@@ -1,0 +1,72 @@
+{
+ "schema": "gteki.research.hours/0.1",
+ "note": "Shinjuku department-store hours, batch 3 (OD-32): the six store POIs' own official pages only; text as printed; current status never asserted.",
+ "entries": [
+  {
+   "poiId": "shop-sjk-marui-honkan",
+   "sourceId": "marui-shinjuku-floorguide-2026-10",
+   "url": "https://www.0101.co.jp/contents2/facilityinfo/003/facility.json",
+   "retrievedAt": "2026-11-01T21:56:30Z",
+   "pageDate": null,
+   "status": "OK",
+   "basis": "undated-official",
+   "hoursText": "11：00～20：00（B1F 11:00～21:00 一部店舗を除く）",
+   "note": "新宿マルイ 本館. Read from the facility data file that the building's page https://www.0101.co.jp/003/info/ loads; hoursText joins the printed rows 基本営業時間 (11：00～20：00) and 基本営業時間２ (（B1F 11:00～21:00 一部店舗を除く）). The page prints no date."
+  },
+  {
+   "poiId": "shop-sjk-marui-annex",
+   "sourceId": "marui-shinjuku-floorguide-2026-10",
+   "url": "https://www.0101.co.jp/contents2/facilityinfo/005/facility.json",
+   "retrievedAt": "2026-11-01T21:56:30Z",
+   "pageDate": null,
+   "status": "OK",
+   "basis": "undated-official",
+   "hoursText": "【平日】11：00～20：00【土・日・祝日】10：30～20：00",
+   "note": "新宿マルイ アネックス. Read from the facility data file that the building's page https://www.0101.co.jp/005/info/ loads; the printed 基本営業時間 row (the first of two rows with that title; the page template renders the first). The page prints no date."
+  },
+  {
+   "poiId": "shop-sjk-marui-men",
+   "sourceId": "marui-shinjuku-floorguide-2026-10",
+   "url": "https://www.0101.co.jp/contents2/facilityinfo/074/facility.json",
+   "retrievedAt": "2026-11-01T21:56:31Z",
+   "pageDate": null,
+   "status": "OK",
+   "basis": "undated-official",
+   "hoursText": "11:00～20:00",
+   "note": "新宿マルイ メン. Read from the facility data file that the building's page https://www.0101.co.jp/074/info/ loads; the printed 基本営業時間 row. The page prints no date."
+  },
+  {
+   "poiId": "shop-sjk-isetan-honkan",
+   "sourceId": "isetan-shinjuku-floorguide-2026-10",
+   "url": "https://www.mistore.jp/content/isetan/mistore/shinjuku/access.html",
+   "retrievedAt": "2026-11-01T21:54:52Z",
+   "pageDate": null,
+   "status": "OK",
+   "basis": "undated-official",
+   "hoursText": "午前10時～午後8時",
+   "note": "本館7階 レストラン街「イートパラダイス」 午前11時～午後10時 (as printed); the page also says フロアによって営業時間が異なります. Read through ego-lite (in-page fetch), the site does not answer curl from this host."
+  },
+  {
+   "poiId": "shop-sjk-isetan-mens",
+   "sourceId": "isetan-shinjuku-floorguide-2026-10",
+   "url": "https://www.mistore.jp/content/isetan/mistore/shinjuku/access.html",
+   "retrievedAt": "2026-11-01T21:54:52Z",
+   "pageDate": null,
+   "status": "OK",
+   "basis": "undated-official",
+   "hoursText": "午前10時～午後8時",
+   "note": "The store page prints one 営業時間 line for 伊勢丹新宿店 (本館 and メンズ館 share the page); no separate メンズ館 line. Read through ego-lite (in-page fetch)."
+  },
+  {
+   "poiId": "shop-sjk-takashimaya",
+   "sourceId": "takashimaya-shinjuku-floorguide-2026-10",
+   "url": "https://www.takashimaya.co.jp/shinjuku/businesshours/",
+   "retrievedAt": "2026-11-01T21:54:44Z",
+   "pageDate": null,
+   "status": "OK",
+   "basis": "undated-official",
+   "hoursText": "午前10時30分～午後7時30分",
+   "note": "The same page prints the 年末年始 hours (12月31日 1階～11階 午前10時～午後6時, 地下1階 午前9時30分～午後6時; 1月1日・2日 全館休業日; 1月3日 午前9時30分～午後6時30分; 1月4日から 午前10時30分～午後7時30分) and floor exceptions. Read through ego-lite (in-page fetch)."
+  }
+ ]
+}

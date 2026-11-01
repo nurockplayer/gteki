@@ -4,9 +4,9 @@
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0,
-    "unvalidatedJoins": 126,
+    "unvalidatedJoins": 122,
     "invalidJoins": 0,
-    "routablePairs": 1054,
-    "failedRoutePairs": 2
+    "routablePairs": 1182,
+    "failedRoutePairs": 0
   }
 }

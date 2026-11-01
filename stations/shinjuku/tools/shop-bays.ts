@@ -13,6 +13,7 @@ import type { Opening } from "../../ikebukuro/scene/kit_shops.ts";
 
 const plan = planJson as unknown as Plan;
 const path = join(dirname(fileURLToPath(import.meta.url)), "../scene/shop_bays.json");
+const FACING_M = 8;
 const round = (x: number) => Math.round(x * 1000) / 1000;
 const distance = (a: XY, b: XY) => Math.hypot(a.x - b.x, a.y - b.y);
 const segmentDistance = (p: XY, a: XY, b: XY) => {
@@ -47,6 +48,20 @@ export function shopBays(): { openings: Opening[] } {
     const u = { x: -g.dir.y * g.width / 2, y: g.dir.x * g.width / 2 };
     return [{ x: g.center.x - u.x, y: g.center.y - u.y }, { x: g.center.x + u.x, y: g.center.y + u.y }] as const;
   });
+  // A bay is a shopfront only if the public walk passes in front of it on its own level: a free-fare walk edge of
+  // that floor within FACING_M on the bay's walk side (a wall facing an unmodelled room or another level's walk is not).
+  const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+  const walks = bundle.edges.filter((e) => e.mode === "walk" && e.paid !== true).flatMap((e) => {
+    const a = nodes.get(e.from), b = nodes.get(e.to);
+    if (!a || !b || a.floorId !== b.floorId) return [];
+    const pts: XY[] = e.geometry?.length ? e.geometry : [a.position, b.position];
+    return pts.slice(1).map((p, i) => ({ floorId: a.floorId, a: pts[i]!, b: p }));
+  });
+  const facesWalk = (floorId: string, centre: XY, normal: XY) => walks.some((w) => {
+    if (w.floorId !== floorId || segmentDistance(centre, w.a, w.b) > FACING_M) return false;
+    const mid = { x: (w.a.x + w.b.x) / 2, y: (w.a.y + w.b.y) / 2 };
+    return [w.a, mid, w.b].some((p) => (p.x - centre.x) * normal.x + (p.y - centre.y) * normal.y > 0.5);
+  });
   const candidates: { key: string; centre: XY; z: number; width: number; normal: XY }[] = [];
   for (const level of layout.levels) {
     if (level.ceilingZ - level.z < 3) continue;
@@ -57,6 +72,7 @@ export function shopBays(): { openings: Opening[] } {
       const normal = { x: -dy / length * wall.side, y: dx / length * wall.side };
       const walk = { x: centre.x + normal.x * 0.5, y: centre.y + normal.y * 0.5 };
       if (!level.slabs.some((s) => s.fare === "free" && pointInRings(walk, s.rings))) continue;
+      if (!facesWalk(level.floorId, centre, normal)) continue;
       if (points.some((p) => distance(centre, p) < 5) || gates.some(([a, b]) => segmentDistance(centre, a, b) < 5)) continue;
       const width = Math.min(length - 1.2, 4.8), ux = dx / length, uy = dy / length;
       const a = { x: centre.x - ux * width / 2, y: centre.y - uy * width / 2 }, b = { x: centre.x + ux * width / 2, y: centre.y + uy * width / 2 };

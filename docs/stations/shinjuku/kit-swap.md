@@ -74,12 +74,12 @@ cap; the rest are dropped, logged as `kit swap: dropped ...`, and listed in `rep
 Draws are counted as distinct (level, material) batches; material keys strip the `~<asset_id>` suffix of
 AO-baked clones (`extras.gteki_name`, falling back to the material name). Runtime batching merges those clones per floor only when their retained texture identities match and clears
 `aoMap`; the GPU texture estimate excludes the manifest's `occlusion` maps and counts only retained maps, taking the largest
-estimate per shared material across assets and floors. Geometry is estimated at 70 B per triangle. The report also carries `measured`
+estimate per shared material across assets and floors. Geometry is estimated at 45 B per triangle (the packed merge stores 19 B per vertex: Int8 normals, half-float uv). The report also carries `measured`
 figures counted from the built meshes; its GPU texture bytes remain a manifest estimate, not a device measurement.
 
 Baseline at main `45250364` (low quality): 130 draws, 223,924 triangles (#298 adds two shell batches and 193 triangles to
 `f143f862`); the kit adds at most the caps above. The stub-library run
-on the real scene (see section 5 for the arithmetic) places 19 escalator pieces, 24 stair-nosing pieces, 4 gate rows and 5 of the 9 lift
+on the real scene (see section 5 for the arithmetic) places 19 escalator pieces, 24 stair-nosing pieces, 4 gate rows and all 9 lift
 portals within the caps; stub geometry, not real pieces.
 
 ### Current real library (main `45250364`)
@@ -187,8 +187,9 @@ the diff, not in code. If the stair stepping rule in `build.ts` changes, update 
 (the test that counts hidden nosing triangles per step catches a mismatch).
 
 Budget with the stub estimates Lane E gave (escalator 1352 triangles per run, stair nosing 180, gate and lift stubs 1800 and 1090): 19 escalators +
-24 stairs + 4 gate rows = 37,208 triangles, which already uses most of the 3 MB geometry cap (70 B per merged triangle = 42,857
-triangles). Five of the nine lift portals fit; the other four are dropped, in rank order (escalator, stairs, gate, exit, lift). The real counts will change this; the rule does not. If the director prefers a different order or per-instance sharing
+24 stairs + 4 gate rows = 37,208 triangles; the nine lift portals add 9,810 for 47,018. The packed merge stores 19 B per
+vertex (Int8 normals, half-float uv), so geometry is estimated at 45 B per merged triangle and the 3 MB cap allows 66,666
+triangles: all nine lift portals fit, because the 60,000-triangle cap is the tighter one and binds first. The real counts will change this; the rule does not. If the director prefers a different order or per-instance sharing
 (InstancedMesh costs draws instead of geometry), that is a one-line change in `config.ts`.
 
 ## 6. How the swap works

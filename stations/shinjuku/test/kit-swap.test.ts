@@ -317,9 +317,9 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(r.totals.triangles).toBeLessThanOrEqual(KIT_BUDGET.maxTriangles);
       expect(r.dropped.map((d) => d.role).sort()).toEqual(["lift", "lift", "lift"]);
       expect(r.dropped.find((d) => d.role === "lift")!.reason).toMatch(/over budget \(triangles 60200 > 60000/);
-      // With a roomier triangle cap the 3 MB geometry cap binds instead.
+      // With a roomier triangle cap the 3 MB geometry cap binds instead: 3 x 20,000 x 45 = 2.7 MB, a 4th breaches.
       const roomy = planKitPlacements({ anchors: anchors(0, 5), manifest: heavy, budget: { ...KIT_BUDGET, maxTriangles: 99e6 }, caps: { ktx2: false } });
-      expect(roomy.placed.length).toBe(2);
+      expect(roomy.placed.length).toBe(3);
       expect(roomy.dropped[0]!.reason).toMatch(/over budget \(geometry/);
       expect(r.dropped.filter((d) => /ranked below a placement dropped for budget/.test(d.reason)).length).toBe(2);
       expect(logs.length).toBe(3);
@@ -819,23 +819,23 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
 
     it("flag on, stub library at the estimated triangle counts: the budget keeps the highest-ranked placements", () => {
       // Stub counts (STUB_TRIANGLES): escalator 1352 (19 fitted runs), stairs 180 (24), gate 1800 (4 rows), lift 1090 (9 portals).
-      // Geometry is 70 B per merged triangle, so the 3 MB cap allows 42,857 triangles:
-      //   19*1352 + 24*180 + 4*1800 = 37,208; five lifts add 5,450 = 42,658; a sixth (43,748) would breach, so the other 4 of the 9 portals go. Toilets are never placed (a gap).
+      // Geometry is 45 B per merged triangle, so the 3 MB cap allows 66,666 triangles:
+      //   19*1352 + 24*180 + 4*1800 + 9*1090 = 47,018 triangles = 2,115,810 B, so all 9 portals fit and the
+      //   60k triangle cap (47,018) binds first. Toilets are never placed (a gap).
       const count = (role: string) => report.placed.filter((p) => p.role === role).length;
-      expect([count("escalator"), count("stairs"), count("gate"), count("lift"), count("toilet")]).toEqual([19, 24, 4, 5, 0]);
-      expect(report.dropped.filter((d) => d.role === "lift").length).toBe(4);
+      expect([count("escalator"), count("stairs"), count("gate"), count("lift"), count("toilet")]).toEqual([19, 24, 4, 9, 0]);
+      expect(report.dropped.filter((d) => d.role === "lift")).toEqual([]);
       expect(report.dropped.filter((d) => d.role === "toilet")).toEqual([]);
       expect(report.gaps.filter((g) => g.role === "toilet")).toEqual([{ role: "toilet", anchors: 3, reason: ROLE_DISABLED.toilet }]);
       expect(report.dropped.filter((d) => d.role === "escalator").map((d) => d.anchorKey).sort()).toEqual(catalogResult.unfitted.map((u) => u.edgeId).sort());
-      expect(report.dropped.find((d) => d.role === "lift")!.reason).toMatch(/over budget \(geometry/);
-      expect(report.totals.triangles).toBe(19 * STUB_TRIANGLES.escalator + 24 * STUB_TRIANGLES.stairs + 4 * STUB_TRIANGLES.gate + 5 * STUB_TRIANGLES.lift);
+      expect(report.totals.triangles).toBe(19 * STUB_TRIANGLES.escalator + 24 * STUB_TRIANGLES.stairs + 4 * STUB_TRIANGLES.gate + 9 * STUB_TRIANGLES.lift);
       expect(report.totals.triangles).toBeLessThanOrEqual(KIT_BUDGET.maxTriangles);
       expect(report.totals.geometryBytes).toBeLessThanOrEqual(KIT_BUDGET.maxGeometryBytes);
       expect(report.totals.draws).toBeLessThanOrEqual(KIT_BUDGET.maxDraws);
-      // Lifts are dropped from the tail of the anchor order, never an escalator or stair for a lift.
-      expect(report.placed.filter((p) => p.role === "lift").map((p) => p.anchorKey)).toEqual(["0", "1", "2", "3", "4"]);
     });
 
+    // Its apply path builds a whole station scene, 4.9 s solo through orb-test (2 CPUs, 2026-11-02 05:31 JST) and over
+    // 5 s beside kit-bundle.test.ts.
     it("the real kit 0.1.0 places mobile gates and lifts; available dressing pieces fit no Shinjuku run", () => {
       const mobile = parseKitManifest(library("mobile/manifest.json"), "mobile");
       const anchors = collectKitAnchors({ layout: captured.layout, protection: captured.protection, plan: captured.plan, bundle, lifts: captured.liftAnchors });
@@ -845,7 +845,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(r.placed.map((p) => p.assetId)).toEqual([
         ...Array<string>(4).fill("gteki_gate_array_1w"), ...Array<string>(9).fill("gteki_lift_portal_w1000"),
       ]);
-      expect(r.totals).toEqual({ draws: 4, triangles: 13_226, geometryBytes: 925_820, gpuTextureBytes: 65_536 });
+      expect(r.totals).toEqual({ draws: 4, triangles: 13_226, geometryBytes: 595_170, gpuTextureBytes: 65_536 });
       expect(r.dropped.filter((d) => d.role === "stairs")).toHaveLength(24);
       expect(r.dropped.filter((d) => d.role === "escalator")).toHaveLength(21);
       expect(r.dropped.every((d) => d.reason === "no piece fits this anchor")).toBe(true);
@@ -872,7 +872,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       // Only this explicit test override enables the role; the normal planner above refuses it.
       expect(exits.placed.filter((p) => p.role === "exit")).toHaveLength(4);
       expect(exits.gaps.some((g) => g.role === "exit")).toBe(false);
-    });
+    }, 30_000);
 
     describe("failure and partial results", () => {
       const manifest = () => parseKitManifest(shinjukuStubManifestJson(catalogJson), "mobile");
@@ -894,6 +894,8 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect(digestSceneLists(scene)).toEqual(MAIN_BASELINE.lists);
       };
 
+      // Each run builds a whole station scene and digests it: 9.7 s on origin/main and 9.9 s on this branch through
+      // orb-test (2 CPUs, 2026-11-02 05:18-05:22 JST), over vitest's 5 s default. Not the extra placements.
       it("an error while building the kit meshes logs 'kit swap off', returns no report and leaves the scene exactly as flag-off", () => {
         const stub = stubProvider();
         let n = 0;
@@ -902,8 +904,10 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect(out.some((l) => /^kit swap off: boom; placeholders stay/.test(l))).toBe(true);
         unchanged(scene);
         scene.dispose();
-      });
+      }, 30_000);
 
+      // Same full scene build and digest per run: 7.7 s on origin/main and 9.2 s on this branch through orb-test
+      // (2 CPUs, 2026-11-02 05:18-05:22 JST), over vitest's 5 s default. Not the extra placements.
       it("an error while hiding placeholders cannot leave a partial hide: the first group is prepared but never committed", () => {
         const { scene, result, out } = run(stubProvider(), (c) => ({
           ...c,
@@ -917,8 +921,10 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect(out.some((l) => /^kit swap off: hide failed/.test(l))).toBe(true);
         unchanged(scene);
         scene.dispose();
-      });
+      }, 30_000);
 
+      // Also a full scene build and digest: 8.4 s on origin/main and 8.5 s on this branch through orb-test (2 CPUs,
+      // 2026-11-02 05:18-05:22 JST), over vitest's 5 s default.
       it("a failed batch removes the entire affected pieces from shared batches and keeps their placeholders", () => {
         const stub = stubProvider();
         let broken = false;
@@ -943,7 +949,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
           expect(result!.placed.filter((p) => p.role === "lift")).toEqual(survivingLifts);
           for (const p of failedLifts) expect(result!.dropped.some((d) => d.role === "lift" && d.anchorKey === p.anchorKey && /no drawable visual mesh/.test(d.reason))).toBe(true);
           expect(result!.hidden["lift-portals"] ?? 0).toBe(survivingLifts.length * 192);
-          expect(result!.dropped.filter((d) => d.role === "lift")).toHaveLength(4 + failedLifts.length);
+          expect(result!.dropped.filter((d) => d.role === "lift")).toHaveLength(failedLifts.length);
           expect(result!.hidden["gate-machines"]).toBe(96 * 4);
           const kit = scene.root.getObjectByName("kit-swap")!;
           // Lift bodies shared stub_palette with every other piece: they must be removed from that successful batch too.
@@ -952,7 +958,9 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
           const placeholders = (root: THREE.Object3D) => triangles(root, (o) => isStationProxy(o) || o.name === "kit-swap");
           expect(placeholders(off.root) - placeholders(scene.root)).toBe(Object.values(result!.hidden).reduce((n, count) => n + count, 0));
         } finally { consoleError.mockRestore(); scene.dispose(); }
-      });
+      }, 30_000);
+      // Same full scene build and digest: 5.3 s on origin/main and 6.7 s on this branch through orb-test (2 CPUs,
+      // 2026-11-02 05:18-05:22 JST), over vitest's 5 s default.
       it("a placement that draws nothing keeps its placeholder: no triangles are hidden for it, and it is reported", () => {
         const stub = stubProvider();
         const { scene, result } = run({
@@ -968,11 +976,11 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect(result).not.toBeNull();
         expect(result!.placed.some((p) => p.role === "lift")).toBe(false);
         expect(result!.hidden["lift-portals"]).toBeUndefined();
-        expect(result!.dropped.filter((d) => /no drawable visual mesh/.test(d.reason)).length).toBe(5);
+        expect(result!.dropped.filter((d) => /no drawable visual mesh/.test(d.reason)).length).toBe(captured.liftAnchors.length);
         // Gates and stairs were still swapped.
         expect(result!.hidden["gate-machines"]).toBe(96 * 4);
         scene.dispose();
-      });
+      }, 30_000);
     });
 
     it("flag on: no shop, kiosk, bench or vending piece is instantiated or drawn", () => {
@@ -1013,8 +1021,8 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       // per-run triangle count is whatever build.ts drew, so the identity below is the exact-size check.
       expect(report.hidden["escalator-balustrade"]).toBeGreaterThan(0);
       expect(report.hidden["escalator-balustrade"]).toBe(offTri - onTri - 192 * placed("lift").length - 96 * placed("gate").length - 12 * steps);
-      // The 4 lifts and 2 escalators that were not placed keep every placeholder triangle.
-      expect(captured.liftAnchors.length - placed("lift").length).toBe(4);
+      // No lifts and 2 escalators that were not placed keep every placeholder triangle.
+      expect(captured.liftAnchors.length - placed("lift").length).toBe(0);
       expect(placed("escalator").length).toBe(19);
     });
 
