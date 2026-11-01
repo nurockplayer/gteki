@@ -41,6 +41,8 @@ const HEADROOM_M = 2.1;
 const HOLE_DEPTH_M = HEADROOM_M + SLAB_BAND_M;
 /** How far a piece's hole runs past a seam with its neighbour. */
 const SEAM_GROW_M = 0.05;
+/** Rail pieces shorter than this are dropped. */
+const MIN_RAIL_M = 1e-3;
 /** Every inner piece with a direction keeps its rectangle: a dropped one would leave a strip of slab uncut. */
 const MIN_INNER_PIECE_M = 1e-3;
 
@@ -92,7 +94,8 @@ export function wellRails(well: StairwellWell, opened: readonly StairwellRect[],
     // no hole piece follows, across the hole's upper end.
     const next = well.rects[index + 1], upper = hole.highEnd ?? (hole.to >= rect.halfLength - 1e-6 && !(next && holes.get(next)) ? to : null);
     // Downwards likewise: a hole starting at a seam with a piece that has none (open air above it) leads on down the flight.
-    const previous = well.rects[index - 1], lower = previous && !holes.get(previous) && hole.from <= -rect.halfLength + 1e-6 ? from : null;
+    // The foot of the first piece is the stair mouth, where the walker comes in from the lower floor.
+    const previous = well.rects[index - 1], lower = (!previous || !holes.get(previous)) && hole.from <= -rect.halfLength + 1e-6 ? from : null;
     for (const along of [upper, lower]) {
       if (along === null) continue;
       const [a, , , d] = pieceQuad(rect, along, along);
@@ -110,7 +113,32 @@ export function wellRails(well: StairwellWell, opened: readonly StairwellRect[],
   // from its pieces' own outlines, open at the seams between them, rather than failing the whole station's cut.
   let polygons: ReturnType<typeof unionRings>;
   try { polygons = union(rings); } catch { polygons = rings.map((ring) => [ring]); open.push(...seams); }
-  return boundaryEdges(polygons, open).map(([a, b]) => [new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z)]);
+  // No rail stands where a piece of the stair runs within a body height under it (a landing or a turn the walker is on).
+  const walked = well.rects.flatMap((rect) => {
+    const reach = depthInterval(rect, well.upperY, -Infinity, WALKER_BODY.bodyTopM);
+    return reach ? [{ rect, from: reach.from, to: reach.to }] : [];
+  });
+  return boundaryEdges(polygons, open).flatMap(([a, b]) => outside(new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z), walked));
+}
+
+/** The parts of a plan segment outside the strict interior of each piece's along-interval [from, to]. */
+function outside(from: THREE.Vector3, to: THREE.Vector3, pieces: readonly { rect: StairwellRect; from: number; to: number }[]): [THREE.Vector3, THREE.Vector3][] {
+  const delta = to.clone().sub(from), inset = 1e-3;
+  let intervals: [number, number][] = [[0, 1]];
+  for (const { rect, from: lo0, to: hi0 } of pieces) {
+    let lo = 0, hi = 1;
+    for (const [axis, min, max] of [[rect.along, lo0 + inset, hi0 - inset], [rect.across, -rect.halfWidth + inset, rect.halfWidth - inset]] as const) {
+      const start = from.clone().sub(rect.center).dot(axis), step = delta.dot(axis);
+      if (Math.abs(step) < 1e-9) { if (start <= min || start >= max) { lo = 1; hi = 0; break; } }
+      else {
+        const a = (min - start) / step, b = (max - start) / step;
+        lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
+      }
+    }
+    if (hi - lo < 1e-6) continue;
+    intervals = intervals.flatMap(([a, b]) => hi <= a || lo >= b ? [[a, b]] : [...(lo > a ? [[a, lo] as [number, number]] : []), ...(hi < b ? [[hi, b] as [number, number]] : [])]);
+  }
+  return intervals.filter(([a, b]) => (b - a) * delta.length() > MIN_RAIL_M).map(([a, b]) => [from.clone().addScaledVector(delta, a), from.clone().addScaledVector(delta, b)]);
 }
 
 /** The plan rectangle of one straight piece of a connector, in renderer coordinates. */

@@ -179,6 +179,39 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("puts no rail across a turning landing that sits within a step of the upper floor", () => {
+    const turn = flight([{ x: 0, y: 0, z: 0 }, { x: 8, y: 0, z: 3.6 }, { x: 6, y: 2, z: 3.6 }, { x: 6, y: 4, z: 4 }]);
+    const wells = stairwellWells(turn, traversable);
+    const landing = wells[0]!.rects[1]!;
+    const s = scene();
+    const result = cutStairwells(s.root, wells, { tier: "high" });
+    const at = resolveWalls(landing.center.x, landing.center.z, 0.3, 3.6, 1.7, result.walls);
+    expect(at.x).toBeCloseTo(landing.center.x);
+    expect(at.z).toBeCloseTo(landing.center.z);
+    result.dispose();
+  });
+
+  it("leaves the stair mouth open where the upper slab reaches over the foot of a low flight", () => {
+    const root = new THREE.Group();
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(12, 0.2, 6), new THREE.MeshBasicMaterial()); upper.position.set(6, 1.1, 0); upper.name = "upper-floor";
+    root.add(upper); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(lowBundle(1.2), traversable), { tier: "high" });
+    expect(resolveWalls(-0.1, 0, 0.3, 0, 1.7, result.walls).x).toBeCloseTo(-0.1);
+    result.dispose();
+  });
+
+  it("puts no fallback rail across the landing at a turn when the union fails", () => {
+    const turn = flight([{ x: 0, y: 0, z: 0 }, { x: 8, y: 0, z: 3 }, { x: 8, y: 3, z: 3 }, { x: 13, y: 3, z: 4 }]);
+    const well = stairwellWells(turn, traversable)[0]!;
+    const landing = well.rects[1]!;
+    const failing = () => { throw new Error("Unable to complete output ring"); };
+    const walls = wellRails(well, well.rects, failing).map(([a, b]) => ({ ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: 4, yMax: 5.1 }));
+    expect(walls.length).toBeGreaterThan(0);
+    const at = resolveWalls(landing.center.x, landing.center.z, 0.3, 3, 1.7, walls);
+    expect(at.x).toBeCloseTo(landing.center.x);
+    expect(at.z).toBeCloseTo(landing.center.z);
+  });
+
   it("rails no sliver across the path where two pieces of one flight meet at a small tilt", () => {
     // A 1.3-degree bend at the joint: the plan runs (0, 0) -> (5, 0.057) -> (10, 0) in renderer x, z.
     const bent = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: -0.057, z: 2 }, { x: 10, y: 0, z: 4 }]);
