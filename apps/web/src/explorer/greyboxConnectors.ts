@@ -279,21 +279,30 @@ function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
  */
 function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
-  const turns = points.map((_p, i) => i).filter((i) => i > 0 && i < points.length - 1 && isTurn(i));
+  // Level legs at either end are the floor the stair starts from, not part of it: they carry no wall, so a walk edge
+  // that meets the same node from the side is not cut off. The model starts at the first and ends at the last climb.
+  const climbs = (i: number) => Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6;
+  let first = 0, last = points.length - 1;
+  while (first < last - 1 && !climbs(first)) first++;
+  while (last > first + 1 && !climbs(last - 1)) last--;
+  const turns = points.map((_p, i) => i).filter((i) => i > first && i < last && isTurn(i));
   const square = (j: number) => planQuad(points[j]!.clone().addScaledVector(planDir(points[j - 1]!, points[j]!), -half), planDir(points[j - 1]!, points[j]!), 2 * half, half);
-  const bounds = [0, ...turns, points.length - 1];
+  const bounds = [first, ...turns, last];
   for (let k = 1; k < bounds.length; k++) {
-    const first = bounds[k - 1]!, last = bounds[k]!, level = `connector:${edge.id}:flight:${k - 1}`;
+    const lo = bounds[k - 1]!, hi = bounds[k]!, level = `connector:${edge.id}:flight:${k - 1}`;
     levels.set(level, { edge, landing: false });
-    regions.push({ kind: "strip", level, points: points.slice(first, last + 1).map((p) => ({ x: p.x, y: p.y, z: p.z })), halfWidth: half });
-    for (let i = first + 1; i < last; i++) {
+    regions.push({ kind: "strip", level, points: points.slice(lo, hi + 1).map((p) => ({ x: p.x, y: p.y, z: p.z })), halfWidth: half });
+    for (let i = lo + 1; i < hi; i++) {
       // Radius half: out at the mitre distance, a disc vertex lands exactly on a strip corner and trips polygon-clipping.
       if (bendAngle(points, i) > 1e-6) regions.push({ kind: "disc", level, x: points[i]!.x, y: points[i]!.y, z: points[i]!.z, radius: half });
     }
-    for (const [end, next] of [[first, first + 1], [last, last - 1]] as const) {
-      const quad = end === 0 || end === points.length - 1 ? planQuad(points[end]!, planDir(points[next]!, points[end]!), MOUTH_M, half) : square(end);
+    for (const [end, next] of [[lo, lo + 1], [hi, hi - 1]] as const) {
+      const quad = end === first || end === last ? planQuad(points[end]!, planDir(points[next]!, points[end]!), MOUTH_M, half) : square(end);
       regions.push({ kind: "connector", level, y: points[end]!.y, quad });
     }
+    // The level legs before the first climb and after the last, as open footprints of the end flights.
+    if (k === 1) for (let i = 0; i < first; i++) regions.push({ kind: "connector", level, y: points[i]!.y, quad: planQuad(points[i]!, planDir(points[i]!, points[i + 1]!), Math.hypot(points[i + 1]!.x - points[i]!.x, points[i + 1]!.z - points[i]!.z), half) });
+    if (k === bounds.length - 1) for (let i = last; i < points.length - 1; i++) regions.push({ kind: "connector", level, y: points[i]!.y, quad: planQuad(points[i]!, planDir(points[i]!, points[i + 1]!), Math.hypot(points[i + 1]!.x - points[i]!.x, points[i + 1]!.z - points[i]!.z), half) });
   }
   for (const j of turns) {
     const level = `connector:${edge.id}:landing:${j}`, centre = points[j]!, axis = planDir(points[j - 1]!, centre);
@@ -307,7 +316,7 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
         const leg = Math.hypot(points[b]!.x - points[a]!.x, points[b]!.z - points[a]!.z);
         // A flight that ends the stair inside the outline opens it out to the square's corners: the floor continues past
         // its end node. No further, or the stub would attach other levels' walls it does not reach.
-        const end = b === 0 || b === points.length - 1;
+        const end = b <= first || b >= last;
         const reach = end ? Math.max(Math.min(left, leg), half * Math.SQRT2 + 0.01 - (2 * half - left)) : Math.min(left, leg);
         // 1 cm narrower than the landing: a stub side collinear with the outline would drop that stretch of the guard.
         regions.push({ kind: "connector", level, y: centre.y, quad: planQuad(points[a]!, planDir(points[a]!, points[b]!), reach, half - 0.01) });
