@@ -21883,6 +21883,46 @@
    ]
   },
   {
+   "id": "shop-ikb-isp",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "ISP"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x36f"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "isp-access-2026-10",
+     "isp-floorguide-2026-10"
+    ],
+    "method": "printed station-level tie (in our words): the access page's route from the 西武池袋線 1階改札 goes down stair 36 and reaches ISP メトロ口 about 10 m along the passage from the stair foot; connector = the B1 foot of stair 36 (x36f), the node the exit-36 POI routes to. STATION_TIE: the entrance itself is not verified. UNVERIFIED",
+    "checkedDate": "2026-10-28"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "案内は36番出口の階段下（地下1階）で終わります。池袋ショッピングパークのアクセス案内によると、そこから通路を右へ約10 m 進んだ左手にメトロ口があります。店舗入口の位置は未確認です。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Directions end at the B1 foot of the exit 36 stairs. Per the centre's access page, the メトロ口 entrance is about 10 m along the passage to the right, on the left. The entrance position is not yet verified. Current status unknown."
+    }
+   ]
+  },
+  {
    "id": "shop-ikb-esola",
    "category": "shop",
    "names": [
