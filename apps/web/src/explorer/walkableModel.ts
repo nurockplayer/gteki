@@ -237,7 +237,8 @@ function collinear(a: BoundaryWall, b: BoundaryWall): boolean {
   const ax = a.bx - a.ax, az = a.bz - a.az, bx = b.bx - b.ax, bz = b.bz - b.az;
   const la = Math.hypot(ax, az), lb = Math.hypot(bx, bz);
   if (la < 1e-12 || lb < 1e-12) return false;
-  return Math.abs(ax * bz - az * bx) <= 1e-9 * la * lb && ax * bx + az * bz > 0;
+  // Same plan direction and the same rise per metre: a level passage and the ramp after it stay two walls.
+  return Math.abs(ax * bz - az * bx) <= 1e-9 * la * lb && ax * bx + az * bz > 0 && Math.abs((a.by - a.ay) / la - (b.by - b.ay) / lb) <= 1e-6;
 }
 
 function mergeCollinear(pieces: readonly BoundaryWall[]): BoundaryWall[] {
@@ -262,7 +263,8 @@ function boundaryWalls(
   sources: readonly HeightSource[],
   connectors: readonly PlanPoint[][],
   level: string,
-  isAttachment?: (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean,
+  isAttachment: ((wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean) | undefined,
+  breakpoints: readonly PlanPoint[],
 ): BoundaryWall[] {
   const walls: BoundaryWall[] = [];
   const connectorBoxes = connectors.map((ring) => boxOf([[ring]]));
@@ -275,6 +277,16 @@ function boundaryWalls(
       const edgeBox = { minX: Math.min(a.x, b.x) - WALL_TOLERANCE_M, minZ: Math.min(a.z, b.z) - WALL_TOLERANCE_M, maxX: Math.max(a.x, b.x) + WALL_TOLERANCE_M, maxZ: Math.max(a.z, b.z) + WALL_TOLERANCE_M };
       const near = connectors.filter((_ring, k) => { const c = connectorBoxes[k]!; return c.minX <= edgeBox.maxX && c.maxX >= edgeBox.minX && c.minZ <= edgeBox.maxZ && c.maxZ >= edgeBox.minZ; });
       const splits = near.length ? splitParameters(a, b, near) : [0, 1];
+      // A region vertex on this edge is a height breakpoint the union dropped (a level passage turning into a ramp).
+      const dx = b.x - a.x, dz = b.z - a.z, length2 = dx * dx + dz * dz;
+      if (length2 > 1e-12) {
+        for (const v of breakpoints) {
+          if (v.x < edgeBox.minX || v.x > edgeBox.maxX || v.z < edgeBox.minZ || v.z > edgeBox.maxZ) continue;
+          const t = ((v.x - a.x) * dx + (v.z - a.z) * dz) / length2;
+          if (t > 1e-9 && t < 1 - 1e-9 && pointSegmentDistance(v, a, b) <= WALL_TOLERANCE_M) splits.push(t);
+        }
+        splits.sort((x, y) => x - y);
+      }
       for (let k = 1; k < splits.length; k++) {
         const t0 = splits[k - 1]!, t1 = splits[k]!;
         if (t1 - t0 <= 1e-12) continue;
@@ -317,7 +329,7 @@ export function buildWalkableModel(
     if (list) list.push(region); else byLevel.set(region.level, [region]);
   }
   const levels = new Map<string, PlanPolygon[]>();
-  const built: { level: string; union: PlanPolygon[]; sources: HeightSource[]; connectors: PlanPoint[][] }[] = [];
+  const built: { level: string; union: PlanPolygon[]; sources: HeightSource[]; connectors: PlanPoint[][]; breakpoints: PlanPoint[] }[] = [];
   for (const [level, list] of byLevel) {
     const polygons: Polygon[] = [];
     for (const region of list) for (const polygon of regionPolygon(region)) polygons.push([polygon[0]!.map((p): [number, number] => [p.x, p.z])]);
@@ -325,15 +337,16 @@ export function buildWalkableModel(
     const union = polygonClipping.union(polygons[0]!, ...polygons.slice(1)).map(fromClipping);
     levels.set(level, union);
     const connectors = list.filter((region) => region.kind === "connector").flatMap((region) => regionPolygon(region).map((polygon) => polygon[0]!));
-    built.push({ level, union, sources: list.map(heightSource), connectors });
+    const breakpoints = list.filter((region) => region.kind === "strip").flatMap((region) => regionPolygon(region).flatMap((polygon) => polygon[0]!));
+    built.push({ level, union, sources: list.map(heightSource), connectors, breakpoints });
   }
   const walls: BoundaryWall[] = [];
-  for (const { level, union, sources, connectors } of built) {
+  for (const { level, union, sources, connectors, breakpoints } of built) {
     // A boundary where another level's floor carries on within a step of it (a ramp meeting the floor it climbs to)
     // is an attachment too; levels themselves never union, so floors stacked in plan keep their own outlines.
     const continues = (outside: { x: number; y: number; z: number }) => stepM > 0 && built.some((other) => other.level !== level
       && pointInLevel(outside, other.union) && Math.abs(heightAtVertex(outside, other.sources) - outside.y) <= stepM);
-    walls.push(...boundaryWalls(union, sources, connectors, level, (wall, outside) => continues(outside) || !!isAttachment?.(wall, outside)));
+    walls.push(...boundaryWalls(union, sources, connectors, level, (wall, outside) => continues(outside) || !!isAttachment?.(wall, outside), breakpoints));
   }
   return { levels, walls };
 }

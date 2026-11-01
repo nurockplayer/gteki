@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
-import { buildGreybox, createGreyboxBuilder, greyboxTriangleLimit, portalDepthAxis, portalWidthAxis, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
+import { buildGreybox, createGreyboxBuilder, emitGreybox, greyboxTriangleLimit, portalDepthAxis, portalWidthAxis, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import { resolveWalls } from "./walker.ts";
 
@@ -381,6 +381,27 @@ describe("buildGreybox", () => {
     const side = (y: number) => result.wallSegments.some((w) => Math.abs(w.az - w.bz) < 1e-9 && w.az > 0 && Math.min(w.ax, w.bx) < 5 && Math.max(w.ax, w.bx) > 5 && Math.abs(w.yMin + 0.12 - y) < 0.01);
     expect(side(0)).toBe(true);
     expect(side(4)).toBe(true);
+  });
+
+  it("keeps a level passage's wall on its floor where the run turns into a ramp", () => {
+    const bent = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: 20, y: 0, z: 2 } }] };
+    // One run, flat for 10 m, then rising 2 m over the next 10 m (ENU z up).
+    const run = { edge: bent.edges[0]!, points: [new THREE.Vector3(0, 0, 0), new THREE.Vector3(10, 0, 0), new THREE.Vector3(20, 0, 2)] };
+    const grey = emitGreybox(bent as unknown as StationBundle, [run] as never, () => false, emptyScene, "high");
+    const at = (x: number) => grey.wallSegments.filter((w) => Math.abs(w.az - w.bz) < 1e-9 && Math.min(w.ax, w.bx) <= x && Math.max(w.ax, w.bx) >= x);
+    expect(at(5).length).toBeGreaterThan(0);
+    expect(at(5).every((w) => w.yMin < 0)).toBe(true);
+    expect(at(9.9).every((w) => w.yMin < 0)).toBe(true);
+  });
+
+  it("keeps a corridor's walls where a ramp to another floor passes over it", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
+    const nodes = [...bundle.nodes, { id: "r0", floorId: "f", position: { x: 5, y: -10, z: 0 } }, { id: "r1", floorId: "g", position: { x: 5, y: 10, z: 4 } }];
+    const edges = [bundle.edges[0]!, { id: "ramp", from: "r0", to: "r1", mode: "ramp" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    // The corridor's south wall (renderer z = +half) is crossed in plan by the ramp, 2 m up: it stays at x = 5.
+    const half = MODE_WIDTH.walk! / 2;
+    expect(result.wallSegments.some((w) => Math.abs(w.az - half) < 1e-6 && Math.abs(w.bz - half) < 1e-6 && Math.min(w.ax, w.bx) <= 5 && Math.max(w.ax, w.bx) >= 5 && w.yMin < 0)).toBe(true);
   });
 
   it("decides attachments along a long side in pieces, where scene floor reaches only part of it", () => {

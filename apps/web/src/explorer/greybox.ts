@@ -467,7 +467,10 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   const levelOf = (floor: string): string => floor;
   const regions: Region[] = [];
   for (const run of runs) {
-    regions.push({ kind: "strip", level: levelOf(nodes.get(run.edge.from)?.floorId ?? ""), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
+    // A run between two floors (a ramp) is its own level: it meets each floor through a step-high attachment, and never
+    // unions with a corridor it passes over or under.
+    const fromFloor = nodes.get(run.edge.from)?.floorId ?? "", toFloor = nodes.get(run.edge.to)?.floorId ?? "";
+    regions.push({ kind: "strip", level: fromFloor === toFloor ? levelOf(fromFloor) : `run:${run.edge.id}`, points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
   }
   for (const pad of pads) {
     regions.push({ kind: "rect", level: levelOf(pad.floorId), center: { x: pad.center.x, y: pad.center.y, z: pad.center.z }, along: { x: pad.along.x, z: pad.along.z }, halfLength: pad.width / 2, halfWidth: pad.width / 2 });
