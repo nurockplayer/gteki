@@ -5,6 +5,7 @@
 
 Input:  docs/research/merchants/ikebukuro-tobu-dept-tenants.json (860 brands; OD-34 facts-only)
         docs/research/merchants/ikebukuro-seibu-honten-tenants.json (307 brands; OD-35 S facts-only, recheck-at-C)
+        docs/research/merchants/ikebukuro-parco-tenants.json (148 brands; OD-35 S facts-only)
 Output: stations/ikebukuro/gteki/tenants.json (gteki.tenants/0.1)
         the floor pages the input cites registered in stations/ikebukuro/data/graph.src.json
         and its generated stations/ikebukuro/gteki/station.json
@@ -30,7 +31,8 @@ ROOT = os.path.dirname(HERE)
 REPO = os.path.dirname(os.path.dirname(ROOT))
 MERCHANTS = os.path.join(REPO, "docs", "research", "merchants")
 INPUTS = [os.path.join(MERCHANTS, "ikebukuro-tobu-dept-tenants.json"),
-          os.path.join(MERCHANTS, "ikebukuro-seibu-honten-tenants.json")]
+          os.path.join(MERCHANTS, "ikebukuro-seibu-honten-tenants.json"),
+          os.path.join(MERCHANTS, "ikebukuro-parco-tenants.json")]
 GRAPH_SRC = os.path.join(ROOT, "data", "graph.src.json")
 STATION = os.path.join(ROOT, "gteki", "station.json")
 OUT = os.path.join(ROOT, "gteki", "tenants.json")
