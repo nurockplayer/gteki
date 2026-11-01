@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import type { Poi, Source } from "@gteki/schema";
 import { strings } from "../i18n.ts";
-import { merchantCardEl, merchantCardModel, merchantPrecision } from "./merchantCard.ts";
+import { isStationTie, merchantCardEl, merchantCardModel, merchantPrecision } from "./merchantCard.ts";
 
 const source: Source = {
   id: "toei-shinjuku-stores-2026-10",
@@ -49,6 +49,27 @@ describe("merchant precision (#213)", () => {
       evidence: { sourceIds: [source.id], method: "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY", checkedDate: "2026-10-24" },
     });
     expect(merchantPrecision(poi)).toBe("search");
+  });
+
+  it("reads a printed station-level tie as its own precision, checked before the point (#213)", () => {
+    const tie = shop({
+      displayPosition: { x: 0, y: 0, z: null },
+      connectorNodeIds: ["node-1"],
+      evidence: {
+        sourceIds: [source.id],
+        method: "printed store-entrance tie: the page prints 「南改札口から徒歩すぐ」 (facts only). STATION_TIE: the store's own entrance is not verified (field item V1). UNVERIFIED",
+        checkedDate: "2026-10-28",
+      },
+    });
+    expect(isStationTie(tie)).toBe(true);
+    expect(merchantPrecision(tie)).toBe("tie");
+    const card = merchantCardEl(merchantCardModel(tie, [source], "en", null), strings("en"));
+    expect(card.querySelector(".merchant-meta")?.textContent).toContain(strings("en").merchant.precision.tie);
+  });
+
+  it("leaves a shop without the token on the existing precisions", () => {
+    expect(isStationTie(shop())).toBe(false);
+    expect(merchantPrecision(shop({ displayPosition: { x: 0, y: 0, z: null }, connectorNodeIds: ["node-1"] }))).toBe("point");
   });
 
   it("never calls a search-only shop's display position verified without a connector", () => {
