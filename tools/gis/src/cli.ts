@@ -28,6 +28,7 @@ import { s03NavGraph } from './s03-nav-graph.js';
 import { s03NavGraphRoute } from './s03-nav-graph-route.js';
 import { s03NavGraphPublish } from './s03-nav-graph-publish.js';
 import { s03PrivateSeam } from './s03-private-seam.js';
+import { s03Levels } from './s03-levels.js';
 import { osmCoverage } from './osm-coverage.js';
 
 async function main() {
@@ -37,7 +38,7 @@ async function main() {
   const { values, positionals } = parseArgs({ args:argv,allowPositionals:true, options:{offline:{type:'boolean'},all:{type:'boolean'},frame:{type:'string'},'bbox-local':{type:'string'},ids:{type:'string'},'max-polygons':{type:'string'},radius:{type:'string'},'clip-radius':{type:'string'},'exit-radius':{type:'string'},merge:{type:'string'},variant:{type:'string'},kinds:{type:'string'},'no-glb':{type:'boolean'},sources:{type:'string'},out:{type:'string'},vertical:{type:'string'},crs:{type:'string'},run:{type:'string'},from:{type:'string'},to:{type:'string'},'held-diagnostic':{type:'boolean'},'private-tier':{type:'boolean'},drape:{type:'boolean'},publish:{type:'boolean'},help:{type:'boolean'}} });
   const [command,...args]=positionals;
   if(command !== 's03-private-seam')ensurePrivateStore();
-  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | station-frame <station> [frame_id] [--vertical per_feature_ground] | context-glb <station> [--radius M] [--exit-radius M] [--merge none|kind|tiles:<size_m>] [--variant high|low] [--kinds bldg,tran] [--sources id1,id2] | context-overlay <station> [--radius M] [--exit-radius M] [--kinds station,railway,border] [--clip-radius M|0|none] [--no-glb] | context-landmarks <station> [--radius M] | s03-transform-check | s03-positions | s03-paths [--crs <label>] | s03-nav-graph | s03-nav-graph-route --run <run_id> --held-diagnostic [--from <poi_id> --to <poi_id>] | s03-nav-graph-publish --run <run_id> --publish | s03-private-seam --run <run_id> --out <file> --private-tier [--drape] | osm-coverage <station> | inspect-network <source_id> | inspect-poi <source_id> | csv-profile <source_id[:doc_id]...> [--out docs/gis/research/<file>.md] | check-literals (alias check-poi-literals) | literals-report | scrub-literals <path...> | inspect-vintages | rights-report | overlap | gap-packet');return;}
+  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | station-frame <station> [frame_id] [--vertical per_feature_ground] | context-glb <station> [--radius M] [--exit-radius M] [--merge none|kind|tiles:<size_m>] [--variant high|low] [--kinds bldg,tran] [--sources id1,id2] | context-overlay <station> [--radius M] [--exit-radius M] [--kinds station,railway,border] [--clip-radius M|0|none] [--no-glb] | context-landmarks <station> [--radius M] | s03-transform-check | s03-positions | s03-paths [--crs <label>] | s03-nav-graph | s03-nav-graph-route --run <run_id> --held-diagnostic [--from <poi_id> --to <poi_id>] | s03-nav-graph-publish --run <run_id> --publish | s03-private-seam --run <run_id> --out <file> --private-tier [--drape] | s03-levels --out <file> --private-tier | osm-coverage <station> | inspect-network <source_id> | inspect-poi <source_id> | csv-profile <source_id[:doc_id]...> [--out docs/gis/research/<file>.md] | check-literals (alias check-poi-literals) | literals-report | scrub-literals <path...> | inspect-vintages | rights-report | overlap | gap-packet');return;}
   const requireArg=(index:number):string=>{if(!args[index])throw new Error(`Missing argument ${index+1} for ${command}`);return args[index];};
   const writesReports=['inspect-citygml','frame-from-envelope','station-frame','crs-roundtrip','citygml-to-glb','inspect-network','inspect-poi','inspect-vintages','rights-report','literals-report','scrub-literals','overlap','gap-packet'].includes(command)||(command==='acquire'&&!values.offline)||(command==='csv-profile'&&values.out!==undefined);
   if(writesReports&&process.env.GTEKI_GIS_REAL_RUN!=='1')await invalidateRealRunReceipt(`gis ${positionals.join(' ')}`);
@@ -113,6 +114,13 @@ async function main() {
       if(args.length)throw new Error('s03-private-seam takes no positional arguments');
       if(!values.run || !values.out)throw new Error('--run <run_id> and --out <file> are required');
       result=await s03PrivateSeam({ run: values.run, out: values.out, privateTier: values['private-tier'] === true, drape: values.drape === true });break;
+    }
+    case 's03-levels': {
+      if(args.length)throw new Error('s03-levels takes no positional arguments');
+      const extra=Object.keys(values).filter(key=>key!=='out'&&key!=='private-tier');
+      if(extra.length)throw new Error(`s03-levels takes only --out <file> and --private-tier; unexpected ${extra.join(', ')}`);
+      if(!values.out)throw new Error('--out <file> is required');
+      result=await s03Levels({ out: values.out, privateTier: values['private-tier'] === true });break;
     }
     case 's03-nav-graph-publish': {
       if(args.length)throw new Error('s03-nav-graph-publish takes no positional arguments: pass --run <run_id> --publish');

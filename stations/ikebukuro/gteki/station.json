@@ -215,10 +215,7 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
-    "date": "2026-10-24"
-   },
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
    "attribution": "店内・施設のサービス｜インフォメーション｜東武百貨店 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-28T04:11:41Z",
@@ -1398,10 +1395,7 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/pull/564",
-    "date": "2026-10-27"
-   },
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/564", "date": "2026-10-27" },
    "attribution": "東武鉄道「池袋駅 構内マップ」(facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-27T08:17:00+09:00",
@@ -1416,15 +1410,155 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/pull/564",
-    "date": "2026-10-27"
-   },
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/564", "date": "2026-10-27" },
    "attribution": "東武百貨店 池袋店 アクセス (facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-27T08:17:00+09:00",
    "datasetDate": null,
    "notes": "Gate names in its directly-connected gate list only (JR メトロポリタン改札, 東上線南口改札); facts only as for tobu-dept-ikebukuro-2026-10 (#377). No text or map reproduced."
+  },
+  {
+   "id": "parco-ikebukuro-floorguide-2026-11",
+   "title": "池袋PARCO フロアガイド（本館・P'PARCO）",
+   "publisher": "株式会社パルコ",
+   "url": "https://ikebukuro.parco.jp/floor/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-11-02" },
+   "attribution": "池袋PARCO フロアガイド (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-11-01T19:34:52Z",
+   "datasetDate": null,
+   "notes": "Printed shop names, printed readings (from the alpha shop list), printed floor labels and printed categories only; no descriptive text, hours, logos, images or maps reproduced. Class (OD-35, docs/research/use-tiers.md): S facts-only. Director ruling 2026-11-02 (OD-35) supersedes the #502 (2026-10-25) corroboration-only ruling for 池袋PARCO. Terms (https://www.parco.co.jp/terms/, 株式会社パルコ, §1 知的財産権等について, page `Updated Feb. 24, 2021`) read by the lead 2026-11-01T19:32:22Z (2026-11-02 04:32 JST): 「本サイトの利用者（以下「利用者」といいます）は、本サイトで提供する情報・サービス等について、(1)当社の事前の承諾を得ずに、私的利用以外の目的で利用すること、及び、(2)当社の事前の承諾（権利者である第三者が存在する場合には、当社を通じた当該第三者の承諾を含みます）を得ずに、著作権法で定める私的利用の範囲を超えて複製、送信、頒布、譲渡、貸与、翻訳、翻案する等の行為を行うこと、はできません。」 robots.txt of ikebukuro.parco.jp: Allow: /. Fetched with plain curl, default User-Agent, one request at a time (~1 s apart). Readings cross-checked against https://ikebukuro.parco.jp/shop/?category_search=alpha (150 cards, read 2026-11-01T19:34:58Z); 2 cards (information counter, Seven Bank ATM) are on no floor page and are not rows. Where the two pages print a name differently (case, spacing, kana vs romanization) the floor page's form is kept. 0 rows skipped (no row lacked a name or a floor); 0 shops were listed on more than one floor.",
+   "pages": [
+    {
+     "building": "本館",
+     "floor": "1F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=1f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:29Z"
+    },
+    {
+     "building": "本館",
+     "floor": "2F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=2f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:30Z"
+    },
+    {
+     "building": "本館",
+     "floor": "3F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=3f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:31Z"
+    },
+    {
+     "building": "本館",
+     "floor": "4F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=4f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:32Z"
+    },
+    {
+     "building": "本館",
+     "floor": "5F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=5f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:34Z"
+    },
+    {
+     "building": "本館",
+     "floor": "6F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=6f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:35Z"
+    },
+    {
+     "building": "本館",
+     "floor": "7F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=7f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:36Z"
+    },
+    {
+     "building": "本館",
+     "floor": "8F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=8f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:37Z"
+    },
+    {
+     "building": "本館",
+     "floor": "B1F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=b1f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:39Z"
+    },
+    {
+     "building": "本館",
+     "floor": "B2F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=b2f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:40Z"
+    },
+    {
+     "building": "本館",
+     "floor": "M2F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=m2f&ft=type1",
+     "retrievedAt": "2026-11-01T19:34:41Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "1F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=1f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:42Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "2F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=2f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:43Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "3F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=3f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:44Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "4F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=4f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:45Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "5F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=5f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:46Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "6F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=6f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:48Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "7F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=7f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:49Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "8F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=8f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:50Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "B1F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=b1f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:51Z"
+    },
+    {
+     "building": "P'PARCO",
+     "floor": "B2F",
+     "url": "https://ikebukuro.parco.jp/floor/detail/?f=b2f&ft=type2",
+     "retrievedAt": "2026-11-01T19:34:52Z"
+    }
+   ]
   }
  ],
  "floors": [
@@ -2794,15 +2928,15 @@
   }
  ],
  "dataFiles": [
-   {
-    "id": "navmesh-paths",
-    "path": "navmesh-paths.json",
-    "sourceIds": [
-     "plateau-ubld-13116"
-    ],
-    "modified": true,
-    "derivation": "packages/godot/src/navmesh-fallback.ts --write-paths: navmesh walk paths baked from the public scene and greybox (#647 navmesh switch)."
-   },
+  {
+   "id": "navmesh-paths",
+   "path": "navmesh-paths.json",
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "packages/godot/src/navmesh-fallback.ts --write-paths: navmesh walk paths baked from the public scene and greybox (#647 navmesh switch)."
+  },
   {
    "id": "signage",
    "path": "scene/signage.json",
