@@ -208,6 +208,9 @@ importers:
       '@gteki/search':
         specifier: workspace:*
         version: link:../../packages/search
+      polygon-clipping:
+        specifier: 0.15.7
+        version: 0.15.7
       three:
         specifier: ^0.186.1
         version: 0.186.1
