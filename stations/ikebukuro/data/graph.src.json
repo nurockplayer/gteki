@@ -579,6 +579,21 @@
    "notes": "Shop names and the zone label (南館) only, under OD-23/OD-31: POI attributes only, never route evidence (#211 DR-MR-04). Page undated."
   },
   {
+   "id": "isp-access-2026-10",
+   "title": "池袋ショッピングパーク アクセス",
+   "publisher": "池袋ショッピングパーク",
+   "url": "https://www.web-isp.co.jp/access/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614", "date": "2026-10-24" },
+   "attribution": "池袋ショッピングパーク アクセス (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-28T00:00:00+09:00",
+   "datasetDate": null,
+   "notes": "Access facts only (DR-IK-merchant-ties.md MER-02). The site terms §3 bar reuse of its text and images: the route is restated in GTEki's own words, nothing quoted."
+  },
+  {
    "id": "echika-ikebukuro-2026-10",
    "title": "エチカ池袋 フロアガイド・ショップ一覧",
    "publisher": "株式会社メトロプロパティーズ",
@@ -24732,6 +24747,46 @@
     {
      "lang": "en",
      "text": "「JR池袋駅南改札、正面右手よりすぐ」 (the store's access page wording: straight ahead and immediately to the right of the JR South Gate). The guide ends on the public (outside the fare gates) side of the JR South Gate; the store's own entrance and the floors inside are not verified. Floors printed: B1–10F (floor guide). Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-isp",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "池袋ショッピングパーク"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "ISP"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x36f"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "isp-access-2026-10",
+     "isp-floorguide-2026-10"
+    ],
+    "method": "printed station-level tie (in our words): the access page's route from the 西武池袋線 1階改札 goes down stair 36 and reaches ISP メトロ口 about 10 m along the passage from the stair foot; connector = the B1 foot of stair 36 (x36f), the node the exit-36 POI routes to. STATION_TIE: the entrance itself is not verified. UNVERIFIED",
+    "checkedDate": "2026-10-28"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "案内は36番出口の階段下（地下1階）で終わります。池袋ショッピングパークのアクセス案内によると、そこから通路を右へ約10 m 進んだ左手にメトロ口があります。店舗入口の位置は未確認です。現在の営業状況は未確認。"
+    },
+    {
+     "lang": "en",
+     "text": "Directions end at the B1 foot of the exit 36 stairs. Per the centre's access page, the メトロ口 entrance is about 10 m along the passage to the right, on the left. The entrance position is not yet verified. Current status unknown."
     }
    ]
   },
