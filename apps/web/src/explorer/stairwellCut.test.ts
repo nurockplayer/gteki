@@ -139,15 +139,16 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
-  it("carries the hole over a piece too short for a rectangle, so no rail crosses the flight there", () => {
-    // Up 3.2 m over 8 m, 0.2 m in the next 0.3 m of plan (no rectangle), then 0.6 m over the last 1.7 m: the walker on
-    // that short piece is 0.6 m under the floor, tall enough to meet a rail standing on it.
+  it("cuts and carries the hole over a short inner piece, so neither slab nor rail crosses the flight there", () => {
+    // Up 3.2 m over 8 m, 0.2 m in the next 0.3 m of plan, then 0.6 m over the last 1.7 m: the walker on that short
+    // piece is 0.6 m under the floor, tall enough to meet a rail standing on it or the slab's underside.
     const gap = flight([{ x: 0, y: 0, z: 0 }, { x: 8, y: 0, z: 3.2 }, { x: 8.3, y: 0, z: 3.4 }, { x: 10, y: 0, z: 4 }]);
     const wells = stairwellWells(gap, traversable);
-    expect(wells[0]!.rects).toHaveLength(2);
+    expect(wells[0]!.rects).toHaveLength(3);
     const s = scene();
     const result = cutStairwells(s.root, wells, { tier: "high" });
     expect(result.walls.length).toBeGreaterThan(0);
+    expect(up(s.root, 8.15, 3.35)).toHaveLength(0);
     expect(resolveWalls(8.15, 0, 0.3, 3.3, 1.7, result.walls).x).toBeCloseTo(8.15);
     expect(resolveWalls(8.15, 0, 0.3, 3.3, 1.7, result.walls).z).toBeCloseTo(0);
     result.dispose();

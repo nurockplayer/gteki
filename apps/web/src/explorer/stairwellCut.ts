@@ -41,6 +41,8 @@ const HEADROOM_M = 2.1;
 const HOLE_DEPTH_M = HEADROOM_M + SLAB_BAND_M;
 /** How far a piece's hole runs past a seam with its neighbour. */
 const SEAM_GROW_M = 0.05;
+/** An inner piece shorter than this is closed by the seams' growth on either side of it. */
+const MIN_INNER_PIECE_M = 2 * SEAM_GROW_M;
 
 /**
  * Where along a piece (`along` offsets from its centre) the flight runs `lo` to `hi` metres under the upper floor,
@@ -96,17 +98,6 @@ function wellRails(well: StairwellWell, opened: readonly StairwellRect[]): [THRE
       const [a, , , d] = pieceQuad(rect, along, along);
       open.push([a!, d!]);
     }
-  }
-  // A piece too short for a rectangle leaves a gap between its neighbours' holes: the hole spans it.
-  for (let i = 1; i < well.rects.length; i++) {
-    const a = well.rects[i - 1]!, b = well.rects[i]!, ha = holes.get(a), hb = holes.get(b);
-    if (!ha || !hb || ha.to < a.halfLength - 1e-6 || hb.from > -b.halfLength + 1e-6) continue;
-    const end = pieceQuad(a, a.halfLength, a.halfLength), start = pieceQuad(b, -b.halfLength, -b.halfLength);
-    // Only across a gap: pieces that meet (a turn) share the end of their centrelines.
-    const ax = a.center.x + a.along.x * a.halfLength, az = a.center.z + a.along.z * a.halfLength;
-    const bx = b.center.x - b.along.x * b.halfLength, bz = b.center.z - b.along.z * b.halfLength;
-    if (Math.hypot(ax - bx, az - bz) < 1e-3) continue;
-    rings.push([end[0]!, start[0]!, start[3]!, end[3]!]);
   }
   if (!rings.length) return [];
   // polygon-clipping can throw on exactly shared edges ("Unable to complete output ring"); one well's rails then come
@@ -206,8 +197,10 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     for (let i = 1; i < ordered.length; i++) {
       const a = ordered[i - 1]!, b = ordered[i]!;
       const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
-      // Exclude the terminal landings and pieces without a usable plan footprint.
-      if (length < 0.5 || (!rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight))) continue;
+      // Exclude the terminal landings and end pieces without a usable plan footprint. A short piece between two flight
+      // pieces keeps its rectangle, or the cut and the hole would stop either side of it, under an intact slab.
+      const inner = i - 1 > firstFlight && i - 1 < lastFlight;
+      if (length < (inner ? MIN_INNER_PIECE_M : 0.5) || (!rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight))) continue;
       const along = new THREE.Vector3(dx / length, 0, dz / length);
       const across = new THREE.Vector3(-along.z, 0, along.x);
       rects.push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2, rise: b.y - a.y });
