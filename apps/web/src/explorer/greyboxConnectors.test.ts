@@ -24,7 +24,6 @@ describe("vertical connector scope", () => {
 
 import * as THREE from "three";
 import { buildConnectors, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
-import { buildConnectors as buildLegacyConnectors } from "./greyboxConnectorsLegacy.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 
 it("leaves elevator edges to the follow-up, including scene gaps", () => {
@@ -550,18 +549,16 @@ describe("turning landing guards", () => {
     }
   });
 
-  // #673 r14: an escalator has no landing geometry, so with two turns it stays on main's legacy builder.
-  it("builds a two-turn escalator with main's legacy builder, unchanged", () => {
+  // #645 step 2: an escalator with two turns is one strip level with discs at its bends, built by the model, not legacy.
+  it("builds a two-turn escalator from the walkable model", () => {
     const geometry = ([[0, 0, 0], [4, 2, 0], [4, 2, 3], [8, 4, 3]] as const).map(([x, h, z]) => ({ x, y: -z, z: h }));
-    const escalator = () => {
-      const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry })]);
-      station.nodes.find((n) => n.id === "upper")!.position = { ...geometry.at(-1)! };
-      return station;
-    };
-    const result = buildConnectors(escalator(), () => true, flat, "high"), legacy = buildLegacyConnectors(escalator(), () => true, flat, "high");
-    expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
-    expect(result.stats.legacyConnectors).toBe(1);
-    expect(result.wallSegments).toEqual(legacy.wallSegments);
+    const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry })]);
+    station.nodes.find((n) => n.id === "upper")!.position = { ...geometry.at(-1)! };
+    const result = buildConnectors(station, () => true, flat, "high");
+    expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(0);
+    expect(result.stats.legacyConnectors).toBe(0);
+    expect(result.pathByEdge.has("turn")).toBe(true);
+    expect(result.wallSegments.length).toBeGreaterThan(0);
   });
 
   // #673 r13: the floor continues past both ends of a stair, so nothing may stand across either exit.
@@ -797,27 +794,30 @@ describe("turning landing guards", () => {
     expect(path.map((p) => p.x)).toEqual([0, 5, 10]);
   });
 
-  it("does not list an unsupported shape in skippedEdgeIds: main's builder builds it (#640 r18)", () => {
+  it("lists no shape in skippedEdgeIds and leaves none to the legacy builder (#645 step 2)", () => {
     const result = buildConnectors(stairThrough(closeS(1)), () => true, flat, "high");
     expect(result.skippedEdgeIds).toEqual([]);
-    expect(result.stats.legacyConnectors).toBe(1);
+    expect(result.stats.legacyConnectors).toBe(0);
   });
 
-  // Every shape outside the supported set is built exactly as main builds it today (#640 r18 ruling; its clipping is #668).
-  const positions = (objects: readonly THREE.Object3D[]) => objects.map((o) => Array.from(((o as THREE.Mesh).geometry.getAttribute("position").array as Float32Array)));
-  it.each(unsupportedCases)("builds $name with main's legacy builder, unchanged", ({ waypoints }) => {
+  // #645 step 2: the shapes main's legacy builder used to take (#640 r18) are built from the model, one level per flight and
+  // landing, and a walker reaches and steps past both of their exits.
+  it.each(unsupportedCases)("builds $name from the walkable model, with both exits clear", ({ name, waypoints }) => {
     for (const tier of ["high", "low"] as const) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, tier);
-      const legacy = buildLegacyConnectors(stairThrough(waypoints), () => true, flat, tier);
-      expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
-      expect(result.stats.legacyConnectors).toBe(1);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(0);
+      expect(result.stats.legacyConnectors).toBe(0);
       expect(result.root.children.length).toBeGreaterThan(0);
-      expect(positions(result.root.children)).toEqual(positions(legacy.root.children));
-      expect(positions(result.walkable)).toEqual(positions(legacy.walkable));
-      expect(positions(result.colliders)).toEqual(positions(legacy.colliders));
-      expect(result.wallSegments).toEqual(legacy.wallSegments);
-      expect([...result.pathByEdge]).toEqual([...legacy.pathByEdge]);
-      expect(result.stats.triangles).toBe(legacy.stats.triangles);
+      expect(result.pathByEdge.has("turn")).toBe(true);
+      for (const [end, prev] of [[0, 1], [waypoints.length - 1, waypoints.length - 2]] as const) {
+        const [ex, ey, ez] = waypoints[end]!, [px, , pz] = waypoints[prev]!;
+        const length = Math.hypot(ex - px, ez - pz), ux = (ex - px) / length, uz = (ez - pz) / length;
+        for (let s = -0.6; s <= 0.6 + 1e-9; s += 0.05) {
+          const x = ex + ux * s, z = ez + uz * s;
+          const resolved = resolveWalls(x, z, 0.3, ey, 1.7, result.wallSegments);
+          expect(Math.hypot(resolved.x - x, resolved.z - z), `${name} ${tier} end=${end} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+        }
+      }
     }
   });
 
