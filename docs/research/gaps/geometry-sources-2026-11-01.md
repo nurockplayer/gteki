@@ -33,5 +33,5 @@ Also excluded: the 豊島区 池袋駅地下空間案内図 2022 is a PDF diagra
 ## What follows
 
 - **Gap A stays a GAP.** F09 and Echika can only come from on-site observation (field items 4, 5, V2) plus greybox built from facts. No desk source can be cited.
-- **JR (rows 2–3) needs a ruling before anyone opens the files.** The licence is a challenge-limited licence; its operative text (`developer.odpt.org/challenge_license`) is served only through JavaScript and was not read. Question for the director (Owner-reserved if it means entering the challenge): may GTEki take part in 公共交通オープンデータチャレンジ2026 and use these files, and on what terms (publishing in the public tier, derived geometry, time limit)? Until then: not acquired, not used.
+- **JR (rows 2–3): GAP by director ruling (2026-11-02 04:2x JST).** The licence is limited to participants in 公共交通オープンデータチャレンジ. GTEki does not enter the challenge and does not acquire the files. They are used in neither the public tier nor the private tier. JR paid areas and platforms at both stations stay a GAP. This is reopened only if the Owner later decides to register for the challenge; that decision belongs to the Owner.
 - **Other operators' paid areas and platforms (東武, 西武, Metro, 小田急, 京王, 都営新宿線): no source.** They stay search-only in the public tier.
