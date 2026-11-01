@@ -821,6 +821,46 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: each connector is its own model, so two flights 1.7 m apart keep the walls that face each other.
+  it("keeps the facing side walls of two independent flights side by side", () => {
+    const geometry = (y: number) => [{ x: 0, y, z: 0 }, { x: 4, y, z: 2 }];
+    const station = createSyntheticBundle([
+      syntheticEdge("left", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: geometry(0) }),
+      syntheticEdge("right", "a", "upper-2", { mode: "stairs", attributes: { sceneGap: true }, geometry: geometry(1.7) }),
+    ]);
+    for (const [id, y, h] of [["start", 0, 0], ["upper", 0, 2], ["a", 1.7, 0], ["upper-2", 1.7, 2]] as const) station.nodes.find((n) => n.id === id)!.position = { x: h ? 4 : 0, y, z: h };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const near = (x: number, z: number) => result.wallSegments.some((w) => {
+      const dx = w.bx - w.ax, dz = w.bz - w.az, t = THREE.MathUtils.clamp(((x - w.ax) * dx + (z - w.az) * dz) / (dx * dx + dz * dz), 0, 1);
+      return Math.hypot(x - (w.ax + dx * t), z - (w.az + dz * t)) < 0.02;
+    });
+    // Wall frame z is the bundle's -y: the left flight's far side is z = -0.78, the right flight's near side z = -0.92.
+    expect(near(2, -0.78)).toBe(true);
+    expect(near(2, -0.92)).toBe(true);
+  });
+
+  // #710 review: a spiral of shallow bends is split into levels of at most 90 degrees, so where it meets itself in plan
+  // both heights keep their outer wall.
+  it("keeps the outer wall of a shallow-bend spiral at both heights where it meets itself in plan", () => {
+    const waypoints = flatSpiral(1);
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const outer = (i: number) => {
+      const [ax, , az] = waypoints[i]!, [bx, , bz] = waypoints[i + 1]!, length = Math.hypot(bx - ax, bz - az);
+      const mx = (ax + bx) / 2, mz = (az + bz) / 2, nx = (bz - az) / length, nz = -(bx - ax) / length;
+      // Outward is away from the spiral's centre (0, 2).
+      const sign = Math.sign(nx * mx + nz * (mz - 2));
+      return [mx + sign * nx * 0.78, mz + sign * nz * 0.78] as const;
+    };
+    const wallsAt = (x: number, z: number) => result.wallSegments.filter((w) => {
+      const dx = w.bx - w.ax, dz = w.bz - w.az, t = THREE.MathUtils.clamp(((x - w.ax) * dx + (z - w.az) * dz) / (dx * dx + dz * dz), 0, 1);
+      return Math.hypot(x - (w.ax + dx * t), z - (w.az + dz * t)) < 0.03;
+    });
+    const [lx, lz] = outer(0), [hx, hz] = outer(waypoints.length - 2);
+    expect(wallsAt(lx, lz).some((w) => w.yMin < 0.5), "first leg, low").toBe(true);
+    expect(wallsAt(hx, hz).some((w) => w.yMin > 0.6), "last leg, high").toBe(true);
+  });
+
   // A straight flight is built.
   it("builds a straight stair in both directions", () => {
     for (const direction of [-1, 1]) {

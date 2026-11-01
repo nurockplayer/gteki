@@ -287,17 +287,31 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
   while (last > first + 1 && !climbs(last - 1)) last--;
   const turns = points.map((_p, i) => i).filter((i) => i > first && i < last && isTurn(i));
   const square = (j: number) => planQuad(points[j]!.clone().addScaledVector(planDir(points[j - 1]!, points[j]!), -half), planDir(points[j - 1]!, points[j]!), 2 * half, half);
-  const bounds = [first, ...turns, last];
+  // A flight also starts a new level once its shallow bends add up past 90 degrees, so a spiral of shallow bends never
+  // stacks over itself inside one plan union (its walls would keep only one height).
+  const soft = new Set<number>();
+  for (let t = 0, hard = [first, ...turns, last]; t + 1 < hard.length; t++) {
+    let turned = 0;
+    for (let i = hard[t]! + 1; i < hard[t + 1]!; i++) {
+      const bend = bendAngle(points, i);
+      if (turned + bend > Math.PI / 2) { soft.add(i); turned = 0; } else turned += bend;
+    }
+  }
+  const bounds = [first, ...turns, ...soft, last].sort((a, b) => a - b);
   for (let k = 1; k < bounds.length; k++) {
     const lo = bounds[k - 1]!, hi = bounds[k]!, level = `connector:${edge.id}:flight:${k - 1}`;
     levels.set(level, { edge, landing: false });
     regions.push({ kind: "strip", level, points: points.slice(lo, hi + 1).map((p) => ({ x: p.x, y: p.y, z: p.z })), halfWidth: half });
-    for (let i = lo + 1; i < hi; i++) {
+    for (let i = soft.has(lo) ? lo : lo + 1; i <= (soft.has(hi) ? hi : hi - 1); i++) {
       // Radius half: out at the mitre distance, a disc vertex lands exactly on a strip corner and trips polygon-clipping.
       if (bendAngle(points, i) > 1e-6) regions.push({ kind: "disc", level, x: points[i]!.x, y: points[i]!.y, z: points[i]!.z, radius: half });
     }
     for (const [end, next] of [[lo, lo + 1], [hi, hi - 1]] as const) {
-      const quad = end === first || end === last ? planQuad(points[end]!, planDir(points[next]!, points[end]!), MOUTH_M, half) : square(end);
+      // At a soft split the neighbouring level's first leg, up to half of it, so the two levels meet without a wall.
+      const beyond = end + (end - next);
+      const quad = end === first || end === last ? planQuad(points[end]!, planDir(points[next]!, points[end]!), MOUTH_M, half)
+        : soft.has(end) ? planQuad(points[end]!, planDir(points[end]!, points[beyond]!), Math.min(half, Math.hypot(points[beyond]!.x - points[end]!.x, points[beyond]!.z - points[end]!.z)), half)
+        : square(end);
       regions.push({ kind: "connector", level, y: points[end]!.y, quad });
     }
     // The level legs before the first climb and after the last, as open footprints of the end flights.
@@ -360,7 +374,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   // stubs of the flights it meets, as connector footprints: their outlines split the boundary exactly and never carry a
   // wall. Where a flight meets a landing at the same height the boundary is an attachment; everything else is a side
   // wall or a landing guard. A mouth footprint at each end of the stair leaves the way onto the floor open.
-  const regions: Region[] = [];
   const levels = new Map<string, { edge: Edge; landing: boolean }>();
   const built: { edge: Edge; parts: ConnectorPart[]; pads: { part: ConnectorPart; floorId: string }[]; path: THREE.Vector3[]; halfWidth: number }[] = [];
   const regionsByEdge = new Map<string, Region[]>();
@@ -382,7 +395,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     }
     const ownRegions: Region[] = [];
     edgeRegions(edge, points, half, isTurn, ownRegions, levels);
-    regions.push(...ownRegions);
     regionsByEdge.set(edge.id, ownRegions);
     const parts: ConnectorPart[] = [];
     const edgePath: THREE.Vector3[] = [];
@@ -434,17 +446,13 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     omittedLandings += edgeOmitted;
     built.push({ edge, parts, pads, path: lowerFirst, halfWidth });
   }
-  // polygon-clipping can throw on exactly coincident input. Then each connector is modelled on its own, and one that
-  // still throws is left to the legacy builder, so a single bad shape never takes every connector down.
-  let modelWalls: BoundaryWall[];
-  try {
-    modelWalls = buildWalkableModel(regions, undefined, WALKER_BODY.stepUpM).walls;
-  } catch {
-    modelWalls = [];
-    for (const [edgeId, own] of regionsByEdge) {
-      try { modelWalls.push(...buildWalkableModel(own, undefined, WALKER_BODY.stepUpM).walls); }
-      catch { legacyEdgeIds.add(edgeId); }
-    }
+  // Each connector is its own model: another connector's floor at the same height is not this one's walkway, so two
+  // flights side by side keep the walls between them. One that polygon-clipping cannot union (it can throw on exactly
+  // coincident input) is left to the legacy builder.
+  const modelWalls: BoundaryWall[] = [];
+  for (const [edgeId, own] of regionsByEdge) {
+    try { modelWalls.push(...buildWalkableModel(own, undefined, WALKER_BODY.stepUpM).walls); }
+    catch { legacyEdgeIds.add(edgeId); }
   }
   const failed = (edgeId: string) => legacyEdgeIds.has(edgeId);
   for (let k = built.length - 1; k >= 0; k--) {
