@@ -95,8 +95,10 @@ describe("stairwell cuts", () => {
 
   it("rails the open sides of the upper well and leaves the arrival side open", () => {
     const { result } = cut();
+    // The hole is where the flight runs more than a step (0.45 m) and less than 3.3 m under the 4 m floor: x 1.75 to
+    // 8.875. Its two sides and its deep end are railed; the shallow end is the step onto the flight.
     expect(result.walls).toHaveLength(3);
-    expect(result.stats.railM).toBeCloseTo(10 + 10 + 2.2, 5);
+    expect(result.stats.railM).toBeCloseTo(7.125 + 7.125 + 2.2, 5);
     const feet = 4, body = 1.7;
     // A body reaching the rail line from the upper floor is pushed back out of the well.
     expect(resolveWalls(5, 1.2, 0.3, feet, body, result.walls).z).toBeCloseTo(1.4);
@@ -105,6 +107,49 @@ describe("stairwell cuts", () => {
     // Below the upper floor there is no rail.
     expect(resolveWalls(5, 1.2, 0.3, 0, body, result.walls).z).toBeCloseTo(1.2);
     expect(result.finishTriangles + result.bandTriangles).toBeLessThan(2000);
+    result.dispose();
+  });
+
+  it("keeps the upper floor and puts no rail where a long flight runs deep under it", () => {
+    // A 12 m flight rising 8 m under a floor at 8 m: only its top 4.95 m of plan (less than 3.3 m under the floor) opens.
+    const deep = createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode: "escalator", lengthM: 14.4 })]);
+    const built = { ...deep, nodes: deep.nodes.map((node) => node.id === "upper" ? { ...node, position: { x: 12, y: 0, z: 8 } } : node) };
+    const root = new THREE.Group();
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(30, 0.4, 6), new THREE.MeshBasicMaterial()); upper.position.set(6, 7.8, 0); upper.name = "upper-floor";
+    root.add(upper); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(built, traversable), { tier: "high" });
+    // Over the deep part (x < 7.05) the upper floor is whole and nothing stands on it.
+    expect(down(root, 3, 9).some((hit) => Math.abs(hit.point.y - 8) < 1e-6)).toBe(true);
+    expect(result.walls.every((w) => Math.min(w.ax, w.bx) >= 7.05 - 1e-6)).toBe(true);
+    // Over the shallow part the floor is open.
+    expect(down(root, 10, 9).filter((hit) => hit.point.y > 7.5)).toHaveLength(0);
+    result.dispose();
+  });
+
+  it("leaves a hole open downwards where the flight below it runs under no slab", () => {
+    // The upper slab covers only x > 5.5: the first piece (x 0 to 5) has nothing above it to cut, the second does.
+    const split = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2.6 }, { x: 10, y: 0, z: 4 }]);
+    const root = new THREE.Group();
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(7.5, 0.4, 6), new THREE.MeshBasicMaterial()); upper.position.set(9.25, 3.8, 0); upper.name = "upper-floor";
+    root.add(upper); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(split, traversable), { tier: "high" });
+    expect(result.walls.length).toBeGreaterThan(0);
+    // Climbing across the seam (x = 5, 1.4 m under the floor) meets no rail.
+    expect(resolveWalls(5.1, 0, 0.3, 2.6, 1.7, result.walls).x).toBeCloseTo(5.1);
+    result.dispose();
+  });
+
+  it("carries the hole over a piece too short for a rectangle, so no rail crosses the flight there", () => {
+    // Up 3.2 m over 8 m, 0.2 m in the next 0.3 m of plan (no rectangle), then 0.6 m over the last 1.7 m: the walker on
+    // that short piece is 0.6 m under the floor, tall enough to meet a rail standing on it.
+    const gap = flight([{ x: 0, y: 0, z: 0 }, { x: 8, y: 0, z: 3.2 }, { x: 8.3, y: 0, z: 3.4 }, { x: 10, y: 0, z: 4 }]);
+    const wells = stairwellWells(gap, traversable);
+    expect(wells[0]!.rects).toHaveLength(2);
+    const s = scene();
+    const result = cutStairwells(s.root, wells, { tier: "high" });
+    expect(result.walls.length).toBeGreaterThan(0);
+    expect(resolveWalls(8.15, 0, 0.3, 3.3, 1.7, result.walls).x).toBeCloseTo(8.15);
+    expect(resolveWalls(8.15, 0, 0.3, 3.3, 1.7, result.walls).z).toBeCloseTo(0);
     result.dispose();
   });
 
@@ -125,9 +170,10 @@ describe("stairwell cuts", () => {
     }));
     const halfWidth = wells[0]!.rects[0]!.halfWidth;
     for (const w of result.walls) {
-      // The mouth rail at x = 0 stands a storey above the foot; only the joint near x = 5 is on the walker's way.
+      // The rail across the hole's deep end (x = 1.75) stands on the upper floor, 3.3 m over the flight; only the joint
+      // near x = 5 is on the walker's way.
       for (const [x, z] of [[w.ax, w.az], [w.bx, w.bz], [(w.ax + w.bx) / 2, (w.az + w.bz) / 2]]) {
-        if (x! < 1e-3) continue;
+        if (Math.abs(x! - 5) > 1) continue;
         expect(toCentre(x!, z!)).toBeGreaterThan(halfWidth - 1e-3);
       }
     }
@@ -216,8 +262,9 @@ describe("stairwell cuts", () => {
     const split = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }]);
     const s = scene();
     const result = cutStairwells(s.root, stairwellWells(split, traversable), { tier: "low" });
-    expect(result.walls).toHaveLength(5);
-    expect(result.stats.railM).toBeCloseTo(22.2, 5);
+    // One hole over both pieces: the union leaves no seam, so the two sides run straight through the joint.
+    expect(result.walls).toHaveLength(3);
+    expect(result.stats.railM).toBeCloseTo(16.45, 5);
     expect(result.walls.every(w => w.yMin === 4 && w.yMax === 5.1)).toBe(true);
     const rails = result.finish!.children.filter(child => child.name === "greybox-stairwell-rail");
     expect(rails).toHaveLength(1);
@@ -533,9 +580,9 @@ describe("stairwell cuts", () => {
 
   it("classifies an unroled sloped slab triangle by its whole triangle, so its clipped piece is still cut", () => {
     // Whole triangle: two corners outside the footprint at 3.0 m, one inside at 3.9 m; mean 3.3 m. Its piece inside
-    // the footprint (x 0 to 1) has a mean of 3.6 m, a different 5 cm level, and lies above the 2.1 m headroom, so only the
-    // band cuts it.
-    const positions = [-1, 3.0, -2, -1, 3.0, 2, 1, 3.9, 0];
+    // the footprint (x 1.9 to 3, within the hole) has a mean of 3.6 m, a different 5 cm level, and lies above the 2.1 m
+    // headroom, so only the band cuts it.
+    const positions = [1, 3.0, -2, 1, 3.0, 2, 3, 3.9, 0];
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
     const slab = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));

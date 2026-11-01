@@ -356,7 +356,7 @@ function fromClipping(polygon: Polygon): PlanPolygon {
  * The union of plan rings. Rings are grouped by overlapping bounds first: a ring alone in its group is its own
  * polygon, and only groups of two or more go through polygon-clipping (most corridors on a level never touch).
  */
-function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
+export function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
   const boxes = rings.map((ring) => boxOf([[ring]]));
   const parent = rings.map((_ring, i) => i);
   const find = (i: number): number => { while (parent[i] !== i) i = parent[i] = parent[parent[i]!]!; return i; };
@@ -379,6 +379,35 @@ function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
     union.push(...polygonClipping.union(polygons[0]!, ...polygons.slice(1)).map(fromClipping));
   }
   return union;
+}
+
+/**
+ * Every edge of the polygons' rings, less the parts lying along an `open` segment (within WALL_TOLERANCE_M): the
+ * boundary a guard follows, with the sides a walker crosses left out.
+ */
+export function boundaryEdges(polygons: readonly PlanPolygon[], open: readonly [PlanPoint, PlanPoint][]): [PlanPoint, PlanPoint][] {
+  const out: [PlanPoint, PlanPoint][] = [];
+  for (const polygon of polygons) for (const ring of polygon) {
+    for (let i = 0; i < ring.length; i++) {
+      const a = ring[i]!, b = ring[(i + 1) % ring.length]!, dx = b.x - a.x, dz = b.z - a.z, length2 = dx * dx + dz * dz;
+      if (length2 < MIN_WALL_M * MIN_WALL_M) continue;
+      let keep: [number, number][] = [[0, 1]];
+      for (const [c, d] of open) {
+        if (pointSegmentDistance(c, a, b) > WALL_TOLERANCE_M && pointSegmentDistance(d, a, b) > WALL_TOLERANCE_M) continue;
+        // Only a collinear open segment removes anything: both its ends lie on this edge's line.
+        const off = (p: PlanPoint) => Math.abs((p.x - a.x) * dz - (p.z - a.z) * dx) / Math.sqrt(length2);
+        if (off(c) > WALL_TOLERANCE_M || off(d) > WALL_TOLERANCE_M) continue;
+        const tc = ((c.x - a.x) * dx + (c.z - a.z) * dz) / length2, td = ((d.x - a.x) * dx + (d.z - a.z) * dz) / length2;
+        const lo = Math.min(tc, td), hi = Math.max(tc, td);
+        keep = keep.flatMap(([s, e]): [number, number][] => hi <= s || lo >= e ? [[s, e]] : [...(lo > s ? [[s, lo] as [number, number]] : []), ...(hi < e ? [[hi, e] as [number, number]] : [])]);
+      }
+      for (const [s, e] of keep) {
+        if ((e - s) * Math.sqrt(length2) < MIN_WALL_M) continue;
+        out.push([{ x: a.x + dx * s, z: a.z + dz * s }, { x: a.x + dx * e, z: a.z + dz * e }]);
+      }
+    }
+  }
+  return out;
 }
 
 /** Union every region per level and emit the boundary walls the connector footprints and attachments leave. */
