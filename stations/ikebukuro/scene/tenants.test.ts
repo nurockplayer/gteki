@@ -22,6 +22,15 @@ describe("西武池袋本店 brand directory (OD-35)", () => {
   });
 });
 
+describe("池袋PARCO brand directory (OD-35)", () => {
+  it("returns shop-ikb-parco's card with the printed floor for a PARCO-only brand", () => {
+    expect(createSearchIndex(bundle).search("Onitsuka Tiger")[0]).toMatchObject({
+      poi: { id: "shop-ikb-parco", category: "shop" },
+      tenant: { name: "Onitsuka Tiger", floorLabel: "本館 2F", category: "Shoes／Women's／Men's" },
+    });
+  });
+});
+
 describe("Tobu Department Store brand directory (#419)", () => {
   it("returns shop-ikb-tobudept's card with the printed floor for a real brand", () => {
     expect(validateBundle(bundle).filter((issue) => issue.level === "error")).toEqual([]);
