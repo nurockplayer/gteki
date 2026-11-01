@@ -78,7 +78,7 @@
     "offFloor": 0,
     "unvalidatedJoins": 478,
     "invalidJoins": 0,
-    "routablePairs": 1054,
-    "failedRoutePairs": 2
+    "routablePairs": 1182,
+    "failedRoutePairs": 0
   }
 }
