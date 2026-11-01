@@ -391,6 +391,7 @@ describe("buildGreybox", () => {
     const at = (x: number) => grey.wallSegments.filter((w) => Math.abs(w.az - w.bz) < 1e-9 && Math.min(w.ax, w.bx) <= x && Math.max(w.ax, w.bx) >= x);
     expect(at(5).length).toBeGreaterThan(0);
     expect(at(5).every((w) => w.yMin < 0)).toBe(true);
+    expect(at(9.9).length).toBeGreaterThan(0);
     expect(at(9.9).every((w) => w.yMin < 0)).toBe(true);
   });
 
@@ -402,6 +403,25 @@ describe("buildGreybox", () => {
     // The corridor's south wall (renderer z = +half) is crossed in plan by the ramp, 2 m up: it stays at x = 5.
     const half = MODE_WIDTH.walk! / 2;
     expect(result.wallSegments.some((w) => Math.abs(w.az - half) < 1e-6 && Math.abs(w.bz - half) < 1e-6 && Math.min(w.ax, w.bx) <= 5 && Math.max(w.ax, w.bx) >= 5 && w.yMin < 0)).toBe(true);
+  });
+
+  it("unions the bend of a ramp between floors with the ramp, leaving no wall inside the turn", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }];
+    const nodes = [bundle.nodes[0]!, { id: "top", floorId: "g", position: { x: 4, y: 4, z: 8 } }];
+    const edges = [{ id: "ramp", from: "a", to: "top", mode: "ramp" }];
+    const turned = { ...bundle, floors, nodes, edges } as unknown as StationBundle;
+    // Steep (1 m up per metre), up 4 m along x, then 4 m more along y: a bend at (4, 0, 4), whose patch meets each
+    // leg more than a step apart in height near the inside corner.
+    const run = { edge: edges[0]!, points: [new THREE.Vector3(0, 0, 0), new THREE.Vector3(4, 0, 4), new THREE.Vector3(4, 4, 8)] };
+    const grey = emitGreybox(turned, [run] as never, () => false, emptyScene, "high");
+    const half = MODE_WIDTH.ramp! / 2;
+    // Nothing stands inside either leg's passage (renderer z = -ENU y): the bend patch's arc there is not an outline.
+    const within = (x: number, z: number, x0: number, x1: number, z0: number, z1: number) => x > x0 + 0.2 && x < x1 - 0.2 && z > z0 + 0.2 && z < z1 - 0.2;
+    const inside = grey.wallSegments.filter((w) => {
+      const mx = (w.ax + w.bx) / 2, mz = (w.az + w.bz) / 2;
+      return within(mx, mz, 0, 4, -half, half) || within(mx, mz, 4 - half, 4 + half, -4, 0);
+    });
+    expect(inside).toEqual([]);
   });
 
   it("decides attachments along a long side in pieces, where scene floor reaches only part of it", () => {

@@ -382,7 +382,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
-  const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; edges: Set<string> }>();
+  const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; edges: Set<string>; bendOf?: Edge }>();
   for (const run of detected) {
     const edgePointsR = edgePoints(bundle, run.edge, nodes, floors);
     for (const [id, point, endpoint] of [[run.edge.from, run.points[0], edgePointsR[0]], [run.edge.to, run.points.at(-1), edgePointsR.at(-1)]] as const) {
@@ -397,7 +397,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       const ax = p.x - a.x, ay = p.y - a.y, bx = z.x - p.x, by = z.y - p.y;
       const lengths = Math.hypot(ax, ay) * Math.hypot(bx, by);
       if (lengths > 1e-9 && (ax * bx + ay * by) / lengths < 0.9999) {
-        junctions.set(`${run.edge.id}:bend:${i}`, { at: R(p.x, p.y, p.z), width: widthOf(run.edge), count: 2, floor: nodes.get(run.edge.from)?.floorId ?? "", edges: new Set([run.edge.id]) });
+        junctions.set(`${run.edge.id}:bend:${i}`, { at: R(p.x, p.y, p.z), width: widthOf(run.edge), count: 2, floor: nodes.get(run.edge.from)?.floorId ?? "", edges: new Set([run.edge.id]), bendOf: run.edge });
       }
     }
   }
@@ -465,18 +465,21 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   // Every wall comes from one per-level walkable union: strips, pads, junction discs and the connector footprints the
   // mouths cut. A boundary edge inside a connector's own footprint belongs to that connector, not to the corridor.
   const levelOf = (floor: string): string => floor;
+  // A run between two floors (a ramp) is its own level, its bends included: it meets each floor through a step-high
+  // attachment, and never unions with a corridor it passes over or under.
+  const runLevel = (edge: Edge): string => {
+    const fromFloor = nodes.get(edge.from)?.floorId ?? "", toFloor = nodes.get(edge.to)?.floorId ?? "";
+    return fromFloor === toFloor ? levelOf(fromFloor) : `run:${edge.id}`;
+  };
   const regions: Region[] = [];
   for (const run of runs) {
-    // A run between two floors (a ramp) is its own level: it meets each floor through a step-high attachment, and never
-    // unions with a corridor it passes over or under.
-    const fromFloor = nodes.get(run.edge.from)?.floorId ?? "", toFloor = nodes.get(run.edge.to)?.floorId ?? "";
-    regions.push({ kind: "strip", level: fromFloor === toFloor ? levelOf(fromFloor) : `run:${run.edge.id}`, points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
+    regions.push({ kind: "strip", level: runLevel(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
   }
   for (const pad of pads) {
     regions.push({ kind: "rect", level: levelOf(pad.floorId), center: { x: pad.center.x, y: pad.center.y, z: pad.center.z }, along: { x: pad.along.x, z: pad.along.z }, halfLength: pad.width / 2, halfWidth: pad.width / 2 });
   }
   for (const junction of activeJunctions) {
-    regions.push({ kind: "disc", level: levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
+    regions.push({ kind: "disc", level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
   }
   for (const mouth of mouths) {
     const ax = mouth.at.x, az = mouth.at.z, bx = ax + mouth.ux * mouth.length, bz = az + mouth.uz * mouth.length;
