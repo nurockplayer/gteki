@@ -1,7 +1,8 @@
 /**
  * Build stations/shinjuku/gteki/tenants.json — the brand directories of 小田急百貨店 新宿店, the three
- * 新宿マルイ buildings, the 売場 sections of 伊勢丹新宿店 本館/メンズ館 and the brands of 新宿高島屋 — from the
- * facts-only research files under docs/research/merchants/ (#419; 伊勢丹 and 高島屋 under OD-35).
+ * 新宿マルイ buildings, the 売場 sections of 伊勢丹新宿店 本館/メンズ館 and the brands of 新宿高島屋 and
+ * 京王百貨店 新宿店 — from the facts-only research files under docs/research/merchants/
+ * (#419; 伊勢丹, 高島屋 and 京王百貨店 under OD-35).
  *
  *   pnpm --filter @gteki/station-shinjuku import:tenants            # writes the file
  *   pnpm --filter @gteki/station-shinjuku import:tenants --check    # fails if the output would change
@@ -43,6 +44,11 @@ const SOURCES = [
     file: join(HERE, "../../../docs/research/merchants/shinjuku-takashimaya-tenants.json"),
     sourceId: "takashimaya-shinjuku-floorguide-2026-10",
     storePoiIds: ["shop-sjk-takashimaya"],
+  },
+  {
+    file: join(HERE, "../../../docs/research/merchants/shinjuku-keio-tenants.json"),
+    sourceId: "keio-shinjuku-shopsearch-2026-11",
+    storePoiIds: ["shop-sjk-keio"],
   },
 ];
 
