@@ -105,7 +105,7 @@ export function buildPrivateSeam(held: HeldGraphDocument, e27: { manifest: Stati
 }
 
 /** Refuse public-tree output, including paths whose existing parent resolves through a symlink. */
-function privateOutput(out: string): string {
+export function privateOutput(out: string): string {
   let ancestor = resolve(out);
   const tail: string[] = [];
   while (!existsSync(ancestor)) {

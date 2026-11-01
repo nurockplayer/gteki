@@ -2001,6 +2001,12 @@ evidenceBytes	function	tools/gis/src/rights.ts	59
 verifyEvidence	function	tools/gis/src/rights.ts	73
 evaluateRightsRecords	function	tools/gis/src/rights.ts	102
 rightsReport	function	tools/gis/src/rights.ts	180
+S03OnlyLevel	interface	tools/gis/src/s03-levels.ts	10
+s03OnlyLevels	function	tools/gis/src/s03-levels.ts	16
+S03LevelFeature	interface	tools/gis/src/s03-levels.ts	27
+S03LevelRegion	interface	tools/gis/src/s03-levels.ts	28
+buildS03Levels	function	tools/gis/src/s03-levels.ts	31
+s03Levels	function	tools/gis/src/s03-levels.ts	42
 S03_PUBLISH_FLAG	const	tools/gis/src/s03-nav-graph-publish.ts	9
 HOLD_SIGNOFF_PATH	const	tools/gis/src/s03-nav-graph-publish.ts	10
 HoldSignoff	interface	tools/gis/src/s03-nav-graph-publish.ts	12
@@ -2118,6 +2124,7 @@ s03Positions	function	tools/gis/src/s03-positions.ts	360
 PrivateSeam	interface	tools/gis/src/s03-private-seam.ts	13
 renderElevationFor	function	tools/gis/src/s03-private-seam.ts	23
 buildPrivateSeam	function	tools/gis/src/s03-private-seam.ts	35
+privateOutput	function	tools/gis/src/s03-private-seam.ts	108
 s03PrivateSeam	function	tools/gis/src/s03-private-seam.ts	123
 S03_TRANSFORM_POLICY	const	tools/gis/src/s03-transform.ts	16
 OUTSIDE_SUPPRESSION_MIN_NODES	const	tools/gis/src/s03-transform.ts	17
@@ -2178,7 +2185,9 @@ floorMappingSha256	function	tools/gis/src/s03-transform.ts	791
 S03DigestFacts	interface	tools/gis/src/s03-transform.ts	795
 receiptIdentity	function	tools/gis/src/s03-transform.ts	800
 guardS03Receipt	function	tools/gis/src/s03-transform.ts	805
-s03TransformCheck	function	tools/gis/src/s03-transform.ts	811
+S03StationFile	interface	tools/gis/src/s03-transform.ts	811
+loadS03Inputs	function	tools/gis/src/s03-transform.ts	820
+s03TransformCheck	function	tools/gis/src/s03-transform.ts	837
 smallestRoom	function	tools/gis/src/selection.ts	2
 StationVerticalMode	type	tools/gis/src/station-enu.ts	27
 StationOrigin	interface	tools/gis/src/station-enu.ts	28
