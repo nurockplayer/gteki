@@ -23,7 +23,7 @@ describe("Department store brand search (#419)", () => {
 
   it("loads the brand directories with no validation errors", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
-    expect(bundle.tenants).toHaveLength(875);
+    expect(bundle.tenants).toHaveLength(1468);
     expect(new Set(bundle.tenants!.map((t) => t.poiId))).toEqual(
       new Set([
         "shop-sjk-odakyudept",
@@ -33,6 +33,7 @@ describe("Department store brand search (#419)", () => {
         "shop-sjk-isetan-honkan",
         "shop-sjk-isetan-mens",
         "shop-sjk-takashimaya",
+        "shop-sjk-keio",
       ]),
     );
   });
@@ -42,7 +43,8 @@ describe("Department store brand search (#419)", () => {
     ["アナ スイ", "１階"],
     ["アクセーヌ", "地下１階"],
   ])("returns the Odakyu card with the printed floor for %s", (brand, floor) => {
-    const hits = search(brand);
+    // 京王百貨店 also prints some of these brands, so the card is looked up rather than assumed first.
+    const hits = search(brand).filter((hit) => hit.poi.id === "shop-sjk-odakyudept");
     expect(hits[0]).toMatchObject({
       poi: { id: "shop-sjk-odakyudept" },
       matched: brand,
@@ -78,6 +80,17 @@ describe("Department store brand search (#419)", () => {
   ])("returns the 高島屋 card with the printed floor for %s", (brand, floor) => {
     expect(search(brand)[0]).toMatchObject({
       poi: { id: "shop-sjk-takashimaya" },
+      matched: brand,
+      tenant: { name: brand, floorLabel: floor },
+    });
+  });
+
+  it.each([
+    ["東京ひよ子", "ＭＢ"],
+    ["フィールアフィール", "1階"],
+  ])("returns the 京王百貨店 card with the printed floor for %s", (brand, floor) => {
+    expect(search(brand)[0]).toMatchObject({
+      poi: { id: "shop-sjk-keio" },
       matched: brand,
       tenant: { name: brand, floorLabel: floor },
     });
