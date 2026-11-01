@@ -48,7 +48,7 @@ describe("greybox station integration", () => {
     ]);
     loaded.bundle.nodes.find((node) => node.id === "upper")!.position.x = 12;
     await state.loadStation(loaded, createRouter(loaded.bundle));
-    expect(state.connectors.stats.connectors).toEqual({ stairs: 1, escalator: 1 });
+    expect(state.connectors.stats.connectors).toEqual({ stairs: 1, escalator: 1, elevator: 0 });
     expect(state.connectors.walkable.length).toBeGreaterThan(1);
     expect(state.groundTargets).toContain(state.connectors.walkable[0]);
     const steps = [{ edgeId: "stairs", mode: "stairs", fromNodeId: "a", toNodeId: "upper" }, { edgeId: "escalator", mode: "escalator", fromNodeId: "start", toNodeId: "upper" }];

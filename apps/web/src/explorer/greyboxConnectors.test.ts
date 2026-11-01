@@ -26,12 +26,12 @@ import * as THREE from "three";
 import { buildConnectors, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 
-it("leaves elevator edges to the follow-up, including scene gaps", () => {
+it("builds a lift scene gap as a shaft, not a stair or escalator (#645 step 2b)", () => {
   const station = { ...bundle, edges: [{ ...bundle.edges[0]!, mode: "elevator", attributes: { sceneGap: true } }] } as StationBundle;
   const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
-  expect(result.root.children).toHaveLength(0);
-  expect(result.walkable).toHaveLength(0);
-  expect(result.colliders).toHaveLength(0);
+  expect(result.stats.connectors).toEqual({ escalator: 0, stairs: 0, elevator: 1 });
+  expect(result.walkable.length).toBeGreaterThan(0);
+  expect(result.colliders.length).toBeGreaterThan(0);
 });
 
 describe("connector geometry", () => {
@@ -1159,6 +1159,57 @@ describe("turning landing guards", () => {
       const p = samplePolyline(path, cumulative, s), r = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
       expect(Math.hypot(r.x - p.x, r.z - p.z), `s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
     }
+  });
+
+  // #645 step 2b (#648): a lift is a 2.2 m shaft, walled but for a 0.9 m door toward each stop's hall, and the ride goes
+  // straight up the shaft centre, never along the slanted graph line through the landing pads.
+  function liftStation(extra: Edge[] = []) {
+    const station = createSyntheticBundle([
+      syntheticEdge("lift", "start", "upper", { mode: "elevator", attributes: { sceneGap: true } }),
+      syntheticEdge("hall-low", "start", "a", { mode: "walk" }),
+      syntheticEdge("hall-high", "upper", "upper-2", { mode: "walk" }),
+      ...extra,
+    ]);
+    station.nodes.find((n) => n.id === "upper")!.position = { x: 0.47, y: 0, z: 4 };
+    return station;
+  }
+  it("builds a lift shaft walled but for its doors, with a vertical ride at the shaft centre", () => {
+    const result = buildConnectors(liftStation(), () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    expect(result.stats.connectors.elevator).toBe(1);
+    const ride = result.pathByEdge.get("lift")!;
+    expect(ride.length).toBe(4);
+    expect(ride[1]!.x).toBeCloseTo(0.235); expect(ride[2]!.x).toBeCloseTo(0.235);
+    expect(ride[1]!.z).toBeCloseTo(ride[2]!.z); expect(ride[2]!.y - ride[1]!.y).toBeCloseTo(4);
+    const pushed = (x: number, y: number) => { const r = resolveWalls(x, 0, 0.3, y, 1.7, result.wallSegments); return Math.hypot(r.x - x, r.z); };
+    for (const y of [0, 4]) {
+      // Out through the door (+x, toward the hall) is open; out through the back face (-x) is walled.
+      for (let x = 0.235; x <= 2.2; x += 0.05) expect(pushed(x, y), `door y=${y} x=${x.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+      let stopped = false;
+      for (let x = 0.235; x >= -1.6 && !stopped; x -= 0.05) if (pushed(x, y) > 0.05) stopped = true;
+      expect(stopped, `back face y=${y}`).toBe(true);
+    }
+  });
+
+  it("opens a lift's door where its hall edge leaves the shaft, off the face centre", () => {
+    const station = liftStation();
+    station.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0.9, z: 0 };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    // Walk the hall edge from the car node (0, 0) out to (3, 0.9) in bundle axes; the wall frame's z is the bundle's -y.
+    for (let k = 0; k <= 60; k++) {
+      const x = 3 * k / 60, z = -0.9 * k / 60, r = resolveWalls(x, z, 0.3, 0, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z - z), `k=${k}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  it("puts lift edges whose cars share a footprint in one shaft and leaves a same-floor car stub alone", () => {
+    const station = liftStation([syntheticEdge("lift-2", "b", "upper-2", { mode: "elevator", attributes: { sceneGap: true } }), syntheticEdge("stub", "start", "goal", { mode: "elevator", attributes: { sceneGap: true } })]);
+    station.nodes.find((n) => n.id === "b")!.position = { x: 0.3, y: 0.4, z: 0 };
+    station.nodes.find((n) => n.id === "upper-2")!.position = { x: 0.2, y: -0.3, z: 4 };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    expect(result.stats.connectors.elevator).toBe(2);
+    expect(result.pathByEdge.has("stub")).toBe(false);
+    const a = result.pathByEdge.get("lift")!, b = result.pathByEdge.get("lift-2")!;
+    expect(a[1]!.x).toBeCloseTo(b[1]!.x); expect(a[1]!.z).toBeCloseTo(b[1]!.z);
   });
 
   // A straight flight is built.
