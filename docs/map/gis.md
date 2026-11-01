@@ -24,14 +24,15 @@ Isolated TypeScript/ESM package with its own pnpm workspace (Node 26). It acquir
 - `tools/gis/src/context-overlay.ts:168-231` — selectLayer(); `tools/gis/src/context-overlay.ts:270-333` writeOverlayGlb(): 2D railway/border overlays.
 - `tools/gis/src/literals.ts:323-347` — checkLiterals(): guards against leaking source values into committed docs.
 - `tools/gis/src/s03-transform.ts:551-597` — checkInternal(): Check A/B of the S03 drawing transform.
-- `tools/gis/src/s03-transform.ts:767-788` — mutualNearest(): E27 to S03 floor-compatible matching; `tools/gis/src/s03-transform.ts:811-919` s03TransformCheck() is the entry.
+- `tools/gis/src/s03-transform.ts:767-788` — mutualNearest(): E27 to S03 floor-compatible matching; `tools/gis/src/s03-transform.ts:820-834` loadS03Inputs() is the one S03 load (ZIP, station origin checks, projector); `tools/gis/src/s03-transform.ts:837-937` s03TransformCheck() is the entry.
 - `tools/gis/src/s03-paths.ts:106-170` — buildPaths(); `tools/gis/src/s03-paths.ts:223-280` s03Paths(): path segments, CRS UNKNOWN.
 - `tools/gis/src/s03-positions.ts:90-142` — joinS03Pois(); `tools/gis/src/s03-positions.ts:242-263` representativePoint(); `tools/gis/src/s03-positions.ts:360-437` s03Positions().
 - `tools/gis/src/s03-nav-graph.ts:178-262` — buildNavGraph(): held walk graph from v5_nav nodes and links, with a reason code on each edge.
 - `tools/gis/src/s03-nav-graph.ts:96-105` — writeHeldDocument(): writes only under the store's out/s03 and refuses paths that escape the store.
 - `tools/gis/src/s03-nav-graph.ts:359-420` — s03NavGraph(): entry; private document plus public receipt.
 - `tools/gis/src/s03-nav-graph-route.ts:81-88` — loadHeldGraph(); `tools/gis/src/s03-nav-graph-route.ts:121-147` shortestPath(); `tools/gis/src/s03-nav-graph-route.ts:241-276` s03NavGraphRoute(): held diagnostic routing, `--held-diagnostic` only.
-- `tools/gis/src/s03-private-seam.ts:14-114` — buildPrivateSeam() / s03PrivateSeam(): PRIVATE-tier additions and E27 stitches; writes only to the private repo via --out, refuses output under this git repo, and emits no public receipt.
+- `tools/gis/src/s03-private-seam.ts:14-151` — buildPrivateSeam() / s03PrivateSeam(): PRIVATE-tier additions and E27 stitches; renderElevationFor() (:23) and the exported privateOutput() guard (:108); writes only to the private repo via --out, refuses output under this git repo, and emits no public receipt.
+- `tools/gis/src/s03-levels.ts:16-53` — s03OnlyLevels() / buildS03Levels() / s03Levels(): the footprint polygons of each S03 floor the public scene does not model, written as a private-tier levels file with no public receipt.
 - `tools/gis/src/s03-nav-graph-publish.ts:14-26` — publishBlockers(): lists every blocker (reason-code counts, floor tie not VERIFIED, missing or malformed HOLD sign-off, sign-off for another run).
 - `tools/gis/src/s03-nav-graph-publish.ts:33-41` — s03NavGraphPublish(): refuses without `--publish`, then always throws. Even with every gate clear it says the station-graph merge (S03 to E27 seam) is not built.
 

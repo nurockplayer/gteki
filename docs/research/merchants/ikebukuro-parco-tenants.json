@@ -1,0 +1,2080 @@
+{
+  "schema": "gteki.research.tenants/0.1",
+  "note": "Facts-only brand list of 池袋PARCO (148 rows: the 本館 and P'PARCO floor guides, 21 floor pages), as the floor guide prints it. Not POIs: a brand search returns the store's POI with the floor. Promoted to S facts-only under OD-35 (docs/research/use-tiers.md); director ruling 2026-11-02 supersedes the #502 (2026-10-25) corroboration-only ruling. UNVERIFIED.",
+  "storePoiId": "shop-ikb-parco",
+  "retrievedAt": "2026-11-01T19:34:52Z",
+  "sources": [
+    {
+      "id": "parco-ikebukuro-floorguide-2026-11",
+      "title": "池袋PARCO フロアガイド（本館・P'PARCO）",
+      "publisher": "株式会社パルコ",
+      "url": "https://ikebukuro.parco.jp/floor/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+        "date": "2026-11-02"
+      },
+      "attribution": "池袋PARCO フロアガイド (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-01T19:34:52Z",
+      "datasetDate": null,
+      "notes": "Printed shop names, printed readings (from the alpha shop list), printed floor labels and printed categories only; no descriptive text, hours, logos, images or maps reproduced. Class (OD-35, docs/research/use-tiers.md): S facts-only. Director ruling 2026-11-02 (OD-35) supersedes the #502 (2026-10-25) corroboration-only ruling for 池袋PARCO. Terms (https://www.parco.co.jp/terms/, 株式会社パルコ, §1 知的財産権等について, page `Updated Feb. 24, 2021`) read by the lead 2026-11-01T19:32:22Z (2026-11-02 04:32 JST): 「本サイトの利用者（以下「利用者」といいます）は、本サイトで提供する情報・サービス等について、(1)当社の事前の承諾を得ずに、私的利用以外の目的で利用すること、及び、(2)当社の事前の承諾（権利者である第三者が存在する場合には、当社を通じた当該第三者の承諾を含みます）を得ずに、著作権法で定める私的利用の範囲を超えて複製、送信、頒布、譲渡、貸与、翻訳、翻案する等の行為を行うこと、はできません。」 robots.txt of ikebukuro.parco.jp: Allow: /. Fetched with plain curl, default User-Agent, one request at a time (~1 s apart). Readings cross-checked against https://ikebukuro.parco.jp/shop/?category_search=alpha (150 cards, read 2026-11-01T19:34:58Z); 2 cards (information counter, Seven Bank ATM) are on no floor page and are not rows. Where the two pages print a name differently (case, spacing, kana vs romanization) the floor page's form is kept. 0 rows skipped (no row lacked a name or a floor); 0 shops were listed on more than one floor.",
+      "pages": [
+        {
+          "building": "本館",
+          "floor": "1F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=1f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:29Z"
+        },
+        {
+          "building": "本館",
+          "floor": "2F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=2f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:30Z"
+        },
+        {
+          "building": "本館",
+          "floor": "3F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=3f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:31Z"
+        },
+        {
+          "building": "本館",
+          "floor": "4F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=4f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:32Z"
+        },
+        {
+          "building": "本館",
+          "floor": "5F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=5f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:34Z"
+        },
+        {
+          "building": "本館",
+          "floor": "6F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=6f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:35Z"
+        },
+        {
+          "building": "本館",
+          "floor": "7F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=7f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:36Z"
+        },
+        {
+          "building": "本館",
+          "floor": "8F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=8f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:37Z"
+        },
+        {
+          "building": "本館",
+          "floor": "B1F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=b1f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:39Z"
+        },
+        {
+          "building": "本館",
+          "floor": "B2F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=b2f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:40Z"
+        },
+        {
+          "building": "本館",
+          "floor": "M2F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=m2f&ft=type1",
+          "retrievedAt": "2026-11-01T19:34:41Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "1F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=1f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:42Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "2F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=2f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:43Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "3F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=3f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:44Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "4F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=4f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:45Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "5F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=5f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:46Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "6F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=6f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:48Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "7F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=7f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:49Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "8F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=8f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:50Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "B1F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=b1f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:51Z"
+        },
+        {
+          "building": "P'PARCO",
+          "floor": "B2F",
+          "url": "https://ikebukuro.parco.jp/floor/detail/?f=b2f&ft=type2",
+          "retrievedAt": "2026-11-01T19:34:52Z"
+        }
+      ]
+    }
+  ],
+  "tenants": [
+    {
+      "id": "tenant-ikb-parco-028276",
+      "name": "0% IKEBUKURO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ゼロパーセント イケブクロ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028297",
+      "name": "2nd STREET",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "セカンドストリート"
+        }
+      ],
+      "floorLabel": "P'PARCO B1F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030646",
+      "name": "A.P.C.",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アーペーセー"
+        }
+      ],
+      "floorLabel": "本館 3F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030860",
+      "name": "agete",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アガット"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Jewelry",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029366",
+      "name": "AINZ＆TULPE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アインズアンドトルペ"
+        }
+      ],
+      "floorLabel": "本館 B2F",
+      "category": "Cosmetics／Beauty products／Medicine",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030681",
+      "name": "AMPHI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アンフィ"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Lingerie",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031508",
+      "name": "and wander",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アンドワンダー"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Women’s／Men’s／Outdoor goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030861",
+      "name": "ANEMONE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アネモネ"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Accessories",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030643",
+      "name": "AniBirth",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アニバース"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030541",
+      "name": "atmos pink",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アトモス ピンク"
+        }
+      ],
+      "floorLabel": "P'PARCO 1F",
+      "category": "Shoes／Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031515",
+      "name": "ATRIUM",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アトリウム"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Glasses／Sunglasses",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027099",
+      "name": "AVALANCHE GOLD&JEWELRY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アヴァランチ ゴールド＆ジュエリー"
+        }
+      ],
+      "floorLabel": "P'PARCO 1F",
+      "category": "Jewelry",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027524",
+      "name": "Aíam",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アイアム"
+        }
+      ],
+      "floorLabel": "本館 1F",
+      "category": "Fragrance",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-010609",
+      "name": "BABY,THE STARS SHINE BRIGHT",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ベイビーザスターズシャインブライト"
+        }
+      ],
+      "floorLabel": "P'PARCO 2F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030851",
+      "name": "BanG Dream! STORE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バンドリストア"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000531",
+      "name": "Beauty Dresse YAMANO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ビューティドレッセヤマノ"
+        }
+      ],
+      "floorLabel": "本館 M2F",
+      "category": "Beauty salon",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030677",
+      "name": "BEAVER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ビーバー"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030633",
+      "name": "BIRKENSTOCK",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ビルケンシュトック"
+        }
+      ],
+      "floorLabel": "本館 3F",
+      "category": "Shoes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028564",
+      "name": "BUYSELL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "バイセル"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Buyback store",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030682",
+      "name": "Calvin Klein",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カルバン クライン"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Women's／Men's／Fashion goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029924",
+      "name": "CAMPER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カンペール"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Shoes／Bag",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000557",
+      "name": "Candy Stripper",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "キャンディストリッパー"
+        }
+      ],
+      "floorLabel": "P'PARCO 1F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030558",
+      "name": "CAPCOM STORE IKEBUKURO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カプコンストア イケブクロ"
+        }
+      ],
+      "floorLabel": "本館 B2F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030542",
+      "name": "CASETiFY STUDiO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ケースティファイ スタジオ"
+        }
+      ],
+      "floorLabel": "本館 1F",
+      "category": "Smart phone case",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030645",
+      "name": "CITY TOKYO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シティ トウキョウ"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030640",
+      "name": "Clarks Originals",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "クラークス オリジナルズ"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Shoes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000366",
+      "name": "Clover leaf",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "クローバーリーフ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Fortune-telling",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007589",
+      "name": "Collabo_Index",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コラボスペースインデックス"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Collaboration cafe",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030634",
+      "name": "COLLECTORS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コレクターズ"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Bag／Fashion goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028845",
+      "name": "Colorcle",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カラクル"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Personal color diagnosis／Skeletal diagnosis",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028305",
+      "name": "coly cafe!",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コリーカフェ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Cafe",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027556",
+      "name": "coly more!",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コリーモア"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031504",
+      "name": "CONZ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コンズ"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Women’s／Men’s",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030540",
+      "name": "Cosme Kitchen",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "コスメキッチン"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Cosmetics",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031546",
+      "name": "destination Tokyo",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "デスティネーショントーキョー"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Women's / Men's / Fashion goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030945",
+      "name": "DIANA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ダイアナ"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's shoes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030672",
+      "name": "DIESEL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ディーゼル"
+        }
+      ],
+      "floorLabel": "本館 3F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030635",
+      "name": "Dr.Martens",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ドクターマーチン"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Shoes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-025139",
+      "name": "eeo POP-UP STORE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イーオ ポップアップストア"
+        }
+      ],
+      "floorLabel": "P'PARCO 3F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029375",
+      "name": "emmi",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エミ"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-009509",
+      "name": "EVANGELION STORE TOKYO-01",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エヴァンゲリオンストアトウキョウゼロワン"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028219",
+      "name": "EXELCO DIAMOND",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エクセルコダイヤモンド"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Jewelry",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-025483",
+      "name": "eyecity",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アイシティ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Contact lens／Care products",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027165",
+      "name": "fantasy village",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ファンタジーヴィレッジ"
+        }
+      ],
+      "floorLabel": "P'PARCO 3F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000491",
+      "name": "Francfranc",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フランフラン"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Interior／Variety goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029376",
+      "name": "FRAY I.D",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フレイアイディー"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030680",
+      "name": "FREAK'S STORE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フリークス ストア"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030157",
+      "name": "FRED PERRY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "フレッドペリー"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030158",
+      "name": "FURFUR",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ファーファー"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029399",
+      "name": "gelato pique",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジェラート ピケ"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's／Men's／Kids／Baby",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031001",
+      "name": "GELATO PIQUE LIMITED CONCEPT STORE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジェラート ピケ リミテッド コンセプト ストア"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-026461",
+      "name": "GINZA DIAMOND SHIRAISHI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ギンザダイヤモンドシライシ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Wedding ring／Engagement ring／Bridal jewelry",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030642",
+      "name": "Ground Y",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "グラウンド ワイ"
+        }
+      ],
+      "floorLabel": "本館 1F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030159",
+      "name": "HARBS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハーブス"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Fresh cake／Cafe",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000386",
+      "name": "HARE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハレ"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028398",
+      "name": "Hawaiian Diner HANAO CAFE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ハワイアンダイナーハナオカフェ"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Hawaiian cafe dining",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-025258",
+      "name": "HIS The ROOM of journey IKEBUKURO(HIS池袋パルコ営業所)",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エイチ・アイ・エス　ザ　ルーム　オブ　ジャーニー"
+        }
+      ],
+      "floorLabel": "本館 M2F",
+      "category": "Travel agency",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031541",
+      "name": "HYSTERIC GLAMOUR",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヒステリックグラマー"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000497",
+      "name": "ILS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イル"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Bag",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-026960",
+      "name": "infirmiere",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アンファミエ"
+        }
+      ],
+      "floorLabel": "P'PARCO 4F",
+      "category": "Nurse supplies",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028242",
+      "name": "INFOLENS GEEK SHOP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "インフォレンズ ギークショップ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000484",
+      "name": "Iwaki",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イワキ"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Glasses／Sunglasses",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030678",
+      "name": "JINS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジンズ"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Glasses／Sunglasses",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030644",
+      "name": "Jouete",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジュエッテ"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Jewelry",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000465",
+      "name": "JOURNAL STANDARD",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジャーナルスタンダード"
+        }
+      ],
+      "floorLabel": "本館 3F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000438",
+      "name": "JTB",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジェーティービー"
+        }
+      ],
+      "floorLabel": "本館 1F",
+      "category": "Travel agency",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030637",
+      "name": "JUMP SHOP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ジャンプショップ"
+        }
+      ],
+      "floorLabel": "本館 B2F",
+      "category": "Characters goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-026029",
+      "name": "KASHIYAMA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カシヤマ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Custom-made suit",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031516",
+      "name": "KEY TIMEZ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "キータイムズ"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Women’s／Men’s",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031542",
+      "name": "kolor",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "カラー"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Women's／Men's／Fashion goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000387",
+      "name": "L.H.P.",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エルエイチピー"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007588",
+      "name": "LA BODEGA PARRILLA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ラボデガパリージャ"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Spanish bar／Spanish cuisine",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007848",
+      "name": "LILY BROWN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "リリー ブラウン"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028222",
+      "name": "MINT GAMES",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ミント ゲームズ"
+        }
+      ],
+      "floorLabel": "P'PARCO 2F",
+      "category": "Trading card games",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029925",
+      "name": "MIZUNO SHOP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ミズノショップ"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Shoes／Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-005975",
+      "name": "MURASAKI SPORTS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ムラサキスポーツ"
+        }
+      ],
+      "floorLabel": "P'PARCO 8F",
+      "category": "Sportswear／Goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028566",
+      "name": "New Balance",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ニューバランス"
+        }
+      ],
+      "floorLabel": "P'PARCO 1F",
+      "category": "Shoes／Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031021",
+      "name": "NO ID.",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ノーアイディー"
+        }
+      ],
+      "floorLabel": "P'PARCO 3F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007530",
+      "name": "OMS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オムズ"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Egg dishes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031507",
+      "name": "Onitsuka Tiger",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オニツカタイガー"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Shoes／Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029283",
+      "name": "PARCO CARD COUNTER",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "パルコカードカウンター"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Credit card counter",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-010539",
+      "name": "PARCO FACTORY",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "パルコファクトリー"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Gallery",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-005846",
+      "name": "PLAZA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "プラザ"
+        }
+      ],
+      "floorLabel": "本館 M2F",
+      "category": "Variety goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030859",
+      "name": "POKER FACE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ポーカーフェイス"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Glasses／Sunglasses",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027422",
+      "name": "POMME d 'AMOUR TOKYO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ポムダムールトーキョー"
+        }
+      ],
+      "floorLabel": "本館 B2F",
+      "category": "Japanese Candied apple",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031544",
+      "name": "POP MART",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ポップマート"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030641",
+      "name": "POTR",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ピーオーティーアール"
+        }
+      ],
+      "floorLabel": "本館 1F",
+      "category": "Bag",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030676",
+      "name": "PUBLIC TOKYO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "パブリックトウキョウ"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031214",
+      "name": "PUNIKKO by TOKOTOYZ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "プニッコバイトコトイズ"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Variety goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-011007",
+      "name": "RANDA",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ランダ"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Women's shoes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027867",
+      "name": "RED WING SHOE STORE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "レッドウィングシューストア"
+        }
+      ],
+      "floorLabel": "P'PARCO 1F",
+      "category": "Shoes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030631",
+      "name": "REGAL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "リーガル"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Shoes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-009444",
+      "name": "Rejet shop",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "リジェットショップ"
+        }
+      ],
+      "floorLabel": "P'PARCO 3F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030836",
+      "name": "SALOMON",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "サロモン"
+        }
+      ],
+      "floorLabel": "本館 3F",
+      "category": "Shoes／Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000523",
+      "name": "Samantha Vega",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "サマンサベガ"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Bag",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-011243",
+      "name": "Sanrio animestore",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "サンリオ アニメストア"
+        }
+      ],
+      "floorLabel": "P'PARCO 3F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027190",
+      "name": "Seria",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "セリア"
+        }
+      ],
+      "floorLabel": "P'PARCO 5F",
+      "category": "Daily necessities／Interior goods／Variety goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000475",
+      "name": "SHIPS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シップス"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000354",
+      "name": "SNIDEL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スナイデル"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030628",
+      "name": "SPINGLE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スピングル"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Shoes",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031543",
+      "name": "STAR WARS STORE by BENELIC",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スターウォーズ ストア バイ ベネリック"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031931",
+      "name": "STPR Family STORE - DREAM LAND -",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エスティーピーアール ファミリー ストア ドリームランド"
+        }
+      ],
+      "floorLabel": "P'PARCO 2F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031505",
+      "name": "STUDIOUS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ステュディオス"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Women’s／Men’s",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029091",
+      "name": "T-BASE JAPAN",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ティーベース ジャパン"
+        }
+      ],
+      "floorLabel": "P'PARCO 2F",
+      "category": "Soft vinyl figure／Capsule toy",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028562",
+      "name": "TENTIAL",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "テンシャル"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Wellness goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-010006",
+      "name": "THE CHARA SHOP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ザキャラショップ"
+        }
+      ],
+      "floorLabel": "P'PARCO 3F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030555",
+      "name": "THE GUEST CAFE BY PARCO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ザ ゲスト カフェ バイ パルコ"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Collaboration cafe／Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000362",
+      "name": "The ROOM of journey CAFE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ザ ルーム オブ ジャーニー カフェ"
+        }
+      ],
+      "floorLabel": "本館 M2F",
+      "category": "Cafe",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031032",
+      "name": "Thingsly",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シングスリー"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Accessories",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000474",
+      "name": "TiC TAC",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "チックタック"
+        }
+      ],
+      "floorLabel": "本館 4F",
+      "category": "Watch",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031512",
+      "name": "topologie",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トポロジー"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Bag / Fashion goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000430",
+      "name": "TOWER RECORDS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "タワーレコード"
+        }
+      ],
+      "floorLabel": "P'PARCO 6F",
+      "category": "Music／CD／DVD",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000353",
+      "name": "Twelve Agenda",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トゥエルブアジェンダ"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Women's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030679",
+      "name": "U NOSE SHOP",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ユー ノーズショップ"
+        }
+      ],
+      "floorLabel": "本館 B1F",
+      "category": "Fragrance",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031568",
+      "name": "ULTRAMAN STORE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ウルトラマンストア"
+        }
+      ],
+      "floorLabel": "本館 B2F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000466",
+      "name": "UNITED ARROWS",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ユナイテッドアローズ"
+        }
+      ],
+      "floorLabel": "本館 3F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-010536",
+      "name": "UNITED TOKYO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ユナイテッド トウキョウ"
+        }
+      ],
+      "floorLabel": "本館 3F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000388",
+      "name": "WEGO",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ウィゴー"
+        }
+      ],
+      "floorLabel": "P'PARCO 4F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031545",
+      "name": "Y's / Y's for men",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ワイズ  ワイズフォーメン"
+        }
+      ],
+      "floorLabel": "本館 2F",
+      "category": "Women's / Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030636",
+      "name": "ÉDIFICE",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "エディフィス"
+        }
+      ],
+      "floorLabel": "本館 3F",
+      "category": "Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-025255",
+      "name": "おとなとこどもの矯正歯科",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オトナトコドモノキョウセイシカ"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Orthodontics",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000532",
+      "name": "お直しラボ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "オナオシラボ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Clothing repair",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000450",
+      "name": "しゃら",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "シャラ"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Kimono／Japanese accessories",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030627",
+      "name": "ちいかわらんど",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "チイカワランド"
+        }
+      ],
+      "floorLabel": "本館 B2F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029432",
+      "name": "ちいかわラーメン 豚",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "チイカワラーメン ブタ"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Ramen",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007599",
+      "name": "とんかつ和幸",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トンカツワコウ"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Tonkatsu",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007593",
+      "name": "ひつまぶし名古屋備長",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヒツマブシナゴヤビンチョウ"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Hitsumabushi",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-025942",
+      "name": "まんだらけ那由多",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "マンダラケナユタ"
+        }
+      ],
+      "floorLabel": "P'PARCO B2F",
+      "category": "Toy／Japanese POP culture goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030160",
+      "name": "アクロトーキョー。",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "アクロトーキョー"
+        }
+      ],
+      "floorLabel": "P'PARCO 2F",
+      "category": "Women's／Men's",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000433",
+      "name": "イシバシ楽器",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イシバシガッキ"
+        }
+      ],
+      "floorLabel": "P'PARCO 7F",
+      "category": "Musical instrument",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-031687",
+      "name": "キャラメゾン ポップアップショップ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "キャラメゾン ポップアップショップ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027570",
+      "name": "ケータイゴッド",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ケータイゴッド"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Smart phone accessories",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-010785",
+      "name": "スマホ修理工房",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "スマホシュウリコウボウ"
+        }
+      ],
+      "floorLabel": "P'PARCO 3F",
+      "category": "Smartphone repair",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000501",
+      "name": "チケットポート",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "チケットポート"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Gift Card",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007531",
+      "name": "マルモキッチン",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "マルモキッチン"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Japanese bowl cafe",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007592",
+      "name": "ローストビーフとハンバーグ YOSHIMI",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ローストビーフトハンバーグヨシミ"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Hamburger steak／Roast beef bowl",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000500",
+      "name": "世界堂",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "セカイドウ"
+        }
+      ],
+      "floorLabel": "本館 6F",
+      "category": "Art supplies／Picture frame",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-027868",
+      "name": "保険クリニック",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ホケンクリニック"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Insurance consultation",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007596",
+      "name": "和食・酒 えん",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ワショクサケエン"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Creative Japanese restaurant",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-029081",
+      "name": "報知エンターテインメントマーケット",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ホウチエンターテインメントマーケット"
+        }
+      ],
+      "floorLabel": "P'PARCO 3F",
+      "category": "Character goods",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028374",
+      "name": "天丼 ちゃんぽん しゃぶしゃぶ 三代目 池袋じげもんとん",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "テンドンチャンポンシャブシャブサンダイメイケブクロジゲモントン"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Tendon／Chanpon／Shabu-shabu",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000384",
+      "name": "東京純豆腐",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "トウキョウスンドゥブ"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Korean hotpot",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028901",
+      "name": "池袋東口アイクリニック",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "イケブクロヒガシグチアイクリニック"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Ophthalmology／Clinic",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-007532",
+      "name": "洋麺屋五右衛門",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ヨウメンヤゴエモン"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Western food／Spaghetti",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-026769",
+      "name": "牛たん焼き 仙台辺見",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ギュウタンヤキセンダイヘンミ"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Grilled beef tongue",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-028199",
+      "name": "茶薫小籠包",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "チャクンショウロンポウ"
+        }
+      ],
+      "floorLabel": "本館 8F",
+      "category": "Xiaolongbao／Chinese cuisine",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-000382",
+      "name": "銀座洋食 三笠會館",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ギンザヨウショクミカサカイカン"
+        }
+      ],
+      "floorLabel": "本館 7F",
+      "category": "Western food",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    },
+    {
+      "id": "tenant-ikb-parco-030632",
+      "name": "靴下屋",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "クツシタヤ"
+        }
+      ],
+      "floorLabel": "本館 5F",
+      "category": "Socks",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11"
+    }
+  ]
+}
