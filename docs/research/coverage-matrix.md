@@ -54,7 +54,7 @@ This is the one-screen view. The cell-by-cell evidence stays in [`gaps/coverage-
 | 新宿 伊勢丹 本館・メンズ館 (and the B5–B3 promenade levels) | facts only (#522); tenants public tier (#578) | n | n | 2 POIs, s; 83 tenants (本館 67, メンズ 16) | search y; route n | field (unscheduled) items 47, 48, 56 |
 | 新宿マルイ 本館 / アネックス / メン | facts only (no quoted ban) | n | n | 3 POIs, s; 157 tenants (63 / 56 / 38) | search y; route n | field (unscheduled) items 40, 41 (メン: E2 attribution inconsistent) |
 | 新宿 高島屋 (タイムズスクエア) | store site corroboration only; brands facts-only tenants (#591, OD-35) | n | n | 1 POI, s; 366 tenants | search y; route n | field (unscheduled) entrance and name |
-| 新宿 京王百貨店 | corroboration only (#516 §5); POI from Tokyo Metro exit data | n | n | 1 POI, s; no tenants | search y; route n | field (unscheduled) item 55 |
+| 新宿 京王百貨店 | store shop-search JSON (facts, OD-35, director 2026-11-02; supersedes #516 §5 / #502 corroboration-only) | n | n | 1 POI, s; 593 tenants | search y; route n | field (unscheduled) item 55 |
 | 新宿 小田急百貨店 (西口ハルク) | usable (OD-34 r2) | n | n | 1 POI, s; 269 tenants | search y; route n | field (unscheduled) item 39 |
 | 新宿 ルミネ1・ルミネ2 | usable (OD-34 §2) | n | n | 2 POIs + 230 shop POIs | search y; route n | field (unscheduled) items 43, 44 |
 | 新宿 ルミネエスト | usable (OD-34 §2) | n | n | 1 POI + 246 shop POIs | search y; route n | field (unscheduled) item 45 |

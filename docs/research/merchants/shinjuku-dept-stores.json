@@ -73,6 +73,24 @@
       "retrievedAt": "2026-10-28T03:31:22Z",
       "datasetDate": null,
       "notes": "Brand names, printed floor labels and printed 売場/corner names only; no floor-guide wording, map, photo or logo is reproduced. Class: sites allowing private use and quotation (use-tiers.md, OD-35; classified by the data lead 2026-10-28). Terms https://www.takashimaya.co.jp/aboutinfo/ 著作権、商標権, read 2026-10-28T03:29Z: 「当社ウェブサイトのコンテンツのご利用は著作権法に定める個人の私的使用のみに限ります。個人の私的使用の範囲を超えて、当社の書面による承諾を得ずにコンテンツの全部または一部を転載、使用、複製、配布、変造、販売等を行うことはできません。」 No business-use or automated-access clause. The site does not answer a direct request from this host and machine-translates in the browser, so the Japanese server HTML was read read-only through ego-lite (in-page fetch): /shinjuku/floor/floor_NN/detail_MM.html 「お取り扱いブランド」 lists and /shinjuku/timessquare/."
+    },
+    {
+      "id": "keio-shinjuku-shopsearch-2026-11",
+      "title": "京王百貨店 新宿店 ショップ検索 | keionet.com",
+      "publisher": "株式会社京王百貨店",
+      "url": "https://www.keionet.com/info/shinjuku/shop/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+        "date": "2026-11-02"
+      },
+      "attribution": "京王百貨店 新宿店 ショップ検索 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-01T19:28:16Z",
+      "datasetDate": null,
+      "notes": "Shop names, printed floor labels and printed 売場 names only, for the store POI shop-sjk-keio; no wording, image or logo is reproduced. Class: sites allowing private use and quotation (use-tiers.md, OD-35; classified by the data lead 2026-11-02). Terms https://www.keionet.com/info/sitepolicy/ 「著作権」, read by the data lead 2026-11-01T19:2xZ and re-read 2026-11-01T19:32Z (京王百貨店's own terms page; not 京王電鉄 or 京王 SC): 「…閲覧につきましては自由ですが「私的利用」または「引用」などは著作権法等関係法令上認められた場合を除き利用することを禁止いたします。…」 No business-use clause and no automated-access clause. robots.txt (read 2026-11-01T19:32Z) disallows only Movable Type rebuild CGI paths. Director ruling 2026-11-02 05:1x JST: OD-35 applies, superseding #502 / #516 §5 corroboration-only. Read from the JSON the 「ショップ検索」 page (/info/shinjuku/shop/) loads, https://www.keionet.com/re2024/json/shop_shinjuku.json (342,902 bytes, SHA-256 6151a6ba2be7fce32feab4f8aba22a6196a5502a2caf4dcdbf4549c57b2962a5, plain curl, default User-Agent, HTTP 200, retrieved 2026-11-01T19:28:16Z = 2026-11-02 04:28 JST). The file has a trailing comma before its final ], stripped before parsing; the raw file is not committed. Record: docs/research/merchants/shinjuku-keio-tenants.json."
     }
   ],
   "pois": [
