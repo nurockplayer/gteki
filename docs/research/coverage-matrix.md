@@ -1,0 +1,71 @@
+# Coverage matrix: every line and store at 新宿 and 池袋
+
+Built 2026-11-01 11:4x JST by the data lead (data-research-05) for the Owner's goal: every line and every department store at both stations. Basis: `origin/main` at `c97c37a2` (2026-11-01 11:2x JST). Public facts only; private-tier additions are recorded in gteki-private and are not counted here.
+
+This is the one-screen view. The cell-by-cell evidence stays in [`gaps/coverage-sjk-ikb.md`](gaps/coverage-sjk-ikb.md) (2026-10-29) and the rights detail in [`lines/gap-table-2026-10-25.md`](lines/gap-table-2026-10-25.md); this file adds the navmesh and issue state since then.
+
+**How the cells were filled.** POI counts are `jq` group counts over `stations/<id>/gteki/pois.json` and `tenants.json` at the basis SHA. "Routed" means the POI has a `floorId` and graph connectors. The scene column follows the coverage table's rule: a named interior or facade counts, generic placeholder shopfronts (#584, #605) do not.
+
+**Columns.**
+- **Source / rights**: where the public facts come from and their class (OD-34 / OD-35 tiers).
+- **3D**: y = modelled, partial = some of its public area is modelled, n = none.
+- **Walk / navmesh**: public walk graph and the baked navmesh paths (#669). Since #676, the live-scene bake leaves many paths incomplete (#684: Shinjuku 196 of 238 routes, Ikebukuro 542 of 1054); those draw as dashed fallbacks.
+- **POIs / tenants**: what is in `pois.json` / `tenants.json`. s = search-only (no floor, no connector).
+- **Search / route**: search = found by the search box; route = a route can end at it.
+- **Open**: the issue, PR or field item (#533 numbering, field run 2026-11-01) that moves the row.
+
+## Lines
+
+| Station · line | Source / rights | 3D | Walk / navmesh | POIs / tenants | Search / route | Open |
+|---|---|---|---|---|---|---|
+| 池袋 JR 山手線 | Toshima underground guide 2022 + PLATEAU 13116 (OD-02 A); jreast.co.jp corroboration only (OD-34 §1) | partial: B1 public concourse and the gate line; paid area and platforms n | partial: 66-node / 67-edge B1 graph; navmesh baked, many paths incomplete (#684) | 4 gates (3 routed: 中央×2, 南); no platform POIs (no platform source) | search y; route to 3 gates | field items 1, A2 / FC-IK-01 (北・メトロポリタン口); #684 |
+| 池袋 JR 埼京線・湘南新宿ライン | same as 山手線 (shared gates) | partial (shared concourse) | partial (shared) | shared gates; no platforms | search y (gates); route to gates only | as above |
+| 池袋 東武東上線 | Toshima guide 2022; tobu.co.jp corroboration only (OD-01 B, OD-34 r2) | n: no line-specific space; 中央改札 sits on the B1 concourse | n: 2 中央改札 POIs have a floor but no connector | 5 gates (中央×2 on B1, 北, 南, JR連絡); no platforms | search y; route n | field items 11, 26 |
+| 池袋 西武池袋線 | OD-25 + OD-34 §2, facts only | n | n | 2 gates + 7 platforms (1–7番), s; exits 37/38 carry 西武東口/西武口 aliases | search y; route n | field gate↔opening items; ISP メトロ口 print ties 1階改札 stair 36 (desk) |
+| 池袋 Metro 丸ノ内線 M25 | tokyometro.jp facts (OD-34 §2) | n | n: 3 gates on B1 floor, no connector | 3 gates + 2 lifts + 2 escalators | search y; route n | field items 6, 9 (A1/A3, FC-IK-02) |
+| 池袋 Metro 有楽町線 Y09 | tokyometro.jp facts (OD-34 §2) | n | n: 1 of 2 gates on B1 floor, no connector | 2 gates + 2 lifts + 4 escalators | search y; route n | field items 2, 3 (F2, I8) |
+| 池袋 Metro 副都心線 F09 | tokyometro.jp facts (OD-34 §2); Echika / C exits absent from PLATEAU 13116 | n: no geometry source | n | 2 gates + 3 lifts + 8 escalators + 11 C exits, s | search y; route n | field items 4, 5; geometry source missing |
+| 新宿 JR 山手線 (14・15番線) | S03 2020-03 names (R-1); jreast.co.jp corroboration only | n | n: S03 graph held (#557 publish gate; 2,254 edges carry reason codes) | platforms 14, 15 + 10 shared JR gates, s | search y; route n | S03 Check A/B, field items 30, 50–54; #623 |
+| 新宿 JR 中央線快速・中央本線 (7・8・11・12番線; 特急 9・10) | as 山手線 | n | n (S03 held) | platforms 7–12, s | search y; route n | as 山手線 |
+| 新宿 JR 中央・総武線各停 (13・16番線) | as 山手線 | n | n (S03 held) | platforms 13, 16, s | search y; route n | as 山手線 |
+| 新宿 JR 埼京線・湘南新宿ライン (1–4番線) | as 山手線 | n | n (S03 held) | platforms 1–4, s | search y; route n | as 山手線 |
+| 新宿 小田急線 | S03 (Q2/Q3 OK); odakyu.jp corroboration only (OD-34 r5a) | n | n (S03 held) | 3 gates + 5 platforms (2–6) + 2 JR連絡, s | search y; route n | S03; field gate items |
+| 新宿 京王線 | S03; keio.co.jp corroboration only (r5a); 京王モール flat ban (§3) | n | n (S03 held) | 8 gates (incl. 京王新線口, 新都心口) + 1 JR連絡, s | search y; route n | S03; field gate items |
+| 新宿 京王新線 | S03 + Toei CSV (CC BY 4.0, #501) | n | n | shares the 京王新線口 / 新都心口 gate POIs | search y; route n | field: tag the gates by line |
+| 新宿 都営新宿線 S01 | Toei facts OD-01 A; Toei CSV CC BY 4.0 (#501) | n | n | 9 Toei exits (1–8, A1), line unattributed except A1 | search y; route n | field: exit attribution (Toei CSV cannot split S01 / E27) |
+| 新宿 都営大江戸線 E27 | MLIT ほこナビ E-27 (#16 override, not a rights PASS) | y: 9 levels, gates, platform, exits | y: 233-node / 263-edge graph; navmesh baked, 196 of 238 routes incomplete (#684); 8 steep/flat vertical edges marked approximate (#655) | 3 gates (unnamed), 1 platform, 6 exits, 3 lifts, 3 toilets: 13 routed, the 3 lifts placed but search-only | search y; route y | gate names (field); #684; #644 (floors via field items 60–61) |
+| 新宿 Metro 丸ノ内線 M08 | tokyometro.jp facts (OD-34 §2), Wayback | n | n | 2 gates + 28 exits + 4 lifts + 2 escalators, s | search y; route n | field: gate identity (WP10) |
+| 西武新宿線 (西武新宿駅, separate station) | operator facts, search-only endpoint | n | n | `poi:sep-seibu-shinjuku`, s | search y; route n | field items 57–59 (FC-SEP-01–03) |
+| 新宿三丁目 (副都心 F13, 丸ノ内 M09, 新宿 S02) | operator facts, search-only endpoint | n | n | `poi:sep-shinjuku-sanchome`, s | search y; route n | field items 57–59 |
+| 新宿西口 (大江戸 E01) | operator facts, search-only endpoint | n | n | `poi:sep-shinjuku-nishiguchi`, s | search y; route n | field items 57–59 |
+
+## Department stores and station buildings
+
+| Station · store | Source / rights | 3D | Walk / navmesh | POIs / tenants | Search / route | Open |
+|---|---|---|---|---|---|---|
+| 池袋 西武池袋本店 | JCSC 2026 list (facts); store site corroboration only (r3); tenants promoted to public tier (#578, OD-35) | n | n | 1 POI, s; 307 tenants | search y (store + brands); route n | field entrance; present layout (renovation) |
+| 池袋 東武百貨店 | store site usable (OD-34 §2) | n | n | 1 POI, s; 860 tenants | search y; route n | field item 26 |
+| 池袋 ルミネ池袋 | lumine.ne.jp usable (OD-34 §2) | partial: named facade, B1 directory board (#598) | partial: routed via `jr-south-gate` (#531); the door itself is not surveyed | 1 POI + 176 shop POIs | search y; route y (to the gate) | door survey (not a field item) |
+| 池袋 エソラ池袋 | usable (OD-34 §2) | n | n | 1 POI + 33 shop POIs | search y; route n | field item 25 |
+| 池袋 PARCO | JCSC (facts); parco.co.jp corroboration only (#502) | n | n | 1 POI, s; no tenants | search y; route n | field item 27; no importable directory |
+| 池袋 Echika | Tokyo Metro facts | n: not in PLATEAU 13116 | n | 22 shop POIs | search y; route n | geometry source; no printed entrance tie |
+| 池袋 ISP (池袋ショッピングパーク) | facts (printed access) | n (B1 passage drawn; no named interior) | n: printed tie only | 53 shop POIs | search y; route n | desk: tie ISP メトロ口 to the graph |
+| 池袋 東武ホープセンター | facts (printed access) | n | n | 43 shop POIs | search y; route n | field entrance |
+| 新宿 伊勢丹 本館・メンズ館 (and the B5–B3 promenade levels) | facts only (#522); tenants public tier (#578) | n | n | 2 POIs, s; 83 tenants (本館 67, メンズ 16) | search y; route n | field items 47, 48, 56 |
+| 新宿マルイ 本館 / アネックス / メン | facts only (no quoted ban) | n | n | 3 POIs, s; 157 tenants (63 / 56 / 38) | search y; route n | field items 40, 41 (メン: E2 attribution inconsistent) |
+| 新宿 高島屋 (タイムズスクエア) | store site corroboration only; brands facts-only tenants (#591, OD-35) | n | n | 1 POI, s; 366 tenants | search y; route n | field entrance and name |
+| 新宿 京王百貨店 | corroboration only (#516 §5); POI from Tokyo Metro exit data | n | n | 1 POI, s; no tenants | search y; route n | field item 55 |
+| 新宿 小田急百貨店 (西口ハルク) | usable (OD-34 r2) | n | n | 1 POI, s; 269 tenants | search y; route n | field item 39 |
+| 新宿 ルミネ1・ルミネ2 | usable (OD-34 §2) | n | n | 2 POIs + 230 shop POIs | search y; route n | field items 43, 44 |
+| 新宿 ルミネエスト | usable (OD-34 §2) | n | n | 1 POI + 246 shop POIs | search y; route n | field item 45 |
+| 新宿 NEWoMan | usable (OD-34 §2) | n | n | 1 POI + 102 shop POIs | search y; route n | field item 46 |
+| 新宿 サブナード | corroboration only; 85 directory cards facts-only, floors GAP | n | n | 1 POI, s | search y; route n | field item 55 |
+| 新宿 小田急エース / 京王モール | flat bans (OD-34 §3); 15 recovered POIs facts-only (#604) | n | n | 15 shop POIs (`shop-sjk-rec-`) | search y; route n | field entrances |
+| 新宿 メトロプロムナード | Tokyo Metro 2018 press release (M08 tie) | n | n | 4 shop POIs (`shop-sjk-metro-`) | search y; route n | field item 56 |
+
+## What the matrix says
+
+- **Routed today:** Toei E27 (13 of 16 POIs), JR Ikebukuro (3 gates on the B1 graph), ルミネ池袋 (via the JR south gate). Everything else, 17 of 20 line rows and 18 of 19 store rows, is search-only.
+- **Modelled in 3D:** the E27 levels at Shinjuku and the B1 public concourse at Ikebukuro. No other operator's paid area, platform or named store interior is modelled.
+- **The two blockers that gate most rows:** at Shinjuku, every non-E27 line waits on the held S03 graph and the unmodelled S03 levels (#623); at both stations, every store and non-JR gate waits on an entrance tie, which only a field receipt can give (store connectors from field receipts only, `import-e27.ts`).
+- **Regression to watch:** #684 cut the complete navmesh routes from 166 to 42 (Shinjuku) and 1054 to 512 (Ikebukuro); the rows that are routed today show dashed fallbacks on many routes.
