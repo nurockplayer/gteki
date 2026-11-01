@@ -83,6 +83,8 @@ function boxOf(polygons: readonly PlanPolygon[]): Box {
   return box;
 }
 
+const overlaps = (a: Box, b: Box): boolean => a.minX <= b.maxX && a.maxX >= b.minX && a.minZ <= b.maxZ && a.maxZ >= b.minZ;
+
 const boxDistance = (box: Box, p: PlanPoint): number => Math.hypot(Math.max(box.minX - p.x, 0, p.x - box.maxX), Math.max(box.minZ - p.z, 0, p.z - box.maxZ));
 
 function closestOnSegment(p: PlanPoint, a: PlanPoint, b: PlanPoint): PlanPoint {
@@ -150,10 +152,15 @@ function heightSource(region: Region): HeightSource {
 /** The floor height at a boundary vertex: the region whose polygon boundary it lies on, nearest first. */
 function heightAtVertex(p: PlanPoint, sources: readonly HeightSource[]): number {
   let distance = Infinity, height = 0;
-  for (const source of sources) {
-    if (boxDistance(source.box, p) >= distance) continue;
-    const nearest = source.nearest(p);
-    if (nearest.distance < distance) { distance = nearest.distance; height = nearest.height; }
+  // Regions whose bounds hold the point first: a boundary vertex lies on one of them, and then the rest are skipped.
+  for (const pass of [0, 1]) {
+    for (const source of sources) {
+      const away = boxDistance(source.box, p);
+      if ((pass === 0) !== (away === 0) || away >= distance) continue;
+      const nearest = source.nearest(p);
+      if (nearest.distance < distance) { distance = nearest.distance; height = nearest.height; }
+      if (distance <= 1e-9) return height;
+    }
   }
   return height;
 }
@@ -167,10 +174,18 @@ function pointInRing(p: PlanPoint, ring: readonly PlanPoint[]): boolean {
   return inside;
 }
 
+/** Plan bounds of a level and of each of its polygons, built once per level: most probes miss every polygon. */
+type LevelIndex = { box: Box; boxes: Box[] };
+const levelIndexes = new WeakMap<readonly PlanPolygon[], LevelIndex>();
+const inBox = (box: Box, p: PlanPoint): boolean => p.x >= box.minX && p.x <= box.maxX && p.z >= box.minZ && p.z <= box.maxZ;
+
 function pointInLevel(p: PlanPoint, polygons: readonly PlanPolygon[]): boolean {
-  for (const polygon of polygons) {
-    const outer = polygon[0];
-    if (!outer || !pointInRing(p, outer)) continue;
+  let index = levelIndexes.get(polygons);
+  if (!index) levelIndexes.set(polygons, index = { box: boxOf(polygons), boxes: polygons.map((polygon) => boxOf([polygon])) });
+  if (!inBox(index.box, p)) return false;
+  for (let k = 0; k < polygons.length; k++) {
+    const polygon = polygons[k]!, outer = polygon[0];
+    if (!outer || !inBox(index.boxes[k]!, p) || !pointInRing(p, outer)) continue;
     let inHole = false;
     for (let i = 1; i < polygon.length && !inHole; i++) inHole = pointInRing(p, polygon[i]!);
     if (!inHole) return true;
@@ -215,12 +230,11 @@ function onConnectorBoundary(p: PlanPoint, connectors: readonly PlanPoint[][]): 
   return false;
 }
 
-/** The midpoint moved `ATTACHMENT_PROBE_M` away from the union interior, at the wall's height. */
-function outsidePoint(wall: BoundaryWall, polygons: readonly PlanPolygon[]): { x: number; y: number; z: number } {
+/** Which side of a boundary piece (+1 left of travel, -1 right) faces away from the union interior. */
+function outwardSide(wall: BoundaryWall, polygons: readonly PlanPolygon[]): number {
   const dx = wall.bx - wall.ax, dz = wall.bz - wall.az, length = Math.hypot(dx, dz);
-  const mx = (wall.ax + wall.bx) / 2, mz = (wall.az + wall.bz) / 2, y = (wall.ay + wall.by) / 2;
-  if (length < 1e-12) return { x: mx, y, z: mz };
-  const nx = -dz / length, nz = dx / length;
+  if (length < 1e-12) return -1;
+  const mx = (wall.ax + wall.bx) / 2, mz = (wall.az + wall.bz) / 2, nx = -dz / length, nz = dx / length;
   const inside = (side: number, distance: number) => pointInLevel({ x: mx + nx * side * distance, z: mz + nz * side * distance }, polygons);
   let outward = -1;
   // A wide probe can land back inside another region, so try close first. With neither decisive (a very
@@ -229,7 +243,15 @@ function outsidePoint(wall: BoundaryWall, polygons: readonly PlanPolygon[]): { x
     const left = inside(1, distance), right = inside(-1, distance);
     if (left !== right) { outward = left ? -1 : 1; break; }
   }
-  return { x: mx + nx * outward * ATTACHMENT_PROBE_M, y, z: mz + nz * outward * ATTACHMENT_PROBE_M };
+  return outward;
+}
+
+/** The midpoint moved `ATTACHMENT_PROBE_M` to the outward side, at the wall's height. */
+function outsidePoint(wall: BoundaryWall, outward: number): { x: number; y: number; z: number } {
+  const dx = wall.bx - wall.ax, dz = wall.bz - wall.az, length = Math.hypot(dx, dz);
+  const mx = (wall.ax + wall.bx) / 2, mz = (wall.az + wall.bz) / 2, y = (wall.ay + wall.by) / 2;
+  if (length < 1e-12) return { x: mx, y, z: mz };
+  return { x: mx - dz / length * outward * ATTACHMENT_PROBE_M, y, z: mz + dx / length * outward * ATTACHMENT_PROBE_M };
 }
 
 function collinear(a: BoundaryWall, b: BoundaryWall): boolean {
@@ -263,7 +285,7 @@ function boundaryWalls(
   sources: readonly HeightSource[],
   connectors: readonly PlanPoint[][],
   level: string,
-  isAttachment: ((wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean) | undefined,
+  attachmentNear: (box: Box) => ((wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean),
   breakpoints: readonly PlanPoint[],
 ): BoundaryWall[] {
   const walls: BoundaryWall[] = [];
@@ -287,16 +309,22 @@ function boundaryWalls(
         }
         splits.sort((x, y) => x - y);
       }
+      const probe = ATTACHMENT_PROBE_M + WALL_TOLERANCE_M;
+      const isAttachment = attachmentNear({ minX: edgeBox.minX - probe, minZ: edgeBox.minZ - probe, maxX: edgeBox.maxX + probe, maxZ: edgeBox.maxZ + probe });
+      // The whole edge has the union interior on one side, so its pieces share one outward side.
+      const outward = outwardSide({ ax: a.x, az: a.z, bx: b.x, bz: b.z, ay: 0, by: 0, level }, polygons);
       for (let k = 1; k < splits.length; k++) {
         const t0 = splits[k - 1]!, t1 = splits[k]!;
         if (t1 - t0 <= 1e-12) continue;
         if (near.length && onConnectorBoundary(lerp(a, b, (t0 + t1) / 2), near)) continue;
         // Attachments are decided in pieces of at most 2 m: scene floor can reach along only part of a long side.
+        // Between splits (region vertices included) the floor height is linear, so only the split ends are looked up.
         const count = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) * (t1 - t0) / ATTACHMENT_PIECE_M));
+        const y0 = heightAtVertex(lerp(a, b, t0), sources), y1 = heightAtVertex(lerp(a, b, t1), sources);
         for (let n = 0; n < count; n++) {
           const p = lerp(a, b, t0 + (t1 - t0) * n / count), q = lerp(a, b, t0 + (t1 - t0) * (n + 1) / count);
-          const wall: BoundaryWall = { ax: p.x, az: p.z, bx: q.x, bz: q.z, ay: heightAtVertex(p, sources), by: heightAtVertex(q, sources), level };
-          if (isAttachment?.(wall, outsidePoint(wall, polygons))) continue;
+          const wall: BoundaryWall = { ax: p.x, az: p.z, bx: q.x, bz: q.z, ay: y0 + (y1 - y0) * n / count, by: y0 + (y1 - y0) * (n + 1) / count, level };
+          if (isAttachment(wall, outsidePoint(wall, outward))) continue;
           pieces.push(wall);
         }
       }
@@ -329,7 +357,7 @@ export function buildWalkableModel(
     if (list) list.push(region); else byLevel.set(region.level, [region]);
   }
   const levels = new Map<string, PlanPolygon[]>();
-  const built: { level: string; union: PlanPolygon[]; sources: HeightSource[]; connectors: PlanPoint[][]; breakpoints: PlanPoint[] }[] = [];
+  const built: { level: string; union: PlanPolygon[]; box: Box; boxes: Box[]; sources: HeightSource[]; connectors: PlanPoint[][]; breakpoints: PlanPoint[] }[] = [];
   for (const [level, list] of byLevel) {
     const polygons: Polygon[] = [];
     for (const region of list) for (const polygon of regionPolygon(region)) polygons.push([polygon[0]!.map((p): [number, number] => [p.x, p.z])]);
@@ -338,15 +366,22 @@ export function buildWalkableModel(
     levels.set(level, union);
     const connectors = list.filter((region) => region.kind === "connector").flatMap((region) => regionPolygon(region).map((polygon) => polygon[0]!));
     const breakpoints = list.filter((region) => region.kind === "strip").flatMap((region) => regionPolygon(region).flatMap((polygon) => polygon[0]!));
-    built.push({ level, union, sources: list.map(heightSource), connectors, breakpoints });
+    built.push({ level, union, box: boxOf(union), boxes: union.map((polygon) => boxOf([polygon])), sources: list.map(heightSource), connectors, breakpoints });
   }
   const walls: BoundaryWall[] = [];
   for (const { level, union, sources, connectors, breakpoints } of built) {
     // A boundary where another level's floor carries on within a step of it (a ramp meeting the floor it climbs to)
     // is an attachment too; levels themselves never union, so floors stacked in plan keep their own outlines.
-    const continues = (outside: { x: number; y: number; z: number }) => stepM > 0 && built.some((other) => other.level !== level
-      && pointInLevel(outside, other.union) && Math.abs(heightAtVertex(outside, other.sources) - outside.y) <= stepM);
-    walls.push(...boundaryWalls(union, sources, connectors, level, (wall, outside) => continues(outside) || !!isAttachment?.(wall, outside), breakpoints));
+    // Each boundary edge checks only the other levels' polygons whose bounds reach its probes.
+    const attachmentNear = (box: Box) => {
+      const near = stepM > 0 ? built.filter((other) => other.level !== level && overlaps(other.box, box)).map((other) => ({
+        polygons: other.union.filter((_polygon, k) => overlaps(other.boxes[k]!, box)),
+        sources: other.sources.filter((source) => overlaps(source.box, box)),
+      })).filter((other) => other.polygons.length) : [];
+      return (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => near.some((other) => pointInLevel(outside, other.polygons)
+        && Math.abs(heightAtVertex(outside, other.sources) - outside.y) <= stepM) || !!isAttachment?.(wall, outside);
+    };
+    walls.push(...boundaryWalls(union, sources, connectors, level, attachmentNear, breakpoints));
   }
   return { levels, walls };
 }
