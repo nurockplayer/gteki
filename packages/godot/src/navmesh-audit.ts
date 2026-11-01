@@ -338,11 +338,20 @@ async function main() {
   const usedVerticalSteps = new Map<string, RouteStep>();
   const affectedByMode: Record<string, number> = {};
   const pois = bundle.pois.filter(p => p.connectorNodeIds.length > 0);
+  // POIs on the same connector nodes (a store tied to a gate shares the gate's node) have no route between them and
+  // route identically to everything else: every pair still counts for coverage, but each node-set pair's route is
+  // audited once, so a new POI on an existing node does not re-count the same clips.
+  const nodeSet = (p: (typeof pois)[number]) => [...p.connectorNodeIds].sort().join("\n");
+  const auditedPairs = new Set<string>();
   for (const from of pois) for (const to of pois) {
-    if (from.id === to.id) continue;
+    if (from.id === to.id || nodeSet(from) === nodeSet(to)) continue;
     const route = routeBetween(router, { kind: "poi", poi: from }, to, DEFAULT_PROFILE);
     if (!route.ok) { routeFailures++; continue; }
-    routeCount++; stepUses += route.steps.length; routeSteps.push(route.steps);
+    routeCount++;
+    const pairKey = `${nodeSet(from)}\t${nodeSet(to)}`;
+    if (auditedPairs.has(pairKey)) continue;
+    auditedPairs.add(pairKey);
+    stepUses += route.steps.length; routeSteps.push(route.steps);
     for (const step of route.steps) if (["stairs","escalator","elevator"].includes(step.mode)) usedVerticalSteps.set(step.edgeId,step);
     const graph = routePolyline(bundle, route);
     const graphAudit = auditPolyline(probe, graph, { cache:auditCache });

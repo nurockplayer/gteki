@@ -113,7 +113,7 @@ describe("no path / refusals", () => {
 
   it("a search-only POI (no verified connector) refuses to route rather than guessing an entrance", () => {
     const searchOnly = bundle.pois.filter((p) => p.connectorNodeIds.length === 0);
-    expect(searchOnly.length).toBe(501); // 6 gates (incl. Yurakucho South Passage West Gate), 15 exit numbers per the gap list, 349 shops (#212, #407, #432, #443) plus 1 store POI and 7 Seibu platforms (#501), and 42 line POIs (#414) and 2 North gates (#420), and 31 facilities (#431), and 40 more facilities (#453, #455), and 1 PARCO store POI (JCSC S13), and 1 Seibu Ikebukuro store POI (JCSC 2026 opening list) and 7 S-tier search-only gates/exits (OD-35)
+    expect(searchOnly.length).toBe(500); // 6 gates (incl. Yurakucho South Passage West Gate), 15 exit numbers per the gap list, 349 shops (#212, #407, #432, #443) plus 1 store POI and 7 Seibu platforms (#501), and 42 line POIs (#414) and 2 North gates (#420), and 31 facilities (#431), and 40 more facilities (#453, #455), and 1 PARCO store POI (JCSC S13), and 7 S-tier search-only gates/exits (OD-35); 西武池袋本店 routes to the JR South Gate's public side (#213), so it is no longer search-only
     const exit35 = bundle.pois.find((p) => p.id === "exit-35")!;
     const gate = bundle.pois.find((p) => p.id === "jr-central-gate-2")!;
     const tobu = bundle.pois.find((p) => p.id === "tobu-central-gate-2")!;
@@ -163,6 +163,21 @@ describe("store entrance: ルミネ池袋 (#529)", () => {
     const index = createSearchIndex(parsed.bundle);
     expect(index.search("ルミネ池袋")[0]?.poi.id).toBe("shop-ikb-lumine");
     expect(index.search("HARBS")[0]?.poi.id).toBe("shop-ikb-lumine-000539");
+  });
+});
+
+// #213 station-level tie: 西武池袋本店 prints 「南改札口から徒歩すぐ」 and routes to the same public-side node; both
+// stores sit outside the fare gates, so 改札外のみ (unpaid_only) must still reach them.
+describe("station-level tie: 西武池袋本店 (#213)", () => {
+  const bundle = load();
+  it("routes with unpaid_only to the JR South Gate's public side", () => {
+    const exit22 = bundle.pois.find((p) => p.id === "exit-22")!;
+    for (const id of ["shop-ikb-seibu-honten", "shop-ikb-lumine"]) {
+      const store = bundle.pois.find((p) => p.id === id)!;
+      const r = routeBetween(createRouter(bundle), { kind: "poi", poi: exit22 }, store, { fare: "unpaid_only", stepFree: false });
+      if (!r.ok) throw new Error(`${id}: ${r.message}`);
+      expect(r.nodeIds.at(-1)).toBe("g_jr_s");
+    }
   });
 });
 

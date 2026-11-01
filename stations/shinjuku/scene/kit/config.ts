@@ -39,8 +39,11 @@ export const KIT_BUDGET: KitBudget = {
   maxGpuTextureBytes: 8_000_000,
 };
 
-/** Merged kit geometry is position + normal + uv (32 B) per vertex plus a 16-bit index; ~2 vertices per triangle. */
-export const KIT_GEOMETRY_BYTES_PER_TRIANGLE = 70;
+/**
+ * Merged kit geometry is Float32 position, Int8 normal and half-float uv (19 B) per vertex plus the index
+ * (batch.ts packGeometry). Measured on the mobile bundle that is under 40 B per triangle; 45 keeps the estimate above it.
+ */
+export const KIT_GEOMETRY_BYTES_PER_TRIANGLE = 45;
 
 export interface TierCaps {
   /** True once the explorer's loader decodes KTX2 (it does not today: `SceneContext.loadGlb` is meshopt only). */

@@ -54,6 +54,25 @@ function plainGeometry(src: THREE.BufferGeometry): THREE.BufferGeometry {
   return out;
 }
 
+/**
+ * Pack a merged batch for upload: normals as normalised Int8 and uv as half floats, so a vertex is 19 B instead of 32.
+ * Positions stay Float32 (world metres across a floor), and packing happens after merging, once every part is in place.
+ */
+function packGeometry(geo: THREE.BufferGeometry): void {
+  const normal = geo.getAttribute("normal");
+  if (normal) {
+    const packed = new THREE.BufferAttribute(new Int8Array(normal.count * 3), 3, true);
+    for (let i = 0; i < normal.count; i++) packed.setXYZ(i, normal.getX(i), normal.getY(i), normal.getZ(i));
+    geo.setAttribute("normal", packed);
+  }
+  const uv = geo.getAttribute("uv");
+  if (uv) {
+    const packed = new THREE.Float16BufferAttribute(new Uint16Array(uv.count * 2), 2);
+    for (let i = 0; i < uv.count; i++) packed.setXY(i, uv.getX(i), uv.getY(i));
+    geo.setAttribute("uv", packed);
+  }
+}
+
 export function batchKitPlacements(args: {
   placed: readonly KitPlacement[];
   manifest: KitManifest;
@@ -167,6 +186,7 @@ export function batchKitPlacements(args: {
   for (const batch of ordered) for (const part of batch.parts) part.geo.dispose();
   for (const { batch: b, geo } of merged) {
     for (const part of b.parts) if (!failed.has(part.placement)) drawn.add(part.placement);
+    packGeometry(geo);
     geo.computeBoundingBox();
     geo.computeBoundingSphere();
     track(geo);

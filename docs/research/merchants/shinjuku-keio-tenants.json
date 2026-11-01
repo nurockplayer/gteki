@@ -1,0 +1,4756 @@
+{
+  "schema": "gteki.research.tenants/0.1",
+  "note": "Facts-only brand list of 京王百貨店 新宿店 (593 rows), as the store's 「ショップ検索」 page prints it. Read from the JSON that page (/info/shinjuku/shop/) loads, https://www.keionet.com/re2024/json/shop_shinjuku.json (342,902 bytes, SHA-256 6151a6ba2be7fce32feab4f8aba22a6196a5502a2caf4dcdbf4549c57b2962a5; plain curl with the default User-Agent; retrieved 2026-11-01T19:28:16Z = 2026-11-02 04:28 JST). The file has a trailing comma before its final ], stripped before parsing; the raw file is not committed. Only the printed facts are kept: title as name (trimmed), floor as floorLabel exactly as printed (１階 .. Ｂ1, ＭＢ, 屋上), salesfloor as category (null when blank). Ids are the source row id. Rows kept in the JSON's own order (not floor order). 0 rows skipped for a missing title or floor, 0 exact name+floor duplicates dropped. Nothing else (tel, memorandum, dates, head, category/category_child) is taken. Not POIs. UNVERIFIED.",
+  "sourceId": "keio-shinjuku-shopsearch-2026-11",
+  "storePoiIds": [
+    "shop-sjk-keio"
+  ],
+  "retrievedAt": "2026-11-01T19:28:16Z",
+  "removed": [],
+  "tenants": [
+    {
+      "id": "tenant-sjk-keio-033514",
+      "name": "赤ちゃんの城",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033446",
+      "name": "パレフローラ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033393",
+      "name": "ベルプラージュ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033392",
+      "name": "モンロワール",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033391",
+      "name": "VANSAN（バンサン）",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033341",
+      "name": "バンヤードストーム",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033340",
+      "name": "ワコールらくラクパートナー",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033318",
+      "name": "ナラカミーチェ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033140",
+      "name": "アトリエ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033139",
+      "name": "ボンステップ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033138",
+      "name": "フィールアフィール",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033137",
+      "name": "MBT",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033136",
+      "name": "H.P.S",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033135",
+      "name": "ペダラ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033134",
+      "name": "アシックス",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033133",
+      "name": "ベティ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033132",
+      "name": "グレースアベニュー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033131",
+      "name": "カルテットハーモニー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033130",
+      "name": "ラウナレア",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033127",
+      "name": "サンアイリゾート",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033119",
+      "name": "コスメクリニック",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033079",
+      "name": "銀座アスター",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033078",
+      "name": "KP　BOY",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033077",
+      "name": "KP",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033069",
+      "name": "ウィークエンド マックスマーラ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033062",
+      "name": "クリーニング＆ブランドケア アクア",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032979",
+      "name": "財布",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "財布売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032966",
+      "name": "フランスベッド",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032975",
+      "name": "リベルコア パル ベベ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032933",
+      "name": "東京ひよ子",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032913",
+      "name": "リザ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032912",
+      "name": "ヘデグレン",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032898",
+      "name": "サンジョア",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032849",
+      "name": "にっぽん全国弁当セレクション",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032845",
+      "name": "キーン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032810",
+      "name": "アカイシ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032773",
+      "name": "三笠会館",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032735",
+      "name": "DHC",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032507",
+      "name": "エイシン",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032407",
+      "name": "ラ・プレリー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032405",
+      "name": "キャスキッドソン",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032406",
+      "name": "飛騨の家具",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "家具・インテリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032404",
+      "name": "ロベルタ ピエリ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032403",
+      "name": "酒商山田",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "酒売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032354",
+      "name": "ABCマート グランドステージ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032327",
+      "name": "ヤマト屋",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032328",
+      "name": "クレッシェント",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032326",
+      "name": "有木",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-032295",
+      "name": "アデュー トリステス",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031989",
+      "name": "オンワードクローゼットセレクト メンズ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031909",
+      "name": "ジェイアンドエムデヴィッドソン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031908",
+      "name": "コンポジション ブロウ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031907",
+      "name": "コンポジションナイン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031906",
+      "name": "マッキントッシュ ロンドン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031905",
+      "name": "マッキントッシュ フィロソフィー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031904",
+      "name": "ランバン コレクション",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031903",
+      "name": "ランバン オン ブルー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031902",
+      "name": "アンリーフ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031901",
+      "name": "ユニティ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031900",
+      "name": "アンテプリマ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031899",
+      "name": "メルモ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031898",
+      "name": "ジルスチュアート シュー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031897",
+      "name": "ツモリチサトウォーク",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031893",
+      "name": "コロンブス",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031889",
+      "name": "リバティハウス",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031888",
+      "name": "ビューフォート",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031884",
+      "name": "鳩居堂",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031883",
+      "name": "ミラ・ショーン スポーツ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031864",
+      "name": "ビオラル",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031861",
+      "name": "コラージュ ガリャルダガランテ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031860",
+      "name": "ドライヘッドスパ リセット",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031818",
+      "name": "パンドラ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031795",
+      "name": "シーキューブ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031768",
+      "name": "柿の葉すし本舗たなか",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031745",
+      "name": "ベイカー・ストリート",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031686",
+      "name": "コムサイズム",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031685",
+      "name": "ジャックインザドーナツ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031573",
+      "name": "洋服お直し専門店 ドクター・フィット",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031477",
+      "name": "薫るバター サブリナ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031432",
+      "name": "とらや",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031412",
+      "name": "両口屋是清",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001658",
+      "name": "ビューティ セラー バイ ハリウッド",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023228",
+      "name": "エスト（花王ソフィーナ）",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001131",
+      "name": "カネボウ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031120",
+      "name": "楽歩堂ラン＆ウォーク",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031091",
+      "name": "日新堂",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "時計売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-031029",
+      "name": "カフェ＆レストラン キャニーズ",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030908",
+      "name": "アートスクエア（テイクアウトコーナー）",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "美術品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030898",
+      "name": "バサラ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030896",
+      "name": "エル",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030895",
+      "name": "フィヨデュベベルダクティオン",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030894",
+      "name": "サムシング",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "ハーモニー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026662",
+      "name": "ハルメクおみせ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023709",
+      "name": "アップルハウス",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020296",
+      "name": "リリアンビューティ エクラ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "小さいサイズの婦人服\"すずらん\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020294",
+      "name": "ラ・エフ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018656",
+      "name": "リリアンビューティ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018653",
+      "name": "パドカレ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018652",
+      "name": "レリアン",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014865",
+      "name": "ミセスジーナゴールド",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014594",
+      "name": "黒のフォーマル",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001393",
+      "name": "ケイコキシ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025142",
+      "name": "カルム",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025141",
+      "name": "スーパービューティ byオーラボー",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025136",
+      "name": "リエルナ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025098",
+      "name": "マインドフォーム オルウェイズ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-012748",
+      "name": "ハーモニー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "ハーモニー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-019046",
+      "name": "ヌオヴォクアランタ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "小さいサイズの婦人服\"すずらん\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-019045",
+      "name": "ダナパリ（Sサイズ）",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "小さいサイズの婦人服\"すずらん\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-019352",
+      "name": "グランマ ママ ドーター",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-015516",
+      "name": "スウィートキャメル",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001390",
+      "name": "エヴェックス バイ クリツィア",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001389",
+      "name": "ヤッコマリカルド",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001381",
+      "name": "サン・フェルメール",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001374",
+      "name": "トランスワーク（Lサイズ）",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001373",
+      "name": "トランスワーク",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001370",
+      "name": "ドゥクラッセ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001369",
+      "name": "ミ・デゥー",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001368",
+      "name": "ジャンニ・ロ・ジュディチェ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001367",
+      "name": "トピィーズ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001364",
+      "name": "詩仙堂",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001355",
+      "name": "ビースリープラス",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001353",
+      "name": "ラリック グラース",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001348",
+      "name": "スタイルブック",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001341",
+      "name": "ベルボニータ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "小さいサイズの婦人服\"すずらん\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001340",
+      "name": "ジョルジュ・レッシュ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001339",
+      "name": "ジャンニ・ロ・ジュディチェ（Sサイズ）",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "小さいサイズの婦人服\"すずらん\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001334",
+      "name": "オンワードクローゼットセレクト レディス",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001328",
+      "name": "ギャバジンK.T",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001326",
+      "name": "コムサ・プラチナ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001320",
+      "name": "マックレガー",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001318",
+      "name": "キース",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001317",
+      "name": "ローラ アシュレイ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001314",
+      "name": "ピンクハウス",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001311",
+      "name": "セオリーリュクス",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001309",
+      "name": "ニューヨーカー",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001308",
+      "name": "リフレクト",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001307",
+      "name": "アマカ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001306",
+      "name": "49AV ジュンコ シマダ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001303",
+      "name": "マドモアゼルノンノン",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001302",
+      "name": "タバサ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001301",
+      "name": "インゲボルグ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001298",
+      "name": "クードシャンス",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001294",
+      "name": "エムズグレィシー",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001293",
+      "name": "マッキントッシュ ロンドン",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001292",
+      "name": "モガ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001291",
+      "name": "ポール・スチュアート",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001289",
+      "name": "ミッシェルクラン",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001287",
+      "name": "アクアスキュータム",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001286",
+      "name": "ダックス",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001284",
+      "name": "ユキトリイ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001283",
+      "name": "プリーツプリーズイッセイミヤケ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001282",
+      "name": "プランテーション",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001281",
+      "name": "レキップ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001279",
+      "name": "ヒロコビス",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001276",
+      "name": "スキャパ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001273",
+      "name": "ダナパリ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001272",
+      "name": "バレンザ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001270",
+      "name": "ミーイッセイ ミヤケ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001269",
+      "name": "ヨーガンレール",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001268",
+      "name": "クリスチャン・オジャール",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001267",
+      "name": "伊太利屋",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001266",
+      "name": "毛皮サロン",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001261",
+      "name": "東京ソワール",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001260",
+      "name": "ジブリーヌ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001238",
+      "name": "シャワーパーティー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001236",
+      "name": "アンタイトル",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001235",
+      "name": "ストロベリーフィールズ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001234",
+      "name": "セオリー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001233",
+      "name": "ノーリーズ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001231",
+      "name": "マッキントッシュフィロソフィー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001230",
+      "name": "ヒューマンウーマン",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001229",
+      "name": "アナイ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001228",
+      "name": "トゥモローランド",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001217",
+      "name": "トリンプ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001216",
+      "name": "プラステ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-022213",
+      "name": "ニューヨーカー（Lサイズ）/アトラエル",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030616",
+      "name": "コンセプトストア　シャワーパーティー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030614",
+      "name": "銀座マギー",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030612",
+      "name": "M.＆KYOKO",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030610",
+      "name": "イア パピヨネ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-012738",
+      "name": "ココチクローゼット",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030608",
+      "name": "アズ ノゥ アズ ドゥ バズ／アズ ノゥ アズ オオラカ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030764",
+      "name": "ご婚礼サロン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "商品券・ご進物サロン・婚礼サロン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030716",
+      "name": "アートスクエア（アートコーナー）",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "美術品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030715",
+      "name": "美術品",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "美術品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030665",
+      "name": "リボンハッカキッズ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030664",
+      "name": "ミニマル",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030663",
+      "name": "BeBe",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030662",
+      "name": "エックスガール ステージス",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030661",
+      "name": "エクストララージ キッズ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030660",
+      "name": "アプレ レ クール",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030659",
+      "name": "アスビーキッズ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030578",
+      "name": "FANS",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030571",
+      "name": "工芸サロン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "美術品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030570",
+      "name": "京王ギャラリー",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "美術品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030569",
+      "name": "印傳屋",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "和装売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030568",
+      "name": "印章・印刷",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "印章・印刷売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030567",
+      "name": "介護用品",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "ハートフルプラザ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-027718",
+      "name": "ミキハウス「キッズパル」",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026817",
+      "name": "グリーンギャラリーガーデンズ",
+      "aliases": [],
+      "floorLabel": "屋上",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025406",
+      "name": "ミラクルリフォーム",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025159",
+      "name": "ながもち屋",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "和装売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023240",
+      "name": "ハーフマイル",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023239",
+      "name": "儀右ヱ門",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023235",
+      "name": "セカンドノーリーズ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-022767",
+      "name": "アルジー",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-022234",
+      "name": "ワスク",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-021917",
+      "name": "ズッパ ディ ズッカ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-021916",
+      "name": "イーストボーイ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020295",
+      "name": "ワコール",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020283",
+      "name": "カインドケア",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "ハートフルプラザ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018666",
+      "name": "ショパン",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018664",
+      "name": "プティマイン",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018660",
+      "name": "手しごとギャラリー",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": null,
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018319",
+      "name": "開運館 E&E",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014231",
+      "name": "京王パスポートカウンター",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": null,
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011197",
+      "name": "アフラック",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "保険",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011196",
+      "name": "京王友の会カウンター",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": null,
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011191",
+      "name": "Foreign Customer Counter",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": null,
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011186",
+      "name": "サービスカウンター",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": null,
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011140",
+      "name": "セレモピアン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "家具・インテリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011137",
+      "name": "ご進物サロン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "商品券・ご進物サロン・婚礼サロン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011136",
+      "name": "商品券",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "商品券・ご進物サロン・婚礼サロン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011134",
+      "name": "ベビー休憩室／授乳室",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-011133",
+      "name": "正面案内所",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": null,
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001681",
+      "name": "写真室／貸衣裳",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "ハートフルプラザ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001679",
+      "name": "補聴器",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "ハートフルプラザ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001651",
+      "name": "クイーンズウェイ",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001649",
+      "name": "ル・タン",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001644",
+      "name": "おもちゃプラザ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001638",
+      "name": "ブリーズ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001637",
+      "name": "ランドセルコーナー",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001630",
+      "name": "ファミリア",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001629",
+      "name": "ミキハウス くつひろば",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001628",
+      "name": "ミキハウス ホットビスケッツ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001627",
+      "name": "ミキハウス",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001624",
+      "name": "ブロッサム39",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001618",
+      "name": "ポロ ラルフ ローレン",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001616",
+      "name": "ミキハウスダブルＢ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001615",
+      "name": "ミキハウスベビー",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001565",
+      "name": "四谷三栄",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "和装売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001563",
+      "name": "東京ますいわ屋",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "和装売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001532",
+      "name": "セレモア",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "家具・インテリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001516",
+      "name": "刀剣サロン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "美術品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001515",
+      "name": "茶道具（千華）",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "美術品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001445",
+      "name": "つえ屋",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001141",
+      "name": "ミスターミニット",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001140",
+      "name": "フローレット",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-027806",
+      "name": "ウィズ・ユー",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-024936",
+      "name": "ベルバラール",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-024935",
+      "name": "デッサン",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020309",
+      "name": "金子半之助",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-015045",
+      "name": "新宿高野",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016663",
+      "name": "築地魚弁",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014571",
+      "name": "資生堂パーラー",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001662",
+      "name": "沖縄宝島",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001650",
+      "name": "自然食品の店F&F",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001092",
+      "name": "柿安ダイニング",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001089",
+      "name": "美濃吉",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001087",
+      "name": "神田明神下 みやび",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001084",
+      "name": "神戸コロッケ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001070",
+      "name": "銀座新之助貝新",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001064",
+      "name": "浅草今半（弁当）",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001063",
+      "name": "錦松梅",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001062",
+      "name": "芭蕉庵",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001061",
+      "name": "船橋屋",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001052",
+      "name": "木村屋總本店",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001050",
+      "name": "泉屋東京店",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001046",
+      "name": "銀座ウエスト",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001034",
+      "name": "鶴屋八幡",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001033",
+      "name": "花園万頭",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001024",
+      "name": "森八",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001022",
+      "name": "銀座千疋屋",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001019",
+      "name": "赤坂柿山",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001018",
+      "name": "銀座に志かわ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001015",
+      "name": "サロン・ド・テ・コロンバン",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001014",
+      "name": "浅草今半（佃煮）",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001013",
+      "name": "深川むらい",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001005",
+      "name": "築地定松",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001004",
+      "name": "ポール",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001003",
+      "name": "肉の匠　いとう",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020306",
+      "name": "浅草今半（精肉）",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025260",
+      "name": "saryo ITOEN 茶寮 伊藤園",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030765",
+      "name": "みなとのてんらんかい",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030751",
+      "name": "ロフテー枕工房",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030746",
+      "name": "リヤドロ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "食器・調理用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030714",
+      "name": "伊東屋",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030708",
+      "name": "フライング タイガー コペンハーゲン",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030707",
+      "name": "パイレーツファクトリーギフツ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030706",
+      "name": "クラスカ ギャラリー＆ショップ \"ドー\"",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030705",
+      "name": "加圧ビューティーテラス",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030704",
+      "name": "ザッカニア",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030700",
+      "name": "マザーハウス",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030694",
+      "name": "石見銀山 群言堂",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030685",
+      "name": "カインドウェア",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030683",
+      "name": "フェイラー",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030682",
+      "name": "和洋食器",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "食器・調理用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030681",
+      "name": "寝具・ベッド用品",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030680",
+      "name": "家具・インテリア",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "家具・インテリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030679",
+      "name": "ワイズ フォー リビング",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030676",
+      "name": "ホットマン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030675",
+      "name": "ベッテンスタジオ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030674",
+      "name": "箸",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "食器・調理用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030673",
+      "name": "漆器",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "食器・調理用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030672",
+      "name": "カリモク家具",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "家具・インテリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030671",
+      "name": "アミブルージュ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030670",
+      "name": "アクセルジャパン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030669",
+      "name": "アフタヌーンティー・リビング",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030668",
+      "name": "名窯サロン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "食器・調理用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030666",
+      "name": "調理用品",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "食器・調理用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030657",
+      "name": "甲府水晶",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "宝石売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030656",
+      "name": "ブルーム",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030655",
+      "name": "日商",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "宝石売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030654",
+      "name": "Zoff",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "子供服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030652",
+      "name": "金製品コーナー",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "宝石売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030651",
+      "name": "エヌジェー",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "宝石売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030649",
+      "name": "TUMI",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030648",
+      "name": "ルコックスポルティフ ゴルフ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030646",
+      "name": "メレル",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030645",
+      "name": "ポロ ゴルフ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030644",
+      "name": "フェールラーベン バイ トリニティ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030643",
+      "name": "プーマゴルフ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030642",
+      "name": "阪神タイガースショップ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030641",
+      "name": "カステルバジャック スポーツ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026950",
+      "name": "アフタヌーンティー・ティールーム",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026949",
+      "name": "美濃吉",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026661",
+      "name": "ユザワヤ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025479",
+      "name": "つな八",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025478",
+      "name": "南国酒家",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025475",
+      "name": "旭鮨総本店",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025474",
+      "name": "龍鳳",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025156",
+      "name": "時計修理",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "時計売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025155",
+      "name": "置時計・掛時計",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "日新堂",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025096",
+      "name": "A&Fカントリー",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023305",
+      "name": "サムソナイト",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "トラベルバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023303",
+      "name": "エース",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "トラベルバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023301",
+      "name": "ランバン スポール",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023300",
+      "name": "ヨネックス",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023298",
+      "name": "ミズノ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023295",
+      "name": "マンシングウェア",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023294",
+      "name": "フォックスファイヤー",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023293",
+      "name": "デサント",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023291",
+      "name": "スポーツサポート用品",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023288",
+      "name": "ゴルフプラザアクティブ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023287",
+      "name": "コロンビア",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023285",
+      "name": "アダバット",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023281",
+      "name": "CW-X",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023279",
+      "name": "アッシュ・エル",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023275",
+      "name": "エミネント",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023226",
+      "name": "WISP",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020694",
+      "name": "本味楽",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020690",
+      "name": "京都 田ごと光悦舗",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020689",
+      "name": "銀座 清月堂本店",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020686",
+      "name": "吉座",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020685",
+      "name": "さぼてん",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018663",
+      "name": "レイジースーザン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016654",
+      "name": "ジュエッテ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016653",
+      "name": "モンビジュウ・篠原",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014650",
+      "name": "ムッシュニコルエクストラ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014649",
+      "name": "コムサ・ステージ メン",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014281",
+      "name": "ブルックス ブラザーズ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014265",
+      "name": "金子眼鏡店",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-012735",
+      "name": "&フリー ねむりの相談所",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001640",
+      "name": "ポポンデッタ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001631",
+      "name": "サンリオ",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001611",
+      "name": "パジャマ（婦人・紳士）",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001610",
+      "name": "バス・トイレタリー用品",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001609",
+      "name": "スリッパ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001608",
+      "name": "エプロン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001607",
+      "name": "タオル",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001579",
+      "name": "ナガホリ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "宝石売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001572",
+      "name": "セイコーウォッチサロン",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "時計売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001554",
+      "name": "近澤レース店",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001552",
+      "name": "ホビーラホビーレ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001550",
+      "name": "シェア ウィズ クリハラ ハルミ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001540",
+      "name": "ムアツ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001539",
+      "name": "エアウィーヴ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001538",
+      "name": "生活の木",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001537",
+      "name": "テンピュール",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001536",
+      "name": "エアー",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001535",
+      "name": "シモンズ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "タオル・エプロン・寝具売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001520",
+      "name": "日本橋木屋",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "食器・調理用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001518",
+      "name": "イワキ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "メガネ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001503",
+      "name": "ワイシャツ・オーダーワイシャツ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001502",
+      "name": "紳士傘",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001498",
+      "name": "ネクタイ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001494",
+      "name": "紳士洋品",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001490",
+      "name": "マックレガー",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001489",
+      "name": "ヴァンプス",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001486",
+      "name": "タケオキクチ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001473",
+      "name": "ニューヨーカー",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001468",
+      "name": "アラミス",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001465",
+      "name": "パパス",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001456",
+      "name": "ポロ ラルフ ローレン",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001455",
+      "name": "ポール・スチュアート",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001454",
+      "name": "マッキントッシュ ロンドン",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001452",
+      "name": "アクアスキュータム",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001451",
+      "name": "ダーバン",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001450",
+      "name": "ミユキドレッシード",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001448",
+      "name": "紳士肌着・靴下・パジャマ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001257",
+      "name": "BIBI",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001255",
+      "name": "マリコ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001254",
+      "name": "ピーク",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001253",
+      "name": "サブラ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001147",
+      "name": "フェッリーニ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "宝石売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001146",
+      "name": "ジュエリーリフォーム",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "宝石売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001118",
+      "name": "スワロフスキー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001117",
+      "name": "テイクアップ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001093",
+      "name": "ロレックス ブティック",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001076",
+      "name": "麻布あさひ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001072",
+      "name": "RF1",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001006",
+      "name": "𠮷川水産",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025477",
+      "name": "シェ松尾",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "レストラン",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030745",
+      "name": "エヴェックス バイ クリツィア（Lサイズ）",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030743",
+      "name": "メゾンドゥサンク",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "小さいサイズの婦人服\"すずらん\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030712",
+      "name": "フットバランス",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026663",
+      "name": "レディス アデランス カウンセリングサロン",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025469",
+      "name": "ハツコエンドウ　ビューティースタジオ&エステティック",
+      "aliases": [],
+      "floorLabel": "7階",
+      "category": "こども服売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-022211",
+      "name": "アナスタシア ミアレ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020711",
+      "name": "フィニ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001657",
+      "name": "グレースハイネット",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "ハートフルプラザ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001506",
+      "name": "紳士靴",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001366",
+      "name": "フォンテーヌ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001323",
+      "name": "ネイルズユニーク・アルティミッド",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014320",
+      "name": "イプサ〈ビューティスクエア〉",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場 (Beauty Square for Tourists)",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001386",
+      "name": "ドモホルンリンクル",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001324",
+      "name": "ケサランパサラン",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001142",
+      "name": "アルティザン・アンド・アーティスト",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-022245",
+      "name": "アテニア〈ビューティスクエア〉",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場 (Beauty Square for Tourists)",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-020308",
+      "name": "和食屋の惣菜 えん",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018667",
+      "name": "北海道フーディスト",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-017136",
+      "name": "塚田農場",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-017135",
+      "name": "メディテ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-017134",
+      "name": "博多 肉の壱丁田",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-015044",
+      "name": "仙太郎",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014508",
+      "name": "ニューヨークパーフェクトチーズ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030600",
+      "name": "ローマイヤ",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030599",
+      "name": "大島水産",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014579",
+      "name": "久世福商店",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014572",
+      "name": "サンドイッチハウス メルヘン",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-018943",
+      "name": "ラ・メゾン アンソレイユ ターブル パティスリー",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001654",
+      "name": "富澤商店",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001653",
+      "name": "AFC健康ショップ",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001652",
+      "name": "ニホンドウ漢方ブティック",
+      "aliases": [],
+      "floorLabel": "8階",
+      "category": "リフレピア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001542",
+      "name": "エンハーブ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001091",
+      "name": "おこわ米八",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001090",
+      "name": "パオパオ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001086",
+      "name": "古市庵",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001085",
+      "name": "ての字",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001083",
+      "name": "味の浜藤",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001082",
+      "name": "とんかつ まい泉",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001081",
+      "name": "つな八",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001080",
+      "name": "崎陽軒",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001079",
+      "name": "さぼてん",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001078",
+      "name": "ポルタ イル マーレ ヴィア（マーレ デリ）",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001077",
+      "name": "イーション",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001074",
+      "name": "ロイスダール",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001067",
+      "name": "伊藤園",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001066",
+      "name": "山形屋海苔店",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001065",
+      "name": "山本海苔店",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001060",
+      "name": "キーコーヒー",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001059",
+      "name": "ユーハイム",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001056",
+      "name": "トップス",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001053",
+      "name": "メリーチョコレート",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001048",
+      "name": "ザ・メープルマニア",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001047",
+      "name": "モロゾフ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001045",
+      "name": "ベルン",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001044",
+      "name": "ゴディバ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001043",
+      "name": "ヨックモック",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001042",
+      "name": "アンテノール",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001041",
+      "name": "明月菓寮",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001040",
+      "name": "小倉山荘",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001038",
+      "name": "アンジェリーナ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001037",
+      "name": "アトリエ　サブレヤ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001032",
+      "name": "一保堂茶舖",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001031",
+      "name": "文明堂東京",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001030",
+      "name": "ロクメイカン",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001029",
+      "name": "ガトーフェスタ ハラダ",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001028",
+      "name": "坂角総本舖",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001021",
+      "name": "ルピシア",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場（のれん街）",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001020",
+      "name": "宗家 源 吉兆庵",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001010",
+      "name": "おがわや",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001009",
+      "name": "妻家房",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001008",
+      "name": "まるこし",
+      "aliases": [],
+      "floorLabel": "Ｂ1",
+      "category": "生鮮・グロサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016657",
+      "name": "なだ万厨房",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023246",
+      "name": "四五六菜館厨房",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "惣菜売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023245",
+      "name": "グラニースミス",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014939",
+      "name": "ジュウニブンベーカリー",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026815",
+      "name": "イシヤ G",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030709",
+      "name": "ヤーマン",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場 (Beauty Square for Tourists)",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030702",
+      "name": "ロックポート",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "スポーツウエア・用品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030701",
+      "name": "ラシット",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア・アクセサリー売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030699",
+      "name": "ニナリッチ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "バッグ・財布売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030698",
+      "name": "婦人財布",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "バッグ・財布売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030697",
+      "name": "ゲンテン",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030696",
+      "name": "ゲラルディーニ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030695",
+      "name": "MKミッシェルクラン",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030693",
+      "name": "楽歩堂",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026568",
+      "name": "ビープライム ハウス オブ ローゼ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025588",
+      "name": "ダコタ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016225",
+      "name": "ラ バガジェリー",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016221",
+      "name": "ペレボルサ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016219",
+      "name": "イザック",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014329",
+      "name": "SK-Ⅱ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014323",
+      "name": "SK-Ⅱ〈ビューティスクエア〉",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場 (Beauty Square for Tourists)",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014322",
+      "name": "ハーバー〈ビューティスクエア〉",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場 (Beauty Square for Tourists)",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014321",
+      "name": "ファンケル〈ビューティスクエア〉",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場 (Beauty Square for Tourists)",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014319",
+      "name": "クレ・ド・ポー ボーテ〈ビューティスクエア〉",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場 (Beauty Square for Tourists)",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-014318",
+      "name": "資生堂〈ビューティスクエア〉",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場 (Beauty Square for Tourists)",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030691",
+      "name": "ピドックス",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030690",
+      "name": "トップドライ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030689",
+      "name": "クシュー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-025172",
+      "name": "メディカルウォーク",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030633",
+      "name": "アクシージア",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030632",
+      "name": "ロジーク サブストリート・ジェットセット",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030631",
+      "name": "ロートレアモン",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030630",
+      "name": "ローズティアラ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030629",
+      "name": "レリアンプラスハウス",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030628",
+      "name": "リエミラー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030627",
+      "name": "ヒロコビス グランデ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030626",
+      "name": "ヒロコ コシノ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030625",
+      "name": "ピサーノ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030623",
+      "name": "ビアズリー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030622",
+      "name": "ノーリーズ　ソフィー",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030621",
+      "name": "トワミー＆バルーン",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "アーバンキャリア売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030620",
+      "name": "トゥー ビー シック",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "大きいサイズの婦人服\"ライラック\"売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030619",
+      "name": "ZUCCa",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016664",
+      "name": "キプリング",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001551",
+      "name": "ちふれグループショップ",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001544",
+      "name": "ブラックペイント",
+      "aliases": [],
+      "floorLabel": "6階",
+      "category": "生活雑貨ショップ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001500",
+      "name": "紳士バッグ",
+      "aliases": [],
+      "floorLabel": "5階",
+      "category": "メンズビジネス売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001425",
+      "name": "スワニー",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "パーツセレクション売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001416",
+      "name": "オサム",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001415",
+      "name": "イビサ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001352",
+      "name": "フィットフィット",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001243",
+      "name": "ダコタ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "バッグ・財布売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001239",
+      "name": "アンジュールアンサック",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハンドバッグ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001224",
+      "name": "アインズ＆トルペ",
+      "aliases": [],
+      "floorLabel": "2階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001208",
+      "name": "イング",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001201",
+      "name": "エンチャンテッド",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001194",
+      "name": "ビューウォーク",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001191",
+      "name": "コンフォートクリニック",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001187",
+      "name": "フェスタ ザ ショップ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001186",
+      "name": "t.イナバ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001184",
+      "name": "リズラフィーネ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001172",
+      "name": "マーガレット・ハウエル アイデア",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001163",
+      "name": "ディッシィ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001158",
+      "name": "ハンカチ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001154",
+      "name": "ストッキング・靴下・タイツ・レギンス",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001153",
+      "name": "婦人傘",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001152",
+      "name": "婦人ベルト",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001151",
+      "name": "ポーチ・エコバッグ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001149",
+      "name": "スカーフ・ストール",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001148",
+      "name": "婦人帽子",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001138",
+      "name": "銀座ヨシノヤ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001137",
+      "name": "ヴィタノーヴァ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001135",
+      "name": "銀座かねまつ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001130",
+      "name": "エステダム",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001128",
+      "name": "ポーラ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001122",
+      "name": "ハーバー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001121",
+      "name": "クリニーク",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001116",
+      "name": "ジバンシイ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001115",
+      "name": "イヴ・サンローラン・ボーテ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001114",
+      "name": "シュウ ウエムラ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001113",
+      "name": "イプサ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001112",
+      "name": "RMK",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001111",
+      "name": "ロクシタン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001110",
+      "name": "シャネル",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001109",
+      "name": "ランコム",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001108",
+      "name": "ディオール",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001107",
+      "name": "ファンケル",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001106",
+      "name": "資生堂",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001105",
+      "name": "クレ・ド・ポー ボーテ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001103",
+      "name": "CAC",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001102",
+      "name": "カバーマーク",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001101",
+      "name": "アクセーヌ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001099",
+      "name": "エスティ ローダー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001098",
+      "name": "クラランス",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001097",
+      "name": "ボビイ ブラウン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001095",
+      "name": "ゲラン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001094",
+      "name": "ヘレナ ルビンスタイン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-001036",
+      "name": "榮太樓總本鋪",
+      "aliases": [],
+      "floorLabel": "ＭＢ",
+      "category": "菓子売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030618",
+      "name": "スーパーハッカ／スーパーハッカフィーユ",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ミセス・サイズ・フォーマル売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-030617",
+      "name": "シビラ",
+      "aliases": [],
+      "floorLabel": "3階",
+      "category": "プレミアムキャリア・マダム売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016639",
+      "name": "エコー",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023231",
+      "name": "コスメデコルテ（コーセー）",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-023230",
+      "name": "CA4LA",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人洋品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-016893",
+      "name": "ロアリブ",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-022244",
+      "name": "ラ・メール",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-022243",
+      "name": "ジョーマローン ロンドン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-022241",
+      "name": "アテニア",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-026656",
+      "name": "卑弥呼",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "婦人靴売場",
+      "storePoiId": "shop-sjk-keio"
+    }
+  ]
+}
