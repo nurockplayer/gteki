@@ -8,16 +8,21 @@ import { poiNoteText } from "./noRouteText.ts";
  * Nothing is inferred: a missing source, floor or date is shown as missing, never filled in, and the card
  * offers no directions (a merchant listing has no verified entrance; the guide button belongs to the route card).
  */
-export type MerchantPrecision = "point" | "area" | "search";
+export type MerchantPrecision = "tie" | "point" | "area" | "search";
+
+/** A store whose route ends at a printed station-level tie (a gate), not at its own verified entrance (#213). */
+export const isStationTie = (poi: Poi) => /\bSTATION_TIE\b/.test(poi.evidence.method);
 
 /**
  * The precision the listing's own evidence text states. The tokens are the data's, not a ranking of ours.
  * A display position is a verified location only when the POI is routable (#213) and its evidence is not
  * SEARCH_ONLY: a listing's own point without a connector has no verified entrance, and a connector does not
  * turn a search-only listing's point into one, so both fall back to the evidence wording.
+ * STATION_TIE comes first: a connector to a gate the store's page names is a route, never a verified entrance.
  */
 export function merchantPrecision(poi: Poi): MerchantPrecision | null {
   const method = poi.evidence.method;
+  if (isStationTie(poi)) return "tie";
   const searchOnly = /\bSEARCH_ONLY\b/.test(method);
   if (poi.displayPosition !== null && poi.connectorNodeIds.length > 0 && !searchOnly) return "point";
   if (/\bAREA_ONLY\b/.test(method)) return "area";

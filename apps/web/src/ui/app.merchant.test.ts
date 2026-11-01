@@ -3,8 +3,9 @@
 // merchant card beside the no-route card with no direction control anywhere.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Poi, Source } from "@gteki/schema";
+import { createRouter, routeBetween } from "@gteki/navigation";
 import { createSearchIndex } from "@gteki/search";
-import { createSyntheticBundle } from "../../../../packages/navigation/src/fixtures.ts";
+import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import { strings, type Lang } from "../i18n.ts";
 
 vi.mock("../explorer/explorer.ts", () => ({ Explorer: class {} }));
@@ -12,7 +13,11 @@ vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, 
 import { App } from "./app.ts";
 
 type Harness = {
-  s: { lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | null; route: unknown; noPath: null; destination: Poi | null; destinationTenant: null; search?: unknown; filter: Poi["category"] | null };
+  s: {
+    lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | null; route: unknown; noPath: null;
+    destination: Poi | null; destinationTenant: null; search?: unknown; filter: Poi["category"] | null;
+    origin?: unknown; polyline?: unknown[]; instructions?: unknown[]; activeInstruction?: number;
+  };
   ui: { sheet: HTMLElement; categoryFilter: HTMLSelectElement; toInput: HTMLInputElement; fromInput: HTMLInputElement; toResults: HTMLElement };
   t: ReturnType<typeof strings>;
   renderCategoryFilter: (b: ReturnType<typeof createSyntheticBundle> | undefined) => void;
@@ -112,6 +117,67 @@ describe("merchant card in the route sheet (#213)", () => {
     // Search-only: no guide, no walk, no overview — the sheet holds only the no-route card's own controls.
     expect(card!.querySelector("button")).toBeNull();
     expect(sheet.querySelector("button.primary")).toBeNull();
+  });
+
+  it("labels a route that ends at the store's printed station-level tie, and its search row", () => {
+    const { a, bundle } = app("ja");
+    const tie = shopPoi({
+      id: "shop-sample-tie",
+      names: [{ lang: "ja", text: "サンプル百貨店" }],
+      connectorNodeIds: ["goal"],
+      evidence: {
+        sourceIds: [SOURCE.id],
+        method: "printed station-level tie: the access page prints 「南改札口から徒歩すぐ」 under JR. STATION_TIE: the store's own entrance is not verified (field item V1).",
+        checkedDate: "2026-10-28",
+      },
+      notes: [{ lang: "ja", text: "「南改札口から徒歩すぐ」（アクセスページの表記）。案内は駅の改札まで。店舗入口の位置は未確認です。" }],
+    });
+    bundle.pois.push(tie);
+    // The harness bundle carries no edges; the tie shop connects to "goal", so give it one.
+    bundle.edges.push(syntheticEdge("start-goal", "start", "goal", { lengthM: 20 }));
+    a.s.search = createSearchIndex(bundle);
+    a.s.origin = { kind: "node", nodeId: "start" };
+    a.s.destination = tie;
+    const route = routeBetween(createRouter(bundle), { kind: "node", nodeId: "start" }, tie, { fare: "ticketed", stepFree: false, hours: "warn_unknown" });
+    if (!route.ok) throw new Error(route.message);
+    a.s.route = route;
+    a.s.polyline = [];
+    a.s.instructions = [];
+    a.s.activeInstruction = 0;
+    a.renderSheet();
+    expect(a.ui.sheet.querySelector(".card.route .entrance-unverified")?.textContent).toBe(strings("ja").merchant.precision.tie);
+    expect(a.ui.sheet.querySelector(".card.route")!.textContent).toContain("店舗入口の位置は未確認です");
+
+    // The search row says the same thing, next to the store's own note.
+    a.ui.toInput.value = "サンプル百貨店";
+    a.renderResults("to");
+    const row = [...a.ui.toResults.querySelectorAll(".result")].find((o) => o.textContent?.includes("サンプル百貨店"))!;
+    expect(row.textContent).toContain(strings("ja").merchant.precision.tie);
+    expect(row.textContent).toContain("店舗入口の位置は未確認です");
+    expect(row.getAttribute("aria-label")).toContain(strings("ja").merchant.precision.tie);
+  });
+
+  it("leaves a route to a gate destination unlabelled", () => {
+    const { a, bundle } = app("ja");
+    const gate: Poi = {
+      ...shopPoi({ id: "gate-sample", connectorNodeIds: ["goal"] }),
+      category: "ticket_gate",
+      names: [{ lang: "ja", text: "サンプル改札" }],
+      evidence: { sourceIds: [SOURCE.id], method: "test", checkedDate: "2026-10-24" },
+    };
+    bundle.pois.push(gate);
+    bundle.edges.push(syntheticEdge("start-goal", "start", "goal", { lengthM: 20 }));
+    a.s.origin = { kind: "node", nodeId: "start" };
+    a.s.destination = gate;
+    const route = routeBetween(createRouter(bundle), { kind: "node", nodeId: "start" }, gate, { fare: "ticketed", stepFree: false, hours: "warn_unknown" });
+    if (!route.ok) throw new Error(route.message);
+    a.s.route = route;
+    a.s.polyline = [];
+    a.s.instructions = [];
+    a.s.activeInstruction = 0;
+    a.renderSheet();
+    expect(a.ui.sheet.querySelector(".card.route")).not.toBeNull();
+    expect(a.ui.sheet.querySelector(".entrance-unverified")).toBeNull();
   });
 
   it("adds no merchant card for a non-shop destination", () => {

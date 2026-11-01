@@ -1,12 +1,12 @@
 {
   "e_low__x34": {
-    "connectorWallHits": 46,
+    "connectorWallHits": 44,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
   },
   "e_low__x35": {
-    "connectorWallHits": 92,
+    "connectorWallHits": 88,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
@@ -18,7 +18,7 @@
     "offFloor": 0
   },
   "ne_m__x28": {
-    "connectorWallHits": 46,
+    "connectorWallHits": 44,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
@@ -30,13 +30,13 @@
     "offFloor": 0
   },
   "se_j__x42": {
-    "connectorWallHits": 46,
+    "connectorWallHits": 44,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
   },
   "se_j__x43": {
-    "connectorWallHits": 92,
+    "connectorWallHits": 88,
     "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0
@@ -72,11 +72,11 @@
     "offFloor": 0
   },
   "total": {
-    "connectorWallHits": 330,
+    "connectorWallHits": 316,
     "fallbackWallHits": 14,
     "navmeshWallHits": 0,
     "offFloor": 0,
-    "unvalidatedJoins": 496,
+    "unvalidatedJoins": 478,
     "invalidJoins": 0,
     "routablePairs": 1054,
     "failedRoutePairs": 2
