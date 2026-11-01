@@ -337,7 +337,15 @@ async function main() {
   const routeSteps: RouteStep[][] = [];
   const usedVerticalSteps = new Map<string, RouteStep>();
   const affectedByMode: Record<string, number> = {};
-  const pois = bundle.pois.filter(p => p.connectorNodeIds.length > 0);
+  // POIs on the same connector nodes route identically (a store tied to a gate shares the gate's node): audit each
+  // node set once, so a new POI on an existing node does not re-count the same routes' clips.
+  const connectorSets = new Set<string>();
+  const pois = bundle.pois.filter(p => {
+    const key = [...p.connectorNodeIds].sort().join("\n");
+    if (!key || connectorSets.has(key)) return false;
+    connectorSets.add(key);
+    return true;
+  });
   for (const from of pois) for (const to of pois) {
     if (from.id === to.id) continue;
     const route = routeBetween(router, { kind: "poi", poi: from }, to, DEFAULT_PROFILE);
