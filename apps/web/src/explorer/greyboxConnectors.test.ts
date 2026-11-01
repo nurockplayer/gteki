@@ -441,6 +441,19 @@ const unsupportedShapes: { name: string; waypoints: (direction: number) => [numb
   { name: "single-vertex 165 degree sharp return", waypoints: (d) => stackedWaypoints(165, d) },
   { name: "single 100 degree turn whose inner wall crosses the next flight", waypoints: (d) => stackedWaypoints(100, d) },
 ];
+/**
+ * Unsupported shapes whose flights or landings overlap in plan with less than body-height clearance between them: no
+ * walker gets through them in reality either, so they are not walked end to end. The walls they need are #694.
+ */
+const obstructedShapes = new Set([
+  "two 90 degree turns 0.5 m apart", "two equal overlapping landing squares", "flight crossing a non-adjacent landing at 1 m",
+  "stacked non-adjacent flights", "a spiral of 15 degree bends whose lower turns pass under its top landing (#673 r3)",
+  "a last flight whose side wall stands 0.4 m over an earlier landing (#673 r7)",
+  "a rising flight whose side wall runs through an earlier landing 0 to 0.9 m above it (#673 r5)",
+  "two 90 degree landings 1.2 m apart whose squares overlap (#673 r1)", "single-vertex 135 degree sharp return",
+  "single-vertex 165 degree sharp return", "single 100 degree turn whose inner wall crosses the next flight",
+]);
+const walkableUnsupportedCases = unsupportedShapes.filter((shape) => !obstructedShapes.has(shape.name)).flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 const unsupportedCases = unsupportedShapes.flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 
 describe("turning landing guards", () => {
@@ -482,8 +495,10 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: the shapes the legacy builder used to take are walked end to end too, unless they are obstructed.
   it("lets a centreline walker and a walker 0.5 m off centre pass bottom to top", () => {
-    for (const { name, waypoints } of guardedCases) {
+    expect(walkableUnsupportedCases.length).toBeGreaterThan(0);
+    for (const { name, waypoints } of [...guardedCases, ...walkableUnsupportedCases]) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       // The new builder must build it: a silent fallback to legacy would pass the geometry checks below (#673 r4).
       expect(result.stats.legacyConnectors, name).toBe(0);
