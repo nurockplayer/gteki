@@ -807,19 +807,37 @@ export function guardS03Receipt<T>(receipt: T, sourceValues: ReadonlySet<string>
   return receipt;
 }
 
-/** Offline evidence only: the source's HOLD gate is recorded, never used as permission to publish positions. */
-export async function s03TransformCheck() {
+/** The station.json fields the S03 checks compare against; the rest of the manifest is not read here. */
+export interface S03StationFile {
+  station: { origin: { lat: number; lon: number; hM: number | null; crs: string } };
+  floors: Array<{ id: string; ordinal: number }>;
+}
+
+/**
+ * The one S03 load: the checked ZIP bytes, the station.json origin checks and the horizontal ENU projector. The raw
+ * station and graph bytes are returned as read, so a caller's receipt hashes exactly what was loaded here.
+ */
+export async function loadS03Inputs(): Promise<{ inputs: S03Inputs; project: Project; station: S03StationFile;
+  stored: Awaited<ReturnType<typeof getStoredSource>>; stationBytes: Buffer; graphBytes: Buffer }> {
   const stored = await getStoredSource('tokyo-s03-zip'), zipBytes = await readFile(stored.path);
   assertS03Bytes(zipBytes, stored.record);
   const inputs = parseS03Members(await readZip(zipBytes, { legacyFileNameEncoding: 'shift_jis' }));
   const graphPath = 'stations/shinjuku/gteki/graph.json', stationPath = 'stations/shinjuku/gteki/station.json';
   const [graphBytes, stationBytes] = await Promise.all([readFile(join(repoRoot, graphPath)), readFile(join(repoRoot, stationPath))]);
-  const station = JSON.parse(stationBytes.toString('utf8')) as { station: { origin: { lat: number; lon: number; hM: number | null; crs: string } }; floors: Array<{ id: string; ordinal: number }> };
+  const station = JSON.parse(stationBytes.toString('utf8')) as S03StationFile;
   const origin = station.station?.origin;
   if (!origin || !finite(origin.lat) || !finite(origin.lon) || !lonLat([origin.lon, origin.lat]) || origin.crs !== 'EPSG:6668') throw new Error(`${stationPath}: invalid station geographic origin`);
   if (!Array.isArray(station.floors) || station.floors.some(f => typeof f.id !== 'string' || !finite(f.ordinal)) || new Set(station.floors.map(f => f.id)).size !== station.floors.length) throw new Error(`${stationPath}: invalid comparison floors`);
   const frame = stationEnuProjector({ lat: origin.lat, lon: origin.lon, hM: 0 });
   const project: Project = (lat, lon) => { const p = frame(lat, lon, 0); return [p[0], p[1]]; };
+  return { inputs, project, station, stored, stationBytes, graphBytes };
+}
+
+/** Offline evidence only: the source's HOLD gate is recorded, never used as permission to publish positions. */
+export async function s03TransformCheck() {
+  const { inputs, project, station, stored, stationBytes, graphBytes } = await loadS03Inputs();
+  const graphPath = 'stations/shinjuku/gteki/graph.json', stationPath = 'stations/shinjuku/gteki/station.json';
+  const origin = station.station?.origin;
   const asIs = checkInternal(inputs, project), swapped = checkInternal(inputs, project, true);
   // Public defect records carry only numeric ids and the ENU gap or offset; source coordinates stay in the private store.
   const sourceDefects = sourceDefectRecords(inputs, project);
@@ -872,7 +890,7 @@ export async function s03TransformCheck() {
     features: nodes.map(n => ({ type: 'Feature', geometry: { type: 'Point', coordinates: n.ll }, properties: { s03_node_index: n.index, level_id: n.levelId, east_m: n.xy[0], north_m: n.xy[1], physical_height_m: null } })) })}\n`;
   const expected = { thresholds_m: [1, 2, 3, 5].map((t, i) => ({ threshold_m: t, pair_count: [4, 8, 12, 15][i]! })), median_m_rounded_2dp: 1.85 };
   const reproduced = JSON.stringify(external.thresholds_m) === JSON.stringify(expected.thresholds_m) && external.residuals_within_5m.median_m !== null && Number(external.residuals_within_5m.median_m.toFixed(2)) === expected.median_m_rounded_2dp;
-  const receipt = guardS03Receipt({ ...digestInputs, run_id: runId, source_id: 'tokyo-s03-zip', source_bytes: zipBytes.length, publish_gate: stored.source.publish_gate,
+  const receipt = guardS03Receipt({ ...digestInputs, run_id: runId, source_id: 'tokyo-s03-zip', source_bytes: stored.record.bytes, publish_gate: stored.source.publish_gate,
     gteki_role: 'evidence', navigation_use: 'NOT_FOR_ROUTING', verification: 'UNVERIFIED', crs: S03_DATUM, datum_note: DATUM_NOTE,
     frame: { station_json_path: stationPath, e27_graph_path: graphPath, station_json_sha256: sha256(stationBytes), ellipsoid: 'GRS80', horizontal_calculation_height_m: 0, physical_height_m: null, floor_elevations_asserted: false,
       floor_mapping_rule: 'Check B ordinals come from station.json floors; floor_mapping_sha256 is the SHA-256 of [floor id, ordinal] pairs sorted by id as UTF-8 JSON.' },
