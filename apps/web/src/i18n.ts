@@ -61,7 +61,9 @@ const STRINGS = {
     /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
     floorUnverified: (label: string) => `${label}（階は未確認）`,
     /** A shop's printed hours (OD-32): the page's own wording, read on this date. */
-    hoursAsOf: (date: string) => `GT-Eki 確認日 ${date} 時点の公式表記`,
+    hoursAsOf: (date: string) => `GT-Eki 確認日 ${date} 時点の公式表記。変更されている場合があります`,
+    /** Link text for the official page the hours were read from (OD-32). */
+    hoursSource: "公式ページ",
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `店舗情報（${date} 時点・未確認）`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */
@@ -293,7 +295,9 @@ const STRINGS = {
     /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
     floorUnverified: (label: string) => `${label} (floor unverified)`,
     /** A shop's printed hours (OD-32): the page's own wording, read on this date. */
-    hoursAsOf: (date: string) => `Official wording as read by GT-Eki on ${date}`,
+    hoursAsOf: (date: string) => `Official wording as read by GT-Eki on ${date}; may have changed`,
+    /** Link text for the official page the hours were read from (OD-32). */
+    hoursSource: "Official page",
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `Store directory as printed (${date}, unverified)`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */
