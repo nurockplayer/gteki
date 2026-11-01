@@ -166,6 +166,21 @@ describe("store entrance: ルミネ池袋 (#529)", () => {
   });
 });
 
+// #213 station-level tie: 西武池袋本店 prints 「南改札口から徒歩すぐ」 and routes to the same public-side node; both
+// stores sit outside the fare gates, so 改札外のみ (unpaid_only) must still reach them.
+describe("station-level tie: 西武池袋本店 (#213)", () => {
+  const bundle = load();
+  it("routes with unpaid_only to the JR South Gate's public side", () => {
+    const exit22 = bundle.pois.find((p) => p.id === "exit-22")!;
+    for (const id of ["shop-ikb-seibu-honten", "shop-ikb-lumine"]) {
+      const store = bundle.pois.find((p) => p.id === id)!;
+      const r = routeBetween(createRouter(bundle), { kind: "poi", poi: exit22 }, store, { fare: "unpaid_only", stepFree: false });
+      if (!r.ok) throw new Error(`${id}: ${r.message}`);
+      expect(r.nodeIds.at(-1)).toBe("g_jr_s");
+    }
+  });
+});
+
 describe("one-way (wrong-way) edges", () => {
   it("Ikebukuro publishes no one-way edges, so wrong-way cannot arise from the real data", () => {
     expect(load().edges.filter((e) => e.direction !== "both")).toEqual([]);

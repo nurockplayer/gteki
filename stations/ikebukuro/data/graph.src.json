@@ -24680,7 +24680,7 @@
    "connectorNodeIds": [
     "g_jr_s"
    ],
-   "paid": null,
+   "paid": false,
    "evidence": {
     "sourceIds": [
      "jcsc-ikebukuro-links-open-sc",
