@@ -219,7 +219,8 @@ describe("printed shop hours on the destination card (OD-32)", () => {
     try {
       const fresh = cardAt(app("ja"), "2026-10-24");
       expect(fresh.querySelector(".poi-hours")?.textContent).toContain(HOURS.text);
-      expect(fresh.querySelector(".hours-asof")?.textContent).toBe("GT-Eki 確認日 2026-10-24 時点の公式表記");
+      expect(fresh.querySelector(".hours-asof")?.textContent).toBe("GT-Eki 確認日 2026-10-24 時点の公式表記。変更されている場合があります · 公式ページ");
+      expect(fresh.querySelector<HTMLAnchorElement>(".hours-source")?.href).toBe(HOURS.sourceUrl);
       // 180 days later it is still shown; 181 days later it is not.
       expect(cardAt(app("ja"), "2027-04-22").querySelector(".poi-hours")).not.toBeNull();
       expect(cardAt(app("ja"), "2027-04-23").querySelector(".poi-hours")).toBeNull();
