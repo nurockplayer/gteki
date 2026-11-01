@@ -377,7 +377,7 @@ Region	type	apps/web/src/explorer/walkableModel.ts	7
 BoundaryWall	type	apps/web/src/explorer/walkableModel.ts	14
 PlanPolygon	type	apps/web/src/explorer/walkableModel.ts	17
 regionPolygon	function	apps/web/src/explorer/walkableModel.ts	27
-buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	349
+buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	385
 Segment2	interface	apps/web/src/explorer/walker.ts	7
 wallToRenderer	function	apps/web/src/explorer/walker.ts	19
 resolveWalls	function	apps/web/src/explorer/walker.ts	24
