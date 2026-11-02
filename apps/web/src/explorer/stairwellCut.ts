@@ -96,12 +96,14 @@ export function wellRails(well: StairwellWell, opened: readonly StairwellRect[],
     const next = well.rects[index + 1], upper = hole.highEnd ?? (hole.to >= rect.halfLength - 1e-6 && !(next && holes.get(next)) ? to : null);
     // Downwards likewise: a hole starting at a seam with a piece that has none because the floor is not over it (open air,
     // or within a step) leads on down the flight; one that is too deep under intact floor is railed. At the stair mouth
-    // (the first piece's foot) the guard stays unless it stands within a body height of the lower floor, in the way of
-    // the walker coming in; higher, it is over their head and guards the drop from the upper floor.
+    // (the first piece's foot) the guard stays unless it stands within reach of the head of a walker stepping off the
+    // flight there (a body height over the flight a radius up it, plus a tread); higher, it is over their head and
+    // guards the drop from the upper floor.
     const previous = well.rects[index - 1];
     const previousOpen = previous
       ? !!holes.get(previous) || well.upperY - (previous.center.y + previous.rise / 2) < HOLE_DEPTH_M - 1e-6
-      : well.upperY - (rect.center.y - rect.rise / 2) < WALKER_BODY.bodyTopM;
+      : well.upperY - (rect.center.y - rect.rise / 2) < WALKER_BODY.bodyTopM + WALKER_BODY.stepUpM
+        + WALKER_BODY.radiusM * Math.abs(rect.rise) / (2 * rect.halfLength);
     const lower = previousOpen && !(previous && holes.get(previous)) && hole.from <= -rect.halfLength + 1e-6 ? from : null;
     for (const along of [upper, lower]) {
       if (along === null) continue;

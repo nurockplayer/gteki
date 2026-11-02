@@ -234,6 +234,17 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("opens the stair mouth where its guard would meet the head of a walker stepping off a steep flight", () => {
+    // 1.8 m up over 3 m under a floor at 1.8 m: a walker on the first tread, a radius up the flight, stands 1.9 m tall.
+    const root = new THREE.Group();
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 6), new THREE.MeshBasicMaterial()); upper.position.set(2, 1.7, 0); upper.name = "upper-floor";
+    root.add(upper); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(landed([{ x: 0, y: 0, z: 0 }, { x: 3, y: 0, z: 1.8 }], { x: 3, y: 0, z: 1.8 }), traversable), { tier: "high" });
+    expect(result.walls.length).toBeGreaterThan(0);
+    expect(resolveWalls(0.2, 0, 0.3, 0.18, 1.7, result.walls).x).toBeCloseTo(0.2);
+    result.dispose();
+  });
+
   it("keeps the outer corner of a turn railed when the union fails", () => {
     const turn = flight([{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 3, z: 2 }, { x: 10, y: 3, z: 4 }]);
     const well = stairwellWells(turn, traversable)[0]!;
