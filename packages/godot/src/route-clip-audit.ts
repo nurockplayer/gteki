@@ -96,7 +96,7 @@ function cross2(a: { x: number; y: number }, b: { x: number; y: number }, c: { x
   return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 /** Where p→q crosses the wall in plan, as a fraction along p→q; null when it doesn't. */
-function segmentsCross(p: { x: number; y: number }, q: { x: number; y: number }, w: WallSegment): number | null {
+export function segmentsCross(p: { x: number; y: number }, q: { x: number; y: number }, w: WallSegment): number | null {
   // A zero-length wall cannot be crossed in plan; the collinear test below would match it along a whole line.
   if (w.a.x === w.b.x && w.a.y === w.b.y) return null;
   const d1 = cross2(w.a, w.b, p), d2 = cross2(w.a, w.b, q), d3 = cross2(p, q, w.a), d4 = cross2(p, q, w.b);
@@ -107,6 +107,39 @@ function segmentsCross(p: { x: number; y: number }, q: { x: number; y: number },
     return s1 > w0 && s0 < w1 ? 0 : null;
   }
   return d1 * d2 < 0 && d3 * d4 < 0 ? d1 / (d1 - d2) : null;
+}
+
+// A power of two, so cell indices divide exactly; the query pads its box so rounding in segmentsCross never reaches past it.
+const WALL_CELL_M = 4, WALL_PAD_M = 0.01;
+interface WallIndex { size: number; cells: Map<string, number[]>; always: number[] }
+const wallIndexes = new WeakMap<readonly WallSegment[], WallIndex>();
+
+/**
+ * The walls whose plan bounding box may touch [x0, x1] × [y0, y1], in ascending index order: a superset of the walls
+ * segmentsCross can report for a segment inside that box, from a grid built once per walls array (#645 step 3: private
+ * Shinjuku has ~110k walls, and a scan of all of them per sample ran the audit for hours).
+ */
+export function wallsNear(walls: readonly WallSegment[], x0: number, y0: number, x1: number, y1: number): number[] {
+  let index = wallIndexes.get(walls);
+  if (!index || index.size !== walls.length) {
+    index = { size: walls.length, cells: new Map(), always: [] };
+    for (const [wi, w] of walls.entries()) {
+      const cx0 = Math.floor(Math.min(w.a.x, w.b.x) / WALL_CELL_M), cx1 = Math.floor(Math.max(w.a.x, w.b.x) / WALL_CELL_M);
+      const cy0 = Math.floor(Math.min(w.a.y, w.b.y) / WALL_CELL_M), cy1 = Math.floor(Math.max(w.a.y, w.b.y) / WALL_CELL_M);
+      // A wall the grid cannot place (non-finite, or spanning a huge area) is checked every time instead.
+      if (![cx0, cx1, cy0, cy1].every(Number.isFinite) || (cx1 - cx0 + 1) * (cy1 - cy0 + 1) > 4096) { index.always.push(wi); continue; }
+      for (let cx = cx0; cx <= cx1; cx++) for (let cy = cy0; cy <= cy1; cy++) {
+        const key = `${cx},${cy}`, cell = index.cells.get(key);
+        if (cell) cell.push(wi); else index.cells.set(key, [wi]);
+      }
+    }
+    wallIndexes.set(walls, index);
+  }
+  const cx0 = Math.floor(x0 / WALL_CELL_M), cx1 = Math.floor(x1 / WALL_CELL_M), cy0 = Math.floor(y0 / WALL_CELL_M), cy1 = Math.floor(y1 / WALL_CELL_M);
+  if (![cx0, cx1, cy0, cy1].every(Number.isFinite) || (cx1 - cx0 + 1) * (cy1 - cy0 + 1) > 4096) return walls.map((_w, wi) => wi);
+  const found = new Set(index.always);
+  for (let cx = cx0; cx <= cx1; cx++) for (let cy = cy0; cy <= cy1; cy++) for (const wi of index.cells.get(`${cx},${cy}`) ?? []) found.add(wi);
+  return [...found].sort((a, b) => a - b);
 }
 
 /** Resample a polyline every STEP_M (keeping every vertex), z linear along each piece. */
@@ -174,8 +207,8 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
         const hit = castCamera(ray, probe.collider, twoSided).find(h => !probe.ignoreColliderHit?.(h, ray.ray.direction));
         if (hit) { crossed = true; const t=hit.distance/len; if (t<firstT) { firstT=t; wallCollider = probe.collider.indexOf(hit.object); wallSegment=undefined; wallPoint = { x: hit.point.x, y: -hit.point.z, z: hit.point.y }; } }
       }
-      for (const [wi, w] of probe.walls.entries()) {
-        const t = segmentsCross(p, s, w);
+      for (const wi of wallsNear(probe.walls, Math.min(p.x, s.x) - WALL_PAD_M, Math.min(p.y, s.y) - WALL_PAD_M, Math.max(p.x, s.x) + WALL_PAD_M, Math.max(p.y, s.y) + WALL_PAD_M)) {
+        const w = probe.walls[wi]!, t = segmentsCross(p, s, w);
         if (t === null) continue;
         // The body's height where the route crosses the wall in plan, not the whole segment's span.
         const z = t === 0 && p.z !== s.z ? Math.min(p.z, s.z) : p.z + (s.z - p.z) * t;
