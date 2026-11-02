@@ -259,6 +259,21 @@ describe("stairwell cuts", () => {
     expect(resolveWalls(1.85, 0, 0.3, 4.34, 1.7, walls).x).toBeCloseTo(1.85);
   });
 
+  it("puts no rail of one stair across the level approach of another stacked over it", () => {
+    const stair = (points: { x: number; y: number; z: number }[]) => {
+      const from = points[0]!, to = points.at(-1)!;
+      const built = createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode: "stairs", lengthM: 12, geometry: points })]);
+      const moved = { ...built, nodes: built.nodes.map((node) => node.id === "upper" ? { ...node, position: to } : node.id === "start" ? { ...node, position: from } : node) };
+      return stairwellWells(moved, traversable)[0]!;
+    };
+    const lower = stair([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }]);
+    const upper = stair([{ x: 1, y: 0, z: 4 }, { x: 3, y: 0, z: 4 }, { x: 13, y: 0, z: 8 }]);
+    expect(upper.landings).toHaveLength(1);
+    const walls = wellRails(lower, lower.rects, undefined, [lower, upper]).map(([a, b]) => ({ ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: 4, yMax: 5.1 }));
+    expect(walls.length).toBeGreaterThan(0);
+    expect(resolveWalls(1.65, 0, 0.3, 4, 1.7, walls).x).toBeCloseTo(1.65);
+  });
+
   it("keeps the outer corner of a turn railed when the union fails", () => {
     const turn = flight([{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 3, z: 2 }, { x: 10, y: 3, z: 4 }]);
     const well = stairwellWells(turn, traversable)[0]!;

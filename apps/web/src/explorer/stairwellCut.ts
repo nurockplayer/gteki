@@ -119,7 +119,7 @@ export function wellRails(well: StairwellWell, opened: readonly StairwellRect[],
   try { polygons = union(rings); } catch { polygons = rings.map((ring) => [ring]); inside = pieces; }
   // No rail stands where a piece of this stair or another runs within a body height of the rail's floor (a landing or
   // a turn the walker is on, or a flight stacked over this one starting from that floor).
-  const walked = [well, ...others.filter((other) => other !== well)].flatMap((stair) => stair.rects).flatMap((rect) => {
+  const walked = [well, ...others.filter((other) => other !== well)].flatMap((stair) => [...stair.rects, ...(stair.landings ?? [])]).flatMap((rect) => {
     const reach = depthInterval(rect, well.upperY, -WALKER_BODY.bodyTopM, WALKER_BODY.bodyTopM);
     return reach ? [{ rect, from: reach.from, to: reach.to }] : [];
   });
@@ -164,6 +164,8 @@ export interface StairwellWell {
   lowerY: number;
   upperY: number;
   rects: StairwellRect[];
+  /** The level pieces before the first and after the last flight piece: walked, never cut or railed. */
+  landings?: StairwellRect[];
   /** Plan point where the top flight piece's centreline ends: its rectangle's end side is the arrival side, never railed. */
   arrival: THREE.Vector3;
   /** Set when the connector cannot be cut cleanly: it has no rects, nothing is cut or railed, and it counts as skipped. */
@@ -229,7 +231,7 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     const lowerY = Math.min(points[0]!.y, points.at(-1)!.y), upperY = Math.max(points[0]!.y, points.at(-1)!.y);
     // Order bottom to top, so the last rectangle is the arrival piece.
     const ordered = points[0]!.y <= points.at(-1)!.y ? points : [...points].reverse();
-    const rects: StairwellRect[] = [];
+    const rects: StairwellRect[] = [], landings: StairwellRect[] = [];
     const rising = ordered.slice(1).map((point, i) => Math.abs(point.y - ordered[i]!.y) >= MIN_PIECE_RISE_M);
     const firstFlight = rising.indexOf(true), lastFlight = rising.lastIndexOf(true);
     if (lastFlight < 0) continue;
@@ -238,11 +240,11 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
       const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
       // Exclude the terminal landings and end pieces without a usable plan footprint. A short piece between two flight
       // pieces keeps its rectangle, or the cut and the hole would stop either side of it, under an intact slab.
-      const inner = i - 1 > firstFlight && i - 1 < lastFlight;
-      if (length < (inner ? MIN_INNER_PIECE_M : 0.5) || (!rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight))) continue;
+      const inner = i - 1 > firstFlight && i - 1 < lastFlight, landing = !rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight);
+      if (length < (inner ? MIN_INNER_PIECE_M : landing ? 1e-3 : 0.5)) continue;
       const along = new THREE.Vector3(dx / length, 0, dz / length);
       const across = new THREE.Vector3(-along.z, 0, along.x);
-      rects.push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2, rise: b.y - a.y });
+      (landing ? landings : rects).push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2, rise: b.y - a.y });
     }
     // The arrival is where the top flight piece's centreline ends (not the end of any landing after it).
     // Its rectangle is cut only when that piece is long enough to have one; otherwise the connector is skipped.
@@ -252,7 +254,7 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
       wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects: [], arrival, skipped: "top flight piece too short for an arrival side" });
       continue;
     }
-    wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, arrival });
+    wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, ...(landings.length ? { landings } : {}), arrival });
   }
   return wells;
 }
