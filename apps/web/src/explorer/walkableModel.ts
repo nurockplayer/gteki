@@ -710,13 +710,16 @@ export function buildWalkableModel(
     };
     const own = boundaryWalls(union, sources, connectors, level, attachmentNear, breakpoints);
     // A wall along a cut under a joined floor stops UNDER_GAP_M under that floor, so a walker on it passes over the wall.
-    for (const wall of own) {
-      for (const { ring, over } of undersOf.get(key) ?? []) {
-        const a = { x: wall.ax, z: wall.az }, b = { x: wall.bx, z: wall.bz };
-        if (!onRing(a, ring) || !onRing(b, ring) || !onRing({ x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }, ring)) continue;
-        const top = Math.min(over(a), over(b)) - UNDER_GAP_M;
-        wall.topY = wall.topY === undefined ? top : Math.min(wall.topY, top);
+    // Merged collinear walls can run along several adjacent cuts: each end and the middle may lie on a different one.
+    const unders = undersOf.get(key);
+    if (unders) for (const wall of own) {
+      const a = { x: wall.ax, z: wall.az }, b = { x: wall.bx, z: wall.bz }, tops: number[] = [];
+      for (const p of [a, { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }, b]) {
+        const on = unders.filter(({ ring }) => onRing(p, ring));
+        if (!on.length) { tops.length = 0; break; }
+        tops.push(Math.min(...on.map(({ over }) => over(p))));
       }
+      if (tops.length) wall.topY = Math.min(...tops) - UNDER_GAP_M;
     }
     walls.push(...own);
   }

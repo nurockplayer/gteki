@@ -232,6 +232,19 @@ describe("walkable model", () => {
       expect(walls.filter((wall) => wall.level === "B" && Math.abs(wall.az - wall.bz) < 1e-9).every((wall) => wall.topY === undefined)).toBe(true);
     });
 
+    it("stops the merged wall across a corridor two side-by-side ramps climb over under both", () => {
+      // Two ramps 3.2 m wide either side of B's centreline, 0.3 m → 2.3 m over x 0..30: their cuts meet at z = 0, and B's
+      // end at x = 21 is one wall across both.
+      const { walls } = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1.3),
+        strip("R", [{ x: 0, y: 0.3, z: -1.6 }, { x: 30, y: 2.3, z: -1.6 }], 1.6),
+        strip("S", [{ x: 0, y: 0.3, z: 1.6 }, { x: 30, y: 2.3, z: 1.6 }], 1.6),
+      ], undefined, 0.45);
+      const across = walls.filter((wall) => wall.level === "B" && Math.abs(wall.ax - 21) < 1e-6 && Math.abs(wall.bx - 21) < 1e-6);
+      expect(across.reduce((sum, wall) => sum + Math.abs(wall.az - wall.bz), 0)).toBeCloseTo(2.6);
+      for (const wall of across) expect(wall.topY).toBeCloseTo(1.3);
+    });
+
     it("leaves the model unchanged without a step height", () => {
       const { slabCuts, ceilingCuts, levels } = buildWalkableModel([
         strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
