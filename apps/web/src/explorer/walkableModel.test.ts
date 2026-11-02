@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { boundaryEdges, buildWalkableModel, regionPolygon, snapRing, type BoundaryWall, type PlanPoint, type Region } from "./walkableModel.ts";
+import { describe, expect, it, vi } from "vitest";
+import polygonClipping from "polygon-clipping";
+import { boundaryEdges, buildWalkableModel, regionPolygon, snapRing, unionRings, type BoundaryWall, type PlanPoint, type Region } from "./walkableModel.ts";
 
 const at = (x: number, z: number): PlanPoint => ({ x, z });
 const strip = (level: string, points: { x: number; y: number; z: number }[], halfWidth: number): Region => ({ kind: "strip", level, points, halfWidth });
@@ -132,5 +133,19 @@ describe("snapRing", () => {
     const snapped = snapRing(ring, 1e4);
     expect(snapped).toEqual([[-20.8012, -436.1322], [-19, -436], [-19, -437]]);
     expect(snapRing(ring, 0)).toHaveLength(4);
+  });
+});
+
+describe("unionRings retry", () => {
+  it("still unions a group when polygon-clipping throws on the first attempt, without moving its boundary", () => {
+    const square = (x0: number, z0: number) => [{ x: x0, z: z0 }, { x: x0 + 2, z: z0 }, { x: x0 + 2, z: z0 + 2 }, { x: x0, z: z0 + 2 }];
+    const spy = vi.spyOn(polygonClipping, "union").mockImplementationOnce(() => { throw new Error("Unable to find segment in SweepLine tree"); });
+    try {
+      const union = unionRings([square(100, -400), square(101, -400)]);
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(union).toHaveLength(1);
+      const xs = union[0]![0]!.map((p) => p.x), zs = union[0]![0]!.map((p) => p.z);
+      expect([Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)]).toEqual([100, 103, -400, -398]);
+    } finally { spy.mockRestore(); }
   });
 });
