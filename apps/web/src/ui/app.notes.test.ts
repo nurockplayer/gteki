@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { parseStationFiles, type Poi } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import { createSyntheticBundle } from "../../../../packages/navigation/src/fixtures.ts";
@@ -200,6 +201,29 @@ describe("approximate positions in search results (#463)", () => {
 });
 
 describe("printed shop hours on the destination card (OD-32)", () => {
+  it("loads batch 5 Esola building hours onto its real destination card with the read-date label", () => {
+    const pois: Poi[] = JSON.parse(readFileSync("stations/ikebukuro/gteki/pois.json", "utf8")).pois;
+    const a = app("ja");
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date("2026-11-03T00:00:00Z"));
+      a.s.destination = pois.find((p) => p.id === "shop-ikb-esola")!;
+      a.s.route = { ok: false, reason: "unknown_goal", message: "" };
+      a.renderSheet();
+      expect([
+        a.ui.sheet.querySelector(".hours-text")?.textContent,
+        a.ui.sheet.querySelector(".hours-asof")?.textContent,
+        a.ui.sheet.querySelector<HTMLAnchorElement>(".hours-source")?.href,
+      ]).toEqual([
+        "物販・サービス店舗　10:30～21:30\n飲食店舗　11:00～23:00\n※店舗により一部異なります",
+        "GT-Eki 確認日 2026-11-02 時点の公式表記。変更されている場合があります · 公式ページ",
+        "https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=12",
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   const HOURS = {
     text: "月～土 10:00～21:00\n日・祝 10:00～19:30", sourceUrl: "https://example.org/shop",
     retrievedAt: "2026-10-24", basis: "undated-official", status: "OK",

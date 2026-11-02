@@ -135,3 +135,17 @@ Facts for data notes (not wiring rows): C1 listed as C1a and C1b in the 令和8�
 2. **Wayback copies of operator pages.** Confirm Wayback snapshots (DR-RT-32, 33) may be used as secondary, facts-only references with the snapshot date, while Keio's own terms remain UNKNOWN.
 
 Applied, not new: OD-22 (Ver1.3 p20 mapping is alias-only).
+
+## 9. FR-01 freshness read — 2026-11-03 JST (DR-RT-35 / DR-IK-01)
+
+- Live read: 2026-11-02 22:17:54 UTC, HTTP 403. The November 2026 lift suspension table and any later month could not be read. No current 休止 or long outage at C1b, C9, 4 or 34/35 is established; this is not a finding of no outages.
+- Used the Wayback capture route described above. The availability API returned HTTP 429, so it was not retried. A dated Wayback lookup for 2026-11-03 JST returned HTTP 302 to capture `20260713101258` (2026-07-13 10:12:58 UTC); that capture returned HTTP 200 and shows July/August 2026 suspension headings, not November or a later month. This historical secondary copy cannot answer FR-01 for November.
+- Fact status: unchanged historical October record in section 3.3; November status remains a GAP. Past inspections do not establish current lift availability. The 34/35 naming conflict remains unresolved. Next scheduled check: 2026-12-01 JST (monthly on the 1st).
+- Tokyo Metro remains in the private-use-and-quotation class: facts only, no source text or raw files committed. Requests used plain `curl -s` with its default User-Agent. Bytes and SHA-256 describe each saved response body, including error and empty redirect bodies; read times are request-start times.
+
+| Source id / read | URL | Read time (UTC) | HTTP status | Bytes | sha256 |
+| --- | --- | --- | --- | --- | --- |
+| DR-RT-35 / DR-IK-01 / metro-live | https://www.tokyometro.jp/station/ikebukuro/index.html | 2026-11-02 22:17:54 UTC | 403 | 411 | `98f9f02e5fc435796b2256285649004ca86ae365d4d0411bb6dec088ce1f243a` |
+| DR-RT-35 / DR-IK-01 / metro-availability | https://archive.org/wayback/available?url=https%3A%2F%2Fwww.tokyometro.jp%2Fstation%2Fikebukuro%2Findex.html&timestamp=20261103 | 2026-11-02 22:18:03 UTC | 429 | 117 | `ae138caf8767f7be2fe6f47f1663b0e2e28d903264707aa9b6f73bb7b223902c` |
+| DR-RT-35 / DR-IK-01 / metro-wayback | https://web.archive.org/web/20261103/https://www.tokyometro.jp/station/ikebukuro/index.html | 2026-11-02 22:18:11 UTC | 302 | 0 | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| DR-RT-35 / DR-IK-01 / metro-capture | https://web.archive.org/web/20260713101258/https://www.tokyometro.jp/station/ikebukuro/index.html | 2026-11-02 22:18:22 UTC | 200 | 104393 | `9bbca7ae446ca4b6bb6b67ad3962588c02c0934cc7d21a042ccedb01a6cb6ad0` |
