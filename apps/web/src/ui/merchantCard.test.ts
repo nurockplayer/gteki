@@ -200,7 +200,7 @@ describe("merchant card model (#213)", () => {
 });
 
 describe("field-only department stores on the public bundles", () => {
-  const read = (station: string, file: string) => JSON.parse(readFileSync(new URL(`../../../../stations/${station}/gteki/${file}.json`, import.meta.url), "utf8"));
+  const read = (station: string, file: string) => JSON.parse(readFileSync(`stations/${station}/gteki/${file}.json`, "utf8"));
 
   it.each([
     ["ikebukuro", "shop-ikb-seibu-honten", "tie", ["g_jr_s"]],
