@@ -549,7 +549,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       let floor = 0;
       for (const [o0, o1] of opens) { if (o0 > floor) kept.push([floor, Math.min(o0, 2.6)]); floor = Math.max(floor, o1); }
       if (floor < 2.6) kept.push([floor, 2.6]);
-      for (const [y0, y1] of kept) {
+      for (const [y0, top] of kept) {
+        // A wall stopping under a floor that climbed over its own (walkableModel topY) is cut down to it.
+        const y1 = wall.topY === undefined ? top : Math.min(top, wall.topY - Math.max(s0.y, s1.y));
         if (y1 - y0 < 0.05) continue;
         const lift = (v: THREE.Vector3, h: number) => v.clone().add(new THREE.Vector3(0, h, 0));
         quad(wb.shell, wb.colors, lift(s0, y0), lift(s1, y0), lift(s1, y1), lift(s0, y1), [0.62, 0.62, 0.62, 0.62]);

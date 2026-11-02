@@ -224,8 +224,12 @@ describe("walkable model", () => {
       expect([...slabCuts.keys()]).toEqual(["0:1"]);
       expect(area(slabCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(18);
       expect(area(ceilingCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(55.5);
-      // B now ends across its width at x = 21 under R, with a wall there.
-      expect(walls.some((wall) => wall.level === "B" && Math.abs(wall.ax - 21) < 1e-6 && Math.abs(wall.bx - 21) < 1e-6 && Math.abs(wall.az - wall.bz) > 1.99)).toBe(true);
+      // B now ends across its width at x = 21 under R, with a wall there that stops 0.4 m under R (1.7 m there), so a
+      // walker on R passes over it; B's own side walls keep their full height.
+      const across = walls.filter((wall) => wall.level === "B" && Math.abs(wall.ax - 21) < 1e-6 && Math.abs(wall.bx - 21) < 1e-6);
+      expect(across.reduce((sum, wall) => sum + Math.abs(wall.az - wall.bz), 0)).toBeCloseTo(2);
+      for (const wall of across) expect(wall.topY).toBeCloseTo(1.3);
+      expect(walls.filter((wall) => wall.level === "B" && Math.abs(wall.az - wall.bz) < 1e-9).every((wall) => wall.topY === undefined)).toBe(true);
     });
 
     it("leaves the model unchanged without a step height", () => {

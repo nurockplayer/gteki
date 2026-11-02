@@ -15,7 +15,8 @@ export type Region = { group?: string } & (
   | { kind: "connector"; level: string; quad: PlanPoint[]; y: number });
 
 /** One wall piece on a level's union boundary, with the floor height at each end. */
-export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay: number; by: number; level: string };
+/** `topY`: the wall stops there (renderer y), under a floor that climbed over the one it guards (see BODY_TOP_M). */
+export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay: number; by: number; level: string; topY?: number };
 
 /** A union polygon in plan: `[0]` is the outer ring, the rest are holes. Rings are open (no repeated closing point). */
 export type PlanPolygon = PlanPoint[][];
@@ -439,6 +440,11 @@ const CEILING_M = 2.72;
  * to 0.4 m under a flight crossing them), and nobody below fits under it.
  */
 const BODY_TOP_M = 1.7;
+/** How far under a joined floor the wall along its lower-floor cut stops (as greybox walls under a flight). */
+const UNDER_GAP_M = 0.4;
+/** Within 1 mm of a ring's outline: a cut's boundary after the union's clipping. */
+const onRing = (p: PlanPoint, ring: readonly PlanPoint[]): boolean =>
+  ring.some((a, i) => { const c = closestOnSegment(p, a, ring[(i + 1) % ring.length]!); return Math.hypot(c.x - p.x, c.z - p.z) <= WALL_TOLERANCE_M; });
 const MIN_CUT_AREA_M2 = 1e-6;
 
 /** One convex piece of a region (a strip segment, or a whole disc, rect or connector) and its floor height. */
@@ -630,6 +636,8 @@ export function buildWalkableModel(
   const slabCuts: PieceCuts = new Map(), ceilingCuts: PieceCuts = new Map();
   const cutsOf = (map: PieceCuts, piece: Piece) => { const key = `${piece.region}:${piece.segment}`; let l = map.get(key); if (!l) map.set(key, l = []); return l; };
   const levelCuts = new Map<string, PlanPoint[][]>();
+  // Lower-floor cuts under a joined floor, with that floor's height: the walls along them stop under it.
+  const undersOf = new Map<string, { ring: PlanPoint[]; over: (p: PlanPoint) => number }[]>();
   if (stepM > 0) {
     boxPairs(pieces.map((piece) => piece.box), (i, j) => {
       const a = pieces[i]!, b = pieces[j]!;
@@ -659,6 +667,8 @@ export function buildWalkableModel(
         if (under.length >= 3 && Math.abs(ringArea(under)) > MIN_CUT_AREA_M2) {
           cutsOf(slabCuts, down).push(under);
           const l = levelCuts.get(keys[lower]!); if (l) l.push(under); else levelCuts.set(keys[lower]!, [under]);
+          const u = undersOf.get(keys[lower]!), entry = { ring: under, over: up.height };
+          if (u) u.push(entry); else undersOf.set(keys[lower]!, [entry]);
         }
         const ceiling = clipHalf(above, (p) => CEILING_M - rise(p));
         if (ceiling.length >= 3 && Math.abs(ringArea(ceiling)) > MIN_CUT_AREA_M2) cutsOf(ceilingCuts, down).push(ceiling);
@@ -698,7 +708,17 @@ export function buildWalkableModel(
       return (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => near.some((other) => pointInLevel(outside, other.polygons)
         && Math.abs(heightAtVertex(outside, other.sources) - outside.y) <= stepM) || !!isAttachment?.(wall, outside);
     };
-    walls.push(...boundaryWalls(union, sources, connectors, level, attachmentNear, breakpoints));
+    const own = boundaryWalls(union, sources, connectors, level, attachmentNear, breakpoints);
+    // A wall along a cut under a joined floor stops UNDER_GAP_M under that floor, so a walker on it passes over the wall.
+    for (const wall of own) {
+      for (const { ring, over } of undersOf.get(key) ?? []) {
+        const a = { x: wall.ax, z: wall.az }, b = { x: wall.bx, z: wall.bz };
+        if (!onRing(a, ring) || !onRing(b, ring) || !onRing({ x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }, ring)) continue;
+        const top = Math.min(over(a), over(b)) - UNDER_GAP_M;
+        wall.topY = wall.topY === undefined ? top : Math.min(wall.topY, top);
+      }
+    }
+    walls.push(...own);
   }
   return { levels, walls, slabCuts, ceilingCuts };
 }
