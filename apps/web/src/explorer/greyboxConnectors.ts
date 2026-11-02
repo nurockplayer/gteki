@@ -419,14 +419,14 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
     return planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6);
   };
-  // Every connector that will be built: its first stretch away from each of its nodes, its plan footprint there 2 * half long.
-  const mouths = new Map<string, { edgeId: string; quad: PlanPoint[] }[]>();
+  // Every connector that will be built: where it leaves each of its nodes, its plan direction and half-width there.
+  const mouths = new Map<string, { edgeId: string; at: THREE.Vector3; dir: THREE.Vector3; half: number }[]>();
   for (const edge of unmodelled) {
     const pts = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
     if (pts.length < 2 || shortRun(pts)) continue;
     for (const [node, at, toward] of [[edge.from, pts[0]!, pts[1]!], [edge.to, pts.at(-1)!, pts.at(-2)!]] as const) {
       const list = mouths.get(node) ?? [];
-      list.push({ edgeId: edge.id, quad: planQuad(at, planDir(at, toward), 2 * halfOf(edge), halfOf(edge)) });
+      list.push({ edgeId: edge.id, at, dir: planDir(at, toward), half: halfOf(edge) });
       mouths.set(node, list);
     }
   }
@@ -456,11 +456,12 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       return true;
     };
     // An end at a node another generated connector also meets is a junction (on station floor, or on the endpoint pad built
-    // where floor is missing): the other connectors' footprints there, where their flights overlap this one's in plan.
+    // where floor is missing): the other connectors' footprints there, where their flights cross this one's in plan.
     const junction = (i: number): PlanPoint[][] => {
       const node = i === 0 ? edge.from : i === points.length - 1 ? edge.to : undefined;
       if (node === undefined) return [];
-      return (mouths.get(node) ?? []).filter((m) => m.edgeId !== edge.id).map((m) => m.quad);
+      // Each 2 * half long for the wider of the two, so it reaches this one's side walls however wide either is.
+      return (mouths.get(node) ?? []).filter((m) => m.edgeId !== edge.id).map((m) => planQuad(m.at, m.dir, 2 * Math.max(m.half, half), m.half));
     };
     edgeRegions(edge, points, half, isTurn, floored, junction, ownRegions, levels);
     regionsByEdge.set(edge.id, ownRegions);

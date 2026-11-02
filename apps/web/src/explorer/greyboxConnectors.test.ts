@@ -927,6 +927,22 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: at a junction of a narrow stair and a wide one, the opening reaches the wide one's side wall.
+  it("lets a walker from a narrow stair onto a wide one that shares its node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[-6, -2, 0], [-2.5, 0, 0], [0, 0, 0]]), b = g([[0, 0, 0], [0, 2, 4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 4 } }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a.at(-1)!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: (p) => p.z > -1e-6 && p.x > -2.6, nearMesh: () => false }, "high");
+    for (let x = -2.5; x <= -0.5; x += 0.1) {
+      const r = resolveWalls(x, 0, 0.3, 0, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z), `x=${x.toFixed(1)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
   // #710 review: a connector skipped as too short opens no junction in the one it meets.
   it("keeps a stair's guards where a skipped short connector meets it", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
