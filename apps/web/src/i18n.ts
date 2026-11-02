@@ -54,6 +54,8 @@ const STRINGS = {
       source: "出典",
       sourceUnknown: "出典の記録なし",
       checked: "最終確認",
+      floorsTitle: "フロア別ブランド",
+      floorsFilter: "ブランド名で絞り込み",
       precision: { door: "入口は駅の図面から読み取った概略位置（現地未検証）", tie: "入口の位置は未確認（案内は駅の改札・出口まで）", point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認" },
     },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
@@ -288,6 +290,8 @@ const STRINGS = {
       source: "Source",
       sourceUnknown: "No source recorded",
       checked: "Last checked",
+      floorsTitle: "Brands by floor",
+      floorsFilter: "Filter by brand name",
       precision: { door: "Entrance read from a station map (approximate, not verified on site)", tie: "Entrance position not yet verified (directions end at the station gate or exit)", point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed" },
     },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
