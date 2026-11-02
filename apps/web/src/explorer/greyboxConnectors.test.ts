@@ -916,12 +916,29 @@ describe("turning landing guards", () => {
       syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } }, geometry: b }),
     ] as Parameters<typeof createSyntheticBundle>[0]);
     for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
-    const result = buildConnectors(station, () => true, flat, "high");
+    // With station floor at the junction, and without it (the builder adds endpoint pads there).
+    for (const scope of [flat, { hasFloor: () => false, nearMesh: () => false }]) {
+    const result = buildConnectors(station, () => true, scope, "high");
     expect(result.stats.legacyConnectors).toBe(0);
-    for (const [x, z] of [[3.45, 0], [3.7, 0], [4, 0], [4, 0.3]] as const) {
+    for (const [x, z] of [[3.45, 0], [3.5, 0], [3.7, 0], [4, 0], [4, 0.3]] as const) {
       const r = resolveWalls(x, z, 0.3, 1.725, 1.7, result.wallSegments);
       expect(Math.hypot(r.x - x, r.z - z), `(${x}, ${z})`).toBeLessThanOrEqual(0.05);
     }
+    }
+  });
+
+  // #710 review: a connector skipped as too short opens no junction in the one it meets.
+  it("keeps a stair's guards where a skipped short connector meets it", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [4, 5, 0.2]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const r = resolveWalls(3.6, 0.7, 0.3, 1.8, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 3.6, r.z - 0.7)).toBeGreaterThan(0.05);
   });
 
   // #710 review: a junction opens only where the other stair is; the incoming flight keeps its outer guard before the landing.

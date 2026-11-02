@@ -414,11 +414,16 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     return ((edge.mode === "stairs" ? (rawWidth && rawWidth > 0 ? rawWidth : 1.5) : 1.2) / 2) + 0.03;
   };
-  // Every generated connector's first stretch away from each of its nodes: its plan footprint there, 2 * half long.
+  // A run too short in plan to build a flight on is skipped.
+  const shortRun = (points: readonly THREE.Vector3[]) => {
+    const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
+    return planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6);
+  };
+  // Every connector that will be built: its first stretch away from each of its nodes, its plan footprint there 2 * half long.
   const mouths = new Map<string, { edgeId: string; quad: PlanPoint[] }[]>();
   for (const edge of unmodelled) {
     const pts = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
-    if (pts.length < 2) continue;
+    if (pts.length < 2 || shortRun(pts)) continue;
     for (const [node, at, toward] of [[edge.from, pts[0]!, pts[1]!], [edge.to, pts.at(-1)!, pts.at(-2)!]] as const) {
       const list = mouths.get(node) ?? [];
       list.push({ edgeId: edge.id, quad: planQuad(at, planDir(at, toward), 2 * halfOf(edge), halfOf(edge)) });
@@ -427,8 +432,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   }
   for (const edge of unmodelled) {
     const points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
-    const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
-    if (planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6)) { skip("short_run", edge.id); continue; }
+    if (shortRun(points)) { skip("short_run", edge.id); continue; }
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
@@ -451,11 +455,11 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       for (let k = 0; k <= count; k++) if (!onFloor(a.clone().lerp(b, k / count))) return false;
       return true;
     };
-    // An end at a node another generated connector also meets, on station floor, is a junction: the other connectors'
-    // footprints there, where their flights overlap this one's in plan.
+    // An end at a node another generated connector also meets is a junction (on station floor, or on the endpoint pad built
+    // where floor is missing): the other connectors' footprints there, where their flights overlap this one's in plan.
     const junction = (i: number): PlanPoint[][] => {
       const node = i === 0 ? edge.from : i === points.length - 1 ? edge.to : undefined;
-      if (node === undefined || !onFloor(points[i]!)) return [];
+      if (node === undefined) return [];
       return (mouths.get(node) ?? []).filter((m) => m.edgeId !== edge.id).map((m) => m.quad);
     };
     edgeRegions(edge, points, half, isTurn, floored, junction, ownRegions, levels);
