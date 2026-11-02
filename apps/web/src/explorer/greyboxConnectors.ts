@@ -313,17 +313,17 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
     }
     for (const [end, next] of [[lo, lo + 1], [hi, hi - 1]] as const) {
       if (soft.has(end)) {
-        // At a soft split the neighbouring level's flight, through its bends, 0.1 m further than the split's own disc reaches
-        // (on a curve the disc's rim passes the end of an opening only `half` long), so the two levels meet without a wall.
-        // At each joint a disc-shaped connector footprint closes the wedge between turning pieces; as a connector it carries
-        // no wall where its rim passes the neighbouring flight's edge (#710 review).
+        // At a soft split the neighbouring level's flight, through its bends, for 2 * half + 0.1 m of plan length: every point of
+        // the split's disc (within `half` of the split) lies within `half` of that stretch of centreline, so the opening covers
+        // it and the two levels meet without a wall. At each joint a full-size disc-shaped connector footprint closes the wedge
+        // between turning pieces; as a connector it carries no wall where its rim passes the neighbouring flight's edge.
         const step = end - next;
-        let left = half + 0.1;
+        let left = 2 * half + 0.1;
         for (let a = end, b = end + step; b >= 0 && b < points.length && left > 1e-6; a = b, b += step) {
           const leg = Math.hypot(points[b]!.x - points[a]!.x, points[b]!.z - points[a]!.z);
           regions.push({ kind: "connector", level, y: points[a]!.y, quad: planQuad(points[a]!, planDir(points[a]!, points[b]!), Math.min(left, leg), half) });
           left -= leg;
-          if (left > 1e-6) regions.push({ kind: "connector", level, y: points[b]!.y, quad: discRing(points[b]!, Math.min(half, left)) });
+          if (left > 1e-6) regions.push({ kind: "connector", level, y: points[b]!.y, quad: discRing(points[b]!, half) });
         }
         continue;
       }
@@ -360,9 +360,10 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
         regions.push({ kind: "connector", level, y: centre.y, quad: planQuad(points[a]!, planDir(points[a]!, points[b]!), reach, half - 0.01) });
         left -= leg;
         if (end || isTurn(b)) break;
-        // Through a shallow bend the next stub turns: a disc at the joint closes the wedge between the two, as on the flight.
-        // No wider than the reach still left, so it never sticks out past the last stub's end.
-        if (left > 1e-6) regions.push({ kind: "disc", level, x: points[b]!.x, y: centre.y, z: points[b]!.z, radius: Math.min(half - 0.01, left) });
+        // Through a shallow bend the next stub turns: a disc-shaped connector footprint at the joint closes the wedge between the
+        // two and, like the stubs, carries no wall. No wider than the reach still left, so it never sticks out past the last
+        // stub's end.
+        if (left > 1e-6) regions.push({ kind: "connector", level, y: centre.y, quad: discRing(points[b]!, Math.min(half - 0.01, left)) });
       }
     }
   }

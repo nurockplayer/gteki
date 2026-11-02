@@ -907,6 +907,34 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: on a curve of long legs the opening still covers the whole of the split's disc.
+  it("keeps the walkway clear across a soft split on a curved stair with long legs", () => {
+    const waypoints = Array.from({ length: 9 }, (_v, i): [number, number, number] => [2.3 * Math.sin(i * 19 * Math.PI / 180), 0.35 * i, 2.3 * (1 - Math.cos(i * 19 * Math.PI / 180))]);
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (const offset of [-0.4, 0, 0.4]) for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), q = samplePolyline(path, cumulative, Math.min(total, s + 0.01));
+      const len = Math.hypot(q.x - p.x, q.z - p.z) || 1, x = p.x - (q.z - p.z) / len * offset, z = p.z + (q.x - p.x) / len * offset;
+      const r = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z - z), `offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  // #710 review: a walker off centre passes the shallow bend next to a landing.
+  it("lets a walker 0.4 m off centre past a shallow bend next to its landing", () => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4.7, 2.5, -0.7], [6.45, 4, -4.3]];
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    const bendS = cumulative[path.findIndex((p) => Math.hypot(p.x - 4.7, p.y - 2.5, p.z + 0.7) < 1e-6)]!;
+    for (const offset of [-0.4, 0.4]) for (let s = bendS - 1; s <= Math.min(total, bendS + 1); s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), q = samplePolyline(path, cumulative, Math.min(total, s + 0.01));
+      const len = Math.hypot(q.x - p.x, q.z - p.z) || 1, x = p.x - (q.z - p.z) / len * offset, z = p.z + (q.x - p.x) / len * offset;
+      const r = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z - z), `offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
   // #710 review: where a curved stair splits into levels, each level's opening reaches as far as the split's joint disc.
   it.each([1.5, 2])("keeps the walkway clear across a soft split on a curved stair with short legs, %f m wide", (width) => {
     const waypoints = Array.from({ length: 10 }, (_v, i): [number, number, number] => [2 * Math.sin(i * Math.PI / 12), 0.3 * i, 2 * (1 - Math.cos(i * Math.PI / 12))]);
