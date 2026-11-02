@@ -619,8 +619,20 @@ export class App {
       if (entry.synthetic || entry.key === this.s.entry?.key || this.directories.has(entry.key)) continue;
       this.directories.set(entry.key, null);
       void entry.loadDirectory().then((bundle) => {
-        this.directories.set(entry.key, { bundle, search: createSearchIndex(bundle) });
-        if (document.activeElement === this.ui.toInput && this.combo.to.open) this.renderResults("to");
+        const search = createSearchIndex(bundle);
+        this.directories.set(entry.key, { bundle, search });
+        const q = this.ui.toInput.value.trim();
+        const categories = this.s.filter ? [this.s.filter] : undefined;
+        if (document.activeElement !== this.ui.toInput || !this.combo.to.open || !q || entry.key === this.s.entry?.key ||
+          !search.search(q, { limit: bundle.pois.length, lang: this.s.lang, categories }).some((hit) => hit.tenant)) return;
+        const previous = this.ui.toResults.querySelectorAll<HTMLElement>('[role="option"]')[this.combo.to.active];
+        const poiId = previous?.dataset.poi;
+        const station = previous?.dataset.station ?? this.s.entry?.key;
+        this.renderResults("to");
+        const rows = [...this.ui.toResults.querySelectorAll<HTMLElement>('[role="option"]')];
+        const active = poiId ? rows.findIndex((row) => row.dataset.poi === poiId &&
+          (row.dataset.station ?? this.s.entry?.key) === station) : -1;
+        this.setCombo("to", { ...this.combo.to, active });
       }).catch(() => { /* An unavailable directory is silently skipped for this app session. */ });
     }
   }
@@ -694,6 +706,7 @@ export class App {
         box.append(header);
       }
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
+      b.dataset.poi = h.poi.id;
       if (h.station) b.dataset.station = h.station.key;
       const dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
@@ -725,7 +738,7 @@ export class App {
       const approximate = this.approximateText(h.poi);
       if (approximate) b.append(el("span", "result-approx", approximate));
       // The accessible name carries the visible tags, the as-of line, the tie label, the note and the approximate warning.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...(description ? [description] : []), ...tags, ...(asOf ? [asOf] : []), ...(tie ? [tie] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [...(h.station ? [this.t.otherStationHeader(h.station.label)] : []), name.textContent, ...(description ? [description] : []), ...tags, ...(asOf ? [asOf] : []), ...(tie ? [tie] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", async () => {
         this.closeResults(which);

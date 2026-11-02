@@ -134,6 +134,54 @@ describe("public brand search across stations", () => {
     expect(a.ui.toResults.querySelector('.result-group')?.textContent).toBe(`Also at ${other.label}`);
   });
 
+  it("keeps the second local keyboard choice when a matching directory arrives", async () => {
+    const { a, entries } = mounted("ikebukuro");
+    let resolve!: (bundle: StationBundle) => void;
+    const pending = new Promise<StationBundle>((done) => { resolve = done; });
+    vi.spyOn(entries[1]!, "loadDirectory").mockReturnValue(pending);
+    a.ui.toInput.focus();
+    type(a.ui.toInput, "スターバックス");
+    const local = createSearchIndex(bundles.ikebukuro).search("スターバックス", { limit: 8, lang: "ja" });
+    expect(local.length).toBeGreaterThanOrEqual(2);
+    for (let i = 0; i < 2; i++) a.ui.toInput.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    expect(a.ui.toInput.getAttribute("aria-activedescendant")).toBe(options(a.ui.toResults)[1]!.id);
+    resolve(bundles.shinjuku);
+    await vi.waitFor(() => expect(a.ui.toResults.querySelector('[data-station="shinjuku"]')).not.toBeNull());
+    expect(a.ui.toInput.getAttribute("aria-activedescendant")).toBe(options(a.ui.toResults)[1]!.id);
+    a.ui.toInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
+    expect(a.s.destination?.id).toBe(local[1]!.poi.id);
+    expect(a.s.entry.key).toBe("ikebukuro");
+  });
+
+  it.each(["", "トイレ"])("does not rebuild for query '%s' when a directory adds no brand rows", async (query) => {
+    const { a, entries } = mounted("ikebukuro");
+    let resolve!: (bundle: StationBundle) => void;
+    const pending = new Promise<StationBundle>((done) => { resolve = done; });
+    vi.spyOn(entries[1]!, "loadDirectory").mockReturnValue(pending);
+    a.s.filter = "toilet";
+    a.ui.toInput.focus();
+    type(a.ui.toInput, query);
+    const first = options(a.ui.toResults)[0]!;
+    expect(first).toBeDefined();
+    a.ui.toInput.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown" }));
+    const active = a.ui.toInput.getAttribute("aria-activedescendant");
+    resolve(bundles.shinjuku);
+    await pending;
+    expect(options(a.ui.toResults)[0]).toBe(first);
+    expect(a.ui.toInput.getAttribute("aria-activedescendant")).toBe(active);
+    expect(a.ui.toResults.querySelector('[data-station]')).toBeNull();
+  });
+
+  it("names the other station in each foreign option's accessible label", async () => {
+    const { a, entries } = mounted("ikebukuro");
+    const other = entries.find((entry) => entry.key === "shinjuku")!;
+    a.ui.toInput.focus();
+    type(a.ui.toInput, "ユニクロ");
+    await vi.waitFor(() => expect(a.ui.toResults.querySelector('[data-station="shinjuku"]')).not.toBeNull());
+    for (const row of a.ui.toResults.querySelectorAll('[data-station="shinjuku"]'))
+      expect(row.getAttribute("aria-label")).toContain(`${other.label}にもあります`);
+  });
+
   it("selecting a Shinjuku store opens it as the destination and keeps the brand", async () => {
     const { a, entries } = mounted("ikebukuro");
     a.ui.toInput.focus();
