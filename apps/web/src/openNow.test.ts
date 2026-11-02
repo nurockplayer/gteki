@@ -56,13 +56,13 @@ describe("openNow from printed OD-32 hours", () => {
   });
 
   it("strips each footnote only through its own line and handles 12 AM/PM", () => {
-    expect(openNow(hours("平日 11:00~21:00 ※注記\n土日祝 10:30~21:00 ※注記"), at("12:00"))).toBe("open");
+    expect(openNow(hours("平日 11:00~21:00 ※館営業時間に準ずる\n土日祝 10:30~21:00 ※館営業時間に準ずる"), at("12:00"))).toBe("open");
     expect(openNow(hours("12:00A.M.~12:00P.M."), at("00:00"))).toBe("open");
     expect(openNow(hours("午前12時~午後12時"), at("12:00"))).toBe("closed");
   });
 
   it("is unknown when a footnote carries an exception to the schedule (review #724)", () => {
-    for (const note of ["※水曜定休", "※定休日：不定休", "※臨時休業あり", "※年末年始を除く", "※日曜は短縮営業", "※12月31日は18:00まで", "※月曜除く", "※THE ALLEYは12:00～22:00までの営業", "※店舗入替日は9:00P.M.閉店"]) {
+    for (const note of ["※水曜定休", "※定休日：不定休", "※臨時休業あり", "※年末年始を除く", "※日曜は短縮営業", "※12月31日は18:00まで", "※月曜除く", "※当面の間、閉店しております", "※注記", "※THE ALLEYは12:00～22:00までの営業", "※店舗入替日は9:00P.M.閉店"]) {
       expect(openNow(hours(`10:00～21:00 ${note}`), at("12:00")), note).toBe("unknown");
     }
     expect(openNow(hours("10:00～21:00 ※館営業時間に準ずる"), at("12:00"))).toBe("open");

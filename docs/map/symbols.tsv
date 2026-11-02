@@ -434,7 +434,7 @@ buildSubmission	function	apps/web/src/merchant/submission.ts	177
 RelaxableOption	type	apps/web/src/noPath.ts	5
 NoPathView	interface	apps/web/src/noPath.ts	7
 noPathView	function	apps/web/src/noPath.ts	20
-openNow	function	apps/web/src/openNow.ts	32
+openNow	function	apps/web/src/openNow.ts	35
 PRIVATE_BUILD	const	apps/web/src/registry.ts	7
 StationEntry	interface	apps/web/src/registry.ts	10
 LoadedStation	interface	apps/web/src/registry.ts	19
