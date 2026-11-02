@@ -43,7 +43,7 @@ This is the one-screen view. The cell-by-cell evidence stays in [`gaps/coverage-
 
 | Station · store | Source / rights | 3D | Walk / navmesh | POIs / tenants | Search / route | Open |
 |---|---|---|---|---|---|---|
-| 池袋 西武池袋本店 | JCSC 2026 list (facts); store site corroboration only (r3); tenants promoted to public tier (#578, OD-35) | n | n | 1 POI, s; 307 tenants | search y (store + brands); route n | field (unscheduled) entrance; present layout (renovation) |
+| 池袋 西武池袋本店 | JCSC 2026 list (facts); store site corroboration only (r3); tenants promoted to public tier (#578, OD-35) | n | n | 1 POI, s; 307 tenants | search y (store + brands); route n | field (unscheduled) entrance; present layout (renovation)<br>GAP 7F: not listed (read 2026-11-02T14:38:33Z)<br>GAP 8F: not listed (read 2026-11-02T14:38:33Z)<br>GAP 別館 RF: not listed (read 2026-11-02T14:38:46Z)<br>GAP 別館 9F: not listed (read 2026-11-02T14:38:46Z)<br>GAP 別館 7F: not listed (read 2026-11-02T14:38:46Z)<br>GAP 別館 6F: not listed (read 2026-11-02T14:38:46Z)<br>GAP 別館 5F: not listed (read 2026-11-02T14:38:46Z)<br>GAP 別館 4F: not listed (read 2026-11-02T14:38:46Z)<br>GAP 別館 3F: not listed (read 2026-11-02T14:38:46Z)<br>GAP 別館 B2F: not listed (read 2026-11-02T14:38:46Z) |
 | 池袋 東武百貨店 | store site usable (OD-34 §2) | n | n | 1 POI, s; 860 tenants | search y; route n | field (unscheduled) item 26 |
 | 池袋 ルミネ池袋 | lumine.ne.jp usable (OD-34 §2) | partial: named facade, B1 directory board (#598) | partial: routed via `jr-south-gate` (#531); the door itself is not surveyed | 1 POI + 176 shop POIs | search y; route y (to the gate) | door survey (not a field (unscheduled) item) |
 | 池袋 エソラ池袋 | usable (OD-34 §2) | n | n | 1 POI + 33 shop POIs | search y; route n | field (unscheduled) item 25 |
