@@ -437,12 +437,18 @@ const MIN_CUT_AREA_M2 = 1e-6;
 
 /** One convex piece of a region (a strip segment, or a whole disc, rect or connector) and its floor height. */
 /**
- * Pieces of one walk less than the clearance apart in height (a bend, whose patch can stand a metre off a steep leg's
- * next segment): exempt from height conflicts and stack cuts. Only a pass of the walk over itself at walking clearance
- * or more is judged like any two pieces.
+ * Pieces of one walk less than the clearance apart in height where they overlap in plan (a bend, whose patch can stand
+ * a metre off a steep leg's next segment): exempt from height conflicts and stack cuts. Only a pass of the walk over
+ * itself at walking clearance or more is judged like any two pieces.
  */
-const sameWalk = (a: Piece, b: Piece): boolean =>
-  a.group !== undefined && a.group === b.group && a.low < b.high + CLEARANCE_M && b.low < a.high + CLEARANCE_M;
+function sameWalk(a: Piece, b: Piece): boolean {
+  if (a.group === undefined || a.group !== b.group) return false;
+  const overlap = convexIntersection(a.ring, b.ring);
+  if (Math.abs(ringArea(overlap)) <= MIN_CUT_AREA_M2) return true;
+  // Linear over the convex overlap: the gap nearest zero is at a vertex, or zero where it changes sign.
+  const gaps = overlap.map((p) => a.height(p) - b.height(p));
+  return Math.min(...gaps) <= 0 && Math.max(...gaps) >= 0 ? true : Math.min(...gaps.map(Math.abs)) < CLEARANCE_M;
+}
 
 type Piece = { region: number; segment: number; level: string; group: string | undefined; kind: Region["kind"]; ring: PlanPoint[]; box: Box; low: number; high: number; height: (p: PlanPoint) => number; source: HeightSource };
 
@@ -619,21 +625,22 @@ export function buildWalkableModel(
   if (stepM > 0) {
     boxPairs(pieces.map((piece) => piece.box), (i, j) => {
       const a = pieces[i]!, b = pieces[j]!;
-      if (keys[i] === keys[j] || sameWalk(a, b)) return;
+      if (sameWalk(a, b)) return;
       // Too far apart in height to cut anything, or two level pieces within a step (they meet).
       if (a.low - b.high >= CEILING_M || b.low - a.high >= CEILING_M) return;
       if (a.low === a.high && b.low === b.high && Math.abs(a.low - b.low) <= stepM) return;
       const overlap = convexIntersection(pieces[i]!.ring, pieces[j]!.ring);
       if (Math.abs(ringArea(overlap)) <= MIN_CUT_AREA_M2) return;
       // Pieces within a step of each other anywhere over their overlap join there (a ramp rising out of the floor
-      // it starts on): that is a walk, not a floor over another one.
+      // it starts on): that is a walk, so both floors stay whole, and only the lower ceiling the rising floor passes
+      // under is cut. Pieces of one height cluster always join.
       const gaps = overlap.map((p) => pieces[i]!.height(p) - pieces[j]!.height(p));
-      if (Math.min(...gaps) <= stepM && Math.max(...gaps) >= -stepM) return;
+      const join = keys[i] === keys[j] || (Math.min(...gaps) <= stepM && Math.max(...gaps) >= -stepM);
       for (const [upper, lower] of [[i, j], [j, i]] as const) {
         const up = pieces[upper]!, down = pieces[lower]!, rise = (p: PlanPoint) => up.height(p) - down.height(p);
         const above = clipHalf(overlap, (p) => rise(p) - stepM);
         if (above.length < 3 || Math.abs(ringArea(above)) <= MIN_CUT_AREA_M2) continue;
-        const slab = clipHalf(above, (p) => CLEARANCE_M - rise(p));
+        const slab = join ? [] : clipHalf(above, (p) => CLEARANCE_M - rise(p));
         if (slab.length >= 3 && Math.abs(ringArea(slab)) > MIN_CUT_AREA_M2) {
           cutsOf(slabCuts, up).push(slab);
           const l = levelCuts.get(keys[upper]!); if (l) l.push(slab); else levelCuts.set(keys[upper]!, [slab]);

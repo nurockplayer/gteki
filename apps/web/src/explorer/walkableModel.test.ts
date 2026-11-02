@@ -142,6 +142,13 @@ describe("walkable model", () => {
       for (const z of [-1, 1]) expect(walls.some((wall) => wall.level === "L" && Math.abs(wall.az - z) < 1e-9 && Math.abs(wall.bz - z) < 1e-9 && Math.abs(wall.ax - wall.bx) > 17)).toBe(true);
     });
 
+    it("splits one edge whose long return ramp crosses its start near the top of the climb", () => {
+      // The last segment climbs 0 → 4 m over 50 m and crosses the first segment about 3.8 m up: its whole range (0–4 m)
+      // meets the first segment's, but not where they overlap.
+      const loop = { ...strip("L", [{ x: 0, y: 0, z: 0 }, { x: 30, y: 0, z: 0 }, { x: 30, y: 0, z: 40 }, { x: 0, y: 4, z: 0 }], 1), group: "e" };
+      expect([...buildWalkableModel([loop], undefined, 0.45).levels.keys()].sort()).toEqual(["L", "L#1"]);
+    });
+
     it("splits a ramp of the corridor's own level where it climbs over that corridor", () => {
       const { levels, walls } = buildWalkableModel([
         strip("L", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
@@ -186,12 +193,25 @@ describe("walkable model", () => {
         strip("R", [{ x: 0, y: 0, z: -10 }, { x: 0, y: 4, z: 10 }], 1),
       ], undefined, 0.45);
       expect(area(ramp.slabCuts.get("1:1")!.map((ring) => [ring]))).toBeCloseTo(4);
-      // Rising out of B's floor, the ramp meets B over the overlap: it cuts nothing, as at a ramp's top landing.
+      // Rising out of B's floor, the ramp meets B over the overlap: both floors stay whole, as at a ramp's top landing;
+      // only B's ceiling gives way where the ramp is more than a step up (z 0.125..1, x -1..1).
       const foot = buildWalkableModel([
         strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
         strip("R", [{ x: 0, y: 0, z: -1 }, { x: 0, y: 4, z: 9 }], 1),
       ], undefined, 0.45);
-      expect(foot.slabCuts.size + foot.ceilingCuts.size).toBe(0);
+      expect(foot.slabCuts.size).toBe(0);
+      expect(area(foot.ceilingCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(1.75);
+    });
+
+    it("cuts the ceiling a ramp joining a corridor climbs under, all along the climb", () => {
+      // R runs along B's centreline from 0.3 m to 2.3 m over 30 m: one step-height meet at its foot joins them, and
+      // B's ceiling over the rest (x 2.25..30) would stand in the way of a walker on R.
+      const { slabCuts, ceilingCuts } = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1),
+        strip("R", [{ x: 0, y: 0.3, z: 0 }, { x: 30, y: 2.3, z: 0 }], 1),
+      ], undefined, 0.45);
+      expect(slabCuts.size).toBe(0);
+      expect(area(ceilingCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(55.5);
     });
 
     it("leaves the model unchanged without a step height", () => {
