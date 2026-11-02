@@ -672,10 +672,12 @@ SampleDetail	interface	packages/godot/src/route-clip-audit.ts	42
 loadScene	function	packages/godot/src/route-clip-audit.ts	46
 sceneProbe	function	packages/godot/src/route-clip-audit.ts	72
 cutSceneProbe	function	packages/godot/src/route-clip-audit.ts	81
-resampleAudit	function	packages/godot/src/route-clip-audit.ts	113
-AuditCache	interface	packages/godot/src/route-clip-audit.ts	123
-auditPolyline	function	packages/godot/src/route-clip-audit.ts	132
-violations	const	packages/godot/src/route-clip-audit.ts	200
+segmentsCross	function	packages/godot/src/route-clip-audit.ts	99
+wallsNear	function	packages/godot/src/route-clip-audit.ts	122
+resampleAudit	function	packages/godot/src/route-clip-audit.ts	146
+AuditCache	interface	packages/godot/src/route-clip-audit.ts	156
+auditPolyline	function	packages/godot/src/route-clip-audit.ts	165
+violations	const	packages/godot/src/route-clip-audit.ts	233
 WALKABLE_ROLES	const	packages/godot/src/scene-roles.ts	25
 COLLIDER_ROLES	const	packages/godot/src/scene-roles.ts	26
 CAMERA_ROLES	const	packages/godot/src/scene-roles.ts	27
