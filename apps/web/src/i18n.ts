@@ -44,6 +44,11 @@ const STRINGS = {
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "種類",
     categoryAll: "すべて",
+    barrierFree: "バリアフリー",
+    floorUnknown: "階不明（掲載案内を参照）",
+    distanceUnknown: "距離不明",
+    routeDistance: (m: number) => `段差なし経路 ${m} m`,
+    straightDistance: (m: number) => `直線距離 約${m} m（経路未確認）`,
     openNowFilter: "営業中のみ",
     openNowOpen: "営業中",
     hoursUnknown: "営業時間不明",
@@ -286,6 +291,11 @@ const STRINGS = {
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "Category",
     categoryAll: "All",
+    barrierFree: "Barrier-free",
+    floorUnknown: "Floor unknown (see printed guidance)",
+    distanceUnknown: "Distance unknown",
+    routeDistance: (m: number) => `Step-free route ${m} m`,
+    straightDistance: (m: number) => `Straight-line approx. ${m} m (route unverified)`,
     openNowFilter: "Open now",
     openNowOpen: "Open now",
     hoursUnknown: "Hours unknown",
