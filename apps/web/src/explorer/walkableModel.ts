@@ -418,8 +418,16 @@ export function buildWalkableModel(
         polygons: other.union.filter((_polygon, k) => overlaps(other.boxes[k]!, box)),
         sources: other.sources.filter((source) => overlaps(source.box, box)),
       })).filter((other) => other.polygons.length) : [];
-      return (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => near.some((other) => pointInLevel(outside, other.polygons)
-        && Math.abs(heightAtVertex(outside, other.sources) - outside.y) <= stepM) || !!isAttachment?.(wall, outside);
+      const held = (p: { x: number; y: number; z: number }) => near.some((other) => pointInLevel(p, other.polygons)
+        && Math.abs(heightAtVertex(p, other.sources) - p.y) <= stepM);
+      // The other floor must carry on from the wall all the way to the probe, sampled every 5 cm: a probe that only lands on
+      // a floor beyond an empty gap (two flights side by side) is no attachment.
+      return (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => {
+        const mx = (wall.ax + wall.bx) / 2, mz = (wall.az + wall.bz) / 2, steps = Math.ceil(ATTACHMENT_PROBE_M / 0.05);
+        const contiguous = Array.from({ length: steps }, (_v, k) => (k + 1) / steps)
+          .every((t) => held({ x: mx + (outside.x - mx) * t, y: outside.y, z: mz + (outside.z - mz) * t }));
+        return contiguous || !!isAttachment?.(wall, outside);
+      };
     };
     walls.push(...boundaryWalls(union, sources, connectors, level, attachmentNear, breakpoints));
   }

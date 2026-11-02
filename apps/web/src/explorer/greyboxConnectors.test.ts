@@ -907,6 +907,20 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: two flights of one stair side by side, a 0.2 m empty gap apart, keep the guards on their facing sides.
+  it("keeps the facing guards of two flights of one stair across a narrow empty gap", () => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 0.4, 0], [4, 0.4, 1.7], [0, 0.8, 1.7]];
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    // Where the two flights come within a step of each other's height (x from about 2.3 m to the landing), a wall still
+    // lines the gap (z = 0.75 to 0.95) on both flights' facing sides.
+    for (const x of [2.4, 2.6, 2.8, 3.0]) for (const [z0, z1] of [[0.7, 0.8], [0.9, 1.0]]) {
+      const lined = result.wallSegments.some((w) => Math.min(w.ax, w.bx) <= x && Math.max(w.ax, w.bx) >= x
+        && Math.min(w.az, w.bz) >= z0 && Math.max(w.az, w.bz) <= z1);
+      expect(lined, `x=${x} z=${z0}..${z1}`).toBe(true);
+    }
+  });
+
   // #710 review: on a curve of long legs the opening still covers the whole of the split's disc.
   it("keeps the walkway clear across a soft split on a curved stair with long legs", () => {
     const waypoints = Array.from({ length: 9 }, (_v, i): [number, number, number] => [2.3 * Math.sin(i * 19 * Math.PI / 180), 0.35 * i, 2.3 * (1 - Math.cos(i * 19 * Math.PI / 180))]);
