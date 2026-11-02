@@ -1,0 +1,17 @@
+{
+ "schema": "gteki.research.hours/0.1",
+ "note": "Shinjuku building-card hours, batch 4 (OD-32): dated official hours only under the 2026-11-03 JST brief. GAPs and the complete building inventory are in shinjuku-hours-batch4-log.md. Current status never asserted.",
+ "entries": [
+  {
+   "poiId": "shop-sjk-keio",
+   "sourceId": "keio-shinjuku-shopsearch-2026-11",
+   "url": "https://www.keionet.com/info/shinjuku/hours/",
+   "retrievedAt": "2026-11-02T20:48:59Z",
+   "pageDate": "2026-11-01",
+   "status": "OK",
+   "basis": "dated-official",
+   "hoursText": "B1～2階\n午前10時～午後8時30分\n※日・祝は午後8時まで\n3階以上\n午前10時～午後8時",
+   "note": "京王百貨店 新宿店. pageDate is the official HTTP Last-Modified date (2026-11-01T13:00:02Z), not a date printed beside the hours. The page update is within 180 days of the reading. The 新宿店の営業時間 blocks are kept in printed order, with their floor and Sunday/holiday exception labels. Restaurant/cafe tenant schedules are separate blocks and are not imported as building hours. No building-wide closed day is printed. Facts only under use-tiers.md; existing Keio department-store source reused. Response: 17,304 bytes; SHA-256 e2709f28c9756d0973a50cfbf3a7ce7d625e4f0111da9412b51620058b345619."
+  }
+ ]
+}
