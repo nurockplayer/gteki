@@ -341,6 +341,9 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
         regions.push({ kind: "connector", level, y: centre.y, quad: planQuad(points[a]!, planDir(points[a]!, points[b]!), reach, half - 0.01) });
         left -= leg;
         if (end || isTurn(b)) break;
+        // Through a shallow bend the next stub turns: a disc at the joint closes the wedge between the two, as on the flight.
+        // No wider than the reach still left, so it never sticks out past the last stub's end.
+        if (left > 1e-6) regions.push({ kind: "disc", level, x: points[b]!.x, y: centre.y, z: points[b]!.z, radius: Math.min(half - 0.01, left) });
       }
     }
   }

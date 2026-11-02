@@ -886,6 +886,15 @@ describe("turning landing guards", () => {
     expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: (p) => p.z < 1e-6 && !(p.x > 1.1 && p.x < 1.4), nearMesh: () => false }, "high"))).toBe(true);
   });
 
+  // #710 review: a landing's opening stubs follow its flight through a shallow bend without leaving a wedge for a guard.
+  it("leaves no guard in a flight that bends shallowly next to its landing", () => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4.7, 2.5, -0.7], [6.45, 4, -4.3]];
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const r = resolveWalls(4.7, -0.7, 0.3, 2.5, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 4.7, r.z + 0.7)).toBeLessThanOrEqual(0.05);
+  });
+
   // A straight flight is built.
   it("builds a straight stair in both directions", () => {
     for (const direction of [-1, 1]) {
