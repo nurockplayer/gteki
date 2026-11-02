@@ -282,7 +282,7 @@ function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
  * The walkable regions of one connector: a strip level per flight (the legs between turning landings, discs at shallow
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
  */
-function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
+function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean, junction: (index: number) => boolean, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
   // Level legs at either end that lie on station floor are that floor, not part of the stair: they carry no wall, so a
   // walk edge that meets the same node from the side is not cut off. Off the floor they keep their walls, or a walker
   // could step off the generated tread. The model starts at the first and ends at the last such climb.
@@ -329,6 +329,9 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
       }
       const quad = end === first || end === last ? planQuad(points[end]!, planDir(points[next]!, points[end]!), MOUTH_M, half) : square(end);
       regions.push({ kind: "connector", level, y: points[end]!.y, quad });
+      // Where two generated connectors meet at a node on station floor, their flights overlap in plan at the node: a
+      // connector footprint 2 * half around it opens the junction, so neither's walls stand across the other's exit.
+      if ((end === first || end === last) && junction(end)) regions.push({ kind: "connector", level, y: points[end]!.y, quad: discRing(points[end]!, 2 * half) });
     }
     // The level legs before the first climb and after the last, as open footprints of the end flights.
     if (k === 1) for (let i = 0; i < first; i++) regions.push({ kind: "connector", level, y: points[i]!.y, quad: planQuad(points[i]!, planDir(points[i]!, points[i + 1]!), Math.hypot(points[i + 1]!.x - points[i]!.x, points[i + 1]!.z - points[i]!.z), half) });
@@ -405,7 +408,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const levels = new Map<string, { edge: Edge; landing: boolean }>();
   const built: { edge: Edge; parts: ConnectorPart[]; pads: { part: ConnectorPart; floorId: string }[]; path: THREE.Vector3[]; halfWidth: number }[] = [];
   const regionsByEdge = new Map<string, Region[]>();
-  for (const edge of unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh)) {
+  const unmodelled = unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh), nodeUse = new Map<string, number>();
+  for (const edge of unmodelled) for (const node of [edge.from, edge.to]) nodeUse.set(node, (nodeUse.get(node) ?? 0) + 1);
+  for (const edge of unmodelled) {
     const points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
     const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
     if (planRuns.reduce((a, b) => a + b, 0) < 0.3 || planRuns.some((run, i) => run < 0.3 && Math.abs(points[i + 1]!.y - points[i]!.y) > 1e-6)) { skip("short_run", edge.id); continue; }
@@ -431,7 +436,12 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       for (let k = 0; k <= count; k++) if (!onFloor(a.clone().lerp(b, k / count))) return false;
       return true;
     };
-    edgeRegions(edge, points, half, isTurn, floored, ownRegions, levels);
+    // An end at a node another generated connector also meets, on station floor, is a junction between the two.
+    const junction = (i: number) => {
+      const node = i === 0 ? edge.from : i === points.length - 1 ? edge.to : undefined;
+      return node !== undefined && (nodeUse.get(node) ?? 0) > 1 && onFloor(points[i]!);
+    };
+    edgeRegions(edge, points, half, isTurn, floored, junction, ownRegions, levels);
     regionsByEdge.set(edge.id, ownRegions);
     const parts: ConnectorPart[] = [];
     const edgePath: THREE.Vector3[] = [];
@@ -483,13 +493,27 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     omittedLandings += edgeOmitted;
     built.push({ edge, parts, pads, path: lowerFirst, halfWidth });
   }
-  // Each connector is its own model: another connector's floor at the same height is not this one's walkway, so two
-  // flights side by side keep the walls between them. One that polygon-clipping cannot union (it can throw on exactly
-  // coincident input) is left to the legacy builder.
+  // Each connector, with the connectors it shares a node with, is its own model: another connector's floor at the same
+  // height is not this one's walkway, so two flights side by side keep the walls between them, while two stairs meeting at
+  // a node attach to each other there (every flight is its own level either way). A group that polygon-clipping cannot
+  // union (it can throw on exactly coincident input) is left to the legacy builder.
+  const edgeById = new Map(bundle.edges.map((edge) => [edge.id, edge]));
+  const groupOf = new Map<string, string>(), byNode = new Map<string, string>();
+  const findGroup = (id: string): string => { const up = groupOf.get(id) ?? id; if (up === id) return id; const top = findGroup(up); groupOf.set(id, top); return top; };
+  for (const edgeId of regionsByEdge.keys()) {
+    groupOf.set(edgeId, edgeId);
+    const edge = edgeById.get(edgeId)!;
+    for (const node of [edge.from, edge.to]) {
+      const other = byNode.get(node);
+      if (other) groupOf.set(findGroup(edgeId), findGroup(other)); else byNode.set(node, edgeId);
+    }
+  }
+  const groups = new Map<string, string[]>();
+  for (const edgeId of regionsByEdge.keys()) { const g = findGroup(edgeId); groups.set(g, [...(groups.get(g) ?? []), edgeId]); }
   const modelWalls: BoundaryWall[] = [];
-  for (const [edgeId, own] of regionsByEdge) {
-    try { modelWalls.push(...buildWalkableModel(own, undefined, WALKER_BODY.stepUpM).walls); }
-    catch { legacyEdgeIds.add(edgeId); }
+  for (const edgeIds of groups.values()) {
+    try { modelWalls.push(...buildWalkableModel(edgeIds.flatMap((id) => regionsByEdge.get(id)!), undefined, WALKER_BODY.stepUpM).walls); }
+    catch { for (const id of edgeIds) legacyEdgeIds.add(id); }
   }
   const failed = (edgeId: string) => legacyEdgeIds.has(edgeId);
   for (let k = built.length - 1; k >= 0; k--) {

@@ -907,6 +907,23 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: two stairs meeting at a node attach there, so neither's walls stand across the other's exit.
+  it("lets a walker turn from one stair onto another that shares its top node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [4, 4, 4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    for (const [x, z] of [[3.45, 0], [3.7, 0], [4, 0], [4, 0.3]] as const) {
+      const r = resolveWalls(x, z, 0.3, 1.725, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z - z), `(${x}, ${z})`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
   // #710 review: two flights of one stair side by side, a 0.2 m empty gap apart, keep the guards on their facing sides.
   it("keeps the facing guards of two flights of one stair across a narrow empty gap", () => {
     const waypoints: [number, number, number][] = [[0, 0, 0], [4, 0.4, 0], [4, 0.4, 1.7], [0, 0.8, 1.7]];
