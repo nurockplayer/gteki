@@ -977,6 +977,22 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: a steep flight keeps its guard even inside the usual junction reach beside a level approach.
+  it("keeps a steep stair's guard beside a level approach inside the junction reach", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [6, 4.2, 0]]), b = g([[0, 0, 0], [3, 0, 0.6], [6, 2, 1.2]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("steep", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("shallow", "start", "b", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["b", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    for (const x of [1.2, 1.0, 1.5]) {
+      const r = resolveWalls(x, 0.6, 0.3, 0.7 * x, 1.7, result.wallSegments);
+      expect(r.z, `x=${x}`).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    }
+  });
+
   // #710 review: two flights meeting end to end at a shared node keep both side guards through the node.
   it("keeps the side guards of two flights that meet end to end", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
