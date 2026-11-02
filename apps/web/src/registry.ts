@@ -13,6 +13,7 @@ export interface StationEntry {
   synthetic: boolean;
   identity?: StationIdentity;
   load(): Promise<LoadedStation>;
+  loadDirectory(): Promise<StationBundle>;
 }
 
 export interface LoadedStation {
@@ -58,7 +59,7 @@ export async function listStations(): Promise<StationEntry[]> {
       manifest = await s.manifest();
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      entries.push({ key: s.dir, label: `⚠ ${s.dir}`, synthetic: false, load: () => Promise.reject(new Error(`station.json could not be read: ${message}`)) });
+      entries.push({ key: s.dir, label: `⚠ ${s.dir}`, synthetic: false, loadDirectory: () => Promise.reject(new Error(`station.json could not be read: ${message}`)), load: () => Promise.reject(new Error(`station.json could not be read: ${message}`)) });
       continue;
     }
     const { label, synthetic } = nameOf(manifest, s.dir);
@@ -67,6 +68,14 @@ export async function listStations(): Promise<StationEntry[]> {
       label,
       synthetic,
       identity: identityNamesOf(manifest),
+      async loadDirectory() {
+        const [graph, pois, tenants] = await Promise.all([
+          s.graph(), s.pois(), s.tenants ? s.tenants() : Promise.resolve(undefined),
+        ]);
+        const parsed = parseStationFiles(manifest, graph, pois, tenants, { privateTier: privateBuild });
+        if (!parsed.ok) throw new StationLoadError(s.dir, parsed.issues);
+        return parsed.bundle;
+      },
       async load() {
         // The scene module is optional presentation: its failure must never block valid routing data.
         let sceneImportError: string | null = null;
@@ -92,6 +101,11 @@ export async function listStations(): Promise<StationEntry[]> {
     key: "_synthetic-demo",
     label: "Synthetic demo (not a real station)",
     synthetic: true,
+    async loadDirectory() {
+      const parsed = parseStationFiles(...createDemoFiles());
+      if (!parsed.ok) throw new StationLoadError("_synthetic-demo", parsed.issues);
+      return parsed.bundle;
+    },
     async load() {
       const [m, g, p] = createDemoFiles();
       const parsed = parseStationFiles(m, g, p);

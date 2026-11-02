@@ -129,6 +129,8 @@ export class App {
   };
   /** Listbox state of the two search comboboxes. */
   private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
+  /** Pending and failed directories stay null so a focus never starts a retry loop. */
+  private readonly directories = new Map<string, { bundle: StationBundle; search: SearchIndex } | null>();
   private panelExpanded = false;
   /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
   private compositionEndMs = -Infinity;
@@ -283,7 +285,10 @@ export class App {
     results.id = `gteki-${which}-listbox`;
     applyAria(input, inputAria(COMBO_CLOSED, results.id));
     input.addEventListener("input", () => this.renderResults(which));
-    input.addEventListener("focus", () => this.renderResults(which));
+    input.addEventListener("focus", () => {
+      if (which === "to") this.loadOtherDirectories();
+      this.renderResults(which);
+    });
     let compositionEndMs = -Infinity;
     input.addEventListener("compositionend", () => { compositionEndMs = performance.now(); });
     input.addEventListener("keydown", (e) => {
@@ -609,6 +614,17 @@ export class App {
     return this.s.loaded?.bundle.tenants?.find((t) => t.id === id) ?? null;
   }
 
+  private loadOtherDirectories(): void {
+    for (const entry of this.s.entries) {
+      if (entry.synthetic || entry.key === this.s.entry?.key || this.directories.has(entry.key)) continue;
+      this.directories.set(entry.key, null);
+      void entry.loadDirectory().then((bundle) => {
+        this.directories.set(entry.key, { bundle, search: createSearchIndex(bundle) });
+        if (document.activeElement === this.ui.toInput && this.combo.to.open) this.renderResults("to");
+      }).catch(() => { /* An unavailable directory is silently skipped for this app session. */ });
+    }
+  }
+
   private renderResults(which: "from" | "to"): void {
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
@@ -628,9 +644,21 @@ export class App {
         : which === "from" ? this.t.suggestPopularFrom : this.t.suggestPopularTo);
       suggestionIndex += group.pois.length;
     }
-    const hits: SearchHit[] = q
+    const hits: (SearchHit & { station?: StationEntry; directory?: StationBundle })[] = q
       ? this.s.search.search(q, { limit: 8, lang: this.s.lang, categories })
       : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true })));
+    if (which === "to" && q) {
+      for (const entry of this.s.entries) {
+        if (entry.synthetic || entry.key === this.s.entry?.key) continue;
+        const directory = this.directories.get(entry.key);
+        if (!directory) continue;
+        const brands = directory.search.search(q, { limit: directory.bundle.pois.length, lang: this.s.lang, categories })
+          .filter((hit) => hit.tenant).slice(0, 3);
+        if (!brands.length) continue;
+        groupHeaders.set(hits.length, this.t.otherStationHeader(entry.label));
+        hits.push(...brands.map((hit) => ({ ...hit, station: entry, directory: directory.bundle })));
+      }
+    }
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       // Nothing in the filtered category: say how many the other categories have, and offer to drop the filter.
@@ -666,6 +694,7 @@ export class App {
         box.append(header);
       }
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
+      if (h.station) b.dataset.station = h.station.key;
       const dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
       const name = el("span", "result-name", this.poiName(h.poi));
@@ -680,7 +709,7 @@ export class App {
       if (!h.routable) tags.push(searchOnly);
       meta.textContent = tags.join(" · ");
       // The directory is unverified: say since when it was checked, as a second line.
-      const checkedDate = h.tenant ? tenantCheckedDate(this.s.loaded?.bundle.tenants, h.tenant.id) : null;
+      const checkedDate = h.tenant ? tenantCheckedDate((h.directory ?? this.s.loaded?.bundle)?.tenants, h.tenant.id) : null;
       const asOf = h.tenant && checkedDate ? this.t.tenantAsOf(checkedDate) : null;
       b.append(dot, name, meta);
       if (description) b.append(el("span", "result-note", description));
@@ -698,9 +727,16 @@ export class App {
       // The accessible name carries the visible tags, the as-of line, the tie label, the note and the approximate warning.
       applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...(description ? [description] : []), ...tags, ...(asOf ? [asOf] : []), ...(tie ? [tie] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
-      b.addEventListener("click", () => {
+      b.addEventListener("click", async () => {
         this.closeResults(which);
         input.blur();
+        if (h.station) {
+          await this.openStation(h.station, null, h.poi.id);
+          const destination = this.s.destination;
+          if (this.s.entry?.key === h.station.key && destination?.id === h.poi.id && h.tenant)
+            this.setDestination(destination, this.findTenant(h.tenant.id));
+          return;
+        }
         const key = this.s.entry?.key;
         if (key) writeRecent(safeStorage(), key, pushRecent(readRecent(safeStorage(), key), h.poi.id));
         // A brand is not a destination of its own: the store carries the route (#419).
