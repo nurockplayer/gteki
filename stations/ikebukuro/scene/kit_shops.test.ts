@@ -270,7 +270,10 @@ describe("visual only", () => {
       if (low) {
         const maps = new Set(group.children.map((o) => ((o as THREE.Mesh).material as THREE.MeshBasicMaterial).map!));
         expect(maps.size).toBe(2);
-        const bytes = [...maps].reduce((n, t) => n + t.image.width * t.image.height * 4 * (t.generateMipmaps ? 4 / 3 : 1), 0);
+        const bytes = [...maps].reduce((n, t) => {
+          const image = t.image as { width: number; height: number };
+          return n + image.width * image.height * 4 * (t.generateMipmaps ? 4 / 3 : 1);
+        }, 0);
         expect(bytes).toBeLessThanOrEqual(12 * 1024 * 1024);
         expect((group.getObjectByName("kit_shop_opaque") as THREE.Mesh).geometry.getAttribute("uv")).toBeTruthy();
       }
