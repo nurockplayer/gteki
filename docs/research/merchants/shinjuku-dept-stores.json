@@ -91,6 +91,24 @@
       "retrievedAt": "2026-11-01T19:28:16Z",
       "datasetDate": null,
       "notes": "Shop names, printed floor labels and printed 売場 names only, for the store POI shop-sjk-keio; no wording, image or logo is reproduced. Class: sites allowing private use and quotation (use-tiers.md, OD-35; classified by the data lead 2026-11-02). Terms https://www.keionet.com/info/sitepolicy/ 「著作権」, read by the data lead 2026-11-01T19:2xZ and re-read 2026-11-01T19:32Z (京王百貨店's own terms page; not 京王電鉄 or 京王 SC): 「…閲覧につきましては自由ですが「私的利用」または「引用」などは著作権法等関係法令上認められた場合を除き利用することを禁止いたします。…」 No business-use clause and no automated-access clause. robots.txt (read 2026-11-01T19:32Z) disallows only Movable Type rebuild CGI paths. Director ruling 2026-11-02 05:1x JST: OD-35 applies, superseding #502 / #516 §5 corroboration-only. Read from the JSON the 「ショップ検索」 page (/info/shinjuku/shop/) loads, https://www.keionet.com/re2024/json/shop_shinjuku.json (342,902 bytes, SHA-256 6151a6ba2be7fce32feab4f8aba22a6196a5502a2caf4dcdbf4549c57b2962a5, plain curl, default User-Agent, HTTP 200, retrieved 2026-11-01T19:28:16Z = 2026-11-02 04:28 JST). The file has a trailing comma before its final ], stripped before parsing; the raw file is not committed. Record: docs/research/merchants/shinjuku-keio-tenants.json."
+    },
+    {
+      "id": "isetan-shinjuku-brands-2026-11",
+      "title": "伊勢丹新宿店 本館・メンズ館 ブランド検索 | mistore.jp",
+      "publisher": "株式会社三越伊勢丹ホールディングス",
+      "url": "https://www.mistore.jp/content/dam/isetan_mitsukoshi/brand-search/shinjuku/data/shinjuku-brand.csv?cb=2026-11-03",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+        "date": "2026-11-02"
+      },
+      "attribution": "伊勢丹新宿店 本館 / メンズ館 ブランド検索 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-02T16:59:38.704Z",
+      "datasetDate": null,
+      "notes": "Class: sites allowing private use and quotation (use-tiers.md, OD-35; #522; lead ruling 2026-11-02). Facts only: brand/shop name, printed floor and printed 売場, for 本館 and メンズ館 only; no wording, images, logos or maps reproduced. Plain curl (default User-Agent, no added headers) to https://www.mistore.jp/store/shinjuku/shops.html returned HTTP 000 / 0 bytes at 2026-11-02T16:59:13Z. Read-only ego-lite in-page GETs (HTTP 200), no sign-in or forms. The page loads a CSV plus floor JSON; floor_id joins to the printed title used by its search renderer, category comes from okaiba. The CSV is filtered to the two buildings and display dates for 2026-11-03 JST, then exact building/name/floor duplicates are dropped, keeping the first printed 売場. 1,154 本館 + 310 メンズ館 rows; 28 surrounding-facility rows and 2 outside their display dates skipped; 34 exact duplicates dropped. 本館 RF GAP: guide lists RF but brand data has no RF entry, read 2026-11-02T17:00:22.663Z. No stricter terms clause was shown on the pages read; the existing #522 classification is used without re-deciding it. Raw responses are not committed. Source receipts (UTC; byte size and SHA-256 of UTF-8 response files): https://www.mistore.jp/store/shinjuku/brand-search.html read 2026-11-02T16:59:38.688Z, 50,836 bytes, SHA-256 538e324a78085a16177b5d59eab264cc19c9bbdfed45da28d0e978dfb1906217; https://www.mistore.jp/content/dam/isetan_mitsukoshi/brand-search/shinjuku/data/shinjuku-brand.csv?cb=2026-11-03 read 2026-11-02T16:59:38.704Z, 272,915 bytes, SHA-256 6a5f439c6d85e0de5bb74ff5a29fcd23a51036b35f2549d3d2e9c4615e95fc82; https://www.mistore.jp/content/dam/isetan_mitsukoshi/brand-search/shinjuku/data/shinjuku-floor.json?cb=2026-11-03 read 2026-11-02T16:59:55.879Z, 7,231 bytes, SHA-256 6caaacee30632d20c3cdf31dcb33747cb669334bf200432c8df77cb91605a396; https://www.mistore.jp/store/shinjuku/shops.html read 2026-11-02T17:00:22.663Z, 165,249 bytes, SHA-256 058cc9c2667de6759e0501b3956c125a331b0ca4c78313015871a2dbea905d14; https://www.mistore.jp/store/shinjuku/shops_mens.html read 2026-11-02T17:00:22.724Z, 112,190 bytes, SHA-256 659c632631c3301098bd7e8224b4c2f027f397fe7417c22a3f08a993898e0320; https://www.mistore.jp/store/shinjuku/shops/mainfloor1.html read 2026-11-02T16:59:27.110Z, 117,425 bytes, SHA-256 cb59645a1b2425f22f927b3d4563d114f1e85c8df188597acd520b7db1e11f6f; https://www.mistore.jp/content/dam/isetan_mitsukoshi/brand-search/common/js/brand-search-main.min.js read 2026-11-02T17:01:16.602Z, 27,213 bytes, SHA-256 1b511ec24395fabb2232de0f766f69f0c5ce6ecb4260a1beb28d3597f9087c10."
     }
   ],
   "pois": [
