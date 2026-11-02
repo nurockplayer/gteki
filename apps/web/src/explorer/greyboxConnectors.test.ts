@@ -924,14 +924,29 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: a junction opens only where the other stair is; the incoming flight keeps its outer guard before the landing.
+  it("keeps a stair's outer guard short of a junction with another stair", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [4, 4, 4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const landing = { hasFloor: (p: { x: number; y: number; z: number }) => (p.x >= 3.25 && p.x <= 4.75 && p.y >= -0.75 && p.y <= 0.75) || p.z < 1e-6, nearMesh: () => false };
+    const result = buildConnectors(station, () => true, landing, "high");
+    const r = resolveWalls(3, -0.7, 0.3, 1.5, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 3, r.z + 0.7)).toBeGreaterThan(0.05);
+  });
+
   // #710 review: two flights of one stair side by side, a 0.2 m empty gap apart, keep the guards on their facing sides.
-  it("keeps the facing guards of two flights of one stair across a narrow empty gap", () => {
-    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 0.4, 0], [4, 0.4, 1.7], [0, 0.8, 1.7]];
+  it.each([[1.7, 0.85], [1.6, 0.8]])("keeps the facing guards of two flights of one stair across a narrow empty gap, %f m apart", (apart, mid) => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 0.4, 0], [4, 0.4, apart], [0, 0.8, apart]];
     const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
     expect(result.stats.legacyConnectors).toBe(0);
     // Where the two flights come within a step of each other's height (x from about 2.3 m to the landing), a wall still
-    // lines the gap (z = 0.75 to 0.95) on both flights' facing sides.
-    for (const x of [2.4, 2.6, 2.8, 3.0]) for (const [z0, z1] of [[0.7, 0.8], [0.9, 1.0]]) {
+    // lines the gap on both flights' facing sides.
+    for (const x of [2.4, 2.6, 2.8, 3.0]) for (const [z0, z1] of [[mid - 0.15, mid], [mid, mid + 0.15]]) {
       const lined = result.wallSegments.some((w) => Math.min(w.ax, w.bx) <= x && Math.max(w.ax, w.bx) >= x
         && Math.min(w.az, w.bz) >= z0 && Math.max(w.az, w.bz) <= z1);
       expect(lined, `x=${x} z=${z0}..${z1}`).toBe(true);

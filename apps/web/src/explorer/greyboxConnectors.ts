@@ -282,7 +282,7 @@ function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
  * The walkable regions of one connector: a strip level per flight (the legs between turning landings, discs at shallow
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
  */
-function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean, junction: (index: number) => boolean, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
+function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean, junction: (index: number) => PlanPoint[][], regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
   // Level legs at either end that lie on station floor are that floor, not part of the stair: they carry no wall, so a
   // walk edge that meets the same node from the side is not cut off. Off the floor they keep their walls, or a walker
   // could step off the generated tread. The model starts at the first and ends at the last such climb.
@@ -329,9 +329,10 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
       }
       const quad = end === first || end === last ? planQuad(points[end]!, planDir(points[next]!, points[end]!), MOUTH_M, half) : square(end);
       regions.push({ kind: "connector", level, y: points[end]!.y, quad });
-      // Where two generated connectors meet at a node on station floor, their flights overlap in plan at the node: a
-      // connector footprint 2 * half around it opens the junction, so neither's walls stand across the other's exit.
-      if ((end === first || end === last) && junction(end)) regions.push({ kind: "connector", level, y: points[end]!.y, quad: discRing(points[end]!, 2 * half) });
+      // Where two generated connectors meet at a node on station floor, their flights overlap in plan at the node: the
+      // other's footprint there is a connector footprint of this level too, so neither's walls stand across the other's
+      // exit, and every guard outside it stays.
+      if (end === first || end === last) for (const quad of junction(end)) regions.push({ kind: "connector", level, y: points[end]!.y, quad });
     }
     // The level legs before the first climb and after the last, as open footprints of the end flights.
     if (k === 1) for (let i = 0; i < first; i++) regions.push({ kind: "connector", level, y: points[i]!.y, quad: planQuad(points[i]!, planDir(points[i]!, points[i + 1]!), Math.hypot(points[i + 1]!.x - points[i]!.x, points[i + 1]!.z - points[i]!.z), half) });
@@ -408,8 +409,22 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const levels = new Map<string, { edge: Edge; landing: boolean }>();
   const built: { edge: Edge; parts: ConnectorPart[]; pads: { part: ConnectorPart; floorId: string }[]; path: THREE.Vector3[]; halfWidth: number }[] = [];
   const regionsByEdge = new Map<string, Region[]>();
-  const unmodelled = unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh), nodeUse = new Map<string, number>();
-  for (const edge of unmodelled) for (const node of [edge.from, edge.to]) nodeUse.set(node, (nodeUse.get(node) ?? 0) + 1);
+  const unmodelled = unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh);
+  const halfOf = (edge: Edge) => {
+    const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
+    return ((edge.mode === "stairs" ? (rawWidth && rawWidth > 0 ? rawWidth : 1.5) : 1.2) / 2) + 0.03;
+  };
+  // Every generated connector's first stretch away from each of its nodes: its plan footprint there, 2 * half long.
+  const mouths = new Map<string, { edgeId: string; quad: PlanPoint[] }[]>();
+  for (const edge of unmodelled) {
+    const pts = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
+    if (pts.length < 2) continue;
+    for (const [node, at, toward] of [[edge.from, pts[0]!, pts[1]!], [edge.to, pts.at(-1)!, pts.at(-2)!]] as const) {
+      const list = mouths.get(node) ?? [];
+      list.push({ edgeId: edge.id, quad: planQuad(at, planDir(at, toward), 2 * halfOf(edge), halfOf(edge)) });
+      mouths.set(node, list);
+    }
+  }
   for (const edge of unmodelled) {
     const points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
     const planRuns = points.slice(1).map((p, i) => Math.hypot(p.x - points[i]!.x, p.z - points[i]!.z));
@@ -436,10 +451,12 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       for (let k = 0; k <= count; k++) if (!onFloor(a.clone().lerp(b, k / count))) return false;
       return true;
     };
-    // An end at a node another generated connector also meets, on station floor, is a junction between the two.
-    const junction = (i: number) => {
+    // An end at a node another generated connector also meets, on station floor, is a junction: the other connectors'
+    // footprints there, where their flights overlap this one's in plan.
+    const junction = (i: number): PlanPoint[][] => {
       const node = i === 0 ? edge.from : i === points.length - 1 ? edge.to : undefined;
-      return node !== undefined && (nodeUse.get(node) ?? 0) > 1 && onFloor(points[i]!);
+      if (node === undefined || !onFloor(points[i]!)) return [];
+      return (mouths.get(node) ?? []).filter((m) => m.edgeId !== edge.id).map((m) => m.quad);
     };
     edgeRegions(edge, points, half, isTurn, floored, junction, ownRegions, levels);
     regionsByEdge.set(edge.id, ownRegions);
