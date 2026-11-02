@@ -412,8 +412,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
   const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
   // Curated shopfronts (#209): visual only, in the surveyed PLATEAU openings; they never enter the walker's world.
-  const shopKit = await loadShopKit(THREE, ctx, kitManifest as KitManifest, (shopPlacements as unknown as { shops: Shop[] }).shops,
-    (shopOpenings as unknown as { openings: Opening[] }).openings, low);
+  const shopKit = await loadShopKit(THREE, ctx, kitManifest as KitManifest,
+    [...(shopPlacements as unknown as { shops: Shop[] }).shops, ...(ctx.privateShops?.shops ?? [])] as Shop[],
+    [...(shopOpenings as unknown as { openings: Opening[] }).openings, ...(ctx.privateShops?.openings ?? [])] as Opening[], low);
   // Phones keep the sign frames but not their rods: with rods all 119 frames are ~40k triangles, without ~19k.
   const signKit = await loadSignKit(THREE, ctx, kitManifest as KitManifest, low, { omitPhoneRods: true });
   const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
