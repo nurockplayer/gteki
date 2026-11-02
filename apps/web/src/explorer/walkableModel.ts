@@ -534,8 +534,10 @@ function splitByHeight(pieces: readonly Piece[], stepM: number): string[] {
       const overlap = convexIntersection(a.ring, b.ring);
       const gaps = Math.abs(ringArea(overlap)) > MIN_CUT_AREA_M2 ? overlap.map((p) => a.height(p) - b.height(p)) : null;
       const apart = gaps ? Math.min(...gaps) > stepM || Math.max(...gaps) < -stepM : rangesApart;
+      // Pieces only touching more than a step apart (a passage alongside another one floor up) conflict too: their
+      // shared side is a drop, not a way across.
       if (!apart) { add(neighbours, i, j); add(neighbours, j, i); }
-      else if (gaps) { add(conflicts, i, j); add(conflicts, j, i); }
+      else { add(conflicts, i, j); add(conflicts, j, i); }
     });
     if (!conflicts.size) continue;
     const cluster = new Map<number, number>();

@@ -149,6 +149,16 @@ describe("walkable model", () => {
       expect([...buildWalkableModel([loop], undefined, 0.45).levels.keys()].sort()).toEqual(["L", "L#1"]);
     });
 
+    it("keeps two passages of one level apart where they only touch side by side 4 m apart in height", () => {
+      const { levels, walls } = buildWalkableModel([
+        strip("L", [{ x: -5, y: 0, z: 0 }, { x: 5, y: 0, z: 0 }], 1),
+        strip("L", [{ x: -5, y: 4, z: 2 }, { x: 5, y: 4, z: 2 }], 1),
+      ], undefined, 0.45);
+      expect(levels.size).toBe(2);
+      // Each keeps its side along the shared line z = 1.
+      expect(walls.filter((wall) => Math.abs(wall.az - 1) < 1e-9 && Math.abs(wall.bz - 1) < 1e-9 && Math.abs(wall.ax - wall.bx) > 9.9)).toHaveLength(2);
+    });
+
     it("splits a ramp of the corridor's own level where it climbs over that corridor", () => {
       const { levels, walls } = buildWalkableModel([
         strip("L", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
