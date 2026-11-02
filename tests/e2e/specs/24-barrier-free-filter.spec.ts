@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { hooks, openStation, stationData } from "../lib/gteki.ts";
 
 for (const station of [
-  { key: "ikebukuro", origin: "jr-central-gate-2", count: 20, positioned: 0 },
+  { key: "ikebukuro", origin: "metro-m-central-west-gate", count: 20, positioned: 0 },
   { key: "shinjuku", origin: "poi:gate:1", count: 9, positioned: 3 },
 ] as const) {
   test(`${station.key}: barrier-free facilities near the origin`, async ({ page }) => {
@@ -11,6 +11,11 @@ for (const station of [
     await page.locator(".category-filter").selectOption("barrier_free");
     const rows = page.locator("#gteki-to-listbox button.result");
     await expect(rows).toHaveCount(station.count);
+    if (station.key === "ikebukuro") {
+      await expect(rows.first()).toHaveAttribute("data-poi", "metro-m-lift-1");
+      await expect(rows.first()).toContainText("Connects to your gate");
+      await expect(rows.first()).toContainText("Distance unknown");
+    }
     const data = stationData(station.key);
     const pois = data.pois;
     const values = await rows.evaluateAll((elements) => elements.map((row) => ({

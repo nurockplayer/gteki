@@ -784,6 +784,7 @@ export class App {
         }
         tags.push(distance.distanceM === null ? this.t.distanceUnknown : distance.distanceKind === "route"
           ? this.t.routeDistance(Math.round(distance.distanceM)) : this.t.straightDistance(Math.round(distance.distanceM)));
+        if (distance.connectsToGate) tags.push(this.t.connectsToGate);
       }
       if (this.s.openNow && h.poi.category === "shop")
         tags.push((statuses.get(h.poi.id) ?? openNow(h.poi.hours, now)) === "open" ? this.t.openNowOpen : this.t.hoursUnknown);

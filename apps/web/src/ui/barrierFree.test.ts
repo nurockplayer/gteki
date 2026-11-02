@@ -72,6 +72,15 @@ it("orders real SJK lifts by distance from a gate or store, then keeps unlocated
   }
 });
 
+it("ranks the real IKB lift serving the origin gate first without inventing a distance", () => {
+  const origin = { kind: "poi", poi: ikb.pois.find((p) => p.id === "metro-m-central-west-gate")! } as const;
+  // Reverse the real POIs so the lift must move from the end rather than pass by data order.
+  const bundle = { ...ikb, pois: [...ikb.pois].reverse() };
+  const hits = barrierFreeResults(bundle, createSearchIndex(bundle), createRouter(bundle), origin, "", "en");
+  expect(hits[0]).toMatchObject({ poi: { id: "metro-m-lift-1" }, connectsToGate: true, distanceM: null });
+  expect(hits.slice(1).every((hit) => !hit.connectsToGate)).toBe(true);
+});
+
 it("selects the new option, shows 20 real IKB rows with notes, and preserves the single-category filter", () => {
   vi.stubGlobal("matchMedia", () => ({ matches: false }));
   const app = new App(document.createElement("div")) as unknown as {
@@ -87,12 +96,13 @@ it("selects the new option, shows 20 real IKB rows with notes, and preserves the
   app.s.entry = { key: "ikebukuro" };
   app.s.search = createSearchIndex(ikb);
   app.s.router = createRouter(ikb);
-  app.s.origin = { kind: "poi", poi: ikb.pois.find((p) => p.id === "jr-central-gate-2")! };
+  app.s.origin = { kind: "poi", poi: ikb.pois.find((p) => p.id === "metro-m-central-west-gate")! };
   app.s.openNow = true;
   app.renderCategoryFilter(ikb);
   app.ui.categoryFilter.value = "barrier_free";
   app.ui.categoryFilter.dispatchEvent(new Event("change"));
   expect(app.ui.toResults.querySelectorAll("button.result")).toHaveLength(20);
+  expect(app.ui.toResults.querySelector("button.result")?.textContent).toContain("起点の改札に接続");
   expect(app.ui.toResults.textContent).toContain("距離不明");
   app.ui.toInput.value = "トイレ";
   app.ui.toInput.dispatchEvent(new Event("input"));

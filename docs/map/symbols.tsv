@@ -398,11 +398,11 @@ printedHours	function	apps/web/src/hours.ts	15
 HOURS_STALE_DAYS	const	apps/web/src/hours.ts	29
 hoursStale	function	apps/web/src/hours.ts	32
 Lang	type	apps/web/src/i18n.ts	6
-Strings	type	apps/web/src/i18n.ts	495
-strings	function	apps/web/src/i18n.ts	497
-pick	function	apps/web/src/i18n.ts	502
-coverageText	function	apps/web/src/i18n.ts	511
-initialLang	function	apps/web/src/i18n.ts	516
+Strings	type	apps/web/src/i18n.ts	497
+strings	function	apps/web/src/i18n.ts	499
+pick	function	apps/web/src/i18n.ts	504
+coverageText	function	apps/web/src/i18n.ts	513
+initialLang	function	apps/web/src/i18n.ts	518
 FormClock	interface	apps/web/src/merchant/form-state.ts	9
 FormState	interface	apps/web/src/merchant/form-state.ts	18
 newFormState	function	apps/web/src/merchant/form-state.ts	32

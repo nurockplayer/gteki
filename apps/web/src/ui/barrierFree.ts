@@ -1,6 +1,6 @@
 import { routeBetween, type RouteEndpoint, type Router } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
-import type { SearchHit, SearchIndex } from "@gteki/search";
+import { searchKey, type SearchHit, type SearchIndex } from "@gteki/search";
 import type { Lang } from "../i18n.ts";
 
 export function isAccessibleToilet(poi: Poi): boolean {
@@ -15,6 +15,11 @@ export function barrierFreeResults(bundle: StationBundle, search: SearchIndex, r
     : poi.connectorNodeIds.flatMap((id) => nodes.get(id) ? [nodes.get(id)!.position] : []);
   const starts = !origin ? [] : origin.kind === "poi" ? positions(origin.poi)
     : nodes.get(origin.nodeId) ? [nodes.get(origin.nodeId)!.position] : [];
+  // Printed gate/exit names put the operator or line before a space; match the core name too.
+  const gateKeys = origin?.kind === "poi" && ["ticket_gate", "exit"].includes(origin.poi.category)
+    ? origin.poi.names.filter((name) => name.lang === "ja")
+      .flatMap(({ text }) => [searchKey(text), searchKey(text.trim().replace(/^.*\s/u, ""))]).filter(Boolean)
+    : [];
   const candidates: SearchHit[] = query
     ? search.search(query, { categories: ["elevator", "escalator", "toilet"], limit: bundle.pois.length, lang })
     : bundle.pois.map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
@@ -30,9 +35,12 @@ export function barrierFreeResults(bundle: StationBundle, search: SearchIndex, r
           distanceKind = "route";
         }
       }
-      return { ...hit, distanceM, distanceKind };
+      const connectsToGate = hit.poi.names.some(({ lang, text }) => lang === "ja" &&
+        gateKeys.some((key) => searchKey(text).includes(key)));
+      return { ...hit, distanceM, distanceKind, connectsToGate };
     })
     .sort((a, b) => Number(b.routable) - Number(a.routable) ||
-      (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity))
+      (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity) ||
+      (a.distanceM === null && b.distanceM === null ? Number(b.connectsToGate) - Number(a.connectsToGate) : 0))
     .slice(0, 20);
 }
