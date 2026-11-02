@@ -908,9 +908,11 @@ describe("turning landing guards", () => {
   });
 
   // #710 review: where a curved stair splits into levels, each level's opening reaches as far as the split's joint disc.
-  it("keeps the walkway clear across a soft split on a curved stair with short legs", () => {
+  it.each([1.5, 2])("keeps the walkway clear across a soft split on a curved stair with short legs, %f m wide", (width) => {
     const waypoints = Array.from({ length: 10 }, (_v, i): [number, number, number] => [2 * Math.sin(i * Math.PI / 12), 0.3 * i, 2 * (1 - Math.cos(i * Math.PI / 12))]);
-    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    const stair = stairThrough(waypoints);
+    stair.edges[0]!.attributes = { ...stair.edges[0]!.attributes, width: { m: width } } as typeof stair.edges[0]["attributes"];
+    const result = buildConnectors(stair, () => true, flat, "high");
     expect(result.stats.legacyConnectors).toBe(0);
     const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
     for (let s = 0; s <= total; s += 0.05) {

@@ -263,6 +263,10 @@ export function skippedConnectorPath(bundle: StationBundle, edge: Edge): { x: nu
 const MOUTH_M = 0.6;
 
 /** A plan rectangle from `at` along unit `u` for `length`, `half` to each side. */
+/** A disc as a 24-sided plan ring, the polygon the walkable model makes of a disc region. */
+function discRing(centre: THREE.Vector3, radius: number): PlanPoint[] {
+  return Array.from({ length: 24 }, (_v, i) => ({ x: centre.x + radius * Math.cos(i * Math.PI / 12), z: centre.z + radius * Math.sin(i * Math.PI / 12) }));
+}
 function planQuad(at: THREE.Vector3, u: THREE.Vector3, length: number, half: number): PlanPoint[] {
   const nx = -u.z * half, nz = u.x * half, bx = at.x + u.x * length, bz = at.z + u.z * length;
   return [{ x: at.x + nx, z: at.z + nz }, { x: bx + nx, z: bz + nz }, { x: bx - nx, z: bz - nz }, { x: at.x - nx, z: at.z - nz }];
@@ -311,14 +315,15 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
       if (soft.has(end)) {
         // At a soft split the neighbouring level's flight, through its bends, 0.1 m further than the split's own disc reaches
         // (on a curve the disc's rim passes the end of an opening only `half` long), so the two levels meet without a wall.
-        // Joint discs close the wedges between turning pieces.
+        // At each joint a disc-shaped connector footprint closes the wedge between turning pieces; as a connector it carries
+        // no wall where its rim passes the neighbouring flight's edge (#710 review).
         const step = end - next;
         let left = half + 0.1;
         for (let a = end, b = end + step; b >= 0 && b < points.length && left > 1e-6; a = b, b += step) {
           const leg = Math.hypot(points[b]!.x - points[a]!.x, points[b]!.z - points[a]!.z);
           regions.push({ kind: "connector", level, y: points[a]!.y, quad: planQuad(points[a]!, planDir(points[a]!, points[b]!), Math.min(left, leg), half) });
           left -= leg;
-          if (left > 1e-6) regions.push({ kind: "disc", level, x: points[b]!.x, y: points[b]!.y, z: points[b]!.z, radius: Math.min(half, left) });
+          if (left > 1e-6) regions.push({ kind: "connector", level, y: points[b]!.y, quad: discRing(points[b]!, Math.min(half, left)) });
         }
         continue;
       }
