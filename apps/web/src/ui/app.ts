@@ -705,8 +705,11 @@ export class App {
         if (entry.synthetic || entry.key === this.s.entry?.key) continue;
         const directory = this.directories.get(entry.key);
         if (!directory) continue;
+        // Same Open now rule as the local rows: closed shops dropped, open before unknown, then the first three.
+        const unknownLast = (hit: SearchHit) => Number(this.s.openNow && hit.poi.category === "shop" && openNow(hit.poi.hours, now) === "unknown");
         const brands = directory.search.search(q, { limit: directory.bundle.pois.length, lang: this.s.lang, categories })
-          .filter((hit) => hit.tenant && notClosed(hit)).slice(0, 3);
+          .filter((hit) => hit.tenant && notClosed(hit))
+          .sort((x, y) => unknownLast(x) - unknownLast(y)).slice(0, 3);
         if (!brands.length) continue;
         groupHeaders.set(hits.length, this.t.otherStationHeader(entry.label));
         hits.push(...brands.map((hit) => ({ ...hit, station: entry, directory: directory.bundle })));
