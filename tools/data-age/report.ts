@@ -43,7 +43,7 @@ export function ageRows(bundles: StationBundle[], now = new Date()): AgeRow[] {
       // Same verified-point conditions as merchantPrecision; ties and map-read doors are unverified.
       const verifiedDoor = poi.displayPosition !== null && poi.connectorNodeIds.length > 0
         && !/\b(STATION_TIE|P_MAP_DOOR|SEARCH_ONLY|AREA_ONLY)\b/.test(poi.evidence.method);
-      const entranceDate = verifiedDoor ? sourceDate(poi.evidence.sourceIds) : null;
+      const entranceDate = verifiedDoor ? jstDate(poi.evidence.checkedDate) : null;
       const oldestDate = oldest([hoursDate, tenantsDate, entranceDate].filter((date): date is string => !!date));
       rows.push({
         missing: !hoursDate || !entranceDate || (tenants.length > 0 && !tenantsDate),

@@ -50,13 +50,26 @@ it("does not treat a station tie or a map-read door as a verified entrance", () 
 
 it("converts source timestamps to JST dates before computing freshness", () => {
   const timestamp = "2026-11-02T16:30:00Z"; // 2026-11-03 01:30 JST
+  const store = poi("older", "2026-11-03");
+  store.evidence.checkedDate = "2026-11-03";
   const bundle: StationBundle = { ...fixture,
     sources: [source("door", timestamp), source("directory", timestamp)],
-    pois: [poi("older", "2026-11-03")], tenants: [tenant("t1", "directory")],
+    pois: [store], tenants: [tenant("t1", "directory")],
   };
   expect(ageRows([bundle], new Date("2026-11-03T03:00:00Z"))[0]).toMatchObject({
     hoursDate: "2026-11-03", tenantsDate: "2026-11-03", entranceDate: "2026-11-03",
     oldestDate: "2026-11-03", ageDays: 0,
+  });
+});
+
+it("uses the verified door's checked date in JST instead of its source retrieval date", () => {
+  const door = poi("verified", "2026-11-03");
+  door.evidence.checkedDate = "2026-11-02T16:30:00Z"; // 2026-11-03 01:30 JST
+  const bundle: StationBundle = { ...fixture,
+    sources: [source("door", "2026-10-20")], pois: [door], tenants: [],
+  };
+  expect(ageRows([bundle], new Date("2026-11-03T03:00:00Z"))[0]).toMatchObject({
+    entranceDate: "2026-11-03", oldestDate: "2026-11-03", ageDays: 0,
   });
 });
 
