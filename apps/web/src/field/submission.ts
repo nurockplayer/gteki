@@ -1,7 +1,7 @@
 import type { FieldStation } from "./data.ts";
 
 export interface Observation {
-  stopId: string; target: string; side: "left" | "right" | "n/a"; offsetM: string;
+  id: string; stopId: string; target: string; side: "left" | "right" | "n/a"; offsetM: string;
   floorLabel: string; confirmation: "CLOSED" | "OPEN"; stepFree: string;
   observedText: string; note: string; poiId: string; itemId: string; paid: string; observedAt: string;
 }
@@ -11,7 +11,8 @@ export function nowJst(date = new Date()): string {
 }
 
 export function newObservation(stopId: string): Observation {
-  return { stopId, target: "", side: "n/a", offsetM: "", floorLabel: "", confirmation: "OPEN", stepFree: "",
+  const id = globalThis.crypto?.randomUUID?.() ?? `obs-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  return { id, stopId, target: "", side: "n/a", offsetM: "", floorLabel: "", confirmation: "OPEN", stepFree: "",
     observedText: "", note: "", poiId: "", itemId: "", paid: "", observedAt: nowJst() };
 }
 
@@ -41,4 +42,23 @@ export function buildReceipt(station: FieldStation, records: Observation[]) {
   if (!items.length) throw new Error("Choose at least one numbered item before exporting a receipt. FC / unassigned notes stay saved and will be included as fieldNotes.");
   return { version: 1, station: station.id, fieldRun: station.fieldRun, sourceKind: "team_field", observer: "owner",
     items, fieldNotes: entries.filter((entry) => entry.item === undefined || entry.item <= 0) };
+}
+
+export interface RecorderState {
+  station: string; positions: Record<string, number>; records: Record<string, Observation[]>; deletedIds?: string[];
+}
+
+/** Only locally edited IDs replace stored records; navigation cannot overwrite another tab's edits. */
+export function mergeRecorderState(stored: RecorderState, local: RecorderState, changedIds: ReadonlySet<string>): RecorderState {
+  const deletedIds = [...new Set([...(stored.deletedIds ?? []), ...(local.deletedIds ?? [])])];
+  const deleted = new Set(deletedIds);
+  const records: RecorderState["records"] = {};
+  for (const station of new Set([...Object.keys(stored.records), ...Object.keys(local.records)])) {
+    const merged = new Map((stored.records[station] ?? []).map((record) => [record.id, record]));
+    for (const record of local.records[station] ?? []) {
+      if (!merged.has(record.id) || changedIds.has(record.id)) merged.set(record.id, record);
+    }
+    records[station] = [...merged.values()].filter((record) => !deleted.has(record.id));
+  }
+  return { ...local, positions: { ...stored.positions, ...local.positions }, records, deletedIds };
 }

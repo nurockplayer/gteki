@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { validateReceipt, type FieldReceipt } from "../../../../stations/ikebukuro/pipeline/import_field_receipt.ts";
-import { buildReceipt, newObservation, nowJst } from "./submission.ts";
+import { buildReceipt, mergeRecorderState, newObservation, nowJst, type RecorderState } from "./submission.ts";
 import type { FieldStation } from "./data.ts";
 
 for (const id of ["ikebukuro", "shinjuku"]) {
@@ -40,4 +40,21 @@ for (const id of ["ikebukuro", "shinjuku"]) {
 }
 it("fills in the JST date across midnight", () => {
   expect(nowJst(new Date("2026-11-02T16:01:02Z"))).toBe("2026-11-03T01:01:02+09:00");
+});
+
+it("keeps records from two stale tabs, applies the last edited ID, and retains deletions", () => {
+  const first = { ...newObservation("IK-01"), observedText: "First tab" };
+  const second = { ...newObservation("IK-01"), observedText: "Second tab" };
+  const empty: RecorderState = { station: "ikebukuro", positions: {}, records: {} };
+  const tabA = { ...empty, records: { ikebukuro: [first] } };
+  const tabB = { ...empty, records: { ikebukuro: [second] } };
+  const savedA = mergeRecorderState(empty, tabA, new Set([first.id]));
+  const savedB = mergeRecorderState(savedA, tabB, new Set([second.id]));
+  expect(savedB.records.ikebukuro).toEqual([first, second]);
+  const edited = { ...first, observedText: "Updated in A" };
+  const savedEdit = mergeRecorderState(savedB, { ...tabA, records: { ikebukuro: [edited] } }, new Set([first.id]));
+  const staleNavigation = mergeRecorderState(savedEdit, savedB, new Set());
+  expect(staleNavigation.records.ikebukuro).toEqual([edited, second]);
+  const removed = mergeRecorderState(staleNavigation, { ...tabA, records: { ikebukuro: [] }, deletedIds: [first.id] }, new Set());
+  expect(mergeRecorderState(removed, tabA, new Set([first.id])).records.ikebukuro).toEqual([second]);
 });

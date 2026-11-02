@@ -400,7 +400,9 @@ parseRoute	function	apps/web/src/field/route.ts	3
 Observation	interface	apps/web/src/field/submission.ts	3
 nowJst	function	apps/web/src/field/submission.ts	9
 newObservation	function	apps/web/src/field/submission.ts	13
-buildReceipt	function	apps/web/src/field/submission.ts	18
+buildReceipt	function	apps/web/src/field/submission.ts	19
+RecorderState	interface	apps/web/src/field/submission.ts	47
+mergeRecorderState	function	apps/web/src/field/submission.ts	52
 HOURS_MAX_AGE_DAYS	const	apps/web/src/hours.ts	7
 printedHours	function	apps/web/src/hours.ts	15
 HOURS_STALE_DAYS	const	apps/web/src/hours.ts	29
