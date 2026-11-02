@@ -1,6 +1,6 @@
 /**
  * Build stations/shinjuku/gteki/tenants.json — the brand directories of 小田急百貨店 新宿店, the three
- * 新宿マルイ buildings, the 売場 sections of 伊勢丹新宿店 本館/メンズ館 and the brands of 新宿高島屋 and
+ * 新宿マルイ buildings, the 売場 sections and brands of 伊勢丹新宿店 本館/メンズ館 and the brands of 新宿高島屋 and
  * 京王百貨店 新宿店 — from the facts-only research files under docs/research/merchants/
  * (#419; 伊勢丹, 高島屋 and 京王百貨店 under OD-35).
  *
@@ -38,6 +38,11 @@ const SOURCES = [
   {
     file: join(HERE, "../../../docs/research/merchants/shinjuku-isetan-sections.json"),
     sourceId: "isetan-shinjuku-floorguide-2026-10",
+    storePoiIds: ["shop-sjk-isetan-honkan", "shop-sjk-isetan-mens"],
+  },
+  {
+    file: join(HERE, "../../../docs/research/merchants/shinjuku-isetan-brands.json"),
+    sourceId: "isetan-shinjuku-brands-2026-11",
     storePoiIds: ["shop-sjk-isetan-honkan", "shop-sjk-isetan-mens"],
   },
   {
