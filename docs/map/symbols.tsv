@@ -144,8 +144,8 @@ buildStairs	function	apps/web/src/explorer/greyboxConnectors.ts	82
 buildEscalator	function	apps/web/src/explorer/greyboxConnectors.ts	117
 ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	202
 skippedConnectorPath	function	apps/web/src/explorer/greyboxConnectors.ts	256
-buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	367
-withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	570
+buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	371
+withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	574
 unmodelledVerticalEdges	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	11
 ConnectorMaterial	type	apps/web/src/explorer/greyboxConnectorsLegacy.ts	45
 ConnectorPart	interface	apps/web/src/explorer/greyboxConnectorsLegacy.ts	46
@@ -377,7 +377,7 @@ Region	type	apps/web/src/explorer/walkableModel.ts	7
 BoundaryWall	type	apps/web/src/explorer/walkableModel.ts	14
 PlanPolygon	type	apps/web/src/explorer/walkableModel.ts	17
 regionPolygon	function	apps/web/src/explorer/walkableModel.ts	27
-buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	385
+buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	389
 Segment2	interface	apps/web/src/explorer/walker.ts	7
 wallToRenderer	function	apps/web/src/explorer/walker.ts	19
 resolveWalls	function	apps/web/src/explorer/walker.ts	24

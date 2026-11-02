@@ -1,4 +1,4 @@
-import polygonClipping, { type Polygon } from "polygon-clipping";
+import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clipping";
 
 /** A point in plan space: renderer x/z. */
 export type PlanPoint = { x: number; z: number };
@@ -375,8 +375,12 @@ function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
   const union: PlanPolygon[] = [];
   for (const group of groups.values()) {
     if (group.length === 1) { union.push([group[0]!.map((p) => ({ x: p.x, z: p.z }))]); continue; }
-    const polygons = group.map((ring): Polygon => [ring.map((p): [number, number] => [p.x, p.z])]);
-    union.push(...polygonClipping.union(polygons[0]!, ...polygons.slice(1)).map(fromClipping));
+    const polygons = (snap: number) => group.map((ring): Polygon => [ring.map((p): [number, number] => snap ? [Math.round(p.x / snap) * snap, Math.round(p.z / snap) * snap] : [p.x, p.z])]);
+    let merged: MultiPolygon;
+    // polygon-clipping's sweep line can throw on edges that nearly coincide; such a group is retried snapped to 0.1 mm.
+    try { const all = polygons(0); merged = polygonClipping.union(all[0]!, ...all.slice(1)); }
+    catch { const all = polygons(1e-4); merged = polygonClipping.union(all[0]!, ...all.slice(1)); }
+    union.push(...merged.map(fromClipping));
   }
   return union;
 }

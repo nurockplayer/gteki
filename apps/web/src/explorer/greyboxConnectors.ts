@@ -329,10 +329,14 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
     if (k === 1) for (let i = 0; i < first; i++) regions.push({ kind: "connector", level, y: points[i]!.y, quad: planQuad(points[i]!, planDir(points[i]!, points[i + 1]!), Math.hypot(points[i + 1]!.x - points[i]!.x, points[i + 1]!.z - points[i]!.z), half) });
     if (k === bounds.length - 1) for (let i = last; i < points.length - 1; i++) regions.push({ kind: "connector", level, y: points[i]!.y, quad: planQuad(points[i]!, planDir(points[i]!, points[i + 1]!), Math.hypot(points[i + 1]!.x - points[i]!.x, points[i + 1]!.z - points[i]!.z), half) });
   }
-  // Turning landings joined by a level leg are one landing: one level, so where their squares overlap no guard stands
-  // across the other's flight.
+  // Turning landings joined by level legs, through any shallow bends between them, are one landing: one level, so where
+  // their squares overlap no guard stands across the other's flight.
   const landingOf = new Map<number, number>();
-  for (const j of turns) landingOf.set(j, turns.includes(j - 1) && Math.abs(points[j]!.y - points[j - 1]!.y) <= 1e-6 ? landingOf.get(j - 1)! : j);
+  for (const j of turns) {
+    let i = j - 1;
+    while (i >= 0 && !turns.includes(i) && Math.abs(points[i]!.y - points[j]!.y) <= 1e-6) i--;
+    landingOf.set(j, i >= 0 && turns.includes(i) && Math.abs(points[i]!.y - points[j]!.y) <= 1e-6 ? landingOf.get(i)! : j);
+  }
   for (const j of turns) {
     const level = `connector:${edge.id}:landing:${landingOf.get(j)}`, centre = points[j]!, axis = planDir(points[j - 1]!, centre);
     levels.set(level, { edge, landing: true });
