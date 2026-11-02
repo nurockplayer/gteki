@@ -16,7 +16,7 @@
 import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { SceneContext } from "@gteki/scene-api";
-import { KIT_ENV_INTENSITY, type KitManifest, mergeByMaterial, pieceUri, tileGroups, tileSize, visibleParts } from "./kit.ts";
+import { KIT_ENV_INTENSITY, type KitManifest, mergeByMaterial, pieceUri, visibleParts } from "./kit.ts";
 import { FONT } from "./signs.ts";
 type ThreeNS = typeof THREE_NS;
 
@@ -387,10 +387,10 @@ function paintSignAtlas(signs: readonly ShopSign[], pxPerM: number, bladeStart: 
 export interface ShopStats {
   /** Shops with a sign and at least one placed row. */
   shops: number;
-  /** Placed bays (InstancedMesh instances). */
+  /** Placed bays (merged per material per tile). */
   modules: number;
   tiles: number;
-  /** One draw per part per piece per tile (worst case: every tile in view). */
+  /** One draw per material (the bays are merged into a single tile). */
   drawCallsAllTiles: number;
   trianglesAllTiles: number;
   trianglesWorstTile: number;
@@ -481,38 +481,31 @@ export async function loadShopKit(
 
       if (placements.length) {
         const world = placements.map((p) => ({ centre: toRenderer(p.x, p.y, p.z), yaw: p.yawDeg * DEG, p }));
-        const tiles = tileGroups(world.map((w) => ({ x: w.centre.x, z: w.centre.z })), tileSize(low));
-        let worst = 0;
-        for (const [key, idx] of [...tiles].sort(([a], [b]) => (a < b ? -1 : 1))) {
-          stats.tiles++;
-          let tileTris = 0;
-          for (const id of [...assets.keys()].sort()) {
-            const mine = idx.filter((wi) => world[wi]!.p.piece === id);
-            if (!mine.length) continue;
-            for (const part of assets.get(id)!.parts) {
-              if (part.material.name === "gteki_reveal_dark") continue;
-              const im = new THREE.InstancedMesh(part.geometry, litOf(part.material), mine.length);
-              owned.push(im); // its instance-matrix buffer is freed only by its own dispose()
-              im.name = `kit_shop:${id}:${key}`;
-              im.userData = { gteki_role: "kit_shop" };
-              mine.forEach((wi, i) => {
-                const w = world[wi]!;
-                q.setFromAxisAngle(up, w.yaw);
-                s.set(w.p.sx, w.p.sy, w.p.sz);
-                base.compose(w.centre, q, s).multiply(part.matrix);
-                im.setMatrixAt(i, base);
-              });
-              im.instanceMatrix.needsUpdate = true;
-              im.computeBoundingSphere();
-              group.add(im);
-              stats.drawCallsAllTiles++;
-              tileTris += triOf(part.geometry) * mine.length;
+        // Every bay part, baked into world space and merged per material: one draw per material for the whole station.
+        // The bays total a few thousand triangles, so splitting them into tiles for culling only multiplied the draws.
+        const parts: { geometry: THREE_NS.BufferGeometry; material: THREE_NS.Material; matrix: THREE_NS.Matrix4 }[] = [];
+        for (const id of [...assets.keys()].sort()) {
+          const mine = world.filter((w) => w.p.piece === id);
+          for (const part of assets.get(id)!.parts) {
+            if (part.material.name === "gteki_reveal_dark") continue;
+            for (const w of mine) {
+              q.setFromAxisAngle(up, w.yaw);
+              s.set(w.p.sx, w.p.sy, w.p.sz);
+              parts.push({ geometry: part.geometry, material: litOf(part.material), matrix: new THREE.Matrix4().compose(w.centre, q, s).multiply(part.matrix) });
             }
           }
-          stats.trianglesAllTiles += tileTris;
-          worst = Math.max(worst, tileTris);
         }
-        stats.trianglesWorstTile = worst;
+        stats.tiles = 1;
+        for (const { geometry, material } of mergeByMaterial(THREE, parts)) {
+          const mesh = new THREE.Mesh(geometry, material);
+          owned.push(geometry);
+          mesh.name = `kit_shop:${material.name}`;
+          mesh.userData = { gteki_role: "kit_shop" };
+          group.add(mesh);
+          stats.drawCallsAllTiles++;
+          stats.trianglesAllTiles += triOf(geometry);
+        }
+        stats.trianglesWorstTile = stats.trianglesAllTiles;
       }
 
       if (placements.length) {
