@@ -1,7 +1,7 @@
 import { routeBetween, type RouteEndpoint, type RouteProfile, type Router } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
-import { searchKey, type SearchHit, type SearchIndex } from "@gteki/search";
-import type { Lang } from "../i18n.ts";
+import { normalizeJa, searchKey, type SearchHit, type SearchIndex } from "@gteki/search";
+import { strings, type Lang } from "../i18n.ts";
 
 export function isAccessibleToilet(poi: Poi): boolean {
   return poi.category === "toilet" && poi.names.some(({ text }) => /車いす|多機能|多目的|バリアフリー|accessible/i.test(text));
@@ -23,6 +23,21 @@ export function barrierFreeResults(bundle: StationBundle, search: SearchIndex, r
   const candidates: SearchHit[] = query
     ? search.search(query, { categories: ["elevator", "escalator", "toilet"], limit: bundle.pois.length, lang })
     : bundle.pois.map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
+  if (query) {
+    const ja = strings("ja").categoryNames;
+    const en = strings("en").categoryNames;
+    const kindLabels: Partial<Record<Poi["category"], string[]>> = {
+      elevator: [en.elevator!, "lift", ja.elevator!, "えれべーたー"],
+      escalator: [en.escalator!, ja.escalator!],
+      toilet: [en.toilet!, "accessible toilet", "restroom", ja.toilet!, "多機能トイレ", "車いす対応トイレ"],
+    };
+    const normalized = normalizeJa(query);
+    const indexed = new Set(candidates.map(({ poi }) => poi.id));
+    for (const poi of bundle.pois) {
+      if (!indexed.has(poi.id) && kindLabels[poi.category]?.some((label) => normalizeJa(label).startsWith(normalized)))
+        candidates.push({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 });
+    }
+  }
   return candidates.filter(({ poi }) => poi.category === "elevator" || poi.category === "escalator" || isAccessibleToilet(poi))
     .map((hit) => {
       const distances = starts.flatMap((start) => positions(hit.poi).map((end) => Math.hypot(end.x - start.x, end.y - start.y)));

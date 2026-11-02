@@ -72,6 +72,18 @@ it("orders real SJK lifts by distance from a gate or store, then keeps unlocated
   }
 });
 
+it("matches English facility kinds on the real IKB Japanese-only POIs", () => {
+  const search = createSearchIndex(ikb);
+  const origin = { kind: "poi", poi: ikb.pois.find((p) => p.id === "metro-m-central-west-gate")! } as const;
+  const results = (query: string) => barrierFreeResults(ikb, search, createRouter(ikb), origin, query, "en", DEFAULT_PROFILE);
+  const elevators = results("elevator");
+  expect(elevators).toHaveLength(8);
+  expect(elevators.every((hit) => hit.poi.category === "elevator")).toBe(true);
+  const toilets = results("toilet");
+  expect(toilets).toHaveLength(19);
+  expect(toilets.every((hit) => isAccessibleToilet(hit.poi))).toBe(true);
+});
+
 it("shows the distance computeRoute produces for the selected SJK lift with step-free off and on", () => {
   vi.useFakeTimers({ now: new Date("2026-11-03T12:00:00+09:00") });
   const router = createRouter(sjk);
