@@ -263,6 +263,18 @@ describe("walkable model", () => {
       }
     });
 
+    it("keeps a multi-segment ramp joining a corridor whole past its first segment", () => {
+      // R rises out of B's floor (0.3 m) and climbs on over it in a second segment that starts 1 m up.
+      const { slabCuts, walls } = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1),
+        strip("R", [{ x: 0, y: 0.3, z: 0 }, { x: 10, y: 1, z: 0 }, { x: 30, y: 2.3, z: 0 }], 1),
+      ], undefined, 0.45);
+      // Only B's floor gives way, from 1.7 m under R (x ≈ 20.8) to R's end; R is not cut anywhere.
+      expect([...slabCuts.keys()]).toEqual(["0:1"]);
+      expect(area(slabCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(2 * (30 - (10 + 0.7 / 1.3 * 20)), 4);
+      expect(walls.some((wall) => wall.level === "B" && wall.topY !== undefined)).toBe(true);
+    });
+
     it("leaves the model unchanged without a step height", () => {
       const { slabCuts, ceilingCuts, levels } = buildWalkableModel([
         strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),

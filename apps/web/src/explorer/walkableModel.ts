@@ -642,6 +642,7 @@ export function buildWalkableModel(
   // Lower-floor cuts under a joined floor, with that floor's height: the walls along them stop under it.
   const undersOf = new Map<string, { ring: PlanPoint[]; over: (p: PlanPoint) => number }[]>();
   if (stepM > 0) {
+    const pairs: { i: number; j: number; overlap: PlanPoint[]; meets: boolean }[] = [];
     boxPairs(pieces.map((piece) => piece.box), (i, j) => {
       const a = pieces[i]!, b = pieces[j]!;
       if (sameWalk(a, b)) return;
@@ -650,11 +651,18 @@ export function buildWalkableModel(
       if (a.low === a.high && b.low === b.high && Math.abs(a.low - b.low) <= stepM) return;
       const overlap = convexIntersection(pieces[i]!.ring, pieces[j]!.ring);
       if (Math.abs(ringArea(overlap)) <= MIN_CUT_AREA_M2) return;
-      // Pieces within a step of each other anywhere over their overlap join there (a ramp rising out of the floor
-      // it starts on): that is a walk, so both floors stay whole, and only the lower ceiling the rising floor passes
-      // under is cut. Pieces of one height cluster always join.
       const gaps = overlap.map((p) => pieces[i]!.height(p) - pieces[j]!.height(p));
-      const join = keys[i] === keys[j] || (Math.min(...gaps) <= stepM && Math.max(...gaps) >= -stepM);
+      pairs.push({ i, j, overlap, meets: Math.min(...gaps) <= stepM && Math.max(...gaps) >= -stepM });
+    });
+    // Pieces within a step of each other anywhere over their overlap join there (a ramp rising out of the floor it
+    // starts on), and so does the rest of each one's walk (a group, or one region) with the other's: the ramp's later
+    // segments climb on over the floor it left. A join is a walk, so both floors stay whole; only the lower ceiling
+    // the rising floor passes under, and the lower floor where no one fits under it, are cut. Pieces of one height
+    // cluster always join.
+    const walkOf = (piece: Piece) => piece.group ?? `region:${piece.region}`;
+    const joinedWalks = new Set(pairs.filter((pair) => pair.meets).map(({ i, j }) => [walkOf(pieces[i]!), walkOf(pieces[j]!)].sort().join("\u0000")));
+    for (const { i, j, overlap } of pairs) {
+      const join = keys[i] === keys[j] || joinedWalks.has([walkOf(pieces[i]!), walkOf(pieces[j]!)].sort().join("\u0000"));
       for (const [upper, lower] of [[i, j], [j, i]] as const) {
         const up = pieces[upper]!, down = pieces[lower]!, rise = (p: PlanPoint) => up.height(p) - down.height(p);
         const above = clipHalf(overlap, (p) => rise(p) - stepM);
@@ -676,7 +684,7 @@ export function buildWalkableModel(
         const ceiling = clipHalf(above, (p) => CEILING_M - rise(p));
         if (ceiling.length >= 3 && Math.abs(ringArea(ceiling)) > MIN_CUT_AREA_M2) cutsOf(ceilingCuts, down).push(ceiling);
       }
-    });
+    }
   }
   const byLevel = new Map<string, Piece[]>();
   pieces.forEach((piece, i) => { const list = byLevel.get(keys[i]!); if (list) list.push(piece); else byLevel.set(keys[i]!, [piece]); });
