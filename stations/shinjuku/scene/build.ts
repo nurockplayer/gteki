@@ -540,6 +540,7 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
   let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput });
+  const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
@@ -649,7 +650,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.name = "room floor (render only)";
       g.add(mesh);
     }
-    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...layout.soffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry)]);
+    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...visibleSoffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry), ...layout.shaftFascias.filter((f) => f.floorId === lv.floorId).map((f) => enclosureWallGeometry(f.wall))]);
     if (ceil) g.add(new THREE.Mesh(track(ceil), mat.ceiling));
     const hood = merged(layout.soffits.filter((s) => s.floorId === lv.floorId && s.spaceId.startsWith("elevator-cap:") && s.z > -0.5).map(soffitGeometry));
     if (hood) {
@@ -1646,7 +1647,8 @@ function buildUndergroundLighting(
   type Fixture = { a: XYZ; b: XYZ; ground: XYZ };
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
-  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))), ...layout.soffits, ...extraRoofs];
+  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
+    ...layout.soffits.filter((s) => !/^shaft-(roof|invert):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
   const ceilingAt = (p: XYZ) => {
     let best: { z: number; floorId: string } | null = null;
     for (const s of roofs) {

@@ -20,6 +20,7 @@ The two stations are built differently:
 | Path | Role |
 | --- | --- |
 | `stations/shinjuku/tools/import-e27.ts` | Builds the Shinjuku bundle; header comment lists the dataset quirks it relies on |
+| `stations/shinjuku/scene/layout.ts` | Keeps the shared physical shaft enclosure/caps in `soffits`; `shaftFinishes` and `shaftFascias` supply the per-flight visual sheets, flat landing/shoulder finishes and step closures used by `stations/shinjuku/scene/build.ts` |
 | `stations/shinjuku/tools/e27-raw.ts` | Raw-dir resolution (`GTEKI_RAW_SHINJUKU`) |
 | `stations/shinjuku/tools/fetch-sources.sh` | Downloads raw inputs, verifies sha256 against `stations/shinjuku/sources/manifest.json` |
 | `stations/shinjuku/tools/field-receipts.ts` | Applies `docs/research/field/receipts/*-shinjuku.json` inside `import:e27` (#556) |
