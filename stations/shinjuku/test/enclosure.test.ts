@@ -312,7 +312,11 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
     expect(lights.every((l) => !l.castShadow)).toBe(true);
     // The Golden Slice bank head (e1fa65, m1 end at renderer -19.81, -7.8, -175.47) has a fill light over its landing.
     const head = new THREE.Vector3(-19.81, -7.8, -175.47);
-    expect(lights.some((l) => l.getWorldPosition(new THREE.Vector3()).setY(-7.8).distanceTo(head) < 4)).toBe(true);
+    // Over that landing: within 4 m in plan, and under its own ceiling (above the landing, below the floor overhead).
+    expect(lights.some((l) => {
+      const p = l.getWorldPosition(new THREE.Vector3());
+      return Math.hypot(p.x - head.x, p.z - head.z) < 4 && p.y > head.y && p.y < head.y + 5;
+    })).toBe(true);
     expect(fixtures.length).toBe(1);
     expect(fixtures.reduce((n, f) => n + f.count, 0)).toBeGreaterThan(100);
     expect(glass.size).toBe(1);
