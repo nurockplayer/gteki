@@ -273,6 +273,32 @@ function planQuad(at: THREE.Vector3, u: THREE.Vector3, length: number, half: num
   return [{ x: at.x + nx, z: at.z + nz }, { x: bx + nx, z: bz + nz }, { x: bx - nx, z: bz - nz }, { x: at.x - nx, z: at.z - nz }];
 }
 
+// Inset each convex source quad/disc by 1 cm before union: imported sides must not erase exposed guards.
+function insetJunctionRing(ring: readonly PlanPoint[]): PlanPoint[] {
+  const origin = ring[0]!;
+  const winding = Math.sign(ring.reduce((area, a, i) => {
+    const b = ring[(i + 1) % ring.length]!;
+    return area + (a.x - origin.x) * (b.z - origin.z) - (b.x - origin.x) * (a.z - origin.z);
+  }, 0));
+  let clipped = [...ring];
+  for (let i = 0; i < ring.length && clipped.length; i++) {
+    const a = ring[i]!, b = ring[(i + 1) % ring.length]!, dx = b.x - a.x, dz = b.z - a.z;
+    const length = Math.hypot(dx, dz);
+    const distance = (p: PlanPoint) => winding * (dx * (p.z - a.z) - dz * (p.x - a.x)) - 0.01 * length;
+    const next: PlanPoint[] = [];
+    for (let k = 0; k < clipped.length; k++) {
+      const p = clipped[k]!, q = clipped[(k + 1) % clipped.length]!, dp = distance(p), dq = distance(q);
+      if (dp >= 0) next.push(p);
+      if ((dp >= 0) !== (dq >= 0)) {
+        const t = dp / (dp - dq);
+        next.push({ x: p.x + (q.x - p.x) * t, z: p.z + (q.z - p.z) * t });
+      }
+    }
+    clipped = next;
+  }
+  return clipped;
+}
+
 /** Unit plan direction from `a` to `b`. */
 function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
   const d = b.clone().sub(a); d.y = 0;
@@ -542,7 +568,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const pitch = Math.abs(j.grade - m.grade), radius = pitch > 1e-6 ? Math.min(along, Math.max(reach, WALKER_BODY.stepUpM / pitch)) : along;
     const asClipping = (ring: readonly PlanPoint[]) => ring.map((p): [number, number] => [p.x, p.z]);
     try {
-      const polygons = other.flatMap((r) => regionPolygon(r)).map((polygon) => polygon.map(asClipping));
+      const polygons = other.flatMap((r) => regionPolygon(r)).map((polygon) => insetJunctionRing(polygon[0]!)).filter((ring) => ring.length >= 3).map((ring) => [asClipping(ring)]);
       if (!polygons.length) continue;
       const footprint = polygonClipping.union(polygons[0]!, ...polygons.slice(1));
       const near: MultiPolygon = polygonClipping.intersection([asClipping(discRing(j.at, radius))], footprint);
