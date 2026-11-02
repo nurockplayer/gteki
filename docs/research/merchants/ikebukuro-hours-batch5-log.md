@@ -20,31 +20,38 @@ All six store/mall building POIs in imported `pois.json` (shop rows without a nu
 Echika池袋, 東武ホープセンター and エミオ池袋 have tenant rows but **no building POI** in this
 bundle. No new POI is created. Batch 1's null-POI building rows do not attach hours to a card.
 
-## Imported (0)
+## Imported (1)
 
-No new hours meet both this brief's rights rule and dated-source requirement.
-Esola's own notice explicitly prints `2026年5月27日更新`, within 180 days of
-2026-11-03 JST (160 days). Its site/operator is not named in `use-tiers.md`, however,
-so the brief requires class UNKNOWN and no import. No hours from this notice enter the bundle.
+`shop-ikb-esola`: the official notice explicitly prints `2026年5月27日更新`,
+`物販・サービス店舗　10:30～21:30` and `飲食店舗　11:00～23:00`.
+The update is 160 days before 2026-11-03 JST, within OD-32's 180 days.
+`pageDate` is 2026-05-27 and `basis` is `dated-official`. The card's `retrievedAt`
+is 2026-11-02, the UTC date of the read; its label says the hours may have changed.
+Tenant exceptions are not building defaults, and no tenant hours are overwritten.
 
 ## Rights
 
-The brief's named-source requirement controls this batch. The older Metro Properties
-(Echika, Esola) facts-only precedent in `docs/map/data-rights.md` does not substitute for a
-lead ruling under this brief. Esola and Hope Center terms are recorded below for the lead.
-PARCO, ISP, LUMINE and Tobu use the brief's decided classes; no rights ruling is changed.
+Data lead ruling on PR #740, 2026-11-03 06:0x JST: Esola/Metro Properties and
+東武ホープセンター belong to **Sites allowing private use and quotation**, with S facts-only
+use. The examples in `docs/research/use-tiers.md` now record that ruling.
+
+Esola terms: https://www.metropro-sc.jp/esola-ikebukuro/shop/site_use.jsp, read
+2026-11-02T20:47:47Z. Clause: 「これらについて、権利者の許可なく複製、転用などをすることは法律で禁止されています。」
+The lead ruled that it restates copyright law and is no stricter than that class;
+`docs/map/data-rights.md` already records the facts-only precedent. The former Esola
+class-unknown GAP is resolved by the lead's ruling and the dated notice is imported.
+PARCO, ISP, LUMINE and Tobu keep the brief's decided classes.
 
 ## GAP
 
 | Store | URL | Read UTC | Reason |
 | --- | --- | --- | --- |
-| エソラ池袋 (`shop-ikb-esola`) | https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=12 | 2026-11-02T20:47:09Z | class unknown: dated hours notice (updated 2026-05-27), but Metro Properties/Esola is not named in use-tiers.md. Terms: https://www.metropro-sc.jp/esola-ikebukuro/shop/site_use.jsp (read 2026-11-02T20:47:47Z), 著作権: 「これらについて、権利者の許可なく複製、転用などをすることは法律で禁止されています。」 Lead to classify; no import. |
 | shop-ikb-isp | https://www.web-isp.co.jp/facilities/ | 2026-11-02T20:46:43Z | UNKNOWN: official facilities page prints whole-building hours and 年中無休, but no hours date/period or page update date. OD-32 dated-source requirement not met. |
 | shop-ikb-lumine | https://www.lumine.ne.jp/ikebukuro/information/hours/ | 2026-11-02T20:46:43Z | UNKNOWN: official hours page prints shopping and restaurant hours, but no hours date/period or page update date. Dates on unrelated shop news do not date the hours. |
 | shop-ikb-parco | https://ikebukuro.parco.jp/pnews/detail/?id=13950 | 2026-11-02T20:47:09Z | UNKNOWN: official hours notice and linked information page print hours without an applicable date/period or page update date. Recent News dates and lost-property service dates are unrelated. |
 | shop-ikb-tobudept | https://www.tobu-dept.jp/ikebukuro/tnb/open/ | 2026-11-02T20:46:44Z | UNKNOWN: unchanged stale COVID notice. Only store-level notice is 3月3日(火)より当面の間 (2020-03-03, inferred as in batch 4), older than 180 days. No newer dated store hours printed. |
 | Echika池袋 (no building POI) | https://www.metropro-sc.jp/echika-ikebukuro/shop/hours.jsp | 2026-11-02T20:46:42Z | UNKNOWN: page says hours vary by tenant and links to a list updated 2025-12-24, over 180 days old; no building-wide opening/closing printed. |
-| 東武ホープセンター (no building POI) | https://tobuhopecenter.jp/ | 2026-11-02T20:46:43Z | class unknown: operator is not named in use-tiers.md; no import. Page prints hours, but news item dates are not a page/hours update date. Terms: https://tobuhopecenter.jp/terms/ (read 2026-11-02T20:47:10Z), 情報の利用制限: 「閲覧につきましては自由ですが“私的利用”または“引用”などは著作権法上認められた場合を除き利用することを禁止いたします。」 Lead to classify. |
+| 東武ホープセンター (no building POI) | https://tobuhopecenter.jp/ | 2026-11-02T20:46:43Z | UNKNOWN: class settled as private use and quotation by the data lead (2026-11-03 JST, #740). No building POI and no qualifying dated hours; no import. News item dates are not a page/hours update date. Terms: https://tobuhopecenter.jp/terms/ (read 2026-11-02T20:47:10Z), 情報の利用制限: 「閲覧につきましては自由ですが“私的利用”または“引用”などは著作権法上認められた場合を除き利用することを禁止いたします。」 Class settled; GAP remains for missing building POI and dated hours. |
 
 Refuse-every-use: none of the scoped missing building cards uses that class; no such site was fetched.
 UNKNOWN means no qualifying hours were imported; existing absent hours and Tobu UNKNOWN are preserved.
@@ -78,26 +85,25 @@ The guessed `sitepolicy.jsp` was 404; the actual linked `site_use.jsp` was then 
 
 ## Rebuild and assumptions
 
-No rows are imported, so no generated file or source registry entry changes. A trial
-#707 rebuild was completed with `SOURCE_DATE_EPOCH=1792594800` (66 nodes, 67 edges,
-67 verified); graph.json equalled main. The proposed Esola import and generated changes
-were removed when the brief's named-source rule was applied. No Shinjuku import is needed.
-The pinned GML used for that trial had SHA-256
-`38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09`.
+Follow #707: one source and `shop-ikb-esola.hours` in `graph.src.json`; rebuild with
+`SOURCE_DATE_EPOCH=1792594800 python3 -I stations/ikebukuro/pipeline/build_station.py`.
+The pinned epoch preserves the graph's geometry dates; graph.json must remain unchanged.
+GML SHA-256: `38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09`.
+No Shinjuku import is needed. No building POI is created for Echika/Hope/Emio.
+The new OD-32 card regression loads the committed Esola POI and asserts the printed
+open/close text, the read-date label and the official link together.
 
-There are no new imported rows to exercise in a card test; no test or product code is changed.
-The requested station-package check is still attempted. An early card-test launch was canceled
-before execution while generation ran, and the queued replacement was canceled when the import
-was removed; neither is claimed as a test pass.
-
-Coverage matrix is not edited. Proposed PR-only update: five missing building cards researched;
-Esola class UNKNOWN with a dated official notice; ISP/LUMINE/PARCO no dated hours; Tobu stale
-notice unchanged; Echika/Hope Center have no building POI. Seibu already has hours, unchanged.
+Coverage matrix is not edited. Proposed PR-only update: Esola building hours imported;
+ISP/LUMINE/PARCO still have no dated hours; Tobu stale notice unchanged; Echika/Hope have
+no building POI. Seibu already has hours, unchanged. Neither Esola nor Hope is class unknown.
 
 ## Tests (2026-11-03 JST)
 
-`orb-test -- pnpm --filter @gteki/station-ikebukuro check` was queued at 05:52 JST and
-canceled at 05:59 JST before container execution. Last output:
-`orb-test: waiting for a gteki slot (2 light run(s) at a time inside the work window)`.
-The selected package defines `typecheck`, not `check`; no successful package check is claimed.
-No test files are touched in this research-only change; no imported-row test ran.
+The initial requested `check` command was canceled before execution: the package has no
+`check` script. The lead corrected the command to `typecheck` in the 06:0x JST ruling.
+Run once after this correction:
+
+- `orb-test -- pnpm exec vitest run apps/web/src/ui/app.notes.test.ts`
+- `orb-test -- pnpm --filter @gteki/station-ikebukuro typecheck`
+
+Results are recorded in PR #740 at hand-off.

@@ -1,19 +1,20 @@
 {
   "schema": "gteki.research.hours/0.1",
-  "note": "Ikebukuro hours batch 5 (2026-11-03 JST): no qualifying imports. Four building cards lack a qualifying source date; Esola has a dated notice but its operator is not named in use-tiers.md, so class unknown per the brief. Existing imported data is unchanged.",
-  "entries": [],
-  "gaps": [
+  "note": "Ikebukuro hours batch 5 (2026-11-03 JST): Esola dated official building-card hours, admitted by the data lead on PR #740. Four building cards lack a qualifying source date and remain UNKNOWN. No tenant hours or building POIs added.",
+  "entries": [
     {
       "poiId": "shop-ikb-esola",
+      "sourceId": "esola-ikebukuro-hours-2026-11",
       "url": "https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=12",
       "retrievedAt": "2026-11-02T20:47:09Z",
       "pageDate": "2026-05-27",
-      "status": "UNKNOWN",
-      "reason": "class unknown: Metro Properties/Esola is not named in use-tiers.md. Its own notice is updated 2026-05-27, within 180 days, but the brief requires lead classification before import. Older docs/map/data-rights.md precedent is not substituted for the brief.",
-      "termsUrl": "https://www.metropro-sc.jp/esola-ikebukuro/shop/site_use.jsp",
-      "termsRetrievedAt": "2026-11-02T20:47:47Z",
-      "termsClause": "これらについて、権利者の許可なく複製、転用などをすることは法律で禁止されています。"
-    },
+      "status": "OK",
+      "basis": "dated-official",
+      "hoursText": "物販・サービス店舗　10:30～21:30\n飲食店舗　11:00～23:00",
+      "note": "2026年5月27日更新。一部店舗は異なる。館の物販・サービス店舗と飲食店舗の時間のみ。各テナントの既存時間を上書きしない。Metro Properties/Esola: private use and quotation class, data lead ruling 2026-11-03 JST, PR #740."
+    }
+  ],
+  "gaps": [
     {
       "poiId": "shop-ikb-isp",
       "url": "https://www.web-isp.co.jp/facilities/",
