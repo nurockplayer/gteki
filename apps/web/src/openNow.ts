@@ -42,7 +42,7 @@ export function openNow(hours: HoursText | null | undefined, now: Date): "open" 
     if (!match) return "unknown";
     const open = minutes(match[2]!);
     const close = minutes(match[3]!);
-    if (open === null || close === null || close < open) return "unknown";
+    if (open === null || close === null || close <= open) return "unknown"; // equal times may mean 24 h: unknown
     const group = (match[1] ?? "").replace("〜", "~");
     for (const day of days[group]!) {
       if (schedule.has(day)) return "unknown";

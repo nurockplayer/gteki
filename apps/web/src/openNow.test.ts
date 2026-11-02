@@ -50,7 +50,7 @@ describe("openNow from printed OD-32 hours", () => {
     "平日 10:00~21:00 日祝 10:00~20:00", // Saturday missing
     "10:00~21:00 平日 10:00~20:00", "月~土 10:00~21:00 土日祝 10:00~20:00", // overlaps
     "10:00~24:00", "10:00~25:00", "21:00~08:00", "10:60~21:00", "0:30A.M.~11:00P.M.",
-    "午前13時~午後8時", "※館営業時間に準ずる",
+    "午前13時~午後8時", "※館営業時間に準ずる", "10:00～10:00",
   ])("keeps unsupported/incomplete/overlapping text unknown: %s", (text) => {
     expect(openNow(hours(text), at("12:00"))).toBe("unknown");
   });

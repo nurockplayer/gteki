@@ -137,8 +137,12 @@ it("ranks every candidate before dropping closed shops, and the other-category c
   const all = createSearchIndex(sjk).search("a", { limit: sjk.pois.length, lang: "ja", categories: ["shop"] })
     .filter((h) => openNow(h.poi.hours, now) !== "closed");
   const shown = search("a").map((row) => row.querySelector(".result-name")?.textContent);
-  expect(shown.length).toBe(Math.min(8, all.length));
-  expect(shown.filter((name) => !name?.length)).toHaveLength(0);
+  // Open shops first, then unknown hours, each in ranking order; the first 8 of those are the rows, in that order.
+  const status = (h: (typeof all)[number]) => openNow(h.poi.hours, now) === "unknown" ? 1 : 0;
+  const expected = [...all].sort((x, y) => status(x) - status(y)).slice(0, 8)
+    .map((h) => h.poi.names.find((n) => n.lang === "ja")?.text ?? h.poi.names[0]!.text);
+  expect(shown).toEqual(expected);
+  expect(all.length).toBeGreaterThan(8);
   // A closed store found only in the shop category leaves no "other categories" offer that counts it.
   const ikb = bundleOf(ikbStation, ikbGraph, ikbPois, ikbTenants);
   const second = mount(ikb, "ikebukuro");
