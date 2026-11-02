@@ -58,3 +58,14 @@ it("keeps records from two stale tabs, applies the last edited ID, and retains d
   const removed = mergeRecorderState(staleNavigation, { ...tabA, records: { ikebukuro: [] }, deletedIds: [first.id] }, new Set());
   expect(mergeRecorderState(removed, tabA, new Set([first.id])).records.ikebukuro).toEqual([second]);
 });
+
+it("rejects nonexistent JST dates and accepts a valid minute-precision timestamp", () => {
+  const station: FieldStation = { id: "ikebukuro", title: "Ikebukuro", fieldRun: "docs/research/field/ikebukuro-route.md",
+    stops: [], nodeIds: [], edgeIds: [], pois: [] };
+  const record = { ...newObservation("IK-01"), itemId: "1", observedText: "Public plate" };
+  for (const observedAt of ["2026-02-30T12:00+09:00", "2026-13-01T12:00+09:00"]) {
+    expect(() => buildReceipt(station, [{ ...record, observedAt }])).toThrow("observedAt needs a valid JST time with +09:00.");
+  }
+  const observedAt = "2026-11-03T08:50+09:00";
+  expect(buildReceipt(station, [{ ...record, observedAt }]).items[0]!.observedAt).toBe(observedAt);
+});

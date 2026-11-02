@@ -18,7 +18,14 @@ export function newObservation(stopId: string): Observation {
 
 export function buildReceipt(station: FieldStation, records: Observation[]) {
   const entries = records.map((record) => {
-    if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?\+09:00$/.test(record.observedAt) || Number.isNaN(Date.parse(record.observedAt)))
+    const parts = record.observedAt.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?\+09:00$/)?.slice(1).map((part) => Number(part ?? 0));
+    const date = new Date(0);
+    if (parts) {
+      date.setUTCFullYear(parts[0]!, parts[1]! - 1, parts[2]!);
+      date.setUTCHours(parts[3]!, parts[4]!, parts[5]!, 0);
+    }
+    if (!parts || [date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()]
+      .some((part, index) => part !== parts[index]))
       throw new Error(`${record.stopId}: observedAt needs a valid JST time with +09:00.`);
     if (!["CLOSED", "OPEN"].includes(record.confirmation)) throw new Error(`${record.stopId}: invalid confirmation.`);
     if (record.stepFree && !/^(level|steps:\d+|lift|escalator)$/.test(record.stepFree))
