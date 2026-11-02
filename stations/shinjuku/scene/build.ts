@@ -540,7 +540,7 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
   let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput });
-  const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert):/.test(s.spaceId)), ...layout.shaftFinishes];
+  const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
@@ -1648,7 +1648,7 @@ function buildUndergroundLighting(
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
-    ...layout.soffits.filter((s) => !/^shaft-(roof|invert):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
+    ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
   const ceilingAt = (p: XYZ) => {
     let best: { z: number; floorId: string } | null = null;
     for (const s of roofs) {

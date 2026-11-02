@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
+import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
 import { buildLayout, pointInRings, soffitHeight, WalkWorld, type Plan, type Soffit } from "../scene/layout.ts";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
+import { buildStation } from "../scene/build.ts";
+import { withCanvasStub } from "./helpers/scene-digest.ts";
 
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
@@ -16,9 +19,10 @@ it("finishes grouped flights on their own planes with flat landings and shoulder
   const fixture: Plan = { levels: [{ label: "B3", ordinal: -3, floorId: "test", renderElevationM: -12, outline: [[ring]],
     spaces: [{ id: "hall", category: "B001", restricted: false, toll: null, rings: [ring] }], facilities: [] }],
     nodeRenderZ: Object.fromEntries(nodes.map((n) => [n.id, n.renderZ])), attribution: [] };
-  const built = buildLayout({ ...bundle, nodes, edges, floors: [{ ...bundle.floors[0]!, id: "test", ordinal: -3, renderElevationM: -12 }] }, fixture);
+  const fixtureBundle: StationBundle = { ...bundle, nodes, edges, pois: [], floors: [{ ...bundle.floors[0]!, id: "test", ordinal: -3, renderElevationM: -12 }] };
+  const built = buildLayout(fixtureBundle, fixture);
   const sheets = (built as typeof built & { shaftFinishes?: Soffit[] }).shaftFinishes;
-  const finishes = sheets ? [...built.soffits.filter((s) => !/^shaft-(roof|invert):/.test(s.spaceId)), ...sheets] : built.soffits;
+  const finishes = sheets ? [...built.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...sheets] : built.soffits;
   const at = (kind: string, x: number, y: number) => finishes.filter((s) =>
     (s.spaceId.startsWith(`shaft-${kind}:`) || kind === "roof" && s.spaceId.startsWith("shaft-collar:")) && pointInRings({ x, y }, s.rings));
   for (const kind of ["roof", "invert"]) {
@@ -49,6 +53,19 @@ it("finishes grouped flights on their own planes with flat landings and shoulder
         && height <= profile.topA + (profile.topB - profile.topA) * t;
     }), `closed shoulder step at ${height}`).toBe(true);
   }
+  expect(at("roof", -0.1, 2).every((s) => !s.slope && Math.abs(s.z + 8.9) < 0.001)).toBe(true);
+  // Physical collars stay, but no raised collar sheet may survive in the actual draw.
+  expect(built.soffits.some((s) => s.spaceId.startsWith("shaft-collar:") && pointInRings({ x: -0.1, y: 2 }, s.rings))).toBe(true);
+  const rendered = withCanvasStub(() => buildStation(fixtureBundle, fixture, { quality: "low" }));
+  try {
+    rendered.root.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(-0.1, -8.8, -2), new THREE.Vector3(0, 1, 0), 0, 3);
+    expect(ray.intersectObject(rendered.root, true).filter((hit) => {
+      const mesh = hit.object as THREE.Mesh;
+      const material = Array.isArray(mesh.material) ? mesh.material[hit.face!.materialIndex] : mesh.material;
+      return material?.name === "mat.ceiling";
+    })).toEqual([]);
+  } finally { rendered.dispose(); }
 });
 
 describe("E27 scene layout", () => {

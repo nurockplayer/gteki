@@ -46,14 +46,15 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged.
  * Vertical item 3 adds a fill light at the guided-walk escalator bank head in the slot a ceilingless anchor wasted (7 → 8 lights): nodes
  * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged. */
+// #221 per-flight shaft finishes; station physical lists unchanged (2026-11-03 JST).
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "2931495174d3eacc531cc9e2bbcdd0e5521b6bc2f457b258fccf1cd9040a472e",
+    geometryDigest: "b1f8c27b2ae5e486e08a58e731e460e21656048948d5e341ada41a50b4f3b471",
     appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
-    nodesDigest: "b4b1106baaf9b34ac1519a23186b5e1cd9e4d614d322bb3d1428fad50fccf7c8",
+    nodesDigest: "ab7c8e444166094c027c627040a17c213bbfe963657d7e2a679c9d70e1573319",
     texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
     meshes: 145,
-    bytes: 14_072_870,
+    bytes: 14356438,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
