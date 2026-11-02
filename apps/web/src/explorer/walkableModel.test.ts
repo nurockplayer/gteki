@@ -228,8 +228,10 @@ describe("walkable model", () => {
       // walker on R passes over it; B's own side walls keep their full height.
       const across = walls.filter((wall) => wall.level === "B" && Math.abs(wall.ax - 21) < 1e-6 && Math.abs(wall.bx - 21) < 1e-6);
       expect(across.reduce((sum, wall) => sum + Math.abs(wall.az - wall.bz), 0)).toBeCloseTo(2);
-      for (const wall of across) expect(wall.topY).toBeCloseTo(1.3);
-      expect(walls.filter((wall) => wall.level === "B" && Math.abs(wall.az - wall.bz) < 1e-9).every((wall) => wall.topY === undefined)).toBe(true);
+      for (const wall of across) for (const top of wall.topY!) expect(top).toBeCloseTo(1.3);
+      const sides = walls.filter((wall) => wall.level === "B" && Math.abs(wall.az - wall.bz) < 1e-9);
+      expect(sides.reduce((sum, wall) => sum + Math.abs(wall.ax - wall.bx), 0)).toBeGreaterThan(80);
+      expect(sides.every((wall) => wall.topY === undefined)).toBe(true);
     });
 
     it("stops the merged wall across a corridor two side-by-side ramps climb over under both", () => {
@@ -242,7 +244,23 @@ describe("walkable model", () => {
       ], undefined, 0.45);
       const across = walls.filter((wall) => wall.level === "B" && Math.abs(wall.ax - 21) < 1e-6 && Math.abs(wall.bx - 21) < 1e-6);
       expect(across.reduce((sum, wall) => sum + Math.abs(wall.az - wall.bz), 0)).toBeCloseTo(2.6);
-      for (const wall of across) expect(wall.topY).toBeCloseTo(1.3);
+      for (const wall of across) for (const top of wall.topY!) expect(top).toBeCloseTo(1.3);
+    });
+
+    it("keeps a long cut's wall stop rising with the floor over it", () => {
+      // B rises 4%, R beside it 5% over B's edge (z 0.3..1.3): B's edge goes from x 140 (1.7 m under R) to x 212 (2.42 m).
+      const { walls } = buildWalkableModel([
+        strip("B", [{ x: 0, y: 0, z: 0 }, { x: 240, y: 9.6, z: 0 }], 1.3),
+        strip("R", [{ x: 0, y: 0.3, z: 1.6 }, { x: 240, y: 12.3, z: 1.6 }], 1.3),
+      ], undefined, 0.45);
+      const along = walls.filter((wall) => wall.level === "B" && wall.topY && Math.abs(wall.az - wall.bz) < 1e-9 && Math.abs(wall.ax - wall.bx) > 60);
+      expect(along.length).toBeGreaterThan(0);
+      for (const wall of along) {
+        // 0.4 m under R at each end and the middle, never under B's own floor there.
+        const at = (x: number) => 0.3 + 12 * x / 240 - 0.4, mid = (wall.ax + wall.bx) / 2;
+        expect(wall.topY!).toEqual([expect.closeTo(at(wall.ax), 5), expect.closeTo(at(mid), 5), expect.closeTo(at(wall.bx), 5)]);
+        for (const [x, top] of [[wall.ax, wall.topY![0]], [wall.bx, wall.topY![2]]] as const) expect(top - 9.6 * x / 240).toBeGreaterThan(1.2);
+      }
     });
 
     it("leaves the model unchanged without a step height", () => {

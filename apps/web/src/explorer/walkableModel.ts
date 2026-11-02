@@ -15,8 +15,11 @@ export type Region = { group?: string } & (
   | { kind: "connector"; level: string; quad: PlanPoint[]; y: number });
 
 /** One wall piece on a level's union boundary, with the floor height at each end. */
-/** `topY`: the wall stops there (renderer y), under a floor that climbed over the one it guards (see BODY_TOP_M). */
-export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay: number; by: number; level: string; topY?: number };
+/**
+ * `topY`: where the wall stops (renderer y) at its start, middle and end, linear between them: under a floor that
+ * climbed over the one it guards (see BODY_TOP_M).
+ */
+export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay: number; by: number; level: string; topY?: [number, number, number] };
 
 /** A union polygon in plan: `[0]` is the outer ring, the rest are holes. Rings are open (no repeated closing point). */
 export type PlanPolygon = PlanPoint[][];
@@ -710,7 +713,8 @@ export function buildWalkableModel(
     };
     const own = boundaryWalls(union, sources, connectors, level, attachmentNear, breakpoints);
     // A wall along a cut under a joined floor stops UNDER_GAP_M under that floor, so a walker on it passes over the wall.
-    // Merged collinear walls can run along several adjacent cuts: each end and the middle may lie on a different one.
+    // Merged collinear walls can run along several adjacent cuts: each end and the middle may lie on a different one,
+    // and the floor over them climbs along the wall, so its stop is kept at all three.
     const unders = undersOf.get(key);
     if (unders) for (const wall of own) {
       const a = { x: wall.ax, z: wall.az }, b = { x: wall.bx, z: wall.bz }, tops: number[] = [];
@@ -719,7 +723,7 @@ export function buildWalkableModel(
         if (!on.length) { tops.length = 0; break; }
         tops.push(Math.min(...on.map(({ over }) => over(p))));
       }
-      if (tops.length) wall.topY = Math.min(...tops) - UNDER_GAP_M;
+      if (tops.length) wall.topY = [tops[0]! - UNDER_GAP_M, tops[1]! - UNDER_GAP_M, tops[2]! - UNDER_GAP_M];
     }
     walls.push(...own);
   }

@@ -531,7 +531,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       return Math.max(wall.ax, wall.bx) >= Math.min(f.at.x, fx) - r && Math.min(wall.ax, wall.bx) <= Math.max(f.at.x, fx) + r
         && Math.max(wall.az, wall.bz) >= Math.min(f.at.z, fz) - r && Math.min(wall.az, wall.bz) <= Math.max(f.at.z, fz) + r;
     });
-    const pieces = crossing.length ? Math.max(1, Math.ceil(length / 0.5)) : Math.abs(wall.by - wall.ay) > 1e-6 ? Math.max(1, Math.ceil(length / 2)) : 1;
+    const pieces = crossing.length ? Math.max(1, Math.ceil(length / 0.5)) : Math.abs(wall.by - wall.ay) > 1e-6 || wall.topY ? Math.max(1, Math.ceil(length / 2)) : 1;
+    // Where the wall stops under a joined floor (walkableModel topY), linear from its start to its middle to its end.
+    const topAt = (t: number) => !wall.topY ? Infinity : t <= 0.5 ? wall.topY[0] + (wall.topY[1] - wall.topY[0]) * t * 2 : wall.topY[1] + (wall.topY[2] - wall.topY[1]) * (t * 2 - 1);
     for (let n = 0; n < pieces; n++) {
       const s0 = p.clone().lerp(q, n / pieces), s1 = p.clone().lerp(q, (n + 1) / pieces), mid = s0.clone().lerp(s1, 0.5);
       // Each flight crossing here opens the heights from 0.4 m under it to 2.6 m over it (an opening starting below
@@ -551,7 +553,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       if (floor < 2.6) kept.push([floor, 2.6]);
       for (const [y0, top] of kept) {
         // A wall stopping under a floor that climbed over its own (walkableModel topY) is cut down to it.
-        const y1 = wall.topY === undefined ? top : Math.min(top, wall.topY - Math.max(s0.y, s1.y));
+        const y1 = Math.min(top, Math.min(topAt(n / pieces), topAt((n + 1) / pieces)) - Math.max(s0.y, s1.y));
         if (y1 - y0 < 0.05) continue;
         const lift = (v: THREE.Vector3, h: number) => v.clone().add(new THREE.Vector3(0, h, 0));
         quad(wb.shell, wb.colors, lift(s0, y0), lift(s1, y0), lift(s1, y1), lift(s0, y1), [0.62, 0.62, 0.62, 0.62]);
