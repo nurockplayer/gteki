@@ -446,7 +446,7 @@ const unsupportedShapes: { name: string; waypoints: (direction: number) => [numb
  * walker gets through them in reality either, so they are not walked end to end. The walls they need are #694.
  */
 const obstructedShapes = new Set([
-  "two 90 degree turns 0.5 m apart", "two equal overlapping landing squares", "flight crossing a non-adjacent landing at 1 m",
+  "two 90 degree turns 0.5 m apart", "flight crossing a non-adjacent landing at 1 m",
   "stacked non-adjacent flights", "a spiral of 15 degree bends whose lower turns pass under its top landing (#673 r3)",
   "a last flight whose side wall stands 0.4 m over an earlier landing (#673 r7)",
   "a rising flight whose side wall runs through an earlier landing 0 to 0.9 m above it (#673 r5)",
