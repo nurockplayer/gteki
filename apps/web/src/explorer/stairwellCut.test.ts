@@ -212,6 +212,16 @@ describe("stairwell cuts", () => {
     expect(at.z).toBeCloseTo(landing.center.z);
   });
 
+  it("rails the deep end of a hole that starts at a seam with a piece too deep under the floor", () => {
+    // The first piece (x 0 to 1.75) runs more than 3.3 m under the floor at 4 m, so the floor over it stays.
+    const deepFirst = flight([{ x: 0, y: 0, z: 0 }, { x: 1.75, y: 0, z: 0.7 }, { x: 10, y: 0, z: 4 }]);
+    const s = scene();
+    const result = cutStairwells(s.root, stairwellWells(deepFirst, traversable), { tier: "high" });
+    // A rail stands across the flight at the hole's deep end, where that floor stops.
+    expect(result.walls.some((w) => Math.min(w.az, w.bz) < 0 && Math.max(w.az, w.bz) > 0 && Math.abs((w.ax + w.bx) / 2 - 1.75) < 0.1)).toBe(true);
+    result.dispose();
+  });
+
   it("rails no sliver across the path where two pieces of one flight meet at a small tilt", () => {
     // A 1.3-degree bend at the joint: the plan runs (0, 0) -> (5, 0.057) -> (10, 0) in renderer x, z.
     const bent = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: -0.057, z: 2 }, { x: 10, y: 0, z: 4 }]);

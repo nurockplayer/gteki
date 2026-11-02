@@ -393,8 +393,7 @@ export function boundaryEdges(polygons: readonly PlanPolygon[], open: readonly [
       if (length2 < MIN_WALL_M * MIN_WALL_M) continue;
       let keep: [number, number][] = [[0, 1]];
       for (const [c, d] of open) {
-        if (pointSegmentDistance(c, a, b) > WALL_TOLERANCE_M && pointSegmentDistance(d, a, b) > WALL_TOLERANCE_M) continue;
-        // Only a collinear open segment removes anything: both its ends lie on this edge's line.
+        // Only a collinear open segment removes anything: both its ends lie on this edge's line (it may run past the edge).
         const off = (p: PlanPoint) => Math.abs((p.x - a.x) * dz - (p.z - a.z) * dx) / Math.sqrt(length2);
         if (off(c) > WALL_TOLERANCE_M || off(d) > WALL_TOLERANCE_M) continue;
         const tc = ((c.x - a.x) * dx + (c.z - a.z) * dz) / length2, td = ((d.x - a.x) * dx + (d.z - a.z) * dz) / length2;

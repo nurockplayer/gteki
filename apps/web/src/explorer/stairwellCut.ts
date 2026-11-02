@@ -93,9 +93,12 @@ export function wellRails(well: StairwellWell, opened: readonly StairwellRect[],
     // The walker leaves the hole upwards across the line where the flight comes within a step of the floor, or, when
     // no hole piece follows, across the hole's upper end.
     const next = well.rects[index + 1], upper = hole.highEnd ?? (hole.to >= rect.halfLength - 1e-6 && !(next && holes.get(next)) ? to : null);
-    // Downwards likewise: a hole starting at a seam with a piece that has none (open air above it) leads on down the flight.
-    // The foot of the first piece is the stair mouth, where the walker comes in from the lower floor.
-    const previous = well.rects[index - 1], lower = (!previous || !holes.get(previous)) && hole.from <= -rect.halfLength + 1e-6 ? from : null;
+    // Downwards likewise: a hole starting at a seam with a piece that has none because the floor is not over it (open air,
+    // or within a step) leads on down the flight; one that is too deep under intact floor is railed. The foot of the
+    // first piece is the stair mouth, where the walker comes in from the lower floor.
+    const previous = well.rects[index - 1];
+    const previousOpen = !previous || !!holes.get(previous) || well.upperY - (previous.center.y + previous.rise / 2) < HOLE_DEPTH_M - 1e-6;
+    const lower = previousOpen && !(previous && holes.get(previous)) && hole.from <= -rect.halfLength + 1e-6 ? from : null;
     for (const along of [upper, lower]) {
       if (along === null) continue;
       const [a, , , d] = pieceQuad(rect, along, along);
