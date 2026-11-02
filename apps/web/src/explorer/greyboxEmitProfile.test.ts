@@ -13,9 +13,15 @@ it("profiles 15 km of synthetic corridors", () => {
   }
   const bundle = { ...base, nodes, edges }, floor = () => false, scene = { colliderNear: () => false, wallHit: () => null };
   const runs = unmodelledRunsByEdge(bundle, () => true, floor);
-  const result = emitGreybox(bundle, runs, floor, scene, "high");
+  // One warm-up build (JIT, first allocations), then the median of three: a single run on a shared CI runner
+  // swings by tens of ms. The 120 ms budget itself stays.
+  emitGreybox(bundle, runs, floor, scene, "high");
+  const samples = [0, 1, 2].map(() => emitGreybox(bundle, runs, floor, scene, "high"));
+  const buildMs = samples.map((sample) => sample.stats.buildMs).sort((a, b) => a - b);
+  console.info(`greybox emit profile: buildMs ${buildMs.map((ms) => ms.toFixed(1)).join(" / ")} (median ${buildMs[1]!.toFixed(1)}, budget 120)`);
+  const result = samples[0]!;
   expect(result.stats.lengthM).toBeCloseTo(15000);
-  expect(result.stats.buildMs).toBeLessThanOrEqual(120);
+  expect(buildMs[1]).toBeLessThanOrEqual(120);
   // 52 per corridor, plus the two end walls the walkable model closes at each dead end (no scene floor beyond).
   expect(result.stats.triangles).toBe(8400);
   expect(result.openings).toHaveLength(0);
