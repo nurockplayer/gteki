@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import type { Poi, Source } from "@gteki/schema";
 import { strings } from "../i18n.ts";
-import { isStationTie, merchantCardEl, merchantCardModel, merchantPrecision } from "./merchantCard.ts";
+import { arrivalPrecision, isMapReadDoor, isStationTie, merchantCardEl, merchantCardModel, merchantPrecision } from "./merchantCard.ts";
 
 const source: Source = {
   id: "toei-shinjuku-stores-2026-10",
@@ -65,6 +65,19 @@ describe("merchant precision (#213)", () => {
     expect(merchantPrecision(tie)).toBe("tie");
     const card = merchantCardEl(merchantCardModel(tie, [source], "en", null), strings("en"));
     expect(card.querySelector(".merchant-meta")?.textContent).toContain(strings("en").merchant.precision.tie);
+  });
+
+  it("labels a private map-read door (P_MAP_DOOR) ahead of a station tie, and only when it routes (OD-35)", () => {
+    const method = "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY; STATION_TIE; P_MAP_DOOR: map-read entrance, unverified";
+    const door = shop({ connectorNodeIds: ["p:entrance"], evidence: { sourceIds: [source.id], method, checkedDate: "2026-10-27" } });
+    expect(isMapReadDoor(door)).toBe(true);
+    expect(arrivalPrecision(door)).toBe("door");
+    expect(merchantPrecision(door)).toBe("door");
+    const card = merchantCardEl(merchantCardModel(door, [source], "ja", null), strings("ja"));
+    expect(card.querySelector(".merchant-meta")?.textContent).toContain(strings("ja").merchant.precision.door);
+    expect(card.querySelector(".merchant-no-route")).toBeNull();
+    // Without a connector the token labels nothing: the listing falls back to its own wording.
+    expect(merchantPrecision(shop({ evidence: { sourceIds: [source.id], method, checkedDate: "2026-10-27" } }))).toBe("tie");
   });
 
   it("leaves a shop without the token on the existing precisions", () => {

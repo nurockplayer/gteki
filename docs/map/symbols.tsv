@@ -495,10 +495,12 @@ MascotInfo	interface	apps/web/src/ui/mascot.ts	127
 MascotSlot	class	apps/web/src/ui/mascot.ts	141
 MerchantPrecision	type	apps/web/src/ui/merchantCard.ts	11
 isStationTie	const	apps/web/src/ui/merchantCard.ts	14
-merchantPrecision	function	apps/web/src/ui/merchantCard.ts	23
-MerchantCardModel	interface	apps/web/src/ui/merchantCard.ts	33
-merchantCardModel	function	apps/web/src/ui/merchantCard.ts	51
-merchantCardEl	function	apps/web/src/ui/merchantCard.ts	77
+isMapReadDoor	const	apps/web/src/ui/merchantCard.ts	20
+arrivalPrecision	function	apps/web/src/ui/merchantCard.ts	23
+merchantPrecision	function	apps/web/src/ui/merchantCard.ts	35
+MerchantCardModel	interface	apps/web/src/ui/merchantCard.ts	46
+merchantCardModel	function	apps/web/src/ui/merchantCard.ts	64
+merchantCardEl	function	apps/web/src/ui/merchantCard.ts	90
 Minimap	class	apps/web/src/ui/minimap.ts	41
 MinimapOrientation	type	apps/web/src/ui/minimapGeometry.ts	7
 MapPoint	interface	apps/web/src/ui/minimapGeometry.ts	8
