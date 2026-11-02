@@ -113,6 +113,87 @@ describe("walkable model", () => {
       [{ x: 0, z: 1 }, { x: 4, z: 1 }, { x: 4, z: -1 }, { x: 0, z: -1 }],
     ]]);
   });
+  describe("level stack", () => {
+    const area = (polygons: PlanPoint[][][]) => polygons.reduce((sum, polygon) => sum + polygon.reduce((n, ring, k) => {
+      let a = 0;
+      for (let i = 0; i < ring.length; i++) { const p = ring[i]!, q = ring[(i + 1) % ring.length]!; a += p.x * q.z - q.x * p.z; }
+      return n + (k === 0 ? 1 : -1) * Math.abs(a / 2);
+    }, 0), 0);
+
+    it("keeps two passages of one level apart where one passes 4 m over the other", () => {
+      const regions = [
+        strip("L", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
+        strip("L", [{ x: 0, y: 4, z: -10 }, { x: 0, y: 4, z: 10 }], 1),
+      ];
+      // Without a step height the level is one union: a plus outline, its crossing open.
+      expect(buildWalkableModel(regions).walls).toHaveLength(12);
+      const { levels, walls } = buildWalkableModel(regions, undefined, 0.45);
+      expect([...levels.keys()].sort()).toEqual(["L", "L#1"]);
+      expect(walls).toHaveLength(8);
+      expect(walls.every((wall) => wall.level === "L")).toBe(true);
+    });
+
+    it("splits a ramp of the corridor's own level where it climbs over that corridor", () => {
+      const { levels, walls } = buildWalkableModel([
+        strip("L", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
+        strip("L", [{ x: -10, y: 0, z: -10 }, { x: 10, y: 0, z: -10 }], 1),
+        strip("L", [{ x: 0, y: 0, z: -10 }, { x: 0, y: 8, z: 10 }], 1),
+      ], undefined, 0.45);
+      expect(levels.size).toBe(2);
+      // The corridor at z = 0 keeps both side walls straight through, under the ramp at 4 m.
+      for (const z of [-1, 1]) expect(walls.some((wall) => Math.abs(wall.az - z) < 1e-9 && Math.abs(wall.bz - z) < 1e-9 && Math.abs(wall.ax - wall.bx) > 19.9)).toBe(true);
+    });
+
+    it("cuts the floor standing less than the clearance over another level, and the lower ceiling under it", () => {
+      const { levels, walls, slabCuts, ceilingCuts } = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
+        strip("A", [{ x: 0, y: 1.6, z: -10 }, { x: 0, y: 1.6, z: 10 }], 1),
+      ], undefined, 0.45);
+      expect(area(slabCuts.get("1:1")!.map((ring) => [ring]))).toBeCloseTo(4);
+      expect(area(ceilingCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(4);
+      expect(slabCuts.has("0:1")).toBe(false);
+      // A loses the crossing (two pieces left) and closes each with a wall along B's sides; B is whole.
+      expect(levels.get("A")).toHaveLength(2);
+      expect(area(levels.get("A")!)).toBeCloseTo(36);
+      expect(area(levels.get("B")!)).toBeCloseTo(40);
+      expect(walls.filter((wall) => wall.level === "A" && Math.abs(Math.abs(wall.az) - 1) < 1e-9 && Math.abs(wall.bz - wall.az) < 1e-9)).toHaveLength(2);
+    });
+
+    it("keeps a floor with the clearance over another level, cutting only the lower ceiling it stands in", () => {
+      for (const [y, ceiling] of [[2.5, true], [3, false]] as const) {
+        const { slabCuts, ceilingCuts } = buildWalkableModel([
+          strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
+          strip("A", [{ x: 0, y, z: -10 }, { x: 0, y, z: 10 }], 1),
+        ], undefined, 0.45);
+        expect(slabCuts.size).toBe(0);
+        expect(ceilingCuts.has("0:1")).toBe(ceiling);
+      }
+    });
+
+    it("cuts a sloped floor passing over another level where it is between a step and the clearance over it", () => {
+      // A ramp from 0 m to 4 m over 20 m along z crosses B's 2 m width at 2 m: the whole overlap is under 2.42 m.
+      const ramp = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
+        strip("R", [{ x: 0, y: 0, z: -10 }, { x: 0, y: 4, z: 10 }], 1),
+      ], undefined, 0.45);
+      expect(area(ramp.slabCuts.get("1:1")!.map((ring) => [ring]))).toBeCloseTo(4);
+      // Rising out of B's floor, the ramp meets B over the overlap: it cuts nothing, as at a ramp's top landing.
+      const foot = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
+        strip("R", [{ x: 0, y: 0, z: -1 }, { x: 0, y: 4, z: 9 }], 1),
+      ], undefined, 0.45);
+      expect(foot.slabCuts.size + foot.ceilingCuts.size).toBe(0);
+    });
+
+    it("leaves the model unchanged without a step height", () => {
+      const { slabCuts, ceilingCuts, levels } = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
+        strip("A", [{ x: 0, y: 1.6, z: -10 }, { x: 0, y: 1.6, z: 10 }], 1),
+      ]);
+      expect(slabCuts.size + ceilingCuts.size).toBe(0);
+      expect(area(levels.get("A")!)).toBeCloseTo(40);
+    });
+  });
 });
 
 describe("boundaryEdges", () => {
