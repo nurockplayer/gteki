@@ -1596,6 +1596,24 @@
    ]
   },
   {
+   "id": "tobu-ikebukuro-station-2026-11",
+   "title": "東武鉄道 池袋駅 設備・ホーム案内",
+   "publisher": "東武鉄道",
+   "url": "https://www.tobu.co.jp/railway/guide/station/info/7105/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "attribution": "東武鉄道 池袋駅 (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-11-02T19:58:53.310019+00:00",
+   "sha256": {
+    "7105.html": "af8b26046e82a77c22518c3e7afbb7d2e3d84b51e181f38d4b8c782e251916a1"
+   },
+   "datasetDate": null,
+   "notes": "facts-only; Tobu §8 business-use ban; recheck-at-C. Read 2026-11-02T19:58:53.310019+00:00 (UTC); 128576 bytes. Text prints platforms 1–5 in the gap/step-reduction list and availability of elevators, escalators and accessible toilets. No facility quantity, floor, paid side or nearest gate is stated. One search entry per facility kind records availability only; no map images, icons or descriptive wording reproduced."
+  },
+  {
    "id": "esola-ikebukuro-hours-2026-11",
    "title": "Esola池袋 各店舗 営業時間について",
    "publisher": "株式会社メトロプロパティーズ",
@@ -25198,6 +25216,366 @@
     {
      "lang": "en",
      "text": "Read 2026-10-27. Location and entrance are unverified (search only, no route); current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-tj-platform-1",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 1番線"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line"
+    },
+    {
+     "lang": "en",
+     "text": "TJ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-station-2026-11"
+    ],
+    "method": "facts-only 池袋駅 station page (OD-35 business-use class), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "位置・入口は未確認（検索のみ、経路なし）。階・改札内外は本文に記載なし。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-tj-platform-2",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 2番線"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line"
+    },
+    {
+     "lang": "en",
+     "text": "TJ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-station-2026-11"
+    ],
+    "method": "facts-only 池袋駅 station page (OD-35 business-use class), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "位置・入口は未確認（検索のみ、経路なし）。階・改札内外は本文に記載なし。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-tj-platform-3",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 3番線"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line"
+    },
+    {
+     "lang": "en",
+     "text": "TJ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-station-2026-11"
+    ],
+    "method": "facts-only 池袋駅 station page (OD-35 business-use class), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "位置・入口は未確認（検索のみ、経路なし）。階・改札内外は本文に記載なし。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-tj-platform-4",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 4番線"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line"
+    },
+    {
+     "lang": "en",
+     "text": "TJ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-station-2026-11"
+    ],
+    "method": "facts-only 池袋駅 station page (OD-35 business-use class), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "位置・入口は未確認（検索のみ、経路なし）。階・改札内外は本文に記載なし。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-tj-platform-5",
+   "category": "platform",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 5番線"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line"
+    },
+    {
+     "lang": "en",
+     "text": "TJ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-station-2026-11"
+    ],
+    "method": "facts-only 池袋駅 station page (OD-35 business-use class), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "位置・入口は未確認（検索のみ、経路なし）。階・改札内外は本文に記載なし。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-tj-lift-1",
+   "category": "elevator",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 エレベーター"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line"
+    },
+    {
+     "lang": "en",
+     "text": "TJ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-station-2026-11"
+    ],
+    "method": "facts-only 池袋駅 station page (OD-35 business-use class), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "設備欄の設置ありを表す1件。実機の台数・個別位置は不明。位置・入口は未確認（検索のみ、経路なし）。階・改札内外は本文に記載なし。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "One search entry records facility availability, not a device count. Individual locations and quantities are unknown. Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-tj-escalator-1",
+   "category": "escalator",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 エスカレーター"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line"
+    },
+    {
+     "lang": "en",
+     "text": "TJ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-station-2026-11"
+    ],
+    "method": "facts-only 池袋駅 station page (OD-35 business-use class), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "設備欄の設置ありを表す1件。実機の台数・個別位置は不明。位置・入口は未確認（検索のみ、経路なし）。階・改札内外は本文に記載なし。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "One search entry records facility availability, not a device count. Individual locations and quantities are unknown. Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "tobu-tj-toilet-1",
+   "category": "toilet",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 バリアフリートイレ"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line"
+    },
+    {
+     "lang": "en",
+     "text": "TJ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "tobu-ikebukuro-station-2026-11"
+    ],
+    "method": "facts-only 池袋駅 station page (OD-35 business-use class), UNVERIFIED, SEARCH_ONLY",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "設備欄の設置ありを表す1件。実機の台数・個別位置は不明。位置・入口は未確認（検索のみ、経路なし）。階・改札内外は本文に記載なし。現在の状況は不明です。"
+    },
+    {
+     "lang": "en",
+     "text": "One search entry records facility availability, not a device count. Individual locations and quantities are unknown. Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
     }
    ]
   }

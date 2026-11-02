@@ -89,6 +89,8 @@ Follow #707: one source and `shop-ikb-esola.hours` in `graph.src.json`; rebuild 
 `SOURCE_DATE_EPOCH=1792594800 python3 -I stations/ikebukuro/pipeline/build_station.py`.
 The pinned epoch preserves the graph's geometry dates; graph.json must remain unchanged.
 GML SHA-256: `38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09`.
+After merging main on 2026-11-03 JST, regenerate from main’s data plus the Esola source/hours.
+Retain all eight `tobu-tj-*` POIs and their referenced source from #738.
 No Shinjuku import is needed. No building POI is created for Echika/Hope/Emio.
 The new OD-32 card regression loads the committed Esola POI and asserts the printed
 open/close text, the read-date label and the official link together.
@@ -103,7 +105,7 @@ The initial requested `check` command was canceled before execution: the package
 `check` script. The lead corrected the command to `typecheck` in the 06:0x JST ruling.
 Run once after this correction:
 
-- `orb-test -- pnpm exec vitest run apps/web/src/ui/app.notes.test.ts`
+- `orb-test -- pnpm exec vitest run apps/web/src/ui/app.notes.test.ts stations/ikebukuro/scene/search.test.ts`
 - `orb-test -- pnpm --filter @gteki/station-ikebukuro typecheck`
 
 Results are recorded in PR #740 at hand-off.
