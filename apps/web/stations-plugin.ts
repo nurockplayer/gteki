@@ -22,6 +22,7 @@ export interface DiscoveredStation {
   scene: string | null;
   /** The optional gteki/tenants.json (a store brand directory, #419). */
   tenants: string | null;
+  privateShops?: string;
   assets: string[];
 }
 
@@ -64,7 +65,9 @@ export function discoverStations(roots: string[], overlay: string | null = null)
       const dataDir = overlayDir && fs.existsSync(path.join(overlayDir, "station.json")) ? fs.realpathSync(overlayDir) : fs.realpathSync(gtekiDir);
       const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
       const tenants = path.join(dataDir, "tenants.json");
-      found.push({ dir, folder, gtekiDir, dataDir, scene, tenants: fs.existsSync(tenants) ? tenants : null, assets: walk(gtekiDir, folder) });
+      const privateShops = overlayDir && fs.existsSync(path.join(overlayDir, "station.json")) ? path.join(dataDir, "private_shops.json") : null;
+      found.push({ dir, folder, gtekiDir, dataDir, scene, tenants: fs.existsSync(tenants) ? tenants : null,
+        ...(privateShops && fs.existsSync(privateShops) ? { privateShops } : {}), assets: walk(gtekiDir, folder) });
     }
   }
   return found;
@@ -386,13 +389,16 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
         const f = (name: string) => fsPath(path.join(s.dataDir, name));
         const files = published ? s.assets.filter((a) => published.get(s.dir)?.has(a)) : s.assets;
         const assets = files.map((a) => `${JSON.stringify(a)}: ${assetLoader(path.join(s.gtekiDir, a))}`);
+        const scene = s.scene ? s.privateShops
+          ? `() => Promise.all([import(${fsPath(s.scene)}), import(${fsPath(s.privateShops)})]).then(([scene, { default: privateShops }]) => ({ ...scene, buildScene: (ctx) => scene.buildScene({ ...ctx, privateShops }) }))`
+          : `() => import(${fsPath(s.scene)})` : "null";
         lines.push(`  {
     dir: ${JSON.stringify(s.dir)},
     manifest: () => import(${f("station.json")}).then((m) => m.default),
     graph: () => import(${f("graph.json")}).then((m) => m.default),
     pois: () => import(${f("pois.json")}).then((m) => m.default),
     tenants: ${s.tenants ? `() => import(${f("tenants.json")}).then((m) => m.default)` : "null"},
-    scene: ${s.scene ? `() => import(${fsPath(s.scene)})` : "null"},
+    scene: ${scene},
     assets: { ${assets.join(", ")} },
   },`);
       }
@@ -465,7 +471,7 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
       if (overlay && fs.existsSync(overlay)) server.watcher.add(overlay);
       const invalidate = (file: string) => {
         const watched = roots.some((r) => file.startsWith(r)) || Boolean(overlay && file.startsWith(overlay));
-        if (!watched || !/station\.json$|graph\.json$|pois\.json$|tenants\.json$|scene\.[jt]s$|assets/.test(file)) return;
+        if (!watched || !/station\.json$|graph\.json$|pois\.json$|tenants\.json$|private_shops\.json$|scene\.[jt]s$|assets/.test(file)) return;
         const mod = server.moduleGraph.getModuleById(RESOLVED);
         if (mod) server.moduleGraph.invalidateModule(mod);
         server.ws.send({ type: "full-reload" });

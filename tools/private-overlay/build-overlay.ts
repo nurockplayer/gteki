@@ -132,6 +132,11 @@ export function buildOverlay(opts: { repoRoot: string; privateDir: string; stati
     const pub = readPublicStation(opts.repoRoot, station);
     const addDir = path.join(additionsRoot, station);
     const merged = mergeStation(pub, fs.existsSync(addDir) ? readAdditions(addDir) : { graphParts: [] });
+    const shopsFile = path.join(addDir, "scene", "shops.json");
+    if (fs.existsSync(shopsFile)) {
+      readArray(shopsFile, "shops");
+      readArray(shopsFile, "openings");
+    }
     const outputDir = path.join(opts.privateDir, "overlay", station, "gteki");
     fs.rmSync(outputDir, { recursive: true, force: true });
     fs.mkdirSync(outputDir, { recursive: true });
@@ -140,6 +145,7 @@ export function buildOverlay(opts: { repoRoot: string; privateDir: string; stati
     write("graph.json", merged.graph);
     write("pois.json", merged.pois);
     if (merged.tenants !== undefined) write("tenants.json", merged.tenants);
+    if (fs.existsSync(shopsFile)) fs.copyFileSync(shopsFile, path.join(outputDir, "private_shops.json"));
     written.push(station);
   }
   return written;

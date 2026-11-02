@@ -104,6 +104,8 @@ export interface StationScene {
 export interface SceneContext {
   THREE: typeof THREE;
   bundle: StationBundle;
+  /** Extra curated shopfronts supplied only by a private overlay (OD-35). */
+  privateShops?: { shops: unknown[]; openings: unknown[] };
   enuToRenderer(p: { x: number; y: number; z: number }): [number, number, number];
   /** Resolve a path relative to stations/<id>/gteki/ to a loadable URL (bundled by the explorer). */
   assetUrl(uri: string): string | null;
