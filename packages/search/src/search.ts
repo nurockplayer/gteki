@@ -123,8 +123,15 @@ function stripStation(prefixes: readonly string[], normalized: string, latinToke
 }
 
 /** Ordered subsequence matching, penalising skipped characters within the match. */
-function fuzzyScore(query: string[], candidate: string[]): number {
-  if (query.length > candidate.length) return 0;
+function fuzzyScore(query: string[], text: string): number {
+  // Reject impossible subsequences before allocating the per-character scoring maps.
+  let at = 0;
+  for (const char of query) {
+    const found = text.indexOf(char, at);
+    if (found < 0) return 0;
+    at = found + char.length;
+  }
+  const candidate = [...text];
   // Track every possible start to avoid a poor early match hiding a tighter later one.
   let starts = new Map<number, number>();
   for (let q = 0; q < query.length; q++) {
@@ -172,7 +179,7 @@ function scoreText(q: QueryForm, candidate: string): number {
   if (candidate.includes(query)) return 60;
   const tokenScore = (q.tokens.length > 1 && q.tokens.every((token) => candidate.includes(token))) ||
     (q.runs.length > 1 && q.runs.every((run) => candidate.includes(run))) ? 40 : 0;
-  return Math.max(tokenScore, q.fuzzy ? fuzzyScore(q.chars, [...candidate]) : 0);
+  return Math.max(tokenScore, q.fuzzy ? fuzzyScore(q.chars, candidate) : 0);
 }
 
 /** Match quality for ties: exact name > name starts with the query > anything else; then the shorter matched name. */
