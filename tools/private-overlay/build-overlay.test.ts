@@ -173,6 +173,33 @@ describe("private overlay builder", () => {
     expect(route.steps.at(-1)?.toFloorId).toBe("p:sjk:s03:f:20");
   });
 
+  it("copies optional scene shops, refuses bad array shapes, and removes the file when absent", () => {
+    const root = tempDir();
+    const privateDir = path.join(root, "private");
+    const stationDir = path.join(root, "stations", "demo", "gteki");
+    const sceneDir = path.join(privateDir, "additions", "demo", "scene");
+    fs.mkdirSync(stationDir, { recursive: true });
+    fs.mkdirSync(sceneDir, { recursive: true });
+    const [manifest, graph, pois] = createDemoFiles();
+    for (const [name, value] of [["station.json", manifest], ["graph.json", graph], ["pois.json", pois]] as const)
+      fs.writeFileSync(path.join(stationDir, name), JSON.stringify(value));
+    const input = path.join(sceneDir, "shops.json");
+    const output = path.join(privateDir, "overlay", "demo", "gteki", "private_shops.json");
+    buildOverlay({ repoRoot: root, privateDir });
+    expect(fs.existsSync(output)).toBe(false);
+    const text = JSON.stringify({ shops: [{ id: "private-shop" }], openings: [{ opening_id: "private-door" }] });
+    fs.writeFileSync(input, text);
+    buildOverlay({ repoRoot: root, privateDir });
+    expect(fs.readFileSync(output, "utf8")).toBe(text);
+    for (const bad of [null, {}, { shops: {}, openings: [] }, { shops: [], openings: {} }, { shops: [] }, { openings: [] }]) {
+      fs.writeFileSync(input, JSON.stringify(bad));
+      expect(() => buildOverlay({ repoRoot: root, privateDir })).toThrow(/shops\.json: expected (shops|openings) array/);
+    }
+    fs.rmSync(input);
+    buildOverlay({ repoRoot: root, privateDir });
+    expect(fs.existsSync(output)).toBe(false);
+  });
+
   it("writes overlay files and rejects an additions station without public data", () => {
     const root = tempDir();
     const privateDir = path.join(root, "private");
