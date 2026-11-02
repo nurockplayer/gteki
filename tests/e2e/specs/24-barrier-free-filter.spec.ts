@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { hooks, openStation, stationData } from "../lib/gteki.ts";
 
 for (const station of [
-  { key: "ikebukuro", origin: "metro-m-central-west-gate", count: 20, positioned: 0 },
+  { key: "ikebukuro", origin: "metro-m-central-west-gate", count: 42, positioned: 0 },
   { key: "shinjuku", origin: "poi:gate:1", count: 9, positioned: 3 },
 ] as const) {
   test(`${station.key}: barrier-free facilities near the origin`, async ({ page }) => {

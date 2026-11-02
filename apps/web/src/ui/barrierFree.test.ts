@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from "vitest";
-import { createRouter, routeBetween } from "@gteki/navigation";
+import { createRouter, DEFAULT_PROFILE, routeBetween, type RouteFailure, type RouteProfile, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Poi, type StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import ikbStation from "../../../../stations/ikebukuro/gteki/station.json" with { type: "json" };
@@ -23,7 +23,7 @@ function bundleOf(station: unknown, graph: unknown, pois: unknown): StationBundl
 const ikb = bundleOf(ikbStation, ikbGraph, ikbPois);
 const sjk = bundleOf(sjkStation, sjkGraph, sjkPois);
 
-afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
+afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
 
 it("classifies only toilets whose names state accessibility", () => {
   const toilet = ikb.pois.find((p) => p.id === "toilet-ikb-metro-001")!;
@@ -36,8 +36,8 @@ it("classifies only toilets whose names state accessibility", () => {
 it("keeps real IKB search-only facilities, excludes plain toilets, and narrows by text", () => {
   const search = createSearchIndex(ikb);
   const origin = { kind: "poi", poi: ikb.pois.find((p) => p.id === "jr-central-gate-2")! } as const;
-  const results = (query: string) => barrierFreeResults(ikb, search, createRouter(ikb), origin, query, "ja");
-  expect(results("")).toHaveLength(20);
+  const results = (query: string) => barrierFreeResults(ikb, search, createRouter(ikb), origin, query, "ja", DEFAULT_PROFILE);
+  expect(results("")).toHaveLength(42);
   expect(results("").every((h) => ["elevator", "escalator"].includes(h.poi.category) || isAccessibleToilet(h.poi))).toBe(true);
   expect(results("").every((h) => !h.routable && h.distanceM === null)).toBe(true);
   const toilets = results("トイレ");
@@ -51,7 +51,7 @@ it("orders real SJK lifts by distance from a gate or store, then keeps unlocated
   const search = createSearchIndex(sjk);
   for (const poi of [sjk.pois.find((p) => p.id === "poi:gate:1")!, sjk.pois.find((p) => p.category === "shop")!]) {
     const origin = { kind: "poi", poi } as const;
-    const hits = barrierFreeResults(sjk, search, router, origin, "", "en");
+    const hits = barrierFreeResults(sjk, search, router, origin, "", "en", { fare: "ticketed", stepFree: true });
     expect(hits).toHaveLength(9);
     if (!poi.displayPosition && !poi.connectorNodeIds.length) {
       expect(hits.every((h) => h.distanceM === null)).toBe(true);
@@ -72,16 +72,52 @@ it("orders real SJK lifts by distance from a gate or store, then keeps unlocated
   }
 });
 
+it("shows the distance computeRoute produces for the selected SJK lift with step-free off and on", () => {
+  vi.useFakeTimers({ now: new Date("2026-11-03T12:00:00+09:00") });
+  const router = createRouter(sjk);
+  const search = createSearchIndex(sjk);
+  const origin = { kind: "poi", poi: sjk.pois.find((p) => p.id === "poi:gate:1")! } as const;
+  const destination = sjk.pois.find((p) => p.id === "poi:elevator:3")!;
+  const app = new App(document.createElement("div")) as unknown as {
+    s: { lang: string; loaded: unknown; entry: unknown; router: unknown; search: unknown; origin: unknown;
+      destination: Poi; filter: string; profile: { stepFree: boolean }; route: RouteResult | RouteFailure | null };
+    ui: { toResults: HTMLElement; minimap: { setRoute: () => void } };
+    explorer: unknown;
+    profile(): RouteProfile; computeRoute(): void; renderResults(which: "to"): void;
+  };
+  for (const name of ["renderSheet", "releaseMascot", "mascotSay"])
+    vi.spyOn(app as unknown as Record<string, () => void>, name).mockImplementation(() => {});
+  vi.spyOn(app.ui.minimap, "setRoute").mockImplementation(() => {});
+  app.explorer = { clearRoute: vi.fn(), connectorRoutePaths: () => new Map(), navmeshRoutePaths: () => new Map(),
+    showRoute: vi.fn(), currentMode: "walk" };
+  Object.assign(app.s, { lang: "en", loaded: { bundle: sjk }, entry: { key: "shinjuku" }, router, search,
+    origin, destination, filter: "barrier_free" });
+  for (const stepFree of [false, true]) {
+    app.s.profile.stepFree = stepFree;
+    app.computeRoute();
+    const route = app.s.route;
+    expect(route?.ok).toBe(true);
+    if (!route?.ok) throw new Error("Expected the real SJK lift route");
+    const hit = barrierFreeResults(sjk, search, router, origin, "", "en", app.profile()).find((h) => h.poi.id === destination.id)!;
+    expect(hit).toMatchObject({ distanceKind: "route", distanceM: route.totalLengthM });
+    app.renderResults("to");
+    expect(app.ui.toResults.querySelector(`[data-poi="${destination.id}"] .result-meta`)?.textContent)
+      .toContain(`Route ${Math.round(route.totalLengthM)} m`);
+  }
+});
+
 it("ranks the real IKB lift serving the origin gate first without inventing a distance", () => {
   const origin = { kind: "poi", poi: ikb.pois.find((p) => p.id === "metro-m-central-west-gate")! } as const;
   // Reverse the real POIs so the lift must move from the end rather than pass by data order.
   const bundle = { ...ikb, pois: [...ikb.pois].reverse() };
-  const hits = barrierFreeResults(bundle, createSearchIndex(bundle), createRouter(bundle), origin, "", "en");
+  const hits = barrierFreeResults(bundle, createSearchIndex(bundle), createRouter(bundle), origin, "", "en", DEFAULT_PROFILE);
+  expect(hits).toHaveLength(42);
+  expect(new Set(hits.map((hit) => hit.poi.category))).toEqual(new Set(["elevator", "escalator", "toilet"]));
   expect(hits[0]).toMatchObject({ poi: { id: "metro-m-lift-1" }, connectsToGate: true, distanceM: null });
   expect(hits.slice(1).every((hit) => !hit.connectsToGate)).toBe(true);
 });
 
-it("selects the new option, shows 20 real IKB rows with notes, and preserves the single-category filter", () => {
+it("selects the new option, shows all 42 real IKB rows with notes, and preserves the single-category filter", () => {
   vi.stubGlobal("matchMedia", () => ({ matches: false }));
   const app = new App(document.createElement("div")) as unknown as {
     s: { lang: string; loaded: unknown; entry: unknown; search: unknown; router: unknown; origin: unknown; openNow: boolean };
@@ -101,7 +137,7 @@ it("selects the new option, shows 20 real IKB rows with notes, and preserves the
   app.renderCategoryFilter(ikb);
   app.ui.categoryFilter.value = "barrier_free";
   app.ui.categoryFilter.dispatchEvent(new Event("change"));
-  expect(app.ui.toResults.querySelectorAll("button.result")).toHaveLength(20);
+  expect(app.ui.toResults.querySelectorAll("button.result")).toHaveLength(42);
   expect(app.ui.toResults.querySelector("button.result")?.textContent).toContain("起点の改札に接続");
   expect(app.ui.toResults.textContent).toContain("距離不明");
   app.ui.toInput.value = "トイレ";

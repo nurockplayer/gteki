@@ -1,4 +1,4 @@
-import { routeBetween, type RouteEndpoint, type Router } from "@gteki/navigation";
+import { routeBetween, type RouteEndpoint, type RouteProfile, type Router } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import { searchKey, type SearchHit, type SearchIndex } from "@gteki/search";
 import type { Lang } from "../i18n.ts";
@@ -9,7 +9,7 @@ export function isAccessibleToilet(poi: Poi): boolean {
 
 /** Search-only facilities remain visible; missing coordinates never become invented distances. */
 export function barrierFreeResults(bundle: StationBundle, search: SearchIndex, router: Router | null,
-  origin: RouteEndpoint | null, query: string, lang: Lang) {
+  origin: RouteEndpoint | null, query: string, lang: Lang, profile: RouteProfile) {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const positions = (poi: Poi) => poi.displayPosition ? [poi.displayPosition]
     : poi.connectorNodeIds.flatMap((id) => nodes.get(id) ? [nodes.get(id)!.position] : []);
@@ -29,7 +29,7 @@ export function barrierFreeResults(bundle: StationBundle, search: SearchIndex, r
       let distanceM = distances.length ? Math.min(...distances) : null;
       let distanceKind: "route" | "straight" = "straight";
       if (router && origin && hit.routable) {
-        const route = routeBetween(router, origin, hit.poi, { fare: "ticketed", stepFree: true });
+        const route = routeBetween(router, origin, hit.poi, profile);
         if (route.ok || route.reason === "start_equals_goal") {
           distanceM = route.ok ? route.totalLengthM : 0;
           distanceKind = "route";
@@ -41,6 +41,5 @@ export function barrierFreeResults(bundle: StationBundle, search: SearchIndex, r
     })
     .sort((a, b) => Number(b.routable) - Number(a.routable) ||
       (a.distanceM ?? Infinity) - (b.distanceM ?? Infinity) ||
-      (a.distanceM === null && b.distanceM === null ? Number(b.connectsToGate) - Number(a.connectsToGate) : 0))
-    .slice(0, 20);
+      (a.distanceM === null && b.distanceM === null ? Number(b.connectsToGate) - Number(a.connectsToGate) : 0));
 }

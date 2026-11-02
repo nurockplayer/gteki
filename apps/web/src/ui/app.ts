@@ -672,7 +672,7 @@ export class App {
     const barrierFree = this.s.filter === "barrier_free";
     const category = this.s.filter === "barrier_free" ? null : this.s.filter;
     const categories = category ? [category] : undefined;
-    const nearby = barrierFree ? barrierFreeResults(this.s.loaded.bundle, this.s.search, this.s.router, this.s.origin, q, this.s.lang) : null;
+    const nearby = barrierFree ? barrierFreeResults(this.s.loaded.bundle, this.s.search, this.s.router, this.s.origin, q, this.s.lang, this.profile()) : null;
     const groups = q || barrierFree ? null : emptySuggestions(this.s.loaded.bundle.pois, which, {
       filter: category, recentIds: readRecent(safeStorage(), this.s.entry!.key),
       limit: this.s.openNow ? this.s.loaded.bundle.pois.length : undefined,
