@@ -308,11 +308,21 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
       if (bendAngle(points, i) > 1e-6) regions.push({ kind: "disc", level, x: points[i]!.x, y: points[i]!.y, z: points[i]!.z, radius: half });
     }
     for (const [end, next] of [[lo, lo + 1], [hi, hi - 1]] as const) {
-      // At a soft split the neighbouring level's first leg, up to half of it, so the two levels meet without a wall.
-      const beyond = end + (end - next);
-      const quad = end === first || end === last ? planQuad(points[end]!, planDir(points[next]!, points[end]!), MOUTH_M, half)
-        : soft.has(end) ? planQuad(points[end]!, planDir(points[end]!, points[beyond]!), Math.min(half, Math.hypot(points[beyond]!.x - points[end]!.x, points[beyond]!.z - points[end]!.z)), half)
-        : square(end);
+      if (soft.has(end)) {
+        // At a soft split the neighbouring level's flight, through its bends, 0.1 m further than the split's own disc reaches
+        // (on a curve the disc's rim passes the end of an opening only `half` long), so the two levels meet without a wall.
+        // Joint discs close the wedges between turning pieces.
+        const step = end - next;
+        let left = half + 0.1;
+        for (let a = end, b = end + step; b >= 0 && b < points.length && left > 1e-6; a = b, b += step) {
+          const leg = Math.hypot(points[b]!.x - points[a]!.x, points[b]!.z - points[a]!.z);
+          regions.push({ kind: "connector", level, y: points[a]!.y, quad: planQuad(points[a]!, planDir(points[a]!, points[b]!), Math.min(left, leg), half) });
+          left -= leg;
+          if (left > 1e-6) regions.push({ kind: "disc", level, x: points[b]!.x, y: points[b]!.y, z: points[b]!.z, radius: Math.min(half, left) });
+        }
+        continue;
+      }
+      const quad = end === first || end === last ? planQuad(points[end]!, planDir(points[next]!, points[end]!), MOUTH_M, half) : square(end);
       regions.push({ kind: "connector", level, y: points[end]!.y, quad });
     }
     // The level legs before the first climb and after the last, as open footprints of the end flights.

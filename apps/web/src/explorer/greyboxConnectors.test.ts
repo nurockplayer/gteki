@@ -895,6 +895,18 @@ describe("turning landing guards", () => {
     expect(Math.hypot(r.x - 4.7, r.z + 0.7)).toBeLessThanOrEqual(0.05);
   });
 
+  // #710 review: where a curved stair splits into levels, each level's opening reaches as far as the split's joint disc.
+  it("keeps the walkway clear across a soft split on a curved stair with short legs", () => {
+    const waypoints = Array.from({ length: 10 }, (_v, i): [number, number, number] => [2 * Math.sin(i * Math.PI / 12), 0.3 * i, 2 * (1 - Math.cos(i * Math.PI / 12))]);
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), r = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - p.x, r.z - p.z), `s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
   // A straight flight is built.
   it("builds a straight stair in both directions", () => {
     for (const direction of [-1, 1]) {
