@@ -21952,7 +21952,14 @@
      "lang": "en",
      "text": "Operator: 株式会社メトロプロパティーズ. Floors: B1–8F as printed in the source floor guide. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "物販・サービス店舗　10:30～21:30\n飲食店舗　11:00～23:00\n※店舗により一部異なります",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=12",
+    "retrievedAt": "2026-11-02",
+    "basis": "dated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-parco",
