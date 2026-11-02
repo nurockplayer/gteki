@@ -1,14 +1,18 @@
-import polygonClipping, { type Polygon } from "polygon-clipping";
+import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clipping";
 
 /** A point in plan space: renderer x/z. */
 export type PlanPoint = { x: number; z: number };
 
-/** A walkable region, at one level, with the floor height (renderer y) it sits at. */
-export type Region =
+/**
+ * A walkable region, at one level, with the floor height (renderer y) it sits at. Regions of one `group` (one graph
+ * edge's runs and bend patches) are one walk: their overlaps never split a level or cut a floor, unless one passes over
+ * the other at walking clearance or more (an edge looping back over itself), which is judged like any two pieces.
+ */
+export type Region = { group?: string } & (
   | { kind: "strip"; level: string; points: { x: number; y: number; z: number }[]; halfWidth: number }
   | { kind: "disc"; level: string; x: number; y: number; z: number; radius: number }
   | { kind: "rect"; level: string; center: { x: number; y: number; z: number }; along: PlanPoint; halfLength: number; halfWidth: number }
-  | { kind: "connector"; level: string; quad: PlanPoint[]; y: number };
+  | { kind: "connector"; level: string; quad: PlanPoint[]; y: number });
 
 /** One wall piece on a level's union boundary, with the floor height at each end. */
 export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay: number; by: number; level: string };
@@ -375,8 +379,24 @@ export function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
   const union: PlanPolygon[] = [];
   for (const group of groups.values()) {
     if (group.length === 1) { union.push([group[0]!.map((p) => ({ x: p.x, z: p.z }))]); continue; }
-    const polygons = group.map((ring): Polygon => [ring.map((p): [number, number] => [p.x, p.z])]);
-    union.push(...polygonClipping.union(polygons[0]!, ...polygons.slice(1)).map(fromClipping));
+    const polygons = (snap: number) => group.map((ring): Polygon => [ring.map((p): [number, number] => snap ? [Math.round(p.x / snap) * snap, Math.round(p.z / snap) * snap] : [p.x, p.z])]);
+    let merged: MultiPolygon | null = null;
+    // polygon-clipping's sweep line can throw on edges that nearly coincide; such a group is retried snapped to 0.1 mm,
+    // then 1 mm, and last in halves.
+    for (const snap of [0, 1e-4, 1e-3]) {
+      try { const all = polygons(snap); merged = polygonClipping.union(all[0]!, ...all.slice(1)); break; } catch { /* next snap */ }
+    }
+    if (!merged) {
+      // Halves first, then their union: a pair that still throws stays apart, at a cost of log(n) passes.
+      const halves = (rings: Polygon[]): MultiPolygon => {
+        if (rings.length === 1) return [rings[0]!];
+        try { return polygonClipping.union(rings[0]!, ...rings.slice(1)); } catch { /* split */ }
+        const mid = rings.length >> 1, left = halves(rings.slice(0, mid)), right = halves(rings.slice(mid));
+        try { return polygonClipping.union(left, right); } catch { return [...left, ...right]; }
+      };
+      merged = halves(polygons(1e-3));
+    }
+    union.push(...merged.map(fromClipping));
   }
   return union;
 }
@@ -409,36 +429,256 @@ export function boundaryEdges(polygons: readonly PlanPolygon[], open: readonly [
   return out;
 }
 
-/** Union every region per level and emit the boundary walls the connector footprints and attachments leave. */
+/** Headroom a floor keeps under the floor above it: 2.3 m clear under that floor's 0.12 m slab. */
+const CLEARANCE_M = 2.42;
+/** A floor less than this above another stands in the lower one's ceiling (2.6 m) or that ceiling's slab. */
+const CEILING_M = 2.72;
+const MIN_CUT_AREA_M2 = 1e-6;
+
+/** One convex piece of a region (a strip segment, or a whole disc, rect or connector) and its floor height. */
+/**
+ * Pieces of one walk less than the clearance apart in height where they overlap in plan (a bend, whose patch can stand
+ * a metre off a steep leg's next segment): exempt from height conflicts and stack cuts. Only a pass of the walk over
+ * itself at walking clearance or more is judged like any two pieces.
+ */
+function sameWalk(a: Piece, b: Piece): boolean {
+  if (a.group === undefined || a.group !== b.group) return false;
+  const overlap = convexIntersection(a.ring, b.ring);
+  if (Math.abs(ringArea(overlap)) <= MIN_CUT_AREA_M2) return true;
+  // Linear over the convex overlap: the gap nearest zero is at a vertex, or zero where it changes sign.
+  const gaps = overlap.map((p) => a.height(p) - b.height(p));
+  return Math.min(...gaps) <= 0 && Math.max(...gaps) >= 0 ? true : Math.min(...gaps.map(Math.abs)) < CLEARANCE_M;
+}
+
+type Piece = { region: number; segment: number; level: string; group: string | undefined; kind: Region["kind"]; ring: PlanPoint[]; box: Box; low: number; high: number; height: (p: PlanPoint) => number; source: HeightSource };
+
+function regionPieces(region: Region, index: number): Piece[] {
+  const polygons = regionPolygon(region);
+  if (region.kind !== "strip") {
+    const ring = polygons[0]?.[0];
+    if (!ring) return [];
+    const y = region.kind === "rect" ? region.center.y : region.y;
+    return [{ region: index, segment: 0, level: region.level, group: region.group, kind: region.kind, ring, box: boxOf(polygons), low: y, high: y, height: () => y, source: heightSource(region) }];
+  }
+  const pieces: Piece[] = [];
+  if (region.halfWidth <= 0) return pieces;
+  for (let i = 1; i < region.points.length; i++) {
+    const a = region.points[i - 1]!, b = region.points[i]!, dx = b.x - a.x, dz = b.z - a.z, length2 = dx * dx + dz * dz;
+    if (length2 < 1e-18) continue;
+    const segment: Region = { ...region, points: [a, b] };
+    const own = regionPolygon(segment);
+    pieces.push({
+      region: index, segment: i, level: region.level, group: region.group, kind: "strip", ring: own[0]![0]!, box: boxOf(own), low: Math.min(a.y, b.y), high: Math.max(a.y, b.y),
+      height: (p) => a.y + (b.y - a.y) * ((p.x - a.x) * dx + (p.z - a.z) * dz) / length2, source: heightSource(segment),
+    });
+  }
+  return pieces;
+}
+
+const ringArea = (ring: readonly PlanPoint[]): number => {
+  let area = 0;
+  for (let i = 0; i < ring.length; i++) { const a = ring[i]!, b = ring[(i + 1) % ring.length]!; area += a.x * b.z - b.x * a.z; }
+  return area / 2;
+};
+
+/** The part of a convex ring where `f` (linear in plan) is at least 0. */
+function clipHalf(ring: readonly PlanPoint[], f: (p: PlanPoint) => number): PlanPoint[] {
+  const out: PlanPoint[] = [];
+  for (let i = 0; i < ring.length; i++) {
+    const p = ring[i]!, q = ring[(i + 1) % ring.length]!, fp = f(p), fq = f(q);
+    if (fp >= 0) out.push(p);
+    if ((fp >= 0) !== (fq >= 0)) { const t = fp / (fp - fq); out.push({ x: p.x + (q.x - p.x) * t, z: p.z + (q.z - p.z) * t }); }
+  }
+  return out;
+}
+
+function convexIntersection(a: readonly PlanPoint[], b: readonly PlanPoint[]): PlanPoint[] {
+  const sign = Math.sign(ringArea(b)) || 1;
+  let out: PlanPoint[] = [...a];
+  for (let i = 0; i < b.length && out.length >= 3; i++) {
+    const c = b[i]!, d = b[(i + 1) % b.length]!;
+    out = clipHalf(out, (p) => sign * ((d.x - c.x) * (p.z - c.z) - (d.z - c.z) * (p.x - c.x)));
+  }
+  return out.length >= 3 ? out : [];
+}
+
+/** Every pair of indices whose boxes overlap, by a sweep along x. */
+function boxPairs(boxes: readonly Box[], visit: (i: number, j: number) => void): void {
+  const order = boxes.map((_box, i) => i).sort((i, j) => boxes[i]!.minX - boxes[j]!.minX);
+  for (let k = 0; k < order.length; k++) {
+    const i = order[k]!;
+    for (let m = k + 1; m < order.length && boxes[order[m]!]!.minX <= boxes[i]!.maxX; m++) if (overlaps(boxes[i]!, boxes[order[m]!]!)) visit(i, order[m]!);
+  }
+}
+
+/**
+ * Splits a level by height: pieces that overlap in plan more than a step apart in height all over the overlap (one
+ * floorId passing over itself) never share a union. Pieces join their neighbours' level unless that level already holds a piece they
+ * overlap at another height; a level without such a crossing stays whole, under its own name.
+ */
+function splitByHeight(pieces: readonly Piece[], stepM: number): string[] {
+  const keys = pieces.map((piece) => piece.level);
+  const byLevel = new Map<string, number[]>();
+  pieces.forEach((piece, i) => { const list = byLevel.get(piece.level); if (list) list.push(i); else byLevel.set(piece.level, [i]); });
+  for (const [level, list] of byLevel) {
+    const neighbours = new Map<number, number[]>(), conflicts = new Map<number, number[]>();
+    const add = (map: Map<number, number[]>, i: number, j: number) => { const l = map.get(i); if (l) l.push(j); else map.set(i, [j]); };
+    boxPairs(list.map((i) => pieces[i]!.box), (u, v) => {
+      const i = list[u]!, j = list[v]!, a = pieces[i]!, b = pieces[j]!;
+      if (sameWalk(a, b)) { add(neighbours, i, j); add(neighbours, j, i); return; }
+      // Heights are linear on each piece, so over their (convex) overlap the gap is extreme at its vertices; pieces
+      // that only touch (a strip's next segment) are judged by their height ranges.
+      const rangesApart = a.low > b.high + stepM || b.low > a.high + stepM;
+      // Two level pieces within a step of each other are neighbours wherever they overlap.
+      if (!rangesApart && a.low === a.high && b.low === b.high) { add(neighbours, i, j); add(neighbours, j, i); return; }
+      const overlap = convexIntersection(a.ring, b.ring);
+      const gaps = Math.abs(ringArea(overlap)) > MIN_CUT_AREA_M2 ? overlap.map((p) => a.height(p) - b.height(p)) : null;
+      const apart = gaps ? Math.min(...gaps) > stepM || Math.max(...gaps) < -stepM : rangesApart;
+      // Pieces only touching more than a step apart (a passage alongside another one floor up) conflict too: their
+      // shared side is a drop, not a way across.
+      if (!apart) { add(neighbours, i, j); add(neighbours, j, i); }
+      else { add(conflicts, i, j); add(conflicts, j, i); }
+    });
+    if (!conflicts.size) continue;
+    const cluster = new Map<number, number>();
+    let next = 0;
+    for (const start of list) {
+      if (cluster.has(start)) continue;
+      const c = next++, queue = [start];
+      cluster.set(start, c);
+      while (queue.length) {
+        for (const q of neighbours.get(queue.pop()!) ?? []) {
+          if (cluster.has(q) || (conflicts.get(q) ?? []).some((r) => cluster.get(r) === c)) continue;
+          cluster.set(q, c);
+          queue.push(q);
+        }
+      }
+    }
+    for (const i of list) { const c = cluster.get(i)!; if (c > 0) keys[i] = `${level}#${c}`; }
+  }
+  return keys;
+}
+
+/** Plan rings a region piece loses, keyed `${region}:${segment}` (strip segments by their end point's index). */
+export type PieceCuts = Map<string, PlanPoint[][]>;
+
+const SNAP_M = 1e-4;
+
+/**
+ * polygon-clipping's difference, retried once with every coordinate snapped to 0.1 mm when it throws on nearly shared
+ * edges; null when that fails too.
+ */
+function difference(subject: readonly PlanPolygon[], cuts: readonly PlanPoint[][]): PlanPolygon[] | null {
+  for (const snap of [(v: number) => v, (v: number) => Math.round(v / SNAP_M) * SNAP_M]) {
+    const toClipping = (polygon: PlanPolygon): Polygon => polygon.map((ring) => ring.map((p): [number, number] => [snap(p.x), snap(p.z)]));
+    try {
+      return polygonClipping.difference(subject.map(toClipping), ...cuts.map((ring) => toClipping([ring]))).map(fromClipping);
+    } catch { /* retried snapped, then given up */ }
+  }
+  return null;
+}
+
+/** What is left of a plan ring outside every cut ring, as union polygons (the whole ring if clipping fails). */
+export function subtractPlan(ring: readonly PlanPoint[], cuts: readonly PlanPoint[][]): PlanPolygon[] {
+  const whole: PlanPolygon[] = [[ring.map((p) => ({ x: p.x, z: p.z }))]];
+  return cuts.length ? difference(whole, cuts) ?? whole : whole;
+}
+
+/** Parameter intervals of the segment a→b that lie outside every convex cut ring. */
+export function outsideIntervals(a: PlanPoint, b: PlanPoint, cuts: readonly PlanPoint[][]): [number, number][] {
+  const inside: [number, number][] = [];
+  for (const ring of cuts) {
+    const sign = Math.sign(ringArea(ring)) || 1;
+    let t0 = 0, t1 = 1;
+    for (let i = 0; i < ring.length && t0 < t1; i++) {
+      const c = ring[i]!, d = ring[(i + 1) % ring.length]!;
+      const f = (p: PlanPoint) => sign * ((d.x - c.x) * (p.z - c.z) - (d.z - c.z) * (p.x - c.x));
+      const fa = f(a), fb = f(b);
+      if (fa < 0 && fb < 0) { t1 = t0; break; }
+      if (fa < 0) t0 = Math.max(t0, fa / (fa - fb)); else if (fb < 0) t1 = Math.min(t1, fa / (fa - fb));
+    }
+    if (t1 - t0 > 1e-9) inside.push([t0, t1]);
+  }
+  inside.sort((x, y) => x[0] - y[0]);
+  const out: [number, number][] = [];
+  let from = 0;
+  for (const [t0, t1] of inside) { if (t0 > from + 1e-9) out.push([from, t0]); from = Math.max(from, t1); }
+  if (from < 1 - 1e-9) out.push([from, 1]);
+  return out;
+}
+
+/**
+ * Union every region per level and emit the boundary walls the connector footprints and attachments leave.
+ * With a step height, levels are also a stack: a level is split where it passes over itself, a floor loses the part
+ * standing less than the 2.42 m clearance over another level (`slabCuts`, left out of its union and its walls), and
+ * a floor's ceiling loses the part another level's floor stands in (`ceilingCuts`). Pieces that come within a step of
+ * each other somewhere over their overlap meet there, and cut nothing.
+ */
 export function buildWalkableModel(
   regions: readonly Region[],
   isAttachment?: (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean,
   stepM = 0,
-): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[] } {
-  const byLevel = new Map<string, Region[]>();
-  for (const region of regions) {
-    const list = byLevel.get(region.level);
-    if (list) list.push(region); else byLevel.set(region.level, [region]);
+): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[]; slabCuts: PieceCuts; ceilingCuts: PieceCuts } {
+  const pieces = regions.flatMap(regionPieces);
+  const keys = stepM > 0 ? splitByHeight(pieces, stepM) : pieces.map((piece) => piece.level);
+  const slabCuts: PieceCuts = new Map(), ceilingCuts: PieceCuts = new Map();
+  const cutsOf = (map: PieceCuts, piece: Piece) => { const key = `${piece.region}:${piece.segment}`; let l = map.get(key); if (!l) map.set(key, l = []); return l; };
+  const levelCuts = new Map<string, PlanPoint[][]>();
+  if (stepM > 0) {
+    boxPairs(pieces.map((piece) => piece.box), (i, j) => {
+      const a = pieces[i]!, b = pieces[j]!;
+      if (sameWalk(a, b)) return;
+      // Too far apart in height to cut anything, or two level pieces within a step (they meet).
+      if (a.low - b.high >= CEILING_M || b.low - a.high >= CEILING_M) return;
+      if (a.low === a.high && b.low === b.high && Math.abs(a.low - b.low) <= stepM) return;
+      const overlap = convexIntersection(pieces[i]!.ring, pieces[j]!.ring);
+      if (Math.abs(ringArea(overlap)) <= MIN_CUT_AREA_M2) return;
+      // Pieces within a step of each other anywhere over their overlap join there (a ramp rising out of the floor
+      // it starts on): that is a walk, so both floors stay whole, and only the lower ceiling the rising floor passes
+      // under is cut. Pieces of one height cluster always join.
+      const gaps = overlap.map((p) => pieces[i]!.height(p) - pieces[j]!.height(p));
+      const join = keys[i] === keys[j] || (Math.min(...gaps) <= stepM && Math.max(...gaps) >= -stepM);
+      for (const [upper, lower] of [[i, j], [j, i]] as const) {
+        const up = pieces[upper]!, down = pieces[lower]!, rise = (p: PlanPoint) => up.height(p) - down.height(p);
+        const above = clipHalf(overlap, (p) => rise(p) - stepM);
+        if (above.length < 3 || Math.abs(ringArea(above)) <= MIN_CUT_AREA_M2) continue;
+        const slab = join ? [] : clipHalf(above, (p) => CLEARANCE_M - rise(p));
+        if (slab.length >= 3 && Math.abs(ringArea(slab)) > MIN_CUT_AREA_M2) {
+          cutsOf(slabCuts, up).push(slab);
+          const l = levelCuts.get(keys[upper]!); if (l) l.push(slab); else levelCuts.set(keys[upper]!, [slab]);
+        }
+        const ceiling = clipHalf(above, (p) => CEILING_M - rise(p));
+        if (ceiling.length >= 3 && Math.abs(ringArea(ceiling)) > MIN_CUT_AREA_M2) cutsOf(ceilingCuts, down).push(ceiling);
+      }
+    });
   }
+  const byLevel = new Map<string, Piece[]>();
+  pieces.forEach((piece, i) => { const list = byLevel.get(keys[i]!); if (list) list.push(piece); else byLevel.set(keys[i]!, [piece]); });
+  for (const region of regions) if (!byLevel.has(region.level) && ![...byLevel.keys()].some((key) => key.startsWith(`${region.level}#`))) byLevel.set(region.level, []);
   const levels = new Map<string, PlanPolygon[]>();
-  const built: { level: string; union: PlanPolygon[]; box: Box; boxes: Box[]; sources: HeightSource[]; connectors: PlanPoint[][]; breakpoints: PlanPoint[] }[] = [];
-  for (const [level, list] of byLevel) {
-    const rings: PlanPoint[][] = [];
-    for (const region of list) for (const polygon of regionPolygon(region)) rings.push(polygon[0]!);
-    if (!rings.length) { levels.set(level, []); continue; }
-    const union = unionRings(rings);
-    levels.set(level, union);
-    const connectors = list.filter((region) => region.kind === "connector").flatMap((region) => regionPolygon(region).map((polygon) => polygon[0]!));
-    const breakpoints = list.filter((region) => region.kind === "strip").flatMap((region) => regionPolygon(region).flatMap((polygon) => polygon[0]!));
-    built.push({ level, union, box: boxOf(union), boxes: union.map((polygon) => boxOf([polygon])), sources: list.map(heightSource), connectors, breakpoints });
+  const built: { level: string; key: string; union: PlanPolygon[]; box: Box; boxes: Box[]; sources: HeightSource[]; connectors: PlanPoint[][]; breakpoints: PlanPoint[] }[] = [];
+  for (const [key, list] of byLevel) {
+    if (!list.length) { levels.set(key, []); continue; }
+    let union = unionRings(list.map((piece) => piece.ring));
+    const cuts = levelCuts.get(key);
+    if (cuts) {
+      // A difference polygon-clipping cannot resolve keeps the level whole, and its floors with it.
+      const cut = difference(union, cuts);
+      if (cut) union = cut; else for (const piece of list) slabCuts.delete(`${piece.region}:${piece.segment}`);
+    }
+    levels.set(key, union);
+    if (!union.length) continue;
+    const connectors = list.filter((piece) => piece.kind === "connector").map((piece) => piece.ring);
+    const breakpoints = list.filter((piece) => piece.kind === "strip").flatMap((piece) => piece.ring);
+    built.push({ level: list[0]!.level, key, union, box: boxOf(union), boxes: union.map((polygon) => boxOf([polygon])), sources: list.map((piece) => piece.source), connectors, breakpoints });
   }
   const walls: BoundaryWall[] = [];
-  for (const { level, union, sources, connectors, breakpoints } of built) {
+  for (const { level, key, union, sources, connectors, breakpoints } of built) {
     // A boundary where another level's floor carries on within a step of it (a ramp meeting the floor it climbs to)
     // is an attachment too; levels themselves never union, so floors stacked in plan keep their own outlines.
     // Each boundary edge checks only the other levels' polygons whose bounds reach its probes.
     const attachmentNear = (box: Box) => {
-      const near = stepM > 0 ? built.filter((other) => other.level !== level && overlaps(other.box, box)).map((other) => ({
+      const near = stepM > 0 ? built.filter((other) => other.key !== key && overlaps(other.box, box)).map((other) => ({
         polygons: other.union.filter((_polygon, k) => overlaps(other.boxes[k]!, box)),
         sources: other.sources.filter((source) => overlaps(source.box, box)),
       })).filter((other) => other.polygons.length) : [];
@@ -447,5 +687,5 @@ export function buildWalkableModel(
     };
     walls.push(...boundaryWalls(union, sources, connectors, level, attachmentNear, breakpoints));
   }
-  return { levels, walls };
+  return { levels, walls, slabCuts, ceilingCuts };
 }

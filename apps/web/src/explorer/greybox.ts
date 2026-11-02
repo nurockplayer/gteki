@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { edgePoints, R, type V3 } from "./geometry.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import type { Segment2 } from "./walker.ts";
-import { buildWalkableModel, type Region } from "./walkableModel.ts";
+import { buildWalkableModel, outsideIntervals, subtractPlan, type PlanPoint, type Region } from "./walkableModel.ts";
 
 /** An edge's floorless samples, extended into the adjacent modelled floor. */
 export interface UnmodelledEdgeRun {
@@ -144,6 +144,30 @@ function quad(out: number[], colors: number[] | null, a: THREE.Vector3, b: THREE
   for (let i = 0; i < points.length; i++) {
     const p = points[i]!; out.push(p.x, p.y, p.z);
     if (colors) { const shade = shades[indices[i]!]!; colors.push(shade, shade, shade); }
+  }
+}
+
+/**
+ * A planar floor or ceiling quad (corners in winding order) with the plan rings it loses taken out: a quad no cut
+ * touches is emitted as before; a cut face is triangulated from what is left, on the face's own plane and facing.
+ */
+function cutFace(out: number[], colors: number[] | null, corners: readonly THREE.Vector3[], cuts: readonly PlanPoint[][] | undefined, shade: number): void {
+  if (!cuts?.length && corners.length === 4) { quad(out, colors, corners[0]!, corners[1]!, corners[2]!, corners[3]!, [shade, shade, shade, shade]); return; }
+  const [a, b, c] = corners as [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+  const u = b.clone().sub(a), v = c.clone().sub(a), normal = u.clone().cross(v);
+  if (Math.abs(normal.y) < 1e-12) return;
+  const yAt = (x: number, z: number) => a.y - (normal.x * (x - a.x) + normal.z * (z - a.z)) / normal.y;
+  for (const polygon of subtractPlan(corners.map((p) => ({ x: p.x, z: p.z })), cuts ?? [])) {
+    const rings = polygon.map((ring) => ring.map((p) => new THREE.Vector2(p.x, p.z)));
+    // triangulateShape drops a repeated closing point from the rings in place, so they are flattened after it.
+    const triangles = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), flat = rings.flat();
+    for (const triangle of triangles) {
+      const p = flat[triangle[0]!]!, q = flat[triangle[1]!]!, r = flat[triangle[2]!]!;
+      // Plan winding against the face's own: keep the face's facing (its normal's sign in y).
+      const turn = (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+      const [m, n] = (turn < 0) === (normal.y > 0) ? [q, r] : [r, q];
+      for (const w of [p, m, n]) { out.push(w.x, yAt(w.x, w.y), w.y); if (colors) colors.push(shade, shade, shade); }
+    }
   }
 }
 
@@ -454,14 +478,6 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   const shellMat = new THREE.MeshLambertMaterial({ color: 0x9a9690, emissive: 0x9a9690, emissiveIntensity: 0.35, vertexColors: true, side: THREE.DoubleSide });
   const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, toneMapped: false, side: THREE.DoubleSide });
   const kerbMat = new THREE.MeshBasicMaterial({ color: 0xffb547, toneMapped: false, side: THREE.DoubleSide });
-  for (const pad of pads) {
-    const b=getBatch(pad.floorId), half=pad.width/2, across=new THREE.Vector3(-pad.along.z,0,pad.along.x);
-    const corner=(a:number,s:number,h:number)=>pad.center.clone().addScaledVector(pad.along,a*half).addScaledVector(across,s*half).add(new THREE.Vector3(0,h,0));
-    const al=corner(-1,-1,0), ar=corner(-1,1,0), zl=corner(1,-1,0), zr=corner(1,1,0);
-    quad(b.shell,b.colors,ar,zr,zl,al,[0.62,0.62,0.62,0.62]);
-    if (captureNav) quad(navFloors,null,ar,zr,zl,al);
-    quad(b.ceiling,b.ceilingColors,corner(1,-1,2.6),corner(1,1,2.6),corner(-1,1,2.6),corner(-1,-1,2.6),[0.62,0.62,0.62,0.62]);
-  }
   // Every wall comes from one per-level walkable union: strips, pads, junction discs and the connector footprints the
   // mouths cut. A boundary edge inside a connector's own footprint belongs to that connector, not to the corridor.
   const levelOf = (floor: string): string => floor;
@@ -473,13 +489,13 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   };
   const regions: Region[] = [];
   for (const run of runs) {
-    regions.push({ kind: "strip", level: runLevel(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
+    regions.push({ kind: "strip", group: run.edge.id, level: runLevel(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
   }
   for (const pad of pads) {
     regions.push({ kind: "rect", level: levelOf(pad.floorId), center: { x: pad.center.x, y: pad.center.y, z: pad.center.z }, along: { x: pad.along.x, z: pad.along.z }, halfLength: pad.width / 2, halfWidth: pad.width / 2 });
   }
   for (const junction of activeJunctions) {
-    regions.push({ kind: "disc", level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
+    regions.push({ kind: "disc", ...(junction.bendOf ? { group: junction.bendOf.id } : {}), level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
   }
   for (const mouth of mouths) {
     const ax = mouth.at.x, az = mouth.at.z, bx = ax + mouth.ux * mouth.length, bz = az + mouth.uz * mouth.length;
@@ -487,6 +503,22 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     regions.push({ kind: "connector", level: levelOf(mouth.floor), y: mouth.y0, quad: [{ x: ax + nx, z: az + nz }, { x: bx + nx, z: bz + nz }, { x: bx - nx, z: bz - nz }, { x: ax - nx, z: az - nz }] });
   }
   const model = buildWalkableModel(regions, (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM);
+  // Floors and ceilings follow the level stack: a floor standing less than the clearance over another level leaves
+  // that part out, and a ceiling another level's floor stands in does too. Regions are runs, then pads, then junctions.
+  const uncut = (p: THREE.Vector3, q: THREE.Vector3, cuts: readonly PlanPoint[][]) => {
+    const [kept] = outsideIntervals({ x: p.x, z: p.z }, { x: q.x, z: q.z }, cuts);
+    return !!kept && kept[0] <= 1e-9 && kept[1] >= 1 - 1e-9;
+  };
+  const slabCut = (region: number, segment = 0) => model.slabCuts.get(`${region}:${segment}`);
+  const ceilingCut = (region: number, segment = 0) => model.ceilingCuts.get(`${region}:${segment}`);
+  pads.forEach((pad, k) => {
+    const b=getBatch(pad.floorId), half=pad.width/2, across=new THREE.Vector3(-pad.along.z,0,pad.along.x);
+    const corner=(a:number,s:number,h:number)=>pad.center.clone().addScaledVector(pad.along,a*half).addScaledVector(across,s*half).add(new THREE.Vector3(0,h,0));
+    const al=corner(-1,-1,0), ar=corner(-1,1,0), zl=corner(1,-1,0), zr=corner(1,1,0), region = runs.length + k;
+    cutFace(b.shell,b.colors,[ar,zr,zl,al],slabCut(region),0.62);
+    if (captureNav) cutFace(navFloors,null,[ar,zr,zl,al],slabCut(region),1);
+    cutFace(b.ceiling,b.ceilingColors,[corner(1,-1,2.6),corner(1,1,2.6),corner(-1,1,2.6),corner(-1,-1,2.6)],ceilingCut(region),0.62);
+  });
   for (const wall of model.walls) {
     const wb = getBatch(wall.level);
     const p = new THREE.Vector3(wall.ax, wall.ay, wall.az), q = new THREE.Vector3(wall.bx, wall.by, wall.bz);
@@ -535,7 +567,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     if (list) list.push(last); else runEnds.set(run.edge.id, [last]);
   }
   const same = (a: V3 | undefined, b: V3 | undefined) => !!a && !!b && Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) < 1e-6;
-  for (const run of runs) {
+  for (const [runIndex, run] of runs.entries()) {
     const width = widthOf(run.edge), half = width / 2;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
     const pts = run.points.map((p) => R(p.x, p.y, p.z));
@@ -567,19 +599,26 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       const across = new THREE.Vector3(-along.z, 0, along.x);
       const offset = (p: THREE.Vector3, side: number, height: number) => p.clone().addScaledVector(across, side).add(new THREE.Vector3(0, height, 0));
       const al = offset(a, -half, 0), ar = offset(a, half, 0), zl = offset(z, -half, 0), zr = offset(z, half, 0);
-      quad(b.shell, b.colors, ar, zr, zl, al, [0.62, 0.62, 0.62, 0.62]);
-      if (captureNav) quad(navFloors, null, ar, zr, zl, al);
-      quad(b.shell, b.colors, offset(a, -half, -0.12), offset(a, half, -0.12), offset(z, half, -0.12), offset(z, -half, -0.12));
+      const slab = slabCut(runIndex, i), ceiling = ceilingCut(runIndex, i);
+      cutFace(b.shell, b.colors, [ar, zr, zl, al], slab, 0.62);
+      if (captureNav) cutFace(navFloors, null, [ar, zr, zl, al], slab, 1);
+      cutFace(b.shell, b.colors, [offset(a, -half, -0.12), offset(a, half, -0.12), offset(z, half, -0.12), offset(z, -half, -0.12)], slab, 1);
+      // The slab's side faces and kerbs keep only their stretches outside the slab cuts.
       for (const side of [-1, 1]) {
-        quad(b.shell, b.colors, offset(a, side * half, -0.12), offset(z, side * half, -0.12), offset(z, side * half, 0), offset(a, side * half, 0));
-        quad(b.kerb, null, offset(a, side * (half - 0.05), 0.005), offset(z, side * (half - 0.05), 0.005), offset(z, side * half, 0.005), offset(a, side * half, 0.005));
+        const s0 = offset(a, side * half, 0), s1 = offset(z, side * half, 0);
+        for (const [t0, t1] of slab ? outsideIntervals({ x: s0.x, z: s0.z }, { x: s1.x, z: s1.z }, slab) : [[0, 1]]) {
+          const from = a.clone().lerp(z, t0!), to = a.clone().lerp(z, t1!);
+          quad(b.shell, b.colors, offset(from, side * half, -0.12), offset(to, side * half, -0.12), offset(to, side * half, 0), offset(from, side * half, 0));
+          quad(b.kerb, null, offset(from, side * (half - 0.05), 0.005), offset(to, side * (half - 0.05), 0.005), offset(to, side * half, 0.005), offset(from, side * half, 0.005));
+        }
       }
-      quad(b.ceiling, b.ceilingColors, offset(z, -half, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, -half, 2.6), [0.62, 0.62, 0.62, 0.62]);
+      cutFace(b.ceiling, b.ceilingColors, [offset(z, -half, 2.6), offset(z, half, 2.6), offset(a, half, 2.6), offset(a, -half, 2.6)], ceiling, 0.62);
       while (nextLight <= travelled + length) {
         const t = (nextLight - travelled) / length;
-        if (t >= 0) {
-          const center = a.clone().lerp(z, t).add(new THREE.Vector3(0, 2.59, 0));
-          const p = center.clone().addScaledVector(along, -0.6), q = center.clone().addScaledVector(along, 0.6);
+        const center = a.clone().lerp(z, t).add(new THREE.Vector3(0, 2.59, 0));
+        const p = center.clone().addScaledVector(along, -0.6), q = center.clone().addScaledVector(along, 0.6);
+        // A light hangs from the ceiling: none where the ceiling is cut.
+        if (t >= 0 && (!ceiling || uncut(p, q, ceiling))) {
           quad(b.lights, b.lightColors, p.clone().addScaledVector(across, -0.075), q.clone().addScaledVector(across, -0.075), q.clone().addScaledVector(across, 0.075), p.clone().addScaledVector(across, 0.075));
         }
         nextLight += 6;
@@ -648,8 +687,16 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       travelled += length; lengthM += length;
     }
   }
-  for (const j of activeJunctions) {
-    const b = getBatch(j.floor), radius = j.width / 2;
+  for (const [k, j] of activeJunctions.entries()) {
+    const b = getBatch(j.floor), radius = j.width / 2, region = runs.length + pads.length + k;
+    const slab = slabCut(region), ceiling = ceilingCut(region);
+    if (slab || ceiling) {
+      const ring = (height: number, turn: number) => Array.from({ length: 24 }, (_v, i) => j.at.clone().add(new THREE.Vector3(Math.cos(turn * i * Math.PI * 2 / 24) * radius, height, Math.sin(turn * i * Math.PI * 2 / 24) * radius)));
+      cutFace(b.shell, b.colors, ring(0, -1), slab ?? [], 0.72);
+      if (captureNav) cutFace(navFloors, null, ring(0, -1), slab ?? [], 1);
+      cutFace(b.ceiling, b.ceilingColors, ring(2.6, 1), ceiling ?? [], 0.72);
+      continue;
+    }
     for (let i = 0; i < 24; i++) {
       const a = i * Math.PI * 2 / 24, z = (i + 1) * Math.PI * 2 / 24;
       for (const height of [0, 2.6]) {

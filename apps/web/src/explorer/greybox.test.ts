@@ -259,6 +259,30 @@ describe("buildGreybox", () => {
     expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
 
+  it("leaves out an intermediate level's floor where it hangs 1.6 m over a corridor, and keeps the corridor", () => {
+    const floors = [...bundle.floors, { id: "m", renderElevationM: 1.6, intermediate: true }];
+    const nodes = [...bundle.nodes, { id: "c", floorId: "m", position: { x: 5, y: -5, z: 1.6 } }, { id: "d", floorId: "m", position: { x: 5, y: 5, z: 1.6 } }];
+    const edges = [bundle.edges[0]!, { id: "cd", from: "c", to: "d", mode: "walk" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high", true);
+    const half = MODE_WIDTH.walk! / 2, nav = result.navFloors!;
+    const covered = (x: number, y: number, z: number) => {
+      for (let i = 0; i < nav.length; i += 9) {
+        if (![1, 4, 7].every((k) => Math.abs(nav[i + k]! - y) < 1e-6)) continue;
+        const [ax, az, bx, bz, cx, cz] = [nav[i]!, nav[i + 2]!, nav[i + 3]!, nav[i + 5]!, nav[i + 6]!, nav[i + 8]!];
+        const d1 = (bx - ax) * (z - az) - (bz - az) * (x - ax), d2 = (cx - bx) * (z - bz) - (cz - bz) * (x - bx), d3 = (ax - cx) * (z - cz) - (az - cz) * (x - cx);
+        if ((d1 >= 0 && d2 >= 0 && d3 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0)) return true;
+      }
+      return false;
+    };
+    expect(covered(5, 0, 0)).toBe(true);
+    expect(covered(5, 1.6, 0)).toBe(false);
+    expect(covered(5, 1.6, -4)).toBe(true);
+    expect(covered(5, 1.6, half + 0.1)).toBe(true);
+    // Nothing of the upper level stands over the corridor below its 2.3 m headroom.
+    const low = result.wallSegments.filter((w) => w.yMin < 2.3 && w.yMax > 1.5);
+    expect(low.every((w) => Math.abs((w.az + w.bz) / 2) >= half - 1e-6 || (w.ax + w.bx) / 2 < 4 || (w.ax + w.bx) / 2 > 6)).toBe(true);
+  });
+
   it("keeps a corridor wall that only runs along a stair's side line", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
     const half = MODE_WIDTH.walk! / 2, stairHalf = MODE_WIDTH.stairs! / 2;
