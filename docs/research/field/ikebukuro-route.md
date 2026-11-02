@@ -56,61 +56,64 @@ Start at 西口（地下）. For doors aim for 11:00 JST or later; check actual 
 - **Items:** 1, 18, 19; B2, B3, B4, B5, B6, C1, H1, H2; FC-CH-04, FC-IMG-01, FC-IMG-02, FC-IMG-03, FC-IMG-04, FC-IMG-08, FC-IMG-09
 - **Minutes:** 98 item; 0 walk from previous stop (start).
 - Read the hall name and 西口五差路 EV plate at `w_c`. Locate exit 9 relative to exit 10 by side/columns; the starts of 14/16/19; the south-west and short stair beside the wide 副都心線 stair; confirm whether exit 8 is reached without crossing a gate. Copy plates; note hoarding, closures and rerouting (+5 min for the merged west-side change check).
-- Open a running sheet here for all nine checklist edges, from `c_w__w_c` through `n_c__x22`, plus South/West Passage edges. At each passage mouth record hours/shutter wording, steps, slopes, lips, equipment/floors and closures against that edge. No notice present, unreadable, and not walked are different results. Finish the sheet at IK-10; H1/H2 have 0 extra minutes.
-- Imagery is a running collection, owned here: floor tiles with ruler/coin and one wide floor/ceiling frame in each Central, South and North passage (15); ceiling grid/joints/fittings straight up (10); walls/columns/skirting with scale (10); tactile bars/dots meeting tiles (10); sign form/style without faces (10, private). Collect these at IK-01/04/06/07/08 on this same walk.
+- Open a running sheet here for all nine checklist edges, from `c_w__w_c` through `n_c__x22`, plus South/West Passage edges. At each passage mouth and exit stair head photograph posted notices privately and copy hours/shutter wording as “exit number / edge: hours”. Record every lift/escalator’s position, served floors and relation to the route, plus steps, slopes, lips and closure wording/location against that edge; passage hours are not shop hours or first/last trains. No notice present, unreadable, and not walked are different results. Finish the sheet at IK-10; H1/H2 have 0 extra minutes.
+- Imagery is a running collection, owned here: floor tiles with ruler/coin and one wide floor/ceiling frame in each Central, South and North passage (15); ceiling panel grid/joints/fittings and any slot, straight up (10); wall/column panel dimensions/joints, skirting profile and wainscot-band height against a known object for scale (10); tactile bars/dots meeting tiles (10); sign form/style without faces (10, private). Collect these at IK-01/04/06/07/08 on this same walk.
 - East/west hall floor, ceiling, handrail and one stair nosing (20) starts here and finishes at IK-07. **Minutes: 3 + 5 + 10 + 5 + 75 imagery = 98**, all charged here. Collect the running imagery on the later named legs without a second time charge.
+- **26 / V4 collection point (owned by IK-10):** read each 東武百貨店 / 東武ホープセンター entrance passed here: private photo and verbatim door plate, store floor, level/steps/lip or lift/escalator floors, and the actual named passage or gate opening it faces. Copy any メトロポリタン改札 / 丸ノ内線中央連絡西改札 wording only if seen. Record no tie seen or unread — reason without inferring a connector. The two 5-min door budgets are charged at IK-10; do not defer these readings until the east-side completion stop.
 
 ### IK-02 · 西通路 → Echika → C exits
 
 - **Items:** 4, 5; FC-CH-03, FC-RT-04, FC-RT-01; V2
 - **Minutes:** 55 item; 4 walk from previous stop.
 - Follow `w_cj → w_13j → w_w → w_nw`. Read both 副都心線 西通路東/西改札 plates and locate the actual gate-line opening, side and columns from a named reference; note which is near マルイシティ and C9/C1b. A plate alone is not an opening.
-- List C exits in walked order with side/number. Locate C1b and C9 relative to 西通路東改札 and read C9 lift floors. Continue by signs to C1b, 2b, 1b, 1a and C4: open/closed, lift/stair service, exit wording, opening-date notice and time-limit text for 1a/C4. These are west-side/sign-led checks, not an assumed east-side circuit.
+- List C exits in walked order with side/number. Locate C1b and C9 relative to 西通路東改札, distinguish C1b from C1/C1a, and read C9 lift floors. Continue by signs to C1b, 2b, 1b, 1a and C4: open/closed, lift/stair service, exit wording, opening-date notice and time-limit text for 1a/C4. These are west-side/sign-led checks, not an assumed east-side circuit.
 - Read an Echika entrance plate, floor and any gate opening it directly faces; photograph the relationship privately. No observed gate tie = UNKNOWN. Minutes: gate/exit checks 10 + freshness 25 + earlier retry questions 15 (conservative overlap retained) + door 5.
 
 ### IK-03 · West Exit (South) approach, stairs 4 / 5 / 6a / 6b / 7
 
 - **Items:** D1; FC-RT-03
 - **Minutes:** 25 item; 3 walk from previous stop.
-- From the north edge of the south hall count columns to exits 5, 6a, 6b and 7; write the passage side. Read 4/5 plates, including any new/old-4 wording. The ward draft remains alias-only. Look/count/copy text; 10 + 15 min.
+- From the north edge of the south hall count columns to exits 5, 6a, 6b and 7; write the passage side. Read 4/5 plates, including any new/old-4 wording. The ward draft remains alias-only. Look/count/copy text; 10 + 15 min. Continue IK-01’s FC-CH-04 sheet here: copy any hoarding/closure/rerouting notice and its stair/passage location, or an inspected “none seen”; its add-on time is already charged at IK-01.
 
 ### IK-04 · 南通路 → Exit 4 / エソラ → JR 南改札 → exit 41
 
 - **Items:** 2, 3, 25; F2, F3; FC-SH-02, FC-MER-01
 - **Minutes:** 29 item; 3 walk from previous stop.
-- Read 有楽町線 南通路西/東改札 plates; locate each gate line by side and columns from JR 南改札, naming the free side. Inspect both ends of the JR–Tobu west link: gates at either end? Walkable without a ticket? Also follow public signs for JR メトロポリタン改札 and Tobu 南改札: read each reachable plate, locate its actual opening, floor and public-side approach; if not found/reachable, record the inspected area and leave the tie OPEN. Stop at any fare boundary.
-- At Exit 4 read lift/escalator panels (actual floors), the outside-gate route and エソラ door plate/floor. Record level / steps / lip / equipment with floors. Facing out of JR 南改札, locate the ルミネ池袋 B1 door by side/columns and read its plate; this is the door survey even though the store already routes to the gate.
-- At `s41_j → s41_f` count steps and record ramp/slope/lift or stairs only and sign text. Minutes: F2/F3 10 (includes numbered item 2), item 3 4, エソラ 5, flight 5, ルミネ 5, running imagery is already charged at IK-01.
+- Read 有楽町線 南通路西/東改札 plates; locate each gate line by side and columns from JR 南改札, naming the free side and copying any 改札外 wording; photograph both gate-name plates privately. Inspect both ends of the JR–Tobu west link: gates at either end? Walkable without a ticket? Also follow public signs for JR メトロポリタン改札 and Tobu 南改札: read each reachable plate, locate its actual opening, floor and public-side approach; if not found/reachable, record the inspected area and leave the tie OPEN. Stop at any fare boundary.
+- At Exit 4 record where the lift and escalator stand relative to the named gate line, read their panels (actual floors) and posted service hours, trace whether the route stays outside the gates, and copy the エソラ door/floor and adjacent 南通路西改札 / 4番出口 plates. Record level / steps / lip / equipment with floors. Facing out of JR 南改札, locate the ルミネ池袋 B1 door by side/columns and read its plate; this is the door survey even though the store already routes to the gate.
+- At `s41_j → s41_f` count steps and record ramp/slope/lift or stairs only and sign text. Minutes: F2/F3 10 (includes numbered item 2), item 3 4, エソラ 5, flight 5, ルミネ 5, running imagery is already charged at IK-01. Collect the South Passage floor-tile close-up with ruler/coin and its wide floor-and-ceiling frame here.
 
 ### IK-05 · 西武 1F / B1 gates, stairs 36–38 and 西武池袋本店
 
 - **Items:** 49; FC-SH-05, FC-CH-02; V1
 - **Minutes:** 40 item; 4 walk from previous stop.
 - From 南通路 follow public signs to each 西武 gate. Copy each 1F/B1 plate; locate its opening onto passage/exit 37 or 38, its floor and fare side, 西武南口 relative to the line, and equipment/floor panels. Keep 西武口 / 西武東口 exit aliases separate from gate names.
-- Read stair 36 and 東口（南） wording; inspect 36/37 and 西武 / Yodobashi passage for new lifts/escalators, changed exit positions and renovation barriers. Record a 西武池袋本店 public door plate, floor, step-free state and the named station element facing it (or none seen). Private door/equipment photos. Minutes: 5 + 5 + 25 + 5.
+- Read stair 36 and 東口（南） wording; for FC-SH-06 (owned by IK-09), copy the plate/shutter access-hours wording at Metro exits 36/37, or no notice / unread — reason; inspect 36/37 and 西武 / Yodobashi passage for new lifts/escalators, changed exit positions and renovation barriers. Record a 西武池袋本店 public door plate, floor, step-free state and the named station element facing it (or none seen). Private door/equipment photos. Minutes: 5 + 5 + 25 + 5.
 
 ### IK-06 · Return to 中央通路 west, Tobu 中央1 / 中央2 and Metro gates
 
 - **Items:** 6, 7; A1, A2, A3; FC-IK-01
 - **Minutes:** 17 item; 6 walk from previous stop.
-- Return by the free 南通路 / 西口 route to `w_c`, then walk east on `c_w__w_c`. Read all four west-run gate plates, actual order, side and columns from `w_c` / `c_w`; record gates not on this run with their observed passage. Include the two floor openings and the 中央通路西改札 / 中央連絡西改札 naming conflict. The east Marunouchi plate is collected at IK-07 for this same A1–A3 sheet.
+- Return by the free 南通路 / 西口 route to `w_c`, then walk east on `c_w__w_c`. Photograph the four west-run gate plates privately and copy their exact wording, actual order, free side, north/south passage side and columns from `w_c` / `c_w`. For A1/A2 also count columns westwards from the west edge of JR 中央1改札 to each of the three Marunouchi and two Tobu gate lines; retain that common reference when the east gate is collected at IK-07. Record gates not on this run with their observed passage. For A3 determine whether each of the two Marunouchi-area floor openings is stairs or another device/opening, where it leads and the exact sign text; never leave it at “opening seen”. Record the 中央通路西改札 / 中央連絡西改札 naming conflict. The east Marunouchi plate is collected at IK-07 for this same A1–A3 sheet.
 - Confirm whether a gate line crosses the west central edge; record 改札内/外 wording. Inspect the lift west of Tobu 中央1 toward exit 19: existence, exact exit sign, served levels and hours. Minutes: merged gate questions 10 + boundary 2 + lift 5.
+- **26 / V4 continuation (owned by IK-10):** inspect any remaining west-run 東武百貨店 / 東武ホープセンター doors now: private plate/relationship photo, exact store/door and facing gate/passage wording, floor and step-free state; record no visible tie or unread — reason. Their budgets remain charged at IK-10.
+- **IK-01 imagery continuation:** collect the Central Passage floor-tile close-up with ruler/coin and one wide floor-and-ceiling frame; no second time charge.
 
 ### IK-07 · 中央通路 centre/east → 34 / 35 → ISP メトロ口
 
 - **Items:** 8, 9; FC-IK-02, FC-SH-03, FC-SH-01, FC-SH-04, FC-RT-02; V3
 - **Minutes:** 50 item; 4 walk from previous stop.
-- Walk the five central edges via `c_mid`, JR 中央2改札 mouth, `c_c`, `c_e1`, `c_n`. For each record steps, threshold or slope and the narrowest-point approximate width; read JR 中央2改札. Read 中央通路東改札 and its two floor openings; locate lift/escalator at stair heads 34/35, ride the free-side lift to read the top plate, copy equipment hours. Do not resolve 34 vs 35 from expectations.
-- At `e_hall → e_low` toward 35 record step count and ramp/slope/lift or stairs only. At ISP, record the slope beside Starbucks 南館, endpoints, central-side and 明治通り sidewalk entrance numbers, and whether they are the same slope entrance. Read ISP メトロ口 door/floor and directly observed gate/passage tie; its printed-relative position alone is insufficient.
-- Complete the east half of the hall imagery begun at IK-01. Minutes: 5 + 10 (numbered item 9 merged) + 5 + 10 + 15 conservative earlier retry allocation + door 5 = 50. Running imagery is already charged at IK-01.
+- Walk the five central edges via `c_mid`, JR 中央2改札 mouth, `c_c`, `c_e1`, `c_n`. For each record step count, threshold or slope against the edge id, the narrowest-point approximate width and whether the whole run can be passed by a wheelchair as observed; read JR 中央2改札. Photograph/copy 中央通路東改札 and both 34/35 stair-head plates privately. Record the gate line’s north/south side and columns westwards from the JR 中央1改札 west edge for A1, and its relation to the lift/escalator. Complete A3 for any opening here: stairs or other type, destination and sign text. Locate lift/escalator at stair heads 34/35, ride the free-side lift to read its top exit plate, and copy equipment hours. Do not resolve 34 vs 35 from expectations.
+- At `e_hall → e_low` toward 35 record step count and ramp/slope/lift or stairs only. At ISP, record the slope beside Starbucks 南館, endpoints, central-side and 明治通り sidewalk entrance numbers, whether they are the same slope entrance, and any level difference/steps at the sidewalk entrance. For FC-SH-06 (owned by IK-09), copy plate/shutter access-hours wording at ISP entrances and Metro exits 34/35, or no notice / unread — reason. Read ISP メトロ口 door/floor and directly observed gate/passage tie; its printed-relative position alone is insufficient.
+- Complete IK-01’s east-hall surface close-ups: floor, ceiling, handrail and stair nosing, without signs/logos/ads/faces. Minutes: 5 + 10 (numbered item 9 merged) + 5 + 10 + 15 conservative earlier retry allocation + door 5 = 50. Running imagery is already charged at IK-01.
 
 ### IK-08 · North run → JR 北改札 / Tobu 北改札 → いけふくろう → Exit 22
 
 - **Items:** 10, 11, 12, 13, 14, 15, 16, 17
 - **Minutes:** 26 item; 3 walk from previous stop.
-- On `c_n__n_h` locate JR 北改札 by readable plate AND opening, side/columns from a named node, and confirm continuous free passage. Look for Tobu 北改札; inspected-not-found or unreadable remains PARTIAL/UNKNOWN. Record all lifts/floors and the run’s steps/slopes/lips.
-- Facing away from JR 北改札, turn right for いけふくろう: side, columns from the gate, relation to stair mouth and nearest named element, name plate. Its photo stays private. Identify Exit 22 by foot/head plate BEFORE using it for the north-passage relation, step count or landing identity.
-- At `n_h → n_c → x22`, note passage side/columns relative to the identified stairwell; count steps/landings and equipment/floors. At the top read street/building plates, roof/open sky, lift and named landmark/tenant. If the stair is not 22, record what was inspected and leave dependent items PARTIAL. Minutes: 26 numbered-item minutes; running imagery is already charged at IK-01.
+- On `c_n__n_h` locate JR 北改札 by readable plate AND opening, side/columns from a named node, and confirm continuous free passage. Look for Tobu 北改札; if found copy its plate and locate the actual opening by side/columns from a named reference. Inspected-not-found or unreadable remains PARTIAL/UNKNOWN. Record every lift’s location, served floors, on/off-route position and whether it serves JR 北改札; record the run’s steps/slopes/lips and its observed step-free state.
+- Facing away from JR 北改札, turn right for いけふくろう: side, columns from the gate, relation to stair mouth and nearest named element, name plate. Its photo stays private. Copy the candidate stair’s foot/head plates (22 / 東口（北） or actual wording) and record whether it faces いけふくろう BEFORE using it for the north-passage relation, step count or landing identity.
+- At `n_h → n_c → x22`, locate the short flight down to the passage between ISP blocks and record whether that passage is east of the identified Exit 22 stairwell, with columns from `n_c`; count steps/landings and equipment/floors. At the top read street/building plates, roof/open sky, any street-reaching lift / 東口メトロ EV wording and named landmark/tenant; explicitly note whether Cafe&Bar RAGE ST is seen. If the stair is skipped, read the landing from the street fallback and record what was not walked. If the stair is not 22, record what was inspected and leave dependent items PARTIAL. Minutes: 26 numbered-item minutes; running imagery is already charged at IK-01. Collect the North Passage floor-tile close-up with ruler/coin and one wide floor-and-ceiling frame before the street ascent.
 
 ### IK-09 · North-east shopping-park passage → Sunshine 地下道入口
 
@@ -130,7 +133,7 @@ Start at 西口（地下）. For doors aim for 11:00 JST or later; check actual 
 
 - **Items:** 24
 - **Minutes:** 15 item; 7 walk from previous stop.
-- Use a valid Tobu admission/journey ticket; same-station IC entry/exit is not assumed. Copy platform 1–3 number/service/destination, and inspect whether 4/5 exist. Unreachable platforms stay PARTIAL. Return to the public side.
+- Use a valid Tobu admission/journey ticket; same-station IC entry/exit is not assumed. Copy each reachable platform’s 番線 plate and service/destination for 1–5; specifically record whether 4/5 exist, were inspected but not found, or were unreachable. Unreachable platforms stay PARTIAL. Return to the public side.
 
 ### IK-12 · Ticket: Metro M25 → platforms → public 中央通路
 

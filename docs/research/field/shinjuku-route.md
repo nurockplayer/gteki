@@ -29,7 +29,7 @@ Photo labels below: **[private]** = sign photo, stays on your device. **[ships]*
 
 The [collection list](../field-collection-list.md) remains the source of truth for FC/checklist questions and minutes. Its current file is FC-keyed, not numbered 1–62: numbered questions come from the public [October field run](../lines/field-run-2026-10-26.md) and [November sheet](../lines/field-run-2026-11-01.md). This packet joins both without renumbering. Matrix-only facility/gate checks are named explicitly; no new FC or gap ids are invented.
 
-**One owning stop per item.** A running item (hours, images, all exits, or the three-store item 55) has one Items entry and one coverage-table destination; its named continuation points are collection waypoints on this same ordered walk, not second assignments. Start that sheet when its first waypoint is passed, even if the completion stop is later. Inspection minutes are charged once at the owning stop including running imagery. Times retain overlap between different source questions conservatively; no new survey accuracy is claimed.
+**One owning stop per item.** A running item (hours, images, all exits, or the three-store item 55) has one Items entry and one coverage-table destination; its named continuation points are collection waypoints on this same ordered walk, not second assignments. Start that sheet when its first waypoint is passed, even if the completion stop is later. Inspection minutes are charged once at the owning stop including running imagery, except item 40’s existing 5 min is allocated to its collection points: 2 min at SJ-01 and 3 min at SJ-06. Times retain overlap between different source questions conservatively; no new survey accuracy is claimed.
 
 At every door read the actual store/door plate and floor, the station plate/opening it physically faces, fare side, level/steps/lip/lift/escalator and served floors, plus relevant posted door/access hours. Photograph plates/relationship privately. Readable names alone never prove a connector. No door/gate seen closes only the inspected negative, leaving its tie UNKNOWN; unreadable, barred or unvisited stays PARTIAL/OPEN, with reason. Do not close an entire multi-part item from one visited end. Do not copy store-site-only facts. The run is **unscheduled**: this is a walk order, not a booked visit.
 
@@ -51,9 +51,11 @@ Start at 西口 B1. Do doors after their actual opening notice permits (aim for 
 ### SJ-01 · 西口 B1 plaza → 小田急エース / 京王モール frontage
 
 - **Items:** FC-CH-01, FC-IMG-05; matrix: 小田急エース / 京王モール entrances
-- **Minutes:** 65 item; 0 walk from previous stop (start).
+- **Minutes:** 67 item; 0 walk from previous stop (start).
 - Inspect stairs 1/2/3/11 and temporary stairs, north passage, temporary lifts: open/closed, level-change steps, lift positions, hoarding and rerouting. Copy notices and keep own-use photos private (40). Surface close-ups of floor/ceiling/column cladding, with renovation state in filename (15).
 - At signed 小田急エース and 京王モール public openings record facility/door plate, passage/exit or gate actually faced, floor, step-free state and posted access hours (5 each, estimated). No store-site-only layout or entrance tie is copied.
+- **Item 40 collection point (owned by SJ-06):** from the free side photograph both 「JR西口改札」 and 「JR西口」 plates as private evidence and copy both wordings verbatim. Locate the gate line each plate actually identifies, count the physical gate lines, and write “one physical gate line” or “two physical gate lines” with the plate-to-line relationship. If either plate or line cannot be read/located, record the reason and keep that comparison PARTIAL; similar wording alone is not a match. At the west-side 「地上出口1」 waypoint also copy its plate/printed number and record the actual stair/exit/opening it identifies, or no identifiable element — reason. Allocate 2 min here from item 40’s existing 5 min; SJ-06 retains 3 min.
+- **Gate-sweep collection point (owned by SJ-10):** for each reachable 京王 / 小田急 gate by these frontages copy its plate and line/operator tag, locate the actual opening onto the public passage, and record floor and fare side. Unread/unlocated gates remain PARTIAL; time is already in SJ-10’s sweep budget.
 
 ### SJ-02 · 小田急 西口 → 西口ハルク → 新宿西口駅 E01
 
@@ -61,7 +63,7 @@ Start at 西口 B1. Do doors after their actual opening notice permits (aim for 
 - **Minutes:** 33 item; 5 walk from previous stop.
 - At 小田急 西口 gate midpoint read the actual plate. At the nearest open-sky spot collect three phone lat/lon/accuracy readings about 30 s apart after standing 2 min, with compass direction and tape/pace offset to midpoint, sky state and phone model; private plate/sky photos. Accuracy >10 m leaves the control PARTIAL (8).
 - 西口ハルク: read 1階正面入口 and, if passed, 喫茶ピース-side door; record floor, steps/lip/equipment. Read the nearest street-exit plate separately. A street walk alone is not a door connector (5).
-- Follow signed public ways between 新宿駅 西口 and 新宿西口駅, recording both endpoint names, continuous at-grade/underground passage names, step-free path/barriers and hours (20, list estimate wins over the shorter November sheet). At E01 collect the E01 surface reference for the later E27/E01 sheet; that time is charged at SJ-11. Paid E01 toilets/store entries wait for SJ-15.
+- Follow signed public ways between 新宿駅 西口 and 新宿西口駅, recording both endpoint names, continuous at-grade/underground passage names, step-free path/barriers and hours (20, list estimate wins over the shorter November sheet). At E01 collect the free-side floor, kick plate, line-colour band, exit stair, wall/column cladding close-ups with scale, and lit-ceiling luminaires with a white card for colour cast. Surface-only photos, no sign/logo/ad/face; time is charged at SJ-11’s E27/E01 sheet. Paid E01 toilets/store entries wait for SJ-15.
 
 ### SJ-03 · サブナード / B10 → 西武新宿駅 → current route to 新宿駅
 
@@ -74,7 +76,7 @@ Start at 西口 B1. Do doors after their actual opening notice permits (aim for 
 
 - **Items:** 45; FC-IMG-06
 - **Minutes:** 15 item; 5 walk from previous stop.
-- JR east–west free passage floor/ceiling/lighting strip surface close-ups (10). At ルミネエスト read both 中央東改札 and 東改札 plates from outside, distinguish each 改札 / 口 wording as one physical gate or two, and tie each to a directly seen store door/floor/step-free state (5). No weekday/Sunday store opening is assumed.
+- JR east–west free passage floor/ceiling/lighting strip surface close-ups (10). At ルミネエスト photograph the plates privately and copy both near pairs verbatim: 「中央東改札」 / 「JR中央東口」 and 「東改札」 / 「JR東口」. For each pair locate and count the physical gate lines, record one line or two (or unread/unlocated — reason), and tie each observed gate to its directly seen store door/floor/step-free state (5). No weekday/Sunday store opening is assumed.
 
 ### SJ-05 · Metro M08 西改札 → 東改札 / A6–B6; A10 stair contexts
 
@@ -86,10 +88,10 @@ Start at 西口 B1. Do doors after their actual opening notice permits (aim for 
 ### SJ-06 · B6 / A6 → メトロプロムナード → A5 → B5 / B4 / B3 / 伊勢丹
 
 - **Items:** 40, 47, 48, 56, 58; FC-SEP-02
-- **Minutes:** 55 item; 3 walk from previous stop.
+- **Minutes:** 53 item; 3 walk from previous stop.
 - Walk east from the M08 B6/A6 end to 新宿三丁目 A5. Copy passage name (including English), manager/operator plate and posted hours. Time and pace from the fixed start to A5; list exit plates and every step/slope and bypass lift. Record both station endpoint signs and the continuous path. Independently record the exact Subnade connection open/not open/unknown (20 for link + 20 for door/length sheet; conservative overlap retained).
-- At B5/B4/B3 count paces from A5 and from each exit plate to the 伊勢丹 door, reading 本館/メンズ館, store floor and step-free state. For 伊勢丹正面改札 copy its plate, direction restriction and posted hours AS GATE HOURS; an unread notice stays PARTIAL. Record メンズ館’s own entrance or inspected-not-found, never infer its tie from 本館 (5 + 5).
-- マルイ本館: record the B1F door on the promenade, passage, floor, free side and step-free access. Read the 地上出口1 plate. The JR西口改札 / JR西口 physical-line comparison is collected at SJ-01 on this same item sheet; do not equate names by text alone (5).
+- At B5/B4/B3 count paces from A5 and from each exit plate to the 伊勢丹 door, reading 本館/メンズ館, store floor and step-free state. For 伊勢丹正面改札 copy its plate, direction restriction and posted hours AS GATE HOURS; an unread notice stays PARTIAL. Copy the other three 新宿三丁目 gate plates if passed. Record メンズ館’s own entrance plate, floor, access and facing station element or inspected-not-found, never infer its tie from 本館 (5 + 5).
+- マルイ本館: record the B1F door on the promenade, passage, floor, free side and step-free access. The west-side 「地上出口1」 plate/element reading and JR西口改札 / JR西口 plate photos, verbatim readings and one-line/two-line comparison are collected at SJ-01 on this same item sheet. Allocate 3 min here for the 本館 entrance reading plus 2 min at SJ-01 for the gate/exit comparison, retaining item 40’s original 5-min total.
 
 ### SJ-07 · 新宿三丁目 street → マルイ アネックス → マルイ メン
 
@@ -117,7 +119,7 @@ Start at 西口 B1. Do doors after their actual opening notice permits (aim for 
 - **Minutes:** 78 item; 4 walk from previous stop.
 - Finish the SJ-03 three-store sheet at 京王百貨店 A14/A15 leads; record actual door/exit plates and store floor. This 5 min is charged at SJ-03. Read former exit 2 closure/notice and adjoining passage/gate side (20). Never equate printed 2番出口 with internal `poi:exit:2`.
 - Open ONE exit sheet for A1 and printed 1–8 plus the six mapped E27 points. Walk signed public exits in north/B1 → south/street order, finishing A1 and the southern points at SJ-11/12. At each: plate text/number/line tag, hours, street/building, street vs underground destination, device, steps and lift/escalator floor list. Keep printed exit number separate from internal descriptor; closed exits are read-only points, not through routes (45).
-- For numbered 28/29 retain only 8 extra min for A1/other-exit equipment details (plate/closure work already covered). At A1 and the mapped southern lift compare whether they are the same continuous device, not merely adjacent. Complete at SJ-12.
+- For numbered 28/29 retain only 8 extra min for A1/other-exit equipment details (plate/closure work already covered). At A1 and the mapped southern lift (`poi:exit:3`) record whether they are the same continuous device, which line it serves and the actual served floors, not merely whether they are adjacent. Complete at SJ-12.
 - Extra matrix gate sweep (5 estimated min): read reachable 小田急 南口 / 西口地下 / 西口 and 京王 gate plates/openings including 京王新線口 / 新都心口, line attribution, floor and free-side passage. Record gates not located/unread rather than assume all 3/8 are reached. The south/west plates are gathered at SJ-01/02/09; JR shared gate plate ties are recorded on the same walking legs. Access missed behind fares stays PARTIAL.
 
 ### SJ-11 · E27 A1 / マインズタワー → B1 free concourse and reachable B2
@@ -154,7 +156,7 @@ Start at 西口 B1. Do doors after their actual opening notice permits (aim for 
 - **Items:** FC-SJ-03, FC-SX-03, FC-SJ-04, FC-SX-02, FC-SX-04, FC-SJ-06
 - **Minutes:** 115 item; 10 walk from previous stop.
 - Visit E01, S01 then E27 on permitted journeys/admission arrangements, with public walks between their gates. For each accessible toilet: floor/passage/nearest gate, fare side and sign wording (45). Complete the E27 paid-side part during SJ-16 before leaving.
-- For A1 and E27/S01 platform links: count lifts, note working state, floors, where each opens, gate side and posted hours. Complete A1 vs mapped lift identity from SJ-10’s sheet; a nearby device does not establish a step-free route. Platform-side E27 lift observations continue at SJ-16 (40).
+- For A1 and E27/S01 platform links: count lifts, note working state, floors, where each opens, gate side and posted hours. For the A1 vs mapped `poi:exit:3` comparison, write whether one continuous lift serves both identified locations, which line it serves and its floor list; use the observed landings, not proximity. Complete the free-side readings at SJ-10/11 and paid-side readings at SJ-16; a nearby device does not establish a step-free route. Platform-side E27 lift observations continue at SJ-16 (40).
 - For Toei store entries at 新宿 / 新宿西口 copy actual storefront name, floor, gate side and nearest-exit wording for each, including the inside-gate B2 entry only on a valid ticket. Read current sign, not store-site text (30). Complete reachable E27 entries at SJ-16. Missing access remains OPEN; geometry and coordinates are not inferred.
 
 ### SJ-16 · Ticket: E27 arrival platform → B6 / B3 / B1 → north gate
@@ -162,7 +164,8 @@ Start at 西口 B1. Do doors after their actual opening notice permits (aim for 
 - **Items:** 32, 33, 34, 35, 36, 37, 38; FC-IMG-10, FV-E27-01, FV-E27-02
 - **Minutes:** 70 item; 5 walk from previous stop.
 - Arrive on a fare-valid 大江戸線 journey, e.g. 新宿 → 代々木 → 新宿 with separate valid outward/return rides. Follow the [checklist](shinjuku-field-checklist.md) 14-edge table (136.5 m), platform → first escalator → B3 concourse → second escalator → B1 north gate. Do not assume same-station IC entry/exit is accepted.
-- While still paid: lift panel floors and each landing on/off route and paid/free B1 (10); floor labels at B6/B3/B1 landings (5); direction of both escalators and posted reversals (5); per-edge steps/slope/threshold for all 11 walk edges (10); fare boundary before final gate, approach name signs and lane count/hours (5); hours and closures against all 14 edges (0 + 0). Exits, first/last trains and the ticket-office 11:00–20:00 JST block are not passage hours. Check escalator direction before boarding; use signed stairs/lift if opposite.
+- While still paid: read lift-panel floors, where each landing opens, its nearest checklist route node, on/off-route state and paid/free B1 side; do not assign it to an edge (10). Copy floor labels at B6/B3/B1 lift/escalator landings, or “no floor label seen” where inspected (5). For both escalators record running direction, posted reversals or none posted, and head/foot floor labels (5). On each of the 11 walking edges count steps and record the edge id plus slope/threshold/flat state (10). Record any gate line before the final gate, 改札内/改札外 mouth signs, approach gate-name wording and north-gate lane count/hours (5). Against every one of the 14 edges copy hours/shutter and closure/hoarding/barrier/rerouting wording and location, or an inspected negative; distinguish “no notice present”, “notice present, unreadable — reason” and “not walked — reason” (0 + 0). Exits, first/last trains and the ticket-office 11:00–20:00 JST block are not passage hours. Check escalator direction before boarding; use signed stairs/lift if opposite.
+- **SJ-15 collection point:** before leaving E27, record each accessible toilet’s floor, passage, nearest gate, fare side and exact sign text; each lift’s working state, floors, opening location, fare side and posted hours; and each reachable Toei store entrance’s name, floor, fare side and nearest-exit wording (including the B2 entry only if ticket access permits). Keep unvisited parts OPEN. These observations are charged at SJ-15, with no second time charge here.
 - Optional platform imagery (30): wall/floor finish, screen-door base, flat grey wall with grey/white card and wide curvature frame, floor with ruler/coin, ceiling joints/luminaire. No tracks/faces/signs/ads. Complete SJ-15’s E27 toilet/lift/store-entry observations before leaving. **70 = 35 checklist + 30 imagery + 5 estimated platform access**. Ride/queue allowance is listed separately above; take optional E27 platform photos after returning to 新宿, before leaving the platform for the upward checklist walk or crossing the final fare gate.
 
 ## Coverage table: every open public field item
