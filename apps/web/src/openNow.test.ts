@@ -60,6 +60,13 @@ describe("openNow from printed OD-32 hours", () => {
     expect(openNow(hours("12:00A.M.~12:00P.M."), at("00:00"))).toBe("open");
     expect(openNow(hours("午前12時~午後12時"), at("12:00"))).toBe("closed");
   });
+
+  it("is unknown when a footnote carries an exception to the schedule (review #724)", () => {
+    for (const note of ["※水曜定休", "※定休日：不定休", "※臨時休業あり", "※年末年始を除く", "※日曜は短縮営業", "※12月31日は18:00まで", "※月曜除く", "※THE ALLEYは12:00～22:00までの営業", "※店舗入替日は9:00P.M.閉店"]) {
+      expect(openNow(hours(`10:00～21:00 ${note}`), at("12:00")), note).toBe("unknown");
+    }
+    expect(openNow(hours("10:00～21:00 ※館営業時間に準ずる"), at("12:00"))).toBe("open");
+  });
   it("honours the exact 180-day cutoff, unknown status, and missing readings", () => {
     const h = hours("10:00~21:00");
     const cutoff = new Date(Date.parse("2026-10-24T00:00:00Z") + 180 * 86400000);

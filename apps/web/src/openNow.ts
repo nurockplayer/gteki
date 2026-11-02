@@ -25,11 +25,17 @@ function minutes(text: string): number | null {
   return (period ? h % 12 + (period === "午後" || period === "P.M." ? 12 : 0) : h) * 60 + m;
 }
 
+/** Footnote words that change the schedule on some days (定休日, 臨時休業, 月曜除く, 短縮営業, other times …). */
+const EXCEPTION_NOTE = /休|除|臨時|異な|変更|短縮|延長|特別|曜|祝|[0-9]+月|[0-9]+日|入替|[0-9]{1,2}\s*[:時]|ラストオーダー|L\.?O/;
+
 /** Only complete, unambiguous printed schedules qualify; all other wording stays unknown. */
 export function openNow(hours: HoursText | null | undefined, now: Date): "open" | "closed" | "unknown" {
   const printed = printedHours(hours, now);
   if (printed === null) return "unknown";
-  let rest = printed.normalize("NFKC").replace(/※[^\r\n]*/g, "").trim();
+  const text = printed.normalize("NFKC");
+  // A footnote may carry an exception to the schedule (closed days, special hours): then the schedule is not complete.
+  if ((text.match(/※[^\r\n]*/g) ?? []).some((note) => EXCEPTION_NOTE.test(note))) return "unknown";
+  let rest = text.replace(/※[^\r\n]*/g, "").trim();
   const schedule = new Map<number, [number, number]>();
   while (rest) {
     const match = block.exec(rest);
