@@ -943,6 +943,22 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: two flights converging on one node at 30 degrees leave the incoming route clear.
+  it("lets a walker up a flight that meets another at 30 degrees on its top node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4 - 2 * Math.sqrt(3), 0, 2], [4, 2, 0]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "b", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["b", b[0]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    for (let x = 0.5; x <= 4; x += 0.1) {
+      const r = resolveWalls(x, 0, 0.3, x / 2, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z), `x=${x.toFixed(1)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
   // #710 review: a connector skipped as too short opens no junction in the one it meets.
   it("keeps a stair's guards where a skipped short connector meets it", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
