@@ -1722,9 +1722,9 @@ function buildUndergroundLighting(
     if (g.center.z >= -0.5 || anchors.some((p) => Math.abs(p.z - g.center.z) < 1 && Math.hypot(p.x - g.center.x, p.y - g.center.y) < 12)) continue;
     anchors.push(g.center);
   }
-  // On each underground level, the main escalator bank arriving there gets one over its upper landing, 2 m past the head,
-  // where the soffit fixtures alone leave the arrival flat (vertical-gap expansion item 3). A bank is the runs whose heads
-  // lie within 8 m on one level; the main one is on the guided walk, else has the most runs, then the longest.
+  // The guided-walk escalator bank gets one over its upper landing, 2 m past the head, where the soffit fixtures alone
+  // leave the arrival flat (vertical-gap expansion item 3). A bank is the runs whose heads lie within 8 m on one level.
+  // Only that bank: with the cap of 8, a head on every level would push out the hall fills of other corridors.
   const runLength = (r: (typeof layout.runs)[number]) => Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y);
   const banks: { head: XYZ; runs: number; length: number; guided: boolean }[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
@@ -1738,7 +1738,7 @@ function buildUndergroundLighting(
     else banks.push({ head, runs: 1, length: len, guided });
   }
   const heads: XYZ[] = [];
-  for (const b of banks.sort((x, y) => Number(y.guided) - Number(x.guided) || y.runs - x.runs || y.length - x.length)) {
+  for (const b of banks.filter((b) => b.guided).sort((x, y) => y.runs - x.runs || y.length - x.length)) {
     if (heads.some((p) => Math.abs(p.z - b.head.z) < 0.3)) continue;
     if (!anchors.some((p) => Math.abs(p.z - b.head.z) < 1 && Math.hypot(p.x - b.head.x, p.y - b.head.y) < 8)) heads.push(b.head);
   }
@@ -1751,9 +1751,8 @@ function buildUndergroundLighting(
     const n = (junctions.length ? junctions : candidates).sort((a, b) => score(b) - score(a))[0];
     if (n) anchors.push({ ...n.position, z: lv.z });
   }
-  for (const p of anchors.slice(0, 8)) {
-    const roof = ceilingAt(p);
-    if (!roof) continue;
+  // An anchor with no ceiling over it gets no light, so it does not take one of the 8.
+  for (const [p, roof] of anchors.flatMap((p) => { const roof = ceilingAt(p); return roof ? [[p, roof] as const] : []; }).slice(0, 8)) {
     const lv = layout.levels.find((l) => l.floorId === roof.floorId)!;
     const light = new THREE.PointLight(lv.label === "B1" || lv.label === "B5" ? "#fff0dc" : "#e0efff", 3.5, 12, 2);
     light.position.copy(v3({ ...p, z: roof.z - 0.22 }));
