@@ -2,6 +2,8 @@
 
 Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing Ikebukuro checklist. One list for the Owner, sorted by cost, cheapest first. Nothing here is a finding; every row is something to look at, count or photograph on site. Decisions the Owner still has to make are in [owner-decisions-pending.md](owner-decisions-pending.md).
 
+2026-11-02 JST walk order: [Shinjuku packet](field/shinjuku-route.md) · [Ikebukuro packet](field/ikebukuro-route.md).
+
 > **Rules for every visit**
 >
 > - Public areas only. No faces. No staff-only zones.
@@ -130,7 +132,7 @@ If time is short, imagery first in the order the source gives: FC-IMG-01, 02, 03
 
 Free extensions (T3 only by length, no ticket): FC-CH-01 (40, same plaza as step 1) and FC-SJ-02 (45, street exits): +85, giving 240 min. FC-IMG-08 and 09 can be repeated here if wanted (the source counts them once for both stations).
 
-Ticket visit, one fare (T3 paid): FC-SJ-03 (45), FC-SJ-04 (40), FC-SJ-05 (90), FC-SJ-06 (30), FC-RT-05 (30), optional FC-IMG-10 (30, with FV-E27-01 and FV-E27-02) = 265 min. FC-CH-05 is deferred to about 2030.
+Ticket visit (T3 paid; use separately valid Toei, JR, Keio, Odakyu or Tokyo Metro tickets/journeys for each paid area required; no single-fare coverage is assumed): FC-SJ-03 (45), FC-SJ-04 (40), FC-SJ-05 (90), FC-SJ-06 (30), FC-RT-05 (30), optional FC-IMG-10 (30, with FV-E27-01 and FV-E27-02) = 265 min. FC-CH-05 is deferred to about 2030.
 
 ## Not collectable by the Owner alone (T4, blocked)
 
