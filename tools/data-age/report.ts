@@ -22,12 +22,12 @@ const oldest = (dates: string[]) => dates.sort()[0] ?? null;
 
 export function ageRows(bundles: StationBundle[], now = new Date()): AgeRow[] {
   // Compare calendar dates, rather than elapsed hours, at the JST day boundary.
-  const today = new Date(now.getTime() + 9 * 3_600_000).toISOString().slice(0, 10);
+  const today = jstDate(now.toISOString());
   const rows: { row: AgeRow; missing: boolean }[] = [];
   for (const bundle of bundles) {
     const sources = new Map(bundle.sources.map((source) => [source.id, source.retrievedAt]));
     const sourceDate = (ids: string[]): string | null => {
-      const dates = ids.map((id) => sources.get(id)?.slice(0, 10));
+      const dates = ids.map((id) => sources.get(id)).map((date) => date ? jstDate(date) : null);
       return dates.length && dates.every((date) => !!date) ? oldest(dates as string[]) : null;
     };
     for (const poi of bundle.pois.filter((poi) => poi.category === "shop")) {
@@ -36,8 +36,8 @@ export function ageRows(bundles: StationBundle[], now = new Date()): AgeRow[] {
       const buildingDates = (bundle.buildingHours ?? [])
         .filter((hours) => hours.building.some((name) => name.lang === "ja"
           && poi.names.some((candidate) => candidate.lang === "ja" && candidate.text === name.text)))
-        .map((hours) => hours.retrievedAt);
-      const hoursDate = poi.hours?.retrievedAt ?? oldest(buildingDates);
+        .map((hours) => jstDate(hours.retrievedAt));
+      const hoursDate = poi.hours?.retrievedAt ? jstDate(poi.hours.retrievedAt) : oldest(buildingDates);
       const tenantsDate = sourceDate(tenants.flatMap((tenant) => tenant.evidence.sourceIds));
       // Same verified-point conditions as merchantPrecision; ties and map-read doors are unverified.
       const verifiedDoor = poi.displayPosition !== null && poi.connectorNodeIds.length > 0
@@ -76,6 +76,13 @@ export function markdown(rows: AgeRow[]): string {
     lines.push(`| ${cells.map((cell) => String(cell).replace(/\|/g, "\\|").replace(/[\r\n]+/g, " ")).join(" | ")} |`);
   }
   return lines.join("\n");
+}
+
+function jstDate(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date(value));
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

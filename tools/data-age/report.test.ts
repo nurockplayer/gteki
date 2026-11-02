@@ -48,6 +48,18 @@ it("does not treat a station tie or a map-read door as a verified entrance", () 
   expect(ageRows([tied]).map((row) => row.entranceDate)).toEqual(["未確認", "未確認", "未確認"]);
 });
 
+it("converts source timestamps to JST dates before computing freshness", () => {
+  const timestamp = "2026-11-02T16:30:00Z"; // 2026-11-03 01:30 JST
+  const bundle: StationBundle = { ...fixture,
+    sources: [source("door", timestamp), source("directory", timestamp)],
+    pois: [poi("older", "2026-11-03")], tenants: [tenant("t1", "directory")],
+  };
+  expect(ageRows([bundle], new Date("2026-11-03T03:00:00Z"))[0]).toMatchObject({
+    hoursDate: "2026-11-03", tenantsDate: "2026-11-03", entranceDate: "2026-11-03",
+    oldestDate: "2026-11-03", ageDays: 0,
+  });
+});
+
 it("uses exactly matched building hours when the store has no own hours", () => {
   const building = { ...fixture, buildingHours: [{
     building: [{ lang: "ja", text: "missing" }], floorRange: null,
