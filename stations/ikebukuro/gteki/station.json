@@ -1589,6 +1589,27 @@
      "retrievedAt": "2026-11-01T19:34:52Z"
     }
    ]
+  },
+  {
+   "id": "tobu-ikebukuro-station-2026-11",
+   "title": "東武鉄道 池袋駅 設備・ホーム案内",
+   "publisher": "東武鉄道",
+   "url": "https://www.tobu.co.jp/railway/guide/station/info/7105/",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+    "date": "2026-10-27"
+   },
+   "attribution": "東武鉄道 池袋駅 (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-11-02T19:58:53.310019+00:00",
+   "sha256": {
+    "7105.html": "af8b26046e82a77c22518c3e7afbb7d2e3d84b51e181f38d4b8c782e251916a1"
+   },
+   "datasetDate": null,
+   "notes": "facts-only; Tobu §8 business-use ban; recheck-at-C. Read 2026-11-02T19:58:53.310019+00:00 (UTC); 128576 bytes. Text prints platforms 1–5 in the gap/step-reduction list and availability of elevators, escalators and accessible toilets. No facility quantity, floor, paid side or nearest gate is stated. One search entry per facility kind records availability only; no map images, icons or descriptive wording reproduced."
   }
  ],
  "floors": [
