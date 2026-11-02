@@ -779,7 +779,8 @@ export class App {
       // A routable store whose route ends at a station gate says so, and carries its note too (#213).
       const arrival = h.routable ? arrivalPrecision(h.poi) : null;
       const note = h.routable && !arrival ? null : poiNoteText(h.poi, this.s.lang);
-      const tie = arrival ? this.t.merchant.precision[arrival] : null;
+      const tie = arrival ? this.t.merchant.precision[arrival]
+        : !h.routable && h.poi.category === "shop" ? this.t.merchant.precision.unverified : null;
       if (tie) b.append(el("span", "result-note", tie));
       if (note) b.append(el("span", "result-note", note));
       // An approximate point is search display only: show the ± radius and that it is not used for directions (#463).
