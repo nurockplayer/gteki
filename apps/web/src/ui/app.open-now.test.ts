@@ -151,8 +151,8 @@ it("ranks every candidate before dropping closed shops, and the other-category c
   second.toggle(true);
   expect(second.search("西武池袋本店").length).toBe(0);
   const offer = second.a.ui.toResults.querySelector(".other-categories")?.textContent ?? "";
-  const expected = createSearchIndex(ikb).search("西武池袋本店", { limit: ikb.pois.length, lang: "ja" })
+  const elsewhere = createSearchIndex(ikb).search("西武池袋本店", { limit: ikb.pois.length, lang: "ja" })
     .filter((h) => h.poi.category !== "shop" || openNow(h.poi.hours, new Date()) !== "closed").slice(0, 8).length;
-  if (expected === 0) expect(offer).toBe("");
-  else expect(offer).toContain(expected === 8 ? "8+" : String(expected));
+  if (elsewhere === 0) expect(offer).toBe("");
+  else expect(offer).toContain(elsewhere === 8 ? "8+" : String(elsewhere));
 });

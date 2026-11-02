@@ -395,11 +395,11 @@ printedHours	function	apps/web/src/hours.ts	15
 HOURS_STALE_DAYS	const	apps/web/src/hours.ts	29
 hoursStale	function	apps/web/src/hours.ts	32
 Lang	type	apps/web/src/i18n.ts	6
-Strings	type	apps/web/src/i18n.ts	479
-strings	function	apps/web/src/i18n.ts	481
-pick	function	apps/web/src/i18n.ts	486
-coverageText	function	apps/web/src/i18n.ts	495
-initialLang	function	apps/web/src/i18n.ts	500
+Strings	type	apps/web/src/i18n.ts	485
+strings	function	apps/web/src/i18n.ts	487
+pick	function	apps/web/src/i18n.ts	492
+coverageText	function	apps/web/src/i18n.ts	501
+initialLang	function	apps/web/src/i18n.ts	506
 FormClock	interface	apps/web/src/merchant/form-state.ts	9
 FormState	interface	apps/web/src/merchant/form-state.ts	18
 newFormState	function	apps/web/src/merchant/form-state.ts	32
@@ -434,6 +434,7 @@ buildSubmission	function	apps/web/src/merchant/submission.ts	177
 RelaxableOption	type	apps/web/src/noPath.ts	5
 NoPathView	interface	apps/web/src/noPath.ts	7
 noPathView	function	apps/web/src/noPath.ts	20
+openNow	function	apps/web/src/openNow.ts	32
 PRIVATE_BUILD	const	apps/web/src/registry.ts	7
 StationEntry	interface	apps/web/src/registry.ts	10
 LoadedStation	interface	apps/web/src/registry.ts	19
@@ -445,7 +446,7 @@ SIGN_FONT_TIMEOUT_MS	const	apps/web/src/signFont.ts	4
 loadSignFont	function	apps/web/src/signFont.ts	9
 StationClock	interface	apps/web/src/stationClock.ts	5
 stationClock	function	apps/web/src/stationClock.ts	17
-App	class	apps/web/src/ui/app.ts	90
+App	class	apps/web/src/ui/app.ts	92
 CATEGORY_ORDER	const	apps/web/src/ui/categoryFilter.ts	7
 categoriesIn	function	apps/web/src/ui/categoryFilter.ts	13
 ComboState	interface	apps/web/src/ui/combobox.ts	3
