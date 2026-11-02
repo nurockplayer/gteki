@@ -248,7 +248,7 @@ describe("visual only", () => {
       if (n.scale) group.scale.fromArray(n.scale);
       if (n.mesh !== undefined) for (const p of d.meshes[n.mesh].primitives) {
         const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(accessor(p.attributes.POSITION, 3), 3)); geo.setIndex(accessor(p.indices, 1));
-        group.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ name: d.materials[p.material].name })));
+        group.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ name: d.materials[p.material].name, side: d.materials[p.material].doubleSided ? THREE.DoubleSide : THREE.FrontSide })));
       }
       return group;
     });
@@ -259,12 +259,24 @@ describe("visual only", () => {
   it("reports committed placements for each real tier", async () => {
     for (const low of [false, true]) {
       const loaded = await loadShopKit(THREE, host(all(low ? "low" : "high"), async (uri) => realShop(uri)), kit, shops, openings, low);
-      const { stats } = loaded.build(THREE, env, toRenderer);
+      const { group, stats } = loaded.build(THREE, env, toRenderer);
       console.log(`[shop stats] ${low ? "low" : "desktop"}: ${JSON.stringify(stats)}`);
       expect(stats).toMatchObject({ shops: 10, modules: 22, tiles: 1,
-        drawCallsAllTiles: low ? 8 : 20, trianglesAllTiles: low ? 3336 : 7379,
-        trianglesWorstTile: low ? 3336 : 7379, signs: 9, signDrawCalls: 1, signTriangles: 54,
-        interiorDrawCalls: 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4, directoryBoards: 1 });
+        drawCallsAllTiles: low ? 1 : 20, trianglesAllTiles: low ? 6846 : 7379,
+        trianglesWorstTile: low ? 6846 : 7379, signs: 9, signDrawCalls: low ? 0 : 1, signTriangles: 54,
+        interiorDrawCalls: low ? 0 : 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4, directoryBoards: 1 });
+      expect(group.children).toHaveLength(low ? 2 : 23);
+      expect(((group.getObjectByName("kit_shop_spill") as THREE.Mesh).material as THREE.Material).forceSinglePass).toBe(low);
+      if (low) {
+        const maps = new Set(group.children.map((o) => ((o as THREE.Mesh).material as THREE.MeshBasicMaterial).map!));
+        expect(maps.size).toBe(2);
+        const bytes = [...maps].reduce((n, t) => {
+          const image = t.image as { width: number; height: number };
+          return n + image.width * image.height * 4 * (t.generateMipmaps ? 4 / 3 : 1);
+        }, 0);
+        expect(bytes).toBeLessThanOrEqual(12 * 1024 * 1024);
+        expect((group.getObjectByName("kit_shop_opaque") as THREE.Mesh).geometry.getAttribute("uv")).toBeTruthy();
+      }
       loaded.dispose();
     }
   });
@@ -326,8 +338,37 @@ describe("visual only", () => {
     const { group, stats } = loaded.build(THREE, env, toRenderer);
     expect(loaded.placements).toHaveLength(4);
     expect(stats.interiorTriangles).toBe(8);
-    expect((group.getObjectByName("kit_shop_interiors") as THREE.Mesh).geometry.getAttribute("position").count).toBe(16);
+    expect(group.children).toHaveLength(2);
+    const opaque = group.getObjectByName("kit_shop_opaque") as THREE.Mesh;
+    // Four bays with two box parts each, four interior cards and paired signs.
+    expect(opaque.geometry.getAttribute("position").count).toBeGreaterThan(16);
+    expect(stats.drawCallsAllTiles + stats.interiorDrawCalls + stats.signDrawCalls + stats.spillDrawCalls).toBe(2);
     loaded.dispose();
+  });
+
+  it("bakes phone palette UVs and colours, releases PBR maps and disposes the replacement atlas", async () => {
+    const albedo = new THREE.Texture({ width: 256, height: 256 } as HTMLImageElement); albedo.flipY = false;
+    const normal = new THREE.Texture(), roughness = new THREE.Texture();
+    const normalDispose = vi.spyOn(normal, "dispose"), roughnessDispose = vi.spyOn(roughness, "dispose");
+    const gltf = fakeShop("palette", 1);
+    const part = gltf.scene.children[0]!.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>;
+    part.material.map = albedo; part.material.normalMap = normal; part.material.roughnessMap = roughness;
+    part.material.color.set("#8a5a3c");
+    const row: Opening = { ...openings[0]!, polygon_ids: ["palette"], width: 2.4, height: 2.2, type: "Window" };
+    const shop: Shop = { ...shops[0]!, openings: ["palette"], front: "glazing" };
+    const loaded = await loadShopKit(THREE, host(all("low"), async () => gltf), kit, [shop], [row], true);
+    expect(normalDispose).toHaveBeenCalledTimes(1); expect(roughnessDispose).toHaveBeenCalledTimes(1);
+    expect(part.material.normalMap).toBeNull(); expect(part.material.roughnessMap).toBeNull();
+    const { group } = loaded.build(THREE, env, toRenderer);
+    const opaque = group.getObjectByName("kit_shop_opaque") as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
+    expect(opaque.material.map).not.toBe(albedo);
+    expect(opaque.material.vertexColors).toBe(true); expect(opaque.material.alphaTest).toBe(0.5);
+    expect(opaque.geometry.getAttribute("color").getX(0)).toBeCloseTo(part.material.color.r);
+    const uv = opaque.geometry.getAttribute("uv");
+    // GLTF's unflipped image origin is converted to the shared canvas's flipped origin.
+    expect(uv.getY(0)).toBeLessThan(uv.getY(2));
+    const dispose = vi.spyOn(opaque.material.map!, "dispose");
+    loaded.dispose(); expect(dispose).toHaveBeenCalledTimes(1);
   });
 
   it("keeps spill quads for distinct rows sharing an opening id", async () => {
