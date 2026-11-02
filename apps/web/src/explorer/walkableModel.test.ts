@@ -133,6 +133,15 @@ describe("walkable model", () => {
       expect(walls.every((wall) => wall.level === "L")).toBe(true);
     });
 
+    it("splits one edge where it loops back over itself 4 m up, and keeps its bends whole", () => {
+      // One walk (one group): along the corridor at 0 m, up to 4 m, and back across its own start.
+      const loop = { ...strip("L", [{ x: 0, y: 0, z: 0 }, { x: 20, y: 0, z: 0 }, { x: 20, y: 4, z: 10 }, { x: 10, y: 4, z: 10 }, { x: 10, y: 4, z: -10 }], 1), group: "e" };
+      const { levels, walls } = buildWalkableModel([loop], undefined, 0.45);
+      expect([...levels.keys()].sort()).toEqual(["L", "L#1"]);
+      // The corridor at 0 m keeps both side walls straight through, under its own upper pass.
+      for (const z of [-1, 1]) expect(walls.some((wall) => wall.level === "L" && Math.abs(wall.az - z) < 1e-9 && Math.abs(wall.bz - z) < 1e-9 && Math.abs(wall.ax - wall.bx) > 17)).toBe(true);
+    });
+
     it("splits a ramp of the corridor's own level where it climbs over that corridor", () => {
       const { levels, walls } = buildWalkableModel([
         strip("L", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),

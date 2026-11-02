@@ -5,7 +5,8 @@ export type PlanPoint = { x: number; z: number };
 
 /**
  * A walkable region, at one level, with the floor height (renderer y) it sits at. Regions of one `group` (one graph
- * edge's runs and bend patches) are one walk: their overlaps at a bend never split a level or cut a floor.
+ * edge's runs and bend patches) are one walk: their overlaps never split a level or cut a floor, unless one passes over
+ * the other at walking clearance or more (an edge looping back over itself), which is judged like any two pieces.
  */
 export type Region = { group?: string } & (
   | { kind: "strip"; level: string; points: { x: number; y: number; z: number }[]; halfWidth: number }
@@ -435,6 +436,14 @@ const CEILING_M = 2.72;
 const MIN_CUT_AREA_M2 = 1e-6;
 
 /** One convex piece of a region (a strip segment, or a whole disc, rect or connector) and its floor height. */
+/**
+ * Pieces of one walk less than the clearance apart in height (a bend, whose patch can stand a metre off a steep leg's
+ * next segment): exempt from height conflicts and stack cuts. Only a pass of the walk over itself at walking clearance
+ * or more is judged like any two pieces.
+ */
+const sameWalk = (a: Piece, b: Piece): boolean =>
+  a.group !== undefined && a.group === b.group && a.low < b.high + CLEARANCE_M && b.low < a.high + CLEARANCE_M;
+
 type Piece = { region: number; segment: number; level: string; group: string | undefined; kind: Region["kind"]; ring: PlanPoint[]; box: Box; low: number; high: number; height: (p: PlanPoint) => number; source: HeightSource };
 
 function regionPieces(region: Region, index: number): Piece[] {
@@ -510,7 +519,7 @@ function splitByHeight(pieces: readonly Piece[], stepM: number): string[] {
     const add = (map: Map<number, number[]>, i: number, j: number) => { const l = map.get(i); if (l) l.push(j); else map.set(i, [j]); };
     boxPairs(list.map((i) => pieces[i]!.box), (u, v) => {
       const i = list[u]!, j = list[v]!, a = pieces[i]!, b = pieces[j]!;
-      if (a.group !== undefined && a.group === b.group) { add(neighbours, i, j); add(neighbours, j, i); return; }
+      if (sameWalk(a, b)) { add(neighbours, i, j); add(neighbours, j, i); return; }
       // Heights are linear on each piece, so over their (convex) overlap the gap is extreme at its vertices; pieces
       // that only touch (a strip's next segment) are judged by their height ranges.
       const rangesApart = a.low > b.high + stepM || b.low > a.high + stepM;
@@ -610,7 +619,7 @@ export function buildWalkableModel(
   if (stepM > 0) {
     boxPairs(pieces.map((piece) => piece.box), (i, j) => {
       const a = pieces[i]!, b = pieces[j]!;
-      if (keys[i] === keys[j] || (a.group !== undefined && a.group === b.group)) return;
+      if (keys[i] === keys[j] || sameWalk(a, b)) return;
       // Too far apart in height to cut anything, or two level pieces within a step (they meet).
       if (a.low - b.high >= CEILING_M || b.low - a.high >= CEILING_M) return;
       if (a.low === a.high && b.low === b.high && Math.abs(a.low - b.low) <= stepM) return;
