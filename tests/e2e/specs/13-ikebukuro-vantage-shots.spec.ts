@@ -84,6 +84,8 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  *      GTEKI_VANTAGE_STATION  station id to open (default ikebukuro); pass GTEKI_VANTAGE_NODES with it
  *      GTEKI_VANTAGE_FRAMETIME_MS frame intervals sampled per view before its screenshot (default 0 = off)
  *      GTEKI_VANTAGE_GROUPS   comma list of groups to keep (gate, rail, exit, control, spawn)
+ *      GTEKI_VANTAGE_LAYER    exact scene object name; sample again hidden, report p50 on-minus-off costs,
+ *                             then restore visible before the screenshot (e.g. ikebukuro_kit_shops)
  *
  * Runtime: about 19 spots x 4 headings = 76 views at roughly 2 to 3 s each, plus page load and the street-context
  * waits on the 6 street spots: expect 4 to 8 minutes per project on the dev Mac, plus GTEKI_VANTAGE_FRAMETIME_MS
@@ -106,6 +108,7 @@ const SETTLE_MS = Number(process.env.GTEKI_VANTAGE_SETTLE_MS ?? 600);
 const HEADING_TOL_DEG = 3;
 const LOW_DRAW_LIMIT = Number(process.env.GTEKI_VANTAGE_LOW_DRAWS ?? 28);
 const FRAMETIME_MS = Number(process.env.GTEKI_VANTAGE_FRAMETIME_MS ?? 0);
+const LAYER = process.env.GTEKI_VANTAGE_LAYER;
 const GROUPS = (process.env.GTEKI_VANTAGE_GROUPS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 const LOOK_RAD_PER_PX = 0.0042;
 /** Station to shoot (default ikebukuro); the default spots below are Ikebukuro nodes, so name nodes for another. */
@@ -258,6 +261,10 @@ interface Row {
   /** The off-graph waypoints walked from the node (">x/y" text, null when none) and the walkPath result. */
   walkTo: string | null; walk: { done: boolean; stuck: boolean; timedOut: boolean } | null;
   renderInfo: unknown; sceneInfo: unknown;
+  layer?: {
+    name: string; found: number; meshes: number; triangles: number; textures: number; textureBytesEst: number;
+    drawsOff: number | null; trisOff: number | null; dDraws: number | null; dTris: number | null;
+  };
 }
 
 test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ page }, testInfo) => {
@@ -394,6 +401,27 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       yaw = wrapRad((-(await facingOf(page)) * Math.PI) / 180);
 
       const m = await measure(page, FRAMES);
+      let layer: Row["layer"];
+      if (LAYER) {
+        try {
+          const stats = await page.evaluate((name) => (window as any).__gteki.layer(name, false) as {
+            found: number; meshes: number; triangles: number; textures: number; textureBytesEst: number;
+          }, LAYER);
+          await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+          const off = await measure(page, FRAMES);
+          const drawsOff = pct(off.draws, 0.5), trisOff = pct(off.tris, 0.5);
+          const drawsOn = pct(m.draws, 0.5), trisOn = pct(m.tris, 0.5);
+          layer = {
+            name: LAYER, found: stats.found, meshes: stats.meshes, triangles: stats.triangles,
+            textures: stats.textures, textureBytesEst: stats.textureBytesEst, drawsOff, trisOff,
+            dDraws: drawsOn === null || drawsOff === null ? null : drawsOn - drawsOff,
+            dTris: trisOn === null || trisOff === null ? null : trisOn - trisOff,
+          };
+        } finally {
+          await page.evaluate((name) => (window as any).__gteki.layer(name, true), LAYER);
+          await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+        }
+      }
       // Frame pacing after the draw sample, before the screenshot: nothing touches the page during the window.
       const ft = FRAMETIME_MS > 0 ? await frameTime(page, FRAMETIME_MS) : { ftP50: null, ftP95: null, ftMax: null, ftFrames: null };
       const vis = await visibilityOf(page);
@@ -414,6 +442,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
         ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= HEADING_TOL_DEG,
         draws: drawsP50, drawsMax, tris: pct(m.tris, 0.5), trisMax: Math.max(...m.tris), frames: m.draws.length, zeroFrames: m.zeroFrames,
         ...ft, visibility: vis.visibility, focused: vis.focused,
+        ...(layer ? { layer } : {}),
         overLowLimit: tier === "low" && drawsMax > LOW_DRAW_LIMIT,
         streetActive: info.street.active, streetOpacity: info.street.opacity,
         walker: { x: round(av.x), y: round(av.y), z: round(av.z) }, walk, file, renderInfo, sceneInfo: info,
@@ -465,6 +494,10 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
   fs.writeFileSync(`${base}.json`, JSON.stringify(result, null, 2));
 
   const cell = (v: unknown) => (v === null || v === undefined ? "n/a" : String(v));
+  const layerMax = (key: "dDraws" | "dTris") => {
+    const values = rows.flatMap((r) => r.layer?.[key] == null ? [] : [r.layer[key]!]);
+    return values.length ? Math.max(...values) : null;
+  };
   const md = [
     `# ${STATION[0]!.toUpperCase()}${STATION.slice(1)} vantage shots: ${tier} tier (${project})`,
     "",
@@ -499,6 +532,18 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
     "",
     "`fence m` is the distance from the node to the nearest fence segment in scene/access_fences.json (blank when the file is absent).",
     "",
+    ...(LAYER ? [
+      `## Layer cost: ${LAYER}`,
+      "",
+      "Draws and tris use p50; Δ = on − off. Texture bytes estimate the layer's unique material textures (RGBA + mipmaps), not memory freed by hiding it.",
+      "",
+      "| group | node | heading | found | meshes | triangles | textures | texture bytes est | draws on | draws off | Δ draws | tris on | tris off | Δ tris |",
+      "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+      ...rows.map((r) => `| ${r.group} | ${r.node} | ${r.heading} | ${cell(r.layer?.found)} | ${cell(r.layer?.meshes)} | ${cell(r.layer?.triangles)} | ${cell(r.layer?.textures)} | ${cell(r.layer?.textureBytesEst)} | ${cell(r.draws)} | ${cell(r.layer?.drawsOff)} | ${cell(r.layer?.dDraws)} | ${cell(r.tris)} | ${cell(r.layer?.trisOff)} | ${cell(r.layer?.dTris)} |`),
+      "",
+      `Max Δ: draws ${cell(layerMax("dDraws"))}; triangles ${cell(layerMax("dTris"))}.`,
+      "",
+    ] : []),
     ...rows.filter((r) => r.file).map((r) => `![${r.group} ${r.node} h${r.heading}](${r.file})`),
     "",
   ].join("\n");
