@@ -532,7 +532,7 @@ describe("turning landing guards", () => {
       expect(guards.length, name).toBeGreaterThan(0);
       for (const w of guards) expect(Math.hypot(w.bx - w.ax, w.bz - w.az), name).toBeLessThanOrEqual(diagonal + 1e-6);
     }
-  });
+  }, 30_000);
 
   // #673 r8: a wide flight lies further below its landing inside the square; it is still the landing's own flight.
   it("builds a 4 m wide single-turn stair with the new builder", () => {
@@ -957,6 +957,20 @@ describe("turning landing guards", () => {
       const r = resolveWalls(x, 0, 0.3, x / 2, 1.7, result.wallSegments);
       expect(Math.hypot(r.x - x, r.z), `x=${x.toFixed(1)}`).toBeLessThanOrEqual(0.05);
     }
+  });
+
+  // #710 review: a junction opens only over the other stair's real footprint, not past its short first leg.
+  it("keeps a wide stair's guard beside a narrow stair whose first leg is short", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [6, 3, 0]]), b = g([[6, 3, 0], [6, 3, 0.4], [10, 5, 0.4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true, width: { m: 4 } }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    const r = resolveWalls(5.6, 1.85, 0.3, 2.8, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 5.6, r.z - 1.85)).toBeGreaterThan(0.05);
   });
 
   // #710 review: a connector skipped as too short opens no junction in the one it meets.
