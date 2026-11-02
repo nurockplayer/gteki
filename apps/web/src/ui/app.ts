@@ -1077,7 +1077,8 @@ export class App {
     const poi = this.s.destination;
     const b = this.s.loaded?.bundle;
     if (!poi || poi.category !== "shop" || !b) return null;
-    return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi)), this.t);
+    return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi),
+      (b.tenants ?? []).filter((tenant) => tenant.poiId === poi.id)), this.t, b.sources, this.s.lang);
   }
 
   // ---- Modes / HUD -----------------------------------------------------------------
