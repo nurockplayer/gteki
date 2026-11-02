@@ -93,3 +93,11 @@ was removed; neither is claimed as a test pass.
 Coverage matrix is not edited. Proposed PR-only update: five missing building cards researched;
 Esola class UNKNOWN with a dated official notice; ISP/LUMINE/PARCO no dated hours; Tobu stale
 notice unchanged; Echika/Hope Center have no building POI. Seibu already has hours, unchanged.
+
+## Tests (2026-11-03 JST)
+
+`orb-test -- pnpm --filter @gteki/station-ikebukuro check` was queued at 05:52 JST and
+canceled at 05:59 JST before container execution. Last output:
+`orb-test: waiting for a gteki slot (2 light run(s) at a time inside the work window)`.
+The selected package defines `typecheck`, not `check`; no successful package check is claimed.
+No test files are touched in this research-only change; no imported-row test ran.
