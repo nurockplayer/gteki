@@ -211,7 +211,7 @@ describe("printed shop hours on the destination card (OD-32)", () => {
         a.ui.sheet.querySelector(".hours-asof")?.textContent,
         a.ui.sheet.querySelector<HTMLAnchorElement>(".hours-source")?.href,
       ]).toEqual([
-        "物販・サービス店舗　10:30～21:30\n飲食店舗　11:00～23:00",
+        "物販・サービス店舗　10:30～21:30\n飲食店舗　11:00～23:00\n※店舗により一部異なります",
         "GT-Eki 確認日 2026-11-02 時点の公式表記。変更されている場合があります · 公式ページ",
         "https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=12",
       ]);

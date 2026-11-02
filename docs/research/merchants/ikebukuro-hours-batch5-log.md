@@ -27,7 +27,8 @@ bundle. No new POI is created. Batch 1's null-POI building rows do not attach ho
 The update is 160 days before 2026-11-03 JST, within OD-32's 180 days.
 `pageDate` is 2026-05-27 and `basis` is `dated-official`. The card's `retrievedAt`
 is 2026-11-02, the UTC date of the read; its label says the hours may have changed.
-Tenant exceptions are not building defaults, and no tenant hours are overwritten.
+The card adds `※店舗により一部異なります`, the existing batch-1 Esola building-hours
+pattern, so the building times are visibly qualified. No tenant hours are overwritten.
 
 ## Rights
 
