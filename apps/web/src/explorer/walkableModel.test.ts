@@ -213,15 +213,75 @@ describe("walkable model", () => {
       expect(area(foot.ceilingCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(1.75);
     });
 
-    it("cuts the ceiling a ramp joining a corridor climbs under, all along the climb", () => {
-      // R runs along B's centreline from 0.3 m to 2.3 m over 30 m: one step-height meet at its foot joins them, and
-      // B's ceiling over the rest (x 2.25..30) would stand in the way of a walker on R.
-      const { slabCuts, ceilingCuts } = buildWalkableModel([
+    it("cuts the ceiling a ramp joining a corridor climbs under, and the corridor floor where no one fits under it", () => {
+      // R runs along B's centreline from 0.3 m to 2.3 m over 30 m: one step-height meet at its foot joins them. B's
+      // ceiling over the rest (x 2.25..30) would stand in the way of a walker on R; B's floor goes from 1.7 m under R
+      // (x 21..30), R's stays whole.
+      const { slabCuts, ceilingCuts, walls } = buildWalkableModel([
         strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1),
         strip("R", [{ x: 0, y: 0.3, z: 0 }, { x: 30, y: 2.3, z: 0 }], 1),
       ], undefined, 0.45);
-      expect(slabCuts.size).toBe(0);
+      expect([...slabCuts.keys()]).toEqual(["0:1"]);
+      expect(area(slabCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(18);
       expect(area(ceilingCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(55.5);
+      // B now ends across its width at x = 21 under R, with a wall there that stops 0.4 m under R (1.7 m there), so a
+      // walker on R passes over it; B's own side walls keep their full height.
+      const across = walls.filter((wall) => wall.level === "B" && Math.abs(wall.ax - 21) < 1e-6 && Math.abs(wall.bx - 21) < 1e-6);
+      expect(across.reduce((sum, wall) => sum + Math.abs(wall.az - wall.bz), 0)).toBeCloseTo(2);
+      for (const wall of across) for (const top of wall.topY!) expect(top).toBeCloseTo(1.3);
+      const sides = walls.filter((wall) => wall.level === "B" && Math.abs(wall.az - wall.bz) < 1e-9);
+      expect(sides.reduce((sum, wall) => sum + Math.abs(wall.ax - wall.bx), 0)).toBeGreaterThan(80);
+      expect(sides.every((wall) => wall.topY === undefined)).toBe(true);
+    });
+
+    it("stops the merged wall across a corridor two side-by-side ramps climb over under both", () => {
+      // Two ramps 3.2 m wide either side of B's centreline, 0.3 m → 2.3 m over x 0..30: their cuts meet at z = 0, and B's
+      // end at x = 21 is one wall across both.
+      const { walls } = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1.3),
+        strip("R", [{ x: 0, y: 0.3, z: -1.6 }, { x: 30, y: 2.3, z: -1.6 }], 1.6),
+        strip("S", [{ x: 0, y: 0.3, z: 1.6 }, { x: 30, y: 2.3, z: 1.6 }], 1.6),
+      ], undefined, 0.45);
+      const across = walls.filter((wall) => wall.level === "B" && Math.abs(wall.ax - 21) < 1e-6 && Math.abs(wall.bx - 21) < 1e-6);
+      expect(across.reduce((sum, wall) => sum + Math.abs(wall.az - wall.bz), 0)).toBeCloseTo(2.6);
+      for (const wall of across) for (const top of wall.topY!) expect(top).toBeCloseTo(1.3);
+    });
+
+    it("keeps a long cut's wall stop rising with the floor over it", () => {
+      // B rises 4%, R beside it 5% over B's edge (z 0.3..1.3): B's edge goes from x 140 (1.7 m under R) to x 212 (2.42 m).
+      const { walls } = buildWalkableModel([
+        strip("B", [{ x: 0, y: 0, z: 0 }, { x: 240, y: 9.6, z: 0 }], 1.3),
+        strip("R", [{ x: 0, y: 0.3, z: 1.6 }, { x: 240, y: 12.3, z: 1.6 }], 1.3),
+      ], undefined, 0.45);
+      const along = walls.filter((wall) => wall.level === "B" && wall.topY && Math.abs(wall.az - wall.bz) < 1e-9 && Math.abs(wall.ax - wall.bx) > 60);
+      expect(along.length).toBeGreaterThan(0);
+      for (const wall of along) {
+        // 0.4 m under R at each end and the middle, never under B's own floor there.
+        const at = (x: number) => 0.3 + 12 * x / 240 - 0.4, mid = (wall.ax + wall.bx) / 2;
+        expect(wall.topY!).toEqual([expect.closeTo(at(wall.ax), 5), expect.closeTo(at(mid), 5), expect.closeTo(at(wall.bx), 5)]);
+        for (const [x, top] of [[wall.ax, wall.topY![0]], [wall.bx, wall.topY![2]]] as const) expect(top - 9.6 * x / 240).toBeGreaterThan(1.2);
+      }
+    });
+
+    it("keeps a multi-segment ramp joining a corridor whole past its first segment", () => {
+      // R rises out of B's floor (0.3 m) and climbs on over it in a second segment that starts 1 m up.
+      const { slabCuts, walls } = buildWalkableModel([
+        strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1),
+        strip("R", [{ x: 0, y: 0.3, z: 0 }, { x: 10, y: 1, z: 0 }, { x: 30, y: 2.3, z: 0 }], 1),
+      ], undefined, 0.45);
+      // Only B's floor gives way, from 1.7 m under R (x ≈ 20.8) to R's end; R is not cut anywhere.
+      expect([...slabCuts.keys()]).toEqual(["0:1"]);
+      expect(area(slabCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(2 * (30 - (10 + 0.7 / 1.3 * 20)), 4);
+      expect(walls.some((wall) => wall.level === "B" && wall.topY !== undefined)).toBe(true);
+    });
+
+    it("joins a ramp that enters a corridor on a flat landing and crosses it again further up", () => {
+      // R (one walk): a flat landing 0.3 m over B's floor that leaves B's footprint flat, then climbs outside it and
+      // comes back across B 1.75 m up. Only the flat landing meets B within a step.
+      const ramp = { ...strip("R", [{ x: -4, y: 0.3, z: 0 }, { x: 0, y: 0.3, z: 0 }, { x: 0, y: 0.3, z: 3 }, { x: 0, y: 1, z: 6 }, { x: 10, y: 1.5, z: 6 }, { x: 10, y: 2, z: -6 }], 1), group: "r" };
+      const { slabCuts } = buildWalkableModel([strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1), ramp], undefined, 0.45);
+      // Joined: R keeps its floor where it crosses B; B gives way there instead (rise over 1.7 m).
+      expect([...slabCuts.keys()]).toEqual(["0:1"]);
     });
 
     it("leaves the model unchanged without a step height", () => {
