@@ -1114,7 +1114,8 @@ export class App {
     const poi = this.s.destination;
     const b = this.s.loaded?.bundle;
     if (!poi || poi.category !== "shop" || !b) return null;
-    return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi)), this.t);
+    return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi),
+      (b.tenants ?? []).filter((tenant) => tenant.poiId === poi.id)), this.t, b.sources, this.s.lang);
   }
 
   // ---- Modes / HUD -----------------------------------------------------------------
@@ -1619,6 +1620,7 @@ export class App {
       setCamera: (patch: { yaw?: number; pitch?: number; distance?: number } | null) => this.explorer.setCamera(patch),
       holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
+      layer: (name: string, visible?: boolean) => this.explorer.layer(name, visible),
       portalView: () => this.explorer.portalView(),
       routeGroundCheck: () => this.explorer.routeGroundCheck(this.s.polyline, this.s.route?.ok ? this.s.route.steps : [], guideStops(this.s.polyline, this.s.instructions).map(({ point }) => polylineLengthM(this.s.polyline.slice(0, point + 1)))),
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import type { Poi, Source } from "@gteki/schema";
+import type { Poi, Source, Tenant } from "@gteki/schema";
 import { strings } from "../i18n.ts";
 import { arrivalPrecision, isMapReadDoor, isStationTie, merchantCardEl, merchantCardModel, merchantPrecision } from "./merchantCard.ts";
 
@@ -33,6 +33,68 @@ const shop = (over: Partial<Poi> = {}): Poi => ({
   ...over,
 });
 
+const tenant = (name: string, floor: string, sourceIds = [source.id]): Tenant => ({
+  id: name, poiId: shop().id, names: [{ lang: "ja", text: name }], aliases: [],
+  floorLabel: [{ lang: "ja", text: floor }],
+  category: name === "ＡＢＣ" ? [{ lang: "ja", text: "雑貨" }] : undefined,
+  evidence: { sourceIds, checkedDate: "2026-10-24", method: "printed directory" },
+});
+
+describe("merchant brands by printed floor", () => {
+  const tenants = [tenant("ＡＢＣ", "本館 3F"), tenant("Other", "地下１階"), tenant("abc café", "本館 3F", ["second", source.id])];
+  const model = () => merchantCardModel(shop(), [source], "ja", null, tenants);
+
+  it("keeps first-appearance floor order and data brand order, combining source ids", () => {
+    expect(model().floors).toEqual([
+      { label: "本館 3F", brands: [{ name: "ＡＢＣ", category: "雑貨" }, { name: "abc café", category: null }], sourceIds: [source.id, "second"], checkedDate: "2026-10-24" },
+      { label: "地下１階", brands: [{ name: "Other", category: null }], sourceIds: [source.id], checkedDate: "2026-10-24" },
+    ]);
+  });
+
+  it("omits the directory without tenants and builds lists only when a floor first opens", () => {
+    const empty = merchantCardEl(merchantCardModel(shop(), [source], "ja", null, []), strings("ja"), [source], "ja");
+    expect(empty.querySelector(".merchant-floors")).toBeNull();
+    for (const lang of ["ja", "en"] as const) {
+      const card = merchantCardEl(model(), strings(lang), [source, { ...source, id: "second", title: "Second directory" }], lang);
+      const directory = card.querySelector<HTMLDetailsElement>(".merchant-floors")!;
+      expect(directory.open).toBe(false);
+      expect(directory.querySelector("summary")?.textContent).toBe(lang === "ja" ? "フロア別ブランド（3）" : "Brands by floor (3)");
+      expect(directory.querySelector("ul")).toBeNull();
+      const floor = directory.querySelector<HTMLDetailsElement>(".merchant-floor")!;
+      floor.open = true;
+      floor.dispatchEvent(new Event("toggle"));
+      expect(floor.querySelectorAll("li")).toHaveLength(2);
+      expect(floor.querySelector("li")?.textContent).toBe("ＡＢＣ · 雑貨");
+      expect(floor.querySelector("summary")?.textContent).toBe(lang === "ja" ? "本館 3F（2）" : "本館 3F (as printed) (2)");
+      expect(floor.querySelector(".merchant-floor-source")?.textContent).toContain(`${source.title} · Second directory`);
+      expect(floor.textContent).toContain(strings(lang).tenantAsOf("2026-10-24"));
+      expect(directory.querySelectorAll("ul")).toHaveLength(1);
+      expect(directory.querySelector("a, button")).toBeNull();
+    }
+  });
+
+  it("normalizes name searches, opens only matching floors and restores every floor on clearing", () => {
+    const card = merchantCardEl(model(), strings("ja"), [source], "ja");
+    const floors = [...card.querySelectorAll<HTMLDetailsElement>(".merchant-floor")];
+    const filter = card.querySelector<HTMLInputElement>(".merchant-floors-filter")!;
+    filter.value = "ＡbＣ";
+    filter.dispatchEvent(new Event("input"));
+    expect(floors.map((f) => [f.hidden, f.open])).toEqual([[false, true], [true, false]]);
+    expect([...card.querySelectorAll("li")].map((li) => li.firstChild?.textContent)).toEqual(["ＡＢＣ", "abc café"]);
+    filter.value = "other";
+    filter.dispatchEvent(new Event("input"));
+    expect(floors.map((f) => [f.hidden, f.open])).toEqual([[true, false], [false, true]]);
+    expect([...card.querySelectorAll("li")].map((li) => li.textContent)).toEqual(["Other"]);
+    filter.value = "no match";
+    filter.dispatchEvent(new Event("input"));
+    expect(floors.every((f) => f.hidden && !f.open)).toBe(true);
+    filter.value = "";
+    filter.dispatchEvent(new Event("input"));
+    expect(floors.every((f) => !f.hidden && !f.open)).toBe(true);
+    expect(floors.map((f) => f.querySelectorAll("li").length)).toEqual([2, 1]);
+  });
+});
+
 describe("merchant precision (#213)", () => {
   it("reads the precision the listing's own evidence states", () => {
     expect(merchantPrecision(shop())).toBe("area");
@@ -63,7 +125,7 @@ describe("merchant precision (#213)", () => {
     });
     expect(isStationTie(tie)).toBe(true);
     expect(merchantPrecision(tie)).toBe("tie");
-    const card = merchantCardEl(merchantCardModel(tie, [source], "en", null), strings("en"));
+    const card = merchantCardEl(merchantCardModel(tie, [source], "en", null, []), strings("en"), [source], "en");
     expect(card.querySelector(".merchant-meta")?.textContent).toContain(strings("en").merchant.precision.tie);
   });
 
@@ -73,7 +135,7 @@ describe("merchant precision (#213)", () => {
     expect(isMapReadDoor(door)).toBe(true);
     expect(arrivalPrecision(door)).toBe("door");
     expect(merchantPrecision(door)).toBe("door");
-    const card = merchantCardEl(merchantCardModel(door, [source], "ja", null), strings("ja"));
+    const card = merchantCardEl(merchantCardModel(door, [source], "ja", null, []), strings("ja"), [source], "ja");
     expect(card.querySelector(".merchant-meta")?.textContent).toContain(strings("ja").merchant.precision.door);
     expect(card.querySelector(".merchant-no-route")).toBeNull();
     // Without a connector the token labels nothing: the listing falls back to its own wording.
@@ -90,7 +152,7 @@ describe("merchant precision (#213)", () => {
       displayPosition: { x: 0, y: 0, z: null },
       evidence: { sourceIds: [source.id], method: "facts-only directory listing (#26), UNVERIFIED, SEARCH_ONLY", checkedDate: "2026-10-24" },
     });
-    const card = merchantCardEl(merchantCardModel(poi, [source], "en", null), strings("en"));
+    const card = merchantCardEl(merchantCardModel(poi, [source], "en", null, []), strings("en"), [source], "en");
     expect(card.textContent).not.toContain(strings("en").merchant.precision.point);
     expect(card.textContent).toContain(strings("en").merchant.precision.search);
   });
@@ -98,7 +160,7 @@ describe("merchant precision (#213)", () => {
 
 describe("merchant card model (#213)", () => {
   it("carries the name, category, source, checked date and precision, and never a route", () => {
-    const model = merchantCardModel(shop(), [source], "ja", null);
+    const model = merchantCardModel(shop(), [source], "ja", null, []);
     expect(model).toMatchObject({
       id: "shop-sjk-toei-001", name: "カレーショップC＆C", category: "shop", floor: null,
       precision: "area", checkedDate: "2026-10-24", routable: false,
@@ -108,14 +170,14 @@ describe("merchant card model (#213)", () => {
   });
 
   it("says a source is missing rather than inventing one, and takes routability from the connector only", () => {
-    const model = merchantCardModel(shop({ evidence: { sourceIds: ["not-in-the-bundle"], method: "test", checkedDate: "2026-10-24" } }), [source], "en", null);
+    const model = merchantCardModel(shop({ evidence: { sourceIds: ["not-in-the-bundle"], method: "test", checkedDate: "2026-10-24" } }), [source], "en", null, []);
     expect(model.source).toBeNull();
-    expect(merchantCardEl(model, strings("en")).textContent).toContain("No source recorded");
-    expect(merchantCardModel(shop({ connectorNodeIds: ["node-1"] }), [source], "en", null).routable).toBe(true);
+    expect(merchantCardEl(model, strings("en"), [source], "en").textContent).toContain("No source recorded");
+    expect(merchantCardModel(shop({ connectorNodeIds: ["node-1"] }), [source], "en", null, []).routable).toBe(true);
   });
 
   it("renders the source as a safe external link and offers no direction control", () => {
-    const card = merchantCardEl(merchantCardModel(shop(), [source], "en", "B1"), strings("en"));
+    const card = merchantCardEl(merchantCardModel(shop(), [source], "en", "B1", []), strings("en"), [source], "en");
     expect(card.querySelector("h2")?.textContent).toBe("カレーショップC＆C");
     expect(card.querySelector(".merchant-meta")?.textContent).toBe("Shop · B1 · Approximate area only");
     const link = card.querySelector("a.merchant-source-link");
@@ -128,9 +190,9 @@ describe("merchant card model (#213)", () => {
   });
 
   it("does not claim a location problem for a routable shop, and shows the source title when it has no URL", () => {
-    const routable = merchantCardEl(merchantCardModel(shop({ connectorNodeIds: ["node-1"] }), [source], "ja", null), strings("ja"));
+    const routable = merchantCardEl(merchantCardModel(shop({ connectorNodeIds: ["node-1"] }), [source], "ja", null, []), strings("ja"), [source], "ja");
     expect(routable.textContent).not.toContain(strings("ja").shopSearchOnly);
-    const noUrl = merchantCardEl(merchantCardModel(shop(), [{ ...source, url: "" }], "ja", null), strings("ja"));
+    const noUrl = merchantCardEl(merchantCardModel(shop(), [{ ...source, url: "" }], "ja", null, []), strings("ja"), [source], "ja");
     expect(noUrl.querySelector("a")).toBeNull();
     expect(noUrl.textContent).toContain(source.title);
   });

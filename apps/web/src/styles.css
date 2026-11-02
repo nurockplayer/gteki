@@ -134,6 +134,15 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .card.merchant .merchant-source { margin-top: 6px; font-size: 12px; }
 .card.merchant .merchant-source a { color: var(--accent); }
 .card.merchant .merchant-checked { margin-top: 2px; font-size: 12px; }
+.merchant-floors { margin-top: 10px; overflow-wrap: anywhere; }
+.merchant-floors summary { cursor: pointer; }
+.merchant-floors-filter { box-sizing: border-box; width: 100%; min-width: 0; margin: 8px 0; }
+.merchant-floor { margin-top: 6px; }
+.merchant-floor ul { padding-left: 20px; font-size: 12px; }
+.merchant-floor-source { font-size: 11px; }
+@media (max-width: 390px) {
+  .merchant-floors { max-height: 50vh; overflow-y: auto; overflow-x: hidden; }
+}
 .issues { font-size: 11px; font-family: ui-monospace, monospace; color: #ffc9c9; max-height: 40vh; overflow: auto; padding-left: 18px; }
 .route-head { display: flex; align-items: baseline; gap: 12px; color: var(--muted); font-size: 13px; }
 .route-head .big { font-size: 26px; color: var(--text); font-weight: 800; letter-spacing: -0.01em; }
