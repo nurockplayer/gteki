@@ -9,7 +9,8 @@ import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
-import { printedHours } from "../hours.ts";
+import { HOURS_STALE_DAYS, hoursStale, printedHours } from "../hours.ts";
+import { openNow } from "../openNow.ts";
 import { listStations, PRIVATE_BUILD, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
@@ -57,6 +58,7 @@ interface State {
   noPath: NoPathCause | null;
   /** The search category filter (#213): one of the loaded station's categories, or null for no filter. */
   filter: Poi["category"] | null;
+  openNow: boolean;
   polyline: PolylinePoint[];
   instructions: Instruction[];
   activeInstruction: number;
@@ -91,7 +93,7 @@ export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
     origin: null, destination: null, destinationTenant: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
-    route: null, noPath: null, filter: null, polyline: [], instructions: [], activeInstruction: 0,
+    route: null, noPath: null, filter: null, openNow: false, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
   private readonly identityView = new StationIdentityView();
@@ -106,6 +108,8 @@ export class App {
     fromResults: el("div", "results"),
     toResults: el("div", "results"),
     categoryFilter: el("select", "category-filter"),
+    openNowFilter: el("input", "open-now-filter"),
+    openNowLabel: el("span"),
     firstRun: el("div", "first-run"),
     firstRunTry: el("button", "first-run-try"),
     firstRunClose: el("button", "first-run-close", "×"),
@@ -129,6 +133,8 @@ export class App {
   };
   /** Listbox state of the two search comboboxes. */
   private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
+  /** Pending and failed directories stay null so a focus never starts a retry loop. */
+  private readonly directories = new Map<string, { bundle: StationBundle; search: SearchIndex } | null>();
   private panelExpanded = false;
   /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
   private compositionEndMs = -Infinity;
@@ -223,7 +229,16 @@ export class App {
       this.closeResults("from");
     });
     const filterRow = el("div", "filter-row");
-    filterRow.append(this.ui.categoryFilter);
+    this.ui.openNowFilter.type = "checkbox";
+    this.ui.openNowFilter.checked = this.s.openNow;
+    this.ui.openNowFilter.addEventListener("change", () => {
+      this.s.openNow = this.ui.openNowFilter.checked;
+      this.closeResults("to");
+      this.closeResults("from");
+    });
+    const openNowLabel = el("label");
+    openNowLabel.append(this.ui.openNowFilter, this.ui.openNowLabel);
+    filterRow.append(this.ui.categoryFilter, openNowLabel);
     this.ui.firstRun.hidden = true;
     this.ui.firstRunClose.type = "button";
     this.ui.firstRunClose.addEventListener("click", () => {
@@ -265,6 +280,7 @@ export class App {
     this.ui.firstRunTry.textContent = t.firstRun.tryRoute;
     this.ui.firstRunClose.setAttribute("aria-label", t.firstRun.close);
     this.ui.categoryFilter.setAttribute("aria-label", t.categoryFilter);
+    this.ui.openNowLabel.textContent = t.openNowFilter;
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
     this.root.querySelectorAll<HTMLElement>("[data-label]").forEach((n) => { n.textContent = t[n.dataset.label as "from" | "to"]; });
@@ -283,7 +299,10 @@ export class App {
     results.id = `gteki-${which}-listbox`;
     applyAria(input, inputAria(COMBO_CLOSED, results.id));
     input.addEventListener("input", () => this.renderResults(which));
-    input.addEventListener("focus", () => this.renderResults(which));
+    input.addEventListener("focus", () => {
+      if (which === "to") this.loadOtherDirectories();
+      this.renderResults(which);
+    });
     let compositionEndMs = -Infinity;
     input.addEventListener("compositionend", () => { compositionEndMs = performance.now(); });
     input.addEventListener("keydown", (e) => {
@@ -565,7 +584,8 @@ export class App {
    */
   private hoursBlock(poi: Poi | null): HTMLElement | null {
     const hours = poi?.hours;
-    const text = printedHours(hours, new Date());
+    const now = new Date();
+    const text = printedHours(hours, now);
     if (!hours || !text) return null;
     const box = el("div", "poi-hours");
     const source = el("a", "hours-source", this.t.hoursSource);
@@ -575,6 +595,8 @@ export class App {
     const asOf = el("p", "muted hours-asof", `${this.t.hoursAsOf(hours.retrievedAt)} · `);
     asOf.append(source);
     box.append(el("p", "hours-text", text), asOf);
+    // Over HOURS_STALE_DAYS old: still shown, but the card says the reading is old (OD-32).
+    if (hoursStale(hours, now)) box.append(el("p", "hours-stale", this.t.hoursStale(HOURS_STALE_DAYS)));
     return box;
   }
 
@@ -609,6 +631,29 @@ export class App {
     return this.s.loaded?.bundle.tenants?.find((t) => t.id === id) ?? null;
   }
 
+  private loadOtherDirectories(): void {
+    for (const entry of this.s.entries) {
+      if (entry.synthetic || entry.key === this.s.entry?.key || this.directories.has(entry.key)) continue;
+      this.directories.set(entry.key, null);
+      void entry.loadDirectory().then((bundle) => {
+        const search = createSearchIndex(bundle);
+        this.directories.set(entry.key, { bundle, search });
+        const q = this.ui.toInput.value.trim();
+        const categories = this.s.filter ? [this.s.filter] : undefined;
+        if (document.activeElement !== this.ui.toInput || !this.combo.to.open || !q || entry.key === this.s.entry?.key ||
+          !search.search(q, { limit: bundle.pois.length, lang: this.s.lang, categories }).some((hit) => hit.tenant)) return;
+        const previous = this.ui.toResults.querySelectorAll<HTMLElement>('[role="option"]')[this.combo.to.active];
+        const poiId = previous?.dataset.poi;
+        const station = previous?.dataset.station ?? this.s.entry?.key;
+        this.renderResults("to");
+        const rows = [...this.ui.toResults.querySelectorAll<HTMLElement>('[role="option"]')];
+        const active = poiId ? rows.findIndex((row) => row.dataset.poi === poiId &&
+          (row.dataset.station ?? this.s.entry?.key) === station) : -1;
+        this.setCombo("to", { ...this.combo.to, active });
+      }).catch(() => { /* An unavailable directory is silently skipped for this app session. */ });
+    }
+  }
+
   private renderResults(which: "from" | "to"): void {
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
@@ -619,6 +664,7 @@ export class App {
     const categories = this.s.filter ? [this.s.filter] : undefined;
     const groups = q ? null : emptySuggestions(this.s.loaded.bundle.pois, which, {
       filter: this.s.filter, recentIds: readRecent(safeStorage(), this.s.entry!.key),
+      limit: this.s.openNow ? this.s.loaded.bundle.pois.length : undefined,
     });
     const groupHeaders = new Map<number, string>();
     let suggestionIndex = 0;
@@ -628,13 +674,53 @@ export class App {
         : which === "from" ? this.t.suggestPopularFrom : this.t.suggestPopularTo);
       suggestionIndex += group.pois.length;
     }
-    const hits: SearchHit[] = q
-      ? this.s.search.search(q, { limit: 8, lang: this.s.lang, categories })
+    let hits: (SearchHit & { station?: StationEntry; directory?: StationBundle })[] = q
+      // Open now filters after ranking, so it ranks every candidate: a closed shop must not use up the list (#724 review).
+      ? this.s.search.search(q, { limit: this.s.openNow ? this.s.loaded.bundle.pois.length : 8, lang: this.s.lang, categories })
       : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true })));
+    const statuses = new Map<string, ReturnType<typeof openNow>>();
+    const now = new Date();
+    // Closed shops are dropped while Open now is on; the other-category count below drops them too.
+    const notClosed = (h: SearchHit) => !this.s.openNow || h.poi.category !== "shop" || openNow(h.poi.hours, now) !== "closed";
+    if (this.s.openNow) {
+      for (const h of hits) if (h.poi.category === "shop") statuses.set(h.poi.id, openNow(h.poi.hours, now));
+      hits = hits.filter((h) => statuses.get(h.poi.id) !== "closed");
+      const shops = hits.filter((h) => h.poi.category === "shop")
+        .sort((a, b) => Number(statuses.get(a.poi.id) === "unknown") - Number(statuses.get(b.poi.id) === "unknown"));
+      let shopIndex = 0;
+      hits = hits.map((h) => h.poi.category === "shop" ? shops[shopIndex++]! : h).slice(0, 8);
+      // Rebuild suggestion headings after filtering/reordering, so they still describe their rows.
+      groupHeaders.clear();
+      let previous: string | undefined;
+      hits.forEach((h, i) => {
+        const group = groups?.find((g) => g.pois.some((p) => p.id === h.poi.id));
+        const title = group && (group.key === "recent" ? this.t.suggestRecent
+          : which === "from" ? this.t.suggestPopularFrom : this.t.suggestPopularTo);
+        if (title && title !== previous) groupHeaders.set(i, title);
+        previous = title;
+      });
+    }
+    if (which === "to" && q) {
+      for (const entry of this.s.entries) {
+        if (entry.synthetic || entry.key === this.s.entry?.key) continue;
+        const directory = this.directories.get(entry.key);
+        if (!directory) continue;
+        // Same Open now rule as the local rows: closed shops dropped, open before unknown, then the first three.
+        const unknownLast = (hit: SearchHit) => Number(this.s.openNow && hit.poi.category === "shop" && openNow(hit.poi.hours, now) === "unknown");
+        const brands = directory.search.search(q, { limit: directory.bundle.pois.length, lang: this.s.lang, categories })
+          .filter((hit) => hit.tenant && notClosed(hit))
+          .sort((x, y) => unknownLast(x) - unknownLast(y)).slice(0, 3);
+        if (!brands.length) continue;
+        groupHeaders.set(hits.length, this.t.otherStationHeader(entry.label));
+        hits.push(...brands.map((hit) => ({ ...hit, station: entry, directory: directory.bundle })));
+      }
+    }
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       // Nothing in the filtered category: say how many the other categories have, and offer to drop the filter.
-      const elsewhere = q && this.s.filter ? this.s.search.search(q, { limit: 8, lang: this.s.lang }).length : 0;
+      const elsewhere = q && this.s.filter
+        ? this.s.search.search(q, { limit: this.s.openNow ? this.s.loaded.bundle.pois.length : 8, lang: this.s.lang }).filter(notClosed).slice(0, 8).length
+        : 0;
       const none = el("div", "result empty", this.t.noResults);
       if (elsewhere > 0) {
         none.setAttribute("role", "presentation");
@@ -666,6 +752,8 @@ export class App {
         box.append(header);
       }
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
+      b.dataset.poi = h.poi.id;
+      if (h.station) b.dataset.station = h.station.key;
       const dot = el("span", "dot");
       dot.setAttribute("aria-hidden", "true");
       const name = el("span", "result-name", this.poiName(h.poi));
@@ -677,10 +765,12 @@ export class App {
       const tags = h.tenant
         ? tenantResultTags(h, this.s.lang, this.t)
         : [floor, h.matched && h.matched !== this.poiName(h.poi) && h.matched !== description ? `“${h.matched}”` : null].filter(Boolean) as string[];
+      if (this.s.openNow && h.poi.category === "shop")
+        tags.push((statuses.get(h.poi.id) ?? openNow(h.poi.hours, now)) === "open" ? this.t.openNowOpen : this.t.hoursUnknown);
       if (!h.routable) tags.push(searchOnly);
       meta.textContent = tags.join(" · ");
       // The directory is unverified: say since when it was checked, as a second line.
-      const checkedDate = h.tenant ? tenantCheckedDate(this.s.loaded?.bundle.tenants, h.tenant.id) : null;
+      const checkedDate = h.tenant ? tenantCheckedDate((h.directory ?? this.s.loaded?.bundle)?.tenants, h.tenant.id) : null;
       const asOf = h.tenant && checkedDate ? this.t.tenantAsOf(checkedDate) : null;
       b.append(dot, name, meta);
       if (description) b.append(el("span", "result-note", description));
@@ -689,18 +779,26 @@ export class App {
       // A routable store whose route ends at a station gate says so, and carries its note too (#213).
       const arrival = h.routable ? arrivalPrecision(h.poi) : null;
       const note = h.routable && !arrival ? null : poiNoteText(h.poi, this.s.lang);
-      const tie = arrival ? this.t.merchant.precision[arrival] : null;
+      const tie = arrival ? this.t.merchant.precision[arrival]
+        : !h.routable && h.poi.category === "shop" ? this.t.merchant.precision.unverified : null;
       if (tie) b.append(el("span", "result-note", tie));
       if (note) b.append(el("span", "result-note", note));
       // An approximate point is search display only: show the ± radius and that it is not used for directions (#463).
       const approximate = this.approximateText(h.poi);
       if (approximate) b.append(el("span", "result-approx", approximate));
       // The accessible name carries the visible tags, the as-of line, the tie label, the note and the approximate warning.
-      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...(description ? [description] : []), ...tags, ...(asOf ? [asOf] : []), ...(tie ? [tie] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [...(h.station ? [this.t.otherStationHeader(h.station.label)] : []), name.textContent, ...(description ? [description] : []), ...tags, ...(asOf ? [asOf] : []), ...(tie ? [tie] : []), ...(note ? [note] : []), ...(approximate ? [approximate] : [])].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
-      b.addEventListener("click", () => {
+      b.addEventListener("click", async () => {
         this.closeResults(which);
         input.blur();
+        if (h.station) {
+          await this.openStation(h.station, null, h.poi.id);
+          const destination = this.s.destination;
+          if (this.s.entry?.key === h.station.key && destination?.id === h.poi.id && h.tenant)
+            this.setDestination(destination, this.findTenant(h.tenant.id));
+          return;
+        }
         const key = this.s.entry?.key;
         if (key) writeRecent(safeStorage(), key, pushRecent(readRecent(safeStorage(), key), h.poi.id));
         // A brand is not a destination of its own: the store carries the route (#419).
@@ -1077,7 +1175,8 @@ export class App {
     const poi = this.s.destination;
     const b = this.s.loaded?.bundle;
     if (!poi || poi.category !== "shop" || !b) return null;
-    return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi)), this.t);
+    return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi),
+      (b.tenants ?? []).filter((tenant) => tenant.poiId === poi.id)), this.t, b.sources, this.s.lang);
   }
 
   // ---- Modes / HUD -----------------------------------------------------------------
@@ -1582,6 +1681,7 @@ export class App {
       setCamera: (patch: { yaw?: number; pitch?: number; distance?: number } | null) => this.explorer.setCamera(patch),
       holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
+      layer: (name: string, visible?: boolean) => this.explorer.layer(name, visible),
       portalView: () => this.explorer.portalView(),
       routeGroundCheck: () => this.explorer.routeGroundCheck(this.s.polyline, this.s.route?.ok ? this.s.route.steps : [], guideStops(this.s.polyline, this.s.instructions).map(({ point }) => polylineLengthM(this.s.polyline.slice(0, point + 1)))),
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),

@@ -33,7 +33,7 @@ function loaded(key: string): LoadedStation {
   return { key, bundle, issues: [], scene: null, sceneImportError: null, assetUrls: new Map() };
 }
 function entry(key: string, promise: Promise<LoadedStation>): StationEntry {
-  return { key, label: key, synthetic: true, identity: loaded(key).bundle.station.identity, load: () => promise };
+  return { key, label: key, synthetic: true, identity: loaded(key).bundle.station.identity, loadDirectory: async () => (await promise).bundle, load: () => promise };
 }
 function app() {
   const root = document.createElement("div"); document.body.append(root);

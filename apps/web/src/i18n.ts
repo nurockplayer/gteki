@@ -44,6 +44,9 @@ const STRINGS = {
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "種類",
     categoryAll: "すべて",
+    openNowFilter: "営業中のみ",
+    openNowOpen: "営業中",
+    hoursUnknown: "営業時間不明",
     categoryNames: {
       shop: "店舗", service: "サービス", atm: "ATM", locker: "コインロッカー", toilet: "トイレ",
       exit: "出口", ticket_gate: "改札", platform: "ホーム", escalator: "エスカレーター", elevator: "エレベーター",
@@ -54,7 +57,9 @@ const STRINGS = {
       source: "出典",
       sourceUnknown: "出典の記録なし",
       checked: "最終確認",
-      precision: { door: "入口は駅の図面から読み取った概略位置（現地未検証）", tie: "入口の位置は未確認（案内は駅の改札・出口まで）", point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認" },
+      floorsTitle: "フロア別ブランド",
+      floorsFilter: "ブランド名で絞り込み",
+      precision: { door: "入口は駅の図面から読み取った概略位置（現地未検証）", tie: "入口未確認（案内は駅の改札・出口まで）", point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認", unverified: "入口未確認" },
     },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `おおよその位置（±${m} m）・経路案内には使いません`,
@@ -64,6 +69,8 @@ const STRINGS = {
     hoursAsOf: (date: string) => `GT-Eki 確認日 ${date} 時点の公式表記。変更されている場合があります`,
     /** Link text for the official page the hours were read from (OD-32). */
     hoursSource: "公式ページ",
+    /** Shown under hours read more than this many days ago (OD-32); the hours stay visible. */
+    hoursStale: (days: number) => `確認日から${days}日以上たっています。公式ページで最新の情報をご確認ください`,
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `店舗情報（${date} 時点・未確認）`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */
@@ -72,6 +79,7 @@ const STRINGS = {
     asPrinted: "（原文どおり）",
     noResults: "該当なし",
     otherCategoryHits: (n: string) => `他の種類に ${n} 件：すべての種類で探す`,
+    otherStationHeader: (label: string) => `${label}にもあります`,
     suggestRecent: "最近選んだ場所",
     suggestPopularFrom: "よく使う出発地（改札など）",
     suggestPopularTo: "人気の目的地",
@@ -278,6 +286,9 @@ const STRINGS = {
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "Category",
     categoryAll: "All",
+    openNowFilter: "Open now",
+    openNowOpen: "Open now",
+    hoursUnknown: "Hours unknown",
     categoryNames: {
       shop: "Shop", service: "Service", atm: "ATM", locker: "Coin locker", toilet: "Toilet",
       exit: "Exit", ticket_gate: "Ticket gate", platform: "Platform", escalator: "Escalator", elevator: "Elevator",
@@ -288,7 +299,9 @@ const STRINGS = {
       source: "Source",
       sourceUnknown: "No source recorded",
       checked: "Last checked",
-      precision: { door: "Entrance read from a station map (approximate, not verified on site)", tie: "Entrance position not yet verified (directions end at the station gate or exit)", point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed" },
+      floorsTitle: "Brands by floor",
+      floorsFilter: "Filter by brand name",
+      precision: { door: "Entrance read from a station map (approximate, not verified on site)", tie: "Entrance position not yet verified (directions end at the station gate or exit)", point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed", unverified: "Entrance not yet verified" },
     },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `Approximate position (±${m} m) · not used for directions`,
@@ -298,6 +311,8 @@ const STRINGS = {
     hoursAsOf: (date: string) => `Official wording as read by GT-Eki on ${date}; may have changed`,
     /** Link text for the official page the hours were read from (OD-32). */
     hoursSource: "Official page",
+    /** Shown under hours read more than this many days ago (OD-32); the hours stay visible. */
+    hoursStale: (days: number) => `Read over ${days} days ago; check the official page for current hours`,
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `Store directory as printed (${date}, unverified)`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */
@@ -305,6 +320,7 @@ const STRINGS = {
     asPrinted: "(as printed)",
     noResults: "No matches",
     otherCategoryHits: (n: string) => `${n} in other categories: search all categories`,
+    otherStationHeader: (label: string) => `Also at ${label}`,
     suggestRecent: "Recent",
     suggestPopularFrom: "Common starting points (gates)",
     suggestPopularTo: "Popular destinations",

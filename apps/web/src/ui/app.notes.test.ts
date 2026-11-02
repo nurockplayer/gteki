@@ -224,6 +224,12 @@ describe("printed shop hours on the destination card (OD-32)", () => {
       // 180 days later it is still shown; 181 days later it is not.
       expect(cardAt(app("ja"), "2027-04-22").querySelector(".poi-hours")).not.toBeNull();
       expect(cardAt(app("ja"), "2027-04-23").querySelector(".poi-hours")).toBeNull();
+      // Over 90 days old: still shown, with the staleness line; at 90 days, no line.
+      expect(cardAt(app("ja"), "2027-01-22").querySelector(".hours-stale")).toBeNull();
+      const stale = cardAt(app("ja"), "2027-01-23");
+      expect(stale.querySelector(".hours-text")?.textContent).toBe(HOURS.text);
+      expect(stale.querySelector(".hours-stale")?.textContent).toBe("確認日から90日以上たっています。公式ページで最新の情報をご確認ください");
+      expect(cardAt(app("en"), "2027-01-23").querySelector(".hours-stale")?.textContent).toBe("Read over 90 days ago; check the official page for current hours");
     } finally {
       vi.useRealTimers();
     }

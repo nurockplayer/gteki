@@ -259,6 +259,30 @@ describe("buildGreybox", () => {
     expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
 
+  it("leaves out an intermediate level's floor where it hangs 1.6 m over a corridor, and keeps the corridor", () => {
+    const floors = [...bundle.floors, { id: "m", renderElevationM: 1.6, intermediate: true }];
+    const nodes = [...bundle.nodes, { id: "c", floorId: "m", position: { x: 5, y: -5, z: 1.6 } }, { id: "d", floorId: "m", position: { x: 5, y: 5, z: 1.6 } }];
+    const edges = [bundle.edges[0]!, { id: "cd", from: "c", to: "d", mode: "walk" }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high", true);
+    const half = MODE_WIDTH.walk! / 2, nav = result.navFloors!;
+    const covered = (x: number, y: number, z: number) => {
+      for (let i = 0; i < nav.length; i += 9) {
+        if (![1, 4, 7].every((k) => Math.abs(nav[i + k]! - y) < 1e-6)) continue;
+        const [ax, az, bx, bz, cx, cz] = [nav[i]!, nav[i + 2]!, nav[i + 3]!, nav[i + 5]!, nav[i + 6]!, nav[i + 8]!];
+        const d1 = (bx - ax) * (z - az) - (bz - az) * (x - ax), d2 = (cx - bx) * (z - bz) - (cz - bz) * (x - bx), d3 = (ax - cx) * (z - cz) - (az - cz) * (x - cx);
+        if ((d1 >= 0 && d2 >= 0 && d3 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0)) return true;
+      }
+      return false;
+    };
+    expect(covered(5, 0, 0)).toBe(true);
+    expect(covered(5, 1.6, 0)).toBe(false);
+    expect(covered(5, 1.6, -4)).toBe(true);
+    expect(covered(5, 1.6, half + 0.1)).toBe(true);
+    // Nothing of the upper level stands over the corridor below its 2.3 m headroom.
+    const low = result.wallSegments.filter((w) => w.yMin < 2.3 && w.yMax > 1.5);
+    expect(low.every((w) => Math.abs((w.az + w.bz) / 2) >= half - 1e-6 || (w.ax + w.bx) / 2 < 4 || (w.ax + w.bx) / 2 > 6)).toBe(true);
+  });
+
   it("keeps a corridor wall that only runs along a stair's side line", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 4 }];
     const half = MODE_WIDTH.walk! / 2, stairHalf = MODE_WIDTH.stairs! / 2;
@@ -403,6 +427,33 @@ describe("buildGreybox", () => {
     // The corridor's south wall (renderer z = +half) is crossed in plan by the ramp, 2 m up: it stays at x = 5.
     const half = MODE_WIDTH.walk! / 2;
     expect(result.wallSegments.some((w) => Math.abs(w.az - half) < 1e-6 && Math.abs(w.bz - half) < 1e-6 && Math.min(w.ax, w.bx) <= 5 && Math.max(w.ax, w.bx) >= 5 && w.yMin < 0)).toBe(true);
+  });
+
+  it("stops the wall across a corridor a ramp joins and climbs over below the ramp, so a walker on it passes", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 2.3 }];
+    // The ramp runs beside the corridor, 1.6 m off its centreline: it overlaps the corridor's edge (ENU y 0.5..1.3), which
+    // the corridor index leaves to both, rising out of the corridor's floor and over that edge.
+    const nodes = [
+      { id: "w0", floorId: "f", position: { x: -10, y: 0, z: 0 } }, { id: "w1", floorId: "f", position: { x: 40, y: 0, z: 0 } },
+      { id: "r0", floorId: "f", position: { x: 0, y: 1.6, z: 0.3 } }, { id: "r1", floorId: "g", position: { x: 30, y: 1.6, z: 2.3 } },
+    ];
+    const edges = [{ id: "corridor", from: "w0", to: "w1", mode: "walk" }, { id: "ramp", from: "r0", to: "r1", mode: "ramp" }];
+    const joined = { ...bundle, floors, nodes, edges } as unknown as StationBundle;
+    const runs = [
+      { edge: edges[0]!, points: [new THREE.Vector3(-10, 0, 0), new THREE.Vector3(40, 0, 0)] },
+      { edge: edges[1]!, points: [new THREE.Vector3(0, 1.6, 0.3), new THREE.Vector3(30, 1.6, 2.3)] },
+    ];
+    const grey = emitGreybox(joined, runs as never, () => false, emptyScene, "high");
+    // The corridor's edge gives way where the ramp is 1.7 m up (x = 21): the wall across it there (renderer z -1.3..-0.5)
+    // stops 0.4 m under the ramp.
+    const across = grey.wallSegments.filter((w) => Math.abs(w.ax - w.bx) < 1e-6 && Math.abs(w.ax - 21) < 0.05 && Math.min(w.az, w.bz) > -1.31 && Math.max(w.az, w.bz) < -0.49);
+    expect(across.length).toBeGreaterThan(0);
+    for (const w of across) expect(w.yMax).toBeLessThanOrEqual(1.3 + 1e-6);
+    // A walker on the ramp over that edge, 0.15 m past the wall (and clear of the ramp's and corridor's side guards), is
+    // not pushed back by it.
+    const at = resolveWalls(21.15, -0.9, 0.3, 1.72, 1.7, grey.wallSegments as never);
+    expect(at.x).toBeCloseTo(21.15);
+    expect(at.z).toBeCloseTo(-0.9);
   });
 
   it("unions the bend of a ramp between floors with the ramp, leaving no wall inside the turn", () => {

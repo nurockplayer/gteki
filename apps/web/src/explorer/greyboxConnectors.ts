@@ -608,7 +608,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   for (const edgeId of regionsByEdge.keys()) { const g = findGroup(edgeId); groups.set(g, [...(groups.get(g) ?? []), edgeId]); }
   const modelWalls: BoundaryWall[] = [];
   for (const edgeIds of groups.values()) {
-    try { modelWalls.push(...buildWalkableModel(edgeIds.flatMap((id) => regionsByEdge.get(id)!), undefined, WALKER_BODY.stepUpM, 2 * FOOTPRINT_PAD_M - 0.001).walls); }
+    // One edge's flights and bend/opening patches are one walk, not separate floors to split or cut at each overlap.
+    try { modelWalls.push(...buildWalkableModel(edgeIds.flatMap((id) => regionsByEdge.get(id)!.map((r) => ({ ...r, group: id }))), undefined, WALKER_BODY.stepUpM, 2 * FOOTPRINT_PAD_M - 0.001).walls); }
     catch { for (const id of edgeIds) legacyEdgeIds.add(id); }
   }
   const failed = (edgeId: string) => legacyEdgeIds.has(edgeId);

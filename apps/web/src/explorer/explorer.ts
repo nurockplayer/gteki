@@ -491,6 +491,35 @@ export class Explorer {
     };
   }
 
+  /** QA-only: count a named layer's resources, optionally changing only its local visibility. */
+  layer(name: string, visible?: boolean): { found: number; visible: boolean; meshes: number; triangles: number; textures: number; textureBytesEst: number } {
+    const matches: THREE.Object3D[] = [];
+    this.scene.traverse((object) => { if (object.name === name) matches.push(object); });
+    const meshes = new Set<THREE.Mesh>();
+    const textures = new Set<THREE.Texture>();
+    for (const object of matches) {
+      if (visible !== undefined) object.visible = visible;
+      object.traverse((child) => { if ((child as THREE.Mesh).isMesh) meshes.add(child as THREE.Mesh); });
+    }
+    let triangles = 0, textureBytesEst = 0;
+    for (const mesh of meshes) {
+      const geometry = mesh.geometry;
+      triangles += (geometry.index?.count ?? geometry.getAttribute("position")?.count ?? 0) / 3 *
+        ((mesh as THREE.InstancedMesh).isInstancedMesh ? (mesh as THREE.InstancedMesh).count : 1);
+      for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+        for (const value of Object.values(material)) {
+          if ((value as THREE.Texture | null)?.isTexture) textures.add(value as THREE.Texture);
+        }
+      }
+    }
+    for (const texture of textures) {
+      const image = texture.image as { width?: number; height?: number } | undefined;
+      textureBytesEst += (image?.width ?? 0) * (image?.height ?? 0) * 4 *
+        (texture.generateMipmaps || texture.mipmaps.length > 1 ? 4 / 3 : 1);
+    }
+    return { found: matches.length, visible: matches.length > 0 && matches.every((object) => object.visible), meshes: meshes.size, triangles, textures: textures.size, textureBytesEst };
+  }
+
   /** QA probe: project station-ENU points to canvas CSS pixels with the camera as last rendered. `behind`: not in front of the camera. */
   projectEnu(points: { x: number; y: number; z: number }[]): { x: number; y: number; behind: boolean }[] {
     this.camera.updateMatrixWorld();

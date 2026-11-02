@@ -912,8 +912,8 @@ describe("turning landing guards", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
     const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [4, 4, 4]]);
     const station = createSyntheticBundle([
-      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } }, geometry: a }),
-      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } }, geometry: b }),
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } } as unknown as Edge["attributes"], geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } } as unknown as Edge["attributes"], geometry: b }),
     ] as Parameters<typeof createSyntheticBundle>[0]);
     for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
     // With station floor at the junction, and without it (the builder adds endpoint pads there).
@@ -933,7 +933,7 @@ describe("turning landing guards", () => {
     const a = g([[-6, -2, 0], [-2.5, 0, 0], [0, 0, 0]]), b = g([[0, 0, 0], [0, 2, 4]]);
     const station = createSyntheticBundle([
       syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
-      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 4 } }, geometry: b }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 4 } } as unknown as Edge["attributes"], geometry: b }),
     ] as Parameters<typeof createSyntheticBundle>[0]);
     for (const [id, p] of [["start", a[0]!], ["a", a.at(-1)!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
     const result = buildConnectors(station, () => true, { hasFloor: (p) => p.z > -1e-6 && p.x > -2.6, nearMesh: () => false }, "high");
@@ -1014,7 +1014,7 @@ describe("turning landing guards", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
     const a = g([[0, 0, 0], [6, 3, 0]]), b = g([[6, 3, 0], [6, 3, 0.4], [10, 5, 0.4]]);
     const station = createSyntheticBundle([
-      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true, width: { m: 4 } }, geometry: a }),
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true, width: { m: 4 } } as unknown as Edge["attributes"], geometry: a }),
       syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
     ] as Parameters<typeof createSyntheticBundle>[0]);
     for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
@@ -1087,7 +1087,7 @@ describe("turning landing guards", () => {
     expect(result.stats.legacyConnectors).toBe(0);
     // Where the two flights come within a step of each other's height (x from about 2.3 m to the landing), a wall still
     // lines the gap on both flights' facing sides.
-    for (const x of [2.4, 2.6, 2.8, 3.0]) for (const [z0, z1] of [[mid - 0.15, mid], [mid, mid + 0.15]]) {
+    for (const x of [2.4, 2.6, 2.8, 3.0]) for (const [z0, z1] of [[mid - 0.15, mid], [mid, mid + 0.15]] as const) {
       const lined = result.wallSegments.some((w) => Math.min(w.ax, w.bx) <= x && Math.max(w.ax, w.bx) >= x
         && Math.min(w.az, w.bz) >= z0 && Math.max(w.az, w.bz) <= z1);
       expect(lined, `x=${x} z=${z0}..${z1}`).toBe(true);
@@ -1133,7 +1133,7 @@ describe("turning landing guards", () => {
   it.each([1.5, 2])("keeps the walkway clear across a soft split on a curved stair with short legs, %f m wide", (width) => {
     const waypoints = Array.from({ length: 10 }, (_v, i): [number, number, number] => [2 * Math.sin(i * Math.PI / 12), 0.3 * i, 2 * (1 - Math.cos(i * Math.PI / 12))]);
     const stair = stairThrough(waypoints);
-    stair.edges[0]!.attributes = { ...stair.edges[0]!.attributes, width: { m: width } } as typeof stair.edges[0]["attributes"];
+    stair.edges[0]!.attributes = { ...stair.edges[0]!.attributes, width: { m: width } } as unknown as Edge["attributes"];
     const result = buildConnectors(stair, () => true, flat, "high");
     expect(result.stats.legacyConnectors).toBe(0);
     const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
