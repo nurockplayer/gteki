@@ -261,16 +261,16 @@ describe("visual only", () => {
       const loaded = await loadShopKit(THREE, host(all(low ? "low" : "high"), async (uri) => realShop(uri)), kit, shops, openings, low);
       const { stats } = loaded.build(THREE, env, toRenderer);
       console.log(`[shop stats] ${low ? "low" : "desktop"}: ${JSON.stringify(stats)}`);
-      expect(stats).toMatchObject({ shops: 10, modules: 22, tiles: low ? 5 : 8,
-        drawCallsAllTiles: low ? 29 : 77, trianglesAllTiles: low ? 3336 : 7379,
-        trianglesWorstTile: low ? 1294 : 1548, signs: 9, signDrawCalls: 1, signTriangles: 54,
+      expect(stats).toMatchObject({ shops: 10, modules: 22, tiles: 1,
+        drawCallsAllTiles: low ? 8 : 20, trianglesAllTiles: low ? 3336 : 7379,
+        trianglesWorstTile: low ? 3336 : 7379, signs: 9, signDrawCalls: 1, signTriangles: 54,
         interiorDrawCalls: 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4, directoryBoards: 1 });
       loaded.dispose();
     }
   });
 
 
-  it("builds instances and one merged sign mesh, all under the kit_shop role, and nothing else", async () => {
+  it("builds merged bays and one merged sign mesh, all under the kit_shop role, and nothing else", async () => {
     const loaded = await loadShopKit(THREE, host(all("high")), kit, shops, openings, false);
     expect(loaded.placements.length).toBe(shopPlacements(shops, openings, pieces).length);
     expect(loaded.signs.length).toBe(shops.filter((s) => s.sign.ja).length);
@@ -289,7 +289,7 @@ describe("visual only", () => {
     const signMesh = group.getObjectByName("kit_shop_signs") as THREE.Mesh;
     expect((signMesh.material as THREE.Material).side).toBe(THREE.FrontSide);
     expect(stats.trianglesAllTiles).toBe(loaded.placements.length * 2 * 12); // 2 fake parts, 12 triangles each
-    expect(stats.drawCallsAllTiles).toBe(group.children.filter((o) => (o as THREE.InstancedMesh).isInstancedMesh).length);
+    expect(stats.drawCallsAllTiles).toBe(group.children.filter((o) => o.name.startsWith("kit_shop:")).length);
     loaded.dispose();
   });
 
@@ -304,8 +304,9 @@ describe("visual only", () => {
       return gltf;
     }), kit, [shop], [row], false);
     const { group } = loaded.build(THREE, env, toRenderer);
-    const instances = group.children.filter((o) => (o as THREE.InstancedMesh).isInstancedMesh) as THREE.InstancedMesh[];
-    expect(instances.every((o) => (o.material as THREE.Material).name !== "gteki_reveal_dark")).toBe(true);
+    const bays = group.children.filter((o) => o.name.startsWith("kit_shop:")) as THREE.Mesh[];
+    expect(bays.length).toBeGreaterThan(0);
+    expect(bays.every((o) => (o.material as THREE.Material).name !== "gteki_reveal_dark")).toBe(true);
     const interior = group.getObjectByName("kit_shop_interiors") as THREE.Mesh;
     expect(interior).toBeTruthy();
     expect(group.children.filter((o) => o.name === "kit_shop_interiors")).toHaveLength(1);
@@ -341,7 +342,7 @@ describe("visual only", () => {
     loaded.dispose();
   });
 
-  it("drops only the rows of a piece that cannot be loaded, and frees its instances", async () => {
+  it("drops only the rows of a piece that cannot be loaded, and frees its merged bays", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const onlyGlazing = await loadShopKit(THREE, host([all("high")[0]!]), kit, shops, openings, false);
     expect(onlyGlazing.placements.length).toBeGreaterThan(0);
@@ -356,9 +357,9 @@ describe("visual only", () => {
 
     const loaded = await loadShopKit(THREE, host(all("high")), kit, shops, openings, false);
     const { group } = loaded.build(THREE, env, toRenderer);
-    const instanced: THREE.InstancedMesh[] = [];
-    group.traverse((o) => { if ((o as THREE.InstancedMesh).isInstancedMesh) instanced.push(o as THREE.InstancedMesh); });
-    const spies = instanced.map((im) => vi.spyOn(im, "dispose"));
+    const bays = group.children.filter((o) => o.name.startsWith("kit_shop:")) as THREE.Mesh[];
+    expect(bays.length).toBeGreaterThan(0);
+    const spies = bays.map((m) => vi.spyOn(m.geometry, "dispose"));
     loaded.dispose();
     for (const s of spies) expect(s).toHaveBeenCalledTimes(1);
   });
