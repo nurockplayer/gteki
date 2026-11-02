@@ -558,7 +558,8 @@ export class App {
   }
 
   /**
-   * A shop's printed hours (OD-32): the page's own wording, then the date GT-Eki read it. Hidden when the page
+   * A shop's printed hours (OD-32): the page's own wording, then the date GT-Eki read it, the may-have-changed
+   * label and the official page. Hidden when the page
    * printed nothing (status UNKNOWN) or the reading is older than HOURS_MAX_AGE_DAYS, so an old timetable is
    * never shown as if it were current.
    */
@@ -567,7 +568,13 @@ export class App {
     const text = printedHours(hours, new Date());
     if (!hours || !text) return null;
     const box = el("div", "poi-hours");
-    box.append(el("p", "hours-text", text), el("p", "muted hours-asof", this.t.hoursAsOf(hours.retrievedAt)));
+    const source = el("a", "hours-source", this.t.hoursSource);
+    source.href = hours.sourceUrl;
+    source.target = "_blank";
+    source.rel = "noopener noreferrer";
+    const asOf = el("p", "muted hours-asof", `${this.t.hoursAsOf(hours.retrievedAt)} · `);
+    asOf.append(source);
+    box.append(el("p", "hours-text", text), asOf);
     return box;
   }
 
