@@ -1073,6 +1073,10 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       bottom: (p: XY) => (l2 ? height(p) : Math.min(a.z, b.z)) - 0.2,
       top: (p: XY) => (l2 ? height(p) : Math.max(a.z, b.z)) + 2.4 };
   });
+  // A finish step must not become a partition across an adjoining platform's
+  // occupied volume, including the signs and hangers above the walking band.
+  const platformVoids = underground.flatMap((lv) => lv.slabs.filter((s) => s.category === "B029")
+    .map((s) => ({ rings: s.rings, bottom: () => lv.z, top: () => lv.ceilingZ })));
   const sheets = layout.shaftFinishes;
   for (let i = 0; i < sheets.length; i++) for (let j = i + 1; j < sheets.length; j++) {
     const a = sheets[i]!, b = sheets[j]!;
@@ -1093,7 +1097,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         const xa = soffitHeight(a, x), xb = soffitHeight(b, x), ya = soffitHeight(a, y), yb = soffitHeight(b, y);
         const wall: WallSeg = { a: x, b: y, side: 1, kind: "wall", zMin: Math.min(xa, xb, ya, yb), zMax: Math.max(xa, xb, ya, yb),
           profile: { bottomA: Math.min(xa, xb), bottomB: Math.min(ya, yb), topA: Math.max(xa, xb), topB: Math.max(ya, yb) } };
-        for (const part of cutWallsByVoids([wall], voids)) layout.shaftFascias.push({ floorId: a.floorId, wall: part });
+        for (const part of cutWallsByVoids([wall], [...voids, ...platformVoids])) layout.shaftFascias.push({ floorId: a.floorId, wall: part });
       }
     }
   }

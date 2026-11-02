@@ -318,7 +318,9 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
       return Math.hypot(p.x - head.x, p.z - head.z) < 4 && p.y > head.y && p.y < head.y + 5;
     })).toBe(true);
     // Without pushing out the hall fills main already had: the B1 hall at the north end and the B2 hall near toei-nwd.
-    for (const [x, y, z] of [[-7.71, -4.92, 17.99], [-88.86, -11.52, -166.85]] as const) {
+    // #221: the B2 height follows its flat hall ceiling (-13.10), rather than
+    // the removed raised shaft collar (-11.30); the 0.22 m fixture offset stays.
+    for (const [x, y, z] of [[-7.71, -4.92, 17.99], [-88.86, -13.32, -166.85]] as const) {
       expect(lights.some((l) => l.getWorldPosition(new THREE.Vector3()).distanceTo(new THREE.Vector3(x, y, z)) < 0.5), `${x}, ${z}`).toBe(true);
     }
     expect(fixtures.length).toBe(1);
