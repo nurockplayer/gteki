@@ -527,7 +527,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   // At a junction the other connectors' own walkable footprint near the node is a connector footprint of this end's level
   // too: neither's walls stand across the other's exit, and only where the other really has floor (its own level keeps
   // its walls). Near means within 2 * half of the wider of the two, or where they leave the node at an acute angle, as far
-  // as the other takes to clear this one (2 * half / sin of the angle), but never past where their pitches part a step.
+  // as the other takes to clear this one (2 * half / sin of the angle), but past 2 * half never where their pitches part
+  // a step.
   const builtRegions = new Map([...regionsByEdge].map(([id, list]) => [id, [...list]]));
   for (const j of junctions) for (const m of mouths.get(j.node) ?? []) {
     // Only the other connector's level that meets this node: a flight of it passing overhead is no opening.
@@ -538,7 +539,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const along = j.dir.x * m.dir.x + j.dir.z * m.dir.z > 0 ? Math.max(reach, reach / Math.max(sin, 0.1)) : reach;
     // Only as far as their first legs stay within a step of each other: two flights leaving together at different pitches
     // part in height long before they part in plan.
-    const pitch = Math.abs(j.grade - m.grade), radius = pitch > 1e-6 ? Math.min(along, reach + WALKER_BODY.stepUpM / pitch) : along;
+    const pitch = Math.abs(j.grade - m.grade), radius = pitch > 1e-6 ? Math.min(along, Math.max(reach, WALKER_BODY.stepUpM / pitch)) : along;
     const asClipping = (ring: readonly PlanPoint[]) => ring.map((p): [number, number] => [p.x, p.z]);
     try {
       const polygons = other.flatMap((r) => regionPolygon(r)).map((polygon) => polygon.map(asClipping));

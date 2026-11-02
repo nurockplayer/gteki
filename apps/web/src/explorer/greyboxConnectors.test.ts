@@ -970,8 +970,11 @@ describe("turning landing guards", () => {
     for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["b", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
     const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
     // 5 m out the steep flight is 2.5 m up and the shallow one about 1.2 m: its side toward the shallow one keeps a guard.
-    const r = resolveWalls(5, 0.6, 0.3, 2.5, 1.7, result.wallSegments);
-    expect(r.z).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    // Nearer, 2 m out, they are already 0.5 m apart, more than a step: the guard stands there too.
+    for (const x of [5, 2]) {
+      const r = resolveWalls(x, 0.6, 0.3, x / 2, 1.7, result.wallSegments);
+      expect(r.z, `x=${x}`).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    }
   });
 
   // #710 review: a junction opens only over the other stair's real footprint, not past its short first leg.
