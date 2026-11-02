@@ -977,6 +977,22 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: two flights meeting end to end at a shared node keep both side guards through the node.
+  it("keeps the side guards of two flights that meet end to end", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [8, 4, 0]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    for (const x of [3, 3.6, 4, 4.4, 5]) for (const side of [1, -1]) {
+      const r = resolveWalls(x, side * 0.6, 0.3, x / 2, 1.7, result.wallSegments);
+      expect(Math.abs(r.z), `x=${x} side=${side}`).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    }
+  });
+
   // #710 review: a junction opens only over the other stair's real footprint, not past its short first leg.
   it("keeps a wide stair's guard beside a narrow stair whose first leg is short", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
