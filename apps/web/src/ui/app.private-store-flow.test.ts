@@ -35,6 +35,14 @@ type Harness = {
 
 const STATIONS = ["ikebukuro", "shinjuku"] as const;
 const MIN_STORES = 15;
+/**
+ * Per station: map-read stores, and how many of them are searched by a brand from their own directory (the rest fall
+ * back to the store name). Lowering either needs a reason in the PR: a lost directory must fail here, not pass by name.
+ */
+const MIN_BY_STATION: Record<(typeof STATIONS)[number], { stores: number; brandStores: number }> = {
+  ikebukuro: { stores: 12, brandStores: 3 },
+  shinjuku: { stores: 8, brandStores: 3 },
+};
 const PROFILE: RouteProfile = { fare: "ticketed", stepFree: false, hours: "warn_unknown" };
 
 /**
@@ -177,8 +185,12 @@ describe.skipIf(!process.env.GTEKI_PRIVATE_DIR)("private build store flow (brand
       let queriesPassed = 0;
       let queriesRun = 0;
       const stores = storesOf(bundle!);
+      expect(stores.length, `${station}: map-read stores`).toBeGreaterThanOrEqual(MIN_BY_STATION[station].stores);
+      const brandStores = stores.filter((store) => queriesFor(bundle!, store).some((q) => q.tenant !== null)).length;
+      expect(brandStores, `${station}: stores searched by their own brands`).toBeGreaterThanOrEqual(MIN_BY_STATION[station].brandStores);
+      let skipped = 0;
       for (const store of stores) {
-        if (KNOWN_GAPS.has(gapKey(store.id))) continue;
+        if (KNOWN_GAPS.has(gapKey(store.id))) { skipped++; continue; }
         const label = `store ${store.id}`;
         const origin = gateReaching(bundle!, store);
         expect.soft(origin !== null, `${label}: a ticket gate routes to the store`).toBe(true);
@@ -197,8 +209,8 @@ describe.skipIf(!process.env.GTEKI_PRIVATE_DIR)("private build store flow (brand
         }
         if (storeOk) storesPassed++;
       }
-      console.info(`${station}: ${storesPassed}/${stores.length} stores, ${queriesPassed}/${queriesRun} brand queries passed`);
-      expect(storesPassed, `${station}: stores passing`).toBe(stores.length);
+      console.info(`${station}: ${storesPassed}/${stores.length - skipped} stores (${brandStores} by brand), ${queriesPassed}/${queriesRun} queries passed`);
+      expect(storesPassed, `${station}: stores passing`).toBe(stores.length - skipped);
     });
   }
 });
