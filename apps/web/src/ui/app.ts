@@ -9,7 +9,7 @@ import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
-import { printedHours } from "../hours.ts";
+import { HOURS_STALE_DAYS, hoursStale, printedHours } from "../hours.ts";
 import { listStations, PRIVATE_BUILD, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
@@ -565,7 +565,8 @@ export class App {
    */
   private hoursBlock(poi: Poi | null): HTMLElement | null {
     const hours = poi?.hours;
-    const text = printedHours(hours, new Date());
+    const now = new Date();
+    const text = printedHours(hours, now);
     if (!hours || !text) return null;
     const box = el("div", "poi-hours");
     const source = el("a", "hours-source", this.t.hoursSource);
@@ -575,6 +576,8 @@ export class App {
     const asOf = el("p", "muted hours-asof", `${this.t.hoursAsOf(hours.retrievedAt)} · `);
     asOf.append(source);
     box.append(el("p", "hours-text", text), asOf);
+    // Over HOURS_STALE_DAYS old: still shown, but the card says the reading is old (OD-32).
+    if (hoursStale(hours, now)) box.append(el("p", "hours-stale", this.t.hoursStale(HOURS_STALE_DAYS)));
     return box;
   }
 
