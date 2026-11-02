@@ -283,7 +283,7 @@ function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
  * The walkable regions of one connector: a strip level per flight (the legs between turning landings, discs at shallow
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
  */
-function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean, junction: (index: number, level: string) => void, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
+function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean, junction: (index: number, level: string, side: "from" | "to") => void, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
   // Level legs at either end that lie on station floor are that floor, not part of the stair: they carry no wall, so a
   // walk edge that meets the same node from the side is not cut off. Off the floor they keep their walls, or a walker
   // could step off the generated tread. The model starts at the first and ends at the last such climb.
@@ -332,7 +332,7 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
       regions.push({ kind: "connector", level, y: points[end]!.y, quad });
       // Where two generated connectors meet at a node, their flights overlap in plan there: buildConnectors makes the other's
       // footprint near the node a connector footprint of this level too.
-      if (end === first || end === last) junction(end, level);
+      if (end === first || end === last) junction(end, level, end === first ? "from" : "to");
     }
     // The level legs before the first climb and after the last, as open footprints of the end flights.
     if (k === 1) for (let i = 0; i < first; i++) regions.push({ kind: "connector", level, y: points[i]!.y, quad: planQuad(points[i]!, planDir(points[i]!, points[i + 1]!), Math.hypot(points[i + 1]!.x - points[i]!.x, points[i + 1]!.z - points[i]!.z), half) });
@@ -458,9 +458,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     };
     // An end at a node another generated connector also meets is a junction (on station floor, or on the endpoint pad built
     // where floor is missing); it is opened once every connector's regions exist.
-    const junction = (i: number, level: string) => {
-      const node = i === 0 ? edge.from : i === points.length - 1 ? edge.to : undefined;
-      if (node !== undefined) junctions.push({ edgeId: edge.id, node, level, at: points[i]!, dir: planDir(points[i]!, points[i === 0 ? 1 : i - 1]!), half });
+    // An end is its node's even where a floor-backed level leg before it was trimmed off.
+    const junction = (i: number, level: string, side: "from" | "to") => {
+      junctions.push({ edgeId: edge.id, node: side === "from" ? edge.from : edge.to, level, at: points[i]!, dir: planDir(points[i]!, points[side === "from" ? i + 1 : i - 1]!), half });
     };
     edgeRegions(edge, points, half, isTurn, floored, junction, ownRegions, levels);
     regionsByEdge.set(edge.id, ownRegions);
@@ -524,7 +524,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   // as the other takes to clear this one (2 * half / sin of the angle).
   const builtRegions = new Map([...regionsByEdge].map(([id, list]) => [id, [...list]]));
   for (const j of junctions) for (const m of mouths.get(j.node) ?? []) {
-    const other = builtRegions.get(m.edgeId);
+    // Only the other connector's level that meets this node: a flight of it passing overhead is no opening.
+    const meets = junctions.find((k) => k.edgeId === m.edgeId && k.node === j.node);
+    const other = meets && builtRegions.get(m.edgeId)?.filter((r) => r.level === meets.level);
     if (m.edgeId === j.edgeId || !other) continue;
     const reach = 2 * Math.max(m.half, j.half), sin = Math.abs(j.dir.x * m.dir.z - j.dir.z * m.dir.x);
     const radius = j.dir.x * m.dir.x + j.dir.z * m.dir.z > 0 ? Math.max(reach, reach / Math.max(sin, 0.1)) : reach;

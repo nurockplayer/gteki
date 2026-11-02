@@ -973,6 +973,34 @@ describe("turning landing guards", () => {
     expect(Math.hypot(r.x - 5.6, r.z - 1.85)).toBeGreaterThan(0.05);
   });
 
+  // #710 review: only the level of the other stair that meets the node opens a junction; one passing overhead does not.
+  it("keeps a stair's guard under another stair's later flight that passes overhead", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [6, 3, 0]]), b = g([[6, 3, 0], [6, 5, 4], [2, 7, 4], [2, 9, 0], [8, 12, 0]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const r = resolveWalls(5, -0.85, 0.3, 2.5, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 5, r.z + 0.85)).toBeGreaterThan(0.05);
+  });
+
+  // #710 review: a junction still opens where a floor-backed level leg at the stair's end is trimmed off.
+  it("opens a junction behind a trimmed level leg at the shared node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0], [4.1, 2, 0]]), b = g([[4.1, 2, 0], [4.1, 4, 4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a.at(-1)!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const r = resolveWalls(4.1, 0.78, 0.3, 2.39, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 4.1, r.z - 0.78)).toBeLessThanOrEqual(0.05);
+  });
+
   // #710 review: a connector skipped as too short opens no junction in the one it meets.
   it("keeps a stair's guards where a skipped short connector meets it", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
