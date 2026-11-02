@@ -633,7 +633,7 @@ export class App {
     const categories = this.s.filter ? [this.s.filter] : undefined;
     const groups = q ? null : emptySuggestions(this.s.loaded.bundle.pois, which, {
       filter: this.s.filter, recentIds: readRecent(safeStorage(), this.s.entry!.key),
-      limit: this.s.openNow ? 40 : undefined,
+      limit: this.s.openNow ? this.s.loaded.bundle.pois.length : undefined,
     });
     const groupHeaders = new Map<number, string>();
     let suggestionIndex = 0;
@@ -644,11 +644,14 @@ export class App {
       suggestionIndex += group.pois.length;
     }
     let hits: SearchHit[] = q
-      ? this.s.search.search(q, { limit: this.s.openNow ? 40 : 8, lang: this.s.lang, categories })
+      // Open now filters after ranking, so it ranks every candidate: a closed shop must not use up the list (#724 review).
+      ? this.s.search.search(q, { limit: this.s.openNow ? this.s.loaded.bundle.pois.length : 8, lang: this.s.lang, categories })
       : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true })));
     const statuses = new Map<string, ReturnType<typeof openNow>>();
+    const now = new Date();
+    // Closed shops are dropped while Open now is on; the other-category count below drops them too.
+    const notClosed = (h: SearchHit) => !this.s.openNow || h.poi.category !== "shop" || openNow(h.poi.hours, now) !== "closed";
     if (this.s.openNow) {
-      const now = new Date();
       for (const h of hits) if (h.poi.category === "shop") statuses.set(h.poi.id, openNow(h.poi.hours, now));
       hits = hits.filter((h) => statuses.get(h.poi.id) !== "closed");
       const shops = hits.filter((h) => h.poi.category === "shop")
@@ -669,7 +672,9 @@ export class App {
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       // Nothing in the filtered category: say how many the other categories have, and offer to drop the filter.
-      const elsewhere = q && this.s.filter ? this.s.search.search(q, { limit: 8, lang: this.s.lang }).length : 0;
+      const elsewhere = q && this.s.filter
+        ? this.s.search.search(q, { limit: this.s.openNow ? this.s.loaded.bundle.pois.length : 8, lang: this.s.lang }).filter(notClosed).slice(0, 8).length
+        : 0;
       const none = el("div", "result empty", this.t.noResults);
       if (elsewhere > 0) {
         none.setAttribute("role", "presentation");

@@ -13,6 +13,7 @@ import sjkTenants from "../../../../stations/shinjuku/gteki/tenants.json" with {
 
 vi.mock("../explorer/explorer.ts", () => ({ Explorer: class {} }));
 vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, StationLoadError: class extends Error {} }));
+import { openNow } from "../openNow.ts";
 import { App } from "./app.ts";
 
 type Harness = {
@@ -123,4 +124,31 @@ it("filters the real public stores and their brands at noon and 21:00 JST, retai
     a.layoutText();
     expect(root.querySelector(".filter-row label")?.textContent).toBe("Open now");
   }
+});
+
+it("ranks every candidate before dropping closed shops, and the other-category count drops them too (#724 review)", () => {
+  const sjk = bundleOf(sjkStation, sjkGraph, sjkPois, sjkTenants);
+  const { a, search, toggle } = mount(sjk, "shinjuku");
+  vi.setSystemTime(new Date("2026-11-04T21:30:00+09:00"));
+  const now = new Date();
+  a.s.filter = "shop";
+  toggle(true);
+  // Every shop the full ranking says is not closed is a candidate; the list shows the first 8 of them.
+  const all = a.s.search!.search("a", { limit: sjk.pois.length, lang: "ja", categories: ["shop"] })
+    .filter((h) => openNow(h.poi.hours, now) !== "closed");
+  const shown = search("a").map((row) => row.querySelector(".result-name")?.textContent);
+  expect(shown.length).toBe(Math.min(8, all.length));
+  expect(shown.filter((name) => !name?.length)).toHaveLength(0);
+  // A closed store found only in the shop category leaves no "other categories" offer that counts it.
+  const ikb = bundleOf(ikbStation, ikbGraph, ikbPois, ikbTenants);
+  const second = mount(ikb, "ikebukuro");
+  vi.setSystemTime(new Date("2026-11-04T21:00:00+09:00"));
+  second.a.s.filter = "shop";
+  second.toggle(true);
+  expect(second.search("西武池袋本店").length).toBe(0);
+  const offer = second.a.ui.toResults.querySelector(".other-categories")?.textContent ?? "";
+  const expected = second.a.s.search!.search("西武池袋本店", { limit: ikb.pois.length, lang: "ja" })
+    .filter((h) => h.poi.category !== "shop" || openNow(h.poi.hours, new Date()) !== "closed").slice(0, 8).length;
+  if (expected === 0) expect(offer).toBe("");
+  else expect(offer).toContain(expected === 8 ? "8+" : String(expected));
 });
