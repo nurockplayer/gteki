@@ -1,52 +1,12 @@
 {
   "version": 1,
   "station": "shinjuku",
-  "date": "2026-11-01",
-  "ruling": "director 2026-11-01 01:0x JST: the navmesh bake and audit check the walker's live scene (#676); the public gate moves once in #685, then shrink-only",
+  "date": "2026-11-02",
+  "ruling": "director 2026-11-02 09:5x JST: e:1dbe550068c1…:forward is a reclassification, not a regression. On main this edge had no navmesh path at all (reason ≠ null, skipped silently); now a path is found that is longer than 1.5× + 2 m, so it is recorded as a detour. In neither case is it written into the guide paths, so what the user sees is unchanged. Every other measure in the same PR shrinks: SJK fallback 14→6, fallbackWallHits 42→6, incomplete 196→146, IKB fallback 8→7, failedRoutePairs 2→0.",
   "followUps": [
-    "#683",
-    "#684",
-    "#687",
-    "#688"
+    "#694"
   ],
   "before": {
-    "fallback": [
-      "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
-      "e:65edd7ca50844b609d4dcb25bd296936",
-      "e:e9a119f724e44645899a1b1bc14ace69",
-      "e:ed7e56a8e6234197be06280fcb24aecc"
-    ],
-    "suspect": [
-      "e:4038cecf024c417a87310ab9859a7404",
-      "e:45ebdab487134925b3b47cd29bffb99c",
-      "e:bdcdf9229c9f49dc9bc02bec79c4a8fe",
-      "e:c2c4ebb36e374e1da3dde94d3a5257d6",
-      "e:c3fe6342f158400ab602dd610f636329",
-      "e:c690df6cad7b48bba7b3b30fee65eda2",
-      "e:c7fa5f74d72f43498ef2cb3b1dbea7e4",
-      "e:dcbc1a258ceb41b09ab50e417aabc8b4"
-    ],
-    "detours": [],
-    "clipBaseline": {
-      "e:ed7e56a8e6234197be06280fcb24aecc": {
-        "connectorWallHits": 0,
-        "fallbackWallHits": 2,
-        "navmeshWallHits": 0,
-        "offFloor": 0
-      },
-      "total": {
-        "connectorWallHits": 0,
-        "fallbackWallHits": 2,
-        "navmeshWallHits": 0,
-        "offFloor": 0,
-        "unvalidatedJoins": 72,
-        "invalidJoins": 0,
-        "routablePairs": 238,
-        "failedRoutePairs": 2
-      }
-    }
-  },
-  "after": {
     "fallback": [
       "e:008b0f9c620c47d7b99a1dbe04b40ff8",
       "e:04881586eea54d7f92cd7ab0076a6004",
@@ -152,6 +112,61 @@
         "navmeshWallHits": 0,
         "offFloor": 0,
         "unvalidatedJoins": 196,
+        "invalidJoins": 0,
+        "routablePairs": 238,
+        "failedRoutePairs": 2
+      }
+    }
+  },
+  "after": {
+    "fallback": [
+      "e:65edd7ca50844b609d4dcb25bd296936",
+      "e:6ac033af77914fe5a9786676088b952c",
+      "e:82c9a2c2cd704a348fbeb423d07cb125",
+      "e:a4ed9fc953984c52a914f0cbe73cd318",
+      "e:ed7e56a8e6234197be06280fcb24aecc",
+      "e:f7671c07bc8d4f059fafa42d307f6873"
+    ],
+    "suspect": [
+      "e:4038cecf024c417a87310ab9859a7404",
+      "e:45ebdab487134925b3b47cd29bffb99c",
+      "e:bdcdf9229c9f49dc9bc02bec79c4a8fe",
+      "e:c2c4ebb36e374e1da3dde94d3a5257d6",
+      "e:c3fe6342f158400ab602dd610f636329",
+      "e:c690df6cad7b48bba7b3b30fee65eda2",
+      "e:c7fa5f74d72f43498ef2cb3b1dbea7e4",
+      "e:dcbc1a258ceb41b09ab50e417aabc8b4"
+    ],
+    "detours": [
+      "e:1dbe550068c14835ad39dcc321137afd:forward",
+      "e:4fcb23c2d1fc4ddfb267916a3190dc00:forward",
+      "e:6d50f884e12d43979ed80980ea53b58b:forward"
+    ],
+    "clipBaseline": {
+      "e:6ac033af77914fe5a9786676088b952c": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:82c9a2c2cd704a348fbeb423d07cb125": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "e:ed7e56a8e6234197be06280fcb24aecc": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 2,
+        "navmeshWallHits": 0,
+        "offFloor": 0
+      },
+      "total": {
+        "connectorWallHits": 0,
+        "fallbackWallHits": 6,
+        "navmeshWallHits": 0,
+        "offFloor": 0,
+        "unvalidatedJoins": 146,
         "invalidJoins": 0,
         "routablePairs": 238,
         "failedRoutePairs": 2
