@@ -32,10 +32,11 @@ export function ageRows(bundles: StationBundle[], now = new Date()): AgeRow[] {
     };
     for (const poi of bundle.pois.filter((poi) => poi.category === "shop")) {
       const tenants = (bundle.tenants ?? []).filter((tenant) => tenant.poiId === poi.id);
-      // A building's printed hours apply only to an exactly named building POI.
+      // Building hours apply to an exact ja name or a prefix followed by a half-/full-width space.
       const buildingDates = (bundle.buildingHours ?? [])
         .filter((hours) => hours.building.some((name) => name.lang === "ja"
-          && poi.names.some((candidate) => candidate.lang === "ja" && candidate.text === name.text)))
+          && poi.names.some((candidate) => candidate.lang === "ja" && (candidate.text === name.text
+            || candidate.text.startsWith(name.text + " ") || candidate.text.startsWith(name.text + "　")))))
         .map((hours) => jstDate(hours.retrievedAt));
       const hoursDate = poi.hours?.retrievedAt ? jstDate(poi.hours.retrievedAt) : oldest(buildingDates);
       const tenantsDate = sourceDate(tenants.flatMap((tenant) => tenant.evidence.sourceIds));

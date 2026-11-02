@@ -1548,7 +1548,7 @@ findOnPath	function	tools/box-idle.mjs	23
 activeContainerNames	function	tools/box-idle.mjs	31
 AgeRow	interface	tools/data-age/report.ts	9
 ageRows	function	tools/data-age/report.ts	23
-markdown	function	tools/data-age/report.ts	68
+markdown	function	tools/data-age/report.ts	69
 renameFont	function	tools/fonts/rename-font.mjs	12
 JOYO_KANJI	const	tools/fonts/sign-glyphs.mjs	8
 repoRoot	const	tools/fonts/sign-glyphs.mjs	11

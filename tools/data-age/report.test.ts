@@ -69,3 +69,19 @@ it("uses exactly matched building hours when the store has no own hours", () => 
   expect(ageRows([building]).find((row) => row.poiId === "missing"))
     .toMatchObject({ hoursDate: "2026-10-15", oldestDate: "2026-10-15", ageDays: expect.any(Number) });
 });
+
+it("matches building-name prefixes only at half- or full-width space boundaries", () => {
+  const bundle: StationBundle = { ...fixture,
+    pois: [
+      { ...poi("lumine1"), names: [{ lang: "ja", text: "ルミネ新宿 ルミネ1" }] },
+      { ...poi("lumine2"), names: [{ lang: "ja", text: "ルミネ新宿　ルミネ2" }] },
+      { ...poi("est"), names: [{ lang: "ja", text: "ルミネエスト新宿" }] },
+    ],
+    buildingHours: [{ building: [{ lang: "ja", text: "ルミネ新宿" }], floorRange: null,
+      retrievedAt: "2026-10-24", sourceUrl: "https://example.com", basis: "undated-official",
+      status: "OK", text: "11:00–21:00" }],
+  };
+  const rows = ageRows([bundle], new Date("2026-11-03T03:00:00Z"));
+  expect(Object.fromEntries(rows.map((row) => [row.poiId, row.hoursDate])))
+    .toEqual({ lumine1: "2026-10-24", lumine2: "2026-10-24", est: "—" });
+});
