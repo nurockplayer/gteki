@@ -78,7 +78,7 @@ function pieceQuad(rect: StairwellRect, from: number, to: number): PlanPoint[] {
  * more than a step and less than HOLE_DEPTH_M under the upper floor, unioned. Rails are the union's boundary, except
  * where the flight meets the floor within a step (the line across the flight the walker steps over).
  */
-export function wellRails(well: StairwellWell, opened: readonly StairwellRect[], union = unionRings): [THREE.Vector3, THREE.Vector3][] {
+export function wellRails(well: StairwellWell, opened: readonly StairwellRect[], union = unionRings, others: readonly StairwellWell[] = []): [THREE.Vector3, THREE.Vector3][] {
   const rings: PlanPoint[][] = [], open: [PlanPoint, PlanPoint][] = [], pieces: { rect: StairwellRect; from: number; to: number }[] = [];
   const holes = new Map(opened.map((rect) => [rect, depthInterval(rect, well.upperY, WALKER_BODY.stepUpM, HOLE_DEPTH_M)] as const));
   for (const rect of opened) {
@@ -117,9 +117,10 @@ export function wellRails(well: StairwellWell, opened: readonly StairwellRect[],
   // whole station's cut.
   let polygons: ReturnType<typeof unionRings>, inside: typeof pieces = [];
   try { polygons = union(rings); } catch { polygons = rings.map((ring) => [ring]); inside = pieces; }
-  // No rail stands where a piece of the stair runs within a body height under it (a landing or a turn the walker is on).
-  const walked = well.rects.flatMap((rect) => {
-    const reach = depthInterval(rect, well.upperY, -Infinity, WALKER_BODY.bodyTopM);
+  // No rail stands where a piece of this stair or another runs within a body height of the rail's floor (a landing or
+  // a turn the walker is on, or a flight stacked over this one starting from that floor).
+  const walked = [well, ...others.filter((other) => other !== well)].flatMap((stair) => stair.rects).flatMap((rect) => {
+    const reach = depthInterval(rect, well.upperY, -WALKER_BODY.bodyTopM, WALKER_BODY.bodyTopM);
     return reach ? [{ rect, from: reach.from, to: reach.to }] : [];
   });
   return boundaryEdges(polygons, open).flatMap(([a, b]) => outside(new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z), [...walked, ...inside]));
@@ -401,7 +402,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   const steel = new THREE.Color(0xaab2b5).toArray();
   for (const well of cutWells) {
     const opened = well.rects.filter((rect) => (cut.maxHeights.get(rect) ?? []).some((y) => y >= well.upperY - 0.3 - 1e-6));
-    for (const [from, to] of wellRails(well, opened)) {
+    for (const [from, to] of wellRails(well, opened, unionRings, live)) {
       addRail(railPositions, railColors, from, to, well.upperY, steel);
       walls.push({ ax: from.x, az: from.z, bx: to.x, bz: to.z, yMin: well.upperY, yMax: well.upperY + RAIL_HEIGHT_M });
       if (options.tier === "high") addGlass(glassPositions, from, to, well.upperY);
