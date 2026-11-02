@@ -10,6 +10,7 @@ import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, St
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { printedHours } from "../hours.ts";
+import { openNow } from "../openNow.ts";
 import { listStations, PRIVATE_BUILD, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
@@ -57,6 +58,7 @@ interface State {
   noPath: NoPathCause | null;
   /** The search category filter (#213): one of the loaded station's categories, or null for no filter. */
   filter: Poi["category"] | null;
+  openNow: boolean;
   polyline: PolylinePoint[];
   instructions: Instruction[];
   activeInstruction: number;
@@ -91,7 +93,7 @@ export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
     origin: null, destination: null, destinationTenant: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
-    route: null, noPath: null, filter: null, polyline: [], instructions: [], activeInstruction: 0,
+    route: null, noPath: null, filter: null, openNow: false, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
   private readonly identityView = new StationIdentityView();
@@ -106,6 +108,8 @@ export class App {
     fromResults: el("div", "results"),
     toResults: el("div", "results"),
     categoryFilter: el("select", "category-filter"),
+    openNowFilter: el("input", "open-now-filter"),
+    openNowLabel: el("span"),
     firstRun: el("div", "first-run"),
     firstRunTry: el("button", "first-run-try"),
     firstRunClose: el("button", "first-run-close", "×"),
@@ -223,7 +227,16 @@ export class App {
       this.closeResults("from");
     });
     const filterRow = el("div", "filter-row");
-    filterRow.append(this.ui.categoryFilter);
+    this.ui.openNowFilter.type = "checkbox";
+    this.ui.openNowFilter.checked = this.s.openNow;
+    this.ui.openNowFilter.addEventListener("change", () => {
+      this.s.openNow = this.ui.openNowFilter.checked;
+      this.closeResults("to");
+      this.closeResults("from");
+    });
+    const openNowLabel = el("label");
+    openNowLabel.append(this.ui.openNowFilter, this.ui.openNowLabel);
+    filterRow.append(this.ui.categoryFilter, openNowLabel);
     this.ui.firstRun.hidden = true;
     this.ui.firstRunClose.type = "button";
     this.ui.firstRunClose.addEventListener("click", () => {
@@ -265,6 +278,7 @@ export class App {
     this.ui.firstRunTry.textContent = t.firstRun.tryRoute;
     this.ui.firstRunClose.setAttribute("aria-label", t.firstRun.close);
     this.ui.categoryFilter.setAttribute("aria-label", t.categoryFilter);
+    this.ui.openNowLabel.textContent = t.openNowFilter;
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
     this.root.querySelectorAll<HTMLElement>("[data-label]").forEach((n) => { n.textContent = t[n.dataset.label as "from" | "to"]; });
@@ -619,6 +633,7 @@ export class App {
     const categories = this.s.filter ? [this.s.filter] : undefined;
     const groups = q ? null : emptySuggestions(this.s.loaded.bundle.pois, which, {
       filter: this.s.filter, recentIds: readRecent(safeStorage(), this.s.entry!.key),
+      limit: this.s.openNow ? 40 : undefined,
     });
     const groupHeaders = new Map<number, string>();
     let suggestionIndex = 0;
@@ -628,9 +643,29 @@ export class App {
         : which === "from" ? this.t.suggestPopularFrom : this.t.suggestPopularTo);
       suggestionIndex += group.pois.length;
     }
-    const hits: SearchHit[] = q
-      ? this.s.search.search(q, { limit: 8, lang: this.s.lang, categories })
+    let hits: SearchHit[] = q
+      ? this.s.search.search(q, { limit: this.s.openNow ? 40 : 8, lang: this.s.lang, categories })
       : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true })));
+    const statuses = new Map<string, ReturnType<typeof openNow>>();
+    if (this.s.openNow) {
+      const now = new Date();
+      for (const h of hits) if (h.poi.category === "shop") statuses.set(h.poi.id, openNow(h.poi.hours, now));
+      hits = hits.filter((h) => statuses.get(h.poi.id) !== "closed");
+      const shops = hits.filter((h) => h.poi.category === "shop")
+        .sort((a, b) => Number(statuses.get(a.poi.id) === "unknown") - Number(statuses.get(b.poi.id) === "unknown"));
+      let shopIndex = 0;
+      hits = hits.map((h) => h.poi.category === "shop" ? shops[shopIndex++]! : h).slice(0, 8);
+      // Rebuild suggestion headings after filtering/reordering, so they still describe their rows.
+      groupHeaders.clear();
+      let previous: string | undefined;
+      hits.forEach((h, i) => {
+        const group = groups?.find((g) => g.pois.some((p) => p.id === h.poi.id));
+        const title = group && (group.key === "recent" ? this.t.suggestRecent
+          : which === "from" ? this.t.suggestPopularFrom : this.t.suggestPopularTo);
+        if (title && title !== previous) groupHeaders.set(i, title);
+        previous = title;
+      });
+    }
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
     if (hits.length === 0) {
       // Nothing in the filtered category: say how many the other categories have, and offer to drop the filter.
@@ -677,6 +712,8 @@ export class App {
       const tags = h.tenant
         ? tenantResultTags(h, this.s.lang, this.t)
         : [floor, h.matched && h.matched !== this.poiName(h.poi) && h.matched !== description ? `“${h.matched}”` : null].filter(Boolean) as string[];
+      if (this.s.openNow && h.poi.category === "shop")
+        tags.push(statuses.get(h.poi.id) === "open" ? this.t.openNowOpen : this.t.hoursUnknown);
       if (!h.routable) tags.push(searchOnly);
       meta.textContent = tags.join(" · ");
       // The directory is unverified: say since when it was checked, as a second line.

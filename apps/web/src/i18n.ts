@@ -44,6 +44,9 @@ const STRINGS = {
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "種類",
     categoryAll: "すべて",
+    openNowFilter: "営業中のみ",
+    openNowOpen: "営業中",
+    hoursUnknown: "営業時間不明",
     categoryNames: {
       shop: "店舗", service: "サービス", atm: "ATM", locker: "コインロッカー", toilet: "トイレ",
       exit: "出口", ticket_gate: "改札", platform: "ホーム", escalator: "エスカレーター", elevator: "エレベーター",
@@ -278,6 +281,9 @@ const STRINGS = {
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "Category",
     categoryAll: "All",
+    openNowFilter: "Open now",
+    openNowOpen: "Open now",
+    hoursUnknown: "Hours unknown",
     categoryNames: {
       shop: "Shop", service: "Service", atm: "ATM", locker: "Coin locker", toilet: "Toilet",
       exit: "Exit", ticket_gate: "Ticket gate", platform: "Platform", escalator: "Escalator", elevator: "Elevator",
