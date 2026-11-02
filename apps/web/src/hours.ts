@@ -21,3 +21,15 @@ export function printedHours(hours: HoursText | null | undefined, now: Date): st
   if (!Number.isFinite(readAt) || nowMs < readAt || nowMs - readAt > HOURS_MAX_AGE_DAYS * DAY_MS) return null;
   return text;
 }
+
+/**
+ * How old a shown reading may get before the card says so (OD-32). Past this the hours stay visible, until
+ * HOURS_MAX_AGE_DAYS hides them, but carry a line that they were read long ago.
+ */
+export const HOURS_STALE_DAYS = 90;
+
+/** True when `retrievedAt` is more than HOURS_STALE_DAYS before `now` (same day arithmetic as printedHours). */
+export function hoursStale(hours: Pick<HoursText, "retrievedAt">, now: Date): boolean {
+  const readAt = Date.parse(`${hours.retrievedAt}T00:00:00Z`);
+  return Number.isFinite(readAt) && now.getTime() - readAt > HOURS_STALE_DAYS * DAY_MS;
+}
