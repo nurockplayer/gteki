@@ -39,6 +39,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Store data age (JST)
+        continue-on-error: true
+        run: pnpm tsx tools/data-age/report.ts >> "$GITHUB_STEP_SUMMARY"
+
       # tools/private-overlay tests import the S03 seam builder from tools/gis, a separate pnpm project.
       - run: pnpm --dir tools/gis install --frozen-lockfile
 
