@@ -43,12 +43,14 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * material) and 490,580 B (riser planes and nosing lips); escalator steps become tread + riser with a step atlas.
  * Geometry, appearance, nodes and textures re-measured; listsDigest and every count unchanged.
  * Vertical batch 3 adds contact-shade vertex colours (truss, risers, escalator steps) and luminaires under the escalator
- * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged. */
+ * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged.
+ * Vertical item 3 moves one underground fill light to the guided-walk escalator bank head (still 8 lights): nodes
+ * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged. */
 const MAIN_BASELINE = {
   station: {
     geometryDigest: "2931495174d3eacc531cc9e2bbcdd0e5521b6bc2f457b258fccf1cd9040a472e",
     appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
-    nodesDigest: "6247901bcf70bac74641e0a6d8ddab3bedff9f9bc744b9d748a76684f70e9941",
+    nodesDigest: "93ce8643ac8863c4a229a67406c939b47dfcec2e3b11ed73919803aac8630f0a",
     texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
     meshes: 145,
     bytes: 14_072_870,

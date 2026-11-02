@@ -1722,6 +1722,27 @@ function buildUndergroundLighting(
     if (g.center.z >= -0.5 || anchors.some((p) => Math.abs(p.z - g.center.z) < 1 && Math.hypot(p.x - g.center.x, p.y - g.center.y) < 12)) continue;
     anchors.push(g.center);
   }
+  // On each underground level, the main escalator bank arriving there gets one over its upper landing, 2 m past the head,
+  // where the soffit fixtures alone leave the arrival flat (vertical-gap expansion item 3). A bank is the runs whose heads
+  // lie within 8 m on one level; the main one is on the guided walk, else has the most runs, then the longest.
+  const runLength = (r: (typeof layout.runs)[number]) => Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y);
+  const banks: { head: XYZ; runs: number; length: number; guided: boolean }[] = [];
+  for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
+    const [lo, hi] = r.a.z <= r.b.z ? [r.a, r.b] : [r.b, r.a];
+    const len = runLength(r);
+    if (hi.z >= -0.5 || len < 1e-6) continue;
+    const head = { x: hi.x + ((hi.x - lo.x) / len) * 2, y: hi.y + ((hi.y - lo.y) / len) * 2, z: hi.z };
+    const bank = banks.find((b) => Math.abs(b.head.z - head.z) < 0.3 && Math.hypot(b.head.x - head.x, b.head.y - head.y) < 8);
+    const guided = GUIDED_WALK_EDGES.has(r.edgeId);
+    if (bank) { bank.runs++; bank.guided ||= guided; if (len > bank.length) Object.assign(bank, { head, length: len }); }
+    else banks.push({ head, runs: 1, length: len, guided });
+  }
+  const heads: XYZ[] = [];
+  for (const b of banks.sort((x, y) => Number(y.guided) - Number(x.guided) || y.runs - x.runs || y.length - x.length)) {
+    if (heads.some((p) => Math.abs(p.z - b.head.z) < 0.3)) continue;
+    if (!anchors.some((p) => Math.abs(p.z - b.head.z) < 1 && Math.hypot(p.x - b.head.x, p.y - b.head.y) < 8)) heads.push(b.head);
+  }
+  anchors.push(...heads);
   for (const lv of layout.levels.filter((l) => l.z < -0.5)) {
     const candidates = bundle.nodes.filter((n) => n.floorId === lv.floorId && n.inOut === "inside" && n.kind !== "elevator" && Math.abs((layout.nodeZ.get(n.id) ?? 0) - lv.z) < 0.1);
     const junctions = candidates.filter((n) => bundle.edges.filter((e) => e.from === n.id || e.to === n.id).length >= 3);
@@ -1741,6 +1762,9 @@ function buildUndergroundLighting(
     track(light);
   }
 }
+
+/** Escalators on the guided walk (the Golden Slice m1–m3 bank): their bank gets its level's head fill light. */
+const GUIDED_WALK_EDGES = new Set(["e:e1fa653048b94a5695777d1063b34417"]);
 
 /** Distance along ray (origin o, unit dir d) to segment ab, or null. */
 function raySeg(o: XY, d: XY, a: XY, b: XY): number | null {
