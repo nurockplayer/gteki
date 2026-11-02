@@ -265,6 +265,15 @@ describe("printed shop hours on the destination card (OD-32)", () => {
         "B1～2階\n午前10時～午後8時30分\n※日・祝は午後8時まで\n3階以上\n午前10時～午後8時",
         "GT-Eki 確認日 2026-11-02 時点の公式表記。変更されている場合があります · 公式ページ",
       ]);
+      a.s.destination = parsed.bundle.pois.find((p) => p.id === "shop-sjk-odakyudept")!;
+      a.renderSheet();
+      expect([
+        a.ui.sheet.querySelector(".hours-text")?.textContent,
+        a.ui.sheet.querySelector(".hours-asof")?.textContent,
+      ]).toEqual([
+        "■地下2階～2階\n10：00→20：30\n※日曜・祝日は20：00まで\n■7階\n10：00→20：00",
+        "GT-Eki 確認日 2026-11-02 時点の公式表記。変更されている場合があります · 公式ページ",
+      ]);
     } finally {
       vi.useRealTimers();
     }

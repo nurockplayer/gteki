@@ -12,6 +12,17 @@
    "basis": "dated-official",
    "hoursText": "B1～2階\n午前10時～午後8時30分\n※日・祝は午後8時まで\n3階以上\n午前10時～午後8時",
    "note": "京王百貨店 新宿店. pageDate is the official HTTP Last-Modified date (2026-11-01T13:00:02Z), not a date printed beside the hours. The page update is within 180 days of the reading. The 新宿店の営業時間 blocks are kept in printed order, with their floor and Sunday/holiday exception labels. Restaurant/cafe tenant schedules are separate blocks and are not imported as building hours. No building-wide closed day is printed. Facts only under use-tiers.md; existing Keio department-store source reused. Response: 17,304 bytes; SHA-256 e2709f28c9756d0973a50cfbf3a7ce7d625e4f0111da9412b51620058b345619."
+  },
+  {
+   "poiId": "shop-sjk-odakyudept",
+   "sourceId": "odakyu-dept-shinjuku-2026-10",
+   "url": "https://www.odakyu-dept.co.jp/shinjuku/hour_acces/",
+   "retrievedAt": "2026-11-02T21:27:25Z",
+   "pageDate": "2026-08-16",
+   "status": "OK",
+   "basis": "dated-official",
+   "hoursText": "■地下2階～2階\n10：00→20：30\n※日曜・祝日は20：00まで\n■7階\n10：00→20：00",
+   "note": "小田急百貨店 新宿店. Lead ruling 2026-11-03 JST confirms this department-store site usable (earlier ruling 2026-11-02 JST); it is distinct from Odakyu SC and Odakyu Railway. pageDate is the official HTTP Last-Modified date (2026-08-16T14:59:51Z), not the printed 2025-01-15 parking notice. Page update is within 180 days of the reading. The two printed store-wide floor blocks and Sunday/holiday exception are retained; separate tenant/cafe exceptions are not imported as building hours. No building-wide closed day is printed. Supersedes the obsolete batch 1 UNKNOWN card row, removed to preserve unique poiIds across hours files; the separate batch 1 buildingHours row is unchanged. Response: 21,493 bytes; SHA-256 76330008b558b1b4e80582a1df704d0157f9d499bdbc0d9c0af3782be159efb4."
   }
  ]
 }
