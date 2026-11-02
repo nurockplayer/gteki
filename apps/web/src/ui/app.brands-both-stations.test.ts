@@ -76,8 +76,12 @@ const options = (box: HTMLElement) => [...box.querySelectorAll<HTMLElement>('[ro
 describe("public brand search across stations", () => {
   beforeEach(() => {
     vi.stubGlobal("matchMedia", () => ({ matches: false, media: "", addEventListener() {}, removeEventListener() {} }));
+    // Switching station starts the minimap's refresh interval; keep it fake so it cannot fire after the jsdom teardown.
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
   });
   afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
     document.body.replaceChildren();
