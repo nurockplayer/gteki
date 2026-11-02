@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildWalkableModel, regionPolygon, type BoundaryWall, type PlanPoint, type Region } from "./walkableModel.ts";
+import { boundaryEdges, buildWalkableModel, regionPolygon, type BoundaryWall, type PlanPoint, type Region } from "./walkableModel.ts";
 
 const at = (x: number, z: number): PlanPoint => ({ x, z });
 const strip = (level: string, points: { x: number; y: number; z: number }[], halfWidth: number): Region => ({ kind: "strip", level, points, halfWidth });
@@ -112,5 +112,14 @@ describe("walkable model", () => {
     expect(regionPolygon(strip("L1", [{ x: 0, y: 0, z: 0 }, { x: 4, y: 1, z: 0 }], 1))).toEqual([[
       [{ x: 0, z: 1 }, { x: 4, z: 1 }, { x: 4, z: -1 }, { x: 0, z: -1 }],
     ]]);
+  });
+});
+
+describe("boundaryEdges", () => {
+  it("drops an edge that an open segment runs past at both ends", () => {
+    const ring: PlanPoint[] = [{ x: 1, z: 0 }, { x: 2, z: 0 }, { x: 2, z: 1 }, { x: 1, z: 1 }];
+    const edges = boundaryEdges([[ring]], [[{ x: 0, z: 0 }, { x: 3, z: 0 }]]);
+    expect(edges).toHaveLength(3);
+    expect(edges.some(([a, b]) => Math.abs(a.z) < 1e-9 && Math.abs(b.z) < 1e-9)).toBe(false);
   });
 });
