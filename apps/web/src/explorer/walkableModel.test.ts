@@ -275,6 +275,15 @@ describe("walkable model", () => {
       expect(walls.some((wall) => wall.level === "B" && wall.topY !== undefined)).toBe(true);
     });
 
+    it("joins a ramp that enters a corridor on a flat landing and crosses it again further up", () => {
+      // R (one walk): a flat landing 0.3 m over B's floor that leaves B's footprint flat, then climbs outside it and
+      // comes back across B 1.75 m up. Only the flat landing meets B within a step.
+      const ramp = { ...strip("R", [{ x: -4, y: 0.3, z: 0 }, { x: 0, y: 0.3, z: 0 }, { x: 0, y: 0.3, z: 3 }, { x: 0, y: 1, z: 6 }, { x: 10, y: 1.5, z: 6 }, { x: 10, y: 2, z: -6 }], 1), group: "r" };
+      const { slabCuts } = buildWalkableModel([strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1), ramp], undefined, 0.45);
+      // Joined: R keeps its floor where it crosses B; B gives way there instead (rise over 1.7 m).
+      expect([...slabCuts.keys()]).toEqual(["0:1"]);
+    });
+
     it("leaves the model unchanged without a step height", () => {
       const { slabCuts, ceilingCuts, levels } = buildWalkableModel([
         strip("B", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 1),
