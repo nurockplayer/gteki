@@ -79,7 +79,7 @@ function pieceQuad(rect: StairwellRect, from: number, to: number): PlanPoint[] {
  * where the flight meets the floor within a step (the line across the flight the walker steps over).
  */
 export function wellRails(well: StairwellWell, opened: readonly StairwellRect[], union = unionRings): [THREE.Vector3, THREE.Vector3][] {
-  const rings: PlanPoint[][] = [], open: [PlanPoint, PlanPoint][] = [], seams: [PlanPoint, PlanPoint][] = [];
+  const rings: PlanPoint[][] = [], open: [PlanPoint, PlanPoint][] = [], pieces: { rect: StairwellRect; from: number; to: number }[] = [];
   const holes = new Map(opened.map((rect) => [rect, depthInterval(rect, well.upperY, WALKER_BODY.stepUpM, HOLE_DEPTH_M)] as const));
   for (const rect of opened) {
     const hole = holes.get(rect);
@@ -90,38 +90,37 @@ export function wellRails(well: StairwellWell, opened: readonly StairwellRect[],
     const from = hole.from <= -rect.halfLength + 1e-6 && index > 0 ? hole.from - SEAM_GROW_M : hole.from;
     const to = hole.to >= rect.halfLength - 1e-6 && index < well.rects.length - 1 ? hole.to + SEAM_GROW_M : hole.to;
     rings.push(pieceQuad(rect, from, to));
+    pieces.push({ rect, from, to });
     // The walker leaves the hole upwards across the line where the flight comes within a step of the floor, or, when
     // no hole piece follows, across the hole's upper end.
     const next = well.rects[index + 1], upper = hole.highEnd ?? (hole.to >= rect.halfLength - 1e-6 && !(next && holes.get(next)) ? to : null);
     // Downwards likewise: a hole starting at a seam with a piece that has none because the floor is not over it (open air,
-    // or within a step) leads on down the flight; one that is too deep under intact floor is railed. The foot of the
-    // first piece is the stair mouth, where the walker comes in from the lower floor.
+    // or within a step) leads on down the flight; one that is too deep under intact floor is railed. At the stair mouth
+    // (the first piece's foot) the guard stays unless it stands within a body height of the lower floor, in the way of
+    // the walker coming in; higher, it is over their head and guards the drop from the upper floor.
     const previous = well.rects[index - 1];
-    const previousOpen = !previous || !!holes.get(previous) || well.upperY - (previous.center.y + previous.rise / 2) < HOLE_DEPTH_M - 1e-6;
+    const previousOpen = previous
+      ? !!holes.get(previous) || well.upperY - (previous.center.y + previous.rise / 2) < HOLE_DEPTH_M - 1e-6
+      : well.upperY - (rect.center.y - rect.rise / 2) < WALKER_BODY.bodyTopM;
     const lower = previousOpen && !(previous && holes.get(previous)) && hole.from <= -rect.halfLength + 1e-6 ? from : null;
     for (const along of [upper, lower]) {
       if (along === null) continue;
       const [a, , , d] = pieceQuad(rect, along, along);
       open.push([a!, d!]);
     }
-    // The grown ends that meet a neighbour's hole: inside the union, so only the fallback below needs them opened.
-    for (const [along, neighbour] of [[from, well.rects[index - 1]], [to, next]] as const) {
-      if (along === hole.from || along === hole.to || !neighbour || !holes.get(neighbour)) continue;
-      const [a, , , d] = pieceQuad(rect, along, along);
-      seams.push([a!, d!]);
-    }
   }
   if (!rings.length) return [];
   // polygon-clipping can throw on exactly shared edges ("Unable to complete output ring"); one well's rails then come
-  // from its pieces' own outlines, open at the seams between them, rather than failing the whole station's cut.
-  let polygons: ReturnType<typeof unionRings>;
-  try { polygons = union(rings); } catch { polygons = rings.map((ring) => [ring]); open.push(...seams); }
+  // from its pieces' own outlines, less what lies inside another piece (as the union would), rather than failing the
+  // whole station's cut.
+  let polygons: ReturnType<typeof unionRings>, inside: typeof pieces = [];
+  try { polygons = union(rings); } catch { polygons = rings.map((ring) => [ring]); inside = pieces; }
   // No rail stands where a piece of the stair runs within a body height under it (a landing or a turn the walker is on).
   const walked = well.rects.flatMap((rect) => {
     const reach = depthInterval(rect, well.upperY, -Infinity, WALKER_BODY.bodyTopM);
     return reach ? [{ rect, from: reach.from, to: reach.to }] : [];
   });
-  return boundaryEdges(polygons, open).flatMap(([a, b]) => outside(new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z), walked));
+  return boundaryEdges(polygons, open).flatMap(([a, b]) => outside(new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z), [...walked, ...inside]));
 }
 
 /** The parts of a plan segment outside the strict interior of each piece's along-interval [from, to]. */

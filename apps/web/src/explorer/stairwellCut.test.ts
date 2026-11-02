@@ -222,6 +222,29 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("keeps the guard across the stair mouth where it stands over the head of the walker coming in", () => {
+    // A 3 m rise under a floor at 3 m: the guard at x = 0 is 3 m over the lower floor, above a 1.7 m walker.
+    const root = new THREE.Group();
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(14, 0.2, 6), new THREE.MeshBasicMaterial()); upper.position.set(5, 2.9, 0); upper.name = "upper-floor";
+    root.add(upper); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(lowBundle(3), traversable), { tier: "high" });
+    expect(result.walls.some((w) => Math.min(w.az, w.bz) < 0 && Math.max(w.az, w.bz) > 0 && Math.abs((w.ax + w.bx) / 2) < 0.1)).toBe(true);
+    // Coming in from the lower floor meets nothing there.
+    expect(resolveWalls(-0.1, 0, 0.3, 0, 1.7, result.walls).x).toBeCloseTo(-0.1);
+    result.dispose();
+  });
+
+  it("keeps the outer corner of a turn railed when the union fails", () => {
+    const turn = flight([{ x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 2 }, { x: 4, y: 3, z: 2 }, { x: 10, y: 3, z: 4 }]);
+    const well = stairwellWells(turn, traversable)[0]!;
+    const failing = () => { throw new Error("Unable to complete output ring"); };
+    const toWalls = (rails: [THREE.Vector3, THREE.Vector3][]) => rails.map(([a, b]) => ({ ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: 4, yMax: 5.1 }));
+    const total = (rails: [THREE.Vector3, THREE.Vector3][]) => rails.reduce((sum, [a, b]) => sum + a.distanceTo(b), 0);
+    // The fallback rails as much of the outline as the union does, the outer corner included.
+    expect(total(wellRails(well, well.rects, failing))).toBeCloseTo(total(wellRails(well, well.rects)), 1);
+    expect(toWalls(wellRails(well, well.rects, failing)).length).toBeGreaterThan(0);
+  });
+
   it("rails no sliver across the path where two pieces of one flight meet at a small tilt", () => {
     // A 1.3-degree bend at the joint: the plan runs (0, 0) -> (5, 0.057) -> (10, 0) in renderer x, z.
     const bent = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: -0.057, z: 2 }, { x: 10, y: 0, z: 4 }]);
