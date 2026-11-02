@@ -134,7 +134,7 @@ it("ranks every candidate before dropping closed shops, and the other-category c
   a.s.filter = "shop";
   toggle(true);
   // Every shop the full ranking says is not closed is a candidate; the list shows the first 8 of them.
-  const all = a.s.search!.search("a", { limit: sjk.pois.length, lang: "ja", categories: ["shop"] })
+  const all = createSearchIndex(sjk).search("a", { limit: sjk.pois.length, lang: "ja", categories: ["shop"] })
     .filter((h) => openNow(h.poi.hours, now) !== "closed");
   const shown = search("a").map((row) => row.querySelector(".result-name")?.textContent);
   expect(shown.length).toBe(Math.min(8, all.length));
@@ -147,7 +147,7 @@ it("ranks every candidate before dropping closed shops, and the other-category c
   second.toggle(true);
   expect(second.search("西武池袋本店").length).toBe(0);
   const offer = second.a.ui.toResults.querySelector(".other-categories")?.textContent ?? "";
-  const expected = second.a.s.search!.search("西武池袋本店", { limit: ikb.pois.length, lang: "ja" })
+  const expected = createSearchIndex(ikb).search("西武池袋本店", { limit: ikb.pois.length, lang: "ja" })
     .filter((h) => h.poi.category !== "shop" || openNow(h.poi.hours, new Date()) !== "closed").slice(0, 8).length;
   if (expected === 0) expect(offer).toBe("");
   else expect(offer).toContain(expected === 8 ? "8+" : String(expected));
