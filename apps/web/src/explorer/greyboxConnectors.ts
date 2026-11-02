@@ -373,6 +373,9 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
   }
 }
 
+/** A connector footprint reaches this far past its tread, so its guard stands just outside the walking surface. */
+const FOOTPRINT_PAD_M = 0.03;
+
 /**
  * Build runtime-only batches for missing vertical transport. Side walls and landing guards are the boundary of the
  * connector's walkable model, so any plan shape builds, stacked returns included; a run shorter than 0.3 m is skipped
@@ -412,7 +415,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const unmodelled = unmodelledVerticalEdges(bundle, traversable, scope.hasFloor, scope.nearMesh);
   const halfOf = (edge: Edge) => {
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
-    return ((edge.mode === "stairs" ? (rawWidth && rawWidth > 0 ? rawWidth : 1.5) : 1.2) / 2) + 0.03;
+    return ((edge.mode === "stairs" ? (rawWidth && rawWidth > 0 ? rawWidth : 1.5) : 1.2) / 2) + FOOTPRINT_PAD_M;
   };
   // A run too short in plan to build a flight on is skipped.
   const shortRun = (points: readonly THREE.Vector3[]) => {
@@ -437,7 +440,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
-    const half = halfWidth + 0.03;
+    const half = halfWidth + FOOTPRINT_PAD_M;
     const bendAt = (index: number) => (edge.mode === "stairs" ? bendAngle(points, index) : 0);
     const isTurn = (index: number) => bendAt(index) >= SHALLOW_BEND;
     let bentEscalator = false;
@@ -554,7 +557,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   for (const edgeId of regionsByEdge.keys()) { const g = findGroup(edgeId); groups.set(g, [...(groups.get(g) ?? []), edgeId]); }
   const modelWalls: BoundaryWall[] = [];
   for (const edgeIds of groups.values()) {
-    try { modelWalls.push(...buildWalkableModel(edgeIds.flatMap((id) => regionsByEdge.get(id)!), undefined, WALKER_BODY.stepUpM).walls); }
+    try { modelWalls.push(...buildWalkableModel(edgeIds.flatMap((id) => regionsByEdge.get(id)!), undefined, WALKER_BODY.stepUpM, 2 * FOOTPRINT_PAD_M - 0.001).walls); }
     catch { for (const id of edgeIds) legacyEdgeIds.add(id); }
   }
   const failed = (edgeId: string) => legacyEdgeIds.has(edgeId);

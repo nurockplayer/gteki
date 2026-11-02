@@ -15,7 +15,7 @@ import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
 import { unverifiedSources } from "./unverifiedSteps.ts";
 import { categoriesIn } from "./categoryFilter.ts";
-import { isStationTie, merchantCardEl, merchantCardModel } from "./merchantCard.ts";
+import { arrivalPrecision, merchantCardEl, merchantCardModel } from "./merchantCard.ts";
 import { stationClock } from "../stationClock.ts";
 import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
@@ -558,7 +558,8 @@ export class App {
   }
 
   /**
-   * A shop's printed hours (OD-32): the page's own wording, then the date GT-Eki read it. Hidden when the page
+   * A shop's printed hours (OD-32): the page's own wording, then the date GT-Eki read it, the may-have-changed
+   * label and the official page. Hidden when the page
    * printed nothing (status UNKNOWN) or the reading is older than HOURS_MAX_AGE_DAYS, so an old timetable is
    * never shown as if it were current.
    */
@@ -567,7 +568,13 @@ export class App {
     const text = printedHours(hours, new Date());
     if (!hours || !text) return null;
     const box = el("div", "poi-hours");
-    box.append(el("p", "hours-text", text), el("p", "muted hours-asof", this.t.hoursAsOf(hours.retrievedAt)));
+    const source = el("a", "hours-source", this.t.hoursSource);
+    source.href = hours.sourceUrl;
+    source.target = "_blank";
+    source.rel = "noopener noreferrer";
+    const asOf = el("p", "muted hours-asof", `${this.t.hoursAsOf(hours.retrievedAt)} · `);
+    asOf.append(source);
+    box.append(el("p", "hours-text", text), asOf);
     return box;
   }
 
@@ -680,8 +687,9 @@ export class App {
       if (asOf) b.append(el("span", "result-asof", asOf));
       // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
       // A routable store whose route ends at a station gate says so, and carries its note too (#213).
-      const note = h.routable && !isStationTie(h.poi) ? null : poiNoteText(h.poi, this.s.lang);
-      const tie = h.routable && isStationTie(h.poi) ? this.t.merchant.precision.tie : null;
+      const arrival = h.routable ? arrivalPrecision(h.poi) : null;
+      const note = h.routable && !arrival ? null : poiNoteText(h.poi, this.s.lang);
+      const tie = arrival ? this.t.merchant.precision[arrival] : null;
       if (tie) b.append(el("span", "result-note", tie));
       if (note) b.append(el("span", "result-note", note));
       // An approximate point is search display only: show the ± radius and that it is not used for directions (#463).
@@ -1052,10 +1060,10 @@ export class App {
       prov.append(el("p", "muted", t.nameEvidence), creditRows(nameIds));
     }
     card.append(prov);
-    // A store routed to its printed station-level tie, not its own door, says so on the route card (#213).
-    const arrivalTie = this.s.destination && isStationTie(this.s.destination) ? this.s.destination : null;
+    // A store routed to its printed station-level tie or a map-read door, not a verified door, says so (#213).
+    const arrivalTie = this.s.destination && arrivalPrecision(this.s.destination) ? this.s.destination : null;
     if (arrivalTie) {
-      card.append(el("p", "muted entrance-unverified", t.merchant.precision.tie));
+      card.append(el("p", "muted entrance-unverified", t.merchant.precision[arrivalPrecision(arrivalTie)!]));
       const arrivalNote = poiNoteText(arrivalTie, this.s.lang);
       if (arrivalNote) card.append(el("p", "muted", arrivalNote));
     }

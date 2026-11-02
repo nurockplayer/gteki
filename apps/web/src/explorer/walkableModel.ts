@@ -353,10 +353,25 @@ function fromClipping(polygon: Polygon): PlanPolygon {
 }
 
 /**
+ * A ring's points as clipping pairs, snapped to 1 / scale m when scale > 0. Dividing the rounded value by the scale
+ * gives one double per grid point (multiplying by 1e-4 does not), and repeated points left by the snap are dropped,
+ * so the snap never makes a zero-length edge.
+ */
+export function snapRing(ring: readonly PlanPoint[], scale: number): [number, number][] {
+  const out: [number, number][] = [];
+  for (const p of ring) {
+    const x = scale ? Math.round(p.x * scale) / scale : p.x, z = scale ? Math.round(p.z * scale) / scale : p.z;
+    const last = out.at(-1);
+    if (!last || last[0] !== x || last[1] !== z) out.push([x, z]);
+  }
+  return out;
+}
+
+/**
  * The union of plan rings. Rings are grouped by overlapping bounds first: a ring alone in its group is its own
  * polygon, and only groups of two or more go through polygon-clipping (most corridors on a level never touch).
  */
-function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
+export function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
   const boxes = rings.map((ring) => boxOf([[ring]]));
   const parent = rings.map((_ring, i) => i);
   const find = (i: number): number => { while (parent[i] !== i) i = parent[i] = parent[parent[i]!]!; return i; };
@@ -375,14 +390,49 @@ function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
   const union: PlanPolygon[] = [];
   for (const group of groups.values()) {
     if (group.length === 1) { union.push([group[0]!.map((p) => ({ x: p.x, z: p.z }))]); continue; }
-    const polygons = (snap: number) => group.map((ring): Polygon => [ring.map((p): [number, number] => snap ? [Math.round(p.x / snap) * snap, Math.round(p.z / snap) * snap] : [p.x, p.z])]);
-    let merged: MultiPolygon;
-    // polygon-clipping's sweep line can throw on edges that nearly coincide; such a group is retried snapped to 0.1 mm.
-    try { const all = polygons(0); merged = polygonClipping.union(all[0]!, ...all.slice(1)); }
-    catch { const all = polygons(1e-4); merged = polygonClipping.union(all[0]!, ...all.slice(1)); }
+    // polygon-clipping's sweep line can throw on edges that nearly coincide, including ones its own intersections make far
+    // from the origin. Such a group is retried about its own corner (more bits for the fraction), snapped to 0.1 mm, then 1 mm.
+    const ox = Math.min(...group.flat().map((p) => p.x)), oz = Math.min(...group.flat().map((p) => p.z));
+    let merged: MultiPolygon | null = null, failure: unknown = null;
+    for (const [scale, x0, z0] of [[0, 0, 0], [1e4, ox, oz], [1e3, ox, oz]] as const) {
+      const all = group.map((ring): Polygon => [snapRing(ring.map((p) => ({ x: p.x - x0, z: p.z - z0 })), scale)]);
+      try {
+        merged = polygonClipping.union(all[0]!, ...all.slice(1)).map((polygon) => polygon.map((ring) => ring.map(([x, z]): [number, number] => [x + x0, z + z0])));
+        break;
+      } catch (error) { failure = error; }
+    }
+    if (!merged) throw failure;
     union.push(...merged.map(fromClipping));
   }
   return union;
+}
+
+/**
+ * Every edge of the polygons' rings, less the parts lying along an `open` segment (within WALL_TOLERANCE_M): the
+ * boundary a guard follows, with the sides a walker crosses left out.
+ */
+export function boundaryEdges(polygons: readonly PlanPolygon[], open: readonly [PlanPoint, PlanPoint][]): [PlanPoint, PlanPoint][] {
+  const out: [PlanPoint, PlanPoint][] = [];
+  for (const polygon of polygons) for (const ring of polygon) {
+    for (let i = 0; i < ring.length; i++) {
+      const a = ring[i]!, b = ring[(i + 1) % ring.length]!, dx = b.x - a.x, dz = b.z - a.z, length2 = dx * dx + dz * dz;
+      if (length2 < MIN_WALL_M * MIN_WALL_M) continue;
+      let keep: [number, number][] = [[0, 1]];
+      for (const [c, d] of open) {
+        // Only a collinear open segment removes anything: both its ends lie on this edge's line (it may run past the edge).
+        const off = (p: PlanPoint) => Math.abs((p.x - a.x) * dz - (p.z - a.z) * dx) / Math.sqrt(length2);
+        if (off(c) > WALL_TOLERANCE_M || off(d) > WALL_TOLERANCE_M) continue;
+        const tc = ((c.x - a.x) * dx + (c.z - a.z) * dz) / length2, td = ((d.x - a.x) * dx + (d.z - a.z) * dz) / length2;
+        const lo = Math.min(tc, td), hi = Math.max(tc, td);
+        keep = keep.flatMap(([s, e]): [number, number][] => hi <= s || lo >= e ? [[s, e]] : [...(lo > s ? [[s, lo] as [number, number]] : []), ...(hi < e ? [[hi, e] as [number, number]] : [])]);
+      }
+      for (const [s, e] of keep) {
+        if ((e - s) * Math.sqrt(length2) < MIN_WALL_M) continue;
+        out.push([{ x: a.x + dx * s, z: a.z + dz * s }, { x: a.x + dx * e, z: a.z + dz * e }]);
+      }
+    }
+  }
+  return out;
 }
 
 /** Union every region per level and emit the boundary walls the connector footprints and attachments leave. */
@@ -390,6 +440,7 @@ export function buildWalkableModel(
   regions: readonly Region[],
   isAttachment?: (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean,
   stepM = 0,
+  padM = 0,
 ): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[] } {
   const byLevel = new Map<string, Region[]>();
   for (const region of regions) {
@@ -424,7 +475,10 @@ export function buildWalkableModel(
       // a floor beyond an empty gap (two flights side by side) is no attachment.
       return (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => {
         const mx = (wall.ax + wall.bx) / 2, mz = (wall.az + wall.bz) / 2, steps = Math.ceil(ATTACHMENT_PROBE_M / 0.01);
-        const contiguous = Array.from({ length: steps }, (_v, k) => (k + 1) / steps)
+        // With padM the other floor must also reach padM behind the wall: footprints padded past their treads overlap
+        // across a real gap narrower than the two pads, and padding alone is no floor.
+        const reach = Math.hypot(outside.x - mx, outside.z - mz) || 1, back = -padM / reach;
+        const contiguous = Array.from({ length: steps }, (_v, k) => (k + 1) / steps).concat(padM > 0 ? [back] : [])
           .every((t) => held({ x: mx + (outside.x - mx) * t, y: outside.y, z: mz + (outside.z - mz) * t }));
         return contiguous || !!isAttachment?.(wall, outside);
       };

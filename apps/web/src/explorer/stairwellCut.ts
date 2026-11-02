@@ -1,10 +1,12 @@
 import type { Edge, StationBundle } from "@gteki/schema";
+import { WALKER_BODY } from "@gteki/scene-api";
 import * as THREE from "three";
 import { edgePoints } from "./geometry.ts";
 import { widthOf } from "./greybox.ts";
 import { cutRegions, disposePortalCuts, type CutRegion, type CutResult, type Plane, type PortalCutResources } from "./portalCut.ts";
 import { RECIPE_VERSION, StaleRecipe, canonicalJson, sha256Hex, type CutRecipe, type MeshRecord, type RecipeHooks } from "./cutRecipe.ts";
 import type { Segment2 } from "./walker.ts";
+import { boundaryEdges, unionRings, type PlanPoint } from "./walkableModel.ts";
 
 /** A plan piece flatter than this is a landing. */
 const MIN_PIECE_RISE_M = 0.05;
@@ -32,6 +34,117 @@ const VERTICAL_NORMAL_M = 0.1;
 const WALKING_SURFACE_TOLERANCE_M = 0.15;
 /** Headroom above the walking surface that the primary cut clears: higher faces obstruct nothing and stay. */
 const HEADROOM_M = 2.1;
+/**
+ * Deepest the flight runs under the upper floor and still opens it: below this, a slab up to SLAB_BAND_M thick leaves
+ * the headroom over the flight, so the upper floor carries on above it (a long escalator passing under a concourse).
+ */
+const HOLE_DEPTH_M = HEADROOM_M + SLAB_BAND_M;
+/** How far a piece's hole runs past a seam with its neighbour. */
+const SEAM_GROW_M = 0.05;
+/** Rail pieces shorter than this are dropped. */
+const MIN_RAIL_M = 1e-3;
+/** Every inner piece with a direction keeps its rectangle: a dropped one would leave a strip of slab uncut. */
+const MIN_INNER_PIECE_M = 1e-3;
+
+/**
+ * Where along a piece (`along` offsets from its centre) the flight runs `lo` to `hi` metres under the upper floor,
+ * clipped to the piece; null when it never does. `highEnd` is the offset where it reaches `lo`, when inside the piece.
+ */
+function depthInterval(rect: StairwellRect, upperY: number, lo: number, hi: number): { from: number; to: number; highEnd: number | null } | null {
+  const slope = rect.rise / (2 * rect.halfLength), depthAt = (along: number) => upperY - (rect.center.y + along * slope);
+  if (Math.abs(slope) < 1e-9) {
+    const depth = depthAt(0);
+    return depth > lo && depth < hi ? { from: -rect.halfLength, to: rect.halfLength, highEnd: null } : null;
+  }
+  // depth(along) = depthAt(0) - along * slope, so the offset at a given depth is (depthAt(0) - depth) / slope.
+  const at = (depth: number) => (depthAt(0) - depth) / slope;
+  const from = Math.max(-rect.halfLength, Math.min(at(lo), at(hi))), to = Math.min(rect.halfLength, Math.max(at(lo), at(hi)));
+  if (to - from < 1e-6) return null;
+  const high = at(lo);
+  return { from, to, highEnd: high > -rect.halfLength + 1e-6 && high < rect.halfLength - 1e-6 ? high : null };
+}
+
+/** The plan quad of a piece between two `along` offsets. */
+function pieceQuad(rect: StairwellRect, from: number, to: number): PlanPoint[] {
+  const at = (along: number, across: number) => ({
+    x: rect.center.x + rect.along.x * along + rect.across.x * across,
+    z: rect.center.z + rect.along.z * along + rect.across.z * across,
+  });
+  return [at(from, -rect.halfWidth), at(to, -rect.halfWidth), at(to, rect.halfWidth), at(from, rect.halfWidth)];
+}
+
+/**
+ * The well's hole on the upper floor and its rails, from the model: each opened piece's footprint where the flight runs
+ * more than a step and less than HOLE_DEPTH_M under the upper floor, unioned. Rails are the union's boundary, except
+ * where the flight meets the floor within a step (the line across the flight the walker steps over).
+ */
+export function wellRails(well: StairwellWell, opened: readonly StairwellRect[], union = unionRings, others: readonly StairwellWell[] = []): [THREE.Vector3, THREE.Vector3][] {
+  const rings: PlanPoint[][] = [], open: [PlanPoint, PlanPoint][] = [], pieces: { rect: StairwellRect; from: number; to: number }[] = [];
+  const holes = new Map(opened.map((rect) => [rect, depthInterval(rect, well.upperY, WALKER_BODY.stepUpM, HOLE_DEPTH_M)] as const));
+  for (const rect of opened) {
+    const hole = holes.get(rect);
+    if (!hole) continue;
+    // At a seam with the next or previous piece the hole runs SEAM_GROW_M on, so a slightly tilted joint leaves no
+    // notch on the walker's way; the outer corner of a real turn stays outside it, railed.
+    const index = well.rects.indexOf(rect);
+    const from = hole.from <= -rect.halfLength + 1e-6 && index > 0 ? hole.from - SEAM_GROW_M : hole.from;
+    const to = hole.to >= rect.halfLength - 1e-6 && index < well.rects.length - 1 ? hole.to + SEAM_GROW_M : hole.to;
+    rings.push(pieceQuad(rect, from, to));
+    pieces.push({ rect, from, to });
+    // The walker leaves the hole upwards across the line where the flight comes within a step of the floor, or, when
+    // no hole piece follows, across the hole's upper end.
+    const next = well.rects[index + 1], upper = hole.highEnd ?? (hole.to >= rect.halfLength - 1e-6 && !(next && holes.get(next)) ? to : null);
+    // Downwards likewise: a hole starting at a seam with a piece that has none because the floor is not over it (open air,
+    // or within a step) leads on down the flight; one that is too deep under intact floor is railed. At the stair mouth
+    // (the first piece's foot) the guard stays unless it stands within reach of the head of a walker stepping off the
+    // flight there (a body height over the flight a radius up it, plus a tread); higher, it is over their head and
+    // guards the drop from the upper floor.
+    const previous = well.rects[index - 1];
+    const previousOpen = previous
+      ? !!holes.get(previous) || well.upperY - (previous.center.y + previous.rise / 2) < HOLE_DEPTH_M - 1e-6
+      : well.upperY - (rect.center.y - rect.rise / 2) < WALKER_BODY.bodyTopM + WALKER_BODY.stepUpM
+        + WALKER_BODY.radiusM * Math.abs(rect.rise) / (2 * rect.halfLength);
+    const lower = previousOpen && !(previous && holes.get(previous)) && hole.from <= -rect.halfLength + 1e-6 ? from : null;
+    for (const along of [upper, lower]) {
+      if (along === null) continue;
+      const [a, , , d] = pieceQuad(rect, along, along);
+      open.push([a!, d!]);
+    }
+  }
+  if (!rings.length) return [];
+  // polygon-clipping can throw on exactly shared edges ("Unable to complete output ring"); one well's rails then come
+  // from its pieces' own outlines, less what lies inside another piece (as the union would), rather than failing the
+  // whole station's cut.
+  let polygons: ReturnType<typeof unionRings>, inside: typeof pieces = [];
+  try { polygons = union(rings); } catch { polygons = rings.map((ring) => [ring]); inside = pieces; }
+  // No rail stands where a piece of this stair or another runs within a body height of the rail's floor (a landing or
+  // a turn the walker is on, or a flight stacked over this one starting from that floor).
+  const walked = [well, ...others.filter((other) => other !== well)].flatMap((stair) => [...stair.rects, ...(stair.landings ?? [])]).flatMap((rect) => {
+    const reach = depthInterval(rect, well.upperY, -WALKER_BODY.bodyTopM, WALKER_BODY.bodyTopM);
+    return reach ? [{ rect, from: reach.from, to: reach.to }] : [];
+  });
+  return boundaryEdges(polygons, open).flatMap(([a, b]) => outside(new THREE.Vector3(a.x, 0, a.z), new THREE.Vector3(b.x, 0, b.z), [...walked, ...inside]));
+}
+
+/** The parts of a plan segment outside the strict interior of each piece's along-interval [from, to]. */
+function outside(from: THREE.Vector3, to: THREE.Vector3, pieces: readonly { rect: StairwellRect; from: number; to: number }[]): [THREE.Vector3, THREE.Vector3][] {
+  const delta = to.clone().sub(from), inset = 1e-3;
+  let intervals: [number, number][] = [[0, 1]];
+  for (const { rect, from: lo0, to: hi0 } of pieces) {
+    let lo = 0, hi = 1;
+    for (const [axis, min, max] of [[rect.along, lo0 + inset, hi0 - inset], [rect.across, -rect.halfWidth + inset, rect.halfWidth - inset]] as const) {
+      const start = from.clone().sub(rect.center).dot(axis), step = delta.dot(axis);
+      if (Math.abs(step) < 1e-9) { if (start <= min || start >= max) { lo = 1; hi = 0; break; } }
+      else {
+        const a = (min - start) / step, b = (max - start) / step;
+        lo = Math.max(lo, Math.min(a, b)); hi = Math.min(hi, Math.max(a, b));
+      }
+    }
+    if (hi - lo < 1e-6) continue;
+    intervals = intervals.flatMap(([a, b]) => hi <= a || lo >= b ? [[a, b]] : [...(lo > a ? [[a, lo] as [number, number]] : []), ...(hi < b ? [[hi, b] as [number, number]] : [])]);
+  }
+  return intervals.filter(([a, b]) => (b - a) * delta.length() > MIN_RAIL_M).map(([a, b]) => [from.clone().addScaledVector(delta, a), from.clone().addScaledVector(delta, b)]);
+}
 
 /** The plan rectangle of one straight piece of a connector, in renderer coordinates. */
 export interface StairwellRect {
@@ -51,6 +164,8 @@ export interface StairwellWell {
   lowerY: number;
   upperY: number;
   rects: StairwellRect[];
+  /** The level pieces before the first and after the last flight piece: walked, never cut or railed. */
+  landings?: StairwellRect[];
   /** Plan point where the top flight piece's centreline ends: its rectangle's end side is the arrival side, never railed. */
   arrival: THREE.Vector3;
   /** Set when the connector cannot be cut cleanly: it has no rects, nothing is cut or railed, and it counts as skipped. */
@@ -116,18 +231,20 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     const lowerY = Math.min(points[0]!.y, points.at(-1)!.y), upperY = Math.max(points[0]!.y, points.at(-1)!.y);
     // Order bottom to top, so the last rectangle is the arrival piece.
     const ordered = points[0]!.y <= points.at(-1)!.y ? points : [...points].reverse();
-    const rects: StairwellRect[] = [];
+    const rects: StairwellRect[] = [], landings: StairwellRect[] = [];
     const rising = ordered.slice(1).map((point, i) => Math.abs(point.y - ordered[i]!.y) >= MIN_PIECE_RISE_M);
     const firstFlight = rising.indexOf(true), lastFlight = rising.lastIndexOf(true);
     if (lastFlight < 0) continue;
     for (let i = 1; i < ordered.length; i++) {
       const a = ordered[i - 1]!, b = ordered[i]!;
       const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
-      // Exclude the terminal landings and pieces without a usable plan footprint.
-      if (length < 0.5 || (!rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight))) continue;
+      // Exclude the terminal landings and end pieces without a usable plan footprint. A short piece between two flight
+      // pieces keeps its rectangle, or the cut and the hole would stop either side of it, under an intact slab.
+      const inner = i - 1 > firstFlight && i - 1 < lastFlight, landing = !rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight);
+      if (length < (inner ? MIN_INNER_PIECE_M : landing ? 1e-3 : 0.5)) continue;
       const along = new THREE.Vector3(dx / length, 0, dz / length);
       const across = new THREE.Vector3(-along.z, 0, along.x);
-      rects.push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2, rise: b.y - a.y });
+      (landing ? landings : rects).push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2, rise: b.y - a.y });
     }
     // The arrival is where the top flight piece's centreline ends (not the end of any landing after it).
     // Its rectangle is cut only when that piece is long enough to have one; otherwise the connector is skipped.
@@ -137,7 +254,7 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
       wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects: [], arrival, skipped: "top flight piece too short for an arrival side" });
       continue;
     }
-    wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, arrival });
+    wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, ...(landings.length ? { landings } : {}), arrival });
   }
   return wells;
 }
@@ -159,9 +276,9 @@ function rectPlanes(rect: StairwellRect, upperY: number): Plane[] {
 
 const horizontal = (normal: THREE.Vector3): boolean => Math.abs(normal.y) > 0.9;
 
-function rectCorners(rect: StairwellRect, height: number): THREE.Vector3[] {
-  return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([l, w]) => rect.center.clone()
-    .addScaledVector(rect.along, l! * rect.halfLength).addScaledVector(rect.across, w! * rect.halfWidth)
+function rectCorners(rect: StairwellRect, height: number, from = -rect.halfLength, to = rect.halfLength): THREE.Vector3[] {
+  return [[from, -1], [to, -1], [to, 1], [from, 1]].map(([l, w]) => rect.center.clone()
+    .addScaledVector(rect.along, l!).addScaledVector(rect.across, w! * rect.halfWidth)
     .setY(height));
 }
 
@@ -189,9 +306,14 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
         rejectsMesh: (mesh) => mesh.userData.gteki_role === "stairs_ramps",
         admits: (piece, mesh, triangle) => !onWalkingSurface(piece, triangle, well),
       });
+      // The upper slab opens only where the flight runs less than HOLE_DEPTH_M under it; deeper, the floor carries on.
+      const reach = depthInterval(rect, well.upperY, -Infinity, HOLE_DEPTH_M);
+      if (!reach) continue;
       const floorY = well.upperY - SLAB_BAND_M;
       const band = [...rectCorners(rect, floorY), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       const planes = rectPlanes(rect, well.upperY).slice(0, 4);
+      const along = (p: THREE.Vector3) => (p.x - rect.center.x) * rect.along.x + (p.z - rect.center.z) * rect.along.z;
+      planes.push(p => along(p) - reach.from, p => reach.to - along(p));
       planes.push(p => p.y - floorY - 1e-6, p => well.upperY + UPPER_CLEAR_M - p.y);
       const levelCache = new WeakMap<THREE.Object3D, BandLevels>();
       const levelsOf = (mesh: THREE.Object3D): BandLevels => {
@@ -268,7 +390,13 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   for (const well of cutWells) {
     for (const [index, rect] of well.rects.entries()) {
       const levels = new Set((heights.get(rect) ?? []).map((y) => Math.round(y * 20) / 20));
-      for (const level of levels) addBand(bands, rect, level, well.rects, index);
+      // In the upper slab's band the opening runs only as far as the cut (reach); a lower slab opens over the whole piece.
+      const reach = depthInterval(rect, well.upperY, -Infinity, HOLE_DEPTH_M);
+      for (const level of levels) {
+        const inSlab = level >= well.upperY - SLAB_BAND_M - 1e-6;
+        if (inSlab && !reach) continue;
+        addBand(bands, rect, level, well.rects, index, inSlab ? reach! : undefined);
+      }
     }
   }
 
@@ -276,7 +404,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   const steel = new THREE.Color(0xaab2b5).toArray();
   for (const well of cutWells) {
     const opened = well.rects.filter((rect) => (cut.maxHeights.get(rect) ?? []).some((y) => y >= well.upperY - 0.3 - 1e-6));
-    for (const rect of opened) for (const [from, to] of railSides(rect, well.arrival, opened, well.rects)) {
+    for (const [from, to] of wellRails(well, opened, unionRings, live)) {
       addRail(railPositions, railColors, from, to, well.upperY, steel);
       walls.push({ ax: from.x, az: from.z, bx: to.x, bz: to.z, yMin: well.upperY, yMax: well.upperY + RAIL_HEIGHT_M });
       if (options.tier === "high") addGlass(glassPositions, from, to, well.upperY);
@@ -339,27 +467,6 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
 /** A baked recipe applies to these wells only when its version, tier, region count and wells hash all match. */
 function recipeMatches(recipe: CutRecipe, wells: readonly StairwellWell[], tier: "high" | "low", keyCount: number): boolean {
   return recipe.version === RECIPE_VERSION && recipe.tier === tier && recipe.keyCount === keyCount && recipe.wellsSha256 === sha256Hex(canonicalJson(wells));
-}
-
-/**
- * Outer portions of each opened rectangle, except the arrival side (the end side of the top flight piece's rectangle,
- * through `arrival`) and, on a seam between two pieces of the well, the part the neighbouring piece covers: the walker
- * on the flight crosses it. The neighbour is grown by 0.05 m so a slightly tilted joint leaves no sliver on the path;
- * a seam's part outside the neighbour (the outer corner of a turn) keeps its rail.
- */
-function railSides(rect: StairwellRect, arrival: THREE.Vector3, opened: readonly StairwellRect[], pieces: readonly StairwellRect[]): [THREE.Vector3, THREE.Vector3][] {
-  const corners = rectCorners(rect, 0), sides: [THREE.Vector3, THREE.Vector3][] = [];
-  const index = pieces.indexOf(rect);
-  const grown = (piece: StairwellRect | undefined): StairwellRect[] => piece ? [{ ...piece, halfLength: piece.halfLength + 0.05, halfWidth: piece.halfWidth + 0.05 }] : [];
-  for (let i = 0; i < 4; i++) {
-    const from = corners[i]!, to = corners[(i + 1) % 4]!, delta = to.clone().sub(from);
-    const tArrival = arrival.clone().sub(from).dot(delta) / delta.lengthSq();
-    if (tArrival >= -1e-6 && tArrival <= 1 + 1e-6 && from.clone().addScaledVector(delta, tArrival).distanceTo(arrival) < 1e-3) continue;
-    const along = alongOf(rect, from, to);
-    const neighbour = along < -rect.halfLength + 1e-3 && index > 0 ? pieces[index - 1] : along > rect.halfLength - 1e-3 && index >= 0 ? pieces[index + 1] : undefined;
-    sides.push(...sideRemainder(from, to, rect, [...opened, ...grown(neighbour)]));
-  }
-  return sides;
 }
 
 /** The plan offset of the midpoint of the side `from`→`to` along the rectangle's own axis. */
@@ -471,8 +578,8 @@ function bandLevels(faces: readonly HorizontalFace[], rect: StairwellRect, floor
 }
 
 /** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
-function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[], index: number): void {
-  const corners = rectCorners(rect, 0);
+function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[], index: number, reach?: { from: number; to: number }): void {
+  const corners = rectCorners(rect, 0, reach?.from, reach?.to);
   for (let i = 0; i < 4; i++) {
     const from = corners[i]!, to = corners[(i + 1) % 4]!;
     // The stair mouth: the first piece's start side and the last piece's end side meet the floors, not a slab edge.

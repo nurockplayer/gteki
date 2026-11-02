@@ -54,14 +54,16 @@ const STRINGS = {
       source: "出典",
       sourceUnknown: "出典の記録なし",
       checked: "最終確認",
-      precision: { tie: "入口の位置は未確認（案内は駅の改札・出口まで）", point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認" },
+      precision: { door: "入口は駅の図面から読み取った概略位置（現地未検証）", tie: "入口の位置は未確認（案内は駅の改札・出口まで）", point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認" },
     },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `おおよその位置（±${m} m）・経路案内には使いません`,
     /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
     floorUnverified: (label: string) => `${label}（階は未確認）`,
     /** A shop's printed hours (OD-32): the page's own wording, read on this date. */
-    hoursAsOf: (date: string) => `GT-Eki 確認日 ${date} 時点の公式表記`,
+    hoursAsOf: (date: string) => `GT-Eki 確認日 ${date} 時点の公式表記。変更されている場合があります`,
+    /** Link text for the official page the hours were read from (OD-32). */
+    hoursSource: "公式ページ",
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `店舗情報（${date} 時点・未確認）`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */
@@ -286,14 +288,16 @@ const STRINGS = {
       source: "Source",
       sourceUnknown: "No source recorded",
       checked: "Last checked",
-      precision: { tie: "Entrance position not yet verified (directions end at the station gate or exit)", point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed" },
+      precision: { door: "Entrance read from a station map (approximate, not verified on site)", tie: "Entrance position not yet verified (directions end at the station gate or exit)", point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed" },
     },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `Approximate position (±${m} m) · not used for directions`,
     /** An approximate POI's floor is a label match, not a surveyed floor (#463). */
     floorUnverified: (label: string) => `${label} (floor unverified)`,
     /** A shop's printed hours (OD-32): the page's own wording, read on this date. */
-    hoursAsOf: (date: string) => `Official wording as read by GT-Eki on ${date}`,
+    hoursAsOf: (date: string) => `Official wording as read by GT-Eki on ${date}; may have changed`,
+    /** Link text for the official page the hours were read from (OD-32). */
+    hoursSource: "Official page",
     /** A store's printed brand directory (#419): unverified, with the date its listing was checked. */
     tenantAsOf: (date: string) => `Store directory as printed (${date}, unverified)`,
     /** The route ends at the store entrance; floors inside the store are not modelled. */

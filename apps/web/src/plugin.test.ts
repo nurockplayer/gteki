@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { createServer } from "vite";
 import { discoverStations, fsUrl, gtekiStations, publishableAssets } from "../stations-plugin.ts";
 import { createDemoFiles } from "./demo.ts";
 import { threeAliases } from "../three-alias.ts";
@@ -58,6 +59,41 @@ describe("station discovery", () => {
     expect(found[0]!.gtekiDir).toBe(path.join(root, "alpha", "gteki"));
     expect(discoverStations([root])[0]!.dataDir).toBe(fs.realpathSync(path.join(root, "alpha", "gteki")));
   });
+
+  it("passes private shops to the scene only when the overlay supplies them", async () => {
+    const root = tree();
+    const overlay = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-overlay-"));
+    const alpha = path.join(overlay, "alpha", "gteki");
+    fs.mkdirSync(alpha, { recursive: true });
+    fs.writeFileSync(path.join(alpha, "station.json"), "{}");
+    fs.writeFileSync(path.join(root, "alpha", "gteki", "scene.ts"),
+      'export const buildScene = (ctx) => ctx; export const marker = "kept";');
+    const privateShops = { shops: [{ id: "private-shop" }], openings: [{ opening_id: "private-door" }] };
+    // A same-named public file must never supply the scene context, even in a private build.
+    fs.writeFileSync(path.join(root, "alpha", "gteki", "private_shops.json"), JSON.stringify(privateShops));
+    const context = async (selectedOverlay: string | null) => {
+      const server = await createServer({
+        root, configFile: false, logLevel: "silent", plugins: [gtekiStations([root], { overlay: selectedOverlay })],
+        server: { middlewareMode: true, watch: null },
+      });
+      try {
+        const { stations } = await server.ssrLoadModule("virtual:gteki-stations");
+        const scene = await stations[0].scene();
+        expect(scene.marker).toBe("kept");
+        return scene.buildScene({ quality: "low" });
+      } finally { await server.close(); }
+    };
+    try {
+      expect(await context(null)).toEqual({ quality: "low" });
+      expect(await context(overlay)).toEqual({ quality: "low" });
+      fs.writeFileSync(path.join(alpha, "private_shops.json"), JSON.stringify(privateShops));
+      expect(await context(overlay)).toEqual({ quality: "low", privateShops });
+      expect(await context(null)).toEqual({ quality: "low" });
+    } finally {
+      fs.rmSync(path.dirname(root), { recursive: true, force: true });
+      fs.rmSync(overlay, { recursive: true, force: true });
+    }
+  }, 30_000);
 
   it("finds the optional brand directory but never treats it as an asset (#419)", () => {
     const root = tree();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildWalkableModel, regionPolygon, type BoundaryWall, type PlanPoint, type Region } from "./walkableModel.ts";
+import { boundaryEdges, buildWalkableModel, regionPolygon, snapRing, type BoundaryWall, type PlanPoint, type Region } from "./walkableModel.ts";
 
 const at = (x: number, z: number): PlanPoint => ({ x, z });
 const strip = (level: string, points: { x: number; y: number; z: number }[], halfWidth: number): Region => ({ kind: "strip", level, points, halfWidth });
@@ -112,5 +112,25 @@ describe("walkable model", () => {
     expect(regionPolygon(strip("L1", [{ x: 0, y: 0, z: 0 }, { x: 4, y: 1, z: 0 }], 1))).toEqual([[
       [{ x: 0, z: 1 }, { x: 4, z: 1 }, { x: 4, z: -1 }, { x: 0, z: -1 }],
     ]]);
+  });
+});
+
+describe("boundaryEdges", () => {
+  it("drops an edge that an open segment runs past at both ends", () => {
+    const ring: PlanPoint[] = [{ x: 1, z: 0 }, { x: 2, z: 0 }, { x: 2, z: 1 }, { x: 1, z: 1 }];
+    const edges = boundaryEdges([[ring]], [[{ x: 0, z: 0 }, { x: 3, z: 0 }]]);
+    expect(edges).toHaveLength(3);
+    expect(edges.some(([a, b]) => Math.abs(a.z) < 1e-9 && Math.abs(b.z) < 1e-9)).toBe(false);
+  });
+});
+
+describe("snapRing", () => {
+  it("snaps two points a float hair apart to one double and drops the repeat, so no zero-length edge reaches the sweep", () => {
+    // Rounding by multiplying with 1e-4 left these as -20.80120000000021 and -20.80119999999979: a 4e-13 m edge that
+    // polygon-clipping's sweep line cannot find again.
+    const ring = [{ x: -20.80120000000021, z: -436.1322 }, { x: -20.80119999999979, z: -436.1322 }, { x: -19, z: -436 }, { x: -19, z: -437 }];
+    const snapped = snapRing(ring, 1e4);
+    expect(snapped).toEqual([[-20.8012, -436.1322], [-19, -436], [-19, -437]]);
+    expect(snapRing(ring, 0)).toHaveLength(4);
   });
 });

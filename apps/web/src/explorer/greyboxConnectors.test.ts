@@ -1031,7 +1031,7 @@ describe("turning landing guards", () => {
   });
 
   // #710 review: two flights of one stair side by side, a 0.2 m empty gap apart, keep the guards on their facing sides.
-  it.each([[1.7, 0.85], [1.6, 0.8]])("keeps the facing guards of two flights of one stair across a narrow empty gap, %f m apart", (apart, mid) => {
+  it.each([[1.7, 0.85], [1.6, 0.8], [1.55, 0.775]])("keeps the facing guards of two flights of one stair across a narrow empty gap, %f m apart", (apart, mid) => {
     const waypoints: [number, number, number][] = [[0, 0, 0], [4, 0.4, 0], [4, 0.4, apart], [0, 0.8, apart]];
     const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
     expect(result.stats.legacyConnectors).toBe(0);
@@ -1042,6 +1042,13 @@ describe("turning landing guards", () => {
         && Math.min(w.az, w.bz) >= z0 && Math.max(w.az, w.bz) <= z1);
       expect(lined, `x=${x} z=${z0}..${z1}`).toBe(true);
     }
+  });
+
+  // #710 review: 5 cm apart, the two 3 cm footprint pads overlap; padding is no floor, so the guards stay and hold the body.
+  it("keeps a walker on the lower flight when the two flights are only 5 cm apart", () => {
+    const result = buildConnectors(stairThrough([[0, 0, 0], [4, 0.4, 0], [4, 0.4, 1.55], [0, 0.8, 1.55]]), () => true, flat, "high");
+    const r = resolveWalls(2.6, 0.7, 0.3, 0.26, 1.7, result.wallSegments);
+    expect(r.z).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
   });
 
   // #710 review: on a curve of long legs the opening still covers the whole of the split's disc.

@@ -1,0 +1,15 @@
+{
+ "schema": "gteki.research.hours/0.1",
+ "note": "ikebukuro hours batch 4 (OD-32 as amended 2026-10-24): 東武百貨店 池袋店, refetched at the merchant lead's request (w6:p16, 2026-11-02). No entry is imported: the only store-level hours the store prints come from a COVID-19 notice dated 3月3日(火) with no year, citing 厚生労働省's 「新型コロナウイルス感染症対策の基本方針」, i.e. 2020-03-03. That is far older than OD-32's 180-day limit, so the POI keeps status UNKNOWN and no hours text.",
+ "entries": [],
+ "gaps": [
+  {
+   "poiId": "shop-ikb-tobudept",
+   "sourceId": "tobu-dept-ikebukuro-2026-10",
+   "url": "https://www.tobu-dept.jp/ikebukuro/tnb/open/",
+   "retrievedAt": "2026-11-01T23:22:23Z",
+   "status": "UNKNOWN",
+   "reason": "Stale notice (OD-32 >180 days). The page prints ≪営業時間変更のお知らせ≫ 「厚生労働省から発表された「新型コロナウイルス感染症対策の基本方針」をふまえ…3月3日(火)より当面の間、下記の通り全館の営業時間を変更いたします。」 followed by 【変更後の営業時間】 ■午前11時～午後8時. The year is not printed; the cited policy dates it to 2020-03-03 (a Tuesday). Not imported, not shown."
+  }
+ ]
+}
