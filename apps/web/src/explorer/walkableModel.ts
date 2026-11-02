@@ -433,6 +433,12 @@ export function boundaryEdges(polygons: readonly PlanPolygon[], open: readonly [
 const CLEARANCE_M = 2.42;
 /** A floor less than this above another stands in the lower one's ceiling (2.6 m) or that ceiling's slab. */
 const CEILING_M = 2.72;
+/**
+ * Where a joined floor climbs at least this far over the floor it rose out of (WALKER_BODY.bodyTopM), the lower floor
+ * gives way under it: the wall along that cut stays below a walker on the rising floor (greybox walls keep at most up
+ * to 0.4 m under a flight crossing them), and nobody below fits under it.
+ */
+const BODY_TOP_M = 1.7;
 const MIN_CUT_AREA_M2 = 1e-6;
 
 /** One convex piece of a region (a strip segment, or a whole disc, rect or connector) and its floor height. */
@@ -646,6 +652,13 @@ export function buildWalkableModel(
         if (slab.length >= 3 && Math.abs(ringArea(slab)) > MIN_CUT_AREA_M2) {
           cutsOf(slabCuts, up).push(slab);
           const l = levelCuts.get(keys[upper]!); if (l) l.push(slab); else levelCuts.set(keys[upper]!, [slab]);
+        }
+        // A join keeps the rising floor whole; the floor it climbs over goes where no one standing fits under it. One
+        // height cluster is one union, so there only the ceiling is cut.
+        const under = join && keys[upper] !== keys[lower] ? clipHalf(clipHalf(overlap, (p) => rise(p) - BODY_TOP_M), (p) => CLEARANCE_M - rise(p)) : [];
+        if (under.length >= 3 && Math.abs(ringArea(under)) > MIN_CUT_AREA_M2) {
+          cutsOf(slabCuts, down).push(under);
+          const l = levelCuts.get(keys[lower]!); if (l) l.push(under); else levelCuts.set(keys[lower]!, [under]);
         }
         const ceiling = clipHalf(above, (p) => CEILING_M - rise(p));
         if (ceiling.length >= 3 && Math.abs(ringArea(ceiling)) > MIN_CUT_AREA_M2) cutsOf(ceilingCuts, down).push(ceiling);

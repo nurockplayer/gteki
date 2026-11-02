@@ -380,10 +380,10 @@ PlanPolygon	type	apps/web/src/explorer/walkableModel.ts	21
 regionPolygon	function	apps/web/src/explorer/walkableModel.ts	31
 unionRings	function	apps/web/src/explorer/walkableModel.ts	363
 boundaryEdges	function	apps/web/src/explorer/walkableModel.ts	408
-PieceCuts	type	apps/web/src/explorer/walkableModel.ts	563
-subtractPlan	function	apps/web/src/explorer/walkableModel.ts	582
-outsideIntervals	function	apps/web/src/explorer/walkableModel.ts	588
-buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	617
+PieceCuts	type	apps/web/src/explorer/walkableModel.ts	569
+subtractPlan	function	apps/web/src/explorer/walkableModel.ts	588
+outsideIntervals	function	apps/web/src/explorer/walkableModel.ts	594
+buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	623
 Segment2	interface	apps/web/src/explorer/walker.ts	7
 wallToRenderer	function	apps/web/src/explorer/walker.ts	19
 resolveWalls	function	apps/web/src/explorer/walker.ts	24

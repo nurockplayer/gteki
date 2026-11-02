@@ -213,15 +213,19 @@ describe("walkable model", () => {
       expect(area(foot.ceilingCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(1.75);
     });
 
-    it("cuts the ceiling a ramp joining a corridor climbs under, all along the climb", () => {
-      // R runs along B's centreline from 0.3 m to 2.3 m over 30 m: one step-height meet at its foot joins them, and
-      // B's ceiling over the rest (x 2.25..30) would stand in the way of a walker on R.
-      const { slabCuts, ceilingCuts } = buildWalkableModel([
+    it("cuts the ceiling a ramp joining a corridor climbs under, and the corridor floor where no one fits under it", () => {
+      // R runs along B's centreline from 0.3 m to 2.3 m over 30 m: one step-height meet at its foot joins them. B's
+      // ceiling over the rest (x 2.25..30) would stand in the way of a walker on R; B's floor goes from 1.7 m under R
+      // (x 21..30), R's stays whole.
+      const { slabCuts, ceilingCuts, walls } = buildWalkableModel([
         strip("B", [{ x: -10, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }], 1),
         strip("R", [{ x: 0, y: 0.3, z: 0 }, { x: 30, y: 2.3, z: 0 }], 1),
       ], undefined, 0.45);
-      expect(slabCuts.size).toBe(0);
+      expect([...slabCuts.keys()]).toEqual(["0:1"]);
+      expect(area(slabCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(18);
       expect(area(ceilingCuts.get("0:1")!.map((ring) => [ring]))).toBeCloseTo(55.5);
+      // B now ends across its width at x = 21 under R, with a wall there.
+      expect(walls.some((wall) => wall.level === "B" && Math.abs(wall.ax - 21) < 1e-6 && Math.abs(wall.bx - 21) < 1e-6 && Math.abs(wall.az - wall.bz) > 1.99)).toBe(true);
     });
 
     it("leaves the model unchanged without a step height", () => {
