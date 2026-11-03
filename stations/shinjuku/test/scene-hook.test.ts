@@ -1,3 +1,5 @@
+import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
+import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { seeThroughMeshes, type StationScene } from "@gteki/scene-api";
@@ -16,6 +18,9 @@ describe("shared-explorer scene hook: camera caps", () => {
     scene = (await buildScene({ THREE, bundle, quality: "low" } as never)) as StationScene;
     layoutZ = new Map(bundle.nodes.map((n) => [n.id, n.renderZ ?? 0]));
     scene.root.updateMatrixWorld(true);
+    const meshes: THREE.Object3D[] = [];
+    scene.root.traverse((o) => { if ((o as THREE.Mesh).isMesh) meshes.push(o); });
+    prepareRayTrees(meshes);
   }, 60_000);
   afterAll(() => {
     scene?.dispose();
@@ -41,9 +46,9 @@ describe("shared-explorer scene hook: camera caps", () => {
     }
   });
 
-  it("makes the drawn street paving and kerbs camera-only blockers", () => {
+  it("keeps rendered roof caps, street paving and kerbs as camera-only blockers", () => {
     const names = (scene.cameraBlockers ?? []).filter((o) => !scene.colliders?.includes(o)).map((o) => o.name).sort();
-    expect(names).toEqual(["surface-ground", "surface-stone"]);
+    expect(names).toEqual(["rendered ceiling camera caps", "surface-ground", "surface-stone"]);
   });
 
   it("caps the follow camera above underground nodes (except lift shafts and exit stairs open to the sky)", () => {
@@ -59,11 +64,11 @@ describe("shared-explorer scene hook: camera caps", () => {
       const eye = new THREE.Vector3(n.position.x, z + 1.62, -n.position.y);
       ray.set(eye, new THREE.Vector3(0, 1, 0));
       ray.far = 6;
-      if (ray.intersectObjects(blockers, false).length) continue;
+      if (castAll(ray, blockers).length) continue;
       // Exit stairwells open to the street: allowed only near street level, with nothing drawn overhead
       // below street level (a canopy above street level is fine).
       ray.far = 60;
-      const first = ray.intersectObjects(visible, false)[0];
+      const first = castAll(ray, visible)[0];
       if (z >= -4.5 && (!first || first.point.y >= -0.05)) continue;
       open.push(`${n.id} ${n.floorId} z${z} first:${first?.object.name}@${first?.point.y.toFixed(2)} parent:${first?.object.parent?.name}`);
     }
@@ -86,7 +91,7 @@ describe("shared-explorer scene hook: camera caps", () => {
         const eye = new THREE.Vector3(a.position.x + (b.position.x - a.position.x) * t, z + 1.62, -(a.position.y + (b.position.y - a.position.y) * t));
         ray.set(eye, new THREE.Vector3(0, 1, 0));
         ray.far = 60;
-        const roof = ray.intersectObjects(visible, false)[0], cap = ray.intersectObjects(blockers, false)[0];
+        const roof = castAll(ray, visible)[0], cap = castAll(ray, blockers)[0];
         // A cap alone is not a roof: something must be drawn there, and the camera must meet a cap no later.
         if (!roof) unroofed.push(`${e.id}@${t} z${z.toFixed(2)}${cap ? ` cap:${cap.object.name}@${cap.point.y.toFixed(2)}` : ""}`);
         // Fixtures (lights, signs) hang up to ~0.1 m under the slab that the cap follows.

@@ -4,7 +4,7 @@ import { castAll } from '../../../../apps/web/src/explorer/raycast.ts';
 // Consolidate the actual draw triangles, preserving each material's cull side and
 // instance transforms. This makes the exhaustive scan one BVH lookup per side.
 export function opaqueScene(root:T.Object3D) {
- const source:T.Mesh[]=[], arrays=new Map<number,number[]>();
+ const source:T.Mesh[]=[], arrays=new Map<T.Side,number[]>();
  root.updateMatrixWorld(true);
  root.traverseVisible(o=>{
   const m=o as T.Mesh;if(!m.isMesh || m.name==='walk proxies (invisible)' || m.name==='viewer probe (draws nothing)' || m.name.startsWith('greybox'))return;

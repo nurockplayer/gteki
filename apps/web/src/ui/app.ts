@@ -142,6 +142,10 @@ export class App {
 
   constructor(private readonly root: HTMLElement) {}
 
+  dispose(): void {
+    this.ui.minimap.dispose();
+  }
+
   private get t() {
     return strings(this.s.lang);
   }

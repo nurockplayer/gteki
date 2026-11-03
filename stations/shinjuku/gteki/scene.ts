@@ -254,6 +254,28 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       cameraBlockers.push(m);
     }
   }
+  // Per-flight finishes and retained shell backing can sit below the legacy
+  // physical caps. The camera follows the roofs actually drawn; walking keeps
+  // the original collider list and ground surfaces.
+  built.root.updateMatrixWorld(true);
+  const drawnCaps: THREE.BufferGeometry[] = [];
+  built.root.traverseVisible((o) => {
+    const mesh = o as THREE.Mesh;
+    if (!mesh.isMesh || Array.isArray(mesh.material) || mesh.material.name !== "mat.ceiling") return;
+    const geometry = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry.clone();
+    geometry.applyMatrix4(mesh.matrixWorld);
+    for (const key of Object.keys(geometry.attributes)) if (key !== "position") geometry.deleteAttribute(key);
+    drawnCaps.push(geometry);
+  });
+  if (drawnCaps.length) {
+    const geometry = mergeGeometries(drawnCaps, false)!;
+    for (const cap of drawnCaps) cap.dispose();
+    geometry.computeBoundingSphere();
+    const mesh = new T.Mesh(geometry, proxyMat);
+    mesh.name = "rendered ceiling camera caps";
+    proxies.add(mesh);
+    cameraBlockers.push(mesh);
+  }
   // Hanging wayfinding boxes and fence sign panels are signage (role "sign"): the explorer dithers them
   // where they come between the camera and the walker instead of stopping the camera in front of a dark
   // board (A/B/C explorer walk: blockers framed 0.16–0.25 near-black close-ups). The drawn street paving

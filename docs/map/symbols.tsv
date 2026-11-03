@@ -143,9 +143,9 @@ ConnectorOptions	interface	apps/web/src/explorer/greyboxConnectors.ts	47
 buildStairs	function	apps/web/src/explorer/greyboxConnectors.ts	83
 buildEscalator	function	apps/web/src/explorer/greyboxConnectors.ts	118
 ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	203
-skippedConnectorPath	function	apps/web/src/explorer/greyboxConnectors.ts	257
-buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	517
-withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	825
+skippedConnectorPath	function	apps/web/src/explorer/greyboxConnectors.ts	264
+buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	524
+withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	832
 unmodelledVerticalEdges	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	11
 ConnectorMaterial	type	apps/web/src/explorer/greyboxConnectorsLegacy.ts	45
 ConnectorPart	interface	apps/web/src/explorer/greyboxConnectorsLegacy.ts	46
@@ -153,8 +153,8 @@ ConnectorOptions	interface	apps/web/src/explorer/greyboxConnectorsLegacy.ts	47
 buildStairs	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	83
 buildEscalator	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	118
 ConnectorScope	interface	apps/web/src/explorer/greyboxConnectorsLegacy.ts	203
-buildConnectors	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	223
-withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	346
+buildConnectors	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	230
+withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	353
 greyboxSceneProbes	function	apps/web/src/explorer/greyboxScene.ts	10
 insideGreyboxOpening	function	apps/web/src/explorer/greyboxScene.ts	106
 GreyboxSegment	interface	apps/web/src/explorer/greyboxScene.ts	114
@@ -1141,7 +1141,7 @@ stairwellRecipeUrl	const	stations/shinjuku/gteki/scene.ts	62
 buildScene	const	stations/shinjuku/gteki/scene.ts	71
 planBundle	function	stations/shinjuku/gteki/scene.ts	86
 assembleScene	const	stations/shinjuku/gteki/scene.ts	97
-navmeshPaths	const	stations/shinjuku/gteki/scene.ts	330
+navmeshPaths	const	stations/shinjuku/gteki/scene.ts	352
 @gteki/station-shinjuku:dev	script	stations/shinjuku/package.json	24
 @gteki/station-shinjuku:build	script	stations/shinjuku/package.json	25
 @gteki/station-shinjuku:preview	script	stations/shinjuku/package.json	26

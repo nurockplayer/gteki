@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json";
 import { buildLayout, type Layout, type Plan } from "../scene/layout.ts";
@@ -14,9 +14,13 @@ export function layoutHash(layout: Layout): string {
 }
 
 describe("layout equivalence", () => {
-  it("preserves the pre-optimization physical layout at millimetre precision", () => {
+  let digest: string;
+  beforeAll(() => {
     const { bundle } = loadShinjukuBundle();
+    digest = layoutHash(buildLayout(bundle, planJson as unknown as Plan));
+  }, 60_000);
+  it("preserves the pre-optimization physical layout at millimetre precision", () => {
     // Captured from cc9a2ca before any performance edits (six identical builds).
-    expect(layoutHash(buildLayout(bundle, planJson as unknown as Plan))).toBe("a6d062d218dec1e06fc241a0d4707a6b303b0f44d28a44f60bec21b6495a5b20");
+    expect(digest).toBe("a6d062d218dec1e06fc241a0d4707a6b303b0f44d28a44f60bec21b6495a5b20");
   });
 });

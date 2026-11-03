@@ -203,18 +203,25 @@ function escalatorWalk(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] 
 export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean }
 
 function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THREE.Material[]): THREE.Mesh {
+  const materialIndex = (p: ConnectorPart) => p.material === "lampOk" ? 1 : p.material === "lampNo" ? 2 : 0;
+  const ordered = Array.isArray(material) ? [...parts].sort((a, b) => materialIndex(a) - materialIndex(b)) : parts;
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(parts.flatMap((p) => p.position), 3));
-  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(parts.flatMap((p) => p.normal), 3));
-  geometry.setAttribute("color", new THREE.Float32BufferAttribute(parts.flatMap((p) => p.colour), 3));
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.position), 3));
+  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.normal), 3));
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.colour), 3));
   if (Array.isArray(material)) {
     let offset = 0;
-    for (const p of parts) { const count = p.position.length / 3; geometry.addGroup(offset, count, p.material === "lampOk" ? 1 : p.material === "lampNo" ? 2 : 0); offset += count; }
+    for (const p of ordered) {
+      const count = p.position.length / 3, index = materialIndex(p), previous = geometry.groups.at(-1);
+      if (previous?.materialIndex === index) previous.count += count;
+      else geometry.addGroup(offset, count, index);
+      offset += count;
+    }
   }
   const mesh = new THREE.Mesh(geometry, material);
   const ids = [...new Set(parts.map((p) => p.edgeId).filter((id): id is string => id !== undefined))];
   let start = 0;
-  const edgeRanges = parts.map((p) => { const range = { start, end: start + p.position.length / 3, edgeId: p.edgeId }; start = range.end; return range; });
+  const edgeRanges = ordered.map((p) => { const range = { start, end: start + p.position.length / 3, edgeId: p.edgeId }; start = range.end; return range; });
   mesh.userData = { greybox: true, connector: true, approximate: true, fit: parts.some((p) => p.userData?.fit === "approximate") ? "approximate" : "exact", edgeId: ids.length === 1 ? ids[0] : ids, edgeRanges };
   return mesh;
 }

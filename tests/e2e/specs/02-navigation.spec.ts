@@ -3,7 +3,7 @@ import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { chooseBySearch, hooks, textIf, openStation, save, shotPath, stationData, STATIONS, type StationKey } from "../lib/gteki.ts";
 
-interface Scenario { id: string; from: string; to: string; expect: "ok" | "fail" | "record"; profile?: Record<string, boolean>; walk?: boolean; note: string }
+interface Scenario { id: string; from: string; to: string; expect: "ok" | "fail" | "record"; profile?: Record<string, boolean>; walk?: boolean; note: string; modes?: string[]; cardText?: string[] }
 const scenarios = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, "../fixtures/scenarios.json"), "utf8")) as Record<StationKey, Scenario[]>;
 
 const RESET = { stepFree: false, unpaidOnly: false, strictHours: false };
@@ -39,6 +39,8 @@ for (const key of STATIONS) {
 
         if (s.expect === "ok") expect.soft(r?.ok, `${s.id} should route: ${s.note}`).toBe(true);
         if (s.expect === "fail") expect.soft(r?.ok, `${s.id} must fail closed: ${s.note}`).toBe(false);
+        for (const mode of s.modes ?? []) expect.soft(usedModes, `${s.id} must use ${mode}`).toContain(mode);
+        for (const text of s.cardText ?? []) await expect.soft(page.locator(".sheet .card.no-route"), `${s.id} explains refusal`).toContainText(text);
         if (r?.ok) {
           expect.soft(r.synthetic, `${s.id} real station route marked synthetic`).toBe(false);
           expect.soft(r.sourceIds.length, `${s.id} route without sources`).toBeGreaterThan(0);

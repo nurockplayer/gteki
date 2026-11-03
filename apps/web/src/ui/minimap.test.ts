@@ -60,6 +60,18 @@ describe("Minimap HUD", () => {
     vi.useRealTimers();
   });
 
+  it("ignores interval ticks and explicit refresh after document teardown", () => {
+    const map = create();
+    expect(vi.getTimerCount()).toBe(1);
+    vi.stubGlobal("document", undefined);
+    try {
+      expect(() => tick()).not.toThrow();
+      expect(() => map.syncVisibility()).not.toThrow();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("defaults to player-up and persists the north-up toggle across instances without changing pose", () => {
     const map = create();
     const toggle = map.el.querySelector<HTMLButtonElement>(".minimap-orientation")!;

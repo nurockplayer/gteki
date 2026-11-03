@@ -60,7 +60,7 @@ export function buildReceipt(station: FieldStation, records: Observation[], priv
 }
 
 export function buildReceipts(station: FieldStation, records: Observation[]) {
-  const receipts = [buildReceipt(station, records)];
+  const receipts = [buildReceipt(station, records)].filter((receipt) => receipt.items.length || receipt.fieldNotes.length);
   if (station.privateCatalog && records.some((record) => isPrivateObservation(station, record))) {
     receipts.push(buildReceipt(station, records, true));
   }

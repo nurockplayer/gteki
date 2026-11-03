@@ -457,11 +457,13 @@
    ],
    "cameraBlockers": [
     "3ff8f1eee138e7ec6a64d2ea332d12f2ae844c4f25f6578b8ae3a8187428cbb0",
+    "b9ab8a49e29a584dd098ab4a66ff6e53d6bbc3bd8d1951209ee91e3dfce85c73",
     "28115fdffccceadc92beea189494bee4d3faec38f3ae777b3c5d81c890380b2f",
     "aa756629d68477d9b79cc5e82639173f3cf008c13bf3c111f0431f4240b3c2cc"
    ],
    "cameraBlockerIsCollider": [
     true,
+    false,
     false,
     false
    ],
@@ -1618,11 +1620,13 @@
    ],
    "cameraBlockers": [
     "3ff8f1eee138e7ec6a64d2ea332d12f2ae844c4f25f6578b8ae3a8187428cbb0",
+    "b9ab8a49e29a584dd098ab4a66ff6e53d6bbc3bd8d1951209ee91e3dfce85c73",
     "28115fdffccceadc92beea189494bee4d3faec38f3ae777b3c5d81c890380b2f",
     "aa756629d68477d9b79cc5e82639173f3cf008c13bf3c111f0431f4240b3c2cc"
    ],
    "cameraBlockerIsCollider": [
     true,
+    false,
     false,
     false
    ],
