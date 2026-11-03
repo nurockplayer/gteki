@@ -924,18 +924,27 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   };
   const liftIds = new Set(liftEdges.map((edge) => edge.id));
   for (const shaft of liftShafts(liftEdges, liftEnds)) {
-    // A stop's door faces the far end of the first traversable edge at its car node that is not a ride of this shaft, and
-    // sits where that edge leaves the shaft (kept inside the face): the hall edge walks out through it, not past its jamb.
+    // Follow the hall away from the car: its first segment leaving the shaft chooses the door face and offset.
     const doorOf = (nodeIds: readonly string[]): { face: number; offset: number } => {
       for (const nodeId of nodeIds) for (const other of bundle.edges) {
         if (liftIds.has(other.id) || !traversable(other) || (other.from !== nodeId && other.to !== nodeId)) continue;
         const points = edgePoints(bundle, other, nodes, floors);
         if (points.length < 2) continue;
-        const car = other.from === nodeId ? points[0]! : points.at(-1)!, far = other.from === nodeId ? points.at(-1)! : points[0]!;
+        if (other.to === nodeId) points.reverse();
+        const firstOutside = points.findIndex((p, i) => i > 0 && Math.max(Math.abs(p.x - shaft.centre.x), Math.abs(p.z - shaft.centre.z)) > SHAFT_HALF + 1e-9);
+        const car = points[firstOutside > 0 ? firstOutside - 1 : 0]!, far = firstOutside > 0 ? points[firstOutside]! : points.at(-1)!;
         const dir = far.clone().sub(shaft.centre); dir.y = 0;
         if (dir.lengthSq() < 1e-8) continue;
-        const face = shaftFace(dir), n = SHAFT_NORMALS[face]!, t = new THREE.Vector3(-n.z, 0, n.x);
-        const run = far.clone().sub(car), into = run.dot(n), s = Math.abs(into) > 1e-9 ? (SHAFT_HALF - car.clone().sub(shaft.centre).dot(n)) / into : 0;
+        const run = far.clone().sub(car);
+        let face = shaftFace(dir), firstCrossing = Infinity;
+        if (firstOutside > 0) SHAFT_NORMALS.forEach((normal, index) => {
+          const into = run.dot(normal);
+          if (into <= 1e-9) return;
+          const at = (SHAFT_HALF - car.clone().sub(shaft.centre).dot(normal)) / into;
+          if (at >= -1e-9 && at <= 1 + 1e-9 && at < firstCrossing) { face = index; firstCrossing = at; }
+        });
+        const n = SHAFT_NORMALS[face]!, t = new THREE.Vector3(-n.z, 0, n.x);
+        const into = run.dot(n), s = Math.abs(into) > 1e-9 ? (SHAFT_HALF - car.clone().sub(shaft.centre).dot(n)) / into : 0;
         const cross = car.clone().addScaledVector(run, THREE.MathUtils.clamp(s, 0, 1)).sub(shaft.centre).dot(t);
         return { face, offset: THREE.MathUtils.clamp(cross, -(SHAFT_HALF - DOOR_HALF), SHAFT_HALF - DOOR_HALF) };
       }

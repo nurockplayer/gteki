@@ -1201,6 +1201,29 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("opens lift doors at the first shaft exit of a bent hall in either edge direction", () => {
+    for (const bendInside of [false, true]) for (const reverse of [false, true]) {
+      const station = liftStation();
+      station.nodes.find((n) => n.id === "start")!.position = { x: 0, y: 0, z: 0 };
+      station.nodes.find((n) => n.id === "upper")!.position = { x: 0, y: 0, z: 4 };
+      station.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 5, z: 0 };
+      const line = [{ x: 0, y: 0, z: 0 }, ...(bendInside ? [{ x: 0.5, y: 0.4, z: 0 }] : []), { x: 3, y: bendInside ? 0.4 : 0, z: 0 }, { x: 3, y: 5, z: 0 }];
+      const hall = station.edges.find((e) => e.id === "hall-low")!;
+      hall.geometry = reverse ? [...line].reverse() : line;
+      if (reverse) [hall.from, hall.to] = [hall.to, hall.from];
+      const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+      expect(result.stats.connectors.elevator).toBe(1);
+      for (let i = 1; i < line.length; i++) {
+        const a = line[i - 1]!, b = line[i]!, steps = Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 0.05);
+        for (let k = 0; k <= steps; k++) {
+          const x = a.x + (b.x - a.x) * k / steps, z = -(a.y + (b.y - a.y) * k / steps);
+          const r = resolveWalls(x, z, 0.3, 0, 1.7, result.wallSegments);
+          expect(Math.hypot(r.x - x, r.z - z), `bendInside=${bendInside} reverse=${reverse} leg=${i} k=${k}`).toBeLessThanOrEqual(0.01);
+        }
+      }
+    }
+  });
+
   it("puts lift edges whose cars share a footprint in one shaft and leaves a same-floor car stub alone", () => {
     const station = liftStation([syntheticEdge("lift-2", "b", "upper-2", { mode: "elevator", attributes: { sceneGap: true } }), syntheticEdge("stub", "start", "goal", { mode: "elevator", attributes: { sceneGap: true } })]);
     station.nodes.find((n) => n.id === "b")!.position = { x: 0.3, y: 0.4, z: 0 };
