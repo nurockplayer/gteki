@@ -9,7 +9,7 @@ export type PlanPoint = { x: number; z: number };
  * edge's runs and bend patches) are one walk: their overlaps never split a level or cut a floor, unless one passes over
  * the other at walking clearance or more (an edge looping back over itself), which is judged like any two pieces.
  */
-export type Region = { group?: string } & (
+export type Region = { group?: string; /** Endpoint floor IDs for graph runs spanning levels; otherwise `level` applies. */ floorLevels?: readonly string[] } & (
   | { kind: "strip"; level: string; points: { x: number; y: number; z: number }[]; halfWidth: number }
   | { kind: "disc"; level: string; x: number; y: number; z: number; radius: number }
   | { kind: "rect"; level: string; center: { x: number; y: number; z: number }; along: PlanPoint; halfLength: number; halfWidth: number }
@@ -25,8 +25,22 @@ export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay:
 
 /** A union polygon in plan: `[0]` is the outer ring, the rest are holes. Rings are open (no repeated closing point). */
 export type PlanPolygon = PlanPoint[][];
-/** Convex exclusion masks for flat surfaces at a level/elevation. */
+/** Convex exclusion masks belonging to a floor level/elevation. */
 export type PlanExclusion = { level: string; y: number; triangles: PlanPoint[][] };
+
+/** Height uncertainty for passages without one authoritative floor membership. */
+const PRIVATE_FLOOR_TOLERANCE_M = 0.3;
+
+/** Shared by routing, graph ribbons and procedural strips. Known single-level membership wins; transitions or
+ * missing membership use the interpolated height at each point of the mask, never just the segment endpoints. */
+export function floorExclusionCuts(cut: PlanExclusion, levels: readonly string[], height: (p: PlanPoint) => number): PlanPoint[][] {
+  if (levels.length && levels[0] && levels.every((level) => level === levels[0]))
+    return levels[0] === cut.level ? cut.triangles : [];
+  return cut.triangles.map((ring) => clipHalf(
+    clipHalf(ring, (p) => height(p) - cut.y + PRIVATE_FLOOR_TOLERANCE_M),
+    (p) => cut.y + PRIVATE_FLOOR_TOLERANCE_M - height(p),
+  )).filter((ring) => ring.length >= 3 && Math.abs(ringArea(ring)) > 1e-12);
+}
 
 const WALL_TOLERANCE_M = 1e-3;
 const MIN_WALL_M = 1e-3;
@@ -688,17 +702,19 @@ export function buildWalkableModel(
   exclusions: readonly PlanExclusion[] = [],
 ): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[]; slabCuts: PieceCuts; ceilingCuts: PieceCuts } {
   const explicitCuts: PieceCuts = new Map();
-  const masks = exclusions.flatMap((cut) => cut.triangles.map((ring) => ({ level: cut.level, y: cut.y, ring, box: boxOf([[ring]]) })));
+  const masks = exclusions.flatMap((cut) => cut.triangles.map((ring) => ({ ...cut, triangles: [ring], box: boxOf([[ring]]) })));
   const pieces = regions.flatMap(regionPieces).flatMap((piece) => {
-    if (!exclusions.length || Math.abs(piece.high - piece.low) >= 1e-6) return [piece];
-    const cuts = masks.filter((cut) => cut.level === piece.level && Math.abs(cut.y - piece.low) < 1e-6
-      && cut.box.maxX >= piece.box.minX && cut.box.minX <= piece.box.maxX && cut.box.maxZ >= piece.box.minZ && cut.box.minZ <= piece.box.maxZ).map((cut) => cut.ring);
+    if (!exclusions.length) return [piece];
+    const levels = regions[piece.region]!.floorLevels ?? [piece.level];
+    const cuts = masks.filter((cut) => cut.box.maxX >= piece.box.minX && cut.box.minX <= piece.box.maxX
+      && cut.box.maxZ >= piece.box.minZ && cut.box.minZ <= piece.box.maxZ).flatMap((cut) => floorExclusionCuts(cut, levels, piece.height));
     if (!cuts.length) return [piece];
     const key = `${piece.region}:${piece.segment}`, all = explicitCuts.get(key) ?? [];
     for (const cut of cuts) if (!all.includes(cut)) all.push(cut);
     explicitCuts.set(key, all);
     return subtractPlan(piece.ring, cuts).flatMap((rings) => regionPieces({ kind: "polygon", level: piece.level, y: piece.low, rings }, piece.region)
-      .map((clipped) => ({ ...piece, ring: clipped.ring, box: clipped.box })));
+      .map((clipped) => ({ ...piece, ring: clipped.ring, box: clipped.box,
+        low: Math.min(...clipped.ring.map(piece.height)), high: Math.max(...clipped.ring.map(piece.height)) })));
   });
   const keys = stepM > 0 ? splitByHeight(pieces, stepM) : pieces.map((piece) => piece.level);
   const slabCuts: PieceCuts = new Map(), ceilingCuts: PieceCuts = new Map();

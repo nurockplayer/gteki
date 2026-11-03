@@ -10,6 +10,7 @@ import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navig
 import { createDemoFiles } from "../demo.ts";
 import { gtekiStations } from "../../stations-plugin.ts";
 import { privateFloorRoutingEdges } from "./privateFloorRouting.ts";
+import { buildGraphView } from "./graphView.ts";
 import { buildGreybox } from "./greybox.ts";
 import { privateLevelRegions, type PrivateLevels, type PolygonRegion } from "./privateLevels.ts";
 
@@ -39,18 +40,25 @@ describe("private level selection and rendering", () => {
     expect(() => privateLevelRegions(input, {} as typeof selection)).toThrow("Private level selection requires string arrays");
   });
 
-  it("keeps a selected floor's hole empty when a graph passage crosses it", () => {
+  it.each([[0, 0], [0, 0.02], [0.02, 0.02]])("keeps a selected floor's hole empty for a passage at %s → %s m", (startY, endY) => {
     const ring = (a: number, b: number) => [{ x: a, z: -a }, { x: b, z: -a }, { x: b, z: -b }, { x: a, z: -b }];
     const regions: PolygonRegion[] = [{ kind: "polygon", level: "synthetic-level", y: 0, rings: [ring(0, 10), ring(3, 7)], exclusions: [[ring(3, 7)]] }];
     const bundle = {
+      ...createSyntheticBundle([]),
       floors: [{ id: "synthetic-level", renderElevationM: 0 }],
-      nodes: [{ id: "a", floorId: "synthetic-level", position: { x: -2, y: 5, z: 0 } }, { id: "b", floorId: "synthetic-level", position: { x: 12, y: 5, z: 0 } }],
-      edges: [{ id: "crossing", from: "a", to: "b", mode: "walk" }],
+      nodes: [{ id: "a", floorId: "synthetic-level", position: { x: -2, y: 5, z: startY } }, { id: "b", floorId: "synthetic-level", position: { x: 12, y: 5, z: endY } }],
+      edges: [syntheticEdge("crossing", "a", "b")],
     } as unknown as StationBundle;
     const grey = buildGreybox(bundle, () => true, () => false, { colliderNear: () => false, wallHit: () => null }, "low", true, regions);
     grey.root.updateMatrixWorld(true);
     const hits = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(grey.walkable, true);
     expect(hits(5)).toHaveLength(0);
+    const graph = buildGraphView(bundle, createRouter(bundle), regions);
+    graph.root.updateMatrixWorld(true);
+    const ray = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 0.5, -5), new THREE.Vector3(0, -1, 0));
+    expect(ray(5).intersectObjects(graph.walkable, true)).toHaveLength(0);
+    expect(ray(11).intersectObjects(graph.walkable, true)[0]!.point.y).toBeCloseTo(startY + (endY - startY) * 13 / 14);
+    graph.dispose();
     expect(hits(11).length).toBeGreaterThan(0);
     expect(hits(1).length).toBeGreaterThan(0);
     expect(grey.wallSegments.length).toBeGreaterThanOrEqual(8);
@@ -65,14 +73,39 @@ describe("private level selection and rendering", () => {
     const navMesh = new THREE.Mesh(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(nav, 3)), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
     expect(new THREE.Raycaster(new THREE.Vector3(5, 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObject(navMesh)).toHaveLength(0);
     expect(new THREE.Raycaster(new THREE.Vector3(11, 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObject(navMesh).length).toBeGreaterThan(0);
-    for (const [floorId, z] of [["synthetic-level", 4], ["another-level", 0]] as const) {
+    for (const [floorId, z] of [["another-level", 4], ["another-level", 0]] as const) {
       const separate = structuredClone(bundle);
       for (const node of separate.nodes) { node.floorId = floorId; node.position.z = z; }
       const kept = buildGreybox(separate, () => true, () => false, { colliderNear: () => false, wallHit: () => null }, "low", true, regions);
       kept.root.updateMatrixWorld(true);
       const hit = new THREE.Raycaster(new THREE.Vector3(5, z + 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(kept.walkable, true);
       expect(hit[0]!.point.y).toBeCloseTo(z);
+      const keptGraph = buildGraphView(separate, createRouter(separate), regions);
+      keptGraph.root.updateMatrixWorld(true);
+      expect(new THREE.Raycaster(new THREE.Vector3(5, z + 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(keptGraph.walkable, true)[0]!.point.y).toBeCloseTo(z);
+      keptGraph.dispose();
     }
+  });
+
+  it("clips only the near-floor part of a cross-level passage inside a hole", () => {
+    const regions = privateLevelRegions({ levels: [{ floorId: "concourse", renderElevationM: 0, features: [
+      { facility: "class-a", polygons: [[rect(0, 0, 10, 10)]] },
+      { facility: "class-b", polygons: [[rect(3, 3, 4, 4)]] },
+    ] }] }, selection);
+    const bundle = createSyntheticBundle([syntheticEdge("rising", "start", "upper")]);
+    bundle.nodes.find(n => n.id === "start")!.position = { x: -2, y: 5, z: -2 };
+    bundle.nodes.find(n => n.id === "upper")!.position = { x: 12, y: 5, z: 2 };
+    expect(privateFloorRoutingEdges(bundle, regions)[0]!.closed).toBe(true);
+    const graph = buildGraphView(bundle, createRouter(bundle), regions);
+    const grey = buildGreybox(bundle, () => true, () => false, { colliderNear: () => false, wallHit: () => null }, "low", true, regions);
+    graph.root.updateMatrixWorld(true); grey.root.updateMatrixWorld(true);
+    const nav = new THREE.Mesh(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(grey.navFloors!, 3)), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    for (const surfaces of [graph.walkable, grey.walkable, [nav]]) {
+      const hit = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(surfaces, true);
+      expect(hit(5)).toHaveLength(0);
+      expect(hit(3.5)[0]!.point.y).toBeCloseTo(-2 + 4 * 5.5 / 14);
+    }
+    graph.dispose(); nav.geometry.dispose(); (nav.material as THREE.Material).dispose();
   });
 
   it("retains explicit masks outside selected footprints, including levels with no selected floors", () => {

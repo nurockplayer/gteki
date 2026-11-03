@@ -9,17 +9,22 @@ const point = (x: number, y: number, z = 0) => ({ x, y, z });
 
 describe("private floor routing exclusions", () => {
   it.each([
+    { name: "slightly sloping same-floor path", path: [point(1, 5), point(9, 5, 0.02)], blocked: true },
+    { name: "offset same-floor path", path: [point(1, 5, 0.02), point(9, 5, 0.02)], blocked: true },
+    { name: "unknown floor near the hole", path: [point(1, 5, 0.02), point(9, 5, 0.02)], levels: ["", ""], blocked: true },
+    { name: "cross-level passage through the height band", path: [point(1, 5, -2), point(9, 5, 2)], levels: ["concourse", "upper"], blocked: true },
     { name: "hole crossing", path: [point(1, 5), point(9, 5)], blocked: true },
     { name: "outside selected floor", path: [point(1, 1), point(11, 1)], blocked: false },
     { name: "outer boundary", path: [point(0, 0), point(10, 0)], blocked: false },
     { name: "detour geometry", path: [point(1, 5), point(1, 1), point(9, 1), point(9, 5)], blocked: false },
-    { name: "another elevation", path: [point(1, 5, 4), point(9, 5, 4)], blocked: false },
-    { name: "sloping path", path: [point(1, 5), point(9, 5, 4)], blocked: false },
+    { name: "another level above", path: [point(1, 5, 4), point(9, 5, 4)], levels: ["upper", "upper"], blocked: false },
+    { name: "sloping path above the hole", path: [point(1, 5), point(9, 5, 4)], levels: ["concourse", "upper"], blocked: false },
     { name: "flat excluded segment then slope", path: [point(1, 5), point(9, 5), point(9, 6, 4)], blocked: true },
-  ])("checks the complete $name", ({ path, blocked }) => {
+  ])("checks the complete $name", ({ path, blocked, levels }) => {
     const bundle = createSyntheticBundle([syntheticEdge("edge", "start", "a", { geometry: path })]);
     bundle.nodes.find(n => n.id === "start")!.position = path[0]!;
     bundle.nodes.find(n => n.id === "a")!.position = path.at(-1)!;
+    if (levels) { bundle.nodes.find(n => n.id === "start")!.floorId = levels[0]!; bundle.nodes.find(n => n.id === "a")!.floorId = levels[1]!; }
     const result = privateFloorRoutingEdges(bundle, regions);
     expect(result[0]!.closed).toBe(blocked);
     expect(bundle.edges[0]!.closed).toBe(false);

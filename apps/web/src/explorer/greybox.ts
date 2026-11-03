@@ -488,15 +488,16 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const fromFloor = nodes.get(edge.from)?.floorId ?? "", toFloor = nodes.get(edge.to)?.floorId ?? "";
     return fromFloor === toFloor ? levelOf(fromFloor) : `run:${edge.id}`;
   };
+  const floorLevels = (edge: Edge) => [nodes.get(edge.from)?.floorId ?? "", nodes.get(edge.to)?.floorId ?? ""];
   const regions: Region[] = [];
   for (const run of runs) {
-    regions.push({ kind: "strip", group: run.edge.id, level: runLevel(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
+    regions.push({ kind: "strip", group: run.edge.id, level: runLevel(run.edge), floorLevels: floorLevels(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
   }
   for (const pad of pads) {
     regions.push({ kind: "rect", level: levelOf(pad.floorId), center: { x: pad.center.x, y: pad.center.y, z: pad.center.z }, along: { x: pad.along.x, z: pad.along.z }, halfLength: pad.width / 2, halfWidth: pad.width / 2 });
   }
   for (const junction of activeJunctions) {
-    regions.push({ kind: "disc", ...(junction.bendOf ? { group: junction.bendOf.id } : {}), level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
+    regions.push({ kind: "disc", ...(junction.bendOf ? { group: junction.bendOf.id, floorLevels: floorLevels(junction.bendOf) } : {}), level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
   }
   for (const mouth of mouths) {
     const ax = mouth.at.x, az = mouth.at.z, bx = ax + mouth.ux * mouth.length, bz = az + mouth.uz * mouth.length;
@@ -506,8 +507,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   const privateStart = regions.length;
   regions.push(...privateRegions);
   const holes = privateHolePlanes(privateRegions);
-  const runHoles = runs.flatMap((run) => runLevel(run.edge).startsWith("run:") ? holes.filter((hole) => hole.level === nodes.get(run.edge.from)?.floorId || hole.level === nodes.get(run.edge.to)?.floorId).map((hole) => ({ ...hole, level: runLevel(run.edge) })) : []);
-  const model = buildWalkableModel(regions, (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM, 0, [...holes, ...runHoles]);
+  const model = buildWalkableModel(regions, (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM, 0, holes);
   // Floors and ceilings follow the level stack: a floor standing less than the clearance over another level leaves
   // that part out, and a ceiling another level's floor stands in does too. Regions are runs, then pads, then junctions.
   const uncut = (p: THREE.Vector3, q: THREE.Vector3, cuts: readonly PlanPoint[][]) => {
