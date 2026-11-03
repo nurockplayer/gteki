@@ -51,12 +51,14 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // overhead query itself. The removed copied-cap mesh briefly made this four
 // camera blockers; this candidate retains three and the original listsDigest.
 // Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
+// #276 (2026-11-04 08:05 JST): only low-tier texture dimensions change; geometry, appearance,
+// nodes, counts and explorer lists retain their existing digests.
 const MAIN_BASELINE = {
   station: {
     geometryDigest: "8b501f6d2a9d6c6e95424959a72791df560a442abdcd9167440187b5d90d0bbd",
     appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
     nodesDigest: "c3721bb561761689083bbf44bbaf8ed2e8689925827d73ddc722e7c4915690f2",
-    texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
+    texturesDigest: "8fca182824232676d47ce0aa7f01108bd2a4aae96c681e50fde38f353510889e",
     meshes: 145,
     bytes: 15897422,
   },
