@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: GTEki contributors
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -52,7 +53,7 @@ for (const station of ["ikebukuro", "shinjuku"]) describe(station, () => {
     expect(merchantPrecision(s.poi())).toBe("point");
     expect(read(join(s.dir, "gteki/pois.json")).pois.filter((p: any) => p.id !== s.poiId)).toEqual(before.pois.filter((p: any) => p.id !== s.poiId));
     if (station === "ikebukuro") expect(read(join(s.dir, "data/graph.src.json")).pois.find((p: any) => p.id === s.poiId)).toEqual(s.poi());
-    else expect(loadReceipts(join(s.root, "docs/research/field/receipts"), station)).toEqual([s.receipt]);
+    expect(loadReceipts(join(s.root, "docs/research/field/receipts"), station)).toEqual([s.receipt]);
     const parsed = parseStationFiles(read(join(s.dir, "gteki/station.json")), read(join(s.dir, "gteki/graph.json")), read(join(s.dir, "gteki/pois.json")), read(join(s.dir, "gteki/tenants.json")));
     expect(parsed.ok).toBe(true);
     expect(() => ingest(s.file, false, s.root)).toThrow("duplicate existing connector");
@@ -136,6 +137,39 @@ for (const station of ["ikebukuro", "shinjuku"]) describe(station, () => {
     expect(() => ingest(s.file, false, s.root)).toThrow("duplicate existing connector");
   });
 
+  it("restores every touched file after a downstream failure and allows the same ingest to retry", () => {
+    const s = setup(station);
+    const files = [join(s.dir, "gteki/pois.json"), join(s.dir, "gteki/station.json")];
+    if (station === "ikebukuro") files.push(join(s.dir, "data/graph.src.json"));
+    else {
+      mkdirSync(join(s.dir, "data"));
+      for (const name of ["plan.json", "surface-baked.json"]) cpSync(join(repo, "stations/shinjuku/data", name), join(s.dir, "data", name));
+      files.push(join(s.dir, "gteki/graph.json"), ...["plan.json", "surface-baked.json", "import-report.json"].map((name) => join(s.dir, "data", name)));
+    }
+    const tree = () => readdirSync(s.root, { recursive: true }).sort().map((name) =>
+      [name, statSync(join(s.root, name)).isFile() ? createHash("sha256").update(readFileSync(join(s.root, name))).digest("hex") : null]);
+    const failDownstream = () => {
+      for (const file of files) writeFileSync(file, "partial downstream output\n");
+      execFileSync("sh", ["-c", "exit 19"], { stdio: "pipe" });
+    };
+    const before = tree();
+    expect(() => ingest(s.file, false, s.root, failDownstream)).toThrow("Command failed");
+    expect(tree()).toEqual(before);
+    expect(ingest(s.file, false, s.root)).toHaveLength(1);
+    const archiveDir = join(s.root, "docs/research/field/receipts");
+    expect(loadReceipts(archiveDir, station)).toEqual([s.receipt]);
+    // Also restore an existing daily archive after a failed second run.
+    s.receipt.items[0]!.observedAt = "2026-10-28T11:00+09:00";
+    s.save();
+    const withArchive = tree();
+    expect(() => ingest(s.file, false, s.root, failDownstream)).toThrow("Command failed");
+    expect(tree()).toEqual(withArchive);
+    expect(ingest(s.file, false, s.root)).toHaveLength(1);
+    const saved = loadReceipts(archiveDir, station)[0]!;
+    expect(saved.items.filter((item) => item.status === "OPEN")).toHaveLength(2);
+    expect(saved.fieldNotes).toEqual([...s.receipt.fieldNotes, ...s.receipt.fieldNotes]);
+  }, 15_000);
+
   // #747 is a separate, still-open PR. Exercise its actual row function once available.
   it.skipIf(!existsSync(join(repo, "tools/data-age/report.ts")))("shows the field entrance date in the data-age row (#747)", async () => {
     const s = setup(station);
@@ -144,7 +178,7 @@ for (const station of ["ikebukuro", "shinjuku"]) describe(station, () => {
     if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
     const { ageRows } = await import(pathToFileURL(join(repo, "tools/data-age/report.ts")).href);
     expect(ageRows([parsed.bundle]).find((row: any) => row.poiId === s.poiId).entranceDate).toBe("2026-10-28");
-  });
+  }, 15_000);
 });
 
 it("runs a real Ikebukuro CLI ingest on copied bundles", () => {
@@ -153,4 +187,19 @@ it("runs a real Ikebukuro CLI ingest on copied bundles", () => {
   expect(output).toContain("applied 1 CLOSED items");
   expect(s.poi().evidence.checkedDate).toBe("2026-10-28");
   expect(merchantPrecision(s.poi())).toBe("point");
+}, 15_000);
+
+it("promotes an approximate Shinjuku gate to a valid verified entrance", () => {
+  const s = setup("shinjuku");
+  const poiId = "poi:keio-gate:2";
+  const poi = () => read(join(s.dir, "gteki/pois.json")).pois.find((entry: any) => entry.id === poiId);
+  expect(poi().approximatePosition).toBeDefined();
+  s.receipt.items[0]!.poiId = poiId;
+  s.save();
+  ingest(s.file, false, s.root);
+  expect(poi().approximatePosition).toBeUndefined();
+  expect(poi()).toMatchObject({ displayPosition: s.node.position, connectorNodeIds: [s.node.id] });
+  const parsed = parseStationFiles(read(join(s.dir, "gteki/station.json")), read(join(s.dir, "gteki/graph.json")), read(join(s.dir, "gteki/pois.json")), read(join(s.dir, "gteki/tenants.json")));
+  expect(parsed.issues.filter((issue) => issue.level === "error")).toEqual([]);
+  expect(parsed.ok).toBe(true);
 });

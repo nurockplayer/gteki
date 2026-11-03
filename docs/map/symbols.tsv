@@ -869,8 +869,8 @@ ReceiptItem	type	stations/ikebukuro/pipeline/import_field_receipt.ts	5
 FieldReceipt	type	stations/ikebukuro/pipeline/import_field_receipt.ts	18
 validateReceipt	function	stations/ikebukuro/pipeline/import_field_receipt.ts	40
 updatePoi	function	stations/ikebukuro/pipeline/import_field_receipt.ts	77
-applyFieldReceipt	function	stations/ikebukuro/pipeline/import_field_receipt.ts	118
-fieldSource	function	stations/ikebukuro/pipeline/import_field_receipt.ts	152
+applyFieldReceipt	function	stations/ikebukuro/pipeline/import_field_receipt.ts	119
+fieldSource	function	stations/ikebukuro/pipeline/import_field_receipt.ts	153
 RADIUS	const	stations/ikebukuro/pipeline/walker_replay.ts	40
 SPEED	const	stations/ikebukuro/pipeline/walker_replay.ts	42
 World	interface	stations/ikebukuro/pipeline/walker_replay.ts	59
@@ -1550,7 +1550,7 @@ activeContainerNames	function	tools/box-idle.mjs	31
 AgeRow	interface	tools/data-age/report.ts	9
 ageRows	function	tools/data-age/report.ts	23
 markdown	function	tools/data-age/report.ts	69
-ingest	function	tools/field-ingest/ingest.ts	17
+ingest	function	tools/field-ingest/ingest.ts	36
 renameFont	function	tools/fonts/rename-font.mjs	12
 JOYO_KANJI	const	tools/fonts/sign-glyphs.mjs	8
 repoRoot	const	tools/fonts/sign-glyphs.mjs	11

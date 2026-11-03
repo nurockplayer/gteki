@@ -75,6 +75,7 @@ function appendUnique(values: unknown, value: string): string[] {
 }
 
 export function updatePoi(poi: any, item: ReceiptItem, sourceId: string, position?: { x: number; y: number; z: number | null }): any {
+  const { approximatePosition: _approximatePosition, ...verifiedPoi } = poi;
   const locate = poi.displayPosition === null && position !== undefined;
   const date = item.observedAt.slice(0, 10);
   const previousAt = /read on site ([^;]+); connector =/.exec(poi.evidence?.method ?? "")?.[1];
@@ -99,7 +100,7 @@ export function updatePoi(poi: any, item: ReceiptItem, sourceId: string, positio
     if (!notes.some((note: any) => note.lang === lang)) notes.push({ lang, text: sentence });
   }
   return {
-    ...poi,
+    ...verifiedPoi,
     ...(locate ? { displayPosition: clone(position) } : {}),
     connectorNodeIds: appendUnique(poi.connectorNodeIds, item.nodeId!),
     paid: older ? poi.paid : item.paid,

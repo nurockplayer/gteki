@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: GTEki contributors
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, rmdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { merchantPrecision } from "../../apps/web/src/ui/merchantCard.ts";
@@ -13,8 +13,27 @@ const text = (value: unknown, indent?: number) => JSON.stringify(value, null, in
 const normalFloor = (label: string) => label.normalize("NFKC").trim().toUpperCase()
   .replace(/^地下(\d+)階$/, "B$1").replace(/^(B\d+)F$/, "$1").replace(/^(\d+)階$/, "$1F");
 
-/** Validate and apply to a public bundle root; dry runs return the same preview without writing. */
-export function ingest(receiptPath: string, dryRun = false, root = process.cwd()) {
+function withSnapshot(files: string[], apply: () => void) {
+  const before = files.map((file) => ({ file, bytes: existsSync(file) ? readFileSync(file) : null }));
+  const missingDirs = new Set<string>();
+  for (const file of files) {
+    for (let dir = dirname(file); !existsSync(dir); dir = dirname(dir)) missingDirs.add(dir);
+  }
+  try { apply(); }
+  catch (error) {
+    for (const { file, bytes } of before) {
+      if (bytes === null) rmSync(file, { force: true });
+      else writeFileSync(file, bytes);
+    }
+    for (const dir of [...missingDirs].sort((a, b) => b.length - a.length)) {
+      if (existsSync(dir)) rmdirSync(dir);
+    }
+    throw error;
+  }
+}
+
+/** Apply to a public bundle root; an optional station rebuild shares the same rollback snapshot. */
+export function ingest(receiptPath: string, dryRun = false, root = process.cwd(), rebuild?: () => void) {
   const receipt = read(receiptPath) as FieldReceipt;
   if (!["ikebukuro", "shinjuku"].includes(receipt?.station)) throw new Error("station must be ikebukuro or shinjuku");
   const stationDir = join(root, "stations", receipt.station);
@@ -87,24 +106,31 @@ export function ingest(receiptPath: string, dryRun = false, root = process.cwd()
   for (const line of preview) console.log(line);
   if (issues.length) throw new Error(issues.join("\n"));
   if (dryRun || !closed.length) return preview;
-  if (receipt.station === "ikebukuro") {
-    const result = applyFieldReceipt(src, pois, station, receipt, graph);
-    for (const [file, value] of [[srcPath, result.src], [poisPath, result.pois], [stationPath, result.station]] as const) {
-      writeFileSync(file, text(value, 1));
-    }
-  } else {
-    const date = closed.map((item) => item.observedAt.slice(0, 10)).sort().at(-1)!;
-    const archive = join(root, "docs/research/field/receipts", `${date}-shinjuku.json`);
-    // Keep earlier observations when several runs arrive on the same day.
-    const previous = existsSync(archive) ? read(archive) : null;
-    const saved = previous ? { ...receipt, items: [...previous.items, ...receipt.items],
-      fieldNotes: [...(previous.fieldNotes ?? []), ...(receipt.fieldNotes ?? [])] } : receipt;
-    applyFieldReceipts(pois.pois, station.sources, new Set<string>(graph.nodes.map((node: any) => node.id)), [receipt], graph.nodes);
+  const date = closed.map((item) => item.observedAt.slice(0, 10)).sort().at(-1)!;
+  const archive = join(root, "docs/research/field/receipts", `${date}-${receipt.station}.json`);
+  // Keep the original envelope, OPEN items and fieldNotes alongside earlier same-day observations.
+  const previous = existsSync(archive) ? read(archive) : null;
+  const saved = previous ? { ...receipt, items: [...previous.items, ...receipt.items],
+    fieldNotes: [...(previous.fieldNotes ?? []), ...(receipt.fieldNotes ?? [])] } : receipt;
+  const files = [archive, poisPath, stationPath, ...(receipt.station === "ikebukuro" ? [srcPath] : [
+    join(stationDir, "gteki/graph.json"), join(stationDir, "data/plan.json"),
+    join(stationDir, "data/import-report.json"), join(stationDir, "data/surface-baked.json"),
+  ])];
+  withSnapshot(files, () => {
     mkdirSync(dirname(archive), { recursive: true });
     writeFileSync(archive, text(saved, 1));
-    writeFileSync(poisPath, text(pois));
-    writeFileSync(stationPath, text(station));
-  }
+    if (receipt.station === "ikebukuro") {
+      const result = applyFieldReceipt(src, pois, station, receipt, graph);
+      for (const [file, value] of [[srcPath, result.src], [poisPath, result.pois], [stationPath, result.station]] as const) {
+        writeFileSync(file, text(value, 1));
+      }
+    } else {
+      applyFieldReceipts(pois.pois, station.sources, new Set<string>(graph.nodes.map((node: any) => node.id)), [receipt], graph.nodes);
+      writeFileSync(poisPath, text(pois));
+      writeFileSync(stationPath, text(station));
+    }
+    rebuild?.();
+  });
   return preview;
 }
 
@@ -113,11 +139,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const file = process.argv[2];
     if (!file || process.argv.slice(3).some((arg) => arg !== "--dry-run")) throw new Error("usage: pnpm field:ingest <receipt.json> [--dry-run]");
     const dryRun = process.argv.includes("--dry-run");
-    const preview = ingest(file, dryRun);
-    if (!dryRun && preview.length && read(file).station === "shinjuku") {
-      execFileSync("pnpm", ["--filter", "@gteki/station-shinjuku", "import:e27"], { stdio: "inherit" });
-      execFileSync("pnpm", ["--filter", "@gteki/station-shinjuku", "bake:surface"], { stdio: "inherit" });
-    }
+    const preview = ingest(file, dryRun, process.cwd(), () => {
+      if (read(file).station === "shinjuku") {
+        execFileSync("pnpm", ["--filter", "@gteki/station-shinjuku", "import:e27"], { stdio: "inherit" });
+        execFileSync("pnpm", ["--filter", "@gteki/station-shinjuku", "bake:surface"], { stdio: "inherit" });
+      }
+    });
     console.log(dryRun ? "dry run: no files written" : `applied ${preview.length} CLOSED items`);
   } catch (error) {
     console.error((error as Error).message);
