@@ -614,6 +614,16 @@ DISPLAY_LANGS	const	packages/godot/src/export-search.ts	15
 NORMALIZATION	const	packages/godot/src/export-search.ts	17
 SCORING	const	packages/godot/src/export-search.ts	28
 buildSearchExport	function	packages/godot/src/export-search.ts	58
+unmodelledVerticalEdges	function	packages/godot/src/fixtures/connector-reference.ts	14
+ConnectorMaterial	type	packages/godot/src/fixtures/connector-reference.ts	48
+ConnectorPart	interface	packages/godot/src/fixtures/connector-reference.ts	49
+ConnectorOptions	interface	packages/godot/src/fixtures/connector-reference.ts	50
+buildStairs	function	packages/godot/src/fixtures/connector-reference.ts	86
+buildEscalator	function	packages/godot/src/fixtures/connector-reference.ts	121
+ConnectorScope	interface	packages/godot/src/fixtures/connector-reference.ts	206
+skippedConnectorPath	function	packages/godot/src/fixtures/connector-reference.ts	267
+buildConnectors	function	packages/godot/src/fixtures/connector-reference.ts	527
+withinGreyboxBudget	function	packages/godot/src/fixtures/connector-reference.ts	835
 greyboxStats	function	packages/godot/src/greybox-stats.ts	21
 ShimUsage	interface	packages/godot/src/headless-dom.ts	13
 newShimUsage	function	packages/godot/src/headless-dom.ts	24
