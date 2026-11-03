@@ -60,6 +60,8 @@ const STRINGS = {
     } as Record<string, string>,
     /** The merchant card (#213): only what the listing states. */
     merchant: {
+      stepFreeTie: "段差なしで行ける最寄りの改札まで（入口未確認）",
+      noStepFreeTie: "段差なしで行ける改札がありません（入口未確認）",
       source: "出典",
       sourceUnknown: "出典の記録なし",
       checked: "最終確認",
@@ -308,6 +310,8 @@ const STRINGS = {
     } as Record<string, string>,
     /** The merchant card (#213): only what the listing states. */
     merchant: {
+      stepFreeTie: "To the nearest gate reachable step-free (entrance not verified)",
+      noStepFreeTie: "No gate is reachable step-free (entrance not verified)",
       source: "Source",
       sourceUnknown: "No source recorded",
       checked: "Last checked",

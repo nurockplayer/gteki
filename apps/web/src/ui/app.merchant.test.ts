@@ -2,8 +2,9 @@
 // #213 at the wiring level: the category filter narrows both search lists, and a shop destination gets the
 // merchant card beside the no-route card with no direction control anywhere.
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Poi, Source } from "@gteki/schema";
-import { createRouter, routeBetween } from "@gteki/navigation";
+import { readFileSync } from "node:fs";
+import { parseStationFiles, type Poi, type Source } from "@gteki/schema";
+import { createRouter, routeBetween, type RouteFailure, type RouteResult, type Router } from "@gteki/navigation";
 import { createSearchIndex } from "@gteki/search";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import { strings, type Lang } from "../i18n.ts";
@@ -14,15 +15,17 @@ import { App } from "./app.ts";
 
 type Harness = {
   s: {
-    lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | null; route: unknown; noPath: null;
+    lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | null; route: RouteResult | RouteFailure | null; noPath: unknown;
     destination: Poi | null; destinationTenant: null; search?: unknown; filter: Poi["category"] | null;
+    router: Router | null; profile: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
     origin?: unknown; polyline?: unknown[]; instructions?: unknown[]; activeInstruction?: number;
   };
-  ui: { sheet: HTMLElement; categoryFilter: HTMLSelectElement; toInput: HTMLInputElement; fromInput: HTMLInputElement; toResults: HTMLElement };
+  ui: { minimap: { setRoute: ReturnType<typeof vi.fn> }; live: { announce: ReturnType<typeof vi.fn> }; sheet: HTMLElement; categoryFilter: HTMLSelectElement; toInput: HTMLInputElement; fromInput: HTMLInputElement; toResults: HTMLElement };
   t: ReturnType<typeof strings>;
   renderCategoryFilter: (b: ReturnType<typeof createSyntheticBundle> | undefined) => void;
   renderResults: (which: "from" | "to") => void;
   renderSheet: () => void;
+  computeRoute: () => void;
   explorer: unknown;
 };
 
@@ -61,7 +64,12 @@ function app(lang: Lang = "ja") {
   a.s.noPath = null;
   a.s.search = createSearchIndex(bundle);
   // renderSheet refits an automatic overview after the sheet opens or closes (#385); the real App always has one.
-  a.explorer = { refitOverview: vi.fn() } as unknown;
+  a.explorer = {
+    refitOverview: vi.fn(), clearRoute: vi.fn(), showRoute: vi.fn(), focusPoints: vi.fn(),
+    connectorRoutePaths: () => null, navmeshRoutePaths: () => null, currentMode: "overview",
+  };
+  a.ui.minimap = { setRoute: vi.fn() };
+  a.ui.live = { announce: vi.fn() };
   for (const name of ["releaseMascot", "mascotSay"] as const) vi.spyOn(a as unknown as Record<string, () => void>, name).mockImplementation(() => {});
   return { a, bundle };
 }
@@ -186,5 +194,62 @@ describe("merchant card in the route sheet (#213)", () => {
     a.s.route = { ok: false, reason: "unknown_goal", message: "no entrance" };
     a.renderSheet();
     expect(a.ui.sheet.querySelector(".card.merchant")).toBeNull();
+  });
+});
+
+
+describe("step-free routes to unverified store ties", () => {
+  it.each(["ja", "en"] as const)("keeps ordinary routing and chooses the cheapest accessible tie in %s", (lang) => {
+    const { a, bundle } = app(lang);
+    const tie = shopPoi({
+      connectorNodeIds: ["a", "b", "goal"], paid: false,
+      evidence: { ...shopPoi().evidence, method: "STATION_TIE: entrance unverified" },
+    });
+    // The closest tie needs stairs. The accessible lift is shorter in metres but costs
+    // more time than the walk, so the walk must win the step-free multi-target query.
+    bundle.edges.push(
+      syntheticEdge("stairs", "start", "a", { mode: "stairs", lengthM: 1 }),
+      syntheticEdge("lift", "start", "b", { mode: "elevator", lengthM: 2 }),
+      syntheticEdge("walk", "start", "goal", { lengthM: 12 }),
+    );
+    a.s.router = createRouter(bundle);
+    a.s.origin = { kind: "node", nodeId: "start" };
+    a.s.destination = tie;
+    a.computeRoute();
+    expect(a.s.route).toMatchObject({ ok: true, nodeIds: ["start", "a"], profile: { stepFree: false } });
+    expect(a.ui.sheet.querySelector(".card.route .entrance-unverified")?.textContent).toBe(strings(lang).merchant.precision.tie);
+    expect(a.ui.sheet.querySelector(".merchant-meta")?.textContent).not.toContain(strings(lang).merchant.stepFreeTie);
+
+    a.s.profile.stepFree = true;
+    a.computeRoute();
+    expect(a.s.route).toMatchObject({ ok: true, nodeIds: ["start", "goal"], steps: [{ edgeId: "walk" }], profile: { stepFree: true } });
+    expect(a.ui.sheet.querySelector(".card.route .entrance-unverified")?.textContent).toBe(strings(lang).merchant.stepFreeTie);
+    expect(a.ui.sheet.querySelector(".merchant-meta")?.textContent).toContain(strings(lang).merchant.stepFreeTie);
+    expect(a.ui.sheet.querySelector(".merchant-no-route")).toBeNull();
+
+    a.s.profile.stepFree = false;
+    a.computeRoute();
+    expect(a.s.route).toMatchObject({ ok: true, nodeIds: ["start", "a"] });
+    expect(a.ui.sheet.querySelector(".card.route .entrance-unverified")?.textContent).toBe(strings(lang).merchant.precision.tie);
+  });
+
+  it.each(["ja", "en"] as const)("shows no reachable gate for real Ikebukuro Seibu in %s", (lang) => {
+    const { a } = app(lang);
+    const read = (file: string) => JSON.parse(readFileSync(`stations/ikebukuro/gteki/${file}.json`, "utf8"));
+    const parsed = parseStationFiles(read("station"), read("graph"), read("pois"));
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+    const bundle = parsed.bundle;
+    a.s.loaded = { bundle };
+    a.s.router = createRouter(bundle);
+    a.s.origin = { kind: "poi", poi: bundle.pois.find((p) => p.id === "jr-central-gate-2")! };
+    a.s.destination = bundle.pois.find((p) => p.id === "shop-ikb-seibu-honten")!;
+    a.s.profile.stepFree = true;
+    a.computeRoute();
+    expect(a.s.route).toMatchObject({ ok: false, reason: "no_path" });
+    expect(a.ui.sheet.querySelector(".card.no-route")?.textContent).toContain(strings(lang).merchant.noStepFreeTie);
+    expect(a.ui.sheet.querySelector(".merchant-no-route")?.textContent).toBe(strings(lang).merchant.noStepFreeTie);
+    expect(a.ui.sheet.querySelector("button.primary")).toBeNull();
+    expect(a.ui.sheet.querySelector(".card.route")).toBeNull();
+    expect(a.ui.live.announce).toHaveBeenCalledWith(expect.stringContaining(strings(lang).merchant.noStepFreeTie));
   });
 });

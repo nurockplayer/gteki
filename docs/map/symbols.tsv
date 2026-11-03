@@ -414,11 +414,11 @@ printedHours	function	apps/web/src/hours.ts	15
 HOURS_STALE_DAYS	const	apps/web/src/hours.ts	29
 hoursStale	function	apps/web/src/hours.ts	32
 Lang	type	apps/web/src/i18n.ts	6
-Strings	type	apps/web/src/i18n.ts	497
-strings	function	apps/web/src/i18n.ts	499
-pick	function	apps/web/src/i18n.ts	504
-coverageText	function	apps/web/src/i18n.ts	513
-initialLang	function	apps/web/src/i18n.ts	518
+Strings	type	apps/web/src/i18n.ts	501
+strings	function	apps/web/src/i18n.ts	503
+pick	function	apps/web/src/i18n.ts	508
+coverageText	function	apps/web/src/i18n.ts	517
+initialLang	function	apps/web/src/i18n.ts	522
 FormClock	interface	apps/web/src/merchant/form-state.ts	9
 FormState	interface	apps/web/src/merchant/form-state.ts	18
 newFormState	function	apps/web/src/merchant/form-state.ts	32
@@ -523,8 +523,8 @@ isMapReadDoor	const	apps/web/src/ui/merchantCard.ts	21
 arrivalPrecision	function	apps/web/src/ui/merchantCard.ts	24
 merchantPrecision	function	apps/web/src/ui/merchantCard.ts	36
 MerchantCardModel	interface	apps/web/src/ui/merchantCard.ts	47
-merchantCardModel	function	apps/web/src/ui/merchantCard.ts	71
-merchantCardEl	function	apps/web/src/ui/merchantCard.ts	109
+merchantCardModel	function	apps/web/src/ui/merchantCard.ts	72
+merchantCardEl	function	apps/web/src/ui/merchantCard.ts	111
 Minimap	class	apps/web/src/ui/minimap.ts	41
 MinimapOrientation	type	apps/web/src/ui/minimapGeometry.ts	7
 MapPoint	interface	apps/web/src/ui/minimapGeometry.ts	8

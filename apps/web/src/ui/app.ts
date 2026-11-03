@@ -1017,7 +1017,8 @@ export class App {
     const profile = this.profile();
     const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
-    this.ui.live.announce(routeLiveMessage(this.t, best, !best.ok && best.reason === "unknown_goal" && isUnlocatedShop(destination) ? this.t.shopNoRoute : undefined));
+    const tieStatus = this.stepFreeTieStatus();
+    this.ui.live.announce(routeLiveMessage(this.t, best, tieStatus === "noStepFreeTie" ? this.t.merchant.noStepFreeTie : !best.ok && best.reason === "unknown_goal" && isUnlocatedShop(destination) ? this.t.shopNoRoute : undefined));
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
@@ -1050,7 +1051,8 @@ export class App {
     if (!r.ok) {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
-      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
+      const tieStatus = this.stepFreeTieStatus();
+      card.append(el("h2", undefined, t.noRoute), el("p", undefined, tieStatus === "noStepFreeTie" ? t.merchant.noStepFreeTie : view?.text ?? noRouteText(t, r, this.s.destination)));
       // The picked brand came from an unverified directory (#419): the failed card says when it was checked.
       const asOf = tenantAsOfNote(this.s.destinationTenant, t);
       if (asOf) card.append(el("p", "muted tenant-asof", asOf));
@@ -1186,7 +1188,7 @@ export class App {
     // A store routed to its printed station-level tie or a map-read door, not a verified door, says so (#213).
     const arrivalTie = this.s.destination && arrivalPrecision(this.s.destination) ? this.s.destination : null;
     if (arrivalTie) {
-      card.append(el("p", "muted entrance-unverified", t.merchant.precision[arrivalPrecision(arrivalTie)!]));
+      card.append(el("p", "muted entrance-unverified", r.profile.stepFree && arrivalPrecision(arrivalTie) === "tie" ? t.merchant.stepFreeTie : t.merchant.precision[arrivalPrecision(arrivalTie)!]));
       const arrivalNote = poiNoteText(arrivalTie, this.s.lang);
       if (arrivalNote) card.append(el("p", "muted", arrivalNote));
     }
@@ -1195,13 +1197,20 @@ export class App {
     if (merchant) sheet.append(merchant);
   }
 
+  private stepFreeTieStatus(): "stepFreeTie" | "noStepFreeTie" | null {
+    const { destination, route, profile } = this.s;
+    if (!destination || destination.category !== "shop" || arrivalPrecision(destination) !== "tie" || !profile.stepFree || !route) return null;
+    if (route.ok) return "stepFreeTie";
+    return route.reason === "no_path" ? "noStepFreeTie" : null;
+  }
+
   /** The merchant card (#213) for a shop destination, or null: only a shop carries a directory listing. */
   private merchantCard(): HTMLElement | null {
     const poi = this.s.destination;
     const b = this.s.loaded?.bundle;
     if (!poi || poi.category !== "shop" || !b) return null;
     return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi),
-      (b.tenants ?? []).filter((tenant) => tenant.poiId === poi.id)), this.t, b.sources, this.s.lang);
+      (b.tenants ?? []).filter((tenant) => tenant.poiId === poi.id), this.stepFreeTieStatus()), this.t, b.sources, this.s.lang);
   }
 
   // ---- Modes / HUD -----------------------------------------------------------------
