@@ -767,7 +767,8 @@ ConnectorPoint	type	packages/navigation/src/navmesh-connector.ts	5
 buildConnectorPath	function	packages/navigation/src/navmesh-connector.ts	8
 RouteEndpoint	type	packages/navigation/src/poi.ts	5
 RouteDestination	type	packages/navigation/src/poi.ts	8
-routeBetween	function	packages/navigation/src/poi.ts	16
+destinationNodeIds	function	packages/navigation/src/poi.ts	11
+routeBetween	function	packages/navigation/src/poi.ts	21
 PolylinePoint	interface	packages/navigation/src/present.ts	13
 nodeDisplayZ	function	packages/navigation/src/present.ts	31
 NavmeshEdgePaths	type	packages/navigation/src/present.ts	39
