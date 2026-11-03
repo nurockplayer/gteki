@@ -141,10 +141,8 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     add("steel",beam(pos(w.a,.28),pos(w.b,.28),.04,.04),mats.steel);
   }
   const entrances=surfaceEntrances(layout,opts.bundle);
-  const atlasScale=opts.quality === "low" ? 0.5 : 1;
-  const atlas=document.createElement("canvas");atlas.width=2048*atlasScale;atlas.height=entrances.length*384*atlasScale;
+  const atlas=document.createElement("canvas");atlas.width=2048;atlas.height=entrances.length*384;
   const ctx=atlas.getContext("2d", { willReadFrequently: true })!;
-  if(atlasScale!==1)ctx.scale(atlasScale,atlasScale);
   entrances.forEach((e,index)=>{
     const y=index*384;
     ctx.fillStyle="#edf0ee";ctx.fillRect(0,y,2048,384);

@@ -586,15 +586,7 @@ export function buildSigns(
   const packedIdentity = packIdentity([...identityArt.values()]);
   const textures: THREE_NS.Texture[] = [];
   const addPage = (page: HTMLCanvasElement, pageFaces: Face[], pageSlots: typeof slots, pi: number, name: string) => {
-    // #276: halve the phone upload once, keeping shelf packing and face UVs unchanged.
-    let image = page;
-    if (texelScale < 1) {
-      image = document.createElement("canvas");
-      image.width = Math.round(page.width / 2);
-      image.height = Math.round(page.height / 2);
-      image.getContext("2d", { willReadFrequently: true })!.drawImage(page, 0, 0, image.width, image.height);
-    }
-    const tex = new THREE.CanvasTexture(image);
+    const tex = new THREE.CanvasTexture(page);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = anisotropy;
     textures.push(tex);
@@ -626,7 +618,7 @@ export function buildSigns(
   return {
     group,
     layouts,
-    /** Packing page sizes (px), before the phone upload is halved: one 4096 x 2048 page, plus a 4096 x <= 1024
+    /** Atlas page sizes (px), for tests and the harness: on the low tier one 4096 x 2048 page, plus a 4096 x <= 1024
      *  overflow page only when the faces need it. */
     pages: pages.map((p) => ({ w: p.width, h: p.height })),
     identityPages: packedIdentity.pages.map((p) => ({ w: p.width, h: p.height })),
