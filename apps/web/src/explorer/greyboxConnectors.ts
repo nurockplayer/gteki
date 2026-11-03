@@ -930,15 +930,30 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     return [{ id: edge.from, at: points[0]! }, { id: edge.to, at: points.at(-1)! }];
   };
   const hallEdges = bundle.edges.filter((edge) => edge.mode === "walk").sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const landingStubs = bundle.edges.filter((edge) => edge.mode === "elevator").sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   for (const shaft of liftShafts(liftEdges, liftEnds)) {
-    // Choose the lowest car id, then horizontal walk edge id, independently of bundle order; rides are never halls.
+    // Choose the lowest hall node id, then horizontal walk edge id, independently of bundle order; rides are never halls.
     // Follow the hall away from the car: its first segment leaving the shaft chooses the door face and offset.
     const doorOf = (nodeIds: readonly string[]): { face: number; offset: number } => {
-      for (const nodeId of [...nodeIds].sort()) for (const other of hallEdges) {
+      // A same-level car-to-hall stub joins the stop to its walking hall; it cannot itself choose a door.
+      const starts = [...nodeIds].sort().flatMap((nodeId) => {
+        const starts = [{ nodeId, approach: [] as THREE.Vector3[] }];
+        for (const stub of landingStubs) {
+          if (!traversable(stub) || (stub.from !== nodeId && stub.to !== nodeId)) continue;
+          const approach = edgePoints(bundle, stub, nodes, floors);
+          if (approach.length < 2 || Math.max(...approach.map((p) => p.y)) - Math.min(...approach.map((p) => p.y)) > 0.5) continue;
+          if (stub.to === nodeId) approach.reverse();
+          starts.push({ nodeId: stub.from === nodeId ? stub.to : stub.from, approach });
+        }
+        return starts;
+      }).sort((a, b) => a.nodeId < b.nodeId ? -1 : a.nodeId > b.nodeId ? 1 : 0);
+      for (const { nodeId, approach } of starts) for (const other of hallEdges) {
         if (!traversable(other) || (other.from !== nodeId && other.to !== nodeId)) continue;
-        const points = edgePoints(bundle, other, nodes, floors);
-        if (points.length < 2 || Math.max(...points.map((p) => p.y)) - Math.min(...points.map((p) => p.y)) > 0.5) continue;
-        if (other.to === nodeId) points.reverse();
+        const hall = edgePoints(bundle, other, nodes, floors);
+        if (hall.length < 2) continue;
+        if (other.to === nodeId) hall.reverse();
+        const points = [...approach.slice(0, -1), ...hall];
+        if (Math.max(...points.map((p) => p.y)) - Math.min(...points.map((p) => p.y)) > 0.5) continue;
         const firstOutside = points.findIndex((p, i) => i > 0 && Math.max(Math.abs(p.x - shaft.centre.x), Math.abs(p.z - shaft.centre.z)) > SHAFT_HALF + 1e-9);
         const car = points[firstOutside > 0 ? firstOutside - 1 : 0]!, far = firstOutside > 0 ? points[firstOutside]! : points.at(-1)!;
         const dir = far.clone().sub(shaft.centre); dir.y = 0;
