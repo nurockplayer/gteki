@@ -48,5 +48,5 @@ export interface SearchIndex {
   search(query: string, opts?: SearchOptions): SearchHit[];
 }
 
-export { createSearchIndex, normalizeJa } from "./search.ts";
+export { createSearchIndex, normalizeJa, searchKey } from "./search.ts";
 export type { StationBundle };
