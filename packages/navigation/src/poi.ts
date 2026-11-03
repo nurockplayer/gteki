@@ -7,6 +7,11 @@ export type RouteEndpoint = { kind: "poi"; poi: Poi } | { kind: "node"; nodeId: 
 /** A destination POI routed via its connectors, or bare graph nodes with no destination fare state. */
 export type RouteDestination = Poi | { kind: "nodes"; nodeIds: string[] };
 
+/** The graph nodes used when routing to a destination. */
+export function destinationNodeIds(to: RouteDestination): string[] {
+  return "kind" in to ? to.nodeIds : to.connectorNodeIds;
+}
+
 /**
  * Route between POIs or graph nodes under the same truth rules as the router's edges: under
  * `unpaid_only` a POI endpoint must be known to be outside the paid area (`paid === false`); a
@@ -16,7 +21,7 @@ export type RouteDestination = Poi | { kind: "nodes"; nodeIds: string[] };
 export function routeBetween(router: Router, from: RouteEndpoint, to: RouteDestination, profile: RouteProfile): RouteResult | RouteFailure {
   const starts = from.kind === "poi" ? from.poi.connectorNodeIds : [from.nodeId];
   if (starts.length === 0) return { ok: false, reason: "unknown_start", message: "origin has no verified entrance" };
-  const goals = "kind" in to ? to.nodeIds : to.connectorNodeIds;
+  const goals = destinationNodeIds(to);
   if (goals.length === 0) return { ok: false, reason: "unknown_goal", message: "destination has no verified entrance" };
   if (profile.fare === "unpaid_only") {
     for (const [role, poi] of [["origin", from.kind === "poi" ? from.poi : null], ["destination", "kind" in to ? null : to]] as const)

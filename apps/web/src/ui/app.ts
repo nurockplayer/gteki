@@ -1,4 +1,4 @@
-import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
+import { createRouter, describeRoute, destinationNodeIds, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
 import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
@@ -1210,14 +1210,20 @@ export class App {
     if (cause.option !== "stepFree") return null;
     if (cause.noData || cause.evidence === "unknown" || cause.evidence === "mixed") return "unsurveyedStepFreeTie";
     if (!cause.complete || cause.evidence !== "known" || !router || !loaded || !origin) return null;
-    // The explanation samples one relaxed route. Check all tie targets together without
-    // known barriers before ruling out an alternative whose access is merely unsurveyed.
+    // The explanation samples one relaxed route. A tie is known inaccessible only if
+    // it is reachable under the profile and every route to it needs a known barrier.
     const knownBarriers = loaded.bundle.edges.filter((edge) => edge.mode === "stairs" || edge.mode === "escalator"
       || edge.accessEvidence && (edge.wheelchair === false || edge.steps === true)).map((edge) => edge.id);
-    const possible = routeBetween(router, origin, destination, {
-      ...this.profile(), stepFree: false, extraClosedEdgeIds: knownBarriers,
+    const relaxed = { ...this.profile(), stepFree: false };
+    const allKnownInaccessible = destinationNodeIds(destination).every((nodeId) => {
+      const target = { kind: "nodes" as const, nodeIds: [nodeId] };
+      const reachable = routeBetween(router, origin, target, relaxed).ok;
+      const reachableWithoutBarriers = routeBetween(router, origin, target, {
+        ...relaxed, extraClosedEdgeIds: knownBarriers,
+      }).ok;
+      return reachable && !reachableWithoutBarriers;
     });
-    return possible.ok ? "unsurveyedStepFreeTie" : possible.reason === "no_path" ? "noStepFreeTie" : null;
+    return allKnownInaccessible ? "noStepFreeTie" : "unsurveyedStepFreeTie";
   }
 
   /** The merchant card (#213) for a shop destination, or null: only a shop carries a directory listing. */
