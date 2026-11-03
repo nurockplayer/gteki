@@ -37,6 +37,7 @@ test("ikebukuro: 西武池袋本店 cannot confirm a step-free gate when access 
   await expect(page.locator(".card.no-route")).toContainText(message);
   await expect(page.locator(".card.no-route")).toContainText("段差の有無が未調査の通路");
   await expect(page.locator(".card.no-route")).not.toContainText("段差なしで行ける改札がありません");
+  await expect(page.locator('.card.merchant[data-poi-id="shop-ikb-seibu-honten"]')).not.toContainText("段差なしで行ける改札まで（入口未確認）");
   await expect(page.locator('.card.merchant[data-poi-id="shop-ikb-seibu-honten"] .merchant-no-route')).toHaveText(message);
   await expect(page.locator(".card .actions button.primary")).toHaveCount(0);
   expect(await hooks.route(page)).toMatchObject({ ok: false, reason: "no_path" });
