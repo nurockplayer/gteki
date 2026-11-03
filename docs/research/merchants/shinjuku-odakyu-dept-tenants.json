@@ -29,7 +29,12 @@
     {
       "id": "tenant-sjk-odakyudept-004",
       "name": "アクセーヌ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ACSEINE"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -64,35 +69,60 @@
     {
       "id": "tenant-sjk-odakyudept-009",
       "name": "アタオ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ATAO"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ハンドバッグ"
     },
     {
       "id": "tenant-sjk-odakyudept-010",
       "name": "アテニア",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Attenir"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-011",
       "name": "アディクション",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ADDICTION"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-012",
       "name": "アトリテナ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ATRITENA"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-013",
       "name": "アナ スイ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ANNA SUI"
+        }
+      ],
       "floorLabel": "１階",
       "category": "アクセサリー・雑貨"
     },
@@ -106,14 +136,24 @@
     {
       "id": "tenant-sjk-odakyudept-015",
       "name": "アラビア",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ARABIA"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（和洋食器）"
     },
     {
       "id": "tenant-sjk-odakyudept-016",
       "name": "有賀園ゴルフ eStand+",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ARIGAEN GOLF eStand+"
+        }
+      ],
       "floorLabel": "１階",
       "category": "ゴルフ用品"
     },
@@ -127,7 +167,12 @@
     {
       "id": "tenant-sjk-odakyudept-018",
       "name": "アルビオン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ALBION"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -190,7 +235,12 @@
     {
       "id": "tenant-sjk-odakyudept-027",
       "name": "イッタラ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "IITTARA"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（和洋食器）"
     },
@@ -204,14 +254,24 @@
     {
       "id": "tenant-sjk-odakyudept-029",
       "name": "イプサ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "IPSA"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-030",
       "name": "ウェッジウッド",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "WEDGWOOD"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（和洋食器）"
     },
@@ -232,14 +292,24 @@
     {
       "id": "tenant-sjk-odakyudept-033",
       "name": "エスティ ローダー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ESTÉE LAUDER"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-034",
       "name": "エスト",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "est"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -260,7 +330,12 @@
     {
       "id": "tenant-sjk-odakyudept-037",
       "name": "エルベシャプリエ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Hervé Chapelier"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ハンドバッグ"
     },
@@ -288,7 +363,12 @@
     {
       "id": "tenant-sjk-odakyudept-041",
       "name": "オグラ眼鏡店",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "OGURA Eyewear Shop"
+        }
+      ],
       "floorLabel": "７階",
       "category": "メガネ・こどもメガネ・補聴器"
     },
@@ -309,7 +389,12 @@
     {
       "id": "tenant-sjk-odakyudept-044",
       "name": "オメガ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "OMEGA"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック"
     },
@@ -372,14 +457,24 @@
     {
       "id": "tenant-sjk-odakyudept-053",
       "name": "カネボウ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "KANEBO"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-054",
       "name": "カバーマーク",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "COVERMARK"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -400,7 +495,12 @@
     {
       "id": "tenant-sjk-odakyudept-057",
       "name": "カルティエ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Cartier"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（時計）"
     },
@@ -428,7 +528,12 @@
     {
       "id": "tenant-sjk-odakyudept-061",
       "name": "キタムラ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Kitamura"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ハンドバッグ"
     },
@@ -540,7 +645,12 @@
     {
       "id": "tenant-sjk-odakyudept-077",
       "name": "クラランス",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "CLARINS"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -561,42 +671,72 @@
     {
       "id": "tenant-sjk-odakyudept-080",
       "name": "クリニーク",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "CLINIQUE"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-081",
       "name": "クレ・ド・ポー ボーテ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Clé de Peau Beauté"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-082",
       "name": "クレドール",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "CREDOR"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（時計）"
     },
     {
       "id": "tenant-sjk-odakyudept-083",
       "name": "グッチ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "GUCCI"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（※紳士雑貨も取り扱いあり）"
     },
     {
       "id": "tenant-sjk-odakyudept-084",
       "name": "グッチ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "GUCCI"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（※紳士雑貨）"
     },
     {
       "id": "tenant-sjk-odakyudept-085",
       "name": "グランドセイコー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Grand Seiko"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（時計）"
     },
@@ -610,7 +750,12 @@
     {
       "id": "tenant-sjk-odakyudept-087",
       "name": "グローバル",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "GLOBAL"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（キッチン用品）"
     },
@@ -631,14 +776,24 @@
     {
       "id": "tenant-sjk-odakyudept-090",
       "name": "ゲラン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "GUERLAIN"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-091",
       "name": "ココシュニック",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "COCOSHNIK"
+        }
+      ],
       "floorLabel": "１階",
       "category": "アクセサリー・雑貨"
     },
@@ -652,7 +807,12 @@
     {
       "id": "tenant-sjk-odakyudept-093",
       "name": "コスメデコルテ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "DECORTÉ"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -673,7 +833,12 @@
     {
       "id": "tenant-sjk-odakyudept-096",
       "name": "コーチ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "COACH"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ハンドバッグ（※紳士雑貨も取り扱いあり）"
     },
@@ -694,7 +859,12 @@
     {
       "id": "tenant-sjk-odakyudept-099",
       "name": "ゴールディ アッシュ・ペー・フランス",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "goldie H.P.FRANCE"
+        }
+      ],
       "floorLabel": "１階",
       "category": "アクセサリー・雑貨"
     },
@@ -729,7 +899,12 @@
     {
       "id": "tenant-sjk-odakyudept-104",
       "name": "サムソナイト",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Samsonite"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック"
     },
@@ -771,42 +946,72 @@
     {
       "id": "tenant-sjk-odakyudept-110",
       "name": "サンローラン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "SAINT LAURENT"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（紳士雑貨）"
     },
     {
       "id": "tenant-sjk-odakyudept-111",
       "name": "サンローラン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "SAINT LAURENT"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（※紳士雑貨も取り扱いあり）"
     },
     {
       "id": "tenant-sjk-odakyudept-112",
       "name": "資生堂",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "SHISEIDO"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-113",
       "name": "シャネル",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "CHANEL"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（※婦人服も取り扱いあり）"
     },
     {
       "id": "tenant-sjk-odakyudept-114",
       "name": "シャネル",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "CHANEL"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-115",
       "name": "シュウ ウエムラ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "shu uemura"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -841,7 +1046,12 @@
     {
       "id": "tenant-sjk-odakyudept-121",
       "name": "ジャックバニー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Jack Bunny!!"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
@@ -869,21 +1079,36 @@
     {
       "id": "tenant-sjk-odakyudept-125",
       "name": "ジョー マローン ロンドン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "JO MALONE LONDON"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-126",
       "name": "ジルスチュアート",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "JILL STUART"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-127",
       "name": "ジンズ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "JINS"
+        }
+      ],
       "floorLabel": "２階",
       "category": "アイウェア"
     },
@@ -904,7 +1129,12 @@
     {
       "id": "tenant-sjk-odakyudept-130",
       "name": "スック",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "SUQQU"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -932,7 +1162,12 @@
     {
       "id": "tenant-sjk-odakyudept-134",
       "name": "スワロフスキー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "SWAROVSKI"
+        }
+      ],
       "floorLabel": "１階",
       "category": "アクセサリー・雑貨"
     },
@@ -953,14 +1188,24 @@
     {
       "id": "tenant-sjk-odakyudept-137",
       "name": "セント・アンドリュース",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "St.ANDREWS"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
     {
       "id": "tenant-sjk-odakyudept-138",
       "name": "ゾーイ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ZOY"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
@@ -988,7 +1233,12 @@
     {
       "id": "tenant-sjk-odakyudept-142",
       "name": "ダミアーニ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "DAMIANI"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック"
     },
@@ -1016,7 +1266,12 @@
     {
       "id": "tenant-sjk-odakyudept-146",
       "name": "ツヴィリング",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ZWILLING"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（キッチン用品）"
     },
@@ -1030,7 +1285,12 @@
     {
       "id": "tenant-sjk-odakyudept-148",
       "name": "ディオール",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Dior"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -1051,7 +1311,12 @@
     {
       "id": "tenant-sjk-odakyudept-151",
       "name": "トム フォード ビューティ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "TOM FORD BEAUTY"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -1086,7 +1351,12 @@
     {
       "id": "tenant-sjk-odakyudept-156",
       "name": "ナディア",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "NADIA"
+        }
+      ],
       "floorLabel": "７階",
       "category": "宝飾"
     },
@@ -1128,7 +1398,12 @@
     {
       "id": "tenant-sjk-odakyudept-162",
       "name": "ニューバランスゴルフ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "new balance golf"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
@@ -1142,7 +1417,12 @@
     {
       "id": "tenant-sjk-odakyudept-164",
       "name": "能作",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "NOUSAKU"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（和洋食器）"
     },
@@ -1163,14 +1443,24 @@
     {
       "id": "tenant-sjk-odakyudept-167",
       "name": "ノリタケ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Noritake"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（和洋食器）"
     },
     {
       "id": "tenant-sjk-odakyudept-168",
       "name": "ハウス オブ ローゼ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "HOUSE OF ROSE"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -1184,21 +1474,36 @@
     {
       "id": "tenant-sjk-odakyudept-170",
       "name": "ハリオ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "HARIO"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（キッチン用品）"
     },
     {
       "id": "tenant-sjk-odakyudept-171",
       "name": "ハートマン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Hartmann"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック"
     },
     {
       "id": "tenant-sjk-odakyudept-172",
       "name": "ハーバー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "HABA"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -1226,7 +1531,12 @@
     {
       "id": "tenant-sjk-odakyudept-176",
       "name": "パンドラ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "PANDORA"
+        }
+      ],
       "floorLabel": "１階",
       "category": "アクセサリー・雑貨"
     },
@@ -1247,7 +1557,12 @@
     {
       "id": "tenant-sjk-odakyudept-179",
       "name": "パーリーゲイツ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "PEARLY GATES"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
@@ -1268,35 +1583,60 @@
     {
       "id": "tenant-sjk-odakyudept-182",
       "name": "ビレロイ＆ボッホ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Villeroy & Boch"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（和洋食器）"
     },
     {
       "id": "tenant-sjk-odakyudept-183",
       "name": "ビームス ゴルフ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "BEAMS GOLF"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
     {
       "id": "tenant-sjk-odakyudept-184",
       "name": "ピン アパレル",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "PING APPAREL"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
     {
       "id": "tenant-sjk-odakyudept-185",
       "name": "ファンケル",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "FANCL"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-186",
       "name": "フェイラー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "FEILER"
+        }
+      ],
       "floorLabel": "２階",
       "category": "婦人服飾雑貨"
     },
@@ -1317,14 +1657,24 @@
     {
       "id": "tenant-sjk-odakyudept-189",
       "name": "フランク ミュラー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "FRANCK MULLER"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（時計）"
     },
     {
       "id": "tenant-sjk-odakyudept-190",
       "name": "フルラ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "FURLA"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ハンドバッグ（※紳士鞄も取り扱いあり）"
     },
@@ -1422,21 +1772,36 @@
     {
       "id": "tenant-sjk-odakyudept-205",
       "name": "ポーラ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "POLA"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-206",
       "name": "ポール ＆ ジョー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "PAUL & JOE beaute"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
     {
       "id": "tenant-sjk-odakyudept-207",
       "name": "マイケル・コース",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "MICHAEL KORS"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ハンドバッグ"
     },
@@ -1457,14 +1822,24 @@
     {
       "id": "tenant-sjk-odakyudept-210",
       "name": "マザーハウス",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "MOTHERHOUSE"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ハンドバッグ（※紳士雑貨も取り扱いあり）"
     },
     {
       "id": "tenant-sjk-odakyudept-211",
       "name": "マスターバニーエディション",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "MASTER BUNNY EDITION"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
@@ -1520,7 +1895,12 @@
     {
       "id": "tenant-sjk-odakyudept-219",
       "name": "ミキモト",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "MIKIMOTO"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック（宝飾）"
     },
@@ -1555,14 +1935,24 @@
     {
       "id": "tenant-sjk-odakyudept-224",
       "name": "ムーンレーベル",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "Moon Label"
+        }
+      ],
       "floorLabel": "１階",
       "category": "アクセサリー・雑貨"
     },
     {
       "id": "tenant-sjk-odakyudept-225",
       "name": "メイクアップソリューション",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "MAKE UP SOLUTION"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -1576,7 +1966,12 @@
     {
       "id": "tenant-sjk-odakyudept-227",
       "name": "モニッケンダム",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "MONNICKENDAM"
+        }
+      ],
       "floorLabel": "７階",
       "category": "宝飾"
     },
@@ -1590,21 +1985,36 @@
     {
       "id": "tenant-sjk-odakyudept-229",
       "name": "モンブラン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "MONT-BLANC"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック"
     },
     {
       "id": "tenant-sjk-odakyudept-230",
       "name": "モーブッサン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "MAUBOUSSIN"
+        }
+      ],
       "floorLabel": "１階",
       "category": "インターナショナルブティック"
     },
     {
       "id": "tenant-sjk-odakyudept-231",
       "name": "ヤーマン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "YA-MAN"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -1709,7 +2119,12 @@
     {
       "id": "tenant-sjk-odakyudept-246",
       "name": "ランコム",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "LANCÔME"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -1730,7 +2145,12 @@
     {
       "id": "tenant-sjk-odakyudept-249",
       "name": "リファ",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ReFa"
+        }
+      ],
       "floorLabel": "地下１階",
       "category": "化粧品"
     },
@@ -1793,7 +2213,12 @@
     {
       "id": "tenant-sjk-odakyudept-258",
       "name": "レスポートサック",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "LeSportsac"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ハンドバッグ"
     },
@@ -1814,14 +2239,24 @@
     {
       "id": "tenant-sjk-odakyudept-261",
       "name": "ロイヤル・アッシャー",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ROYAL ASSCHER"
+        }
+      ],
       "floorLabel": "７階",
       "category": "宝飾"
     },
     {
       "id": "tenant-sjk-odakyudept-262",
       "name": "ロイヤルコペンハーゲン",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "ROYAL COPENHAGEN"
+        }
+      ],
       "floorLabel": "２階",
       "category": "ライフスタイル雑貨（和洋食器）"
     },
@@ -1835,7 +2270,12 @@
     {
       "id": "tenant-sjk-odakyudept-264",
       "name": "ワック",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "WAAC"
+        }
+      ],
       "floorLabel": "M２階",
       "category": "ゴルフウェア"
     },
@@ -1849,7 +2289,12 @@
     {
       "id": "tenant-sjk-odakyudept-266",
       "name": "ヴァンドーム青山",
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja-Latn",
+          "text": "VENDOME AOYAMA"
+        }
+      ],
       "floorLabel": "１階",
       "category": "アクセサリー・雑貨"
     },
@@ -1904,5 +2349,13 @@
       "category": "新宿デリッシュパーク［PARK3］",
       "reason": "pop-up space (rotating vendors), not a permanent brand"
     }
-  ]
+  ],
+  "aliasSource": {
+    "url": "https://www.odakyu-dept.co.jp/foreign/en/shinjuku/irp5la0000000y2l-att/shinjuku_brandlist.pdf",
+    "linkedFrom": "https://www.odakyu-dept.co.jp/foreign/en/shinjuku/index.html",
+    "retrievedAt": "2026-11-03T14:37:36+09:00",
+    "printedDate": "2026.9.2 (as printed; no time or zone)",
+    "field": "Printed Latin brand labels under the same floor as the Japanese brand-search row.",
+    "note": "Only unambiguous brand counterparts; no translation, inferred readings, or aliases from another store. RF1, RMK, OXO, THREE, MAKANAI, ReD and WMF have no kana reading in these sources and keep empty aliases. The PDF spells イッタラ as IITTARA; keep that printed spelling rather than correcting it to IITTALA."
+  }
 }
