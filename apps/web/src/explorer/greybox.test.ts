@@ -271,7 +271,12 @@ describe("buildGreybox", () => {
     expect(side.length).toBeGreaterThan(0);
     expect(side.every((w) => w.yMin <= w.yMax)).toBe(true);
     for (const x of [0.5, 1.5, 3.25, 5, 7.75, 9.5]) {
-      expect(resolveWalls(x, -1, 0.3, 1.2 * x, WALKER_BODY.bodyTopM, side).z).not.toBeCloseTo(-1);
+      const feet = 1.2 * x;
+      expect(side.some((w) => Math.min(w.ax, w.bx) <= x + 1e-6 && Math.max(w.ax, w.bx) >= x - 1e-6
+        && w.yMin <= feet + WALKER_BODY.bodyTopM && w.yMax >= feet + WALKER_BODY.bodyBottomM)).toBe(true);
+      // Approach from inside: starting exactly on a segment seam can slide along X to an end instead of moving Z.
+      const contact = resolveWalls(x, -0.9, WALKER_BODY.radiusM, feet, WALKER_BODY.bodyTopM, side);
+      expect(contact.z).toBeGreaterThan(-0.9);
     }
   });
 
