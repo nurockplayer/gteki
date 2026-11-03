@@ -228,7 +228,11 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
   let cut: string | null = null;
   for (const c of candidates) {
     if (cut === null) {
-      const why = breach(totalsFor([...placed, c], manifest, caps), budget);
+      const resident = totalsFor([...placed, c], manifest, caps);
+      // Vertical clusters spend triangles/draws only while near. Their resident geometry and textures
+      // still count station-wide; gates and portals retain their static render caps.
+      const always = totalsFor([...placed, c].filter((p) => p.role !== "stairs" && p.role !== "escalator"), manifest, caps);
+      const why = breach({ ...resident, triangles: always.triangles, draws: always.draws }, budget);
       if (why === null) { placed.push(c); continue; }
       cut = why;
       dropped.push({ role: c.role, anchorKey: c.anchorKey, assetId: c.assetId, reason: `over budget (${why})` });

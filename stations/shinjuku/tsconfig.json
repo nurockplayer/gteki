@@ -1,4 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "types": ["node", "vite/client"] },
   "include": ["gteki", "scene", "app/src", "tools", "test", "vite.config.ts"]
 }
