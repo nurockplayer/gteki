@@ -1307,8 +1307,8 @@ for (const file of MERCHANT_POI_FILES) {
 }
 
 // ---------------------------------------------------------------- printed shop hours (OD-32)
-// Transcription: docs/research/merchants/shinjuku-hours-batch1.json and shinjuku-hours-batch3.json (batch 3:
-// the six department-store POIs). Each row is the hours line an official page printed for one shop (matched by
+// Transcription: docs/research/merchants/shinjuku-hours-batch{1,3,4}.json (batch 3: the six department-store
+// POIs; batch 4: dated building-card hours). Each row is the hours line an official page printed for one shop (matched by
 // poiId) or for a whole building (poiId null → station.json buildingHours). Text stays as printed; nothing is
 // parsed into open/closed state. Rows for shops that are not shipped yet (the recovery batch) have no POI here
 // and are skipped. A poiId may appear in only one hours file.
@@ -1325,7 +1325,7 @@ type HoursEntry = {
 };
 const readHours = (file: string): HoursEntry[] =>
   (JSON.parse(readFileSync(join(HERE, "../../../docs/research/merchants", file), "utf8")) as { entries: HoursEntry[] }).entries;
-const hoursResearch = { entries: [...readHours("shinjuku-hours-batch1.json"), ...readHours("shinjuku-hours-batch3.json")] };
+const hoursResearch = { entries: [...readHours("shinjuku-hours-batch1.json"), ...readHours("shinjuku-hours-batch3.json"), ...readHours("shinjuku-hours-batch4.json")] };
 const hoursPoiIds = new Set<string>();
 for (const e of hoursResearch.entries) {
   if (e.poiId === null) continue;
@@ -1615,7 +1615,7 @@ const bundle: StationBundle = {
 
 // ---------------------------------------------------------------- field receipts (#533, #554)
 // CLOSED team_field observations add a store or gate connector; nothing else may (see the merchant guard above).
-const fieldApplied = applyFieldReceipts(pois, sources, new Set(nodes.map((n) => n.id)), loadReceipts(join(HERE, "../../../docs/research/field/receipts"), "shinjuku"));
+const fieldApplied = applyFieldReceipts(pois, sources, new Set(nodes.map((n) => n.id)), loadReceipts(join(HERE, "../../../docs/research/field/receipts"), "shinjuku"), nodes);
 if (fieldApplied.length) console.log(`field receipts: applied #533 items ${fieldApplied.join(", ")}`);
 
 // ---------------------------------------------------------------- plan (render geometry)

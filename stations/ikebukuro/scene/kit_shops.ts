@@ -435,6 +435,16 @@ export async function loadShopKit(
       const gltf = await host.loadGlb(uri);
       const parts = visibleParts(THREE, gltf);
       if (!parts.length) throw new Error(`${uri} has no visible mesh`);
+      if (low) {
+        // Phone rendering only samples albedo; do not retain the unused PBR maps.
+        for (const part of parts) {
+          const material = part.material as THREE_NS.MeshStandardMaterial;
+          for (const key of ["normalMap", "roughnessMap", "metalnessMap", "emissiveMap", "aoMap"] as const) {
+            material[key]?.dispose();
+            material[key] = null;
+          }
+        }
+      }
       assets.set(id, { gltf, parts });
     } catch (err) {
       console.warn(`[ikebukuro] shop kit: ${id}: ${err instanceof Error ? err.message : String(err)}; keeping the PLATEAU panels`);
@@ -511,7 +521,7 @@ export async function loadShopKit(
       if (placements.length) {
         const displays = ["cafe", "bakery", "sweets", "deli", "pharmacy", "books", "fashion", "homeware", "department", "none"];
         const boardDisplays = ["cafe", "bakery", "deli", "sweets"];
-        const cell = low ? 256 : 512, cols = 4, rows = 6;
+        const cell = low ? 128 : 512, cols = 4, rows = 6;
         const canvas = document.createElement("canvas"); canvas.width = cols * cell; canvas.height = rows * cell;
         const g = canvas.getContext("2d", { willReadFrequently: true })!;
         const rect = (x: number, y: number, w: number, h: number, colour: string) => { g.fillStyle = colour; g.fillRect(x, y, w, h); };
@@ -591,7 +601,7 @@ export async function loadShopKit(
         if (merged.length) { const geo = merged[0]!.geometry; const mesh = new THREE.Mesh(geo, material); owned.push(geo); mesh.name = "kit_shop_interiors"; mesh.userData = { gteki_role: "kit_shop" }; group.add(mesh); stats.interiorDrawCalls = 1; stats.interiorTriangles = triOf(geo); stats.aBoards = boards.length; }
         const spillCanvas = document.createElement("canvas"); spillCanvas.width = 2; spillCanvas.height = 64;
         const sg = spillCanvas.getContext("2d", { willReadFrequently: true })!; const gradient = sg.createLinearGradient(0,0,0,64); gradient.addColorStop(0,"rgba(255,255,255,0.35)"); gradient.addColorStop(1,"rgba(255,255,255,0)"); sg.fillStyle = gradient; sg.fillRect(0,0,2,64);
-        const st = new THREE.CanvasTexture(spillCanvas); const sm = new THREE.MeshBasicMaterial({ map: st, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }); owned.push(st,sm);
+        const st = new THREE.CanvasTexture(spillCanvas); const sm = new THREE.MeshBasicMaterial({ map: st, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: low }); owned.push(st,sm);
         const spillParts: { geometry: THREE_NS.BufferGeometry; material: THREE_NS.Material; matrix: THREE_NS.Matrix4 }[] = [];
         for (const polygon of new Set(placements.map((p) => p.polygon))) {
           const row = rowOf(openings, polygon)!; const p = placements.find((p) => p.polygon === polygon)!; const display = shops.find((shop) => shop.id === p.shop)!.display;
@@ -612,7 +622,7 @@ export async function loadShopKit(
 
       if (signs.length || directories.length) {
         // One unlit atlas face batch: every sign quad lit from within, one draw call.
-        const { canvas, slots } = paintSignAtlas([...signs, ...blades, ...directories], SIGN_PX_PER_M, signs.length, signs.length + blades.length, shops);
+        const { canvas, slots } = paintSignAtlas([...signs, ...blades, ...directories], low ? 128 : SIGN_PX_PER_M, signs.length, signs.length + blades.length, shops);
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
@@ -647,6 +657,74 @@ export async function loadShopKit(
           stats.signDrawCalls = 1;
           stats.signTriangles = triOf(merged[0]!.geometry);
         }
+      }
+      if (low && placements.length) {
+        // All opaque phone geometry shares one unlit atlas. Glass palette pixels below the alpha cutoff
+        // reveal the interior cards instead of requiring a transparent piece-material draw.
+        const meshes = group.children.filter((o) => o.name !== "kit_shop_spill") as THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[];
+        const sources = [...new Set(meshes.map((mesh) => mesh.material.map))];
+        const slots = new Map<THREE_NS.Texture | null, SignSlot>();
+        let x = 0, y = 0, rowH = 0, width = 1;
+        const ordered = sources.map((texture) => {
+          const image = texture?.image as { width: number; height: number } | undefined;
+          // Keep the generated sign/interior resolution; kit palettes need only 64 px per side.
+          const scale = (texture as THREE_NS.CanvasTexture | null)?.isCanvasTexture ? 1 : Math.min(1, 64 / Math.max(image?.width ?? 1, image?.height ?? 1));
+          return { texture, w: Math.max(1, Math.round((image?.width ?? 1) * scale)), h: Math.max(1, Math.round((image?.height ?? 1) * scale)) };
+        }).sort((a, b) => b.h - a.h);
+        for (const source of ordered) {
+          if (x && x + source.w + 4 > 1536) { y += rowH; x = 0; rowH = 0; }
+          slots.set(source.texture, { x: x + 2, y: y + 2, w: source.w, h: source.h });
+          x += source.w + 4; rowH = Math.max(rowH, source.h + 4); width = Math.max(width, x);
+        }
+        const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = y + rowH;
+        const context = canvas.getContext("2d")!;
+        for (const { texture } of ordered) {
+          const slot = slots.get(texture)!;
+          if (texture) context.drawImage(texture.image as CanvasImageSource, slot.x, slot.y, slot.w, slot.h);
+          else { context.fillStyle = "#ffffff"; context.fillRect(slot.x, slot.y, slot.w, slot.h); }
+        }
+        const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;
+        // Tight NPOT atlas, no mip chain: avoids both wasted padding and distant-cell mip bleeding.
+        texture.generateMipmaps = false; texture.minFilter = THREE.LinearFilter;
+        const material = new THREE.MeshBasicMaterial({ map: texture, vertexColors: true, alphaTest: 0.5, toneMapped: false });
+        const colours: number[] = [];
+        const parts = meshes.map((mesh) => {
+          const geometry = mesh.geometry.clone(), count = geometry.getAttribute("position").count;
+          const source = mesh.material.map, slot = slots.get(source)!;
+          const uv = geometry.getAttribute("uv") ?? new THREE.BufferAttribute(new Float32Array(count * 2), 2);
+          for (let i = 0; i < count; i++) {
+            const u = source ? uv.getX(i) : 0.5;
+            const v = source ? (source.flipY ? 1 - uv.getY(i) : uv.getY(i)) : 0.5;
+            uv.setXY(i, (slot.x + 0.5 + u * (slot.w - 1)) / canvas.width, 1 - (slot.y + 0.5 + v * (slot.h - 1)) / canvas.height);
+            colours.push(mesh.material.color.r, mesh.material.color.g, mesh.material.color.b);
+          }
+          geometry.setAttribute("uv", uv);
+          // Preserve two-sided pieces/interiors while keeping the sign text's paired faces unmirrored.
+          if (mesh.material.side === THREE.DoubleSide) {
+            const indices = geometry.index ? Array.from(geometry.index.array) : Array.from({ length: count }, (_, i) => i);
+            const back: number[] = [];
+            for (let i = 0; i < indices.length; i += 3) back.push(indices[i]!, indices[i + 2]!, indices[i + 1]!);
+            geometry.setIndex([...indices, ...back]);
+          }
+          return { geometry, material, matrix: new THREE.Matrix4() };
+        });
+        const geometry = mergeByMaterial(THREE, parts)[0]!.geometry;
+        geometry.setAttribute("color", new THREE.Float32BufferAttribute(colours, 3));
+        for (const part of parts) part.geometry.dispose();
+        const replaced = new Set<{ dispose(): void }>();
+        for (const mesh of meshes) {
+          group.remove(mesh); replaced.add(mesh.geometry); replaced.add(mesh.material);
+          if (mesh.material.map) replaced.add(mesh.material.map);
+        }
+        for (const resource of replaced) {
+          resource.dispose();
+          const index = owned.indexOf(resource); if (index >= 0) owned.splice(index, 1);
+        }
+        const mesh = new THREE.Mesh(geometry, material); mesh.name = "kit_shop_opaque";
+        mesh.userData = { gteki_role: "kit_shop" }; group.add(mesh); owned.push(geometry, material, texture);
+        // Phone draw totals count the shared opaque batch once, with spill as the second draw.
+        stats.drawCallsAllTiles = 1; stats.interiorDrawCalls = 0; stats.signDrawCalls = 0;
+        stats.trianglesAllTiles = triOf(geometry); stats.trianglesWorstTile = stats.trianglesAllTiles;
       }
       return { group, stats };
     },

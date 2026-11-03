@@ -1,7 +1,7 @@
 ---
 area: data/stations
 owner: data-research lead
-updated: 2026-10-29 02:36 JST
+updated: 2026-11-03 08:26 JST
 ---
 
 # Station data: Ikebukuro and Shinjuku
@@ -19,6 +19,7 @@ The two stations are built differently:
 
 | Path | Role |
 | --- | --- |
+| `tools/field-ingest/ingest.ts` | `pnpm field:ingest <receipt.json> [--dry-run]`; validates public graph references, floors, timestamps and duplicates before applying station receipts |
 | `stations/shinjuku/tools/import-e27.ts` | Builds the Shinjuku bundle; header comment lists the dataset quirks it relies on |
 | `stations/shinjuku/tools/e27-raw.ts` | Raw-dir resolution (`GTEKI_RAW_SHINJUKU`) |
 | `stations/shinjuku/tools/fetch-sources.sh` | Downloads raw inputs, verifies sha256 against `stations/shinjuku/sources/manifest.json` |

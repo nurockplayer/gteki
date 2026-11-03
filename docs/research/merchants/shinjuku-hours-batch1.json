@@ -5808,15 +5808,6 @@
    "basis": "undated-official"
   },
   {
-   "poiId": "shop-sjk-odakyudept",
-   "sourceId": "odakyu-dept-shinjuku-2026-10",
-   "url": "https://www.odakyu-dept.co.jp/shinjuku/hour_acces/",
-   "retrievedAt": "2026-10-24T11:37:56Z",
-   "pageDate": "2025-01-15",
-   "status": "UNKNOWN",
-   "reason": "date older than 2026-04-27"
-  },
-  {
    "poiId": "shop-sjk-rec-001",
    "sourceId": "chain-zetteria-ace-sjk-2026-10",
    "url": "https://maps.zetteria.jp/shop/shop2312.html",

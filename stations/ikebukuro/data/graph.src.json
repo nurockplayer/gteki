@@ -1603,10 +1603,7 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": {
-    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
-    "date": "2026-10-27"
-   },
+   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
    "attribution": "東武鉄道 池袋駅 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-02T19:58:53.310019+00:00",
@@ -1615,6 +1612,21 @@
    },
    "datasetDate": null,
    "notes": "facts-only; Tobu §8 business-use ban; recheck-at-C. Read 2026-11-02T19:58:53.310019+00:00 (UTC); 128576 bytes. Text prints platforms 1–5 in the gap/step-reduction list and availability of elevators, escalators and accessible toilets. No facility quantity, floor, paid side or nearest gate is stated. One search entry per facility kind records availability only; no map images, icons or descriptive wording reproduced."
+  },
+  {
+   "id": "esola-ikebukuro-hours-2026-11",
+   "title": "Esola池袋 各店舗 営業時間について",
+   "publisher": "株式会社メトロプロパティーズ",
+   "url": "https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=12",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/740", "date": "2026-11-03" },
+   "attribution": "エソラ池袋 営業時間 (facts only, UNVERIFIED; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-11-02T20:47:09Z",
+   "datasetDate": "2026-05-27",
+   "notes": "Printed building hours only; notice explicitly updated 2026-05-27 (160 days before the JST read date). Data lead ruling 2026-11-03 JST, PR #740: Metro Properties/Esola is in the private use and quotation class (OD-35 S facts-only), as recorded in docs/research/use-tiers.md. No tenant exceptions, prose, logos, images or maps imported; no current status asserted."
   }
  ],
  "floors": [
@@ -24856,7 +24868,14 @@
      "lang": "en",
      "text": "Operator: 株式会社メトロプロパティーズ. Floors: B1–8F as printed in the source floor guide. Location and entrance not verified (search only, no route). Current status unknown."
     }
-   ]
+   ],
+   "hours": {
+    "text": "物販・サービス店舗　10:30～21:30\n飲食店舗　11:00～23:00\n※店舗により一部異なります",
+    "sourceUrl": "https://www.metropro-sc.jp/esola-ikebukuro/event/item_eventnews.jsp?id=12",
+    "retrievedAt": "2026-11-02",
+    "basis": "dated-official",
+    "status": "OK"
+   }
   },
   {
    "id": "shop-ikb-parco",
