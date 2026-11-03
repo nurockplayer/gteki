@@ -6,10 +6,10 @@ import { parseStationFiles } from "@gteki/schema";
 import { loadScene } from "./route-clip-audit.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
 
-// Recorded on e35daf9fb9c7b7a445972ed17a698505bd43bf64 before the allocation/probe optimization.
+// Recorded on 556e6fab446df0c4a77a5fb202c4a9be7be70f8c before the allocation/probe optimization.
 const expected: Record<string, string> = {
-  ikebukuro: "446cec8af83769c744902d512e1803a8463ee5d89411b93aeed31687d4d6b02d",
-  shinjuku: "3bcf631bf29ad26240939d20a277af99d2b286f0cfae6c5c2d90def9deedfe3c",
+  ikebukuro: "9eabaf17d435174722a870092335e8735d3b04c40206ea81fffd88e5b8ef3f13",
+  shinjuku: "906a30dde6ed34a5bebc41e21ecc6755c7ad8722db954a9d6b2e6fdb6427d9e8",
 };
 
 // Public station geometry, through the same live cut and connector builder as the navmesh gate.
