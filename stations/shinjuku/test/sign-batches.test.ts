@@ -8,7 +8,7 @@ import type { Plan } from "../scene/layout.ts";
 const { bundle } = loadShinjukuBundle();
 
 describe("wayfinding sign batches", () => {
-  let station: BuiltStation;
+  let station: BuiltStation, low: BuiltStation;
   beforeAll(() => {
     // The test checks atlas layout and draw grouping, not raster output.
     const context = new Proxy({}, {
@@ -17,10 +17,12 @@ describe("wayfinding sign batches", () => {
         : () => undefined,
     });
     vi.stubGlobal("document", { createElement: () => ({ width: 1, height: 1, getContext: () => context }) });
-    station = buildStation(bundle, planJson as unknown as Plan, { quality: "high" });
+    station = buildStation(bundle, planJson as unknown as Plan, { quality: "high", reuseLayout: true });
+    low = buildStation(bundle, planJson as unknown as Plan, { quality: "low", reuseLayout: true });
   }, 60_000);
   afterAll(() => {
     station?.dispose();
+    low?.dispose();
     vi.unstubAllGlobals();
   });
 
@@ -43,27 +45,22 @@ describe("wayfinding sign batches", () => {
   it("low quality halves every atlas page on both axes and keeps the layout and UVs", () => {
     // #276: phones get half-size pages; every shelf/cell/gutter coordinate scales by the same factor, so
     // the rects and UVs must be identical and only the sampling is blurrier.
-    const low = buildStation(bundle, planJson as unknown as Plan, { quality: "low" });
     const faceMeshes = (s: BuiltStation) => {
       const out: THREE.Mesh[] = [];
       s.root.traverse((o) => { if (o instanceof THREE.Mesh && o.name.startsWith("sign-faces:")) out.push(o); });
       return out;
     };
-    try {
-      const highFaces = faceMeshes(station), lowFaces = faceMeshes(low);
-      expect(lowFaces.map((m) => m.name)).toEqual(highFaces.map((m) => m.name));
-      lowFaces.forEach((mesh, i) => {
-        const image = (mesh.material as THREE.MeshStandardMaterial).map!.image as HTMLCanvasElement;
-        const highImage = (highFaces[i]!.material as THREE.MeshStandardMaterial).map!.image as HTMLCanvasElement;
-        expect(image.width).toBe(highImage.width / 2);
-        expect(image.height).toBe(highImage.height / 2);
-        expect(mesh.userData.atlasRects).toEqual(highFaces[i]!.userData.atlasRects);
-        expect(Array.from((mesh.geometry.getAttribute("uv") as THREE.BufferAttribute).array))
-          .toEqual(Array.from((highFaces[i]!.geometry.getAttribute("uv") as THREE.BufferAttribute).array));
-      });
-    } finally {
-      low.dispose();
-    }
+    const highFaces = faceMeshes(station), lowFaces = faceMeshes(low);
+    expect(lowFaces.map((m) => m.name)).toEqual(highFaces.map((m) => m.name));
+    lowFaces.forEach((mesh, i) => {
+      const image = (mesh.material as THREE.MeshStandardMaterial).map!.image as HTMLCanvasElement;
+      const highImage = (highFaces[i]!.material as THREE.MeshStandardMaterial).map!.image as HTMLCanvasElement;
+      expect(image.width).toBe(highImage.width / 2);
+      expect(image.height).toBe(highImage.height / 2);
+      expect(mesh.userData.atlasRects).toEqual(highFaces[i]!.userData.atlasRects);
+      expect(Array.from((mesh.geometry.getAttribute("uv") as THREE.BufferAttribute).array))
+        .toEqual(Array.from((highFaces[i]!.geometry.getAttribute("uv") as THREE.BufferAttribute).array));
+    });
   });
 
   it("keeps every merged face UV inside one original sign's atlas content rect", () => {

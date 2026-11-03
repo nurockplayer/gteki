@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { init, importNavMesh, NavMeshQuery, Detour, statusDetail, type NavMesh } from "recast-navigation";
 import { assembleSnapPath, snapJoinKey, createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
 import { navmeshBundle } from "./navmesh-input.ts";
+import { floorScene, floorSplitPlan, parseFloors } from "./navmesh-floors.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
 import { qaFile } from "./navmesh-qa-path.ts";
 import { auditPolyline, loadScene, sceneProbe, resampleAudit, type SampleDetail, type AuditCache } from "./route-clip-audit.ts";
@@ -111,6 +112,7 @@ export function countedTotals(details: readonly Pick<SampleDetail,"floor"|"wallB
 
 async function main() {
   let station = "", navmeshFile = "", json = "", fallbackList = "", withGreybox = false, snapFallback = false, bridgeGaps = false, gate = false;
+  let floorIds: string[] | undefined, splitPlan = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
@@ -118,10 +120,17 @@ async function main() {
     else if (args[i] === "--json" && args[i+1]) json = args[++i]!;
     else if (args[i] === "--fallback-list" && args[i+1]) fallbackList = args[++i]!;
     else if (args[i] === "--gate") gate = true;
+    else if (args[i] === "--floors" && args[i+1]) floorIds = parseFloors(args[++i]!);
+    else if (args[i] === "--split-plan") splitPlan = true;
     else if (args[i] === "--with-greybox") withGreybox = true;
     else if (args[i] === "--snap-fallback") snapFallback = true;
     else if (args[i] === "--bridge-gaps") bridgeGaps = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
+  }
+  if (splitPlan) {
+    const { bundle } = await navmeshBundle(station, floorIds);
+    console.log(JSON.stringify({ station, estimate: "sum of floor node bounding-box raster cells at 0.15 m, 64 bytes/cell; excludes scene/greybox/WASM overhead", groups: floorSplitPlan(bundle) }, null, 2));
+    return;
   }
   if (gate && !fallbackList) throw new Error("--gate requires --fallback-list");
   if (!station || !navmeshFile || !json) throw new Error("use --station <station> --navmesh <file> --json <file>");
@@ -130,16 +139,17 @@ async function main() {
   const meshBytes = fs.readFileSync(navmeshFile);
   const provenance = JSON.parse(fs.readFileSync(path.join(path.dirname(navmeshFile), `${station}-bake.json`), "utf8"));
   if (provenance.station !== station || provenance.withGreybox !== withGreybox || provenance.meshSha256 !== createHash("sha256").update(meshBytes).digest("hex")) throw new Error("navmesh bake provenance does not match station, greybox flag, or binary; rebake first");
+  if (JSON.stringify(provenance.floors) !== JSON.stringify(floorIds)) throw new Error("navmesh bake and audit disagree on --floors");
   if (!!provenance.bridgeGaps !== bridgeGaps) throw new Error("navmesh bake and audit disagree on --bridge-gaps");
   if (bridgeGaps && provenance.bridgePolicy !== "no-exemptions-v1") throw new Error("obsolete bridge mesh; rebake without exemptions");
   if (!!provenance.snapFallback !== snapFallback) throw new Error("navmesh bake and audit disagree on --snap-fallback");
   await init();
   const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav, { maxNodes: 8192 });
   const loadMs = performance.now() - loadStart, memoryAfterLoad = process.memoryUsage();
-  const { bundle, privateBuild } = await navmeshBundle(station);
+  const { bundle, privateBuild, outOfSplit = [], sceneBundle = bundle } = await navmeshBundle(station, floorIds);
   if (provenance.privateBuild !== privateBuild) throw new Error("navmesh bake and audit disagree on private overlay; rebake first");
   if (provenance.bundleSha256 !== createHash("sha256").update(JSON.stringify(bundle)).digest("hex")) throw new Error("navmesh bake and audit bundle differ; rebake first");
-  const router = createRouter(bundle, { allowUnverified: privateBuild }), scene = await loadScene(station, bundle);
+  const router = createRouter(bundle, { allowUnverified: privateBuild }), scene = floorScene(await loadScene(station, sceneBundle), bundle, floorIds);
   const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
   const originalProbe = grey?.probe ?? sceneProbe(scene);
   // Recomputed exactly as the bake does; a difference means the bake and this audit see different inputs.
@@ -486,7 +496,7 @@ async function main() {
     const key = `${e.mode} | ${e.fromSnapped && e.toSnapped ? "both snapped" : "snap missing"} | ${e.connectivity} | ${e.reason}`;
     failureClasses[key] = (failureClasses[key] ?? 0)+1;
   }
-  const result = { station, withGreybox, snapFallback, queryMaxNodes:8192, suspectEdges:[...usedSuspect].sort(), queryDiagnosis, fallbackAudit, clipSites, clipCounts, gateResult:gate ? gateResult : null, gapClasses, blockingColliderKinds, linkAttachmentDiagnosis:provenance.linkAttachmentDiagnosis ?? null, fallbackRecoveredAttached:provenance.fallbackRecovered ?? 0, fallbackEdgesUsed:usedFallbackEdges.size, fallbackRoutesCompleted, unpairedFallbackRoutes, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
+  const result = { ...(floorIds ? { floors: floorIds, outOfSplit: outOfSplit.length, outOfSplitEdgeIds: outOfSplit } : {}), station, withGreybox, snapFallback, queryMaxNodes:8192, suspectEdges:[...usedSuspect].sort(), queryDiagnosis, fallbackAudit, clipSites, clipCounts, gateResult:gate ? gateResult : null, gapClasses, blockingColliderKinds, linkAttachmentDiagnosis:provenance.linkAttachmentDiagnosis ?? null, fallbackRecoveredAttached:provenance.fallbackRecovered ?? 0, fallbackEdgesUsed:usedFallbackEdges.size, fallbackRoutesCompleted, unpairedFallbackRoutes, bakeProvenance: provenance, collisionAuditUsesOriginalGateObstacles: provenance.ignoreGates, affectedIncompleteRoutesByMode:affectedByMode, failureClasses, failureEdges:failures, greyboxRuns: grey?.grey.stats.runs ?? null, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, runtime, orderedPoiPairs: pois.length * (pois.length-1), routesAudited: routeCount, failedRoutePairs: routeFailures, completeAuditedRoutes: completed, pureNavmeshRoutes: pure, routesWithConnectors: hybrid, incompleteRoutes: incomplete, invalidJoinRoutes, joinsWithGap, maxJoinGapM,
     edgeUses: stepUses, uniqueEdgesUsed: new Set([...cache.values()].map(e => e.step.edgeId)).size, directedEdgesQueried: cache.size,
     navmeshTotals: navTotal, snapDiagnosis, navmeshSegmentHeights:{default:walkingDetail,gateSceneRaycast:walkingScene}, uniqueEdgeScene, connectorByMode, noFloorOnBuiltEdge, noFloorOnUnbuiltEdge, segmentTotals:{ raw:{connector:connectorRaw,navmesh:walkingRaw}, detail:{connector:connectorDetail,navmesh:walkingDetail}, sceneRaycast:{connector:connectorScene,navmesh:walkingScene} }, diagnosis: { raw: rawTotal, detail: navTotal, sceneRaycast: sceneTotal,
       detailHeightUnavailableSamples: detailMissing, detailUnavailableStairFallback: detailMissingFallback, detailUnavailableJoin: detailMissingJoin, detailUnavailableAmbiguous: detailAmbiguous, detailLargeHeightJumps, detailMaxHeightJump, offFloorWithDetail, offFloorWithoutDetail, heightCorrectionM: { count:heightCorrections.length, p50:percentile(heightCorrections,0.5), p95:percentile(heightCorrections,0.95), max:heightCorrections.length ? heightCorrections.reduce((a,b)=>Math.max(a,b),0) : null }, sceneFloorUnavailableSamples: sceneMissing,

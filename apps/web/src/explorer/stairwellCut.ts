@@ -390,12 +390,14 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   for (const well of cutWells) {
     for (const [index, rect] of well.rects.entries()) {
       const levels = new Set((heights.get(rect) ?? []).map((y) => Math.round(y * 20) / 20));
-      // In the upper slab's band the opening runs only as far as the cut (reach); a lower slab opens over the whole piece.
+      // Bands follow the cut's height interval, not the entire footprint: a lower slab only opens
+      // within headroom of the flight. Extending its band farther fences off passages below it.
       const reach = depthInterval(rect, well.upperY, -Infinity, HOLE_DEPTH_M);
       for (const level of levels) {
         const inSlab = level >= well.upperY - SLAB_BAND_M - 1e-6;
-        if (inSlab && !reach) continue;
-        addBand(bands, rect, level, well.rects, index, inSlab ? reach! : undefined);
+        const opening = inSlab ? reach : depthInterval(rect, level, WALK_CLEAR_M, HEADROOM_M);
+        if (!opening) continue;
+        addBand(bands, rect, level, well.rects, index, opening);
       }
     }
   }
