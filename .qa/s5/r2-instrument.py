@@ -26,5 +26,5 @@ s=s.replace('const routeSteps: RouteStep[][] = [];','const qaRoutes:any[]=[]; co
 s=s.replace('stepUses += route.steps.length;', 'const qaRoute:any={pairKey,steps:route.steps,incomplete:false,invalid:false}; qaRoutes.push(qaRoute); stepUses += route.steps.length;',1)
 s=s.replace('incomplete++;','qaRoute.incomplete=true; incomplete++;')
 s=s.replace('invalidJoinRoutes++;','qaRoute.invalid=true; invalidJoinRoutes++;')
-s=s.replace('JSON.stringify({ ...result, navPaths,','JSON.stringify({ ...result, qaRoutes, qaQueries, qaEntries:[...cache.values()].map(e=>({step:e.step,missing:e.missing,reason:e.reason,suspect:e.suspect,connectivity:e.connectivity,first:e.points?.[0],last:e.points?.at(-1)})), qaJoins:[...joinChecks], navPaths,',1)
+s=s.replace('JSON.stringify({ ...result, navPaths,','JSON.stringify({ ...result, qaRoutes, qaQueries, qaEntries:[...cache.values()].map(e=>({step:e.step,missing:e.missing,reason:e.reason,suspect:e.suspect,connectivity:e.connectivity,pathRejection:e.pathRejection,corridorStart:e.corridor[0],corridorEnd:e.corridor.at(-1),first:e.points?.[0],last:e.points?.at(-1)})), qaJoins:[...joinChecks], navPaths,',1)
 p.write_text(s)

@@ -58,7 +58,7 @@ for station in ('ikebukuro','shinjuku'):
   if e['edgeId'] in old:continue
   es=[v for v in entries.values() if v['step']['edgeId']==e['edgeId']]
   if e['edgeId'] in suspect: c='suspect height excluded from bake';cause=suspect[e['edgeId']]['detail']
-  else:c=f"{e['mode']} {e['reason']}";cause='; '.join(sorted(set(v['connectivity'] for v in es)))
+  else:c=f"{e['mode']} {e['reason']}";cause='; '.join(sorted(set(v['connectivity']+' / '+str(v.get('pathRejection')) for v in es)))
   first=es[0]['step'];pair=next((r['steps'][max(0,i-1):i+2] for r in head['qaRoutes'] for i,s in enumerate(r['steps']) if s['edgeId']==e['edgeId']),[first])
   fallback_rows.append((station,'fallback',c,1,' → '.join(direction(s) for s in pair),cause))
 lines=['# Round 2 growth classes','', 'Measured 2026-11-03 (JST); base and head use the same merged public scene. Counts are new route identities, not a subtraction of aggregate totals. Invalid routes are also incomplete, so those metric rows overlap.','', '| Station | Metric | Class | Count | Example edge pair | Cause |','|---|---|---|---:|---|---|']

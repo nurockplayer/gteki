@@ -15,3 +15,5 @@ orb-test --heavy --memory 3g --cpus 2 --out .qa/s5 -- sh .qa/s5/r2-regenerate.sh
 As of 2026-11-03 20:47 JST it is still queued behind five other heavy jobs. The focused real-navmesh endpoint probe is also waiting for a light slot. There are no new measurements yet; the previous report's numbers are not a fair comparison against this main.
 
 A diagnostic `oracle-ego` question completed 2026-11-03 20:35 JST, exit 0, GPT-6/high, run `~/.local/state/oracle-ego/runs/20261103-203251-48235-gteki-645-s5-r2-diagnosis`. It identifies a falsifiable endpoint-contract discrepancy (Detour wrapper 0.01 m versus shared assembly 1e-6 m), and confirms that an ordinary walking query does not establish semantic fare-gate traversal. A tentative gate-to-walking change was withdrawn before any measurement. No production code has changed in round 2 yet.
+
+At 2026-11-03 20:56 JST, both requested lanes are still waiting. The heavy ticket is sixth in line behind running #297 and queued #298–302. No test or regeneration has been killed or rerun in round 2.
