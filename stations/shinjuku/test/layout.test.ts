@@ -106,6 +106,21 @@ it("closes shipped escalator and shaft shoulder sightlines with rendered surface
       // e:cc8b27a958dd4cbb83d68f3791db6111, 1 m, lateral 0.6.
       [new THREE.Vector3(-91.52869312410283, -18.438204298786 + 1.62, -166.75528757378888),
         new THREE.Vector3(-0.3030417828247059, 0.4453125, -0.8425333555451521)],
+      // e:1cc1c57ea635401cac4ac6bf895feece, 0.000 m, lateral 0.
+      [new THREE.Vector3(-55.14, -7.8 + 1.62, -142.5),
+        new THREE.Vector3(0.547129872820503, -0.17364817766693033, -0.8188377205896016)],
+      // e:2692fe08625f4a3f92d69a1380a58ccd, 32.500 m, lateral -0.6.
+      [new THREE.Vector3(-20.486021234199537, -8.544917935482566 + 1.62, -173.187079040088),
+        new THREE.Vector3(-0.6963642403200189, -0.17364817766693033, 0.696364240320019)],
+      // e:41b6ebb3ce0846719aa1c9985f9cd4d1, 5.471 m, lateral 0.
+      [new THREE.Vector3(-15.72, -16.2 + 1.62, -117.52),
+        new THREE.Vector3(0.2837846601360632, 0.9453125, -0.1607810437060573)],
+      // e:03bd24ff9bc0412b92016f57625f0ba5, 1.000 m, lateral 0.6.
+      [new THREE.Vector3(-59.06354349973163, -7.330693182213129 + 1.62, -195.52152587908938),
+        new THREE.Vector3(0.38268343236509, 0, -0.9238795325112866)],
+      // e:03bd24ff9bc0412b92016f57625f0ba5, 2.500 m, lateral -0.6.
+      [new THREE.Vector3(-57.64225482568801, -6.626732955532824 + 1.62, -196.99393156513096),
+        new THREE.Vector3(0.1950903220161283, 0, -0.9807852804032304)],
     ]) {
       const hit = new THREE.Raycaster(eye!, direction!.normalize(), 0.001, 25).intersectObjects(meshes, false).find((h) => {
         const mesh = h.object as THREE.Mesh;

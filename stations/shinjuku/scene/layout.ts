@@ -1143,7 +1143,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   // A patch edge may end inside another finish's footprint, not only on
   // another polygon edge. Join every such height step to the unchanged hull
   // datum so T junctions and overlapping flight/shoulder planes stay closed.
-  for (const sheet of layout.shaftFinishes) for (const hull of shaftHulls) {
+  for (const sheet of layout.shaftFinishes) for (const hull of [...shaftHulls, ...layout.shaftFinishes]) {
+    if (sheet === hull) continue;
     if (sheet.spaceId.split(":").slice(0, 2).join(":") !== hull.spaceId.split(":").slice(0, 2).join(":")) continue;
     for (const ring of sheet.rings) for (let i = 1; i < ring.length; i++) {
       const a = ring[i - 1]!, b = ring[i]!, direction = sub(b, a), length = len(direction);
@@ -1176,6 +1177,37 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
             profile: { bottomA: Math.min(xa, xb), bottomB: Math.min(ya, yb), topA: Math.max(xa, xb), topB: Math.max(ya, yb) } };
           for (const part of cutWallsByVoids([wall], [...voids, ...platformVoids])) layout.shaftFascias.push({ floorId: sheet.floorId, wall: part });
         }
+      }
+    }
+  }
+  // Flat invert sheets finish the underside of a landing slab. Close its
+  // exposed 180 mm edge as well as the larger changes of finish height.
+  for (const sheet of layout.shaftFinishes.filter((s) => s.spaceId.startsWith("shaft-invert:") && !s.slope)) {
+    for (const ring of sheet.rings) for (let i = 1; i < ring.length; i++) {
+      const wall: WallSeg = { a: ring[i - 1]!, b: ring[i]!, side: 1, kind: "wall", zMin: sheet.z, zMax: sheet.z + 0.172 };
+      for (const part of cutWallsByVoids([wall], [...voids, ...platformVoids])) layout.shaftFascias.push({ floorId: sheet.floorId, wall: part });
+    }
+  }
+  // A platform clearance opens a finish step into the adjoining hall. Finish
+  // the hall/sleeve union at its perimeter inside the shaft. Flat links at the
+  // same level belong to that union; inclined mouths still cut its side panels.
+  for (const lv of underground) {
+    const envelopes = union([...lv.slabs, ...layout.linkStrips.filter((s) => Math.abs(s.z - lv.z) < 0.05)].map((s) => s.rings));
+    const boundaryVoids = voids.filter((_, i) => Math.abs(finishPassages[i]!.a.z - lv.z) > 0.05 || Math.abs(finishPassages[i]!.b.z - lv.z) > 0.05);
+    for (const rings of envelopes) for (const ring of rings) for (let i = 1; i < ring.length; i++) {
+      const a = ring[i - 1]!, b = ring[i]!, d = sub(b, a), breaks = [0, 1];
+      for (const hull of shaftHulls) for (const boundary of hull.rings) for (let k = 1; k < boundary.length; k++) {
+        const c = boundary[k - 1]!, edge = sub(boundary[k]!, c), denominator = cross(d, edge);
+        if (Math.abs(denominator) < 1e-10) continue;
+        const t = cross(sub(c, a), edge) / denominator, u = cross(sub(c, a), d) / denominator;
+        if (t > 0 && t < 1 && u >= 0 && u <= 1) breaks.push(t);
+      }
+      breaks.sort((a, b) => a - b);
+      for (let k = 1; k < breaks.length; k++) {
+        const mid = lerp(a, b, (breaks[k - 1]! + breaks[k]!) / 2);
+        if (!shaftHulls.some((h) => pointInRings(mid, h.rings))) continue;
+        const wall: WallSeg = { a: lerp(a, b, breaks[k - 1]!), b: lerp(a, b, breaks[k]!), side: 1, kind: "wall", zMin: lv.z, zMax: lv.ceilingZ };
+        for (const part of cutWallsByVoids([wall], boundaryVoids)) layout.shaftFascias.push({ floorId: lv.floorId, wall: part });
       }
     }
   }

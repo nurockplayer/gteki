@@ -45,11 +45,11 @@ describe("station geometry lifetime", () => {
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
     expect(result.live).toBe(145); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss)
-    expect(result.bytes).toBe(16260172); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
+    expect(result.bytes).toBe(24980114); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
     // #49 retains two clipped render-only shell batches: +217,498 B and +5,055 triangles
     // after #316 stopped letting surfaces below the runs suppress the shell.
     // Removing only those batches reproduces the previous visual digest; all physical
     // buffers remain byte-identical (scene-digest.test.ts). Retired arrays stay collectible.
-    expect(result.geometryHash).toBe("5bd7d2a228c1a29d259a5d69f8fa22da88bd2b941deedb13ac9cb4d4502378ca");
+    expect(result.geometryHash).toBe("9ad410c3fa8d1b682bc669b558721f6dd7b773ae12e8a686f9978bdce0e51ec5");
   }, 60_000);
 });
