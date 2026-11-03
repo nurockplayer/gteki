@@ -40,6 +40,19 @@ describe("stairwell recipes", () => {
       for (let i = 0; i < position.count; i++) position.setX(i, position.getX(i) * 1.01);
       mesh.geometry.computeBoundingBox();
     });
+    // The kit frame is fitted to the same canvas dimensions, so its instance transforms vary too.
+    const frames = scene.root.getObjectByName("ikebukuro_kit_signs");
+    expect(frames).toBeDefined();
+    frames!.traverse(object => {
+      const mesh = object as THREE.InstancedMesh;
+      if (!mesh.isInstancedMesh) return;
+      const matrix = new THREE.Matrix4();
+      for (let i = 0; i < mesh.count; i++) {
+        mesh.getMatrixAt(i, matrix); matrix.elements[0]! *= 1.01; matrix.elements[12]! += 0.01;
+        mesh.setMatrixAt(i, matrix);
+      }
+      mesh.boundingBox = null; mesh.boundingSphere = null;
+    });
     const portals: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
     try {
       const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);

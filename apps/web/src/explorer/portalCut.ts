@@ -262,7 +262,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     // Keep their existing live cut; only stable scene geometry belongs to a baked recipe.
     let meshRecipe = recipe;
     if (meshRecipe) for (let parent: THREE.Object3D | null = mesh; parent; parent = parent.parent) {
-      if (parent.userData.gteki_role === "sign") { meshRecipe = undefined; break; }
+      if ((parent.userData.gteki_role === "sign" && Array.isArray(parent.userData.faces)) || parent.userData.gteki_role === "kit_sign_frame") { meshRecipe = undefined; break; }
     }
     const key = meshRecipe ? meshKey(mesh, geometry, position) : null;
     if (key) keysHash = fnv1a(bytesOf(Uint32Array.of(key.count, key.hash, key.matrix)), keysHash);

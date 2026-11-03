@@ -14,9 +14,9 @@ const ray = (mesh: THREE.Mesh, x: number, y: number) => {
 };
 
 describe("portal cuts", () => {
-  it("cuts canvas-sized signs live while replaying the stable meshes", () => {
+  it.each(["sign", "kit_sign_frame"])("cuts canvas-sized %s live while replaying the stable meshes", (role) => {
     const scene = (width: number) => {
-      const root = new THREE.Group(), signs = new THREE.Group(); signs.userData.gteki_role = "sign";
+      const root = new THREE.Group(), signs = new THREE.Group(); signs.userData = { gteki_role: role, ...(role === "sign" ? { faces: [] } : {}) };
       const slab = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 4));
       const sign = new THREE.Mesh(new THREE.BoxGeometry(width, 0.2, 2)); sign.position.y = 0.5;
       signs.add(sign); root.add(slab, signs); return { root, slab, sign };
@@ -40,6 +40,18 @@ describe("portal cuts", () => {
       expect(Array.from(browser[name].geometry.getAttribute("position").array)).toEqual(Array.from(live[name].geometry.getAttribute("position").array));
     }
     for (const owned of [a, b, c]) disposePortalCuts(owned);
+  });
+
+  it("keeps ordinary tagged signs in the recipe key (Shinjuku)", () => {
+    const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1));
+    mesh.userData.gteki_role = "sign"; root.add(mesh);
+    const region = { key: opening, bounds: new THREE.Box3(new THREE.Vector3(-2, -2, -2), new THREE.Vector3(2, 2, 2)), planes: [], clip: null, accepts: () => true };
+    const recorded: MeshRecord[] = [], baked = resources();
+    cutRegions(root, [region], baked, new Set(), false, Infinity, { keys: [opening], record: recorded });
+    expect(recorded).toHaveLength(1);
+    disposePortalCuts(baked);
+    mesh.geometry = new THREE.BoxGeometry(3, 1, 1);
+    expect(() => cutRegions(root, [region], resources(), new Set(), false, Infinity, { keys: [opening], replay: recorded })).toThrow(StaleRecipe);
   });
 
   it("tracks a provisional instance copy when recipe replay throws", () => {
