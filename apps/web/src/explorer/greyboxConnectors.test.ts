@@ -993,6 +993,24 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: level approaches do not let later flights with different pitches erase the lower flight's guard.
+  it("keeps the lower stair's guard when shared level approaches lead to different pitches", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const angle = Math.PI / 18, c = Math.cos(angle), s = Math.sin(angle);
+    const a = g([[0, 0, 0], [0.5, 0, 0], [8.5, 2.4, 0]]), b = g([[0, 0, 0], [0.5 * c, 0, 0.5 * s], [8.5 * c, 5.2, 8.5 * s]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("lower", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("upper", "start", "b", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a.at(-1)!], ["b", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    for (const x of [5, 6, 7]) {
+      const r = resolveWalls(x, 0.6, 0.3, 0.3 * (x - 0.5), 1.7, result.wallSegments);
+      expect(r.z, `x=${x}`).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    }
+  });
+
   // #710 review: two flights meeting end to end at a shared node keep both side guards through the node.
   it("keeps the side guards of two flights that meet end to end", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
