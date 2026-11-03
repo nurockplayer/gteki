@@ -1,5 +1,6 @@
 import { WALKER_BODY } from "@gteki/scene-api";
 import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clipping";
+import { ShapeUtils, Vector2 } from "three";
 
 /** A point in plan space: renderer x/z. */
 export type PlanPoint = { x: number; z: number };
@@ -9,10 +10,11 @@ export type PlanPoint = { x: number; z: number };
  * edge's runs and bend patches) are one walk: their overlaps never split a level or cut a floor, unless one passes over
  * the other at walking clearance or more (an edge looping back over itself), which is judged like any two pieces.
  */
-export type Region = { group?: string } & (
+export type Region = { group?: string; /** Endpoint floor IDs for graph runs spanning levels; otherwise `level` applies. */ floorLevels?: readonly string[]; floorHeights?: readonly number[] } & (
   | { kind: "strip"; level: string; points: { x: number; y: number; z: number }[]; halfWidth: number }
   | { kind: "disc"; level: string; x: number; y: number; z: number; radius: number }
   | { kind: "rect"; level: string; center: { x: number; y: number; z: number }; along: PlanPoint; halfLength: number; halfWidth: number }
+  | { kind: "polygon"; level: string; y: number; rings: PlanPoint[][] }
   | { kind: "connector"; level: string; quad: PlanPoint[]; y: number; flight?: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } } });
 
 /**
@@ -23,6 +25,21 @@ export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay:
 
 /** A union polygon in plan: `[0]` is the outer ring, the rest are holes. Rings are open (no repeated closing point). */
 export type PlanPolygon = PlanPoint[][];
+/** Convex exclusion masks belonging to a floor level/elevation. */
+export type PlanExclusion = { level: string; y: number; triangles: PlanPoint[][] };
+
+/** Height uncertainty for passages without one authoritative floor membership. */
+const PRIVATE_FLOOR_TOLERANCE_M = 0.3;
+
+/** Shared by routing, graph ribbons and procedural strips. Only same-floor edges lose holes; cross-level
+ * passages use openings to move between floors. Missing membership requires both endpoint heights near the floor. */
+export function floorExclusionCuts(cut: PlanExclusion, levels: readonly string[], heights: readonly number[]): PlanPoint[][] {
+  if (!heights.length || Math.max(...heights) - Math.min(...heights) > PRIVATE_FLOOR_TOLERANCE_M) return [];
+  const known = levels.filter(Boolean);
+  if (known.some((level) => level !== cut.level)) return [];
+  if (levels.length && known.length === levels.length) return cut.triangles;
+  return heights.every((y) => Math.abs(y - cut.y) <= PRIVATE_FLOOR_TOLERANCE_M) ? cut.triangles : [];
+}
 
 const WALL_TOLERANCE_M = 1e-3;
 const MIN_WALL_M = 1e-3;
@@ -76,6 +93,16 @@ export function regionPolygon(region: Region): PlanPolygon[] {
     }
     case "connector":
       return region.quad.length >= 3 ? [[region.quad.map((p) => ({ x: p.x, z: p.z }))]] : [];
+    case "polygon": {
+      const rings = region.rings.map((ring, i) => {
+        const open = ring.map((p) => ({ x: p.x, z: p.z }));
+        if (open.length > 1 && open[0]!.x === open.at(-1)!.x && open[0]!.z === open.at(-1)!.z) open.pop();
+        // Counter-clockwise outer, clockwise holes, in x/z plan space.
+        if ((ringArea(open) > 0) !== (i === 0)) open.reverse();
+        return open;
+      });
+      return rings[0]?.length && rings.every((ring) => ring.length >= 3) ? [rings] : [];
+    }
   }
 }
 
@@ -154,6 +181,7 @@ function heightSource(region: Region): HeightSource {
     case "disc": return { box, nearest: (p) => polygonNearest(polygons, region.y, p) };
     case "rect": return { box, nearest: (p) => polygonNearest(polygons, region.center.y, p) };
     case "connector": return { box, nearest: (p) => polygonNearest(polygons, region.y, p) };
+    case "polygon": return { box, nearest: (p) => polygonNearest(polygons, region.y, p) };
   }
 }
 
@@ -487,10 +515,24 @@ function sameWalk(a: Piece, b: Piece): boolean {
   return Math.min(...gaps) <= 0 && Math.max(...gaps) >= 0 ? true : Math.min(...gaps.map(Math.abs)) < CLEARANCE_M;
 }
 
+// Polygon regions contribute convex triangles, excluding holes. `ring` remains one convex outer ring, so the
+// existing height clustering and slab/ceiling clipping also work for concave polygons. Their cuts share segment 0.
 type Piece = { region: number; segment: number; level: string; group: string | undefined; kind: Region["kind"]; ring: PlanPoint[]; box: Box; low: number; high: number; height: (p: PlanPoint) => number; source: HeightSource };
 
 function regionPieces(region: Region, index: number): Piece[] {
   const polygons = regionPolygon(region);
+  if (region.kind === "polygon") {
+    const polygon = polygons[0];
+    if (!polygon) return [];
+    const rings = polygon.map((ring) => ring.map((p) => new Vector2(p.x, p.z)));
+    const triangles = ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), points = rings.flat();
+    const source = heightSource(region);
+    return triangles.map((triangle) => {
+      const ring = triangle.map((i) => ({ x: points[i]!.x, z: points[i]!.y }));
+      return { region: index, segment: 0, level: region.level, group: region.group, kind: region.kind, ring,
+        box: boxOf([[ring]]), low: region.y, high: region.y, height: () => region.y, source };
+    });
+  }
   if (region.kind !== "strip") {
     const ring = polygons[0]?.[0];
     if (!ring) return [];
@@ -722,9 +764,25 @@ export function buildWalkableModel(
   isAttachment?: (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean,
   stepM = 0,
   padM = 0,
+  exclusions: readonly PlanExclusion[] = [],
 ): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[]; slabCuts: PieceCuts; ceilingCuts: PieceCuts } {
   const flights = regions.filter((region): region is Extract<Region, { kind: "connector" }> => region.kind === "connector" && !!region.flight);
-  const pieces = regions.flatMap((region, index) => region.kind === "connector" && region.flight ? [] : regionPieces(region, index));
+  const explicitCuts: PieceCuts = new Map();
+  const masks = exclusions.flatMap((cut) => cut.triangles.map((ring) => ({ ...cut, triangles: [ring], box: boxOf([[ring]]) })));
+  const pieces = regions.flatMap((region, index) => region.kind === "connector" && region.flight ? [] : regionPieces(region, index)).flatMap((piece) => {
+    if (!exclusions.length) return [piece];
+    const region = regions[piece.region]!, levels = region.floorLevels ?? [piece.level];
+    const heights = region.floorHeights ?? (region.kind === "strip" ? [region.points[0]!.y, region.points.at(-1)!.y] : [piece.low, piece.high]);
+    const cuts = masks.filter((cut) => cut.box.maxX >= piece.box.minX && cut.box.minX <= piece.box.maxX
+      && cut.box.maxZ >= piece.box.minZ && cut.box.minZ <= piece.box.maxZ).flatMap((cut) => floorExclusionCuts(cut, levels, heights));
+    if (!cuts.length) return [piece];
+    const key = `${piece.region}:${piece.segment}`, all = explicitCuts.get(key) ?? [];
+    for (const cut of cuts) if (!all.includes(cut)) all.push(cut);
+    explicitCuts.set(key, all);
+    return subtractPlan(piece.ring, cuts).flatMap((rings) => regionPieces({ kind: "polygon", level: piece.level, y: piece.low, rings }, piece.region)
+      .map((clipped) => ({ ...piece, ring: clipped.ring, box: clipped.box,
+        low: Math.min(...clipped.ring.map(piece.height)), high: Math.max(...clipped.ring.map(piece.height)) })));
+  });
   const keys = stepM > 0 ? splitByHeight(pieces, stepM) : pieces.map((piece) => piece.level);
   const slabCuts: PieceCuts = new Map(), ceilingCuts: PieceCuts = new Map();
   const cutsOf = (map: PieceCuts, piece: Piece) => { const key = `${piece.region}:${piece.segment}`; let l = map.get(key); if (!l) map.set(key, l = []); return l; };
@@ -845,6 +903,10 @@ export function buildWalkableModel(
       if (tops.length) wall.topY = [tops[0]! - UNDER_GAP_M, tops[1]! - UNDER_GAP_M, tops[2]! - UNDER_GAP_M];
     }
     walls.push(...own.flatMap((wall) => flightBoundaryWalls(wall, flights, stepM)));
+  }
+  for (const [key, cuts] of explicitCuts) {
+    slabCuts.set(key, [...(slabCuts.get(key) ?? []), ...cuts]);
+    ceilingCuts.set(key, [...(ceilingCuts.get(key) ?? []), ...cuts]);
   }
   return { levels, walls, slabCuts, ceilingCuts };
 }
