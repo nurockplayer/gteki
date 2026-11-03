@@ -153,6 +153,10 @@ export interface Layout {
   runWalls: WallSeg[];
   /** Underground shaft roofs, intermediate landing ceilings and finished slab undersides. */
   soffits: Soffit[];
+  /** Visual shaft sheets; soffits retains the original collision caps and enclosure inputs. */
+  shaftFinishes: Soffit[];
+  /** Render-only closure of height steps; wall bounds the connected polygon when present. */
+  shaftFascias: { floorId: string; wall: WallSeg; polygon?: { rings: XY[][]; axis: XY; offset: number } }[];
   nodeZ: Map<string, number>;
   bounds: { min: XY; max: XY };
 }
@@ -628,7 +632,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
   for (const lv of levels) lv.slabs = cutWalkingSlabs(lv.slabs);
   const cutPads = cutWalkingSlabs(pads);
   const cutStreet = cutWalkingSlabs(streetPads);
-  const layout: Layout = { levels, runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips: cutWalkingSlabs(linkStrips), runWalls, soffits: [], nodeZ, bounds: { min, max } };
+  const layout: Layout = { levels, runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips: cutWalkingSlabs(linkStrips), runWalls, soffits: [], shaftFinishes: [], shaftFascias: [], nodeZ, bounds: { min, max } };
   const elevatorLandings = bundle.nodes.filter((n) => n.kind === "elevator" && zOf(n.id) < -0.5).map((n) => ({ ...n.position, z: zOf(n.id) }));
   finishUnderground(layout, plan, [...segs, ...elevatorPassages], elevatorLandings, elevatorPassages);
   return layout;
@@ -689,6 +693,7 @@ export function clearSoffit<T extends SlabPoly & { origin?: XY; slope?: XY }>(s:
  * New vertical panels are in lv.walls so both consumers use the same physical enclosure.
  */
 function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elevatorLandings: XYZ[], elevatorPassages: Passage[]) {
+  const cross = (a: XY, b: XY) => a.x * b.y - a.y * b.x;
   // Finish exit shafts against the 180 mm street slab underside, rather than
   // stopping 330 mm below it. This remains below the surface canopy and its walls.
   const streetUnderside = -0.18;
@@ -696,6 +701,14 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   const levelAt = (z: number) => underground.reduce((a, b) => Math.abs(a.z - z) < Math.abs(b.z - z) ? a : b);
   const union = (polys: XY[][][]) => polys.length ? polygonClipping.union(clipPoly(polys[0]!), ...polys.slice(1).map(clipPoly)).map(xyRings) : [];
   const addRoof = (s: Soffit) => layout.soffits.push(...clearSoffit(s, passages));
+  // Only visible sheets use the full rendered flat-link sleeve. The original passages
+  // still determine floors, physical caps and walls, including run-underside finishes.
+  const finishPassages = passages.map((p) => p.halfWidth === 0.6 && Math.abs(p.a.z - p.b.z) < 0.05 ? { ...p, halfWidth: 1.4 } : p);
+  const addFinish = (s: Soffit) => {
+    for (const panel of cropUndergroundRoof(s, streetUnderside)) {
+      layout.shaftFinishes.push(...clearSoffit(panel, finishPassages, 0.025, s.kind === "slab" ? 2.1 : 2.4));
+    }
+  };
   const shaftVoids: { rings: XY[][]; bottom: (p: XY) => number; top: (p: XY) => number; ceilingTop: (p: XY) => number }[] = [];
 
   // Generic landing/back-of-house envelope around the very small source elevator footprints.
@@ -813,6 +826,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   // Parallel lanes and near-collinear serial flights form one continuous shaft. In particular,
   // enclosing every stair flight separately creates crossing walls at the shared landing.
   const shafts: Run[][] = [];
+  const shaftHulls: Soffit[] = [];
+  const shaftEndFaces: Layout["shaftFascias"] = [];
   const shaftRoofCuts: { prefix: string; rings: XY[][] }[] = [];
   const ends = (r: Run) => r.a.z < r.b.z ? [r.a, r.b] as const : [r.b, r.a] as const;
   const undergroundRuns = layout.runs.filter((r) => Math.min(r.a.z, r.b.z) < -0.5);
@@ -873,9 +888,61 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const at = (s: number, c: number): XY => ({ x: lo.x + u.x * s + n.x * c, y: lo.y + u.y * s + n.y * c });
     // One rectangular hull spans intermediate landings and parallel lanes without interior walls.
     const envelope = [ [ [at(minS, minN), at(maxS, minN), at(maxS, maxN), at(minS, maxN), at(minS, minN)] ] ];
+    // The hull remains the physical enclosure. Its visible inclined sheets belong
+    // to individual flights only, with no endpoint extension or shared pitch.
+    const strips = group.map((r) => [passageRing(r.a, r.b, r.width / 2)]);
+    for (const [ri, r] of group.entries()) {
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, length2 = dx * dx + dy * dy;
+      const flightSlope = { x: dx * (r.b.z - r.a.z) / length2, y: dy * (r.b.z - r.a.z) / length2 };
+      for (const kind of ["roof", "invert"] as const) {
+        addFinish({ spaceId: `shaft-${kind}:${si}:flight:${ri}`, floorId: lv.floorId,
+          kind: kind === "roof" ? "shaft" : "slab", clearance: kind === "roof" ? roofClearance : undefined,
+          rings: strips[ri]!, origin: r.a, slope: flightSlope, z: r.a.z + (kind === "roof" ? roofClearance : -0.3), fare: null, category: "ceiling" });
+      }
+    }
+    // Landings, lateral shoulders and end overhangs take the nearest adjoining
+    // endpoint's flat plane. Equal-height serial mouths therefore share one datum.
+    const shoulders = polygonClipping.difference(clipPoly(envelope[0]!), ...strips.map(clipPoly)).map(xyRings);
+    const mouths = [...new Map(group.flatMap((r) => [r.a, r.b]).map((p) => [`${p.x},${p.y}`, p])).values()];
+    for (const [mi, mouth] of mouths.entries()) {
+      let panels = shoulders;
+      for (const other of mouths) {
+        if (mouth === other) continue;
+        panels = panels.flatMap((rings) => affineMask(rings, (p) =>
+          (p.x - other.x) ** 2 + (p.y - other.y) ** 2 - (p.x - mouth.x) ** 2 - (p.y - mouth.y) ** 2));
+      }
+      const ceilingZ = Math.min(layout.levels.find((level) => Math.abs(level.z - mouth.z) < 0.1)?.ceilingZ ?? mouth.z + 3.2, streetUnderside);
+      for (const [pi, rings] of panels.entries()) for (const kind of ["roof", "invert"] as const) {
+        const z = kind === "roof" ? ceilingZ : mouth.z - 0.18;
+        addFinish({ spaceId: `shaft-${kind}:${si}:landing:${mi}:${pi}`, floorId: lv.floorId,
+          kind: kind === "roof" ? "landing" : "slab", clearance: kind === "roof" ? ceilingZ - mouth.z : undefined,
+          rings, z, fare: null, category: "ceiling" });
+        // Structural shoulder covers close the volume above/below a finish
+        // opened by a crossing flight. They stop at the flight endpoints and
+        // leave serial flat landings on their own datum.
+        const coverHeights = kind === "roof"
+          ? [Math.min(Math.max(...mouths.map((p) => layout.levels.find((level) => Math.abs(level.z - p.z) < 0.1)?.ceilingZ ?? p.z + 3.2)), streetUnderside)]
+          : [Math.min(...mouths.map((p) => p.z)) - 0.18, Math.max(...mouths.map((p) => p.z)) - 0.18];
+        let covers = affineMask(rings, (p) => along(p) - Math.min(...stations))
+          .flatMap((r) => affineMask(r, (p) => Math.max(...stations) - along(p)));
+        for (const p of finishPassages.filter(({ a, b }) => Math.abs(a.z - b.z) < 0.05
+          && mouths.some((m) => len(sub(m, a)) < 0.01) && mouths.some((m) => len(sub(m, b)) < 0.01))) {
+          covers = covers.flatMap((r) => polygonClipping.difference(clipPoly(r), clipPoly([passageRing(p.a, p.b, p.halfWidth ?? 1.4)])).map(xyRings));
+        }
+        for (const [zi, coverZ] of coverHeights.entries()) {
+          if (Math.abs(coverZ - z) < 0.01) continue;
+          for (const [ci, coverRings] of covers.entries()) {
+            const cover: Soffit = { spaceId: `shaft-${kind}:${si}:landing:${mi}:${pi}:cover:${zi}:${ci}`, floorId: lv.floorId,
+              kind: "slab", rings: coverRings, z: coverZ, fare: null, category: "ceiling" };
+            layout.shaftFinishes.push(...clearSoffit(cover, finishPassages, 0.025, kind === "roof" ? 2.4 : 2.1));
+          }
+        }
+      }
+    }
     for (const [i, rings] of envelope.entries()) {
       // Surface exits hand off at the street slab underside; the canopy stays above it.
       const roof: Soffit = { spaceId: `shaft-roof:${si}:${i}`, floorId: lv.floorId, kind: "shaft", clearance: rise, rings, origin: lo, slope, z: lo.z + rise, fare: null, category: "ceiling" };
+      shaftHulls.push(roof);
       const cropped = cropUndergroundRoof(roof, streetUnderside);
       // A tall shaft cover reaches street before the walking head band does. Continue
       // it as a flat soffit at the surface handoff height, without exposing a roof gap.
@@ -896,6 +963,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       // full head clearance through the same exact affine cuts as other soffits.
       const invert: Soffit = { ...roof, spaceId: `shaft-invert:${si}:${i}`, kind: "slab", clearance: undefined,
         z: lo.z + Math.min(...offsets) - 0.3 };
+      shaftHulls.push(invert);
       for (const panel of cropUndergroundRoof(invert, streetUnderside)) layout.soffits.push(...clearSoffit(panel, passages, 0.025, 2.1));
       enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft");
     }
@@ -925,16 +993,52 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         const raised = affineMask(rings, (p) => z + collarClearance - (base(p) + rise) - 0.025);
         for (const [j, panel] of raised.entries()) {
           addRoof({ spaceId: `shaft-collar:${si}:${end}:${i}:${j}`, floorId: lv.floorId, kind: "landing", clearance: collarClearance, rings: panel, z: z + collarClearance, fare: null, category: "ceiling" });
+          shaftHulls.push({ spaceId: `shaft-roof:${si}:collar:${end}:${i}:${j}`, floorId: lv.floorId,
+            kind: "landing", rings: panel, z: z + collarClearance, fare: null, category: "ceiling" });
+          // The collar's outer volume survives physically. Finish its exposed
+          // landing footprint flat, while the flight itself keeps its own roof.
+          const ceilingZ = Math.min(layout.levels.find((level) => Math.abs(level.z - z) < 0.1)?.ceilingZ ?? z + 3.2, streetUnderside);
+          for (const [k, flat] of polygonClipping.difference(clipPoly(panel), ...strips.map(clipPoly)).entries()) {
+            addFinish({ spaceId: `shaft-roof:${si}:mouth:${end}:${i}:${j}:${k}`, floorId: lv.floorId,
+              kind: "landing", clearance: ceilingZ - z, rings: xyRings(flat), z: ceilingZ, fare: null, category: "ceiling" });
+            // A crossing landing may clear this lower mouth finish. Its own
+            // local hall plane closes that opening above the crossing head band.
+            for (const { a, b, halfWidth = 0.6, extend = 0.6 } of finishPassages) {
+              const band = parameterBand(ceilingZ - a.z, ceilingZ - b.z, 0.025, 2.4);
+              if (!band) continue;
+              const mask = clipPoly([passageRing(lerp(a, b, band[0]), lerp(a, b, band[1]), halfWidth, extend)]);
+              for (const [ci, cover] of polygonClipping.intersection(flat, mask).entries()) {
+                const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+                const floor = (p: XY) => a.z + (b.z - a.z) * ((p.x - a.x) * dx + (p.y - a.y) * dy) / (l2 || 1);
+                const coverZ = Math.min(Math.max(...xyRings(cover).flat().map(floor)) + 3.2, streetUnderside);
+                const finish: Soffit = { spaceId: `shaft-roof:${si}:mouth:${end}:${i}:${j}:${k}:cover:${ci}`,
+                  floorId: lv.floorId, kind: "slab", rings: xyRings(cover), z: coverZ, fare: null, category: "ceiling" };
+                layout.shaftFinishes.push(...clearSoffit(finish, finishPassages, 0.025, 2.4));
+              }
+            }
+          }
           shaftRoofCuts.push({ prefix: `shaft-roof:${si}:`, rings: panel });
           shaftVoids.push({ rings: panel, bottom: () => z - 0.18, top: () => z + collarClearance, ceilingTop: () => z + collarClearance });
           enclose(lv, panel, () => z - 0.18, () => z + collarClearance, "shaft");
         }
       }
     }
+
+    // Join the structural covers to the mouth finishes at the flight endpoints,
+    // rather than continuing a high sheet out above the adjoining low hall.
+    const ceilingHeights = mouths.map((p) => Math.min(layout.levels.find((level) => Math.abs(level.z - p.z) < 0.1)?.ceilingZ ?? p.z + 3.2, streetUnderside));
+    for (const s of [Math.min(...stations), Math.max(...stations)]) {
+      for (const [bottom, top] of [[Math.min(...ceilingHeights), Math.max(...ceilingHeights)],
+        [Math.min(...mouths.map((p) => p.z)) - 0.18, Math.max(...mouths.map((p) => p.z)) - 0.18]]) {
+        if (top! - bottom! < 0.005) continue;
+        shaftEndFaces.push({ floorId: lv.floorId, wall: { a: at(s, minN), b: at(s, maxN), side: 1, kind: "wall",
+          zMin: bottom!, zMax: top!, profile: { bottomA: bottom!, bottomB: bottom!, topA: top!, topB: top! } } });
+      }
+    }
   }
 
-  // Pitched and raised collar roofs form one stepped underside. Remove hidden pitched
-  // patches while preserving any prior passage-clearance holes in those surfaces.
+  // Preserve the legacy collar cuts in physical caps. The rendered per-flight
+  // roofs stay intact: their replacement collars are not rendered.
   for (const cut of shaftRoofCuts) {
     layout.soffits = layout.soffits.flatMap((s) => {
       if (!s.spaceId.startsWith(cut.prefix)) return [s];
@@ -1014,6 +1118,189 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   const streetSlabs = [...layout.levels.filter((lv) => Math.abs(lv.z) < 0.1).flatMap((lv) => lv.slabs), ...layout.pads, ...layout.linkStrips, ...layout.streetPads].filter((s) => Math.abs(s.z) < 0.1);
   for (const s of streetSlabs) layout.soffits.push(...clearSoffit({ ...s, spaceId: `street-underside:${s.spaceId}`, z: s.z - 0.18,
     floorId: underground[0]!.floorId, kind: "slab" as const }, passages, 0.025, 2.1));
+  // Trim hidden visual roof sheets without modifying the physical ceilings/caps.
+  const visible = { ...layout, levels: layout.levels.map((lv) => ({ ...lv })),
+    soffits: [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes] };
+  trimInteriorRoofs(visible);
+  layout.shaftFinishes = visible.soffits.filter((s) => /^shaft-(roof|invert):/.test(s.spaceId));
+  // Close internal finish steps without adding anything to the physical wall lists.
+  const voids = finishPassages.map(({ a, b, halfWidth = 0.6, extend = 0.6 }) => {
+    const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+    const height = (p: XY) => a.z + (b.z - a.z) * ((p.x - a.x) * dx + (p.y - a.y) * dy) / (l2 || 1);
+    return { rings: [passageRing(a, b, halfWidth, extend)],
+      // Keep the rendered slab edge: the walking void starts at its top,
+      // not 20 cm below it, which would cut a slot through the invert join.
+      bottom: (p: XY) => (l2 ? height(p) : Math.min(a.z, b.z)) - 0.008,
+      top: (p: XY) => (l2 ? height(p) : Math.max(a.z, b.z)) + 2.4 };
+  });
+  // A finish step must not become a partition across an adjoining platform's
+  // occupied volume, including the signs and hangers above the walking band.
+  const platformVoids = underground.flatMap((lv) => lv.slabs.filter((s) => s.category === "B029")
+    .map((s) => ({ rings: s.rings, bottom: () => lv.z, top: () => lv.ceilingZ })));
+  const joins: Layout["shaftFascias"] = [...shaftEndFaces];
+  // A patch edge may end inside another finish's footprint, not only on
+  // another polygon edge. Join every such height step to the unchanged hull
+  // datum so T junctions and overlapping flight/shoulder planes stay closed.
+  for (const sheet of layout.shaftFinishes) for (const hull of [...shaftHulls, ...layout.shaftFinishes]) {
+    if (sheet === hull) continue;
+    if (sheet.spaceId.split(":").slice(0, 2).join(":") !== hull.spaceId.split(":").slice(0, 2).join(":")) continue;
+    for (const ring of sheet.rings) for (let i = 1; i < ring.length; i++) {
+      const a = ring[i - 1]!, b = ring[i]!, direction = sub(b, a), length = len(direction);
+      if (length < 0.002) continue;
+      const breaks = [0, 1];
+      for (const boundary of hull.rings) for (let k = 1; k < boundary.length; k++) {
+        const c = boundary[k - 1]!, edge = sub(boundary[k]!, c), denominator = cross(direction, edge);
+        if (Math.abs(denominator) < 1e-10) continue;
+        const t = cross(sub(c, a), edge) / denominator, u = cross(sub(c, a), direction) / denominator;
+        if (t > 1e-8 && t < 1 - 1e-8 && u >= -1e-8 && u <= 1 + 1e-8) breaks.push(t);
+      }
+      breaks.sort((a, b) => a - b);
+      for (let bi = 1; bi < breaks.length; bi++) {
+        const lo = breaks[bi - 1]!, hi = breaks[bi]!, mid = lerp(a, b, (lo + hi) / 2);
+        const onBoundary = hull.rings.some((boundary) => boundary.some((c, k) => {
+          const d = boundary[(k + 1) % boundary.length]!, edge = sub(d, c), l2 = edge.x * edge.x + edge.y * edge.y;
+          const t = l2 ? Math.max(0, Math.min(1, ((mid.x - c.x) * edge.x + (mid.y - c.y) * edge.y) / l2)) : 0;
+          return len(sub(mid, lerp(c, d, t))) < 0.002;
+        }));
+        if (hi <= lo || !pointInRings(mid, hull.rings) && !onBoundary) continue;
+        const ref = (p: XY) => Math.min(soffitHeight(hull, p), streetUnderside);
+        const p = lerp(a, b, lo), q = lerp(a, b, hi);
+        const d0 = soffitHeight(sheet, p) - ref(p), d1 = soffitHeight(sheet, q) - ref(q);
+        if (Math.max(Math.abs(d0), Math.abs(d1)) < 0.005) continue;
+        const cuts = d0 * d1 < 0 ? [lo, lo + (hi - lo) * d0 / (d0 - d1), hi] : [lo, hi];
+        for (let k = 1; k < cuts.length; k++) {
+          const x = lerp(a, b, cuts[k - 1]!), y = lerp(a, b, cuts[k]!);
+          const xa = soffitHeight(sheet, x), xb = ref(x), ya = soffitHeight(sheet, y), yb = ref(y);
+          const wall: WallSeg = { a: x, b: y, side: 1, kind: "wall", zMin: Math.min(xa, xb, ya, yb), zMax: Math.max(xa, xb, ya, yb),
+            profile: { bottomA: Math.min(xa, xb), bottomB: Math.min(ya, yb), topA: Math.max(xa, xb), topB: Math.max(ya, yb) } };
+          joins.push({ floorId: sheet.floorId, wall });
+        }
+      }
+    }
+  }
+  // Flat invert sheets finish the underside of a landing slab. Close its
+  // exposed 180 mm edge as well as the larger changes of finish height.
+  for (const sheet of layout.shaftFinishes.filter((s) => s.spaceId.startsWith("shaft-invert:") && !s.slope)) {
+    for (const ring of sheet.rings) for (let i = 1; i < ring.length; i++) {
+      const wall: WallSeg = { a: ring[i - 1]!, b: ring[i]!, side: 1, kind: "wall", zMin: sheet.z, zMax: sheet.z + 0.172 };
+      joins.push({ floorId: sheet.floorId, wall });
+    }
+  }
+  // A platform clearance opens a finish step into the adjoining hall. Finish
+  // the hall/sleeve union at its perimeter inside the shaft. Flat links at the
+  // same level belong to that union; inclined mouths still cut its side panels.
+  for (const lv of underground) {
+    const envelopes = union([...lv.slabs, ...layout.linkStrips.filter((s) => Math.abs(s.z - lv.z) < 0.05)].map((s) => s.rings));
+    const boundaryVoids = voids.filter((_, i) => Math.abs(finishPassages[i]!.a.z - lv.z) > 0.05 || Math.abs(finishPassages[i]!.b.z - lv.z) > 0.05);
+    for (const rings of envelopes) for (const ring of rings) for (let i = 1; i < ring.length; i++) {
+      const a = ring[i - 1]!, b = ring[i]!, d = sub(b, a), breaks = [0, 1];
+      for (const hull of shaftHulls) for (const boundary of hull.rings) for (let k = 1; k < boundary.length; k++) {
+        const c = boundary[k - 1]!, edge = sub(boundary[k]!, c), denominator = cross(d, edge);
+        if (Math.abs(denominator) < 1e-10) continue;
+        const t = cross(sub(c, a), edge) / denominator, u = cross(sub(c, a), d) / denominator;
+        if (t > 0 && t < 1 && u >= 0 && u <= 1) breaks.push(t);
+      }
+      breaks.sort((a, b) => a - b);
+      for (let k = 1; k < breaks.length; k++) {
+        if (breaks[k]! - breaks[k - 1]! < 1e-8) continue;
+        const mid = lerp(a, b, (breaks[k - 1]! + breaks[k]!) / 2);
+        if (!shaftHulls.some((h) => pointInRings(mid, h.rings))) continue;
+        const wall: WallSeg = { a: lerp(a, b, breaks[k - 1]!), b: lerp(a, b, breaks[k]!), side: 1, kind: "wall", zMin: lv.z, zMax: lv.ceilingZ };
+        for (const part of cutWallsByVoids([wall], boundaryVoids)) layout.shaftFascias.push({ floorId: lv.floorId, wall: part });
+      }
+    }
+  }
+  // Union the repeated references before cutting: difference distributes over
+  // this union, so the same openings survive without clipping each copy.
+  for (const f of compactShaftFascias(joins)) for (const span of fasciaSpans(f)) for (const wall of cutWallsByVoids([span], [...voids, ...platformVoids])) {
+    layout.shaftFascias.push({ floorId: f.floorId, wall });
+  }
+  layout.shaftFascias = compactShaftFascias(layout.shaftFascias, layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind === "wall")));
+}
+
+/** Union vertical finish panels in their own plane, retaining openings and
+ * affine top/bottom edges. Physical wall lists never enter the result. */
+function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[] = []): Layout["shaftFascias"] {
+  type Plane = { floorId: string; u: XY; offset: number; panels: ClipPolygon[]; covered: ClipPolygon[] };
+  const planes = new Map<string, Plane>();
+  const snap = (v: number) => Math.round(v * 1e4) / 1e4;
+  const add = (wall: WallSeg, floorId?: string) => {
+    const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = Math.hypot(dx, dy);
+    const p = wall.profile ?? { bottomA: wall.zMin, bottomB: wall.zMin, topA: wall.zMax, topB: wall.zMax };
+    if (length < 1e-6 || Math.max(p.topA - p.bottomA, p.topB - p.bottomB) < 1e-6) return;
+    const sign = (Math.abs(dx) > Math.abs(dy) ? dx : dy) >= 0 ? 1 : -1;
+    const u = { x: dx / length * sign, y: dy / length * sign }, offset = -wall.a.x * u.y + wall.a.y * u.x;
+    const key = `${u.x.toFixed(5)},${u.y.toFixed(5)},${offset.toFixed(4)}`;
+    let plane = planes.get(key);
+    if (!plane && floorId !== undefined) { plane = { floorId, u, offset, panels: [], covered: [] }; }
+    if (!plane) return;
+    const a = snap(wall.a.x * plane.u.x + wall.a.y * plane.u.y), b = snap(wall.b.x * plane.u.x + wall.b.y * plane.u.y);
+    if (Math.abs(a - b) < 1e-6) return;
+    if (Math.max(snap(p.topA) - snap(p.bottomA), snap(p.topB) - snap(p.bottomB)) < 1e-6) return;
+    const polygon: ClipPolygon = [[[a, snap(p.bottomA)], [b, snap(p.bottomB)], [b, snap(p.topB)], [a, snap(p.topA)], [a, snap(p.bottomA)]]];
+    planes.set(key, plane);
+    (floorId === undefined ? plane.covered : plane.panels).push(polygon);
+  };
+  for (const f of fascias) add(f.wall, f.floorId);
+  for (const w of covered) add(w);
+  const out: Layout["shaftFascias"] = [];
+  for (const plane of planes.values()) {
+    // Exact copies are common when a shoulder is referenced by several flights.
+    const unique = [...new Map(plane.panels.map((p) => [JSON.stringify(p), p])).values()];
+    let polygons = polygonClipping.union(unique[0]!, ...unique.slice(1));
+    if (plane.covered.length) polygons = polygonClipping.difference(polygons, ...plane.covered);
+    for (const polygon of polygons) {
+      const points = polygon.flat(), min = Math.min(...points.map((p) => p[0]!)), max = Math.max(...points.map((p) => p[0]!));
+      const bottom = Math.min(...points.map((p) => p[1]!)), top = Math.max(...points.map((p) => p[1]!));
+      const area = polygon.reduce((sum, ring) => sum + ring.slice(1).reduce((a, p, i) => a + ring[i]![0]! * p[1]! - p[0]! * ring[i]![1]!, 0), 0);
+      if (max - min < 1e-6 || top - bottom < 1e-6 || Math.abs(area) < 1e-10) continue;
+      const at = (x: number): XY => ({ x: plane.u.x * x - plane.u.y * plane.offset, y: plane.u.y * x + plane.u.x * plane.offset });
+      out.push({ floorId: plane.floorId, wall: { a: at(min), b: at(max), zMin: bottom, zMax: top, side: 1, kind: "wall" },
+        polygon: { rings: polygon.map((r) => r.map(([x, y]) => ({ x: x!, y: y! }))), axis: plane.u, offset: plane.offset } });
+    }
+  }
+  return out;
+}
+
+/** Passage clipping consumes trapezoids; the final render keeps connected polygons. */
+function fasciaSpans(fascia: Layout["shaftFascias"][number]): WallSeg[] {
+  const panel = fascia.polygon!, plane = { u: panel.axis, offset: panel.offset };
+  const polygon = panel.rings.map((r) => r.map((p) => [p.x, p.y]));
+  const out: WallSeg[] = [];
+  const xs = [...new Set(polygon.flat().map((p) => p[0]!))].sort((a, b) => a - b);
+  let previous: WallSeg[] = [];
+  for (let i = 1; i < xs.length; i++) {
+    const lo = xs[i - 1]!, hi = xs[i]!, mid = (lo + hi) / 2;
+    if (hi - lo < 1e-6) continue;
+    const crossings: { at: (x: number) => number; y: number }[] = [];
+    for (const ring of polygon) for (let k = 1; k < ring.length; k++) {
+      const a = ring[k - 1]!, b = ring[k]!;
+      if (!(Math.min(a[0]!, b[0]!) < mid && mid < Math.max(a[0]!, b[0]!))) continue;
+      const at = (x: number) => a[1]! + (b[1]! - a[1]!) * (x - a[0]!) / (b[0]! - a[0]!);
+      crossings.push({ at, y: at(mid) });
+    }
+    crossings.sort((a, b) => a.y - b.y);
+    const next: WallSeg[] = [];
+    for (let k = 1; k < crossings.length; k += 2) {
+      const bottom = crossings[k - 1]!.at, top = crossings[k]!.at;
+      if (top(mid) - bottom(mid) < 1e-6) continue;
+      const profile = { bottomA: bottom(lo), bottomB: bottom(hi), topA: top(lo), topB: top(hi) };
+      const at = (x: number): XY => ({ x: plane.u.x * x - plane.u.y * plane.offset, y: plane.u.y * x + plane.u.x * plane.offset });
+      const a = at(lo), b = at(hi);
+      const same = previous.find((w) => {
+        const p = w.profile!, l = len(sub(w.b, w.a)), m = hi - lo;
+        return len(sub(w.b, a)) < 1e-6 && Math.abs(p.bottomB - profile.bottomA) < 1e-5 && Math.abs(p.topB - profile.topA) < 1e-5
+          && Math.abs((p.bottomB - p.bottomA) * m - (profile.bottomB - profile.bottomA) * l) < 1e-5
+          && Math.abs((p.topB - p.topA) * m - (profile.topB - profile.topA) * l) < 1e-5;
+      });
+      if (same) { same.b = b; same.profile!.bottomB = profile.bottomB; same.profile!.topB = profile.topB;
+        same.zMin = Math.min(same.zMin, profile.bottomB); same.zMax = Math.max(same.zMax, profile.topB); next.push(same); }
+      else { const wall: WallSeg = { a, b, side: 1, kind: "wall", zMin: Math.min(profile.bottomA, profile.bottomB), zMax: Math.max(profile.topA, profile.topB), profile };
+        out.push(wall); next.push(wall); }
+    }
+    previous = next;
+  }
+  return out;
 }
 
 /** Roofs at a shared landing are the outside of the union of the rooms' air volumes.
@@ -1034,6 +1321,9 @@ function trimInteriorRoofs(layout: Layout) {
     const a = bounds[i]!;
     for (const [j, v] of roofs.entries()) {
       if (i === j || !pieces.length) continue;
+      // A flight's restored roof must not lift an existing flat landing or
+      // shoulder ceiling where the two shafts overlap in plan.
+      if (s.spaceId.startsWith("shaft-roof:") && !s.slope && v.spaceId.startsWith("shaft-roof:") && v.slope) continue;
       const b = bounds[j]!;
       if (a.maxX < b.minX || a.minX > b.maxX || a.maxY < b.minY || a.minY > b.maxY) continue;
       const corners = [

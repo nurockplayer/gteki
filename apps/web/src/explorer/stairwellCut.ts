@@ -43,8 +43,8 @@ const HOLE_DEPTH_M = HEADROOM_M + SLAB_BAND_M;
 const SEAM_GROW_M = 0.05;
 /** Rail pieces shorter than this are dropped. */
 const MIN_RAIL_M = 1e-3;
-/** Every inner piece with a direction keeps its rectangle: a dropped one would leave a strip of slab uncut. */
-const MIN_INNER_PIECE_M = 1e-3;
+/** Every piece with a direction keeps its rectangle: a dropped one would leave a strip of slab uncut. */
+const MIN_PIECE_M = 1e-3;
 
 /**
  * Where along a piece (`along` offsets from its centre) the flight runs `lo` to `hi` metres under the upper floor,
@@ -238,10 +238,9 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     for (let i = 1; i < ordered.length; i++) {
       const a = ordered[i - 1]!, b = ordered[i]!;
       const dx = b.x - a.x, dz = b.z - a.z, length = Math.hypot(dx, dz);
-      // Exclude the terminal landings and end pieces without a usable plan footprint. A short piece between two flight
-      // pieces keeps its rectangle, or the cut and the hole would stop either side of it, under an intact slab.
-      const inner = i - 1 > firstFlight && i - 1 < lastFlight, landing = !rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight);
-      if (length < (inner ? MIN_INNER_PIECE_M : landing ? 1e-3 : 0.5)) continue;
+      // Keep short rising end pieces too, or the entrance or exit keeps a strip of intact slab.
+      const landing = !rising[i - 1] && (i - 1 < firstFlight || i - 1 > lastFlight);
+      if (length < MIN_PIECE_M) continue;
       const along = new THREE.Vector3(dx / length, 0, dz / length);
       const across = new THREE.Vector3(-along.z, 0, along.x);
       (landing ? landings : rects).push({ center: new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), along, across, halfLength: length / 2, halfWidth: (widthOf(edge) + 0.2) / 2, rise: b.y - a.y });
@@ -250,7 +249,7 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     // Its rectangle is cut only when that piece is long enough to have one; otherwise the connector is skipped.
     const exit = ordered[lastFlight]!, end = ordered[lastFlight + 1]!;
     const arrival = new THREE.Vector3(end.x, 0, end.z);
-    if (Math.hypot(end.x - exit.x, end.z - exit.z) < 0.5) {
+    if (Math.hypot(end.x - exit.x, end.z - exit.z) < MIN_PIECE_M) {
       wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects: [], arrival, skipped: "top flight piece too short for an arrival side" });
       continue;
     }
@@ -390,12 +389,14 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   for (const well of cutWells) {
     for (const [index, rect] of well.rects.entries()) {
       const levels = new Set((heights.get(rect) ?? []).map((y) => Math.round(y * 20) / 20));
-      // In the upper slab's band the opening runs only as far as the cut (reach); a lower slab opens over the whole piece.
+      // Bands follow the cut's height interval, not the entire footprint: a lower slab only opens
+      // within headroom of the flight. Extending its band farther fences off passages below it.
       const reach = depthInterval(rect, well.upperY, -Infinity, HOLE_DEPTH_M);
       for (const level of levels) {
         const inSlab = level >= well.upperY - SLAB_BAND_M - 1e-6;
-        if (inSlab && !reach) continue;
-        addBand(bands, rect, level, well.rects, index, inSlab ? reach! : undefined);
+        const opening = inSlab ? reach : depthInterval(rect, level, WALK_CLEAR_M, HEADROOM_M);
+        if (!opening) continue;
+        addBand(bands, rect, level, well.rects, index, opening);
       }
     }
   }

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { castAll } from "./raycast.ts";
-import { cacheBvh, currentBvh, prepareRayTrees } from "./meshBvh.ts";
+import { cacheBvh, currentBvh, prepareRayTrees, raycastObject } from "./meshBvh.ts";
 import { TriangleBvh } from "./triangleBvh.ts";
 
 /** Seeded uniform [0, 1). */
@@ -60,6 +60,32 @@ function prepared(...objects: THREE.Object3D[]): THREE.Object3D[] {
 afterEach(() => vi.restoreAllMocks());
 
 describe("BVH ray tests match three's brute-force Mesh.raycast", () => {
+  it("adds overhead roof hits without replacing the native mesh or its static BVH", () => {
+    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+    const cap = new THREE.Mesh(new THREE.PlaneGeometry(8, 8, 10, 10).rotateX(-Math.PI / 2).translate(0, 5, 0), material);
+    const roof = new THREE.Mesh(new THREE.PlaneGeometry(8, 8, 10, 10).rotateX(-Math.PI / 2).translate(0, 3, 0), material);
+    prepared(cap, roof);
+    let calls = 0;
+    Object.defineProperty(cap.userData, "gtekiOverheadRaycast", { value: (ray: THREE.Raycaster, hits: THREE.Intersection[]) => {
+      calls++; raycastObject(roof, ray, hits);
+    } });
+    try {
+      for (const direction of [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0.25, 1).normalize()]) {
+        const ray = new THREE.Raycaster(new THREE.Vector3(0.13, 0, 0.27), direction, 0, 25);
+        expectSame(castAll(ray, [cap]), brute(ray, [cap]));
+      }
+      expect(calls).toBe(0);
+      const ray = new THREE.Raycaster(new THREE.Vector3(0.13, 0, 0.27), new THREE.Vector3(0, 1, 0), 0, 25);
+      const hits = castAll(ray, [cap]);
+      expect(hits).toHaveLength(2);
+      expect(hits[0]!.distance).toBeCloseTo(3, 6);
+      expect(hits[1]!.distance).toBeCloseTo(5, 6);
+      expect(calls).toBe(1);
+      expect(cap.raycast).toBe(THREE.Mesh.prototype.raycast);
+      expect(currentBvh(cap.geometry)).not.toBeNull();
+    } finally { cap.geometry.dispose(); roof.geometry.dispose(); material.dispose(); }
+  });
+
   it("indexed and unindexed meshes, any side, moved, rotated and scaled, near and far", () => {
     const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(2, 0.6, 128, 16), new THREE.MeshBasicMaterial());
     const back = new THREE.Mesh(new THREE.TorusKnotGeometry(1.5, 0.4, 96, 12).toNonIndexed(), new THREE.MeshBasicMaterial({ side: THREE.BackSide }));
