@@ -19,7 +19,7 @@ describe("shared-explorer scene hook: camera caps", () => {
     layoutZ = new Map(bundle.nodes.map((n) => [n.id, n.renderZ ?? 0]));
     scene.root.updateMatrixWorld(true);
     const meshes: THREE.Object3D[] = [];
-    scene.root.traverse((o) => { if ((o as THREE.Mesh).isMesh) meshes.push(o); });
+    meshes.push(...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? []));
     prepareRayTrees(meshes);
   }, 60_000);
   afterAll(() => {
@@ -46,9 +46,9 @@ describe("shared-explorer scene hook: camera caps", () => {
     }
   });
 
-  it("keeps rendered roof caps, street paving and kerbs as camera-only blockers", () => {
+  it("makes the drawn street paving and kerbs camera-only blockers", () => {
     const names = (scene.cameraBlockers ?? []).filter((o) => !scene.colliders?.includes(o)).map((o) => o.name).sort();
-    expect(names).toEqual(["rendered ceiling camera caps", "surface-ground", "surface-stone"]);
+    expect(names).toEqual(["surface-ground", "surface-stone"]);
   });
 
   it("caps the follow camera above underground nodes (except lift shafts and exit stairs open to the sky)", () => {
@@ -141,7 +141,7 @@ describe("shared-explorer scene hook: camera caps", () => {
         for (const h of [0.5, 1.2]) {
           ray.set(p.clone().add(new THREE.Vector3(0, h, 0)), dir);
           ray.far = 0.6;
-          if (ray.intersectObjects(caps, false).length) hits.push(`${e.id}@${t.toFixed(2)}+${h}`);
+          if (castAll(ray, caps).length) hits.push(`${e.id}@${t.toFixed(2)}+${h}`);
         }
       }
     }

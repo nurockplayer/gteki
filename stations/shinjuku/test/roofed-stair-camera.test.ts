@@ -1,3 +1,4 @@
+import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { WALKER_BODY, type StationScene } from "@gteki/scene-api";
@@ -70,6 +71,7 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
       return m;
     });
     const capless = explorerTargets(scene.walkable, swap(scene.colliders ?? []), swap(scene.cameraBlockers ?? []));
+    prepareRayTrees([...full.camera, ...capless.camera]);
     return { full, capless };
   }
 

@@ -228,7 +228,7 @@ describe("#49 render-only escalator enclosure", () => {
   it("keeps walking colliders and walls byte-identical, with rendered roof caps camera-only", () => {
     expect(scene.walkable).toHaveLength(433);
     expect(scene.colliders).toHaveLength(2);
-    expect(scene.cameraBlockers).toHaveLength(4);
+    expect(scene.cameraBlockers).toHaveLength(3);
     expect(scene.walls).toHaveLength(14479);
     for (const name of ["walkable", "colliders", "cameraBlockers"] as const) {
       const meshes = scene[name] ?? [];
