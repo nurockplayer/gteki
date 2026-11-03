@@ -368,7 +368,10 @@ export class Minimap {
   private syncTimer(): void {
     const running = !this.disposed && !!this.bundle && !this.collapsed && !document.hidden;
     if (!running && this.timer !== null) { clearInterval(this.timer); this.timer = null; }
-    if (running && this.timer === null) this.timer = setInterval(() => this.refresh(), 1000 / 12);
+    if (running && this.timer === null) this.timer = setInterval(() => {
+      if (typeof document === "undefined") return;
+      this.refresh();
+    }, 1000 / 12);
   }
 
   private updateText(): void {
@@ -419,7 +422,7 @@ export class Minimap {
   }
 
   private refresh(): void {
-    if (this.disposed || document.hidden) return;
+    if (typeof document === "undefined" || this.disposed || document.hidden) return;
     const pose = this.bundle ? this.getPose() : null;
     const visible = !!pose && pose.mode !== "overview";
     if (this.el.hidden === visible) this.el.hidden = !visible;
