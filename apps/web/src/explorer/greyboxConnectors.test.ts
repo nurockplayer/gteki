@@ -1283,6 +1283,43 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("ignores a modelled lower lift ride when choosing the shared stop's hall door", () => {
+    for (const reverseOrder of [false, true]) {
+      const station = liftStation([syntheticEdge("modelled-lower", "b", "start", { mode: "elevator" })]);
+      station.nodes.find((n) => n.id === "start")!.position = { x: 0, y: 0, z: 0 };
+      station.nodes.find((n) => n.id === "upper")!.position = { x: 0, y: 0, z: 4 };
+      station.nodes.find((n) => n.id === "b")!.position = { x: 0, y: -0.2, z: -4 };
+      station.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
+      station.edges.unshift(station.edges.pop()!);
+      if (reverseOrder) station.edges.reverse();
+      const result = buildConnectors(station, () => true, { hasFloor: () => true, nearMesh: () => true }, "high");
+      expect(result.stats.connectors.elevator).toBe(1);
+      expect(result.pathByEdge.has("modelled-lower")).toBe(false);
+      for (let k = 0; k <= 60; k++) {
+        const x = 3 * k / 60, r = resolveWalls(x, 0, 0.3, 0, 1.7, result.wallSegments);
+        expect(Math.hypot(r.x - x, r.z), `reverseOrder=${reverseOrder} k=${k}`).toBeLessThanOrEqual(0.01);
+      }
+    }
+  });
+
+  it("chooses the lowest hall edge id independently of bundle order when a stop has several halls", () => {
+    for (const reverseOrder of [false, true]) {
+      const station = liftStation([syntheticEdge("hall-a-rise", "start", "b", { mode: "walk" }), syntheticEdge("hall-z", "start", "goal", { mode: "walk" })]);
+      station.nodes.find((n) => n.id === "start")!.position = { x: 0, y: 0, z: 0 };
+      station.nodes.find((n) => n.id === "upper")!.position = { x: 0, y: 0, z: 4 };
+      station.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
+      station.nodes.find((n) => n.id === "goal")!.position = { x: 0, y: 3, z: 0 };
+      station.nodes.find((n) => n.id === "b")!.position = { x: 0, y: 3, z: 4 };
+      station.edges.unshift(station.edges.pop()!);
+      if (reverseOrder) station.edges.reverse();
+      const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+      for (let k = 0; k <= 60; k++) {
+        const x = 3 * k / 60, r = resolveWalls(x, 0, 0.3, 0, 1.7, result.wallSegments);
+        expect(Math.hypot(r.x - x, r.z), `reverseOrder=${reverseOrder} k=${k}`).toBeLessThanOrEqual(0.01);
+      }
+    }
+  });
+
   it("puts lift edges whose cars share a footprint in one shaft and leaves a same-floor car stub alone", () => {
     const station = liftStation([syntheticEdge("lift-2", "b", "upper-2", { mode: "elevator", attributes: { sceneGap: true } }), syntheticEdge("stub", "start", "goal", { mode: "elevator", attributes: { sceneGap: true } })]);
     station.nodes.find((n) => n.id === "b")!.position = { x: 0.3, y: 0.4, z: 0 };
