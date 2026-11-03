@@ -39,6 +39,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - Ikebukuro: data (`stations/ikebukuro/gteki/`), scene (`stations/ikebukuro/scene/`), pipeline (`stations/ikebukuro/pipeline/`), lane docs (`stations/ikebukuro/docs/`), entry point `stations/ikebukuro/README.md` · data generation and receipts: [[data-stations]]; scene: no note yet (station lead)
 
 ### Tools (`tools/`)
+- Store data age: public store/mall hours, tenant and verified entrance read dates, oldest first; Markdown or JSON (`pnpm data:age`) · `tools/data-age/report.ts` · this index
 - GIS: its own pnpm workspace. Source acquisition, CRS conversion, S03 nav graph, publish path into the stations · `tools/gis/` · [[gis]]
 - Map generator: `tools/map/gen-symbols.mjs` and its test `tools/map/map.test.ts` · this index
 - Private overlay builder: `tools/private-overlay/build-overlay.ts` · builds station contract overlays from private additions for local builds/dev only
