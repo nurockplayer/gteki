@@ -98,10 +98,10 @@ it("splits private stops into a separate receipt, including GAP notes and persis
   expect(buildReceipts(publicBuild, [publicRecord, privateRecord])[0]).toEqual(receipts[0]);
   expect(buildReceipts(station, [publicRecord])).toEqual([receipts[0]]);
   const privateOnly = buildReceipts(station, [gap]);
-  expect(privateOnly[0]!.items).toEqual([]);
-  expect(privateOnly[0]!.fieldNotes).toEqual([]);
-  expect(privateOnly[1]!.fieldNotes).toHaveLength(1);
-  expect(() => validateReceipt(privateOnly[1] as unknown as FieldReceipt, "shinjuku", () => true, () => true)).not.toThrow();
+  expect(privateOnly).toHaveLength(1);
+  expect(privateOnly[0]).toMatchObject({ private: true, items: [] });
+  expect(privateOnly[0]!.fieldNotes).toHaveLength(1);
+  expect(() => validateReceipt(privateOnly[0] as unknown as FieldReceipt, "shinjuku", () => true, () => true)).not.toThrow();
 });
 
 it("exports an overlay-only store selected at a public SJ-02 stop only in the private receipt", () => {
@@ -112,10 +112,8 @@ it("exports an overlay-only store selected at a public SJ-02 stop only in the pr
   const record = { ...newObservation("SJ-02"), itemId: "39", target: "public-node", poiId: "overlay-shop",
     paid: "false", confirmation: "CLOSED" as const, observedText: "Synthetic overlay store" };
   const receipts = buildReceipts(station, [record]);
-  expect(receipts).toHaveLength(2);
-  expect(JSON.stringify(receipts[0])).not.toContain("overlay-shop");
-  expect(receipts[0]!.items).toEqual([]);
-  expect(receipts[1]).toMatchObject({ private: true, items: [{ poiId: "overlay-shop", nodeId: "public-node", status: "CLOSED" }] });
+  expect(receipts).toHaveLength(1);
+  expect(receipts[0]).toMatchObject({ private: true, items: [{ poiId: "overlay-shop", nodeId: "public-node", status: "CLOSED" }] });
 });
 
 it("keeps saved private records untouched and omits their file when no overlay is loaded", () => {
@@ -125,10 +123,19 @@ it("keeps saved private records untouched and omits their file when no overlay i
     paid: "false", confirmation: "CLOSED" as const, observedText: "Synthetic saved private record" }];
   const before = structuredClone(records);
   const receipts = buildReceipts(station, records);
-  expect(receipts).toHaveLength(1);
-  expect(receipts[0]).not.toHaveProperty("private");
-  expect(receipts[0]!.items).toEqual([]);
-  expect(receipts[0]!.fieldNotes).toEqual([]);
+  expect(receipts).toEqual([]);
   expect(records).toEqual(before);
   expect(() => buildReceipt(station, records, true)).toThrow("非公開の記録は非公開ビルドで書き出してください / Export private records from the private build");
+});
+
+it("produces only the private download for a private-only run", () => {
+  const station: FieldStation = { id: "shinjuku", title: "Synthetic", fieldRun: "synthetic.md", stops: [],
+    nodeIds: ["overlay-node"], edgeIds: [], pois: [{ id: "overlay-shop", label: "Synthetic" }],
+    privateCatalog: { targetIds: ["overlay-node"], poiIds: ["overlay-shop"] } };
+  const record = { ...newObservation("P-SJ-01", true), itemId: "39", target: "overlay-node", poiId: "overlay-shop",
+    paid: "false", confirmation: "CLOSED" as const, observedText: "Synthetic private-only run" };
+  const receipts = buildReceipts(station, [record]);
+  expect(receipts).toHaveLength(1);
+  expect(receipts[0]).toMatchObject({ private: true, items: [{ status: "CLOSED", nodeId: "overlay-node", poiId: "overlay-shop" }], fieldNotes: [] });
+  expect(() => validateReceipt(receipts[0] as unknown as FieldReceipt, "shinjuku", () => true, () => true)).not.toThrow();
 });
