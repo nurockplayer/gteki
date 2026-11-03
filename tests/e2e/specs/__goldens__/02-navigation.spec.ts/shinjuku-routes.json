@@ -268,12 +268,91 @@
     "profile": {
       "stepFree": true
     },
-    "expect": "record",
-    "note": "Step-free via elevators: must not use stairs if it routes",
+    "expect": "fail",
+    "note": "Exit 1 has known steps: no supported step-free connection",
+    "cardText": [
+      "No route confirmed in the surveyed data with \"Step-free\" on.",
+      "stairs, escalators or passages not step-free"
+    ],
     "result": {
       "ok": false,
       "reason": "no_path",
       "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Step-free\" on. The connection found uses stairs, escalators or passages not step-free.Turn off \"Step-free\""
+    }
+  },
+  "S6": {
+    "id": "S6",
+    "from": "poi:exit:3",
+    "to": "poi:platform:oedo",
+    "profile": {
+      "stepFree": true
+    },
+    "expect": "ok",
+    "note": "Street south to the Oedo platform via evidenced wheelchair-accessible lifts",
+    "modes": [
+      "elevator"
+    ],
+    "result": {
+      "ok": true,
+      "lengthM": 108.6,
+      "seconds": 444,
+      "floorChanges": 4,
+      "crossesFareBoundary": true,
+      "synthetic": false,
+      "unknowns": [
+        "hours×25"
+      ],
+      "stale": false,
+      "sources": 2,
+      "nodes": 26,
+      "modes": [
+        "elevator",
+        "walk",
+        "ramp",
+        "gate"
+      ],
+      "instructions": [
+        "Start",
+        "Take the elevator down to B2",
+        "Go straight ~21 m",
+        "Turn left, ~6 m",
+        "Take the ramp",
+        "Continue on the ramp",
+        "Continue on the ramp",
+        "Go straight ~24 m",
+        "Turn left, ~5 m",
+        "Turn right, then pass the ticket gate",
+        "Go straight ~6 m",
+        "Turn left, then left again, then take the elevator down to B6",
+        "Arrive at destination. Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name, for search, from Tokyo Metropolitan Government data as of March 2020; some gates and transfers also carry an approximate position derived from that data's shapes (search display only, not for routing). There is no route for them. The Toei Shinjuku Line and other lines are not modelled."
+      ],
+      "steps": [
+        "<e:65edd7ca50844b609d4dcb25bd296936",
+        "<e:ed7e56a8e6234197be06280fcb24aecc",
+        "<e:02f4e95f96b745f586ce2fa10929f40e",
+        "<e:8efcde1b27f54aad9e742c3cef8ac607",
+        "<e:b11627b004444914a79e0822178195dc",
+        "<e:dbc823a7c24344c18592200c8bafcbce",
+        "<e:d37a32a3fdc24a5292dad051944a3bf4",
+        "<e:e6cdab49ff2140369dd6333155aef2e4",
+        "<e:21c3d698b19844b39d3fe66c299697e6",
+        "<e:7828070374bd43f49ba5f22adfe3a06c",
+        "<e:e2f7391080b64a1da363a394498823f7",
+        "<e:777346d9cc79413fa96537ed02c83cfa",
+        "<e:8e2ca70e3d574943840e3239482e88a7",
+        "<e:e19e8974276540aca742c901b9b5591d",
+        "<e:1b868192cccb42409590b39fde41797c",
+        "<e:afb6c22c083e418faddf9cd1422504ce",
+        "<e:967e8b882ad14db2979c375ad229d32a",
+        "<e:af24f76aec9c47ee9d82a627e50fcc74",
+        "<e:69c34a0db9554308a7c2f690015b98d8",
+        "<e:45d9f015ee1e46f79bef7fa49bff6f9a",
+        "<e:7c3c6af17f3a481183f183b36ba65291",
+        ">e:b24ebc3e1bde40309f70486e9c99c5fd",
+        ">e:1d19da0eafe945b7a430d6f27410d0dc",
+        "<e:84d843ac977448498e5613d39a495dca",
+        ">e:9a2aed29648b48c8ac5d3eb0cf04e91a"
+      ]
     }
   },
   "SN1": {
