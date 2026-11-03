@@ -672,7 +672,7 @@ measureFallbacks	function	packages/godot/src/navmesh-fallback.ts	53
 parseFloors	function	packages/godot/src/navmesh-floors.ts	8
 splitFloors	function	packages/godot/src/navmesh-floors.ts	14
 floorScene	function	packages/godot/src/navmesh-floors.ts	34
-floorSplitPlan	function	packages/godot/src/navmesh-floors.ts	94
+floorSplitPlan	function	packages/godot/src/navmesh-floors.ts	126
 GapClass	type	packages/godot/src/navmesh-gaps.ts	8
 gapClass	function	packages/godot/src/navmesh-gaps.ts	9
 dataWidth	function	packages/godot/src/navmesh-gaps.ts	19

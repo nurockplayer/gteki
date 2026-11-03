@@ -41,42 +41,74 @@ export function floorScene(scene: StationScene, bundle: StationBundle, floorIds?
   });
   const overlaps = (min: number, max: number) => bands.some(b => max >= b.min && min <= b.max);
   const root = new THREE.Group(), owned: THREE.BufferGeometry[] = [];
-  const mapped = new Map<THREE.Object3D, THREE.Mesh | null>();
-  const select = (objects: THREE.Object3D[], others: THREE.Object3D[]) => castTargets(objects, others).flatMap(object => {
-    if (!mapped.has(object)) {
-      const mesh = object as THREE.Mesh, attr = mesh.geometry?.getAttribute("position"), index = mesh.geometry?.index;
-      const positions: number[] = [], gates: number[] = [], groups: { start: number; count: number; materialIndex: number }[] = [], oldGates = new Set<number>(mesh.userData.gtekiGateTriangles ?? []);
-      const instance = new THREE.Matrix4(), world = new THREE.Matrix4();
-      const points = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
-      const instanced = mesh as THREE.InstancedMesh;
-      for (let n = 0; attr && n < (instanced.isInstancedMesh ? instanced.count : 1); n++) {
-        if (instanced.isInstancedMesh) instanced.getMatrixAt(n, instance); else instance.identity();
-        world.multiplyMatrices(mesh.matrixWorld, instance);
-        for (let i = 0; i + 2 < (index?.count ?? attr.count); i += 3) {
-          points.forEach((p, k) => p.fromBufferAttribute(attr, index ? index.getX(i+k) : i+k).applyMatrix4(world));
-          if (!overlaps(Math.min(...points.map(p => p.y)), Math.max(...points.map(p => p.y)))) continue;
-          if (Array.isArray(mesh.material)) {
-            const group = mesh.geometry.groups.find(g => i >= g.start && i < g.start + g.count);
-            if (group) groups.push({ start: positions.length/3, count: 3, materialIndex: group.materialIndex ?? 0 });
-          }
-          if (oldGates.has(i/3)) gates.push(positions.length/9);
-          for (const p of points) positions.push(p.x, p.y, p.z);
-        }
-      }
-      let copy: THREE.Mesh | null = null;
-      if (positions.length) {
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-        for (const g of groups) geometry.addGroup(g.start, g.count, g.materialIndex);
-        owned.push(geometry);
-        copy = new THREE.Mesh(geometry, mesh.material); copy.name = mesh.name;
-        Object.defineProperties(copy.userData, Object.getOwnPropertyDescriptors(mesh.userData));
-        if (oldGates.size) copy.userData.gtekiGateTriangles = gates;
-        root.add(copy);
-      }
-      mapped.set(object, copy);
+  const ancestors = new Map<THREE.Object3D, THREE.Group>();
+  const parentOf = (source: THREE.Object3D | null): THREE.Object3D => {
+    if (!source) return root;
+    let copy = ancestors.get(source);
+    if (!copy) {
+      copy = new THREE.Group(); copy.name = source.name;
+      Object.defineProperties(copy.userData, Object.getOwnPropertyDescriptors(source.userData));
+      ancestors.set(source, copy); parentOf(source.parent).add(copy);
     }
-    const copy = mapped.get(object); return copy ? [copy] : [];
+    return copy;
+  };
+  const mapped = new Map<THREE.Object3D, THREE.Mesh[]>();
+  const select = (objects: THREE.Object3D[], others: THREE.Object3D[]) => castTargets(objects, others).flatMap(object => {
+    if (mapped.has(object)) return mapped.get(object)!;
+    const mesh = object as THREE.Mesh, source = mesh.geometry, attr = source?.getAttribute("position"), index = source?.index;
+    const copies: THREE.Mesh[] = []; mapped.set(object, copies);
+    if (!attr) return copies;
+    const oldGates = new Set<number>(mesh.userData.gtekiGateTriangles ?? []);
+    const instanced = mesh as THREE.InstancedMesh, wholeInstances: number[] = [];
+    const instance = new THREE.Matrix4(), world = new THREE.Matrix4();
+    const points = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+    const length = index?.count ?? attr.count;
+    const attach = (copy: THREE.Mesh, matrix: THREE.Matrix4, gates?: number[]) => {
+      copy.name = mesh.name; copy.matrixAutoUpdate = false; copy.matrix.copy(matrix);
+      Object.defineProperties(copy.userData, Object.getOwnPropertyDescriptors(mesh.userData));
+      if (gates && oldGates.size) copy.userData.gtekiGateTriangles = gates;
+      parentOf(mesh.parent).add(copy); copies.push(copy);
+    };
+    for (let n = 0; n < (instanced.isInstancedMesh ? instanced.count : 1); n++) {
+      if (instanced.isInstancedMesh) instanced.getMatrixAt(n, instance); else instance.identity();
+      world.multiplyMatrices(mesh.matrixWorld, instance);
+      const kept: number[] = [], gates: number[] = [];
+      const groups: { start: number; count: number; materialIndex: number }[] = [];
+      for (let i = 0; i + 2 < length; i += 3) {
+        points.forEach((p, k) => p.fromBufferAttribute(attr, index ? index.getX(i+k) : i+k).applyMatrix4(world));
+        const a = points[0]!.y, b = points[1]!.y, c = points[2]!.y;
+        if (!overlaps(Math.min(a,b,c), Math.max(a,b,c))) continue;
+        if (Array.isArray(mesh.material)) {
+          const group = source.groups.find(g => i >= g.start && i < g.start + g.count);
+          if (group) {
+            const materialIndex = group.materialIndex ?? 0, last = groups.at(-1);
+            if (last && last.materialIndex === materialIndex && last.start + last.count === kept.length) last.count += 3;
+            else groups.push({ start: kept.length, count: 3, materialIndex });
+          }
+        }
+        if (oldGates.has(i/3)) gates.push(kept.length/3);
+        for (let k = 0; k < 3; k++) kept.push(index ? index.getX(i+k) : i+k);
+      }
+      if (!kept.length) continue;
+      if (kept.length === length) {
+        if (instanced.isInstancedMesh) wholeInstances.push(n);
+        else attach(new THREE.Mesh(source, mesh.material), world);
+      } else {
+        // Share vertex attributes; only the selected index and merged material ranges are new.
+        const geometry = new THREE.BufferGeometry();
+        for (const [name, attribute] of Object.entries(source.attributes)) geometry.setAttribute(name, attribute);
+        geometry.setIndex(kept);
+        for (const g of groups) geometry.addGroup(g.start, g.count, g.materialIndex);
+        owned.push(geometry); attach(new THREE.Mesh(geometry, mesh.material), world, gates);
+      }
+    }
+    if (wholeInstances.length) {
+      const copy = new THREE.InstancedMesh(source, mesh.material, wholeInstances.length);
+      if (wholeInstances.length === instanced.count) copy.instanceMatrix = instanced.instanceMatrix;
+      else wholeInstances.forEach((id, i) => { instanced.getMatrixAt(id, instance); copy.setMatrixAt(i, instance); });
+      attach(copy, mesh.matrixWorld);
+    }
+    return copies;
   });
   const walkable = select(scene.walkable, scene.colliders ?? []);
   const colliders = select(scene.colliders ?? [], scene.walkable);

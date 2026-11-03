@@ -4,6 +4,7 @@ import { expect, it } from "vitest";
 import * as THREE from "three";
 import { createSyntheticBundle, syntheticEdge } from "../../navigation/src/fixtures.ts";
 import { floorScene, floorSplitPlan, parseFloors, splitFloors } from "./navmesh-floors.ts";
+import { objectNames, objectSource } from "./navmesh-source.ts";
 import { navmeshBundle } from "./navmesh-input.ts";
 
 it("keeps an induced subgraph, trims POI connectors and counts boundary edges separately", () => {
@@ -48,7 +49,7 @@ it("filters triangles inside merged, transformed and instanced meshes before gre
   wall.setMatrixAt(1, new THREE.Matrix4().makeTranslation(0,5,0));
   Object.defineProperty(wall.userData, "gtekiGateTriangles", { value: [0,1], writable: true });
   Object.defineProperty(wall.userData, "gteki_source", { value: "fixture" });
-  const root = new THREE.Group().add(floor, wall); root.position.x = 10; root.updateMatrixWorld(true);
+  const root = new THREE.Group().add(floor, wall); root.name = "PLATEAU parent"; root.userData.gtekiAsset = { uri: "citygml.glb" }; root.position.x = 10; root.updateMatrixWorld(true);
   const scene = { root, walkable:[floor], colliders:[wall], walls:[
     { a:{x:0,y:0}, b:{x:1,y:0}, zMin:0, zMax:2 },
     { a:{x:0,y:0}, b:{x:1,y:0}, zMin:4, zMax:6 },
@@ -56,18 +57,50 @@ it("filters triangles inside merged, transformed and instanced meshes before gre
   expect(floorScene(scene, bundle)).toBe(scene);
   const filtered = floorScene(scene, bundle, ["concourse"]);
   const mesh = filtered.walkable[0] as THREE.Mesh;
-  expect(mesh.geometry.getAttribute("position").count).toBe(3);
+  expect(mesh.geometry.getAttribute("position")).toBe(geometry.getAttribute("position"));
+  expect(mesh.geometry.index!.count).toBe(3);
   expect(mesh.geometry.groups).toEqual([{ start: 0, count: 3, materialIndex: 0 }]);
   const ray = new THREE.Raycaster(new THREE.Vector3(11, 1, 1), new THREE.Vector3(0, -1, 0));
   expect(ray.intersectObject(mesh)).toHaveLength(1);
-  expect(mesh.geometry.getAttribute("position").getX(0)).toBe(10);
-  expect((filtered.colliders![0] as THREE.Mesh).geometry.getAttribute("position").count).toBe(36);
+  expect(mesh.matrixWorld.elements[12]).toBe(10);
+  expect(objectSource(mesh)).toBe(objectSource(floor));
+  expect(objectNames(mesh).parents.slice(0, -1)).toEqual(objectNames(floor).parents);
+  expect(mesh.parent!.userData.gtekiAsset).toEqual(root.userData.gtekiAsset);
+  const filteredWall = filtered.colliders![0] as THREE.InstancedMesh;
+  expect(filteredWall.isInstancedMesh).toBe(true);
+  expect(filteredWall.count).toBe(1);
+  expect(filteredWall.geometry).toBe(wall.geometry);
   expect(filtered.colliders![0]!.userData.gtekiGateTriangles).toEqual([0,1]);
   expect(filtered.colliders![0]!.userData.gteki_source).toBe("fixture");
   expect(filtered.walls).toHaveLength(1);
-  expect(filtered.root.children).toHaveLength(2);
+  expect(filtered.walkable).toHaveLength(1);
+  expect(filtered.colliders).toHaveLength(1);
   expect(geometry.getAttribute("position").count).toBe(6);
   filtered.dispose(); geometry.dispose(); wall.geometry.dispose();
+});
+
+it("keeps indexed vertices shared and coalesces material ranges for partial instances", () => {
+  const bundle = createSyntheticBundle(), geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute([
+    0,0,0, 0,0,4, 4,0,4, 4,0,0, 0,4,0, 0,4,4, 4,4,4, 4,4,0,
+  ], 3));
+  const lower = Array.from({ length: 200 }, () => [0,1,2,0,2,3]).flat();
+  geometry.setIndex([...lower, 4,5,6,4,6,7]);
+  geometry.addGroup(0, lower.length, 0); geometry.addGroup(lower.length, 6, 1);
+  const original = new THREE.InstancedMesh(geometry, [new THREE.MeshBasicMaterial(), new THREE.MeshBasicMaterial()], 2);
+  original.setMatrixAt(0, new THREE.Matrix4()); original.setMatrixAt(1, new THREE.Matrix4().makeTranslation(0,0.5,0));
+  const root = new THREE.Group().add(original); root.updateMatrixWorld(true);
+  const filtered = floorScene({ root, walkable:[original], dispose() {} }, bundle, ["concourse"]);
+  expect(filtered.walkable).toHaveLength(2);
+  for (const object of filtered.walkable) {
+    const mesh = object as THREE.Mesh;
+    expect(mesh.geometry.getAttribute("position")).toBe(geometry.getAttribute("position"));
+    expect(mesh.geometry.index!.count).toBe(lower.length);
+    expect(mesh.geometry.groups).toEqual([{ start:0, count:lower.length, materialIndex:0 }]);
+  }
+  expect(filtered.walkable[1]!.matrixWorld.elements[13]).toBe(0.5);
+  expect(geometry.index!.count).toBe(lower.length + 6);
+  filtered.dispose(); geometry.dispose();
 });
 
 it("public Shinjuku: no-flag input restricted to a planned group equals --floors input, edge for edge", async () => {
