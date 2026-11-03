@@ -340,8 +340,8 @@ StairwellStats	interface	apps/web/src/explorer/stairwellCut.ts	175
 StairwellCut	interface	apps/web/src/explorer/stairwellCut.ts	188
 StairwellOptions	interface	apps/web/src/explorer/stairwellCut.ts	208
 stairwellWells	function	apps/web/src/explorer/stairwellCut.ts	223
-stairwellRegions	function	apps/web/src/explorer/stairwellCut.ts	291
-cutStairwells	function	apps/web/src/explorer/stairwellCut.ts	357
+stairwellRegions	function	apps/web/src/explorer/stairwellCut.ts	290
+cutStairwells	function	apps/web/src/explorer/stairwellCut.ts	356
 shouldRelease	function	apps/web/src/explorer/stationCaches.ts	8
 StationCaches	class	apps/web/src/explorer/stationCaches.ts	17
 STREET	const	apps/web/src/explorer/streetBackdrop.ts	12
@@ -374,8 +374,8 @@ IndexAccessor	interface	apps/web/src/explorer/triangleBvh.ts	16
 Cull	type	apps/web/src/explorer/triangleBvh.ts	22
 segmentHitsBox	function	apps/web/src/explorer/triangleBvh.ts	35
 TriangleBvh	class	apps/web/src/explorer/triangleBvh.ts	74
-PlanPoint	type	apps/web/src/explorer/walkableModel.ts	4
-Region	type	apps/web/src/explorer/walkableModel.ts	11
+PlanPoint	type	apps/web/src/explorer/walkableModel.ts	5
+Region	type	apps/web/src/explorer/walkableModel.ts	12
 BoundaryWall	type	apps/web/src/explorer/walkableModel.ts	22
 PlanPolygon	type	apps/web/src/explorer/walkableModel.ts	25
 regionPolygon	function	apps/web/src/explorer/walkableModel.ts	35
@@ -385,7 +385,7 @@ boundaryEdges	function	apps/web/src/explorer/walkableModel.ts	434
 PieceCuts	type	apps/web/src/explorer/walkableModel.ts	600
 subtractPlan	function	apps/web/src/explorer/walkableModel.ts	619
 outsideIntervals	function	apps/web/src/explorer/walkableModel.ts	625
-buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	654
+buildWalkableModel	function	apps/web/src/explorer/walkableModel.ts	720
 Segment2	interface	apps/web/src/explorer/walker.ts	7
 wallToRenderer	function	apps/web/src/explorer/walker.ts	19
 resolveWalls	function	apps/web/src/explorer/walker.ts	24
