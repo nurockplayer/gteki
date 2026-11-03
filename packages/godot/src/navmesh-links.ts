@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
 
 type Point = { x: number; y: number; z: number };
-type VerticalEdge = { id: string; mode: string; from: string; to: string; direction: "both" | "forward" };
+type ConnectorEdge = { id: string; mode: string; from: string; to: string; direction: "both" | "forward" };
 type Fallback = { point: Point; neighborId: string; edgeId: string };
 
 /** Consume the adjacent graph approach together with its composite vertical connector. */
@@ -82,9 +82,9 @@ export function validateLinkSnap(probe: SceneProbe, node: Point, snapped: Point)
   return null;
 }
 
-/** Build candidates from edges already filtered by the caller for graph traversability.
+/** Build vertical and fare-gate candidates from edges already filtered for graph traversability.
  * A candidate still needs post-bake verification that Detour attached its user ID. */
-export function verticalLinkCandidates(edges: readonly VerticalEdge[], nodePoint: (id: string) => Point | undefined, query: Pick<NavMeshQuery, "findClosestPoint">, validateSnap: (nodeId: string, node: Point, snapped: Point) => boolean, fallback?: (nodeId:string,node:Point)=>Fallback | null) {
+export function verticalLinkCandidates(edges: readonly ConnectorEdge[], nodePoint: (id: string) => Point | undefined, query: Pick<NavMeshQuery, "findClosestPoint">, validateSnap: (nodeId: string, node: Point, snapped: Point) => boolean, fallback?: (nodeId:string,node:Point)=>Fallback | null) {
   const candidates: { edgeId: string; connection: OffMeshConnectionParams; fallback?: {from?:Fallback;to?:Fallback} }[] = [];
   const failed: { edgeId: string; reason: "missing_node" | "snap_failed" | "unsafe_snap" }[] = [];
   let snapFailures = 0, noPolyStart = 0, noPolyEnd = 0;
@@ -93,17 +93,25 @@ export function verticalLinkCandidates(edges: readonly VerticalEdge[], nodePoint
     const result = query.findClosestPoint(point, { halfExtents: { x: 1.5, y: 0.6, z: 1.5 } });
     return result.success && result.polyRef && Math.abs(result.point.y - point.y) <= 0.6 ? result.point : null;
   };
-  vertical.forEach((edge, index) => {
+  // Append gates so existing vertical user IDs remain stable.
+  const gates = edges.filter(e => e.mode === "gate").slice().sort((a,b) => a.id.localeCompare(b.id));
+  [...vertical, ...gates].forEach((edge, index) => {
     const from = nodePoint(edge.from), to = nodePoint(edge.to);
     if (!from || !to) { failed.push({ edgeId: edge.id, reason: "missing_node" }); return; }
     let start = snap(from), end = snap(to);
-    const fromFallback = !start && fallback ? fallback(edge.from,from) : null;
-    const toFallback = !end && fallback ? fallback(edge.to,to) : null;
+    const fromFallback = !start && edge.mode !== "gate" && fallback ? fallback(edge.from,from) : null;
+    const toFallback = !end && edge.mode !== "gate" && fallback ? fallback(edge.to,to) : null;
     start ??= fromFallback?.point ?? null; end ??= toFallback?.point ?? null;
     if (!start || !end) { noPolyStart += Number(!start); noPolyEnd += Number(!end); snapFailures += Number(!start) + Number(!end); failed.push({ edgeId: edge.id, reason: "snap_failed" }); return; }
+    if (edge.mode === "gate") {
+      const dx=to.x-from.x, dz=to.z-from.z, mx=(from.x+to.x)/2, mz=(from.z+to.z)/2;
+      if ((start.x-mx)*dx+(start.z-mz)*dz >= 0 || (end.x-mx)*dx+(end.z-mz)*dz <= 0) {
+        failed.push({edgeId:edge.id,reason:"unsafe_snap"}); return;
+      }
+    }
     const startValid=!!fromFallback || validateSnap(edge.from, from, start), endValid=!!toFallback || validateSnap(edge.to, to, end);
-    if (!startValid || !endValid) { failed.push({ edgeId: edge.id, reason: "unsafe_snap" }); return; }
-    candidates.push({ edgeId: edge.id, connection: { startPosition: start, endPosition: end, radius: 0.3, bidirectional: edge.direction === "both", area: 0, flags: 1, userId: index + 1 }, ...(fromFallback || toFallback ? {fallback:{...(fromFallback ? {from:fromFallback} : {}),...(toFallback ? {to:toFallback} : {})}} : {}) });
+    if (!startValid || !endValid || (edge.mode === "gate" && !validateSnap(edge.from, start, end))) { failed.push({ edgeId: edge.id, reason: "unsafe_snap" }); return; }
+    candidates.push({ edgeId: edge.id, connection: { startPosition: start, endPosition: end, radius: 0.3, bidirectional: edge.direction === "both" || (edge.mode === "gate" && gates.some(e => e.from === edge.to && e.to === edge.from)), area: 0, flags: 1, userId: index + 1 }, ...(fromFallback || toFallback ? {fallback:{...(fromFallback ? {from:fromFallback} : {}),...(toFallback ? {to:toFallback} : {})}} : {}) });
   });
   return { candidates, failed, snapFailures, noPolyStart, noPolyEnd };
 }

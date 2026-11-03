@@ -224,12 +224,18 @@ async function main() {
       const entry: Entry = {suspect:true,points:line,missing:false,reason:null,stairLink:false,connector:false,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:false,toSnapped:false,connectivity:"unknown_snap",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
       cache.set(key,entry); return entry;
     }
-    // Fare gates walk their graph line between navmesh snaps, as the app draws them (gteki#669): the gate barriers
-    // block the navmesh, so a Detour path is either none or a detour round the gate.
+    // Gate transitions require their own attached link; a walk around the barrier is not the gate.
     if (["stairs","escalator","elevator","gate"].includes(step.mode)) {
       const line=routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]},connectorPaths);
       const built=buildConnectorPath(query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null);
-      const entry: Entry = {suspect:false,points:built.points,missing:built.reason!==null,reason:built.reason,stairLink:false,connector:!!built.points,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:built.fromSnapped,toSnapped:built.toSnapped,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
+      const gateLinkUsed = step.mode !== "gate" || !!link;
+      if (step.mode === "gate" && link && built.points) {
+        const a=step.reversed ? link.connection.endPosition : link.connection.startPosition;
+        const b=step.reversed ? link.connection.startPosition : link.connection.endPosition;
+        built.points.splice(0,built.points.length,
+          {...built.points[0]!,x:a.x,y:-a.z,z:a.y}, {...built.points.at(-1)!,x:b.x,y:-b.z,z:b.y});
+      }
+      const entry: Entry = {suspect:false,points:gateLinkUsed ? built.points : null,missing:!gateLinkUsed || built.reason!==null,reason:gateLinkUsed ? built.reason : "no_path",stairLink:false,connector:gateLinkUsed && !!built.points,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:built.fromSnapped,toSnapped:built.toSnapped,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:gateLinkUsed ? null : "missing_link"};
       cache.set(key,entry); return entry;
     }
     const a = link ? (step.reversed ? link.connection.endPosition : link.connection.startPosition) : snap(step.fromNodeId);

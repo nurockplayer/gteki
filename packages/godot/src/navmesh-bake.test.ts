@@ -255,3 +255,62 @@ it("does not open a wall or construct an overly steep landing strip",async()=>{
   expect(linkPadClear(probe,p(0,0),auditPolyline)).toBe(false);
   expect(linkStripGeometry({...probe,walls:[]},p(0,0),p(0.5,0.6),auditPolyline).reason).toBe("steep");
 });
+
+
+it.each(["forward", "both", "paired"] as const)("routes through a fare-gate link (%s)", async direction => {
+  // The machine opening remains physically open, but erosion disconnects the two walk areas.
+  const { positions, indices } = rooms(false);
+  positions.splice(12); indices.splice(6);
+  const wall = (z0: number, z1: number) => {
+    const base = positions.length / 3;
+    positions.push(4,0,z0, 4,2.5,z0, 4,2.5,z1, 4,0,z1);
+    indices.push(base,base+1,base+2,base,base+2,base+3);
+  };
+  wall(0,1.75); wall(2.25,4);
+  const points = { a:{x:3,y:0,z:2}, b:{x:5,y:0,z:2} };
+  const edges = [{ id:"gate", mode:"gate", from:"a", to:"b", direction:direction === "both" ? "both" as const : "forward" as const }];
+  if (direction === "paired") edges.push({ id:"return", mode:"gate", from:"b", to:"a", direction:"forward" });
+  const base = await bakeNavmesh(positions,indices);
+  if (!base.success) throw new Error(base.error);
+  const query = new NavMeshQuery(base.navMesh);
+  expect(completePath(query,points.a,points.b)).toBeNull();
+  const THREE = await import("three");
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(16,16).rotateX(-Math.PI/2), new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+  floor.updateMatrixWorld(true);
+  const probe = {ground:[floor],collider:[],walls:[
+    {a:{x:4,y:0},b:{x:4,y:-1.75},zMin:0,zMax:2.5},
+    {a:{x:4,y:-2.25},b:{x:4,y:-4},zMin:0,zMax:2.5},
+  ]};
+  const built = verticalLinkCandidates(edges,id=>points[id as keyof typeof points],query,(_id,node,snap)=>validateLinkSnap(probe,node,snap)===null);
+  expect(built.failed).toEqual([]);
+  expect(built.candidates).toHaveLength(edges.length);
+  expect(built.candidates.every(c=>c.connection.bidirectional === (direction !== "forward"))).toBe(true);
+  query.destroy(); base.navMesh.destroy();
+  const linked = await bakeNavmesh(positions,indices,{offMeshConnections:built.candidates.map(c=>c.connection)});
+  if (!linked.success) throw new Error(linked.error);
+  const q = new NavMeshQuery(linked.navMesh), {queryPathWithLinks} = await import("./navmesh-audit.ts");
+  const attached = new Set<number>();
+  for (let i=0;i<linked.navMesh.getMaxTiles();i++) {
+    const tile=linked.navMesh.getTile(i), header=tile.header();
+    if (!header) continue;
+    for (let j=0;j<header.offMeshConCount();j++) {
+      const connection=tile.offMeshCons(j), ends=new Set<number>();
+      let next=tile.polys(connection.poly()).firstLink(), guard=0;
+      while (next !== 0xffffffff && guard++ < header.maxLinkCount()) {
+        const link=tile.links(next); if (link.ref()) ends.add(link.edge()); next=link.next();
+      }
+      if (ends.has(0) && ends.has(1)) attached.add(connection.userId());
+    }
+  }
+  expect([...attached].sort()).toEqual(built.candidates.map(c=>c.connection.userId).sort());
+  const candidate = built.candidates.find(c=>c.edgeId === "gate")!;
+  const path = queryPathWithLinks(linked.navMesh,q,candidate.connection.startPosition,candidate.connection.endPosition);
+  const crossing = path?.find(p=>built.candidates.some(c=>p.link?.userId === c.connection.userId));
+  expect(crossing).toBeDefined();
+  expect(crossing!.point.x).toBeLessThan(4);
+  expect(crossing!.link!.end.x).toBeGreaterThan(4);
+  expect(crossing!.point.z).toBeCloseTo(2);
+  expect(crossing!.link!.end.z).toBeCloseTo(2);
+  expect(completePath(q,points.b,points.a) !== null).toBe(direction !== "forward");
+  q.destroy(); linked.navMesh.destroy(); floor.geometry.dispose(); floor.material.dispose();
+});
