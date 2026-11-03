@@ -178,6 +178,29 @@ it("audits a two-way gate backwards even when both endpoints share a walking pol
   const line=[{x:to.x,y:-to.z,z:to.y,zKnown:true,floorId:"f",stepIndex:0},{x:from.x,y:-from.z,z:from.y,zKnown:true,floorId:"f",stepIndex:0}];
   const result=auditGatePath(linked.navMesh,q,to,from,line,(a,b)=>validateLinkSnap(probe,a,b)===null,{connection},true);
   expect(result).toMatchObject({missing:false,reason:null,pathRejection:null});
-  expect(result.points?.map(p=>[p.x,p.y,p.z])).toEqual([[connection.endPosition.x,-connection.endPosition.z,connection.endPosition.y],[connection.startPosition.x,-connection.startPosition.z,connection.startPosition.y]]);
+  expect([result.points![0]!,result.points!.at(-1)!].map(p=>[p.x,p.y,p.z])).toEqual([[connection.endPosition.x,-connection.endPosition.z,connection.endPosition.y],[connection.startPosition.x,-connection.startPosition.z,connection.startPosition.y]]);
+  q.destroy(); linked.navMesh.destroy();
+});
+
+
+it("rejects the authored gate bend when the explorer route crosses a machine", async () => {
+  const {positions,indices,probe}=fixture(true,0.5);
+  const {verticalLinkCandidates,validateLinkSnap}=await import("./navmesh-links.ts");
+  const {fallbackGate}=await import("./navmesh-fallback-audit.ts");
+  const points={a:{x:3,y:0,z:2},b:{x:5,y:0,z:2}};
+  const base=await bakeNavmesh(positions,indices); if (!base.success) throw new Error(base.error);
+  const q0=new NavMeshQuery(base.navMesh);
+  const candidate=verticalLinkCandidates([{id:"gate",mode:"gate",from:"a",to:"b",direction:"both"}],id=>points[id as keyof typeof points],q0,(_id,a,b)=>validateLinkSnap(probe,a,b)===null).candidates[0]!;
+  expect(candidate).toBeDefined();
+  q0.destroy(); base.navMesh.destroy();
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:[candidate.connection]});
+  if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh), link={connection:{...candidate.connection,userId:candidate.connection.userId!}};
+  const line=[{x:3,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0},{x:4.3,y:-1,z:0,zKnown:true,floorId:"f",stepIndex:0},{x:5,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0}];
+  const result=auditGatePath(linked.navMesh,q,points.a,points.b,line,(a,b)=>validateLinkSnap(probe,a,b)===null,link);
+  expect(result.missing).toBe(false);
+  const collision=auditPolyline(probe,result.points!);
+  expect(collision.wallHits).toBeGreaterThan(0);
+  expect(fallbackGate({fallback:{failed:[]},unlisted:[],navmesh:{offFloor:0,noFloor:0,wallHits:0},connector:collision,incompleteRoutes:0}).ok).toBe(false);
   q.destroy(); linked.navMesh.destroy();
 });

@@ -124,6 +124,7 @@ export function auditGatePath(nav: NavMesh, query: NavMeshQuery, from: V3, to: V
   if (!traversable) return reject("wrong_link");
   return { ...built, missing: false, pathRejection: null, points: [
     { ...built.points[0]!, x: a.x, y: -a.z, z: a.y },
+    ...built.points.slice(1,-1),
     { ...built.points.at(-1)!, x: b.x, y: -b.z, z: b.y },
   ] };
 }
