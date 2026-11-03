@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { gtekiStations } from "./stations-plugin.ts";
 import { threeAliases } from "./three-alias.ts";
+import { fieldPrivate } from "./field-private.ts";
 import { fieldOffline } from "./field-offline.ts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -14,7 +15,7 @@ const overlay = process.env.GTEKI_PRIVATE_OVERLAY ? path.resolve(process.env.GTE
 
 export default defineConfig({
   base: "./",
-  plugins: [gtekiStations(roots, { overlay }), fieldOffline()],
+  plugins: [gtekiStations(roots, { overlay }), fieldOffline(), fieldPrivate(overlay)],
   resolve: {
     // Station scene modules live outside this package; give them the explorer's single three.
     alias: threeAliases(fs.realpathSync(path.join(here, "node_modules/three"))),

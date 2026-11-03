@@ -1,7 +1,7 @@
 import type { FieldStation } from "./data.ts";
 
 export interface Observation {
-  id: string; stopId: string; target: string; side: "left" | "right" | "n/a"; offsetM: string;
+  id: string; stopId: string; private?: true; target: string; side: "left" | "right" | "n/a"; offsetM: string;
   floorLabel: string; confirmation: "CLOSED" | "OPEN"; stepFree: string;
   observedText: string; note: string; poiId: string; itemId: string; paid: string; observedAt: string;
 }
@@ -10,14 +10,15 @@ export function nowJst(date = new Date()): string {
   return new Date(date.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19) + "+09:00";
 }
 
-export function newObservation(stopId: string): Observation {
+export function newObservation(stopId: string, privateStop?: true): Observation {
   const id = globalThis.crypto?.randomUUID?.() ?? `obs-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-  return { id, stopId, target: "", side: "n/a", offsetM: "", floorLabel: "", confirmation: "OPEN", stepFree: "",
+  return { id, stopId, ...(privateStop ? { private: true as const } : {}), target: "", side: "n/a", offsetM: "", floorLabel: "", confirmation: "OPEN", stepFree: "",
     observedText: "", note: "", poiId: "", itemId: "", paid: "", observedAt: nowJst() };
 }
 
-export function buildReceipt(station: FieldStation, records: Observation[]) {
-  const entries = records.map((record) => {
+export function buildReceipt(station: FieldStation, records: Observation[], privateReceipt = false) {
+  const isPrivate = (record: Observation) => !!record.private || !!station.stops.find((stop) => stop.id === record.stopId)?.private;
+  const entries = records.filter((record) => isPrivate(record) === privateReceipt).map((record) => {
     const parts = record.observedAt.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?\+09:00$/)?.slice(1).map((part) => Number(part ?? 0));
     const date = new Date(0);
     if (parts) {
@@ -47,9 +48,17 @@ export function buildReceipt(station: FieldStation, records: Observation[]) {
     };
   });
   const items = entries.filter((entry) => entry.item !== undefined && entry.item > 0);
-  if (!items.length) throw new Error("Choose at least one numbered item before exporting a receipt. FC / unassigned notes stay saved and will be included as fieldNotes.");
-  return { version: 1, station: station.id, fieldRun: station.fieldRun, sourceKind: "team_field", observer: "owner",
+  if (!items.length && !privateReceipt && !records.some(isPrivate)) throw new Error("Choose at least one numbered item before exporting a receipt. FC / unassigned notes stay saved and will be included as fieldNotes.");
+  return { ...(privateReceipt ? { private: true as const } : {}), version: 1, station: station.id, fieldRun: station.fieldRun, sourceKind: "team_field", observer: "owner",
     items, fieldNotes: entries.filter((entry) => entry.item === undefined || entry.item <= 0) };
+}
+
+export function buildReceipts(station: FieldStation, records: Observation[]) {
+  const receipts = [buildReceipt(station, records)];
+  if (records.some((record) => record.private || station.stops.some((stop) => stop.id === record.stopId && stop.private))) {
+    receipts.push(buildReceipt(station, records, true));
+  }
+  return receipts;
 }
 
 export interface RecorderState {

@@ -1,6 +1,6 @@
 import "./style.css";
 import { stations } from "./data.ts";
-import { buildReceipt, mergeRecorderState, newObservation, nowJst, type Observation, type RecorderState } from "./submission.ts";
+import { buildReceipts, mergeRecorderState, newObservation, nowJst, type Observation, type RecorderState } from "./submission.ts";
 
 const storageKey = "gteki-field-v1";
 let state: RecorderState = { station: "ikebukuro", positions: {}, records: {} };
@@ -44,7 +44,7 @@ function button(text: string, action: () => void) {
 function render() {
   const station = stations.find((s) => s.id === state.station) ?? stations[0]!;
   state.station = station.id;
-  const position = state.positions[station.id] ?? 0;
+  const position = Math.min(state.positions[station.id] ?? 0, station.stops.length - 1);
   const stop = station.stops[position]!;
   const records = state.records[station.id] ??= [];
   root.replaceChildren(el("h1", "現地メモ / Field recorder"));
@@ -60,13 +60,16 @@ function render() {
   nav.append(prev, el("span", `${position + 1} / ${station.stops.length}`), next);
   const visited = new Set(records.map((r) => r.stopId)).size;
   root.append(nav, el("p", `${visited} / ${station.stops.length} stops with notes · ${records.length} records`), el("h2", `${stop.id} · ${stop.title}`));
+  if (stop.private) {
+    const badge = el("strong", "非公開 / Private"); badge.className = "private-badge"; root.append(badge);
+  }
   root.append(el("p", `Items: ${stop.items.join(", ")}`));
   const instructions = el("details"); instructions.append(el("summary", "手順を読む / Stop instructions"), el("pre", stop.instructions)); root.append(instructions);
   root.append(el("p", "公の場所の事実だけ。写真・位置情報・氏名なし。 / Public facts only; no photos, geolocation or names."));
   root.append(el("p", "CLOSED = 確認済み / confirmed. Receipt status stays OPEN unless a numbered item, known node, store POI and fare side are set. FC / unassigned observations export as fieldNotes alongside numbered items."));
   for (const record of records.filter((r) => r.stopId === stop.id)) {
     const card = el("section"); card.className = "record"; card.append(el("h3", `記録 / Record ${records.indexOf(record) + 1}`));
-    const field = (label: string, key: keyof Observation, choices?: [string, string][], multiline = false) => {
+    const field = (label: string, key: Exclude<keyof Observation, "private">, choices?: [string, string][], multiline = false) => {
       const control = choices ? el("select") : multiline ? el("textarea") : el("input");
       if (control instanceof HTMLSelectElement) for (const [value, text] of choices!) control.add(new Option(text, value));
       control.value = record[key];
@@ -107,15 +110,17 @@ function render() {
     root.append(card);
   }
   root.append(button("＋ 記録 / Add record", () => {
-    const record = newObservation(stop.id);
+    const record = newObservation(stop.id, stop.private);
     state.records[station.id]!.push(record); save(record.id); render();
   }));
   root.append(button("JSON を保存 / Export station JSON", () => {
     try {
-      const receipt = buildReceipt(station, state.records[station.id] ?? []);
-      const url = URL.createObjectURL(new Blob([JSON.stringify(receipt, null, 2) + "\n"], { type: "application/json" }));
-      const link = el("a"); link.href = url; link.download = `${nowJst().slice(0, 10)}-${station.id}.json`;
-      root.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      const receipts = buildReceipts(station, state.records[station.id] ?? []);
+      for (const receipt of receipts) {
+        const url = URL.createObjectURL(new Blob([JSON.stringify(receipt, null, 2) + "\n"], { type: "application/json" }));
+        const link = el("a"); link.href = url; link.download = `${nowJst().slice(0, 10)}-${station.id}${receipt.private ? "-private" : ""}.json`;
+        root.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
       exportStatus.textContent = "JSON saved. Notes remain on this device.";
     } catch (error) { exportStatus.textContent = (error as Error).message; }
   }), exportStatus);

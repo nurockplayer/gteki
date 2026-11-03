@@ -3,6 +3,8 @@
 A receipt records text read from public signage during a field run. Store it at
 `docs/research/field/receipts/<YYYY-MM-DD>-<station>.json`.
 
+Private-stop observations download separately as `<YYYY-MM-DD>-<station>-private.json` with `"private": true` (GAP IDs stay in fieldNotes); ingest requires `--private-root <gteki-private>` and writes only to `additions/<station>/` there, archiving under `field-receipts/` (2026-11-03 JST).
+
 ```json
 {
  "version": 1,
