@@ -27,8 +27,8 @@ import { RECIPE_VERSION, canonicalJson, decodeRecipe, encodeRecipe, sha256Hex, t
 import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { loadScene } from "./route-clip-audit.ts";
 
-/** Stations with a baked recipe. Ikebukuro stays on the live cut for now (follow-up issue). */
-export const PUBLIC_STATIONS = ["shinjuku"] as const;
+/** Public stations with a baked stairwell cut recipe. */
+export const PUBLIC_STATIONS = ["shinjuku", "ikebukuro"] as const;
 type Tier = "high" | "low";
 /** Tolerance for an attribute component replayed against the live cut. */
 const ATTR_TOLERANCE = 1e-5;
