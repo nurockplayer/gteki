@@ -1615,7 +1615,7 @@ const bundle: StationBundle = {
 
 // ---------------------------------------------------------------- field receipts (#533, #554)
 // CLOSED team_field observations add a store or gate connector; nothing else may (see the merchant guard above).
-const fieldApplied = applyFieldReceipts(pois, sources, new Set(nodes.map((n) => n.id)), loadReceipts(join(HERE, "../../../docs/research/field/receipts"), "shinjuku"));
+const fieldApplied = applyFieldReceipts(pois, sources, new Set(nodes.map((n) => n.id)), loadReceipts(join(HERE, "../../../docs/research/field/receipts"), "shinjuku"), nodes);
 if (fieldApplied.length) console.log(`field receipts: applied #533 items ${fieldApplied.join(", ")}`);
 
 // ---------------------------------------------------------------- plan (render geometry)

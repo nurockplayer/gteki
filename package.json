@@ -5,6 +5,7 @@
   "packageManager": "pnpm@12.11.2",
   "scripts": {
     "fonts:subset": "node tools/fonts/subset-sign-font.mjs",
+    "field:ingest": "tsx tools/field-ingest/ingest.ts",
     "map:gen": "node tools/map/gen-symbols.mjs",
     "data:age": "tsx tools/data-age/report.ts",
     "bake:stairwells": "tsx packages/godot/src/stairwell-bake.ts --station shinjuku",
