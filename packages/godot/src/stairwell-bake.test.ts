@@ -29,6 +29,17 @@ describe("stairwell recipes", () => {
     const bundle = parsed.bundle;
     // Explorer.loadStation cuts after buildScene resolves, before the first update starts lazy catalog dressing.
     const scene = await loadScene("ikebukuro", bundle, tier, false);
+    // The browser measures real fonts: canvas-sized sign positions differ from the headless approximation.
+    const signs = scene.root.getObjectByName("ikebukuro_signs");
+    expect(signs).toBeDefined();
+    signs!.traverse(object => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.geometry = mesh.geometry.clone();
+      const position = mesh.geometry.getAttribute("position");
+      for (let i = 0; i < position.count; i++) position.setX(i, position.getX(i) * 1.01);
+      mesh.geometry.computeBoundingBox();
+    });
     const portals: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
     try {
       const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);

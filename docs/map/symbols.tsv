@@ -288,7 +288,7 @@ PortalCutResources	interface	apps/web/src/explorer/portalCut.ts	114
 disposePortalCuts	function	apps/web/src/explorer/portalCut.ts	121
 CutResult	interface	apps/web/src/explorer/portalCut.ts	129
 cutRegions	function	apps/web/src/explorer/portalCut.ts	168
-cutPortals	function	apps/web/src/explorer/portalCut.ts	473
+cutPortals	function	apps/web/src/explorer/portalCut.ts	479
 headingFromYaw	function	apps/web/src/explorer/pose.ts	2
 PostFxSettings	interface	apps/web/src/explorer/postfx.ts	18
 POSTFX_HIGH	const	apps/web/src/explorer/postfx.ts	27
@@ -748,7 +748,7 @@ AoAtlasInfo	interface	packages/godot/src/scene-roles.ts	436
 tagAoAtlases	function	packages/godot/src/scene-roles.ts	455
 stripTextures	function	packages/godot/src/scene-roles.ts	491
 runSearch	function	packages/godot/src/search-query.ts	11
-PUBLIC_STATIONS	const	packages/godot/src/stairwell-bake.ts	31
+PUBLIC_STATIONS	const	packages/godot/src/stairwell-bake.ts	32
 NoPathOption	type	packages/navigation/src/explain.ts	11
 NoPathEvidence	type	packages/navigation/src/explain.ts	23
 NoPathOptionCause	interface	packages/navigation/src/explain.ts	25

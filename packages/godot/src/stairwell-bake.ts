@@ -6,6 +6,7 @@
  * inside a container whose writes come back only through a bind mount. Each bake first runs the live cut with
  * the portal cut applied (as Explorer.loadStation does), then replays the file's recipe on the same scene and
  * compares the two. `--check` exits 1 when a committed file differs from a fresh bake or the replay disagrees.
+ * Canvas-sized signs retain their live cut: browser font metrics differ from the headless approximation.
  */
 import fs from "node:fs";
 import path from "node:path";

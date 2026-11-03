@@ -135,7 +135,7 @@ export interface CutResult {
   heights: Map<object, number[]>;
   /** Maximum world height of each removed polygon, per region key. */
   maxHeights: Map<object, number[]>;
-  /** Hash of every mesh the triangle stage reached, as the recipe header keeps it (FNV-1a; the offset basis when no mesh was reached). */
+  /** Hash of the stable meshes in the recipe stage (FNV-1a; the offset basis when no mesh was reached). */
   meshKeysHash: number;
 }
 
@@ -258,15 +258,21 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     const index = geometry.index, count = index ? index.count : position.count;
     const groups = geometry.groups.length ? geometry.groups : [{ start: 0, count, materialIndex: 0 }];
     // Recipe stage: a replayed mesh must match its record, and then skips the clipping below; a recorded one keeps its draft.
-    const key = recipe ? meshKey(mesh, geometry, position) : null;
-    if (key) keysHash = fnv1a(bytesOf(Uint32Array.of(key.count, key.hash, key.matrix)), keysHash);
-    const replaying: MeshRecord | null = recipe?.replay ? recipe.replay[stage] ?? null : null;
-    if (recipe?.replay && (!replaying || replaying.count !== key!.count || replaying.hash !== key!.hash || replaying.matrix !== key!.matrix)) {
-      throw new StaleRecipe(`${mesh.name || mesh.uuid} (${mesh.parent?.name}, ${mesh.userData.gteki_role}) stage ${stage}: ${JSON.stringify(key)} != ${JSON.stringify(replaying && { count: replaying.count, hash: replaying.hash, matrix: replaying.matrix })}`);
+    // Canvas-sized signs differ with browser font metrics (the headless canvas only approximates text).
+    // Keep their existing live cut; only stable scene geometry belongs to a baked recipe.
+    let meshRecipe = recipe;
+    if (meshRecipe) for (let parent: THREE.Object3D | null = mesh; parent; parent = parent.parent) {
+      if (parent.userData.gteki_role === "sign") { meshRecipe = undefined; break; }
     }
-    const draft: MeshRecord | null = recipe?.record ? { count: key!.count, hash: key!.hash, matrix: key!.matrix, hasCut: false, groups: [], codes: [], weights: [], events: [] } : null;
-    if (draft) recipe!.record!.push(draft);
-    stage++;
+    const key = meshRecipe ? meshKey(mesh, geometry, position) : null;
+    if (key) keysHash = fnv1a(bytesOf(Uint32Array.of(key.count, key.hash, key.matrix)), keysHash);
+    const replaying: MeshRecord | null = meshRecipe?.replay ? meshRecipe.replay[stage] ?? null : null;
+    if (meshRecipe?.replay && (!replaying || replaying.count !== key!.count || replaying.hash !== key!.hash || replaying.matrix !== key!.matrix)) {
+      throw new StaleRecipe(`${mesh.name || mesh.uuid}: changed since the recipe was baked`);
+    }
+    const draft: MeshRecord | null = meshRecipe?.record ? { count: key!.count, hash: key!.hash, matrix: key!.matrix, hasCut: false, groups: [], codes: [], weights: [], events: [] } : null;
+    if (draft) meshRecipe!.record!.push(draft);
+    if (meshRecipe) stage++;
     const tree = !replaying && groups.every(g => g.start % 3 === 0 && g.count % 3 === 0) ? currentBvh(geometry) : null;
     const inverse = mesh.matrixWorld.clone().invert();
     const vertices = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];

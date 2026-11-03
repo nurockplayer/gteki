@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { cutPortals, cutRegions, disposePortalCuts } from "./portalCut.ts";
-import { StaleRecipe } from "./cutRecipe.ts";
+import { StaleRecipe, type MeshRecord } from "./cutRecipe.ts";
 import { castAll, castCamera, castTargets, portalPassable } from "./raycast.ts";
 import { prepareRayTrees, raycastObject } from "./meshBvh.ts";
 
@@ -14,6 +14,34 @@ const ray = (mesh: THREE.Mesh, x: number, y: number) => {
 };
 
 describe("portal cuts", () => {
+  it("cuts canvas-sized signs live while replaying the stable meshes", () => {
+    const scene = (width: number) => {
+      const root = new THREE.Group(), signs = new THREE.Group(); signs.userData.gteki_role = "sign";
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 4));
+      const sign = new THREE.Mesh(new THREE.BoxGeometry(width, 0.2, 2)); sign.position.y = 0.5;
+      signs.add(sign); root.add(slab, signs); return { root, slab, sign };
+    };
+    const region = {
+      key: opening, bounds: new THREE.Box3(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1)),
+      planes: [(p: THREE.Vector3) => p.x + 1, (p: THREE.Vector3) => 1 - p.x, (p: THREE.Vector3) => p.z + 1, (p: THREE.Vector3) => 1 - p.z],
+      clip: null, accepts: () => true,
+    };
+    const baked = scene(1), browser = scene(3), live = scene(3);
+    const recorded: MeshRecord[] = [], a = resources(), b = resources(), c = resources();
+    const bake = cutRegions(baked.root, [region], a, new Set(), false, Infinity, { keys: [opening], record: recorded });
+    const signBefore = browser.sign.geometry;
+    const replay = cutRegions(browser.root, [region], b, new Set(), false, Infinity, { keys: [opening], replay: recorded });
+    const expected = cutRegions(live.root, [region], c, new Set(), false);
+    expect(recorded).toHaveLength(1);
+    expect(replay.meshKeysHash).toBe(bake.meshKeysHash);
+    expect(browser.sign.geometry).not.toBe(signBefore);
+    expect(replay.cutTriangles).toBe(expected.cutTriangles);
+    for (const name of ["slab", "sign"] as const) {
+      expect(Array.from(browser[name].geometry.getAttribute("position").array)).toEqual(Array.from(live[name].geometry.getAttribute("position").array));
+    }
+    for (const owned of [a, b, c]) disposePortalCuts(owned);
+  });
+
   it("tracks a provisional instance copy when recipe replay throws", () => {
     const root = new THREE.Group(), geometry = new THREE.BoxGeometry(6, 3, 0.2);
     const material = new THREE.MeshBasicMaterial(), mesh = new THREE.InstancedMesh(geometry, material, 1);
