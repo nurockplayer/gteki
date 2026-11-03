@@ -1,3 +1,4 @@
+import { opaqueScene } from "./helpers/opaque-scene.ts";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { loadShinjukuBundle } from "../data/bundle.ts";
@@ -318,7 +319,9 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
       return Math.hypot(p.x - head.x, p.z - head.z) < 4 && p.y > head.y && p.y < head.y + 5;
     })).toBe(true);
     // Without pushing out the hall fills main already had: the B1 hall at the north end and the B2 hall near toei-nwd.
-    for (const [x, y, z] of [[-7.71, -4.92, 17.99], [-88.86, -11.52, -166.85]] as const) {
+    // #221: the B2 height follows its flat hall ceiling (-13.10), rather than
+    // the removed raised shaft collar (-11.30); the 0.22 m fixture offset stays.
+    for (const [x, y, z] of [[-7.71, -4.92, 17.99], [-88.86, -13.32, -166.85]] as const) {
       expect(lights.some((l) => l.getWorldPosition(new THREE.Vector3()).distanceTo(new THREE.Vector3(x, y, z)) < 0.5), `${x}, ${z}`).toBe(true);
     }
     expect(fixtures.length).toBe(1);
@@ -487,4 +490,30 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
     expect(atlases.size).toBe(1);
     expect([...atlases][0]!.channel).toBe(1);
   });
+});
+
+// Real base surface-stone face 8408 at the e:0564105d stair mouth. The ray is
+// 1.34 nm below its Float32 lower edge; label-occlusion slack invents a hit.
+it("classifies the shipped stair-mouth curb using exact rendered intersections", () => {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute([
+    -48.5880012512207, -0.05999999865889549, -151.9239959716797,
+    -48.099998474121094, -0.05999999865889549, -150.39999389648438,
+    -48.099998474121094, 0.10999999940395355, -150.39999389648438,
+  ], 3));
+  const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+  const root = new THREE.Group(); root.add(new THREE.Mesh(geometry, material));
+  const opaque = opaqueScene(root);
+  try {
+    const ray = new THREE.Raycaster(new THREE.Vector3(-48.91, -1.68 + 1.62, -149.3),
+      new THREE.Vector3(0.38268343236509, 0, -0.9238795325112866), 0.001, 25);
+    expect(opaque.original(ray)).toBeUndefined();
+    expect(opaque.blockedBelowStreet(ray)).toBe(false);
+    ray.ray.origin.y = -0.05;
+    expect(opaque.original(ray)).toBeDefined();
+    expect(opaque.blockedBelowStreet(ray)).toBe(true);
+  } finally {
+    geometry.dispose(); material.dispose();
+    for (const mesh of opaque.meshes) { mesh.geometry.dispose(); mesh.material.dispose(); }
+  }
 });

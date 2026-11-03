@@ -46,14 +46,19 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged.
  * Vertical item 3 adds a fill light at the guided-walk escalator bank head in the slot a ceilingless anchor wasted (7 → 8 lights): nodes
  * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged. */
+// #221 per-flight shaft finishes; station physical lists unchanged (2026-11-03 JST).
+// 2026-11-03 18:00 JST: the attributed ceiling proxy intentionally supplies the
+// overhead query itself. The removed copied-cap mesh briefly made this four
+// camera blockers; this candidate retains three and the original listsDigest.
+// Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "2931495174d3eacc531cc9e2bbcdd0e5521b6bc2f457b258fccf1cd9040a472e",
+    geometryDigest: "8b501f6d2a9d6c6e95424959a72791df560a442abdcd9167440187b5d90d0bbd",
     appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
-    nodesDigest: "b4b1106baaf9b34ac1519a23186b5e1cd9e4d614d322bb3d1428fad50fccf7c8",
+    nodesDigest: "c3721bb561761689083bbf44bbaf8ed2e8689925827d73ddc722e7c4915690f2",
     texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
     meshes: 145,
-    bytes: 14_072_870,
+    bytes: 15897422,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
