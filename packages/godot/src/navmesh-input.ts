@@ -4,7 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { parseStationFiles, type StationBundle } from "@gteki/schema";
 
-export async function navmeshBundle(station: string): Promise<{ bundle: StationBundle; privateBuild: boolean }> {
+import type { PolygonRegion } from "../../../apps/web/src/explorer/privateLevels.ts";
+
+export async function navmeshBundle(station: string): Promise<{ bundle: StationBundle; privateBuild: boolean; privateRegions?: PolygonRegion[] }> {
   if (station !== "ikebukuro" && station !== "shinjuku") throw new Error("station must be ikebukuro or shinjuku");
   const privateDir = process.env.GTEKI_PRIVATE_DIR;
   let tmp: string | undefined;
@@ -23,7 +25,9 @@ export async function navmeshBundle(station: string): Promise<{ bundle: StationB
     const tenantFile = path.join(dir, "tenants.json");
     const result = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), fs.existsSync(tenantFile) ? read("tenants.json") : undefined, { privateTier: !!privateDir });
     if (!result.ok) throw new Error(`${station}: bundle validation failed`);
-    return { bundle: result.bundle, privateBuild: !!privateDir };
+    const regionsFile = path.join(dir, "private_regions.json");
+    const privateRegions = privateDir && fs.existsSync(regionsFile) ? read("private_regions.json") as PolygonRegion[] : undefined;
+    return { ...(privateRegions ? { privateRegions } : {}), bundle: result.bundle, privateBuild: !!privateDir };
   } finally {
     if (tmp) fs.rmSync(tmp, { recursive: true, force: true });
   }

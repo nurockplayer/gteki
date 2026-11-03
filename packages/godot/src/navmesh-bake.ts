@@ -169,10 +169,10 @@ async function main() {
   if (!Number.isInteger(tileSize) || tileSize < 1 || tileSize > 256) throw new Error("tile size must be an integer between 1 and 256");
   if (!out) throw new Error("use --station <station> --out <directory>");
   const output = qaDirectory(out);
-  const { bundle, privateBuild } = await navmeshBundle(station);
+  const { bundle, privateBuild, privateRegions } = await navmeshBundle(station);
   const scene = await loadScene(station, bundle);
   const probe = sceneProbe(scene);
-  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
+  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild, privateRegions) : null;
   const ground = [...(grey?.targets.ground ?? probe.ground)], collider = [...(grey?.targets.collider ?? probe.collider)];
   let walls = [...probe.walls], greyboxRuns: number | null = null;
   const positions: number[] = [], indices: number[] = [];

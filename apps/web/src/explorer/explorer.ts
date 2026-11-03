@@ -999,7 +999,7 @@ export class Explorer {
         return value;
       };
       const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
-      this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
+      this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality, false, station.privateRegions);
       lap("greybox");
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       lap("greyboxSegments");

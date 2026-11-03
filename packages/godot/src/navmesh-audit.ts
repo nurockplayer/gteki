@@ -138,11 +138,11 @@ async function main() {
   await init();
   const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav, { maxNodes: 8192 });
   const loadMs = performance.now() - loadStart, memoryAfterLoad = process.memoryUsage();
-  const { bundle, privateBuild } = await navmeshBundle(station);
+  const { bundle, privateBuild, privateRegions } = await navmeshBundle(station);
   if (provenance.privateBuild !== privateBuild) throw new Error("navmesh bake and audit disagree on private overlay; rebake first");
   if (provenance.bundleSha256 !== createHash("sha256").update(JSON.stringify(bundle)).digest("hex")) throw new Error("navmesh bake and audit bundle differ; rebake first");
   const router = createRouter(bundle, { allowUnverified: privateBuild }), scene = await loadScene(station, bundle);
-  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
+  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild, privateRegions) : null;
   const originalProbe = grey?.probe ?? sceneProbe(scene);
   // Recomputed exactly as the bake does; a difference means the bake and this audit see different inputs.
   const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.suspectProbe ?? originalProbe), e => router.isTraversable(e, DEFAULT_PROFILE));
