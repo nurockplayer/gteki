@@ -89,14 +89,14 @@ Those two public navmesh integration tests were not retried in light resources. 
 
 ### Before/after gate table
 
-Snapshot 2026-11-03 17:58 JST. Heavy regeneration ticket #263 queued at 2026-11-03 17:26 JST, waiting for #262. It has not started. No gate files have been regenerated; neither fallback recovery nor shrink-only acceptance is established yet.
+Final status 2026-11-03 18:11 JST. Heavy ticket #263 queued at 2026-11-03 17:26 JST and acquired the lock at 2026-11-03 17:59 JST, then exited 1 before starting a container, with no failure detail printed. Its one allowed infrastructure retry, ticket #266, queued at 2026-11-03 18:00 JST and was canceled while still waiting at 2026-11-03 18:11 JST to stay within the 60-minute cap. No generator ran and no gate files have been regenerated; neither target-edge recovery nor shrink-only acceptance is established.
 
 | Station | Fallback before / after | Unvalidated before / after | Detours before / after | offFloor before / after |
 |---|---|---|---|---|
-| ikebukuro | 1 / pending | 62 / pending | 0 / pending | 0 / pending |
-| shinjuku | 6 / pending | 146 / pending | 2 / pending | 0 / pending |
+| ikebukuro | 1 / not run | 62 / not run | 0 / not run | 0 / not run |
+| shinjuku | 6 / not run | 146 / not run | 2 / not run | 0 / not run |
 
-The queued runner executes the exact requested CI command and retains the eight generated files under `.qa/m3/after` for comparison and copying back:
+The requested CI command below remains to be run. The attempted temporary runner would retain the eight generated files under `.qa/m3/after` for comparison and copying back; it produced none. To write directly back through orb-test, retain outputs with `--out stations/ikebukuro --out stations/shinjuku` while keeping the inner command identical:
 
 ```sh
 orb-test --heavy --memory 3g --cpus 2 -- sh -c 'for s in ikebukuro shinjuku; do pnpm tsx packages/godot/src/navmesh-fallback.ts --station "$s" --with-greybox --write "stations/$s/navmesh-fallback.json" --write-baseline "stations/$s/navmesh-clip-baseline.json" --write-suspect "stations/$s/navmesh-suspect.json" --write-paths "stations/$s/navmesh-paths.json"; done'
@@ -105,3 +105,10 @@ orb-test --heavy --memory 3g --cpus 2 -- sh -c 'for s in ikebukuro shinjuku; do 
 Assumption: fix the stairwell band generator that contributes these shell faces, rather than changing a corridor boundary model that emitted none of them.
 
 Follow-up: the existing 15 km emission timing limit still fails in the specified 1-CPU light container. No performance code or timing limits were changed.
+
+
+## Blocked / handoff (2026-11-03 18:11 JST)
+
+The heavy wrapper exited 1 before creating a container and printed no error detail. Its one queued retry was canceled before starting a container because the remaining cap could not cover the queue and both station regenerations; the untouched 15 km emission timing assertion also failed its one bounded retry. The lead must run the exact two-station regeneration above, verify both target edges are absent from fallback and present in both path directions, and require no growth in fallback, unvalidated, detours, offFloor or per-edge clip counts before marking this PR ready.
+
+No running test container was manually killed. The duplicate light waiter exited 143 when canceled, and heavy retry #266 was canceled while queued; neither started tests. The two timed-out light navmesh subprocesses were not rerun in light resources. All temporary instrumentation and runner source files were removed; the worktree contains only committed task changes.
