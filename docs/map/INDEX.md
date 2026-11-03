@@ -1,7 +1,7 @@
 ---
 area: index
 owner: gteki-fa
-updated: 2026-10-26 JST
+updated: 2026-11-03 JST
 ---
 # GT-Eki project map
 
@@ -20,7 +20,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - Private preview deployment: local-only deployment of the private overlay to the Pages `private` branch · `scripts/deploy-private.sh`
 
 ### App (`apps/web`)
-- Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup · `apps/web/src/explorer/` · [[web-explorer]]
+- Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup, model-derived connector guards · `apps/web/src/explorer/` · [[web-explorer]]
 - UI shell: app frame, search combobox, minimap, identity/merchant cards, rail travel, live region · `apps/web/src/ui/` · [[web-ui]]
 - Field recorder: phone walk, offline notes, public/private receipt JSON and optional private-stop overlay · `apps/web/src/field/` · [[web-field]]
 - Merchant form: the merchant submission form and payload · `apps/web/src/merchant/` · [[web-merchant]]

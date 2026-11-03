@@ -33,7 +33,18 @@ function addOverheadRoofQueries(T: typeof THREE, cap: THREE.Mesh, root: THREE.Ob
       if (!roof.isMesh || Array.isArray(roof.material) || !roof.material.visible || roof.material.name !== "mat.ceiling") return;
       cacheBvh(roof.geometry);
       const added: THREE.Intersection[] = [];
-      raycastObject(roof, ray, added);
+      if (roof instanceof T.InstancedMesh && roof.userData.tightCulling) {
+        const count = roof.count;
+        try {
+          // Camera queries need every roof instance, even when rendering culled the batch.
+          roof.count = roof.instanceMatrix.count;
+          raycastObject(roof, ray, added);
+        } finally {
+          roof.count = count;
+        }
+      } else {
+        raycastObject(roof, ray, added);
+      }
       for (const hit of added) {
         if (!hit.face || hit.point.y > STREET_UNDERSIDE + 0.0001) continue;
         const normal = hit.face.normal.clone().applyNormalMatrix(new T.Matrix3().getNormalMatrix(roof.matrixWorld));

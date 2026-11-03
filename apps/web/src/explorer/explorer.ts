@@ -848,10 +848,13 @@ export class Explorer {
 
   private buildAvatar(glbUrl?: string): void {
     this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl });
-    // A slim marker ring keeps "this is you" readable without outshining the character.
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
-    ring.position.y = 0.02;
-    this.avatar.add(this.avatarRig.root, contactShadow(0.42), ring);
+    this.avatar.add(this.avatarRig.root);
+    if (this.quality === "high") {
+      // A slim marker ring keeps "this is you" readable without outshining the character.
+      const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
+      ring.position.y = 0.02;
+      this.avatar.add(contactShadow(0.42), ring);
+    }
     this.avatar.visible = false;
   }
 
