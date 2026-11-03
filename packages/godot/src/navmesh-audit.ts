@@ -208,11 +208,16 @@ async function main() {
       const entry: Entry = {suspect:true,points:null,missing:true,reason:"snap_failed",stairLink:false,connector:false,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:false,toSnapped:false,connectivity:"unknown_snap",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
       cache.set(key,entry); return entry;
     }
-    if (["stairs","escalator","elevator"].includes(step.mode)) {
+    if (["stairs","escalator","elevator","gate"].includes(step.mode)) {
       const a = link && (step.reversed ? link.connection.endPosition : link.connection.startPosition);
       const b = link && (step.reversed ? link.connection.startPosition : link.connection.endPosition);
-      const points = a && b ? [a,b].map((p,i) => ({x:p.x,y:-p.z,z:p.y,zKnown:true,stepIndex:0,floorId:i ? step.toFloorId : step.fromFloorId,connector:true})) : null;
-      const entry: Entry = {suspect:false,points,missing:!points,reason:points ? null : "snap_failed",stairLink:false,connector:!!points,fallbackUsed:link?.fallback ? [step.edgeId] : [],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:!!a,toSnapped:!!b,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}),pathRejection:null};
+      // The off-mesh traversal retains the built connector's bends/landings, never its graph-node ends.
+      // A link endpoint is authoritative even when the authored node is outside the navmesh.
+      const built = grey?.connectors?.pathByEdge.get(step.edgeId);
+      const interior = a && built?.length ? (distance(built[0]!,a) <= distance(built.at(-1)!,a) ? built : [...built].reverse()).slice(1,-1) : [];
+      const linkPoints = a && b ? [a,...interior,b] : null;
+      const points = linkPoints?.map((p,i) => ({x:p.x,y:-p.z,z:p.y,zKnown:true,stepIndex:0,floorId:i === linkPoints.length-1 ? step.toFloorId : step.fromFloorId,connector:true})) ?? null;
+      const entry: Entry = {suspect:false,points,missing:!points,reason:points ? null : step.mode === "gate" ? "no_path" : "snap_failed",stairLink:false,connector:!!points,fallbackUsed:link?.fallback ? [step.edgeId] : [],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:!!a,toSnapped:!!b,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}),pathRejection:null};
       cache.set(key,entry); return entry;
     }
     const a = link ? (step.reversed ? link.connection.endPosition : link.connection.startPosition) : snap(step.fromNodeId);
@@ -220,23 +225,12 @@ async function main() {
     const pathDiagnostics = { straightLimit:false };
     let path = a && b ? queryPathWithLinks(nav,query,a,b,pathDiagnostics) : null;
     let pathRejection: Entry["pathRejection"] = null;
-    if (["stairs","escalator","elevator"].includes(step.mode) && (!link || !path?.some(p=>p.link?.userId===link.connection.userId))) { if (path) pathRejection=link ? "wrong_link" : "missing_link"; path=null; }
-    if (!["stairs","escalator","elevator"].includes(step.mode) && path?.some(p=>p.link)) { pathRejection="unexpected_link"; path=null; }
-    const tooLong = step.mode === "stairs" && !!path && !path.some(p=>p.link) && length(path.map(p=>p.point)) > 2 * step.lengthM;
-    let reason: "snap_failed" | "no_path" | "too_long" | null = !a || !b ? "snap_failed" : !path ? "no_path" : tooLong ? "too_long" : null;
+    // Vertical steps were resolved by their own attached link above. Walking never borrows another link.
+    if (path?.some(p=>p.link)) { pathRejection="unexpected_link"; path=null; }
+    const reason: "snap_failed" | "no_path" | null = !a || !b ? "snap_failed" : !path ? "no_path" : null;
     const stairLink = false;
     const fallbackUsed = new Set<string>();
-    let points: (PolylinePoint & {connector?:boolean})[] | null = null;
-    if (path && !reason) {
-      points=[];
-      for (const part of path) {
-        const p=part.point;
-        points.push({ x:p.x,y:-p.z,z:p.y,zKnown:true,stepIndex:0,floorId:distance(p,from)<=distance(p,to) ? step.fromFloorId:step.toFloorId });
-        if (!part.link) continue;
-        points.push({x:part.link.end.x,y:-part.link.end.z,z:part.link.end.y,zKnown:true,stepIndex:0,floorId:step.toFloorId,connector:true});
-      }
-    }
-    if (!points && !reason) { reason="no_path"; pathRejection="reconstruction"; }
+    const points: PolylinePoint[] | null = path?.map(({point:p}) => ({x:p.x,y:-p.z,z:p.y,zKnown:true,stepIndex:0,floorId:distance(p,from)<=distance(p,to) ? step.fromFloorId:step.toFloorId})) ?? null;
     const missing = reason !== null;
     let corridor: number[] = [];
     let partialEndDistanceM: number | null = null;
@@ -265,7 +259,7 @@ async function main() {
     const graph=routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]});
     const edge=edges.get(step.edgeId);
     const gaps=missing && edge ? diagnoseGaps(query,probe,graph,dataWidth(edge),provenance.effectiveClimbM ?? provenance.climbM ?? 0.3,{radius:provenance.radiusM ?? 0.3,cell:provenance.cellSizeM ?? 0.1}) : [];
-    const entry: Entry = { suspect:false, points, missing, reason, stairLink, connector:!!points?.some(p=>p.connector), fallbackUsed:[...fallbackUsed], corridor, gapM: distance(from, to), gapWidthM: missing && !stairLink ? crossSectionWidth(route,step) : null, step, fromSnapped: !!snap(step.fromNodeId), toSnapped: !!snap(step.toNodeId), connectivity, partialEndDistanceM, gaps, graph, pathRejection };
+    const entry: Entry = { suspect:false, points, missing, reason, stairLink, connector:false, fallbackUsed:[...fallbackUsed], corridor, gapM: distance(from, to), gapWidthM: missing && !stairLink ? crossSectionWidth(route,step) : null, step, fromSnapped: !!snap(step.fromNodeId), toSnapped: !!snap(step.toNodeId), connectivity, partialEndDistanceM, gaps, graph, pathRejection };
     cache.set(key, entry); return entry;
   };
   const totals = () => ({ samples: 0, offFloor: 0, noFloor: 0, wallHits: 0 });
@@ -341,7 +335,7 @@ async function main() {
       const key=snapJoinKey(entries[i-1]!.step,entries[i]!.step);
       if (!joinChecks.has(key)) {
         const path=queryPathWithLinks(nav,query,{x:p.x,y:p.z,z:-p.y},{x:q.x,y:q.z,z:-q.y});
-        const points=path && !path.some(v=>v.link) ? path.map(v=>({...q,x:v.point.x,y:-v.point.z,z:v.point.y})) : null;
+        const points=path && !path.some(v=>v.link) && length(path.map(v=>v.point))<=distance(p,q)+0.3 ? path.map(v=>({...q,x:v.point.x,y:-v.point.z,z:v.point.y})) : null;
         joinChecks.set(key,points);
       }
       return joinChecks.get(key)?.map(v=>({...v,stepIndex:i,join:true})) ?? null;
@@ -544,17 +538,25 @@ async function main() {
     const ends = [[incoming,step.toNodeId,entry.points.at(-1)!],[outgoing,step.fromNodeId,entry.points[0]!]] as const;
     for (const [map,node,point] of ends) { const list=map.get(node) ?? []; list.push({step,point}); map.set(node,list); }
   }
+  const publishedJoinEnds = new Map<string, readonly [number[],number[]]>();
   for (const [node,arrivals] of incoming) for (const a of arrivals) for (const b of outgoing.get(node) ?? []) {
     const key=snapJoinKey(a.step,b.step);
+    const start=navPaths[a.step.edgeId]![a.step.reversed ? "reverse" : "forward"]!.at(-1)!;
+    const end=navPaths[b.step.edgeId]![b.step.reversed ? "reverse" : "forward"]![0]!;
+    publishedJoinEnds.set(key,[start,end]);
     if (joinChecks.has(key) || distance(a.point,b.point)<1e-6) continue;
     const path=queryPathWithLinks(nav,query,{x:a.point.x,y:a.point.z,z:-a.point.y},{x:b.point.x,y:b.point.z,z:-b.point.y});
-    joinChecks.set(key,path && !path.some(v=>v.link) ? path.map(v=>({...b.point,x:v.point.x,y:-v.point.z,z:v.point.y})) : null);
+    joinChecks.set(key,path && !path.some(v=>v.link) && length(path.map(v=>v.point))<=distance(a.point,b.point)+0.3 ? path.map(v=>({...b.point,x:v.point.x,y:-v.point.z,z:v.point.y})) : null);
   }
   const navJoins: Record<string,number[][]> = {};
   for (const [key,line] of joinChecks) {
     if (!line) continue;
     const floorAt = (p:PolylinePoint) => { const d:SampleDetail[]=[]; auditPolyline(probe,[p],{alreadySampled:true,detail:d,cache:auditCache}); return d[0]?.floorZ ?? p.z; };
     const points=floorSnapPath(line,floorAt).map(p=>({...p,x:round2(p.x),y:round2(p.y),z:round2(p.z)}));
+    const ends=publishedJoinEnds.get(key);
+    if (!ends) continue;
+    const coordinates=(p:PolylinePoint)=>[p.x,p.y,p.z];
+    if (coordinates(points[0]!).some((v,i)=>v!==ends[0][i]) || coordinates(points.at(-1)!).some((v,i)=>v!==ends[1][i])) { navPathsRejected.push(key); continue; }
     const checked=auditPolyline(probe,points,{cache:auditCache});
     if (checked.wallHits || checked.offFloor || checked.noFloor) { navPathsRejected.push(key); continue; }
     navJoins[key]=points.map(p=>[p.x,p.y,p.z]);

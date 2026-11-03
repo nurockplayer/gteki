@@ -1472,7 +1472,11 @@ export class Explorer {
   /** Connector centre lines converted from renderer coordinates to station ENU. */
   /** The station's baked navmesh walk paths per edge (ENU), or null: no file, a failed load or the L0 graph view. */
   navmeshRoutePaths(): NavmeshPaths | null {
-    return this.navmeshPaths;
+    if (this.navmeshPaths) return this.navmeshPaths;
+    // A failed public bake load is a missing guide, not permission to walk graph geometry.
+    return this.stationScene && this.station?.scene?.navmeshPaths
+      ? { version:1, station:this.station.key, frame:"ENU", edges:{} }
+      : null;
   }
 
   connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {
