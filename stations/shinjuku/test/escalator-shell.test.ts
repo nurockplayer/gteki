@@ -166,6 +166,10 @@ describe("#49 render-only escalator enclosure", () => {
         for (const side of [-1, 1]) {
           ray.set(v3({ ...p, z: p.z + 2.8 }), new THREE.Vector3(-dy / length * side, 0, -dx / length * side));
           ray.far = half + 0.1;
+          // Keep the enclosing side below an adjoining roof; trim only above
+          // that roof, where the old legacy-hull test removed the whole wall.
+          expect(ray.intersectObject(meshes.sides, false).length > 0, `backing side${side}@${t}`).toBe(true);
+          ray.set(v3({ ...p, z: p.z + SHELL_RISE - 0.025 }), new THREE.Vector3(-dy / length * side, 0, -dx / length * side));
           expect(ray.intersectObject(meshes.sides, false).length > 0, `side${side}@${t}`).toBe(drawn);
         }
       }
