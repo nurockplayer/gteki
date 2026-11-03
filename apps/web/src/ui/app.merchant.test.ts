@@ -4,10 +4,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { parseStationFiles, type Poi, type Source } from "@gteki/schema";
-import { createRouter, routeBetween, type RouteFailure, type RouteResult, type Router } from "@gteki/navigation";
+import { createRouter, routeBetween, type NoPathCause, type RouteFailure, type RouteResult, type Router } from "@gteki/navigation";
 import { createSearchIndex } from "@gteki/search";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import { strings, type Lang } from "../i18n.ts";
+import { noPathView } from "../noPath.ts";
 
 vi.mock("../explorer/explorer.ts", () => ({ Explorer: class {} }));
 vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, StationLoadError: class extends Error {} }));
@@ -15,7 +16,7 @@ import { App } from "./app.ts";
 
 type Harness = {
   s: {
-    lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | null; route: RouteResult | RouteFailure | null; noPath: unknown;
+    lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | null; route: RouteResult | RouteFailure | null; noPath: NoPathCause | null;
     destination: Poi | null; destinationTenant: null; search?: unknown; filter: Poi["category"] | null;
     router: Router | null; profile: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
     origin?: unknown; polyline?: unknown[]; instructions?: unknown[]; activeInstruction?: number;
@@ -233,7 +234,7 @@ describe("step-free routes to unverified store ties", () => {
     expect(a.ui.sheet.querySelector(".card.route .entrance-unverified")?.textContent).toBe(strings(lang).merchant.precision.tie);
   });
 
-  it.each(["ja", "en"] as const)("shows no reachable gate for real Ikebukuro Seibu in %s", (lang) => {
+  it.each(["ja", "en"] as const)("reports unsurveyed access for real Ikebukuro Seibu in %s", (lang) => {
     const { a } = app(lang);
     const read = (file: string) => JSON.parse(readFileSync(`stations/ikebukuro/gteki/${file}.json`, "utf8"));
     const parsed = parseStationFiles(read("station"), read("graph"), read("pois"));
@@ -246,10 +247,61 @@ describe("step-free routes to unverified store ties", () => {
     a.s.profile.stepFree = true;
     a.computeRoute();
     expect(a.s.route).toMatchObject({ ok: false, reason: "no_path" });
-    expect(a.ui.sheet.querySelector(".card.no-route")?.textContent).toContain(strings(lang).merchant.noStepFreeTie);
-    expect(a.ui.sheet.querySelector(".merchant-no-route")?.textContent).toBe(strings(lang).merchant.noStepFreeTie);
+    expect(a.ui.sheet.querySelector(".card.no-route > p")?.textContent).toBe(noPathView(strings(lang), a.s.noPath!)?.text);
+    expect(a.ui.sheet.querySelector(".card.no-route")?.textContent).toContain(strings(lang).merchant.unsurveyedStepFreeTie);
+    expect(a.ui.sheet.textContent).not.toContain(strings(lang).merchant.noStepFreeTie);
+    expect(a.ui.sheet.querySelector(".merchant-no-route")?.textContent).toBe(strings(lang).merchant.unsurveyedStepFreeTie);
     expect(a.ui.sheet.querySelector("button.primary")).toBeNull();
     expect(a.ui.sheet.querySelector(".card.route")).toBeNull();
-    expect(a.ui.live.announce).toHaveBeenCalledWith(expect.stringContaining(strings(lang).merchant.noStepFreeTie));
+    expect(a.ui.live.announce).toHaveBeenCalledWith(expect.stringContaining(strings(lang).merchant.unsurveyedStepFreeTie));
   });
+
+  it.each([false, true])("checks every tie before claiming known inaccessibility (unsurveyed alternative: %s)", (unsurveyed) => {
+    for (const lang of ["ja", "en"] as const) {
+      const { a, bundle } = app(lang);
+      a.s.destination = shopPoi({
+        connectorNodeIds: ["a", "goal"], paid: false,
+        evidence: { ...shopPoi().evidence, method: "STATION_TIE: entrance unverified" },
+      });
+      bundle.edges.push(
+        syntheticEdge("stairs", "start", "a", { mode: "stairs", lengthM: 1 }),
+        syntheticEdge("other-tie", "start", "goal", { wheelchair: unsurveyed ? null : false, lengthM: 20 }),
+      );
+      a.s.router = createRouter(bundle);
+      a.s.origin = { kind: "node", nodeId: "start" };
+      a.s.profile.stepFree = true;
+      a.computeRoute();
+      expect(a.s.route).toMatchObject({ ok: false, reason: "no_path" });
+      // The cheapest relaxed route uses known stairs in both cases; the second
+      // candidate's unknown access must still prevent a claim of inaccessibility.
+      expect(a.s.noPath).toMatchObject({ kind: "option", options: [{ option: "stepFree", evidence: "known", complete: true }] });
+      const message = unsurveyed ? strings(lang).merchant.unsurveyedStepFreeTie : strings(lang).merchant.noStepFreeTie;
+      expect(a.ui.sheet.querySelector(".merchant-no-route")?.textContent).toBe(message);
+      expect(a.ui.sheet.querySelector(".card.no-route > p")?.textContent).toBe(noPathView(strings(lang), a.s.noPath!)?.text);
+      expect(a.ui.sheet.querySelector(".card.no-route .entrance-unverified")?.textContent).toBe(message);
+      expect(a.ui.sheet.querySelector("button.primary")).toBeNull();
+    }
+  });
+
+  it.each(["unpaidOnly", "strictHours"] as const)("keeps the existing explanation when %s blocks a step-free tie", (option) => {
+    const { a, bundle } = app();
+    a.s.destination = shopPoi({
+      connectorNodeIds: ["goal"], paid: false,
+      evidence: { ...shopPoi().evidence, method: "STATION_TIE: entrance unverified" },
+    });
+    bundle.edges.push(syntheticEdge("accessible", "start", "goal", option === "unpaidOnly" ? { paid: true } : { hours: null }));
+    a.s.router = createRouter(bundle);
+    a.s.origin = { kind: "node", nodeId: "start" };
+    a.s.profile.stepFree = true;
+    a.s.profile[option] = true;
+    a.computeRoute();
+    expect(a.s.route).toMatchObject({ ok: false, reason: "no_path" });
+    expect(a.s.noPath).toMatchObject({ kind: "option", options: [{ option }] });
+    const explanation = noPathView(strings("ja"), a.s.noPath!)!.text;
+    expect(a.ui.sheet.querySelector(".card.no-route > p")?.textContent).toBe(explanation);
+    expect(a.ui.sheet.querySelector(".entrance-unverified")).toBeNull();
+    expect(a.ui.sheet.querySelector(".merchant-no-route")).toBeNull();
+    expect(a.ui.live.announce).toHaveBeenCalledWith(expect.stringContaining(explanation));
+  });
+
 });

@@ -1017,10 +1017,13 @@ export class App {
     const profile = this.profile();
     const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
-    const tieStatus = this.stepFreeTieStatus();
-    this.ui.live.announce(routeLiveMessage(this.t, best, tieStatus === "noStepFreeTie" ? this.t.merchant.noStepFreeTie : !best.ok && best.reason === "unknown_goal" && isUnlocatedShop(destination) ? this.t.shopNoRoute : undefined));
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
+    const tieStatus = this.stepFreeTieStatus();
+    const failureText = tieStatus && tieStatus !== "stepFreeTie" ? this.t.merchant[tieStatus]
+      : this.s.noPath ? noPathView(this.t, this.s.noPath)?.text
+      : !best.ok && best.reason === "unknown_goal" && isUnlocatedShop(destination) ? this.t.shopNoRoute : undefined;
+    this.ui.live.announce(routeLiveMessage(this.t, best, failureText));
     if (best.ok) {
       // Baked navmesh paths are public-graph data: the private build keeps its graph polylines (gteki-private#4).
       this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths(), PRIVATE_BUILD ? null : this.explorer.navmeshRoutePaths());
@@ -1052,7 +1055,8 @@ export class App {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
       const tieStatus = this.stepFreeTieStatus();
-      card.append(el("h2", undefined, t.noRoute), el("p", undefined, tieStatus === "noStepFreeTie" ? t.merchant.noStepFreeTie : view?.text ?? noRouteText(t, r, this.s.destination)));
+      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
+      if (tieStatus && tieStatus !== "stepFreeTie") card.append(el("p", "entrance-unverified", t.merchant[tieStatus]));
       // The picked brand came from an unverified directory (#419): the failed card says when it was checked.
       const asOf = tenantAsOfNote(this.s.destinationTenant, t);
       if (asOf) card.append(el("p", "muted tenant-asof", asOf));
@@ -1197,11 +1201,23 @@ export class App {
     if (merchant) sheet.append(merchant);
   }
 
-  private stepFreeTieStatus(): "stepFreeTie" | "noStepFreeTie" | null {
-    const { destination, route, profile } = this.s;
+  private stepFreeTieStatus(): "stepFreeTie" | "noStepFreeTie" | "unsurveyedStepFreeTie" | null {
+    const { destination, route, profile, noPath, router, loaded, origin } = this.s;
     if (!destination || destination.category !== "shop" || arrivalPrecision(destination) !== "tie" || !profile.stepFree || !route) return null;
     if (route.ok) return "stepFreeTie";
-    return route.reason === "no_path" ? "noStepFreeTie" : null;
+    if (route.reason !== "no_path" || noPath?.kind !== "option" || noPath.options.length !== 1) return null;
+    const cause = noPath.options[0]!;
+    if (cause.option !== "stepFree") return null;
+    if (cause.noData || cause.evidence === "unknown" || cause.evidence === "mixed") return "unsurveyedStepFreeTie";
+    if (!cause.complete || cause.evidence !== "known" || !router || !loaded || !origin) return null;
+    // The explanation samples one relaxed route. Check all tie targets together without
+    // known barriers before ruling out an alternative whose access is merely unsurveyed.
+    const knownBarriers = loaded.bundle.edges.filter((edge) => edge.mode === "stairs" || edge.mode === "escalator"
+      || edge.accessEvidence && (edge.wheelchair === false || edge.steps === true)).map((edge) => edge.id);
+    const possible = routeBetween(router, origin, destination, {
+      ...this.profile(), stepFree: false, extraClosedEdgeIds: knownBarriers,
+    });
+    return possible.ok ? "unsurveyedStepFreeTie" : possible.reason === "no_path" ? "noStepFreeTie" : null;
   }
 
   /** The merchant card (#213) for a shop destination, or null: only a shop carries a directory listing. */

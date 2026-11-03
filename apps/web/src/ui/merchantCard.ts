@@ -60,7 +60,7 @@ export interface MerchantCardModel {
   note: string | null;
   /** True only with a verified connector: the data owner's real evidence, never the listing alone. */
   routable: boolean;
-  stepFreeTie: "stepFreeTie" | "noStepFreeTie" | null;
+  stepFreeTie: "stepFreeTie" | "noStepFreeTie" | "unsurveyedStepFreeTie" | null;
   floors: {
     label: string;
     brands: { name: string; category: string | null }[];
@@ -122,7 +122,7 @@ export function merchantCardEl(model: MerchantCardModel, t: Strings, sources: re
   card.append(el("p", "merchant-meta", meta));
   // The shop's own note carries the area wording as printed; it never becomes a floor or a position.
   if (model.note) card.append(el("p", "muted merchant-note", model.note));
-  if (model.stepFreeTie === "noStepFreeTie") card.append(el("p", "merchant-no-route", t.merchant.noStepFreeTie));
+  if (model.stepFreeTie && model.stepFreeTie !== "stepFreeTie") card.append(el("p", "merchant-no-route", t.merchant[model.stepFreeTie]));
   else if (!model.routable) card.append(el("p", "merchant-no-route", t.shopSearchOnly));
   const source = el("p", "merchant-source");
   source.append(el("span", "muted", `${t.merchant.source}: `));
