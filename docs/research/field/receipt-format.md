@@ -3,6 +3,8 @@
 A receipt records text read from public signage during a field run. Store it at
 `docs/research/field/receipts/<YYYY-MM-DD>-<station>.json`.
 
+Owner 操作說明（繁體中文）：[現地記錄 HOWTO](HOWTO.md)。
+
 ```json
 {
  "version": 1,
