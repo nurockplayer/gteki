@@ -52,7 +52,7 @@ export function ribbonGeometry(points: readonly THREE.Vector3[], width: number, 
 }
 
 /** Renderer-space polyline for an edge, with display heights for unknown z (never routed on). */
-export function edgePoints(bundle: StationBundle, edge: Edge, nodes: Map<string, StationBundle["nodes"][number]>, floors: Map<string, StationBundle["floors"][number]>): THREE.Vector3[] {
+export function edgePoints(bundle: Pick<StationBundle, "nodes" | "floors">, edge: Edge, nodes: Map<string, StationBundle["nodes"][number]>, floors: Map<string, StationBundle["floors"][number]>): THREE.Vector3[] {
   const from = nodes.get(edge.from);
   const to = nodes.get(edge.to);
   if (!from || !to) return [];

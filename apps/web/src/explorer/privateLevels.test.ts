@@ -4,7 +4,9 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createServer } from "vite";
 import * as THREE from "three";
-import type { StationBundle } from "@gteki/schema";
+import { parseStationFiles, type StationBundle } from "@gteki/schema";
+import { createRouter } from "@gteki/navigation";
+import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import { createDemoFiles } from "../demo.ts";
 import { gtekiStations } from "../../stations-plugin.ts";
 import { buildGreybox } from "./greybox.ts";
@@ -63,6 +65,43 @@ describe("private level selection and rendering", () => {
       const hit = new THREE.Raycaster(new THREE.Vector3(5, z + 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(kept.walkable, true);
       expect(hit[0]!.point.y).toBeCloseTo(z);
     }
+  });
+
+  it("routes around private exclusions, or returns no route when the crossing is the only edge", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-private-route-")), privateDir = path.join(root, "private");
+    const stationDir = path.join(root, "stations", "demo", "gteki"), additions = path.join(privateDir, "additions", "demo");
+    fs.mkdirSync(stationDir, { recursive: true }); fs.mkdirSync(additions, { recursive: true });
+    const write = (dir: string, name: string, value: unknown) => fs.writeFileSync(path.join(dir, name), JSON.stringify(value));
+    const direct = syntheticEdge("crossing", "start", "a");
+    const bundle = createSyntheticBundle([direct]);
+    for (const [id, x, y] of [["start", 1, 5], ["a", 9, 5], ["b", 1, 1], ["goal", 9, 1]] as const)
+      bundle.nodes.find((n) => n.id === id)!.position = { x, y, z: 0 };
+    write(stationDir, "station.json", { schema: bundle.schema, station: bundle.station, sources: bundle.sources, floors: bundle.floors, coverage: bundle.coverage });
+    write(stationDir, "pois.json", { schema: bundle.schema, stationId: bundle.station.id, pois: [] });
+    const writeGraph = () => write(stationDir, "graph.json", { schema: bundle.schema, stationId: bundle.station.id, nodes: bundle.nodes, edges: bundle.edges });
+    write(additions, "levels.s03.json", { levels: [{ floorId: "concourse", renderElevationM: 0, features: [{ facility: "class-a", polygons: [[rect(0, 0, 10, 10), rect(3, 3, 4, 4)]] }] }] });
+    write(additions, "levels.selection.json", selection);
+    const load = () => {
+      writeGraph(); buildOverlay({ repoRoot: root, privateDir });
+      const dir = path.join(privateDir, "overlay", "demo", "gteki");
+      const read = (name: string) => JSON.parse(fs.readFileSync(path.join(dir, name), "utf8"));
+      const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), undefined, { privateTier: true });
+      if (!parsed.ok) throw new Error("synthetic overlay did not parse");
+      return parsed.bundle;
+    };
+    try {
+      expect(createRouter(bundle).route("start", "a").ok).toBe(true);
+      const blocked = load();
+      expect(createRouter(blocked).route("start", "a")).toMatchObject({ ok: false, reason: "no_path" });
+      expect(blocked.edges[0]).toMatchObject({ closed: true, attributes: { privateFloorBlockedReason: "outside-selected-floor" } });
+      bundle.edges.push(syntheticEdge("around-1", "start", "b"), syntheticEdge("around-2", "b", "goal"), syntheticEdge("around-3", "goal", "a"));
+      const route = createRouter(load()).route("start", "a");
+      expect(route.ok).toBe(true);
+      if (route.ok) expect(route.steps.map((step) => step.edgeId)).toEqual(["around-1", "around-2", "around-3"]);
+      expect(direct.closed).toBe(false);
+      fs.rmSync(path.join(additions, "levels.s03.json"));
+      expect(load().edges[0]!.closed).toBe(false);
+    } finally { fs.rmSync(root, { recursive: true, force: true }); }
   });
 
   it("loads only overlay geometry and emits real walkable/navmesh floors with empty holes", async () => {
