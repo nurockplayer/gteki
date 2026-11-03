@@ -89,11 +89,39 @@ export function auditGatePath(nav: NavMesh, query: NavMeshQuery, from: V3, to: V
   if (!built.points) return { ...built, missing: true, pathRejection: null };
   const a = reversed ? link.connection.endPosition : link.connection.startPosition;
   const b = reversed ? link.connection.startPosition : link.connection.endPosition;
-  const path = queryPathWithLinks(nav, query, a, b);
-  const crossings = path?.filter(p => p.link);
-  const crossing = crossings?.[0];
-  if (!path || crossings?.length !== 1 || crossing?.link?.userId !== link.connection.userId ||
-      distance(crossing.point, a) > 0.01 || distance(crossing.link.end, b) > 0.01) return reject("wrong_link");
+  // Select this connection explicitly: a shortest walking path can bypass a valid wide gate.
+  let traversable = false;
+  for (let i=0;i<nav.getMaxTiles() && !traversable;i++) {
+    const tile=nav.getTile(i), header=tile.header(); if (!header) continue;
+    for (let j=0;j<header.offMeshConCount() && !traversable;j++) {
+      const connection=tile.offMeshCons(j);
+      if (connection.userId() !== link.connection.userId || (reversed && !(connection.flags() & 1))) continue; // DT_OFFMESH_CON_BIDIR
+      const endpoint=(offset:number)=>({x:connection.pos(offset),y:connection.pos(offset+1),z:connection.pos(offset+2)});
+      if (distance(a,endpoint(reversed ? 3 : 0))>0.01 || distance(b,endpoint(reversed ? 0 : 3))>0.01) continue;
+      const ends = new Map<number,number[]>();
+      let next=tile.polys(connection.poly()).firstLink(), guard=0;
+      while (next !== 0xffffffff && guard++ < header.maxLinkCount()) {
+        const adjacent=tile.links(next);
+        if (adjacent.ref()) ends.set(adjacent.edge(),[...(ends.get(adjacent.edge()) ?? []),adjacent.ref()]);
+        next=adjacent.next();
+      }
+      if (!ends.has(0) || !ends.has(1)) continue;
+      const connectionRef=nav.getPolyRefBase(tile)+connection.poly();
+      // Verify the directed floor→connection→floor corridor, including the incoming floor link.
+      for (const ref of ends.get(reversed ? 1 : 0)!) {
+        const ground=nav.getTileAndPolyByRef(ref), groundHeader=ground.success ? ground.tile.header() : null;
+        if (!ground.success || !groundHeader) continue;
+        let entry=ground.poly.firstLink(), count=0;
+        while (entry !== 0xffffffff && count++ < groundHeader.maxLinkCount()) {
+          const adjacent=ground.tile.links(entry);
+          if (adjacent.ref() === connectionRef) { traversable=true; break; }
+          entry=adjacent.next();
+        }
+        if (traversable) break;
+      }
+    }
+  }
+  if (!traversable) return reject("wrong_link");
   return { ...built, missing: false, pathRejection: null, points: [
     { ...built.points[0]!, x: a.x, y: -a.z, z: a.y },
     { ...built.points.at(-1)!, x: b.x, y: -b.z, z: b.y },

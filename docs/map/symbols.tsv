@@ -638,8 +638,8 @@ queryCompletePath	function	packages/godot/src/navmesh-audit.ts	35
 snapNode	function	packages/godot/src/navmesh-audit.ts	44
 queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	50
 auditGatePath	function	packages/godot/src/navmesh-audit.ts	84
-floorSnapPath	function	packages/godot/src/navmesh-audit.ts	106
-countedTotals	function	packages/godot/src/navmesh-audit.ts	123
+floorSnapPath	function	packages/godot/src/navmesh-audit.ts	134
+countedTotals	function	packages/godot/src/navmesh-audit.ts	151
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	25
 completePath	function	packages/godot/src/navmesh-bake.ts	43
 applyBridgeGeometry	function	packages/godot/src/navmesh-bake.ts	85
