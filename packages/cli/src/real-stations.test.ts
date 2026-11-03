@@ -1,6 +1,8 @@
 // route.ts on the committed Ikebukuro and Shinjuku bundles (what the Godot client shells out to / reads).
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import type { Poi } from "@gteki/schema";
 import { describe, expect, it } from "vitest";
 
 const routeScript = fileURLToPath(new URL("./route.ts", import.meta.url));
@@ -42,6 +44,16 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     expect(byPoi.out.result.nodeIds![0]).toBe("g_jr_c2");
     expect(byPoi.out.result.nodeIds!.at(-1)).toBe("x35");
     expect(byPoi.out.instructions.ja.length).toBeGreaterThan(2);
+
+    const { pois } = JSON.parse(readFileSync(new URL("../../../stations/ikebukuro/gteki/pois.json", import.meta.url), "utf8")) as { pois: Poi[] };
+    const destination = pois.find((poi) => poi.id === "tobu-central-gate-2")!;
+    const tobu = route("ikebukuro", ["jr-central-gate-2", destination.id, "--from-poi", "--goal-poi"]);
+    expect(tobu.status, tobu.stderr).toBe(0);
+    for (const lang of ["en", "ja"] as const) {
+      const note = destination.notes!.find((note) => note.lang === lang)!.text;
+      expect(note).not.toBe("");
+      expect(tobu.out.instructions[lang].at(-1)!.text).toContain(note);
+    }
   });
 
   it("Ikebukuro: the draft sign guideline that names Exit 22 is not route evidence (#491)", () => {
@@ -84,7 +96,7 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-hope-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-echika-1129", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
     ["ikebukuro", ["jr-central-gate-2", "shop-ikb-metro-001", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only shop (#407)
-    ["ikebukuro", ["jr-central-gate-2", "tobu-central-gate-2", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only POI: no verified entrance
+    ["ikebukuro", ["jr-central-gate-2", "tobu-central-gate-1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only POI: no verified entrance
     ["ikebukuro", ["jr-central-gate-2", "exit-c1", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
     ["ikebukuro", ["jr-central-gate-2", "metro-f-west-east-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)
     ["ikebukuro", ["jr-central-gate-2", "seibu-1f-gate", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only line POI (#414)

@@ -2186,15 +2186,27 @@
    ],
    "floorId": "b1",
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "c_w"
+   ],
    "paid": false,
    "evidence": {
     "sourceIds": [
      "toshima-underground-guide-2022"
     ],
-    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
-    "checkedDate": "2026-10-20"
-   }
+    "method": "Toshima underground guide (2022-01), PDF p.2, west Central Passage: Central Gate 2 is drawn on the north side of the passage, west of JR Central Gate 2 and beside the Marunouchi Central Passage West Gate. Printed passage-approach tie to c_w on the existing c_w__w_c / c_w__c_mid route; STATION_TIE, not an identified gate opening. No wheelchair or steps claim.",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "案内は中央通路西側の通路上で終わります。2022年1月版の豊島区案内図にある中央2改札への通路側の案内で、改札口の正確な位置は未確認です。"
+    },
+    {
+     "lang": "en",
+     "text": "Directions end on the west Central Passage approach to Central Gate 2 shown in the January 2022 Toshima guide. The exact gate opening is not verified."
+    }
+   ]
   },
   {
    "id": "central-passage",
