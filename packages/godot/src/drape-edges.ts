@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { enuToRenderer } from "@gteki/geo";
 import { nodeDisplayZ, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type Node, type StationBundle } from "@gteki/schema";
+import type { StationScene } from "@gteki/scene-api";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
 import { auditPolyline, loadScene, privateSceneProbe, sceneProbe, violations, type SampleDetail, type SceneProbe } from "./route-clip-audit.ts";
 
@@ -24,6 +25,18 @@ function floorAt(probe: SceneProbe, x: number, y: number, band: number, toleranc
 function drawn(bundle: StationBundle, edge: Edge): PolylinePoint[] {
   const nodes = new Map(bundle.nodes.map(n => [n.id, n]));
   return routePolyline(bundle, { ok: true, nodeIds: [edge.from, edge.to], steps: [{ edgeId: edge.id, fromNodeId: edge.from, toNodeId: edge.to, reversed: false, mode: edge.mode, lengthM: edge.lengthM ?? 0, fromFloorId: nodes.get(edge.from)!.floorId, toFloorId: nodes.get(edge.to)!.floorId }] } as unknown as RouteResult);
+}
+
+/** Automatic gap flags must not supply the floor or wall opening used to clear themselves. */
+export async function drapeSceneProbe(scene: StationScene, bundle: StationBundle, overlayDir: string): Promise<SceneProbe> {
+  const withoutAutomaticGaps = { ...bundle, edges: bundle.edges.map(edge => {
+    if (edge.attributes?.sceneGapReason !== "drape-unresolved") return edge;
+    const attributes = { ...edge.attributes };
+    delete attributes.sceneGap;
+    delete attributes.sceneGapReason;
+    return { ...edge, attributes };
+  }) };
+  return await privateSceneProbe(scene, withoutAutomaticGaps, overlayDir) ?? sceneProbe(scene);
 }
 
 /** Drape selected edges without mutating the input bundle. */
@@ -156,7 +169,7 @@ async function main(): Promise<void> {
     const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), fs.existsSync(path.join(dir, "tenants.json")) ? read("tenants.json") : undefined, { privateTier: true });
     if (!parsed.ok) throw new Error(`overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
     const scene = await loadScene(station, parsed.bundle);
-    const probe = await privateSceneProbe(scene, parsed.bundle, dir) ?? sceneProbe(scene);
+    const probe = await drapeSceneProbe(scene, parsed.bundle, dir);
     const result = drapeEdges(probe, parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)) });
     for (const n of doc.nodes) if (result.nodes.has(n.id)) n.renderZ = result.nodes.get(n.id)!;
     for (const e of doc.edges) {
