@@ -12,14 +12,16 @@
     { "id": "IN2", "from": "jr-central-gate-2", "to": "exit-35", "profile": { "strictHours": true }, "expect": "fail", "note": "Hours unknown everywhere: require_known must refuse" },
     { "id": "IN3", "from": "jr-central-gate-2", "to": "exit-35", "profile": { "stepFree": true }, "expect": "fail", "note": "Step-free unknown/stairs: must refuse" },
     { "id": "IN4", "from": "exit-35", "to": "exit-35", "expect": "record", "note": "start = goal" },
-    { "id": "IN5", "from": "tobu-central-gate-1", "to": "exit-35", "expect": "fail", "note": "Search-only origin must not route" }
+    { "id": "IN5", "from": "tobu-central-gate-1", "to": "exit-35", "expect": "fail", "note": "Search-only origin must not route" },
+    { "id": "IN6", "from": "central-passage", "to": "east-exit-b1", "profile": { "stepFree": true }, "expect": "fail", "note": "B1 halls have unsurveyed step-free access: explain missing survey data", "cardText": ["No route confirmed in the surveyed data with \"Step-free\" on.", "step-free access is not surveyed"] }
   ],
   "shinjuku": [
     { "id": "S1", "from": "poi:exit:1", "to": "poi:platform:oedo", "expect": "ok", "walk": true, "note": "Street (north) down to the B6 platform; crosses the fare line" },
     { "id": "S2", "from": "poi:platform:oedo", "to": "poi:exit:2", "expect": "ok", "walk": true, "note": "Platform to street (north-west) via the stacked switchback" },
     { "id": "S3", "from": "poi:exit:5", "to": "poi:toilet:2", "expect": "ok", "walk": true, "note": "B1 exit to B3 toilets (inside paid area)" },
     { "id": "S4", "from": "poi:exit:3", "to": "poi:exit:6", "expect": "ok", "walk": true, "note": "Street south to B1 south, unpaid only" },
-    { "id": "S5", "from": "poi:exit:1", "to": "poi:platform:oedo", "profile": { "stepFree": true }, "expect": "record", "note": "Step-free via elevators: must not use stairs if it routes" },
+    { "id": "S5", "from": "poi:exit:1", "to": "poi:platform:oedo", "profile": { "stepFree": true }, "expect": "fail", "note": "Exit 1 has known steps: no supported step-free connection", "cardText": ["No route confirmed in the surveyed data with \"Step-free\" on.", "stairs, escalators or passages not step-free"] },
+    { "id": "S6", "from": "poi:exit:3", "to": "poi:platform:oedo", "profile": { "stepFree": true }, "expect": "ok", "note": "Street south to the Oedo platform via evidenced wheelchair-accessible lifts", "modes": ["elevator"] },
     { "id": "SN1", "from": "poi:exit:1", "to": "poi:platform:oedo", "profile": { "unpaidOnly": true }, "expect": "fail", "note": "Platform is paid: outside-gates profile must refuse" },
     { "id": "SN2", "from": "poi:exit:1", "to": "poi:toilet:1", "profile": { "unpaidOnly": true }, "expect": "fail", "note": "Toilets are inside the paid area" },
     { "id": "SN3", "from": "poi:exit:1", "to": "poi:platform:oedo", "profile": { "strictHours": true }, "expect": "record", "note": "require_known hours" },
