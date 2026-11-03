@@ -296,3 +296,4 @@ export function seeThroughMeshes(root: THREE.Object3D): THREE.Object3D[] {
   visit(root, null);
   return found;
 }
+export * from "./liftShaft.ts";

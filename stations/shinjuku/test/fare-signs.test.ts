@@ -33,8 +33,9 @@ describe("access barrier sign truth", () => {
     }
   });
   it("labels the reviewer's B1 source-restricted space as restricted", () => {
-    const sign = signs.find(s => Math.hypot((s.fence.a.x + s.fence.b.x) / 2 + 44.48,
-      (s.fence.a.y + s.fence.b.y) / 2 - 169.395) < .02)!;
+    // The fence beside the lift: the one that ran through its shaft is cut at the shaft now (#645 step 2c).
+    const sign = signs.find(s => Math.hypot((s.fence.a.x + s.fence.b.x) / 2 + 43.6345,
+      (s.fence.a.y + s.fence.b.y) / 2 - 171.1805) < .02)!;
     expect(sign).toBeDefined();
     expect(sign.sourceSpaceId).toBe("aabd65fc5e8c4d1cabafa98e06faaf39");
     expect(sign.en).toBe("Restricted area");
