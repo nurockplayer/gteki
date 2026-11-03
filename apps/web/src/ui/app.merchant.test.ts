@@ -224,8 +224,8 @@ describe("step-free routes to unverified store ties", () => {
     a.s.profile.stepFree = true;
     a.computeRoute();
     expect(a.s.route).toMatchObject({ ok: true, nodeIds: ["start", "goal"], steps: [{ edgeId: "walk" }], profile: { stepFree: true } });
-    const stepFreeText = lang === "ja" ? "段差なしで行ける改札まで（入口未確認）"
-      : "To a gate reachable step-free (entrance unverified)";
+    const stepFreeText = lang === "ja" ? "段差なしで行ける駅側の接続地点まで（入口未確認）"
+      : "To a station connection point reachable step-free (entrance unverified)";
     expect(a.ui.sheet.querySelector(".card.route .entrance-unverified")?.textContent).toBe(stepFreeText);
     expect(a.ui.sheet.querySelector(".merchant-meta")?.textContent).toContain(stepFreeText);
     expect(a.ui.sheet.querySelector(".merchant-no-route")).toBeNull();
