@@ -11,7 +11,7 @@ export type FallbackEntry = {edgeId:string; mode:string; reason:string};
 /** The bake options every measurement uses; the committed navmesh paths carry them as their header. */
 export const NAVMESH_BAKE = { cellSizeM:0.10, agentRadiusM:0.30, walkableClimbM:0.40, tileSize:256, withGreybox:true };
 
-export type NavEdgePaths = { forward?: number[][]; reverse?: number[][] };
+export type NavEdgePaths = { forward?: number[][]; reverse?: number[][]; suspectPolyline?:true };
 export type NavPaths = Record<string, NavEdgePaths>;
 
 /** Compare committed per-edge walk paths with freshly computed ones, keyed `edgeId:forward|reverse`. */
@@ -20,6 +20,7 @@ export function navPathsDiff(committed:NavPaths, computed:NavPaths, toleranceM=0
   const before=index(committed), after=index(computed), missing:string[]=[], extra:string[]=[], moved:string[]=[];
   for(const [key,points] of after) {if(!before.has(key)) missing.push(key); else if(!samePoints(before.get(key)!,points,toleranceM)) moved.push(key);}
   for(const key of before.keys()) if(!after.has(key)) extra.push(key);
+  for(const id of new Set([...Object.keys(committed ?? {}),...Object.keys(computed ?? {})])) if(!!committed?.[id]?.suspectPolyline!==!!computed?.[id]?.suspectPolyline) moved.push(`${id}:suspectPolyline`);
   return {missing:missing.sort(),extra:extra.sort(),moved:moved.sort()};
 }
 const samePoints=(a:readonly number[][],b:readonly number[][],toleranceM:number)=>a.length===b.length && a.every((p,i)=>{const q=b[i]!;return p.length===q.length && p.every((v,axis)=>Math.abs(v-q[axis]!)<=toleranceM);});

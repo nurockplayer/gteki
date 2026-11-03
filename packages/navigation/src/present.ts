@@ -27,6 +27,8 @@ export interface PolylinePoint {
    * `attributes.displayHeightApprox`, whose display heights are approximate.
    */
   sceneGap?: true;
+  /** Explicit unvalidated graph geometry admitted by the station suspect list. */
+  suspectPolyline?: true;
 }
 
 export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number; known: boolean } {
@@ -36,13 +38,15 @@ export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number;
 }
 
 /** Polyline along the route, following edge geometry (reversed when traversed backwards). */
-/** Baked navmesh walk polylines per edge and direction, in the station ENU frame (see NavmeshPaths in @gteki/scene-api). */
-export type NavmeshEdgePaths = Readonly<Record<string, { forward?: readonly (readonly number[])[]; reverse?: readonly (readonly number[])[] }>>;
+/** Baked guide paths in station ENU; suspectPolyline is the explicit station-list graph exception. */
+export type NavmeshEdgePaths = Readonly<Record<string, { forward?: readonly (readonly number[])[]; reverse?: readonly (readonly number[])[]; suspectPolyline?:true }>>;
 
 /** With baked paths, missing snaps or junction paths fail closed (an empty polyline). */
 export function routePolyline(bundle: StationBundle, route: RouteResult, edgePaths?: ReadonlyMap<string, readonly { x: number; y: number; z: number }[]>, navPaths?: NavmeshEdgePaths | null, joins?: Readonly<Record<string, readonly (readonly number[])[]>>): PolylinePoint[] {
   if (navPaths) {
     const steps = route.steps.map((step, stepIndex) => {
+      const suspect=navPaths[step.edgeId]?.suspectPolyline;
+      if (suspect) return routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}).map(p=>({...p,stepIndex,suspectPolyline:true as const,sceneGap:true as const}));
       const path = navPaths[step.edgeId]?.[step.reversed ? "reverse" : "forward"];
       return path?.map((p, i) => ({ x:p[0]!, y:p[1]!, z:p[2]!, zKnown:false, stepIndex, floorId:i === path.length - 1 ? step.toFloorId : step.fromFloorId })) ?? null;
     });

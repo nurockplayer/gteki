@@ -1,8 +1,8 @@
 import json, sys
 from pathlib import Path
 errors=[]
-print('| Station | fallback | unvalidatedJoins | invalidJoins | detours | offFloor | snap_failed exit stairs |')
-print('|---|---:|---:|---:|---:|---:|---:|')
+print('| Station | fallback | unvalidatedJoins | invalidJoins | detours | offFloor | snap_failed exit stairs | suspectPolyline routes/edges |')
+print('|---|---:|---:|---:|---:|---:|---:|---|')
 for station in ['ikebukuro','shinjuku']:
  before=Path(sys.argv[2] if len(sys.argv)>2 else '.qa/s5/before')/station
  after=Path(sys.argv[1] if len(sys.argv)>1 else '.qa/s5/regen-output')/station
@@ -18,18 +18,26 @@ for station in ['ikebukuro','shinjuku']:
   edge=edges[e['edgeId']]
   return e['mode']=='stairs' and e['reason']=='snap_failed' and (edge['from'] in exits or edge['to'] in exits)
  pairs=[(len(fa),len(fb)),(a['total']['unvalidatedJoins'],b['total']['unvalidatedJoins']),(a['total']['invalidJoins'],b['total']['invalidJoins']),(len(pa['detours']),len(pb['detours'])),(a['total']['offFloor'],b['total']['offFloor']),(sum(exit_snap(e) for e in fa),sum(exit_snap(e) for e in fb))]
- print('| '+station+' | '+' | '.join(f'{x} → {y}' for x,y in pairs)+' |')
+ suspect_before=f"{a['total'].get('suspectPolyline','new')}/{a['total'].get('suspectPolylineEdges','new')}"
+ suspect_after=f"{b['total']['suspectPolyline']}/{b['total']['suspectPolylineEdges']}"
+ print('| '+station+' | '+' | '.join(f'{x} → {y}' for x,y in pairs)+f' | {suspect_before} → {suspect_after} |')
  for name in ['navmesh-fallback','navmesh-suspect']:
   old={e['edgeId'] for e in load(before,name)};new={e['edgeId'] for e in load(after,name)}
   if new-old:errors.append(f'{station} {name} grew: {sorted(new-old)}')
  if set(pb['detours'])-set(pa['detours']):errors.append(f'{station} detours grew')
  for edge,counters in b.items():
   for key,count in counters.items():
+   if key in ['suspectPolyline','suspectPolylineEdges'] and key not in a.get(edge,{}):continue
    old=a.get(edge,{}).get(key,0)
    if (count<old if key=='routablePairs' else count>old):errors.append(f'{station} {edge}.{key}: {old} → {count}')
  audit=load(after,'audit')
  print(station,'rejected paths',len(audit['navPathsRejected']),'junctions',len(audit.get('navJoins',{})))
  print(station,'failure edges',[(e['edgeId'],e['mode'],e['reason']) for e in fb])
  print(station,'uniqueEdgeScene',audit['uniqueEdgeScene'])
+ if audit['navPathsRejected']:errors.append(f"{station} rejected published paths: {audit['navPathsRejected']}")
+ if audit['completeAuditedRoutes']+audit['incompleteRoutes']+audit['suspectPolyline']['routes']!=audit['auditedRoutePairs']:errors.append(f'{station} route outcome partition is inconsistent')
+ for kind in ['navmesh','connector']:
+  if audit['uniqueEdgeScene'][kind]['noFloor'] or audit['segmentTotals']['sceneRaycast'][kind]['noFloor']:errors.append(f'{station} {kind} samples without floor')
+ if audit['fallbackAudit']['totals']['noFloor']:errors.append(f'{station} fallback samples without floor')
 print('SHRINK-ONLY '+('FAIL' if errors else 'PASS'))
 for error in errors:print(error)

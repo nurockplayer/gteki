@@ -7,6 +7,8 @@
     "unvalidatedJoins": 62,
     "invalidJoins": 0,
     "routablePairs": 1182,
-    "failedRoutePairs": 0
+    "failedRoutePairs": 0,
+    "suspectPolyline": 0,
+    "suspectPolylineEdges": 0
   }
 }

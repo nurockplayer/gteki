@@ -948,3 +948,12 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     expect(describeRoute(loop, route(loop, "door-1f", "hall"), "en")[1]).toMatchObject({ vertical: null, text: "Take the elevator" });
   });
 });
+
+it("keeps suspect graph geometry explicitly flagged between baked walks",()=>{
+  const b=createSyntheticBundle([edge("s-a","start","a"),edge("suspect","a","goal",{mode:"stairs",attributes:{displayHeightApprox:true}})]);
+  const r=route(b,"start","goal");
+  const points=routePolyline(b,r,undefined,{"s-a":{forward:[[0,1,0],[9,1,0]]},suspect:{suspectPolyline:true}});
+  expect(points.length).toBeGreaterThan(2);
+  expect(points.some(p=>p.suspectPolyline && p.sceneGap)).toBe(true);
+  expect(points.filter(p=>p.suspectPolyline).at(-1)).toMatchObject({x:20,y:0});
+});
