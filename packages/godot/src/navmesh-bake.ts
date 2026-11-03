@@ -8,6 +8,7 @@ import * as THREE from "three";
 import { enuToRenderer } from "@gteki/geo";
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routePolyline, type RouteResult } from "@gteki/navigation";
 import { navmeshBundle, privateRegionsSha256 } from "./navmesh-input.ts";
+import { floorScene, floorSplitPlan, parseFloors } from "./navmesh-floors.ts";
 import type { Box } from "../../../apps/web/src/explorer/greybox.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
 import { auditPolyline, loadScene, sceneProbe } from "./route-clip-audit.ts";
@@ -149,10 +150,13 @@ export function appendMeshes(objects: readonly THREE.Object3D[], positions: numb
 
 async function main() {
   let station = "", out = "", withGreybox = false, snapFallback = false, bridgeGaps = false, radiusM: number = WALKER_BODY.radiusM, cellSizeM = 0.15, climbM = 0.3, tileSize = 256, rounding: "up" | "down" = "up", ignoreGates = false;
+  let floorIds: string[] | undefined, splitPlan = false;
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--station" && args[i+1]) station = args[++i]!;
     else if (args[i] === "--out" && args[i+1]) out = args[++i]!;
+    else if (args[i] === "--floors" && args[i+1]) floorIds = parseFloors(args[++i]!);
+    else if (args[i] === "--split-plan") splitPlan = true;
     else if (args[i] === "--with-greybox") withGreybox = true;
     else if (args[i] === "--snap-fallback") snapFallback = true;
     else if (args[i] === "--bridge-gaps") bridgeGaps = true;
@@ -164,13 +168,18 @@ async function main() {
     else if (args[i] === "--ignore-gate-obstacles") ignoreGates = true;
     else throw new Error(`unknown or incomplete argument: ${args[i]}`);
   }
+  if (splitPlan) {
+    const { bundle } = await navmeshBundle(station, floorIds);
+    console.log(JSON.stringify({ station, estimate: "sum of floor node bounding-box raster cells at 0.15 m, 64 bytes/cell; excludes scene/greybox/WASM overhead", groups: floorSplitPlan(bundle) }, null, 2));
+    return;
+  }
   if (!Number.isFinite(radiusM) || radiusM <= 0) throw new Error("radius must be positive");
   if (!Number.isFinite(cellSizeM) || cellSizeM <= 0 || !Number.isFinite(climbM) || climbM < 0) throw new Error("cell size must be positive and climb must be non-negative");
   if (!Number.isInteger(tileSize) || tileSize < 1 || tileSize > 256) throw new Error("tile size must be an integer between 1 and 256");
   if (!out) throw new Error("use --station <station> --out <directory>");
   const output = qaDirectory(out);
-  const { bundle, privateBuild, privateRegions } = await navmeshBundle(station);
-  const scene = await loadScene(station, bundle);
+  const { bundle, privateBuild, privateRegions, outOfSplit = [], sceneBundle = bundle } = await navmeshBundle(station, floorIds);
+  const scene = floorScene(await loadScene(station, sceneBundle), bundle, floorIds);
   const probe = sceneProbe(scene);
   const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild, privateRegions) : null;
   const ground = [...(grey?.targets.ground ?? probe.ground)], collider = [...(grey?.targets.collider ?? probe.collider)];
@@ -356,7 +365,7 @@ async function main() {
   const effectiveRadiusCells = rounding === "down" ? Math.floor(radiusM / cellSizeM + 1e-6) : Math.ceil(radiusM / cellSizeM - 1e-6);
   const gateTriangles = collider.reduce((n, mesh) => n + (mesh.userData.gtekiGateTriangles?.length ?? 0), 0);
   const regionHash = privateRegionsSha256(privateBuild && withGreybox ? privateRegions : undefined);
-  const metrics = { ...(regionHash ? { privateRegionsSha256: regionHash } : {}), station, withGreybox, privateBuild, snapFallback, bridgeGaps, bridgePolicy:bridgeGaps ? "no-exemptions-v1" : null, bridgedGaps, bridgedByClass, bridgeRebakeMs, unbridgeableGaps, linkPads, linkPadsWithoutNearbyPoly, linkPadsBlocked, linkPadsSteep, bridgeFloorTriangles:bridgeFloorData, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, suspectEdges: suspect, greyboxRuns, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), linkAttachmentDiagnosis, fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
+  const metrics = { ...(floorIds ? { floors: floorIds, outOfSplit: outOfSplit.length, outOfSplitEdgeIds: outOfSplit } : {}), ...(regionHash ? { privateRegionsSha256: regionHash } : {}), station, withGreybox, privateBuild, snapFallback, bridgeGaps, bridgePolicy:bridgeGaps ? "no-exemptions-v1" : null, bridgedGaps, bridgedByClass, bridgeRebakeMs, unbridgeableGaps, linkPads, linkPadsWithoutNearbyPoly, linkPadsBlocked, linkPadsSteep, bridgeFloorTriangles:bridgeFloorData, bundleSha256:createHash("sha256").update(JSON.stringify(bundle)).digest("hex"), meshSha256: createHash("sha256").update(bytes).digest("hex"), radiusM, rounding, cellSizeM, climbM, tileSize, effectiveClimbM: Math.floor(climbM / 0.1 + 1e-6) * 0.1, effectiveRadiusCells, effectiveRadiusM: effectiveRadiusCells * cellSizeM, ignoreGates, gateWallCount, activeGateWalls, gateTriangles, excludedActiveGateWalls: ignoreGates ? activeGateWalls : 0, excludedGateTriangles: ignoreGates ? gateTriangles : 0, bakeMs, rawBytes: bytes.length, gzipBytes: gz.length, tiles, polygons, peakRssKiB: process.resourceUsage().maxRSS, suspectEdges: suspect, greyboxRuns, greyboxLandingPads:grey?.grey.stats.landingPads ?? null, vertical, links, emittedLinkIds:[...emittedLinkIds].sort((a,b)=>a-b), attachedLinkIds:[...attachedLinkIds].sort((a,b)=>a-b), linkAttachmentDiagnosis, fallbackRecovered:links.candidates.filter(c=>c.fallback && attachedLinkIds.has(c.connection.userId!)).length, snapRejections };
   fs.writeFileSync(qaFile(path.join(output, `${station}-bake.json`)), JSON.stringify(metrics, null, 2) + "\n");
   console.log(JSON.stringify({station,withGreybox,snapFallback,bridgeGaps,bridgedGaps,bridgedByClass,bridgeRebakeMs,unbridgeableGaps,linkPads,linkPadsWithoutNearbyPoly,linkPadsBlocked,linkPadsSteep,bakeMs,rawBytes:bytes.length,gzipBytes:gz.length,tiles,polygons,landingPads:metrics.greyboxLandingPads,linksAttached:attachedLinkIds.size,fallbackAttached:metrics.fallbackRecovered,linkAttachmentDiagnosis,snapRejections,peakRssKiB:metrics.peakRssKiB}));
   query.destroy(); nav.destroy(); bridgeFloorGeometry.dispose(); (bridgeFloor.material as THREE.Material).dispose(); scene.dispose();

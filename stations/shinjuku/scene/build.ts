@@ -136,6 +136,20 @@ function enclosureWallGeometry(w: WallSeg): THREE.BufferGeometry {
   return g;
 }
 
+/** Draw one connected coplanar finish, including its passage holes. */
+function shaftFasciaGeometry(fascia: Layout["shaftFascias"][number]): THREE.BufferGeometry {
+  if (!fascia.polygon) return enclosureWallGeometry(fascia.wall);
+  const { rings, axis, offset } = fascia.polygon;
+  const g = new THREE.ShapeGeometry(shapeFromRings(rings)), position = g.attributes.position!, uv = g.attributes.uv!;
+  for (let i = 0; i < position.count; i++) {
+    const s = position.getX(i), z = position.getY(i);
+    position.setXYZ(i, axis.x * s - axis.y * offset, z, -(axis.y * s + axis.x * offset));
+    uv.setXY(i, s / 2.4, z / 3.2);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
 function runPanel(w: WallSeg, r: Run): WallSeg {
   const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, l2 = dx * dx + dy * dy;
   const zAt = (p: XY) => r.a.z + (r.b.z - r.a.z) * ((p.x - r.a.x) * dx + (p.y - r.a.y) * dy) / l2;
@@ -179,7 +193,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     ...layout.runs.map((r) => pitched(r, 0.04, 0.08))];
   const voids = surfaces.map((s) => {
     const points = s.rings.flat();
-    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.2, top: (p: XY) => soffitHeight(s, p) + HEAD_BAND,
+    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.008, top: (p: XY) => soffitHeight(s, p) + HEAD_BAND,
       minX: Math.min(...points.map((p) => p.x)), maxX: Math.max(...points.map((p) => p.x)),
       minY: Math.min(...points.map((p) => p.y)), maxY: Math.max(...points.map((p) => p.y)) };
   });
@@ -214,16 +228,21 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   // Mirror finishUnderground's streetUnderside without changing its bake fingerprint.
   // Leave 1 mm below it so Float32 vertices remain strictly underground.
   const streetLimit = STREET_UNDERSIDE - 0.001;
-  const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
-  const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [], finishes: Soffit[] = [];
+  // Only drawn finishes can replace a shell panel. Legacy shaft caps remain
+  // in the physical layout, but their footprints no longer close visible voids.
+  const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings),
+    ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
+  const snap = (polys: polygonClipping.MultiPolygon): polygonClipping.MultiPolygon => polys.map((poly) => poly.map((ring) =>
+    ring.map(([x, y]) => [Math.round(x! * 1e4) / 1e4, Math.round(y! * 1e4) / 1e4])));
+  const walls: { wall: WallSeg; covered: { rings: XY[][]; roof: Finish }[] }[] = [], roofs: THREE.BufferGeometry[] = [], finishes: Soffit[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
     // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
     // joins the inclined finish to landing ceilings without closing either run mouth.
     const roof = pitched(r, 0.45, 0.6);
     roof.z += SHELL_RISE;
-    // Existing finish wins wherever its footprint covers the shell and its
-    // affine underside is at or below the shell top. Remove the side there too:
-    // otherwise its upper strip can become the first drawn roof seen by the camera.
+    // A lower finish trims the side above its underside. Keep the backing
+    // shell roof when the planes differ: cutting it by footprint alone leaves
+    // an open step between the two heights.
     // #316: only a surface above the walker's head band can close that void, so
     // undersides (run-underside:*, shaft-invert:*) and lower ceilings never count.
     const headTop = (p: XY) => soffitHeight(roof, p) - SHELL_RISE + HEAD_BAND;
@@ -239,7 +258,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       return footprint;
     };
     let panels: polygonClipping.MultiPolygon = [polygon(roof.rings)];
-    const covered: XY[][][] = [];
+    const covered: { rings: XY[][]; roof: Finish }[] = [];
     for (const existing of existingRoofs) {
       let cut = polygonClipping.intersection([polygon(roof.rings)], polygon(existing.rings));
       if (!atStreetFinish(existing)) cut = heightMask(cut, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
@@ -247,8 +266,12 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       if (!cut.length) continue;
       // Keep the existing footprint for side cutting: intersecting it with the
       // shell strip would put both side walls exactly on the cutter boundary.
-      covered.push(...covers(existing).map(ringsOf));
-      panels = polygonClipping.difference(panels, cut);
+      covered.push(...covers(existing).map((poly) => ({ rings: ringsOf(poly), roof: existing })));
+      // A lower finish does not meet this pitched roof along the cut edge.
+      // Keep the backing roof there; only a coincident plane replaces it safely.
+      if (roof.rings.flat().every((p) => Math.abs(soffitHeight(roof, p) - soffitHeight(existing, p)) < 1e-4)) {
+        panels = polygonClipping.difference(snap(panels), snap(cut));
+      }
     }
     panels = heightMask(panels, (p) => streetLimit - soffitHeight(roof, p));
     const ring = roof.rings[0]!;
@@ -260,12 +283,15 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     const points = roof.rings.flat();
     const minX = Math.min(...points.map((p) => p.x)), maxX = Math.max(...points.map((p) => p.x));
     const minY = Math.min(...points.map((p) => p.y)), maxY = Math.max(...points.map((p) => p.y));
+    // As with the side panels below, dissolve near-coincident cut edges at
+    // 0.1 mm precision before combining the new finish masks with walking voids.
+    panels = snap(panels);
     for (const v of voids) {
       if (v.maxX < minX || v.minX > maxX || v.maxY < minY || v.minY > maxY) continue;
-      let cut = polygonClipping.intersection(panels, polygon(v.rings));
+      let cut = polygonClipping.intersection(panels, ...snap([polygon(v.rings)]));
       cut = heightMask(cut, (p) => soffitHeight(roof, p) - v.bottom(p));
       cut = heightMask(cut, (p) => v.top(p) - soffitHeight(roof, p));
-      if (cut.length) panels = polygonClipping.difference(panels, cut);
+      if (cut.length) panels = polygonClipping.difference(panels, snap(cut));
     }
     const lowZ = Math.min(r.a.z, r.b.z);
     const floorId = layout.levels.reduce<Layout["levels"][number] | undefined>((best, lv) => !best || Math.abs(lv.z - lowZ) < Math.abs(best.z - lowZ) ? lv : best, undefined)?.floorId ?? "";
@@ -280,7 +306,8 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = Math.hypot(dx, dy);
     const u = { x: dx / length, y: dy / length };
     const along = (p: XY) => (p.x - wall.a.x) * u.x + (p.y - wall.a.y) * u.y;
-    const roofVoids = covered.map((rings) => ({ rings, bottom: () => wall.zMin - 1, top: () => wall.zMax + 1 }));
+    const roofVoids = covered.map(({ rings, roof }) => ({ rings,
+      bottom: (p: XY) => soffitHeight(roof, p), top: () => wall.zMax + 1 }));
     const pieces = cutWallsByVoids([wall], [...voids, ...roofVoids]).map((w): polygonClipping.Polygon => {
       const p = w.profile!;
       return [[[along(w.a), p.bottomA], [along(w.b), p.bottomB], [along(w.b), p.topB], [along(w.a), p.topA]]];
@@ -540,6 +567,7 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
   let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput });
+  const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
@@ -649,7 +677,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.name = "room floor (render only)";
       g.add(mesh);
     }
-    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...layout.soffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry)]);
+    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...visibleSoffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry), ...layout.shaftFascias.filter((f) => f.floorId === lv.floorId).map(shaftFasciaGeometry)]);
     if (ceil) g.add(new THREE.Mesh(track(ceil), mat.ceiling));
     const hood = merged(layout.soffits.filter((s) => s.floorId === lv.floorId && s.spaceId.startsWith("elevator-cap:") && s.z > -0.5).map(soffitGeometry));
     if (hood) {
@@ -1646,7 +1674,8 @@ function buildUndergroundLighting(
   type Fixture = { a: XYZ; b: XYZ; ground: XYZ };
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
-  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))), ...layout.soffits, ...extraRoofs];
+  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
+    ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
   const ceilingAt = (p: XYZ) => {
     let best: { z: number; floorId: string } | null = null;
     for (const s of roofs) {

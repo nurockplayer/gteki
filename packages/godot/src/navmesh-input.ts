@@ -3,11 +3,12 @@ import fs from "node:fs";
 import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
+import { splitFloors } from "./navmesh-floors.ts";
 import { parseStationFiles, type StationBundle } from "@gteki/schema";
 
 import type { PolygonRegion } from "../../../apps/web/src/explorer/privateLevels.ts";
 
-export async function navmeshBundle(station: string): Promise<{ bundle: StationBundle; privateBuild: boolean; privateRegions?: PolygonRegion[] }> {
+export async function navmeshBundle(station: string, floors?: readonly string[]): Promise<{ bundle: StationBundle; privateBuild: boolean; privateRegions?: PolygonRegion[]; outOfSplit?: string[]; sceneBundle?: StationBundle }> {
   if (station !== "ikebukuro" && station !== "shinjuku") throw new Error("station must be ikebukuro or shinjuku");
   const privateDir = process.env.GTEKI_PRIVATE_DIR;
   let tmp: string | undefined;
@@ -27,8 +28,9 @@ export async function navmeshBundle(station: string): Promise<{ bundle: StationB
     const result = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), fs.existsSync(tenantFile) ? read("tenants.json") : undefined, { privateTier: !!privateDir });
     if (!result.ok) throw new Error(`${station}: bundle validation failed`);
     const regionsFile = path.join(dir, "private_regions.json");
-    const privateRegions = privateDir && fs.existsSync(regionsFile) ? read("private_regions.json") as PolygonRegion[] : undefined;
-    return { ...(privateRegions ? { privateRegions } : {}), bundle: result.bundle, privateBuild: !!privateDir };
+    const privateRegions = privateDir && fs.existsSync(regionsFile) ? (read("private_regions.json") as PolygonRegion[]).filter(region => !floors || floors.includes(region.level)) : undefined;
+    const geometry = privateRegions ? { privateRegions } : {};
+    return floors ? { ...splitFloors(result.bundle, floors), ...geometry, privateBuild: !!privateDir, sceneBundle: result.bundle } : { ...geometry, bundle: result.bundle, privateBuild: !!privateDir };
   } finally {
     if (tmp) fs.rmSync(tmp, { recursive: true, force: true });
   }

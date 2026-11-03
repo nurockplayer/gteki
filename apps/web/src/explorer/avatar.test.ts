@@ -26,6 +26,21 @@ function footMinY(rig: AvatarRig): { left: number; right: number } {
   const get = (n: string): number => {
     const o = rig.root.getObjectByName(n);
     if (!o) throw new Error(`missing ${n}`);
+    if (o instanceof THREE.Bone) {
+      let min = Infinity;
+      const p = new THREE.Vector3();
+      rig.root.traverse((mesh) => {
+        if (!(mesh instanceof THREE.SkinnedMesh)) return;
+        const bone = mesh.skeleton.bones.indexOf(o);
+        const indices = mesh.geometry.getAttribute("skinIndex");
+        for (let i = 0; i < indices.count; i++) {
+          if (indices.getX(i) !== bone) continue;
+          mesh.getVertexPosition(i, p).applyMatrix4(mesh.matrixWorld);
+          min = Math.min(min, p.y);
+        }
+      });
+      return min;
+    }
     return bbox(o, true).min.y;
   };
   return { left: Math.min(get("shoeL"), get("soleL")), right: Math.min(get("shoeR"), get("soleR")) };
@@ -54,7 +69,8 @@ describe("avatar", () => {
         expect(Math.abs(c.x)).toBeLessThan(0.1);
         expect(Math.abs(c.z)).toBeLessThan(0.12);
         const s = stats(rig.root);
-        expect(s.meshes).toBeLessThanOrEqual(24);
+        if (quality === "low") expect(s.meshes).toBeLessThanOrEqual(4);
+        else expect(s.meshes).toBe(22);
         expect(s.tris).toBeLessThanOrEqual(quality === "high" ? 12000 : 5000);
         expect(s.allCast).toBe(true);
         rig.dispose();
@@ -85,6 +101,26 @@ describe("avatar", () => {
       }, 60_000);
     });
   }
+
+  it("lifts the rendered low-tier feet over a walking cycle with three material draws", () => {
+    const rig = createAvatar({ quality: "low" });
+    expect(stats(rig.root).meshes).toBe(3);
+    rig.root.traverse((o) => {
+      if (!(o instanceof THREE.Mesh)) return;
+      expect(o).toBeInstanceOf(THREE.SkinnedMesh);
+      expect(Array.isArray(o.material)).toBe(false);
+      expect(o.geometry.groups).toHaveLength(0);
+    });
+    for (let i = 0; i < 120; i++) rig.update(1 / 60, 1.45);
+    const heights: number[] = [];
+    for (let i = 0; i < 90; i++) {
+      rig.update(1 / 60, 1.45);
+      heights.push(footMinY(rig).left);
+    }
+    expect(Math.min(...heights)).toBeLessThan(0.02);
+    expect(Math.max(...heights) - Math.min(...heights)).toBeGreaterThan(0.05);
+    rig.dispose();
+  });
 
   it("faces -Z (toes and face forward, pack behind)", () => {
     const rig = createAvatar();
@@ -159,7 +195,7 @@ describe("avatar", () => {
     rig.root.traverse((o) => {
       if (o instanceof THREE.Mesh) mats.add(o.material as THREE.MeshStandardMaterial);
     });
-    expect(mats.size).toBeGreaterThan(5);
+    expect(mats.size).toBe(3);
     for (const m of mats) {
       expect(m).toBeInstanceOf(THREE.MeshStandardMaterial);
       expect(m.envMap).toBe(tex);
