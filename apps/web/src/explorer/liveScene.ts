@@ -5,7 +5,7 @@ import * as THREE from "three";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { buildConnectors } from "./greyboxConnectors.ts";
 import { buildGreybox, splitWallsAtOpenings, type Box } from "./greybox.ts";
-import { sceneMeshNear } from "./routeGroundQa.ts";
+import { sceneMeshProbe } from "./routeGroundQa.ts";
 import type { ExplorerTargets } from "./raycast.ts";
 import { cutStairwells, stairwellWells, type StairwellCut } from "./stairwellCut.ts";
 import type { CutRecipe } from "./cutRecipe.ts";
@@ -41,6 +41,8 @@ export interface LiveSceneOptions {
 }
 
 export interface LiveScene {
+  /** Synchronous build costs; recipe loading is timed separately by the explorer. */
+  timings: Record<"stairwellCut" | "cutTargets" | "connectors" | "connectorWalls", number>;
   stairwellCut: StairwellCut;
   connectors: ReturnType<typeof buildConnectors>;
   /** The cut scene's ground targets, copies included. */
@@ -57,6 +59,8 @@ export interface LiveScene {
 }
 
 export function buildLiveScene(options: LiveSceneOptions): LiveScene {
+  let stepStart = performance.now();
+  const elapsed = () => { const now = performance.now(); const ms = Math.round(now - stepStart); stepStart = now; return ms; };
   const { root, bundle, traversable, hasFloor, greybox, openings, originalTargets, tier, recipe } = options;
   const { walkable, colliders, cameraBlockers } = options;
   const stairwellCut = cutStairwells(root, stairwellWells(bundle, traversable), {
@@ -65,6 +69,7 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
     collision: [...walkable, ...colliders, ...cameraBlockers],
     recipe,
   });
+  const cutMs = elapsed();
   // Instances pulled out of an InstancedMesh by either cut stand in for their owner in every target list.
   const instances = [...options.portalInstances, ...stairwellCut.resources.instances];
   const extracted = new Map<THREE.InstancedMesh, number>();
@@ -84,9 +89,12 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
   const liveBlockers = [...new Set([...retain(cameraBlockers), ...blockerCopies])];
   liveWalkable.push(...greybox.walkable);
   liveColliders.push(...greybox.colliders, ...stairwellCut.colliders);
-  const connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: (p, radius) => sceneMeshNear([root], p, radius) }, tier);
+  const targetsMs = elapsed();
+  const connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: sceneMeshProbe([root]) }, tier);
+  const connectorsMs = elapsed();
   liveWalkable.push(...connectors.walkable);
   liveColliders.push(...connectors.colliders);
   const walls = splitWallsAtOpenings([...options.walls, ...greybox.wallSegments, ...stairwellCut.walls, ...connectors.wallSegments], openings);
-  return { stairwellCut, connectors, sceneGroundTargets, sceneColliderTargets, walkable: liveWalkable, colliders: liveColliders, cameraBlockers: liveBlockers, walls };
+  const timings = { stairwellCut: cutMs, cutTargets: targetsMs, connectors: connectorsMs, connectorWalls: elapsed() };
+  return { timings, stairwellCut, connectors, sceneGroundTargets, sceneColliderTargets, walkable: liveWalkable, colliders: liveColliders, cameraBlockers: liveBlockers, walls };
 }
