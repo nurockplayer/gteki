@@ -13,6 +13,9 @@ greater than 10 cm. These are categories, not metre values. The signed slope
 and source distances support symbolic rises for the three isolated ends too.
 `H_F=0` supplies no distinct endpoint elevation. `route_type=5/6` is interpreted using the existing E27 CAD category
 rule (stairs/escalator respectively).
+This slope convention agrees with all 32 cross-floor source stairs/escalators:
+25 ascending links use code 7, and seven descending links use code 8. The other
+19 links have equal source floor labels, including seven of the eight repaired here.
 
 The southern corridor's six nodes (`51435d91`, `ad4ba030`, `3e48483e`,
 `f4135189`, `b1f35094`, `296c36e0`) all say NWD floor −1, but are separated from
