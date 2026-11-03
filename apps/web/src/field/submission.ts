@@ -16,8 +16,14 @@ export function newObservation(stopId: string, privateStop?: true): Observation 
     observedText: "", note: "", poiId: "", itemId: "", paid: "", observedAt: nowJst() };
 }
 
+export function isPrivateObservation(station: FieldStation, record: Observation): boolean {
+  return !!record.private || !!station.stops.find((stop) => stop.id === record.stopId)?.private
+    || !!station.privateCatalog?.targetIds.includes(record.target) || !!station.privateCatalog?.poiIds.includes(record.poiId);
+}
+
 export function buildReceipt(station: FieldStation, records: Observation[], privateReceipt = false) {
-  const isPrivate = (record: Observation) => !!record.private || !!station.stops.find((stop) => stop.id === record.stopId)?.private;
+  if (privateReceipt && !station.privateCatalog) throw new Error("非公開の記録は非公開ビルドで書き出してください / Export private records from the private build");
+  const isPrivate = (record: Observation) => isPrivateObservation(station, record);
   const entries = records.filter((record) => isPrivate(record) === privateReceipt).map((record) => {
     const parts = record.observedAt.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?\+09:00$/)?.slice(1).map((part) => Number(part ?? 0));
     const date = new Date(0);
@@ -55,7 +61,7 @@ export function buildReceipt(station: FieldStation, records: Observation[], priv
 
 export function buildReceipts(station: FieldStation, records: Observation[]) {
   const receipts = [buildReceipt(station, records)];
-  if (records.some((record) => record.private || station.stops.some((stop) => stop.id === record.stopId && stop.private))) {
+  if (station.privateCatalog && records.some((record) => isPrivateObservation(station, record))) {
     receipts.push(buildReceipt(station, records, true));
   }
   return receipts;

@@ -1,6 +1,6 @@
 import "./style.css";
 import { stations } from "./data.ts";
-import { buildReceipts, mergeRecorderState, newObservation, nowJst, type Observation, type RecorderState } from "./submission.ts";
+import { buildReceipts, isPrivateObservation, mergeRecorderState, newObservation, nowJst, type Observation, type RecorderState } from "./submission.ts";
 
 const storageKey = "gteki-field-v1";
 let state: RecorderState = { station: "ikebukuro", positions: {}, records: {} };
@@ -76,7 +76,11 @@ function render() {
       const wrap = el("label", label); wrap.append(control); card.append(wrap);
       control.oninput = () => {
         const current = state.records[station.id]!.find((entry) => entry.id === record.id);
-        if (current) { (current[key] as string) = control.value; save(current.id); }
+        if (current) {
+          (current[key] as string) = control.value;
+          if (isPrivateObservation(station, current)) current.private = true;
+          save(current.id);
+        }
       };
       return control;
     };
@@ -121,7 +125,9 @@ function render() {
         const link = el("a"); link.href = url; link.download = `${nowJst().slice(0, 10)}-${station.id}${receipt.private ? "-private" : ""}.json`;
         root.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
-      exportStatus.textContent = "JSON saved. Notes remain on this device.";
+      exportStatus.textContent = !station.privateCatalog && (state.records[station.id] ?? []).some((record) => isPrivateObservation(station, record))
+        ? "非公開の記録は非公開ビルドで書き出してください / Export private records from the private build"
+        : "JSON saved. Notes remain on this device.";
     } catch (error) { exportStatus.textContent = (error as Error).message; }
   }), exportStatus);
 }
