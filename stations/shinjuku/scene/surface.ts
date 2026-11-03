@@ -93,6 +93,14 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     leaf: track(daylight("#60754b")),
     facades: Array.from({length:5},(_,i)=>{const m=track(daylight("#ffffff",track(facadeTexture(i)),i===0?.65:.24));m.vertexColors=true;return m;}),
   };
+  if (opts.quality === "low") for (const material of mats.facades) {
+    const source = material.map!.image as HTMLCanvasElement;
+    const canvas = document.createElement("canvas");
+    canvas.width = source.width / 2;
+    canvas.height = source.height / 2;
+    canvas.getContext("2d", { willReadFrequently: true })!.drawImage(source, 0, 0, canvas.width, canvas.height);
+    material.map!.image = canvas;
+  }
   mats.glass.transparent = true; mats.glass.opacity = .38; mats.glass.depthWrite = false;
   const batches = new Map<string, { material: THREE.Material; geometries: THREE.BufferGeometry[] }>();
   const add = (key: string, geometry: THREE.BufferGeometry, material: THREE.Material) => {
@@ -133,8 +141,10 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     add("steel",beam(pos(w.a,.28),pos(w.b,.28),.04,.04),mats.steel);
   }
   const entrances=surfaceEntrances(layout,opts.bundle);
-  const atlas=document.createElement("canvas");atlas.width=2048;atlas.height=entrances.length*384;
+  const atlasScale=opts.quality === "low" ? 0.5 : 1;
+  const atlas=document.createElement("canvas");atlas.width=2048*atlasScale;atlas.height=entrances.length*384*atlasScale;
   const ctx=atlas.getContext("2d", { willReadFrequently: true })!;
+  if(atlasScale!==1)ctx.scale(atlasScale,atlasScale);
   entrances.forEach((e,index)=>{
     const y=index*384;
     ctx.fillStyle="#edf0ee";ctx.fillRect(0,y,2048,384);
