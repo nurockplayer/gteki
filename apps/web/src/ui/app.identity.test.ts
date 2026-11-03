@@ -35,18 +35,39 @@ function loaded(key: string): LoadedStation {
 function entry(key: string, promise: Promise<LoadedStation>): StationEntry {
   return { key, label: key, synthetic: true, identity: loaded(key).bundle.station.identity, loadDirectory: async () => (await promise).bundle, load: () => promise };
 }
+const apps: App[] = [];
+function disposeApps() {
+  for (const a of apps.splice(0)) a.dispose();
+}
 function app() {
   const root = document.createElement("div"); document.body.append(root);
-  const a = new App(root) as unknown as Harness;
+  const instance = new App(root);
+  apps.push(instance);
+  const a = instance as unknown as Harness;
   a.explorer = { currentMode: "overview", sceneError: null, cancelPendingLoad: vi.fn(), loadStation: vi.fn(async () => true), getPose: () => null };
   for (const name of ["renderCredit", "renderSpawnChips", "renderHud", "updateUrl"] as const) vi.spyOn(a, name).mockImplementation(() => {});
   vi.spyOn(a, "refreshAll").mockImplementation(() => a.renderIdentity());
   root.append(a.identityView.card, a.identityView.overview, a.ui.sheet);
   return { a, root };
 }
-afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
+afterEach(() => { disposeApps(); vi.restoreAllMocks(); document.body.replaceChildren(); vi.useRealTimers(); });
 
 describe("App station identity lifecycle", () => {
+  it("clears every app's minimap interval during cleanup", async () => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+    for (const key of ["first", "second"]) {
+      const { a } = app();
+      await a.openStation(entry(key, Promise.resolve(loaded(key))));
+    }
+    vi.advanceTimersByTime(100);
+    expect(vi.getTimerCount()).toBe(2);
+    disposeApps();
+    expect(vi.getTimerCount()).toBe(0);
+    vi.advanceTimersByTime(1000);
+    expect(vi.getTimerCount()).toBe(0);
+  });
   it("holds the card through scene readiness and announces loading once", async () => {
     const { a } = app(); const scene = deferred<boolean>(); const data = deferred<LoadedStation>();
     a.explorer.loadStation = vi.fn(() => scene.promise);
