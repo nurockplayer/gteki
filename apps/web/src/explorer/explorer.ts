@@ -1018,7 +1018,9 @@ export class Explorer {
         originalTargets, walkable: this.walkable, colliders: this.colliders, cameraBlockers: this.cameraBlockers, walls: this.walls,
         tier: this.quality, recipe, portalInstances: this.portalCutResources.instances,
       });
-      lap("stairwellCut");
+      // Reset the outer lap after the synchronous build; its internal boundaries separate cut and connectors.
+      lap("liveScene");
+      Object.assign(timings, live.timings);
       this.stairwellCut = live.stairwellCut;
       this.stairwellStats = live.stairwellCut.stats;
       this.greybox.stats.triangles += live.stairwellCut.bandTriangles;
@@ -1031,7 +1033,7 @@ export class Explorer {
       this.colliders = live.colliders;
       this.cameraBlockers = live.cameraBlockers;
       this.connectors = live.connectors;
-      lap("connectors");
+      lap("attachGreybox");
       this.greyboxSegments.push(...live.connectors.segments);
       this.skippedEdgeIds = new Set(live.connectors.skippedEdgeIds);
       this.greyboxSegments.push(...greyboxPathSegments(unmodelledRunsByEdge(bundle, (edge) => traversable(edge) && this.skippedEdgeIds.has(edge.id), hasFloor, this.skippedEdgeIds)));
