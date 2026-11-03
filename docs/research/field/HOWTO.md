@@ -1,6 +1,6 @@
 # 現地記錄：Owner 隨身說明
 
-更新：2026-11-03 11:44 JST。路線：[池袋](ikebukuro-route.md)／[新宿](shinjuku-route.md)；資料規格：[receipt-format.md](receipt-format.md)。
+更新：2026-11-03 17:39 JST。路線：[池袋](ikebukuro-route.md)／[新宿](shinjuku-route.md)；資料規格：[receipt-format.md](receipt-format.md)。
 
 ## 要帶什麼
 
@@ -34,4 +34,33 @@ pnpm field:ingest ~/Downloads/field-incoming/YYYY-MM-DD-shinjuku.json --dry-run
 
 非公開 receipt（檔名以 `-private.json` 結尾）匯入時必須加上 `--private-root <gteki-private repo 根目錄>`；這類檔案絕不可放入 public repo。
 
-成功結尾是 `dry run: no files written`；若報未知 ID、樓層不符、重複或未來時刻，交由 lead 核對原筆記，勿猜改。dry-run 通過後由 lead 移除 `--dry-run`，執行相同命令正式匯入；只有 `CLOSED` 會套用到站內資料，`OPEN` 與 `fieldNotes` 保留供後續處理。Owner 不必在手機執行 ingest。
+成功結尾是 `dry run: no files written`；若報未知 ID、樓層不符、重複或未來時刻，交由 lead 核對原筆記，勿猜改。dry-run 通過後由 lead 移除 `--dry-run`，執行相同命令正式匯入；只有 `CLOSED` 會套用到站內資料，同份 receipt 的 `OPEN` 與 `fieldNotes` 會一起封存。**全為 `OPEN` 的 public receipt 目前回報 `applied 0 CLOSED items`，不寫站內資料，也不建立封存；務必保留收到的原檔供後續處理。** Owner 不必在手機執行 ingest。
+
+## Lead 本機演練：build、離線與非公開停點
+
+正式網站以外的本機演練，須使用 production build；`pnpm dev` 不提供離線副本。在 repo 根目錄安裝鎖定的依賴後，用同一個 `orb-test` host run build 並啟動 preview；瀏覽器開啟 `http://127.0.0.1:5287/field.html`。完成後以 Ctrl-C 停止自己啟動的 preview。
+
+```sh
+pnpm install --frozen-lockfile
+orb-test --heavy --host -- sh -c 'pnpm build && pnpm --filter @gteki/web preview --port 5287 --strictPort --host 127.0.0.1'
+```
+
+Playwright 演練亦把 scratch script 放在 `.qa/field-e2e/`，經 `orb-test --heavy --host -- <command>` 執行；由同一支 script 完成 build、preview 啟停與 browser，三者共用一次 heavy lock。使用手機 viewport、首次連線載入、等「Ready for offline reload」後 `context.setOffline(true)`，再 reload、記錄與下載。不要直接用 `file://` 開啟 HTML；service worker 需要 localhost 或 HTTPS。兩站各匯出一次，核對 stop 數及下載檔內容；synthetic 筆記一律標 `REHEARSAL`。
+
+非公開資料只在可丟棄的 private worktree 操作，絕不放進 public commit、PR、截圖或 review 輸入。以 `$GTEKI_PRIVATE_DIR` 指向該 private repo 根目錄，執行 `pnpm build:private` 會建立 `$GTEKI_PRIVATE_DIR/overlay` 並 build；host run 使用 host 絕對路徑，orb-test container 內同一份 worktree 的路徑是 `/w/.priv`。
+
+```sh
+rtk git -C ~/Developer/gteki-private worktree add --detach "$(pwd)/.priv" origin/main
+orb-test --out .priv/overlay --out apps/web/dist --env GTEKI_PRIVATE_DIR=/w/.priv -- pnpm build:private
+export GTEKI_PRIVATE_DIR="$(pwd)/.priv"
+```
+
+圖與商店 overlay 不會自動產生 recorder 停點。非公開維護者須另備 `overlay/<station>/field/private-stops.json`，內容為陣列，每筆具有 `id`、`title`、`after`（public stop ID）、`items`（原項目字串陣列）、`ids`（實際 target ID 陣列）、`instructions`。準備好檔案後，執行以下 build 才會把停點加入 recorder；`after` 必須是該站既有停點。只在 private copy 內製作演練停點，不改動正式 private 資料。
+
+```sh
+orb-test --heavy --host -- sh -c 'GTEKI_PRIVATE_OVERLAY="$GTEKI_PRIVATE_DIR/overlay" pnpm build && pnpm --filter @gteki/web preview --port 5288 --strictPort --host 127.0.0.1'
+```
+
+非公開 preview 使用另一個 port，避免沿用 public 版本的 service worker。等待離線準備完成後斷網，確認停點顯示「非公開 / Private」，再記錄、匯出。非公開停點可以只有 GAP／未指定筆記而無數字項目；下載的 `*-private.json` 具有 `private: true`，不會混入 public receipt。這是前述 public 數字項目規則的例外。
+
+在正式 write 前後各執行 `pnpm coverage:matrix --check` 並比較輸出的列。`--check` 的 drift 是報告，不會令 exit status 失敗；`OPEN`／fieldNotes 不會使 public coverage 增加，private write 亦不會改變 public matrix。新宿的 `CLOSED` write 會重跑 E27 importer 與 surface bake，須備有原始資料（預設 `~/Developer/gteki-raw/shinjuku`，或指定 `GTEKI_RAW_SHINJUKU`；container 須另將資料放入 worktree）。演練後還原所有 synthetic receipt 封存及站內生成檔，移除 private worktree 與 scratch；synthetic 資料不得提交。
