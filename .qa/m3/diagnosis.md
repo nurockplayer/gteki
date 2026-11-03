@@ -53,3 +53,55 @@ Bake settings: cell 0.10 m, radius 0.30 m, climb 0.40 m, tile 256, greybox on. A
 | 46 | `e:cc8b27a958dd4cbb83d68f3791db6111` |
 
 These connections are attached and used by Detour. The refusal happens afterwards in the walk-edge audit, which discards the entire corridor on seeing its first off-mesh link. The repair removes the spurious local fences; it does not weaken that rejection.
+
+## Validation and gate status (2026-11-03 17:58 JST)
+
+The fix and tests are in `a419b6aa`. One self-review of the finished implementation found no concrete code failure. The interval helper already handles flat and sloping pieces; the upper-slab policy is unchanged. There are no station or edge exceptions. Oracle was not attempted, as directed.
+
+Synthetic negative control, before the fix:
+
+```sh
+orb-test --memory 3g --cpus 1 --out .qa/m3 -- pnpm vitest run apps/web/src/explorer/stairwellCut.test.ts -t 'limits a lower slab' --maxWorkers=1
+```
+
+Result: `Tests 1 failed | 52 skipped (53)`; the ray under the higher flight hit the spurious band. On the final implementation, `stairwellCut.test.ts` passes all 53 tests.
+
+Final related functional run:
+
+```sh
+orb-test --memory 3g --cpus 1 --out .qa/m3 -- sh -c 'pnpm vitest related --run apps/web/src/explorer/stairwellCut.ts apps/web/src/explorer/stairwellCut.test.ts --exclude packages/godot/src/navmesh-gate.test.ts --maxWorkers=1 && pnpm vitest run apps/web/src/explorer/greybox*.test.ts apps/web/src/explorer/walkableModel*.test.ts --maxWorkers=1 && pnpm typecheck'
+```
+
+Results: related `Test Files 23 passed (23)` / `Tests 275 passed (275)`; greybox/walkable `Tests 2 failed | 201 passed (203)`. The two failures are existing timing assertions in untouched greybox emission/discovery code. The `&&` chain stopped before typecheck, so the bounded timing retry and typecheck ran separately:
+
+```sh
+orb-test --memory 3g --cpus 1 --out .qa/m3 -- sh -c 'pnpm vitest run apps/web/src/explorer/greybox.test.ts apps/web/src/explorer/greyboxEmitProfile.test.ts -t "keeps floor discovery within a generous per-step bound|profiles 15 km of synthetic corridors" --maxWorkers=1; pnpm typecheck'
+```
+
+Results: `Tests 1 failed | 1 passed | 60 skipped (62)`. Floor discovery passed the retry; `greyboxEmitProfile.test.ts:23` failed again: `expected 393.5459109999997 to be less than or equal to 120`. No further retry or threshold change. Typecheck printed `$ tsc -p tsconfig.json` and exited 0. `pnpm map:gen` exited 0 and left the map unchanged.
+
+The first, unfiltered related run ended `Tests 4 failed | 284 passed (288)`: the old L-shaped-outline assertion (corrected and now passing), an untouched drape-edges 5000 ms timeout (passed in the final run), and these subprocess failures:
+
+- `navmesh-audit.ts failed: spawnSync pnpm ETIMEDOUT` (Ikebukuro).
+- `navmesh-bake.ts failed: spawnSync pnpm ETIMEDOUT` (Shinjuku).
+
+Those two public navmesh integration tests were not retried in light resources. A duplicate queued validation was canceled before starting a container (waiting PID 82498, exit 143); it ran no tests. The replacement excluded the public navmesh gate file, leaving the explicit heavy regeneration as the required real station proof.
+
+### Before/after gate table
+
+Snapshot 2026-11-03 17:58 JST. Heavy regeneration ticket #263 queued at 2026-11-03 17:26 JST, waiting for #262. It has not started. No gate files have been regenerated; neither fallback recovery nor shrink-only acceptance is established yet.
+
+| Station | Fallback before / after | Unvalidated before / after | Detours before / after | offFloor before / after |
+|---|---|---|---|---|
+| ikebukuro | 1 / pending | 62 / pending | 0 / pending | 0 / pending |
+| shinjuku | 6 / pending | 146 / pending | 2 / pending | 0 / pending |
+
+The queued runner executes the exact requested CI command and retains the eight generated files under `.qa/m3/after` for comparison and copying back:
+
+```sh
+orb-test --heavy --memory 3g --cpus 2 -- sh -c 'for s in ikebukuro shinjuku; do pnpm tsx packages/godot/src/navmesh-fallback.ts --station "$s" --with-greybox --write "stations/$s/navmesh-fallback.json" --write-baseline "stations/$s/navmesh-clip-baseline.json" --write-suspect "stations/$s/navmesh-suspect.json" --write-paths "stations/$s/navmesh-paths.json"; done'
+```
+
+Assumption: fix the stairwell band generator that contributes these shell faces, rather than changing a corridor boundary model that emitted none of them.
+
+Follow-up: the existing 15 km emission timing limit still fails in the specified 1-CPU light container. No performance code or timing limits were changed.
