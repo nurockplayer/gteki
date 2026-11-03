@@ -2,6 +2,8 @@
 import json, math
 from collections import defaultdict
 from pathlib import Path
+from datetime import datetime
+from zoneinfo import ZoneInfo
 ROOT=Path('.qa/s5')
 def dist(a,b): return math.dist([a[k] for k in ('x','y','z')],[b[k] for k in ('x','y','z')])
 def direction(s): return s['edgeId']+(' reverse' if s['reversed'] else ' forward')
@@ -26,10 +28,14 @@ for station in ('ikebukuro','shinjuku'):
   if not raw:return 'join query absent','no matching query recorded'
   result=raw['result']
   if result is None and raw.get('candidate'):
-   candidate=raw['candidate'];return 'Detour endpoint projection exceeds 0.01 m',f"start {dist(candidate['first'],renderer(p)):.9f} m, end {dist(candidate['last'],renderer(q)):.9f} m"
+   candidate=raw['candidate']
+   if not candidate.get('first') or not candidate.get('last'):return 'empty straight path',raw.get('stage','')
+   start_gap,end_gap=dist(candidate['first'],renderer(p)),dist(candidate['last'],renderer(q))
+   if max(start_gap,end_gap)>0.01:return 'Detour endpoint projection exceeds 0.01 m',f'start {start_gap:.9f} m, end {end_gap:.9f} m'
   if result is None:return 'no complete walking corridor',f"polys {raw['a']['poly']} → {raw['b']['poly']}; {raw.get('stage','')}"
   if result['links']:return 'join borrows off-mesh link',str([l['userId'] for l in result['links']])
-  return 'junction local-length bound',f"path {result['length']:.6f} m, snap gap {dist(p,q):.6f} m"
+  if result['length']>dist(p,q)+0.3:return 'junction local-length bound',f"path {result['length']:.6f} m, snap gap {dist(p,q):.6f} m"
+  return 'unresolved junction rejection','query succeeded without links and passed the local-length bound'
  def route_cause(r):
   es=[entries[key(s)] for s in r['steps']]
   missing=[e for e in es if e['missing']]
@@ -59,9 +65,10 @@ for station in ('ikebukuro','shinjuku'):
   es=[v for v in entries.values() if v['step']['edgeId']==e['edgeId']]
   if e['edgeId'] in suspect: c='suspect height excluded from bake';cause=suspect[e['edgeId']]['detail']
   else:c=f"{e['mode']} {e['reason']}";cause='; '.join(sorted(set(v['connectivity']+' / '+str(v.get('pathRejection')) for v in es)))
-  first=es[0]['step'];pair=next((r['steps'][max(0,i-1):i+2] for r in head['qaRoutes'] for i,s in enumerate(r['steps']) if s['edgeId']==e['edgeId']),[first])
-  fallback_rows.append((station,'fallback',c,1,' → '.join(direction(s) for s in pair),cause))
-lines=['# Round 2 growth classes','', 'Measured 2026-11-03 (JST); base and head use the same merged public scene. Counts are new route identities, not a subtraction of aggregate totals. Invalid routes are also incomplete, so those metric rows overlap.','', '| Station | Metric | Class | Count | Example edge pair | Cause |','|---|---|---|---:|---|---|']
+  pair=next((r['steps'][max(0,i-1):i+2] for r in head['qaRoutes'] for i,s in enumerate(r['steps']) if s['edgeId']==e['edgeId']),[])
+  example=' → '.join(direction(s) for s in pair) if pair else e['edgeId']+' (not exercised by QA routes)'
+  fallback_rows.append((station,'fallback',c,1,example,cause))
+lines=['# Round 2 growth classes','', f"Measured {datetime.now(ZoneInfo('Asia/Tokyo')).strftime('%Y-%m-%d %H:%M JST')}; base and head use the same merged public scene. Counts are new route identities, not a subtraction of aggregate totals. Invalid routes are also incomplete, so those metric rows overlap.",'', '| Station | Metric | Class | Count | Example edge pair | Cause |','|---|---|---|---:|---|---|']
 for row in rows+fallback_rows:lines.append('| '+' | '.join(str(v).replace('|','/') for v in row)+' |')
 (ROOT/'classes.md').write_text('\n'.join(lines)+'\n')
 (ROOT/'r2-classified.json').write_text(json.dumps(details,indent=2)+'\n')
