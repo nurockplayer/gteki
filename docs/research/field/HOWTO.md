@@ -1,6 +1,6 @@
 # 現地記錄：Owner 隨身說明
 
-更新：2026-11-03 11:23 JST。路線：[池袋](ikebukuro-route.md)／[新宿](shinjuku-route.md)；資料規格：[receipt-format.md](receipt-format.md)。
+更新：2026-11-03 11:44 JST。路線：[池袋](ikebukuro-route.md)／[新宿](shinjuku-route.md)；資料規格：[receipt-format.md](receipt-format.md)。
 
 ## 要帶什麼
 
@@ -25,11 +25,11 @@
 
 每站至少一筆必須選數字項目，才能匯出；FC／未指定項目會一起放在 `fieldNotes`。因此只記 `SJ-01` 的 FC 問題還不能匯出，記到 `SJ-02` 的數字項目後再匯出；不要為了下載虛構數字或觀察內容。匯出錯誤會指出停點；修正時刻、段差格式或空白牌文後再按匯出。
 
-把兩個 JSON 原檔透過本次任務的交付管道交給 lead，附上未完成／受阻項目；若有 repo 工作目錄，放到 `docs/research/field/receipts/`。不要交照片。lead 核對後，在 repo 根目錄執行以下命令（把 `YYYY-MM-DD` 換成檔名日期）：
+把兩個 JSON 原檔透過本次任務的交付管道交給 lead，附上未完成／受阻項目；收到的原檔留在 repo 外，例如 `~/Downloads/field-incoming/`。**不要先複製到 `docs/research/field/receipts/`**：那是 ingest 自行管理的每日封存目錄，正式匯入時會自動封存；預先放入會讓同一份記錄被重複合併。不要交照片。lead 核對後，在 repo 根目錄執行以下命令（把 `YYYY-MM-DD` 換成檔名日期）：
 
 ```sh
-pnpm field:ingest docs/research/field/receipts/YYYY-MM-DD-ikebukuro.json --dry-run
-pnpm field:ingest docs/research/field/receipts/YYYY-MM-DD-shinjuku.json --dry-run
+pnpm field:ingest ~/Downloads/field-incoming/YYYY-MM-DD-ikebukuro.json --dry-run
+pnpm field:ingest ~/Downloads/field-incoming/YYYY-MM-DD-shinjuku.json --dry-run
 ```
 
 成功結尾是 `dry run: no files written`；若報未知 ID、樓層不符、重複或未來時刻，交由 lead 核對原筆記，勿猜改。dry-run 通過後由 lead 移除 `--dry-run`，執行相同命令正式匯入；只有 `CLOSED` 會套用到站內資料，`OPEN` 與 `fieldNotes` 保留供後續處理。Owner 不必在手機執行 ingest。
