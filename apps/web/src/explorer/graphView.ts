@@ -58,7 +58,7 @@ export function buildGraphView(bundle: StationBundle, router: Router, privateReg
     overlay.add(...overlayStyle.lines(lineGeo, 10));
     if (edge.mode === "elevator") continue; // a shaft is not a walk surface
     const ribbon = ribbonGeometry(pts, MODE_WIDTH[edge.mode] ?? 2);
-    const geo = clipFlatGeometry(ribbon, holes, [nodes.get(edge.from)!.floorId, nodes.get(edge.to)!.floorId]);
+    const geo = clipFlatGeometry(ribbon, holes, [nodes.get(edge.from)!.floorId, nodes.get(edge.to)!.floorId], [pts[0]!.y, pts.at(-1)!.y]);
     if (geo !== ribbon) ribbon.dispose();
     disposables.push(geo);
     const vertical = edge.mode === "stairs" || edge.mode === "escalator" || edge.mode === "ramp";
@@ -77,7 +77,7 @@ export function buildGraphView(bundle: StationBundle, router: Router, privateReg
   for (const id of touched) {
     const n = nodes.get(id)!;
     const z = nodeDisplayZ(n, floors.get(n.floorId)).z;
-    const at = R(n.position.x, n.position.y, z), geo = clipFlatGeometry(pad, holes, [n.floorId], at);
+    const at = R(n.position.x, n.position.y, z), geo = clipFlatGeometry(pad, holes, [n.floorId], [z, z], at);
     if (geo !== pad) disposables.push(geo);
     const m = new THREE.Mesh(geo, mats.ok);
     m.position.copy(at);

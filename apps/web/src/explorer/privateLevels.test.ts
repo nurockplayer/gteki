@@ -87,23 +87,24 @@ describe("private level selection and rendering", () => {
     }
   });
 
-  it("clips only the near-floor part of a cross-level passage inside a hole", () => {
-    const regions = privateLevelRegions({ levels: [{ floorId: "concourse", renderElevationM: 0, features: [
+  it.each(["walk", "ramp", "stairs"] as const)("preserves a cross-level %s passage through an upper-floor opening", (mode) => {
+    const regions = privateLevelRegions({ levels: [{ floorId: "upper", renderElevationM: 0, features: [
       { facility: "class-a", polygons: [[rect(0, 0, 10, 10)]] },
       { facility: "class-b", polygons: [[rect(3, 3, 4, 4)]] },
     ] }] }, selection);
-    const bundle = createSyntheticBundle([syntheticEdge("rising", "start", "upper")]);
+    const bundle = createSyntheticBundle([syntheticEdge("rising", "start", "upper", { mode })]);
     bundle.nodes.find(n => n.id === "start")!.position = { x: -2, y: 5, z: -2 };
-    bundle.nodes.find(n => n.id === "upper")!.position = { x: 12, y: 5, z: 2 };
-    expect(privateFloorRoutingEdges(bundle, regions)[0]!.closed).toBe(true);
+    bundle.nodes.find(n => n.id === "upper")!.position = { x: 5, y: 5, z: 0 };
+    const edges = privateFloorRoutingEdges(bundle, regions);
+    expect(edges[0]!.closed).toBe(false);
+    expect(createRouter({ ...bundle, edges }).route("start", "upper").ok).toBe(true);
     const graph = buildGraphView(bundle, createRouter(bundle), regions);
     const grey = buildGreybox(bundle, () => true, () => false, { colliderNear: () => false, wallHit: () => null }, "low", true, regions);
     graph.root.updateMatrixWorld(true); grey.root.updateMatrixWorld(true);
     const nav = new THREE.Mesh(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(grey.navFloors!, 3)), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
-    for (const surfaces of [graph.walkable, grey.walkable, [nav]]) {
+    for (const surfaces of mode === "stairs" ? [graph.walkable] : [graph.walkable, grey.walkable, [nav]]) {
       const hit = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(surfaces, true);
-      expect(hit(5)).toHaveLength(0);
-      expect(hit(3.5)[0]!.point.y).toBeCloseTo(-2 + 4 * 5.5 / 14);
+      expect(hit(4.8)[0]!.point.y).toBeCloseTo(-2 + 2 * 6.8 / 7);
     }
     graph.dispose(); nav.geometry.dispose(); (nav.material as THREE.Material).dispose();
   });

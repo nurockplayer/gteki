@@ -112,15 +112,15 @@ export function dashTexture(): THREE.CanvasTexture {
 }
 
 /** Remove explicit holes from graph triangles on their floor, preserving the authored surface height. */
-export function clipFlatGeometry(geometry: THREE.BufferGeometry, holes: readonly PlanExclusion[], levels: readonly string[], offset = new THREE.Vector3()): THREE.BufferGeometry {
-  if (!holes.length) return geometry;
+export function clipFlatGeometry(geometry: THREE.BufferGeometry, holes: readonly PlanExclusion[], levels: readonly string[], heights: readonly number[], offset = new THREE.Vector3()): THREE.BufferGeometry {
+  const cuts = holes.flatMap((plane) => floorExclusionCuts(plane, levels, heights));
+  if (!cuts.length) return geometry;
   const position = geometry.getAttribute("position"), count = geometry.index?.count ?? position.count, out: number[] = [];
   for (let i = 0; i < count; i += 3) {
     const corners = [0, 1, 2].map((j) => new THREE.Vector3().fromBufferAttribute(position, geometry.index?.getX(i + j) ?? i + j).add(offset));
     const a = corners[0]!, normal = corners[1]!.clone().sub(a).cross(corners[2]!.clone().sub(a));
     const height = (p: PlanPoint) => a.y - (normal.x * (p.x - a.x) + normal.z * (p.z - a.z)) / normal.y;
-    const cuts = Math.abs(normal.y) < 1e-12 ? [] : holes.flatMap((plane) => floorExclusionCuts(plane, levels, height));
-    if (!cuts.length) { for (const p of corners) out.push(p.x - offset.x, p.y - offset.y, p.z - offset.z); continue; }
+    if (Math.abs(normal.y) < 1e-12) { for (const p of corners) out.push(p.x - offset.x, p.y - offset.y, p.z - offset.z); continue; }
     for (const polygon of subtractPlan(corners, cuts)) {
       const rings = polygon.map((ring) => ring.map((p) => new THREE.Vector2(p.x, p.z)));
       const faces = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), points = rings.flat();

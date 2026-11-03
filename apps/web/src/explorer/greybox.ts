@@ -488,16 +488,19 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const fromFloor = nodes.get(edge.from)?.floorId ?? "", toFloor = nodes.get(edge.to)?.floorId ?? "";
     return fromFloor === toFloor ? levelOf(fromFloor) : `run:${edge.id}`;
   };
-  const floorLevels = (edge: Edge) => [nodes.get(edge.from)?.floorId ?? "", nodes.get(edge.to)?.floorId ?? ""];
+  const floorMembership = (edge: Edge) => {
+    const points = edgePoints(bundle, edge, nodes, floors);
+    return { floorLevels: [nodes.get(edge.from)?.floorId ?? "", nodes.get(edge.to)?.floorId ?? ""], floorHeights: [points[0]!.y, points.at(-1)!.y] };
+  };
   const regions: Region[] = [];
   for (const run of runs) {
-    regions.push({ kind: "strip", group: run.edge.id, level: runLevel(run.edge), floorLevels: floorLevels(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
+    regions.push({ kind: "strip", group: run.edge.id, level: runLevel(run.edge), ...floorMembership(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
   }
   for (const pad of pads) {
     regions.push({ kind: "rect", level: levelOf(pad.floorId), center: { x: pad.center.x, y: pad.center.y, z: pad.center.z }, along: { x: pad.along.x, z: pad.along.z }, halfLength: pad.width / 2, halfWidth: pad.width / 2 });
   }
   for (const junction of activeJunctions) {
-    regions.push({ kind: "disc", ...(junction.bendOf ? { group: junction.bendOf.id, floorLevels: floorLevels(junction.bendOf) } : {}), level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
+    regions.push({ kind: "disc", ...(junction.bendOf ? { group: junction.bendOf.id, ...floorMembership(junction.bendOf) } : {}), level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
   }
   for (const mouth of mouths) {
     const ax = mouth.at.x, az = mouth.at.z, bx = ax + mouth.ux * mouth.length, bz = az + mouth.uz * mouth.length;
