@@ -14,3 +14,8 @@ declare module "virtual:gteki-stations" {
   export const stations: DiscoveredStationModule[];
   export const privateBuild: boolean;
 }
+
+declare module "virtual:gteki-field-private" {
+  const stations: Record<string, import("./field/route.ts").PrivateFieldData>;
+  export default stations;
+}

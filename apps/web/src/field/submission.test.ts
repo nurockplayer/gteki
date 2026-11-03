@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { validateReceipt, type FieldReceipt } from "../../../../stations/ikebukuro/pipeline/import_field_receipt.ts";
-import { buildReceipt, mergeRecorderState, newObservation, nowJst, type RecorderState } from "./submission.ts";
+import { buildReceipt, buildReceipts, mergeRecorderState, newObservation, nowJst, type RecorderState } from "./submission.ts";
 import type { FieldStation } from "./data.ts";
 
 for (const id of ["ikebukuro", "shinjuku"]) {
@@ -75,4 +75,60 @@ it("rejects nonexistent JST dates and accepts a valid minute-precision timestamp
   }
   const observedAt = "2026-11-03T08:50+09:00";
   expect(buildReceipt(station, [{ ...record, observedAt }]).items[0]!.observedAt).toBe(observedAt);
+});
+
+it("splits private stops into a separate receipt, including GAP notes and persisted private records", () => {
+  const station: FieldStation = { id: "shinjuku", title: "Synthetic", fieldRun: "synthetic.md",
+    stops: [{ id: "SJ-01", title: "Public", items: [], ids: [], instructions: "" },
+      { id: "P-SJ-01", title: "Synthetic private", items: [], ids: [], instructions: "", private: true }],
+    privateCatalog: { targetIds: ["overlay-node", "overlay-edge"], poiIds: ["overlay-shop"] },
+    nodeIds: ["public-node", "overlay-node"], edgeIds: ["overlay-edge"], pois: [{ id: "overlay-shop", label: "Synthetic" }] };
+  const publicRecord = { ...newObservation("SJ-01"), itemId: "1", observedText: "Public synthetic text" };
+  const privateRecord = { ...newObservation("P-SJ-01", true), itemId: "2", target: "overlay-node", poiId: "overlay-shop",
+    paid: "false", confirmation: "CLOSED" as const, observedText: "Private synthetic text" };
+  const gap = { ...privateRecord, itemId: "GAP-01", target: "overlay-edge" };
+  const receipts = buildReceipts(station, [publicRecord, privateRecord, gap]);
+  expect(receipts).toHaveLength(2);
+  expect(receipts[0]).toEqual(buildReceipt(station, [publicRecord]));
+  expect(JSON.stringify(receipts[0])).not.toContain("Private synthetic");
+  expect(receipts[0]).not.toHaveProperty("private");
+  expect(receipts[1]).toMatchObject({ private: true, items: [{ stopId: "P-SJ-01", status: "CLOSED", nodeId: "overlay-node" }],
+    fieldNotes: [{ itemId: "GAP-01", edgeId: "overlay-edge", targetUnknown: false }] });
+  const publicBuild = { ...station, privateCatalog: undefined, stops: station.stops.filter((stop) => !stop.private) };
+  expect(buildReceipts(publicBuild, [publicRecord, privateRecord])[0]).toEqual(receipts[0]);
+  expect(buildReceipts(station, [publicRecord])).toEqual([receipts[0]]);
+  const privateOnly = buildReceipts(station, [gap]);
+  expect(privateOnly[0]!.items).toEqual([]);
+  expect(privateOnly[0]!.fieldNotes).toEqual([]);
+  expect(privateOnly[1]!.fieldNotes).toHaveLength(1);
+  expect(() => validateReceipt(privateOnly[1] as unknown as FieldReceipt, "shinjuku", () => true, () => true)).not.toThrow();
+});
+
+it("exports an overlay-only store selected at a public SJ-02 stop only in the private receipt", () => {
+  const station: FieldStation = { id: "shinjuku", title: "Synthetic", fieldRun: "synthetic.md",
+    stops: [{ id: "SJ-02", title: "Public stop", items: ["39"], ids: ["public-node"], instructions: "" }],
+    nodeIds: ["public-node"], edgeIds: [], pois: [{ id: "overlay-shop", label: "Synthetic overlay store" }],
+    privateCatalog: { targetIds: [], poiIds: ["overlay-shop"] } };
+  const record = { ...newObservation("SJ-02"), itemId: "39", target: "public-node", poiId: "overlay-shop",
+    paid: "false", confirmation: "CLOSED" as const, observedText: "Synthetic overlay store" };
+  const receipts = buildReceipts(station, [record]);
+  expect(receipts).toHaveLength(2);
+  expect(JSON.stringify(receipts[0])).not.toContain("overlay-shop");
+  expect(receipts[0]!.items).toEqual([]);
+  expect(receipts[1]).toMatchObject({ private: true, items: [{ poiId: "overlay-shop", nodeId: "public-node", status: "CLOSED" }] });
+});
+
+it("keeps saved private records untouched and omits their file when no overlay is loaded", () => {
+  const station: FieldStation = { id: "shinjuku", title: "Synthetic public build", fieldRun: "synthetic.md",
+    stops: [], nodeIds: [], edgeIds: [], pois: [] };
+  const records = [{ ...newObservation("P-SJ-01", true), itemId: "39", target: "overlay-node", poiId: "overlay-shop",
+    paid: "false", confirmation: "CLOSED" as const, observedText: "Synthetic saved private record" }];
+  const before = structuredClone(records);
+  const receipts = buildReceipts(station, records);
+  expect(receipts).toHaveLength(1);
+  expect(receipts[0]).not.toHaveProperty("private");
+  expect(receipts[0]!.items).toEqual([]);
+  expect(receipts[0]!.fieldNotes).toEqual([]);
+  expect(records).toEqual(before);
+  expect(() => buildReceipt(station, records, true)).toThrow("非公開の記録は非公開ビルドで書き出してください / Export private records from the private build");
 });

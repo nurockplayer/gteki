@@ -1,4 +1,4 @@
-export interface Stop { id: string; title: string; items: string[]; ids: string[]; instructions: string }
+export interface Stop { id: string; title: string; items: string[]; ids: string[]; instructions: string; private?: true }
 
 export function parseRoute(markdown: string): Stop[] {
   const walk = markdown.split(/^## Ordered walk\s*$/m)[1]?.split(/^## /m)[0] ?? "";
@@ -11,4 +11,14 @@ export function parseRoute(markdown: string): Stop[] {
       instructions: body.trim(),
     };
   });
+}
+
+export interface PrivateFieldData {
+  stops: (Stop & { after: string })[];
+  nodeIds: string[]; edgeIds: string[]; pois: { id: string; label: string }[];
+}
+
+export function mergePrivateStops(stops: Stop[], additions: PrivateFieldData["stops"]): Stop[] {
+  return stops.flatMap((stop) => [stop, ...additions.filter((entry) => entry.after === stop.id)
+    .map(({ after, ...entry }) => ({ ...entry, private: true as const }))]);
 }
