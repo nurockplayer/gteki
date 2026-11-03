@@ -1492,6 +1492,7 @@ catalogStubAssets	function	stations/shinjuku/test/helpers/kit-stub.ts	35
 shinjukuStubManifestJson	function	stations/shinjuku/test/helpers/kit-stub.ts	59
 stubManifestJson	function	stations/shinjuku/test/helpers/kit-stub.ts	75
 stubProvider	function	stations/shinjuku/test/helpers/kit-stub.ts	112
+opaqueScene	function	stations/shinjuku/test/helpers/opaque-scene.ts	6
 plainHash	function	stations/shinjuku/test/helpers/scene-digest.ts	24
 exactHash	const	stations/shinjuku/test/helpers/scene-digest.ts	31
 geometryBytesHash	function	stations/shinjuku/test/helpers/scene-digest.ts	34
