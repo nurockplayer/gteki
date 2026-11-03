@@ -12,6 +12,7 @@ const LOAD_BUDGET_MS = 1500;
 /** Opening each station from a plain browser URL: no install, real scene, honest banners, no errors. */
 for (const key of STATIONS) {
   test(`${key}: opens, renders its scene and states its limits @phone`, async ({ page }, testInfo) => {
+    page.on("console", message => { if (message.text().startsWith("[stairwell-recipe]")) console.log(message.text()); });
     const diag = watch(page);
     const { loadMs, phase } = await openStation(page, key);
     expect(phase).toBe("ready");

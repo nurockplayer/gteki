@@ -262,7 +262,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     if (key) keysHash = fnv1a(bytesOf(Uint32Array.of(key.count, key.hash, key.matrix)), keysHash);
     const replaying: MeshRecord | null = recipe?.replay ? recipe.replay[stage] ?? null : null;
     if (recipe?.replay && (!replaying || replaying.count !== key!.count || replaying.hash !== key!.hash || replaying.matrix !== key!.matrix)) {
-      throw new StaleRecipe(`${mesh.name || mesh.uuid}: changed since the recipe was baked`);
+      throw new StaleRecipe(`${mesh.name || mesh.uuid} (${mesh.parent?.name}, ${mesh.userData.gteki_role}) stage ${stage}: ${JSON.stringify(key)} != ${JSON.stringify(replaying && { count: replaying.count, hash: replaying.hash, matrix: replaying.matrix })}`);
     }
     const draft: MeshRecord | null = recipe?.record ? { count: key!.count, hash: key!.hash, matrix: key!.matrix, hasCut: false, groups: [], codes: [], weights: [], events: [] } : null;
     if (draft) recipe!.record!.push(draft);

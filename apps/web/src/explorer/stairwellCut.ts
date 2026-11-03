@@ -372,12 +372,14 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
       recipe = "replayed";
     } catch (error) {
       if (!(error instanceof StaleRecipe)) throw error;
+      console.warn(`[stairwell-recipe] ${error.message}`);
       // Put back what the replay replaced, then cut live from the untouched scene.
       disposePortalCuts(resources);
       resources = freshResources();
       cut = cutLive(); recipe = "stale";
     }
   } else {
+    if (baked) console.warn(`[stairwell-recipe] header ${JSON.stringify({ tier: options.tier, keyCount: keys.length, wellsSha256: sha256Hex(canonicalJson(wells)), baked: { tier: baked.tier, keyCount: baked.keyCount, wellsSha256: baked.wellsSha256, version: baked.version } })}`);
     cut = cutLive();
     if (baked) recipe = "stale";
   }
