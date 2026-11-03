@@ -23,3 +23,22 @@ for (const store of [
     expect(await hooks.route(page)).toMatchObject({ ok: false });
   });
 }
+
+
+test("ikebukuro: 西武池袋本店 cannot confirm a step-free station connection point when access is unsurveyed", async ({ page }) => {
+  await openStation(page, "ikebukuro");
+  await page.getByRole("button", { name: "日本語", exact: true }).click();
+  expect(await hooks.setOrigin(page, "jr-central-gate-2")).toBe(true);
+  await page.getByRole("button", { name: "段差なし", exact: true }).click();
+  await expect(page.getByRole("button", { name: "段差なし", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.locator("#gteki-to").fill("西武池袋本店");
+  await page.locator('.result[data-poi="shop-ikb-seibu-honten"]').click();
+  const message = "段差の有無が未調査のため、段差なしで行ける駅側の接続地点を確認できません（入口未確認）";
+  await expect(page.locator(".card.no-route")).toContainText(message);
+  await expect(page.locator(".card.no-route")).toContainText("段差の有無が未調査の通路");
+  await expect(page.locator(".card.no-route")).not.toContainText("段差なしで行ける駅側の接続地点がありません");
+  await expect(page.locator('.card.merchant[data-poi-id="shop-ikb-seibu-honten"]')).not.toContainText("段差なしで行ける駅側の接続地点まで（入口未確認）");
+  await expect(page.locator('.card.merchant[data-poi-id="shop-ikb-seibu-honten"] .merchant-no-route')).toHaveText(message);
+  await expect(page.locator(".card .actions button.primary")).toHaveCount(0);
+  expect(await hooks.route(page)).toMatchObject({ ok: false, reason: "no_path" });
+});
