@@ -288,7 +288,7 @@ PortalCutResources	interface	apps/web/src/explorer/portalCut.ts	114
 disposePortalCuts	function	apps/web/src/explorer/portalCut.ts	121
 CutResult	interface	apps/web/src/explorer/portalCut.ts	129
 cutRegions	function	apps/web/src/explorer/portalCut.ts	168
-cutPortals	function	apps/web/src/explorer/portalCut.ts	464
+cutPortals	function	apps/web/src/explorer/portalCut.ts	473
 headingFromYaw	function	apps/web/src/explorer/pose.ts	2
 PostFxSettings	interface	apps/web/src/explorer/postfx.ts	18
 POSTFX_HIGH	const	apps/web/src/explorer/postfx.ts	27
@@ -423,11 +423,11 @@ printedHours	function	apps/web/src/hours.ts	15
 HOURS_STALE_DAYS	const	apps/web/src/hours.ts	29
 hoursStale	function	apps/web/src/hours.ts	32
 Lang	type	apps/web/src/i18n.ts	6
-Strings	type	apps/web/src/i18n.ts	497
-strings	function	apps/web/src/i18n.ts	499
-pick	function	apps/web/src/i18n.ts	504
-coverageText	function	apps/web/src/i18n.ts	513
-initialLang	function	apps/web/src/i18n.ts	518
+Strings	type	apps/web/src/i18n.ts	503
+strings	function	apps/web/src/i18n.ts	505
+pick	function	apps/web/src/i18n.ts	510
+coverageText	function	apps/web/src/i18n.ts	519
+initialLang	function	apps/web/src/i18n.ts	524
 FormClock	interface	apps/web/src/merchant/form-state.ts	9
 FormState	interface	apps/web/src/merchant/form-state.ts	18
 newFormState	function	apps/web/src/merchant/form-state.ts	32
@@ -532,8 +532,8 @@ isMapReadDoor	const	apps/web/src/ui/merchantCard.ts	21
 arrivalPrecision	function	apps/web/src/ui/merchantCard.ts	24
 merchantPrecision	function	apps/web/src/ui/merchantCard.ts	36
 MerchantCardModel	interface	apps/web/src/ui/merchantCard.ts	47
-merchantCardModel	function	apps/web/src/ui/merchantCard.ts	71
-merchantCardEl	function	apps/web/src/ui/merchantCard.ts	109
+merchantCardModel	function	apps/web/src/ui/merchantCard.ts	72
+merchantCardEl	function	apps/web/src/ui/merchantCard.ts	111
 Minimap	class	apps/web/src/ui/minimap.ts	41
 MinimapOrientation	type	apps/web/src/ui/minimapGeometry.ts	7
 MapPoint	interface	apps/web/src/ui/minimapGeometry.ts	8

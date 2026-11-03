@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
-import { cutPortals, disposePortalCuts } from "./portalCut.ts";
+import { cutPortals, cutRegions, disposePortalCuts } from "./portalCut.ts";
+import { StaleRecipe } from "./cutRecipe.ts";
 import { castAll, castCamera, castTargets, portalPassable } from "./raycast.ts";
 import { prepareRayTrees, raycastObject } from "./meshBvh.ts";
 
@@ -13,6 +14,49 @@ const ray = (mesh: THREE.Mesh, x: number, y: number) => {
 };
 
 describe("portal cuts", () => {
+  it("tracks a provisional instance copy when recipe replay throws", () => {
+    const root = new THREE.Group(), geometry = new THREE.BoxGeometry(6, 3, 0.2);
+    const material = new THREE.MeshBasicMaterial(), mesh = new THREE.InstancedMesh(geometry, material, 1);
+    const matrix = new THREE.Matrix4().makeTranslation(0, 1.5, 0);
+    mesh.setMatrixAt(0, matrix); mesh.setColorAt(0, new THREE.Color(0.5, 0.25, 1)); root.add(mesh);
+    const region = { key: opening, bounds: new THREE.Box3(new THREE.Vector3(-2, 0, -1), new THREE.Vector3(2, 3, 1)), planes: [], clip: null, accepts: () => true };
+    const owned = resources();
+    expect(() => cutRegions(root, [region], owned, new Set(), false, Infinity, { keys: [opening], replay: [] })).toThrow(StaleRecipe);
+    expect(owned.instances).toHaveLength(1);
+    const disposed = vi.fn(); owned.materials[0]!.addEventListener("dispose", disposed);
+    disposePortalCuts(owned);
+    expect(mesh.children).toHaveLength(0);
+    const actual = new THREE.Matrix4(); mesh.getMatrixAt(0, actual);
+    expect(actual.equals(matrix)).toBe(true);
+    expect(mesh.geometry).toBe(geometry); expect(mesh.material).toBe(material);
+    expect(disposed).toHaveBeenCalledOnce();
+  });
+  it("keeps bounds-only instance overlaps in their original batch", () => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute([
+      -3, 0, 0, -2, 0, 0, -2, 3, 0,
+      2, 0, 0, 3, 0, 0, 2, 3, 0,
+    ], 3));
+    const root = new THREE.Group(), material = new THREE.MeshBasicMaterial();
+    const mesh = new THREE.InstancedMesh(geometry, material, 2);
+    const matrices = [new THREE.Matrix4(), new THREE.Matrix4().makeTranslation(10, 0, 0)];
+    matrices.forEach((matrix, i) => mesh.setMatrixAt(i, matrix));
+    mesh.setColorAt(0, new THREE.Color(0.5, 0.25, 1));
+    root.add(mesh);
+    const owned = resources(), result = cutPortals(root, [opening], owned);
+    expect(result.cutMeshes).toBe(0);
+    expect(owned.instances).toHaveLength(0);
+    expect(mesh.children).toHaveLength(0);
+    expect(mesh.geometry).toBe(geometry);
+    expect(mesh.material).toBe(material);
+    matrices.forEach((matrix, i) => {
+      const actual = new THREE.Matrix4(); mesh.getMatrixAt(i, actual);
+      expect(actual.equals(matrix)).toBe(true);
+    });
+    const tint = new THREE.Color(); mesh.getColorAt(0, tint);
+    expect(tint.toArray()).toEqual([0.5, 0.25, 1]);
+    disposePortalCuts(owned);
+  });
   it.each([false, true])("avoids rebuilding a bounds-only overlap (cached BVH: %s)", (withTree) => {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.Float32BufferAttribute([
