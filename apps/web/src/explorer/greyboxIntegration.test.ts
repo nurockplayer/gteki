@@ -185,16 +185,19 @@ describe("greybox station integration", () => {
     expect(floorProbe(new THREE.Raycaster(), state.sceneGroundTargets)({ x: 1.9, y: 0, z: 0 })).toBe(true);
   });
 
-  it("keeps an extracted visual-only instance out of ground and collider targets", async () => {
+  it("keeps an unchanged visual-only instance batched and out of physical targets", async () => {
     const { state, scene, loaded } = fixture();
     const decoration = new THREE.InstancedMesh(new THREE.BoxGeometry(0.4, 1, 0.4), new THREE.MeshBasicMaterial(), 1);
     decoration.setMatrixAt(0, new THREE.Matrix4().makeTranslation(2.1, 1, 0));
+    const originalMatrix = decoration.instanceMatrix.array.slice();
     scene.root.add(decoration); scene.root.updateMatrixWorld(true);
     await state.loadStation(loaded, createRouter(loaded.bundle));
     const copy = state.portalCutResources.instances.find((entry: { owner: THREE.Object3D }) => entry.owner === decoration)?.copy;
-    expect(copy).toBeDefined(); expect(state.sceneGroundTargets).not.toContain(copy);
-    expect(state.groundTargets).not.toContain(copy); expect(state.colliderTargets).not.toContain(copy);
-    expect(state.walkable).not.toContain(copy); expect(state.colliders).not.toContain(copy);
+    expect(copy).toBeUndefined(); expect(decoration.children).toHaveLength(0);
+    expect(decoration.instanceMatrix.array).toEqual(originalMatrix);
+    expect(state.sceneGroundTargets).not.toContain(decoration);
+    expect(state.groundTargets).not.toContain(decoration); expect(state.colliderTargets).not.toContain(decoration);
+    expect(state.walkable).not.toContain(decoration); expect(state.colliders).not.toContain(decoration);
   });
 
   it("records the hit face normal and exempts an oblique wall crossing", () => {
