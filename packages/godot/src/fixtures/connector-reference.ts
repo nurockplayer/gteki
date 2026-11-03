@@ -1,5 +1,5 @@
 /** Frozen pre-#768 builder from #714 at 485e6952282a7717901202cc04df17d37b04cfaa.
- * Deliberately includes #714's lift shafts, doors and continuous collider panels.
+ * Deliberately includes #714's lift shafts, doors, continuous colliders and collision-matched low-tier wall panels.
  * Non-lift algorithms remain byte-for-byte those of frozen main 556e6fab after removing the lift additions.
  * Test-only: preserve this unoptimized reference; do not regenerate it from the optimized builder. */
 import type { Edge, StationBundle } from "@gteki/schema";
@@ -490,17 +490,16 @@ function freePanels(uMin: number, uMax: number, vMin: number, vMax: number, hole
  * collides: the walls come from the shaft's walkable model.
  */
 export function buildElevator(centre: THREE.Vector3, stops: readonly { y: number; face: number; offset?: number }[], tier: "high" | "low"): ConnectorPart[] {
-  const parts: ConnectorPart[] = [], half = SHAFT_HALF, yMin = stops[0]!.y - 0.1, yMax = stops.at(-1)!.y + 2.6;
+  const parts: ConnectorPart[] = [], half = SHAFT_HALF, yMin = stops[0]!.y - (tier === "low" ? 0.12 : 0.1), yMax = stops.at(-1)!.y + 2.6;
   const holes = new Map<number, { u0: number; u1: number; v0: number; v1: number }[]>();
   // Face frames look along the normal, so their u axis is the plan tangent (-n.z, n.x) negated: a door offset flips sign.
   const u = (stop: { offset?: number }) => -(stop.offset ?? 0);
-  for (const stop of stops) holes.set(stop.face, [...(holes.get(stop.face) ?? []), { u0: u(stop) - DOOR_HALF, u1: u(stop) + DOOR_HALF, v0: stop.y, v1: stop.y + 2.1 }]);
+  for (const stop of stops) holes.set(stop.face, [...(holes.get(stop.face) ?? []), { u0: u(stop) - DOOR_HALF, u1: u(stop) + DOOR_HALF, v0: stop.y - (tier === "low" ? 0.12 : 0), v1: stop.y + (tier === "low" ? 2.6 : 2.1) }]);
   const faceFrame = (normal: THREE.Vector3) => new THREE.Matrix4().makeRotationY(Math.atan2(normal.x, normal.z)).setPosition(centre.x, 0, centre.z);
   SHAFT_NORMALS.forEach((normal, index) => {
     const faceHoles = holes.get(index) ?? [];
-    if (tier === "low" && faceHoles.length) return; // the door face is open framing only
     for (const [u0, u1, v0, v1] of freePanels(-half, half, yMin, yMax, faceHoles)) {
-      box(parts, tier === "high" ? "glass" : "escTruss", faceFrame(normal), (u0 + u1) / 2, (v0 + v1) / 2, half, u1 - u0, v1 - v0, tier === "high" ? 0.02 : 0.06);
+      box(parts, tier === "high" ? "glass" : "escTruss", faceFrame(normal), (u0 + u1) / 2, (v0 + v1) / 2, half, u1 - u0, v1 - v0, tier === "high" ? 0.02 : 0.04);
     }
   });
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(parts, "steel", new THREE.Matrix4(), centre.x + sx * (half - 0.04), (yMin + yMax) / 2, centre.z + sz * (half - 0.04), 0.08, yMax - yMin, 0.08);

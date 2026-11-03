@@ -23,7 +23,7 @@ describe("vertical connector scope", () => {
 });
 
 import * as THREE from "three";
-import { buildConnectors, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
+import { buildConnectors, buildElevator, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { buildConnectors as buildLegacyConnectors, buildEscalator as buildLegacyEscalator } from "./greyboxConnectorsLegacy.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 
@@ -1374,6 +1374,40 @@ describe("turning landing guards", () => {
       }
       const ray = new THREE.Raycaster(new THREE.Vector3(0, y + 0.8, 0), new THREE.Vector3(1, 0, 0), 0, 2);
       expect(ray.intersectObjects(result.colliders).length, `door collider mesh y=${y}`).toBe(0);
+    }
+  });
+
+  it("matches low-tier shaft wall visuals to collision around every face and door band", () => {
+    const normals = [[1, 0], [0, 1], [-1, 0], [0, -1]] as const;
+    for (let lowerFace = 0; lowerFace < 4; lowerFace++) {
+      const upperFace = (lowerFace + 1) % 4, station = liftStation();
+      station.nodes.find((n) => n.id === "start")!.position = { x: 0, y: 0, z: 0 };
+      station.nodes.find((n) => n.id === "upper")!.position = { x: 0, y: 0, z: 10 };
+      for (const [id, face, z, side] of [["a", lowerFace, 0, 1], ["upper-2", upperFace, 10, -1]] as const) {
+        const [nx, nz] = normals[face]!;
+        station.nodes.find((n) => n.id === id)!.position = { x: 3 * nx - 0.6 * side * nz, y: -3 * nz - 0.6 * side * nx, z };
+      }
+      const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "low");
+      const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+      // Compare the shaft wall panels, independently of decorative frames, rings and the car.
+      const visuals = buildElevator(new THREE.Vector3(), [{ y: 0, face: lowerFace, offset: 0.22 }, { y: 10, face: upperFace, offset: -0.22 }], "low")
+        .filter((part) => part.material === "escTruss").map((part) => {
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute("position", new THREE.Float32BufferAttribute(part.position, 3));
+          return new THREE.Mesh(geometry, material);
+        });
+      for (const mesh of [...visuals, ...result.colliders]) mesh.updateMatrixWorld(true);
+      for (let face = 0; face < 4; face++) for (const u of [-0.9, -0.6, -0.3, 0, 0.3, 0.6, 0.9]) {
+        const [nx, nz] = normals[face]!;
+        for (const y of [0.8, 2.15, 2.4, 2.65, 5, 9.89, 10.8, 12.4, 12.59, -0.11]) {
+          const ray = new THREE.Raycaster(new THREE.Vector3(nx * 1.4 - nz * u, y, nz * 1.4 + nx * u), new THREE.Vector3(-nx, 0, -nz), 0, 0.6);
+          const visible = ray.intersectObjects(visuals).length > 0;
+          const blocked = ray.intersectObjects(result.colliders).length > 0;
+          expect(visible, `doors=${lowerFace}/${upperFace} face=${face} u=${u} y=${y}`).toBe(blocked);
+        }
+      }
+      for (const mesh of visuals) mesh.geometry.dispose();
+      material.dispose();
     }
   });
 
