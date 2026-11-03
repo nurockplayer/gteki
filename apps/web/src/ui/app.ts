@@ -16,6 +16,7 @@ import { noPathView } from "../noPath.ts";
 import { isUnlocatedShop, noRouteText, poiNoteText } from "./noRouteText.ts";
 import { unverifiedSources } from "./unverifiedSteps.ts";
 import { categoriesIn } from "./categoryFilter.ts";
+import { barrierFreeResults } from "./barrierFree.ts";
 import { arrivalPrecision, merchantCardEl, merchantCardModel } from "./merchantCard.ts";
 import { stationClock } from "../stationClock.ts";
 import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
@@ -57,7 +58,7 @@ interface State {
   /** Which enabled option made the last `no_path` refuse (null = not a no_path). */
   noPath: NoPathCause | null;
   /** The search category filter (#213): one of the loaded station's categories, or null for no filter. */
-  filter: Poi["category"] | null;
+  filter: Poi["category"] | "barrier_free" | null;
   openNow: boolean;
   polyline: PolylinePoint[];
   instructions: Instruction[];
@@ -223,10 +224,14 @@ export class App {
     // #213: narrow both search lists to one POI category. Only the loaded station's own categories are offered.
     this.ui.categoryFilter.addEventListener("change", () => {
       const v = this.ui.categoryFilter.value;
-      this.s.filter = v === "" ? null : v as Poi["category"];
+      this.s.filter = v === "" ? null : v as State["filter"];
       // The change comes from the select, which holds focus, so no result list can still be on screen.
       this.closeResults("to");
       this.closeResults("from");
+      if (this.s.filter === "barrier_free") {
+        this.ui.toInput.focus();
+        this.renderResults("to");
+      }
     });
     const filterRow = el("div", "filter-row");
     this.ui.openNowFilter.type = "checkbox";
@@ -491,11 +496,14 @@ export class App {
   private renderCategoryFilter(b: StationBundle | undefined): void {
     const select = this.ui.categoryFilter;
     const categories = b ? categoriesIn(b.pois) : [];
-    if (this.s.filter !== null && !categories.includes(this.s.filter)) this.s.filter = null;
+    if (this.s.filter !== null && this.s.filter !== "barrier_free" && !categories.includes(this.s.filter)) this.s.filter = null;
     select.replaceChildren();
     const all = el("option", undefined, this.t.categoryAll);
     all.value = "";
     select.append(all);
+    const barrierFree = el("option", undefined, this.t.barrierFree);
+    barrierFree.value = "barrier_free";
+    select.append(barrierFree);
     for (const c of categories) {
       const o = el("option", undefined, this.t.categoryNames[c] ?? c);
       o.value = c;
@@ -639,6 +647,7 @@ export class App {
         const search = createSearchIndex(bundle);
         this.directories.set(entry.key, { bundle, search });
         const q = this.ui.toInput.value.trim();
+        if (this.s.filter === "barrier_free") return;
         const categories = this.s.filter ? [this.s.filter] : undefined;
         if (document.activeElement !== this.ui.toInput || !this.combo.to.open || !q || entry.key === this.s.entry?.key ||
           !search.search(q, { limit: bundle.pois.length, lang: this.s.lang, categories }).some((hit) => hit.tenant)) return;
@@ -660,10 +669,12 @@ export class App {
     this.closeResults(which);
     if (!this.s.search || !this.s.loaded) return;
     const q = input.value.trim();
-    // The category filter narrows both lists to one POI category (#213); no filter searches every category.
-    const categories = this.s.filter ? [this.s.filter] : undefined;
-    const groups = q ? null : emptySuggestions(this.s.loaded.bundle.pois, which, {
-      filter: this.s.filter, recentIds: readRecent(safeStorage(), this.s.entry!.key),
+    const barrierFree = this.s.filter === "barrier_free";
+    const category = this.s.filter === "barrier_free" ? null : this.s.filter;
+    const categories = category ? [category] : undefined;
+    const nearby = barrierFree ? barrierFreeResults(this.s.loaded.bundle, this.s.search, this.s.router, this.s.origin, q, this.s.lang, this.profile()) : null;
+    const groups = q || barrierFree ? null : emptySuggestions(this.s.loaded.bundle.pois, which, {
+      filter: category, recentIds: readRecent(safeStorage(), this.s.entry!.key),
       limit: this.s.openNow ? this.s.loaded.bundle.pois.length : undefined,
     });
     const groupHeaders = new Map<number, string>();
@@ -674,15 +685,15 @@ export class App {
         : which === "from" ? this.t.suggestPopularFrom : this.t.suggestPopularTo);
       suggestionIndex += group.pois.length;
     }
-    let hits: (SearchHit & { station?: StationEntry; directory?: StationBundle })[] = q
+    let hits: (SearchHit & { station?: StationEntry; directory?: StationBundle })[] = nearby ?? (q
       // Open now filters after ranking, so it ranks every candidate: a closed shop must not use up the list (#724 review).
       ? this.s.search.search(q, { limit: this.s.openNow ? this.s.loaded.bundle.pois.length : 8, lang: this.s.lang, categories })
-      : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true })));
+      : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true }))));
     const statuses = new Map<string, ReturnType<typeof openNow>>();
     const now = new Date();
     // Closed shops are dropped while Open now is on; the other-category count below drops them too.
     const notClosed = (h: SearchHit) => !this.s.openNow || h.poi.category !== "shop" || openNow(h.poi.hours, now) !== "closed";
-    if (this.s.openNow) {
+    if (this.s.openNow && !barrierFree) {
       for (const h of hits) if (h.poi.category === "shop") statuses.set(h.poi.id, openNow(h.poi.hours, now));
       hits = hits.filter((h) => statuses.get(h.poi.id) !== "closed");
       const shops = hits.filter((h) => h.poi.category === "shop")
@@ -700,7 +711,7 @@ export class App {
         previous = title;
       });
     }
-    if (which === "to" && q) {
+    if (which === "to" && q && !barrierFree) {
       for (const entry of this.s.entries) {
         if (entry.synthetic || entry.key === this.s.entry?.key) continue;
         const directory = this.directories.get(entry.key);
@@ -765,6 +776,16 @@ export class App {
       const tags = h.tenant
         ? tenantResultTags(h, this.s.lang, this.t)
         : [floor, h.matched && h.matched !== this.poiName(h.poi) && h.matched !== description ? `“${h.matched}”` : null].filter(Boolean) as string[];
+      const distance = nearby?.[i];
+      if (distance) {
+        if (!floor) {
+          const floorIds = new Set(this.s.loaded!.bundle.nodes.filter((n) => h.poi.connectorNodeIds.includes(n.id)).map((n) => n.floorId));
+          tags.unshift([...floorIds].map((id) => floorDisplayName(this.s.loaded!.bundle.floors.find((f) => f.id === id), this.s.lang)).join(" / ") || this.t.floorUnknown);
+        }
+        tags.push(distance.distanceM === null ? this.t.distanceUnknown : distance.distanceKind === "route"
+          ? this.t.routeDistance(Math.round(distance.distanceM)) : this.t.straightDistance(Math.round(distance.distanceM)));
+        if (distance.connectsToGate) tags.push(this.t.connectsToGate);
+      }
       if (this.s.openNow && h.poi.category === "shop")
         tags.push((statuses.get(h.poi.id) ?? openNow(h.poi.hours, now)) === "open" ? this.t.openNowOpen : this.t.hoursUnknown);
       if (!h.routable) tags.push(searchOnly);
