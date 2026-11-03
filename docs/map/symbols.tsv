@@ -287,7 +287,7 @@ PortalCutResources	interface	apps/web/src/explorer/portalCut.ts	114
 disposePortalCuts	function	apps/web/src/explorer/portalCut.ts	121
 CutResult	interface	apps/web/src/explorer/portalCut.ts	129
 cutRegions	function	apps/web/src/explorer/portalCut.ts	168
-cutPortals	function	apps/web/src/explorer/portalCut.ts	464
+cutPortals	function	apps/web/src/explorer/portalCut.ts	473
 headingFromYaw	function	apps/web/src/explorer/pose.ts	2
 PostFxSettings	interface	apps/web/src/explorer/postfx.ts	18
 POSTFX_HIGH	const	apps/web/src/explorer/postfx.ts	27
