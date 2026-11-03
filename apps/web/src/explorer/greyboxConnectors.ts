@@ -97,9 +97,23 @@ function frame(from: THREE.Vector3, to: THREE.Vector3) {
   return { low, high, length, rise: high.y - low.y, matrix };
 }
 
+// Reuse the box topology; round local coordinates to Float32 before transforming, exactly as BoxGeometry does.
+const boxTemplate = new THREE.BoxGeometry().toNonIndexed();
 function box(parts: ConnectorPart[], material: ConnectorMaterial, f: THREE.Matrix4, x: number, y: number, z: number, sx: number, sy: number, sz: number, role?: ConnectorPart["role"], shade = 1) {
   const matrix = f.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, z));
-  parts.push(part(new THREE.BoxGeometry(sx, sy, sz), material, matrix, role, shade));
+  const positions = boxTemplate.getAttribute("position"), normals = boxTemplate.getAttribute("normal");
+  const normalMatrix = new THREE.Matrix3().getNormalMatrix(matrix);
+  const v = new THREE.Vector3(), color = new THREE.Color(connectorColours[material]).multiplyScalar(shade);
+  const position: number[] = [], normal: number[] = [], colour: number[] = [];
+  for (let i = 0; i < positions.count; i++) {
+    // Preserve both Float32 rounding boundaries: local BoxGeometry coordinates, then applyMatrix4's output.
+    v.set(Math.fround(positions.getX(i) * sx), Math.fround(positions.getY(i) * sy), Math.fround(positions.getZ(i) * sz)).applyMatrix4(matrix);
+    position.push(Math.fround(v.x), Math.fround(v.y), Math.fround(v.z));
+    v.fromBufferAttribute(normals, i).applyNormalMatrix(normalMatrix);
+    normal.push(Math.fround(v.x), Math.fround(v.y), Math.fround(v.z));
+    colour.push(color.r, color.g, color.b);
+  }
+  parts.push({ material, position, normal, colour, role });
 }
 
 /** Build stairs from the lower landing to the upper landing in renderer space. */
@@ -229,9 +243,13 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THR
   const materialIndex = (p: ConnectorPart) => p.material === "lampOk" ? 1 : p.material === "lampNo" ? 2 : 0;
   const ordered = Array.isArray(material) ? [...parts].sort((a, b) => materialIndex(a) - materialIndex(b)) : parts;
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.position), 3));
-  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.normal), 3));
-  geometry.setAttribute("color", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.colour), 3));
+  const length = parts.reduce((sum, p) => sum + p.position.length, 0);
+  for (const [name, key] of [["position", "position"], ["normal", "normal"], ["color", "colour"]] as const) {
+    const values = new Float32Array(length);
+    let offset = 0;
+    for (const p of ordered) { values.set(p[key], offset); offset += p[key].length; }
+    geometry.setAttribute(name, new THREE.BufferAttribute(values, 3));
+  }
   if (Array.isArray(material)) {
     let offset = 0;
     for (const p of ordered) {
@@ -861,11 +879,12 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const length = Math.hypot(wall.bx - wall.ax, wall.bz - wall.az);
     if (length < 1e-6) continue;
     const joined = junctionFloors.has(owner.edge.id), below = joined ? 0 : 0.12;
+    const meetingFloors = (junctionFloors.get(owner.edge.id) ?? []).filter((floor) => floor.level === wall.level);
     // A higher floor caps a lower guard: it still holds the lower body but cannot block a body already on that floor.
     const capGuard = (segment: Segment2, high: number) => {
+      if (!meetingFloors.length) return;
       const samples = [{ x: segment.ax, z: segment.az }, { x: (segment.ax + segment.bx) / 2, z: (segment.az + segment.bz) / 2 }, { x: segment.bx, z: segment.bz }];
-      for (const floor of junctionFloors.get(owner.edge.id) ?? []) {
-        if (floor.level !== wall.level) continue;
+      for (const floor of meetingFloors) {
         const inside = (p: PlanPoint) => floor.polygons.some((polygon) => {
           const ring = polygon[0]!;
           let hit = false;
