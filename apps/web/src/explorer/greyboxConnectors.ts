@@ -74,9 +74,15 @@ function frame(from: THREE.Vector3, to: THREE.Vector3) {
   return { low, high, length, rise: high.y - low.y, matrix };
 }
 
+// Reuse the box topology; round local coordinates to Float32 before transforming, exactly as BoxGeometry does.
+const boxTemplate = new THREE.BoxGeometry().toNonIndexed();
 function box(parts: ConnectorPart[], material: ConnectorMaterial, f: THREE.Matrix4, x: number, y: number, z: number, sx: number, sy: number, sz: number, role?: ConnectorPart["role"], shade = 1) {
   const matrix = f.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, z));
-  parts.push(part(new THREE.BoxGeometry(sx, sy, sz), material, matrix, role, shade));
+  const geometry = boxTemplate.clone();
+  const position = geometry.getAttribute("position");
+  const original = boxTemplate.getAttribute("position");
+  for (let i = 0; i < position.count; i++) position.setXYZ(i, original.getX(i) * sx, original.getY(i) * sy, original.getZ(i) * sz);
+  parts.push(part(geometry, material, matrix, role, shade));
 }
 
 /** Build stairs from the lower landing to the upper landing in renderer space. */
@@ -206,9 +212,13 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THR
   const materialIndex = (p: ConnectorPart) => p.material === "lampOk" ? 1 : p.material === "lampNo" ? 2 : 0;
   const ordered = Array.isArray(material) ? [...parts].sort((a, b) => materialIndex(a) - materialIndex(b)) : parts;
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.position), 3));
-  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.normal), 3));
-  geometry.setAttribute("color", new THREE.Float32BufferAttribute(ordered.flatMap((p) => p.colour), 3));
+  const length = parts.reduce((sum, p) => sum + p.position.length, 0);
+  for (const [name, key] of [["position", "position"], ["normal", "normal"], ["color", "colour"]] as const) {
+    const values = new Float32Array(length);
+    let offset = 0;
+    for (const p of ordered) { values.set(p[key], offset); offset += p[key].length; }
+    geometry.setAttribute(name, new THREE.BufferAttribute(values, 3));
+  }
   if (Array.isArray(material)) {
     let offset = 0;
     for (const p of ordered) {

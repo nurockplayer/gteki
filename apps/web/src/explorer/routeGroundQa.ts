@@ -69,32 +69,39 @@ function isConnector(mesh: THREE.Mesh): boolean {
   return false;
 }
 
-/** Distance to connector mesh triangles in world space, not merely a mesh's bounding box. */
-export function sceneMeshNear(roots: readonly THREE.Object3D[], point: THREE.Vector3, radius: number, edgeId?: string): boolean {
+/** Prepare proximity queries for one synchronous connector build: the cut scene cannot change between queries. */
+export function sceneMeshProbe(roots: readonly THREE.Object3D[]): (point: THREE.Vector3, radius: number, edgeId?: string) => boolean {
   const meshes: THREE.Mesh[] = [];
   for (const root of roots) { root.updateWorldMatrix(true, true); root.traverse((o) => { if ((o as THREE.Mesh).isMesh && isConnector(o as THREE.Mesh)) meshes.push(o as THREE.Mesh); }); }
+  for (const geometry of new Set(meshes.map((mesh) => mesh.geometry))) if (geometry.getAttribute("position")) geometry.computeBoundingSphere();
   const triangle = new THREE.Triangle(), closest = new THREE.Vector3(), matrix = new THREE.Matrix4();
-  for (const mesh of meshes) {
-    const geometry = mesh.geometry, position = geometry?.getAttribute("position"), index = geometry?.getIndex();
-    if (!position) continue;
-    geometry.computeBoundingSphere();
-    const instance = mesh as THREE.InstancedMesh;
-    const count = instance.isInstancedMesh ? instance.count : 1;
-    for (let n = 0; n < count; n++) {
-      if (instance.isInstancedMesh) { instance.getMatrixAt(n, matrix); matrix.premultiply(mesh.matrixWorld); } else matrix.copy(mesh.matrixWorld);
-      const bound = geometry.boundingSphere?.clone().applyMatrix4(matrix);
-      if (bound && bound.distanceToPoint(point) > radius) continue;
-      const size = index?.count ?? position.count;
-      for (let i = 0; i + 2 < size; i += 3) {
-        if (mesh.userData.greybox && edgeId !== undefined) {
-          const ranges = mesh.userData.edgeRanges as { start: number; end: number; edgeId?: string }[] | undefined;
-          if (ranges ? !ranges.some((r) => i >= r.start && i + 3 <= r.end && r.edgeId === edgeId) : mesh.userData.edgeId !== edgeId) continue;
+  return (point, radius, edgeId) => {
+    for (const mesh of meshes) {
+      const geometry = mesh.geometry, position = geometry?.getAttribute("position"), index = geometry?.getIndex();
+      if (!position) continue;
+      const instance = mesh as THREE.InstancedMesh;
+      const count = instance.isInstancedMesh ? instance.count : 1;
+      for (let n = 0; n < count; n++) {
+        if (instance.isInstancedMesh) { instance.getMatrixAt(n, matrix); matrix.premultiply(mesh.matrixWorld); } else matrix.copy(mesh.matrixWorld);
+        const bound = geometry.boundingSphere?.clone().applyMatrix4(matrix);
+        if (bound && bound.distanceToPoint(point) > radius) continue;
+        const size = index?.count ?? position.count;
+        for (let i = 0; i + 2 < size; i += 3) {
+          if (mesh.userData.greybox && edgeId !== undefined) {
+            const ranges = mesh.userData.edgeRanges as { start: number; end: number; edgeId?: string }[] | undefined;
+            if (ranges ? !ranges.some((r) => i >= r.start && i + 3 <= r.end && r.edgeId === edgeId) : mesh.userData.edgeId !== edgeId) continue;
+          }
+          const read = (v: THREE.Vector3, k: number) => v.fromBufferAttribute(position, index ? index.getX(k) : k).applyMatrix4(matrix);
+          read(triangle.a, i); read(triangle.b, i + 1); read(triangle.c, i + 2);
+          if (triangle.closestPointToPoint(point, closest).distanceToSquared(point) <= radius * radius) return true;
         }
-        const read = (v: THREE.Vector3, k: number) => v.fromBufferAttribute(position, index ? index.getX(k) : k).applyMatrix4(matrix);
-        read(triangle.a, i); read(triangle.b, i + 1); read(triangle.c, i + 2);
-        if (triangle.closestPointToPoint(point, closest).distanceToSquared(point) <= radius * radius) return true;
       }
     }
-  }
-  return false;
+    return false;
+  };
+}
+
+/** One-off query for QA, which may run after scene geometry or transforms have changed. */
+export function sceneMeshNear(roots: readonly THREE.Object3D[], point: THREE.Vector3, radius: number, edgeId?: string): boolean {
+  return sceneMeshProbe(roots)(point, radius, edgeId);
 }
