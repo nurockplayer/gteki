@@ -407,5 +407,24 @@
       "reason": "unknown_start",
       "uiCard": "No route confirmed in the surveyed dataThe start is not on the network."
     }
+  },
+  "IN6": {
+    "id": "IN6",
+    "from": "central-passage",
+    "to": "east-exit-b1",
+    "profile": {
+      "stepFree": true
+    },
+    "expect": "fail",
+    "note": "B1 halls have unsurveyed step-free access: explain missing survey data",
+    "cardText": [
+      "No route confirmed in the surveyed data with \"Step-free\" on.",
+      "step-free access is not surveyed"
+    ],
+    "result": {
+      "ok": false,
+      "reason": "no_path",
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Step-free\" on. The connection found uses passages whose step-free access is not surveyed.Turn off \"Step-free\""
+    }
   }
 }

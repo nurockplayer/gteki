@@ -10,7 +10,12 @@
      "text": "麻布あさひ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AZABU ASAHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -40,7 +45,12 @@
      "text": "RF1"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アールエフワン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -70,7 +80,12 @@
      "text": "アントニオズデリ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ANTONIO'S DELI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -100,7 +115,12 @@
      "text": "愛国製茶"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AIKOKU SEICHA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -130,7 +150,12 @@
      "text": "浅草今半"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ASAKUSA IMAHAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -160,7 +185,12 @@
      "text": "味の十字屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AJINOJUJIYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -190,7 +220,12 @@
      "text": "麻布茶房ジェラートショップ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アザブサボウジェラートショップ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -220,7 +255,12 @@
      "text": "赤坂ふきぬき"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AKASAKA FUKINUKI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -250,7 +290,12 @@
      "text": "イーションプルミエ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "eashion PREMIER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -280,7 +325,12 @@
      "text": "伊藤園"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ITOEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -310,7 +360,12 @@
      "text": "いとはん"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ITOHAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -340,7 +395,12 @@
      "text": "いずみ乃"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Izumino"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -370,7 +430,12 @@
      "text": "いなりすし専門店 豆狸"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "マメダ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -400,7 +465,12 @@
      "text": "梅善"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UMEZEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -430,7 +500,12 @@
      "text": "魚力"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UORIKI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -460,7 +535,12 @@
      "text": "京粕漬　魚久"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KYOKASUZUKE UOKYU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -490,7 +570,12 @@
      "text": "うなぎ 日本一"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UNAGI NIHONICHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -520,7 +605,12 @@
      "text": "おむすび一番"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Omusubi Ichiban"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -550,7 +640,12 @@
      "text": "大川水産"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ohkawa Suisan"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -580,7 +675,12 @@
      "text": "おいしいもの選べる便"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "OISHIIMONOERABERUBIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -610,7 +710,12 @@
      "text": "おこわ米八"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "OKOWA YONEHACHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -640,7 +745,12 @@
      "text": "柿安牛めし"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KAKIYASU GYUMESHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -670,7 +780,12 @@
      "text": "柿安"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KAKIYASU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -700,7 +815,12 @@
      "text": "加島屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KASHIMAYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -730,7 +850,12 @@
      "text": "かげん"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KAGEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -790,7 +915,12 @@
      "text": "日本橋 天丼 天むす 金子半之助"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Nihonbashi Tendon Tenmusu Kanekohannosuke"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -820,7 +950,12 @@
      "text": "柿安ダイニング"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KAKIYASU DINING"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -850,7 +985,12 @@
      "text": "神田明神下みやび"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MIYABI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -880,7 +1020,12 @@
      "text": "沈菜館"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KIMUCHIKAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -910,7 +1055,12 @@
      "text": "キャピタルコーヒー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CAPITAL COFFEE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -940,7 +1090,12 @@
      "text": "九州屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KYUSYUYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -970,7 +1125,12 @@
      "text": "崎陽軒"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KIYOKEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1000,7 +1160,12 @@
      "text": "錦松梅"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KINSYOBAI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1030,7 +1195,12 @@
      "text": "銀座木村家"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GINZA KIMURAYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1060,7 +1230,12 @@
      "text": "紀ノ国屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "キノクニヤ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1090,7 +1265,12 @@
      "text": "キーコーヒー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KEY COFFEE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1120,7 +1300,12 @@
      "text": "北野エース"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KITANO ACE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1150,7 +1335,12 @@
      "text": "銀座天一"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GINZA TENICHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1180,7 +1370,12 @@
      "text": "京つけもの 西利"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NISHIRI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1210,7 +1405,12 @@
      "text": "京都 八百一"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "YAOICHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1240,7 +1440,12 @@
      "text": "串重 / アヴァンセ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "クシジュウ / アヴァンセ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1270,7 +1475,12 @@
      "text": "桂林"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KEIRIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1300,7 +1510,12 @@
      "text": "古市庵"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KOICHIAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1330,7 +1545,12 @@
      "text": "神戸コロッケ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KOBE CROQUETTE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1360,7 +1580,12 @@
      "text": "御座候"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GOZASORO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1390,7 +1615,12 @@
      "text": "魚道楽"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "サカナドウラク"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1420,7 +1650,12 @@
      "text": "妻家房"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SAIKABO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1450,7 +1685,12 @@
      "text": "サイボク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SAIBOKU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1480,7 +1720,12 @@
      "text": "栄屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SAKAEYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1510,7 +1755,12 @@
      "text": "サラダカフェ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SALAD CAFÉ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1540,7 +1790,12 @@
      "text": "サンマルコ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SUN MARCO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1570,7 +1825,12 @@
      "text": "サダマツ ジュース＆スイーツ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SADAMATSU JUICE & SWEETS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1600,7 +1860,12 @@
      "text": "魚の北辰"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SAKANA NO HOKUSHIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1630,7 +1895,12 @@
      "text": "The Roast！"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ザ　ロースト"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1660,7 +1930,12 @@
      "text": "叙々苑"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "jojoen"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1690,7 +1965,12 @@
      "text": "柴又丸仁"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SHIBAMATA MARUJIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1720,7 +2000,12 @@
      "text": "鈴波"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SUZUNAMI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1750,7 +2035,12 @@
      "text": "鈴木水産"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SUZUKI SUISAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1780,7 +2070,12 @@
      "text": "千駄木腰塚"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SENDAGI KOSHIZUKA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1810,7 +2105,12 @@
      "text": "SOU.Dining"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ソウドットダイニング"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1840,7 +2140,12 @@
      "text": "多々楽達屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "タタラチヤ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1870,7 +2175,12 @@
      "text": "チーズ王国"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHEESE OKOKU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1900,7 +2210,12 @@
      "text": "佃の佃煮"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TSUKUDANOTSUKUDANI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1930,7 +2245,12 @@
      "text": "築地 魚弁"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TSUKIJI UOBEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1960,7 +2280,12 @@
      "text": "富澤商店"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "トミザワショウテン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -1990,7 +2315,12 @@
      "text": "東京吉兆"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TOKYO KITCHO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2020,7 +2350,12 @@
      "text": "とんかつ まい泉"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MAISEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2050,7 +2385,12 @@
      "text": "なだ万厨房"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NADAMAN CHUBOW"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2080,7 +2420,12 @@
      "text": "日本製茶"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NIHONSEICHA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2110,7 +2455,12 @@
      "text": "ニュー・クイック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NEW QUICK"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2140,7 +2490,12 @@
      "text": "にんべん"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ニンベン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2170,7 +2525,12 @@
      "text": "人形町今半"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NINGYOCHO IMAHAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2200,7 +2560,12 @@
      "text": "日本ばし大増"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NIHONBASHI DAIMASU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2230,7 +2595,12 @@
      "text": "ねり伝"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NERIDEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2260,7 +2630,12 @@
      "text": "好餃子"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HAOCHAOZU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2290,7 +2665,12 @@
      "text": "パオパオ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PAOPAO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2320,7 +2700,12 @@
      "text": "パン・リゾッタ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PAN RIZOTTA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2350,7 +2735,12 @@
      "text": "韓美膳ＤＥＬＩ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ハンビジェ デリ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2380,7 +2770,12 @@
      "text": "発酵kitchen リッチクリームコロッケ東京"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Hakkou kitchen Rich Cream Croquette Tokyo"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2410,7 +2805,12 @@
      "text": "ビオセボン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Bio c’Bon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2440,7 +2840,12 @@
      "text": "ベーグル＆ベーグル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BAGEL＆BAGEL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2470,7 +2875,12 @@
      "text": "ベジテリア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VEGETERIA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2500,7 +2910,12 @@
      "text": "北辰鮨"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HOKUSHIN SUSHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2530,7 +2945,12 @@
      "text": "ポンパドウル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "POMPADOUR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2560,7 +2980,12 @@
      "text": "まつおか"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MATSUOKA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2590,7 +3015,12 @@
      "text": "丸福珈琲店"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "マルフクコーヒーテン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2620,7 +3050,12 @@
      "text": "三崎豊魚"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MISAKI　HOUGYO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2650,7 +3085,12 @@
      "text": "美濃吉"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MINOKICHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2680,7 +3120,12 @@
      "text": "みはし"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MIHASHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2710,7 +3155,12 @@
      "text": "京鳥"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MIYAKODORI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2740,7 +3190,12 @@
      "text": "三崎まぐろ問屋 金印"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Misaki maguro donya Kinjirushi"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2770,7 +3225,12 @@
      "text": "大和屋守口漬總本家"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "YAMATOYA MORIGUCHIZUKE SOUHONKE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2800,7 +3260,12 @@
      "text": "山本海苔店"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "YAMAMOTO NORITEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2860,7 +3325,12 @@
      "text": "融合 (ASIAN FOOD MARKET)"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ユウゴウ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2890,7 +3360,12 @@
      "text": "リカーショップ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LIQUOR SHOP"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2920,7 +3395,12 @@
      "text": "アンリ・シャルパンティエ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HENRI-CHARPENTIER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -2950,7 +3430,12 @@
      "text": "アンジェリーナ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ANGELINA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3010,7 +3495,12 @@
      "text": "AND THE FRIET"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アンド ザ フリット"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3040,7 +3530,12 @@
      "text": "アンテノール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ANTENOR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3070,7 +3565,12 @@
      "text": "麻布かりんと"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Azabukarinto"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3100,7 +3600,12 @@
      "text": "赤坂柿山"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AKASAKA KAKIYAMA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3130,7 +3635,12 @@
      "text": "一保堂茶舗"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "IPPODO TEA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3160,7 +3670,12 @@
      "text": "銀座ウエスト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GINZA WEST"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3220,7 +3735,12 @@
      "text": "ヴィタメール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "WITTAMER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3250,7 +3770,12 @@
      "text": "ヴィヨン池袋東武店"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "villonikebukurotobu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3280,7 +3805,12 @@
      "text": "オッジ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "OGGI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3310,7 +3840,12 @@
      "text": "菓匠 花見"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KASHOU HANAMI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3340,7 +3875,12 @@
      "text": "ガトー・ド・ボワイヤージュ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GATEAUX DE VOYAGE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3370,7 +3910,12 @@
      "text": "金沢和音"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KANAZAWA WAON"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3400,7 +3945,12 @@
      "text": "叶 匠寿庵"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KANOU SHOUJUAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3430,7 +3980,12 @@
      "text": "がんこ職人"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GANKO SYOKUNIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3460,7 +4015,12 @@
      "text": "カフェ オウザン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CAFE OHZAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3490,7 +4050,12 @@
      "text": "茅乃舎"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KAYANOYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3520,7 +4085,12 @@
      "text": "薫るバター サブリナ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Kaoru butter Sabrina"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3550,7 +4120,12 @@
      "text": "きりのさか by 中央軒煎餅"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "kirinosaka by Chuoken Senbei"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3580,7 +4155,12 @@
      "text": "銀座あけぼの"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GINZA AKEBONO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3610,7 +4190,12 @@
      "text": "京都・宇治 式部郷"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KYOTO UJI SHIKIBUNOSATO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3640,7 +4225,12 @@
      "text": "銀座鈴屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ginzasuzuya"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3670,7 +4260,12 @@
      "text": "京橋千疋屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KYOBASHI SEMBIKIYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3700,7 +4295,12 @@
      "text": "クラブハリエ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CLUB HARIE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3730,7 +4330,12 @@
      "text": "グラマシーニューヨーク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GRAMERCY NEWYORK"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3790,7 +4395,12 @@
      "text": "ケーニヒスクローネ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KONIGS KRONE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3820,7 +4430,12 @@
      "text": "京菓子處 鼓月"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KYOUGASHIDOKORO KOGETSU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3850,7 +4465,12 @@
      "text": "ゴディバ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GODIVA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3880,7 +4500,12 @@
      "text": "コロンバン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "colombin"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3910,7 +4535,12 @@
      "text": "シーキューブ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "C3"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3940,7 +4570,12 @@
      "text": "松月堂"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Syogetsudo"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -3970,7 +4605,12 @@
      "text": "資生堂パーラー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SHISEIDO PARLOUR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4000,7 +4640,12 @@
      "text": "Gバターズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "G Butters'"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4030,7 +4675,12 @@
      "text": "セゾンファクトリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SAISON FACTORY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4060,7 +4710,12 @@
      "text": "仙太郎"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SENTARO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4090,7 +4745,12 @@
      "text": "宗家 源吉兆庵"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SOKE MINAMOTO KITCHOAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4120,7 +4780,12 @@
      "text": "ダロワイヨ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DALLOYAU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4150,7 +4815,12 @@
      "text": "ダロワイヨ レ マカロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DALLOYAU LES MACARONS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4180,7 +4850,12 @@
      "text": "立喰い寿し すしつね"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SUSHITSUNE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4210,7 +4885,12 @@
      "text": "タルティン フラワーチョコレート"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Tartine FLOWER CHOCOLATE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4240,7 +4920,12 @@
      "text": "チーズガーデン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHEESE GARDEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4270,7 +4955,12 @@
      "text": "デメル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DEMEL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4300,7 +4990,12 @@
      "text": "TEA MARIA"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ティーマリア"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4330,7 +5025,12 @@
      "text": "トップス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TOPS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4360,7 +5060,12 @@
      "text": "虎屋ういろ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TORAYA UIRO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4390,7 +5095,12 @@
      "text": "とらや"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TORAYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4420,7 +5130,12 @@
      "text": "東京ひよ子"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Tokyohiyoko"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4450,7 +5165,12 @@
      "text": "ニコデリ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "nicodeli"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4480,7 +5200,12 @@
      "text": "ニューヨークパーフェクトチーズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NEWYORK PERFECT CHEESE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4510,7 +5235,12 @@
      "text": "ネスプレッソ ブティック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NESPRESSO Boutiques"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4540,7 +5270,12 @@
      "text": "パステル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Pastel"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4570,7 +5305,12 @@
      "text": "坂角総本舖"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BANKAKU SOUHONPO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4630,7 +5370,12 @@
      "text": "バニラージュ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "vanillage"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4660,7 +5405,12 @@
      "text": "花園万頭×東京花万"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HANAZONO MANJYU×TOKYO HANAMAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4690,7 +5440,12 @@
      "text": "ビスキュイテリエ ブルトンヌ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BISCUITERIE BRETONNE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4720,7 +5475,12 @@
      "text": "福砂屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FUKUSAYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4750,7 +5510,12 @@
      "text": "船橋屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FUNABASHIYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4780,7 +5545,12 @@
      "text": "文明堂東京"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BUNMEIDO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4810,7 +5580,12 @@
      "text": "ブール アンジュ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BOUL'ANGE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4840,7 +5615,12 @@
      "text": "富士見堂"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FUJIMIDO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4870,7 +5650,12 @@
      "text": "フルーツショップ青木"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "fruit shop AOKI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4900,7 +5685,12 @@
      "text": "ベルン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BERNE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4930,7 +5720,12 @@
      "text": "豆源"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MAMEGEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4960,7 +5755,12 @@
      "text": "MINISOF"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ミニソフ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -4990,7 +5790,12 @@
      "text": "蜜匠 CoCo Amendoro"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CoCo Amendoro"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5020,7 +5825,12 @@
      "text": "メリーチョコレート"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MARY'S CHOCOLATE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5050,7 +5860,12 @@
      "text": "モロゾフ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MOROZOFF"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5080,7 +5895,12 @@
      "text": "パティスリー モンシェール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Moncher"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5110,7 +5930,12 @@
      "text": "モンロワール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MON LOIRE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5140,7 +5965,12 @@
      "text": "ユーハイム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "JUCHHEIM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5170,7 +6000,12 @@
      "text": "ヨックモック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "YOKUMOKU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5200,7 +6035,12 @@
      "text": "ラベイユ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "L'ABEILLE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5230,7 +6070,12 @@
      "text": "両口屋是清"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RYOGUCHIYA KOREKIYO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5260,7 +6105,12 @@
      "text": "LE BIHAN"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ル ビアン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5290,7 +6140,12 @@
      "text": "ロイスダール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RUYSDAEL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5320,7 +6175,12 @@
      "text": "LONDON BAKE GALLERY"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ロンドン ベイク ギャラリー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5350,7 +6210,12 @@
      "text": "和洋酒"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SAKE,BEER,LIQUOR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5380,7 +6245,12 @@
      "text": "ワッフルパレット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Waffle Palette"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5410,7 +6280,12 @@
      "text": "ワインショップ・エノテカ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ENOTECA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5440,7 +6315,12 @@
      "text": "アガット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AGETE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5470,7 +6350,12 @@
      "text": "アクセサリー（婦人）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ACCESARYS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5500,7 +6385,12 @@
      "text": "アフリカダイヤモンド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AFRICA DIAMONDS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5530,7 +6420,12 @@
      "text": "雨傘"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UMBRELLAS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5560,7 +6455,12 @@
      "text": "ANNA SUI"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アナ スイ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5590,7 +6490,12 @@
      "text": "アークテリクス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ARC'TERYX"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5620,7 +6525,12 @@
      "text": "ヴァンドーム ブティック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VENDOME BOUTIQUE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5650,7 +6560,12 @@
      "text": "ヴァンドーム青山"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VENDOME AOYAMA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5680,7 +6595,12 @@
      "text": "グロッセ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Grossѐ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5710,7 +6630,12 @@
      "text": "グロッセ・グラッセ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Grossѐ Glacѐ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5740,7 +6665,12 @@
      "text": "GLOBAL GALLERY"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "グローバルギャラリー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5770,7 +6700,12 @@
      "text": "コンプレックス ビズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Complex Biz"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5800,7 +6735,12 @@
      "text": "Conteje"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "コンテージュ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5860,7 +6800,12 @@
      "text": "サロモン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SALOMON"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5890,7 +6835,12 @@
      "text": "スカーフ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SCARF"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5920,7 +6870,12 @@
      "text": "スタージュエリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "STAR JEWELRY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5950,7 +6905,12 @@
      "text": "スワロフスキー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SWAROVSKI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -5980,7 +6940,12 @@
      "text": "ティファニー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TIFFANY&Co."
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6010,7 +6975,12 @@
      "text": "テイクアップ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TAKE-UP"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6040,7 +7010,12 @@
      "text": "ディー・スタイル フラワーズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "D.STYLE flowers"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6070,7 +7045,12 @@
      "text": "デサント"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DESCENTE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6100,7 +7080,12 @@
      "text": "ハンカチ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HANDKERCHIEF"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6130,7 +7115,12 @@
      "text": "パンドラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PANDORA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6160,7 +7150,12 @@
      "text": "ハイネット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Hi-net"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6190,7 +7185,12 @@
      "text": "BIBI"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ビビ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6220,7 +7220,12 @@
      "text": "festaria bijou SOPHIA"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "フェスタリア ビジュソフィア"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6250,7 +7255,12 @@
      "text": "フォルム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FORM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6280,7 +7290,12 @@
      "text": "婦人靴下"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LADIES SOCKS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6310,7 +7325,12 @@
      "text": "婦人手袋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LADIES GLOVES"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6340,7 +7360,12 @@
      "text": "婦人ベルト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LADIES BELT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6370,7 +7395,12 @@
      "text": "婦人帽子"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LADIES HAT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6400,7 +7430,12 @@
      "text": "マックスマーラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MaxMara"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6430,7 +7465,12 @@
      "text": "マキシ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Maxi"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6460,7 +7500,12 @@
      "text": "４℃"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "4℃"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6490,7 +7535,12 @@
      "text": "ランバン オン ブルー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN en Bleu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6520,7 +7570,12 @@
      "text": "青山フラワーマーケット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Aoyama Flower Market"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6550,7 +7605,12 @@
      "text": "アクセーヌ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ACSEINE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6580,7 +7640,12 @@
      "text": "アグ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UGG"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6610,7 +7675,12 @@
      "text": "アテニア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Attenir"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6640,7 +7710,12 @@
      "text": "アナ スイ（バッグ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ANNA SUI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6670,7 +7745,12 @@
      "text": "アユーラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AYURA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6700,7 +7780,12 @@
      "text": "ＲＭＫ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RMK"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6730,7 +7815,12 @@
      "text": "アルビオン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ALBION"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6760,7 +7850,12 @@
      "text": "アンリーフ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "unReef"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6790,7 +7885,12 @@
      "text": "アンテプリマ（婦人靴）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ANTEPRIMA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6820,7 +7920,12 @@
      "text": "ANAYI"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アナイ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6850,7 +7955,12 @@
      "text": "アシックスウォーキング"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "asicsWALKING"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6880,7 +7990,12 @@
      "text": "イヴ・サンローラン ボーテ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Yves Saint Laurent"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6910,7 +8025,12 @@
      "text": "イザック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Y'SACCS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6940,7 +8060,12 @@
      "text": "イプサ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "IPSA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -6970,7 +8095,12 @@
      "text": "イング"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ING"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7000,7 +8130,12 @@
      "text": "イビサ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "IBIZA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7030,7 +8165,12 @@
      "text": "ヴァーチェ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VIRCHE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7060,7 +8200,12 @@
      "text": "ＳＫ-Ⅱ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "エスケイツー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7090,7 +8235,12 @@
      "text": "エスト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "est"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7120,7 +8270,12 @@
      "text": "エスティ ローダー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ESTEE LAUDER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7150,7 +8305,12 @@
      "text": "エトロ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ETRO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7180,7 +8340,12 @@
      "text": "エピステーム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "episteme"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7210,7 +8375,12 @@
      "text": "エレガンス（アルビオン内）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "elegance"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7240,7 +8410,12 @@
      "text": "エルベシャプリエ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Herve Chapelier"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7270,7 +8445,12 @@
      "text": "エコー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ECCO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7300,7 +8480,12 @@
      "text": "エンチャンテッド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ENCHANTED"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7330,7 +8515,12 @@
      "text": "MCM"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "エムシーエム"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7360,7 +8550,12 @@
      "text": "MK ミッシェルクラン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "エムケー ミッシェルクラン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7390,7 +8585,12 @@
      "text": "オサム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "OSAM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7420,7 +8620,12 @@
      "text": "カオリプラス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "kaori plus+"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7450,7 +8655,12 @@
      "text": "カバーマーク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "covermark"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7480,7 +8690,12 @@
      "text": "ガリャルダガランテ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GALLARDAGALANTE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7510,7 +8725,12 @@
      "text": "カンペール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CAMPER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7540,7 +8760,12 @@
      "text": "カネボウ/ルナソル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KANEBO/LUNASOL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7570,7 +8795,12 @@
      "text": "ＧＡＰ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ギャップ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7600,7 +8830,12 @@
      "text": "キタムラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Kitamura"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7630,7 +8865,12 @@
      "text": "KEEN"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "キーン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7660,7 +8900,12 @@
      "text": "銀座かねまつ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GINZA Kanematsu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7690,7 +8935,12 @@
      "text": "銀座 福祿壽"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GINZA FUKUROKUJU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7720,7 +8970,12 @@
      "text": "銀座ヨシノヤ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ginza yoshinoya"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7750,7 +9005,12 @@
      "text": "クラランス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CLARINS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7780,7 +9040,12 @@
      "text": "クラークス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "clarks"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7810,7 +9075,12 @@
      "text": "クリニーク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CLINIQUE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7840,7 +9110,12 @@
      "text": "クレ･ド･ポー ボーテ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "clé de peau Beauté"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7870,7 +9145,12 @@
      "text": "クラランスプレシャス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CLARINSPrecious"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7930,7 +9210,12 @@
      "text": "ゲラルディーニ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GHERARDINI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7960,7 +9245,12 @@
      "text": "ゲラン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GUERLAIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -7990,7 +9280,12 @@
      "text": "ゲンテン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "genten"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8020,7 +9315,12 @@
      "text": "コスメデコルテ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DECORTÉ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8050,7 +9350,12 @@
      "text": "コーチ(レディース・メンズ)"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "COACH"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8080,7 +9385,12 @@
      "text": "コール ハーン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "COLE HAAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8110,7 +9420,12 @@
      "text": "コンポジション９"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "COMPOSITION9"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8140,7 +9455,12 @@
      "text": "婦人財布"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LADIES WALLETS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8170,7 +9490,12 @@
      "text": "シスレー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "sisley PARIS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8200,7 +9525,12 @@
      "text": "資生堂"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SHISEIDO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8230,7 +9560,12 @@
      "text": "ジバンシイ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GIVENCHY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8260,7 +9595,12 @@
      "text": "シャネル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHANEL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8290,7 +9630,12 @@
      "text": "シュウ ウエムラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "shu uemura"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8320,7 +9665,12 @@
      "text": "シューケアグッズ コロンブス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "COLUMBUS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8350,7 +9700,12 @@
      "text": "ジョージ ジェンセン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GEORG JENSEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8380,7 +9735,12 @@
      "text": "ジルスチュアート シュー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "JILLSTUART shoe"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8440,7 +9800,12 @@
      "text": "ジョー マローン ロンドン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "JO MALONE LONDON"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8470,7 +9835,12 @@
      "text": "J&M DAVIDSON"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "J&M デヴィットソン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8500,7 +9870,12 @@
      "text": "ジャンニ キアリーニ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GIANNI CHIARINI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8530,7 +9905,12 @@
      "text": "スック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SUQQU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8560,7 +9940,12 @@
      "text": "ストロバー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "strober"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8590,7 +9975,12 @@
      "text": "スリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "THREE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8620,7 +10010,12 @@
      "text": "スクラップブック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Scrap Book"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8650,7 +10045,12 @@
      "text": "スニーカーズ バイ エミ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SNEAKERS by emmi"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8710,7 +10110,12 @@
      "text": "STACCATO"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "スタッカート"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8740,7 +10145,12 @@
      "text": "'eir"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ゼア"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8770,7 +10180,12 @@
      "text": "セーブ・ザ・ダック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SAVE THE DUCK"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8800,7 +10215,12 @@
      "text": "タカノフルーツパーラー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TAKANO FRUITS parlour"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8830,7 +10250,12 @@
      "text": "タカミ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TAKAMI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8860,7 +10285,12 @@
      "text": "ツモリチサト ウォーク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "tsumori chisato WALK"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8890,7 +10320,12 @@
      "text": "DHC"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ディーエイチシー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8920,7 +10355,12 @@
      "text": "ディオール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Dior"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8950,7 +10390,12 @@
      "text": "ディッシィ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "D'ICI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -8980,7 +10425,12 @@
      "text": "トリー バーチ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TORY BURCH"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9010,7 +10460,12 @@
      "text": "ＴＵＭＩ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "トゥミ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9040,7 +10495,12 @@
      "text": "ナーズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NARS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9070,7 +10530,12 @@
      "text": "ニールズヤード　レメディーズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NEAL'SYARD REMEDIES"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9100,7 +10565,12 @@
      "text": "NAILS UNIQUE"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ネイルズユニーク"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9130,7 +10600,12 @@
      "text": "ノーリーズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NOLLEY'S"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9160,7 +10635,12 @@
      "text": "バカラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Baccarat"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9190,7 +10670,12 @@
      "text": "白鳳堂"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HAKUHODO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9220,7 +10705,12 @@
      "text": "ハーバー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HABA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9250,7 +10740,12 @@
      "text": "ハルタ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HARUTA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9280,7 +10775,12 @@
      "text": "卑弥呼"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HIMIKO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9310,7 +10810,12 @@
      "text": "ビューフォート"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BeauFort"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9340,7 +10845,12 @@
      "text": "HIROFU"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ヒロフ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9370,7 +10880,12 @@
      "text": "ファンケル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FANCL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9400,7 +10915,12 @@
      "text": "FURLA"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "フルラ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9430,7 +10950,12 @@
      "text": "フレグランス アヴェニュー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FRAGRANCE AVENUE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9460,7 +10985,12 @@
      "text": "FAS"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ファス"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9490,7 +11020,12 @@
      "text": "ヘレナ ルビンスタイン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HELENA RUBINSTEIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9520,7 +11055,12 @@
      "text": "ペレボルサ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PELLE BORSA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9550,7 +11090,12 @@
      "text": "ポーラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "POLA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9580,7 +11125,12 @@
      "text": "MICHAEL KORS"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "マイケル・コース"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9610,7 +11160,12 @@
      "text": "マーガレット・ハウエル アイデア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MARGARET HOWELL idea"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9640,7 +11195,12 @@
      "text": "マリコール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MARY COHR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9670,7 +11230,12 @@
      "text": "マッキントッシュ フィロソフィー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MACKINTOSH PHILOSOPHY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9700,7 +11265,12 @@
      "text": "M・A・C"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "マック"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9730,7 +11300,12 @@
      "text": "マーク ジェイコブス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MARC JACOBS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9760,7 +11335,12 @@
      "text": "マリメッコ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "marimekko"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9790,7 +11370,12 @@
      "text": "カギの製作 ミスターミニット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MISTER MINIT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9820,7 +11405,12 @@
      "text": "靴ハンドバッグの修理 ミスターミニット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MISTER MINIT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9850,7 +11440,12 @@
      "text": "メルモ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MELMO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9880,7 +11475,12 @@
      "text": "メイクアップフォーエバー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MAKE UP FOR EVER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9910,7 +11510,12 @@
      "text": "モードカオリ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MODE KAORI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9940,7 +11545,12 @@
      "text": "ユニティ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "unity"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -9970,7 +11580,12 @@
      "text": "ラシット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "russet"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10000,7 +11615,12 @@
      "text": "ラ バガジェリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LA BAGAGERIE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10030,7 +11650,12 @@
      "text": "ラ・プレリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "la prairie"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10060,7 +11685,12 @@
      "text": "ランコム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANCOME"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10090,7 +11720,12 @@
      "text": "ランバン オン ブルー（婦人靴）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN en Bleu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10120,7 +11755,12 @@
      "text": "ランバン オン ブルー （ハンドバッグ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN en Bleu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10150,7 +11790,12 @@
      "text": "ランバン コレクション（婦人靴）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN COLLECTION"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10180,7 +11825,12 @@
      "text": "ラ・メール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LA MER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10210,7 +11860,12 @@
      "text": "ラトリエ デ パルファム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "L'ATELIER DES PARFUMS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10240,7 +11895,12 @@
      "text": "リズ・ラフィーネ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Riz raffinee"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10270,7 +11930,12 @@
      "text": "ReFa"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "リファ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10300,7 +11965,12 @@
      "text": "レスポートサック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LeSportsac"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10330,7 +12000,12 @@
      "text": "ロクシタン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LOCCITANE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10360,7 +12035,12 @@
      "text": "ロンシャン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LONGCHAMP"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10390,7 +12070,12 @@
      "text": "アズ　ノゥ　アズ　ドゥ　バズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "as know as de base"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10420,7 +12105,12 @@
      "text": "アナスタシア ミアレ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ANASTASIA MIARAY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10450,7 +12140,12 @@
      "text": "アニエスベー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "agnes b."
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10480,7 +12175,12 @@
      "text": "アフタヌーンティー・ティールーム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Afternoon Tea TEAROOM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10510,7 +12210,12 @@
      "text": "アルアバイル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "allureville"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10540,7 +12245,12 @@
      "text": "アンタイトル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UNTITLED"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10570,7 +12280,12 @@
      "text": "アズ　ノゥ　アズ　オオラカ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AS KNOW AS olaca"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10600,7 +12315,12 @@
      "text": "アフタヌーンティー・リビング"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Afternoon Tea LIVING"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10630,7 +12350,12 @@
      "text": "アレーズ モジュレーション"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "alaise modulation"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10660,7 +12385,12 @@
      "text": "アンタイトル トール&ラージ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UNTITLED Ｔ&Ｌ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10690,7 +12420,12 @@
      "text": "イーストボーイ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "EAST BOY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10720,7 +12455,12 @@
      "text": "インディヴィ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "INDIVI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10750,7 +12490,12 @@
      "text": "インナーウェアサロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "innerwear"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10780,7 +12525,12 @@
      "text": "インディヴィ　ラージ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "INDIVI　LARGE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10810,7 +12560,12 @@
      "text": "ヴィヴィアン・ウエストウッド レッドアンドマン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VIVIENNE WESTWOOD RED+MAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10840,7 +12595,12 @@
      "text": "ＭＫミッシェルクラン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MK MICHEL KLEIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10870,7 +12630,12 @@
      "text": "エムズ グレィシー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "M'S GRACY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10900,7 +12665,12 @@
      "text": "オンワードクローゼットセレクト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ONWARD CROSSET select"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10930,7 +12700,12 @@
      "text": "加圧ビューティーテラス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KAATSU BEAUTY TERRACE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10960,7 +12735,12 @@
      "text": "加圧メンズテラス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KAATSU MENS TERRACE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -10990,7 +12770,12 @@
      "text": "café comme ca"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "カフェコムサ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11020,7 +12805,12 @@
      "text": "カールパークレーン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Karl Park Lane"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11050,7 +12840,12 @@
      "text": "キッドブルー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KID BLUE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11080,7 +12875,12 @@
      "text": "クードシャンス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "COUP DE CHANCE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11110,7 +12910,12 @@
      "text": "グランラフィネ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Grand Raffine"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11140,7 +12945,12 @@
      "text": "クラスカ ギャラリー＆ショップ ドー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CLASKA Gallery＆Shop ”DO”"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11170,7 +12980,12 @@
      "text": "ケサランパサラン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "kesalanpatharan"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11200,7 +13015,12 @@
      "text": "COLLAGE GALLARDAGALANTE"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "コラージュ ガリャルダガランテ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11230,7 +13050,12 @@
      "text": "サムシング"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SOMETHING"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11260,7 +13085,12 @@
      "text": "ジェットセット ソロプラス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "JETSET SOLO PLUS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11290,7 +13120,12 @@
      "text": "ストロベリーフィールズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "STRAWBERRY-FIELDS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11320,7 +13155,12 @@
      "text": "スウィートキャメル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Sweet Camel"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11350,7 +13190,12 @@
      "text": "ZUCCa"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ズッカ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11380,7 +13225,12 @@
      "text": "セオリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Theory"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11410,7 +13260,12 @@
      "text": "セオリーリュクス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Theory luxe"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11440,7 +13295,12 @@
      "text": "ツモリチサト　スリープ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "tsumori chisato SLEEP"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11470,7 +13330,12 @@
      "text": "デッサン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Dessin"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11500,7 +13365,12 @@
      "text": "デシグアル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Desigual"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11530,7 +13400,12 @@
      "text": "トリンプ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Triumph"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11560,7 +13435,12 @@
      "text": "ドレステリア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DRESSTERIOR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11590,7 +13470,12 @@
      "text": "DouDou"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ドゥドゥ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11620,7 +13505,12 @@
      "text": "Droite lautreamont"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ドロワット ロートレアモン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11650,7 +13540,12 @@
      "text": "ナイトウェアサロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NIGHT WEAR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11680,7 +13575,12 @@
      "text": "２３区　Ｓ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NIJUSANKU　S"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11710,7 +13610,12 @@
      "text": "２３区　Ｌ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NIJUSANKU　L"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11740,7 +13645,12 @@
      "text": "NOBLE"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ノーブル"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11770,7 +13680,12 @@
      "text": "バナナ・リパブリック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BANANA REPUBLIC"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11800,7 +13715,12 @@
      "text": "パラスパレス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ＰＡＬ’ＬＡＳ　 ＰＡＬＡＣＥ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11830,7 +13750,12 @@
      "text": "BARNYARDSTORM"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "バンヤードストーム"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11860,7 +13785,12 @@
      "text": "pas de calais"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "パドカレ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11890,7 +13820,12 @@
      "text": "ヒューマンウーマン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HUMAN WOMAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11920,7 +13855,12 @@
      "text": "PINK HOUSE"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ピンクハウス"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11950,7 +13890,12 @@
      "text": "ビアズリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BEARDSLEY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -11980,7 +13925,12 @@
      "text": "ピーク・ア・ブー　アヴェダ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PEEK-A-BOO AVEDA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12010,7 +13960,12 @@
      "text": "フィニ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "fini"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12040,7 +13995,12 @@
      "text": "ブルーレーベル・クレストブリッジ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BLUE LABEL CRESTBRIDGE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12070,7 +14030,12 @@
      "text": "PLST"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "プラステ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12100,7 +14065,12 @@
      "text": "Flying Tiger Copenhagen"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "フライング タイガー コペンハーゲン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12130,7 +14100,12 @@
      "text": "ポアレスラボ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PORELESS LABO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12160,7 +14135,12 @@
      "text": "ホコモモラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Jocomomola"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12190,7 +14170,12 @@
      "text": "ポール・スミス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Paul Smith"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12220,7 +14205,12 @@
      "text": "ポロ ラルフ ローレン レディス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "POLO Ralph Lauren Women's"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12250,7 +14240,12 @@
      "text": "マーガレット・ハウエル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MARGARET HOWELL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12280,7 +14275,12 @@
      "text": "マザーハウス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MOTHERHOUSE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12310,7 +14310,12 @@
      "text": "マッキントッシュ フィロソフィー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MACKINTOSH PHILOSOPHY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12340,7 +14345,12 @@
      "text": "マリークワント"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MARY QUANT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12370,7 +14380,12 @@
      "text": "MARcourt"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "マーコート"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12400,7 +14415,12 @@
      "text": "ミッシェルクラン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MICHEL KLEIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12430,7 +14450,12 @@
      "text": "Mrs. Jeana® GOLD"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ミセスジーナ ゴールド"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12460,7 +14485,12 @@
      "text": "メイクアップソリューション"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "make up solution"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12490,7 +14520,12 @@
      "text": "YANUK"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ヤヌーク"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12520,7 +14555,12 @@
      "text": "ラ ブティックボンボン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ｌa boutique ＢonＢon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12550,7 +14590,12 @@
      "text": "リヴドロワ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RIVE DROITE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12580,7 +14625,12 @@
      "text": "リュクス　アーモワール　カプリス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Luxe armoire caprice"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12610,7 +14660,12 @@
      "text": "ル・タン ラグジュアリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Le・temps LUXURY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12640,7 +14695,12 @@
      "text": "ロートレアモン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LAUTREAMONT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12670,7 +14730,12 @@
      "text": "ロペ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ROPE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12700,7 +14765,12 @@
      "text": "ROBE SUPERIOR CLOSET"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ローブ スーペリアクローゼット"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12730,7 +14800,12 @@
      "text": "ローズ ティアラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RoseTiara"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12760,7 +14835,12 @@
      "text": "ワイズ / ワイズフォーメン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Y's / Y's for men"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12790,7 +14870,12 @@
      "text": "ワコール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "WACOAL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12820,7 +14905,12 @@
      "text": "アクアスキュータム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Aquascutum"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12850,7 +14940,12 @@
      "text": "アマカ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AMACA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12880,7 +14975,12 @@
      "text": "アルチザン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ARTISAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12910,7 +15010,12 @@
      "text": "アクアスキュータム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Aquascutum"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12940,7 +15045,12 @@
      "text": "アダバット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "adabat"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -12970,7 +15080,12 @@
      "text": "アナ スイ　セレモニー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ANNA SUI CEREMONY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13000,7 +15115,12 @@
      "text": "アプレイジ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "APPLEIGE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13030,7 +15150,12 @@
      "text": "イギン　ゴールド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "igin"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13060,7 +15185,12 @@
      "text": "インディヴィ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "INDIVI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13090,7 +15220,12 @@
      "text": "エヴェックス　バイ　クリツィア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "EVEX by KRIZIA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13120,7 +15255,12 @@
      "text": "M.&KYOKO"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "エム アンド キョウコ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13150,7 +15290,12 @@
      "text": "オングレース"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ongrace"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13180,7 +15325,12 @@
      "text": "キース"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KEITH"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13210,7 +15360,12 @@
      "text": "美容室　キャノン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "cannon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13240,7 +15395,12 @@
      "text": "季節きもの"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KISETSU KIMONO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13270,7 +15430,12 @@
      "text": "きものサロン（振袖・フォーマル呉服・紬）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Kimono Salon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13300,7 +15465,12 @@
      "text": "クリスチャン　オジャールリベルテ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHRISTIAN AUJARD LIBERTE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13330,7 +15500,12 @@
      "text": "クリスチャン　オジャ－ル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHRISTIAN AUJARD"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13360,7 +15535,12 @@
      "text": "クレッシェント"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CRESCENT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13390,7 +15570,12 @@
      "text": "クリスチャン オジャール S"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHRISTIAN AUJARD S"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13420,7 +15605,12 @@
      "text": "ケイ ハヤマ プリュス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KEI Hayama PLUS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13450,7 +15640,12 @@
      "text": "コムサプラチナ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "COMME CA Platinum"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13480,7 +15675,12 @@
      "text": "珈琲貴族"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ko-hi-kizoku"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13510,7 +15710,12 @@
      "text": "ゴルフ用品「有賀園ゴルフ」"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GOLF GOODS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13540,7 +15745,12 @@
      "text": "サブストリート マイ スタンダード"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "sab street my standard"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13570,7 +15780,12 @@
      "text": "サーハウス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SUAHHAUS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13600,7 +15815,12 @@
      "text": "シェ松尾（サロン・ド・テ　シェ松尾）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHEZ-MATSUO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13630,7 +15850,12 @@
      "text": "シビラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SYBILLA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13660,7 +15885,12 @@
      "text": "ジブリーヌ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Zibeline"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13690,7 +15920,12 @@
      "text": "ジャンニ　ロ　ジュディチェ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GIANNI LO GIUDICE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13720,7 +15955,12 @@
      "text": "ジャンニ ロ ジュディチェ Ｓ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GIANNI LO GIUDICE（S）"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13750,7 +15990,12 @@
      "text": "ジョコンダ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "JOCONDE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13780,7 +16025,12 @@
      "text": "ジョルジュ　レッシュ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GEORGES RECH"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13810,7 +16060,12 @@
      "text": "ジョルジュ　レッシュ　Ｓ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GEORGES RECH（S）"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13840,7 +16095,12 @@
      "text": "ＣＷ-Ｘ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "シーダブリューエックス"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13870,7 +16130,12 @@
      "text": "シャルダッソー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Char dassaut"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13900,7 +16165,12 @@
      "text": "ジュンアシダ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "jun ashida"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13930,7 +16200,12 @@
      "text": "スキャパ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SCAPA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13960,7 +16235,12 @@
      "text": "スポーツシューズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SPORTS SHOES"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -13990,7 +16270,12 @@
      "text": "ソワール　ドルチェ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SOIR DOLCE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14020,7 +16305,12 @@
      "text": "ソワール　ペルル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SOIR PERLE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14050,7 +16340,12 @@
      "text": "ZOY"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ゾーイ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14110,7 +16405,12 @@
      "text": "タバサ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TABASA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14140,7 +16440,12 @@
      "text": "タケオ ニシダ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TAKEO NISHIDA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14200,7 +16505,12 @@
      "text": "トゥービーシック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TO BE CHIC"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14230,7 +16540,12 @@
      "text": "トランスワーク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TRANS WORK"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14260,7 +16575,12 @@
      "text": "トランスワーク　Ｌ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TRANS WORK（L）"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14290,7 +16610,12 @@
      "text": "ドゥ クラッセ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Do CLASSE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14320,7 +16645,12 @@
      "text": "ニナリッチ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NINA RICCI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14350,7 +16680,12 @@
      "text": "ニューヨーカー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NEWYORKER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14380,7 +16715,12 @@
      "text": "ノジマ〔家電製品〕"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "nojima"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14410,7 +16750,12 @@
      "text": "バジーレ28"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BASILE28"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14440,7 +16785,12 @@
      "text": "パーリーゲイツ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PEARLY GATES"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14470,7 +16820,12 @@
      "text": "ビースリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "B-three"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14500,7 +16855,12 @@
      "text": "ピッコーネ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PICONE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14530,7 +16890,12 @@
      "text": "ヒロココシノ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HIROKO KOSHINO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14560,7 +16925,12 @@
      "text": "フォンテーヌクチュール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FONTAINE COUTURE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14590,7 +16960,12 @@
      "text": "プランテーション"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Plantation"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14620,7 +16995,12 @@
      "text": "プリーツ プリーズ イッセイ ミヤケ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PLEATS PLEASE ISSEY MIYAKE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14650,7 +17030,12 @@
      "text": "プレシャスマイルド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Precious-Mild"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14680,7 +17065,12 @@
      "text": "プレタきもの「日和着」"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PRETA KIMONO HIYORIGI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14710,7 +17100,12 @@
      "text": "fitfit"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "フィットフィット"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14770,7 +17165,12 @@
      "text": "ベータ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "β"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14800,7 +17200,12 @@
      "text": "ベルポネッティ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BELLE PONETTI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14830,7 +17235,12 @@
      "text": "ポール・スチュアート"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Paul Stuart"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14860,7 +17270,12 @@
      "text": "マッキントッシュ ロンドン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MACKINTOSH LONDON"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14890,7 +17305,12 @@
      "text": "マッキントッシュ ロンドン　Ｌ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MACKINTOSH LONDON （L）"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14920,7 +17340,12 @@
      "text": "マドモアゼルノンノン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MADEMOISELLE NONNON"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14950,7 +17375,12 @@
      "text": "マリココウガフィルドレ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MARIKO KOHGA Fil Dore"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -14980,7 +17410,12 @@
      "text": "マリナ リナルディ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MARINA RINALDI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15010,7 +17445,12 @@
      "text": "マンシングウエア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Munsingwear"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15040,7 +17480,12 @@
      "text": "マックレガー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "McGREGOR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15070,7 +17515,12 @@
      "text": "マスターバニーエディション"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MASTER BUNNY EDITION"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15100,7 +17550,12 @@
      "text": "ミー イッセイ ミヤケ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "me ISSEY MIYAKE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15130,7 +17585,12 @@
      "text": "ミズノ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mizuno"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15160,7 +17620,12 @@
      "text": "ミッシェルクラン（小さなサイズ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MICHEL KLEIN (small size)"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15190,7 +17655,12 @@
      "text": "山田養蜂場"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "YAMADA BEE FARM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15220,7 +17690,12 @@
      "text": "ユキトリヰ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "YUKI TORII"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15280,7 +17755,12 @@
      "text": "ラピーヌフォーマル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LAPINE FORMAL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15310,7 +17790,12 @@
      "text": "ランバン　ノワール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN NOIR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15340,7 +17825,12 @@
      "text": "ランバンスポール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN SPORT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15370,7 +17860,12 @@
      "text": "ランバン コレクション"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN  COLLECTION"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15400,7 +17895,12 @@
      "text": "リフレクト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Reflect"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15430,7 +17930,12 @@
      "text": "リリアンビューティ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Liliane Burty"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15460,7 +17965,12 @@
      "text": "写真室　ルイ・ミヤシタ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Louis Miyashita"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15490,7 +18000,12 @@
      "text": "ルネ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "René"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15520,7 +18035,12 @@
      "text": "レオナール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LEONARD"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15550,7 +18070,12 @@
      "text": "レリアン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Leilian"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15580,7 +18105,12 @@
      "text": "レリアンプラスハウス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Leilian Plus House"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15610,7 +18140,12 @@
      "text": "レンタルコーディネート　マイム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "rental coordinate salon M・AI・M"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15640,7 +18175,12 @@
      "text": "ローラ アシュレイ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Laura Ashley"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15670,7 +18210,12 @@
      "text": "ローレン ラルフ　ローレン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LAUREN Ralph Lauren"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15700,7 +18245,12 @@
      "text": "和装小物(帯締／帯揚／草履／和装肌着／風呂敷／印傳)"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "WASO KOMONO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15730,7 +18280,12 @@
      "text": "アクアスキュータム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Aquascutum"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15760,7 +18315,12 @@
      "text": "アニアリ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "aniary"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15790,7 +18350,12 @@
      "text": "アラミス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ARAMIS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15820,7 +18385,12 @@
      "text": "イージーオーダーサロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "EASY ORDER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15850,7 +18420,12 @@
      "text": "イズイット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "IS/IT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15880,7 +18455,12 @@
      "text": "ウルティマ トーキョー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ultima"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15910,7 +18490,12 @@
      "text": "ヴァン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15940,7 +18525,12 @@
      "text": "エースジーン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ace. GENE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -15970,7 +18560,12 @@
      "text": "エドウイン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "EDWIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16000,7 +18595,12 @@
      "text": "エルイーディーバイツ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "L.E.D.BITES"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16030,7 +18630,12 @@
      "text": "エース"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ACE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16060,7 +18665,12 @@
      "text": "オーダーシャツ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ORDER SHIRT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16090,7 +18700,12 @@
      "text": "オロビアンコ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Orobianco"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16120,7 +18735,12 @@
      "text": "オンワードクローゼットセレクト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ONWARD CROSSET Select"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16150,7 +18770,12 @@
      "text": "カナナプロジェクト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "kanana project"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16180,7 +18805,12 @@
      "text": "カルワザ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KARUWAZA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16210,7 +18840,12 @@
      "text": "KASHIYAMA"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "カシヤマ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16240,7 +18875,12 @@
      "text": "傘・帽子"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UMBRELLA,HAT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16270,7 +18910,12 @@
      "text": "クラークス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "clarks"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16300,7 +18945,12 @@
      "text": "グレゴリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GREGORY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16330,7 +18980,12 @@
      "text": "メンズシューズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MENS SHOES"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16360,7 +19015,12 @@
      "text": "靴下"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MENS SOX"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16390,7 +19050,12 @@
      "text": "コムサ・ステージ・メン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "COMME CA STAGE MEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16420,7 +19085,12 @@
      "text": "コールハーン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Cole Haan"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16450,7 +19120,12 @@
      "text": "コロンビア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Columbia"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16480,7 +19155,12 @@
      "text": "サムソナイト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Samsonite"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16510,7 +19190,12 @@
      "text": "サムソナイト・ブラックレーベル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Samsonite BLACK LABEL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16540,7 +19225,12 @@
      "text": "Psycho Bunny"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "サイコバニー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16570,7 +19260,12 @@
      "text": "シップス メンズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SHIPS MEN’S"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16600,7 +19295,12 @@
      "text": "スコッチグレイン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SCOTCH GRAIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16630,7 +19330,12 @@
      "text": "STEFANOMANO"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ステファノマーノ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16660,7 +19365,12 @@
      "text": "スポーツサングラスショップ(メガネさろん)"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Sports sunglasses"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16690,7 +19400,12 @@
      "text": "タケオキクチ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TAKEO KIKUCHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16720,7 +19435,12 @@
      "text": "タケオキクチ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TAKEO KIKUCHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16750,7 +19470,12 @@
      "text": "ダックス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DAKS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16780,7 +19505,12 @@
      "text": "たばこ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Cigarette"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16810,7 +19540,12 @@
      "text": "ダーバン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "D'URBAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16840,7 +19575,12 @@
      "text": "タビオ メン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "tabio MEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16870,7 +19610,12 @@
      "text": "タケオキクチ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TAKEO KIKUCHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16930,7 +19675,12 @@
      "text": "トミー ヒルフィガー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TOMMY HILFIGER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16960,7 +19710,12 @@
      "text": "トラベルステーション"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TRAVEL STATION"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -16990,7 +19745,12 @@
      "text": "トラベルバッグ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TRAVEL BAG"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17020,7 +19780,12 @@
      "text": "ドレスシャツ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DRESS SHIRT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17050,7 +19815,12 @@
      "text": "ニューヨーカー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NEWYORKER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17080,7 +19850,12 @@
      "text": "ネクタイ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TIE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17110,7 +19885,12 @@
      "text": "白洋舎"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Hakuyosha"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17140,7 +19920,12 @@
      "text": "パジャマ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MENS PAJAMA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17170,7 +19955,12 @@
      "text": "肌着"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MENS UNDERWEAR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17200,7 +19990,12 @@
      "text": "パパス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "papas"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17230,7 +20025,12 @@
      "text": "ハンティングワールド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HUNTING WORLD"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17260,7 +20060,12 @@
      "text": "ハンカチ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HANDKERCHIEF"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17290,7 +20095,12 @@
      "text": "VUMPS"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ヴァンプス"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17320,7 +20130,12 @@
      "text": "ビクトリノックス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VICTORINOX"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17350,7 +20165,12 @@
      "text": "ピド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PIDO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17380,7 +20200,12 @@
      "text": "ピドライトウォーカー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PIDO LIGHTWALKER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17440,7 +20265,12 @@
      "text": "紳士フォーマル＆スーツサロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FORMAL and SUIT SALON"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17470,7 +20300,12 @@
      "text": "フジタカ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FUJITAKA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17500,7 +20335,12 @@
      "text": "ブラックレーベル・クレストブリッジ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BLACK LABEL CRESTBRIDGE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17530,7 +20370,12 @@
      "text": "ブルックス ブラザーズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Brooks Brothers"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17560,7 +20405,12 @@
      "text": "フレジーノ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FREGINO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17590,7 +20440,12 @@
      "text": "プロテカ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Proteca"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17620,7 +20475,12 @@
      "text": "フランコスパダ（ネクタイ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Franco Spada"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17650,7 +20510,12 @@
      "text": "フットバランス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Foot Balance"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17680,7 +20545,12 @@
      "text": "BRIEFING"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ブリーフィング"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17710,7 +20580,12 @@
      "text": "ペダラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "pedala"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17740,7 +20615,12 @@
      "text": "BOSS"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ボス"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17770,7 +20650,12 @@
      "text": "ポーター"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PORTER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17800,7 +20685,12 @@
      "text": "ポール・スチュアート"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Paul Stuart"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17830,7 +20720,12 @@
      "text": "ポール・スミス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Paul Smith"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17860,7 +20755,12 @@
      "text": "ポロ ラルフ ローレン メンズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "POLO Ralph Lauren Men's"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17890,7 +20790,12 @@
      "text": "ポロラルフローレン(洋品)"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Polo Ralph Lauren"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17920,7 +20825,12 @@
      "text": "ポロラルフローレン(雑貨)"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Polo Ralph Lauren"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17950,7 +20860,12 @@
      "text": "マスターピース"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "master-piece"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -17980,7 +20895,12 @@
      "text": "マッキントッシュ　フィロソフィー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MACKINTOSH PHILOSOPHY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18010,7 +20930,12 @@
      "text": "マックレガー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "McGREGOR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18040,7 +20965,12 @@
      "text": "マドラス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "madras"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18070,7 +21000,12 @@
      "text": "マドラスウォーク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "madras Walk"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18100,7 +21035,12 @@
      "text": "マレリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Marelli"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18130,7 +21070,12 @@
      "text": "マンハッタンパッセージ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MANHATTAN PASSAGE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18160,7 +21105,12 @@
      "text": "マグノリア・トウキョウ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MAGNOLIA TOKYO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18190,7 +21140,12 @@
      "text": "ミッシェルクランオム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MICHEL KLEIN homme"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18220,7 +21175,12 @@
      "text": "ミラショーン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mila schon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18250,7 +21210,12 @@
      "text": "ムッシュニコル　キャナルドゥ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MONSIEUR NICOLE Canal deux"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18280,7 +21245,12 @@
      "text": "メンズバッグ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MENS BAG"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18310,7 +21280,12 @@
      "text": "メンズ雑貨"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MENS GOODS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18340,7 +21315,12 @@
      "text": "メガネさろん"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Glasses Salon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18370,7 +21350,12 @@
      "text": "モンベル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mont-bell"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18400,7 +21385,12 @@
      "text": "ヤンコ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "YANKO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18430,7 +21420,12 @@
      "text": "ユニオンインペリアル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Union Imperial"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18460,7 +21455,12 @@
      "text": "ラコステ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LACOSTE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18490,7 +21490,12 @@
      "text": "ランウォーク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Runwalk"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18520,7 +21525,12 @@
      "text": "ランバン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18550,7 +21560,12 @@
      "text": "ランバン オン ブルー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN en Bleu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18580,7 +21595,12 @@
      "text": "ランバン コレクション"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LANVIN COLLECTION"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18610,7 +21630,12 @@
      "text": "リーガル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "REGAL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18640,7 +21665,12 @@
      "text": "リフォーム工房"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "REFORM KOBO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18670,7 +21700,12 @@
      "text": "旅行小物・用品"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TRAVEL GOODS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18700,7 +21735,12 @@
      "text": "リオネル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LIONEL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18730,7 +21770,12 @@
      "text": "REPLAY"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "リプレイ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18760,7 +21805,12 @@
      "text": "理容室「そがわ」"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BARBER SOGAWA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18790,7 +21840,12 @@
      "text": "リエラボ ニコルクラブフォーメン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RIELABO NICOLE CLUB FOR MEN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18820,7 +21875,12 @@
      "text": "ル・ポワール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Le Poéle"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18850,7 +21910,12 @@
      "text": "レセント"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LeCENT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18880,7 +21945,12 @@
      "text": "ロードソン（ドレスシャツ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LORDOSON"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18910,7 +21980,12 @@
      "text": "ＩＷＣ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アイダブリューシー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18940,7 +22015,12 @@
      "text": "UCHINO Bath&Wellness"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ウチノ バス＆ウェルネス"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -18970,7 +22050,12 @@
      "text": "ウブロ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Hublot"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19000,7 +22085,12 @@
      "text": "ウノアエレ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UNO AERRE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19030,7 +22120,12 @@
      "text": "ヴェーダヴィ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VedaVie"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19060,7 +22155,12 @@
      "text": "ビタクラフト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VitaCraft"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19090,7 +22190,12 @@
      "text": "WMF"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ヴェーエムエフ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19120,7 +22225,12 @@
      "text": "ウェッジウッド｜ロイヤル コペンハーゲン｜イッタラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "WEDGWOOD | Royal Copenhagen | IITTALA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19150,7 +22260,12 @@
      "text": "エアウィーヴ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "airweave"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19180,7 +22295,12 @@
      "text": "エピカリス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Epicaris"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19210,7 +22330,12 @@
      "text": "エプロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "apron"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19240,7 +22365,12 @@
      "text": "エンハーブ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "enherb"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19270,7 +22400,12 @@
      "text": "エアー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AiR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19300,7 +22435,12 @@
      "text": "SGCゴールドショップ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "エスジーシーゴールドショップ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19330,7 +22470,12 @@
      "text": "エドックス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "EDOX"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19360,7 +22505,12 @@
      "text": "エイレン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AiRAiN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19390,7 +22540,12 @@
      "text": "置時計・掛時計"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Table clock, wall clock"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19420,7 +22575,12 @@
      "text": "オメガ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "OMEGA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19450,7 +22610,12 @@
      "text": "オクソー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "OXO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19480,7 +22645,12 @@
      "text": "オークス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AUX"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19510,7 +22680,12 @@
      "text": "オリス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ORIS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19540,7 +22715,12 @@
      "text": "ORIENTSTAR"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "オリエントスター"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19570,7 +22750,12 @@
      "text": "カシオ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "casio"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19600,7 +22785,12 @@
      "text": "カルティエ（ウォッチ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "cartier (watch)"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19630,7 +22820,12 @@
      "text": "カリス成城"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHARIS SEIJO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19660,7 +22855,12 @@
      "text": "木屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KIYA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19690,7 +22890,12 @@
      "text": "京橋千疋屋　フルーツパーラー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Kyobashi Sembikiya fruit parlor"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19720,7 +22925,12 @@
      "text": "グリーンパン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GREEN PAN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19750,7 +22960,12 @@
      "text": "グランドセイコーサロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GRAND SEIKO salon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19780,7 +22995,12 @@
      "text": "クレドールサロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Credor salon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19810,7 +23030,12 @@
      "text": "コルロフ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KORLOFF"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19840,7 +23065,12 @@
      "text": "コルム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CORUM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19870,7 +23100,12 @@
      "text": "サロン・ド・デコール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Salon de　Décor"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19900,7 +23135,12 @@
      "text": "Something Blue"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "サムシング ブルー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19930,7 +23170,12 @@
      "text": "サンクスデイズ・プラチナ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Thanks Days Platinum"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19960,7 +23205,12 @@
      "text": "サバース"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SA BIRTH"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -19990,7 +23240,12 @@
      "text": "シチズン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "citizen"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20020,7 +23275,12 @@
      "text": "シチズンコンセプトショップ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "citizen concept shop"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20050,7 +23310,12 @@
      "text": "漆器・箸"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "lacquerware and chopsticks"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20080,7 +23345,12 @@
      "text": "シャネル（ウォッチ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHANEL (watch)"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20110,7 +23380,12 @@
      "text": "ジュエリーオーダーメイド＆リフォーム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Jewelry made-to-order and reform"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20140,7 +23415,12 @@
      "text": "ジラール・ペルゴ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "GIRARD-PERREGAUX"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20170,7 +23450,12 @@
      "text": "寝装品"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BEDDING"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20200,7 +23485,12 @@
      "text": "シュトゥルマンスキー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "STURMANSKIE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20230,7 +23520,12 @@
      "text": "シモンズ ベッド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SIMMONS BED"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20260,7 +23555,12 @@
      "text": "昭和西川"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ショウワニシカワ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20290,7 +23590,12 @@
      "text": "スリッパ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SLIPPER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20320,7 +23625,12 @@
      "text": "ＳＵＷＡ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "スワ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20350,7 +23660,12 @@
      "text": "ストウブ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "staub"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20380,7 +23695,12 @@
      "text": "スイートテン・ダイヤモンド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Sweet 10 Diamond"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20410,7 +23730,12 @@
      "text": "Standard Products"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "スタンダードプロダクツ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20440,7 +23765,12 @@
      "text": "THREEPPY"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "スリーピー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20470,7 +23800,12 @@
      "text": "生活の木"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SEIKATSUNOKI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20500,7 +23835,12 @@
      "text": "セイコー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "seiko"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20530,7 +23870,12 @@
      "text": "セイコーウオッチサロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "seiko watch salon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20560,7 +23905,12 @@
      "text": "センチュリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "century"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20590,7 +23940,12 @@
      "text": "タオル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "towel"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20620,7 +23975,12 @@
      "text": "タグ・ホイヤー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Tag Heuer"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20650,7 +24010,12 @@
      "text": "ＴＡＳＡＫＩ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "tasaki"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20680,7 +24045,12 @@
      "text": "たち吉"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TACHIKICHI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20710,7 +24080,12 @@
      "text": "ダミアーニ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "damiani"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20740,7 +24115,12 @@
      "text": "DAISO"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ダイソー"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20770,7 +24150,12 @@
      "text": "TOWEL THINK LAB　byタオル美術館"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TOWEL THINK LAB　byTOWEL MUSEUM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20800,7 +24185,12 @@
      "text": "ツヴィリングJ.A.ヘンケルス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ZWILLING J.A. HENCKELS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20830,7 +24220,12 @@
      "text": "ティソ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TISSOT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20860,7 +24255,12 @@
      "text": "デロンギ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "DeLonghi"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20890,7 +24290,12 @@
      "text": "ティファール"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "T-fal"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20920,7 +24325,12 @@
      "text": "テンピュール®"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Tempur"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20950,7 +24360,12 @@
      "text": "時計サロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Watch Salon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -20980,7 +24395,12 @@
      "text": "トム フォード"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TOM FORD"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21010,7 +24430,12 @@
      "text": "西川ショップ ネムリウム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NISHIKAWASHOPNEMRIUM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21040,7 +24465,12 @@
      "text": "野田琺瑯"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Noda Horo"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21070,7 +24500,12 @@
      "text": "ノモス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "NOMOS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21100,7 +24535,12 @@
      "text": "ハウスオブローゼ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HOUSE OF ROSE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21130,7 +24570,12 @@
      "text": "パジャマ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PAJAMA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21160,7 +24605,12 @@
      "text": "バス＆トイレタリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Bath & Toiletries"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21190,7 +24640,12 @@
      "text": "ハミルトン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HAMILTON"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21220,7 +24675,12 @@
      "text": "ハリオ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HARIO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21250,7 +24710,12 @@
      "text": "バーミキュラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "VERMICULAR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21280,7 +24745,12 @@
      "text": "はせがわ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "hasegawa"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21310,7 +24780,12 @@
      "text": "パレフローラ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Palais Flora"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21340,7 +24815,12 @@
      "text": "ピアジェ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "piaget"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21370,7 +24850,12 @@
      "text": "ピキョッティ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PICCHIOTTI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21400,7 +24885,12 @@
      "text": "BToL"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ビートゥーエル"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21430,7 +24920,12 @@
      "text": "ビレロイ&ボッホ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Villeroy & Boch"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21460,7 +24955,12 @@
      "text": "フェイラー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FEILER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21490,7 +24990,12 @@
      "text": "深川製磁"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FUKAGAWA SEIJI"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21520,7 +25025,12 @@
      "text": "フランク ミュラー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FRANCK MULLER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21550,7 +25060,12 @@
      "text": "フレデリック・コンスタント"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FREDERIQUE CONSTANT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21580,7 +25095,12 @@
      "text": "ブローバ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BULOVA"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21610,7 +25130,12 @@
      "text": "ファビュラスタイル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "fabuloustyle"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21640,7 +25165,12 @@
      "text": "フォッペ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "FOPE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21670,7 +25200,12 @@
      "text": "フランスベッド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "France BeD"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21700,7 +25235,12 @@
      "text": "ベッド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BED"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21730,7 +25270,12 @@
      "text": "ベル＆ロス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Bell ＆ Ross"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21760,7 +25305,12 @@
      "text": "宝飾サロン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Jewelry salon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21790,7 +25340,12 @@
      "text": "ホットマン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Hotman"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21820,7 +25375,12 @@
      "text": "ホビーラホビーレ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "HOBBYRA HOBBYRE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21850,7 +25410,12 @@
      "text": "マット"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MATT"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21880,7 +25445,12 @@
      "text": "ミキモト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mikimoto"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21910,7 +25480,12 @@
      "text": "ムアツ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MUATSU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21940,7 +25515,12 @@
      "text": "モニッケンダム"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MONNICKENDAM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -21970,7 +25550,12 @@
      "text": "モバード"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MOVADO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22000,7 +25585,12 @@
      "text": "柳 宗理"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Sori Yanagi"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22030,7 +25620,12 @@
      "text": "洋食器"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Western tableware"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22060,7 +25655,12 @@
      "text": "ラザール ダイヤモンド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LAZARE DIAMOND"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22090,7 +25690,12 @@
      "text": "ラッセルホブス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Russell Hobbs"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22120,7 +25725,12 @@
      "text": "ラドー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Rado"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22150,7 +25760,12 @@
      "text": "ラボア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LEBOIS＆Co"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22180,7 +25795,12 @@
      "text": "リバーライト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "riverlight"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22210,7 +25830,12 @@
      "text": "リッツ・ジュエリー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RIZ JEWELRY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22240,7 +25865,12 @@
      "text": "リーン・ロゼ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ligne roset"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22270,7 +25900,12 @@
      "text": "ル・クルーゼ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LE CREUSET"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22300,7 +25935,12 @@
      "text": "レコルト"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "recolte"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22330,7 +25970,12 @@
      "text": "レイモンド・ウェイル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RAYMOND WEIL"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22360,7 +26005,12 @@
      "text": "レオピッツォ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LeoPizzo"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22390,7 +26040,12 @@
      "text": "ロイヤル・アッシャー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ROYAL ASSCHER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22450,7 +26105,12 @@
      "text": "ロンジン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LONGINES"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22510,7 +26170,12 @@
      "text": "ロフテー　枕工房"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LOFTY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22540,7 +26205,12 @@
      "text": "ワイ・ヨット ストア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Y.YACHT STORE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22570,7 +26240,12 @@
      "text": "和食器"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Japanese Tableware"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22600,7 +26275,12 @@
      "text": "ASBee KIDS"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アスビーキッズ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22630,7 +26310,12 @@
      "text": "ANNA SUI mini"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "アナ スイ・ミニ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22660,7 +26345,12 @@
      "text": "アニエスベー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "agnès b."
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22690,7 +26380,12 @@
      "text": "アカチャンホンポ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "akachan honpo"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22720,7 +26415,12 @@
      "text": "伊東屋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Itoya"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22750,7 +26450,12 @@
      "text": "イワキメガネ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "IWAKI OPTIC"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22780,7 +26485,12 @@
      "text": "いいだばし幼児教室"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "イイダバシヨウジキョウシツ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22810,7 +26520,12 @@
      "text": "エックスガール ステージス / エクストララージ キッズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "X-girl Stages / XLARGE KIDS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22840,7 +26555,12 @@
      "text": "F.O.Store"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "エフオーストア"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22870,7 +26590,12 @@
      "text": "おもちゃパーク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "TOY"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22900,7 +26625,12 @@
      "text": "OSHMAN`S"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "オッシュマンズ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22960,7 +26690,12 @@
      "text": "学生服"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SCHOOL UNIFORM"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -22990,7 +26725,12 @@
      "text": "鳩居堂"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KYUKYODO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23020,7 +26760,12 @@
      "text": "紀伊國屋書店"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Kinokuniya Book Store"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23050,7 +26795,12 @@
      "text": "クレードスコープ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "‎Kladskap"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23080,7 +26830,12 @@
      "text": "kate spade new york kids"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ケイト・スペード　ニューヨーク　キッズ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23110,7 +26865,12 @@
      "text": "ＫＰ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KP"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23140,7 +26900,12 @@
      "text": "San-ai Resort"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "サンアイリゾート"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23170,7 +26935,12 @@
      "text": "シップス キッズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SHIPS KIDS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23200,7 +26970,12 @@
      "text": "ＪＩＮＳ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ジンズ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23230,7 +27005,12 @@
      "text": "スターバックス コーヒー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "STARBUCKS COFFEE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23260,7 +27040,12 @@
      "text": "ズッソ　キッズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "ZUSSO KIDS"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23290,7 +27075,12 @@
      "text": "センスオブワンダー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SENSE OF WONDER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23320,7 +27110,12 @@
      "text": "にこはぴきっず NHKキャラクターとあそぼう"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Nikohapikids"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23350,7 +27145,12 @@
      "text": "ファミリア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "familiar"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23380,7 +27180,12 @@
      "text": "ブロッサム３９"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "blossom39"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23410,7 +27215,12 @@
      "text": "プチバトーショップ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "PETIT BATEAU"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23440,7 +27250,12 @@
      "text": "BEBE CLOSET"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "べべクローゼット"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23470,7 +27285,12 @@
      "text": "ベベルダクティオン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "bebe reduction"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23500,7 +27320,12 @@
      "text": "ボーネルンド"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "BorneLund"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23530,7 +27355,12 @@
      "text": "ポンポネットジュニア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "POMPONETTE JUNIOR"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23560,7 +27390,12 @@
      "text": "Paul Smith JUNIOR"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ポール・スミス ジュニア"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23590,7 +27425,12 @@
      "text": "ポロ ラルフ ローレン チルドレン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "POLO Ralph Lauren Children"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23620,7 +27460,12 @@
      "text": "ミキハウス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mikihouse"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23650,7 +27495,12 @@
      "text": "ミキハウスダブルＢ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mikihouse doubleb"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23680,7 +27530,12 @@
      "text": "ミキハウスゴールドレーベル"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "MIKI HAUSE Gold Label"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23710,7 +27565,12 @@
      "text": "ミキハウスホットビスケッツ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mikihouse hot biscuits"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23740,7 +27600,12 @@
      "text": "ミキハウス キッズパル (第一教室・第二教室)"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mikihouse kids paru"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23770,7 +27635,12 @@
      "text": "メゾピアノ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mezzo piano"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23800,7 +27670,12 @@
      "text": "メゾピアノジュニア"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "mezzo piano junior"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23830,7 +27705,12 @@
      "text": "moimoln"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "モイモルン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23860,7 +27740,12 @@
      "text": "ラグマート"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Rag Mart"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23890,7 +27775,12 @@
      "text": "ラブスト　フォトスタジオ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LOVST PHOTO STUDIO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23950,7 +27840,12 @@
      "text": "生き活き倶楽部"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "IKIIKI CLUB"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -23980,7 +27875,12 @@
      "text": "介護用品/健康器具"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KAIGOYOUHIN"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24010,7 +27910,12 @@
      "text": "キプリング"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "kipling"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24040,7 +27945,12 @@
      "text": "コムサスタイル  ウィメン アンド キッズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "commeca style women and kids"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24070,7 +27980,12 @@
      "text": "ジュリア・オージェ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "jullia・olger"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24100,7 +28015,12 @@
      "text": "盆栽　清香園"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ボンサイ　セイコウエン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24130,7 +28050,12 @@
      "text": "ちふれ化粧品"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "CHIFURE"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24160,7 +28085,12 @@
      "text": "ハルメク おみせ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "halmek"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24190,7 +28120,12 @@
      "text": "婦人洋品"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "LADIES CLOTHING"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24220,7 +28155,12 @@
      "text": "ヒヤリングストア　小型補聴器専門店"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Hearing Store"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24280,7 +28220,12 @@
      "text": "らくラクパートナー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "RAKURAKU PARTNER"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24310,7 +28255,12 @@
      "text": "ボディーズ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Bodies"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24340,7 +28290,12 @@
      "text": "ユニクロ（ウィメンズ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UNIQLO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24370,7 +28325,12 @@
      "text": "ユニクロ（メンズ・キッズ）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "UNIQLO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24400,7 +28360,12 @@
      "text": "うどん茶房　KAKAYA"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "udon sabou kakaya"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24430,7 +28395,12 @@
      "text": "Old Manhattan"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "オールド マンハッタン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24460,7 +28430,12 @@
      "text": "回転寿し　トリトン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "kaiten Sushi Toriton"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24550,7 +28525,12 @@
      "text": "つくみ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Tsukumi"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24580,7 +28560,12 @@
      "text": "ベーカリーレストラン　サンマルク"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Bakery Restaurant Saint Marc"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24610,7 +28595,12 @@
      "text": "Mia Bocca"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ミア ボッカ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24640,7 +28630,12 @@
      "text": "味乃宮川"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "AjinoMiyagawa"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24670,7 +28665,12 @@
      "text": "牛カツと和定食　京都勝牛"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Gyukatsu Kyoto Katsugyu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24700,7 +28700,12 @@
      "text": "銀座　福助"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ginza Fukusuke"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24730,7 +28735,12 @@
      "text": "妻家房～柳香姫の台所～"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "SAIKABO-Ryu Hyang Hee's kitchen"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24760,7 +28770,12 @@
      "text": "四川飯店"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Shisen Hanten"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24790,7 +28805,12 @@
      "text": "Suage(北海道スープカレー)"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "スアゲ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24820,7 +28840,12 @@
      "text": "銀座　天龍"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ginza Tenryu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24850,7 +28875,12 @@
      "text": "永坂更科　布屋太兵衛"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Nagasaka Sarashina Nunoya Tahee"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24910,7 +28940,12 @@
      "text": "洋麺屋五右衛門"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Yomenya Goemon"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24940,7 +28975,12 @@
      "text": "６６ダイニング　六本木六丁目食堂"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "66DINING Roppongi Rokuchome Shokudo"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -24970,7 +29010,12 @@
      "text": "ロータスパレス"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Lotus Palace"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25000,7 +29045,12 @@
      "text": "青葉"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Aoba"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25030,7 +29080,12 @@
      "text": "家族亭"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Kazokutei"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25090,7 +29145,12 @@
      "text": "京都 茶寮翠泉"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "キョウト サリョウスイセン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25120,7 +29180,12 @@
      "text": "銀座ハゲ天"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ginza Hageten"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25150,7 +29215,12 @@
      "text": "ＫＵＳＨＩハゲ天"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "KUSHI Hageten"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25210,7 +29280,12 @@
      "text": "鯛塩そば 灯花"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Taishiosoba Toka"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25240,7 +29315,12 @@
      "text": "鼎泰豐"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "Din Tai Fung　ディンタイフォン"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25270,7 +29350,12 @@
      "text": "寅福"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Torafuku"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25330,7 +29415,12 @@
      "text": "不二家レストラン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Fujiya Restaurant"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25360,7 +29450,12 @@
      "text": "大阪道頓堀 ぼてぢゅう"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Osaka Doutonbori Botejyu"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25390,7 +29485,12 @@
      "text": "蟻月"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "Arizuki　ありづき"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25420,7 +29520,12 @@
      "text": "クイーンズウェイ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Queensway"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25450,7 +29555,12 @@
      "text": "BATON"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "バトン ビストロ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25480,7 +29590,12 @@
      "text": "BIKiNi medi"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ビキニ メディ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25510,7 +29625,12 @@
      "text": "ビューティーチューン資生堂"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "beauty TUNE SHISEIDO"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25540,7 +29660,12 @@
      "text": "POLLO PORRO"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ポロ ポロ"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25570,7 +29695,12 @@
      "text": "御影蔵"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "Mikagekura　みかげくら"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25600,7 +29730,12 @@
      "text": "焼肉チャンピオン"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Yakiniku Champion"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25660,7 +29795,12 @@
      "text": "華湘"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Kasho"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25690,7 +29830,12 @@
      "text": "たかの友梨ビューティクリニック"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Takano Yuri BEAUTY CLINIC"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25720,7 +29865,12 @@
      "text": "人形町今半"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ningyocho Imahan"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25750,7 +29900,12 @@
      "text": "美濃吉"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Minokichi"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
@@ -25780,7 +29935,12 @@
      "text": "リストランテ マキャベリ"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja-Latn",
+     "text": "Ristrante Machiavelli"
+    }
+   ],
    "floorLabel": [
     {
      "lang": "ja",
