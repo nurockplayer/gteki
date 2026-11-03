@@ -1,7 +1,7 @@
 ---
 area: index
 owner: gteki-fa
-updated: 2026-10-26 JST
+updated: 2026-11-03 JST
 ---
 # GT-Eki project map
 
@@ -20,7 +20,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - Private preview deployment: local-only deployment of the private overlay to the Pages `private` branch · `scripts/deploy-private.sh`
 
 ### App (`apps/web`)
-- Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup · `apps/web/src/explorer/` · [[web-explorer]]
+- Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup, model-derived connector guards · `apps/web/src/explorer/` · [[web-explorer]]
 - UI shell: app frame, search combobox, minimap, identity/merchant cards, rail travel, live region · `apps/web/src/ui/` · [[web-ui]]
 - Field recorder: phone walk, offline notes, public/private receipt JSON and optional private-stop overlay · `apps/web/src/field/` · [[web-field]]
 - Merchant form: the merchant submission form and payload · `apps/web/src/merchant/` · [[web-merchant]]
@@ -48,6 +48,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - Private overlay builder: `tools/private-overlay/build-overlay.ts` · builds station contract overlays from private additions for local builds/dev only
 - S03 private seam drape: `packages/godot/src/drape-edges.ts` · optional second generator stage snaps nodes and routes walk edges over the scene floor.
 - Route clip audit: `packages/godot/src/route-clip-audit.ts` · headless check of a private build's added edges against the real station scene (floor within ±0.3 m, no wall crossing); `--route <from> <to>` audits one route
+- Navmesh floor splits: `packages/godot/src/navmesh-floors.ts` partitions bundle and physical scene inputs for `navmesh-bake.ts` / `navmesh-audit.ts`; `--split-plan` prints floor groups without baking · [[pkg-godot]]
 - Greybox stats: `packages/godot/src/greybox-stats.ts` · headless runtime passage statistics for public stations or local private overlays; JSON is printed to stdout.
 - QA: L2 acceptance pack, avatar baseline, recognition and Shinjuku B checks · `tools/qa/` · no note yet (visual lead); the protocol is in `docs/qa/protocol.md`
 - Blender: asset build, GLB validation, texture budget, Godot import · `tools/blender/` · no note yet (visual lead); start at `tools/blender/README.md`

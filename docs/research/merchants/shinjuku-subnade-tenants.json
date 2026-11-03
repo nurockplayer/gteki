@@ -1,0 +1,701 @@
+{
+  "schema": "gteki.research.tenants/0.1",
+  "note": "Facts only, manually transcribed from enlarged rendered PDF and every name hand-checked. Guide dated 2026-10-22: 21 cafe/restaurant, 48 fashion/daily goods and 17 service listings (86 total); unreadable names: 0. Fashion slot 31 is blank, not an unreadable shop. Floor label 地下一階 is printed by the same operator at https://www.subnade.co.jp/company/safety/ (retrieved 2026-11-03 UTC); the PDF labels the parking connections B2 but does not label the shopping floor. B2 parking is not a tenant floor. Earlier 85 cards were an unimported 2026-09-17 archived search-directory count, not this guide snapshot. No coordinates, layout, descriptions, phone numbers, hours, logos or PDF retained. No distinct printed reading/Latin counterpart was found for aliases. Not POIs. UNVERIFIED.",
+  "sourceId": "subnade-shinjuku-floorguide-2026-11",
+  "storePoiIds": [
+    "shop-sjk-subnade"
+  ],
+  "retrievedAt": "2026-11-03T09:07:37Z",
+  "method": "facts-only OCR of image-only floor guide (OD-35), hand-checked",
+  "removed": [],
+  "tenants": [
+    {
+      "id": "tenant-sjk-subnade-food-001",
+      "name": "サーティワンアイスクリーム",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "アイスクリーム",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-002",
+      "name": "AFURI 辛紅",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "らーめん",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-003",
+      "name": "とんかつ和幸",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "とんかつ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-004",
+      "name": "カフェ・ハイチ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ハイチ料理",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-005",
+      "name": "鶏五味",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "鶏料理専門店",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-006",
+      "name": "スターバックスコーヒー",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "カフェ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-007",
+      "name": "洋麺屋五右衛門",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "スパゲッティー",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-008",
+      "name": "台湾小籠包",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "中華",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-009",
+      "name": "バンビ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "洋食",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-010",
+      "name": "大阪 くり田",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "厚切りビーフ丼・カレー・からあげ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-011",
+      "name": "ぼてぢゅう",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "お好み焼",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-012",
+      "name": "卵と私",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "オムライス",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-013",
+      "name": "すし銚子丸 Shinjuku",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "グルメ寿司",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-014",
+      "name": "吉祥庵",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "蕎麦・うどん",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-015",
+      "name": "ねぎし",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "牛たん・とろろ・麦めし",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-016",
+      "name": "新宿 秀山",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "フカヒレと担々麺",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-017",
+      "name": "ドトールコーヒーショップ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "カフェ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-018",
+      "name": "土鍋カリー ぼんた",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "おにぎり＆スープカレー",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-019",
+      "name": "オスロコーヒー",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "カフェ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-020",
+      "name": "お酒の美術館",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "BAR",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-food-021",
+      "name": "カフェ・ベローチェ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "カフェ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-001",
+      "name": "鈴乃屋",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "呉服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-002",
+      "name": "ハニーズ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-003",
+      "name": "トウキョウシャツ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "紳士・婦人シャツ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-004",
+      "name": "ガチャガチャの森",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "カプセルトイ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-005",
+      "name": "金沢治与門窯 スッポン堂",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "健康補助食品",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-006",
+      "name": "たんす屋",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "リサイクルきもの",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-007",
+      "name": "バイセル",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "古物売買",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-008",
+      "name": "ペットパラダイス",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ペット用衣料・雑貨",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-009",
+      "name": "ジュピター",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "コーヒー豆・輸入食品",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-010",
+      "name": "LIBERTYDOLL",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人靴",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-011",
+      "name": "クリア",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-012",
+      "name": "コクミンドラッグ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "薬・化粧品",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-013",
+      "name": "リーガルシューズ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "紳士靴・婦人靴",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-014",
+      "name": "アンテシュクレ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ランジェリー",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-015",
+      "name": "ORIHICA",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "紳士服・服飾雑貨",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-016",
+      "name": "アエナ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "化粧品・サプリメント",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-017",
+      "name": "北海道どさんこプラザ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "北海道アンテナショップ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-018",
+      "name": "JINS",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "メガネ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-019",
+      "name": "ロペピクニック",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-020",
+      "name": "スペッチオ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-021",
+      "name": "オグラ眼鏡店",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "メガネ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-022",
+      "name": "ルーニィ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-023",
+      "name": "MUK MOCABROWN",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "アクセサリー・服飾雑貨",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-024",
+      "name": "伊勢志摩マルシェ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "伊勢志摩アンテナショップ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-025",
+      "name": "アクアフォレスト",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "天然石",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-026",
+      "name": "SHIRAI",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-027",
+      "name": "SOHBI",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ヨーロッパ輸入食器専門店",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-028",
+      "name": "コスミックレイ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-029",
+      "name": "SODA",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-030",
+      "name": "ディジーストア",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服服飾雑貨",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-032",
+      "name": "アビコスメティック プロデュースド by リュウセイドウ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "薬・化粧品専門店",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-033",
+      "name": "シルビア",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "バレエ用品",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-034",
+      "name": "ジュエルナローズ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "鞄",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-035",
+      "name": "オッズオネスト",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-036",
+      "name": "ダイソー",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "バラエティショップ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-037",
+      "name": "チュチュアンナ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "靴下",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-038",
+      "name": "ストラ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-039",
+      "name": "TRARIUM by ACE",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "鞄",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-040",
+      "name": "ジュエリー ツツミ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ジュエリー",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-041",
+      "name": "グレイスター",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-042",
+      "name": "トゥエルブアジェンダ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-043",
+      "name": "Green Parks topic",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-044",
+      "name": "アクシーズファム",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-045",
+      "name": "ルナアース",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ファッション雑貨",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-046",
+      "name": "ディスコート",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-047",
+      "name": "ナチュラルクチュール/ナイスクラップ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "婦人服",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-048",
+      "name": "PARTS CLUB",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "アクセサリーパーツ・ビーズ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-fashion-049",
+      "name": "ガチャガチャの森 EAST",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "カプセルトイ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-001",
+      "name": "チャージ＆パウワウ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "整体",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-002",
+      "name": "楽天モバイル",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "携帯端末販売",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-003",
+      "name": "ママのリフォーム",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "洋服のリフォーム",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-004",
+      "name": "スマホスピタル",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "スマホ修理サービス",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-005",
+      "name": "新宿シティ眼科/プラザアイコンタクト",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "眼科・コンタクトレンズ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-006",
+      "name": "ほけんの窓口",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "保険ショップ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-007",
+      "name": "NEWラフィネ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "リラクゼーションスペース",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-008",
+      "name": "ミスターミニット",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "靴・鞄修理、合鍵、時計電池交換、印鑑作成",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-009",
+      "name": "ラフィネ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "リラクゼーションスペース",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-010",
+      "name": "Dr.ストレッチ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ストレッチ",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-011",
+      "name": "エクセル美容室",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "美容室",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-012",
+      "name": "QB HOUSE",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ヘアカット専門店",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-013",
+      "name": "アジアンハーブス",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "リラクゼーション",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-014",
+      "name": "ガリレオ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "インフォメーション・チケット販売・外貨両替",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-015",
+      "name": "ダッシングディバ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "ネイルサロン",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-016",
+      "name": "J・マーケット",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "チケットショップ・外貨両替",
+      "storePoiId": "shop-sjk-subnade"
+    },
+    {
+      "id": "tenant-sjk-subnade-service-017",
+      "name": "フットマンカメラ",
+      "aliases": [],
+      "floorLabel": "地下一階",
+      "category": "中古カメラ専門店",
+      "storePoiId": "shop-sjk-subnade"
+    }
+  ]
+}
