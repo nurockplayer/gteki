@@ -31,6 +31,13 @@ for (const id of ["ikebukuro", "shinjuku"]) {
       expect(() => validateReceipt(receipt as unknown as FieldReceipt, id, () => true, () => true)).not.toThrow();
       expect(() => buildReceipt(station, [{ ...observation(), itemId: "" }])).toThrow("numbered item");
     });
+    it("keeps an unnumbered CLOSED confirmation with known node, POI and paid as an OPEN field note", () => {
+      const receipt = buildReceipt(station, [observation(), { ...observation(), itemId: "" }]);
+      expect(receipt.items).toHaveLength(1);
+      expect(receipt.items[0]).toMatchObject({ status: "CLOSED" });
+      expect(receipt.fieldNotes).toHaveLength(1);
+      expect(receipt.fieldNotes[0]).toMatchObject({ status: "OPEN", confirmation: "CLOSED", nodeId: station.nodeIds[0], poiId: station.pois[0]!.id, paid: false });
+    });
     it("rejects invalid JST, status and stepFree at export", () => {
       for (const patch of [{ observedAt: "2026-11-03T01:00:00Z" }, { confirmation: "PARTIAL" }, { stepFree: "ramp" }]) {
         expect(() => buildReceipt(station, [{ ...observation(), ...patch } as ReturnType<typeof observation>])).toThrow();

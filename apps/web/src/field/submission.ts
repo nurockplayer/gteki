@@ -35,9 +35,10 @@ export function buildReceipt(station: FieldStation, records: Observation[]) {
     const edgeId = station.edgeIds.includes(record.target) ? record.target : undefined;
     const poiId = station.pois.some((p) => p.id === record.poiId) ? record.poiId : undefined;
     const paid = record.paid === "true" ? true : record.paid === "false" ? false : null;
+    const item = /^\d+$/.test(record.itemId) ? Number(record.itemId) : undefined;
     return {
-      item: /^\d+$/.test(record.itemId) ? Number(record.itemId) : undefined,
-      status: record.confirmation === "CLOSED" && nodeId && poiId && paid !== null ? "CLOSED" as const : "OPEN" as const,
+      item,
+      status: item !== undefined && item > 0 && record.confirmation === "CLOSED" && nodeId && poiId && paid !== null ? "CLOSED" as const : "OPEN" as const,
       poiId, nodeId, paid, observedText: record.observedText, observedAt: record.observedAt,
       floorLabel: record.floorLabel || null, stepFree: record.stepFree || null,
       stopId: record.stopId, edgeId, side: record.side, offsetM: record.offsetM === "" ? null : Number(record.offsetM),
