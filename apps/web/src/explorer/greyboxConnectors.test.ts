@@ -1339,6 +1339,44 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("opens the west door for a gently sloped hall whose shaft crossing is near the stop height", () => {
+    for (const rise of [0.6, -0.6]) for (const reverse of [false, true]) {
+      const station = liftStation();
+      station.nodes.find((n) => n.id === "start")!.position = { x: 0, y: 0, z: 0 };
+      station.nodes.find((n) => n.id === "upper")!.position = { x: 0, y: 0, z: 4 };
+      station.nodes.find((n) => n.id === "a")!.position = { x: -12, y: 0, z: rise };
+      const hall = station.edges.find((e) => e.id === "hall-low")!;
+      if (reverse) [hall.from, hall.to] = [hall.to, hall.from];
+      const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+      for (let k = 0; k <= 240; k++) {
+        const x = -12 * k / 240, y = rise * k / 240, r = resolveWalls(x, 0, 0.3, y, 1.7, result.wallSegments);
+        expect(Math.hypot(r.x - x, r.z), `rise=${rise} reverse=${reverse} k=${k}`).toBeLessThanOrEqual(0.01);
+      }
+    }
+  });
+
+  it("keeps shaft collision walls continuous between widely spaced stops and opens only the stop doors", () => {
+    const station = liftStation();
+    station.nodes.find((n) => n.id === "start")!.position = { x: 0, y: 0, z: 0 };
+    station.nodes.find((n) => n.id === "upper")!.position = { x: 0, y: 0, z: 10 };
+    station.nodes.find((n) => n.id === "upper-2")!.position = { x: 3, y: 0, z: 10 };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    for (const [dx, dz] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+      const r = resolveWalls(dx!, dz!, 0.3, 5, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - dx!, r.z - dz!), `mid-shaft face ${dx},${dz}`).toBeGreaterThan(0.1);
+      const ray = new THREE.Raycaster(new THREE.Vector3(0, 5.8, 0), new THREE.Vector3(dx!, 0, dz!), 0, 2);
+      expect(ray.intersectObjects(result.colliders).length, `collider mesh face ${dx},${dz}`).toBeGreaterThan(0);
+    }
+    for (const y of [0, 10]) {
+      for (let k = 0; k <= 44; k++) {
+        const x = 2.2 * k / 44, r = resolveWalls(x, 0, 0.3, y, 1.7, result.wallSegments);
+        expect(Math.hypot(r.x - x, r.z), `door y=${y} k=${k}`).toBeLessThanOrEqual(0.01);
+      }
+      const ray = new THREE.Raycaster(new THREE.Vector3(0, y + 0.8, 0), new THREE.Vector3(1, 0, 0), 0, 2);
+      expect(ray.intersectObjects(result.colliders).length, `door collider mesh y=${y}`).toBe(0);
+    }
+  });
+
   it("puts lift edges whose cars share a footprint in one shaft and leaves a same-floor car stub alone", () => {
     const station = liftStation([syntheticEdge("lift-2", "b", "upper-2", { mode: "elevator", attributes: { sceneGap: true } }), syntheticEdge("stub", "start", "goal", { mode: "elevator", attributes: { sceneGap: true } })]);
     station.nodes.find((n) => n.id === "b")!.position = { x: 0.3, y: 0.4, z: 0 };
