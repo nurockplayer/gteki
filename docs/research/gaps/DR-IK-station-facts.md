@@ -242,3 +242,9 @@ Existing ids stay as written in `field-checklist.md`. New ids are FC-IK-nn. All 
 5. **ODPT key.** Registering for an ODPT key to inspect 駅情報 fields is an account sign-up to an external service. Under "contact no external party", does a self-service sign-up count? (Not done.)
 6. **Toshima notice offers consultation for other uses** (the contact is on the notice). Not used, per the decision of no outside contact. Recorded here only because it is the stated route for a 3D-derivative permission.
 7. **Process note.** The fetch tool auto-saved an 8.8 MB Toshima PDF; I deleted it unread. I used the ego-lite browser for page text (no Chrome tools).
+
+## 9. FR-01 freshness read — 2026-11-03 JST (DR-IK-01 / DR-RT-35)
+
+- Read 2026-11-02 22:17:54 UTC: the live Metro 池袋 page returned HTTP 403. The Wayback route yielded only a capture dated 2026-07-13 10:12:58 UTC, with July/August suspension headings. November 2026 and any later month's table were not available in that read.
+- Unchanged: section 3.7's October inspection is a historical fact only. Current 休止 or long outages at C1b, C9, 4, 34/35 remain unknown; no absence-of-outage or lift-operating claim is made. Next check: 2026-12-01 JST.
+- Full URLs, UTC read times, HTTP statuses, response bytes and sha256 for the live request and Wayback reads are in [DR-RT addendum section 9](DR-retry-unread-sources-addendum.md#9-fr-01-freshness-read--2026-11-03-jst-dr-rt-35--dr-ik-01). Facts only under Metro's private-use-and-quotation class; no station data changed.

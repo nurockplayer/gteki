@@ -2,7 +2,7 @@
 // items add a connector; the shared validation, provenance and POI update are Ikebukuro's (#554).
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { Poi, Source } from "@gteki/schema";
+import type { Node, Poi, Source } from "@gteki/schema";
 import { fieldSource, updatePoi, validateReceipt, type FieldReceipt } from "../../ikebukuro/pipeline/import_field_receipt.ts";
 
 export function loadReceipts(dir: string, station: string): FieldReceipt[] {
@@ -12,7 +12,7 @@ export function loadReceipts(dir: string, station: string): FieldReceipt[] {
 }
 
 /** Applies the receipts in place (import-e27 builds its arrays by mutation) and returns the applied #533 item numbers. */
-export function applyFieldReceipts(pois: Poi[], sources: Source[], nodeIds: ReadonlySet<string>, receipts: readonly FieldReceipt[]): number[] {
+export function applyFieldReceipts(pois: Poi[], sources: Source[], nodeIds: ReadonlySet<string>, receipts: readonly FieldReceipt[], nodes: readonly Node[] = []): number[] {
   const applied: number[] = [];
   for (const receipt of receipts) {
     validateReceipt(receipt, "shinjuku", (id) => pois.some((p) => p.id === id), (id) => typeof id === "string" && nodeIds.has(id));
@@ -22,7 +22,7 @@ export function applyFieldReceipts(pois: Poi[], sources: Source[], nodeIds: Read
     if (at < 0) sources.push(provenance.source as unknown as Source); else sources[at] = provenance.source as unknown as Source;
     for (const item of provenance.closed) {
       const index = pois.findIndex((p) => p.id === item.poiId);
-      pois[index] = updatePoi(pois[index], item, provenance.sourceId);
+      pois[index] = updatePoi(pois[index], item, provenance.sourceId, nodes.find((node) => node.id === item.nodeId)?.position);
       applied.push(item.item);
     }
   }
