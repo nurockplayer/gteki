@@ -85,6 +85,39 @@ it("keeps a rendered shaft ceiling over the shipped stair's former collar patch"
   } finally { station.dispose(); }
 }, 60_000);
 
+it("closes shipped escalator and shaft shoulder sightlines with rendered surfaces", () => {
+  const station = withCanvasStub(() => buildStation(bundle, plan, { quality: "high" }));
+  try {
+    station.root.updateMatrixWorld(true);
+    const meshes: THREE.Mesh[] = [];
+    station.root.traverseVisible((o) => { if ((o as THREE.Mesh).isMesh) meshes.push(o as THREE.Mesh); });
+    // e:d573063b997e42f3b146ffeec98aed38 at 5%, then the outer shoulder
+    // of stair e:c690df6cad7b48bba7b3b30fee65eda2 at 3 m, -0.6 half-width.
+    for (const [eye, direction] of [
+      [new THREE.Vector3(18.3415, -14.16, -5.2725), new THREE.Vector3(0.4238, 3, 1.4389)],
+      [new THREE.Vector3(-2.8477459353, -5.4859025133 + 1.62, 16.0726828284),
+        new THREE.Vector3(-0.3299046246, 0.7578125, 0.5629237546)],
+      // e:85f51acf3bfe4da797fbdf82497ce706, 0 m, lateral -0.6.
+      [new THREE.Vector3(9.195240064658455, -11.96 + 1.62, -5.46691563878745),
+        new THREE.Vector3(-0.3621114756780077, 0.8828125, 0.29919453375027694)],
+      // e:88ef3d09d7b240b18754ee19bbeae3e1, 3.5 m, lateral 0.6.
+      [new THREE.Vector3(-83.61250390249477, -14.78680661097159 + 1.62, -170.8367727006367),
+        new THREE.Vector3(0.6267458007743936, 0.6171875, -0.4756777176360212)],
+      // e:cc8b27a958dd4cbb83d68f3791db6111, 1 m, lateral 0.6.
+      [new THREE.Vector3(-91.52869312410283, -18.438204298786 + 1.62, -166.75528757378888),
+        new THREE.Vector3(-0.3030417828247059, 0.4453125, -0.8425333555451521)],
+    ]) {
+      const hit = new THREE.Raycaster(eye!, direction!.normalize(), 0.001, 25).intersectObjects(meshes, false).find((h) => {
+        const mesh = h.object as THREE.Mesh;
+        const material = Array.isArray(mesh.material) ? mesh.material[h.face!.materialIndex] : mesh.material;
+        return material?.visible && !material.transparent && material.opacity > 0;
+      });
+      expect(hit).toBeDefined();
+      expect(hit!.point.y).toBeLessThan(0);
+    }
+  } finally { station.dispose(); }
+}, 60_000);
+
 describe("E27 scene layout", () => {
   const layout = buildLayout(bundle, plan);
   const world = new WalkWorld(layout);
