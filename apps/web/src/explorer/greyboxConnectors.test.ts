@@ -24,6 +24,7 @@ describe("vertical connector scope", () => {
 
 import * as THREE from "three";
 import { buildConnectors, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
+import { buildConnectors as buildLegacyConnectors, buildEscalator as buildLegacyEscalator } from "./greyboxConnectorsLegacy.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 
 it("builds a lift scene gap as a shaft, not a stair or escalator (#645 step 2b)", () => {
@@ -249,6 +250,64 @@ it("renders the comb and flight at the walkable incline height in both tiers", (
     const materials = lights.material as THREE.MeshStandardMaterial[];
     expect(materials[1]!.emissive.getHexString()).toBe("00ff00"); expect(materials[2]!.emissive.getHexString()).toBe("ff0000");
     expect(new Set(lights.geometry.groups.map((g) => g.materialIndex))).toEqual(new Set([0, 1, 2]));
+  }
+});
+
+it.each([
+  ["current", buildConnectors, buildEscalator],
+  ["legacy", buildLegacyConnectors, buildLegacyEscalator],
+] as const)("%s packs lamp parts into one range per material with correct edge offsets", (_name, build, escalator) => {
+  const station = {
+    ...bundle,
+    nodes: [
+      { ...bundle.nodes[0]!, position: { x: 0, y: 0, z: 0 } },
+      { ...bundle.nodes[1]!, position: { x: 5.2, y: 0, z: 3 } },
+      { ...bundle.nodes[0]!, id: "c", position: { x: 20, y: 0, z: 0 } },
+      { ...bundle.nodes[1]!, id: "d", position: { x: 25.2, y: 0, z: 3 } },
+    ],
+    edges: [
+      { ...bundle.edges[0]!, id: "up", from: "a", to: "b", mode: "escalator", attributes: { sceneGap: true } },
+      { ...bundle.edges[0]!, id: "other", from: "c", to: "d", mode: "escalator", attributes: { sceneGap: true } },
+    ],
+  } as StationBundle;
+  for (const tier of ["high", "low"] as const) {
+    const parts = [
+      ...escalator(new THREE.Vector3(0, 0, 0), new THREE.Vector3(5.2, 3, 0), tier).map((p) => ({ ...p, edgeId: "up" })),
+      ...escalator(new THREE.Vector3(20, 0, 0), new THREE.Vector3(25.2, 3, 0), tier).map((p) => ({ ...p, edgeId: "other" })),
+    ].filter((p) => ["light", "lampOk", "lampNo"].includes(p.material));
+    expect(parts.length).toBeGreaterThan(3);
+    expect(new Set(parts.map((p) => p.material)).size).toBe(3);
+    const result = build(station, () => true, { hasFloor: () => true, nearMesh: () => false }, tier);
+    const lamp = result.root.children.find((o) => Array.isArray((o as THREE.Mesh).material)) as THREE.Mesh;
+    const check = (kept: typeof parts) => {
+      const ordered = [...kept].sort((a, b) => ["light", "lampOk", "lampNo"].indexOf(a.material) - ["light", "lampOk", "lampNo"].indexOf(b.material));
+      const groups = lamp.geometry.groups;
+      expect(groups).toHaveLength(new Set(kept.map((p) => p.material)).size);
+      let offset = 0, groupIndex = 0;
+      for (const [materialIndex, material] of ["light", "lampOk", "lampNo"].entries()) {
+        const count = kept.filter((p) => p.material === material).reduce((sum, p) => sum + p.position.length / 3, 0);
+        if (count) expect(groups[groupIndex++]).toEqual({ start: offset, count, materialIndex });
+        offset += count;
+      }
+      expect(offset).toBe(lamp.geometry.getAttribute("position").count);
+      for (const [attribute, key] of [["position", "position"], ["normal", "normal"], ["color", "colour"]] as const) {
+        expect(Array.from(lamp.geometry.getAttribute(attribute).array)).toEqual(Array.from(new Float32Array(ordered.flatMap((p) => p[key]))));
+      }
+      let start = 0;
+      expect(lamp.userData.edgeRanges).toEqual(ordered.map((p) => {
+        const range = { start, end: start + p.position.length / 3, edgeId: p.edgeId };
+        start = range.end;
+        return range;
+      }));
+    };
+    check(parts);
+    for (const mesh of result.root.children as THREE.Mesh[]) {
+      if (!Array.isArray(mesh.material)) expect(mesh.geometry.groups).toHaveLength(0);
+    }
+    const triangles = result.stats.triangles;
+    result.stats.dropSoffits();
+    check(parts.filter((p) => !p.soffit));
+    expect(result.stats.triangles).toBe(triangles - parts.filter((p) => p.soffit).reduce((sum, p) => sum + p.position.length / 9, 0));
   }
 });
 
