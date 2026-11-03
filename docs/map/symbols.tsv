@@ -295,6 +295,10 @@ qaPostFxSettings	function	apps/web/src/explorer/postfx.ts	36
 GradeShader	const	apps/web/src/explorer/postfx.ts	42
 FadeAwareGTAOPass	class	apps/web/src/explorer/postfx.ts	91
 PostFx	class	apps/web/src/explorer/postfx.ts	151
+PolygonRegion	type	apps/web/src/explorer/privateLevels.ts	4
+LevelSelection	type	apps/web/src/explorer/privateLevels.ts	5
+PrivateLevels	type	apps/web/src/explorer/privateLevels.ts	6
+privateLevelRegions	function	apps/web/src/explorer/privateLevels.ts	12
 setClippedPortals	function	apps/web/src/explorer/raycast.ts	6
 clearClippedPortals	function	apps/web/src/explorer/raycast.ts	7
 hasClippedPortals	function	apps/web/src/explorer/raycast.ts	8
