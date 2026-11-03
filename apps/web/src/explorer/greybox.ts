@@ -1,4 +1,4 @@
-import type { PolygonRegion } from "./privateLevels.ts";
+import { privateFloorAt, type PolygonRegion } from "./privateLevels.ts";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { WALKER_BODY } from "@gteki/scene-api";
 import * as THREE from "three";
@@ -379,6 +379,16 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
 export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = [], traversable: (edge: Edge) => boolean = () => true, privateRegions: readonly PolygonRegion[] = []) {
   const started = performance.now();
+  if (privateRegions.length) {
+    const nodeFloors = new Map(bundle.nodes.map((node) => [node.id, node.floorId]));
+    // A selected floor defines the entire flat level, including holes and the space outside its boundary.
+    detected = detected.filter((run) => {
+      const level = nodeFloors.get(run.edge.from) ?? "";
+      return nodeFloors.get(run.edge.to) !== level || !privateFloorAt(privateRegions, level, run.points[0]!.z)
+        || !run.points.every((p) => Math.abs(p.z - run.points[0]!.z) < 1e-6);
+    });
+    pads = pads.filter((pad) => !privateFloorAt(privateRegions, pad.floorId, pad.center.y));
+  }
   const index = new CorridorIndex();
   for (const pad of pads) index.add(pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2);
   const runs: UnmodelledEdgeRun[] = [];

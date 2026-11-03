@@ -897,7 +897,7 @@ export class Explorer {
     this.station = station;
     this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
-    this.graph = buildGraphView(bundle, router);
+    this.graph = buildGraphView(bundle, router, station.privateRegions);
     this.routablePts = routablePoints(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE));
     this.routableBox = toBox3(pointsBounds(this.routablePts));
     lap("graph");
@@ -1043,6 +1043,15 @@ export class Explorer {
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
+      if (station.privateRegions?.length) {
+        // The graph keeps its other surfaces; this greybox adds only the authoritative private floors.
+        this.greybox = buildGreybox(bundle, () => false, () => false, { colliderNear: () => false, wallHit: () => null }, this.quality, false, station.privateRegions);
+        this.world.add(this.greybox.root);
+        this.walkable = [...this.walkable, ...this.greybox.walkable];
+        this.colliders = this.greybox.colliders;
+        this.walls = this.greybox.wallSegments;
+        this.greyboxOpenings = this.greybox.openings;
+      }
     }
     this.world.updateMatrixWorld(true);
     const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);

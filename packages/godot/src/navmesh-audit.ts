@@ -6,7 +6,7 @@ import { pathToFileURL } from "node:url";
 import * as THREE from "three";
 import { init, importNavMesh, NavMeshQuery, Detour, statusDetail, type NavMesh } from "recast-navigation";
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
-import { navmeshBundle } from "./navmesh-input.ts";
+import { navmeshBundle, privateRegionsSha256 } from "./navmesh-input.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
 import { skippedConnectorPath } from "../../../apps/web/src/explorer/greyboxConnectors.ts";
 import { qaFile } from "./navmesh-qa-path.ts";
@@ -111,6 +111,11 @@ export function countedTotals(details: readonly Pick<SampleDetail,"floor"|"wallB
   return total;
 }
 
+/** A missing hash also rejects meshes baked before private geometry entered provenance. */
+export function assertPrivateRegionsProvenance(provenance: { privateRegionsSha256?: string }, regions: Parameters<typeof privateRegionsSha256>[0]): void {
+  if (provenance.privateRegionsSha256 !== privateRegionsSha256(regions)) throw new Error("navmesh bake and audit private regions differ; rebake first");
+}
+
 async function main() {
   let station = "", navmeshFile = "", json = "", fallbackList = "", withGreybox = false, snapFallback = false, bridgeGaps = false, gate = false;
   const args = process.argv.slice(2);
@@ -141,6 +146,7 @@ async function main() {
   const { bundle, privateBuild, privateRegions } = await navmeshBundle(station);
   if (provenance.privateBuild !== privateBuild) throw new Error("navmesh bake and audit disagree on private overlay; rebake first");
   if (provenance.bundleSha256 !== createHash("sha256").update(JSON.stringify(bundle)).digest("hex")) throw new Error("navmesh bake and audit bundle differ; rebake first");
+  assertPrivateRegionsProvenance(provenance, privateBuild && withGreybox ? privateRegions : undefined);
   const router = createRouter(bundle, { allowUnverified: privateBuild }), scene = await loadScene(station, bundle);
   const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild, privateRegions) : null;
   const originalProbe = grey?.probe ?? sceneProbe(scene);

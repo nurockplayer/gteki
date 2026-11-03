@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { privateFloorAt, type PolygonRegion } from "./privateLevels.ts";
 import type { StationBundle } from "@gteki/schema";
 import type { Router } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
@@ -23,7 +24,7 @@ export interface GraphView {
   dispose(): void;
 }
 
-export function buildGraphView(bundle: StationBundle, router: Router): GraphView {
+export function buildGraphView(bundle: StationBundle, router: Router, privateRegions: readonly PolygonRegion[] = []): GraphView {
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const root = new THREE.Group();
@@ -55,6 +56,9 @@ export function buildGraphView(bundle: StationBundle, router: Router): GraphView
     root.add(line);
     overlay.add(...overlayStyle.lines(lineGeo, 10));
     if (edge.mode === "elevator") continue; // a shaft is not a walk surface
+    const level = nodes.get(edge.from)!.floorId;
+    if (nodes.get(edge.to)!.floorId === level && privateFloorAt(privateRegions, level, pts[0]!.y)
+      && pts.every((p) => Math.abs(p.y - pts[0]!.y) < 1e-6)) continue;
     const geo = ribbonGeometry(pts, MODE_WIDTH[edge.mode] ?? 2);
     disposables.push(geo);
     const vertical = edge.mode === "stairs" || edge.mode === "escalator" || edge.mode === "ramp";
@@ -73,6 +77,7 @@ export function buildGraphView(bundle: StationBundle, router: Router): GraphView
   for (const id of touched) {
     const n = nodes.get(id)!;
     const z = nodeDisplayZ(n, floors.get(n.floorId)).z;
+    if (privateFloorAt(privateRegions, n.floorId, z)) continue;
     const m = new THREE.Mesh(pad, mats.ok);
     m.position.copy(R(n.position.x, n.position.y, z));
     m.userData = { gteki_role: "walkable", nodeId: id };

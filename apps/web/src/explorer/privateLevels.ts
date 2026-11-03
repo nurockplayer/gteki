@@ -30,3 +30,8 @@ export function privateLevelRegions(input: PrivateLevels, selection: LevelSelect
   }
   return out;
 }
+
+/** Selected floors replace procedural flat surfaces at this level/elevation, including their excluded space. */
+export function privateFloorAt(regions: readonly PolygonRegion[], level: string, y: number): boolean {
+  return regions.some((region) => region.level === level && Math.abs(region.y - y) < 1e-6);
+}

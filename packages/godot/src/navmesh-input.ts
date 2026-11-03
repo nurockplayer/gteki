@@ -1,5 +1,6 @@
 /** Public station data or a temporary, read-only copy of the private overlay inputs. */
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { parseStationFiles, type StationBundle } from "@gteki/schema";
@@ -31,4 +32,9 @@ export async function navmeshBundle(station: string): Promise<{ bundle: StationB
   } finally {
     if (tmp) fs.rmSync(tmp, { recursive: true, force: true });
   }
+}
+
+/** Geometry independently affects the mesh even when the parsed station bundle is unchanged. */
+export function privateRegionsSha256(regions: readonly PolygonRegion[] | undefined): string | undefined {
+  return regions?.length ? createHash("sha256").update(JSON.stringify(regions)).digest("hex") : undefined;
 }

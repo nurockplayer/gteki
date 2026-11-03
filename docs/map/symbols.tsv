@@ -119,9 +119,9 @@ ribbonGeometry	function	apps/web/src/explorer/geometry.ts	14
 edgePoints	function	apps/web/src/explorer/geometry.ts	55
 chevronTexture	function	apps/web/src/explorer/geometry.ts	72
 dashTexture	function	apps/web/src/explorer/geometry.ts	98
-MODE_WIDTH	const	apps/web/src/explorer/graphView.ts	14
-GraphView	interface	apps/web/src/explorer/graphView.ts	16
-buildGraphView	function	apps/web/src/explorer/graphView.ts	26
+MODE_WIDTH	const	apps/web/src/explorer/graphView.ts	15
+GraphView	interface	apps/web/src/explorer/graphView.ts	17
+buildGraphView	function	apps/web/src/explorer/graphView.ts	27
 UnmodelledEdgeRun	interface	apps/web/src/explorer/greybox.ts	11
 unmodelledRunsByEdge	function	apps/web/src/explorer/greybox.ts	75
 Box	interface	apps/web/src/explorer/greybox.ts	81
@@ -299,6 +299,7 @@ PolygonRegion	type	apps/web/src/explorer/privateLevels.ts	4
 LevelSelection	type	apps/web/src/explorer/privateLevels.ts	5
 PrivateLevels	type	apps/web/src/explorer/privateLevels.ts	6
 privateLevelRegions	function	apps/web/src/explorer/privateLevels.ts	12
+privateFloorAt	function	apps/web/src/explorer/privateLevels.ts	35
 setClippedPortals	function	apps/web/src/explorer/raycast.ts	6
 clearClippedPortals	function	apps/web/src/explorer/raycast.ts	7
 hasClippedPortals	function	apps/web/src/explorer/raycast.ts	8
@@ -643,6 +644,7 @@ snapNode	function	packages/godot/src/navmesh-audit.ts	43
 queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	49
 floorSnapPath	function	packages/godot/src/navmesh-audit.ts	85
 countedTotals	function	packages/godot/src/navmesh-audit.ts	102
+assertPrivateRegionsProvenance	function	packages/godot/src/navmesh-audit.ts	115
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	24
 completePath	function	packages/godot/src/navmesh-bake.ts	42
 applyBridgeGeometry	function	packages/godot/src/navmesh-bake.ts	84
@@ -687,7 +689,8 @@ readGateSnapshot	function	packages/godot/src/navmesh-gate-reset.ts	54
 readAtRevision	function	packages/godot/src/navmesh-gate-reset.ts	67
 readWorkTree	const	packages/godot/src/navmesh-gate-reset.ts	73
 makeGreybox	function	packages/godot/src/navmesh-greybox.ts	18
-navmeshBundle	function	packages/godot/src/navmesh-input.ts	9
+navmeshBundle	function	packages/godot/src/navmesh-input.ts	10
+privateRegionsSha256	function	packages/godot/src/navmesh-input.ts	38
 planFallbackRoute	function	packages/godot/src/navmesh-links.ts	11
 diagnoseVerticalSnap	function	packages/godot/src/navmesh-links.ts	32
 validateLinkSnap	function	packages/godot/src/navmesh-links.ts	64

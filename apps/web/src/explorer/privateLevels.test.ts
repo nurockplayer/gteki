@@ -36,6 +36,35 @@ describe("private level selection and rendering", () => {
     expect(() => privateLevelRegions(input, {} as typeof selection)).toThrow("Private level selection requires string arrays");
   });
 
+  it("keeps a selected floor's hole empty when a graph passage crosses it", () => {
+    const ring = (a: number, b: number) => [{ x: a, z: -a }, { x: b, z: -a }, { x: b, z: -b }, { x: a, z: -b }];
+    const regions: PolygonRegion[] = [{ kind: "polygon", level: "synthetic-level", y: 0, rings: [ring(0, 10), ring(3, 7)] }];
+    const bundle = {
+      floors: [{ id: "synthetic-level", renderElevationM: 0 }],
+      nodes: [{ id: "a", floorId: "synthetic-level", position: { x: -2, y: 5, z: 0 } }, { id: "b", floorId: "synthetic-level", position: { x: 12, y: 5, z: 0 } }],
+      edges: [{ id: "crossing", from: "a", to: "b", mode: "walk" }],
+    } as unknown as StationBundle;
+    const grey = buildGreybox(bundle, () => true, () => false, { colliderNear: () => false, wallHit: () => null }, "low", true, regions);
+    grey.root.updateMatrixWorld(true);
+    const hits = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(grey.walkable, true);
+    expect(hits(5)).toHaveLength(0);
+    expect(hits(11)).toHaveLength(0);
+    expect(hits(1).length).toBeGreaterThan(0);
+    expect(grey.wallSegments).toHaveLength(8);
+    const nav = grey.navFloors!;
+    let area = 0;
+    for (let i = 0; i < nav.length; i += 9) area += Math.abs((nav[i + 3]! - nav[i]!) * (nav[i + 8]! - nav[i + 2]!) - (nav[i + 5]! - nav[i + 2]!) * (nav[i + 6]! - nav[i]!)) / 2;
+    expect(area).toBeCloseTo(84);
+    for (const [floorId, z] of [["synthetic-level", 4], ["another-level", 0]] as const) {
+      const separate = structuredClone(bundle);
+      for (const node of separate.nodes) { node.floorId = floorId; node.position.z = z; }
+      const kept = buildGreybox(separate, () => true, () => false, { colliderNear: () => false, wallHit: () => null }, "low", true, regions);
+      kept.root.updateMatrixWorld(true);
+      const hit = new THREE.Raycaster(new THREE.Vector3(5, z + 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(kept.walkable, true);
+      expect(hit[0]!.point.y).toBeCloseTo(z);
+    }
+  });
+
   it("loads only overlay geometry and emits real walkable/navmesh floors with empty holes", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-levels-")), privateDir = path.join(root, "private");
     const stationDir = path.join(root, "stations", "demo", "gteki"), additions = path.join(privateDir, "additions", "demo");
