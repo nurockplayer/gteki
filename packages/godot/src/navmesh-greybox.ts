@@ -13,7 +13,9 @@ import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { hitNormal } from "../../../apps/web/src/explorer/bodyCollision.ts";
 import { sceneProbe, type SceneProbe } from "./route-clip-audit.ts";
 
-export function makeGreybox(bundle: StationBundle, scene: StationScene, privateBuild: boolean) {
+import type { PolygonRegion } from "../../../apps/web/src/explorer/privateLevels.ts";
+
+export function makeGreybox(bundle: StationBundle, scene: StationScene, privateBuild: boolean, privateRegions: readonly PolygonRegion[] = []) {
   sceneProbe(scene);
   const walkable = scene.walkable, colliders = scene.colliders ?? [], cameraBlockers = scene.cameraBlockers ?? [];
   const targets = explorerTargets(walkable, colliders, cameraBlockers);
@@ -26,7 +28,7 @@ export function makeGreybox(bundle: StationBundle, scene: StationScene, privateB
   };
   const router = createRouter(bundle, { allowUnverified: privateBuild });
   const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
-  const grey = buildGreybox(bundle, traversable, hasFloor, sceneTests, "low", true);
+  const grey = buildGreybox(bundle, traversable, hasFloor, sceneTests, "low", true, privateBuild ? privateRegions : []);
   grey.root.updateMatrixWorld(true);
   // Explorer exempts every wall-like scene collider hit inside an opening.
   const portals = new Map<THREE.Object3D, Box[]>();
