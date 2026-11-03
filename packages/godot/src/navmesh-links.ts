@@ -111,7 +111,7 @@ export function verticalLinkCandidates(edges: readonly ConnectorEdge[], nodePoin
     }
     const startValid=!!fromFallback || validateSnap(edge.from, from, start), endValid=!!toFallback || validateSnap(edge.to, to, end);
     if (!startValid || !endValid || (edge.mode === "gate" && !validateSnap(edge.from, start, end))) { failed.push({ edgeId: edge.id, reason: "unsafe_snap" }); return; }
-    candidates.push({ edgeId: edge.id, connection: { startPosition: start, endPosition: end, radius: 0.3, bidirectional: edge.direction === "both" || (edge.mode === "gate" && gates.some(e => e.from === edge.to && e.to === edge.from)), area: 0, flags: 1, userId: index + 1 }, ...(fromFallback || toFallback ? {fallback:{...(fromFallback ? {from:fromFallback} : {}),...(toFallback ? {to:toFallback} : {})}} : {}) });
+    candidates.push({ edgeId: edge.id, connection: { startPosition: start, endPosition: end, radius: 0.3, bidirectional: edge.direction === "both", area: 0, flags: 1, userId: index + 1 }, ...(fromFallback || toFallback ? {fallback:{...(fromFallback ? {from:fromFallback} : {}),...(toFallback ? {to:toFallback} : {})}} : {}) });
   });
   return { candidates, failed, snapFailures, noPolyStart, noPolyEnd };
 }

@@ -3,7 +3,7 @@ import { NavMeshQuery } from "recast-navigation";
 import { bakeNavmesh, completePath } from "./navmesh-bake.ts";
 import { validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
 // Two 4 m rooms divided by a wall. The doorway is 1.6 m wide when open.
-function rooms(door: boolean) {
+function rooms(door: boolean, width = 1.6) {
   const positions: number[] = [], indices: number[] = [];
   function quad(a: number[], b: number[], c: number[], d: number[]) {
     const base = positions.length / 3;
@@ -12,7 +12,7 @@ function rooms(door: boolean) {
   }
   quad([0, 0, 0], [0, 0, 4], [8, 0, 4], [8, 0, 0]);
   const wall = (z0: number, z1: number) => quad([4, 0, z0], [4, 2.5, z0], [4, 2.5, z1], [4, 0, z1]);
-  if (door) { wall(0, 1.2); wall(2.8, 4); } else wall(0, 4);
+  if (door) { wall(0, 2-width/2); wall(2+width/2, 4); } else wall(0, 4);
   return { positions, indices };
 }
 
@@ -259,14 +259,7 @@ it("does not open a wall or construct an overly steep landing strip",async()=>{
 
 it.each(["forward", "both", "paired"] as const)("routes through a fare-gate link (%s)", async direction => {
   // The machine opening remains physically open, but erosion disconnects the two walk areas.
-  const { positions, indices } = rooms(false);
-  positions.splice(12); indices.splice(6);
-  const wall = (z0: number, z1: number) => {
-    const base = positions.length / 3;
-    positions.push(4,0,z0, 4,2.5,z0, 4,2.5,z1, 4,0,z1);
-    indices.push(base,base+1,base+2,base,base+2,base+3);
-  };
-  wall(0,1.75); wall(2.25,4);
+  const { positions, indices } = rooms(true, 0.5);
   const points = { a:{x:3,y:0,z:2}, b:{x:5,y:0,z:2} };
   const edges = [{ id:"gate", mode:"gate", from:"a", to:"b", direction:direction === "both" ? "both" as const : "forward" as const }];
   if (direction === "paired") edges.push({ id:"return", mode:"gate", from:"b", to:"a", direction:"forward" });
@@ -284,7 +277,7 @@ it.each(["forward", "both", "paired"] as const)("routes through a fare-gate link
   const built = verticalLinkCandidates(edges,id=>points[id as keyof typeof points],query,(_id,node,snap)=>validateLinkSnap(probe,node,snap)===null);
   expect(built.failed).toEqual([]);
   expect(built.candidates).toHaveLength(edges.length);
-  expect(built.candidates.every(c=>c.connection.bidirectional === (direction !== "forward"))).toBe(true);
+  expect(built.candidates.every(c=>c.connection.bidirectional === (direction === "both"))).toBe(true);
   query.destroy(); base.navMesh.destroy();
   const linked = await bakeNavmesh(positions,indices,{offMeshConnections:built.candidates.map(c=>c.connection)});
   if (!linked.success) throw new Error(linked.error);
@@ -305,12 +298,39 @@ it.each(["forward", "both", "paired"] as const)("routes through a fare-gate link
   expect([...attached].sort()).toEqual(built.candidates.map(c=>c.connection.userId).sort());
   const candidate = built.candidates.find(c=>c.edgeId === "gate")!;
   const path = queryPathWithLinks(linked.navMesh,q,candidate.connection.startPosition,candidate.connection.endPosition);
-  const crossing = path?.find(p=>built.candidates.some(c=>p.link?.userId === c.connection.userId));
+  const crossing = path?.find(p=>p.link?.userId === candidate.connection.userId);
   expect(crossing).toBeDefined();
   expect(crossing!.point.x).toBeLessThan(4);
   expect(crossing!.link!.end.x).toBeGreaterThan(4);
   expect(crossing!.point.z).toBeCloseTo(2);
   expect(crossing!.link!.end.z).toBeCloseTo(2);
   expect(completePath(q,points.b,points.a) !== null).toBe(direction !== "forward");
+  if (direction === "paired") {
+    const returning=built.candidates.find(c=>c.edgeId === "return")!;
+    const reverse=queryPathWithLinks(linked.navMesh,q,returning.connection.startPosition,returning.connection.endPosition);
+    expect(reverse?.filter(p=>p.link).map(p=>p.link!.userId)).toEqual([returning.connection.userId]);
+  }
   q.destroy(); linked.navMesh.destroy(); floor.geometry.dispose(); floor.material.dispose();
+});
+
+
+it("a reverse gate edge does not permit gate-out backwards", async () => {
+  const {positions,indices}=rooms(true,0.5);
+  const points={a:{x:3,y:0,z:2},b:{x:5,y:0,z:2}};
+  const base=await bakeNavmesh(positions,indices); if (!base.success) throw new Error(base.error);
+  const query=new NavMeshQuery(base.navMesh);
+  const built=verticalLinkCandidates([
+    {id:"gate-out",mode:"gate",from:"a",to:"b",direction:"forward"},
+    {id:"gate-in",mode:"gate",from:"b",to:"a",direction:"forward"},
+  ],id=>points[id as keyof typeof points],query,()=>true);
+  const out=built.candidates.find(c=>c.edgeId === "gate-out")!;
+  expect(out).toBeDefined();
+  query.destroy(); base.navMesh.destroy();
+  // Keep the opposing graph edge but omit its physical link: only gate-out could provide B→A.
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:[out.connection]});
+  if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh), {queryPathWithLinks}=await import("./navmesh-audit.ts");
+  expect(queryPathWithLinks(linked.navMesh,q,out.connection.startPosition,out.connection.endPosition)?.some(p=>p.link?.userId === out.connection.userId)).toBe(true);
+  expect(queryPathWithLinks(linked.navMesh,q,out.connection.endPosition,out.connection.startPosition)).toBeNull();
+  q.destroy(); linked.navMesh.destroy();
 });

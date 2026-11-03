@@ -2,10 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { NavMeshQuery } from "recast-navigation";
 import { bakeNavmesh } from "./navmesh-bake.ts";
-import { floorSnapPath, queryCompletePath, snapNode } from "./navmesh-audit.ts";
+import { auditGatePath, floorSnapPath, queryCompletePath, snapNode } from "./navmesh-audit.ts";
 import { auditPolyline, sceneProbe } from "./route-clip-audit.ts";
 
-function fixture(open: boolean) {
+function fixture(open: boolean, width = 1.6) {
   const positions: number[] = [], indices: number[] = [];
   const quad = (...corners: number[][]) => {
     const n = positions.length / 3;
@@ -18,7 +18,7 @@ function fixture(open: boolean) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.05, 2.5, z1-z0), new THREE.MeshBasicMaterial());
     m.position.set(4, 1.25, (z0+z1)/2); walls.push(m);
   };
-  if (open) { wall(0,1.2); wall(2.8,4); } else wall(0,4);
+  if (open) { wall(0,2-width/2); wall(2+width/2,4); } else wall(0,4);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(8,4).rotateX(-Math.PI/2).translate(4,0,2), new THREE.MeshBasicMaterial());
   const root = new THREE.Group().add(floor,...walls); root.updateMatrixWorld(true);
   return { positions, indices, probe: sceneProbe({ root, walkable: [floor], colliders: walls, walls: [] } as never) };
@@ -107,4 +107,35 @@ describe("floorSnapPath", () => {
     expect(floorSnapPath([{ x:0, y:0, z:0.3 }, { x:2, y:0, z:0.3 }], floor)).toEqual([{ x:0, y:0, z:0 }, { x:2, y:0, z:0 }]);
     expect(floorSnapPath([{ x:2, y:0, z:0 }, { x:6, y:0, z:0 }], floor)).toHaveLength(2);
   });
+});
+
+
+it("audits directional gates only through their own links and rejects missing or opposing links", async () => {
+  const {positions,indices,probe}=fixture(true,0.5);
+  const {verticalLinkCandidates,validateLinkSnap}=await import("./navmesh-links.ts");
+  const points={a:{x:3,y:0,z:2},b:{x:5,y:0,z:2}};
+  const base=await bakeNavmesh(positions,indices); if (!base.success) throw new Error(base.error);
+  const query=new NavMeshQuery(base.navMesh);
+  const candidates=verticalLinkCandidates([
+    {id:"gate-out",mode:"gate",from:"a",to:"b",direction:"forward"},
+    {id:"gate-in",mode:"gate",from:"b",to:"a",direction:"forward"},
+  ],id=>points[id as keyof typeof points],query,(id,node,snap)=>validateLinkSnap(probe,node,snap)===null).candidates;
+  expect(candidates).toHaveLength(2);
+  query.destroy(); base.navMesh.destroy();
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:candidates.map(c=>c.connection)});
+  if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh);
+  const outCandidate=candidates.find(c=>c.edgeId === "gate-out")!, inCandidate=candidates.find(c=>c.edgeId === "gate-in")!;
+  const out={connection:{...outCandidate.connection,userId:outCandidate.connection.userId!}};
+  const incoming={connection:{...inCandidate.connection,userId:inCandidate.connection.userId!}};
+  const line=[{x:3,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0},{x:5,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0}];
+  const validate=(node:typeof points.a,snap:typeof points.a)=>validateLinkSnap(probe,node,snap)===null;
+  expect(auditGatePath(linked.navMesh,q,points.a,points.b,line,validate,out)).toMatchObject({missing:false,reason:null,pathRejection:null});
+  const reverse=[...line].reverse();
+  expect(auditGatePath(linked.navMesh,q,points.b,points.a,reverse,validate,incoming)).toMatchObject({missing:false,reason:null,pathRejection:null});
+  expect(auditGatePath(linked.navMesh,q,points.a,points.b,line,validate,undefined)).toMatchObject({points:null,missing:true,reason:"no_path",pathRejection:"missing_link"});
+  expect(auditGatePath(linked.navMesh,q,points.b,points.a,reverse,validate,out,true)).toMatchObject({points:null,missing:true,reason:"no_path",pathRejection:"wrong_link"});
+  const mislabeled={connection:{...out.connection,userId:incoming.connection.userId!}};
+  expect(auditGatePath(linked.navMesh,q,points.a,points.b,line,validate,mislabeled)).toMatchObject({points:null,missing:true,reason:"no_path",pathRejection:"wrong_link"});
+  q.destroy(); linked.navMesh.destroy();
 });

@@ -80,6 +80,26 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
   } finally { corridor.polys.destroy(); }
 }
 
+/** Audit a gate using its own directed off-mesh connection, never a different gate or walking bypass. */
+export function auditGatePath(nav: NavMesh, query: NavMeshQuery, from: V3, to: V3, line: readonly PolylinePoint[], validateSnap: (node: V3, snap: V3) => boolean,
+  link: { connection: { userId: number; startPosition: V3; endPosition: V3 } } | undefined, reversed = false) {
+  const built = buildConnectorPath(query, from, to, line, validateSnap);
+  const reject = (pathRejection: "missing_link" | "wrong_link") => ({ ...built, points: null, missing: true, reason: "no_path" as const, pathRejection });
+  if (!link) return reject("missing_link");
+  if (!built.points) return { ...built, missing: true, pathRejection: null };
+  const a = reversed ? link.connection.endPosition : link.connection.startPosition;
+  const b = reversed ? link.connection.startPosition : link.connection.endPosition;
+  const path = queryPathWithLinks(nav, query, a, b);
+  const crossings = path?.filter(p => p.link);
+  const crossing = crossings?.[0];
+  if (!path || crossings?.length !== 1 || crossing?.link?.userId !== link.connection.userId ||
+      distance(crossing.point, a) > 0.01 || distance(crossing.link.end, b) > 0.01) return reject("wrong_link");
+  return { ...built, missing: false, pathRejection: null, points: [
+    { ...built.points[0]!, x: a.x, y: -a.z, z: a.y },
+    { ...built.points.at(-1)!, x: b.x, y: -b.z, z: b.y },
+  ] };
+}
+
 /** Snap a path's vertices to the floor height floorAt reports. Between two vertices the floor is sampled every 0.25 m of
  * plan length; where the straight line leaves it by more than 0.05 m, the path is split at the worst sample, at floor
  * height, and both halves are checked again (#669 r2: a ramp foot between vertices). */
@@ -227,15 +247,10 @@ async function main() {
     // Gate transitions require their own attached link; a walk around the barrier is not the gate.
     if (["stairs","escalator","elevator","gate"].includes(step.mode)) {
       const line=routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]},connectorPaths);
-      const built=buildConnectorPath(query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null);
-      const gateLinkUsed = step.mode !== "gate" || !!link;
-      if (step.mode === "gate" && link && built.points) {
-        const a=step.reversed ? link.connection.endPosition : link.connection.startPosition;
-        const b=step.reversed ? link.connection.startPosition : link.connection.endPosition;
-        built.points.splice(0,built.points.length,
-          {...built.points[0]!,x:a.x,y:-a.z,z:a.y}, {...built.points.at(-1)!,x:b.x,y:-b.z,z:b.y});
-      }
-      const entry: Entry = {suspect:false,points:gateLinkUsed ? built.points : null,missing:!gateLinkUsed || built.reason!==null,reason:gateLinkUsed ? built.reason : "no_path",stairLink:false,connector:gateLinkUsed && !!built.points,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:built.fromSnapped,toSnapped:built.toSnapped,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:gateLinkUsed ? null : "missing_link"};
+      const built = step.mode === "gate"
+        ? auditGatePath(nav,query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null,link,step.reversed)
+        : (() => { const path=buildConnectorPath(query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null); return {...path,missing:path.reason!==null,pathRejection:null}; })();
+      const entry: Entry = {suspect:false,points:built.points,missing:built.missing,reason:built.reason,stairLink:false,connector:!!built.points,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:built.fromSnapped,toSnapped:built.toSnapped,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:built.pathRejection};
       cache.set(key,entry); return entry;
     }
     const a = link ? (step.reversed ? link.connection.endPosition : link.connection.startPosition) : snap(step.fromNodeId);
