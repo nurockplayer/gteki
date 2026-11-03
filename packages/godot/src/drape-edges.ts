@@ -8,7 +8,7 @@ import { enuToRenderer } from "@gteki/geo";
 import { nodeDisplayZ, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type Node, type StationBundle } from "@gteki/schema";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
-import { auditPolyline, loadScene, sceneProbe, violations, type SampleDetail, type SceneProbe } from "./route-clip-audit.ts";
+import { auditPolyline, loadScene, privateSceneProbe, sceneProbe, violations, type SampleDetail, type SceneProbe } from "./route-clip-audit.ts";
 
 type Point = { x: number; y: number; z: number };
 const point = (p: Point): PolylinePoint => ({ ...p, zKnown: false, stepIndex: 0, floorId: "" });
@@ -155,7 +155,9 @@ async function main(): Promise<void> {
     const dir = path.join(tmp, "overlay", station, "gteki"), read = (n: string) => JSON.parse(fs.readFileSync(path.join(dir, n), "utf8")) as unknown;
     const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), fs.existsSync(path.join(dir, "tenants.json")) ? read("tenants.json") : undefined, { privateTier: true });
     if (!parsed.ok) throw new Error(`overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
-    const result = drapeEdges(sceneProbe(await loadScene(station, parsed.bundle)), parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)) });
+    const scene = await loadScene(station, parsed.bundle);
+    const probe = await privateSceneProbe(scene, parsed.bundle, dir) ?? sceneProbe(scene);
+    const result = drapeEdges(probe, parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)) });
     for (const n of doc.nodes) if (result.nodes.has(n.id)) n.renderZ = result.nodes.get(n.id)!;
     for (const e of doc.edges) {
       const geometry = result.geometry.get(e.id); if (geometry) applyDrapeGeometry(e, geometry);
