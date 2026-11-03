@@ -11,6 +11,7 @@ import { greyboxSceneProbes } from "../../../apps/web/src/explorer/greyboxScene.
 import { buildGreybox } from "../../../apps/web/src/explorer/greybox.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
 import { buildLiveScene } from "../../../apps/web/src/explorer/liveScene.ts";
+import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 
 it("keeps the low-tier underground fixtures instanced after both runtime cuts", () => {
   const { bundle } = loadShinjukuBundle();
@@ -23,7 +24,8 @@ it("keeps the low-tier underground fixtures instanced after both runtime cuts", 
   const originalMatrices = lights.instanceMatrix.array.slice();
   const originalColors = lights.instanceColor!.array.slice();
   const floorPools = lights.userData.floorPools;
-  const walkable = station.walkable ?? [], colliders = station.colliders ?? [], cameraBlockers = station.cameraBlockers ?? [], walls = station.walls ?? [];
+  const walkable = station.walkable ?? [], colliders = station.colliders ?? [], cameraBlockers = station.cameraBlockers ?? [];
+  const walls = (station.walls ?? []).map(wallToRenderer);
   root.updateMatrixWorld(true);
   const originalTargets = explorerTargets(walkable, colliders, cameraBlockers);
   prepareRayTrees(originalTargets.camera);
