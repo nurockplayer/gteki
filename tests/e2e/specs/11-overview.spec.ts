@@ -43,6 +43,39 @@ const FRAMING = { min: 0.5, max: 0.8 }; // share of the shorter viewport side (#
 const NEAR_BLACK_MAX = 0.3; // #109 acceptance 2
 const MEAN_LUMA = { min: 40, max: 200 }; // of 255
 
+test("ikebukuro: overview refits above the open route sheet @phone", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("phone"), "The phone route sheet spans the canvas width.");
+  await openStation(page, "ikebukuro");
+  await chooseBySearch(page, "from", "中央2", /JR 中央2改札/);
+  await chooseBySearch(page, "to", "35", /^35番出口$/);
+  expect((await hooks.route(page))?.ok, "route exists").toBe(true);
+  const sheet = page.locator(".sheet");
+  await expect(sheet).toHaveClass(/\bopen\b/);
+  await sheet.locator(".card.route button.primary").click();
+  await expect.poll(() => hooks.mode(page)).toBe("guide");
+  await page.locator(".hud").getByRole("button", { name: "Overview", exact: true }).click();
+  await expect.poll(() => hooks.mode(page)).toBe("overview");
+  await expect(sheet).toBeVisible();
+  await page.waitForTimeout(1500); // Camera damping and the occluder ResizeObserver settle.
+  const readFrame = () => page.evaluate(() => (window as any).__gteki.overviewFrame());
+  const open = await readFrame();
+  expect(open).not.toBeNull();
+  expect.soft(open.extentShare, "network fits above the open route sheet").toBeLessThanOrEqual(1);
+
+  // There is no sheet-close button: exercise its display:none transition without resetting the camera.
+  await sheet.evaluate((el) => el.classList.remove("open"));
+  await expect(sheet).toBeHidden();
+  await page.waitForTimeout(1500);
+  const closed = await readFrame();
+  expect(closed).not.toBeNull();
+  const measuredAt = new Date().toISOString(); // UTC
+  console.log(`[route-sheet] ${measuredAt} ${JSON.stringify({ open, closed })}`);
+  save(testInfo, "ikebukuro-overview-route-sheet.json", { measuredAt, open, closed });
+  expect(closed.extentShare, "network fits after closing the route sheet").toBeLessThanOrEqual(1);
+  expect(Math.abs(closed.extentShare - open.extentShare), "closing the sheet changes extentShare").toBeGreaterThan(0.001);
+  expect(closed.bbox, "the camera refits, beyond the free-rectangle measurement changing").not.toEqual(open.bbox);
+});
+
 for (const key of STATIONS) {
   test(`${key}: overview frames the slice, reads clearly and declutters labels @phone`, async ({ page }, testInfo) => {
     await openStation(page, key);
