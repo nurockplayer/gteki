@@ -30,10 +30,17 @@ for station in ['ikebukuro','shinjuku']:
    if key in ['suspectPolyline','suspectPolylineEdges'] and key not in a.get(edge,{}):continue
    old=a.get(edge,{}).get(key,0)
    if (count<old if key=='routablePairs' else count>old):errors.append(f'{station} {edge}.{key}: {old} → {count}')
+ limits=load(Path('stations')/station,'navmesh-clip-baseline')['total']
+ for field in ['suspectPolyline','suspectPolylineEdges']:
+  if field in limits and b['total'][field]>limits[field]:errors.append(f'{station} {field} exceeds admitted baseline: {limits[field]} → {b["total"][field]}')
  audit=load(after,'audit')
  print(station,'rejected paths',len(audit['navPathsRejected']),'junctions',len(audit.get('navJoins',{})))
  print(station,'failure edges',[(e['edgeId'],e['mode'],e['reason']) for e in fb])
  print(station,'uniqueEdgeScene',audit['uniqueEdgeScene'])
+ flagged={edge for edge,paths in pb['edges'].items() if paths.get('suspectPolyline')}
+ expected={e['edgeId'] for e in load(after,'navmesh-suspect')}
+ if flagged!=expected:errors.append(f'{station} suspect guide flags disagree with station list')
+ if not audit['completeAuditedRoutes'] or not audit['navPathsScene']['samples']:errors.append(f'{station} has no completed routes or checked navmesh path samples')
  if audit['navPathsRejected']:errors.append(f"{station} rejected published paths: {audit['navPathsRejected']}")
  if audit['completeAuditedRoutes']+audit['incompleteRoutes']+audit['suspectPolyline']['routes']!=audit['auditedRoutePairs']:errors.append(f'{station} route outcome partition is inconsistent')
  for kind in ['navmesh','connector']:
