@@ -15,18 +15,8 @@
     "reason": "other"
   },
   {
-    "edgeId": "e:a4ed9fc953984c52a914f0cbe73cd318",
-    "mode": "walk",
-    "reason": "other"
-  },
-  {
     "edgeId": "e:ed7e56a8e6234197be06280fcb24aecc",
     "mode": "elevator",
     "reason": "snap_failed"
-  },
-  {
-    "edgeId": "e:f7671c07bc8d4f059fafa42d307f6873",
-    "mode": "walk",
-    "reason": "other"
   }
 ]
