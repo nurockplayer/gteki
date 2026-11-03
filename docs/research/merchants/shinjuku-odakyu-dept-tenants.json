@@ -238,7 +238,7 @@
       "aliases": [
         {
           "lang": "ja-Latn",
-          "text": "IITTALA"
+          "text": "IITTARA"
         }
       ],
       "floorLabel": "２階",
@@ -2356,6 +2356,6 @@
     "retrievedAt": "2026-11-03T14:37:36+09:00",
     "printedDate": "2026.9.2 (as printed; no time or zone)",
     "field": "Printed Latin brand labels under the same floor as the Japanese brand-search row.",
-    "note": "Only unambiguous brand counterparts; no translation, inferred readings, or aliases from another store. RF1, RMK, OXO, THREE, MAKANAI, ReD and WMF have no kana reading in these sources and keep empty aliases."
+    "note": "Only unambiguous brand counterparts; no translation, inferred readings, or aliases from another store. RF1, RMK, OXO, THREE, MAKANAI, ReD and WMF have no kana reading in these sources and keep empty aliases. The PDF spells イッタラ as IITTARA; keep that printed spelling rather than correcting it to IITTALA."
   }
 }
