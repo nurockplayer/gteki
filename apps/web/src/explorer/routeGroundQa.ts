@@ -71,14 +71,19 @@ function isConnector(mesh: THREE.Mesh): boolean {
 
 /** Prepare proximity queries for one synchronous connector build: the cut scene cannot change between queries. */
 export function sceneMeshProbe(roots: readonly THREE.Object3D[]): (point: THREE.Vector3, radius: number, edgeId?: string) => boolean {
-  const meshes: THREE.Mesh[] = [];
-  for (const root of roots) { root.updateWorldMatrix(true, true); root.traverse((o) => { if ((o as THREE.Mesh).isMesh && isConnector(o as THREE.Mesh)) meshes.push(o as THREE.Mesh); }); }
-  for (const geometry of new Set(meshes.map((mesh) => mesh.geometry))) if (geometry.getAttribute("position")) geometry.computeBoundingSphere();
+  let meshes: THREE.Mesh[] | undefined;
+  const prepared = new Set<THREE.BufferGeometry>();
   const triangle = new THREE.Triangle(), closest = new THREE.Vector3(), matrix = new THREE.Matrix4();
   return (point, radius, edgeId) => {
+    if (!meshes) {
+      meshes = [];
+      for (const root of roots) { root.updateWorldMatrix(true, true); root.traverse((o) => { if ((o as THREE.Mesh).isMesh && isConnector(o as THREE.Mesh)) meshes!.push(o as THREE.Mesh); }); }
+    }
     for (const mesh of meshes) {
       const geometry = mesh.geometry, position = geometry?.getAttribute("position"), index = geometry?.getIndex();
       if (!position) continue;
+      // A hit can return before later meshes are visited; do not prepare their bounds eagerly.
+      if (!prepared.has(geometry)) { geometry.computeBoundingSphere(); prepared.add(geometry); }
       const instance = mesh as THREE.InstancedMesh;
       const count = instance.isInstancedMesh ? instance.count : 1;
       for (let n = 0; n < count; n++) {

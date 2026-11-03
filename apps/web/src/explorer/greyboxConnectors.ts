@@ -78,11 +78,19 @@ function frame(from: THREE.Vector3, to: THREE.Vector3) {
 const boxTemplate = new THREE.BoxGeometry().toNonIndexed();
 function box(parts: ConnectorPart[], material: ConnectorMaterial, f: THREE.Matrix4, x: number, y: number, z: number, sx: number, sy: number, sz: number, role?: ConnectorPart["role"], shade = 1) {
   const matrix = f.clone().multiply(new THREE.Matrix4().makeTranslation(x, y, z));
-  const geometry = boxTemplate.clone();
-  const position = geometry.getAttribute("position");
-  const original = boxTemplate.getAttribute("position");
-  for (let i = 0; i < position.count; i++) position.setXYZ(i, original.getX(i) * sx, original.getY(i) * sy, original.getZ(i) * sz);
-  parts.push(part(geometry, material, matrix, role, shade));
+  const positions = boxTemplate.getAttribute("position"), normals = boxTemplate.getAttribute("normal");
+  const normalMatrix = new THREE.Matrix3().getNormalMatrix(matrix);
+  const v = new THREE.Vector3(), color = new THREE.Color(connectorColours[material]).multiplyScalar(shade);
+  const position: number[] = [], normal: number[] = [], colour: number[] = [];
+  for (let i = 0; i < positions.count; i++) {
+    // Preserve both Float32 rounding boundaries: local BoxGeometry coordinates, then applyMatrix4's output.
+    v.set(Math.fround(positions.getX(i) * sx), Math.fround(positions.getY(i) * sy), Math.fround(positions.getZ(i) * sz)).applyMatrix4(matrix);
+    position.push(Math.fround(v.x), Math.fround(v.y), Math.fround(v.z));
+    v.fromBufferAttribute(normals, i).applyNormalMatrix(normalMatrix);
+    normal.push(Math.fround(v.x), Math.fround(v.y), Math.fround(v.z));
+    colour.push(color.r, color.g, color.b);
+  }
+  parts.push({ material, position, normal, colour, role });
 }
 
 /** Build stairs from the lower landing to the upper landing in renderer space. */
@@ -745,11 +753,12 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const length = Math.hypot(wall.bx - wall.ax, wall.bz - wall.az);
     if (length < 1e-6) continue;
     const joined = junctionFloors.has(owner.edge.id), below = joined ? 0 : 0.12;
+    const meetingFloors = (junctionFloors.get(owner.edge.id) ?? []).filter((floor) => floor.level === wall.level);
     // A higher floor caps a lower guard: it still holds the lower body but cannot block a body already on that floor.
     const capGuard = (segment: Segment2, high: number) => {
+      if (!meetingFloors.length) return;
       const samples = [{ x: segment.ax, z: segment.az }, { x: (segment.ax + segment.bx) / 2, z: (segment.az + segment.bz) / 2 }, { x: segment.bx, z: segment.bz }];
-      for (const floor of junctionFloors.get(owner.edge.id) ?? []) {
-        if (floor.level !== wall.level) continue;
+      for (const floor of meetingFloors) {
         const inside = (p: PlanPoint) => floor.polygons.some((polygon) => {
           const ring = polygon[0]!;
           let hit = false;

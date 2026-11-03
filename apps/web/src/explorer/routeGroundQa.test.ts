@@ -1,7 +1,7 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
-import { routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
+import { routeGroundCounts, sceneMeshNear, sceneMeshProbe } from "./routeGroundQa.ts";
 
 it("does not count a nearby floor as a vertical connector", () => {
   const bundle = createSyntheticBundle([syntheticEdge("stairs", "start", "a", { mode: "stairs" })]);
@@ -65,4 +65,24 @@ it("samples the actual bent vertical edge instead of its endpoint midpoint", () 
   const seen: THREE.Vector3[] = [];
   const result = routeGroundCounts([], () => 0, steps, bundle, (p) => { seen.push(p.clone()); return p.distanceTo(new THREE.Vector3(10, 0, 0)) < 0.01; });
   expect(result.verticalWithoutConnector).toBe(0); expect(seen[0]!.x).toBeCloseTo(10); expect(seen[0]!.z).toBeCloseTo(0);
+});
+
+it("prepares bounds on first visit and preserves proximity early exits", () => {
+  const first = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
+  const later = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1));
+  first.userData.gteki_role = later.userData.gteki_role = "stairs";
+  later.position.x = 10;
+  const root = new THREE.Group(); root.add(first, later);
+  const firstBounds = vi.spyOn(first.geometry, "computeBoundingSphere");
+  const laterBounds = vi.spyOn(later.geometry, "computeBoundingSphere");
+  const near = sceneMeshProbe([root]);
+  expect(firstBounds).not.toHaveBeenCalled();
+  expect(laterBounds).not.toHaveBeenCalled();
+  expect(near(new THREE.Vector3(), 1)).toBe(true);
+  expect(near(new THREE.Vector3(), 1)).toBe(true);
+  expect(firstBounds).toHaveBeenCalledTimes(1);
+  expect(laterBounds).not.toHaveBeenCalled();
+  expect(near(new THREE.Vector3(10, 0, 0), 1)).toBe(true);
+  expect(laterBounds).toHaveBeenCalledTimes(1);
+  first.geometry.dispose(); later.geometry.dispose();
 });
