@@ -4,7 +4,7 @@ errors=[]
 print('| Station | fallback | unvalidatedJoins | invalidJoins | detours | offFloor | snap_failed exit stairs |')
 print('|---|---:|---:|---:|---:|---:|---:|')
 for station in ['ikebukuro','shinjuku']:
- before=Path('.qa/s5/before')/station
+ before=Path(sys.argv[2] if len(sys.argv)>2 else '.qa/s5/before')/station
  after=Path(sys.argv[1] if len(sys.argv)>1 else '.qa/s5/regen-output')/station
  def load(root,name): return json.loads((root/(name+'.json')).read_text())
  a,b=[load(root,'navmesh-clip-baseline') for root in [before,after]]
