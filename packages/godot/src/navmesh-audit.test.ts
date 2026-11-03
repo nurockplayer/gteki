@@ -120,6 +120,8 @@ it("rejects stale private geometry even with an unchanged bundle and no suspect 
   const withHole = structuredClone(regions);
   withHole[0]!.rings.push([{ x: 3, z: 3 }, { x: 7, z: 3 }, { x: 7, z: 7 }]);
   expect(() => assertPrivateRegionsProvenance(provenance, withHole)).toThrow(/rebake/);
+  const withMask = [{ ...regions[0]!, exclusions: [[[{ x: 30, z: 30 }, { x: 31, z: 30 }, { x: 31, z: 31 }]]] }];
+  expect(() => assertPrivateRegionsProvenance(provenance, withMask)).toThrow(/rebake/);
   expect(() => assertPrivateRegionsProvenance({}, regions)).toThrow(/rebake/);
   expect(() => assertPrivateRegionsProvenance(provenance, undefined)).toThrow(/rebake/);
   expect(() => assertPrivateRegionsProvenance({}, undefined)).not.toThrow();

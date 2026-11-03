@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { subtractPlan, type PlanExclusion } from "./walkableModel.ts";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { nodeDisplayZ } from "@gteki/navigation";
 
@@ -108,4 +109,31 @@ export function dashTexture(): THREE.CanvasTexture {
   t.wrapT = THREE.ClampToEdgeWrapping;
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
+}
+
+/** Remove explicit holes from flat graph triangles; keep all other surfaces as authored. */
+export function clipFlatGeometry(geometry: THREE.BufferGeometry, holes: readonly PlanExclusion[], levels: readonly string[], offset = new THREE.Vector3()): THREE.BufferGeometry {
+  const planes = holes.filter((hole) => levels.includes(hole.level));
+  if (!planes.length) return geometry;
+  const position = geometry.getAttribute("position"), count = geometry.index?.count ?? position.count, out: number[] = [];
+  for (let i = 0; i < count; i += 3) {
+    const corners = [0, 1, 2].map((j) => new THREE.Vector3().fromBufferAttribute(position, geometry.index?.getX(i + j) ?? i + j).add(offset));
+    const y = corners[0]!.y, flat = corners.every((p) => Math.abs(p.y - y) < 1e-6);
+    const cuts = flat ? planes.filter((plane) => Math.abs(plane.y - y) < 1e-4).flatMap((plane) => plane.triangles) : [];
+    if (!cuts.length) { for (const p of corners) out.push(p.x - offset.x, p.y - offset.y, p.z - offset.z); continue; }
+    const normal = corners[1]!.clone().sub(corners[0]!).cross(corners[2]!.clone().sub(corners[0]!)).y;
+    for (const polygon of subtractPlan(corners, cuts)) {
+      const rings = polygon.map((ring) => ring.map((p) => new THREE.Vector2(p.x, p.z)));
+      const faces = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), points = rings.flat();
+      for (const face of faces) {
+        const triangle = face.map((index) => points[index]!);
+        const [a, b, c] = triangle as [THREE.Vector2, THREE.Vector2, THREE.Vector2];
+        if (((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) < 0) !== (normal > 0)) triangle.reverse();
+        for (const p of triangle) out.push(p.x - offset.x, y - offset.y, p.y - offset.z);
+      }
+    }
+  }
+  const clipped = new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+  clipped.computeVertexNormals();
+  return clipped;
 }

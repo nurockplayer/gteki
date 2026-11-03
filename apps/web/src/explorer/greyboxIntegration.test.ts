@@ -46,14 +46,14 @@ describe("greybox station integration", () => {
     loaded.bundle.nodes.find((n) => n.id === "start")!.position = { x: -2, y: 5, z: 0 };
     loaded.bundle.nodes.find((n) => n.id === "a")!.position = { x: 12, y: 5, z: 0 };
     const ring = (a: number, b: number) => [{ x: a, z: -a }, { x: b, z: -a }, { x: b, z: -b }, { x: a, z: -b }];
-    const station = { ...loaded, privateRegions: [{ kind: "polygon" as const, level: "concourse", y: 0, rings: [ring(0, 10), ring(3, 7)] }] };
+    const station = { ...loaded, privateRegions: [{ kind: "polygon" as const, level: "concourse", y: 0, rings: [ring(0, 10), ring(3, 7)], exclusions: [[ring(3, 7)]] }] };
     expect(await state.loadStation(station, createRouter(loaded.bundle))).toBe(true);
     expect(state.greybox).toBeDefined();
     expect(state.world.children).toContain(state.greybox.root);
     const hits = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(state.groundTargets, true);
     expect(hits(1).length).toBeGreaterThan(0);
     expect(hits(5)).toHaveLength(0);
-    expect(hits(11)).toHaveLength(0);
+    expect(hits(11).length).toBeGreaterThan(0);
     expect(state.walls).toHaveLength(8);
     expect(state.colliderTargets).toContain(state.greybox.colliders[0]);
   });

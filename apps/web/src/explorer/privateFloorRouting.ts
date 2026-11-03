@@ -1,19 +1,14 @@
-import { ShapeUtils, Vector2 } from "three";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { edgePoints } from "./geometry.ts";
-import type { PolygonRegion } from "./privateLevels.ts";
+import { privateHolePlanes, type PolygonRegion } from "./privateLevels.ts";
 import { outsideIntervals } from "./walkableModel.ts";
 
-/** Private overlay only: close paths with a flat segment outside the selected floor, retaining a QA reason. */
+/** Private overlay only: close paths with a flat segment inside an explicit hole, retaining a QA reason. */
 export function privateFloorRoutingEdges(graph: Pick<StationBundle, "nodes" | "edges" | "floors">, regions: readonly PolygonRegion[]): Edge[] {
   if (!regions.length) return graph.edges;
   const nodes = new Map(graph.nodes.map((node) => [node.id, node]));
   const floors = new Map(graph.floors.map((floor) => [floor.id, floor]));
-  const planes = regions.map((region) => {
-    const rings = region.rings.map((ring) => ring.map((p) => new Vector2(p.x, p.z)));
-    const faces = ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), points = rings.flat();
-    return { level: region.level, y: region.y, triangles: faces.map((face) => face.map((i) => ({ x: points[i]!.x, z: points[i]!.y }))) };
-  });
+  const planes = privateHolePlanes(regions);
   return graph.edges.map((edge) => {
     const levels = new Set([nodes.get(edge.from)?.floorId, nodes.get(edge.to)?.floorId]);
     const candidates = planes.filter((plane) => levels.has(plane.level));
@@ -23,8 +18,9 @@ export function privateFloorRoutingEdges(graph: Pick<StationBundle, "nodes" | "e
       const a = path[i - 1]!, b = path[i]!;
       if (Math.abs(a.y - b.y) >= 1e-6 || Math.hypot(a.x - b.x, a.z - b.z) < 1e-9) continue;
       const selected = candidates.filter((plane) => Math.abs(plane.y - a.y) < 1e-6);
-      if (selected.length && outsideIntervals(a, b, selected.flatMap((plane) => plane.triangles)).length) {
-        return { ...edge, closed: true, attributes: { ...edge.attributes, privateFloorBlockedReason: "outside-selected-floor" } };
+      const kept = outsideIntervals(a, b, selected.flatMap((plane) => plane.triangles));
+      if (kept.length !== 1 || kept[0]![0] > 1e-9 || kept[0]![1] < 1 - 1e-9) {
+        return { ...edge, closed: true, attributes: { ...edge.attributes, privateFloorBlockedReason: "explicit-private-hole" } };
       }
     }
     return edge;

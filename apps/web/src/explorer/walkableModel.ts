@@ -25,6 +25,8 @@ export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay:
 
 /** A union polygon in plan: `[0]` is the outer ring, the rest are holes. Rings are open (no repeated closing point). */
 export type PlanPolygon = PlanPoint[][];
+/** Convex exclusion masks for flat surfaces at a level/elevation. */
+export type PlanExclusion = { level: string; y: number; triangles: PlanPoint[][] };
 
 const WALL_TOLERANCE_M = 1e-3;
 const MIN_WALL_M = 1e-3;
@@ -683,8 +685,21 @@ export function buildWalkableModel(
   isAttachment?: (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean,
   stepM = 0,
   padM = 0,
+  exclusions: readonly PlanExclusion[] = [],
 ): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[]; slabCuts: PieceCuts; ceilingCuts: PieceCuts } {
-  const pieces = regions.flatMap(regionPieces);
+  const explicitCuts: PieceCuts = new Map();
+  const masks = exclusions.flatMap((cut) => cut.triangles.map((ring) => ({ level: cut.level, y: cut.y, ring, box: boxOf([[ring]]) })));
+  const pieces = regions.flatMap(regionPieces).flatMap((piece) => {
+    if (!exclusions.length || Math.abs(piece.high - piece.low) >= 1e-6) return [piece];
+    const cuts = masks.filter((cut) => cut.level === piece.level && Math.abs(cut.y - piece.low) < 1e-6
+      && cut.box.maxX >= piece.box.minX && cut.box.minX <= piece.box.maxX && cut.box.maxZ >= piece.box.minZ && cut.box.minZ <= piece.box.maxZ).map((cut) => cut.ring);
+    if (!cuts.length) return [piece];
+    const key = `${piece.region}:${piece.segment}`, all = explicitCuts.get(key) ?? [];
+    for (const cut of cuts) if (!all.includes(cut)) all.push(cut);
+    explicitCuts.set(key, all);
+    return subtractPlan(piece.ring, cuts).flatMap((rings) => regionPieces({ kind: "polygon", level: piece.level, y: piece.low, rings }, piece.region)
+      .map((clipped) => ({ ...piece, ring: clipped.ring, box: clipped.box })));
+  });
   const keys = stepM > 0 ? splitByHeight(pieces, stepM) : pieces.map((piece) => piece.level);
   const slabCuts: PieceCuts = new Map(), ceilingCuts: PieceCuts = new Map();
   const cutsOf = (map: PieceCuts, piece: Piece) => { const key = `${piece.region}:${piece.segment}`; let l = map.get(key); if (!l) map.set(key, l = []); return l; };
@@ -805,6 +820,10 @@ export function buildWalkableModel(
       if (tops.length) wall.topY = [tops[0]! - UNDER_GAP_M, tops[1]! - UNDER_GAP_M, tops[2]! - UNDER_GAP_M];
     }
     walls.push(...own);
+  }
+  for (const [key, cuts] of explicitCuts) {
+    slabCuts.set(key, [...(slabCuts.get(key) ?? []), ...cuts]);
+    ceilingCuts.set(key, [...(ceilingCuts.get(key) ?? []), ...cuts]);
   }
   return { levels, walls, slabCuts, ceilingCuts };
 }

@@ -1,4 +1,4 @@
-import { privateFloorAt, type PolygonRegion } from "./privateLevels.ts";
+import { privateHolePlanes, type PolygonRegion } from "./privateLevels.ts";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { WALKER_BODY } from "@gteki/scene-api";
 import * as THREE from "three";
@@ -379,16 +379,6 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
 export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = [], traversable: (edge: Edge) => boolean = () => true, privateRegions: readonly PolygonRegion[] = []) {
   const started = performance.now();
-  if (privateRegions.length) {
-    const nodeFloors = new Map(bundle.nodes.map((node) => [node.id, node.floorId]));
-    // A selected floor defines the entire flat level, including holes and the space outside its boundary.
-    detected = detected.filter((run) => {
-      const level = nodeFloors.get(run.edge.from) ?? "";
-      return nodeFloors.get(run.edge.to) !== level || !privateFloorAt(privateRegions, level, run.points[0]!.z)
-        || !run.points.every((p) => Math.abs(p.z - run.points[0]!.z) < 1e-6);
-    });
-    pads = pads.filter((pad) => !privateFloorAt(privateRegions, pad.floorId, pad.center.y));
-  }
   const index = new CorridorIndex();
   for (const pad of pads) index.add(pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2);
   const runs: UnmodelledEdgeRun[] = [];
@@ -515,7 +505,9 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   const privateStart = regions.length;
   regions.push(...privateRegions);
-  const model = buildWalkableModel(regions, (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM);
+  const holes = privateHolePlanes(privateRegions);
+  const runHoles = runs.flatMap((run) => runLevel(run.edge).startsWith("run:") ? holes.filter((hole) => hole.level === nodes.get(run.edge.from)?.floorId || hole.level === nodes.get(run.edge.to)?.floorId).map((hole) => ({ ...hole, level: runLevel(run.edge) })) : []);
+  const model = buildWalkableModel(regions, (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM, 0, [...holes, ...runHoles]);
   // Floors and ceilings follow the level stack: a floor standing less than the clearance over another level leaves
   // that part out, and a ceiling another level's floor stands in does too. Regions are runs, then pads, then junctions.
   const uncut = (p: THREE.Vector3, q: THREE.Vector3, cuts: readonly PlanPoint[][]) => {
@@ -533,6 +525,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     cutFace(b.ceiling,b.ceilingColors,[corner(1,-1,2.6),corner(1,1,2.6),corner(-1,1,2.6),corner(-1,-1,2.6)],ceilingCut(region),0.62);
   });
   privateRegions.forEach((region, index) => {
+    if (!region.rings.length) return;
     const b = getBatch(region.level), rings = region.rings.map((ring) => ring.map((p) => new THREE.Vector2(p.x, p.z)));
     const triangles = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), points = rings.flat();
     for (const triangle of triangles) {
