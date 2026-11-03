@@ -99,9 +99,13 @@ export function checkMatrix(text: string, rows: CoverageRow[]): string[] {
     for (const match of walk.matchAll(/([\d,]+)[- ](node|edge)s?\b/g))
       compare(`${match[2]}s`, Number(match[1]!.replaceAll(",", "")));
     const pois = cells[4] ?? "";
-    for (const match of pois.matchAll(/([\d,]+)\s+(shop POIs?|POIs?|gates?|platforms?|(?:C )?exits?|lifts?|escalators?|toilets?|transfers?|tenants?|routed)\b/g)) {
-      const raw = match[2]!.replace(/^C /, "");
+    for (const match of pois.matchAll(/([\d,]+)\s+((?:[\p{L}\p{M}][\p{L}\p{M}\p{N}_-]*\s+)*?)(shop POIs?|POIs?|gates?|platforms?|exits?|lifts?|escalators?|toilets?|transfers?|tenants?|routed)\b/gu)) {
+      const raw = match[3]!;
       const kind = raw === "routed" ? raw : raw.endsWith("s") ? raw : `${raw}s`;
+      if (match[2] && row.counts[kind] === undefined) {
+        mismatches.push(`${row.label}: ${match[0]}: not compared (no derived ${kind})`);
+        continue;
+      }
       compare(kind, Number(match[1]!.replaceAll(",", "")));
     }
     if (/no platforms?(?: POIs)?\b/.test(pois)) compare("platforms", 0);

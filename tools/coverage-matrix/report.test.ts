@@ -18,12 +18,16 @@ it("derives Tobu tenants, the E27 graph and route, and M25 search-only coverage 
 it("checks count and search/route assertions while leaving rights, 3D, Open and platform numbers as prose", () => {
   const rows = [{ label: "store", counts: { POIs: 1, tenants: 860, "shop POIs": 5 }, searchable: true, routable: false },
     { label: "line", counts: { gates: 3, lifts: 2, nodes: 233, edges: 263 }, searchable: true, routable: true },
-    { label: "directory", counts: { tenants: 1547 }, searchable: true, routable: false }];
+    { label: "directory", counts: { tenants: 1547 }, searchable: true, routable: false },
+    { label: "S01", counts: { exits: 9 }, searchable: true, routable: false },
+    { label: "JR", counts: { platforms: 2, gates: 10 }, searchable: true, routable: false }];
   const text = `| Station · line/store | Source / rights | 3D | Walk / navmesh | POIs / tenants | Search / route | Open |
 |---|---|---|---|---|---|---|
 | store | 99 tenants | 9 gates | n | 1 POI + 5 shop POIs; 860 tenants | search y; route n | 7 lifts |
 | line | source | y | 233-node / 263-edge graph; 196 of 238 paths incomplete | 3 gates + 2 lifts; platforms 14, 15 | search y; route y | #684 |
-| directory | source | n | n | 83 sections (本館 67, メンズ 16) + 1,464 brands (本館 1154, メンズ 310) | search y; route n | field |`;
+| directory | source | n | n | 83 sections (本館 67, メンズ 16) + 1,464 brands (本館 1154, メンズ 310) | search y; route n | field |
+| S01 | source | n | n | 9 Toei exits (1–8, A1), line unattributed except A1 | search y; route n | field |
+| JR | source | n | n | platforms 14, 15 + 10 shared JR gates, s; facilities GAP (operator pages only) | search y; route n | field |`;
   expect(checkMatrix(text, rows)).toEqual([]);
   expect(checkMatrix(text.replace("860 tenants", "861 tenants").replace("3 gates + 2 lifts", "4 gates + 2 lifts")
     .replace("search y; route y", "search y; route n").replace("263-edge", "264-edge"), rows))
@@ -31,4 +35,9 @@ it("checks count and search/route assertions while leaving rights, 3D, Open and 
       "line: gates: matrix 4, derived 3", "line: route: matrix n, derived y"]);
   expect(checkMatrix(text.replace("| store |", "| renamed |"), rows))
     .toEqual(["store: missing matrix row", "renamed: missing row map entry"]);
+  expect(checkMatrix(text, rows.map((row) => row.label === "S01" ? { ...row, counts: { exits: 10 } }
+    : row.label === "JR" ? { ...row, counts: { platforms: 2, gates: 11 } } : row)))
+    .toEqual(["S01: exits: matrix 9, derived 10", "JR: gates: matrix 10, derived 11"]);
+  expect(checkMatrix(text, rows.map((row) => row.label === "S01" ? { ...row, counts: {} } : row)))
+    .toEqual(["S01: 9 Toei exits: not compared (no derived exits)"]);
 });
