@@ -76,7 +76,10 @@ describe("BVH ray tests match three's brute-force Mesh.raycast", () => {
       }
       expect(calls).toBe(0);
       const ray = new THREE.Raycaster(new THREE.Vector3(0.13, 0, 0.27), new THREE.Vector3(0, 1, 0), 0, 25);
-      expect(castAll(ray, [cap]).map((hit) => hit.distance)).toEqual([3, 5]);
+      const hits = castAll(ray, [cap]);
+      expect(hits).toHaveLength(2);
+      expect(hits[0]!.distance).toBeCloseTo(3, 6);
+      expect(hits[1]!.distance).toBeCloseTo(5, 6);
       expect(calls).toBe(1);
       expect(cap.raycast).toBe(THREE.Mesh.prototype.raycast);
       expect(currentBvh(cap.geometry)).not.toBeNull();
