@@ -54,61 +54,68 @@ Bake settings: cell 0.10 m, radius 0.30 m, climb 0.40 m, tile 256, greybox on. A
 
 These connections are attached and used by Detour. The refusal happens afterwards in the walk-edge audit, which discards the entire corridor on seeing its first off-mesh link. The repair removes the spurious local fences; it does not weaken that rejection.
 
-## Validation and gate status (2026-11-03 17:58 JST)
 
-The fix and tests are in `a419b6aa`. One self-review of the finished implementation found no concrete code failure. The interval helper already handles flat and sloping pieces; the upper-slab policy is unchanged. There are no station or edge exceptions. Oracle was not attempted, as directed.
+## Gate regeneration completed (2026-11-03 18:50 JST)
 
-Synthetic negative control, before the fix:
+Both public stations were regenerated through orb-test with 3 GiB and 2 CPUs. All eight gate files were retained and copied back. Ikebukuro's four files and Shinjuku's suspect list are byte-identical to the committed versions; only the other three Shinjuku gate files changed.
 
-```sh
-orb-test --memory 3g --cpus 1 --out .qa/m3 -- pnpm vitest run apps/web/src/explorer/stairwellCut.test.ts -t 'limits a lower slab' --maxWorkers=1
-```
-
-Result: `Tests 1 failed | 52 skipped (53)`; the ray under the higher flight hit the spurious band. On the final implementation, `stairwellCut.test.ts` passes all 53 tests.
-
-Final related functional run:
-
-```sh
-orb-test --memory 3g --cpus 1 --out .qa/m3 -- sh -c 'pnpm vitest related --run apps/web/src/explorer/stairwellCut.ts apps/web/src/explorer/stairwellCut.test.ts --exclude packages/godot/src/navmesh-gate.test.ts --maxWorkers=1 && pnpm vitest run apps/web/src/explorer/greybox*.test.ts apps/web/src/explorer/walkableModel*.test.ts --maxWorkers=1 && pnpm typecheck'
-```
-
-Results: related `Test Files 23 passed (23)` / `Tests 275 passed (275)`; greybox/walkable `Tests 2 failed | 201 passed (203)`. The two failures are existing timing assertions in untouched greybox emission/discovery code. The `&&` chain stopped before typecheck, so the bounded timing retry and typecheck ran separately:
-
-```sh
-orb-test --memory 3g --cpus 1 --out .qa/m3 -- sh -c 'pnpm vitest run apps/web/src/explorer/greybox.test.ts apps/web/src/explorer/greyboxEmitProfile.test.ts -t "keeps floor discovery within a generous per-step bound|profiles 15 km of synthetic corridors" --maxWorkers=1; pnpm typecheck'
-```
-
-Results: `Tests 1 failed | 1 passed | 60 skipped (62)`. Floor discovery passed the retry; `greyboxEmitProfile.test.ts:23` failed again: `expected 393.5459109999997 to be less than or equal to 120`. No further retry or threshold change. Typecheck printed `$ tsc -p tsconfig.json` and exited 0. `pnpm map:gen` exited 0 and left the map unchanged.
-
-The first, unfiltered related run ended `Tests 4 failed | 284 passed (288)`: the old L-shaped-outline assertion (corrected and now passing), an untouched drape-edges 5000 ms timeout (passed in the final run), and these subprocess failures:
-
-- `navmesh-audit.ts failed: spawnSync pnpm ETIMEDOUT` (Ikebukuro).
-- `navmesh-bake.ts failed: spawnSync pnpm ETIMEDOUT` (Shinjuku).
-
-Those two public navmesh integration tests were not retried in light resources. A duplicate queued validation was canceled before starting a container (waiting PID 82498, exit 143); it ran no tests. The replacement excluded the public navmesh gate file, leaving the explicit heavy regeneration as the required real station proof.
-
-### Before/after gate table
-
-Final status 2026-11-03 18:11 JST. Heavy ticket #263 queued at 2026-11-03 17:26 JST and acquired the lock at 2026-11-03 17:59 JST, then exited 1 before starting a container, with no failure detail printed. Its one allowed infrastructure retry, ticket #266, queued at 2026-11-03 18:00 JST and was canceled while still waiting at 2026-11-03 18:11 JST to stay within the 60-minute cap. No generator ran and no gate files have been regenerated; neither target-edge recovery nor shrink-only acceptance is established.
-
-| Station | Fallback before / after | Unvalidated before / after | Detours before / after | offFloor before / after |
+| Station | Fallback before → after | Unvalidated before → after | Detours before → after | offFloor before → after |
 |---|---|---|---|---|
-| ikebukuro | 1 / not run | 62 / not run | 0 / not run | 0 / not run |
-| shinjuku | 6 / not run | 146 / not run | 2 / not run | 0 / not run |
+| ikebukuro | 1 → 1 | 62 → 62 | 0 → 0 | 0 → 0 |
+| shinjuku | 6 → 4 | 146 → 56 | 2 → 0 | 0 → 0 |
 
-The requested CI command below remains to be run. The attempted temporary runner would retain the eight generated files under `.qa/m3/after` for comparison and copying back; it produced none. To write directly back through orb-test, retain outputs with `--out stations/ikebukuro --out stations/shinjuku` while keeping the inner command identical:
+Shrink-only PASS: fallback and suspect edge sets and detour sets are subsets of their previous sets; no per-edge or total clip counter grows; unvalidated, invalid joins and failed route pairs do not grow; route coverage is preserved. Both target edges are absent from the Shinjuku fallback list and have finite forward and reverse navmesh paths.
+
+### Write-back and local timeout
+
+`orb-test --help` documents `--out` as a writable bind mount, not automatic write-back. History contains regenerated gate artifacts in #708 and #710; #710 also records the local 180-second limitation. Directly mounting source station directories collided with the snapshot copy (`tar: file changed as we read it`, exit 1); tracked file contents remained unchanged. The successful run mounted only `.qa/m3`, which is excluded from the snapshot, and copied the generator's eight JSON outputs into that mount before the container exited. No run was killed.
+
+There is no timeout environment override in `navmesh-fallback.ts`. The runner changed `timeout:180_000` to `timeout:600_000` only in the disposable container's source copy. The host file still contains `timeout:180_000`; no timeout change is committed.
+
+Exact successful command:
 
 ```sh
-orb-test --heavy --memory 3g --cpus 2 -- sh -c 'for s in ikebukuro shinjuku; do pnpm tsx packages/godot/src/navmesh-fallback.ts --station "$s" --with-greybox --write "stations/$s/navmesh-fallback.json" --write-baseline "stations/$s/navmesh-clip-baseline.json" --write-suspect "stations/$s/navmesh-suspect.json" --write-paths "stations/$s/navmesh-paths.json"; done'
+orb-test --heavy --memory 3g --cpus 2 --out .qa/m3 -- sh .qa/m3/regenerate-gates.sh
 ```
 
-Assumption: fix the stairwell band generator that contributes these shell faces, rather than changing a corridor boundary model that emitted none of them.
+The temporary runner contained:
 
-Follow-up: the existing 15 km emission timing limit still fails in the specified 1-CPU light container. No performance code or timing limits were changed.
+```sh
+#!/bin/sh
+set -eu
+python3 - <<'PY'
+from pathlib import Path
+p = Path('packages/godot/src/navmesh-fallback.ts')
+s = p.read_text()
+assert s.count('timeout:180_000') == 1
+p.write_text(s.replace('timeout:180_000', 'timeout:600_000', 1))
+print('m3: container-only spawnSync timeout raised to 600000 ms; host source unchanged', flush=True)
+PY
+for s in ikebukuro shinjuku; do
+  pnpm tsx packages/godot/src/navmesh-fallback.ts --station "$s" --with-greybox --write "stations/$s/navmesh-fallback.json" --write-baseline "stations/$s/navmesh-clip-baseline.json" --write-suspect "stations/$s/navmesh-suspect.json" --write-paths "stations/$s/navmesh-paths.json"
+  mkdir -p ".qa/m3/regen-output/$s"
+  for f in navmesh-fallback navmesh-clip-baseline navmesh-suspect navmesh-paths; do
+    cp "stations/$s/$f.json" ".qa/m3/regen-output/$s/$f.json"
+  done
+done
 
+```
 
-## Blocked / handoff (2026-11-03 18:11 JST)
+Final generator output:
 
-The heavy wrapper exited 1 before creating a container and printed no error detail. Its one queued retry was canceled before starting a container because the remaining cap could not cover the queue and both station regenerations; the untouched 15 km emission timing assertion also failed its one bounded retry. The lead must run the exact two-station regeneration above, verify both target edges are absent from fallback and present in both path directions, and require no growth in fallback, unvalidated, detours, offFloor or per-edge clip counts before marking this PR ready.
+```json
+{"station":"ikebukuro","edges":1,"bakeMs":15978.566724999997,"elapsedMs":545001.184064}
+{"station":"shinjuku","edges":4,"bakeMs":28861.853066999996,"elapsedMs":141773.518206}
+```
 
-No running test container was manually killed. The duplicate light waiter exited 143 when canceled, and heavy retry #266 was canceled while queued; neither started tests. The two timed-out light navmesh subprocesses were not rerun in light resources. All temporary instrumentation and runner source files were removed; the worktree contains only committed task changes.
+Result: exit 0, completed 2026-11-03 18:48 JST. Copy-back and shrink-only comparison completed 2026-11-03 18:49 JST.
+
+### CI and existing validation
+
+[Root tests on `0724e532`](https://github.com/nurockplayer/gteki/actions/runs/41609081772) completed 2026-11-03 18:21 JST with `Tests 1 failed | 3360 passed | 11 skipped (3372)`. Its only failure was the public Shinjuku gate asking to remove the two target edges, lower unvalidated routes 146 → 56, and regenerate detours/paths. `greyboxEmitProfile.test.ts` passed that CI run. E2E smoke, GIS tests and REUSE also passed. These regenerated files address the one CI failure; no full suite was manually rerun for this data-only follow-up.
+
+The original implementation's focused stairwell-cut tests passed 53/53 (the new regression failed before the fix), related functional tests passed 275/275, and root typecheck exited 0. The local 1-CPU emission profile's earlier timing failure is recorded in the prior handoff; its threshold and implementation remain unchanged. One bounded self-review of the implementation found no concrete code failure; Oracle was skipped as directed.
+
+Assumptions: the large diff is generated public navmesh path coordinates plus this QA record. Production TypeScript is unchanged in this follow-up, and the temporary timeout increase was container-only.
+
+Blocked: none. Both stations' required regeneration and shrink-only comparison are complete. Auto-merge was not changed.
