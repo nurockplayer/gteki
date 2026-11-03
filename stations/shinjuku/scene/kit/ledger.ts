@@ -54,6 +54,27 @@ export class PlaceholderLedger implements PlaceholderLedgerView {
     return prepared.removed;
   }
 
+  /** Copy a cluster's replacement finishes before hiding them in the original shared meshes. */
+  copy(group: PlaceholderGroup, anchorKeys: ReadonlySet<string>): THREE.Group {
+    const out = new THREE.Group();
+    out.name = "kit-fallback";
+    for (const entry of this.bound) {
+      if (entry.group !== group || !entry.mesh.geometry.index) continue;
+      const indices = entry.ranges.filter((r) => anchorKeys.has(r.key)).flatMap((r) =>
+        Array.from({ length: r.count }, (_, i) => entry.mesh.geometry.index!.getX(r.start + i)));
+      if (!indices.length) continue;
+      entry.mesh.updateWorldMatrix(true, false);
+      const geo = this.track(compact(entry.mesh.geometry, indices).applyMatrix4(entry.mesh.matrixWorld));
+      // Preserve these exact visual finishes through the static slab cutter (which excludes explicit ranges).
+      geo.setDrawRange(0, geo.index!.count);
+      const mesh = new THREE.Mesh(geo, entry.mesh.material);
+      mesh.name = `kit-fallback:${group}`;
+      mesh.userData.kitLod = true;
+      out.add(mesh);
+    }
+    return out;
+  }
+
   /**
    * Work out the new index buffers without touching any mesh. Only `commit()` mutates (plain assignments that
    * cannot throw), so a caller that prepares every group first and commits afterwards can never leave a

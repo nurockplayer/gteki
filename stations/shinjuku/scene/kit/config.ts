@@ -29,8 +29,9 @@ export const kitBundleUri = (tier: KitTier) => `${KIT_ASSET_ROOT}/${tier}.glb`;
 export const kitFileUri = (tier: KitTier, file: string) => `${KIT_ASSET_ROOT}/${tier}/${file}`;
 
 /**
- * Director's ruling for Shinjuku, per scene, measured on the shipped (meshopt + KTX2) variant:
- * at most +30 draws, +60k triangles, +3 MB geometry, 8 MB GPU textures. Decimal megabytes, the stricter reading.
+ * At most +30 active kit draws and +60k active kit triangles. Distance LOD admits vertical clusters
+ * at runtime; +3 MB estimated resident kit geometry and 8 MB GPU textures remain whole-station guards.
+ * Decimal megabytes, the stricter reading. Procedural fallback reuses the existing finish materials.
  */
 export const KIT_BUDGET: KitBudget = {
   maxDraws: 30,

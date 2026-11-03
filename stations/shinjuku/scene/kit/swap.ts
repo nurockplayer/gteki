@@ -6,7 +6,7 @@
  * colliders, walls, floors, camera blockers or fences: those are built from the layout, which it only reads.
  */
 import { collectKitAnchors } from "./anchors.ts";
-import { batchKitPlacements } from "./batch.ts";
+import { batchDistanceKit } from "./lod.ts";
 import { KIT_BUDGET, ROLE_REPLACES, type TierCaps, type TintSlot } from "./config.ts";
 import { planKitPlacements, totalsFor } from "./place.ts";
 import type { KitApplyContext, KitAssetProvider, KitBudget, KitDrop, KitManifest, KitRole, KitSwap, KitSwapReport, PlaceholderGroup } from "./types.ts";
@@ -32,7 +32,7 @@ export function createKitSwap(opts: KitSwapOptions): KitSwap {
       try {
         const anchors = collectKitAnchors({ layout: ctx.layout, protection: ctx.protection, plan: ctx.plan, bundle: ctx.bundle, lifts: ctx.liftAnchors });
         const plan = planKitPlacements({ anchors, manifest: opts.manifest, budget, caps: opts.caps, ...(opts.placeable ? { placeable: opts.placeable } : {}), log });
-        const batch = batchKitPlacements({ placed: plan.placed, manifest: opts.manifest, provider: opts.provider, tint: opts.tint, track: ctx.track });
+        const batch = batchDistanceKit({ placed: plan.placed, manifest: opts.manifest, provider: opts.provider, tint: opts.tint, track: ctx.track }, anchors, ctx.ledger, budget, opts.caps);
         group = batch.group;
 
         // A placement hides its placeholder only when all of its drawable batches merged successfully.
@@ -58,6 +58,7 @@ export function createKitSwap(opts: KitSwapOptions): KitSwap {
 
         const dropped = [...plan.dropped, ...undrawn];
         const report: KitSwapReport = {
+          lod: batch.lod,
           tier: opts.manifest.tier,
           license: opts.manifest.license,
           placed: drawn,
