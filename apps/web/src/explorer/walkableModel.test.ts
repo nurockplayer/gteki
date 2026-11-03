@@ -20,6 +20,67 @@ function properlyCrosses(a: PlanPoint, b: PlanPoint, c: PlanPoint, d: PlanPoint)
 const length = (wall: BoundaryWall): number => Math.hypot(wall.bx - wall.ax, wall.bz - wall.az);
 
 describe("walkable model", () => {
+  const square = (lo: number, hi: number) => [at(lo, lo), at(hi, lo), at(hi, hi), at(lo, hi)];
+  const atrium = (): Region => ({ kind: "polygon", level: "L1", y: 0, rings: [square(0, 10), square(3, 7)] });
+  const contains = (polygons: PlanPoint[][][], x: number, z: number): boolean => {
+    const inRing = (ring: PlanPoint[]) => {
+      let inside = false;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const a = ring[i]!, b = ring[j]!;
+        if ((a.z > z) !== (b.z > z) && x < (b.x - a.x) * (z - a.z) / (b.z - a.z) + a.x) inside = !inside;
+      }
+      return inside;
+    };
+    return polygons.some((polygon) => inRing(polygon[0]!) && !polygon.slice(1).some(inRing));
+  };
+
+  it.each([false, true])("keeps an atrium hole and both boundaries (reversed rings: %s)", (reverse) => {
+    const region = atrium();
+    if (region.kind !== "polygon") throw new Error("expected polygon");
+    region.rings = region.rings.map((ring) => {
+      const points = reverse ? [...ring].reverse() : ring;
+      return [...points, points[0]!];
+    });
+    const original = structuredClone(region);
+    const normalized = regionPolygon(region)[0]!;
+    const signedArea = (ring: PlanPoint[]) => ring.reduce((sum, p, i) => {
+      const q = ring[(i + 1) % ring.length]!;
+      return sum + p.x * q.z - p.z * q.x;
+    }, 0) / 2;
+    expect(normalized.map(signedArea)).toEqual([100, -16]);
+    expect(normalized.map((ring) => ring.length)).toEqual([4, 4]);
+    const { levels, walls } = buildWalkableModel([region], undefined, 0.4);
+    expect(region).toEqual(original);
+    expect(levels.get("L1")).toHaveLength(1);
+    expect(levels.get("L1")![0]).toHaveLength(2);
+    expect(contains(levels.get("L1")!, 5, 5)).toBe(false);
+    expect(contains(levels.get("L1")!, 1, 5)).toBe(true);
+    expect(walls).toHaveLength(8);
+    const hole = walls.filter((wall) => [wall.ax, wall.az, wall.bx, wall.bz].every((v) => v >= 3 && v <= 7));
+    expect(hole).toHaveLength(4);
+    expect(hole.reduce((sum, wall) => sum + length(wall), 0)).toBeCloseTo(16);
+    expect(walls.reduce((sum, wall) => sum + length(wall), 0)).toBeCloseTo(56);
+  });
+
+  it("unions a polygon and a same-level stair landing strip without a joint wall", () => {
+    const { levels, walls } = buildWalkableModel([
+      atrium(), strip("L1", [{ x: -4, y: 0, z: 5 }, { x: 2, y: 0, z: 5 }], 1),
+    ], undefined, 0.4);
+    expect(levels.get("L1")).toHaveLength(1);
+    expect(contains(levels.get("L1")!, -2, 5)).toBe(true);
+    expect(contains(levels.get("L1")!, 1, 5)).toBe(true);
+    expect(contains(levels.get("L1")!, 5, 5)).toBe(false);
+    for (const wall of walls) expect(properlyCrosses(wallStart(wall), wallEnd(wall), at(-2, 5), at(2, 5))).toBe(false);
+  });
+
+  it("does not cut floors or ceilings for a strip passing through a polygon's empty hole", () => {
+    const { slabCuts, ceilingCuts } = buildWalkableModel([
+      atrium(), strip("L2", [{ x: 4, y: 1, z: 5 }, { x: 6, y: 1, z: 5 }], 0.5),
+    ], undefined, 0.4);
+    expect(slabCuts.size).toBe(0);
+    expect(ceilingCuts.size).toBe(0);
+  });
+
   it("keeps only the union outline where two strips cross", () => {
     const { walls } = buildWalkableModel([
       strip("L1", [{ x: -10, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }], 2),

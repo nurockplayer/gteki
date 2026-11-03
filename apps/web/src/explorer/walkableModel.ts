@@ -1,4 +1,5 @@
 import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clipping";
+import { ShapeUtils, Vector2 } from "three";
 
 /** A point in plan space: renderer x/z. */
 export type PlanPoint = { x: number; z: number };
@@ -12,6 +13,7 @@ export type Region = { group?: string } & (
   | { kind: "strip"; level: string; points: { x: number; y: number; z: number }[]; halfWidth: number }
   | { kind: "disc"; level: string; x: number; y: number; z: number; radius: number }
   | { kind: "rect"; level: string; center: { x: number; y: number; z: number }; along: PlanPoint; halfLength: number; halfWidth: number }
+  | { kind: "polygon"; level: string; y: number; rings: PlanPoint[][] }
   | { kind: "connector"; level: string; quad: PlanPoint[]; y: number });
 
 /** One wall piece on a level's union boundary, with the floor height at each end. */
@@ -76,6 +78,16 @@ export function regionPolygon(region: Region): PlanPolygon[] {
     }
     case "connector":
       return region.quad.length >= 3 ? [[region.quad.map((p) => ({ x: p.x, z: p.z }))]] : [];
+    case "polygon": {
+      const rings = region.rings.map((ring, i) => {
+        const open = ring.map((p) => ({ x: p.x, z: p.z }));
+        if (open.length > 1 && open[0]!.x === open.at(-1)!.x && open[0]!.z === open.at(-1)!.z) open.pop();
+        // Counter-clockwise outer, clockwise holes, in x/z plan space.
+        if ((ringArea(open) > 0) !== (i === 0)) open.reverse();
+        return open;
+      });
+      return rings[0]?.length && rings.every((ring) => ring.length >= 3) ? [rings] : [];
+    }
   }
 }
 
@@ -154,6 +166,7 @@ function heightSource(region: Region): HeightSource {
     case "disc": return { box, nearest: (p) => polygonNearest(polygons, region.y, p) };
     case "rect": return { box, nearest: (p) => polygonNearest(polygons, region.center.y, p) };
     case "connector": return { box, nearest: (p) => polygonNearest(polygons, region.y, p) };
+    case "polygon": return { box, nearest: (p) => polygonNearest(polygons, region.y, p) };
   }
 }
 
@@ -487,10 +500,24 @@ function sameWalk(a: Piece, b: Piece): boolean {
   return Math.min(...gaps) <= 0 && Math.max(...gaps) >= 0 ? true : Math.min(...gaps.map(Math.abs)) < CLEARANCE_M;
 }
 
+// Polygon regions contribute convex triangles, excluding holes. `ring` remains one convex outer ring, so the
+// existing height clustering and slab/ceiling clipping also work for concave polygons. Their cuts share segment 0.
 type Piece = { region: number; segment: number; level: string; group: string | undefined; kind: Region["kind"]; ring: PlanPoint[]; box: Box; low: number; high: number; height: (p: PlanPoint) => number; source: HeightSource };
 
 function regionPieces(region: Region, index: number): Piece[] {
   const polygons = regionPolygon(region);
+  if (region.kind === "polygon") {
+    const polygon = polygons[0];
+    if (!polygon) return [];
+    const rings = polygon.map((ring) => ring.map((p) => new Vector2(p.x, p.z)));
+    const triangles = ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), points = rings.flat();
+    const source = heightSource(region);
+    return triangles.map((triangle) => {
+      const ring = triangle.map((i) => ({ x: points[i]!.x, z: points[i]!.y }));
+      return { region: index, segment: 0, level: region.level, group: region.group, kind: region.kind, ring,
+        box: boxOf([[ring]]), low: region.y, high: region.y, height: () => region.y, source };
+    });
+  }
   if (region.kind !== "strip") {
     const ring = polygons[0]?.[0];
     if (!ring) return [];

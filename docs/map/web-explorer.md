@@ -11,7 +11,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 
 ## Main files and functions
 - `apps/web/src/explorer/greybox.ts` — detects unmodelled edge runs, builds merged runtime passage meshes and portal openings, and splits walls at openings.
-- `apps/web/src/explorer/walkableModel.ts` — `buildWalkableModel()`: the pure per-level walkable union of strip, disc, rect and connector regions, and the boundary walls it leaves once connector footprints and caller-accepted attachments are excluded (#645 step 1a).
+- `apps/web/src/explorer/walkableModel.ts` — `buildWalkableModel()`: the pure per-level walkable union of strip, disc, rect, connector and polygon regions (including holes), and the boundary walls it leaves once connector footprints and caller-accepted attachments are excluded (#645 step 1a).
 - `apps/web/src/explorer/greyboxConnectors.ts` — builds runtime vertical connectors, batches their geometry and checks the shared triangle budget.
 - `apps/web/src/explorer/portalCut.ts` — `cutRegions()` (the generic CPU triangle cut with a clipping-plane fallback) plus `cutPortals()` for greybox openings.
 - `apps/web/src/explorer/stairwellCut.ts` — `stairwellWells()` builds a plan rectangle per straight piece of a traversable stairs/escalator edge (including intermediate landings), `stairwellRegions()` turns them into walking-surface-relative cut regions, `cutStairwells()` runs the CPU cut, adds the 0.30 m edge band into the greybox shell and builds the upper-floor guard rail (mesh + wall segments + colliders). Elevators are not handled yet.
