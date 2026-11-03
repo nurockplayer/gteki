@@ -330,6 +330,21 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("limits a lower slab's edge bands to the part of the flight that cut it", () => {
+    const s = scene();
+    // This low slab is cut near the foot of the flight. Its edge band must not extend along
+    // the whole footprint and fence off a passage beneath the higher part of the flight.
+    s.ceiling.position.y = 1.1;
+    s.root.updateMatrixWorld(true);
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "low" });
+    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
+    band.updateMatrixWorld(true);
+    const across = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 1.1, -2), new THREE.Vector3(0, 0, 1), 0, 4).intersectObject(band);
+    expect(across(1)).not.toHaveLength(0);
+    expect(across(8)).toHaveLength(0);
+    result.dispose();
+  });
+
   it("merges the well edge into the greybox shell instead of adding a mesh", () => {
     const s = scene();
     const shellGeometry = new THREE.BufferGeometry();
@@ -541,10 +556,17 @@ describe("stairwell cuts", () => {
       const a = (x - r.center.x) * r.across.x + (z - r.center.z) * r.across.z;
       return Math.abs(d) < r.halfLength - 1e-3 && Math.abs(a) < r.halfWidth - 1e-3;
     });
-    for (let i = 0; i < positions.count; i++) expect(strictlyInside(positions.getX(i), positions.getZ(i))).toBe(false);
-    // The first flight's outer ends, on both long sides at x = 0, still carry bands.
+    // Long-side bands stay on the plan union's exterior. A clipped end band can be inside
+    // the full footprint: at that slab height the opening ends before the flight does.
+    for (let i = 0; i < positions.count; i += 6) {
+      const a = new THREE.Vector3().fromBufferAttribute(positions, i), b = new THREE.Vector3().fromBufferAttribute(positions, i + 1);
+      const longSide = rects.some((r) => Math.abs(a.clone().sub(r.center).dot(r.across) - b.clone().sub(r.center).dot(r.across)) < 1e-6
+        && Math.abs(Math.abs(a.clone().sub(r.center).dot(r.across)) - r.halfWidth) < 1e-6);
+      if (longSide) for (let j = 0; j < 6; j++) expect(strictlyInside(positions.getX(i + j), positions.getZ(i + j))).toBe(false);
+    }
+    // The 2.6 m ceiling starts opening at x = 1 (2.1 m above the flight); both outer sides keep bands there.
     const vertex = (x: number, z: number) => { for (let i = 0; i < positions.count; i++) if (Math.abs(positions.getX(i) - x) < 1e-6 && Math.abs(positions.getZ(i) - z) < 1e-6) return true; return false; };
-    expect(vertex(0, -1.1) && vertex(0, 1.1)).toBe(true);
+    expect(vertex(1, -1.1) && vertex(1, 1.1)).toBe(true);
     result.dispose();
   });
 
