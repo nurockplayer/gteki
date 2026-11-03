@@ -848,10 +848,13 @@ export class Explorer {
 
   private buildAvatar(glbUrl?: string): void {
     this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl });
-    // A slim marker ring keeps "this is you" readable without outshining the character.
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
-    ring.position.y = 0.02;
-    this.avatar.add(this.avatarRig.root, contactShadow(0.42), ring);
+    this.avatar.add(this.avatarRig.root);
+    if (this.quality === "high") {
+      // A slim marker ring keeps "this is you" readable without outshining the character.
+      const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
+      ring.position.y = 0.02;
+      this.avatar.add(contactShadow(0.42), ring);
+    }
     this.avatar.visible = false;
   }
 
@@ -897,7 +900,7 @@ export class Explorer {
     this.station = station;
     this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
-    this.graph = buildGraphView(bundle, router);
+    this.graph = buildGraphView(bundle, router, station.privateRegions);
     this.routablePts = routablePoints(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE));
     this.routableBox = toBox3(pointsBounds(this.routablePts));
     lap("graph");
@@ -999,7 +1002,7 @@ export class Explorer {
         return value;
       };
       const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
-      this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
+      this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality, false, station.privateRegions);
       lap("greybox");
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       lap("greyboxSegments");
@@ -1043,6 +1046,16 @@ export class Explorer {
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
+      if (station.privateRegions?.length) {
+        // Join traversable graph corridors to private floors so their shared boundary has no wall.
+        const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+        this.greybox = buildGreybox(bundle, traversable, () => false, { colliderNear: () => false, wallHit: () => null }, this.quality, false, station.privateRegions);
+        this.world.add(this.greybox.root);
+        this.walkable = [...this.walkable, ...this.greybox.walkable];
+        this.colliders = this.greybox.colliders;
+        this.walls = this.greybox.wallSegments;
+        this.greyboxOpenings = this.greybox.openings;
+      }
     }
     this.world.updateMatrixWorld(true);
     const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);

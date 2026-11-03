@@ -11,6 +11,7 @@ import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseStationFiles, type StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "../../../packages/search/src/index.ts";
+import { createRouter, routeBetween } from "../../../packages/navigation/src/index.ts";
 
 const read = (f: string): unknown => JSON.parse(fs.readFileSync(new URL(`../gteki/${f}`, import.meta.url), "utf8"));
 function load(): StationBundle {
@@ -153,6 +154,23 @@ const GOLDEN: Record<string, Row[]> = {
 };
 
 describe("Ikebukuro golden search", () => {
+  it("finds Central Gate 2 as routable and routes to its printed west Central Passage approach", () => {
+    const hit = index.search("東武東上線 中央2改札")[0]!;
+    expect(hit.poi.id).toBe("tobu-central-gate-2");
+    expect(hit.routable).toBe(true);
+    expect(hit.poi.connectorNodeIds).toEqual(["c_w"]);
+    expect(hit.poi.evidence.sourceIds).toEqual(["toshima-underground-guide-2022"]);
+    const origin = bundle.pois.find((poi) => poi.id === "jr-central-gate-2")!;
+    const result = routeBetween(createRouter(bundle), { kind: "poi", poi: origin }, hit.poi, { fare: "ticketed", stepFree: false });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected the printed passage approach to route");
+    expect(result.nodeIds.at(-1)).toBe("c_w");
+    expect(result.crossesFareBoundary).toBe(false);
+    const searchOnly = index.search("東武東上線 中央1改札")[0]!;
+    expect(searchOnly.poi.id).toBe("tobu-central-gate-1");
+    expect(searchOnly.routable).toBe(false);
+  });
+
   for (const [group, rows] of Object.entries(GOLDEN)) {
     describe(group, () => {
       for (const row of rows) {

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { floorExclusionCuts, subtractPlan, type PlanExclusion, type PlanPoint } from "./walkableModel.ts";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { nodeDisplayZ } from "@gteki/navigation";
 
@@ -52,7 +53,7 @@ export function ribbonGeometry(points: readonly THREE.Vector3[], width: number, 
 }
 
 /** Renderer-space polyline for an edge, with display heights for unknown z (never routed on). */
-export function edgePoints(bundle: StationBundle, edge: Edge, nodes: Map<string, StationBundle["nodes"][number]>, floors: Map<string, StationBundle["floors"][number]>): THREE.Vector3[] {
+export function edgePoints(bundle: Pick<StationBundle, "nodes" | "floors">, edge: Edge, nodes: Map<string, StationBundle["nodes"][number]>, floors: Map<string, StationBundle["floors"][number]>): THREE.Vector3[] {
   const from = nodes.get(edge.from);
   const to = nodes.get(edge.to);
   if (!from || !to) return [];
@@ -108,4 +109,30 @@ export function dashTexture(): THREE.CanvasTexture {
   t.wrapT = THREE.ClampToEdgeWrapping;
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
+}
+
+/** Remove explicit holes from graph triangles on their floor, preserving the authored surface height. */
+export function clipFlatGeometry(geometry: THREE.BufferGeometry, holes: readonly PlanExclusion[], levels: readonly string[], heights: readonly number[], offset = new THREE.Vector3()): THREE.BufferGeometry {
+  const cuts = holes.flatMap((plane) => floorExclusionCuts(plane, levels, heights));
+  if (!cuts.length) return geometry;
+  const position = geometry.getAttribute("position"), count = geometry.index?.count ?? position.count, out: number[] = [];
+  for (let i = 0; i < count; i += 3) {
+    const corners = [0, 1, 2].map((j) => new THREE.Vector3().fromBufferAttribute(position, geometry.index?.getX(i + j) ?? i + j).add(offset));
+    const a = corners[0]!, normal = corners[1]!.clone().sub(a).cross(corners[2]!.clone().sub(a));
+    const height = (p: PlanPoint) => a.y - (normal.x * (p.x - a.x) + normal.z * (p.z - a.z)) / normal.y;
+    if (Math.abs(normal.y) < 1e-12) { for (const p of corners) out.push(p.x - offset.x, p.y - offset.y, p.z - offset.z); continue; }
+    for (const polygon of subtractPlan(corners, cuts)) {
+      const rings = polygon.map((ring) => ring.map((p) => new THREE.Vector2(p.x, p.z)));
+      const faces = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), points = rings.flat();
+      for (const face of faces) {
+        const triangle = face.map((index) => points[index]!);
+        const [a, b, c] = triangle as [THREE.Vector2, THREE.Vector2, THREE.Vector2];
+        if (((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) < 0) !== (normal.y > 0)) triangle.reverse();
+        for (const p of triangle) out.push(p.x - offset.x, height({ x: p.x, z: p.y }) - offset.y, p.y - offset.z);
+      }
+    }
+  }
+  const clipped = new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+  clipped.computeVertexNormals();
+  return clipped;
 }

@@ -458,7 +458,7 @@ function addWallBackFaces(root: THREE.Group, material: THREE.Material, track: <T
 /** Thin, long level meshes have very loose default bounding spheres. A second box
  * check avoids submitting whole underground levels when the camera faces away from them.
  */
-function installTightCulling(root: THREE.Group) {
+function installTightCulling(root: THREE.Group, quality: BuildOptions["quality"]) {
   const frustum = new THREE.Frustum(), projection = new THREE.Matrix4(), worldBox = new THREE.Box3();
   const uses = new Map<THREE.BufferGeometry, number>();
   root.traverse((o) => { if (o instanceof THREE.Mesh) uses.set(o.geometry, (uses.get(o.geometry) ?? 0) + 1); });
@@ -485,6 +485,12 @@ function installTightCulling(root: THREE.Group) {
     batch.renderOrder = o.renderOrder;
     batch.computeBoundingSphere();
     batch.onBeforeRender = (_renderer, _scene, camera) => {
+      // The cutter replaces this sole instance with a child mesh and zeros its matrix.
+      // A zero-scale instance still submits a draw; keep the empty phone batch at zero.
+      if (quality === "low" && batch.children.some(child => child.userData.portalInstanceCopy)) {
+        batch.count = 0;
+        return;
+      }
       frustum.setFromProjectionMatrix(projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
       worldBox.copy(bounds).applyMatrix4(batch.matrixWorld);
       batch.count = frustum.intersectsBox(worldBox) ? 1 : 0;
@@ -615,7 +621,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     trackBed: track(new THREE.MeshStandardMaterial({ color: "#2a2826", roughness: 0.95 })),
     rail: track(new THREE.MeshStandardMaterial({ color: "#8d8f92", roughness: 0.3, metalness: 0.9 })),
     accent: track(new THREE.MeshStandardMaterial({ color: OEDO_MAGENTA, roughness: 0.4, emissive: OEDO_MAGENTA, emissiveIntensity: 0.15 })),
-    portal: track(new THREE.MeshBasicMaterial({ color: "#7fd3ff", transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })),
+    portal: track(new THREE.MeshBasicMaterial({ color: "#7fd3ff", transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false, forceSinglePass: opts.quality === "low" })),
     sidewalk: track(new THREE.MeshStandardMaterial({ color: "#a39e96", roughness: 0.9 })),
     tunnel: track(new THREE.MeshStandardMaterial({ color: "#3a3b3d", roughness: 0.95, side: THREE.DoubleSide })),
     psdLeaf: track(new THREE.MeshStandardMaterial({ color: "#c9d6dd", roughness: 0.15, metalness: 0.4, transparent: true, opacity: 0.85 })),
@@ -1076,7 +1082,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
     const portalTex = signTexture([{ icon: "nomap", ja: "この先 データ未収録", en: "Not mapped beyond this point", tone: "warn" }], 1024);
     track(portalTex.texture);
-    const signMat = track(new THREE.MeshBasicMaterial({ map: portalTex.texture, side: THREE.DoubleSide, transparent: true }));
+    const signMat = track(new THREE.MeshBasicMaterial({ map: portalTex.texture, side: THREE.DoubleSide, transparent: true, forceSinglePass: opts.quality === "low" }));
     for (const node of bundle.nodes) {
       if (degree.get(node.id) !== 1 || node.inOut !== "inside") continue;
       if (node.kind !== "junction" && node.kind !== "exit") continue;
@@ -1135,7 +1141,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // of which the portals are only ~650 (#72). The batch used to inherit the name "elevator-portal:finish".
   mergeRootFinishes(root, [[mat.steel, "static-steel-finishes"], [mat.glass, "static-glass-finishes"]], track, true);
   mergeRootFinishes(root, [[mat.darkSteel, "static-dark-steel-finishes"], [mat.gateOk, "static-gate-ok-finishes"], [mat.accent, "static-accent-finishes"]], track);
-  installTightCulling(root);
+  installTightCulling(root, opts.quality);
 
   // ---- platform edge helper
   function buildPlatformEdge(walls: WallSeg[], z: number, g: THREE.Group) {

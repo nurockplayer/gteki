@@ -5,13 +5,13 @@ import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import * as THREE from "three";
 import { init, importNavMesh, NavMeshQuery, Detour, statusDetail, type NavMesh } from "recast-navigation";
-import { assembleSnapPath, snapJoinKey, createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
-import { navmeshBundle } from "./navmesh-input.ts";
+import { assembleSnapPath, snapJoinKey, buildConnectorPath, createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
+import { navmeshBundle, privateRegionsSha256 } from "./navmesh-input.ts";
 import { floorScene, floorSplitPlan, parseFloors } from "./navmesh-floors.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
 import { qaFile } from "./navmesh-qa-path.ts";
 import { auditPolyline, loadScene, sceneProbe, resampleAudit, type SampleDetail, type AuditCache } from "./route-clip-audit.ts";
-import { diagnoseVerticalSnap } from "./navmesh-links.ts";
+import { diagnoseVerticalSnap, validateLinkSnap } from "./navmesh-links.ts";
 import { makeFloorHeightNear, suspectVerticalEdges } from "./navmesh-suspect.ts";
 
 import { auditFallbackSegments, fallbackGate } from "./navmesh-fallback-audit.ts";
@@ -78,6 +78,55 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
   } finally { corridor.polys.destroy(); }
 }
 
+/** Audit a gate using its own directed off-mesh connection, never a different gate or walking bypass. */
+export function auditGatePath(nav: NavMesh, query: NavMeshQuery, from: V3, to: V3, line: readonly PolylinePoint[], validateSnap: (node: V3, snap: V3) => boolean,
+  link: { connection: { userId: number; startPosition: V3; endPosition: V3 } } | undefined, reversed = false) {
+  const built = buildConnectorPath(query, from, to, line, validateSnap);
+  const reject = (pathRejection: "missing_link" | "wrong_link") => ({ ...built, points: null, missing: true, reason: "no_path" as const, pathRejection });
+  if (!link) return reject("missing_link");
+  if (!built.points) return { ...built, missing: true, pathRejection: null };
+  const a = reversed ? link.connection.endPosition : link.connection.startPosition;
+  const b = reversed ? link.connection.startPosition : link.connection.endPosition;
+  // Select this connection explicitly: a shortest walking path can bypass a valid wide gate.
+  let traversable = false;
+  for (let i=0;i<nav.getMaxTiles() && !traversable;i++) {
+    const tile=nav.getTile(i), header=tile.header(); if (!header) continue;
+    for (let j=0;j<header.offMeshConCount() && !traversable;j++) {
+      const connection=tile.offMeshCons(j);
+      if (connection.userId() !== link.connection.userId || (reversed && !(connection.flags() & 1))) continue; // DT_OFFMESH_CON_BIDIR
+      const endpoint=(offset:number)=>({x:connection.pos(offset),y:connection.pos(offset+1),z:connection.pos(offset+2)});
+      if (distance(a,endpoint(reversed ? 3 : 0))>0.01 || distance(b,endpoint(reversed ? 0 : 3))>0.01) continue;
+      const ends = new Map<number,number[]>();
+      let next=tile.polys(connection.poly()).firstLink(), guard=0;
+      while (next !== 0xffffffff && guard++ < header.maxLinkCount()) {
+        const adjacent=tile.links(next);
+        if (adjacent.ref()) ends.set(adjacent.edge(),[...(ends.get(adjacent.edge()) ?? []),adjacent.ref()]);
+        next=adjacent.next();
+      }
+      if (!ends.has(0) || !ends.has(1)) continue;
+      const connectionRef=nav.getPolyRefBase(tile)+connection.poly();
+      // Verify the directed floor→connection→floor corridor, including the incoming floor link.
+      for (const ref of ends.get(reversed ? 1 : 0)!) {
+        const ground=nav.getTileAndPolyByRef(ref), groundHeader=ground.success ? ground.tile.header() : null;
+        if (!ground.success || !groundHeader) continue;
+        let entry=ground.poly.firstLink(), count=0;
+        while (entry !== 0xffffffff && count++ < groundHeader.maxLinkCount()) {
+          const adjacent=ground.tile.links(entry);
+          if (adjacent.ref() === connectionRef) { traversable=true; break; }
+          entry=adjacent.next();
+        }
+        if (traversable) break;
+      }
+    }
+  }
+  if (!traversable) return reject("wrong_link");
+  return { ...built, missing: false, pathRejection: null, points: [
+    { ...built.points[0]!, x: a.x, y: -a.z, z: a.y },
+    ...built.points.slice(1,-1),
+    { ...built.points.at(-1)!, x: b.x, y: -b.z, z: b.y },
+  ] };
+}
+
 /** Snap a path's vertices to the floor height floorAt reports. Between two vertices the floor is sampled every 0.25 m of
  * plan length; where the straight line leaves it by more than 0.05 m, the path is split at the worst sample, at floor
  * height, and both halves are checked again (#669 r2: a ramp foot between vertices). */
@@ -108,6 +157,11 @@ export function countedTotals(details: readonly Pick<SampleDetail,"floor"|"wallB
     if (d.wallBefore) total.wallHits++;
   });
   return total;
+}
+
+/** A missing hash also rejects meshes baked before private geometry entered provenance. */
+export function assertPrivateRegionsProvenance(provenance: { privateRegionsSha256?: string }, regions: Parameters<typeof privateRegionsSha256>[0]): void {
+  if (provenance.privateRegionsSha256 !== privateRegionsSha256(regions)) throw new Error("navmesh bake and audit private regions differ; rebake first");
 }
 
 async function main() {
@@ -146,11 +200,12 @@ async function main() {
   await init();
   const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav, { maxNodes: 8192 });
   const loadMs = performance.now() - loadStart, memoryAfterLoad = process.memoryUsage();
-  const { bundle, privateBuild, outOfSplit = [], sceneBundle = bundle } = await navmeshBundle(station, floorIds);
+  const { bundle, privateBuild, privateRegions, outOfSplit = [], sceneBundle = bundle } = await navmeshBundle(station, floorIds);
   if (provenance.privateBuild !== privateBuild) throw new Error("navmesh bake and audit disagree on private overlay; rebake first");
   if (provenance.bundleSha256 !== createHash("sha256").update(JSON.stringify(bundle)).digest("hex")) throw new Error("navmesh bake and audit bundle differ; rebake first");
+  assertPrivateRegionsProvenance(provenance, privateBuild && withGreybox ? privateRegions : undefined);
   const router = createRouter(bundle, { allowUnverified: privateBuild }), scene = floorScene(await loadScene(station, sceneBundle), bundle, floorIds);
-  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild) : null;
+  const grey = withGreybox ? makeGreybox(bundle, scene, privateBuild, privateRegions) : null;
   const originalProbe = grey?.probe ?? sceneProbe(scene);
   // Recomputed exactly as the bake does; a difference means the bake and this audit see different inputs.
   const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.suspectProbe ?? originalProbe), e => router.isTraversable(e, DEFAULT_PROFILE));
@@ -233,6 +288,11 @@ async function main() {
       const interior = a && built?.length ? (distance(built[0]!,a) <= distance(built.at(-1)!,a) ? built : [...built].reverse()).slice(1,-1) : [];
       const linkPoints = a && b ? [a,...interior,b] : null;
       let points = linkPoints?.map((p,i) => ({x:p.x,y:-p.z,z:p.y,zKnown:true,stepIndex:0,floorId:i === linkPoints.length-1 ? step.toFloorId : step.fromFloorId,connector:true})) ?? null;
+      // Preserve #791's explicit directed gate-link admission, using the baked endpoints.
+      const gate = step.mode === "gate" && a && b && points
+        ? auditGatePath(nav,query,a,b,points,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null,link,step.reversed)
+        : null;
+      if (step.mode === "gate") points=gate?.points ?? null;
       const snappedPoints=points?.map((p,i)=>i===0 || i===points!.length-1 ? canonicalSnap(p) : p);
       const hasSnaps=!!snappedPoints?.[0] && !!snappedPoints?.at(-1);
       if(snappedPoints?.every((p):p is NonNullable<typeof p>=>p!==null)) {
@@ -241,7 +301,8 @@ async function main() {
         const checked=auditPolyline(probe,onFloor,{alreadySampled:true,cache:auditCache});
         points=checked.wallHits || checked.offFloor || checked.noFloor ? null : snappedPoints;
       } else points=null;
-      const entry: Entry = {suspect:false,points,missing:!points,reason:points ? null : link && hasSnaps ? "no_path" : step.mode === "gate" ? "no_path" : "snap_failed",stairLink:false,connector:!!points,fallbackUsed:link?.fallback ? [step.edgeId] : [],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:!!snappedPoints?.[0],toSnapped:!!snappedPoints?.at(-1),connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}),pathRejection:link && !points ? "reconstruction":null};
+      const entry: Entry = {suspect:false,points,missing:!points,reason:points ? null : link && hasSnaps ? "no_path" : step.mode === "gate" ? "no_path" : "snap_failed",stairLink:false,connector:!!points,fallbackUsed:link?.fallback ? [step.edgeId] : [],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:!!snappedPoints?.[0],toSnapped:!!snappedPoints?.at(-1),connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}),pathRejection:gate?.pathRejection ?? (link && !points ? "reconstruction":null)};
+
       cache.set(key,entry); return entry;
     }
     const a = link ? (step.reversed ? link.connection.endPosition : link.connection.startPosition) : snap(step.fromNodeId);

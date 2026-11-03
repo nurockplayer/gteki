@@ -135,7 +135,7 @@ export interface CutResult {
   heights: Map<object, number[]>;
   /** Maximum world height of each removed polygon, per region key. */
   maxHeights: Map<object, number[]>;
-  /** Hash of every mesh the triangle stage reached, as the recipe header keeps it (FNV-1a; the offset basis when no mesh was reached). */
+  /** Hash of the stable meshes in the recipe stage (FNV-1a; the offset basis when no mesh was reached). */
   meshKeysHash: number;
 }
 
@@ -230,7 +230,16 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
         copy.castShadow = instance.castShadow; copy.receiveShadow = instance.receiveShadow; copy.layers.mask = instance.layers.mask;
         if (walkable.has(instance)) walkableCopies.add(copy);
         instance.add(copy); copy.updateWorldMatrix(false, false);
+        // Track before visiting so a stale recipe can dispose this provisional copy too.
         opts.instances.push({ owner: instance, index: i, matrix: matrix.clone(), copy });
+        // Bounds overlap alone does not mean a fixture was cut. Keep unchanged instances
+        // in their batch; only a real geometry/clip change needs an extracted draw object.
+        visit(copy);
+        if (copy.geometry === geometry && copy.material === material) {
+          instance.remove(copy);
+          opts.instances.pop();
+          continue;
+        }
         instance.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
       }
       instance.instanceMatrix.needsUpdate = true; instance.boundingBox = null; instance.boundingSphere = null;
@@ -249,15 +258,21 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     const index = geometry.index, count = index ? index.count : position.count;
     const groups = geometry.groups.length ? geometry.groups : [{ start: 0, count, materialIndex: 0 }];
     // Recipe stage: a replayed mesh must match its record, and then skips the clipping below; a recorded one keeps its draft.
-    const key = recipe ? meshKey(mesh, geometry, position) : null;
+    // Canvas-sized signs differ with browser font metrics (the headless canvas only approximates text).
+    // Keep their existing live cut; only stable scene geometry belongs to a baked recipe.
+    let meshRecipe = recipe;
+    if (meshRecipe) for (let parent: THREE.Object3D | null = mesh; parent; parent = parent.parent) {
+      if ((parent.userData.gteki_role === "sign" && Array.isArray(parent.userData.faces)) || parent.userData.gteki_role === "kit_sign_frame") { meshRecipe = undefined; break; }
+    }
+    const key = meshRecipe ? meshKey(mesh, geometry, position) : null;
     if (key) keysHash = fnv1a(bytesOf(Uint32Array.of(key.count, key.hash, key.matrix)), keysHash);
-    const replaying: MeshRecord | null = recipe?.replay ? recipe.replay[stage] ?? null : null;
-    if (recipe?.replay && (!replaying || replaying.count !== key!.count || replaying.hash !== key!.hash || replaying.matrix !== key!.matrix)) {
+    const replaying: MeshRecord | null = meshRecipe?.replay ? meshRecipe.replay[stage] ?? null : null;
+    if (meshRecipe?.replay && (!replaying || replaying.count !== key!.count || replaying.hash !== key!.hash || replaying.matrix !== key!.matrix)) {
       throw new StaleRecipe(`${mesh.name || mesh.uuid}: changed since the recipe was baked`);
     }
-    const draft: MeshRecord | null = recipe?.record ? { count: key!.count, hash: key!.hash, matrix: key!.matrix, hasCut: false, groups: [], codes: [], weights: [], events: [] } : null;
-    if (draft) recipe!.record!.push(draft);
-    stage++;
+    const draft: MeshRecord | null = meshRecipe?.record ? { count: key!.count, hash: key!.hash, matrix: key!.matrix, hasCut: false, groups: [], codes: [], weights: [], events: [] } : null;
+    if (draft) meshRecipe!.record!.push(draft);
+    if (meshRecipe) stage++;
     const tree = !replaying && groups.every(g => g.start % 3 === 0 && g.count % 3 === 0) ? currentBvh(geometry) : null;
     const inverse = mesh.matrixWorld.clone().invert();
     const vertices = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];

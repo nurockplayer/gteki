@@ -5102,15 +5102,27 @@
    ],
    "floorId": "b1",
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "c_w"
+   ],
    "paid": false,
    "evidence": {
     "sourceIds": [
      "toshima-underground-guide-2022"
     ],
-    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
-    "checkedDate": "2026-10-20"
-   }
+    "method": "Toshima underground guide (2022-01), PDF p.2, west Central Passage: Central Gate 2 is drawn on the north side of the passage, west of JR Central Gate 2 and beside the Marunouchi Central Passage West Gate. Printed passage-approach tie to c_w on the existing c_w__w_c / c_w__c_mid route; STATION_TIE, not an identified gate opening. No wheelchair or steps claim.",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "案内は中央通路西側の通路上で終わります。2022年1月版の豊島区案内図にある中央2改札への通路側の案内で、改札口の正確な位置は未確認です。"
+    },
+    {
+     "lang": "en",
+     "text": "Directions end on the west Central Passage approach to Central Gate 2 shown in the January 2022 Toshima guide. The exact gate opening is not verified."
+    }
+   ]
   },
   {
    "id": "central-passage",
@@ -27006,6 +27018,48 @@
   }
  ],
  "dataFiles": [
+  {
+   "id": "stairwell-cut-high",
+   "path": "scene/stairwell-cut.high.b64.txt",
+   "sourceIds": [
+    "gteki-ikb-catalog-0-1-0",
+    "gteki-kit-0-1-0",
+    "ikefukuro-location-references-2026-10",
+    "lumine-ikebukuro-access-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577",
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
+  },
+  {
+   "id": "stairwell-cut-low",
+   "path": "scene/stairwell-cut.low.b64.txt",
+   "sourceIds": [
+    "gteki-ikb-catalog-0-1-0",
+    "gteki-kit-0-1-0",
+    "ikefukuro-location-references-2026-10",
+    "lumine-ikebukuro-access-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577",
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
+  },
   {
    "id": "navmesh-paths",
    "path": "navmesh-paths.json",

@@ -1,9 +1,10 @@
 import * as THREE from "three";
+import { privateHolePlanes, type PolygonRegion } from "./privateLevels.ts";
 import type { StationBundle } from "@gteki/schema";
 import type { Router } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
 import { occludedLineStyle } from "./occludedLine.ts";
-import { R, edgePoints, ribbonGeometry } from "./geometry.ts";
+import { R, edgePoints, ribbonGeometry, clipFlatGeometry } from "./geometry.ts";
 
 /**
  * L0 "graph corridor" view built only from the station graph — no invented walls or floor
@@ -23,7 +24,8 @@ export interface GraphView {
   dispose(): void;
 }
 
-export function buildGraphView(bundle: StationBundle, router: Router): GraphView {
+export function buildGraphView(bundle: StationBundle, router: Router, privateRegions: readonly PolygonRegion[] = []): GraphView {
+  const holes = privateHolePlanes(privateRegions);
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const root = new THREE.Group();
@@ -55,7 +57,9 @@ export function buildGraphView(bundle: StationBundle, router: Router): GraphView
     root.add(line);
     overlay.add(...overlayStyle.lines(lineGeo, 10));
     if (edge.mode === "elevator") continue; // a shaft is not a walk surface
-    const geo = ribbonGeometry(pts, MODE_WIDTH[edge.mode] ?? 2);
+    const ribbon = ribbonGeometry(pts, MODE_WIDTH[edge.mode] ?? 2);
+    const geo = clipFlatGeometry(ribbon, holes, [nodes.get(edge.from)!.floorId, nodes.get(edge.to)!.floorId], [pts[0]!.y, pts.at(-1)!.y]);
+    if (geo !== ribbon) ribbon.dispose();
     disposables.push(geo);
     const vertical = edge.mode === "stairs" || edge.mode === "escalator" || edge.mode === "ramp";
     const mesh = new THREE.Mesh(geo, !traversable ? mats.blocked : vertical ? mats.vertical : edge.paid === true ? mats.paid : mats.ok);
@@ -73,8 +77,10 @@ export function buildGraphView(bundle: StationBundle, router: Router): GraphView
   for (const id of touched) {
     const n = nodes.get(id)!;
     const z = nodeDisplayZ(n, floors.get(n.floorId)).z;
-    const m = new THREE.Mesh(pad, mats.ok);
-    m.position.copy(R(n.position.x, n.position.y, z));
+    const at = R(n.position.x, n.position.y, z), geo = clipFlatGeometry(pad, holes, [n.floorId], [z, z], at);
+    if (geo !== pad) disposables.push(geo);
+    const m = new THREE.Mesh(geo, mats.ok);
+    m.position.copy(at);
     m.userData = { gteki_role: "walkable", nodeId: id };
     root.add(m);
     walkable.push(m);

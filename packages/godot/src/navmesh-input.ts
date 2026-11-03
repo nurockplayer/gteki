@@ -1,11 +1,14 @@
 /** Public station data or a temporary, read-only copy of the private overlay inputs. */
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { splitFloors } from "./navmesh-floors.ts";
 import { parseStationFiles, type StationBundle } from "@gteki/schema";
 
-export async function navmeshBundle(station: string, floors?: readonly string[]): Promise<{ bundle: StationBundle; privateBuild: boolean; outOfSplit?: string[]; sceneBundle?: StationBundle }> {
+import type { PolygonRegion } from "../../../apps/web/src/explorer/privateLevels.ts";
+
+export async function navmeshBundle(station: string, floors?: readonly string[]): Promise<{ bundle: StationBundle; privateBuild: boolean; privateRegions?: PolygonRegion[]; outOfSplit?: string[]; sceneBundle?: StationBundle }> {
   if (station !== "ikebukuro" && station !== "shinjuku") throw new Error("station must be ikebukuro or shinjuku");
   const privateDir = process.env.GTEKI_PRIVATE_DIR;
   let tmp: string | undefined;
@@ -24,8 +27,16 @@ export async function navmeshBundle(station: string, floors?: readonly string[])
     const tenantFile = path.join(dir, "tenants.json");
     const result = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), fs.existsSync(tenantFile) ? read("tenants.json") : undefined, { privateTier: !!privateDir });
     if (!result.ok) throw new Error(`${station}: bundle validation failed`);
-    return floors ? { ...splitFloors(result.bundle, floors), privateBuild: !!privateDir, sceneBundle: result.bundle } : { bundle: result.bundle, privateBuild: !!privateDir };
+    const regionsFile = path.join(dir, "private_regions.json");
+    const privateRegions = privateDir && fs.existsSync(regionsFile) ? (read("private_regions.json") as PolygonRegion[]).filter(region => !floors || floors.includes(region.level)) : undefined;
+    const geometry = privateRegions ? { privateRegions } : {};
+    return floors ? { ...splitFloors(result.bundle, floors), ...geometry, privateBuild: !!privateDir, sceneBundle: result.bundle } : { ...geometry, bundle: result.bundle, privateBuild: !!privateDir };
   } finally {
     if (tmp) fs.rmSync(tmp, { recursive: true, force: true });
   }
+}
+
+/** Geometry independently affects the mesh even when the parsed station bundle is unchanged. */
+export function privateRegionsSha256(regions: readonly PolygonRegion[] | undefined): string | undefined {
+  return regions?.length ? createHash("sha256").update(JSON.stringify(regions)).digest("hex") : undefined;
 }

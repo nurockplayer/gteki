@@ -1,7 +1,7 @@
 ---
 area: pkg-navigation
 owner: gteki-fa
-updated: 2026-10-26 JST
+updated: 2026-11-04 JST
 ---
 # pkg-navigation: routing graph, pathfinding and guidance
 
@@ -23,7 +23,8 @@ Fail-closed rules: an edge is usable only if `verification` is `verified` (or `s
 - `packages/navigation/src/router.ts:373-393` — `openings()`: weekly opening windows of an edge.
 - `packages/navigation/src/router.ts:405-423` — `lowerBounds()`: backward cost bound used for pruning.
 - `packages/navigation/src/router.ts:577-715` — `route()`: the search itself.
-- `packages/navigation/src/poi.ts:16-27` — `routeBetween()`: POI-level entry point; applies the fare rule to the POIs and is what the apps call.
+- `packages/navigation/src/poi.ts:11-13` — `destinationNodeIds()`: shared destination-to-node resolution for routing and per-tie UI classification.
+- `packages/navigation/src/poi.ts:21-32` — `routeBetween()`: POI-level entry point; applies the fare rule to the POIs and is what the apps call.
 - `packages/navigation/src/explain.ts:143-163` — `explainNoPathWith()`; `packages/navigation/src/explain.ts:182-190` — `explainNoPathBetween()`, which names the refusing option.
 - `packages/navigation/src/present.ts:32-66` — `routePolyline()`: per-step edge geometry with `zKnown`.
 - `packages/navigation/src/present.ts:672-841` — `describeRoute()`: the `Instruction[]` (kinds, waits, lifts, junction hints) in ja or en.
