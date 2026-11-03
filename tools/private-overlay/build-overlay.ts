@@ -4,6 +4,9 @@ import { pathToFileURL } from "node:url";
 import type { Edge, Floor, GraphFile, Node, Poi, PoiFile, Source, StationManifestFile, Tenant, TenantFile } from "../../packages/schema/src/index.ts";
 import { parseStationFiles, TENANTS_SCHEMA_VERSION } from "../../packages/schema/src/index.ts";
 
+import { privateFloorRoutingEdges } from "../../apps/web/src/explorer/privateFloorRouting.ts";
+import { privateLevelRegions, type PrivateLevels, type LevelSelection } from "../../apps/web/src/explorer/privateLevels.ts";
+
 export interface StationFiles { manifest: StationManifestFile; graph: GraphFile; pois: PoiFile; tenants?: unknown }
 export interface Additions {
   sources?: Source[];
@@ -132,6 +135,11 @@ export function buildOverlay(opts: { repoRoot: string; privateDir: string; stati
     const pub = readPublicStation(opts.repoRoot, station);
     const addDir = path.join(additionsRoot, station);
     const merged = mergeStation(pub, fs.existsSync(addDir) ? readAdditions(addDir) : { graphParts: [] });
+    const levelsFile = path.join(addDir, "levels.s03.json");
+    const privateRegions = fs.existsSync(levelsFile)
+      ? privateLevelRegions(readJson(levelsFile) as PrivateLevels, readJson(path.join(addDir, "levels.selection.json")) as LevelSelection)
+      : undefined;
+    if (privateRegions?.length) merged.graph.edges = privateFloorRoutingEdges({ ...merged.graph, floors: merged.manifest.floors }, privateRegions);
     const shopsFile = path.join(addDir, "scene", "shops.json");
     if (fs.existsSync(shopsFile)) {
       readArray(shopsFile, "shops");
@@ -141,6 +149,7 @@ export function buildOverlay(opts: { repoRoot: string; privateDir: string; stati
     fs.rmSync(outputDir, { recursive: true, force: true });
     fs.mkdirSync(outputDir, { recursive: true });
     const write = (name: string, value: unknown) => fs.writeFileSync(path.join(outputDir, name), `${JSON.stringify(value, null, 2)}\n`);
+    if (privateRegions) write("private_regions.json", privateRegions);
     write("station.json", merged.manifest);
     write("graph.json", merged.graph);
     write("pois.json", merged.pois);
