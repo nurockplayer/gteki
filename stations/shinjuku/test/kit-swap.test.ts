@@ -49,12 +49,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #221 per-flight shaft finishes; station physical lists unchanged (2026-11-03 JST).
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "9ad410c3fa8d1b682bc669b558721f6dd7b773ae12e8a686f9978bdce0e51ec5",
+    geometryDigest: "8b501f6d2a9d6c6e95424959a72791df560a442abdcd9167440187b5d90d0bbd",
     appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
     nodesDigest: "c3721bb561761689083bbf44bbaf8ed2e8689925827d73ddc722e7c4915690f2",
     texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
     meshes: 145,
-    bytes: 24980114,
+    bytes: 15897422,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
@@ -72,7 +72,8 @@ const geometryHash = (g: THREE.BufferGeometry) => {
   }
   return h.digest("hex");
 };
-const isStationProxy = (o: THREE.Object3D) => o.name === "walk proxies (invisible)" || o.name === "viewer probe (draws nothing)";
+// Static-removal accounting excludes the retained LOD copies, whose visibility/geometry have dedicated tests.
+const isStationProxy = (o: THREE.Object3D) => o.name === "walk proxies (invisible)" || o.name === "viewer probe (draws nothing)" || o.name === "kit-fallback";
 const triangles = (root: THREE.Object3D, skip: (o: THREE.Object3D) => boolean = () => false) => {
   let n = 0;
   const visit = (o: THREE.Object3D) => {
@@ -915,6 +916,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         const { scene, result, out } = run(stubProvider(), (c) => ({
           ...c,
           ledger: {
+            copy: (g, k) => c.ledger.copy(g, k),
             hide: (g, k) => c.ledger.hide(g, k),
             keys: (g) => c.ledger.keys(g),
             prepareHide: (g, k) => { if (g === "lift-portals") throw new Error("hide failed"); return c.ledger.prepareHide(g, k); },
@@ -956,8 +958,8 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
           expect(result!.hidden["gate-machines"]).toBe(96 * 4);
           const kit = scene.root.getObjectByName("kit-swap")!;
           // Lift bodies shared stub_palette with every other piece: they must be removed from that successful batch too.
-          expect(triangles(kit)).toBe((result!.placed.length + survivingLifts.length) * 12);
-          expect(result!.measured.triangles).toBe(triangles(kit));
+          expect(triangles(kit, isStationProxy)).toBe((result!.placed.length + survivingLifts.length) * 12);
+          expect(result!.measured.triangles).toBe(triangles(kit, isStationProxy));
           const placeholders = (root: THREE.Object3D) => triangles(root, (o) => isStationProxy(o) || o.name === "kit-swap");
           expect(placeholders(off.root) - placeholders(scene.root)).toBe(Object.values(result!.hidden).reduce((n, count) => n + count, 0));
         } finally { consoleError.mockRestore(); scene.dispose(); }
@@ -1050,8 +1052,10 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     it("flag on: the drawn kit meshes are plain merged meshes without collision, sockets or hints", () => {
       const kit = on.root.children.find((c) => c.name === "kit-swap")!;
       kit.traverse((o) => { expect(o.name).not.toMatch(/^(COL_|SOCKET_|LIGHTHINT_)|-colonly$/); });
-      for (const c of kit.children) {
-        expect((c as THREE.Mesh).isMesh).toBe(true);
+      const meshes: THREE.Mesh[] = [];
+      kit.traverse((o) => { if ((o as THREE.Mesh).isMesh) meshes.push(o as THREE.Mesh); });
+      expect(meshes.length).toBeGreaterThan(0);
+      for (const c of meshes) {
         expect(on.walkable).not.toContain(c);
         expect(on.colliders).not.toContain(c);
         expect(on.cameraBlockers).not.toContain(c);

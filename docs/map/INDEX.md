@@ -22,6 +22,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 ### App (`apps/web`)
 - Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup · `apps/web/src/explorer/` · [[web-explorer]]
 - UI shell: app frame, search combobox, minimap, identity/merchant cards, rail travel, live region · `apps/web/src/ui/` · [[web-ui]]
+- Field recorder: phone walk, offline notes, public/private receipt JSON and optional private-stop overlay · `apps/web/src/field/` · [[web-field]]
 - Merchant form: the merchant submission form and payload · `apps/web/src/merchant/` · [[web-merchant]]
 - App root: entry `apps/web/src/main.ts`, station registry `apps/web/src/registry.ts`, hours/credits/i18n/no-path helpers · `apps/web/src/` · covered in [[web-explorer]] and [[web-ui]]
 
@@ -35,10 +36,11 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - godot: Godot HQ client fed by exported GLB + sidecar snapshots; routes/searches by calling the TS CLIs. `src/*.test.ts` runs in root vitest, the GDScript suites in `packages/godot/tests/` run in no CI · `packages/godot/` · [[pkg-godot]]
 
 ### Stations (`stations/`)
-- Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · data generation and raw-data runs: [[data-stations]]; scene: no note yet (station lead)
+- Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · data generation and raw-data runs: [[data-stations]]; vertical kit: [[shinjuku-kit]]; other scene areas: no note yet (station lead)
 - Ikebukuro: data (`stations/ikebukuro/gteki/`), scene (`stations/ikebukuro/scene/`), pipeline (`stations/ikebukuro/pipeline/`), lane docs (`stations/ikebukuro/docs/`), entry point `stations/ikebukuro/README.md` · data generation and receipts: [[data-stations]]; scene: no note yet (station lead)
 
 ### Tools (`tools/`)
+- Field-run ingest: recorder JSON validation, dry run and station importer dispatch · `tools/field-ingest/ingest.ts` · [[data-stations]]
 - Store data age: public store/mall hours, tenant and verified entrance read dates, oldest first; Markdown or JSON (`pnpm data:age`) · `tools/data-age/report.ts` · this index
 - GIS: its own pnpm workspace. Source acquisition, CRS conversion, S03 nav graph, publish path into the stations · `tools/gis/` · [[gis]]
 - Map generator: `tools/map/gen-symbols.mjs` and its test `tools/map/map.test.ts` · this index

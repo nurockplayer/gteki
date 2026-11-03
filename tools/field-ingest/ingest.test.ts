@@ -1,0 +1,247 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: GTEki contributors
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { afterEach, describe, expect, it } from "vitest";
+import { parseStationFiles } from "../../packages/schema/src/parse.ts";
+import { merchantPrecision } from "../../apps/web/src/ui/merchantCard.ts";
+import { loadReceipts } from "../../stations/shinjuku/tools/field-receipts.ts";
+import { ingest } from "./ingest.ts";
+
+const repo = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const read = (file: string) => JSON.parse(readFileSync(file, "utf8"));
+const roots: string[] = [];
+afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
+
+function setup(station: string) {
+  const root = mkdtempSync(join(tmpdir(), "field-ingest-"));
+  roots.push(root);
+  const dir = join(root, "stations", station);
+  mkdirSync(join(dir, "gteki"), { recursive: true });
+  for (const file of ["station", "graph", "pois", "tenants"]) cpSync(join(repo, "stations", station, "gteki", `${file}.json`), join(dir, "gteki", `${file}.json`));
+  if (station === "ikebukuro") {
+    mkdirSync(join(dir, "data"));
+    cpSync(join(repo, "stations/ikebukuro/data/graph.src.json"), join(dir, "data/graph.src.json"));
+  }
+  const node = read(join(dir, "gteki/graph.json")).nodes.find((n: any) => n.floorId === (station === "ikebukuro" ? "b1" : "toei-nwd-m1"));
+  const poiId = station === "ikebukuro" ? "shop-ikb-esola" : "shop-sjk-lumine1";
+  const receipt = { version: 1, station, fieldRun: "docs/research/lines/field-run-2026-10-26.md", sourceKind: "team_field", observer: "owner",
+    items: [{ item: 25, status: "CLOSED", poiId, nodeId: node.id, paid: false, observedText: "SYNTHETIC — not an observation",
+      observedAt: "2026-10-28T10:12+09:00", floorLabel: "地下1階", stepFree: "level", stopId: "shop", confirmation: "confirmed", targetUnknown: false },
+    { item: 26, status: "OPEN", observedText: "Not confirmed", observedAt: "2026-10-28T10:13+09:00" }],
+    fieldNotes: [{ observedText: "Unnumbered observation; never apply", poiId, nodeId: "not-a-node" }] };
+  const file = join(root, "receipt.json");
+  const save = () => writeFileSync(file, JSON.stringify(receipt));
+  save();
+  return { root, dir, node, poiId, receipt, file, save, poi: () => read(join(dir, "gteki/pois.json")).pois.find((p: any) => p.id === poiId) };
+}
+
+for (const station of ["ikebukuro", "shinjuku"]) describe(station, () => {
+  it("applies CLOSED evidence, leaves OPEN/fieldNotes alone, and makes a verified point", () => {
+    const s = setup(station);
+    const before = read(join(s.dir, "gteki/pois.json"));
+    expect(merchantPrecision(s.poi())).not.toBe("point");
+    const preview = ingest(s.file, false, s.root);
+    expect(preview).toHaveLength(1);
+    expect(preview[0]).toContain("→ point");
+    expect(s.poi()).toMatchObject({ displayPosition: s.node.position, connectorNodeIds: [s.node.id], evidence: { checkedDate: "2026-10-28" } });
+    expect(s.poi().evidence.method).toContain("displayPosition = public connector node position");
+    expect(merchantPrecision(s.poi())).toBe("point");
+    expect(read(join(s.dir, "gteki/pois.json")).pois.filter((p: any) => p.id !== s.poiId)).toEqual(before.pois.filter((p: any) => p.id !== s.poiId));
+    if (station === "ikebukuro") expect(read(join(s.dir, "data/graph.src.json")).pois.find((p: any) => p.id === s.poiId)).toEqual(s.poi());
+    expect(loadReceipts(join(s.root, "docs/research/field/receipts"), station)).toEqual([s.receipt]);
+    const parsed = parseStationFiles(read(join(s.dir, "gteki/station.json")), read(join(s.dir, "gteki/graph.json")), read(join(s.dir, "gteki/pois.json")), read(join(s.dir, "gteki/tenants.json")));
+    expect(parsed.ok).toBe(true);
+    expect(() => ingest(s.file, false, s.root)).toThrow("duplicate existing connector");
+  });
+
+  it("reports all graph, floor, duplicate and timestamp errors without writing", () => {
+    const s = setup(station);
+    const before = readFileSync(join(s.dir, "gteki/pois.json"), "utf8");
+    s.receipt.items = [
+      { ...s.receipt.items[0]!, poiId: "missing-poi", nodeId: "missing-node", edgeId: "missing-edge", observedAt: "2026-10-28T10:12Z" },
+      { ...s.receipt.items[0]!, item: 27, floorLabel: "B9F", observedAt: "2099-01-01T00:00+09:00" },
+      { ...s.receipt.items[0]!, item: 28 },
+      { ...s.receipt.items[0]!, item: 29, observedAt: "2026-02-31T10:12+09:00" },
+    ] as typeof s.receipt.items;
+    s.save();
+    let message = "";
+    try { ingest(s.file, true, s.root); } catch (error) { message = (error as Error).message; }
+    for (const issue of ["unknown POI missing-poi", "unknown node missing-node", "unknown edge missing-edge", "floor mismatch", "duplicate poiId+nodeId", "valid +09:00 timestamp", "future (JST)", "item 29: observedAt"]) expect(message).toContain(issue);
+    expect(readFileSync(join(s.dir, "gteki/pois.json"), "utf8")).toBe(before);
+    expect(existsSync(join(s.root, "docs"))).toBe(false);
+  });
+
+  it("runs the CLI dry run without changing any station file or archiving a receipt", () => {
+    const s = setup(station);
+    const files = ["gteki/pois.json", "gteki/station.json", "gteki/graph.json", ...(station === "ikebukuro" ? ["data/graph.src.json"] : [])];
+    const before = files.map((f) => readFileSync(join(s.dir, f), "utf8"));
+    const output = execFileSync(join(repo, "node_modules/.bin/tsx"), [join(repo, "tools/field-ingest/ingest.ts"), s.file, "--dry-run"], { cwd: s.root, encoding: "utf8" });
+    expect(output).toContain(`${s.poiId} node=${s.node.id} checkedDate`);
+    expect(output).toContain("→ 2026-10-28; precision");
+    expect(output).toContain("→ point");
+    expect(output).toContain("dry run: no files written");
+    expect(files.map((f) => readFileSync(join(s.dir, f), "utf8"))).toEqual(before);
+    expect(existsSync(join(s.root, "docs"))).toBe(false);
+  }, 15_000);
+
+  it("keeps an existing display position and ignores OPEN-only receipts", () => {
+    const s = setup(station);
+    const poisPath = join(s.dir, "gteki/pois.json");
+    const catalog = read(poisPath);
+    const position = { x: 1, y: 2, z: null };
+    catalog.pois.find((p: any) => p.id === s.poiId).displayPosition = position;
+    writeFileSync(poisPath, JSON.stringify(catalog));
+    ingest(s.file, false, s.root);
+    expect(s.poi().displayPosition).toEqual(position);
+    s.receipt.items = s.receipt.items.filter((item) => item.status === "OPEN");
+    s.save();
+    const before = readFileSync(poisPath, "utf8");
+    expect(ingest(s.file, false, s.root)).toEqual([]);
+    expect(readFileSync(poisPath, "utf8")).toBe(before);
+  });
+
+  it("preserves daily provenance instead of relabelling earlier observations", () => {
+    const s = setup(station);
+    ingest(s.file, false, s.root);
+    const before = readFileSync(join(s.dir, "gteki/station.json"), "utf8");
+    s.receipt.fieldRun = "docs/research/lines/different-field-run.md";
+    s.receipt.items[0]!.observedAt = "2026-10-28T11:00+09:00";
+    s.save();
+    expect(() => ingest(s.file, false, s.root)).toThrow("different fieldRun/observer provenance");
+    expect(readFileSync(join(s.dir, "gteki/station.json"), "utf8")).toBe(before);
+    if (station === "shinjuku") expect(loadReceipts(join(s.root, "docs/research/field/receipts"), station)[0]!.fieldRun).not.toBe(s.receipt.fieldRun);
+  });
+
+  it("keeps newer evidence while accepting a backdated reading of another connector at the same time", () => {
+    const s = setup(station);
+    ingest(s.file, false, s.root);
+    const other = read(join(s.dir, "gteki/graph.json")).nodes.find((n: any) => n.floorId === s.node.floorId && n.id !== s.node.id);
+    s.receipt.items[0]!.nodeId = other.id;
+    s.receipt.items[0]!.observedAt = "2026-10-29T11:00+09:00";
+    s.receipt.items[0]!.paid = true;
+    s.save();
+    ingest(s.file, false, s.root);
+    const latestMethod = s.poi().evidence.method;
+    s.receipt.items[0]!.observedAt = "2026-10-28T10:12+09:00";
+    s.receipt.items[0]!.paid = false;
+    s.save();
+    expect(ingest(s.file, false, s.root)[0]).toContain("checkedDate 2026-10-29 → 2026-10-29");
+    expect(s.poi()).toMatchObject({ paid: true, connectorNodeIds: [s.node.id, other.id], displayPosition: s.node.position,
+      evidence: { checkedDate: "2026-10-29" } });
+    expect(s.poi().evidence.method).toContain(latestMethod);
+    expect(() => ingest(s.file, false, s.root)).toThrow("duplicate existing connector");
+  });
+
+  it("restores every touched file after a downstream failure and allows the same ingest to retry", () => {
+    const s = setup(station);
+    const files = [join(s.dir, "gteki/pois.json"), join(s.dir, "gteki/station.json")];
+    if (station === "ikebukuro") files.push(join(s.dir, "data/graph.src.json"));
+    else {
+      mkdirSync(join(s.dir, "data"));
+      for (const name of ["plan.json", "surface-baked.json"]) cpSync(join(repo, "stations/shinjuku/data", name), join(s.dir, "data", name));
+      files.push(join(s.dir, "gteki/graph.json"), ...["plan.json", "surface-baked.json", "import-report.json"].map((name) => join(s.dir, "data", name)));
+    }
+    const tree = () => readdirSync(s.root, { recursive: true, encoding: "utf8" }).sort().map((name) =>
+      [name, statSync(join(s.root, name)).isFile() ? createHash("sha256").update(readFileSync(join(s.root, name))).digest("hex") : null]);
+    const failDownstream = () => {
+      for (const file of files) writeFileSync(file, "partial downstream output\n");
+      execFileSync("sh", ["-c", "exit 19"], { stdio: "pipe" });
+    };
+    const before = tree();
+    expect(() => ingest(s.file, false, s.root, failDownstream)).toThrow("Command failed");
+    expect(tree()).toEqual(before);
+    expect(ingest(s.file, false, s.root)).toHaveLength(1);
+    const archiveDir = join(s.root, "docs/research/field/receipts");
+    expect(loadReceipts(archiveDir, station)).toEqual([s.receipt]);
+    // Also restore an existing daily archive after a failed second run.
+    s.receipt.items[0]!.observedAt = "2026-10-28T11:00+09:00";
+    s.save();
+    const withArchive = tree();
+    expect(() => ingest(s.file, false, s.root, failDownstream)).toThrow("Command failed");
+    expect(tree()).toEqual(withArchive);
+    expect(ingest(s.file, false, s.root)).toHaveLength(1);
+    const saved = loadReceipts(archiveDir, station)[0]!;
+    expect(saved.items.filter((item) => item.status === "OPEN")).toHaveLength(2);
+    expect(saved.fieldNotes).toEqual([...s.receipt.fieldNotes, ...s.receipt.fieldNotes]);
+  }, 15_000);
+
+  // #747 is a separate, still-open PR. Exercise its actual row function once available.
+  it.skipIf(!existsSync(join(repo, "tools/data-age/report.ts")))("shows the field entrance date in the data-age row (#747)", async () => {
+    const s = setup(station);
+    ingest(s.file, false, s.root);
+    const parsed = parseStationFiles(read(join(s.dir, "gteki/station.json")), read(join(s.dir, "gteki/graph.json")), read(join(s.dir, "gteki/pois.json")), read(join(s.dir, "gteki/tenants.json")));
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+    const { ageRows } = await import(pathToFileURL(join(repo, "tools/data-age/report.ts")).href);
+    expect(ageRows([parsed.bundle]).find((row: any) => row.poiId === s.poiId).entranceDate).toBe("2026-10-28");
+  }, 15_000);
+});
+
+it("runs a real Ikebukuro CLI ingest on copied bundles", () => {
+  const s = setup("ikebukuro");
+  const output = execFileSync(join(repo, "node_modules/.bin/tsx"), [join(repo, "tools/field-ingest/ingest.ts"), s.file], { cwd: s.root, encoding: "utf8" });
+  expect(output).toContain("applied 1 CLOSED items");
+  expect(s.poi().evidence.checkedDate).toBe("2026-10-28");
+  expect(merchantPrecision(s.poi())).toBe("point");
+}, 15_000);
+
+it("promotes an approximate Shinjuku gate to a valid verified entrance", () => {
+  const s = setup("shinjuku");
+  const poiId = "poi:keio-gate:2";
+  const poi = () => read(join(s.dir, "gteki/pois.json")).pois.find((entry: any) => entry.id === poiId);
+  expect(poi().approximatePosition).toBeDefined();
+  s.receipt.items[0]!.poiId = poiId;
+  s.save();
+  ingest(s.file, false, s.root);
+  expect(poi().approximatePosition).toBeUndefined();
+  expect(poi()).toMatchObject({ displayPosition: s.node.position, connectorNodeIds: [s.node.id] });
+  const parsed = parseStationFiles(read(join(s.dir, "gteki/station.json")), read(join(s.dir, "gteki/graph.json")), read(join(s.dir, "gteki/pois.json")), read(join(s.dir, "gteki/tenants.json")));
+  expect(parsed.issues.filter((issue) => issue.level === "error")).toEqual([]);
+  expect(parsed.ok).toBe(true);
+});
+
+for (const station of ["ikebukuro", "shinjuku"]) it(`${station}: refuses mixed roots and writes a private receipt only to synthetic private additions`, () => {
+  const root = mkdtempSync(join(tmpdir(), "private-ingest-")); roots.push(root);
+  const privateRoot = join(root, "private");
+  const overlay = join(privateRoot, "overlay", station, "gteki");
+  const additions = join(privateRoot, "additions", station);
+  mkdirSync(overlay, { recursive: true }); mkdirSync(additions, { recursive: true });
+  const graph = { nodes: [{ id: "synthetic-node", floorId: "b1", position: { x: 1, y: 2, z: 0 } }], edges: [] };
+  const pois = { pois: [{ id: "synthetic-shop", names: [{ lang: "en", text: "Synthetic only" }], category: "shop", displayPosition: null,
+    connectorNodeIds: [], paid: null, evidence: { method: "synthetic", checkedDate: null, sourceIds: [] }, notes: [] }] };
+  const write = (file: string, value: unknown) => writeFileSync(file, JSON.stringify(value));
+  write(join(overlay, "graph.json"), graph); write(join(overlay, "pois.json"), pois);
+  write(join(overlay, "station.json"), { floors: [{ id: "b1", ordinal: -1 }], sources: [] });
+  write(join(additions, "graph.json"), graph);
+  const receipt = { private: true, version: 1, station, fieldRun: "synthetic.md", observer: "owner", sourceKind: "team_field",
+    items: [{ item: 1, status: "CLOSED", poiId: "synthetic-shop", nodeId: "synthetic-node", paid: false,
+      observedText: "SYNTHETIC ONLY", observedAt: "2026-10-28T10:00+09:00", floorLabel: "B1" }],
+    fieldNotes: [{ itemId: "GAP-01", observedText: "Synthetic GAP", observedAt: "2026-10-28T10:00+09:00" }] };
+  const file = join(root, "receipt.json"); write(file, receipt);
+  expect(() => ingest(file, false, root)).toThrow("requires --private-root");
+  write(file, { ...receipt, private: undefined });
+  expect(() => ingest(file, false, root, undefined, privateRoot)).toThrow("public receipt refuses --private-root");
+  write(file, receipt);
+  const before = ["graph", "pois", "station"].map((name) => readFileSync(join(overlay, `${name}.json`), "utf8"));
+  const cli = join(repo, "tools/field-ingest/ingest.ts");
+  const run = (...args: string[]) => execFileSync(join(repo, "node_modules/.bin/tsx"), [cli, file, "--private-root", privateRoot, ...args], { cwd: root, encoding: "utf8" });
+  expect(run("--dry-run")).toContain("dry run: no files written");
+  expect(existsSync(join(additions, "pois.json"))).toBe(false);
+  expect(run()).toContain("applied 1 CLOSED items");
+  expect(read(join(additions, "pois.json")).pois[0]).toMatchObject({ id: "synthetic-shop", connectorNodeIds: ["synthetic-node"],
+    displayPosition: graph.nodes[0]!.position, evidence: { sourceIds: [`field-private-${station}-2026-10-28`] } });
+  expect(read(join(additions, "graph.json"))).toEqual(graph);
+  expect(read(join(additions, "sources.json")).sources[0].notes).toMatch(/^\[tier P\]/);
+  expect(loadReceipts(join(additions, "field-receipts"), station)).toEqual([receipt]);
+  expect(["graph", "pois", "station"].map((name) => readFileSync(join(overlay, `${name}.json`), "utf8"))).toEqual(before);
+  expect(existsSync(join(root, "stations"))).toBe(false);
+  expect(existsSync(join(root, "docs"))).toBe(false);
+  expect(() => ingest(file, false, root, undefined, privateRoot)).toThrow("duplicate existing connector");
+  write(file, { ...receipt, items: [] });
+  expect(run()).toContain("applied 0 CLOSED items");
+  expect(read(join(additions, "field-receipts", `2026-10-28-${station}.json`)).fieldNotes).toHaveLength(2);
+}, 15_000);

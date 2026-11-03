@@ -44,9 +44,11 @@ it("finishes grouped flights on their own planes with flat landings and shoulder
     }
   }
   for (const height of [-12.1, -11, -10.2, -8.8, -7.8, -6.9]) {
-    expect(built.shaftFascias.some(({ wall }) => {
+    expect(built.shaftFascias.some(({ wall, polygon }) => {
       const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, l2 = dx * dx + dy * dy;
       const t = Math.max(0, Math.min(1, ((2 - wall.a.x) * dx + (2 - wall.a.y) * dy) / l2));
+      if (polygon) return Math.hypot(2 - wall.a.x - dx * t, 2 - wall.a.y - dy * t) < 0.002
+        && pointInRings({ x: 2 * polygon.axis.x + 2 * polygon.axis.y, y: height }, polygon.rings);
       const profile = wall.profile!;
       return Math.hypot(2 - wall.a.x - dx * t, 2 - wall.a.y - dy * t) < 0.002
         && height >= profile.bottomA + (profile.bottomB - profile.bottomA) * t
@@ -136,6 +138,11 @@ it("closes shipped escalator and shaft shoulder sightlines with rendered surface
 describe("E27 scene layout", () => {
   const layout = buildLayout(bundle, plan);
   const world = new WalkWorld(layout);
+
+  it("emits no zero-length or degenerate shaft fascia", () => {
+    expect(layout.shaftFascias.every(({ wall: w }) => Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y) > 1e-6
+      && (!w.profile || Math.max(w.profile.topA - w.profile.bottomA, w.profile.topB - w.profile.bottomB) > 1e-6))).toBe(true);
+  });
 
   it("builds every level with floor slabs and walls", () => {
     expect(layout.levels.length).toBe(6);

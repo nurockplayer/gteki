@@ -136,6 +136,20 @@ function enclosureWallGeometry(w: WallSeg): THREE.BufferGeometry {
   return g;
 }
 
+/** Draw one connected coplanar finish, including its passage holes. */
+function shaftFasciaGeometry(fascia: Layout["shaftFascias"][number]): THREE.BufferGeometry {
+  if (!fascia.polygon) return enclosureWallGeometry(fascia.wall);
+  const { rings, axis, offset } = fascia.polygon;
+  const g = new THREE.ShapeGeometry(shapeFromRings(rings)), position = g.attributes.position!, uv = g.attributes.uv!;
+  for (let i = 0; i < position.count; i++) {
+    const s = position.getX(i), z = position.getY(i);
+    position.setXYZ(i, axis.x * s - axis.y * offset, z, -(axis.y * s + axis.x * offset));
+    uv.setXY(i, s / 2.4, z / 3.2);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
 function runPanel(w: WallSeg, r: Run): WallSeg {
   const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, l2 = dx * dx + dy * dy;
   const zAt = (p: XY) => r.a.z + (r.b.z - r.a.z) * ((p.x - r.a.x) * dx + (p.y - r.a.y) * dy) / l2;
@@ -450,7 +464,7 @@ function installTightCulling(root: THREE.Group) {
   root.traverse((o) => { if (o instanceof THREE.Mesh) uses.set(o.geometry, (uses.get(o.geometry) ?? 0) + 1); });
   const candidates: THREE.Mesh[] = [];
   root.traverse((o) => {
-    if (o instanceof THREE.Mesh && !(o instanceof THREE.InstancedMesh) && uses.get(o.geometry) === 1 && !o.children.length) candidates.push(o);
+    if (o instanceof THREE.Mesh && !(o instanceof THREE.InstancedMesh) && !o.userData.kitLod && uses.get(o.geometry) === 1 && !o.children.length) candidates.push(o);
   });
   for (const o of candidates) {
     const geometry = o.geometry;
@@ -663,7 +677,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.name = "room floor (render only)";
       g.add(mesh);
     }
-    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...visibleSoffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry), ...layout.shaftFascias.filter((f) => f.floorId === lv.floorId).map((f) => enclosureWallGeometry(f.wall))]);
+    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...visibleSoffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry), ...layout.shaftFascias.filter((f) => f.floorId === lv.floorId).map(shaftFasciaGeometry)]);
     if (ceil) g.add(new THREE.Mesh(track(ceil), mat.ceiling));
     const hood = merged(layout.soffits.filter((s) => s.floorId === lv.floorId && s.spaceId.startsWith("elevator-cap:") && s.z > -0.5).map(soffitGeometry));
     if (hood) {
@@ -1373,7 +1387,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     for (const esc of escalators) {
       const { lo, hi, yaw, count, L3, stepLen } = esc.steps.userData as { lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number };
-      const trim = combed.has(esc.run.edgeId) ? stepLen / 2 : 0;
+      const trim = combed.has(esc.run.edgeId) && (!kitSwap?.lod || kitSwap.lod.active.has(esc.run.edgeId)) ? stepLen / 2 : 0;
       tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
       const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
       for (let i = 0; i < count; i++) {
@@ -1418,7 +1432,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     identityBoards,
     levelGroups,
     update(dt, t) { update(dt, t); surface.update(dt, t); },
-    setViewer: surface.setViewer,
+    setViewer(position) { surface.setViewer(position); kitSwap?.lod?.update(position); },
     trainStatus,
     ...(kitSwap ? { kitSwap } : {}),
     dispose() {
@@ -1444,7 +1458,7 @@ function mergeRootFinishes(root: THREE.Group, materials: [THREE.Material, string
   for (const [material, name] of materials) {
     const meshes: THREE.Mesh[] = [];
     root.traverse((o) => {
-      if (o instanceof THREE.Mesh && !(o instanceof THREE.InstancedMesh) && o.material === material &&
+      if (o instanceof THREE.Mesh && !(o instanceof THREE.InstancedMesh) && !o.userData.kitLod && o.material === material &&
         (includeLevelTrim || o.parent === root)) meshes.push(o);
     });
     if (meshes.length < 2) continue;

@@ -15,6 +15,7 @@ import type { Plan } from "../scene/layout.ts";
 import type { KitSwapReport } from "../scene/kit/types.ts";
 import { withCanvasStub } from "./helpers/scene-digest.ts";
 import { digestSceneLists } from "./helpers/station-digest.ts";
+import { cutStairwells, stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
 
 const { bundle } = loadShinjukuBundle(), plan = planJson as unknown as Plan;
 
@@ -137,5 +138,43 @@ describe("the shipped mobile kit bundle dresses the escalators", () => {
     expect(meshes(on.cameraBlockers)).toEqual(meshes(off.cameraBlockers));
     expect(on.spawnPoints).toEqual(off.spawnPoints);
     expect(on.walls).toEqual(off.walls);
+  });
+
+  it("switches the shipped geometry between kit and procedural clusters without changing physics", () => {
+    const layer = on.root.getObjectByName("kit-swap")!;
+    report.lod!.update({ x: 10000, y: 10000, z: 10000 });
+    const far = layer.children.filter((g) => g.name === "kit-fallback");
+    const pairs = layer.children.filter((g) => g.name.startsWith("kit-near:") && g.name !== "kit-near:static")
+      .map((near, i) => ({ near, far: far[i]! }));
+    const physical = digestSceneLists(on);
+    const first = report.placed[0]!;
+    for (const position of [
+      { x: first.position[0], y: -first.position[2], z: first.position[1] },
+      { x: 10000, y: 10000, z: 10000 },
+      { x: first.position[0], y: -first.position[2], z: first.position[1] },
+    ]) {
+      report.lod!.update(position);
+      for (const { near, far } of pairs) {
+        expect(far.name).toBe("kit-fallback");
+        expect(near.visible).toBe(!far.visible);
+        expect(far.children.length).toBeGreaterThan(0);
+      }
+      expect(report.lod!.active.has(first.anchorKey)).toBe(position.x !== 10000);
+      expect(digestSceneLists(on)).toEqual(physical);
+    }
+  });
+
+  it("never turns the additional fallback representation into runtime slab bands or guard colliders", () => {
+    const layer = new THREE.Group();
+    for (const child of on.root.getObjectByName("kit-swap")!.children) {
+      if (child.name === "kit-fallback") layer.add(child.clone(true));
+    }
+    const cut = cutStairwells(layer, stairwellWells(bundle, () => true), { tier: "low" });
+    try {
+      expect(cut.stats.cutTriangles).toBe(0);
+      expect(cut.bandTriangles).toBe(0);
+      expect(cut.walls).toEqual([]);
+      expect(cut.colliders).toEqual([]);
+    } finally { cut.dispose(); }
   });
 });

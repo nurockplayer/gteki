@@ -1,7 +1,7 @@
 ---
 area: data/stations
 owner: data-research lead
-updated: 2026-10-29 02:36 JST
+updated: 2026-11-03 08:26 JST
 ---
 
 # Station data: Ikebukuro and Shinjuku
@@ -19,6 +19,7 @@ The two stations are built differently:
 
 | Path | Role |
 | --- | --- |
+| `tools/field-ingest/ingest.ts` | `pnpm field:ingest <receipt.json> [--dry-run] [--private-root <dir>]`; validates graph references, floors, timestamps and duplicates before applying station receipts; private receipts require the private root and write additions plus their archive there |
 | `stations/shinjuku/tools/import-e27.ts` | Builds the Shinjuku bundle; header comment lists the dataset quirks it relies on |
 | `stations/shinjuku/scene/layout.ts` | Keeps the shared physical shaft enclosure/caps in `soffits`; `shaftFinishes` and `shaftFascias` supply the per-flight visual sheets, flat landing/shoulder finishes and step closures used by `stations/shinjuku/scene/build.ts` |
 | `stations/shinjuku/tools/e27-raw.ts` | Raw-dir resolution (`GTEKI_RAW_SHINJUKU`) |

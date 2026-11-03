@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { boundaryEdges, buildWalkableModel, regionPolygon, type BoundaryWall, type PlanPoint, type Region } from "./walkableModel.ts";
+import { describe, expect, it, vi } from "vitest";
+import polygonClipping from "polygon-clipping";
+import { boundaryEdges, buildWalkableModel, regionPolygon, snapRing, unionRings, type BoundaryWall, type PlanPoint, type Region } from "./walkableModel.ts";
 
 const at = (x: number, z: number): PlanPoint => ({ x, z });
 const strip = (level: string, points: { x: number; y: number; z: number }[], halfWidth: number): Region => ({ kind: "strip", level, points, halfWidth });
@@ -301,5 +302,30 @@ describe("boundaryEdges", () => {
     const edges = boundaryEdges([[ring]], [[{ x: 0, z: 0 }, { x: 3, z: 0 }]]);
     expect(edges).toHaveLength(3);
     expect(edges.some(([a, b]) => Math.abs(a.z) < 1e-9 && Math.abs(b.z) < 1e-9)).toBe(false);
+  });
+});
+
+describe("snapRing", () => {
+  it("snaps two points a float hair apart to one double and drops the repeat, so no zero-length edge reaches the sweep", () => {
+    // Rounding by multiplying with 1e-4 left these as -20.80120000000021 and -20.80119999999979: a 4e-13 m edge that
+    // polygon-clipping's sweep line cannot find again.
+    const ring = [{ x: -20.80120000000021, z: -436.1322 }, { x: -20.80119999999979, z: -436.1322 }, { x: -19, z: -436 }, { x: -19, z: -437 }];
+    const snapped = snapRing(ring, 1e4);
+    expect(snapped).toEqual([[-20.8012, -436.1322], [-19, -436], [-19, -437]]);
+    expect(snapRing(ring, 0)).toHaveLength(4);
+  });
+});
+
+describe("unionRings retry", () => {
+  it("still unions a group when polygon-clipping throws on the first attempt, without moving its boundary", () => {
+    const square = (x0: number, z0: number) => [{ x: x0, z: z0 }, { x: x0 + 2, z: z0 }, { x: x0 + 2, z: z0 + 2 }, { x: x0, z: z0 + 2 }];
+    const spy = vi.spyOn(polygonClipping, "union").mockImplementationOnce(() => { throw new Error("Unable to find segment in SweepLine tree"); });
+    try {
+      const union = unionRings([square(100, -400), square(101, -400)]);
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(union).toHaveLength(1);
+      const xs = union[0]![0]!.map((p) => p.x), zs = union[0]![0]!.map((p) => p.z);
+      expect([Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)]).toEqual([100, 103, -400, -398]);
+    } finally { spy.mockRestore(); }
   });
 });

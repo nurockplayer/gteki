@@ -7,6 +7,7 @@ export type ReceiptItem = {
   status: "CLOSED" | "OPEN";
   poiId?: string;
   nodeId?: string;
+  edgeId?: string;
   paid?: boolean;
   observedText: string;
   observedAt: string;
@@ -16,6 +17,7 @@ export type ReceiptItem = {
 
 export type FieldReceipt = {
   version: number;
+  private?: true;
   station: string;
   fieldRun: string;
   /** Director 2026-10-26: only the GTEki team's own field readings for now; crowd contributions need a contributor licence first. */
@@ -23,6 +25,7 @@ export type FieldReceipt = {
   /** Role only, never a name (e.g. "owner"). */
   observer: string;
   items: ReceiptItem[];
+  fieldNotes?: unknown[];
 };
 
 type SkippedItem = { item: number; reason: string };
@@ -35,31 +38,36 @@ function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-function fail(item: unknown, message: string): never {
-  throw new Error(`item ${String(item ?? "?")}: ${message}`);
-}
-
 export function validateReceipt(receipt: FieldReceipt, station: string, hasPoi: (id: unknown) => boolean, hasNode: (id: unknown) => boolean): void {
+  const issues: string[] = [];
+  const fail = (item: unknown, message: string) => { issues.push(`item ${String(item ?? "?")}: ${message}`); };
   if (receipt?.version !== 1) fail("?", "version must be 1");
   if (receipt?.station !== station) fail("?", `station must be "${station}"`);
-  if (receipt.sourceKind !== "team_field") fail("?", 'sourceKind must be "team_field" (crowd contributions are not accepted yet)');
-  if (typeof receipt.observer !== "string" || !/^[a-z][a-z-]*$/.test(receipt.observer)) fail("?", "observer must be a role such as \"owner\", not a name");
-  if (!Array.isArray(receipt.items)) fail("?", "items must be an array");
-  if (receipt.items.length === 0) fail("?", "items must contain at least one item");
-  for (const item of receipt.items) {
-    const number = item?.item;
-    if (!Number.isInteger(number) || number <= 0) fail(number, "item must be a positive integer");
-    if (item.status !== "CLOSED" && item.status !== "OPEN") fail(number, "status must be CLOSED or OPEN");
-    if (typeof item.observedText !== "string" || item.observedText.trim().length === 0) fail(number, "observedText must be non-empty");
-    if (typeof item.observedAt !== "string" || !OBSERVED_AT.test(item.observedAt) || Number.isNaN(Date.parse(item.observedAt))) {
-      fail(number, "observedAt must include a valid +09:00 timestamp");
-    }
-    if (item.status === "CLOSED") {
-      if (typeof item.paid !== "boolean") fail(number, "paid must be a boolean for CLOSED items");
-      if (!hasPoi(item.poiId)) fail(number, `unknown POI ${String(item.poiId)}`);
-      if (!hasNode(item.nodeId)) fail(number, `unknown node ${String(item.nodeId)}`);
+  if (receipt?.sourceKind !== "team_field") fail("?", 'sourceKind must be "team_field" (crowd contributions are not accepted yet)');
+  if (typeof receipt?.observer !== "string" || !/^[a-z][a-z-]*$/.test(receipt.observer)) fail("?", 'observer must be a role such as "owner", not a name');
+  if (!Array.isArray(receipt?.items)) fail("?", "items must be an array");
+  else {
+    if (receipt.items.length === 0 && !(receipt.private && receipt.fieldNotes?.length)) fail("?", "items must contain at least one item");
+    for (const item of receipt.items) {
+      const number = item?.item;
+      if (!Number.isInteger(number) || number <= 0) fail(number, "item must be a positive integer");
+      if (item?.status !== "CLOSED" && item?.status !== "OPEN") fail(number, "status must be CLOSED or OPEN");
+      if (typeof item?.observedText !== "string" || item.observedText.trim().length === 0) fail(number, "observedText must be non-empty");
+      if (typeof item?.observedAt !== "string" || !OBSERVED_AT.test(item.observedAt) || Number.isNaN(Date.parse(item.observedAt))) {
+        fail(number, "observedAt must include a valid +09:00 timestamp");
+      } else {
+        const local = item.observedAt.slice(0, -6);
+        const canonical = new Date(Date.parse(item.observedAt) + 9 * 3_600_000).toISOString().slice(0, local.length);
+        if (canonical !== local) fail(number, "observedAt must include a valid +09:00 timestamp");
+      }
+      if (item?.status === "CLOSED") {
+        if (typeof item.paid !== "boolean") fail(number, "paid must be a boolean for CLOSED items");
+        if (!hasPoi(item.poiId)) fail(number, `unknown POI ${String(item.poiId)}`);
+        if (!hasNode(item.nodeId)) fail(number, `unknown node ${String(item.nodeId)}`);
+      }
     }
   }
+  if (issues.length) throw new Error(issues.join("\n"));
 }
 
 function appendUnique(values: unknown, value: string): string[] {
@@ -67,13 +75,20 @@ function appendUnique(values: unknown, value: string): string[] {
   return current.includes(value) ? current : [...current, value];
 }
 
-export function updatePoi(poi: any, item: ReceiptItem, sourceId: string): any {
+export function updatePoi(poi: any, item: ReceiptItem, sourceId: string, position?: { x: number; y: number; z: number | null }): any {
+  const { approximatePosition: _approximatePosition, ...verifiedPoi } = poi;
+  const locate = poi.displayPosition === null && position !== undefined;
   const date = item.observedAt.slice(0, 10);
+  const previousAt = /read on site ([^;]+); connector =/.exec(poi.evidence?.method ?? "")?.[1];
+  const older = previousAt !== undefined && Date.parse(item.observedAt) < Date.parse(previousAt);
+  const marker = `; field receipt ${JSON.stringify([item.nodeId, item.observedAt])}`;
+  const history = poi.evidence?.method.match(/; field receipt \[[^\]]*\]/g) ?? [];
   const sentenceJa = `入口は現地で確認（#533 項目${item.item}、${item.observedAt}）：「${item.observedText}」。`;
   const sentenceEn = `Entrance checked on site (#533 item ${item.item}, ${item.observedAt}): 「${item.observedText}」.`;
   const method = `field observation (#533 item ${item.item}): 「${item.observedText}」 read on site ${item.observedAt}; connector = ${item.nodeId}`
     + (item.floorLabel ? `; floor ${item.floorLabel}` : "")
-    + (item.stepFree ? `; step-free: ${item.stepFree}` : "");
+    + (item.stepFree ? `; step-free: ${item.stepFree}` : "")
+    + (locate ? "; displayPosition = public connector node position (field-verified entrance)" : "");
   const notes = Array.isArray(poi.notes) ? poi.notes.map((note: any) => {
     const sentence = note.lang === "ja" ? sentenceJa : note.lang === "en" ? sentenceEn : null;
     const oldPhrase = note.lang === "ja" ? JA_SEARCH_ONLY : note.lang === "en" ? EN_SEARCH_ONLY : null;
@@ -86,20 +101,23 @@ export function updatePoi(poi: any, item: ReceiptItem, sourceId: string): any {
     if (!notes.some((note: any) => note.lang === lang)) notes.push({ lang, text: sentence });
   }
   return {
-    ...poi,
+    ...verifiedPoi,
+    ...(locate ? { displayPosition: clone(position) } : {}),
     connectorNodeIds: appendUnique(poi.connectorNodeIds, item.nodeId!),
-    paid: item.paid,
+    paid: older ? poi.paid : item.paid,
     evidence: {
       ...poi.evidence,
       sourceIds: appendUnique(poi.evidence?.sourceIds, sourceId),
-      method,
-      checkedDate: date,
+      method: older
+        ? poi.evidence.method + (locate ? "; displayPosition = public connector node position (field-verified entrance)" : "") + (position && !poi.evidence.method.includes(marker) ? marker : "")
+        : method + (position ? [...new Set([...history, marker])].join("") : ""),
+      checkedDate: older ? poi.evidence.checkedDate : date,
     },
     notes,
   };
 }
 
-export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: any, receipt: FieldReceipt) {
+export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: any, receipt: FieldReceipt, graph?: { nodes: any[] }) {
   const src = clone(srcInput);
   const pois = clone(poisInput);
   const station = clone(stationInput);
@@ -125,8 +143,9 @@ export function applyFieldReceipt(srcInput: any, poisInput: any, stationInput: a
     }
     const srcIndex = src.pois.findIndex((poi: any) => poi.id === item.poiId);
     const poisIndex = pois.pois.findIndex((poi: any) => poi.id === item.poiId);
-    src.pois[srcIndex] = updatePoi(src.pois[srcIndex], item, sourceId);
-    pois.pois[poisIndex] = updatePoi(pois.pois[poisIndex], item, sourceId);
+    const position = graph?.nodes.find((node) => node.id === item.nodeId)?.position;
+    src.pois[srcIndex] = updatePoi(src.pois[srcIndex], item, sourceId, position);
+    pois.pois[poisIndex] = updatePoi(pois.pois[poisIndex], item, sourceId, position);
     applied.push(item.item);
   }
   return { src, pois, station, applied, skipped };
@@ -139,7 +158,7 @@ export function fieldSource(receipt: FieldReceipt, station: string): { sourceId:
   if (!closed.length) return null;
   const latest = closed.reduce((a, b) => Date.parse(a.observedAt) >= Date.parse(b.observedAt) ? a : b);
   const date = latest.observedAt.slice(0, 10);
-  const sourceId = `field-${station}-${date}`;
+  const sourceId = `field-${receipt.private ? "private-" : ""}${station}-${date}`;
   const itemNumbers = closed.map(({ item }) => item).join(", ");
   const source = {
     id: sourceId,
@@ -175,6 +194,7 @@ async function main(): Promise<void> {
     JSON.parse(fs.readFileSync(poisPath, "utf8")),
     JSON.parse(fs.readFileSync(stationPath, "utf8")),
     JSON.parse(fs.readFileSync(receiptPath, "utf8")),
+    JSON.parse(fs.readFileSync(path.join(stationDir, "gteki", "graph.json"), "utf8")),
   );
   for (const [file, value] of [[srcPath, result.src], [poisPath, result.pois], [stationPath, result.station]] as const) {
     fs.writeFileSync(file, `${JSON.stringify(value, null, 1)}\n`);
