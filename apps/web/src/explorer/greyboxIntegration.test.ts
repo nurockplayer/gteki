@@ -40,6 +40,25 @@ function fixture() {
 }
 
 describe("greybox station integration", () => {
+  it("walks through a traversable graph corridor into a private floor without a scene", async () => {
+    const { state, loaded } = fixture();
+    Object.assign(state, { buildStationScene: async () => null, colliders: [], cameraBlockers: [], walls: [] });
+    loaded.bundle.nodes.find((n) => n.id === "start")!.position = { x: -2, y: 5, z: 0 };
+    loaded.bundle.nodes.find((n) => n.id === "a")!.position = { x: 2, y: 5, z: 0 };
+    const station = { ...loaded, privateRegions: [{ kind: "polygon" as const, level: "concourse", y: 0, rings: [[
+      { x: 0, z: 0 }, { x: 10, z: 0 }, { x: 10, z: -10 }, { x: 0, z: -10 },
+    ]] }] };
+    const router = createRouter(loaded.bundle);
+    expect(router.route("start", "a").ok).toBe(true);
+    expect(await state.loadStation(station, router)).toBe(true);
+    state.pos.set(-1, 0, -5);
+    expect(state.walkPath([{ x: 1, z: -5 }], { maxSeconds: 5 })).toMatchObject({ done: true, stuck: false });
+    expect(state.pos.x).toBeGreaterThan(0.5);
+    expect(state.pos.y).toBeCloseTo(0);
+    expect(state.walkPath([{ x: -1, z: -5 }], { maxSeconds: 5 })).toMatchObject({ done: true, stuck: false });
+    expect(state.pos.x).toBeLessThan(-0.5);
+  });
+
   it("loads private floors through the graph-only fallback without refilling their holes", async () => {
     const { state, loaded } = fixture();
     Object.assign(state, { buildStationScene: async () => null, colliders: [], cameraBlockers: [], walls: [] });
@@ -54,7 +73,9 @@ describe("greybox station integration", () => {
     expect(hits(1).length).toBeGreaterThan(0);
     expect(hits(5)).toHaveLength(0);
     expect(hits(11).length).toBeGreaterThan(0);
-    expect(state.walls).toHaveLength(8);
+    state.pos.set(1, 0, -5);
+    expect(state.walkPath([{ x: 5, z: -5 }], { maxSeconds: 5 })).toMatchObject({ done: false, stuck: true });
+    expect(state.pos.x).toBeLessThan(3);
     expect(state.colliderTargets).toContain(state.greybox.colliders[0]);
   });
 

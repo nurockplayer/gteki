@@ -1044,8 +1044,9 @@ export class Explorer {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
       if (station.privateRegions?.length) {
-        // The graph keeps its other surfaces; this greybox adds only the authoritative private floors.
-        this.greybox = buildGreybox(bundle, () => false, () => false, { colliderNear: () => false, wallHit: () => null }, this.quality, false, station.privateRegions);
+        // Join traversable graph corridors to private floors so their shared boundary has no wall.
+        const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+        this.greybox = buildGreybox(bundle, traversable, () => false, { colliderNear: () => false, wallHit: () => null }, this.quality, false, station.privateRegions);
         this.world.add(this.greybox.root);
         this.walkable = [...this.walkable, ...this.greybox.walkable];
         this.colliders = this.greybox.colliders;
