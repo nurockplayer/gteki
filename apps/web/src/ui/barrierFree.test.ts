@@ -27,11 +27,41 @@ afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(
 
 it("classifies only toilets whose names state accessibility", () => {
   const toilet = ikb.pois.find((p) => p.id === "toilet-ikb-metro-001")!;
-  for (const text of ["車いす対応トイレ", "多機能トイレ", "多目的トイレ", "バリアフリートイレ", "Accessible toilet"])
+  for (const text of ["車いす対応トイレ", "車椅子対応トイレ", "多機能トイレ", "多目的トイレ", "バリアフリートイレ",
+    "Accessible toilet", "multipurpose toilet", "multi-purpose toilet", "wheelchair toilet"])
     expect(isAccessibleToilet({ ...toilet, names: [{ lang: "ja", text }] })).toBe(true);
+  for (const text of ["not accessible toilet", "inaccessible toilet", "non-accessible toilet", "in-accessible toilet"])
+    expect(isAccessibleToilet({ ...toilet, names: [{ lang: "en", text }] })).toBe(false);
   expect(isAccessibleToilet({ ...toilet, names: [{ lang: "ja", text: "トイレ（男女共用）" }] })).toBe(false);
   expect(isAccessibleToilet({ ...toilet, category: "shop" })).toBe(false);
 });
+
+it.each([["IKB", ikb, 2, 4, 19], ["SJK", sjk, 0, 0, 0]] as const)(
+  "keeps toilet designations separate in real %s names and generic queries complete",
+  (_station, bundle, multipurposeCount, wheelchairCount, accessibleCount) => {
+    const search = createSearchIndex(bundle);
+    const results = (query: string) => barrierFreeResults(bundle, search, null, null, query, "ja", DEFAULT_PROFILE);
+    for (const [queries, designation, count] of [
+      [["多機能", "多機", "多目的", "multipurpose", "multi-purpose", "multi"], /多機能|多目的|multi-?purpose/i, multipurposeCount],
+      [["車いす", "車椅子", "wheelchair", "wheel"], /車いす|車椅子|wheelchair/i, wheelchairCount],
+    ] as const) {
+      const expected = bundle.pois.filter((poi) => poi.category === "toilet" &&
+        poi.names.some(({ text }) => designation.test(text)));
+      expect(expected).toHaveLength(count);
+      for (const query of queries) {
+        const toilets = results(query).filter(({ poi }) => poi.category === "toilet");
+        expect(toilets.map(({ poi }) => poi.id).sort()).toEqual(expected.map((poi) => poi.id).sort());
+        if (count > 0) expect(toilets.length).toBeGreaterThan(0);
+        for (const { poi } of toilets)
+          expect(poi.names.some(({ text }) => designation.test(text))).toBe(true);
+      }
+    }
+    const accessible = bundle.pois.filter(isAccessibleToilet);
+    expect(accessible).toHaveLength(accessibleCount);
+    for (const query of ["トイレ", "toilet", "restroom", "accessible toilet", "バリアフリー"])
+      expect(results(query).map(({ poi }) => poi.id).sort()).toEqual(accessible.map((poi) => poi.id).sort());
+  },
+);
 
 it("keeps real IKB search-only facilities, excludes plain toilets, and narrows by text", () => {
   const search = createSearchIndex(ikb);
