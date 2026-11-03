@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createSearchIndex } from "@gteki/search";
 import { loadShinjukuBundle } from "../data/bundle.ts";
+import { merchantCardModel } from "../../../apps/web/src/ui/merchantCard.ts";
 
 /**
  * #419: the Odakyu Department Store and 新宿マルイ brand directories ship as gteki/tenants.json.
@@ -23,7 +24,7 @@ describe("Department store brand search (#419)", () => {
 
   it("loads the brand directories with no validation errors", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
-    expect(bundle.tenants).toHaveLength(2932);
+    expect(bundle.tenants).toHaveLength(3018);
     expect(new Set(bundle.tenants!.map((t) => t.poiId))).toEqual(
       new Set([
         "shop-sjk-odakyudept",
@@ -34,6 +35,7 @@ describe("Department store brand search (#419)", () => {
         "shop-sjk-isetan-mens",
         "shop-sjk-takashimaya",
         "shop-sjk-keio",
+        "shop-sjk-subnade",
       ]),
     );
   });
@@ -96,6 +98,30 @@ describe("Department store brand search (#419)", () => {
       matched: brand,
       tenant: { name: brand, floorLabel: floor },
     });
+  });
+
+  it.each([
+    ["AFURI 辛紅", "らーめん"],
+    ["金沢治与門窯 スッポン堂", "健康補助食品"],
+    ["フットマンカメラ", "中古カメラ専門店"],
+  ])("returns the サブナード card with its printed shopping floor for %s", (brand, category) => {
+    const hit = search(brand).find((result) => result.poi.id === "shop-sjk-subnade")!;
+    expect(hit).toMatchObject({
+      poi: { id: "shop-sjk-subnade", floorId: null, connectorNodeIds: [] },
+      routable: false,
+      matched: brand,
+      tenant: { name: brand, floorLabel: "地下一階" },
+    });
+    const card = merchantCardModel(hit.poi, bundle.sources, "ja", null,
+      bundle.tenants!.filter((tenant) => tenant.poiId === hit.poi.id));
+    expect(card.floors).toEqual([
+      expect.objectContaining({
+        label: "地下一階",
+        brands: expect.arrayContaining([{ name: brand, category }]),
+        sourceIds: ["subnade-shinjuku-floorguide-2026-11"],
+        checkedDate: "2026-11-03",
+      }),
+    ]);
   });
 
   it.each([
