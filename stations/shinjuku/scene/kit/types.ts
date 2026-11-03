@@ -147,7 +147,7 @@ export interface KitPlacement {
 
 export type PlaceholderGroup = "gate-machines" | "lift-portals" | "stair-nosing" | "escalator-balustrade";
 
-/** Budget caps for one scene (director ruling, Issue #94). */
+/** Active render caps plus whole-scene resident geometry/texture guards. */
 export interface KitBudget {
   maxDraws: number;
   maxTriangles: number;
@@ -176,6 +176,8 @@ export interface KitGap {
 }
 
 export interface KitSwapReport {
+  /** Render-only distance state; active keys also control the animated comb trim. */
+  lod?: { active: ReadonlySet<string>; update(position: { x: number; y: number; z: number }): void };
   tier: KitTier;
   /** Manifest licence string, verbatim. The swap makes no licence claim of its own. */
   license: string;
@@ -186,9 +188,9 @@ export interface KitSwapReport {
   totals: KitTotals;
   budget: KitBudget;
   tinted: string[];
-  /** What the scene really got, counted from the merged meshes (the totals above come from the manifest). */
+  /** Resident kit meshes, before distance visibility and explorer cuts (totals above come from the manifest). */
   measured: KitTotals;
-  /** Placeholder triangles hidden, per group. */
+  /** Placeholder triangles removed from static batches; vertical LOD retains copies in fallback groups. */
   hidden: Partial<Record<PlaceholderGroup, number>>;
 }
 
@@ -215,6 +217,7 @@ export interface KitApplyContext {
 
 /** The part of the placeholder ledger a swap needs. */
 export interface PlaceholderLedgerView {
+  copy(group: PlaceholderGroup, anchorKeys: ReadonlySet<string>): THREE.Group;
   /** Hide (remove) every triangle recorded for these anchor keys of this group. Returns triangles removed. */
   hide(group: PlaceholderGroup, anchorKeys: ReadonlySet<string>): number;
   /** Same, in two steps: nothing changes until `commit()`, so several groups can be prepared before any is hidden. */

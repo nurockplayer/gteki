@@ -24,7 +24,6 @@ describe("vertical connector scope", () => {
 
 import * as THREE from "three";
 import { buildConnectors, buildEscalator, buildStairs, withinGreyboxBudget } from "./greyboxConnectors.ts";
-import { buildConnectors as buildLegacyConnectors } from "./greyboxConnectorsLegacy.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 
 it("leaves elevator edges to the follow-up, including scene gaps", () => {
@@ -442,6 +441,19 @@ const unsupportedShapes: { name: string; waypoints: (direction: number) => [numb
   { name: "single-vertex 165 degree sharp return", waypoints: (d) => stackedWaypoints(165, d) },
   { name: "single 100 degree turn whose inner wall crosses the next flight", waypoints: (d) => stackedWaypoints(100, d) },
 ];
+/**
+ * Unsupported shapes whose flights or landings overlap in plan with less than body-height clearance between them: no
+ * walker gets through them in reality either, so they are not walked end to end. The walls they need are #694.
+ */
+const obstructedShapes = new Set([
+  "two 90 degree turns 0.5 m apart", "flight crossing a non-adjacent landing at 1 m",
+  "stacked non-adjacent flights", "a spiral of 15 degree bends whose lower turns pass under its top landing (#673 r3)",
+  "a last flight whose side wall stands 0.4 m over an earlier landing (#673 r7)",
+  "a rising flight whose side wall runs through an earlier landing 0 to 0.9 m above it (#673 r5)",
+  "two 90 degree landings 1.2 m apart whose squares overlap (#673 r1)", "single-vertex 135 degree sharp return",
+  "single-vertex 165 degree sharp return", "single 100 degree turn whose inner wall crosses the next flight",
+]);
+const walkableUnsupportedCases = unsupportedShapes.filter((shape) => !obstructedShapes.has(shape.name)).flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 const unsupportedCases = unsupportedShapes.flatMap((shape) => [-1, 1].map((direction) => ({ name: `${shape.name}, direction=${direction}`, waypoints: shape.waypoints(direction) })));
 
 describe("turning landing guards", () => {
@@ -483,8 +495,10 @@ describe("turning landing guards", () => {
     }
   });
 
+  // #710 review: the shapes the legacy builder used to take are walked end to end too, unless they are obstructed.
   it("lets a centreline walker and a walker 0.5 m off centre pass bottom to top", () => {
-    for (const { name, waypoints } of guardedCases) {
+    expect(walkableUnsupportedCases.length).toBeGreaterThan(0);
+    for (const { name, waypoints } of [...guardedCases, ...walkableUnsupportedCases]) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
       // The new builder must build it: a silent fallback to legacy would pass the geometry checks below (#673 r4).
       expect(result.stats.legacyConnectors, name).toBe(0);
@@ -503,7 +517,7 @@ describe("turning landing guards", () => {
         expect(Math.hypot(resolved.x - x, resolved.z - z), `${name} offset=${offset} s=${s}`).toBeLessThanOrEqual(0.05);
       }
     }
-  });
+  }, 30_000);
 
   it("keeps every landing guard segment within the landing's diagonal", () => {
     const diagonal = 2 * half * Math.SQRT2;
@@ -518,7 +532,7 @@ describe("turning landing guards", () => {
       expect(guards.length, name).toBeGreaterThan(0);
       for (const w of guards) expect(Math.hypot(w.bx - w.ax, w.bz - w.az), name).toBeLessThanOrEqual(diagonal + 1e-6);
     }
-  });
+  }, 30_000);
 
   // #673 r8: a wide flight lies further below its landing inside the square; it is still the landing's own flight.
   it("builds a 4 m wide single-turn stair with the new builder", () => {
@@ -550,18 +564,16 @@ describe("turning landing guards", () => {
     }
   });
 
-  // #673 r14: an escalator has no landing geometry, so with two turns it stays on main's legacy builder.
-  it("builds a two-turn escalator with main's legacy builder, unchanged", () => {
+  // #645 step 2: an escalator with two turns is one strip level with discs at its bends, built by the model, not legacy.
+  it("builds a two-turn escalator from the walkable model", () => {
     const geometry = ([[0, 0, 0], [4, 2, 0], [4, 2, 3], [8, 4, 3]] as const).map(([x, h, z]) => ({ x, y: -z, z: h }));
-    const escalator = () => {
-      const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry })]);
-      station.nodes.find((n) => n.id === "upper")!.position = { ...geometry.at(-1)! };
-      return station;
-    };
-    const result = buildConnectors(escalator(), () => true, flat, "high"), legacy = buildLegacyConnectors(escalator(), () => true, flat, "high");
-    expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
-    expect(result.stats.legacyConnectors).toBe(1);
-    expect(result.wallSegments).toEqual(legacy.wallSegments);
+    const station = createSyntheticBundle([syntheticEdge("turn", "start", "upper", { mode: "escalator", attributes: { sceneGap: true }, geometry })]);
+    station.nodes.find((n) => n.id === "upper")!.position = { ...geometry.at(-1)! };
+    const result = buildConnectors(station, () => true, flat, "high");
+    expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(0);
+    expect(result.stats.legacyConnectors).toBe(0);
+    expect(result.pathByEdge.has("turn")).toBe(true);
+    expect(result.wallSegments.length).toBeGreaterThan(0);
   });
 
   // #673 r13: the floor continues past both ends of a stair, so nothing may stand across either exit.
@@ -797,27 +809,355 @@ describe("turning landing guards", () => {
     expect(path.map((p) => p.x)).toEqual([0, 5, 10]);
   });
 
-  it("does not list an unsupported shape in skippedEdgeIds: main's builder builds it (#640 r18)", () => {
+  it("lists no shape in skippedEdgeIds and leaves none to the legacy builder (#645 step 2)", () => {
     const result = buildConnectors(stairThrough(closeS(1)), () => true, flat, "high");
     expect(result.skippedEdgeIds).toEqual([]);
-    expect(result.stats.legacyConnectors).toBe(1);
+    expect(result.stats.legacyConnectors).toBe(0);
   });
 
-  // Every shape outside the supported set is built exactly as main builds it today (#640 r18 ruling; its clipping is #668).
-  const positions = (objects: readonly THREE.Object3D[]) => objects.map((o) => Array.from(((o as THREE.Mesh).geometry.getAttribute("position").array as Float32Array)));
-  it.each(unsupportedCases)("builds $name with main's legacy builder, unchanged", ({ waypoints }) => {
+  // #645 step 2: the shapes main's legacy builder used to take (#640 r18) are built from the model, one level per flight and
+  // landing, and a walker reaches and steps past both of their exits.
+  it.each(unsupportedCases)("builds $name from the walkable model, with both exits clear", ({ name, waypoints }) => {
     for (const tier of ["high", "low"] as const) {
       const result = buildConnectors(stairThrough(waypoints), () => true, flat, tier);
-      const legacy = buildLegacyConnectors(stairThrough(waypoints), () => true, flat, tier);
-      expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(1);
-      expect(result.stats.legacyConnectors).toBe(1);
+      expect(result.stats.connectorsSkippedByReason.unsupported_shape).toBe(0);
+      expect(result.stats.legacyConnectors).toBe(0);
       expect(result.root.children.length).toBeGreaterThan(0);
-      expect(positions(result.root.children)).toEqual(positions(legacy.root.children));
-      expect(positions(result.walkable)).toEqual(positions(legacy.walkable));
-      expect(positions(result.colliders)).toEqual(positions(legacy.colliders));
-      expect(result.wallSegments).toEqual(legacy.wallSegments);
-      expect([...result.pathByEdge]).toEqual([...legacy.pathByEdge]);
-      expect(result.stats.triangles).toBe(legacy.stats.triangles);
+      expect(result.pathByEdge.has("turn")).toBe(true);
+      for (const [end, prev] of [[0, 1], [waypoints.length - 1, waypoints.length - 2]] as const) {
+        const [ex, ey, ez] = waypoints[end]!, [px, , pz] = waypoints[prev]!;
+        const length = Math.hypot(ex - px, ez - pz), ux = (ex - px) / length, uz = (ez - pz) / length;
+        for (let s = -0.6; s <= 0.6 + 1e-9; s += 0.05) {
+          const x = ex + ux * s, z = ez + uz * s;
+          const resolved = resolveWalls(x, z, 0.3, ey, 1.7, result.wallSegments);
+          expect(Math.hypot(resolved.x - x, resolved.z - z), `${name} ${tier} end=${end} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+        }
+      }
+    }
+  });
+
+  // #710 review: each connector is its own model, so two flights 1.7 m apart keep the walls that face each other.
+  it("keeps the facing side walls of two independent flights side by side", () => {
+    const geometry = (y: number) => [{ x: 0, y, z: 0 }, { x: 4, y, z: 2 }];
+    const station = createSyntheticBundle([
+      syntheticEdge("left", "start", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: geometry(0) }),
+      syntheticEdge("right", "a", "upper-2", { mode: "stairs", attributes: { sceneGap: true }, geometry: geometry(1.7) }),
+    ]);
+    for (const [id, y, h] of [["start", 0, 0], ["upper", 0, 2], ["a", 1.7, 0], ["upper-2", 1.7, 2]] as const) station.nodes.find((n) => n.id === id)!.position = { x: h ? 4 : 0, y, z: h };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const near = (x: number, z: number) => result.wallSegments.some((w) => {
+      const dx = w.bx - w.ax, dz = w.bz - w.az, t = THREE.MathUtils.clamp(((x - w.ax) * dx + (z - w.az) * dz) / (dx * dx + dz * dz), 0, 1);
+      return Math.hypot(x - (w.ax + dx * t), z - (w.az + dz * t)) < 0.02;
+    });
+    // Wall frame z is the bundle's -y: the left flight's far side is z = -0.78, the right flight's near side z = -0.92.
+    expect(near(2, -0.78)).toBe(true);
+    expect(near(2, -0.92)).toBe(true);
+  });
+
+  // #710 review: a spiral of shallow bends is split into levels of at most 90 degrees, so where it meets itself in plan
+  // both heights keep their outer wall.
+  it("keeps the outer wall of a shallow-bend spiral at both heights where it meets itself in plan", () => {
+    const waypoints = flatSpiral(1);
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const outer = (i: number) => {
+      const [ax, , az] = waypoints[i]!, [bx, , bz] = waypoints[i + 1]!, length = Math.hypot(bx - ax, bz - az);
+      const mx = (ax + bx) / 2, mz = (az + bz) / 2, nx = (bz - az) / length, nz = -(bx - ax) / length;
+      // Outward is away from the spiral's centre (0, 2).
+      const sign = Math.sign(nx * mx + nz * (mz - 2));
+      return [mx + sign * nx * 0.78, mz + sign * nz * 0.78] as const;
+    };
+    const wallsAt = (x: number, z: number) => result.wallSegments.filter((w) => {
+      const dx = w.bx - w.ax, dz = w.bz - w.az, t = THREE.MathUtils.clamp(((x - w.ax) * dx + (z - w.az) * dz) / (dx * dx + dz * dz), 0, 1);
+      return Math.hypot(x - (w.ax + dx * t), z - (w.az + dz * t)) < 0.03;
+    });
+    const [lx, lz] = outer(0), [hx, hz] = outer(waypoints.length - 2);
+    expect(wallsAt(lx, lz).some((w) => w.yMin < 0.5), "first leg, low").toBe(true);
+    expect(wallsAt(hx, hz).some((w) => w.yMin > 0.6), "last leg, high").toBe(true);
+  });
+
+  // #710 review: a level leg before the first climb keeps its side walls unless station floor lies under it.
+  it("walls a level approach leg off the floor and leaves it open on the floor", () => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [3, 0, 0], [6, 2, 0]];
+    const sideWall = (result: ReturnType<typeof buildConnectors>) => result.wallSegments.some((w) => Math.abs(w.az - w.bz) < 1e-6 && Math.abs(Math.abs(w.az) - 0.78) < 0.02 && Math.min(w.ax, w.bx) < 1.5 && Math.max(w.ax, w.bx) > 1.5);
+    expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: () => false, nearMesh: () => false }, "high"))).toBe(true);
+    expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: (p) => p.z < 1e-6, nearMesh: () => false }, "high"))).toBe(false);
+    // Floor missing over 0.3 m between the leg's ends and middle: the walls stay.
+    expect(sideWall(buildConnectors(stairThrough(waypoints), () => true, { hasFloor: (p) => p.z < 1e-6 && !(p.x > 1.1 && p.x < 1.4), nearMesh: () => false }, "high"))).toBe(true);
+  });
+
+  // #710 review: a landing's opening stubs follow its flight through a shallow bend without leaving a wedge for a guard.
+  it("leaves no guard in a flight that bends shallowly next to its landing", () => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4.7, 2.5, -0.7], [6.45, 4, -4.3]];
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const r = resolveWalls(4.7, -0.7, 0.3, 2.5, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 4.7, r.z + 0.7)).toBeLessThanOrEqual(0.05);
+  });
+
+  // #710 review: two turns on one flat landing, with a shallow bend between them, make one landing.
+  it("keeps the walkway clear on a flat landing with a shallow bend between its turns", () => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4, 2, -0.4], [4.05, 2, -0.8], [8, 4, -0.8]];
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), r = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - p.x, r.z - p.z), `s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  // #710 review: two stairs meeting at a node attach there, so neither's walls stand across the other's exit.
+  it("lets a walker turn from one stair onto another that shares its top node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [4, 4, 4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } } as unknown as Edge["attributes"], geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 1 } } as unknown as Edge["attributes"], geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    // With station floor at the junction, and without it (the builder adds endpoint pads there).
+    for (const scope of [flat, { hasFloor: () => false, nearMesh: () => false }]) {
+    const result = buildConnectors(station, () => true, scope, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    for (const [x, z] of [[3.45, 0], [3.5, 0], [3.7, 0], [4, 0], [4, 0.3]] as const) {
+      const r = resolveWalls(x, z, 0.3, 1.725, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z - z), `(${x}, ${z})`).toBeLessThanOrEqual(0.05);
+    }
+    }
+  });
+
+  // #710 review: at a junction of a narrow stair and a wide one, the opening reaches the wide one's side wall.
+  it("lets a walker from a narrow stair onto a wide one that shares its node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[-6, -2, 0], [-2.5, 0, 0], [0, 0, 0]]), b = g([[0, 0, 0], [0, 2, 4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true, width: { m: 4 } } as unknown as Edge["attributes"], geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a.at(-1)!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: (p) => p.z > -1e-6 && p.x > -2.6, nearMesh: () => false }, "high");
+    for (let x = -2.5; x <= -0.5; x += 0.1) {
+      const r = resolveWalls(x, 0, 0.3, 0, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z), `x=${x.toFixed(1)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  // #710 review: two flights converging on one node at 30 degrees leave the incoming route clear.
+  it("lets a walker up a flight that meets another at 30 degrees on its top node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4 - 2 * Math.sqrt(3), 0, 2], [4, 2, 0]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "b", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["b", b[0]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    for (let x = 0.5; x <= 4; x += 0.1) {
+      const r = resolveWalls(x, 0, 0.3, x / 2, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z), `x=${x.toFixed(1)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  // #710 review: two stairs leaving one node almost together but at different pitches part in height long before plan.
+  it("keeps the guard of the steeper of two stairs that leave one node together at different pitches", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [6, 3, 0]]), b = g([[0, 0, 0], [6, 1.5, 1.2]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("steep", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("shallow", "start", "b", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["b", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    // 5 m out the steep flight is 2.5 m up and the shallow one about 1.2 m: its side toward the shallow one keeps a guard.
+    // Nearer, 2 m out, they are already 0.5 m apart, more than a step: the guard stands there too.
+    for (const x of [5, 2]) {
+      const r = resolveWalls(x, 0.6, 0.3, x / 2, 1.7, result.wallSegments);
+      expect(r.z, `x=${x}`).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    }
+  });
+
+  // #710 review: a steep flight keeps its guard even inside the usual junction reach beside a level approach.
+  it("keeps a steep stair's guard beside a level approach inside the junction reach", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [6, 4.2, 0]]), b = g([[0, 0, 0], [3, 0, 0.6], [6, 2, 1.2]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("steep", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("shallow", "start", "b", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["b", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    for (const x of [1.2, 1.0, 1.5]) {
+      const r = resolveWalls(x, 0.6, 0.3, 0.7 * x, 1.7, result.wallSegments);
+      expect(r.z, `x=${x}`).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    }
+  });
+
+  // #710 review: level approaches do not let later flights with different pitches erase the lower flight's guard.
+  it("keeps the lower stair's guard when shared level approaches lead to different pitches", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const angle = Math.PI / 18, c = Math.cos(angle), s = Math.sin(angle);
+    const a = g([[0, 0, 0], [0.5, 0, 0], [8.5, 2.4, 0]]), b = g([[0, 0, 0], [0.5 * c, 0, 0.5 * s], [8.5 * c, 5.2, 8.5 * s]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("lower", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("upper", "start", "b", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a.at(-1)!], ["b", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    for (const x of [5, 6, 7]) {
+      const r = resolveWalls(x, 0.6, 0.3, 0.3 * (x - 0.5), 1.7, result.wallSegments);
+      expect(r.z, `x=${x}`).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    }
+  });
+
+  // #710 review: two flights meeting end to end at a shared node keep both side guards through the node.
+  it("keeps the side guards of two flights that meet end to end", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [8, 4, 0]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    for (const x of [3, 3.6, 4, 4.4, 5]) for (const side of [1, -1]) {
+      const r = resolveWalls(x, side * 0.6, 0.3, x / 2, 1.7, result.wallSegments);
+      expect(Math.abs(r.z), `x=${x} side=${side}`).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+    }
+  });
+
+  // #710 review: a junction opens only over the other stair's real footprint, not past its short first leg.
+  it("keeps a wide stair's guard beside a narrow stair whose first leg is short", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [6, 3, 0]]), b = g([[6, 3, 0], [6, 3, 0.4], [10, 5, 0.4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true, width: { m: 4 } } as unknown as Edge["attributes"], geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    const r = resolveWalls(5.6, 1.85, 0.3, 2.8, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 5.6, r.z - 1.85)).toBeGreaterThan(0.05);
+  });
+
+  // #710 review: only the level of the other stair that meets the node opens a junction; one passing overhead does not.
+  it("keeps a stair's guard under another stair's later flight that passes overhead", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [6, 3, 0]]), b = g([[6, 3, 0], [6, 5, 4], [2, 7, 4], [2, 9, 0], [8, 12, 0]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b.at(-1)!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const r = resolveWalls(5, -0.85, 0.3, 2.5, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 5, r.z + 0.85)).toBeGreaterThan(0.05);
+  });
+
+  // #710 review: a junction still opens where a floor-backed level leg at the stair's end is trimmed off.
+  it("opens a junction behind a trimmed level leg at the shared node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0], [4.1, 2, 0]]), b = g([[4.1, 2, 0], [4.1, 4, 4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a.at(-1)!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const r = resolveWalls(4.1, 0.78, 0.3, 2.39, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 4.1, r.z - 0.78)).toBeLessThanOrEqual(0.05);
+  });
+
+  // #710 review: a connector skipped as too short opens no junction in the one it meets.
+  it("keeps a stair's guards where a skipped short connector meets it", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [4, 5, 0.2]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const r = resolveWalls(3.6, 0.7, 0.3, 1.8, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 3.6, r.z - 0.7)).toBeGreaterThan(0.05);
+  });
+
+  // #710 review: a junction opens only where the other stair is; the incoming flight keeps its outer guard before the landing.
+  it("keeps a stair's outer guard short of a junction with another stair", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const a = g([[0, 0, 0], [4, 2, 0]]), b = g([[4, 2, 0], [4, 4, 4]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("first", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["upper", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const landing = { hasFloor: (p: { x: number; y: number; z: number }) => (p.x >= 3.25 && p.x <= 4.75 && p.y >= -0.75 && p.y <= 0.75) || p.z < 1e-6, nearMesh: () => false };
+    const result = buildConnectors(station, () => true, landing, "high");
+    const r = resolveWalls(3, -0.7, 0.3, 1.5, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 3, r.z + 0.7)).toBeGreaterThan(0.05);
+  });
+
+  // #710 review: two flights of one stair side by side, a 0.2 m empty gap apart, keep the guards on their facing sides.
+  it.each([[1.7, 0.85], [1.6, 0.8], [1.55, 0.775]])("keeps the facing guards of two flights of one stair across a narrow empty gap, %f m apart", (apart, mid) => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 0.4, 0], [4, 0.4, apart], [0, 0.8, apart]];
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    // Where the two flights come within a step of each other's height (x from about 2.3 m to the landing), a wall still
+    // lines the gap on both flights' facing sides.
+    for (const x of [2.4, 2.6, 2.8, 3.0]) for (const [z0, z1] of [[mid - 0.15, mid], [mid, mid + 0.15]] as const) {
+      const lined = result.wallSegments.some((w) => Math.min(w.ax, w.bx) <= x && Math.max(w.ax, w.bx) >= x
+        && Math.min(w.az, w.bz) >= z0 && Math.max(w.az, w.bz) <= z1);
+      expect(lined, `x=${x} z=${z0}..${z1}`).toBe(true);
+    }
+  });
+
+  // #710 review: 5 cm apart, the two 3 cm footprint pads overlap; padding is no floor, so the guards stay and hold the body.
+  it("keeps a walker on the lower flight when the two flights are only 5 cm apart", () => {
+    const result = buildConnectors(stairThrough([[0, 0, 0], [4, 0.4, 0], [4, 0.4, 1.55], [0, 0.8, 1.55]]), () => true, flat, "high");
+    const r = resolveWalls(2.6, 0.7, 0.3, 0.26, 1.7, result.wallSegments);
+    expect(r.z).toBeLessThanOrEqual(0.75 + 0.03 - 0.3 + 0.01);
+  });
+
+  // #710 review: on a curve of long legs the opening still covers the whole of the split's disc.
+  it("keeps the walkway clear across a soft split on a curved stair with long legs", () => {
+    const waypoints = Array.from({ length: 9 }, (_v, i): [number, number, number] => [2.3 * Math.sin(i * 19 * Math.PI / 180), 0.35 * i, 2.3 * (1 - Math.cos(i * 19 * Math.PI / 180))]);
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (const offset of [-0.4, 0, 0.4]) for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), q = samplePolyline(path, cumulative, Math.min(total, s + 0.01));
+      const len = Math.hypot(q.x - p.x, q.z - p.z) || 1, x = p.x - (q.z - p.z) / len * offset, z = p.z + (q.x - p.x) / len * offset;
+      const r = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z - z), `offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  // #710 review: a walker off centre passes the shallow bend next to a landing.
+  it("lets a walker 0.4 m off centre past a shallow bend next to its landing", () => {
+    const waypoints: [number, number, number][] = [[0, 0, 0], [4, 2, 0], [4.7, 2.5, -0.7], [6.45, 4, -4.3]];
+    const result = buildConnectors(stairThrough(waypoints), () => true, flat, "high");
+    const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    const bendS = cumulative[path.findIndex((p) => Math.hypot(p.x - 4.7, p.y - 2.5, p.z + 0.7) < 1e-6)]!;
+    for (const offset of [-0.4, 0.4]) for (let s = bendS - 1; s <= Math.min(total, bendS + 1); s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), q = samplePolyline(path, cumulative, Math.min(total, s + 0.01));
+      const len = Math.hypot(q.x - p.x, q.z - p.z) || 1, x = p.x - (q.z - p.z) / len * offset, z = p.z + (q.x - p.x) / len * offset;
+      const r = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z - z), `offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  // #710 review: where a curved stair splits into levels, each level's opening reaches as far as the split's joint disc.
+  it.each([1.5, 2])("keeps the walkway clear across a soft split on a curved stair with short legs, %f m wide", (width) => {
+    const waypoints = Array.from({ length: 10 }, (_v, i): [number, number, number] => [2 * Math.sin(i * Math.PI / 12), 0.3 * i, 2 * (1 - Math.cos(i * Math.PI / 12))]);
+    const stair = stairThrough(waypoints);
+    stair.edges[0]!.attributes = { ...stair.edges[0]!.attributes, width: { m: width } } as unknown as Edge["attributes"];
+    const result = buildConnectors(stair, () => true, flat, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    const path = result.pathByEdge.get("turn")!, cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s), r = resolveWalls(p.x, p.z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - p.x, r.z - p.z), `s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
     }
   });
 

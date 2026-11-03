@@ -361,6 +361,21 @@ function fromClipping(polygon: Polygon): PlanPolygon {
 }
 
 /**
+ * A ring's points as clipping pairs, snapped to 1 / scale m when scale > 0. Dividing the rounded value by the scale
+ * gives one double per grid point (multiplying by 1e-4 does not), and repeated points left by the snap are dropped,
+ * so the snap never makes a zero-length edge.
+ */
+export function snapRing(ring: readonly PlanPoint[], scale: number): [number, number][] {
+  const out: [number, number][] = [];
+  for (const p of ring) {
+    const x = scale ? Math.round(p.x * scale) / scale : p.x, z = scale ? Math.round(p.z * scale) / scale : p.z;
+    const last = out.at(-1);
+    if (!last || last[0] !== x || last[1] !== z) out.push([x, z]);
+  }
+  return out;
+}
+
+/**
  * The union of plan rings. Rings are grouped by overlapping bounds first: a ring alone in its group is its own
  * polygon, and only groups of two or more go through polygon-clipping (most corridors on a level never touch).
  */
@@ -383,12 +398,19 @@ export function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
   const union: PlanPolygon[] = [];
   for (const group of groups.values()) {
     if (group.length === 1) { union.push([group[0]!.map((p) => ({ x: p.x, z: p.z }))]); continue; }
-    const polygons = (snap: number) => group.map((ring): Polygon => [ring.map((p): [number, number] => snap ? [Math.round(p.x / snap) * snap, Math.round(p.z / snap) * snap] : [p.x, p.z])]);
+    // polygon-clipping's sweep line can throw on edges that nearly coincide, including ones its own intersections make far
+    // from the origin. Such a group is retried about its own corner (more bits for the fraction), snapped to 0.1 mm, then
+    // 1 mm, and last in halves.
+    const ox = Math.min(...group.flat().map((p) => p.x)), oz = Math.min(...group.flat().map((p) => p.z));
+    const local = (scale: number) => group.map((ring): Polygon => [snapRing(ring.map((p) => ({ x: p.x - ox, z: p.z - oz })), scale)]);
+    const back = (multi: MultiPolygon): MultiPolygon => multi.map((polygon) => polygon.map((ring) => ring.map(([x, z]): [number, number] => [x + ox, z + oz])));
     let merged: MultiPolygon | null = null;
-    // polygon-clipping's sweep line can throw on edges that nearly coincide; such a group is retried snapped to 0.1 mm,
-    // then 1 mm, and last in halves.
-    for (const snap of [0, 1e-4, 1e-3]) {
-      try { const all = polygons(snap); merged = polygonClipping.union(all[0]!, ...all.slice(1)); break; } catch { /* next snap */ }
+    for (const [scale, x0, z0] of [[0, 0, 0], [1e4, ox, oz], [1e3, ox, oz]] as const) {
+      const all = group.map((ring): Polygon => [snapRing(ring.map((p) => ({ x: p.x - x0, z: p.z - z0 })), scale)]);
+      try {
+        merged = polygonClipping.union(all[0]!, ...all.slice(1)).map((polygon) => polygon.map((ring) => ring.map(([x, z]): [number, number] => [x + x0, z + z0])));
+        break;
+      } catch { /* next snap */ }
     }
     if (!merged) {
       // Halves first, then their union: a pair that still throws stays apart, at a cost of log(n) passes.
@@ -398,7 +420,7 @@ export function unionRings(rings: readonly PlanPoint[][]): PlanPolygon[] {
         const mid = rings.length >> 1, left = halves(rings.slice(0, mid)), right = halves(rings.slice(mid));
         try { return polygonClipping.union(left, right); } catch { return [...left, ...right]; }
       };
-      merged = halves(polygons(1e-3));
+      merged = back(halves(local(1e3)));
     }
     union.push(...merged.map(fromClipping));
   }
@@ -633,6 +655,7 @@ export function buildWalkableModel(
   regions: readonly Region[],
   isAttachment?: (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => boolean,
   stepM = 0,
+  padM = 0,
 ): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[]; slabCuts: PieceCuts; ceilingCuts: PieceCuts } {
   const pieces = regions.flatMap(regionPieces);
   const keys = stepM > 0 ? splitByHeight(pieces, stepM) : pieces.map((piece) => piece.level);
@@ -726,8 +749,19 @@ export function buildWalkableModel(
         polygons: other.union.filter((_polygon, k) => overlaps(other.boxes[k]!, box)),
         sources: other.sources.filter((source) => overlaps(source.box, box)),
       })).filter((other) => other.polygons.length) : [];
-      return (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => near.some((other) => pointInLevel(outside, other.polygons)
-        && Math.abs(heightAtVertex(outside, other.sources) - outside.y) <= stepM) || !!isAttachment?.(wall, outside);
+      const held = (p: { x: number; y: number; z: number }) => near.some((other) => pointInLevel(p, other.polygons)
+        && Math.abs(heightAtVertex(p, other.sources) - p.y) <= stepM);
+      // The other floor must carry on from the wall all the way to the probe, sampled every 1 cm: a probe that only lands on
+      // a floor beyond an empty gap (two flights side by side) is no attachment.
+      return (wall: BoundaryWall, outside: { x: number; y: number; z: number }) => {
+        const mx = (wall.ax + wall.bx) / 2, mz = (wall.az + wall.bz) / 2, steps = Math.ceil(ATTACHMENT_PROBE_M / 0.01);
+        // With padM the other floor must also reach padM behind the wall: footprints padded past their treads overlap
+        // across a real gap narrower than the two pads, and padding alone is no floor.
+        const reach = Math.hypot(outside.x - mx, outside.z - mz) || 1, back = -padM / reach;
+        const contiguous = Array.from({ length: steps }, (_v, k) => (k + 1) / steps).concat(padM > 0 ? [back] : [])
+          .every((t) => held({ x: mx + (outside.x - mx) * t, y: outside.y, z: mz + (outside.z - mz) * t }));
+        return contiguous || !!isAttachment?.(wall, outside);
+      };
     };
     const own = boundaryWalls(union, sources, connectors, level, attachmentNear, breakpoints);
     // A wall along a cut under a joined floor stops UNDER_GAP_M under that floor, so a walker on it passes over the wall.
