@@ -33,7 +33,7 @@ describe("avatar selection", () => {
     const parent = new THREE.Group();
     const marker = new THREE.Object3D();
     parent.add(previous, marker);
-    const previousGeometry = (previous.getObjectByName("shoeL") as THREE.Mesh).geometry;
+    const previousGeometry = (previous.getObjectByName("avatar-low-skin") as THREE.Mesh).geometry;
     const disposedPrevious = vi.spyOn(previousGeometry, "dispose");
     rig.update(0.1, 0);
     rig.setFade(0.7);

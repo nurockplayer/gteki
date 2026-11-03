@@ -21,7 +21,7 @@ export interface AvatarRig {
 
 export function createAvatar(opts?: { quality?: "low" | "high" }): AvatarRig {
   const quality = opts?.quality ?? "high";
-  return new Avatar(DETAIL[quality]);
+  return new Avatar(DETAIL[quality], quality === "low");
 }
 
 /* ------------------------------------------------------------------------------------------ */
@@ -518,16 +518,72 @@ class Avatar implements AvatarRig {
   private readonly e1 = new THREE.Euler();
   private disposed = false;
   private readonly fade = { value: 1 };
+  private skeleton: THREE.Skeleton | null = null;
 
-  constructor(private readonly d: Detail) {
+  constructor(private readonly d: Detail, low: boolean) {
     this.materials = makeMaterials(this.fade);
     this.root.name = "avatar";
     this.build();
     this.hips.rotation.order = "YXZ";
     this.update(0.0001, 0);
+    if (low) this.mergeLowTier();
   }
 
   /* ----- construction ----------------------------------------------------------------------- */
+
+  /** Rigid skinning keeps the existing joint animation, with three material draws on phones. */
+  private mergeLowTier(): void {
+    const M = this.materials;
+    const batches = new Map<THREE.MeshStandardMaterial, THREE.BufferGeometry[]>([
+      [M.jacket, []], [M.trousers, []], [M.skin, []],
+    ]);
+    const parts: THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>[] = [];
+    this.root.updateMatrixWorld(true);
+    this.root.traverse((o) => {
+      if (o instanceof THREE.Mesh) parts.push(o);
+    });
+    const bones: THREE.Bone[] = [];
+    for (const part of parts) {
+      const bone = new THREE.Bone();
+      bone.name = part.name;
+      bone.position.copy(part.position);
+      bone.quaternion.copy(part.quaternion);
+      bone.scale.copy(part.scale);
+      part.parent!.add(bone);
+      const geo = prep(part.geometry.clone()).applyMatrix4(part.matrixWorld);
+      const color = part.material.color;
+      bake(geo, null, [color.r, color.g, color.b]);
+      const count = geo.getAttribute("position").count;
+      const indices = new Uint16Array(count * 4);
+      const weights = new Float32Array(count * 4);
+      for (let i = 0; i < count; i++) {
+        indices[i * 4] = bones.length;
+        weights[i * 4] = 1;
+      }
+      geo.setAttribute("skinIndex", new THREE.Uint16BufferAttribute(indices, 4));
+      geo.setAttribute("skinWeight", new THREE.Float32BufferAttribute(weights, 4));
+      bones.push(bone);
+      // Keep the double-sided jacket separate; approximate cloth and skin/shoe roughness on low only.
+      const mat = part.material;
+      const batch = mat === M.jacket ? M.jacket
+        : mat === M.trousers || mat === M.shirt || mat === M.pack || mat === M.hair ? M.trousers : M.skin;
+      batches.get(batch)!.push(geo);
+      part.removeFromParent();
+    }
+    for (const geo of new Set(parts.map((part) => part.geometry))) geo.dispose();
+    this.shoeGeos = null;
+    this.root.updateMatrixWorld(true);
+    const skeleton = this.skeleton = new THREE.Skeleton(bones);
+    for (const [material, geometries] of batches) {
+      material.color.set(0xffffff); // Authored colours are now in the vertex attributes.
+      const mesh = new THREE.SkinnedMesh(mergeAll(geometries), material);
+      mesh.name = `avatar-low-${material === M.jacket ? "jacket" : material === M.trousers ? "cloth" : "skin"}`;
+      mesh.castShadow = true;
+      mesh.frustumCulled = false; // The bind-pose bounds do not include a swinging foot or hand.
+      this.root.add(mesh);
+      mesh.bind(skeleton);
+    }
+  }
 
   private mesh(name: string, geo: THREE.BufferGeometry, mat: THREE.Material, parent: THREE.Object3D): THREE.Mesh {
     ensureColor(geo);
@@ -930,6 +986,7 @@ class Avatar implements AvatarRig {
       if (o instanceof THREE.Mesh) geos.add(o.geometry as THREE.BufferGeometry);
     });
     for (const g of geos) g.dispose();
+    this.skeleton?.dispose();
     for (const m of Object.values(this.materials)) m.dispose();
   }
 
