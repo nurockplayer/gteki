@@ -47,6 +47,10 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * Vertical item 3 adds a fill light at the guided-walk escalator bank head in the slot a ceilingless anchor wasted (7 → 8 lights): nodes
  * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged. */
 // #221 per-flight shaft finishes; station physical lists unchanged (2026-11-03 JST).
+// 2026-11-03 18:00 JST: the attributed ceiling proxy intentionally supplies the
+// overhead query itself. The removed copied-cap mesh briefly made this four
+// camera blockers; this candidate retains three and the original listsDigest.
+// Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
 const MAIN_BASELINE = {
   station: {
     geometryDigest: "8b501f6d2a9d6c6e95424959a72791df560a442abdcd9167440187b5d90d0bbd",
