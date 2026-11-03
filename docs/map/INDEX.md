@@ -42,6 +42,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 ### Tools (`tools/`)
 - Field-run ingest: recorder JSON validation, dry run and station importer dispatch · `tools/field-ingest/ingest.ts` · [[data-stations]]
 - Store data age: public store/mall hours, tenant and verified entrance read dates, oldest first; Markdown or JSON (`pnpm data:age`) · `tools/data-age/report.ts` · this index
+- Coverage matrix: hand-kept public row ownership, derived POI/tenant counts, router reachability and report-only Markdown drift (`pnpm coverage:matrix --check`) · `tools/coverage-matrix/rows.ts`, `tools/coverage-matrix/report.ts` · this index
 - GIS: its own pnpm workspace. Source acquisition, CRS conversion, S03 nav graph, publish path into the stations · `tools/gis/` · [[gis]]
 - Map generator: `tools/map/gen-symbols.mjs` and its test `tools/map/map.test.ts` · this index
 - Private overlay builder: `tools/private-overlay/build-overlay.ts` · builds station contract overlays from private additions for local builds/dev only
