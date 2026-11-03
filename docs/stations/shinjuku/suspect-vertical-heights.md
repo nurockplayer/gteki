@@ -47,3 +47,30 @@ Regenerate with `pnpm --filter @gteki/station-shinjuku import:e27`, then
 All eight approximation flags are removed; the steep/flat truth rule remains.
 Measured elevations still require field evidence, just as for the existing
 symbolic floor model.
+
+## Navmesh qualification — 2026-11-04 JST
+
+The canonical public `navmesh-fallback.ts --station shinjuku --with-greybox`
+run used 0.10 m cells, 0.30 m radius, 0.40 m climb and 256-cell tiles.
+All eight repaired edges were emitted and attached at both ends. Bake user IDs:
+`4038cecf=16`, `45ebdab4=20`, `bdcdf922=45`, `c2c4ebb3=47`, `c3fe6342=48`,
+`c690df6c=49`, `c7fa5f74=52`, `dcbc1a25=57`.
+
+| Public metric | Before | After |
+| --- | ---: | ---: |
+| Suspect vertical edges | 8 | 0 |
+| Route-used suspect edges (#789 before count) | 6 | 0 |
+| Fallback edges | 4 | 4 |
+| Unvalidated joins | 56 | 56 |
+| Connector / fallback / navmesh wall hits | 0 / 6 / 0 | 0 / 6 / 0 |
+| Off-floor / invalid joins | 0 / 0 | 0 / 0 |
+| Routable / failed route pairs | 238 / 2 | 238 / 2 |
+
+No per-edge clip baseline increased; no new fallback edges or detours appeared.
+PR #783 is still open at qualification, so this base has `suspectEdges`, not the
+new `suspectPolyline` field. With no bake suspects, its route-used subset is empty.
+The regenerated fallback and clip-baseline files are byte-identical; paths and
+suspect files changed.
+
+Public bundle SHA-256: `61225ea3e89fe4732368f38c4023f7bce58bde7c3d390671980719695a05ec16`.
+Mesh SHA-256: `d0bd5911f41504b376c052ae0fa65130faf29cd102da9bbd74f307e03605b826`.
