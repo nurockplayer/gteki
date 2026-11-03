@@ -29,6 +29,7 @@ Fail-closed rules: an edge is usable only if `verification` is `verified` (or `s
 - `packages/navigation/src/present.ts:672-841` — `describeRoute()`: the `Instruction[]` (kinds, waits, lifts, junction hints) in ja or en.
 - `packages/navigation/src/present.ts:532-584` — `foldShortLegs()`: merges very short legs into their neighbours.
 - `packages/navigation/src/present.ts:72-81` — `instructionPoints()`: polyline points one instruction covers.
+- `packages/navigation/src/snap-path.ts` — `assembleSnapPath()` shares snap-only route assembly between the navmesh audit and runtime; missing steps or baked junctions fail instead of drawing straight gaps.
 - `packages/navigation/src/fixtures.ts` — `createSyntheticBundle()` and friends, used as test fixtures by other packages.
 
 ## Data flow
@@ -49,6 +50,7 @@ Fail-closed rules: an edge is usable only if `verification` is `verified` (or `s
 - Budget overrun is `search_limit`, not `no_path`. Traversals past `MAX_CLOCK_MINUTES` (366 days) are UNKNOWN, not proof that no route exists.
 - Cost is the router's time-like cost (walk 1.2 m/s, stairs 0.5, escalator 0.75, lift 45 s, plus waits), not metres.
 - `route()` ignores unknown node ids; `start_equals_goal` beats any walk.
+- `packages/navigation/src/snap-path.ts` — `assembleSnapPath()` shares snap-only route assembly between the navmesh audit and runtime; missing steps or baked junctions fail instead of drawing straight gaps.
 - `packages/navigation/src/fixtures.ts` is non-test code imported by tests across apps, packages and stations. Changing a fixture ripples widely.
 - Routes keep a copy of the profile (`RouteResult.profile`); presentation must use that copy, not the UI's current options.
 

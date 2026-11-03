@@ -1471,8 +1471,8 @@ export class Explorer {
 
   /** Connector centre lines converted from renderer coordinates to station ENU. */
   /** The station's baked navmesh walk paths per edge (ENU), or null: no file, a failed load or the L0 graph view. */
-  navmeshRoutePaths(): NavmeshPaths["edges"] | null {
-    return this.navmeshPaths?.edges ?? null;
+  navmeshRoutePaths(): NavmeshPaths | null {
+    return this.navmeshPaths;
   }
 
   connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {

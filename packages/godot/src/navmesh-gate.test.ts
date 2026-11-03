@@ -106,6 +106,9 @@ describe("public station navmesh gate",()=>{
     if(clips.increased.length) errors.push(`clip baseline exceeded: ${clips.increased.join(", ")}`);
     if(clips.lowered.length) errors.push(`lower the baseline for: ${clips.lowered.join(", ")}`);
     const pathsDiff=navPathsDiff(committedPaths.edges,result.audit.navPaths);
+    const asPaths=(joins:Record<string,number[][]>)=>Object.fromEntries(Object.entries(joins ?? {}).map(([key,forward])=>[key,{forward}]));
+    const joinsDiff=navPathsDiff(asPaths(committedPaths.joins),asPaths(result.audit.navJoins));
+    if (joinsDiff.missing.length+joinsDiff.extra.length+joinsDiff.moved.length) errors.push("navmesh junction paths stale: regenerate with --write-paths");
     const staleKeys=[...pathsDiff.missing,...pathsDiff.extra,...pathsDiff.moved].slice(0,10);
     const rejected=(result.audit.navPathsRejected ?? []) as string[];
     if(rejected.length) errors.push(`navmesh walk paths leave the floor or meet a wall (fix the scene or greybox, or list the edge as a fallback): ${rejected.join(", ")}`);

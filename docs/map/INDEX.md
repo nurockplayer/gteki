@@ -27,7 +27,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - App root: entry `apps/web/src/main.ts`, station registry `apps/web/src/registry.ts`, hours/credits/i18n/no-path helpers · `apps/web/src/` · covered in [[web-explorer]] and [[web-ui]]
 
 ### Packages (`packages/`)
-- navigation: `createRouter` over a validated bundle (Dijkstra, or a time-dependent Pareto search when hours matter), polyline + ja/en instructions, no-path explanation. The Shinjuku and Ikebukuro routes run through it · `packages/navigation/` · [[pkg-navigation]]
+- navigation: `createRouter` over a validated bundle (Dijkstra, or a time-dependent Pareto search when hours matter), polyline + ja/en instructions, no-path explanation, shared snap-only guide assembly. The Shinjuku and Ikebukuro routes run through it · `packages/navigation/` · [[pkg-navigation]]
 - search: Japanese-aware name/alias search over one station's POIs and tenant brands; marks hits routable or search-only · `packages/search/` · [[pkg-search]]
 - schema: the gteki.station/0.1 data contract. `parseStationFiles` composes station/graph/pois/tenants JSON into a `StationBundle` and fails closed · `packages/schema/` · [[pkg-schema]]
 - scene-api: the contract between a station's `buildScene` and its hosts (explorer, walk/replay tools, Godot export): `StationScene`, `WALKER_BODY` · `packages/scene-api/` · [[pkg-scene-api]]

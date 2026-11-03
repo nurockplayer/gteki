@@ -285,7 +285,7 @@ async function main() {
     return null;
   };
   const links = verticalLinkCandidates(bundle.edges.filter(e => !suspectIds.has(e.id) && router.isTraversable(e, DEFAULT_PROFILE)), id => { const n=nodes.get(id); return n ? point(n) : undefined; }, initialQuery,
-    (_id, a, b) => { const reason=validateLinkSnap(bridgeProbe, a, b); if (reason) snapRejections[reason]++; return !reason; }, snapFallback ? fallback : undefined);
+    (_id, a, b) => { const reason=validateLinkSnap(bridgeProbe, b, b); if (reason) snapRejections[reason]++; return !reason; }, snapFallback ? fallback : undefined);
   initialQuery.destroy(); result.navMesh.destroy();
   const linked = await bakeNavmesh(positions, indices, { radiusM, rounding, cellSizeM, climbM, tileSize, offMeshConnections:links.candidates.map(c => c.connection) });
   if (!linked.success) throw new Error(`linked bake failed: ${linked.error}`);

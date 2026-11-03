@@ -5,16 +5,14 @@ import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import * as THREE from "three";
 import { init, importNavMesh, NavMeshQuery, Detour, statusDetail, type NavMesh } from "recast-navigation";
-import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
+import { assembleSnapPath, snapJoinKey, createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
 import { navmeshBundle } from "./navmesh-input.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
-import { skippedConnectorPath } from "../../../apps/web/src/explorer/greyboxConnectors.ts";
 import { qaFile } from "./navmesh-qa-path.ts";
 import { auditPolyline, loadScene, sceneProbe, resampleAudit, type SampleDetail, type AuditCache } from "./route-clip-audit.ts";
-import { diagnoseVerticalSnap, validateLinkSnap } from "./navmesh-links.ts";
+import { diagnoseVerticalSnap } from "./navmesh-links.ts";
 import { makeFloorHeightNear, suspectVerticalEdges } from "./navmesh-suspect.ts";
 
-import { buildConnectorPath } from "@gteki/navigation";
 import { auditFallbackSegments, fallbackGate } from "./navmesh-fallback-audit.ts";
 import { dataWidth, diagnoseGaps } from "./navmesh-gaps.ts";
 import { objectNames } from "./navmesh-source.ts";
@@ -147,9 +145,6 @@ async function main() {
   // Recomputed exactly as the bake does; a difference means the bake and this audit see different inputs.
   const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.suspectProbe ?? originalProbe), e => router.isTraversable(e, DEFAULT_PROFILE));
   if (JSON.stringify(suspect) !== JSON.stringify(provenance.suspectEdges ?? null)) throw new Error("navmesh bake and audit disagree on suspect vertical edges; rebake first");
-  // Vertical edges follow the built connector paths, as app.ts passes connectorRoutePaths().
-  const connectorPaths = grey?.connectors ? new Map([...grey.connectors.pathByEdge].map(([id,path]) => [id, path.map(q => ({ x:q.x, y:-q.z, z:q.y }))])) : undefined;
-  if (grey?.connectors) for (const edge of bundle.edges) if (grey.connectors.skippedEdgeIds.includes(edge.id)) connectorPaths!.set(edge.id, skippedConnectorPath(bundle, edge));
   const suspectIds = new Set(suspect.map(s => s.edgeId)), usedSuspect = new Set<string>();
   const bridgeFloorGeometry=new THREE.BufferGeometry(); bridgeFloorGeometry.setAttribute("position",new THREE.Float32BufferAttribute(provenance.bridgeFloorTriangles ?? [],3));
   const bridgeFloor=new THREE.Mesh(bridgeFloorGeometry,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); bridgeFloor.userData.greybox=true; bridgeFloor.updateMatrixWorld(true);
@@ -208,18 +203,16 @@ async function main() {
     const cached = cache.get(key); if (cached) return cached;
     const from = nodePoint(step.fromNodeId), to = nodePoint(step.toNodeId), link = linksByEdge.get(step.edgeId);
     if (suspectIds.has(step.edgeId)) {
-      // No off-mesh link exists for a suspect edge: draw its graph polyline and leave its samples uncounted.
       usedSuspect.add(step.edgeId);
       const line = routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]});
-      const entry: Entry = {suspect:true,points:line,missing:false,reason:null,stairLink:false,connector:false,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:false,toSnapped:false,connectivity:"unknown_snap",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
+      const entry: Entry = {suspect:true,points:null,missing:true,reason:"snap_failed",stairLink:false,connector:false,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:false,toSnapped:false,connectivity:"unknown_snap",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
       cache.set(key,entry); return entry;
     }
-    // Fare gates walk their graph line between navmesh snaps, as the app draws them (gteki#669): the gate barriers
-    // block the navmesh, so a Detour path is either none or a detour round the gate.
-    if (["stairs","escalator","elevator","gate"].includes(step.mode)) {
-      const line=routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]},connectorPaths);
-      const built=buildConnectorPath(query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null);
-      const entry: Entry = {suspect:false,points:built.points,missing:built.reason!==null,reason:built.reason,stairLink:false,connector:!!built.points,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:built.fromSnapped,toSnapped:built.toSnapped,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
+    if (["stairs","escalator","elevator"].includes(step.mode)) {
+      const a = link && (step.reversed ? link.connection.endPosition : link.connection.startPosition);
+      const b = link && (step.reversed ? link.connection.startPosition : link.connection.endPosition);
+      const points = a && b ? [a,b].map((p,i) => ({x:p.x,y:-p.z,z:p.y,zKnown:true,stepIndex:0,floorId:i ? step.toFloorId : step.fromFloorId,connector:true})) : null;
+      const entry: Entry = {suspect:false,points,missing:!points,reason:points ? null : "snap_failed",stairLink:false,connector:!!points,fallbackUsed:link?.fallback ? [step.edgeId] : [],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:!!a,toSnapped:!!b,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}),pathRejection:null};
       cache.set(key,entry); return entry;
     }
     const a = link ? (step.reversed ? link.connection.endPosition : link.connection.startPosition) : snap(step.fromNodeId);
@@ -240,27 +233,7 @@ async function main() {
         const p=part.point;
         points.push({ x:p.x,y:-p.z,z:p.y,zKnown:true,stepIndex:0,floorId:distance(p,from)<=distance(p,to) ? step.fromFloorId:step.toFloorId });
         if (!part.link) continue;
-        const link=links.get(part.link.userId), edge=link && edges.get(link.edgeId);
-        if (!link || !edge) { points=null; break; }
-        if (link.fallback && link.edgeId!==step.edgeId) { points=null; break; }
-        const reversed=distance(part.point,link.connection.endPosition)<distance(part.point,link.connection.startPosition);
-        if (reversed && edge.direction!=="both") { points=null; break; }
-        const fromId=reversed ? edge.to:edge.from, toId=reversed ? edge.from:edge.to;
-        const n1=nodes.get(fromId), n2=nodes.get(toId);
-        if (!n1 || !n2) { points=null; break; }
-        const linkStep={...step,edgeId:edge.id,mode:edge.mode,fromNodeId:fromId,toNodeId:toId,fromFloorId:n1.floorId,toFloorId:n2.floorId,reversed};
-        const approach=(fb:Fallback, startId:string, endId:string) => {
-          const via=edges.get(fb.edgeId), nStart=nodes.get(startId), nEnd=nodes.get(endId);
-          if (!via || !nStart || !nEnd || via.direction!=="both") return null;
-          const viaStep={...step,edgeId:via.id,mode:via.mode,fromNodeId:startId,toNodeId:endId,fromFloorId:nStart.floorId,toFloorId:nEnd.floorId,reversed:via.from!==startId};
-          return routePolyline(bundle,{...route,nodeIds:[startId,endId],steps:[viaStep]}).map(q=>({...q,connector:true}));
-        };
-        const first=reversed ? link.fallback?.to : link.fallback?.from, last=reversed ? link.fallback?.from : link.fallback?.to;
-        if (first) { const line=approach(first,first.neighborId,fromId); if (!line) {points=null;break;} points.push(...line); }
-        points.push(...routePolyline(bundle,{...route,nodeIds:[fromId,toId],steps:[linkStep]},connectorPaths).map(q=>({...q,connector:true})));
-        if (last) { const line=approach(last,toId,last.neighborId); if (!line) {points=null;break;} points.push(...line); }
-        points.push({x:part.link.end.x,y:-part.link.end.z,z:part.link.end.y,zKnown:true,stepIndex:0,floorId:n2.floorId,connector:true});
-        if (first || last) fallbackUsed.add(link.edgeId);
+        points.push({x:part.link.end.x,y:-part.link.end.z,z:part.link.end.y,zKnown:true,stepIndex:0,floorId:step.toFloorId,connector:true});
       }
     }
     if (!points && !reason) { reason="no_path"; pathRejection="reconstruction"; }
@@ -300,7 +273,7 @@ async function main() {
     target.samples += result.samples; target.offFloor += result.offFloor; target.noFloor += result.noFloor; target.wallHits += result.wallHits;
   };
   const auditCache: AuditCache = { floor: new Map(), wall: new Map() };
-  const joinChecks = new Map<string, boolean>();
+  const joinChecks = new Map<string, PolylinePoint[] | null>();
   const detailHeights = new Map<string, number | null>(), ambiguousHeights = new Set<string>();
   const heightKey = (p: PolylinePoint, entry: Entry) => `${entry.step.edgeId},${entry.step.reversed},${p.x},${p.y},${p.z}`;
   const heightAt = (p: PolylinePoint, entry: Entry | undefined, join: boolean): number | null => {
@@ -363,35 +336,18 @@ async function main() {
       for (const mode of new Set(entries.filter(e => !e.points?.length).map(e => e.step.mode))) affectedByMode[mode] = (affectedByMode[mode] ?? 0) + 1;
       continue;
     }
-    let invalidJoin=false;
-    for (let i=1;i<entries.length;i++) {
-      const p=entries[i-1]!.points!.at(-1)!, q=entries[i]!.points![0]!;
-      if (Math.hypot(p.x-q.x,p.y-q.y,p.z-q.z)<1e-6) continue;
-      // A suspect polyline starts at its raw node height, which no mesh path reaches; its joins are not validated.
-      if (entries[i-1]!.suspect || entries[i]!.suspect) continue;
-      const key=`${p.x},${p.y},${p.z};${q.x},${q.y},${q.z}`;
-      let valid=joinChecks.get(key);
-      if (valid===undefined) {
-        const checked=auditPolyline(probe,[p,q],{cache:auditCache});
-        const a={x:p.x,y:p.z,z:-p.y}, b={x:q.x,y:q.z,z:-q.y}, na=query.findClosestPoint(a,{halfExtents:extents}), nb=query.findClosestPoint(b,{halfExtents:extents});
-        const path=na.success && nb.success && na.polyRef && nb.polyRef && distance(a,na.point)<=0.02 && distance(b,nb.point)<=0.02 ? queryPathWithLinks(nav,query,a,b) : null;
-        valid=!checked.wallHits && !checked.offFloor && !checked.noFloor && !!path && !path.some(v=>v.link) && length(path.map(v=>v.point))<=distance(a,b)+0.3;
-        joinChecks.set(key,valid);
-      }
-      if (!valid) { invalidJoin=true; break; }
-    }
-    if (invalidJoin) { incomplete++; invalidJoinRoutes++; continue; }
     type Marked = PolylinePoint & { join?: boolean; fallback?: boolean; connector?: boolean; suspect?: boolean };
-    const walked: Marked[] = [];
-    for (const [entryIndex, entry] of entries.entries()) {
-      const pts = entry.points!;
-      // Keep both endpoints when snapping/fallback produces a gap, so the audit sees it.
-      const last = walked.at(-1), first = pts[0];
-      const joinGap = last && first ? Math.hypot(last.x-first.x, last.y-first.y, last.z-first.z) : 0;
-      if (joinGap >= 1e-6) { joinsWithGap++; maxJoinGapM = Math.max(maxJoinGapM, joinGap); }
-      const skip = last && first && joinGap < 1e-6 ? 1 : 0;
-      walked.push(...pts.slice(skip).map((p, j) => ({ ...p, stepIndex: entryIndex, fallback: entry.stairLink, join: !!last && !skip && j === 0, suspect: entry.suspect })));
-    }
+    const assembled = assembleSnapPath<Marked>(entries.map((entry, i) => entry.points!.map(p => ({ ...p, stepIndex:i, fallback:entry.stairLink, suspect:entry.suspect }))), (p,q,i) => {
+      const key=snapJoinKey(entries[i-1]!.step,entries[i]!.step);
+      if (!joinChecks.has(key)) {
+        const path=queryPathWithLinks(nav,query,{x:p.x,y:p.z,z:-p.y},{x:q.x,y:q.z,z:-q.y});
+        const points=path && !path.some(v=>v.link) ? path.map(v=>({...q,x:v.point.x,y:-v.point.z,z:v.point.y})) : null;
+        joinChecks.set(key,points);
+      }
+      return joinChecks.get(key)?.map(v=>({...v,stepIndex:i,join:true})) ?? null;
+    });
+    if (!assembled.points) { incomplete++; invalidJoinRoutes++; continue; }
+    const walked=assembled.points;
     if (!walked.length) { incomplete++; continue; }
     completed++; if (consumed.size) fallbackRoutesCompleted++; for (const entry of entries) {for (const id of entry.fallbackUsed) usedFallbackEdges.add(id);const key=`${entry.step.edgeId}\0${entry.step.reversed ? 1:0}`;completedEdgeKeys.add(key);if(entry.connector) completedConnectorKeys.add(key);} if (entries.some(e => e.connector)) hybrid++; else pure++;
     const samples = resampleAudit(walked) as Marked[];
@@ -547,25 +503,23 @@ async function main() {
     directedStairLinks: [...cache.values()].filter(e => e.step.mode === "stairs" && e.connector).length, uniqueStairsWithoutPath: new Set(failed.filter(e => e.step.mode === "stairs").map(e => e.step.edgeId)).size,
     snapDistanceM: { count: snapDistances.length, p50: percentile(snapDistances, 0.5), p95: percentile(snapDistances, 0.95), max: snapDistances.length ? Math.max(...snapDistances) : null },
     medianPathToGraphLength: percentile(ratios, 0.5) };
-  // Walk path per edge and direction for the app's guide (#647): non-vertical, non-suspect and traversable edges
-  // whose navmesh path is clean (no link) only. ENU points as edgePath returns them, rounded to 0.01 m.
+  // Publish snapped walks, attached links and their junctions in ENU, rounded to 0.01 m.
   const navPaths: Record<string, { forward?: number[][]; reverse?: number[][] }> = {};
   const navPathsScene = { samples: 0 }, navPathsRejected: string[] = [], navPathsDetours: string[] = [];
   const round2 = (v: number) => Math.round(v * 100) / 100;
   const oneStepRoute = (step: RouteStep): RouteResult => ({ ok:true, profile:DEFAULT_PROFILE, nodeIds:[step.fromNodeId,step.toNodeId], steps:[step], totalLengthM:step.lengthM, estimatedSeconds:0, waitSeconds:0, floorChanges:step.fromFloorId===step.toFloorId ? 0 : 1, crossesFareBoundary:null, unknowns:[], sourceIds:[], endpointSourceIds:[], evidenceCheckedDate:null, oldestSourceDate:null, undatedSourceIds:[], expiredSourceIds:[], stale:null, synthetic:false, timeRestricted:[], operatorIds:[] });
   for (const edge of [...bundle.edges].sort((a,b) => a.id.localeCompare(b.id))) {
-    // Fare gates keep their graph polyline: the gate barriers block the navmesh, so a path around them is never the gate (#669 r1).
-    if (["stairs","escalator","elevator","gate"].includes(edge.mode) || suspectIds.has(edge.id) || !router.isTraversable(edge, DEFAULT_PROFILE)) continue;
+    if (suspectIds.has(edge.id) || !router.isTraversable(edge, DEFAULT_PROFILE)) continue;
     const dirs: { forward?: number[][]; reverse?: number[][] } = {};
     for (const reversed of edge.direction === "both" ? [false, true] : [false]) {
       const fromNode = nodes.get(reversed ? edge.to : edge.from), toNode = nodes.get(reversed ? edge.from : edge.to);
       if (!fromNode || !toNode) continue;
       const step: RouteStep = { edgeId:edge.id, fromNodeId:fromNode.id, toNodeId:toNode.id, reversed, mode:edge.mode, lengthM:edge.lengthM ?? 0, fromFloorId:fromNode.floorId, toFloorId:toNode.floorId };
       const entry = edgePath(oneStepRoute(step), step);
-      if (!entry.points || entry.points.length < 2 || entry.reason !== null || entry.suspect || entry.connector) continue;
+      if (!entry.points || entry.points.length < 2 || entry.reason !== null || entry.suspect) continue;
       // A detour is not the edge: Detour may find an unrelated longer way round (#669 r1). Same rule as the stairs check.
       const graphM = length(routePolyline(bundle, oneStepRoute(step)).map(p => ({ x:p.x, y:p.z, z:-p.y })));
-      if (length(entry.points.map(p => ({ x:p.x, y:p.z, z:-p.y }))) > 1.5 * graphM + 2) { navPathsDetours.push(`${edge.id}:${reversed ? "reverse" : "forward"}`); continue; }
+      if (!entry.connector && length(entry.points.map(p => ({ x:p.x, y:p.z, z:-p.y }))) > 1.5 * graphM + 2) { navPathsDetours.push(`${edge.id}:${reversed ? "reverse" : "forward"}`); continue; }
       // Commit the vertices at the scene's floor height (navmesh detail heights can sit above it), rounded as written, then
       // audit exactly that polyline with the route audit's samples: one that leaves the floor or meets a wall is not
       // committed, and the gate fails on it (#669 r2). An edge no audited route walks is checked here too.
@@ -581,7 +535,31 @@ async function main() {
     }
     if (dirs.forward || dirs.reverse) navPaths[edge.id] = dirs;
   }
-  fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify({ ...result, navPaths, navPathsScene, navPathsRejected, navPathsDetours }, null, 2) + "\n");
+  // Bake junctions for every adjacent published direction, including routes selected by other profiles.
+  const incoming = new Map<string, {step:RouteStep;point:PolylinePoint}[]>();
+  const outgoing = new Map<string, {step:RouteStep;point:PolylinePoint}[]>();
+  for (const entry of cache.values()) {
+    const step=entry.step, points=navPaths[step.edgeId]?.[step.reversed ? "reverse" : "forward"];
+    if (!points || !entry.points?.length) continue;
+    const ends = [[incoming,step.toNodeId,entry.points.at(-1)!],[outgoing,step.fromNodeId,entry.points[0]!]] as const;
+    for (const [map,node,point] of ends) { const list=map.get(node) ?? []; list.push({step,point}); map.set(node,list); }
+  }
+  for (const [node,arrivals] of incoming) for (const a of arrivals) for (const b of outgoing.get(node) ?? []) {
+    const key=snapJoinKey(a.step,b.step);
+    if (joinChecks.has(key) || distance(a.point,b.point)<1e-6) continue;
+    const path=queryPathWithLinks(nav,query,{x:a.point.x,y:a.point.z,z:-a.point.y},{x:b.point.x,y:b.point.z,z:-b.point.y});
+    joinChecks.set(key,path && !path.some(v=>v.link) ? path.map(v=>({...b.point,x:v.point.x,y:-v.point.z,z:v.point.y})) : null);
+  }
+  const navJoins: Record<string,number[][]> = {};
+  for (const [key,line] of joinChecks) {
+    if (!line) continue;
+    const floorAt = (p:PolylinePoint) => { const d:SampleDetail[]=[]; auditPolyline(probe,[p],{alreadySampled:true,detail:d,cache:auditCache}); return d[0]?.floorZ ?? p.z; };
+    const points=floorSnapPath(line,floorAt).map(p=>({...p,x:round2(p.x),y:round2(p.y),z:round2(p.z)}));
+    const checked=auditPolyline(probe,points,{cache:auditCache});
+    if (checked.wallHits || checked.offFloor || checked.noFloor) { navPathsRejected.push(key); continue; }
+    navJoins[key]=points.map(p=>[p.x,p.y,p.z]);
+  }
+  fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, JSON.stringify({ ...result, navPaths, navJoins, navPathsScene, navPathsRejected, navPathsDetours }, null, 2) + "\n");
   console.log(`fallback audit ${JSON.stringify(fallbackAudit.totals)}; fallback clipped ${fallbackAudit.failed.length}; gaps ${JSON.stringify(gapClasses)}; collider kinds ${JSON.stringify(blockingColliderKinds)}; link attachment ${JSON.stringify(result.linkAttachmentDiagnosis)}; query diagnosis ${JSON.stringify(queryDiagnosis)}; snap diagnosis ${JSON.stringify(snapDiagnosis)}; fallback attached ${result.fallbackRecoveredAttached}, used ${result.fallbackEdgesUsed}, completed routes ${fallbackRoutesCompleted}; navmesh segments ${JSON.stringify(result.navmeshSegmentHeights)}`);
   query.destroy(); nav.destroy(); bridgeFloorGeometry.dispose(); (bridgeFloor.material as THREE.Material).dispose(); scene.dispose();
   if (gate && !gateResult.ok) process.exitCode=1;

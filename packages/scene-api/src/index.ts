@@ -160,6 +160,8 @@ export interface NavmeshPaths {
   station: string;
   frame: "ENU";
   edges: Record<string, { forward?: [number, number, number][]; reverse?: [number, number, number][] }>;
+  /** Navmesh junction paths keyed by directed edge pair. */
+  joins?: Record<string, [number, number, number][]>;
 }
 
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);

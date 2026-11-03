@@ -143,3 +143,5 @@ export { describeRoute, floorDisplayName, instructionPoints, nodeDisplayZ, route
 export { explainNoPath, explainNoPathBetween, explainNoPathWith, type NoPathCause, type NoPathContext, type NoPathEndpoint, type NoPathEvidence, type NoPathOption, type NoPathOptionCause } from "./explain.ts";
 
 export { buildConnectorPath, type ConnectorPoint } from "./navmesh-connector.ts";
+
+export { assembleSnapPath, snapJoinKey } from "./snap-path.ts";
