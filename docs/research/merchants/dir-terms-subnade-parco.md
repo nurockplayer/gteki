@@ -107,6 +107,14 @@ Exits 8, 10 and 12 are not printed on the page. These are entrance-field facts f
 | SB-3 | Live terms vs archived terms | The clause in 1.2 is a 2026-10-12 capture, not a live read. | Re-read `/legal/` when the host answers again. |
 | SB-4 | Shop list on the floor guide | The floor guide prints no shop names; only `/search/` does, and from an older capture (2026-09-17). | Same as SB-1/SB-2. |
 
+### 1.5 Current PDF tenant import — 2026-11-03 JST
+
+The live floor-guide page and its linked `https://www.subnade.co.jp/pdf/floorguide/floorguide20261022.pdf` both returned HTTP 200 with curl's default User-Agent on 2026-11-03. PDF retrieved 2026-11-03T09:07:37Z (UTC), 673,885 bytes, SHA-256 `793aefd755a0099faa671b4fb6db63dbebe4f8d71aa81a994e0b3db7224f91dd`; guide dated 2026-10-22. The single image-only page was rendered, enlarged and every name hand-checked: 86 directory entries (21 cafe/restaurant, 48 fashion/daily goods, 17 service), unreadable names 0. Fashion slot 31 is blank and is not a tenant. Ancillary ATMs, vending machines and parking facilities are outside the shop directory.
+
+The PDF does not print a shopping-floor label; its B2 legend labels parking connections. The operator's `https://www.subnade.co.jp/company/safety/` explicitly places the shops on **地下一階** and parking on 地下２階 (HTTP 200, read 2026-11-03 UTC); tenant floor labels preserve **地下一階**, rather than inventing a PDF B1F label. This is a same-site floor fact under the supplied `/legal/` §1 OD-35 ruling, not a new rights classification.
+
+The **85 cards** in §1.3 are the unimported **2026-09-17 Wayback search snapshot**, not existing committed tenants and not a count for the 2026-10-22 PDF. The current import uses only the PDF's shop names/categories plus the official floor fact: `shinjuku-subnade-tenants.json`, source registered in `shinjuku-dept-stores.json`. No image, layout, coordinates, descriptions, telephone numbers or other source text is reused. The PDF and renderings remain outside git and are deleted after the run.
+
 ## 2. 池袋PARCO — coverage-sjk-ikb row 53
 
 ### 2.1 Terms (already ruled; cited, not re-litigated)

@@ -109,6 +109,24 @@
       "retrievedAt": "2026-11-02T16:59:38.704Z",
       "datasetDate": null,
       "notes": "Class: sites allowing private use and quotation (use-tiers.md, OD-35; #522; lead ruling 2026-11-02). Facts only: brand/shop name, printed floor and printed 売場, for 本館 and メンズ館 only; no wording, images, logos or maps reproduced. Plain curl (default User-Agent, no added headers) to https://www.mistore.jp/store/shinjuku/shops.html returned HTTP 000 / 0 bytes at 2026-11-02T16:59:13Z. Read-only ego-lite in-page GETs (HTTP 200), no sign-in or forms. The page loads a CSV plus floor JSON; floor_id joins to the printed title used by its search renderer, category comes from okaiba. The CSV is filtered to the two buildings and display dates for 2026-11-03 JST, then exact building/name/floor duplicates are dropped, keeping the first printed 売場. 1,154 本館 + 310 メンズ館 rows; 28 surrounding-facility rows and 2 outside their display dates skipped; 34 exact duplicates dropped. 本館 RF GAP: guide lists RF but brand data has no RF entry, read 2026-11-02T17:00:22.663Z. No stricter terms clause was shown on the pages read; the existing #522 classification is used without re-deciding it. Raw responses are not committed. Source receipts (UTC; byte size and SHA-256 of UTF-8 response files): https://www.mistore.jp/store/shinjuku/brand-search.html read 2026-11-02T16:59:38.688Z, 50,836 bytes, SHA-256 538e324a78085a16177b5d59eab264cc19c9bbdfed45da28d0e978dfb1906217; https://www.mistore.jp/content/dam/isetan_mitsukoshi/brand-search/shinjuku/data/shinjuku-brand.csv?cb=2026-11-03 read 2026-11-02T16:59:38.704Z, 272,915 bytes, SHA-256 6a5f439c6d85e0de5bb74ff5a29fcd23a51036b35f2549d3d2e9c4615e95fc82; https://www.mistore.jp/content/dam/isetan_mitsukoshi/brand-search/shinjuku/data/shinjuku-floor.json?cb=2026-11-03 read 2026-11-02T16:59:55.879Z, 7,231 bytes, SHA-256 6caaacee30632d20c3cdf31dcb33747cb669334bf200432c8df77cb91605a396; https://www.mistore.jp/store/shinjuku/shops.html read 2026-11-02T17:00:22.663Z, 165,249 bytes, SHA-256 058cc9c2667de6759e0501b3956c125a331b0ca4c78313015871a2dbea905d14; https://www.mistore.jp/store/shinjuku/shops_mens.html read 2026-11-02T17:00:22.724Z, 112,190 bytes, SHA-256 659c632631c3301098bd7e8224b4c2f027f397fe7417c22a3f08a993898e0320; https://www.mistore.jp/store/shinjuku/shops/mainfloor1.html read 2026-11-02T16:59:27.110Z, 117,425 bytes, SHA-256 cb59645a1b2425f22f927b3d4563d114f1e85c8df188597acd520b7db1e11f6f; https://www.mistore.jp/content/dam/isetan_mitsukoshi/brand-search/common/js/brand-search-main.min.js read 2026-11-02T17:01:16.602Z, 27,213 bytes, SHA-256 1b511ec24395fabb2232de0f766f69f0c5ce6ecb4260a1beb28d3597f9087c10."
+    },
+    {
+      "id": "subnade-shinjuku-floorguide-2026-11",
+      "title": "新宿サブナード フロアガイド / 各種防災（店舗階） | subnade.co.jp",
+      "publisher": "新宿サブナード株式会社",
+      "url": "https://www.subnade.co.jp/pdf/floorguide/floorguide20261022.pdf",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+        "date": "2026-11-02"
+      },
+      "attribution": "新宿サブナード フロアガイド / 各種防災 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-03T09:07:37Z",
+      "datasetDate": "2026-10-22",
+      "notes": "OD-35 private use and quotation class, director ruling 2026-11-02; /legal/ §1, recorded in docs/research/merchants/dir-terms-subnade-parco.md. Facts only: shop name, printed category and floor. Method: facts-only OCR of image-only floor guide (OD-35), hand-checked. Current PDF linked by https://www.subnade.co.jp/floorguide/, default User-Agent curl HTTP 200, 673885 bytes, SHA-256 793aefd755a0099faa671b4fb6db63dbebe4f8d71aa81a994e0b3db7224f91dd. One image-only page, rendered and hand-checked: 86 shops; unreadable 0; fashion slot 31 blank. Shopping floor is not printed in the PDF: official https://www.subnade.co.jp/company/safety/ explicitly identifies the shops on 地下一階 and parking on 地下２階, retrieved 2026-11-03T09:09:08Z (UTC), default User-Agent HTTP 200, 30795 bytes, SHA-256 441b6a02352c00029961728f1d8dc8d72386b28b83f415497b494fb945ae516d; floorLabel preserves 地下一階. No image, layout, coordinates, descriptions or other source wording is reused. PDF and rendered images are not committed. The historical 85 cards refer to the unimported 2026-09-17 Wayback /search/ snapshot, not this current guide."
     }
   ],
   "pois": [

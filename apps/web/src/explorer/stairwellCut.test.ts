@@ -143,6 +143,20 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("cuts the slab over the short first rising piece of a 1.2 m flight", () => {
+    const short = lowBundle(1.2);
+    short.edges[0]!.geometry = [{ x: 0, y: 0, z: 0 }, { x: 0.3, y: 0, z: 0.18 }, { x: 2, y: 0, z: 1.2 }];
+    short.nodes.find((node) => node.id === "upper")!.position = { x: 2, y: 0, z: 1.2 };
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 4), new THREE.MeshBasicMaterial());
+    slab.position.set(1, 1, 0); slab.userData.gteki_role = "floor";
+    const root = new THREE.Group(); root.add(slab); root.updateMatrixWorld(true);
+    const result = cutStairwells(root, stairwellWells(short, traversable), { tier: "high" });
+    expect(down(slab, 0.15, 2)).toHaveLength(0);
+    expect(up(slab, 0.15, 0.2)).toHaveLength(0);
+    expect(down(slab, -0.5, 2)[0]!.point.y).toBeCloseTo(1.2);
+    result.dispose();
+  });
+
   it("cuts and carries the hole over a short inner piece, so neither slab nor rail crosses the flight there", () => {
     // Up 3.2 m over 8 m, 0.2 m in the next 0.3 m of plan, then 0.6 m over the last 1.7 m: the walker on that short
     // piece is 0.6 m under the floor, tall enough to meet a rail standing on it or the slab's underside.
@@ -451,20 +465,18 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
-  it("skips a connector whose top flight piece is too short for an arrival side", () => {
-    // The last rising piece runs 0.3 m across the plan (from height 3.8 to 4.0), too short for a rectangle.
+  it("cuts a short last rising piece and keeps its arrival open", () => {
+    // The last rising piece runs only 0.3 m across the plan (from height 3.8 to 4.0).
     const short = landed([{ x: 0, y: 0, z: 0 }, { x: 9, y: 0, z: 3.8 }, { x: 9.3, y: 0, z: 4 }], { x: 9.3, y: 0, z: 4 });
     const wells = stairwellWells(short, traversable);
     expect(wells).toHaveLength(1);
     const s = scene();
-    const ceilingOriginal = s.ceiling.geometry;
+    expect(wells[0]!.rects).toHaveLength(2);
     const result = cutStairwells(s.root, wells, { tier: "high" });
-    expect(result.stats.wells).toBe(0);
-    expect(result.stats.skippedWells).toBe(1);
-    expect(result.stats.cutTriangles).toBe(0);
-    expect(result.walls).toHaveLength(0);
-    expect(result.finish).toBeNull();
-    expect(s.ceiling.geometry).toBe(ceilingOriginal);
+    expect(result.stats.wells).toBe(1);
+    expect(result.stats.skippedWells).toBe(0);
+    expect(down(s.upper, 9.15, 5)).toHaveLength(0);
+    expect(result.walls.some((w) => Math.abs(w.ax - 9.3) < 1e-6 && Math.abs(w.bx - 9.3) < 1e-6)).toBe(false);
     result.dispose();
   });
 

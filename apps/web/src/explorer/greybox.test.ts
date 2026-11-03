@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
+import { WALKER_BODY } from "@gteki/scene-api";
 import { buildGreybox, createGreyboxBuilder, emitGreybox, greyboxTriangleLimit, portalDepthAxis, portalWidthAxis, simplifyGreyboxRun, splitWallsAtOpenings, unmodelledRunsByEdge } from "./greybox.ts";
 import { MODE_WIDTH } from "./graphView.ts";
 import { resolveWalls } from "./walker.ts";
@@ -190,9 +191,10 @@ describe("buildGreybox", () => {
     const result = buildGreybox({ ...bundle, floors, nodes, edges: [bundle.edges[0]!, stairs] } as unknown as StationBundle, () => true, floorOnlyAt(nodes, ["b", "c"]), emptyScene, "high");
     const half = MODE_WIDTH.walk! / 2;
     const side = (z: number) => result.wallSegments.filter((w) => Math.abs(w.az - z) < 1e-6 && Math.abs(w.bz - z) < 1e-6);
-    // North in the graph is -z in the renderer: the stair leaves through the -z wall, which opens over its 4 m width.
+    // North in the graph is -z in the renderer: the stair crosses the -z wall over its 4 m width.
+    // Its floor is already beyond a step there, so a low guard remains below the flight body.
     expect(side(-half).length).toBeGreaterThan(0);
-    expect(side(-half).every((w) => Math.max(w.ax, w.bx) <= 8 + 1e-5)).toBe(true);
+    expect(side(-half).filter((w) => w.yMax > 1.11).every((w) => Math.max(w.ax, w.bx) <= 8 + 1e-5)).toBe(true);
     // The other side wall still runs right up to the node, so nobody walks off the passage there.
     expect(Math.max(...side(half).map((w) => Math.max(w.ax, w.bx)))).toBeGreaterThan(10 - 1e-5);
   });
@@ -205,12 +207,13 @@ describe("buildGreybox", () => {
     const half = MODE_WIDTH.walk! / 2;
     const near = result.wallSegments.filter((w) => Math.abs(w.az + half) < 1e-6 && Math.abs(w.bz + half) < 1e-6);
     expect(near.length).toBeGreaterThan(0);
-    // The flight crosses the north wall between about x = 11 and 13.8; no wall piece may cover x = 12.5.
-    expect(near.some((w) => Math.min(w.ax, w.bx) < 12.5 && Math.max(w.ax, w.bx) > 12.5)).toBe(false);
+    // The step-compatible start opens; further along a low guard stays below the flight body.
+    expect(near.some((w) => Math.min(w.ax, w.bx) < 11 && Math.max(w.ax, w.bx) > 11)).toBe(false);
+    expect(near.some((w) => Math.min(w.ax, w.bx) < 12.5 && Math.max(w.ax, w.bx) > 12.5 && w.yMax <= 1.11)).toBe(true);
     expect(near.some((w) => Math.max(w.ax, w.bx) > 15)).toBe(true);
   });
 
-  it("opens a wall the flight meets far from the mouth, but not one on another level", () => {
+  it("guards a boundary the flight meets far from the mouth, and keeps other levels enclosed", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 8 }, { id: "h", renderElevationM: -6 }];
     const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 16, z: 8 } },
       { id: "p", floorId: "f", position: { x: 0, y: 6, z: 1 } }, { id: "q", floorId: "f", position: { x: 20, y: 6, z: 1 } },
@@ -218,21 +221,76 @@ describe("buildGreybox", () => {
     const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }, { id: "rt", from: "r", to: "t", mode: "walk" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     const covers = (z: number, y: number) => result.wallSegments.some((w) => Math.abs(w.az - z) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3 && Math.abs(w.yMin - y) < 1.5);
-    // The flight is 3 m up as it crosses the corridor 6 m north (wall base 1 m): open. The corridor 6 m below stays shut.
-    expect(covers(-6 + MODE_WIDTH.walk! / 2, 1)).toBe(false);
+    // The higher flight leaves a corridor guard below its body. The corridor 6 m below stays enclosed.
+    expect(covers(-6 + MODE_WIDTH.walk! / 2, 1)).toBe(true);
     expect(covers(-3 + MODE_WIDTH.walk! / 2, -6)).toBe(true);
   });
 
-  it("opens the low part of a wall a rising flight runs along, and keeps the part it has climbed over", () => {
+  it("guards the corridor ledge inside a diagonal rising flight footprint", () => {
     const floors = [...bundle.floors, { id: "g", renderElevationM: 6 }];
     const nodes = [...bundle.nodes, { id: "d", floorId: "f", position: { x: 30, y: 0, z: 0 } }, { id: "c", floorId: "g", position: { x: 20, y: 1, z: 6 } }];
     const edges = [bundle.edges[0]!, { id: "e2", from: "b", to: "d", mode: "walk" }, { id: "s", from: "b", to: "c", mode: "stairs" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     const north = result.wallSegments.filter((w) => Math.abs(w.az + MODE_WIDTH.walk! / 2) < 1e-6);
-    // Only wall reaching up to where a walker on the flight is counts: a band below the flight stays for the corridor.
-    const covers = (x: number, y: number) => north.some((w) => Math.min(w.ax, w.bx) <= x && Math.max(w.ax, w.bx) >= x && w.yMax > y);
-    expect(covers(13.6, 2.2)).toBe(false);
-    expect(covers(18, 2.2)).toBe(true);
+    const at = (x: number) => north.filter((w) => Math.min(w.ax, w.bx) <= x + 1e-6 && Math.max(w.ax, w.bx) >= x - 1e-6);
+    // This is the inherited #694 fixture: the flight overlaps the corridor side at x = 13.6, over a step above it.
+    for (const x of [13.6, 18]) {
+      expect(at(x).some((w) => w.yMin <= 0 && w.yMax >= 1.09)).toBe(true);
+      expect(at(x).every((w) => w.yMax <= 1.11)).toBe(true);
+    }
+    expect(resolveWalls(13.6, -MODE_WIDTH.walk! / 2, 0.3, 0, 1.7, north).z).not.toBeCloseTo(-MODE_WIDTH.walk! / 2);
+  });
+
+  it("guards a corridor beside a rising flight beyond a step and leaves the step-height attachment open", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: 6 }];
+    const nodes = [...bundle.nodes, { id: "d", floorId: "f", position: { x: 30, y: 0, z: 0 } }, { id: "c", floorId: "g", position: { x: 20, y: 0, z: 6 } }];
+    const edges = [bundle.edges[0]!, { id: "e2", from: "b", to: "d", mode: "walk" }, { id: "s", from: "b", to: "c", mode: "stairs", attributes: { width: { m: MODE_WIDTH.walk! } } }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const north = result.wallSegments.filter((w) => Math.abs(w.az + MODE_WIDTH.walk! / 2) < 1e-6);
+    const at = (x: number) => north.filter((w) => Math.min(w.ax, w.bx) <= x + 1e-6 && Math.max(w.ax, w.bx) >= x - 1e-6);
+    // The flight's north side coincides with the corridor boundary at x = 10. Its rise is 0.6 m per metre.
+    const stepEnd = 10 + WALKER_BODY.stepUpM / 0.6;
+    expect(at(stepEnd - 0.01)).toHaveLength(0);
+    for (const x of [stepEnd + 0.01, 11.5, 13.6]) {
+      expect(at(x).some((w) => w.yMin <= 0 && w.yMax > WALKER_BODY.bodyBottomM)).toBe(true);
+      expect(at(x).every((w) => w.yMax <= 1.11)).toBe(true);
+    }
+    expect(resolveWalls(11.5, -MODE_WIDTH.walk! / 2, 0.3, 0, 1.7, north).z).not.toBeCloseTo(-MODE_WIDTH.walk! / 2);
+  });
+
+  it("guards a corridor rising steeply beside a parallel flight without inverted collision bands", () => {
+    const station = {
+      floors: [{ id: "f", renderElevationM: 0 }, { id: "g", renderElevationM: 4 }],
+      nodes: [{ id: "a", floorId: "f", position: { x: 0, y: 0, z: 0 } }, { id: "b", floorId: "f", position: { x: 10, y: 0, z: 12 } },
+        { id: "c", floorId: "g", position: { x: 0, y: 1, z: 4 } }, { id: "d", floorId: "g", position: { x: 10, y: 1, z: 16 } }],
+      edges: [{ id: "walk", from: "a", to: "b", mode: "walk", attributes: { width: { m: 2 } } },
+        { id: "stairs", from: "c", to: "d", mode: "stairs", attributes: { width: { m: 2 } } }],
+    } as unknown as StationBundle;
+    const result = buildGreybox(station, () => true, () => false, emptyScene, "high");
+    const side = result.wallSegments.filter((w) => Math.abs(w.az + 1) < 1e-6 && Math.abs(w.bz + 1) < 1e-6);
+    expect(side.length).toBeGreaterThan(0);
+    expect(side.every((w) => w.yMin <= w.yMax)).toBe(true);
+    for (const x of [0.5, 1.5, 3.25, 5, 7.75, 9.5]) {
+      const feet = 1.2 * x;
+      expect(side.some((w) => Math.min(w.ax, w.bx) <= x + 1e-6 && Math.max(w.ax, w.bx) >= x - 1e-6
+        && w.yMin <= feet + WALKER_BODY.bodyTopM && w.yMax >= feet + WALKER_BODY.bodyBottomM)).toBe(true);
+      // Approach from inside: starting exactly on a segment seam can slide along X to an end instead of moving Z.
+      const contact = resolveWalls(x, -0.9, WALKER_BODY.radiusM, feet, WALKER_BODY.bodyTopM, side);
+      expect(contact.z).toBeGreaterThan(-0.9);
+    }
+  });
+
+  it("keeps a corridor guard above the body of a flight descending beside it", () => {
+    const floors = [...bundle.floors, { id: "g", renderElevationM: -6 }];
+    const nodes = [...bundle.nodes, { id: "d", floorId: "f", position: { x: 30, y: 0, z: 0 } }, { id: "c", floorId: "g", position: { x: 20, y: 0, z: -6 } }];
+    const edges = [bundle.edges[0]!, { id: "e2", from: "b", to: "d", mode: "walk" }, { id: "s", from: "b", to: "c", mode: "stairs", attributes: { width: { m: MODE_WIDTH.walk! } } }];
+    const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
+    const x = 11; // The flight is 0.6 m below the corridor: its body reaches 1.1 m above the corridor.
+    const north = result.wallSegments.filter((w) => Math.abs(w.az + MODE_WIDTH.walk! / 2) < 1e-6);
+    const at = north.filter((w) => Math.min(w.ax, w.bx) <= x && Math.max(w.ax, w.bx) >= x);
+    expect(at.some((w) => w.yMin < WALKER_BODY.bodyTopM && w.yMax > WALKER_BODY.bodyTopM)).toBe(true);
+    expect(resolveWalls(x, -MODE_WIDTH.walk! / 2, 0.3, 0, WALKER_BODY.bodyTopM, north).z).not.toBeCloseTo(-MODE_WIDTH.walk! / 2);
+    expect(resolveWalls(x, -MODE_WIDTH.walk! / 2, 0.3, -0.6, WALKER_BODY.bodyTopM, north).z).toBeCloseTo(-MODE_WIDTH.walk! / 2);
   });
 
   it("keeps the wall of a corridor a flight passes over, below the flight", () => {
@@ -242,9 +300,9 @@ describe("buildGreybox", () => {
     const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     // The flight is 2.4 m up where it crosses the corridor's near wall, 2.4 m north: a walker in the corridor
-    // still meets a wall up to the flight's underside, and nothing stands where a walker on the flight is.
+    // still meets a guard, and nothing stands where a walker on the flight is.
     const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
-    expect(at.some((w) => w.yMin < 0.1 && w.yMax > 1.9)).toBe(true);
+    expect(at.some((w) => w.yMin <= 0 && w.yMax >= 1.09)).toBe(true);
     expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
 
@@ -255,7 +313,7 @@ describe("buildGreybox", () => {
     const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }, { id: "cd", from: "c", to: "d", mode: "walk" }, { id: "ec", from: "e", to: "c", mode: "walk" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
-    expect(at.some((w) => w.yMin < 0.1 && w.yMax > 1.9)).toBe(true);
+    expect(at.some((w) => w.yMin <= 0 && w.yMax >= 1.09)).toBe(true);
     expect(at.every((w) => w.yMax < 2.5 || w.yMin > 4.4)).toBe(true);
   });
 
@@ -303,8 +361,8 @@ describe("buildGreybox", () => {
     const edges = [bundle.edges[0]!, { id: "e2", from: "b", to: "d", mode: "walk" }, { id: "s", from: "b", to: "c", mode: "stairs" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     const north = result.wallSegments.filter((w) => Math.abs(w.az + MODE_WIDTH.walk! / 2) < 1e-6);
-    // Past x = 15 the flight is over 2 m up: the corridor below keeps a wall up to the flight's underside.
-    expect(north.some((w) => Math.min(w.ax, w.bx) <= 16 && Math.max(w.ax, w.bx) >= 16 && w.yMin < 0.1 && w.yMax > 1.5)).toBe(true);
+    // Past x = 15 the flight is over 2 m up: the corridor below keeps its guard.
+    expect(north.some((w) => Math.min(w.ax, w.bx) <= 16 && Math.max(w.ax, w.bx) >= 16 && w.yMin <= 0 && w.yMax >= 1.09)).toBe(true);
   });
 
   it("opens a near-parallel wall that crosses into the stair footprint", () => {
@@ -330,10 +388,10 @@ describe("buildGreybox", () => {
       { id: "pq", from: "p", to: "q", mode: "walk" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
     // At the corridor's near wall (2.4 m north) one flight is 2.4 m above its base and the other 2 m below it: the
-    // wall between, from about 0.6 m to 2 m up, stays.
+    // corridor guard between their body clearances stays.
     const at = result.wallSegments.filter((w) => Math.abs(w.az + 3.7 - MODE_WIDTH.walk! / 2) < 1e-6 && Math.min(w.ax, w.bx) < 10.3 && Math.max(w.ax, w.bx) > 10.3);
-    expect(at.some((w) => w.yMin < 0.8 && w.yMax > 1.8)).toBe(true);
-    expect(at.every((w) => w.yMax < 2.1 && w.yMin > 0.5)).toBe(true);
+    expect(at.some((w) => w.yMin <= 0 && w.yMax >= 1.09)).toBe(true);
+    expect(at.every((w) => w.yMax < 2.6)).toBe(true);
   });
 
   it("opens a stair mouth at the end of a long ramp", () => {
@@ -345,7 +403,9 @@ describe("buildGreybox", () => {
     const half = MODE_WIDTH.ramp! / 2, stairHalf = MODE_WIDTH.stairs! / 2;
     const near = result.wallSegments.filter((w) => Math.abs((w.az + w.bz) / 2 + half) < 1e-6);
     expect(near.length).toBeGreaterThan(0);
-    expect(near.every((w) => Math.max(w.ax, w.bx) <= 30 - stairHalf + 1e-5)).toBe(true);
+    expect(near.filter((w) => w.yMax > 4.2).every((w) => Math.max(w.ax, w.bx) <= 30 - stairHalf + 1e-5)).toBe(true);
+    const stairY = 3 + 4 * half / 6;
+    expect(resolveWalls(30, -half, 0.3, stairY, WALKER_BODY.bodyTopM, near).z).toBeCloseTo(-half);
   });
 
   it("opens a passing corridor's wall only inside the stair footprint", () => {
@@ -353,9 +413,9 @@ describe("buildGreybox", () => {
     const nodes = [...bundle.nodes, { id: "c", floorId: "g", position: { x: 10, y: 6, z: 4 } }, { id: "p", floorId: "f", position: { x: 0, y: 2.7, z: 0 } }, { id: "q", floorId: "f", position: { x: 20, y: 2.7, z: 0 } }];
     const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, () => false, emptyScene, "high");
-    const wallLengthNear = (z: number) => result.wallSegments.filter((w) => Math.abs((w.az + w.bz) / 2 - z) < 0.01).reduce((sum, w) => sum + Math.hypot(w.bx - w.ax, w.bz - w.az), 0);
+    const wallLengthNear = (z: number) => result.wallSegments.filter((w) => Math.abs((w.az + w.bz) / 2 - z) < 0.01 && w.yMax > 1.11).reduce((sum, w) => sum + Math.hypot(w.bx - w.ax, w.bz - w.az), 0);
     // The renderer frame mirrors north into -z; take whichever side the corridor's near wall lands on.
-    // The flight passes through the near wall over its own 2 m width; the rest of that wall stays.
+    // The full-height wall gives way to a low guard over the flight's 2 m width; the rest stays full-height.
     expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeGreaterThan(20 - MODE_WIDTH.stairs! - 1e-3);
     expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeLessThan(20 - MODE_WIDTH.stairs! + 1e-3);
   });

@@ -1,3 +1,4 @@
+import { WALKER_BODY } from "@gteki/scene-api";
 import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clipping";
 import { ShapeUtils, Vector2 } from "three";
 
@@ -14,14 +15,13 @@ export type Region = { group?: string; /** Endpoint floor IDs for graph runs spa
   | { kind: "disc"; level: string; x: number; y: number; z: number; radius: number }
   | { kind: "rect"; level: string; center: { x: number; y: number; z: number }; along: PlanPoint; halfLength: number; halfWidth: number }
   | { kind: "polygon"; level: string; y: number; rings: PlanPoint[][] }
-  | { kind: "connector"; level: string; quad: PlanPoint[]; y: number });
+  | { kind: "connector"; level: string; quad: PlanPoint[]; y: number; flight?: { from: { x: number; y: number; z: number }; to: { x: number; y: number; z: number } } });
 
-/** One wall piece on a level's union boundary, with the floor height at each end. */
 /**
- * `topY`: where the wall stops (renderer y) at its start, middle and end, linear between them: under a floor that
- * climbed over the one it guards (see BODY_TOP_M).
+ * A boundary piece with floor heights at its ends. Optional vertical extents are linear at start, middle and end:
+ * level-stack cuts and flight body clearance can cap a guard or leave more than one vertical span.
  */
-export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay: number; by: number; level: string; topY?: [number, number, number] };
+export type BoundaryWall = { ax: number; az: number; bx: number; bz: number; ay: number; by: number; level: string; bottomY?: [number, number, number]; topY?: [number, number, number] };
 
 /** A union polygon in plan: `[0]` is the outer ring, the rest are holes. Rings are open (no repeated closing point). */
 export type PlanPolygon = PlanPoint[][];
@@ -686,6 +686,72 @@ export function outsideIntervals(a: PlanPoint, b: PlanPoint, cuts: readonly Plan
   return out;
 }
 
+/** Connector footprints open a corridor boundary only within a step; otherwise its guard clears each flight's body. */
+function flightBoundaryWalls(wall: BoundaryWall, flights: readonly Extract<Region, { kind: "connector" }>[], stepM: number): BoundaryWall[] {
+  const a = { x: wall.ax, z: wall.az }, b = { x: wall.bx, z: wall.bz };
+  const at = (t: number) => ({ x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t });
+  const floor = (t: number) => wall.ay + (wall.by - wall.ay) * t;
+  const crossings = flights.flatMap((region) => {
+    const { from, to } = region.flight!;
+    const dx = to.x - from.x, dz = to.z - from.z, length2 = dx * dx + dz * dz;
+    if (length2 < 1e-12) return [];
+    const outside = outsideIntervals(a, b, [region.quad]);
+    const inside: [number, number][] = [];
+    let start = 0;
+    for (const [lo, hi] of outside) { if (lo > start) inside.push([start, lo]); start = hi; }
+    if (start < 1) inside.push([start, 1]);
+    const height = (t: number) => {
+      const p = at(t);
+      return from.y + (to.y - from.y) * ((p.x - from.x) * dx + (p.z - from.z) * dz) / length2;
+    };
+    return inside.map(([lo, hi]) => ({ lo, hi, height, gap: (t: number) => height(t) - floor(t) }));
+  });
+  if (!crossings.length) return [wall];
+  const guardHeight = 1.1;
+  const splits = [0, 0.5, 1];
+  for (const crossing of crossings) {
+    splits.push(crossing.lo, crossing.hi);
+    const g0 = crossing.gap(0), dg = crossing.gap(1) - g0;
+    // All changes of vertical ordering: step attachments and the body clearance crossing the guard's ends.
+    for (const gap of [stepM, -stepM, -WALKER_BODY.bodyBottomM, -WALKER_BODY.bodyTopM,
+      guardHeight - WALKER_BODY.bodyBottomM, guardHeight - WALKER_BODY.bodyTopM]) {
+      const t = (gap - g0) / dg;
+      if (Number.isFinite(t) && t > crossing.lo && t < crossing.hi) splits.push(t);
+    }
+  }
+  splits.sort((x, y) => x - y);
+  const result: BoundaryWall[] = [];
+  const existingTop = (t: number) => !wall.topY ? Infinity : t <= 0.5
+    ? wall.topY[0] + (wall.topY[1] - wall.topY[0]) * t * 2
+    : wall.topY[1] + (wall.topY[2] - wall.topY[1]) * (t * 2 - 1);
+  for (let i = 1; i < splits.length; i++) {
+    const lo = splits[i - 1]!, hi = splits[i]!, mid = (lo + hi) / 2;
+    if ((hi - lo) * Math.hypot(b.x - a.x, b.z - a.z) < MIN_WALL_M) continue;
+    const active = crossings.filter((crossing) => mid >= crossing.lo && mid <= crossing.hi);
+    if (active.some((crossing) => Math.abs(crossing.gap(mid)) <= stepM)) continue;
+    type Height = (t: number) => number;
+    let spans: [Height, Height][] = [[floor, (t) => Math.min(existingTop(t), floor(t) + (active.length && active.every((crossing) => crossing.gap(mid) > stepM) ? guardHeight : 2.6))]];
+    for (const crossing of active) {
+      const bottom = (t: number) => crossing.height(t) + WALKER_BODY.bodyBottomM - WALL_TOLERANCE_M;
+      const top = (t: number) => crossing.height(t) + WALKER_BODY.bodyTopM + WALL_TOLERANCE_M;
+      spans = spans.flatMap(([low, high]): [Height, Height][] => {
+        if (bottom(mid) >= high(mid) || top(mid) <= low(mid)) return [[low, high]];
+        const kept: [Height, Height][] = [];
+        if (bottom(mid) > low(mid)) kept.push([low, (t) => Math.min(high(t), bottom(t))]);
+        if (top(mid) < high(mid)) kept.push([(t) => Math.max(low(t), top(t)), high]);
+        return kept;
+      });
+    }
+    const p = at(lo), q = at(hi);
+    for (const [bottom, top] of spans) {
+      if (top(mid) - bottom(mid) < MIN_WALL_M) continue;
+      result.push({ ...wall, ax: p.x, az: p.z, bx: q.x, bz: q.z, ay: floor(lo), by: floor(hi),
+        bottomY: [bottom(lo), bottom(mid), bottom(hi)], topY: [top(lo), top(mid), top(hi)] });
+    }
+  }
+  return result;
+}
+
 /**
  * Union every region per level and emit the boundary walls the connector footprints and attachments leave.
  * With a step height, levels are also a stack: a level is split where it passes over itself, a floor loses the part
@@ -700,9 +766,10 @@ export function buildWalkableModel(
   padM = 0,
   exclusions: readonly PlanExclusion[] = [],
 ): { levels: Map<string, PlanPolygon[]>; walls: BoundaryWall[]; slabCuts: PieceCuts; ceilingCuts: PieceCuts } {
+  const flights = regions.filter((region): region is Extract<Region, { kind: "connector" }> => region.kind === "connector" && !!region.flight);
   const explicitCuts: PieceCuts = new Map();
   const masks = exclusions.flatMap((cut) => cut.triangles.map((ring) => ({ ...cut, triangles: [ring], box: boxOf([[ring]]) })));
-  const pieces = regions.flatMap(regionPieces).flatMap((piece) => {
+  const pieces = regions.flatMap((region, index) => region.kind === "connector" && region.flight ? [] : regionPieces(region, index)).flatMap((piece) => {
     if (!exclusions.length) return [piece];
     const region = regions[piece.region]!, levels = region.floorLevels ?? [piece.level];
     const heights = region.floorHeights ?? (region.kind === "strip" ? [region.points[0]!.y, region.points.at(-1)!.y] : [piece.low, piece.high]);
@@ -835,7 +902,7 @@ export function buildWalkableModel(
       }
       if (tops.length) wall.topY = [tops[0]! - UNDER_GAP_M, tops[1]! - UNDER_GAP_M, tops[2]! - UNDER_GAP_M];
     }
-    walls.push(...own);
+    walls.push(...own.flatMap((wall) => flightBoundaryWalls(wall, flights, stepM)));
   }
   for (const [key, cuts] of explicitCuts) {
     slabCuts.set(key, [...(slabCuts.get(key) ?? []), ...cuts]);
