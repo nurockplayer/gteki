@@ -32,4 +32,6 @@ pnpm field:ingest ~/Downloads/field-incoming/YYYY-MM-DD-ikebukuro.json --dry-run
 pnpm field:ingest ~/Downloads/field-incoming/YYYY-MM-DD-shinjuku.json --dry-run
 ```
 
+非公開 receipt（檔名以 `-private.json` 結尾）匯入時必須加上 `--private-root <gteki-private repo 根目錄>`；這類檔案絕不可放入 public repo。
+
 成功結尾是 `dry run: no files written`；若報未知 ID、樓層不符、重複或未來時刻，交由 lead 核對原筆記，勿猜改。dry-run 通過後由 lead 移除 `--dry-run`，執行相同命令正式匯入；只有 `CLOSED` 會套用到站內資料，`OPEN` 與 `fieldNotes` 保留供後續處理。Owner 不必在手機執行 ingest。

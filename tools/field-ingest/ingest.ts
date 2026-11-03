@@ -32,25 +32,38 @@ function withSnapshot(files: string[], apply: () => void) {
   }
 }
 
-/** Apply to a public bundle root; an optional station rebuild shares the same rollback snapshot. */
-export function ingest(receiptPath: string, dryRun = false, root = process.cwd(), rebuild?: () => void) {
+/** Apply public receipts to the station bundle, or private receipts to the private additions root. */
+export function ingest(receiptPath: string, dryRun = false, root = process.cwd(), rebuild?: () => void, privateRoot?: string) {
   const receipt = read(receiptPath) as FieldReceipt;
+  if (receipt.private === true && !privateRoot) throw new Error("private receipt requires --private-root <dir>");
+  if (receipt.private !== true && privateRoot) throw new Error("public receipt refuses --private-root");
   if (!["ikebukuro", "shinjuku"].includes(receipt?.station)) throw new Error("station must be ikebukuro or shinjuku");
   const stationDir = join(root, "stations", receipt.station);
-  const poisPath = join(stationDir, "gteki/pois.json");
-  const stationPath = join(stationDir, "gteki/station.json");
-  const graph = read(join(stationDir, "gteki/graph.json"));
+  const dataDir = privateRoot ? join(privateRoot, "overlay", receipt.station, "gteki") : join(stationDir, "gteki");
+  const additionsDir = privateRoot ? join(privateRoot, "additions", receipt.station) : null;
+  const archiveDir = additionsDir ? join(additionsDir, "field-receipts") : join(root, "docs/research/field/receipts");
+  const poisPath = join(dataDir, "pois.json");
+  const stationPath = join(dataDir, "station.json");
+  const graph = read(join(dataDir, "graph.json"));
   const pois = read(poisPath);
   const station = read(stationPath);
+  // Additions can be newer than the last overlay build (including an earlier ingest).
+  if (additionsDir) for (const [name, target, key] of [["pois", pois, "pois"], ["sources", station, "sources"]] as const) {
+    const file = join(additionsDir, `${name}.json`);
+    if (existsSync(file)) for (const entry of read(file)[key]) {
+      const index = target[key].findIndex((value: any) => value.id === entry.id);
+      if (index < 0) target[key].push(entry); else target[key][index] = entry;
+    }
+  }
   const srcPath = join(stationDir, "data/graph.src.json");
-  const src = receipt.station === "ikebukuro" ? read(srcPath) : null;
+  const src = receipt.station === "ikebukuro" ? (privateRoot ? { nodes: graph.nodes, pois: pois.pois, sources: station.sources } : read(srcPath)) : null;
   const issues: string[] = [];
   try {
     validateReceipt(receipt, receipt.station,
       (id) => pois.pois.some((poi: any) => poi.id === id) && (!src || src.pois.some((poi: any) => poi.id === id)),
       (id) => graph.nodes.some((node: any) => node.id === id) && (!src || src.nodes.some((node: any) => node.id === id)));
   } catch (error) { issues.push(...(error as Error).message.split("\n")); }
-  const archived = loadReceipts(join(root, "docs/research/field/receipts"), receipt.station);
+  const archived = loadReceipts(archiveDir, receipt.station);
   const seen = new Set<string>();
   for (const item of Array.isArray(receipt.items) ? receipt.items : []) {
     if (!item) continue;
@@ -105,13 +118,42 @@ export function ingest(receiptPath: string, dryRun = false, root = process.cwd()
   // Print the complete preview even if validation will fail. Validation always precedes writes.
   for (const line of preview) console.log(line);
   if (issues.length) throw new Error(issues.join("\n"));
-  if (dryRun || !closed.length) return preview;
-  const date = closed.map((item) => item.observedAt.slice(0, 10)).sort().at(-1)!;
-  const archive = join(root, "docs/research/field/receipts", `${date}-${receipt.station}.json`);
+  if (dryRun || (!closed.length && !privateRoot)) return preview;
+  const observations = privateRoot ? [...receipt.items, ...(receipt.fieldNotes ?? [])] as { observedAt: string }[] : closed;
+  const date = observations.map((item) => item.observedAt.slice(0, 10)).sort().at(-1)!;
+  const archive = join(archiveDir, `${date}-${receipt.station}.json`);
   // Keep the original envelope, OPEN items and fieldNotes alongside earlier same-day observations.
   const previous = existsSync(archive) ? read(archive) : null;
   const saved = previous ? { ...receipt, items: [...previous.items, ...receipt.items],
     fieldNotes: [...(previous.fieldNotes ?? []), ...(receipt.fieldNotes ?? [])] } : receipt;
+  if (additionsDir) {
+    const graphPath = join(additionsDir, "graph.json");
+    const privatePoisPath = join(additionsDir, "pois.json");
+    const sourcesPath = join(additionsDir, "sources.json");
+    const additions = existsSync(privatePoisPath) ? read(privatePoisPath) : { pois: [] };
+    const sources = existsSync(sourcesPath) ? read(sourcesPath) : { sources: [] };
+    withSnapshot([archive, graphPath, privatePoisPath, sourcesPath], () => {
+      mkdirSync(archiveDir, { recursive: true });
+      writeFileSync(archive, text(saved, 1));
+      if (!closed.length) return;
+      const updated = receipt.station === "ikebukuro" ? applyFieldReceipt(src, pois, station, receipt, graph) : null;
+      if (!updated) applyFieldReceipts(pois.pois, station.sources, new Set<string>(graph.nodes.map((node: any) => node.id)), [receipt], graph.nodes);
+      const updatedPois = updated?.pois ?? pois;
+      for (const id of new Set(closed.map((item) => item.poiId))) {
+        const poi = updatedPois.pois.find((entry: any) => entry.id === id);
+        const index = additions.pois.findIndex((entry: any) => entry.id === id);
+        if (index < 0) additions.pois.push(poi); else additions.pois[index] = poi;
+      }
+      const provenance = fieldSource(receipt, receipt.station)!;
+      const source = { ...provenance.source, notes: `[tier P] ${provenance.source.notes}` };
+      const index = sources.sources.findIndex((entry: any) => entry.id === provenance.sourceId);
+      if (index < 0) sources.sources.push(source); else sources.sources[index] = source;
+      writeFileSync(graphPath, text(existsSync(graphPath) ? read(graphPath) : { nodes: [], edges: [] }, 1));
+      writeFileSync(privatePoisPath, text(additions, 1));
+      writeFileSync(sourcesPath, text(sources, 1));
+    });
+    return preview;
+  }
   const files = [archive, poisPath, stationPath, ...(receipt.station === "ikebukuro" ? [srcPath] : [
     join(stationDir, "gteki/graph.json"), join(stationDir, "data/plan.json"),
     join(stationDir, "data/import-report.json"), join(stationDir, "data/surface-baked.json"),
@@ -137,14 +179,21 @@ export function ingest(receiptPath: string, dryRun = false, root = process.cwd()
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const file = process.argv[2];
-    if (!file || process.argv.slice(3).some((arg) => arg !== "--dry-run")) throw new Error("usage: pnpm field:ingest <receipt.json> [--dry-run]");
-    const dryRun = process.argv.includes("--dry-run");
+    const args = process.argv.slice(3);
+    let privateRoot: string | undefined;
+    let dryRun = false;
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === "--dry-run") dryRun = true;
+      else if (args[i] === "--private-root" && args[i + 1] && !args[i + 1]!.startsWith("--")) privateRoot = resolve(args[++i]!);
+      else throw new Error("usage: pnpm field:ingest <receipt.json> [--dry-run] [--private-root <dir>]");
+    }
+    if (!file) throw new Error("usage: pnpm field:ingest <receipt.json> [--dry-run] [--private-root <dir>]");
     const preview = ingest(file, dryRun, process.cwd(), () => {
-      if (read(file).station === "shinjuku") {
+      if (!privateRoot && read(file).station === "shinjuku") {
         execFileSync("pnpm", ["--filter", "@gteki/station-shinjuku", "import:e27"], { stdio: "inherit" });
         execFileSync("pnpm", ["--filter", "@gteki/station-shinjuku", "bake:surface"], { stdio: "inherit" });
       }
-    });
+    }, privateRoot);
     console.log(dryRun ? "dry run: no files written" : `applied ${preview.length} CLOSED items`);
   } catch (error) {
     console.error((error as Error).message);

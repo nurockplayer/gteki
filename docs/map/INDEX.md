@@ -22,7 +22,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 ### App (`apps/web`)
 - Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup · `apps/web/src/explorer/` · [[web-explorer]]
 - UI shell: app frame, search combobox, minimap, identity/merchant cards, rail travel, live region · `apps/web/src/ui/` · [[web-ui]]
-- Field recorder: phone walk, offline notes and receipt JSON · `apps/web/src/field/` · [[web-field]]
+- Field recorder: phone walk, offline notes, public/private receipt JSON and optional private-stop overlay · `apps/web/src/field/` · [[web-field]]
 - Merchant form: the merchant submission form and payload · `apps/web/src/merchant/` · [[web-merchant]]
 - App root: entry `apps/web/src/main.ts`, station registry `apps/web/src/registry.ts`, hours/credits/i18n/no-path helpers · `apps/web/src/` · covered in [[web-explorer]] and [[web-ui]]
 

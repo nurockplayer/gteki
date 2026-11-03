@@ -17,6 +17,7 @@ export type ReceiptItem = {
 
 export type FieldReceipt = {
   version: number;
+  private?: true;
   station: string;
   fieldRun: string;
   /** Director 2026-10-26: only the GTEki team's own field readings for now; crowd contributions need a contributor licence first. */
@@ -46,7 +47,7 @@ export function validateReceipt(receipt: FieldReceipt, station: string, hasPoi: 
   if (typeof receipt?.observer !== "string" || !/^[a-z][a-z-]*$/.test(receipt.observer)) fail("?", 'observer must be a role such as "owner", not a name');
   if (!Array.isArray(receipt?.items)) fail("?", "items must be an array");
   else {
-    if (receipt.items.length === 0) fail("?", "items must contain at least one item");
+    if (receipt.items.length === 0 && !(receipt.private && receipt.fieldNotes?.length)) fail("?", "items must contain at least one item");
     for (const item of receipt.items) {
       const number = item?.item;
       if (!Number.isInteger(number) || number <= 0) fail(number, "item must be a positive integer");
@@ -157,7 +158,7 @@ export function fieldSource(receipt: FieldReceipt, station: string): { sourceId:
   if (!closed.length) return null;
   const latest = closed.reduce((a, b) => Date.parse(a.observedAt) >= Date.parse(b.observedAt) ? a : b);
   const date = latest.observedAt.slice(0, 10);
-  const sourceId = `field-${station}-${date}`;
+  const sourceId = `field-${receipt.private ? "private-" : ""}${station}-${date}`;
   const itemNumbers = closed.map(({ item }) => item).join(", ");
   const source = {
     id: sourceId,

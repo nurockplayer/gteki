@@ -146,7 +146,7 @@ for (const station of ["ikebukuro", "shinjuku"]) describe(station, () => {
       for (const name of ["plan.json", "surface-baked.json"]) cpSync(join(repo, "stations/shinjuku/data", name), join(s.dir, "data", name));
       files.push(join(s.dir, "gteki/graph.json"), ...["plan.json", "surface-baked.json", "import-report.json"].map((name) => join(s.dir, "data", name)));
     }
-    const tree = () => readdirSync(s.root, { recursive: true }).sort().map((name) =>
+    const tree = () => readdirSync(s.root, { recursive: true, encoding: "utf8" }).sort().map((name) =>
       [name, statSync(join(s.root, name)).isFile() ? createHash("sha256").update(readFileSync(join(s.root, name))).digest("hex") : null]);
     const failDownstream = () => {
       for (const file of files) writeFileSync(file, "partial downstream output\n");
@@ -203,3 +203,45 @@ it("promotes an approximate Shinjuku gate to a valid verified entrance", () => {
   expect(parsed.issues.filter((issue) => issue.level === "error")).toEqual([]);
   expect(parsed.ok).toBe(true);
 });
+
+for (const station of ["ikebukuro", "shinjuku"]) it(`${station}: refuses mixed roots and writes a private receipt only to synthetic private additions`, () => {
+  const root = mkdtempSync(join(tmpdir(), "private-ingest-")); roots.push(root);
+  const privateRoot = join(root, "private");
+  const overlay = join(privateRoot, "overlay", station, "gteki");
+  const additions = join(privateRoot, "additions", station);
+  mkdirSync(overlay, { recursive: true }); mkdirSync(additions, { recursive: true });
+  const graph = { nodes: [{ id: "synthetic-node", floorId: "b1", position: { x: 1, y: 2, z: 0 } }], edges: [] };
+  const pois = { pois: [{ id: "synthetic-shop", names: [{ lang: "en", text: "Synthetic only" }], category: "shop", displayPosition: null,
+    connectorNodeIds: [], paid: null, evidence: { method: "synthetic", checkedDate: null, sourceIds: [] }, notes: [] }] };
+  const write = (file: string, value: unknown) => writeFileSync(file, JSON.stringify(value));
+  write(join(overlay, "graph.json"), graph); write(join(overlay, "pois.json"), pois);
+  write(join(overlay, "station.json"), { floors: [{ id: "b1", ordinal: -1 }], sources: [] });
+  write(join(additions, "graph.json"), graph);
+  const receipt = { private: true, version: 1, station, fieldRun: "synthetic.md", observer: "owner", sourceKind: "team_field",
+    items: [{ item: 1, status: "CLOSED", poiId: "synthetic-shop", nodeId: "synthetic-node", paid: false,
+      observedText: "SYNTHETIC ONLY", observedAt: "2026-10-28T10:00+09:00", floorLabel: "B1" }],
+    fieldNotes: [{ itemId: "GAP-01", observedText: "Synthetic GAP", observedAt: "2026-10-28T10:00+09:00" }] };
+  const file = join(root, "receipt.json"); write(file, receipt);
+  expect(() => ingest(file, false, root)).toThrow("requires --private-root");
+  write(file, { ...receipt, private: undefined });
+  expect(() => ingest(file, false, root, undefined, privateRoot)).toThrow("public receipt refuses --private-root");
+  write(file, receipt);
+  const before = ["graph", "pois", "station"].map((name) => readFileSync(join(overlay, `${name}.json`), "utf8"));
+  const cli = join(repo, "tools/field-ingest/ingest.ts");
+  const run = (...args: string[]) => execFileSync(join(repo, "node_modules/.bin/tsx"), [cli, file, "--private-root", privateRoot, ...args], { cwd: root, encoding: "utf8" });
+  expect(run("--dry-run")).toContain("dry run: no files written");
+  expect(existsSync(join(additions, "pois.json"))).toBe(false);
+  expect(run()).toContain("applied 1 CLOSED items");
+  expect(read(join(additions, "pois.json")).pois[0]).toMatchObject({ id: "synthetic-shop", connectorNodeIds: ["synthetic-node"],
+    displayPosition: graph.nodes[0]!.position, evidence: { sourceIds: [`field-private-${station}-2026-10-28`] } });
+  expect(read(join(additions, "graph.json"))).toEqual(graph);
+  expect(read(join(additions, "sources.json")).sources[0].notes).toMatch(/^\[tier P\]/);
+  expect(loadReceipts(join(additions, "field-receipts"), station)).toEqual([receipt]);
+  expect(["graph", "pois", "station"].map((name) => readFileSync(join(overlay, `${name}.json`), "utf8"))).toEqual(before);
+  expect(existsSync(join(root, "stations"))).toBe(false);
+  expect(existsSync(join(root, "docs"))).toBe(false);
+  expect(() => ingest(file, false, root, undefined, privateRoot)).toThrow("duplicate existing connector");
+  write(file, { ...receipt, items: [] });
+  expect(run()).toContain("applied 0 CLOSED items");
+  expect(read(join(additions, "field-receipts", `2026-10-28-${station}.json`)).fieldNotes).toHaveLength(2);
+}, 15_000);
