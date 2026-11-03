@@ -44,6 +44,12 @@ const STRINGS = {
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "種類",
     categoryAll: "すべて",
+    barrierFree: "バリアフリー",
+    connectsToGate: "起点の改札に接続",
+    floorUnknown: "階不明（掲載案内を参照）",
+    distanceUnknown: "距離不明",
+    routeDistance: (m: number) => `経路距離 ${m} m`,
+    straightDistance: (m: number) => `直線距離 約${m} m（経路未確認）`,
     openNowFilter: "営業中のみ",
     openNowOpen: "営業中",
     hoursUnknown: "営業時間不明",
@@ -59,7 +65,7 @@ const STRINGS = {
       checked: "最終確認",
       floorsTitle: "フロア別ブランド",
       floorsFilter: "ブランド名で絞り込み",
-      precision: { door: "入口は駅の図面から読み取った概略位置（現地未検証）", tie: "入口の位置は未確認（案内は駅の改札・出口まで）", point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認" },
+      precision: { door: "入口は駅の図面から読み取った概略位置（現地未検証）", tie: "入口未確認（案内は駅の改札・出口まで）", point: "位置確認済み", area: "おおよその区域のみ", search: "店舗位置は未確認", unverified: "入口未確認" },
     },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `おおよその位置（±${m} m）・経路案内には使いません`,
@@ -286,6 +292,12 @@ const STRINGS = {
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "Category",
     categoryAll: "All",
+    barrierFree: "Barrier-free",
+    connectsToGate: "Connects to your gate",
+    floorUnknown: "Floor unknown (see printed guidance)",
+    distanceUnknown: "Distance unknown",
+    routeDistance: (m: number) => `Route ${m} m`,
+    straightDistance: (m: number) => `Straight-line approx. ${m} m (route unverified)`,
     openNowFilter: "Open now",
     openNowOpen: "Open now",
     hoursUnknown: "Hours unknown",
@@ -301,7 +313,7 @@ const STRINGS = {
       checked: "Last checked",
       floorsTitle: "Brands by floor",
       floorsFilter: "Filter by brand name",
-      precision: { door: "Entrance read from a station map (approximate, not verified on site)", tie: "Entrance position not yet verified (directions end at the station gate or exit)", point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed" },
+      precision: { door: "Entrance read from a station map (approximate, not verified on site)", tie: "Entrance position not yet verified (directions end at the station gate or exit)", point: "Location verified", area: "Approximate area only", search: "Shop location unconfirmed", unverified: "Entrance not yet verified" },
     },
     /** An approximate, search-display-only point (#463): the ± radius shown, never used for directions. */
     approximatePosition: (m: number) => `Approximate position (±${m} m) · not used for directions`,

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import type { Poi, Source, Tenant } from "@gteki/schema";
 import { strings } from "../i18n.ts";
 import { arrivalPrecision, isMapReadDoor, isStationTie, merchantCardEl, merchantCardModel, merchantPrecision } from "./merchantCard.ts";
@@ -179,7 +180,7 @@ describe("merchant card model (#213)", () => {
   it("renders the source as a safe external link and offers no direction control", () => {
     const card = merchantCardEl(merchantCardModel(shop(), [source], "en", "B1", []), strings("en"), [source], "en");
     expect(card.querySelector("h2")?.textContent).toBe("カレーショップC＆C");
-    expect(card.querySelector(".merchant-meta")?.textContent).toBe("Shop · B1 · Approximate area only");
+    expect(card.querySelector(".merchant-meta")?.textContent).toBe("Shop · B1 · Approximate area only · Entrance not yet verified");
     const link = card.querySelector("a.merchant-source-link");
     expect(link?.getAttribute("href")).toBe(source.url);
     expect(link?.getAttribute("rel")).toBe("noopener noreferrer");
@@ -195,5 +196,27 @@ describe("merchant card model (#213)", () => {
     const noUrl = merchantCardEl(merchantCardModel(shop(), [{ ...source, url: "" }], "ja", null, []), strings("ja"), [source], "ja");
     expect(noUrl.querySelector("a")).toBeNull();
     expect(noUrl.textContent).toContain(source.title);
+  });
+});
+
+describe("field-only department stores on the public bundles", () => {
+  const read = (station: string, file: string) => JSON.parse(readFileSync(`stations/${station}/gteki/${file}.json`, "utf8"));
+
+  it.each([
+    ["ikebukuro", "shop-ikb-seibu-honten", "tie", ["g_jr_s"]],
+    ["ikebukuro", "shop-ikb-tobudept", "area", []],
+    ["shinjuku", "shop-sjk-keio", "search", []],
+  ] as const)("%s %s keeps its real connector and labels the entrance", (station, id, precision, connectors) => {
+    const poi: Poi = read(station, "pois").pois.find((p: Poi) => p.id === id);
+    const tenants: Tenant[] = read(station, "tenants").tenants.filter((t: Tenant) => t.poiId === id);
+    const sources: Source[] = read(station, "station").sources;
+    expect(tenants.length).toBeGreaterThan(0);
+    expect(poi.connectorNodeIds).toEqual(connectors);
+    const model = merchantCardModel(poi, sources, "ja", null, tenants);
+    expect(model.precision).toBe(precision);
+    expect(model.routable).toBe(connectors.length > 0);
+    const card = merchantCardEl(model, strings("ja"), sources, "ja");
+    expect(card.querySelector(".merchant-meta")?.textContent).toContain("入口未確認");
+    expect(card.querySelector(".merchant-no-route") !== null).toBe(connectors.length === 0);
   });
 });

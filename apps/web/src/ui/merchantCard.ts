@@ -115,6 +115,7 @@ export function merchantCardEl(model: MerchantCardModel, t: Strings, sources: re
     t.categoryNames[model.category] ?? model.category,
     model.floor,
     model.precision ? t.merchant.precision[model.precision] : null,
+    !model.routable ? t.merchant.precision.unverified : null,
   ].filter(Boolean).join(" · ");
   card.append(el("p", "merchant-meta", meta));
   // The shop's own note carries the area wording as printed; it never becomes a floor or a position.
