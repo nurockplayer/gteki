@@ -2,7 +2,7 @@
 set -eu
 for variant in base head; do
   export S5_VARIANT="$variant"
-  tar -xf ".qa/s5/r2-$variant.tar"
+  tar --exclude='.qa' --exclude='.qa/*' -xf ".qa/s5/r2-$variant.tar"
   python3 .qa/s5/r2-instrument.py
   for station in ikebukuro shinjuku; do
     dest=".qa/s5/r2-$variant/$station"

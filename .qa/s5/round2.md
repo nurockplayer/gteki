@@ -35,3 +35,11 @@ At 2026-11-03 21:15 JST, ticket #303 remained fifth in line, behind a running jo
 The full-patch Oracle review completed 2026-11-03 21:17 JST, exit 0, **Changes required**. See `r2-oracle-review.md`, including the corrected first diffstat-only upload. Bounded QA fixes were applied; serialized endpoint/required-junction publication findings remain blocked with the physical classes. No production code was changed in round 2 beyond merging main.
 
 The cancelled heavy wrapper exited 143; its last line was `orb-test: end 2026-11-03 21:15 JST`. This was cancellation while queued, before a container or regeneration process existed. It was not rerun.
+
+## Light validation outcome
+
+Root typecheck passed, and the related audit run completed with **Tests 34 passed (34)** across three files (bake, audit and suspect). Exit 0; last line `orb-test: end 2026-11-03 21:20 JST`. It started at 2026-11-03 21:17 JST after waiting for a light slot. The merged production source is unchanged by subsequent QA-only commits.
+
+The final runner excludes `.qa` during archive extraction, so an older head archive cannot overwrite newer QA scripts/reports through the writable output mount. Generated station outputs go directly under `.qa/s5/r2-base` or `.qa/s5/r2-head`; the committed station baseline files are not used as output destinations. Python compilation, shell syntax and diff whitespace checks passed. The runner's station path was not executed.
+
+No task-owned job remains running. No test or regeneration was killed after start; the only cancelled process was the queued heavy wrapper (exit 143), and it was not rerun. No denied action occurred.
