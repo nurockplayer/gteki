@@ -53,10 +53,11 @@ export function unmodelledLiftEdges(
   hasFloor: (point: V3) => boolean,
   nearMesh: (point: THREE.Vector3, radius: number) => boolean,
 ): Edge[] {
+  const candidates = bundle.edges.filter((edge) => edge.mode === "elevator" && traversable(edge));
+  if (!candidates.length) return [];
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
-  return bundle.edges.filter((edge) => {
-    if (!traversable(edge) || edge.mode !== "elevator") return false;
+  return candidates.filter((edge) => {
     const points = edgePoints(bundle, edge, nodes, floors);
     if (points.length < 2 || Math.abs(points[0]!.y - points.at(-1)!.y) <= 0.5) return false;
     if (edge.attributes?.sceneGap === true) return true;
@@ -948,8 +949,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const points = edgePoints(bundle, edge, nodes, floors);
     return [{ id: edge.from, at: points[0]! }, { id: edge.to, at: points.at(-1)! }];
   };
-  const hallEdges = bundle.edges.filter((edge) => edge.mode === "walk").sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-  const landingStubs = bundle.edges.filter((edge) => edge.mode === "elevator").sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const hallEdges = (liftEdges.length ? bundle.edges : []).filter((edge) => edge.mode === "walk").sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  const landingStubs = (liftEdges.length ? bundle.edges : []).filter((edge) => edge.mode === "elevator").sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   for (const shaft of liftShafts(liftEdges, liftEnds)) {
     // Choose the lowest hall node id, then walk edge id, independently of bundle order; rides are never halls.
     // Follow the hall away from the car: its first segment leaving the shaft chooses the door face and offset.
