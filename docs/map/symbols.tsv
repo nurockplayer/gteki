@@ -1263,6 +1263,7 @@ bundleProvider	function	stations/shinjuku/scene/kit/load.ts	15
 mapProvider	function	stations/shinjuku/scene/kit/load.ts	23
 PrepareOptions	interface	stations/shinjuku/scene/kit/load.ts	27
 prepareKitSwap	function	stations/shinjuku/scene/kit/load.ts	42
+batchDistanceKit	function	stations/shinjuku/scene/kit/lod.ts	7
 KitManifestError	class	stations/shinjuku/scene/kit/manifest.ts	15
 parseKitManifest	function	stations/shinjuku/scene/kit/manifest.ts	26
 socketOf	function	stations/shinjuku/scene/kit/manifest.ts	87
