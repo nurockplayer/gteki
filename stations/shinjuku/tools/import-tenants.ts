@@ -1,7 +1,7 @@
 /**
  * Build stations/shinjuku/gteki/tenants.json — the brand directories of 小田急百貨店 新宿店, the three
  * 新宿マルイ buildings, the 売場 sections and brands of 伊勢丹新宿店 本館/メンズ館 and the brands of 新宿高島屋 and
- * 京王百貨店 新宿店 — from the facts-only research files under docs/research/merchants/
+ * 京王百貨店 新宿店 and サブナード — from the facts-only research files under docs/research/merchants/
  * (#419; 伊勢丹, 高島屋 and 京王百貨店 under OD-35).
  *
  *   pnpm --filter @gteki/station-shinjuku import:tenants            # writes the file
@@ -55,6 +55,11 @@ const SOURCES = [
     sourceId: "keio-shinjuku-shopsearch-2026-11",
     storePoiIds: ["shop-sjk-keio"],
   },
+  {
+    file: join(HERE, "../../../docs/research/merchants/shinjuku-subnade-tenants.json"),
+    sourceId: "subnade-shinjuku-floorguide-2026-11",
+    storePoiIds: ["shop-sjk-subnade"],
+  },
 ];
 
 interface ResearchTenant {
@@ -72,6 +77,7 @@ interface ResearchFile {
   storePoiIds?: string[];
   sourceId: string;
   retrievedAt: string;
+  method?: string;
   tenants: ResearchTenant[];
 }
 
@@ -91,7 +97,7 @@ for (const source of SOURCES) {
   const CHECKED = research.retrievedAt.slice(0, 10);
   const evidence = (): EvidenceRef => ({
     sourceIds: [source.sourceId],
-    method: "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY",
+    method: research.method ? `${research.method}, UNVERIFIED, SEARCH_ONLY` : "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY",
     checkedDate: CHECKED,
   });
 

@@ -61,7 +61,7 @@ This is the one-screen view. The cell-by-cell evidence stays in [`gaps/coverage-
 | 新宿 ルミネ1・ルミネ2 | usable (OD-34 §2) | n | n | 2 POIs + 230 shop POIs | search y; route n | field (unscheduled) items 43, 44 |
 | 新宿 ルミネエスト | usable (OD-34 §2) | n | n | 1 POI + 245 shop POIs | search y; route n | field (unscheduled) item 45 |
 | 新宿 NEWoMan | usable (OD-34 §2) | n | n | 1 POI + 101 shop POIs | search y; route n | field (unscheduled) item 46 |
-| 新宿 サブナード | site reachable again 2026-11-01T21:32Z (refused on 10-25); its own terms (`/legal/` §1) are a private-use limit (OD-35 "private use and quotation" class, data lead 2026-11-02), but the floor guide is an image-only PDF (`floorguide20261022.pdf`, no text layer) and the site lists no shops as text → tenants GAP (map-image precedent: 高島屋 1F/3F/6F/8F, #591); 85 directory cards facts-only, floors GAP | n | n | 1 POI, s | search y; route n | field (unscheduled) item 55 |
+| 新宿 サブナード | current `floorguide20261022.pdf` facts-only OCR, all names hand-checked (OD-35, `/legal/` §1, director 2026-11-02); shop floor 地下一階 explicitly printed at `/company/safety/` (PDF only labels B2 parking); retrieved 2026-11-03 UTC; 86 current PDF listings, unreadable 0; earlier 85 cards were an unimported 2026-09-17 archive snapshot | n | n | 1 POI, s; 86 tenants | search y; route n | field (unscheduled) item 55 |
 | 新宿 小田急エース / 京王モール | refuse every use (OD-34 §3; OD-35 class, terms re-read 2026-11-02T16:57Z, unchanged); 15 recovered POIs facts-only (#604) | n | n | 15 shop POIs (`shop-sjk-rec-`); tenants GAP (terms) | search y; route n | field (unscheduled) entrances |
 | 新宿 メトロプロムナード | Tokyo Metro 2018 press release (M08 tie) | n | n | 4 shop POIs (`shop-sjk-metro-`) | search y; route n | field (unscheduled) item 56 |
 
