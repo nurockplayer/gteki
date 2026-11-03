@@ -43,7 +43,7 @@ export interface SampleDetail { i: number; floor: "ok" | "off" | "none"; wallBef
 
 const repoRoot = process.cwd();
 
-export async function loadScene(station: string, bundle: StationBundle, quality: "high" | "low" = "low"): Promise<StationScene> {
+export async function loadScene(station: string, bundle: StationBundle, quality: "high" | "low" = "low", settle = true): Promise<StationScene> {
   const gtekiDir = path.join(repoRoot, "stations", station, "gteki");
   const usage = newShimUsage();
   installHeadlessDom(usage);
@@ -63,8 +63,10 @@ export async function loadScene(station: string, bundle: StationBundle, quality:
   };
   const module = (await import(pathToFileURL(path.join(gtekiDir, "scene.ts")).href)) as StationSceneModule;
   const scene = await module.buildScene(ctx);
-  await settleScene(scene, station, 120_000);
-  scene.update?.(0, 0);
+  if (settle) {
+    await settleScene(scene, station, 120_000);
+    scene.update?.(0, 0);
+  }
   scene.root.updateMatrixWorld(true);
   return scene;
 }

@@ -132,7 +132,8 @@ async function bakeTier(station: string, bundle: StationBundle, tier: Tier): Pro
   let scene: StationScene;
   try {
     console.log = console.info = (...values: unknown[]) => { process.stderr.write(`${format(...values)}\n`); };
-    scene = await loadScene(station, bundle, tier);
+    // Explorer cuts immediately after buildScene, before lazy catalog dressing starts on the first update.
+    scene = await loadScene(station, bundle, tier, false);
   } finally { console.log = log; console.info = info; }
   try {
     // Mirrors Explorer.loadStation: targets, greybox, portal cut, then the stairwell cut.
