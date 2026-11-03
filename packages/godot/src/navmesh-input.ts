@@ -2,9 +2,10 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { splitFloors } from "./navmesh-floors.ts";
 import { parseStationFiles, type StationBundle } from "@gteki/schema";
 
-export async function navmeshBundle(station: string): Promise<{ bundle: StationBundle; privateBuild: boolean }> {
+export async function navmeshBundle(station: string, floors?: readonly string[]): Promise<{ bundle: StationBundle; privateBuild: boolean; outOfSplit?: string[]; sceneBundle?: StationBundle }> {
   if (station !== "ikebukuro" && station !== "shinjuku") throw new Error("station must be ikebukuro or shinjuku");
   const privateDir = process.env.GTEKI_PRIVATE_DIR;
   let tmp: string | undefined;
@@ -23,7 +24,7 @@ export async function navmeshBundle(station: string): Promise<{ bundle: StationB
     const tenantFile = path.join(dir, "tenants.json");
     const result = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), fs.existsSync(tenantFile) ? read("tenants.json") : undefined, { privateTier: !!privateDir });
     if (!result.ok) throw new Error(`${station}: bundle validation failed`);
-    return { bundle: result.bundle, privateBuild: !!privateDir };
+    return floors ? { ...splitFloors(result.bundle, floors), privateBuild: !!privateDir, sceneBundle: result.bundle } : { bundle: result.bundle, privateBuild: !!privateDir };
   } finally {
     if (tmp) fs.rmSync(tmp, { recursive: true, force: true });
   }
