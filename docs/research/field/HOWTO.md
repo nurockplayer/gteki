@@ -1,6 +1,6 @@
 # 現地記錄：Owner 隨身說明
 
-更新：2026-11-03 17:39 JST。路線：[池袋](ikebukuro-route.md)／[新宿](shinjuku-route.md)；資料規格：[receipt-format.md](receipt-format.md)。
+更新：2026-11-03 18:19 JST。路線：[池袋](ikebukuro-route.md)／[新宿](shinjuku-route.md)；資料規格：[receipt-format.md](receipt-format.md)。
 
 ## 要帶什麼
 
@@ -47,18 +47,18 @@ orb-test --heavy --host -- sh -c 'pnpm build && pnpm --filter @gteki/web preview
 
 Playwright 演練亦把 scratch script 放在 `.qa/field-e2e/`，經 `orb-test --heavy --host -- <command>` 執行；由同一支 script 完成 build、preview 啟停與 browser，三者共用一次 heavy lock。使用手機 viewport、首次連線載入、等「Ready for offline reload」後 `context.setOffline(true)`，再 reload、記錄與下載。不要直接用 `file://` 開啟 HTML；service worker 需要 localhost 或 HTTPS。兩站各匯出一次，核對 stop 數及下載檔內容；synthetic 筆記一律標 `REHEARSAL`。
 
-非公開資料只在可丟棄的 private worktree 操作，絕不放進 public commit、PR、截圖或 review 輸入。以 `$GTEKI_PRIVATE_DIR` 指向該 private repo 根目錄，執行 `pnpm build:private` 會建立 `$GTEKI_PRIVATE_DIR/overlay` 並 build；host run 使用 host 絕對路徑，orb-test container 內同一份 worktree 的路徑是 `/w/.priv`。
+非公開資料只在可丟棄的 private worktree 操作，絕不放進 public commit、PR、截圖或 review 輸入。以 `$GTEKI_PRIVATE_DIR` 指向該 private repo 根目錄，先執行 `node "$GTEKI_PRIVATE_DIR/tools/build-overlay.mjs" <gteki root>`，把 private additions（包含 `additions/<station>/field`）複製到 overlay，再執行 `pnpm build:private`。這與 private deploy 的準備順序相同；host run 使用 host 絕對路徑，orb-test container 內同一份 worktree 的路徑是 `/w/.priv`。
 
 ```sh
 rtk git -C ~/Developer/gteki-private worktree add --detach "$(pwd)/.priv" origin/main
-orb-test --out .priv/overlay --out apps/web/dist --env GTEKI_PRIVATE_DIR=/w/.priv -- pnpm build:private
+orb-test --out .priv/overlay --out apps/web/dist --env GTEKI_PRIVATE_DIR=/w/.priv -- sh -c 'node /w/.priv/tools/build-overlay.mjs /w && pnpm build:private'
 export GTEKI_PRIVATE_DIR="$(pwd)/.priv"
 ```
 
-圖與商店 overlay 不會自動產生 recorder 停點。非公開維護者須另備 `overlay/<station>/field/private-stops.json`，內容為陣列，每筆具有 `id`、`title`、`after`（public stop ID）、`items`（原項目字串陣列）、`ids`（實際 target ID 陣列）、`instructions`。準備好檔案後，執行以下 build 才會把停點加入 recorder；`after` 必須是該站既有停點。只在 private copy 內製作演練停點，不改動正式 private 資料。
+Recorder 停點來自 private repo 既有的 `additions/<station>/field/private-stops.json`；上述 private builder 會將它複製至 `overlay/<station>/field/private-stops.json`，不必另造演練停點。檔案內容為陣列，每筆具有 `id`、`title`、`after`、`items`、`ids`、`instructions`；此處僅列欄位名稱，不收錄 private 內容。完成 private build 後啟動 preview：
 
 ```sh
-orb-test --heavy --host -- sh -c 'GTEKI_PRIVATE_OVERLAY="$GTEKI_PRIVATE_DIR/overlay" pnpm build && pnpm --filter @gteki/web preview --port 5288 --strictPort --host 127.0.0.1'
+orb-test --heavy --host -- pnpm --filter @gteki/web preview --port 5288 --strictPort --host 127.0.0.1
 ```
 
 非公開 preview 使用另一個 port，避免沿用 public 版本的 service worker。等待離線準備完成後斷網，確認停點顯示「非公開 / Private」，再記錄、匯出。非公開停點可以只有 GAP／未指定筆記而無數字項目；下載的 `*-private.json` 具有 `private: true`，不會混入 public receipt。這是前述 public 數字項目規則的例外。
