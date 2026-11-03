@@ -975,15 +975,11 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     }
   }
 
-  // Pitched and raised collar roofs form one stepped underside. Remove hidden pitched
-  // patches while preserving any prior passage-clearance holes in those surfaces.
+  // Preserve the legacy collar cuts in physical caps. The rendered per-flight
+  // roofs stay intact: their replacement collars are not rendered.
   for (const cut of shaftRoofCuts) {
     layout.soffits = layout.soffits.flatMap((s) => {
       if (!s.spaceId.startsWith(cut.prefix)) return [s];
-      return polygonClipping.difference(clipPoly(s.rings), clipPoly(cut.rings)).map((poly, i) => ({ ...s, spaceId: `${s.spaceId}:collar${i}`, rings: xyRings(poly) }));
-    });
-    layout.shaftFinishes = layout.shaftFinishes.flatMap((s) => {
-      if (!s.slope || !s.spaceId.startsWith(cut.prefix)) return [s];
       return polygonClipping.difference(clipPoly(s.rings), clipPoly(cut.rings)).map((poly, i) => ({ ...s, spaceId: `${s.spaceId}:collar${i}`, rings: xyRings(poly) }));
     });
   }
@@ -1121,6 +1117,9 @@ function trimInteriorRoofs(layout: Layout) {
     const a = bounds[i]!;
     for (const [j, v] of roofs.entries()) {
       if (i === j || !pieces.length) continue;
+      // A flight's restored roof must not lift an existing flat landing or
+      // shoulder ceiling where the two shafts overlap in plan.
+      if (s.spaceId.startsWith("shaft-roof:") && !s.slope && v.spaceId.startsWith("shaft-roof:") && v.slope) continue;
       const b = bounds[j]!;
       if (a.maxX < b.minX || a.minX > b.maxX || a.maxY < b.minY || a.minY > b.maxY) continue;
       const corners = [

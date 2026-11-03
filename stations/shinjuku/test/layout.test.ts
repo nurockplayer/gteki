@@ -68,6 +68,23 @@ it("finishes grouped flights on their own planes with flat landings and shoulder
   } finally { rendered.dispose(); }
 });
 
+it("keeps a rendered shaft ceiling over the shipped stair's former collar patch", () => {
+  const station = withCanvasStub(() => buildStation(bundle, plan, { quality: "high" }));
+  try {
+    station.root.updateMatrixWorld(true);
+    const ceilings: THREE.Mesh[] = [];
+    station.root.traverseVisible((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh && [mesh.material].flat().some((m) => m.visible && m.name === "mat.ceiling")) ceilings.push(mesh);
+    });
+    // e:c690df6cad7b48bba7b3b30fee65eda2, 0.161 m in plan from its lower endpoint.
+    const eye = new THREE.Vector3(-4.751, -7.605 + 1.62, 16.279);
+    const hit = new THREE.Raycaster(eye, new THREE.Vector3(0, 1, 0), 0, 20).intersectObjects(ceilings, false)[0];
+    expect(hit).toBeDefined();
+    expect(hit!.point.y).toBeLessThan(0);
+  } finally { station.dispose(); }
+}, 60_000);
+
 describe("E27 scene layout", () => {
   const layout = buildLayout(bundle, plan);
   const world = new WalkWorld(layout);

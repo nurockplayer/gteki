@@ -49,12 +49,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #221 per-flight shaft finishes; station physical lists unchanged (2026-11-03 JST).
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "9624dc6c489af9a92a6f5352e1af8fcb449d9ad0d3fb33668731d7b4539f9737",
+    geometryDigest: "aa5faba49de707a27c258dc51d9d641713bd15a0f936f4f91cfb7c4347ebe26e",
     appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
-    nodesDigest: "ab7c8e444166094c027c627040a17c213bbfe963657d7e2a679c9d70e1573319",
+    nodesDigest: "86a53baeebf5c2c954011a03cba10c39bb8bd39710311ca006e1d61993e4f475",
     texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
     meshes: 145,
-    bytes: 14415938,
+    bytes: 14426344,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
