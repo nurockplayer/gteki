@@ -1,4 +1,4 @@
-import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
+import { createRouter, describeRoute, destinationNodeIds, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
 import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
@@ -1017,9 +1017,13 @@ export class App {
     const profile = this.profile();
     const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
-    this.ui.live.announce(routeLiveMessage(this.t, best, !best.ok && best.reason === "unknown_goal" && isUnlocatedShop(destination) ? this.t.shopNoRoute : undefined));
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
+    const tieStatus = this.stepFreeTieStatus();
+    const failureText = tieStatus && tieStatus !== "stepFreeTie" ? this.t.merchant[tieStatus]
+      : this.s.noPath ? noPathView(this.t, this.s.noPath)?.text
+      : !best.ok && best.reason === "unknown_goal" && isUnlocatedShop(destination) ? this.t.shopNoRoute : undefined;
+    this.ui.live.announce(routeLiveMessage(this.t, best, failureText));
     if (best.ok) {
       // Baked navmesh paths are public-graph data: the private build keeps its graph polylines (gteki-private#4).
       this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths(), PRIVATE_BUILD ? null : this.explorer.navmeshRoutePaths());
@@ -1050,7 +1054,9 @@ export class App {
     if (!r.ok) {
       const card = el("div", "card no-route");
       const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
+      const tieStatus = this.stepFreeTieStatus();
       card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? noRouteText(t, r, this.s.destination)));
+      if (tieStatus && tieStatus !== "stepFreeTie") card.append(el("p", "entrance-unverified", t.merchant[tieStatus]));
       // The picked brand came from an unverified directory (#419): the failed card says when it was checked.
       const asOf = tenantAsOfNote(this.s.destinationTenant, t);
       if (asOf) card.append(el("p", "muted tenant-asof", asOf));
@@ -1186,7 +1192,7 @@ export class App {
     // A store routed to its printed station-level tie or a map-read door, not a verified door, says so (#213).
     const arrivalTie = this.s.destination && arrivalPrecision(this.s.destination) ? this.s.destination : null;
     if (arrivalTie) {
-      card.append(el("p", "muted entrance-unverified", t.merchant.precision[arrivalPrecision(arrivalTie)!]));
+      card.append(el("p", "muted entrance-unverified", r.profile.stepFree && arrivalPrecision(arrivalTie) === "tie" ? t.merchant.stepFreeTie : t.merchant.precision[arrivalPrecision(arrivalTie)!]));
       const arrivalNote = poiNoteText(arrivalTie, this.s.lang);
       if (arrivalNote) card.append(el("p", "muted", arrivalNote));
     }
@@ -1195,13 +1201,38 @@ export class App {
     if (merchant) sheet.append(merchant);
   }
 
+  private stepFreeTieStatus(): "stepFreeTie" | "noStepFreeTie" | "unsurveyedStepFreeTie" | null {
+    const { destination, route, profile, noPath, router, loaded, origin } = this.s;
+    if (!destination || destination.category !== "shop" || arrivalPrecision(destination) !== "tie" || !profile.stepFree || !route) return null;
+    if (route.ok) return "stepFreeTie";
+    if (route.reason !== "no_path" || noPath?.kind !== "option" || noPath.options.length !== 1) return null;
+    const cause = noPath.options[0]!;
+    if (cause.option !== "stepFree") return null;
+    if (cause.noData || cause.evidence === "unknown" || cause.evidence === "mixed") return "unsurveyedStepFreeTie";
+    if (!cause.complete || cause.evidence !== "known" || !router || !loaded || !origin) return null;
+    // The explanation samples one relaxed route. A tie is known inaccessible only if
+    // it is reachable under the profile and every route to it needs a known barrier.
+    const knownBarriers = loaded.bundle.edges.filter((edge) => edge.mode === "stairs" || edge.mode === "escalator"
+      || edge.accessEvidence && (edge.wheelchair === false || edge.steps === true)).map((edge) => edge.id);
+    const relaxed = { ...this.profile(), stepFree: false };
+    const allKnownInaccessible = destinationNodeIds(destination).every((nodeId) => {
+      const target = { kind: "nodes" as const, nodeIds: [nodeId] };
+      const reachable = routeBetween(router, origin, target, relaxed).ok;
+      const reachableWithoutBarriers = routeBetween(router, origin, target, {
+        ...relaxed, extraClosedEdgeIds: knownBarriers,
+      }).ok;
+      return reachable && !reachableWithoutBarriers;
+    });
+    return allKnownInaccessible ? "noStepFreeTie" : "unsurveyedStepFreeTie";
+  }
+
   /** The merchant card (#213) for a shop destination, or null: only a shop carries a directory listing. */
   private merchantCard(): HTMLElement | null {
     const poi = this.s.destination;
     const b = this.s.loaded?.bundle;
     if (!poi || poi.category !== "shop" || !b) return null;
     return merchantCardEl(merchantCardModel(poi, b.sources, this.s.lang, this.floorLabel(poi),
-      (b.tenants ?? []).filter((tenant) => tenant.poiId === poi.id)), this.t, b.sources, this.s.lang);
+      (b.tenants ?? []).filter((tenant) => tenant.poiId === poi.id), this.stepFreeTieStatus()), this.t, b.sources, this.s.lang);
   }
 
   // ---- Modes / HUD -----------------------------------------------------------------

@@ -27019,6 +27019,48 @@
  ],
  "dataFiles": [
   {
+   "id": "stairwell-cut-high",
+   "path": "scene/stairwell-cut.high.b64.txt",
+   "sourceIds": [
+    "gteki-ikb-catalog-0-1-0",
+    "gteki-kit-0-1-0",
+    "ikefukuro-location-references-2026-10",
+    "lumine-ikebukuro-access-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577",
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
+  },
+  {
+   "id": "stairwell-cut-low",
+   "path": "scene/stairwell-cut.low.b64.txt",
+   "sourceIds": [
+    "gteki-ikb-catalog-0-1-0",
+    "gteki-kit-0-1-0",
+    "ikefukuro-location-references-2026-10",
+    "lumine-ikebukuro-access-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577",
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
+  },
+  {
    "id": "navmesh-paths",
    "path": "navmesh-paths.json",
    "sourceIds": [

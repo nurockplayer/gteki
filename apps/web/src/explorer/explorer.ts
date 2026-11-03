@@ -900,7 +900,7 @@ export class Explorer {
     this.station = station;
     this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
-    this.graph = buildGraphView(bundle, router);
+    this.graph = buildGraphView(bundle, router, station.privateRegions);
     this.routablePts = routablePoints(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE));
     this.routableBox = toBox3(pointsBounds(this.routablePts));
     lap("graph");
@@ -1002,7 +1002,7 @@ export class Explorer {
         return value;
       };
       const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
-      this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality);
+      this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality, false, station.privateRegions);
       lap("greybox");
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       lap("greyboxSegments");
@@ -1046,6 +1046,16 @@ export class Explorer {
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
+      if (station.privateRegions?.length) {
+        // Join traversable graph corridors to private floors so their shared boundary has no wall.
+        const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+        this.greybox = buildGreybox(bundle, traversable, () => false, { colliderNear: () => false, wallHit: () => null }, this.quality, false, station.privateRegions);
+        this.world.add(this.greybox.root);
+        this.walkable = [...this.walkable, ...this.greybox.walkable];
+        this.colliders = this.greybox.colliders;
+        this.walls = this.greybox.wallSegments;
+        this.greyboxOpenings = this.greybox.openings;
+      }
     }
     this.world.updateMatrixWorld(true);
     const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
-import { cutPortals, disposePortalCuts } from "./portalCut.ts";
+import { cutPortals, cutRegions, disposePortalCuts } from "./portalCut.ts";
+import { StaleRecipe, type MeshRecord } from "./cutRecipe.ts";
 import { castAll, castCamera, castTargets, portalPassable } from "./raycast.ts";
 import { prepareRayTrees, raycastObject } from "./meshBvh.ts";
 
@@ -13,6 +14,89 @@ const ray = (mesh: THREE.Mesh, x: number, y: number) => {
 };
 
 describe("portal cuts", () => {
+  it.each(["sign", "kit_sign_frame"])("cuts canvas-sized %s live while replaying the stable meshes", (role) => {
+    const scene = (width: number) => {
+      const root = new THREE.Group(), signs = new THREE.Group(); signs.userData = { gteki_role: role, ...(role === "sign" ? { faces: [] } : {}) };
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 4));
+      const sign = new THREE.Mesh(new THREE.BoxGeometry(width, 0.2, 2)); sign.position.y = 0.5;
+      signs.add(sign); root.add(slab, signs); return { root, slab, sign };
+    };
+    const region = {
+      key: opening, bounds: new THREE.Box3(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1)),
+      planes: [(p: THREE.Vector3) => p.x + 1, (p: THREE.Vector3) => 1 - p.x, (p: THREE.Vector3) => p.z + 1, (p: THREE.Vector3) => 1 - p.z],
+      clip: null, accepts: () => true,
+    };
+    const baked = scene(1), browser = scene(3), live = scene(3);
+    const recorded: MeshRecord[] = [], a = resources(), b = resources(), c = resources();
+    const bake = cutRegions(baked.root, [region], a, new Set(), false, Infinity, { keys: [opening], record: recorded });
+    const signBefore = browser.sign.geometry;
+    const replay = cutRegions(browser.root, [region], b, new Set(), false, Infinity, { keys: [opening], replay: recorded });
+    const expected = cutRegions(live.root, [region], c, new Set(), false);
+    expect(recorded).toHaveLength(1);
+    expect(replay.meshKeysHash).toBe(bake.meshKeysHash);
+    expect(browser.sign.geometry).not.toBe(signBefore);
+    expect(replay.cutTriangles).toBe(expected.cutTriangles);
+    for (const name of ["slab", "sign"] as const) {
+      expect(Array.from(browser[name].geometry.getAttribute("position").array)).toEqual(Array.from(live[name].geometry.getAttribute("position").array));
+    }
+    for (const owned of [a, b, c]) disposePortalCuts(owned);
+  });
+
+  it("keeps ordinary tagged signs in the recipe key (Shinjuku)", () => {
+    const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1));
+    mesh.userData.gteki_role = "sign"; root.add(mesh);
+    const region = { key: opening, bounds: new THREE.Box3(new THREE.Vector3(-2, -2, -2), new THREE.Vector3(2, 2, 2)), planes: [], clip: null, accepts: () => true };
+    const recorded: MeshRecord[] = [], baked = resources();
+    cutRegions(root, [region], baked, new Set(), false, Infinity, { keys: [opening], record: recorded });
+    expect(recorded).toHaveLength(1);
+    disposePortalCuts(baked);
+    mesh.geometry = new THREE.BoxGeometry(3, 1, 1);
+    expect(() => cutRegions(root, [region], resources(), new Set(), false, Infinity, { keys: [opening], replay: recorded })).toThrow(StaleRecipe);
+  });
+
+  it("tracks a provisional instance copy when recipe replay throws", () => {
+    const root = new THREE.Group(), geometry = new THREE.BoxGeometry(6, 3, 0.2);
+    const material = new THREE.MeshBasicMaterial(), mesh = new THREE.InstancedMesh(geometry, material, 1);
+    const matrix = new THREE.Matrix4().makeTranslation(0, 1.5, 0);
+    mesh.setMatrixAt(0, matrix); mesh.setColorAt(0, new THREE.Color(0.5, 0.25, 1)); root.add(mesh);
+    const region = { key: opening, bounds: new THREE.Box3(new THREE.Vector3(-2, 0, -1), new THREE.Vector3(2, 3, 1)), planes: [], clip: null, accepts: () => true };
+    const owned = resources();
+    expect(() => cutRegions(root, [region], owned, new Set(), false, Infinity, { keys: [opening], replay: [] })).toThrow(StaleRecipe);
+    expect(owned.instances).toHaveLength(1);
+    const disposed = vi.fn(); owned.materials[0]!.addEventListener("dispose", disposed);
+    disposePortalCuts(owned);
+    expect(mesh.children).toHaveLength(0);
+    const actual = new THREE.Matrix4(); mesh.getMatrixAt(0, actual);
+    expect(actual.equals(matrix)).toBe(true);
+    expect(mesh.geometry).toBe(geometry); expect(mesh.material).toBe(material);
+    expect(disposed).toHaveBeenCalledOnce();
+  });
+  it("keeps bounds-only instance overlaps in their original batch", () => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute([
+      -3, 0, 0, -2, 0, 0, -2, 3, 0,
+      2, 0, 0, 3, 0, 0, 2, 3, 0,
+    ], 3));
+    const root = new THREE.Group(), material = new THREE.MeshBasicMaterial();
+    const mesh = new THREE.InstancedMesh(geometry, material, 2);
+    const matrices = [new THREE.Matrix4(), new THREE.Matrix4().makeTranslation(10, 0, 0)];
+    matrices.forEach((matrix, i) => mesh.setMatrixAt(i, matrix));
+    mesh.setColorAt(0, new THREE.Color(0.5, 0.25, 1));
+    root.add(mesh);
+    const owned = resources(), result = cutPortals(root, [opening], owned);
+    expect(result.cutMeshes).toBe(0);
+    expect(owned.instances).toHaveLength(0);
+    expect(mesh.children).toHaveLength(0);
+    expect(mesh.geometry).toBe(geometry);
+    expect(mesh.material).toBe(material);
+    matrices.forEach((matrix, i) => {
+      const actual = new THREE.Matrix4(); mesh.getMatrixAt(i, actual);
+      expect(actual.equals(matrix)).toBe(true);
+    });
+    const tint = new THREE.Color(); mesh.getColorAt(0, tint);
+    expect(tint.toArray()).toEqual([0.5, 0.25, 1]);
+    disposePortalCuts(owned);
+  });
   it.each([false, true])("avoids rebuilding a bounds-only overlap (cached BVH: %s)", (withTree) => {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.Float32BufferAttribute([

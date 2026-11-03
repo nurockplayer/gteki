@@ -51,7 +51,16 @@ function shownPois(): string[] {
 
 /** Derived files name their generating script and cite the sources it reads; an authored file (GTEki's own config,
  *  #256) cites none and its derivation says it is GTEki-authored. */
+const stairwellSources = (): string[] => [
+  ...graph.nodes.flatMap((n: { sourceRefs: { sourceId: string }[] }) => n.sourceRefs.map((r) => r.sourceId)),
+  ...graph.edges.flatMap((e: Edge) => [...(e.geometryEvidence?.sourceIds ?? []), ...(e.accessEvidence?.sourceIds ?? [])]),
+  ...station.assets.filter((a: { id: string }) => a.id !== "ksj-n02-context").flatMap((a: Evidence) => a.sourceIds),
+  ...station.dataFiles.filter((d: DataFile) => !d.path.startsWith("scene/stairwell-cut.")).flatMap((d: DataFile) => d.sourceIds),
+];
+
 const EXPECTED: Record<string, { script: string; sources: () => string[]; authored?: boolean }> = {
+  "scene/stairwell-cut.high.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
+  "scene/stairwell-cut.low.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/walk_bridges.json": { script: "pipeline/build_walkfix.py", sources: () => [PLATEAU] },
   "scene/access_fences.json": { script: "pipeline/build_access.py", sources: () => [PLATEAU, ...routableAreas()] },
   "scene/crowd_lanes.json": { script: "pipeline/build_station.py", sources: () => [PLATEAU, ...routableAreas(), ...verifiedEdges()] },

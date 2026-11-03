@@ -2,6 +2,7 @@ import { parseStationFiles, type StationIdentity, type StationBundle, type Valid
 import type { StationSceneModule } from "@gteki/scene-api";
 import { stations as discovered, privateBuild } from "virtual:gteki-stations";
 import { identityNamesOf } from "./ui/identityCard.ts";
+import type { PolygonRegion } from "./explorer/privateLevels.ts";
 import { createDemoFiles } from "./demo.ts";
 
 export const PRIVATE_BUILD = privateBuild;
@@ -24,6 +25,7 @@ export interface LoadedStation {
   /** Why the optional scene module could not be imported; routing data is still usable (L0 view). */
   sceneImportError: string | null;
   assetUrls: Map<string, string>;
+  privateRegions?: PolygonRegion[];
 }
 
 export class StationLoadError extends Error {
@@ -92,7 +94,8 @@ export async function listStations(): Promise<StationEntry[]> {
         if (sceneModule !== null && !isSceneModule(sceneModule)) sceneImportError = "scene module does not export buildScene(ctx)";
         const assetUrls = new Map<string, string>();
         await Promise.all(Object.entries(s.assets).map(async ([uri, url]) => assetUrls.set(uri, await url())));
-        return { key: s.dir, bundle: parsed.bundle, issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, sceneImportError, assetUrls };
+        const privateRegions = privateBuild && s.privateRegions ? await s.privateRegions() : undefined;
+        return { ...(privateRegions ? { privateRegions } : {}), key: s.dir, bundle: parsed.bundle, issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, sceneImportError, assetUrls };
       },
     });
   }
