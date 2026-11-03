@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { NavMeshQuery, type NavMesh } from "recast-navigation";
 import { bakeNavmesh } from "./navmesh-bake.ts";
-import { auditGatePath, floorSnapPath, queryCompletePath, queryPathWithLinks, snapNode } from "./navmesh-audit.ts";
+import { assertPrivateRegionsProvenance, auditGatePath, floorSnapPath, queryCompletePath, queryPathWithLinks, snapNode } from "./navmesh-audit.ts";
 import { auditPolyline, sceneProbe } from "./route-clip-audit.ts";
 
 function fixture(open: boolean, width = 1.6) {
@@ -203,4 +203,22 @@ it("rejects the authored gate bend when the explorer route crosses a machine", a
   expect(collision.wallHits).toBeGreaterThan(0);
   expect(fallbackGate({fallback:{failed:[]},unlisted:[],navmesh:{offFloor:0,noFloor:0,wallHits:0},connector:collision,incompleteRoutes:0}).ok).toBe(false);
   q.destroy(); linked.navMesh.destroy();
+});
+
+it("rejects stale private geometry even with an unchanged bundle and no suspect edges", async () => {
+  const { privateRegionsSha256 } = await import("./navmesh-input.ts");
+  const regions = [{ kind: "polygon" as const, level: "synthetic", y: 0, rings: [[{ x: 0, z: 0 }, { x: 10, z: 0 }, { x: 10, z: 10 }, { x: 0, z: 10 }]] }];
+  const provenance = { privateRegionsSha256: privateRegionsSha256(regions) };
+  expect(provenance.privateRegionsSha256).toMatch(/^[a-f0-9]{64}$/);
+  expect(() => assertPrivateRegionsProvenance(provenance, structuredClone(regions))).not.toThrow();
+  const changed = structuredClone(regions); changed[0]!.rings[0]![0]!.x = 1;
+  expect(() => assertPrivateRegionsProvenance(provenance, changed)).toThrow(/private regions differ; rebake/);
+  const withHole = structuredClone(regions);
+  withHole[0]!.rings.push([{ x: 3, z: 3 }, { x: 7, z: 3 }, { x: 7, z: 7 }]);
+  expect(() => assertPrivateRegionsProvenance(provenance, withHole)).toThrow(/rebake/);
+  const withMask = [{ ...regions[0]!, exclusions: [[[{ x: 30, z: 30 }, { x: 31, z: 30 }, { x: 31, z: 31 }]]] }];
+  expect(() => assertPrivateRegionsProvenance(provenance, withMask)).toThrow(/rebake/);
+  expect(() => assertPrivateRegionsProvenance({}, regions)).toThrow(/rebake/);
+  expect(() => assertPrivateRegionsProvenance(provenance, undefined)).toThrow(/rebake/);
+  expect(() => assertPrivateRegionsProvenance({}, undefined)).not.toThrow();
 });

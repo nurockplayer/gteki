@@ -230,7 +230,16 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
         copy.castShadow = instance.castShadow; copy.receiveShadow = instance.receiveShadow; copy.layers.mask = instance.layers.mask;
         if (walkable.has(instance)) walkableCopies.add(copy);
         instance.add(copy); copy.updateWorldMatrix(false, false);
+        // Track before visiting so a stale recipe can dispose this provisional copy too.
         opts.instances.push({ owner: instance, index: i, matrix: matrix.clone(), copy });
+        // Bounds overlap alone does not mean a fixture was cut. Keep unchanged instances
+        // in their batch; only a real geometry/clip change needs an extracted draw object.
+        visit(copy);
+        if (copy.geometry === geometry && copy.material === material) {
+          instance.remove(copy);
+          opts.instances.pop();
+          continue;
+        }
         instance.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
       }
       instance.instanceMatrix.needsUpdate = true; instance.boundingBox = null; instance.boundingSphere = null;

@@ -23,6 +23,7 @@ export interface DiscoveredStation {
   /** The optional gteki/tenants.json (a store brand directory, #419). */
   tenants: string | null;
   privateShops?: string;
+  privateRegions?: string;
   assets: string[];
 }
 
@@ -66,7 +67,9 @@ export function discoverStations(roots: string[], overlay: string | null = null)
       const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
       const tenants = path.join(dataDir, "tenants.json");
       const privateShops = overlayDir && fs.existsSync(path.join(overlayDir, "station.json")) ? path.join(dataDir, "private_shops.json") : null;
+      const privateRegions = privateShops ? path.join(dataDir, "private_regions.json") : null;
       found.push({ dir, folder, gtekiDir, dataDir, scene, tenants: fs.existsSync(tenants) ? tenants : null,
+        ...(privateRegions && fs.existsSync(privateRegions) ? { privateRegions } : {}),
         ...(privateShops && fs.existsSync(privateShops) ? { privateShops } : {}), assets: walk(gtekiDir, folder) });
     }
   }
@@ -398,6 +401,7 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
     graph: () => import(${f("graph.json")}).then((m) => m.default),
     pois: () => import(${f("pois.json")}).then((m) => m.default),
     tenants: ${s.tenants ? `() => import(${f("tenants.json")}).then((m) => m.default)` : "null"},
+    ${s.privateRegions ? `privateRegions: () => import(${fsPath(s.privateRegions)}).then((m) => m.default),` : ""}
     scene: ${scene},
     assets: { ${assets.join(", ")} },
   },`);
@@ -471,7 +475,7 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
       if (overlay && fs.existsSync(overlay)) server.watcher.add(overlay);
       const invalidate = (file: string) => {
         const watched = roots.some((r) => file.startsWith(r)) || Boolean(overlay && file.startsWith(overlay));
-        if (!watched || !/station\.json$|graph\.json$|pois\.json$|tenants\.json$|private_shops\.json$|scene\.[jt]s$|assets/.test(file)) return;
+        if (!watched || !/station\.json$|graph\.json$|pois\.json$|tenants\.json$|private_shops\.json$|private_regions\.json$|scene\.[jt]s$|assets/.test(file)) return;
         const mod = server.moduleGraph.getModuleById(RESOLVED);
         if (mod) server.moduleGraph.invalidateModule(mod);
         server.ws.send({ type: "full-reload" });
