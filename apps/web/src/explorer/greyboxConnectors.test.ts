@@ -1159,6 +1159,26 @@ describe("turning landing guards", () => {
     expect(Math.hypot(r.x - 3, r.z + 0.7)).toBeGreaterThan(0.05);
   });
 
+  // #688: the junction opening follows the drawn walking surface. Both flights climb at 0.55 m per plan metre, so their
+  // straight polylines are the same height all the way; their drawn surfaces are not: 7.5 m out the long one's treads
+  // are 0.56 m above the short one's, because each flight climbs between its mid-flight landings and the landings sit at
+  // different plan positions. A walker must not step across that drop.
+  it("keeps a guard where mid-flight landings part one flight's drawn surface from another's", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    // Two flights leave one node 10 degrees apart: the junction reach is 2 * half / sin(10 degrees), about 9 m.
+    const a = g([[0, 0, 0], [10.5, 5.78, 0]]), b = g([[0, 0, 0], [15.7567, 8.8, 2.7784]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("long", "node", "atop", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "node", "btop", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["node", a[0]!], ["atop", a[1]!], ["btop", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    // 7.5 m out, the long flight's drawn surface is at 3.92 m and the other's at 4.47 m; both polylines are at 4.13 m.
+    const r = resolveWalls(7.5, 0.65, 0.3, 4.125, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 7.5, r.z - 0.65)).toBeGreaterThan(0.05);
+  });
+
   // #710 review: two flights of one stair side by side, a 0.2 m empty gap apart, keep the guards on their facing sides.
   it.each([[1.7, 0.85], [1.6, 0.8], [1.55, 0.775]])("keeps the facing guards of two flights of one stair across a narrow empty gap, %f m apart", (apart, mid) => {
     const waypoints: [number, number, number][] = [[0, 0, 0], [4, 0.4, 0], [4, 0.4, apart], [0, 0.8, apart]];
