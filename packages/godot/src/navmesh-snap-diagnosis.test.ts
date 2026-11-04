@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import * as THREE from "three";
 import type { NavMeshQuery } from "recast-navigation";
-import { diagnoseVerticalSnap, planFallbackRoute, verticalLinkCandidates } from "./navmesh-links.ts";
+import { connectorShape, diagnoseVerticalSnap, planFallbackRoute, validateLinkEndpoint, validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
 
 it("classifies missing polygons, wrong heights, missing floor and wall crossings", () => {
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,8).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); floor.updateMatrixWorld(true);
@@ -45,4 +45,22 @@ it("can replace a missing endpoint with a neighbour snap for a combined connecto
   expect(planFallbackRoute([stair],links)).toBeNull();
   const reverseStair={...stair,fromNodeId:"b",toNodeId:"a",reversed:true}, reverseWalk={...walk,fromNodeId:"a",toNodeId:"neighbor",reversed:true};
   expect([...planFallbackRoute([reverseStair,reverseWalk],links)!]).toEqual([1]);
+});
+
+it("admits a link endpoint on a solid floor even when the discarded node-to-snap approach crosses a wall", () => {
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,8).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); floor.updateMatrixWorld(true);
+  const probe={ground:[floor],collider:[],walls:[{a:{x:0.5,y:-2},b:{x:0.5,y:2},zMin:0,zMax:2}]};
+  const node={x:0,y:0,z:0}, snapped={x:1,y:0,z:0};
+  expect(validateLinkSnap(probe,node,snapped)).toBe("wall");
+  expect(validateLinkEndpoint(probe,snapped)).toBeNull();
+  expect(validateLinkEndpoint(probe,{x:1,y:1,z:0})).toBe("floor");
+  floor.geometry.dispose(); floor.material.dispose();
+});
+
+it("draws a link from its snapped ends through the built connector interior", () => {
+  const a={x:0,y:0,z:0}, b={x:0,y:10,z:0};
+  const built=[{x:0,y:1,z:0},{x:0,y:2,z:0},{x:0,y:3,z:0}];
+  expect(connectorShape(built,a,b)).toEqual([a,{x:0,y:2,z:0},b]);
+  expect(connectorShape(built,b,a)).toEqual([b,{x:0,y:2,z:0},a]);
+  expect(connectorShape(undefined,a,b)).toEqual([a,b]);
 });

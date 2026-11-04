@@ -18,7 +18,7 @@ import { WALKER_BODY } from "@gteki/scene-api";
 import { qaDirectory, qaFile } from "./navmesh-qa-path.ts";
 import { bridgeGapGeometry, bridgeFloorTriangles, linkPadGeometry, linkPadClear, linkStripGeometry, type BridgeGeometry } from "./navmesh-bridge.ts";
 import { dataWidth, diagnoseGaps } from "./navmesh-gaps.ts";
-import { validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
+import { connectorShape, validateLinkEndpoint, validateLinkSnap, verticalLinkCandidates } from "./navmesh-links.ts";
 import { makeFloorHeightNear, suspectVerticalEdges } from "./navmesh-suspect.ts";
 
 /** Positions are renderer coordinates; triangle indices must have upward-facing floors. */
@@ -294,7 +294,23 @@ async function main() {
     return null;
   };
   const links = verticalLinkCandidates(bundle.edges.filter(e => !suspectIds.has(e.id) && router.isTraversable(e, DEFAULT_PROFILE)), id => { const n=nodes.get(id); return n ? point(n) : undefined; }, initialQuery,
-    (_id, node, snapped) => { const reason=validateLinkSnap(bridgeProbe, node, snapped); if (reason) snapRejections[reason]++; return !reason; }, snapFallback ? fallback : undefined);
+    (_id, _node, snapped) => { const reason=validateLinkEndpoint(bridgeProbe, snapped); if (reason) snapRejections[reason]++; return !reason; }, snapFallback ? fallback : undefined);
+  // Admission follows the guide's drawn shape: snapped ends plus the built connector interior between them.
+  // The authored node-to-snap segment is never drawn, so it is not validated here.
+  const shapeRejected: { edgeId: string; reason: "unsafe_snap" }[] = [];
+  const gateIds = new Set(bundle.edges.filter(e => e.mode === "gate").map(e => e.id));
+  links.candidates = links.candidates.filter(candidate => {
+    // Gates have their own directed admission (#791); this rule covers the drawn vertical connector shape.
+    if (gateIds.has(candidate.edgeId)) return true;
+    const built = grey?.connectors?.pathByEdge.get(candidate.edgeId);
+    const shape = connectorShape(built, candidate.connection.startPosition, candidate.connection.endPosition)
+      .map(p => ({ x:p.x, y:-p.z, z:p.y, zKnown:true, floorId:"", stepIndex:0 }));
+    const audit = auditPolyline(bridgeProbe, shape);
+    if (!audit.wallHits && !audit.offFloor && !audit.noFloor) return true;
+    shapeRejected.push({ edgeId: candidate.edgeId, reason: "unsafe_snap" });
+    return false;
+  });
+  links.failed.push(...shapeRejected);
   initialQuery.destroy(); result.navMesh.destroy();
   const linked = await bakeNavmesh(positions, indices, { radiusM, rounding, cellSizeM, climbM, tileSize, offMeshConnections:links.candidates.map(c => c.connection) });
   if (!linked.success) throw new Error(`linked bake failed: ${linked.error}`);

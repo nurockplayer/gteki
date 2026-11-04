@@ -60,13 +60,27 @@ export function diagnoseVerticalSnap(query: Pick<NavMeshQuery, "findClosestPoint
   return {reason,deltaZ,walkableWithin3m,greyboxFloorAtNode,floorSource,floorRule};
 }
 
-/** A snap must land on a scene floor and the node-to-snap segment must not cross a wall. */
-export function validateLinkSnap(probe: SceneProbe, node: Point, snapped: Point): "floor" | "wall" | null {
+/** The snapped link endpoint must stand on a scene floor; its authored node is not drawn. */
+export function validateLinkEndpoint(probe: SceneProbe, snapped: Point): "floor" | null {
   const p = (v: Point) => ({ x:v.x, y:-v.z, z:v.y, zKnown:true, floorId:"", stepIndex:0 });
   const detail: SampleDetail[] = [];
   auditPolyline(probe, [p(snapped)], { detail });
   const floor = detail[0]?.floorZ;
-  if (floor === undefined || Math.abs(floor-snapped.y) > 0.6) return "floor";
+  return floor === undefined || Math.abs(floor-snapped.y) > 0.6 ? "floor" : null;
+}
+
+/** The guide's drawn link shape in renderer space: snapped ends with the built connector's interior between them. */
+export function connectorShape(built: readonly Point[] | undefined, a: Point, b: Point): Point[] {
+  if (!built?.length) return [a,b];
+  const near = (p: Point) => Math.hypot(p.x-a.x, p.y-a.y, p.z-a.z);
+  const ordered = near(built[0]!) <= near(built[built.length-1]!) ? built : [...built].reverse();
+  return [a, ...ordered.slice(1,-1), b];
+}
+
+/** A snap must land on a scene floor and the node-to-snap segment must not cross a wall. */
+export function validateLinkSnap(probe: SceneProbe, node: Point, snapped: Point): "floor" | "wall" | null {
+  const p = (v: Point) => ({ x:v.x, y:-v.z, z:v.y, zKnown:true, floorId:"", stepIndex:0 });
+  if (validateLinkEndpoint(probe, snapped)) return "floor";
   if (auditPolyline(probe, [p(node),p(snapped)], { alreadySampled:true }).wallHits) return "wall";
   const approach=auditPolyline(probe,[p(node),p(snapped)]);
   if (approach.noFloor || approach.offFloor) return "floor";

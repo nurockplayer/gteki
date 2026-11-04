@@ -12,7 +12,7 @@ import { floorScene, floorSplitPlan, parseFloors } from "./navmesh-floors.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
 import { qaFile } from "./navmesh-qa-path.ts";
 import { auditPolyline, loadScene, sceneProbe, resampleAudit, type SampleDetail, type AuditCache } from "./route-clip-audit.ts";
-import { diagnoseVerticalSnap, validateLinkSnap } from "./navmesh-links.ts";
+import { connectorShape, diagnoseVerticalSnap, validateLinkSnap } from "./navmesh-links.ts";
 import { makeFloorHeightNear, suspectVerticalEdges } from "./navmesh-suspect.ts";
 
 import { auditFallbackSegments, fallbackGate } from "./navmesh-fallback-audit.ts";
@@ -294,8 +294,7 @@ async function main() {
       // The off-mesh traversal retains the built connector's bends/landings, never its graph-node ends.
       // A link endpoint is authoritative even when the authored node is outside the navmesh.
       const built = grey?.connectors?.pathByEdge.get(step.edgeId);
-      const interior = a && built?.length ? (distance(built[0]!,a) <= distance(built.at(-1)!,a) ? built : [...built].reverse()).slice(1,-1) : [];
-      const linkPoints = a && b ? [a,...interior,b] : null;
+      const linkPoints = a && b ? connectorShape(built, a, b) : null;
       let points = linkPoints?.map((p,i) => ({x:p.x,y:-p.z,z:p.y,zKnown:true,stepIndex:0,floorId:i === linkPoints.length-1 ? step.toFloorId : step.fromFloorId,connector:true})) ?? null;
       // Preserve #791's explicit directed gate-link admission, using the baked endpoints.
       const gate = step.mode === "gate" && a && b && points
