@@ -588,6 +588,16 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const paidTiles = tileTextures({ base: "#76776f", grout: "#4c4f49", n: 4, seed: 23, speckle: 0.12 });
   const platformTiles = tileTextures({ base: "#777b7a", grout: "#484d4c", n: 4, seed: 37, speckle: 0.13 });
   const wallMaps = wallTexture(OEDO_MAGENTA), ceilingMaps = ceilingTexture();
+  if (opts.quality === "low") {
+    for (const maps of [concourseTiles, paidTiles, platformTiles, wallMaps, ceilingMaps]) for (const texture of Object.values(maps)) {
+      const source = texture.image as HTMLCanvasElement;
+      const canvas = document.createElement("canvas");
+      canvas.width = source.width / 2;
+      canvas.height = source.height / 2;
+      canvas.getContext("2d", { willReadFrequently: true })!.drawImage(source, 0, 0, canvas.width, canvas.height);
+      texture.image = canvas;
+    }
+  }
   for (const texture of Object.values(wallMaps)) texture.wrapT = THREE.ClampToEdgeWrapping;
   for (const t of [concourseTiles, paidTiles, platformTiles, wallMaps, ceilingMaps]) for (const tex of Object.values(t)) (tex.anisotropy = aniso), track(tex);
   const mat = {
