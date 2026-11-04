@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { NavMeshQuery, type NavMesh } from "recast-navigation";
+import { NavMeshQuery, QueryFilter, type NavMesh } from "recast-navigation";
 import { bakeNavmesh } from "./navmesh-bake.ts";
 import { assertPrivateRegionsProvenance, auditGatePath, connectorFallbackPolyline, floorSnapPath, queryCompletePath, queryPathWithLinks, snapNode } from "./navmesh-audit.ts";
 import { createRouter, routePolyline } from "@gteki/navigation";
@@ -255,4 +255,21 @@ it.each([false,true])("keeps a snap_failed stair fallback on the built floor (re
   expect(guide.every(p=>p.sceneGap)).toBe(true);
   expect(auditPolyline(probe,guide)).toMatchObject({offFloor:0,noFloor:0,wallHits:0});
   query.destroy(); baked.navMesh.destroy(); geometry.dispose(); floor.material.dispose();
+});
+
+ it("excludes a gate link from a walking corridor", async () => {
+  const {positions,indices,probe}=fixture(true,0.5);
+  const base=await bakeNavmesh(positions,indices); if (!base.success) throw new Error(base.error);
+  const q0=new NavMeshQuery(base.navMesh);
+  const {verticalLinkCandidates,validateLinkSnap}=await import("./navmesh-links.ts");
+  const points={a:{x:3,y:0,z:2},b:{x:5,y:0,z:2}};
+  const candidate=verticalLinkCandidates([{id:"gate",mode:"gate",from:"a",to:"b",direction:"both"}],id=>points[id as keyof typeof points],q0,(_id,a,b)=>validateLinkSnap(probe,a,b)===null).candidates[0]!;
+  expect(candidate).toBeDefined();
+  q0.destroy(); base.navMesh.destroy();
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:[candidate.connection]}); if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh), from=candidate.connection.startPosition, to=candidate.connection.endPosition;
+  expect(queryPathWithLinks(linked.navMesh,q,from,to)?.some(p=>p.link?.userId===candidate.connection.userId)).toBe(true);
+  const filter=new QueryFilter(); filter.excludeFlags=2;
+  expect(queryPathWithLinks(linked.navMesh,q,from,to,undefined,filter)).toBeNull();
+  q.destroy(); linked.navMesh.destroy();
 });
