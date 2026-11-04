@@ -1,13 +1,10 @@
 # #826 Shinjuku: four missing navmesh paths — diagnosis
 
-2026-11-05 JST. Bake data: `.qa/826/diag/shinjuku/audit.json` (job `826-diag`, orb-test #487,
-exit 0, bake 30.4 s, 2026-11-05 05:05–05:10 JST). Reproduces main exactly
-(`python3 .qa/826/compare.py diag shinjuku` → SHRINK-ONLY PASS, all counters equal).
-
-## Shinjuku totals (main → diag, identical)
-fallback 4, unvalidatedJoins 56, fallbackWallHits 6, failedRoutePairs 2, routablePairs 238,
-`links.failed`: 3× `unsafe_snap` (4b7d9463, 6113a228, 7628a98a) + 2× `snap_failed` (the elevators),
-`snapRejections {floor:3, wall:0}` = exactly the three `unsafe_snap` edges.
+2026-11-05 JST. Bake data: `.qa/826/diag/shinjuku/audit.json` (job `826-diag`, orb-test #487, exit 0,
+bake 30.4 s, 05:05–05:10 JST), which reproduces main exactly (`python3 .qa/826/compare.py diag shinjuku`
+→ SHRINK-ONLY PASS, all counters equal): fallback 4, unvalidatedJoins 56, fallbackWallHits 6,
+failedRoutePairs 2, routablePairs 238; `links.failed` = 3× `unsafe_snap` (4b7d9463, 6113a228,
+7628a98a) + 2× `snap_failed` (the elevators); `snapRejections {floor:3,wall:0}` = the 3 unsafe_snap.
 
 ## 1. e:82c9a2c2cd704a348fbeb423d07cb125 — walk, toei-nwd-m0_5
 - forward+reverse: `no_path`, both endpoints snapped, `connectivity: disconnected`,
