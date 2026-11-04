@@ -23,7 +23,7 @@ async function measure(page: Page) {
       routeLabel: map.querySelector(".minimap-route-label")!.textContent,
       routeLines: map.querySelectorAll(".minimap-route-line").length,
       dots: map.querySelectorAll(".minimap-poi").length,
-      overlaps: Object.fromEntries([".panel", ".hud-row", ".hud-instruction", ".credit-line", ".joystick.active", ".mascot-figure", ".mascot-bubble"]
+      overlaps: Object.fromEntries([".panel", ".hint", ".hud-row", ".hud-instruction", ".credit-line", ".joystick.active", ".mascot-figure", ".mascot-bubble"]
         .map((selector) => [selector, overlap(selector)])),
       canvasCount: document.querySelectorAll("canvas").length,
       minimapCanvasCount: map.querySelectorAll("canvas").length,
