@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import * as THREE from "three";
 import { init, importNavMesh, NavMeshQuery, Detour, statusDetail, type NavMesh } from "recast-navigation";
 import { assembleSnapPath, snapJoinKey, buildConnectorPath, createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
+import { skippedConnectorPath } from "../../../apps/web/src/explorer/greyboxConnectors.ts";
 import { navmeshBundle, privateRegionsSha256 } from "./navmesh-input.ts";
 import { floorScene, floorSplitPlan, parseFloors } from "./navmesh-floors.ts";
 import { makeGreybox } from "./navmesh-greybox.ts";
@@ -28,6 +29,11 @@ const percentile = (values: number[], p: number) => {
   if (p === 0.5 && sorted.length % 2 === 0) return (sorted[sorted.length / 2 - 1]! + sorted[sorted.length / 2]!) / 2;
   return sorted[Math.ceil(p * sorted.length) - 1]!;
 };
+
+/** Failed connectors retain main's built fallback geometry; it is never admitted as a snapped guide. */
+export function connectorFallbackPolyline(bundle: Parameters<typeof routePolyline>[0], route: RouteResult, connectorPaths?: Parameters<typeof routePolyline>[2]): PolylinePoint[] {
+  return routePolyline(bundle,route,connectorPaths);
+}
 
 /** Query between already snapped renderer points, rejecting Detour's partial paths. */
 export function queryCompletePath(query: NavMeshQuery, from: V3, to: V3): V3[] | null {
@@ -210,6 +216,9 @@ async function main() {
   // Recomputed exactly as the bake does; a difference means the bake and this audit see different inputs.
   const suspect = suspectVerticalEdges(bundle, makeFloorHeightNear(grey?.suspectProbe ?? originalProbe), e => router.isTraversable(e, DEFAULT_PROFILE));
   if (JSON.stringify(suspect) !== JSON.stringify(provenance.suspectEdges ?? null)) throw new Error("navmesh bake and audit disagree on suspect vertical edges; rebake first");
+  // Keep the existing fallback construction separate from snap-only guide admission.
+  const connectorPaths = grey?.connectors ? new Map([...grey.connectors.pathByEdge].map(([id,path]) => [id,path.map(q=>({x:q.x,y:-q.z,z:q.y}))])) : undefined;
+  if (grey?.connectors) for (const edge of bundle.edges) if (grey.connectors.skippedEdgeIds.includes(edge.id)) connectorPaths!.set(edge.id,skippedConnectorPath(bundle,edge));
   const suspectIds = new Set(suspect.map(s => s.edgeId)), usedSuspect = new Set<string>();
   const bridgeFloorGeometry=new THREE.BufferGeometry(); bridgeFloorGeometry.setAttribute("position",new THREE.Float32BufferAttribute(provenance.bridgeFloorTriangles ?? [],3));
   const bridgeFloor=new THREE.Mesh(bridgeFloorGeometry,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); bridgeFloor.userData.greybox=true; bridgeFloor.updateMatrixWorld(true);
@@ -301,7 +310,7 @@ async function main() {
         const checked=auditPolyline(probe,onFloor,{alreadySampled:true,cache:auditCache});
         points=checked.wallHits || checked.offFloor || checked.noFloor ? null : snappedPoints;
       } else points=null;
-      const entry: Entry = {suspect:false,points,missing:!points,reason:points ? null : link && hasSnaps ? "no_path" : step.mode === "gate" ? "no_path" : "snap_failed",stairLink:false,connector:!!points,fallbackUsed:link?.fallback ? [step.edgeId] : [],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:!!snappedPoints?.[0],toSnapped:!!snappedPoints?.at(-1),connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}),pathRejection:gate?.pathRejection ?? (link && !points ? "reconstruction":null)};
+      const entry: Entry = {suspect:false,points,missing:!points,reason:points ? null : link && hasSnaps ? "no_path" : step.mode === "gate" ? "no_path" : "snap_failed",stairLink:false,connector:!!points,fallbackUsed:link?.fallback ? [step.edgeId] : [],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:!!snappedPoints?.[0],toSnapped:!!snappedPoints?.at(-1),connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:connectorFallbackPolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]},connectorPaths),pathRejection:gate?.pathRejection ?? (link && !points ? "reconstruction":null)};
 
       cache.set(key,entry); return entry;
     }
