@@ -1,0 +1,32 @@
+{
+  "recordedAt": "2026-11-04 11:15 JST",
+  "run": 41757639217,
+  "test": "shinjuku: guided walk exit1-platform (real UI, recorded) @phone",
+  "durationMs": 112107,
+  "stdout": [
+    {
+      "text": "[frame-settle] {\"label\":\"open shinjuku\",\"waitedMs\":264,\"settled\":true}\n"
+    },
+    {
+      "text": "[frame-settle] {\"label\":\"shinjuku exit1-platform next\",\"waitedMs\":20007,\"settled\":false,\"lastFramesMs\":[3333,1783,3133,67,9083]}\n"
+    }
+  ],
+  "error": {
+    "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.guide-next')\u001b[22m\n\u001b[2m    - locator resolved to <button aria-label=\"Next instruction\" aria-keyshortcuts=\"] PageDown\" class=\"ghost guide-step guide-next\" title=\"Next instruction (] or PageDown)\">\u203a</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n",
+    "stack": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.guide-next')\u001b[22m\n\u001b[2m    - locator resolved to <button aria-label=\"Next instruction\" aria-keyshortcuts=\"] PageDown\" class=\"ghost guide-step guide-next\" title=\"Next instruction (] or PageDown)\">\u203a</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\n    at /home/runner/work/gteki/gteki/tests/e2e/specs/03-guided-walkthrough.spec.ts:106:45",
+    "location": {
+      "file": "/home/runner/work/gteki/gteki/tests/e2e/specs/03-guided-walkthrough.spec.ts",
+      "column": 45,
+      "line": 106
+    },
+    "snippet": "\u001b[0m \u001b[90m 104 |\u001b[39m           \u001b[90m// Mid-walk, Shinjuku can stay above 1 s a frame under SwiftShader: wait at most 20 s, then click anyway.\u001b[39m\n \u001b[90m 105 |\u001b[39m           \u001b[36mawait\u001b[39m settleFrames(page\u001b[33m,\u001b[39m \u001b[32m`${key} ${w.label} next`\u001b[39m\u001b[33m,\u001b[39m \u001b[35m20\u001b[39m_000)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 106 |\u001b[39m           \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m\".guide-next\"\u001b[39m)\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 107 |\u001b[39m           steppedOn \u001b[33m=\u001b[39m \u001b[36mtrue\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m 108 |\u001b[39m         }\n \u001b[90m 109 |\u001b[39m       }\u001b[0m"
+  },
+  "attachments": [
+    {
+      "name": "error-context",
+      "contentType": "text/markdown",
+      "path": "/home/runner/work/gteki/gteki/tests/e2e/artifacts/test-results/03-guided-walkthrough-shin-f9cc2-form-real-UI-recorded-phone-desktop-chromium/error-context.md"
+    }
+  ],
+  "traceAvailable": false
+}

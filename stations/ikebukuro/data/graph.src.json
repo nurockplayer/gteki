@@ -2970,7 +2970,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 80.0,
+        "y": 114.5,
+        "z": 32.422
+      },
    "connectorNodeIds": [
     "x22"
    ],
@@ -3018,7 +3022,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 101.0,
+        "y": 92.0,
+        "z": 32.246
+      },
    "connectorNodeIds": [
     "x26"
    ],
@@ -3065,7 +3073,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 127.0,
+        "y": 95.0,
+        "z": 32.37
+      },
    "connectorNodeIds": [
     "x28"
    ],
@@ -3112,7 +3124,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 157.0,
+        "y": 115.5,
+        "z": 32.426
+      },
    "connectorNodeIds": [
     "x32"
    ],
@@ -3159,7 +3175,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 148.0,
+        "y": 73.0,
+        "z": 32.078
+      },
    "connectorNodeIds": [
     "x33"
    ],
@@ -3206,7 +3226,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 83.0,
+        "y": 47.0,
+        "z": 32.267
+      },
    "connectorNodeIds": [
     "x27"
    ],
@@ -3253,7 +3277,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 139.5,
+        "y": 53.5,
+        "z": 31.891
+      },
    "connectorNodeIds": [
     "x34"
    ],
@@ -3300,7 +3328,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 154.0,
+        "y": 18.5,
+        "z": 31.268
+      },
    "connectorNodeIds": [
     "x35"
    ],
@@ -3414,7 +3446,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 38.0,
+        "y": 19.0,
+        "z": 32.345
+      },
    "connectorNodeIds": [
     "x37"
    ],
@@ -3462,7 +3498,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 91.0,
+        "y": -30.5,
+        "z": 31.969
+      },
    "connectorNodeIds": [
     "x42"
    ],
@@ -3509,7 +3549,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 108.5,
+        "y": -7.5,
+        "z": 31.791
+      },
    "connectorNodeIds": [
     "x43"
    ],
@@ -3556,7 +3600,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 84.5,
+        "y": -39.5,
+        "z": 32.153
+      },
    "connectorNodeIds": [
     "x41"
    ],
@@ -3623,7 +3671,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 53.5,
+        "y": -52.5,
+        "z": 32.642
+      },
    "connectorNodeIds": [
     "x38"
    ],
@@ -3671,7 +3723,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 172.5,
+        "y": -179.0,
+        "z": 32.646
+      },
    "connectorNodeIds": [
     "x39"
    ],
@@ -3718,7 +3774,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": 131.0,
+        "y": -129.0,
+        "z": 32.506
+      },
    "connectorNodeIds": [
     "x40"
    ],
@@ -5102,15 +5162,27 @@
    ],
    "floorId": "b1",
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "c_w"
+   ],
    "paid": false,
    "evidence": {
     "sourceIds": [
      "toshima-underground-guide-2022"
     ],
-    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
-    "checkedDate": "2026-10-20"
-   }
+    "method": "Toshima underground guide (2022-01), PDF p.2, west Central Passage: Central Gate 2 is drawn on the north side of the passage, west of JR Central Gate 2 and beside the Marunouchi Central Passage West Gate. Printed passage-approach tie to c_w on the existing c_w__w_c / c_w__c_mid route; STATION_TIE, not an identified gate opening. No wheelchair or steps claim.",
+    "checkedDate": "2026-11-03"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "案内は中央通路西側の通路上で終わります。2022年1月版の豊島区案内図にある中央2改札への通路側の案内で、改札口の正確な位置は未確認です。"
+    },
+    {
+     "lang": "en",
+     "text": "Directions end on the west Central Passage approach to Central Gate 2 shown in the January 2022 Toshima guide. The exact gate opening is not verified."
+    }
+   ]
   },
   {
    "id": "central-passage",
@@ -5190,7 +5262,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": -155.5,
+        "y": 153.0,
+        "z": 33.146
+      },
    "connectorNodeIds": [
     "x10"
    ],
@@ -5237,7 +5313,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": -145.0,
+        "y": 179.0,
+        "z": 33.146
+      },
    "connectorNodeIds": [
     "x11"
    ],
@@ -5284,7 +5364,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": -117.5,
+        "y": 137.0,
+        "z": 33.146
+      },
    "connectorNodeIds": [
     "x15"
    ],
@@ -5331,7 +5415,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": -107.0,
+        "y": 164.0,
+        "z": 33.146
+      },
    "connectorNodeIds": [
     "x17"
    ],
@@ -5378,7 +5466,11 @@
     }
    ],
    "floorId": "street",
-   "displayPosition": null,
+   "displayPosition": {
+        "x": -98.5,
+        "y": 156.0,
+        "z": 33.168
+      },
    "connectorNodeIds": [
     "x18"
    ],
@@ -27006,6 +27098,48 @@
   }
  ],
  "dataFiles": [
+  {
+   "id": "stairwell-cut-high",
+   "path": "scene/stairwell-cut.high.b64.txt",
+   "sourceIds": [
+    "gteki-ikb-catalog-0-1-0",
+    "gteki-kit-0-1-0",
+    "ikefukuro-location-references-2026-10",
+    "lumine-ikebukuro-access-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577",
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
+  },
+  {
+   "id": "stairwell-cut-low",
+   "path": "scene/stairwell-cut.low.b64.txt",
+   "sourceIds": [
+    "gteki-ikb-catalog-0-1-0",
+    "gteki-kit-0-1-0",
+    "ikefukuro-location-references-2026-10",
+    "lumine-ikebukuro-access-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577",
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
+  },
   {
    "id": "navmesh-paths",
    "path": "navmesh-paths.json",

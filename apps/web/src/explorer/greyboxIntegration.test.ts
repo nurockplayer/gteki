@@ -40,6 +40,45 @@ function fixture() {
 }
 
 describe("greybox station integration", () => {
+  it("walks through a traversable graph corridor into a private floor without a scene", async () => {
+    const { state, loaded } = fixture();
+    Object.assign(state, { buildStationScene: async () => null, colliders: [], cameraBlockers: [], walls: [] });
+    loaded.bundle.nodes.find((n) => n.id === "start")!.position = { x: -2, y: 5, z: 0 };
+    loaded.bundle.nodes.find((n) => n.id === "a")!.position = { x: 2, y: 5, z: 0 };
+    const station = { ...loaded, privateRegions: [{ kind: "polygon" as const, level: "concourse", y: 0, rings: [[
+      { x: 0, z: 0 }, { x: 10, z: 0 }, { x: 10, z: -10 }, { x: 0, z: -10 },
+    ]] }] };
+    const router = createRouter(loaded.bundle);
+    expect(router.route("start", "a").ok).toBe(true);
+    expect(await state.loadStation(station, router)).toBe(true);
+    state.pos.set(-1, 0, -5);
+    expect(state.walkPath([{ x: 1, z: -5 }], { maxSeconds: 5 })).toMatchObject({ done: true, stuck: false });
+    expect(state.pos.x).toBeGreaterThan(0.5);
+    expect(state.pos.y).toBeCloseTo(0);
+    expect(state.walkPath([{ x: -1, z: -5 }], { maxSeconds: 5 })).toMatchObject({ done: true, stuck: false });
+    expect(state.pos.x).toBeLessThan(-0.5);
+  });
+
+  it("loads private floors through the graph-only fallback without refilling their holes", async () => {
+    const { state, loaded } = fixture();
+    Object.assign(state, { buildStationScene: async () => null, colliders: [], cameraBlockers: [], walls: [] });
+    loaded.bundle.nodes.find((n) => n.id === "start")!.position = { x: -2, y: 5, z: 0 };
+    loaded.bundle.nodes.find((n) => n.id === "a")!.position = { x: 12, y: 5, z: 0 };
+    const ring = (a: number, b: number) => [{ x: a, z: -a }, { x: b, z: -a }, { x: b, z: -b }, { x: a, z: -b }];
+    const station = { ...loaded, privateRegions: [{ kind: "polygon" as const, level: "concourse", y: 0, rings: [ring(0, 10), ring(3, 7)], exclusions: [[ring(3, 7)]] }] };
+    expect(await state.loadStation(station, createRouter(loaded.bundle))).toBe(true);
+    expect(state.greybox).toBeDefined();
+    expect(state.world.children).toContain(state.greybox.root);
+    const hits = (x: number) => new THREE.Raycaster(new THREE.Vector3(x, 0.5, -5), new THREE.Vector3(0, -1, 0)).intersectObjects(state.groundTargets, true);
+    expect(hits(1).length).toBeGreaterThan(0);
+    expect(hits(5)).toHaveLength(0);
+    expect(hits(11).length).toBeGreaterThan(0);
+    state.pos.set(1, 0, -5);
+    expect(state.walkPath([{ x: 5, z: -5 }], { maxSeconds: 5 })).toMatchObject({ done: false, stuck: true });
+    expect(state.pos.x).toBeLessThan(3);
+    expect(state.colliderTargets).toContain(state.greybox.colliders[0]);
+  });
+
   it("loads stairs and escalators as walkable connectors", async () => {
     const { state, loaded } = fixture();
     loaded.bundle = createSyntheticBundle([
@@ -48,7 +87,7 @@ describe("greybox station integration", () => {
     ]);
     loaded.bundle.nodes.find((node) => node.id === "upper")!.position.x = 12;
     await state.loadStation(loaded, createRouter(loaded.bundle));
-    expect(state.connectors.stats.connectors).toEqual({ stairs: 1, escalator: 1, elevator: 0 });
+    expect(state.connectors.stats.connectors).toEqual({ stairs: 1, escalator: 1 });
     expect(state.connectors.walkable.length).toBeGreaterThan(1);
     expect(state.groundTargets).toContain(state.connectors.walkable[0]);
     const steps = [{ edgeId: "stairs", mode: "stairs", fromNodeId: "a", toNodeId: "upper" }, { edgeId: "escalator", mode: "escalator", fromNodeId: "start", toNodeId: "upper" }];
@@ -185,16 +224,19 @@ describe("greybox station integration", () => {
     expect(floorProbe(new THREE.Raycaster(), state.sceneGroundTargets)({ x: 1.9, y: 0, z: 0 })).toBe(true);
   });
 
-  it("keeps an extracted visual-only instance out of ground and collider targets", async () => {
+  it("keeps an unchanged visual-only instance batched and out of physical targets", async () => {
     const { state, scene, loaded } = fixture();
     const decoration = new THREE.InstancedMesh(new THREE.BoxGeometry(0.4, 1, 0.4), new THREE.MeshBasicMaterial(), 1);
     decoration.setMatrixAt(0, new THREE.Matrix4().makeTranslation(2.1, 1, 0));
+    const originalMatrix = decoration.instanceMatrix.array.slice();
     scene.root.add(decoration); scene.root.updateMatrixWorld(true);
     await state.loadStation(loaded, createRouter(loaded.bundle));
     const copy = state.portalCutResources.instances.find((entry: { owner: THREE.Object3D }) => entry.owner === decoration)?.copy;
-    expect(copy).toBeDefined(); expect(state.sceneGroundTargets).not.toContain(copy);
-    expect(state.groundTargets).not.toContain(copy); expect(state.colliderTargets).not.toContain(copy);
-    expect(state.walkable).not.toContain(copy); expect(state.colliders).not.toContain(copy);
+    expect(copy).toBeUndefined(); expect(decoration.children).toHaveLength(0);
+    expect(decoration.instanceMatrix.array).toEqual(originalMatrix);
+    expect(state.sceneGroundTargets).not.toContain(decoration);
+    expect(state.groundTargets).not.toContain(decoration); expect(state.colliderTargets).not.toContain(decoration);
+    expect(state.walkable).not.toContain(decoration); expect(state.colliders).not.toContain(decoration);
   });
 
   it("records the hit face normal and exempts an oblique wall crossing", () => {

@@ -5,9 +5,10 @@
  */
 import { WALKER_BODY, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
+import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { OEDO_MAGENTA, buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
+import { OEDO_MAGENTA, STREET_UNDERSIDE, buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { kitSwapRequested, prepareKitSwap, type KitSwap } from "../scene/kit/index.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
@@ -18,6 +19,44 @@ import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
 import shopKitManifest from "../scene/shop_kit.json" with { type: "json" };
 import shopBays from "../scene/shop_bays.json" with { type: "json" };
 import shopPlacements from "../scene/shop_placements.json" with { type: "json" };
+
+/** Supplement the existing attributed cap only for a camera looking above
+ * the walker. The default follow boom and every horizontal walking ray retain
+ * the legacy query. Actual roof meshes supply footprints and post-cut heights;
+ * no copied fascia buffer or extra stairwell-cut target is introduced.
+ * Kept outside assembleScene so its closure cannot retain the build layout. */
+function addOverheadRoofQueries(T: typeof THREE, cap: THREE.Mesh, root: THREE.Object3D) {
+  Object.defineProperty(cap.userData, "gtekiOverheadRaycast", { value: (ray: THREE.Raycaster, hits: THREE.Intersection[]) => {
+    if (ray.ray.origin.y > STREET_UNDERSIDE + 0.0001) return;
+    root.traverseVisible((o) => {
+      const roof = o as THREE.Mesh;
+      if (!roof.isMesh || Array.isArray(roof.material) || !roof.material.visible || roof.material.name !== "mat.ceiling") return;
+      cacheBvh(roof.geometry);
+      const added: THREE.Intersection[] = [];
+      if (roof instanceof T.InstancedMesh && roof.userData.tightCulling) {
+        const count = roof.count;
+        try {
+          // Camera queries need every roof instance, even when rendering culled the batch.
+          roof.count = roof.instanceMatrix.count;
+          raycastObject(roof, ray, added);
+        } finally {
+          roof.count = count;
+        }
+      } else {
+        raycastObject(roof, ray, added);
+      }
+      for (const hit of added) {
+        if (!hit.face || hit.point.y > STREET_UNDERSIDE + 0.0001) continue;
+        const normal = hit.face.normal.clone().applyNormalMatrix(new T.Matrix3().getNormalMatrix(roof.matrixWorld));
+        if (Math.abs(normal.y) < 0.000001) continue; // vertical fascias are not roofs
+        normal.applyNormalMatrix(new T.Matrix3().getNormalMatrix(cap.matrixWorld).invert());
+        hit.face = { ...hit.face, normal };
+        hit.object = cap;
+        hits.push(hit);
+      }
+    });
+  } });
+}
 
 /** Camera that renders the station, reported to the street layer (see the probe in buildScene). */
 function viewerTracker(setViewer: ((pos: { x: number; y: number; z: number }) => void) | undefined) {
@@ -252,6 +291,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       proxies.add(m);
       colliders.push(m);
       cameraBlockers.push(m);
+      addOverheadRoofQueries(T, m, built.root);
     }
   }
   // Hanging wayfinding boxes and fence sign panels are signage (role "sign"): the explorer dithers them

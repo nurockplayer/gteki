@@ -131,6 +131,13 @@ const SMALL_MESH_TRIANGLES = 32;
  * only skips triangles the ray cannot touch.
  */
 export function raycastObject(object: THREE.Object3D, raycaster: THREE.Raycaster, intersects: THREE.Intersection[]): void {
+  // A station may supplement its attributed ceiling cap with rendered roof
+  // faces for steep upward camera queries. Keep the native mesh raycast and
+  // static collider BVH intact for walking, proximity probes and normal booms.
+  if (raycaster.ray.direction.y > Math.SQRT1_2) {
+    const overhead = object.userData.gtekiOverheadRaycast;
+    if (typeof overhead === "function") overhead(raycaster, intersects);
+  }
   const mesh = object as THREE.Mesh;
   // Anything with its own raycast (instanced, batched, skinned, sprites, lines) runs it unchanged.
   if (mesh.isMesh !== true || mesh.raycast !== THREE.Mesh.prototype.raycast) {

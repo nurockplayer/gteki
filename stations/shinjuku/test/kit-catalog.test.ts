@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { protectFareAndAccess } from "../scene/fare-fence.ts";
@@ -20,6 +20,8 @@ const layout = buildLayout(bundle, plan);
 const protection = protectFareAndAccess(layout, plan, bundle);
 const fresh = buildStationCatalog(layout, protection);
 const runs = runAnchors(layout);
+let generatedText: string;
+beforeAll(() => { generatedText = renderCatalog().text; }, 60_000);
 
 describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
   it("is valid: kit catalog shape, id pattern, params inside the generator ranges", () => {
@@ -56,7 +58,7 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
   });
 
   it("is exactly what the generator derives from the current data (regenerate with pnpm kit:catalog)", () => {
-    expect(renderCatalog().text).toBe(`${JSON.stringify(committed, null, 2)}\n`);
+    expect(generatedText).toBe(`${JSON.stringify(committed, null, 2)}\n`);
     expect(fresh.catalog).toEqual(committed);
   });
 

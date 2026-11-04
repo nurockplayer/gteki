@@ -1,3 +1,4 @@
+import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { WALKER_BODY, type StationScene } from "@gteki/scene-api";
@@ -70,6 +71,7 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
       return m;
     });
     const capless = explorerTargets(scene.walkable, swap(scene.colliders ?? []), swap(scene.cameraBlockers ?? []));
+    prepareRayTrees([...full.camera, ...capless.camera]);
     return { full, capless };
   }
 
@@ -170,6 +172,45 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
     }
     return rows;
   }
+
+  it("queries a culled ceiling batch through the camera cap without changing its render count (#780)", () => {
+    let roof: THREE.InstancedMesh | undefined;
+    scene.root.traverseVisible((o) => {
+      if (!roof && o instanceof THREE.InstancedMesh && o.userData.tightCulling &&
+        !Array.isArray(o.material) && o.material.name === "mat.ceiling") roof = o;
+    });
+    expect(roof).toBeDefined();
+    const batch = roof!, geometry = batch.geometry;
+    const matrix = new THREE.Matrix4();
+    batch.getMatrixAt(0, matrix);
+    matrix.premultiply(batch.matrixWorld);
+    const position = geometry.attributes.position!, index = geometry.index;
+    const triangle = new THREE.Triangle(), normal = new THREE.Vector3();
+    let point: THREE.Vector3 | undefined;
+    for (let i = 0; i < (index ? index.count : position.count); i += 3) {
+      [triangle.a, triangle.b, triangle.c].forEach((v, k) =>
+        v.fromBufferAttribute(position, index ? index.getX(i + k) : i + k).applyMatrix4(matrix));
+      triangle.getNormal(normal);
+      const center = triangle.getMidpoint(new THREE.Vector3());
+      if (normal.y < -0.7071 && center.y < -0.5) { point = center; break; }
+    }
+    expect(point).toBeDefined();
+    const ray = new THREE.Raycaster(point!.clone().add(new THREE.Vector3(0, -0.25, 0)), new THREE.Vector3(0, 1, 0), 0, 0.5);
+    const cap = scene.cameraBlockers!.find((o) => o.name === CEILING)!;
+    expect(cap).toBeDefined();
+    const savedCount = batch.count;
+    try {
+      batch.count = 0;
+      const hits = castCamera(ray, [cap], new Set([cap]));
+      expect(batch.count).toBe(0);
+      // instanceId distinguishes the rendered roof from a coincident legacy cap.
+      const hit = hits.find((h) => h.instanceId === 0 && h.point.distanceTo(point!) < 1e-5);
+      expect(hit).toBeDefined();
+      expect(hit!.object).toBe(cap);
+    } finally {
+      batch.count = savedCount;
+    }
+  });
 
   it("keeps every roofed tread at least 2.9 m under its cap", () => {
     const rows = replay(DEFAULT_PITCH);

@@ -6,6 +6,7 @@
  * inside a container whose writes come back only through a bind mount. Each bake first runs the live cut with
  * the portal cut applied (as Explorer.loadStation does), then replays the file's recipe on the same scene and
  * compares the two. `--check` exits 1 when a committed file differs from a fresh bake or the replay disagrees.
+ * Canvas-sized signs retain their live cut: browser font metrics differ from the headless approximation.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -27,8 +28,8 @@ import { RECIPE_VERSION, canonicalJson, decodeRecipe, encodeRecipe, sha256Hex, t
 import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { loadScene } from "./route-clip-audit.ts";
 
-/** Stations with a baked recipe. Ikebukuro stays on the live cut for now (follow-up issue). */
-export const PUBLIC_STATIONS = ["shinjuku"] as const;
+/** Public stations with a baked stairwell cut recipe. */
+export const PUBLIC_STATIONS = ["shinjuku", "ikebukuro"] as const;
 type Tier = "high" | "low";
 /** Tolerance for an attribute component replayed against the live cut. */
 const ATTR_TOLERANCE = 1e-5;
@@ -132,7 +133,8 @@ async function bakeTier(station: string, bundle: StationBundle, tier: Tier): Pro
   let scene: StationScene;
   try {
     console.log = console.info = (...values: unknown[]) => { process.stderr.write(`${format(...values)}\n`); };
-    scene = await loadScene(station, bundle, tier);
+    // Explorer cuts immediately after buildScene, before lazy catalog dressing starts on the first update.
+    scene = await loadScene(station, bundle, tier, false);
   } finally { console.log = log; console.info = info; }
   try {
     // Mirrors Explorer.loadStation: targets, greybox, portal cut, then the stairwell cut.

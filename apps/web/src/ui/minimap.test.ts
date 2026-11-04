@@ -262,6 +262,41 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(2);
   });
 
+  it("zooms graph, route, POIs and connector together without changing pose or navigation", () => {
+    const map = create();
+    map.setRoute({ points: upRoute, steps: upSteps }, poi());
+    const before = { ...pose };
+    const zoomIn = map.el.querySelector<HTMLButtonElement>(".minimap-zoom-in")!;
+    const zoomOut = map.el.querySelector<HTMLButtonElement>(".minimap-zoom-out")!;
+    zoomIn.click();
+    expect(zoomIn.disabled).toBe(true);
+    expect(map.el.querySelector(".minimap-zoom span")!.textContent).toBe("2×");
+    expect(routeLines(map)[0]!.getAttribute("points")).toBe("0,0 40,0");
+    expect(map.el.querySelector(".minimap-graph polyline")!.getAttribute("points")).toContain("40,0");
+    expect(map.el.querySelector(".minimap-poi")!.getAttribute("cx")).toBe("40");
+    expect(map.el.querySelector(".minimap-connector-marker")!.getAttribute("transform")).toBe("translate(135 95)");
+    map.el.querySelector<HTMLButtonElement>(".minimap-orientation")!.click();
+    expect(routeLines(map)[0]!.getAttribute("points")).toBe("0,0 40,0");
+    zoomOut.click();
+    zoomOut.click();
+    expect(zoomOut.disabled).toBe(true);
+    expect(routeLines(map)[0]!.getAttribute("points")).toBe("0,0 10,0");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    expect(pose).toEqual(before);
+  });
+
+  it("does not draw or highlight search-only and area-only destinations with connectors", () => {
+    const bundle = createSyntheticBundle();
+    const located = bundle.pois[0]!;
+    bundle.pois = ["SEARCH_ONLY", "AREA_ONLY"].map((method) => ({
+      ...located, id: method, evidence: { ...located.evidence, method },
+    }));
+    const map = create(bundle);
+    map.setRoute({ points: upRoute, steps: upSteps }, bundle.pois[0]!);
+    expect(map.el.querySelectorAll(".minimap-poi")).toHaveLength(0);
+    expect(map.el.querySelectorAll(".is-destination")).toHaveLength(0);
+  });
+
   it("clears the connector hint when the route is cleared while the floor is unknown", () => {
     const map = create();
     map.setRoute({ points: loopPoints, steps: loopSteps }, null);

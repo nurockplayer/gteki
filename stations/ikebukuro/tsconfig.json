@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "lib": ["ES2022", "DOM"],
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "isolatedModules": true,

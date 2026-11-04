@@ -13,6 +13,8 @@ const STRINGS = {
     minimapNorthUp: "北を上に固定",
     minimapCollapse: "ミニマップを折りたたむ",
     minimapShow: "ミニマップを表示",
+    minimapZoomIn: "ミニマップを拡大",
+    minimapZoomOut: "ミニマップを縮小",
     minimapFloorUnknown: "階不明",
     minimapFloor: "表示する階",
     minimapFloorFollow: "追従",
@@ -60,6 +62,9 @@ const STRINGS = {
     } as Record<string, string>,
     /** The merchant card (#213): only what the listing states. */
     merchant: {
+      stepFreeTie: "段差なしで行ける駅側の接続地点まで（入口未確認）",
+      noStepFreeTie: "段差なしで行ける駅側の接続地点がありません（入口未確認）",
+      unsurveyedStepFreeTie: "段差の有無が未調査のため、段差なしで行ける駅側の接続地点を確認できません（入口未確認）",
       source: "出典",
       sourceUnknown: "出典の記録なし",
       checked: "最終確認",
@@ -261,6 +266,8 @@ const STRINGS = {
     minimapNorthUp: "North up",
     minimapCollapse: "Collapse minimap",
     minimapShow: "Show minimap",
+    minimapZoomIn: "Zoom in minimap",
+    minimapZoomOut: "Zoom out minimap",
     minimapFloorUnknown: "Floor unknown",
     minimapFloor: "Floor shown",
     minimapFloorFollow: "Follow player",
@@ -308,6 +315,9 @@ const STRINGS = {
     } as Record<string, string>,
     /** The merchant card (#213): only what the listing states. */
     merchant: {
+      stepFreeTie: "To a station connection point reachable step-free (entrance unverified)",
+      noStepFreeTie: "No station connection point is reachable step-free (entrance not verified)",
+      unsurveyedStepFreeTie: "Step-free access is unsurveyed, so a reachable step-free station connection point cannot be confirmed (entrance not verified)",
       source: "Source",
       sourceUnknown: "No source recorded",
       checked: "Last checked",

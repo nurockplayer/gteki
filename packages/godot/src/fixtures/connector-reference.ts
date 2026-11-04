@@ -1,13 +1,12 @@
-/** Frozen pre-#768 builder from #716 at ff68afc07b1af775da3ce9992f74b287b3b383c6.
- * Deliberately includes the shared lift helper, lift-pad rendering and continuous collider panels.
- * Test-only: preserve this unoptimized reference; do not regenerate it from the optimized builder. */
+/** Frozen reference builder from main 556e6fab446df0c4a77a5fb202c4a9be7be70f8c, before #758.
+ * Test-only: compare exact output on the same runner and inputs; headless scene output can vary across environments.
+ * Keep the reference algorithms unchanged. Only relative imports differ from the original source. */
 import type { Edge, StationBundle } from "@gteki/schema";
 import * as THREE from "three";
 import { edgePoints, type V3 } from "../../../../apps/web/src/explorer/geometry.ts";
 import type { Segment2 } from "../../../../apps/web/src/explorer/walker.ts";
 import { buildConnectors as buildLegacyConnectors } from "../../../../apps/web/src/explorer/greyboxConnectorsLegacy.ts";
-import { LIFT_DOOR_CLEARANCE_M, LIFT_DOOR_HALF_M, LIFT_FACE_NORMALS, LIFT_SHAFT_HALF_M, WALKER_BODY, liftShafts } from "@gteki/scene-api";
-import { nodeDisplayZ } from "@gteki/navigation";
+import { WALKER_BODY } from "@gteki/scene-api";
 import type { MultiPolygon } from "polygon-clipping";
 import { buildWalkableModel, regionPolygon, unionRings, type BoundaryWall, type PlanPoint, type Region } from "../../../../apps/web/src/explorer/walkableModel.ts";
 
@@ -43,29 +42,6 @@ export function unmodelledVerticalEdges(
       }
     }
     return false;
-  });
-}
-
-/**
- * Lift edges the scene lacks a shaft for: a rise of more than 0.5 m (a same-floor car-to-hall stub is a walk run, not a
- * connector), and a scene gap, a missing landing floor or no mesh near the middle. A lift's middle is the shaft, which
- * never has floor, so only its two landings are sampled.
- */
-export function unmodelledLiftEdges(
-  bundle: StationBundle,
-  traversable: (edge: Edge) => boolean,
-  hasFloor: (point: V3) => boolean,
-  nearMesh: (point: THREE.Vector3, radius: number) => boolean,
-): Edge[] {
-  const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
-  const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
-  return bundle.edges.filter((edge) => {
-    if (!traversable(edge) || edge.mode !== "elevator") return false;
-    const points = edgePoints(bundle, edge, nodes, floors);
-    if (points.length < 2 || Math.abs(points[0]!.y - points.at(-1)!.y) <= 0.5) return false;
-    if (edge.attributes?.sceneGap === true) return true;
-    if (!nearMesh(points[0]!.clone().lerp(points.at(-1)!, 0.5), 1.5)) return true;
-    return [points[0]!, points.at(-1)!].some((p) => !hasFloor({ x: p.x, y: -p.z, z: p.y }));
   });
 }
 
@@ -446,75 +422,6 @@ function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
   return d.lengthSq() > 1e-12 ? d.normalize() : new THREE.Vector3(1, 0, 0);
 }
 
-/** Renderer outward normals of the shaft faces, indexed like LIFT_FACE_NORMALS (plan north is renderer -z). */
-const SHAFT_NORMALS = LIFT_FACE_NORMALS.map((n) => new THREE.Vector3(n.x, 0, -n.y));
-const SHAFT_HALF = LIFT_SHAFT_HALF_M, DOOR_HALF = LIFT_DOOR_HALF_M;
-
-/** Plan rectangles `[u0, u1, v0, v1]` covering a face minus its door holes. */
-function freePanels(uMin: number, uMax: number, vMin: number, vMax: number, holes: readonly { u0: number; u1: number; v0: number; v1: number }[]): [number, number, number, number][] {
-  const clamp = (v: number) => THREE.MathUtils.clamp(v, vMin, vMax);
-  const cuts = [...new Set([vMin, vMax, ...holes.flatMap((hole) => [clamp(hole.v0), clamp(hole.v1)])])].sort((a, b) => a - b);
-  const panels: [number, number, number, number][] = [];
-  for (let i = 0; i + 1 < cuts.length; i++) {
-    const v0 = cuts[i]!, v1 = cuts[i + 1]!;
-    if (v1 - v0 < 1e-6) continue;
-    const middle = (v0 + v1) / 2;
-    let spans: [number, number][] = [[uMin, uMax]];
-    for (const hole of holes) {
-      if (middle <= hole.v0 + 1e-9 || middle >= hole.v1 - 1e-9) continue;
-      const next: [number, number][] = [];
-      for (const [a, b] of spans) {
-        if (hole.u1 <= a || hole.u0 >= b) { next.push([a, b]); continue; }
-        if (hole.u0 > a) next.push([a, hole.u0]);
-        if (hole.u1 < b) next.push([hole.u1, b]);
-      }
-      spans = next;
-    }
-    for (const [a, b] of spans) if (b - a > 1e-6) panels.push([a, b, v0, v1]);
-  }
-  return panels;
-}
-
-/**
- * Decoration of a greybox lift shaft centred on `centre` (renderer space): glass faces with a 0.9 x 2.1 m door hole at
- * each stop, corner posts, a steel ring at each stop, door frames, and the car parked at the lowest stop. Nothing here
- * collides: the walls come from the shaft's walkable model.
- */
-export function buildElevator(centre: THREE.Vector3, stops: readonly { y: number; face: number; door?: THREE.Vector3 }[], tier: "high" | "low"): ConnectorPart[] {
-  const parts: ConnectorPart[] = [], half = SHAFT_HALF, yMin = stops[0]!.y - 0.1, yMax = stops.at(-1)!.y + 2.6;
-  const holes = new Map<number, { u0: number; u1: number; v0: number; v1: number }[]>();
-  // A door's position across its face, on the face frame's own x axis (the frame looks along the outward normal).
-  const u = (stop: { face: number; door?: THREE.Vector3 }) => {
-    const n = SHAFT_NORMALS[stop.face]!;
-    return stop.door ? (stop.door.x - centre.x) * n.z - (stop.door.z - centre.z) * n.x : 0;
-  };
-  for (const stop of stops) holes.set(stop.face, [...(holes.get(stop.face) ?? []), { u0: u(stop) - DOOR_HALF, u1: u(stop) + DOOR_HALF, v0: stop.y, v1: stop.y + 2.1 }]);
-  const faceFrame = (normal: THREE.Vector3) => new THREE.Matrix4().makeRotationY(Math.atan2(normal.x, normal.z)).setPosition(centre.x, 0, centre.z);
-  SHAFT_NORMALS.forEach((normal, index) => {
-    const faceHoles = holes.get(index) ?? [];
-    if (tier === "low" && faceHoles.length) return; // the door face is open framing only
-    for (const [u0, u1, v0, v1] of freePanels(-half, half, yMin, yMax, faceHoles)) {
-      box(parts, tier === "high" ? "glass" : "escTruss", faceFrame(normal), (u0 + u1) / 2, (v0 + v1) / 2, half, u1 - u0, v1 - v0, tier === "high" ? 0.02 : 0.06);
-    }
-  });
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(parts, "steel", new THREE.Matrix4(), centre.x + sx * (half - 0.04), (yMin + yMax) / 2, centre.z + sz * (half - 0.04), 0.08, yMax - yMin, 0.08);
-  for (const stop of stops) {
-    const { y, face } = stop;
-    for (const sz of [-1, 1]) box(parts, "steel", new THREE.Matrix4(), centre.x, y + 0.04, centre.z + sz * (half + 0.01), 2 * half, 0.08, 0.08);
-    for (const sx of [-1, 1]) box(parts, "steel", new THREE.Matrix4(), centre.x + sx * (half + 0.01), y + 0.04, centre.z, 0.08, 0.08, 2 * half);
-    const frame = faceFrame(SHAFT_NORMALS[face]!);
-    for (const side of [-1, 1]) box(parts, "steel", frame, u(stop) + side * 0.49, y + 1.05, half, 0.08, 2.1, 0.12);
-    box(parts, "steel", frame, u(stop), y + 2.14, half, 1.06, 0.08, 0.12);
-    box(parts, "light", frame, u(stop), y + 2.33, half + 0.08, 0.3, 0.06, 0.04);
-  }
-  // The car: three steel walls and a lit ceiling, open toward the lowest stop's door; the stop square is its floor.
-  const bottom = stops[0]!, door = SHAFT_NORMALS[bottom.face]!, car = new THREE.Matrix4().makeRotationY(Math.atan2(door.x, door.z)).setPosition(centre.x, bottom.y + 1.15, centre.z);
-  box(parts, "steel", car.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0, -0.75)), 0, 0, 0, 1.6, 2.3, 0.04);
-  for (const side of [-1, 1]) box(parts, "steel", car.clone().multiply(new THREE.Matrix4().makeTranslation(side * 0.78, 0, 0)), 0, 0, 0, 0.04, 2.3, 1.5);
-  box(parts, "light", new THREE.Matrix4(), centre.x, bottom.y + 2.28, centre.z, 1.4, 0.02, 1.3);
-  return parts;
-}
-
 /**
  * The walkable regions of one connector: a strip level per flight (the legs between turning landings, discs at shallow
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
@@ -625,7 +532,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const batches = new Map<string, ConnectorPart[]>();
-  const counts = { escalator: 0, stairs: 0, elevator: 0 };
+  const counts = { escalator: 0, stairs: 0 };
   let approximateFits = 0, omittedLandings = 0, connectorsSkipped = 0;
   const connectorsSkippedByReason: Record<"unsupported_shape" | "short_run", number> = { unsupported_shape: 0, short_run: 0 };
   const skippedEdgeIds: string[] = [];
@@ -890,48 +797,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const support = [...parts.filter((p) => p.role === "walkable"), ...pads.map((pad) => pad.part)], walls = parts.filter((p) => p.role === "collider");
     if (support.length) walkable.push(meshFor(support, physicalMaterial));
     if (walls.length) colliders.push(meshFor(walls, physicalMaterial));
-  }
-  // Lift shafts (#645 step 2b, #648): each shaft is its own model with a stop square per stop and a door footprint where
-  // that stop's hall edge leaves the shaft (shared with station fences, step 2c), so the shaft is walled everywhere but its
-  // doors. The ride goes from the car node to the shaft centre, straight up, and out to the other car node.
-  const nodeZ = (id: string) => { const node = nodes.get(id)!; return nodeDisplayZ(node, floors.get(node.floorId)).z; };
-  const liftEdges = unmodelledLiftEdges(bundle, traversable, scope.hasFloor, scope.nearMesh);
-  for (const shaft of liftShafts(bundle, liftEdges, nodeZ, traversable)) {
-    const centre = new THREE.Vector3(shaft.centre.x, 0, -shaft.centre.y);
-    const stops = shaft.stops.map((stop) => ({ y: stop.z, face: stop.face, door: new THREE.Vector3(stop.door.x, stop.z, -stop.door.y) }));
-    const parts = buildElevator(centre, stops, tier);
-    // A shaft is solid over its full height, except for each stop's door band on that face.
-    const yMin = stops[0]!.y - 0.12, yMax = stops.at(-1)!.y + 2.6;
-    SHAFT_NORMALS.forEach((normal, face) => {
-      const origin = centre.clone().addScaledVector(normal, SHAFT_HALF), tangent = new THREE.Vector3(normal.z, 0, -normal.x);
-      const holes = stops.filter((stop) => stop.face === face).map((stop) => {
-        const u = stop.door.clone().sub(centre).dot(tangent);
-        return { u0: u - DOOR_HALF, u1: u + DOOR_HALF, v0: stop.y - 0.12, v1: stop.y + 2.6 };
-      });
-      for (const [u0, u1, v0, v1] of freePanels(-SHAFT_HALF, SHAFT_HALF, yMin, yMax, holes)) {
-        const a = origin.clone().addScaledVector(tangent, u0), b = origin.clone().addScaledVector(tangent, u1), length = u1 - u0;
-        if (length < 0.02) continue;
-        wallSegments.push({ ax: a.x, az: a.z, bx: b.x, bz: b.z, yMin: v0, yMax: v1 });
-        const transform = new THREE.Matrix4().makeRotationY(Math.atan2(-(b.z - a.z), b.x - a.x)).setPosition((a.x + b.x) / 2, (v0 + v1) / 2, (a.z + b.z) / 2);
-        box(parts, "steel", transform, 0, 0, 0, length, v1 - v0, 0.04, "collider"); parts.at(-1)!.walkableOnly = true;
-      }
-    });
-    // The stop floor, visible: a lift's greybox landing pad leaves its floor to the shaft.
-    for (const stop of stops) box(parts, "tread", new THREE.Matrix4(), centre.x, stop.y - 0.04, centre.z, 2 * SHAFT_HALF, 0.08, 2 * SHAFT_HALF, "walkable");
-    for (const edge of shaft.edges) {
-      const points = edgePoints(bundle, edge, nodes, floors), from = points[0]!, to = points.at(-1)!;
-      const path = [from.clone(), new THREE.Vector3(centre.x, from.y, centre.z), new THREE.Vector3(centre.x, to.y, centre.z), to.clone()];
-      const ride = path.filter((p, i) => i === 0 || p.distanceTo(path[i - 1]!) > 1e-6);
-      pathByEdge.set(edge.id, ride);
-      for (let i = 1; i < ride.length; i++) segments.push({ line: new THREE.Line3(ride[i - 1]!.clone(), ride[i]!.clone()), halfWidth: DOOR_HALF });
-      counts.elevator++;
-    }
-    for (const part of parts) part.edgeId = shaft.id;
-    const key = tier === "low" ? "all" : nodes.get(shaft.edges[0]!.from)?.floorId ?? "";
-    const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => !p.walkableOnly)); batches.set(key, batch);
-    const support = parts.filter((p) => p.role === "walkable"), shaftWalls = parts.filter((p) => p.role === "collider");
-    if (support.length) walkable.push(meshFor(support, physicalMaterial));
-    if (shaftWalls.length) colliders.push(meshFor(shaftWalls, physicalMaterial));
   }
   let triangles = 0;
   const lightBatches: { mesh: THREE.Mesh; parts: ConnectorPart[] }[] = [];

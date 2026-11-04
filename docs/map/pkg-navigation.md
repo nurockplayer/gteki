@@ -1,7 +1,7 @@
 ---
 area: pkg-navigation
 owner: gteki-fa
-updated: 2026-10-26 JST
+updated: 2026-11-04 JST
 ---
 # pkg-navigation: routing graph, pathfinding and guidance
 
@@ -23,12 +23,14 @@ Fail-closed rules: an edge is usable only if `verification` is `verified` (or `s
 - `packages/navigation/src/router.ts:373-393` — `openings()`: weekly opening windows of an edge.
 - `packages/navigation/src/router.ts:405-423` — `lowerBounds()`: backward cost bound used for pruning.
 - `packages/navigation/src/router.ts:577-715` — `route()`: the search itself.
-- `packages/navigation/src/poi.ts:16-27` — `routeBetween()`: POI-level entry point; applies the fare rule to the POIs and is what the apps call.
+- `packages/navigation/src/poi.ts:11-13` — `destinationNodeIds()`: shared destination-to-node resolution for routing and per-tie UI classification.
+- `packages/navigation/src/poi.ts:21-32` — `routeBetween()`: POI-level entry point; applies the fare rule to the POIs and is what the apps call.
 - `packages/navigation/src/explain.ts:143-163` — `explainNoPathWith()`; `packages/navigation/src/explain.ts:182-190` — `explainNoPathBetween()`, which names the refusing option.
 - `packages/navigation/src/present.ts:32-66` — `routePolyline()`: per-step edge geometry with `zKnown`.
 - `packages/navigation/src/present.ts:672-841` — `describeRoute()`: the `Instruction[]` (kinds, waits, lifts, junction hints) in ja or en.
 - `packages/navigation/src/present.ts:532-584` — `foldShortLegs()`: merges very short legs into their neighbours.
 - `packages/navigation/src/present.ts:72-81` — `instructionPoints()`: polyline points one instruction covers.
+- `packages/navigation/src/snap-path.ts` — `assembleSnapPath()` shares snap-only route assembly between the navmesh audit and runtime; missing steps or baked junctions fail instead of drawing straight gaps. Ruling-C suspect graph polylines are explicitly flagged; the audit counts their routes separately. The audit resolves endpoints to canonical final-mesh snaps before assembly.
 - `packages/navigation/src/fixtures.ts` — `createSyntheticBundle()` and friends, used as test fixtures by other packages.
 
 ## Data flow
@@ -49,6 +51,7 @@ Fail-closed rules: an edge is usable only if `verification` is `verified` (or `s
 - Budget overrun is `search_limit`, not `no_path`. Traversals past `MAX_CLOCK_MINUTES` (366 days) are UNKNOWN, not proof that no route exists.
 - Cost is the router's time-like cost (walk 1.2 m/s, stairs 0.5, escalator 0.75, lift 45 s, plus waits), not metres.
 - `route()` ignores unknown node ids; `start_equals_goal` beats any walk.
+- `packages/navigation/src/snap-path.ts` — `assembleSnapPath()` shares snap-only route assembly between the navmesh audit and runtime; missing steps or baked junctions fail instead of drawing straight gaps. Ruling-C suspect graph polylines are explicitly flagged; the audit counts their routes separately. The audit resolves endpoints to canonical final-mesh snaps before assembly.
 - `packages/navigation/src/fixtures.ts` is non-test code imported by tests across apps, packages and stations. Changing a fixture ripples widely.
 - Routes keep a copy of the profile (`RouteResult.profile`); presentation must use that copy, not the UI's current options.
 

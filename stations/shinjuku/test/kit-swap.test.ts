@@ -46,14 +46,22 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged.
  * Vertical item 3 adds a fill light at the guided-walk escalator bank head in the slot a ceilingless anchor wasted (7 → 8 lights): nodes
  * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged. */
+// #221 per-flight shaft finishes; station physical lists unchanged (2026-11-03 JST).
+// 2026-11-03 18:00 JST: the attributed ceiling proxy intentionally supplies the
+// overhead query itself. The removed copied-cap mesh briefly made this four
+// camera blockers; this candidate retains three and the original listsDigest.
+// Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
+// 2026-11-04 JST: low-tier steps share one geometry and 1,582 instances across 21 runs.
+// #815: real-size shared step geometry, relative scales and run bounds change geometry/nodes only.
+// #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "2931495174d3eacc531cc9e2bbcdd0e5521b6bc2f457b258fccf1cd9040a472e",
-    appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
-    nodesDigest: "b4b1106baaf9b34ac1519a23186b5e1cd9e4d614d322bb3d1428fad50fccf7c8",
-    texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
-    meshes: 145,
-    bytes: 14_072_870,
+    geometryDigest: "963d2262bbc6629270924c8d104ef9e6ffb9d8403ac21860d1865ac45c2c5012",
+    appearanceDigest: "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
+    nodesDigest: "23a9c085918b8fdfacd0347bddfed5205ff24482f22efe140cb1e1d1fef86b3c",
+    texturesDigest: "640b359c5471765e6c9817784676b751578030272216e2381b3d25df9ce7c354",
+    meshes: 125,
+    bytes: 15852302,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
@@ -762,7 +770,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.unstubAllGlobals();
     });
 
-    it("flag off: the scene equals main 45250364 in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
+    it("flag off: the low-tier scene matches its mesh, node, texture and explorer-list digest", () => {
       expect(off.root.userData.kitSwap).toBeUndefined();
       // Meshes (geometry + appearance), all other nodes incl. lights and userData, and texture params of every material.
       expect(digestStation(off.root, isStationProxy)).toEqual(MAIN_BASELINE.station);

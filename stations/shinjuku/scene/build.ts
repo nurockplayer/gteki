@@ -136,6 +136,20 @@ function enclosureWallGeometry(w: WallSeg): THREE.BufferGeometry {
   return g;
 }
 
+/** Draw one connected coplanar finish, including its passage holes. */
+function shaftFasciaGeometry(fascia: Layout["shaftFascias"][number]): THREE.BufferGeometry {
+  if (!fascia.polygon) return enclosureWallGeometry(fascia.wall);
+  const { rings, axis, offset } = fascia.polygon;
+  const g = new THREE.ShapeGeometry(shapeFromRings(rings)), position = g.attributes.position!, uv = g.attributes.uv!;
+  for (let i = 0; i < position.count; i++) {
+    const s = position.getX(i), z = position.getY(i);
+    position.setXYZ(i, axis.x * s - axis.y * offset, z, -(axis.y * s + axis.x * offset));
+    uv.setXY(i, s / 2.4, z / 3.2);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
 function runPanel(w: WallSeg, r: Run): WallSeg {
   const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, l2 = dx * dx + dy * dy;
   const zAt = (p: XY) => r.a.z + (r.b.z - r.a.z) * ((p.x - r.a.x) * dx + (p.y - r.a.y) * dy) / l2;
@@ -179,7 +193,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     ...layout.runs.map((r) => pitched(r, 0.04, 0.08))];
   const voids = surfaces.map((s) => {
     const points = s.rings.flat();
-    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.2, top: (p: XY) => soffitHeight(s, p) + HEAD_BAND,
+    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.008, top: (p: XY) => soffitHeight(s, p) + HEAD_BAND,
       minX: Math.min(...points.map((p) => p.x)), maxX: Math.max(...points.map((p) => p.x)),
       minY: Math.min(...points.map((p) => p.y)), maxY: Math.max(...points.map((p) => p.y)) };
   });
@@ -214,16 +228,21 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   // Mirror finishUnderground's streetUnderside without changing its bake fingerprint.
   // Leave 1 mm below it so Float32 vertices remain strictly underground.
   const streetLimit = STREET_UNDERSIDE - 0.001;
-  const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
-  const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [], finishes: Soffit[] = [];
+  // Only drawn finishes can replace a shell panel. Legacy shaft caps remain
+  // in the physical layout, but their footprints no longer close visible voids.
+  const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings),
+    ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
+  const snap = (polys: polygonClipping.MultiPolygon): polygonClipping.MultiPolygon => polys.map((poly) => poly.map((ring) =>
+    ring.map(([x, y]) => [Math.round(x! * 1e4) / 1e4, Math.round(y! * 1e4) / 1e4])));
+  const walls: { wall: WallSeg; covered: { rings: XY[][]; roof: Finish }[] }[] = [], roofs: THREE.BufferGeometry[] = [], finishes: Soffit[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
     // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
     // joins the inclined finish to landing ceilings without closing either run mouth.
     const roof = pitched(r, 0.45, 0.6);
     roof.z += SHELL_RISE;
-    // Existing finish wins wherever its footprint covers the shell and its
-    // affine underside is at or below the shell top. Remove the side there too:
-    // otherwise its upper strip can become the first drawn roof seen by the camera.
+    // A lower finish trims the side above its underside. Keep the backing
+    // shell roof when the planes differ: cutting it by footprint alone leaves
+    // an open step between the two heights.
     // #316: only a surface above the walker's head band can close that void, so
     // undersides (run-underside:*, shaft-invert:*) and lower ceilings never count.
     const headTop = (p: XY) => soffitHeight(roof, p) - SHELL_RISE + HEAD_BAND;
@@ -239,7 +258,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       return footprint;
     };
     let panels: polygonClipping.MultiPolygon = [polygon(roof.rings)];
-    const covered: XY[][][] = [];
+    const covered: { rings: XY[][]; roof: Finish }[] = [];
     for (const existing of existingRoofs) {
       let cut = polygonClipping.intersection([polygon(roof.rings)], polygon(existing.rings));
       if (!atStreetFinish(existing)) cut = heightMask(cut, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
@@ -247,8 +266,12 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       if (!cut.length) continue;
       // Keep the existing footprint for side cutting: intersecting it with the
       // shell strip would put both side walls exactly on the cutter boundary.
-      covered.push(...covers(existing).map(ringsOf));
-      panels = polygonClipping.difference(panels, cut);
+      covered.push(...covers(existing).map((poly) => ({ rings: ringsOf(poly), roof: existing })));
+      // A lower finish does not meet this pitched roof along the cut edge.
+      // Keep the backing roof there; only a coincident plane replaces it safely.
+      if (roof.rings.flat().every((p) => Math.abs(soffitHeight(roof, p) - soffitHeight(existing, p)) < 1e-4)) {
+        panels = polygonClipping.difference(snap(panels), snap(cut));
+      }
     }
     panels = heightMask(panels, (p) => streetLimit - soffitHeight(roof, p));
     const ring = roof.rings[0]!;
@@ -260,12 +283,15 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     const points = roof.rings.flat();
     const minX = Math.min(...points.map((p) => p.x)), maxX = Math.max(...points.map((p) => p.x));
     const minY = Math.min(...points.map((p) => p.y)), maxY = Math.max(...points.map((p) => p.y));
+    // As with the side panels below, dissolve near-coincident cut edges at
+    // 0.1 mm precision before combining the new finish masks with walking voids.
+    panels = snap(panels);
     for (const v of voids) {
       if (v.maxX < minX || v.minX > maxX || v.maxY < minY || v.minY > maxY) continue;
-      let cut = polygonClipping.intersection(panels, polygon(v.rings));
+      let cut = polygonClipping.intersection(panels, ...snap([polygon(v.rings)]));
       cut = heightMask(cut, (p) => soffitHeight(roof, p) - v.bottom(p));
       cut = heightMask(cut, (p) => v.top(p) - soffitHeight(roof, p));
-      if (cut.length) panels = polygonClipping.difference(panels, cut);
+      if (cut.length) panels = polygonClipping.difference(panels, snap(cut));
     }
     const lowZ = Math.min(r.a.z, r.b.z);
     const floorId = layout.levels.reduce<Layout["levels"][number] | undefined>((best, lv) => !best || Math.abs(lv.z - lowZ) < Math.abs(best.z - lowZ) ? lv : best, undefined)?.floorId ?? "";
@@ -280,7 +306,8 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = Math.hypot(dx, dy);
     const u = { x: dx / length, y: dy / length };
     const along = (p: XY) => (p.x - wall.a.x) * u.x + (p.y - wall.a.y) * u.y;
-    const roofVoids = covered.map((rings) => ({ rings, bottom: () => wall.zMin - 1, top: () => wall.zMax + 1 }));
+    const roofVoids = covered.map(({ rings, roof }) => ({ rings,
+      bottom: (p: XY) => soffitHeight(roof, p), top: () => wall.zMax + 1 }));
     const pieces = cutWallsByVoids([wall], [...voids, ...roofVoids]).map((w): polygonClipping.Polygon => {
       const p = w.profile!;
       return [[[along(w.a), p.bottomA], [along(w.b), p.bottomB], [along(w.b), p.topB], [along(w.a), p.topA]]];
@@ -431,7 +458,7 @@ function addWallBackFaces(root: THREE.Group, material: THREE.Material, track: <T
 /** Thin, long level meshes have very loose default bounding spheres. A second box
  * check avoids submitting whole underground levels when the camera faces away from them.
  */
-function installTightCulling(root: THREE.Group) {
+function installTightCulling(root: THREE.Group, quality: BuildOptions["quality"]) {
   const frustum = new THREE.Frustum(), projection = new THREE.Matrix4(), worldBox = new THREE.Box3();
   const uses = new Map<THREE.BufferGeometry, number>();
   root.traverse((o) => { if (o instanceof THREE.Mesh) uses.set(o.geometry, (uses.get(o.geometry) ?? 0) + 1); });
@@ -458,6 +485,12 @@ function installTightCulling(root: THREE.Group) {
     batch.renderOrder = o.renderOrder;
     batch.computeBoundingSphere();
     batch.onBeforeRender = (_renderer, _scene, camera) => {
+      // The cutter replaces this sole instance with a child mesh and zeros its matrix.
+      // A zero-scale instance still submits a draw; keep the empty phone batch at zero.
+      if (quality === "low" && batch.children.some(child => child.userData.portalInstanceCopy)) {
+        batch.count = 0;
+        return;
+      }
       frustum.setFromProjectionMatrix(projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
       worldBox.copy(bounds).applyMatrix4(batch.matrixWorld);
       batch.count = frustum.intersectsBox(worldBox) ? 1 : 0;
@@ -511,7 +544,7 @@ function contactShade(geo: THREE.BufferGeometry, open: (p: THREE.Vector3) => num
 /**
  * One escalator step in its instance frame (+X uphill, tread top at y = 0): a level tread `depth` deep and the riser
  * under its downhill edge, `rise` tall. UVs map the tread into the top half of `escalatorStepTexture` and the riser into
- * the bottom half, so a step stays one geometry and one draw per escalator.
+ * the bottom half, so treads and risers share one geometry and material.
  */
 function escalatorStepGeometry(depth: number, rise: number, width: number): THREE.BufferGeometry {
   const half = (g: THREE.BufferGeometry, v0: number) => {
@@ -540,6 +573,7 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
   let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput });
+  const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
@@ -554,6 +588,16 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const paidTiles = tileTextures({ base: "#76776f", grout: "#4c4f49", n: 4, seed: 23, speckle: 0.12 });
   const platformTiles = tileTextures({ base: "#777b7a", grout: "#484d4c", n: 4, seed: 37, speckle: 0.13 });
   const wallMaps = wallTexture(OEDO_MAGENTA), ceilingMaps = ceilingTexture();
+  if (opts.quality === "low") {
+    for (const maps of [concourseTiles, paidTiles, platformTiles, wallMaps, ceilingMaps]) for (const texture of Object.values(maps)) {
+      const source = texture.image as HTMLCanvasElement;
+      const canvas = document.createElement("canvas");
+      canvas.width = source.width / 2;
+      canvas.height = source.height / 2;
+      canvas.getContext("2d", { willReadFrequently: true })!.drawImage(source, 0, 0, canvas.width, canvas.height);
+      texture.image = canvas;
+    }
+  }
   for (const texture of Object.values(wallMaps)) texture.wrapT = THREE.ClampToEdgeWrapping;
   for (const t of [concourseTiles, paidTiles, platformTiles, wallMaps, ceilingMaps]) for (const tex of Object.values(t)) (tex.anisotropy = aniso), track(tex);
   const mat = {
@@ -587,7 +631,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     trackBed: track(new THREE.MeshStandardMaterial({ color: "#2a2826", roughness: 0.95 })),
     rail: track(new THREE.MeshStandardMaterial({ color: "#8d8f92", roughness: 0.3, metalness: 0.9 })),
     accent: track(new THREE.MeshStandardMaterial({ color: OEDO_MAGENTA, roughness: 0.4, emissive: OEDO_MAGENTA, emissiveIntensity: 0.15 })),
-    portal: track(new THREE.MeshBasicMaterial({ color: "#7fd3ff", transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })),
+    portal: track(new THREE.MeshBasicMaterial({ color: "#7fd3ff", transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false, forceSinglePass: opts.quality === "low" })),
     sidewalk: track(new THREE.MeshStandardMaterial({ color: "#a39e96", roughness: 0.9 })),
     tunnel: track(new THREE.MeshStandardMaterial({ color: "#3a3b3d", roughness: 0.95, side: THREE.DoubleSide })),
     psdLeaf: track(new THREE.MeshStandardMaterial({ color: "#c9d6dd", roughness: 0.15, metalness: 0.4, transparent: true, opacity: 0.85 })),
@@ -649,7 +693,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.name = "room floor (render only)";
       g.add(mesh);
     }
-    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...layout.soffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry)]);
+    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...visibleSoffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry), ...layout.shaftFascias.filter((f) => f.floorId === lv.floorId).map(shaftFasciaGeometry)]);
     if (ceil) g.add(new THREE.Mesh(track(ceil), mat.ceiling));
     const hood = merged(layout.soffits.filter((s) => s.floorId === lv.floorId && s.spaceId.startsWith("elevator-cap:") && s.z > -0.5).map(soffitGeometry));
     if (hood) {
@@ -775,6 +819,32 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     root.add(mesh);
   }
   const escalators: BuiltStation["escalators"] = [];
+  const stepCount = (r: Run) => Math.ceil(Math.hypot(Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1, r.b.z - r.a.z) / 0.4);
+  const lowStepSizes = opts.quality === "low" ? layout.runs.filter(r => r.mode === "escalator").map(r => {
+    const L = Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1;
+    const rise = Math.abs(r.b.z - r.a.z);
+    const L3 = Math.hypot(L, rise);
+    return { depth: 0.4 * L / L3, rise: 0.4 * rise / L3 };
+  }) : [];
+  const median = (values: number[]) => {
+    values.sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    return values.length % 2 ? values[mid]! : (values[mid - 1]! + values[mid]!) / 2;
+  };
+  const refDepth = median(lowStepSizes.map(s => s.depth));
+  const refRise = median(lowStepSizes.map(s => s.rise));
+  const sharedSteps = opts.quality === "low"
+    ? new THREE.InstancedMesh(track(escalatorStepGeometry(refDepth, refRise, 1)), mat.escStep,
+      layout.runs.filter(r => r.mode === "escalator").reduce((sum, r) => sum + stepCount(r), 0))
+    : undefined;
+  if (sharedSteps) {
+    sharedSteps.name = "escalator-steps:all";
+    sharedSteps.frustumCulled = false;
+    sharedSteps.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    sharedSteps.userData.ranges = {};
+    root.add(sharedSteps);
+  }
+  let stepOffset = 0;
   {
     const stairGeos: THREE.BufferGeometry[] = [...fasciaGeos];
     const nosingGeos: THREE.BufferGeometry[] = [];
@@ -842,13 +912,20 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const L3 = Math.hypot(L, dz);
         const stepLen = 0.4;
         const count = Math.ceil(L3 / stepLen);
-        const stepGeo = track(escalatorStepGeometry(stepLen * (L / L3), stepLen * (dz / L3), r.width - 0.1));
-        const steps = new THREE.InstancedMesh(stepGeo, mat.escStep, count);
+        const scale = new THREE.Vector3(stepLen * (L / L3), stepLen * (dz / L3), r.width - 0.1);
+        const steps = sharedSteps ?? new THREE.InstancedMesh(track(escalatorStepGeometry(scale.x, scale.y, scale.z)), mat.escStep, count);
         // Animated every frame: dynamic usage also tells the explorer's cuts to leave these instances alone.
         steps.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        steps.name = `escalator-steps:${r.edgeId}`;
-        steps.userData = { lo, hi, yaw, count, L3, stepLen };
-        root.add(steps);
+        if (sharedSteps) {
+          scale.set(scale.x / refDepth, scale.y / refRise, scale.z);
+          const bounds = new THREE.Box3().setFromPoints([v3(lo), v3(hi)]).expandByScalar(hw + stepLen);
+          steps.userData.ranges[r.edgeId] = { lo, hi, yaw, count, L3, stepLen, offset: stepOffset, scale, bounds };
+          stepOffset += count;
+        } else {
+          steps.name = `escalator-steps:${r.edgeId}`;
+          steps.userData = { lo, hi, yaw, count, L3, stepLen };
+          root.add(steps);
+        }
         escalators.push({ run: r, steps, speed: 0.5 * (r.travel === 0 ? 0 : (r.a.z <= r.b.z ? 1 : -1) * r.travel) });
         // entry/exit indicators: green arrow where you board, red bar where you must not.
         // Low on the skirt end at the comb, facing the approach (not floating out over the landing).
@@ -1048,7 +1125,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
     const portalTex = signTexture([{ icon: "nomap", ja: "この先 データ未収録", en: "Not mapped beyond this point", tone: "warn" }], 1024);
     track(portalTex.texture);
-    const signMat = track(new THREE.MeshBasicMaterial({ map: portalTex.texture, side: THREE.DoubleSide, transparent: true }));
+    const signMat = track(new THREE.MeshBasicMaterial({ map: portalTex.texture, side: THREE.DoubleSide, transparent: true, forceSinglePass: opts.quality === "low" }));
     for (const node of bundle.nodes) {
       if (degree.get(node.id) !== 1 || node.inOut !== "inside") continue;
       if (node.kind !== "junction" && node.kind !== "exit") continue;
@@ -1107,7 +1184,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // of which the portals are only ~650 (#72). The batch used to inherit the name "elevator-portal:finish".
   mergeRootFinishes(root, [[mat.steel, "static-steel-finishes"], [mat.glass, "static-glass-finishes"]], track, true);
   mergeRootFinishes(root, [[mat.darkSteel, "static-dark-steel-finishes"], [mat.gateOk, "static-gate-ok-finishes"], [mat.accent, "static-accent-finishes"]], track);
-  installTightCulling(root);
+  installTightCulling(root, opts.quality);
 
   // ---- platform edge helper
   function buildPlatformEdge(walls: WallSeg[], z: number, g: THREE.Group) {
@@ -1306,6 +1383,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   /** Train cycle (s): 0–14 arrive (decelerate), 14–40 dwell (doors 16–37), 40–54 depart, 54–110 empty. */
   const CYCLE = 110;
   let trainClock = 0;
+  let stepTime = 0;
   /** QA: phase of each platform's train cycle (s) and whether a train is in. */
   const trainStatus = () => platformTracks.map((tr) => {
     const tt = (trainClock + tr.phase) % CYCLE;
@@ -1357,23 +1435,45 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         mesh.computeBoundingSphere();
       }
     }
-    for (const esc of escalators) {
-      const { lo, hi, yaw, count, L3, stepLen } = esc.steps.userData as { lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number };
-      const trim = combed.has(esc.run.edgeId) && (!kitSwap?.lod || kitSwap.lod.active.has(esc.run.edgeId)) ? stepLen / 2 : 0;
-      tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
-      const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
-      for (let i = 0; i < count; i++) {
-        let s = i * stepLen + phase;
-        if (s > L3) s -= L3;
-        const f = s / L3;
-        tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
-        // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
-        // Procedural runs have no comb, so hiding would open a gap at the landing instead.
-        tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : tmpS);
-        esc.steps.setMatrixAt(i, tmpM);
-      }
+    stepTime = t;
+    if (!sharedSteps) for (const esc of escalators) {
+      writeSteps(esc, t);
       esc.steps.instanceMatrix.needsUpdate = true;
     }
+  }
+  function writeSteps(esc: BuiltStation["escalators"][number], t: number, offset = 0) {
+    const { lo, hi, yaw, count, L3, stepLen, scale = tmpS } = (esc.steps.userData.ranges?.[esc.run.edgeId] ?? esc.steps.userData) as {
+      lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number; scale?: THREE.Vector3;
+    };
+    const trim = combed.has(esc.run.edgeId) && (!kitSwap?.lod || kitSwap.lod.active.has(esc.run.edgeId)) ? stepLen / 2 : 0;
+    tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
+    const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
+    for (let i = 0; i < count; i++) {
+      let s = i * stepLen + phase;
+      if (s > L3) s -= L3;
+      const f = s / L3;
+      tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
+      // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
+      // Procedural runs have no comb, so hiding would open a gap at the landing instead.
+      tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : scale);
+      esc.steps.setMatrixAt(offset + i, tmpM);
+    }
+    return count;
+  }
+  if (sharedSteps) {
+    const frustum = new THREE.Frustum(), projection = new THREE.Matrix4(), worldBox = new THREE.Box3();
+    // Populate the initial pose for scene digests; subsequent low-tier animation happens per view.
+    for (const esc of escalators) writeSteps(esc, 0, sharedSteps.userData.ranges[esc.run.edgeId].offset);
+    sharedSteps.onBeforeRender = (_renderer, _scene, camera) => {
+      frustum.setFromProjectionMatrix(projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+      let packed = 0;
+      for (const esc of escalators) {
+        worldBox.copy(sharedSteps.userData.ranges[esc.run.edgeId].bounds).applyMatrix4(sharedSteps.matrixWorld);
+        if (frustum.intersectsBox(worldBox)) packed += writeSteps(esc, stepTime, packed);
+      }
+      sharedSteps.count = packed;
+      sharedSteps.instanceMatrix.needsUpdate = true;
+    };
   }
   update(0, 0);
 
@@ -1646,7 +1746,8 @@ function buildUndergroundLighting(
   type Fixture = { a: XYZ; b: XYZ; ground: XYZ };
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
-  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))), ...layout.soffits, ...extraRoofs];
+  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
+    ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
   const ceilingAt = (p: XYZ) => {
     let best: { z: number; floorId: string } | null = null;
     for (const s of roofs) {
