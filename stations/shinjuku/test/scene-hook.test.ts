@@ -119,7 +119,8 @@ describe("shared-explorer scene hook: camera caps", () => {
   it("negative controls: a cap without its drawn glazing, or glazing without its cap, fails the roofed-link check", () => {
     const visible = drawn(), blockers = [...scene.cameraBlockers!, ...scene.walkable];
     // Drop the drawn street glazing (canopies + roofed-run glazing) but keep every cap.
-    expect(roofedLinkSamples(visible.filter((o) => o.name !== "surface-glass"), blockers).unroofed.length).toBeGreaterThan(0);
+    expect(roofedLinkSamples(visible.filter((o) => o.name !== "surface-glass"), blockers).unroofed.length)
+      .toBeGreaterThan(roofedLinkSamples(visible, blockers).unroofed.length);
     // Keep the glazing but drop the merged ceiling/canopy cap.
     expect(roofedLinkSamples(visible, blockers.filter((o) => o.name !== "ceiling collider (invisible)")).uncapped.length).toBeGreaterThan(0);
   }, 60_000);
