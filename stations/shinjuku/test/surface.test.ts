@@ -96,6 +96,25 @@ describe("street geometry and collision", () => {
     }
     expect(samples).toBeGreaterThan(50);
   });
+  it("keeps pavement above repaired stair-chain landings clear of the walker", () => {
+    const repaired = ["4038cecf", "45ebdab4", "bdcdf922", "c2c4ebb3", "c3fe6342", "c690df6c", "c7fa5f74", "dcbc1a25"];
+    const flights = bundle.edges.filter((e) => repaired.some((id) => e.id.startsWith(`e:${id}`)));
+    expect(flights).toHaveLength(8);
+    const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+    const landings = bundle.edges.filter((e) => e.mode === "walk" &&
+      [e.from, e.to].some((id) => flights.some((f) => f.from === id || f.to === id)) &&
+      [e.from, e.to].every((id) => bundle.edges.some((f) => (f.mode === "stairs" || f.mode === "escalator") && (f.from === id || f.to === id))) &&
+      [e.from, e.to].every((id) => { const z = layout.nodeZ.get(id)!; return z < -0.012 && z + 1.7 > -0.012; }));
+    expect(landings.length).toBeGreaterThan(0);
+    for (const e of landings) {
+      const points = e.geometry?.length ? e.geometry : [nodes.get(e.from)!.position, nodes.get(e.to)!.position];
+      for (let i = 1; i < points.length; i++) for (let k = 1; k < 20; k++) {
+        const a = points[i - 1]!, b = points[i]!, t = k / 20;
+        expect(inPolys(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, ground), e.id).toBe(false);
+      }
+    }
+    console.log(`Repaired-chain landings within walker height: ${landings.length}`);
+  });
   it("cuts every ground-level elevator endpoint", () => {
     for (const e of bundle.edges.filter((e) => e.mode === "elevator")) for (const id of [e.from, e.to]) {
       if (Math.abs(layout.nodeZ.get(id)!) > 0.1) continue;

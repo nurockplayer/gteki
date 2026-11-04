@@ -71,6 +71,28 @@ export function surfaceOpenings(layout: Layout, bundle: StationBundle): MultiPol
       const a = { x: r.a.x + dx * lo, y: r.a.y + dy * lo }, b = { x: r.a.x + dx * hi, y: r.a.y + dy * hi };
       holes.push([[[a.x + nx, a.y + ny], [b.x + nx, b.y + ny], [b.x - nx, b.y - ny], [a.x - nx, a.y - ny], [a.x + nx, a.y + ny]]]);
     }
+    // Flat links between flights are landings, not solid street slabs. Cut the
+    // connecting corridor when the two flights together span street level.
+    const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+    const vertical = bundle.edges.filter((e) => e.mode === "stairs" || e.mode === "escalator");
+    for (const e of bundle.edges.filter((e) => e.mode === "walk")) {
+      const za = layout.nodeZ.get(e.from)!, zb = layout.nodeZ.get(e.to)!;
+      if (Math.abs(za - zb) >= 0.01 || za >= -0.012 || za < -2.6) continue;
+      const first = vertical.filter((v) => v.from === e.from || v.to === e.from);
+      const second = vertical.filter((v) => v.from === e.to || v.to === e.to);
+      if (!first.some((a) => second.some((b) => {
+        const heights = [za, zb, layout.nodeZ.get(a.from)!, layout.nodeZ.get(a.to)!, layout.nodeZ.get(b.from)!, layout.nodeZ.get(b.to)!];
+        return a.id !== b.id && Math.max(...heights) >= -0.012 && Math.min(...heights) < -0.012;
+      }))) continue;
+      const points = e.geometry?.length ? e.geometry : [nodes.get(e.from)!.position, nodes.get(e.to)!.position];
+      const halfWidth = widthFromClass(e.attributes?.width, e.mode) / 2 + 0.08;
+      for (let i = 1; i < points.length; i++) {
+        const a = points[i - 1]!, b = points[i]!, dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
+        if (!length) continue;
+        const nx = -dy / length * halfWidth, ny = dx / length * halfWidth;
+        holes.push([[[a.x + nx, a.y + ny], [b.x + nx, b.y + ny], [b.x - nx, b.y - ny], [a.x - nx, a.y - ny], [a.x + nx, a.y + ny]]]);
+      }
+    }
     // CAD elevator shaft polygons where available; otherwise the graph-end shaft
     // uses an explicitly generic 2.2 m opening, never a claim about equipment size.
     for (const lv of layout.levels.filter((l) => Math.abs(l.z) < 0.1)) for (const room of lv.rooms.filter((r) => r.role === "elevator")) holes.push(ringPoly(room.space.rings));
