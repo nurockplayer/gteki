@@ -364,6 +364,8 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .minimap-route-label div { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .minimap-notice { padding: 0 6px; color: var(--muted); font-size: 10px; line-height: 13px; text-align: center; }
 .minimap-controls { display: flex; justify-content: center; gap: 4px; padding: 0 4px; }
+.minimap-zoom { align-items: center; }
+.minimap-zoom button { min-width: 28px; }
 .minimap-controls button, .minimap-reopen { min-height: 28px; padding: 3px 6px; font-size: 11px; }
 .minimap-orientation[aria-pressed="true"] { border-color: #5ef0ff; color: #5ef0ff; }
 .minimap-collapse { flex: none; min-width: 28px; }
