@@ -86,7 +86,18 @@ for (const key of STATIONS) {
     // Alias / Japanese query finds something on this station.
     await page.locator("#gteki-to").click();
     await page.locator("#gteki-to").pressSequentially(p.alias[0], { delay: 40 });
-    await expect(page.locator(".field-to .results .result-name", { hasText: p.alias[1] }).first()).toBeVisible();
+    if (key === "shinjuku") {
+      // Director rule 2026-10-28 JST (#595): names stay verbatim; composed English is a description subtitle.
+      const result = page.locator(".field-to .results .result").filter({
+        has: page.locator(".result-note", { hasText: /Toilet/i }),
+      }).first();
+      await expect(result).toBeVisible();
+      const poiId = await result.getAttribute("data-poi");
+      const poi = stationData(key).pois.find((poi) => poi.id === poiId)!;
+      await expect(result.locator(".result-name")).toHaveText(poi.names.find((name) => name.lang === "ja")!.text);
+    } else {
+      await expect(page.locator(".field-to .results .result-name", { hasText: p.alias[1] }).first()).toBeVisible();
+    }
     await page.keyboard.press("Escape");
 
     await chooseBySearch(page, "from", p.from[0], p.from[1]);
