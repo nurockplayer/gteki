@@ -41,12 +41,11 @@ failedRoutePairs 2, routablePairs 238; `links.failed` = 3× `unsafe_snap` (4b7d9
   (forbidden); the honest repair needs source geometry (a landing floor at the shaft mouth).
 
 ## 4. e:ed7e56a8e6234197be06280fcb24aecc — elevator, m1 ↔ toei-nwd-1 (7.81 m)
-- Same shape as #3: `snap_failed`, `link_unattached`, both endpoint snaps absent.
-  `n:cbaeded02c…` (B1, z=-7.8) is the partner node in the same shaft void.
-- Both elevator edges need the `826-probe` endpoint boxes to decide source-backed vs Blocked.
+- Same shape as #3: `snap_failed`, `link_unattached`, both endpoint snaps absent; `n:cbaeded02c…`
+  (B1, z=-7.8) is the partner node in the same shaft void, so both need the `826-probe` boxes.
 
 ## Next
 `.qa/826/probe-navmesh.sh` (job `826-probe`, started 2026-11-05 05:13 JST) adds `qaEdgeProbe` to the
-audit dump: per-endpoint snap + 1.5/3 m boxes, walk-edges' island grid, navmesh presence at 0.25 m,
-live wall crossings, ceiling clearance. Anything not source-backed is reported Blocked with the
-data location above; the audit classification and tolerances are not touched.
+audit dump: endpoint snaps + 1.5/3 m boxes, island grid, 0.25 m navmesh presence, wall crossings,
+ceiling clearance. Anything not source-backed is Blocked with the data location above; audit
+classification and tolerances are untouched.
