@@ -70,32 +70,31 @@ All eight repaired edges were emitted and attached at both ends. Bake user IDs:
 `4038cecf=16`, `45ebdab4=20`, `bdcdf922=45`, `c2c4ebb3=47`, `c3fe6342=48`,
 `c690df6c=49`, `c7fa5f74=52`, `dcbc1a25=57`.
 
-| Public metric | Before | After |
+Latest-main reference: `9cbbfb29` (including #783).
+
+| Public metric | Main | Candidate audit |
 | --- | ---: | ---: |
 | Suspect vertical edges | 8 | 0 |
-| Route-used suspect edges (#789 before count) | 6 | 0 |
+| `suspectPolyline.routes` | 58 | 0 |
+| `suspectPolyline.edges` | 6 | 0 |
 | Fallback edges | 4 | 4 |
-| Unvalidated joins | 56 | 56 |
+| Unvalidated joins | 48 | **56** |
 | Connector / fallback / navmesh wall hits | 0 / 6 / 0 | 0 / 6 / 0 |
 | Off-floor / invalid joins | 0 / 0 | 0 / 0 |
 | Routable / failed route pairs | 238 / 2 | 238 / 2 |
 
 No per-edge clip baseline increased; no new fallback edges or detours appeared.
-The merged main `9e90ac2c` still reports `suspectEdges`, not a literal
-`suspectPolyline` field (#783 remained open during reconciliation). The
-captured runtime audit reports `suspectEdges: []`, and the bake has no suspect
-candidates, so no route can use a suspect polyline.
-The regenerated fallback and clip-baseline files are byte-identical; paths and
-suspect files changed.
+The runtime audit's literal `suspectPolyline` field reports zero routes and
+zero edges; `suspectEdges` is empty. However, the strict no-rise gate fails
+because 56 incomplete routes exceed main's limit of 48. See the route-cohort
+evidence below. The main baseline limits are retained, rather than silently
+accepting the higher count. The generator's complete measured snapshot is
+recorded by this qualification; its proposed higher limit is not committed.
 
-Public bundle SHA-256: `61225ea3e89fe4732368f38c4023f7bce58bde7c3d390671980719695a05ec16`.
-Mesh SHA-256: `570353bce0911f285f175ca32e17782188012a5ad039f8dcec7248a64dabd009`.
-
-After the roof and portal corrections, the final heavy run completed at
-2026-11-04 12:18 JST after merging main `9e90ac2c`. Both stairwell tiers were rebaked and passed
-`pnpm bake:stairwells:check`: 308 meshes, 68 cut meshes and 18,697 cut triangles,
-with maximum attribute error `0.0000152587890625`. The canonical public gate
-and attachment/baseline comparison then passed on that same geometry.
+The earlier heavy run at 2026-11-04 12:18 JST attached all eight links on
+main `9e90ac2c`. CI on the #783 merge candidate then measured the counters
+above. Fresh canonical regeneration for the latest main is queued; that run
+will replace the intermediate main path cache before final handoff.
 
 ## Bounded review — 2026-11-04 JST
 
@@ -127,19 +126,16 @@ original five camera tests pass; at the default pitch the lower flight has
 minimum camera distance 2.33 m uphill and 3.45 m downhill (the comfort
 threshold remains 1.6 m), with maximum head share 0.16 and 0.11 respectively.
 
-## Main merge — 2026-11-04 JST
+## Main merges — 2026-11-04 JST
 
-Merged main `9e90ac2c` without rebasing. The only textual conflict was the
-measured `MAIN_BASELINE` in `kit-swap.test.ts`; it was regenerated from the
-combined scene rather than selecting either old digest. Main's runtime and
-rendering changes are retained. The importer, surface bake, kit catalog, fare
-cache, scene fixture, existing scene expectations, stairwell recipes, navmesh
-outputs and map symbols were regenerated with their generators.
-
-The merged public bake emitted and attached all eight repaired links, with
-zero bake suspects and zero audit-used suspects. The shrink-only comparison
-against main's saved baseline passed with no new fallback edges, detours or
-per-edge clips; all public totals in the table above remain unchanged.
+Merged main `9e90ac2c`, then `9cbbfb29`, without rebasing. The only textual
+conflict was the measured `MAIN_BASELINE` in `kit-swap.test.ts` during the first
+merge; it was regenerated from the combined scene. The second merge had no
+textual conflicts and retains #783's snap-to-snap paths and route outcome
+classification. Main's runtime and rendering changes are retained. The importer,
+surface bake, kit catalog, fare cache, scene fixture, existing scene expectations,
+stairwell recipes, navmesh outputs and map symbols use their normal generators.
+Generated JSON was not hand-merged.
 
 Merged-head CI identified four test expectations that the earlier container
 setup timeouts had not exercised. The B6 fence geometry is byte-equivalent
@@ -148,3 +144,33 @@ removed; the replay still uses the same endpoint. The repeated kit wall count
 is 14,906, matching the measured baseline. Both drawn-roof queries exclude
 hanging linear lights. The merged high-quality texture report measures
 107.503 MiB signage and 186.503 MiB total; texture-density settings are retained.
+
+### Newly exposed incomplete routes
+
+Main #783 skips suspect-bearing routes before counting incomplete routes.
+Main's committed baseline therefore counts 48 incomplete routes and 58 suspect
+routes. Once the repaired stairs cease to be suspect, eight of those 58 routes
+reach the missing-path check and remain incomplete. Actual public graph routing
+has identical directed edge sequences on main and the candidate for every POI
+pair. Replaying the same deduplicated route cohorts identifies the existing 48
+incomplete routes plus these eight newly exposed routes:
+
+| Directed route pairs | Existing missing paths | Audit reason |
+| --- | --- | --- |
+| Exit 2 → 4, 2 → 5, 4 → 2, 5 → 2 | `82c9a2c2`, `6ac033af` | `no_path`, disconnected walk edges |
+| Exit 3 → 4, 3 → 5, 4 → 3, 5 → 3 | `65edd7ca`, `ed7e56a8` | `snap_failed`, unattached elevator links |
+
+All four edges already occur in main's fallback list, and main's committed
+navmesh paths contain neither direction for any of them. No new failing edge or
+changed graph route is involved. The other 50 formerly suspect routes become
+fully audited. This explains the count; it does not satisfy the strict
+shrink-only acceptance rule. The audit classification and acceptance checks
+are unchanged. Fixing these four unrelated paths needs its own source-backed
+geometry work or an explicit acceptance ruling; this change supplies neither
+an invented snap nor a baseline-reset exception.
+
+A technical `oracle-ego` diagnosis confirmed the classification mechanism and
+that a 48 → 56 increase cannot be offset against the suspect count's decrease.
+The route identities and unchanged directed sequences above were established
+by local public-data diagnostics after that diagnosis, rather than inferred
+from the difference of eight alone.
