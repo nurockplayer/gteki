@@ -1,0 +1,36 @@
+import { it, expect } from "vitest";
+import { readFileSync, writeFileSync } from "node:fs";
+import { parseStationFiles } from "@gteki/schema";
+import { createRouter, routeBetween, describeRoute, routePolyline, instructionPoints } from "./index.ts";
+import { routePolyline as mainPolyline, describeRoute as mainDescribe } from "./r6-main-present.ts";
+import { loadScene } from "../../godot/src/route-clip-audit.ts";
+import { makeGreybox } from "../../godot/src/navmesh-greybox.ts";
+import { skippedConnectorPath } from "../../../apps/web/src/explorer/greyboxConnectors.ts";
+import { instructionStartsM } from "../../../apps/web/src/explorer/guideSteps.ts";
+import { polylineLengthM } from "../../../apps/web/src/explorer/guidePace.ts";
+
+it("compares the real Exit 1 guide with main", async () => {
+  const read = (p: string) => JSON.parse(readFileSync(p, "utf8"));
+  const dir = "stations/shinjuku/gteki/";
+  const parsed = parseStationFiles(read(dir + "station.json"), read(dir + "graph.json"), read(dir + "pois.json"));
+  if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+  const b = parsed.bundle;
+  const from = b.pois.find(p => p.descriptions?.some(x => /street level, north side/.test(x.text)));
+  const to = b.pois.find(p => p.descriptions?.some(x => /Oedo Line platform/.test(x.text)));
+  expect(from).toBeDefined(); expect(to).toBeDefined();
+  const route = routeBetween(createRouter(b), {kind:"poi", poi:from!}, to!, {fare:"ticketed", stepFree:false});
+  if (!route.ok) throw new Error(route.message);
+  const scene = await loadScene("shinjuku", b);
+  const grey = makeGreybox(b, scene, false);
+  const paths = new Map([...grey.connectors.pathByEdge].map(([id,path]) => [id,path.map(p => ({x:p.x,y:-p.z,z:p.y}))]));
+  for (const edge of b.edges) if (grey.connectors.skippedEdgeIds.includes(edge.id)) paths.set(edge.id,skippedConnectorPath(b,edge));
+  const mainNav = read(".qa/s5/r6/main-navmesh-paths.json"), nav = read("stations/shinjuku/navmesh-paths.json");
+  const before = mainPolyline(b,route,paths,mainNav.edges), after = routePolyline(b,route,paths,nav.edges,nav.joins);
+  const instructions = describeRoute(b,route,"en",to!,from!);
+  expect(instructions).toEqual(mainDescribe(b,route,"en",to!,from!));
+  expect(after.length).toBeGreaterThan(1);
+  const summary = (line: typeof after) => ({points:line.length,lengthM:polylineLengthM(line),startsM:instructionStartsM(line,instructions),instructions:instructions.map(ins => ({text:ins.text,kind:ins.kind,steps:ins.stepIndexes,pathLengthM:polylineLengthM(instructionPoints(line,ins))})),zeroSegments:line.slice(1).filter((p,i) => Math.hypot(p.x-line[i]!.x,p.y-line[i]!.y,p.z-line[i]!.z)<1e-6).length});
+  const report = {measuredAt:"2026-11-04 JST",main:"3f3c026b",branch:"6e881692",from:from!.id,to:to!.id,graphLengthM:route.totalLengthM,stepCount:route.steps.length,instructionCount:instructions.length,before:summary(before),after:summary(after)};
+  writeFileSync(".qa/s5/r6/guide-comparison.json",JSON.stringify(report,null,2)+"\n");
+  console.log(JSON.stringify({instructionCount:instructions.length,before:{points:before.length,lengthM:report.before.lengthM,startsM:report.before.startsM,zeroSegments:report.before.zeroSegments},after:{points:after.length,lengthM:report.after.lengthM,startsM:report.after.startsM,zeroSegments:report.after.zeroSegments}}));
+},120_000);
