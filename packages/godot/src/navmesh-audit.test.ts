@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { NavMeshQuery, type NavMesh } from "recast-navigation";
 import { bakeNavmesh } from "./navmesh-bake.ts";
-import { assertPrivateRegionsProvenance, auditGatePath, floorSnapPath, queryCompletePath, queryPathWithLinks, snapNode } from "./navmesh-audit.ts";
+import { assertPrivateRegionsProvenance, auditGatePath, connectorFallbackPolyline, floorSnapPath, queryCompletePath, queryPathWithLinks, snapNode } from "./navmesh-audit.ts";
+import { createRouter, routePolyline } from "@gteki/navigation";
+import { createSyntheticBundle, syntheticEdge } from "../../navigation/src/fixtures.ts";
 import { auditPolyline, sceneProbe } from "./route-clip-audit.ts";
 
 function fixture(open: boolean, width = 1.6) {
@@ -221,4 +223,34 @@ it("rejects stale private geometry even with an unchanged bundle and no suspect 
   expect(() => assertPrivateRegionsProvenance({}, regions)).toThrow(/rebake/);
   expect(() => assertPrivateRegionsProvenance(provenance, undefined)).toThrow(/rebake/);
   expect(() => assertPrivateRegionsProvenance({}, undefined)).not.toThrow();
+});
+
+
+it.each([false,true])("keeps a snap_failed stair fallback on the built floor (reversed %s)", async reversed => {
+  const bundle=createSyntheticBundle([syntheticEdge("exit-stair","start","upper",{mode:"stairs"})]);
+  // The built floor is flat for 5 m, then rises: its endpoint chord leaves the floor.
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute("position",new THREE.Float32BufferAttribute([0,0,-1,0,0,1,5,0,1,5,0,-1,5,0,-1,5,0,1,10,4,1,10,4,-1],3));
+  geometry.setIndex([0,1,2,0,2,3,4,5,6,4,6,7]);
+  const floor=new THREE.Mesh(geometry,new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+  const root=new THREE.Group().add(floor); root.updateMatrixWorld(true);
+  const probe=sceneProbe({root,walkable:[floor],colliders:[],walls:[]} as never);
+  // This navmesh has no polygon at either stair endpoint, as with an unattached connector.
+  const baked=await bakeNavmesh([20,0,0,20,0,4,28,0,4,28,0,0],[0,1,2,0,2,3]);
+  if (!baked.success) throw new Error(baked.error);
+  const query=new NavMeshQuery(baked.navMesh);
+  expect(snapNode(query,{x:0,y:0,z:0})).toBeNull();
+  const route=createRouter(bundle).route(reversed ? "upper":"start",reversed ? "start":"upper");
+  if (!route.ok) throw new Error(route.message);
+  const raw=routePolyline(bundle,route);
+  const {buildConnectorPath}=await import("@gteki/navigation");
+  expect(buildConnectorPath(query,{x:0,y:0,z:0},{x:10,y:4,z:0},raw,()=>true).reason).toBe("snap_failed");
+  expect(auditPolyline(probe,raw).offFloor).toBeGreaterThan(0);
+  const paths=new Map([["exit-stair",[{x:0,y:0,z:0},{x:5,y:0,z:0},{x:10,y:0,z:4}]]]);
+  const fallback=connectorFallbackPolyline(bundle,route,paths);
+  expect(auditPolyline(probe,fallback)).toMatchObject({offFloor:0,noFloor:0,wallHits:0});
+  expect(fallback.map(p=>[p.x,p.z])).toEqual(reversed ? [[10,4],[5,0],[0,0]]:[[0,0],[5,0],[10,4]]);
+  // An audit fallback does not manufacture a runtime path for the missing snap.
+  expect(routePolyline(bundle,route,paths,{})).toEqual([]);
+  query.destroy(); baked.navMesh.destroy(); geometry.dispose(); floor.material.dispose();
 });

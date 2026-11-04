@@ -51,14 +51,16 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // overhead query itself. The removed copied-cap mesh briefly made this four
 // camera blockers; this candidate retains three and the original listsDigest.
 // Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
+// 2026-11-04 JST: low-tier steps share one geometry and 1,582 instances across 21 runs.
+// #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "8b501f6d2a9d6c6e95424959a72791df560a442abdcd9167440187b5d90d0bbd",
-    appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
-    nodesDigest: "c3721bb561761689083bbf44bbaf8ed2e8689925827d73ddc722e7c4915690f2",
-    texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
-    meshes: 145,
-    bytes: 15897422,
+    geometryDigest: "9db906943741a89f9e120380ee00cd6166f35ec114cd451ad4d26ea1d70b5710",
+    appearanceDigest: "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
+    nodesDigest: "f58f6271533e57ccc8f1fd0b04aa509ee49fec69aa5667fd6975b7ddccfc2bf3",
+    texturesDigest: "640b359c5471765e6c9817784676b751578030272216e2381b3d25df9ce7c354",
+    meshes: 125,
+    bytes: 15852302,
   },
   lists: {
     listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
@@ -767,7 +769,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.unstubAllGlobals();
     });
 
-    it("flag off: the scene equals main 45250364 in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
+    it("flag off: the low-tier scene matches its mesh, node, texture and explorer-list digest", () => {
       expect(off.root.userData.kitSwap).toBeUndefined();
       // Meshes (geometry + appearance), all other nodes incl. lights and userData, and texture params of every material.
       expect(digestStation(off.root, isStationProxy)).toEqual(MAIN_BASELINE.station);

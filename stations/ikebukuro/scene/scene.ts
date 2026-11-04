@@ -489,6 +489,15 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       // "diffuse light" (outgoing = albedo * L) while three computes irradiance * albedo / PI.
       const meta = litMeta as { encoding: { scale: number } };
       lightmap = await ctx.loadTexture(LIGHTMAP[ctx.quality], { colorSpace: "srgb", flipY: false });
+      if (low) {
+        const source = lightmap.image as HTMLImageElement;
+        const canvas = document.createElement("canvas");
+        canvas.width = source.width / 2;
+        canvas.height = source.height / 2;
+        canvas.getContext("2d", { willReadFrequently: true })!.drawImage(source, 0, 0, canvas.width, canvas.height);
+        lightmap.image = canvas;
+        lightmap.needsUpdate = true;
+      }
       lightmap.channel = 1;
       mats.setLightmap(lightmap, meta.encoding.scale * Math.PI * LIGHTMAP_GAIN);
     } catch {

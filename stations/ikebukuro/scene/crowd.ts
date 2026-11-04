@@ -4,6 +4,7 @@
 // parts, jacket over shirt, hair cap, rounded shoes with a darker sole, elbow and knee joints), drawn as
 // one InstancedMesh per part with per-instance colour; no per-agent objects, no physics.
 import type * as THREE_NS from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 interface P3 { x: number; y: number; z: number | null }
 interface Edge { id: string; from: string; to: string; verification: string; geometry: P3[] }
@@ -540,7 +541,8 @@ export function buildCrowd(
     a.phase = a.bobPhase = rand() * 6.28;
   }
 
-  const geo = makeGeometry(THREE, count <= LOW_QUALITY_MAX_COUNT);
+  const low = count <= LOW_QUALITY_MAX_COUNT;
+  const geo = makeGeometry(THREE, low);
   // One material per surface type. Albedos are real-world values; the envMap is the only light, so it is
   // held down a little to keep dark coats dark.
   // Specular is cut back (MeshPhysicalMaterial.specularIntensity): with F0 = 0.04 against a bright studio envMap,
@@ -633,7 +635,7 @@ export function buildCrowd(
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     mesh.frustumCulled = false;
     mesh.userData.gteki_role = "ambient_crowd";
-    group.add(mesh);
+    if (!low) group.add(mesh);
     return { mesh, per, slots };
   };
   const P = {
@@ -656,6 +658,109 @@ export function buildCrowd(
   const parts = Object.values(P);
   const hairParts = [P.hair0, P.hair1, P.hair2];
 
+  // Phone: one merged rest figure, a packed per-person palette, and simple GPU limb swings.
+  // Optional pieces collapse to zero area in the same draw; desktop keeps its full CPU IK pose.
+  let lowMesh: THREE_NS.InstancedMesh | undefined;
+  let lowPhase: THREE_NS.InstancedBufferAttribute | undefined;
+  if (low) {
+    const pieces: THREE_NS.BufferGeometry[] = [];
+    const add = (g: THREE_NS.BufferGeometry, color: number, variant: number, x: number, y: number, scale = 1, pivot = 0, swing = 0) => {
+      const rest = g.clone().scale(scale, scale, scale).translate(x, y, 0);
+      const meta = Array.from({ length: rest.getAttribute("position").count }, () => [color, variant, pivot, swing]).flat();
+      rest.setAttribute("part", new THREE.Float32BufferAttribute(meta, 4));
+      pieces.push(rest);
+    };
+    add(geo.torso, 0, 0, 0, CHEST_Y);
+    add(geo.shirt, 1, 1, 0, CHEST_Y);
+    add(geo.head, 3, 0, 0, CHEST_Y + HEAD_PIVOT_DY, HEAD_SCALE);
+    add(geo.hair0, 4, 0, 0, CHEST_Y + HEAD_PIVOT_DY, HEAD_SCALE);
+    add(geo.shoulderBag, 7, 7, 0, CHEST_Y);
+    add(geo.skirt, 2, 2, 0, HIPS_Y + THIGH_DY);
+    for (const side of [1, -1]) {
+      const hip = HIPS_Y + THIGH_DY, shoulder = CHEST_Y + SHOULDER_DY;
+      add(geo.thigh, 5, 0, side * THIGH_X, hip, 1, hip, side * 0.32);
+      add(geo.shin, 5, 0, side * THIGH_X, hip - L_THIGH, 1, hip, side * 0.32);
+      add(geo.shoe, 6, 0, side * THIGH_X, ANKLE_H, 1, hip, side * 0.32);
+      add(geo.upperArm, 0, 0, side * SHOULDER_X, shoulder, 1, shoulder, -side * 0.25);
+      add(geo.foreArm, 0, 0, side * SHOULDER_X, shoulder - L_UPPER_ARM, 1, shoulder, -side * 0.25);
+      add(geo.hand, 3, 0, side * SHOULDER_X, shoulder - L_UPPER_ARM - L_FOREARM, 1, shoulder, -side * 0.25);
+    }
+    const merged = mergeGeometries(pieces)!;
+    pieces.forEach((g) => g.dispose());
+    owned.push(merged);
+    const paletteKeys = ["coat", "shirt", "tail", "skin", "hair", "leg", "shoe", "bag"];
+    for (let half = 0; half < 2; half++) {
+      const colors = looks.flatMap((_, i) => paletteKeys.slice(half * 4, half * 4 + 4).map((key) => cols[key]![i]!));
+      merged.setAttribute(`palette${half}`, new THREE.InstancedBufferAttribute(new Float32Array(colors), 4));
+    }
+    const variants = looks.flatMap((l) => [Number(l.open), l.tail, l.hair, l.carry ? 2 * l.bagSide : 0]);
+    merged.setAttribute("look", new THREE.InstancedBufferAttribute(new Float32Array(variants), 4));
+    merged.setAttribute("stride", new THREE.InstancedBufferAttribute(new Float32Array(looks.map((l) => l.stride)), 1));
+    lowPhase = new THREE.InstancedBufferAttribute(new Float32Array(count), 1).setUsage(THREE.DynamicDrawUsage);
+    merged.setAttribute("phase", lowPhase);
+    M.cloth.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader.replace("#include <common>", `#include <common>
+        attribute vec4 part, palette0, palette1, look;
+        attribute float phase, stride;
+        float crowdLegPhase() { return mod(phase + (part.w < 0.0 ? ${Math.PI} : 0.0), ${TAU}); }
+        float crowdFootForward() {
+          float p = crowdLegPhase() / ${TAU};
+          // Phase advances by speed / (stride * body width): world stance velocity is exactly -speed.
+          if (p >= 0.5) return stride * (0.75 - p);
+          float u = p * 2.0;
+          return stride * (-0.25 - 0.5 * u + 3.0 * u * u - 2.0 * u * u * u);
+        }
+        float crowdAngle() {
+          if (part.x == 6.0) return 0.0; // a flat sole has a fixed contact vertex throughout stance
+          if (part.x == 5.0) return -asin(crowdFootForward() / (${HIPS_Y + THIGH_DY - ANKLE_H}));
+          return sin(phase) * part.w;
+        }
+        vec3 crowdSwing(vec3 v) {
+          float a = crowdAngle();
+          return vec3(v.x, cos(a) * v.y - sin(a) * v.z, sin(a) * v.y + cos(a) * v.z);
+        }
+        float crowdLegOffset() {
+          if (part.x != 5.0 && part.x != 6.0) return 0.0;
+          float a = crowdAngle();
+          float low = 1e9;
+          ${Array.from({ length: geo.solePts.length / 2 }, (_, i) => {
+            const y = geo.solePts[i * 2 + 1]!;
+            return `low = min(low, (${ANKLE_H} - part.z) * cos(a) + ${y.toFixed(9)});`;
+          }).join("\n")}
+          return -part.z - low + ${LOW_SWING_LIFT} * max(0.0, sin(phase) * sign(part.w));
+        }
+      `).replace("#include <color_vertex>", `#include <color_vertex>
+        int slot = int(part.x);
+        float hex = slot < 4 ? palette0[slot] : palette1[slot - 4];
+        vec3 rgb = mod(floor(hex / vec3(65536.0, 256.0, 1.0)), 256.0) / 255.0;
+        vColor.rgb *= mix(rgb / 12.92, pow((rgb + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), rgb));
+      `).replace("#include <beginnormal_vertex>", `#include <beginnormal_vertex>
+        if (part.y == 7.0 && look.w < 0.0) objectNormal.xz *= -1.0;
+        objectNormal = crowdSwing(objectNormal);
+      `).replace("#include <begin_vertex>", `#include <begin_vertex>
+        float tag = part.y;
+        bool shown = tag == 0.0 || (tag == 1.0 && look.x > 0.5) || (tag == 2.0 && look.y > 0.5)
+          || (tag >= 3.0 && tag <= 5.0 && tag - 3.0 == look.z)
+          || (tag == 6.0 && look.w == 1.0) || (tag == 7.0 && abs(look.w) == 2.0);
+        if (tag == 2.0 && look.y == 1.0) transformed.y = ${TAIL_TOP} + (transformed.y - ${TAIL_TOP}) * 0.62;
+        if (tag == 7.0 && look.w < 0.0) transformed.xz *= -1.0;
+        transformed.y -= part.z;
+        transformed = crowdSwing(transformed);
+        transformed.y += part.z;
+        // Ground the flat sole and align its rigid leg's ankle; only the swing side lifts.
+        transformed.y += crowdLegOffset();
+        if (part.x == 6.0) transformed.z += crowdFootForward();
+        if (!shown) transformed = vec3(0.0);
+      `);
+    };
+    lowMesh = new THREE.InstancedMesh(merged, M.cloth, count);
+    lowMesh.name = "crowd_low";
+    lowMesh.frustumCulled = false;
+    lowMesh.userData.gteki_role = "ambient_crowd";
+    lowMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    group.add(lowMesh);
+  }
+
   const pos = new THREE.Vector3(), dir = new THREE.Vector3(), side = new THREE.Vector3();
   let along = 0; // horizontal distance from the edge start at the last sample()
   const q = new THREE.Quaternion(), base = new THREE.Matrix4();
@@ -666,7 +771,7 @@ export function buildCrowd(
   const cam = new THREE.Vector3(1e9, 0, 0);
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
   let renders = 0;
-  P.torso.mesh.onBeforeRender = (_r, _s, camera) => {
+  (lowMesh ?? P.torso.mesh).onBeforeRender = (_r, _s, camera) => {
     renders++;
     cam.setFromMatrixPosition(camera.matrixWorld);
     frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
@@ -729,6 +834,7 @@ export function buildCrowd(
     if (who >= 0) part.mesh.setMatrixAt(who * part.per + side, m);
   };
   const hide = (i: number) => {
+    if (lowMesh) { lowMesh.setMatrixAt(i, hidden); return; }
     for (const part of parts) {
       if (part.per === 2) { put(part, i, 0, hidden); put(part, i, 1, hidden); } else put(part, i, 0, hidden);
     }
@@ -936,9 +1042,15 @@ export function buildCrowd(
         hide(i);
         continue;
       }
-      pose(i, a, L, base);
+      if (lowMesh) {
+        lowMesh.setMatrixAt(i, base);
+        lowPhase!.setX(i, a.phase);
+      } else pose(i, a, L, base);
     }
-    for (const part of parts) part.mesh.instanceMatrix.needsUpdate = true;
+    if (lowMesh) {
+      lowMesh.instanceMatrix.needsUpdate = true;
+      lowPhase!.needsUpdate = true;
+    } else for (const part of parts) part.mesh.instanceMatrix.needsUpdate = true;
     nearby = near;
   }
   update(0, 0);
@@ -952,6 +1064,27 @@ export function buildCrowd(
       owned.forEach((g) => g.dispose());
       Object.values(M).forEach((m) => m.dispose());
       parts.forEach((p) => p.mesh.dispose());
+      lowMesh?.dispose();
     },
   };
+}
+
+const LOW_SWING_LIFT = 0.05;
+
+/** Phone vertex shader transform for the non-optional legs/shoes; sole points are ankle-relative (z, y) pairs. */
+export function transformLowCrowdVertex(position: readonly number[], part: readonly number[], phase: number, sole: Float64Array, stride: number): V3 {
+  const [x, y, z] = position as V3;
+  const [slot, , pivot, swing] = part as [number, number, number, number];
+  const p = ((phase + (swing < 0 ? Math.PI : 0)) / TAU) % 1;
+  const u = p * 2;
+  const forward = stride * (p >= 0.5 ? 0.75 - p : -0.25 - 0.5 * u + 3 * u * u - 2 * u * u * u);
+  const a = slot === 6 ? 0 : slot === 5 ? -Math.asin(forward / (HIPS_Y + THIGH_DY - ANKLE_H)) : Math.sin(phase) * swing;
+  const c = Math.cos(a), s = Math.sin(a);
+  let dy = 0;
+  if (slot === 5 || slot === 6) {
+    const support = { dy: 0, dz: 0 };
+    pivotOffset(0, sole, support);
+    dy = support.dy + (ANKLE_H - pivot) * (1 - c) + LOW_SWING_LIFT * Math.max(0, Math.sin(phase) * Math.sign(swing));
+  }
+  return [x, pivot + (y - pivot) * c - z * s + dy, (y - pivot) * s + z * c + (slot === 6 ? forward : 0)];
 }
