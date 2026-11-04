@@ -646,9 +646,10 @@ loadBundle	function	packages/godot/src/load-bundle.ts	6
 queryCompletePath	function	packages/godot/src/navmesh-audit.ts	35
 snapNode	function	packages/godot/src/navmesh-audit.ts	44
 queryPathWithLinks	function	packages/godot/src/navmesh-audit.ts	50
-floorSnapPath	function	packages/godot/src/navmesh-audit.ts	86
-countedTotals	function	packages/godot/src/navmesh-audit.ts	103
-assertPrivateRegionsProvenance	function	packages/godot/src/navmesh-audit.ts	116
+auditGatePath	function	packages/godot/src/navmesh-audit.ts	84
+floorSnapPath	function	packages/godot/src/navmesh-audit.ts	135
+countedTotals	function	packages/godot/src/navmesh-audit.ts	152
+assertPrivateRegionsProvenance	function	packages/godot/src/navmesh-audit.ts	165
 bakeNavmesh	function	packages/godot/src/navmesh-bake.ts	25
 completePath	function	packages/godot/src/navmesh-bake.ts	43
 applyBridgeGeometry	function	packages/godot/src/navmesh-bake.ts	85
