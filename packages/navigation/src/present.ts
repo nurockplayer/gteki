@@ -41,16 +41,31 @@ export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number;
 /** Baked guide paths in station ENU; suspectPolyline is the explicit station-list graph exception. */
 export type NavmeshEdgePaths = Readonly<Record<string, { forward?: readonly (readonly number[])[]; reverse?: readonly (readonly number[])[]; suspectPolyline?:true }>>;
 
-/** With baked paths, missing snaps or junction paths fail closed (an empty polyline). */
+/** Use baked paths where available, retaining the previous geometry for missing paths or joins. */
 export function routePolyline(bundle: StationBundle, route: RouteResult, edgePaths?: ReadonlyMap<string, readonly { x: number; y: number; z: number }[]>, navPaths?: NavmeshEdgePaths | null, joins?: Readonly<Record<string, readonly (readonly number[])[]>>): PolylinePoint[] {
   if (navPaths) {
+    const fallback = (stepIndex:number) => {
+      const step = route.steps[stepIndex]!;
+      return routePolyline(bundle, {...route, nodeIds:[step.fromNodeId,step.toNodeId], steps:[step]}, edgePaths)
+        .map(p => ({...p, stepIndex, sceneGap:true as const}));
+    };
     const steps = route.steps.map((step, stepIndex) => {
       const suspect=navPaths[step.edgeId]?.suspectPolyline;
-      if (suspect) return routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}).map(p=>({...p,stepIndex,suspectPolyline:true as const,sceneGap:true as const}));
+      if (suspect) return fallback(stepIndex).map(p=>({...p,suspectPolyline:true as const}));
       const path = navPaths[step.edgeId]?.[step.reversed ? "reverse" : "forward"];
-      return path?.map((p, i) => ({ x:p[0]!, y:p[1]!, z:p[2]!, zKnown:false, stepIndex, floorId:i === path.length - 1 ? step.toFloorId : step.fromFloorId })) ?? null;
+      return path && path.length >= 2 ? path.map((p, i) => ({ x:p[0]!, y:p[1]!, z:p[2]!, zKnown:false, stepIndex, floorId:i === path.length - 1 ? step.toFloorId : step.fromFloorId })) : fallback(stepIndex);
     });
-    const result = assembleSnapPath(steps, (from, to, i) => joins?.[snapJoinKey(route.steps[i-1]!, route.steps[i]!)]?.map(p => ({ ...to, x:p[0]!, y:p[1]!, z:p[2]! })) ?? null);
+    let failedJoin = 0;
+    const assemble = () => assembleSnapPath(steps, (from, to, i) => {
+      failedJoin = i;
+      return joins?.[snapJoinKey(route.steps[i-1]!, route.steps[i]!)]?.map(p => ({ ...to, x:p[0]!, y:p[1]!, z:p[2]! })) ?? null;
+    });
+    let result = assemble();
+    while (!result.points && result.reason === "join_gap") {
+      steps[failedJoin - 1] = fallback(failedJoin - 1);
+      steps[failedJoin] = fallback(failedJoin);
+      result = assemble();
+    }
     if (!result.points) return [];
     if (result.points[0]) result.points[0].stepIndex = -1;
     return result.points;

@@ -820,12 +820,26 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }
   const escalators: BuiltStation["escalators"] = [];
   const stepCount = (r: Run) => Math.ceil(Math.hypot(Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1, r.b.z - r.a.z) / 0.4);
+  const lowStepSizes = opts.quality === "low" ? layout.runs.filter(r => r.mode === "escalator").map(r => {
+    const L = Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1;
+    const rise = Math.abs(r.b.z - r.a.z);
+    const L3 = Math.hypot(L, rise);
+    return { depth: 0.4 * L / L3, rise: 0.4 * rise / L3 };
+  }) : [];
+  const median = (values: number[]) => {
+    values.sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    return values.length % 2 ? values[mid]! : (values[mid - 1]! + values[mid]!) / 2;
+  };
+  const refDepth = median(lowStepSizes.map(s => s.depth));
+  const refRise = median(lowStepSizes.map(s => s.rise));
   const sharedSteps = opts.quality === "low"
-    ? new THREE.InstancedMesh(track(escalatorStepGeometry(1, 1, 1)), mat.escStep,
+    ? new THREE.InstancedMesh(track(escalatorStepGeometry(refDepth, refRise, 1)), mat.escStep,
       layout.runs.filter(r => r.mode === "escalator").reduce((sum, r) => sum + stepCount(r), 0))
     : undefined;
   if (sharedSteps) {
     sharedSteps.name = "escalator-steps:all";
+    sharedSteps.frustumCulled = false;
     sharedSteps.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     sharedSteps.userData.ranges = {};
     root.add(sharedSteps);
@@ -903,7 +917,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         // Animated every frame: dynamic usage also tells the explorer's cuts to leave these instances alone.
         steps.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
         if (sharedSteps) {
-          steps.userData.ranges[r.edgeId] = { lo, hi, yaw, count, L3, stepLen, offset: stepOffset, scale };
+          scale.set(scale.x / refDepth, scale.y / refRise, scale.z);
+          const bounds = new THREE.Box3().setFromPoints([v3(lo), v3(hi)]).expandByScalar(hw + stepLen);
+          steps.userData.ranges[r.edgeId] = { lo, hi, yaw, count, L3, stepLen, offset: stepOffset, scale, bounds };
           stepOffset += count;
         } else {
           steps.name = `escalator-steps:${r.edgeId}`;
@@ -1367,6 +1383,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   /** Train cycle (s): 0–14 arrive (decelerate), 14–40 dwell (doors 16–37), 40–54 depart, 54–110 empty. */
   const CYCLE = 110;
   let trainClock = 0;
+  let stepTime = 0;
   /** QA: phase of each platform's train cycle (s) and whether a train is in. */
   const trainStatus = () => platformTracks.map((tr) => {
     const tt = (trainClock + tr.phase) % CYCLE;
@@ -1418,25 +1435,45 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         mesh.computeBoundingSphere();
       }
     }
-    for (const esc of escalators) {
-      const { lo, hi, yaw, count, L3, stepLen, offset = 0, scale = tmpS } = (esc.steps.userData.ranges?.[esc.run.edgeId] ?? esc.steps.userData) as {
-        lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number; offset?: number; scale?: THREE.Vector3;
-      };
-      const trim = combed.has(esc.run.edgeId) && (!kitSwap?.lod || kitSwap.lod.active.has(esc.run.edgeId)) ? stepLen / 2 : 0;
-      tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
-      const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
-      for (let i = 0; i < count; i++) {
-        let s = i * stepLen + phase;
-        if (s > L3) s -= L3;
-        const f = s / L3;
-        tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
-        // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
-        // Procedural runs have no comb, so hiding would open a gap at the landing instead.
-        tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : scale);
-        esc.steps.setMatrixAt(offset + i, tmpM);
-      }
+    stepTime = t;
+    if (!sharedSteps) for (const esc of escalators) {
+      writeSteps(esc, t);
       esc.steps.instanceMatrix.needsUpdate = true;
     }
+  }
+  function writeSteps(esc: BuiltStation["escalators"][number], t: number, offset = 0) {
+    const { lo, hi, yaw, count, L3, stepLen, scale = tmpS } = (esc.steps.userData.ranges?.[esc.run.edgeId] ?? esc.steps.userData) as {
+      lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number; scale?: THREE.Vector3;
+    };
+    const trim = combed.has(esc.run.edgeId) && (!kitSwap?.lod || kitSwap.lod.active.has(esc.run.edgeId)) ? stepLen / 2 : 0;
+    tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
+    const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
+    for (let i = 0; i < count; i++) {
+      let s = i * stepLen + phase;
+      if (s > L3) s -= L3;
+      const f = s / L3;
+      tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
+      // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
+      // Procedural runs have no comb, so hiding would open a gap at the landing instead.
+      tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : scale);
+      esc.steps.setMatrixAt(offset + i, tmpM);
+    }
+    return count;
+  }
+  if (sharedSteps) {
+    const frustum = new THREE.Frustum(), projection = new THREE.Matrix4(), worldBox = new THREE.Box3();
+    // Populate the initial pose for scene digests; subsequent low-tier animation happens per view.
+    for (const esc of escalators) writeSteps(esc, 0, sharedSteps.userData.ranges[esc.run.edgeId].offset);
+    sharedSteps.onBeforeRender = (_renderer, _scene, camera) => {
+      frustum.setFromProjectionMatrix(projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+      let packed = 0;
+      for (const esc of escalators) {
+        worldBox.copy(sharedSteps.userData.ranges[esc.run.edgeId].bounds).applyMatrix4(sharedSteps.matrixWorld);
+        if (frustum.intersectsBox(worldBox)) packed += writeSteps(esc, stepTime, packed);
+      }
+      sharedSteps.count = packed;
+      sharedSteps.instanceMatrix.needsUpdate = true;
+    };
   }
   update(0, 0);
 

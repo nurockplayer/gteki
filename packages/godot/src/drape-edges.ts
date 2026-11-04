@@ -7,10 +7,14 @@ import * as THREE from "three";
 import { enuToRenderer } from "@gteki/geo";
 import { nodeDisplayZ, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type Node, type StationBundle } from "@gteki/schema";
+import type { StationScene } from "@gteki/scene-api";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
-import { auditPolyline, loadScene, sceneProbe, violations, type SampleDetail, type SceneProbe } from "./route-clip-audit.ts";
+import { buildGreybox } from "../../../apps/web/src/explorer/greybox.ts";
+import type { PolygonRegion } from "../../../apps/web/src/explorer/privateLevels.ts";
+import { auditPolyline, loadScene, privateSceneProbe, sceneProbe, violations, type SampleDetail, type SceneProbe } from "./route-clip-audit.ts";
 
 type Point = { x: number; y: number; z: number };
+type DrapeProbe = SceneProbe & { nodeGround?: THREE.Object3D[] };
 const point = (p: Point): PolylinePoint => ({ ...p, zKnown: false, stepIndex: 0, floorId: "" });
 const clean = (probe: SceneProbe, pts: Point[]) => violations(auditPolyline(probe, pts.map(point))) === 0;
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -26,18 +30,42 @@ function drawn(bundle: StationBundle, edge: Edge): PolylinePoint[] {
   return routePolyline(bundle, { ok: true, nodeIds: [edge.from, edge.to], steps: [{ edgeId: edge.id, fromNodeId: edge.from, toNodeId: edge.to, reversed: false, mode: edge.mode, lengthM: edge.lengthM ?? 0, fromFloorId: nodes.get(edge.from)!.floorId, toFloorId: nodes.get(edge.to)!.floorId }] } as unknown as RouteResult);
 }
 
+/** Automatic gap flags must not supply the floor or wall opening used to clear themselves. */
+export async function drapeSceneProbe(scene: StationScene, bundle: StationBundle, overlayDir: string): Promise<DrapeProbe> {
+  const source = sceneProbe(scene);
+  const withoutAutomaticGaps = { ...bundle, edges: bundle.edges.map(edge => {
+    if (edge.attributes?.sceneGapReason !== "drape-unresolved") return edge;
+    const attributes = { ...edge.attributes };
+    delete attributes.sceneGap;
+    delete attributes.sceneGapReason;
+    return { ...edge, attributes };
+  }) };
+  const probe = await privateSceneProbe(scene, withoutAutomaticGaps, overlayDir);
+  if (!probe) return source;
+  // Height evidence comes from the source scene and selected polygons, never graph-built ribbons or landings.
+  const regions = JSON.parse(fs.readFileSync(path.join(overlayDir, "private_regions.json"), "utf8")) as PolygonRegion[];
+  const polygons = buildGreybox({ ...bundle, edges: [] }, () => false, () => false,
+    { colliderNear: () => false, wallHit: () => null }, "low", true, regions);
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(polygons.navFloors ?? [], 3));
+  const floor = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+  floor.updateMatrixWorld(true);
+  return { ...probe, nodeGround: [...source.ground, floor] };
+}
+
 /** Drape selected edges without mutating the input bundle. */
-export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Set<string>, opts: { maxCells?: number; nodeIds?: Set<string> } = {}): {
+export function drapeEdges(probe: DrapeProbe, bundle: StationBundle, edgeIds: Set<string>, opts: { maxCells?: number; nodeIds?: Set<string> } = {}): {
   nodes: Map<string, number>; geometry: Map<string, Point[]>; unresolved: { edgeId: string; reason: string }[]; sceneGaps: Map<string, boolean>;
 } {
   const selected = bundle.edges.filter(e => edgeIds.has(e.id)).sort((a, b) => a.id.localeCompare(b.id));
   const nodes = new Map<string, number>(), geometry = new Map<string, Point[]>(), unresolved: { edgeId: string; reason: string }[] = [];
   const byId = new Map(bundle.nodes.map(n => [n.id, n]));
   const floors = new Map(bundle.floors.map(f => [f.id, f]));
+  const nodeProbe = probe.nodeGround ? { ...probe, ground: probe.nodeGround } : probe;
   for (const id of [...new Set(selected.flatMap(e => [e.from, e.to]))].sort()) {
     const n = byId.get(id)!;
     if (n.position.z !== null || opts.nodeIds && !opts.nodeIds.has(id)) continue;
-    const z = floorAt(probe, n.position.x, n.position.y, floors.get(n.floorId)?.renderElevationM ?? 0, 2);
+    const z = floorAt(nodeProbe, n.position.x, n.position.y, floors.get(n.floorId)?.renderElevationM ?? 0, 2);
     if (z !== undefined) nodes.set(id, z);
   }
   const updated = { ...bundle, nodes: bundle.nodes.map(n => nodes.has(n.id) ? { ...n, renderZ: nodes.get(n.id)! } : n) };
@@ -155,7 +183,9 @@ async function main(): Promise<void> {
     const dir = path.join(tmp, "overlay", station, "gteki"), read = (n: string) => JSON.parse(fs.readFileSync(path.join(dir, n), "utf8")) as unknown;
     const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), fs.existsSync(path.join(dir, "tenants.json")) ? read("tenants.json") : undefined, { privateTier: true });
     if (!parsed.ok) throw new Error(`overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
-    const result = drapeEdges(sceneProbe(await loadScene(station, parsed.bundle)), parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)) });
+    const scene = await loadScene(station, parsed.bundle);
+    const probe = await drapeSceneProbe(scene, parsed.bundle, dir);
+    const result = drapeEdges(probe, parsed.bundle, new Set(doc.edges.map(e => e.id)), { nodeIds: new Set(doc.nodes.map(n => n.id)) });
     for (const n of doc.nodes) if (result.nodes.has(n.id)) n.renderZ = result.nodes.get(n.id)!;
     for (const e of doc.edges) {
       const geometry = result.geometry.get(e.id); if (geometry) applyDrapeGeometry(e, geometry);

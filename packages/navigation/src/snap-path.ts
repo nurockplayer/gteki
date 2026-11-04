@@ -20,8 +20,8 @@ export function assembleSnapPath<P extends Point>(steps:readonly (readonly P[] |
     if (!start || !end) return {points:null,reason:"snap_failed"};
     step[0]=start; step[step.length-1]=end;
     const last = points.at(-1), first = step[0]!;
-    if (last && !same(last, first) && (last.suspectPolyline || first.suspectPolyline)) {
-      points.push({...first,suspectPolyline:true,sceneGap:true});
+    if (last && !same(last, first) && (last.sceneGap || first.sceneGap)) {
+      points.push({...first,sceneGap:true});
     } else if (last && !same(last, first)) {
       const bridge = join(last, first, i);
       if (!bridge?.length || !same(bridge[0]!, last) || !same(bridge.at(-1)!, first)) return { points:null, reason:"join_gap" };

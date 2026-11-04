@@ -24,6 +24,7 @@ import { settleScene } from "./export-scene.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { castAll, castCamera, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { cutStairwells, stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
+import type { PolygonRegion } from "../../../apps/web/src/explorer/privateLevels.ts";
 
 export const FLOOR_TOLERANCE_M = 0.3;
 const STEP_M = 0.5;
@@ -92,6 +93,15 @@ export function cutSceneProbe(scene: StationScene, bundle: StationBundle, qualit
   probe.collider.push(...cut.colliders);
   probe.walls = [...probe.walls, ...cut.walls.map((w) => ({ a: { x: w.ax, y: -w.az }, b: { x: w.bx, y: -w.bz }, zMin: w.yMin, zMax: w.yMax }))];
   return probe;
+}
+
+/** Use the overlay's selected polygon floors and live connectors in both audit and drape. */
+export async function privateSceneProbe(scene: StationScene, bundle: StationBundle, overlayDir: string): Promise<SceneProbe | null> {
+  const file = path.join(overlayDir, "private_regions.json");
+  const regions = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) as PolygonRegion[] : [];
+  if (!regions.length) return null;
+  const { makeGreybox } = await import("./navmesh-greybox.ts");
+  return makeGreybox(bundle, scene, true, regions).probe;
 }
 
 function cross2(a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }): number {
@@ -275,7 +285,8 @@ async function main(): Promise<void> {
         fs.existsSync(path.join(dir, "tenants.json")) ? read("tenants.json") : undefined, { privateTier: true });
       if (!parsed.ok) throw new Error(`${station}: overlay failed validation: ${JSON.stringify(parsed.issues).slice(0, 500)}`);
       const bundle = parsed.bundle;
-      const probe = cutSceneProbe(await loadScene(station, bundle), bundle);
+      const scene = await loadScene(station, bundle);
+      const probe = await privateSceneProbe(scene, bundle, dir) ?? cutSceneProbe(scene, bundle);
       const sourceOf = additionsEdgeFiles(path.join(tmp, "additions", station));
       if (route) {
         const poi = (id: string) => { const p = bundle.pois.find((x) => x.id === id); if (!p) throw new Error(`${station}: no POI ${id}`); return p; };

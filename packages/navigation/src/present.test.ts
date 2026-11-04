@@ -68,11 +68,14 @@ describe("routePolyline", () => {
     expect(routePolyline(b, route(b, "upper", "start"), new Map([["stairs", line]]), paths).map(p => [p.x, p.y, p.z])).toEqual(paths.stairs.reverse);
   });
 
-  it("fails a missing snap or join instead of bridging the gap", () => {
+  it("uses earlier edge geometry for a missing path or join", () => {
     const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal")]);
     const paths = { "s-a": { forward: [[0, 1, 0], [9, 1, 0]] } };
-    expect(routePolyline(b, route(b, "start", "goal"), undefined, paths)).toEqual([]);
-    expect(routePolyline(b, route(b, "start", "goal"), undefined, { ...paths, "a-goal": { forward: [[11, 1, 0], [20, 1, 0]] } })).toEqual([]);
+    const missing = routePolyline(b, route(b, "start", "goal"), undefined, paths);
+    expect(missing.map(p => [p.x, p.y])).toEqual([[0, 1], [9, 1], [10, 0], [20, 0]]);
+    expect(missing.at(-1)?.sceneGap).toBe(true);
+    const noJoin = routePolyline(b, route(b, "start", "goal"), undefined, { ...paths, "a-goal": { forward: [[11, 1, 0], [20, 1, 0]] } });
+    expect(noJoin.map(p => [p.x, p.y])).toEqual([[0, 0], [10, 0], [20, 0]]);
   });
 
   it("leaves graph polylines undashed when the station has no navmesh paths", () => {
