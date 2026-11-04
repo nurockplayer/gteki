@@ -595,7 +595,7 @@
     },
     "[\"MeshStandardMaterial\",\"mat.escStep\",\"ffffff\",\"000000\",1,1,false,0,true,0.51,0.3,true,true,true,true,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 38520,
-     "hash": "77a5b259749e0ec1091a1e2ae13c1d410b25f213ca11ccc101f6ff74ea12eccd"
+     "hash": "32f6e54e0e11848218e12b50dafb99c4cea501f9a17b1f937bfbf202f9bad4d6"
     },
     "[\"MeshStandardMaterial\",\"mat.escTruss\",\"ccccc7\",\"000000\",1,1,false,0,true,0.34,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 264,

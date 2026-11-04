@@ -51,26 +51,22 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // overhead query itself. The removed copied-cap mesh briefly made this four
 // camera blockers; this candidate retains three and the original listsDigest.
 // Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
-// 2026-11-04 JST: low-tier steps share one geometry and 1,605 instances.
+// 2026-11-04 JST: low-tier steps share one geometry and 1,605 instances across 21 runs.
+// #815: real-size shared step geometry, relative scales and run bounds change geometry/nodes only.
 // #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
-  "station": {
-    "geometryDigest": "4b3a87b952d034eaa72305b80ceb06ca4864c1a6c9219a91c59e9f88379ae21d",
-    "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
-    "nodesDigest": "bfed2974192fab84c438659ca5cbc55adc82157d2d1b3280c96db87dc296fdae",
-    "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
-    "meshes": 125,
-    "bytes": 16239546
+  station: {
+    geometryDigest: "97525b3bf171128db97b99b0be23c0ba2be268e34022d5c8ae4cd92986648d12",
+    appearanceDigest: "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
+    nodesDigest: "671b7e0fca848dcf1aacac050fd030d5ff788dd421aa3e38335c80f891cf1216",
+    texturesDigest: "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
+    meshes: 125,
+    bytes: 16239546,
   },
-  "lists": {
-    "listsDigest": "a8e6c49f0bb47bea12e2c995b46460360024e0ed227ac5eb37cb6ff5ddfd86bf",
-    "counts": {
-      "walkable": 442,
-      "colliders": 2,
-      "cameraBlockers": 3,
-      "walls": 14906
-    }
-  }
+  lists: {
+    listsDigest: "a8e6c49f0bb47bea12e2c995b46460360024e0ed227ac5eb37cb6ff5ddfd86bf",
+    counts: { walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14906 },
+  },
 };
 
 const sha = (parts: unknown[]) => createHash("sha256").update(JSON.stringify(parts)).digest("hex");
@@ -1037,7 +1033,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       // per-run triangle count is whatever build.ts drew, so the identity below is the exact-size check.
       expect(report.hidden["escalator-balustrade"]).toBeGreaterThan(0);
       expect(report.hidden["escalator-balustrade"]).toBe(offTri - onTri - 192 * placed("lift").length - 96 * placed("gate").length - 12 * steps);
-      // No lifts and the one unfitted escalator keep every placeholder triangle.
+      // No lifts and 2 escalators that were not placed keep every placeholder triangle.
       expect(captured.liftAnchors.length - placed("lift").length).toBe(0);
       expect(placed("escalator").length).toBe(21);
     });
