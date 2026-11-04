@@ -238,7 +238,7 @@ export function restrictionDigest(input: string) {
 export function restrictedInputKey(layout: Layout, plan: Plan, bundle: StationBundle, base: Fence[]) {
   // Digest the complete source/graph/layout input; CI compares the fresh derivation
   // and separately requires review of every change to the conflict table.
-  return restrictionDigest(JSON.stringify(["restricted-boundary-v17", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
+  return restrictionDigest(JSON.stringify(["restricted-boundary-v18", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
     plan.levels.map(l => [l.label, l.renderElevationM, l.spaces.filter(s => s.restricted)]),
     bundle.edges.filter(e => e.verification === "verified"),
     bundle.nodes.map(n => [n.id, n.position]), [...layout.nodeZ], layout.gates,
@@ -529,10 +529,13 @@ export function protectFareAndAccess(
   const restricted = deriveRestrictedAccess(layout, plan, bundle);
   fences.push(...deriveRestrictedFences(layout, restricted, fences, lifts));
   closeBarrierEnds(layout, fences, gates, (a, b, z) => {
-    const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / .03));
+    const dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
+    const normal = { x: -dy / (length || 1) * .04, y: dx / (length || 1) * .04 };
+    const levelLifts = lifts.filter(l => Math.abs(l.z - z) < .5);
+    const steps = Math.max(1, Math.ceil(length / .01));
     for (let i = 0; i <= steps; i++) {
       const p = { x: a.x + (b.x - a.x) * i / steps, y: a.y + (b.y - a.y) * i / steps };
-      if (routeClear(p, z, .3001)) return false;
+      if (routeClear(p, z, .3001) || levelLifts.some(l => l.clear(p, normal))) return false;
     }
     return true;
   });
