@@ -7,7 +7,7 @@ import { buildConnectors } from "./greyboxConnectors.ts";
 import { buildGreybox, splitWallsAtOpenings, type Box } from "./greybox.ts";
 import { sceneMeshProbe } from "./routeGroundQa.ts";
 import type { ExplorerTargets } from "./raycast.ts";
-import { cutStairwells, stairwellWells, type StairwellCut } from "./stairwellCut.ts";
+import { cutStairwells, plannedWalks, stairwellWells, type StairwellCut } from "./stairwellCut.ts";
 import type { CutRecipe } from "./cutRecipe.ts";
 import type { Segment2 } from "./walker.ts";
 
@@ -67,6 +67,7 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
     walkable: new Set(originalTargets.ground), tier, greyboxRoot: greybox.root,
     // Collision proxies may sit outside the station root: cut them with the visible slabs.
     collision: [...walkable, ...colliders, ...cameraBlockers],
+    walks: plannedWalks(bundle, traversable),
     recipe,
   });
   const cutMs = elapsed();

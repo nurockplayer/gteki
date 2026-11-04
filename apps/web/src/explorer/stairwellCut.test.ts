@@ -183,6 +183,22 @@ describe("stairwell cuts", () => {
     expect(crossing(wellRails(well, well.rects))).toHaveLength(0);
   });
 
+  it("keeps no rail across a planned flat walk at the landing, and keeps the rails away from it", () => {
+    // Same short top piece as above: the well rails the seam beside it, at x ≈ 8.15 across z = 0.
+    const gap = flight([{ x: 0, y: 0, z: 0 }, { x: 8, y: 0, z: 3.2 }, { x: 8.3, y: 0, z: 3.4 }, { x: 10, y: 0, z: 4 }]);
+    const well = stairwellWells(gap, traversable)[0]!;
+    const crossing = (rails: [THREE.Vector3, THREE.Vector3][]) => rails.filter(([a, b]) =>
+      Math.min(a.z, b.z) <= 0 && Math.max(a.z, b.z) >= 0 && Math.min(a.x, b.x) <= 8.15 && Math.max(a.x, b.x) >= 8.15);
+    const away = (rails: [THREE.Vector3, THREE.Vector3][]) => rails.filter(([a, b]) => Math.max(a.x, b.x) < 6);
+    const plain = wellRails(well, well.rects);
+    expect(crossing(plain).length).toBeGreaterThan(0);
+    // A planned flat walk at the landing floor (upperY 4.0), 2.8 m wide, laid across that rail.
+    const walk = { from: { x: 7, y: 3.3, z: 0 }, to: { x: 9, y: 3.3, z: 0 }, halfWidth: 1.4 };
+    expect(crossing(wellRails(well, well.rects, undefined, [], [walk]))).toHaveLength(0);
+    // Rails the walk does not reach stay.
+    expect(away(wellRails(well, well.rects, undefined, [], [walk])).length).toBe(away(plain).length);
+  });
+
   it("cuts the slab over a very short level piece between two flights", () => {
     const gap = flight([{ x: 0, y: 0, z: 0 }, { x: 8, y: 0, z: 3.2 }, { x: 8.08, y: 0, z: 3.2 }, { x: 10, y: 0, z: 4 }]);
     const wells = stairwellWells(gap, traversable);

@@ -23,7 +23,7 @@ import { floorProbe } from "../../../apps/web/src/explorer/routeGaps.ts";
 import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
-import { cutStairwells, stairwellWells, type StairwellCut } from "../../../apps/web/src/explorer/stairwellCut.ts";
+import { cutStairwells, plannedWalks, stairwellWells, type StairwellCut } from "../../../apps/web/src/explorer/stairwellCut.ts";
 import { RECIPE_VERSION, canonicalJson, decodeRecipe, encodeRecipe, sha256Hex, type CutRecipe, type MeshRecord } from "../../../apps/web/src/explorer/cutRecipe.ts";
 import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { loadScene } from "./route-clip-audit.ts";
@@ -162,7 +162,8 @@ async function bakeTier(station: string, bundle: StationBundle, tier: Tier): Pro
     const shell = greybox.root.getObjectByName("greybox-shell") as THREE.Mesh | undefined;
     const shellBefore = shell ? Object.fromEntries(SHELL_ATTRIBUTES.map((n) => [n, shell.geometry.getAttribute(n)])) : null;
     const recorded: MeshRecord[] = [];
-    const live = cutStairwells(scene.root, wells, { walkable, tier, greyboxRoot: greybox.root, collision, record: recorded });
+    const walks = plannedWalks(bundle, traversable);
+    const live = cutStairwells(scene.root, wells, { walkable, tier, greyboxRoot: greybox.root, collision, walks, record: recorded });
     const liveOutcome = outcomeOf(live, shell);
     if (shell && shellBefore) for (const n of SHELL_ATTRIBUTES) shell.geometry.setAttribute(n, shellBefore[n]!);
     const recipe: CutRecipe = {
@@ -174,7 +175,7 @@ async function bakeTier(station: string, bundle: StationBundle, tier: Tier): Pro
 
     // Replay the encoded bytes (not the in-memory record) on the same scene, and compare.
     const decoded = decodeRecipe(bytes);
-    const replay = cutStairwells(scene.root, wells, { walkable, tier, greyboxRoot: greybox.root, collision, recipe: decoded });
+    const replay = cutStairwells(scene.root, wells, { walkable, tier, greyboxRoot: greybox.root, collision, walks, recipe: decoded });
     if (replay.stats.recipe !== "replayed") throw new Error(`${station} ${tier}: replay came back "${replay.stats.recipe}"`);
     const replayOutcome = outcomeOf(replay, shell);
     const maxAttrError = compareOutcomes(liveOutcome, replayOutcome);

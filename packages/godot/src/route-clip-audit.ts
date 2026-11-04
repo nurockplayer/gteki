@@ -23,7 +23,7 @@ import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, 
 import { settleScene } from "./export-scene.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { castAll, castCamera, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
-import { cutStairwells, stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
+import { cutStairwells, plannedWalks, stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
 import type { PolygonRegion } from "../../../apps/web/src/explorer/privateLevels.ts";
 
 export const FLOOR_TOLERANCE_M = 0.3;
@@ -87,6 +87,7 @@ export function cutSceneProbe(scene: StationScene, bundle: StationBundle, qualit
     walkable: new Set(castTargets(scene.walkable, scene.colliders ?? [])), tier: quality,
     // Collision proxies may sit outside scene.root: cut them with the slabs, as Explorer.loadStation does.
     collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])],
+    walks: plannedWalks(bundle, (edge) => router.isTraversable(edge, DEFAULT_PROFILE)),
   });
   if (cut.finish) scene.root.add(cut.finish);
   const probe = sceneProbe(scene);
