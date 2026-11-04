@@ -38,6 +38,12 @@ export interface BuiltStation {
   identityBoards: THREE.Object3D[];
   levelGroups: Map<string, THREE.Group>;
   update(dt: number, t: number): void;
+  /**
+   * Low tier only: pack the shared `escalator-steps:all` batch for `camera`, at most once per renderer
+   * frame. Renderers install it through `installLowTierSteps`, from their scene's onBeforeRender: Three.js
+   * uploads instance matrices before a mesh's own callback runs, so packing there is a frame late.
+   */
+  beforeRender?(renderer: THREE.WebGLRenderer | null, camera: THREE.Camera): void;
   /** W2: ENU camera position controls render-only street visibility. */
   setViewer?(pos: XYZ): void;
   /** QA readout of the decorative train cycle per platform track. */
@@ -1460,11 +1466,20 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     return count;
   }
+  let prepareSteps: BuiltStation["beforeRender"];
   if (sharedSteps) {
     const frustum = new THREE.Frustum(), projection = new THREE.Matrix4(), worldBox = new THREE.Box3();
     // Populate the initial pose for scene digests; subsequent low-tier animation happens per view.
     for (const esc of escalators) writeSteps(esc, 0, sharedSteps.userData.ranges[esc.run.edgeId].offset);
-    sharedSteps.onBeforeRender = (_renderer, _scene, camera) => {
+    let packedFrame = -1;
+    // The mesh's own onBeforeRender stays empty: packing runs from the scene hook (installLowTierSteps),
+    // before the upload, and the frame stamp keeps a second call in the same renderer frame a no-op.
+    prepareSteps = (renderer, camera) => {
+      const frame = renderer?.info?.render?.frame;
+      if (frame !== undefined) {
+        if (frame === packedFrame) return;
+        packedFrame = frame;
+      }
       frustum.setFromProjectionMatrix(projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
       let packed = 0;
       for (const esc of escalators) {
@@ -1504,6 +1519,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     identityBoards,
     levelGroups,
     update(dt, t) { update(dt, t); surface.update(dt, t); },
+    ...(prepareSteps ? { beforeRender: prepareSteps } : {}),
     setViewer(position) { surface.setViewer(position); kitSwap?.lod?.update(position); },
     trainStatus,
     ...(kitSwap ? { kitSwap } : {}),
@@ -1522,6 +1538,19 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   layout = undefined as never;
   protection = undefined as never;
   return built;
+}
+
+/**
+ * Install the station's low-tier step packing as `scene`'s onBeforeRender hook, so the shared
+ * `escalator-steps:all` batch is packed before Three.js uploads its instance matrices. The explorer reaches
+ * the same hook through `StationScene.beforeRender` (stations/shinjuku/gteki/scene.ts); the standalone
+ * Shinjuku app calls this one. Returns false on the high tier, whose meshes have nothing to pack per view.
+ */
+export function installLowTierSteps(scene: THREE.Scene, built: BuiltStation): boolean {
+  const prepare = built.beforeRender;
+  if (!prepare) return false;
+  scene.onBeforeRender = (renderer, _scene, camera) => prepare(renderer, camera);
+  return true;
 }
 
 /** Merge static trim; instanced train finishes, gate leaves and fixtures stay independent. */
