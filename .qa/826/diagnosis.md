@@ -22,10 +22,10 @@ routablePairs 238; `links.failed` = 3× `unsafe_snap` + 2× `snap_failed` (the e
   mesh and a navmesh wall. `wellRails` suppresses rails only inside stair pieces and the well's own
   landings (`:120-126`); the *planned flat walk across the landing* (the layout's link strip) is not in
   that set, so the cut cannot know a route crosses there.
-- Reading: the rail splits each landing into two navmesh islands, and it is also a real barrier for the
-  walker in the 3D scene — so the authored route across the well mouth conflicts with the source
-  geometry. Removing the rail is forbidden (it guards a real drop); teaching the cut about planned flat
-  walks is a design change in `liveScene.ts` plumbing plus a crossing rule, not a source-backed patch.
+- Reading: the rail splits each landing into two navmesh islands and is a real barrier for the walker,
+  so the authored route across the well mouth conflicts with the source geometry. Removing the rail is
+  forbidden (it guards a real drop); teaching the cut about planned flat walks is a design change in
+  `liveScene.ts` plumbing plus a crossing rule, not a source-backed patch.
 
 ## Elevator edges: the 1F exit 3/4/5 cluster has no navmesh at all
 - Both fail on the same 1F node `n:5b824a37…` (-3.84, 0, 3.22): `snap: null` **and**
@@ -41,9 +41,8 @@ routablePairs 238; `links.failed` = 3× `unsafe_snap` + 2× `snap_failed` (the e
 - Repairing it needs the plan's 1F floor at that cluster, not a snap change — a separate geometry task.
 
 ## Blocked (data locations)
-1. Rails vs planned walks: `apps/web/src/explorer/stairwellCut.ts:81-127` (`wellRails`) and the
-   `cutStairwells` call site in `apps/web/src/explorer/liveScene.ts`; evidence
-   `.qa/826/probe/shinjuku/audit.json` → `qaEdgeProbe[0..1].wallCrossings`, `island`, `navAlong`.
+1. Rails vs planned walks: `stairwellCut.ts:81-127` (`wellRails`) and the `cutStairwells` call in
+   `liveScene.ts`; evidence `.qa/826/probe/shinjuku/audit.json` → `qaEdgeProbe[0..1].wallCrossings`.
 2. Missing 1F exit floor: `stations/shinjuku/data/plan.json` (1F levels/spaces around x ≈ −3,
    north ≈ 3.2–3.6) and `stations/shinjuku/scene/layout.ts` (`linkStrips`, `liftCuts`); evidence
    `.qa/826/probe/shinjuku/audit.json` → `qaEdgeProbe[2..3].fromEnd/toEnd`, and the diag
