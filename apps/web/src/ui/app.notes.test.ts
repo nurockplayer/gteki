@@ -24,12 +24,14 @@ type Harness = {
   ui: {
     sheet: HTMLElement; fromNote: HTMLElement; toNote: HTMLElement; fromInput: HTMLInputElement; toInput: HTMLInputElement;
     fromResults: HTMLElement; toResults: HTMLElement; minimap?: { setRoute: ReturnType<typeof vi.fn> }; live?: { announce: ReturnType<typeof vi.fn> };
+    coverage: HTMLDialogElement;
   };
   stationReady: boolean;
   renderEndpointNote: (box: HTMLElement, poi: Poi | null) => void;
   renderResults: (which: "from" | "to") => void;
   renderSheet: () => void;
   computeRoute: () => void;
+  openCoverage: () => void;
   releaseMascot: () => void;
   mascotSay: () => void;
   openStation: (e: { key: string; label: string; synthetic: boolean; load: () => Promise<never> }) => Promise<void>;
@@ -57,6 +59,35 @@ function app(lang: Lang = "ja") {
   return a;
 }
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
+
+describe("coverage dialog source deduplication", () => {
+  it.each([
+    ["en", "not used for directions"],
+    ["ja", "経路案内には不使用"],
+  ] as const)("retains distinct links once and words routing restrictions plainly in %s", (lang, restriction) => {
+    const a = app(lang);
+    const bundle = createSyntheticBundle([]);
+    const source = { ...bundle.sources[0]!, title: "Shared source", attribution: "", license: null };
+    const first = "https://example.invalid/source-a";
+    const second = "https://example.invalid/source-b";
+    bundle.sources = [
+      { ...source, id: "a", url: first },
+      { ...source, id: "b", url: second },
+      { ...source, id: "a-copy", url: first },
+    ];
+    bundle.coverage.gaps = [{ id: "gap:position", floorId: null, zone: "NOT_FOR_ROUTING", missingFact: "Position unknown", fieldWorkNeeded: "Verify on site" }];
+    a.s.loaded = { bundle };
+    a.ui.coverage.showModal = vi.fn();
+    a.openCoverage();
+
+    const heading = [...a.ui.coverage.querySelectorAll("h3")].find((h) => h.textContent === strings(lang).sources)!;
+    const rows = heading.nextElementSibling!.querySelectorAll("li");
+    expect(rows).toHaveLength(1);
+    expect([...rows[0]!.querySelectorAll("a")].map((link) => link.getAttribute("href"))).toEqual([first, second]);
+    expect(a.ui.coverage.textContent).toContain(restriction);
+    expect(a.ui.coverage.textContent).not.toContain("NOT_FOR_ROUTING");
+  });
+});
 
 describe("search-only POI notes outside a route", () => {
   it("shows a picked search-only endpoint's note under its field, in the UI language, and hides it otherwise", () => {
