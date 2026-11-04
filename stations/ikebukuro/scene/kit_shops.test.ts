@@ -160,8 +160,8 @@ describe("committed shop data", () => {
     }
   });
 
-  it("lists 10 shops whose every opening id is a surveyed opening row", () => {
-    expect(shops).toHaveLength(10);
+  it("lists 11 shops whose every opening id is a surveyed opening row", () => {
+    expect(shops).toHaveLength(11);
     for (const shop of shops)
       for (const polygon of shop.openings) expect(byPolygon.get(polygon), `${shop.id} ${polygon}`).toBeTruthy();
   });

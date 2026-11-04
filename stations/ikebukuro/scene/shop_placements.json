@@ -3,6 +3,27 @@
  "note": "Visual-only shopfronts in PLATEAU openings (scene/shop_openings.json, by first polygon id). kind=placeholder: an original illustrative shop (示意店面), generic category text in our own words, no POI, connector, route node or search result. kind=real: a merchant with a printed tie; its position_basis says how exact it is. Signs are plain text in the GTEki sign font; no logo, photo or brand artwork. Accent colours are ours. Curated by the merchant scene lead, docs/assets/merchant-scene-inventory-2026-10-28.md.",
  "shops": [
   {
+   "id": "real-ikb-isp-x36f",
+   "kind": "real",
+   "poiId": "shop-ikb-isp",
+   "openings": [
+    "poly-0fda067a-89e1-446a-a895-0a8c652a9842"
+   ],
+   "front": "glazing",
+   "sign": {
+    "ja": "池袋ショッピングパーク",
+    "en": "IKEBUKURO SHOPPING PARK"
+   },
+   "accent": "#365d72",
+   "display": "none",
+   "position_basis": "printed station-level tie (isp-access: about 10 m along the B1 passage from the stair 36 foot x36f); entrance not surveyed",
+   "sourceIds": [
+    "isp-access-2026-10"
+   ],
+   "field_check": "FC-MER-01",
+   "ruling": "Visual only; no connector, node or coordinate; no 'you are here' or distance on the facade; moves or goes on field check"
+  },
+  {
    "id": "real-ikb-lumine-b1",
    "kind": "real",
    "poiId": "shop-ikb-lumine",
