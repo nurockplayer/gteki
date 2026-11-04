@@ -238,7 +238,7 @@ export function restrictionDigest(input: string) {
 export function restrictedInputKey(layout: Layout, plan: Plan, bundle: StationBundle, base: Fence[]) {
   // Digest the complete source/graph/layout input; CI compares the fresh derivation
   // and separately requires review of every change to the conflict table.
-  return restrictionDigest(JSON.stringify(["restricted-boundary-v18", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
+  return restrictionDigest(JSON.stringify(["restricted-boundary-v19", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
     plan.levels.map(l => [l.label, l.renderElevationM, l.spaces.filter(s => s.restricted)]),
     bundle.edges.filter(e => e.verification === "verified"),
     bundle.nodes.map(n => [n.id, n.position]), [...layout.nodeZ], layout.gates,
@@ -539,6 +539,32 @@ export function protectFareAndAccess(
     }
     return true;
   });
+  // A restricted return can change classification along its length, even when
+  // its midpoint is outside the opening. Cut each affected piece after joins.
+  const clipped: Fence[] = [];
+  for (const fence of fences) {
+    const dx = fence.b.x - fence.a.x, dy = fence.b.y - fence.a.y, length = Math.hypot(dx, dy);
+    const nearby = lifts.filter(l => Math.abs(l.z - (fence.zMin + .05)) < .5 && l.rings.some(r =>
+      Math.max(fence.a.x, fence.b.x) >= Math.min(...r.map(p => p.x)) &&
+      Math.min(fence.a.x, fence.b.x) <= Math.max(...r.map(p => p.x)) &&
+      Math.max(fence.a.y, fence.b.y) >= Math.min(...r.map(p => p.y)) &&
+      Math.min(fence.a.y, fence.b.y) <= Math.max(...r.map(p => p.y))));
+    if (!nearby.length || length < 1e-8) { clipped.push(fence); continue; }
+    const normal = { x: -dy / length * .04, y: dx / length * .04 };
+    const steps = Math.ceil(length / .005), at = (t: number) => ({ x: fence.a.x + dx * t, y: fence.a.y + dy * t });
+    const clear = (t: number) => nearby.some(l => l.clear(at(t), normal));
+    let start: number | undefined, pieces = 0;
+    for (let i = 0; i < steps; i++) {
+      const keep = !clear(i / steps) && !clear((i + .5) / steps) && !clear((i + 1) / steps);
+      if (keep && start === undefined) start = i / steps;
+      if (start !== undefined && (!keep || i === steps - 1)) {
+        const end = (keep ? i + 1 : i) / steps;
+        clipped.push({ ...fence, id: pieces++ ? `${fence.id}:lift:${pieces}` : fence.id, a: at(start), b: at(end) });
+        start = undefined;
+      }
+    }
+  }
+  fences.splice(0, fences.length, ...clipped);
   options.onRestricted?.(structuredClone({ inputKey, fences, conflicts: restricted.conflicts }));
   return { fences, gates, removedAccess, restrictedConflicts: restricted.conflicts, restrictionCacheHit: false };
 }
