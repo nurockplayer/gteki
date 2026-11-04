@@ -305,7 +305,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .field-input { padding: 8px 10px; }
   .station-select { max-width: 52vw; font-size: 13px; }
   .top-actions button { padding: 7px 9px; font-size: 12px; }
-  .panel { left: 16px; right: 16px; width: auto; padding: 10px; }
+  .panel { left: 16px; right: 16px; width: auto; padding: 10px; max-height: calc(100% - 58px - env(safe-area-inset-top) - var(--credit-extra) - env(safe-area-inset-bottom) - 8px); overflow-y: auto; }
   .field { grid-template-columns: 52px 1fr; }
   .results { left: 60px; }
   .sheet { left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + var(--credit-extra)); width: auto; border-radius: var(--radius) var(--radius) 0 0; max-height: 38vh; }
