@@ -1987,6 +1987,12 @@ export class Explorer {
     const { w: vw, h: vh } = this.viewSize;
     const items: DeclutterItem[] = [];
     const byId = new Map<string, PoiLabel>();
+    // The credit footer and the disclaimer badge are never text under a label (#838). Blocked chips stay out of
+    // the declutter itself, so the chip they would have beaten still gets its place.
+    const footers = [this.creditEl, this.legendEl]
+      .filter((el): el is HTMLElement => el !== null && el.getClientRects().length > 0)
+      .map((el) => el.getBoundingClientRect());
+    const blocked = new Set<string>();
     const p = new THREE.Vector3();
     for (const l of labels) {
       l.decluttered = false;
@@ -1995,21 +2001,13 @@ export class Explorer {
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
       const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
-      // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
       const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
       if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
+      if (footers.some((q) => x - size.w / 2 < q.right && x + size.w / 2 > q.left && y - size.h / 2 < q.bottom && y + size.h / 2 > q.top)) blocked.add(l.poiId);
     }
-    const keep = declutter(items);
-    // The credit footer and the disclaimer badge are never text under a label: drop a chip that lands on them (#838).
-    for (const el of [this.creditEl, this.legendEl]) {
-      if (!el || el.getClientRects().length === 0) continue;
-      const q = el.getBoundingClientRect();
-      for (const it of items) {
-        if (it.x - it.w / 2 < q.right && it.x + it.w / 2 > q.left && it.y - it.h / 2 < q.bottom && it.y + it.h / 2 > q.top) keep.delete(it.id);
-      }
-    }
+    const keep = declutter(items.filter((it) => !blocked.has(it.id)));
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
     // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
