@@ -1,3 +1,5 @@
+import { routePolyline, type RouteResult } from "@gteki/navigation";
+import { auditPolyline } from "../../../../packages/godot/src/route-clip-audit.ts";
 import { describe, expect, it } from "vitest";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { skippedConnectorPath, unmodelledVerticalEdges } from "./greyboxConnectors.ts";
@@ -1231,3 +1233,17 @@ describe("turning landing guards", () => {
 
 });
 
+
+it.each([
+  ["escalator", 2, 3.6],
+  ["stairs", 3, 3.6],
+] as const)("keeps the drawn %s route on its own connector", (mode, length, height) => {
+  const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: length, y: 0, z: height } }], edges: [{ ...bundle.edges[0]!, mode, attributes: { sceneGap: true } }] } as StationBundle;
+  const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+  result.root.updateMatrixWorld(true);
+  const route = { nodeIds: ["a", "b"], steps: [{ edgeId: "e", fromNodeId: "a", toNodeId: "b", fromFloorId: "low", toFloorId: "high", mode, reversed: false }] } as unknown as RouteResult;
+  const audit = auditPolyline({ ground: result.walkable, collider: result.colliders, walls: [] }, routePolyline(station, route));
+  expect(audit.wallHits).toBe(0);
+  expect(audit.offFloor).toBe(0);
+  expect(audit.noFloor).toBe(0);
+});
