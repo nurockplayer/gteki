@@ -112,10 +112,12 @@ export function buildStairs(from: THREE.Vector3, to: THREE.Vector3, widthM: numb
   const count = Math.max(1, Math.round(f.rise / 0.18)), rise = f.rise / count;
   const flightSteps = Math.max(1, Math.floor(3 / (rise || 0.18))), landing = 1.2;
   const needed = Math.floor((count - 1) / flightSteps);
-  const omitted = f.length < count * 0.25 + needed * landing ? needed : 0;
+  const nominalOmitted = f.length < count * 0.25 + needed * landing;
+  const nominalTread = (f.length - (nominalOmitted ? 0 : needed * landing)) / count;
+  const fit = rise < 0.15 || rise > 0.21 || nominalTread < 0.25 || nominalTread > 0.35 || f.length < f.rise / Math.tan(35 * Math.PI / 180) ? "approximate" : "exact";
+  const omitted = nominalOmitted || fit === "approximate" ? needed : 0;
   const placed = needed - omitted;
   const tread = (f.length - placed * landing) / count;
-  const fit = rise < 0.15 || rise > 0.21 || tread < 0.25 || tread > 0.35 || f.length < f.rise / Math.tan(35 * Math.PI / 180) ? "approximate" : "exact";
   const xAt = (i: number) => i * tread + (omitted ? 0 : Math.floor(i / flightSteps) * landing);
   for (let i = 0; i < count; i++) {
     const x = xAt(i), y = i * rise;
@@ -144,9 +146,11 @@ export function buildStairs(from: THREE.Vector3, to: THREE.Vector3, widthM: numb
 /** Build the escalator from lower to higher landing; indicators retain the supplied direction. */
 export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "high" | "low"): ConnectorPart[] {
   const f = frame(from, to), parts: ConnectorPart[] = [];
-  const landing = Math.min(0.8, f.length / 4), run = Math.max(0, f.length - 2 * landing);
+  const nominalLanding = Math.min(0.8, f.length / 4);
+  const nominalAngle = Math.atan2(f.rise, f.length - 2 * nominalLanding);
+  const fit = nominalLanding < 0.8 || nominalAngle < 27 * Math.PI / 180 || nominalAngle > 33 * Math.PI / 180 ? "approximate" : "exact";
+  const landing = fit === "approximate" ? 0 : nominalLanding, run = f.length - 2 * landing;
   const angle = Math.atan2(f.rise, run), incline = Math.hypot(run, f.rise);
-  const fit = landing < 0.8 || angle < 27 * Math.PI / 180 || angle > 33 * Math.PI / 180 ? "approximate" : "exact";
   const count = Math.ceil(incline / 0.4 - 1e-9), group = tier === "low" ? 3 : 1;
   const retained = Array.from({ length: count }, (_, i) => i).filter((i) => (i + 0.5) * 0.4 > 0.2 + 1e-9 && (i + 0.5) * 0.4 < incline - 0.2 - 1e-9);
   const firstX = retained.length ? landing + retained[0]! * 0.4 * Math.cos(angle) : f.length / 2;
@@ -202,7 +206,10 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
 function stairWalk(from: THREE.Vector3, to: THREE.Vector3, width: number, parts: ConnectorPart[]): THREE.Vector3[] {
   const f = frame(from, to), count = Math.max(1, Math.round(f.rise / 0.18)), rise = f.rise / count;
   const block = Math.max(1, Math.floor(3 / (rise || 0.18))), needed = Math.floor((count - 1) / block);
-  const omitted = f.length < count * 0.25 + needed * 1.2, tread = (f.length - (omitted ? 0 : needed * 1.2)) / count;
+  const nominalOmitted = f.length < count * 0.25 + needed * 1.2;
+  const nominalTread = (f.length - (nominalOmitted ? 0 : needed * 1.2)) / count;
+  const omitted = nominalOmitted || rise < 0.15 || rise > 0.21 || nominalTread < 0.25 || nominalTread > 0.35 || f.length < f.rise / Math.tan(35 * Math.PI / 180);
+  const tread = (f.length - (omitted ? 0 : needed * 1.2)) / count;
   const at = (x: number, y: number) => new THREE.Vector3(x, y, 0).applyMatrix4(f.matrix);
   const path = [at(0, 0)];
   for (let start = 0; start < count; start += block) {
@@ -221,7 +228,9 @@ function stairWalk(from: THREE.Vector3, to: THREE.Vector3, width: number, parts:
 }
 
 function escalatorWalk(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] {
-  const f = frame(from, to), landing = Math.min(0.8, f.length / 4);
+  const f = frame(from, to), nominalLanding = Math.min(0.8, f.length / 4);
+  const angle = Math.atan2(f.rise, f.length - 2 * nominalLanding);
+  const landing = nominalLanding < 0.8 || angle < 27 * Math.PI / 180 || angle > 33 * Math.PI / 180 ? 0 : nominalLanding;
   const at = (x: number, y: number) => new THREE.Vector3(x, y, 0).applyMatrix4(f.matrix);
   const path = [at(0, 0), at(landing, 0), at(f.length - landing, f.rise), at(f.length, f.rise)];
   return from.y <= to.y ? path : path.reverse();

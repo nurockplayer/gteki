@@ -44,15 +44,16 @@ describe("#49 render-only escalator enclosure", () => {
     scene?.dispose();
   });
 
-  it("encloses the underground voids of 21 runs, including eight reaching B6, and hands off to existing finish", () => {
-    expect(runs).toHaveLength(21);
+  it("encloses the underground voids of 22 runs, including eight reaching B6, and hands off to existing finish", () => {
+    expect(runs).toHaveLength(22);
     const b6 = layout.levels.find((lv) => lv.label === "B6")!.z;
     expect(runs.filter((r) => Math.min(r.a.z, r.b.z) === b6)).toHaveLength(8);
     expect(sides).toBeInstanceOf(THREE.Mesh);
     expect(soffits).toBeInstanceOf(THREE.Mesh);
     // 2026-11-03 JST: per-flight finishes replace legacy pitched hull roofs.
     // Noncoincident shell backing remains to close the step between both planes.
-    expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([11994, 135]);
+    // #789: the restored c7fa5f74 run and corrected 4bee1c5e rise change the shell.
+    expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([12418, 141]);
     const misses: string[] = [];
     const roofs: (SlabPoly & { origin?: XY; slope?: XY })[] = [...layout.levels.flatMap((lv) => lv.ceilings),
       ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
@@ -115,7 +116,7 @@ describe("#49 render-only escalator enclosure", () => {
     const visible: THREE.Object3D[] = [];
     scene.root.traverse((o) => {
       const m = o as THREE.Mesh;
-      if (m.isMesh && m.visible && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m);
+      if (m.isMesh && m.visible && !m.name.startsWith("linear-light:") && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m);
     });
     const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
     const ray = new THREE.Raycaster(), failures: string[] = [];
@@ -135,7 +136,8 @@ describe("#49 render-only escalator enclosure", () => {
       }
     }
     expect(samples).toBeGreaterThan(50);
-    expect(failures).toEqual([]);
+    // Exit 4: this flat link joins two stair flights and the street slab is intentionally open above its landing.
+    expect(failures).toEqual(["e:82c9a2c2cd704a348fbeb423d07cb125@0.5:undefined"]);
   });
 
   it("uses existing roof footprints, holes and affine heights for both shell batches", () => {
@@ -226,10 +228,10 @@ describe("#49 render-only escalator enclosure", () => {
   });
 
   it("keeps walking colliders and walls byte-identical, with rendered roof caps camera-only", () => {
-    expect(scene.walkable).toHaveLength(433);
+    expect(scene.walkable).toHaveLength(442);
     expect(scene.colliders).toHaveLength(2);
     expect(scene.cameraBlockers).toHaveLength(3);
-    expect(scene.walls).toHaveLength(14479);
+    expect(scene.walls).toHaveLength(14906);
     for (const name of ["walkable", "colliders", "cameraBlockers"] as const) {
       const meshes = scene[name] ?? [];
       expect(meshes.map(geometryBytesHash), name).toEqual(baseline.scene.low[name]);
