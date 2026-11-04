@@ -302,9 +302,10 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .field-input { padding: 8px 10px; }
   .station-select { max-width: 52vw; font-size: 13px; }
   .top-actions button { padding: 7px 9px; font-size: 12px; }
-  .panel { left: 16px; right: 16px; width: auto; padding: 10px; max-height: calc(100% - 58px - env(safe-area-inset-top) - var(--credit-extra) - env(safe-area-inset-bottom) - 8px); overflow-y: auto; }
-  /* The overview is the map: the search panel is shortened (its content scrolls) so it leaves most of the slice visible (#838). */
-  .app[data-mode="overview"] .panel { max-height: 40vh; }
+  /* The phone overview is the map: the search panel is capped at 40 % of the height (its content scrolls) so the slice
+     keeps most of the screen (#838). On `.panel` itself, not `.app[data-mode="overview"]`: the first view of a session
+     is the overview and its mode event only fires on a change, so the root has no data-mode attribute yet. */
+  .panel { left: 16px; right: 16px; width: auto; padding: 10px; max-height: 40vh; overflow-y: auto; }
   .field { grid-template-columns: 52px 1fr; }
   .swap { grid-row: 2 / 3; top: -4px; }
   .results { position: static; grid-column: 1 / -1; margin-left: 60px; }
