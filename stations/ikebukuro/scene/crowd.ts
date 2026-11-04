@@ -673,12 +673,11 @@ export function buildCrowd(
     add(geo.torso, 0, 0, 0, CHEST_Y);
     add(geo.shirt, 1, 1, 0, CHEST_Y);
     add(geo.head, 3, 0, 0, CHEST_Y + HEAD_PIVOT_DY, HEAD_SCALE);
-    [geo.hair0, geo.hair1, geo.hair2].forEach((g, h) => add(g, 4, 3 + h, 0, CHEST_Y + HEAD_PIVOT_DY, HEAD_SCALE));
-    add(geo.backpack, 7, 6, 0, CHEST_Y);
+    add(geo.hair0, 4, 0, 0, CHEST_Y + HEAD_PIVOT_DY, HEAD_SCALE);
     add(geo.shoulderBag, 7, 7, 0, CHEST_Y);
+    add(geo.skirt, 2, 2, 0, HIPS_Y + THIGH_DY);
     for (const side of [1, -1]) {
       const hip = HIPS_Y + THIGH_DY, shoulder = CHEST_Y + SHOULDER_DY;
-      add(geo.skirt, 2, 2, side * THIGH_X, hip, 1, hip, side * 0.22);
       add(geo.thigh, 5, 0, side * THIGH_X, hip, 1, hip, side * 0.32);
       add(geo.shin, 5, 0, side * THIGH_X, hip - L_THIGH, 1, hip, side * 0.32);
       add(geo.shoe, 6, 0, side * THIGH_X, ANKLE_H, 1, hip, side * 0.32);
@@ -694,25 +693,39 @@ export function buildCrowd(
       const colors = looks.flatMap((_, i) => paletteKeys.slice(half * 4, half * 4 + 4).map((key) => cols[key]![i]!));
       merged.setAttribute(`palette${half}`, new THREE.InstancedBufferAttribute(new Float32Array(colors), 4));
     }
-    const variants = looks.flatMap((l) => [Number(l.open), l.tail, l.hair, l.carry === "backpack" ? 1 : l.carry === "shoulderBag" ? 2 * l.bagSide : 0]);
+    const variants = looks.flatMap((l) => [Number(l.open), l.tail, l.hair, l.carry ? 2 * l.bagSide : 0]);
     merged.setAttribute("look", new THREE.InstancedBufferAttribute(new Float32Array(variants), 4));
+    merged.setAttribute("stride", new THREE.InstancedBufferAttribute(new Float32Array(looks.map((l) => l.stride)), 1));
     lowPhase = new THREE.InstancedBufferAttribute(new Float32Array(count), 1).setUsage(THREE.DynamicDrawUsage);
     merged.setAttribute("phase", lowPhase);
     M.cloth.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader.replace("#include <common>", `#include <common>
         attribute vec4 part, palette0, palette1, look;
-        attribute float phase;
+        attribute float phase, stride;
+        float crowdLegPhase() { return mod(phase + (part.w < 0.0 ? ${Math.PI} : 0.0), ${TAU}); }
+        float crowdFootForward() {
+          float p = crowdLegPhase() / ${TAU};
+          // Phase advances by speed / (stride * body width): world stance velocity is exactly -speed.
+          if (p >= 0.5) return stride * (0.75 - p);
+          float u = p * 2.0;
+          return stride * (-0.25 - 0.5 * u + 3.0 * u * u - 2.0 * u * u * u);
+        }
+        float crowdAngle() {
+          if (part.x == 6.0) return 0.0; // a flat sole has a fixed contact vertex throughout stance
+          if (part.x == 5.0) return -asin(crowdFootForward() / (${HIPS_Y + THIGH_DY - ANKLE_H}));
+          return sin(phase) * part.w;
+        }
         vec3 crowdSwing(vec3 v) {
-          float a = sin(phase) * part.w;
+          float a = crowdAngle();
           return vec3(v.x, cos(a) * v.y - sin(a) * v.z, sin(a) * v.y + cos(a) * v.z);
         }
         float crowdLegOffset() {
           if (part.x != 5.0 && part.x != 6.0) return 0.0;
-          float a = sin(phase) * part.w;
+          float a = crowdAngle();
           float low = 1e9;
           ${Array.from({ length: geo.solePts.length / 2 }, (_, i) => {
-            const z = geo.solePts[i * 2]!, y = geo.solePts[i * 2 + 1]!;
-            return `low = min(low, (${ANKLE_H} - part.z + ${y.toFixed(9)}) * cos(a) - ${z.toFixed(9)} * sin(a));`;
+            const y = geo.solePts[i * 2 + 1]!;
+            return `low = min(low, (${ANKLE_H} - part.z) * cos(a) + ${y.toFixed(9)});`;
           }).join("\n")}
           return -part.z - low + ${LOW_SWING_LIFT} * max(0.0, sin(phase) * sign(part.w));
         }
@@ -734,8 +747,9 @@ export function buildCrowd(
         transformed.y -= part.z;
         transformed = crowdSwing(transformed);
         transformed.y += part.z;
-        // Ground each rigid leg on its actual sole; only the swing side lifts.
+        // Ground the flat sole and align its rigid leg's ankle; only the swing side lifts.
         transformed.y += crowdLegOffset();
+        if (part.x == 6.0) transformed.z += crowdFootForward();
         if (!shown) transformed = vec3(0.0);
       `);
     };
@@ -1058,15 +1072,19 @@ export function buildCrowd(
 const LOW_SWING_LIFT = 0.05;
 
 /** Phone vertex shader transform for the non-optional legs/shoes; sole points are ankle-relative (z, y) pairs. */
-export function transformLowCrowdVertex(position: readonly number[], part: readonly number[], phase: number, sole: Float64Array): V3 {
+export function transformLowCrowdVertex(position: readonly number[], part: readonly number[], phase: number, sole: Float64Array, stride: number): V3 {
   const [x, y, z] = position as V3;
   const [slot, , pivot, swing] = part as [number, number, number, number];
-  const a = Math.sin(phase) * swing, c = Math.cos(a), s = Math.sin(a);
+  const p = ((phase + (swing < 0 ? Math.PI : 0)) / TAU) % 1;
+  const u = p * 2;
+  const forward = stride * (p >= 0.5 ? 0.75 - p : -0.25 - 0.5 * u + 3 * u * u - 2 * u * u * u);
+  const a = slot === 6 ? 0 : slot === 5 ? -Math.asin(forward / (HIPS_Y + THIGH_DY - ANKLE_H)) : Math.sin(phase) * swing;
+  const c = Math.cos(a), s = Math.sin(a);
   let dy = 0;
   if (slot === 5 || slot === 6) {
     const support = { dy: 0, dz: 0 };
-    pivotOffset(-a, sole, support);
+    pivotOffset(0, sole, support);
     dy = support.dy + (ANKLE_H - pivot) * (1 - c) + LOW_SWING_LIFT * Math.max(0, Math.sin(phase) * Math.sign(swing));
   }
-  return [x, pivot + (y - pivot) * c - z * s + dy, (y - pivot) * s + z * c];
+  return [x, pivot + (y - pivot) * c - z * s + dy, (y - pivot) * s + z * c + (slot === 6 ? forward : 0)];
 }
