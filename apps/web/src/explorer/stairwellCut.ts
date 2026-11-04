@@ -78,7 +78,7 @@ function pieceQuad(rect: StairwellRect, from: number, to: number): PlanPoint[] {
  * more than a step and less than HOLE_DEPTH_M under the upper floor, unioned. Rails are the union's boundary, except
  * where the flight meets the floor within a step (the line across the flight the walker steps over).
  */
-export function wellRails(well: StairwellWell, opened: readonly StairwellRect[], union = unionRings, others: readonly StairwellWell[] = [], walks: readonly PlannedWalk[] = []): [THREE.Vector3, THREE.Vector3][] {
+export function wellRails(well: StairwellWell, opened: readonly StairwellRect[], union = unionRings, others: readonly StairwellWell[] = []): [THREE.Vector3, THREE.Vector3][] {
   const rings: PlanPoint[][] = [], open: [PlanPoint, PlanPoint][] = [], pieces: { rect: StairwellRect; from: number; to: number }[] = [];
   const holes = new Map(opened.map((rect) => [rect, depthInterval(rect, well.upperY, WALKER_BODY.stepUpM, HOLE_DEPTH_M)] as const));
   for (const rect of opened) {
@@ -118,9 +118,8 @@ export function wellRails(well: StairwellWell, opened: readonly StairwellRect[],
   let polygons: ReturnType<typeof unionRings>, inside: typeof pieces = [];
   try { polygons = union(rings); } catch { polygons = rings.map((ring) => [ring]); inside = pieces; }
   // No rail stands where a piece of this stair or another runs within a body height of the rail's floor (a landing or
-  // a turn the walker is on, or a flight stacked over this one starting from that floor), nor across a planned flat
-  // walk at that floor: the layout floors that sleeve, so the rail would fence off a route the plan says is walkable.
-  const walked = [...[well, ...others.filter((other) => other !== well)].flatMap((stair) => [...stair.rects, ...(stair.landings ?? [])]), ...walks.map(walkRect)].flatMap((rect) => {
+  // a turn the walker is on, or a flight stacked over this one starting from that floor).
+  const walked = [well, ...others.filter((other) => other !== well)].flatMap((stair) => [...stair.rects, ...(stair.landings ?? [])]).flatMap((rect) => {
     const reach = depthInterval(rect, well.upperY, -WALKER_BODY.bodyTopM, WALKER_BODY.bodyTopM);
     return reach ? [{ rect, from: reach.from, to: reach.to }] : [];
   });
@@ -218,8 +217,6 @@ export interface StairwellOptions {
   recipe?: CutRecipe | null;
   /** Bake only: the live cut records every mesh it reaches here. */
   record?: MeshRecord[];
-  /** Planned flat walks (`plannedWalks`): rails never cross them. */
-  walks?: readonly PlannedWalk[];
 }
 
 /** One well per traversable stairs / escalator edge that has a vertical run worth cutting. */
@@ -259,46 +256,6 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
     wells.push({ edgeId: edge.id, mode: edge.mode, lowerY, upperY, rects, ...(landings.length ? { landings } : {}), arrival });
   }
   return wells;
-}
-
-/** A planned flat walk in renderer coordinates: the sleeve `layout.ts` lays for a flat graph edge. */
-export interface PlannedWalk {
-  from: { x: number; y: number; z: number };
-  to: { x: number; y: number; z: number };
-  /** Half the sleeve width: the layout's 1.4 m below -0.5 m, 0.5 m at street level. */
-  halfWidth: number;
-}
-
-/**
- * Flat graph edges (|Δy| ≤ 0.05, elevator excluded) in pieces, matching the edges `layout.ts` gives a link strip:
- * a walk the plan routes across a landing must not be railed off where that landing floors it (#826).
- */
-export function plannedWalks(bundle: StationBundle, traversable: (edge: Edge) => boolean): PlannedWalk[] {
-  const nodes = new Map(bundle.nodes.map((node) => [node.id, node])), floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
-  const walks: PlannedWalk[] = [];
-  for (const edge of bundle.edges) {
-    if (edge.mode === "elevator" || !traversable(edge)) continue;
-    const points = edgePoints(bundle, edge, nodes, floors);
-    for (let i = 1; i < points.length; i++) {
-      const a = points[i - 1]!, b = points[i]!;
-      if (Math.abs(b.y - a.y) > 0.05 || Math.hypot(b.x - a.x, b.z - a.z) < 0.05) continue;
-      walks.push({ from: { x: a.x, y: a.y, z: a.z }, to: { x: b.x, y: b.y, z: b.z }, halfWidth: a.y < -0.5 ? 1.4 : 0.5 });
-    }
-  }
-  return walks;
-}
-
-/** The rect of one planned walk, spanning the whole sleeve. */
-function walkRect(walk: PlannedWalk): StairwellRect {
-  const dx = walk.to.x - walk.from.x, dz = walk.to.z - walk.from.z, length = Math.hypot(dx, dz) || 1;
-  return {
-    center: new THREE.Vector3((walk.from.x + walk.to.x) / 2, (walk.from.y + walk.to.y) / 2, (walk.from.z + walk.to.z) / 2),
-    along: new THREE.Vector3(dx / length, 0, dz / length),
-    across: new THREE.Vector3(-dz / length, 0, dx / length),
-    halfLength: length / 2,
-    halfWidth: walk.halfWidth,
-    rise: walk.to.y - walk.from.y,
-  };
 }
 
 function rectPlanes(rect: StairwellRect, upperY: number): Plane[] {
@@ -448,7 +405,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   const steel = new THREE.Color(0xaab2b5).toArray();
   for (const well of cutWells) {
     const opened = well.rects.filter((rect) => (cut.maxHeights.get(rect) ?? []).some((y) => y >= well.upperY - 0.3 - 1e-6));
-    for (const [from, to] of wellRails(well, opened, unionRings, live, options.walks ?? [])) {
+    for (const [from, to] of wellRails(well, opened, unionRings, live)) {
       addRail(railPositions, railColors, from, to, well.upperY, steel);
       walls.push({ ax: from.x, az: from.z, bx: to.x, bz: to.z, yMin: well.upperY, yMax: well.upperY + RAIL_HEIGHT_M });
       if (options.tier === "high") addGlass(glassPositions, from, to, well.upperY);
