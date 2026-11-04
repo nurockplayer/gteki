@@ -710,7 +710,7 @@ export function buildCrowd(
         int slot = int(part.x);
         float hex = slot < 4 ? palette0[slot] : palette1[slot - 4];
         vec3 rgb = mod(floor(hex / vec3(65536.0, 256.0, 1.0)), 256.0) / 255.0;
-        vColor *= mix(rgb / 12.92, pow((rgb + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), rgb));
+        vColor.rgb *= mix(rgb / 12.92, pow((rgb + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), rgb));
       `).replace("#include <beginnormal_vertex>", `#include <beginnormal_vertex>
         if (part.y == 7.0 && look.w < 0.0) objectNormal.xz *= -1.0;
         objectNormal = crowdSwing(objectNormal);

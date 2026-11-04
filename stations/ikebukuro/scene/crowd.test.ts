@@ -154,7 +154,7 @@ describe("ikebukuro crowd gait", () => {
   /** One walker on a long straight edge, stepped at 120 Hz; tracks heel / ball / toe of each shoe and the knee angle. */
   function runOne() {
     const long = [{ id: "L", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 4000, y: 0, z: 0 }] }];
-    const c = buildCrowd(THREE, long, toRenderer, 150, new THREE.Texture(), {});
+    const c = buildCrowd(THREE, long, toRenderer, LOW_QUALITY_MAX_COUNT + 1, new THREE.Texture(), {});
     const shoe = named(c, "shoe"), shin = named(c, "shin"), thigh = named(c, "thigh");
     const landmarks = [[0, -0.072, -0.07], [0, -0.072, 0.105], [0, -0.05, 0.172]].map(([x, y, z]) => new THREE.Vector3(x, y, z));
     const m = new THREE.Matrix4(), a = new THREE.Matrix4(), b = new THREE.Matrix4(), p = new THREE.Vector3();
