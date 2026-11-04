@@ -74,7 +74,9 @@ export function connectorShape(built: readonly Point[] | undefined, a: Point, b:
   if (!built?.length) return [a,b];
   const near = (p: Point) => Math.hypot(p.x-a.x, p.y-a.y, p.z-a.z);
   const ordered = near(built[0]!) <= near(built[built.length-1]!) ? built : [...built].reverse();
-  return [a, ...ordered.slice(1,-1), b];
+  // Keep the built ends: dropping them cuts diagonally from the last interior point to the snap,
+  // through the connector's own landing.
+  return [a, ...ordered, b];
 }
 
 /** A snap must land on a scene floor and the node-to-snap segment must not cross a wall. */

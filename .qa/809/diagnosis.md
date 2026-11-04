@@ -57,6 +57,17 @@ After a full regen of both stations, `.qa/809/compare.py` is SHRINK-ONLY PASS wi
 in either: Ikebukuro 992/64/0, Shinjuku 132/48/58 suspect, `unvalidatedJoins` 64 and 48, every clip
 field, fallback and routable count unchanged.
 
+## r2 measurement — link shape follows the built landing
+
+r2 self-exclusion variant (2026-11-05 02:5x JST, `.qa/809/after`, kept in `after-r1` order):
+excluding the edge's own connector mesh from the wall check left Ikebukuro at 992/64 and the
+fallback list unchanged, so it changed nothing measurable; the Lead ruled it out because it hides
+real clipping for every vertical edge, and it is not shipped.
+
+The shipped change keeps the built connector's end points in `connectorShape` (`[snap, built…,
+snap]` instead of dropping the first and last built point), so the drawn link follows the landing
+instead of cutting diagonally from the last interior point to the snap.
+
 ## Follow-ups (unfixed)
 
 1. `ne_j__x26` layer 2: why Detour finds no path across the admitted link, and whether the

@@ -60,7 +60,7 @@ it("admits a link endpoint on a solid floor even when the discarded node-to-snap
 it("draws a link from its snapped ends through the built connector interior", () => {
   const a={x:0,y:0,z:0}, b={x:0,y:10,z:0};
   const built=[{x:0,y:1,z:0},{x:0,y:2,z:0},{x:0,y:3,z:0}];
-  expect(connectorShape(built,a,b)).toEqual([a,{x:0,y:2,z:0},b]);
-  expect(connectorShape(built,b,a)).toEqual([b,{x:0,y:2,z:0},a]);
+  expect(connectorShape(built,a,b)).toEqual([a,...built,b]);
+  expect(connectorShape(built,b,a)).toEqual([b,...built.slice().reverse(),a]);
   expect(connectorShape(undefined,a,b)).toEqual([a,b]);
 });
