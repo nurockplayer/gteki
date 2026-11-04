@@ -52,12 +52,13 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // camera blockers; this candidate retains three and the original listsDigest.
 // Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
 // 2026-11-04 JST: low-tier steps share one geometry and 1,582 instances across 21 runs.
+// #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
   station: {
     geometryDigest: "9db906943741a89f9e120380ee00cd6166f35ec114cd451ad4d26ea1d70b5710",
     appearanceDigest: "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
     nodesDigest: "f58f6271533e57ccc8f1fd0b04aa509ee49fec69aa5667fd6975b7ddccfc2bf3",
-    texturesDigest: "3832e841fdc7d3baa1d40d1a466b4cda861de7c27e1346c29d574d02fe176822",
+    texturesDigest: "640b359c5471765e6c9817784676b751578030272216e2381b3d25df9ce7c354",
     meshes: 125,
     bytes: 15852302,
   },
