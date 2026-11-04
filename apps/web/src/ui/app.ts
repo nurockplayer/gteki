@@ -869,6 +869,10 @@ export class App {
     else box.removeAttribute("role");
     applyAria(input, inputAria(state, box.id));
     box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
+    if (state.active >= 0) {
+      const opt = box.querySelectorAll<HTMLElement>('[role="option"]')[state.active];
+      if (opt && typeof opt.scrollIntoView === "function") opt.scrollIntoView({ block: "nearest" });
+    }
     this.syncPanelMascot();
   }
 
@@ -1026,7 +1030,14 @@ export class App {
     this.ui.live.announce(routeLiveMessage(this.t, best, failureText));
     if (best.ok) {
       // Baked navmesh paths are public-graph data: the private build keeps its graph polylines (gteki-private#4).
-      this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths(), PRIVATE_BUILD ? null : this.explorer.navmeshRoutePaths());
+      const nav = PRIVATE_BUILD ? null : this.explorer.navmeshRoutePaths();
+      this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths(), nav?.edges, nav?.joins);
+      if (!this.s.polyline.length) {
+        this.s.route = { ok:false, reason:"no_path", message:"No continuous navmesh guide path" };
+        this.ui.live.announce(routeLiveMessage(this.t, this.s.route));
+        this.renderSheet();
+        return;
+      }
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
@@ -1695,6 +1706,29 @@ export class App {
           ul.append(li);
         }
         d.append(el("h3", undefined, this.t.dataFileDerivations), ul);
+      }
+    }
+    // Provenance is stored verbatim; show its routing restriction in plain language.
+    const textNodes = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
+    while (textNodes.nextNode()) {
+      const node = textNodes.currentNode;
+      node.textContent = node.textContent!.replace(/\bNOT_FOR_ROUTING\b/g, this.s.lang === "ja" ? "経路案内には不使用" : "not used for directions");
+    }
+    // Separate source records and coverage polygons can have identical visible rows.
+    // Combine their wording while retaining every distinct source link.
+    for (const ul of d.querySelectorAll("ul")) {
+      const seen = new Map<string, Element>();
+      for (const li of [...ul.children]) {
+        const key = li.textContent ?? "";
+        const previous = seen.get(key);
+        if (!previous) { seen.set(key, li); continue; }
+        const hrefs = new Set([...previous.querySelectorAll("a")].map((a) => a.getAttribute("href")));
+        for (const a of li.querySelectorAll("a")) {
+          if (hrefs.has(a.getAttribute("href"))) continue;
+          previous.append(" / ", a.cloneNode(true));
+          hrefs.add(a.getAttribute("href"));
+        }
+        li.remove();
       }
     }
     d.showModal();

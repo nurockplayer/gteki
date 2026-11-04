@@ -403,6 +403,13 @@ export class Explorer {
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
+    // Mesh callbacks run after Three uploads instance matrices. Prepare this dynamic batch before upload too.
+    if (this.quality === "low") this.scene.onBeforeRender = (renderer, scene, camera) => {
+      const steps = this.stationScene?.root.getObjectByName("escalator-steps:all");
+      if (steps instanceof THREE.InstancedMesh) {
+        steps.onBeforeRender(renderer, scene, camera, steps.geometry, steps.material as THREE.Material, null as never);
+      }
+    };
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
@@ -961,6 +968,10 @@ export class Explorer {
     }
     this.stationScene = built;
     this.sceneError = sceneError;
+    // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
+    const sharedSteps = this.quality === "low" ? built?.root.getObjectByName("escalator-steps:all") : undefined;
+    const prepareSteps = sharedSteps?.onBeforeRender;
+    if (sharedSteps) sharedSteps.onBeforeRender = () => {};
 
     // Overview may have been entered while loading (against an empty world): restore first, so the new
     // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
@@ -1097,6 +1108,7 @@ export class Explorer {
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
+    if (sharedSteps && prepareSteps) sharedSteps.onBeforeRender = prepareSteps;
     this.phase = "ready";
     return true;
   }
@@ -1485,8 +1497,12 @@ export class Explorer {
 
   /** Connector centre lines converted from renderer coordinates to station ENU. */
   /** The station's baked navmesh walk paths per edge (ENU), or null: no file, a failed load or the L0 graph view. */
-  navmeshRoutePaths(): NavmeshPaths["edges"] | null {
-    return this.navmeshPaths?.edges ?? null;
+  navmeshRoutePaths(): NavmeshPaths | null {
+    if (this.navmeshPaths) return this.navmeshPaths;
+    // A failed public bake load is a missing guide, not permission to walk graph geometry.
+    return this.stationScene && this.station?.scene?.navmeshPaths
+      ? { version:1, station:this.station.key, frame:"ENU", edges:{} }
+      : null;
   }
 
   connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {

@@ -47,19 +47,35 @@ describe("routePolyline", () => {
     expect(pts.map((p) => p.sceneGap ?? false)).toEqual([false, false, true]);
   });
 
-  it("walks baked navmesh paths snap to snap, by direction, and dashes a walk edge without one", () => {
+  it("chains two snaps around an off-mesh graph node using the baked join", () => {
     const b = createSyntheticBundle([edge("a-start", "a", "start"), edge("a-goal", "a", "goal")]);
-    const navPaths = {
-      // Traversed start -> a, i.e. against the edge: the reverse path is used.
-      "a-start": { forward: [[10, 0.1, 0], [0, 0.1, 0]], reverse: [[0.2, 0.1, 0], [5, 1, 0], [9.8, 0.1, 0]] },
+    const paths = {
+      "a-start": { reverse: [[0.2, 1, 0], [9, 1, 0]] },
+      "a-goal": { forward: [[11, 1, 0], [20, 1, 0]] },
     };
-    const pts = routePolyline(b, route(b, "start", "goal"), undefined, navPaths);
-    // The first point is the start snap, not the start node: no straight node-to-snap join.
-    expect(pts.map((p) => [p.x, p.y])).toEqual([[0.2, 0.1], [5, 1], [9.8, 0.1], [20, 0]]);
-    expect(pts.map((p) => p.stepIndex)).toEqual([-1, 0, 0, 1]);
-    expect(pts.at(2)?.floorId).toBe(b.nodes.find((n) => n.id === "a")!.floorId);
-    // a-goal has no navmesh path: a fallback, drawn dashed; the navmesh points are not.
-    expect(pts.map((p) => p.sceneGap ?? false)).toEqual([false, false, false, true]);
+    const joins = { "a-start:reverse>a-goal:forward": [[9, 1, 0], [10, 2, 0], [11, 1, 0]] };
+    const pts = routePolyline(b, route(b, "start", "goal"), undefined, paths, joins);
+    expect(pts.map(p => [p.x, p.y])).toEqual([[0.2, 1], [9, 1], [10, 2], [11, 1], [20, 1]]);
+    expect(pts.some(p => p.x === 10 && p.y === 0)).toBe(false);
+    expect(pts.map(p => p.stepIndex)).toEqual([-1, 0, 1, 1, 1]);
+  });
+
+  it("uses snapped off-mesh link endpoints instead of offset vertical graph and connector lines", () => {
+    const b = createSyntheticBundle([edge("stairs", "start", "upper", { mode: "stairs" })]);
+    const line = [{ x:0, y:0, z:0 }, { x:5, y:0, z:3 }];
+    const paths = { stairs: { forward: [[0, 1, 0], [5, 1, 3]], reverse: [[5, 1, 3], [0, 1, 0]] } };
+    expect(routePolyline(b, route(b, "start", "upper"), new Map([["stairs", line]]), paths).map(p => [p.x, p.y, p.z])).toEqual(paths.stairs.forward);
+    expect(routePolyline(b, route(b, "upper", "start"), new Map([["stairs", line]]), paths).map(p => [p.x, p.y, p.z])).toEqual(paths.stairs.reverse);
+  });
+
+  it("uses earlier edge geometry for a missing path or join", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal")]);
+    const paths = { "s-a": { forward: [[0, 1, 0], [9, 1, 0]] } };
+    const missing = routePolyline(b, route(b, "start", "goal"), undefined, paths);
+    expect(missing.map(p => [p.x, p.y])).toEqual([[0, 1], [9, 1], [10, 0], [20, 0]]);
+    expect(missing.at(-1)?.sceneGap).toBe(true);
+    const noJoin = routePolyline(b, route(b, "start", "goal"), undefined, { ...paths, "a-goal": { forward: [[11, 1, 0], [20, 1, 0]] } });
+    expect(noJoin.map(p => [p.x, p.y])).toEqual([[0, 0], [10, 0], [20, 0]]);
   });
 
   it("leaves graph polylines undashed when the station has no navmesh paths", () => {
@@ -934,4 +950,13 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     loop.nodes.find((n) => n.id === "hall")!.floorId = "f1";
     expect(describeRoute(loop, route(loop, "door-1f", "hall"), "en")[1]).toMatchObject({ vertical: null, text: "Take the elevator" });
   });
+});
+
+it("keeps suspect graph geometry explicitly flagged between baked walks",()=>{
+  const b=createSyntheticBundle([edge("s-a","start","a"),edge("suspect","a","goal",{mode:"stairs",attributes:{displayHeightApprox:true}})]);
+  const r=route(b,"start","goal");
+  const points=routePolyline(b,r,undefined,{"s-a":{forward:[[0,1,0],[9,1,0]]},suspect:{suspectPolyline:true}});
+  expect(points.length).toBeGreaterThan(2);
+  expect(points.some(p=>p.suspectPolyline && p.sceneGap)).toBe(true);
+  expect(points.filter(p=>p.suspectPolyline).at(-1)).toMatchObject({x:20,y:0});
 });

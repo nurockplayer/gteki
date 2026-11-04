@@ -284,4 +284,30 @@ describe("floor POIs by evidence", () => {
     // The shop has a position but no connector: search-only, so it never gets a dot.
     expect(floorPois(createSyntheticBundle(), "upper")).toEqual([]);
   });
+  it("never gives search-only or area-only evidence a precise dot even with a connector", () => {
+    const bundle = createSyntheticBundle();
+    const located = bundle.pois[0]!;
+    bundle.pois = ["SEARCH_ONLY", "AREA_ONLY"].map((method) => ({
+      ...located, id: method, evidence: { ...located.evidence, method },
+    }));
+    expect(floorPois(bundle, located.floorId!)).toEqual([]);
+  });
+});
+
+it("shows only evidenced Ikebukuro POIs on their floor", async () => {
+  const fs = await import("node:fs");
+  const { parseStationFiles } = await import("@gteki/schema");
+  const read = (f: string): unknown => JSON.parse(fs.readFileSync(new URL(`../../../../stations/ikebukuro/gteki/${f}`, import.meta.url), "utf8"));
+  const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+  if (!parsed.ok || !parsed.bundle) throw new Error("Ikebukuro bundle failed to parse");
+  const expected: Record<string, string[]> = {
+    street: ["exit-10", "exit-11", "exit-15", "exit-17", "exit-18", "exit-22", "exit-26", "exit-27", "exit-28", "exit-32", "exit-33", "exit-34", "exit-35", "exit-37", "exit-38", "exit-39", "exit-40", "exit-41", "exit-42", "exit-43"],
+  };
+  for (const floor of parsed.bundle.floors) {
+    const pins = floorPois(parsed.bundle, floor.id);
+    expect(pins.map((p) => p.id).sort()).toEqual(expected[floor.id] ?? []);
+    expect(pins.map((p) => p.id)).not.toContain("tobu-central-gate-2");
+    expect(pins.map((p) => p.id)).not.toContain("exit-36");
+    for (const pin of pins) expect(pin.displayPosition).toEqual(parsed.bundle.nodes.find((n) => n.id === pin.connectorNodeIds[0])?.position);
+  }
 });

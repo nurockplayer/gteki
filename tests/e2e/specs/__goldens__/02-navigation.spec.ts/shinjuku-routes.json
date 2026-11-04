@@ -42,7 +42,7 @@
         "Turn left, then left again, ~21 m. After ~17 m, continue straight through the junction.",
         "Turn right, ~6 m",
         "Take the escalator down to B6",
-        "Arrive at destination. Data for the Toei Oedo Line station (E27) only. Facilities of JR, Keio, Odakyu, Tokyo Metro, the Toei Shinjuku Line and other operators or lines are not modelled."
+        "Arrive at destination. Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name, for search, from Tokyo Metropolitan Government data as of March 2020; some gates and transfers also carry an approximate position derived from that data's shapes (search display only, not for routing). There is no route for them. The Toei Shinjuku Line and other lines are not modelled."
       ],
       "steps": [
         "<e:b503c7d9461a4f239a60bbd4011022e9",
