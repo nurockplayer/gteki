@@ -112,12 +112,12 @@ describe("the shipped mobile kit bundle dresses the escalators", () => {
     const keys = new Set(report.placed.map((p) => p.anchorKey));
     for (const edge of GOLDEN_SLICE) expect([edge, keys.has(edge)]).toEqual([edge, true]);
     // All 19 runs a piece fits get dressed: 19 fitted runs, no budget drops, 58,008 triangles under the 60k cap.
-    // The other two runs (e:4bee1c5e at 48.3 deg and e:27d3ed49 at 35.7 deg, both outside the dressing
-    // generator's range) never fitted any piece.
+    // After #789, 4bee1c5e and c7fa5f74 need newly fitted assets; 27d3ed49 remains outside the dressing
+    // generator's angle range. All three retain procedural finishes.
     expect(report.placed.length).toBe(19);
     expect(report.dropped.filter((d) => /budget/.test(d.reason))).toEqual([]);
     expect(report.dropped.filter((d) => /no piece fits/.test(d.reason)).map((d) => d.anchorKey).sort()).toEqual([
-      "e:27d3ed498cc9423683ee7f502c5d2460", "e:4bee1c5e3544452db681f9aeccfe2346",
+      "e:27d3ed498cc9423683ee7f502c5d2460", "e:4bee1c5e3544452db681f9aeccfe2346", "e:c7fa5f74d72f43498ef2cb3b1dbea7e4",
     ]);
     expect(report.totals.draws).toBeLessThanOrEqual(KIT_BUDGET.maxDraws);
     expect(report.totals.triangles).toBeLessThanOrEqual(KIT_BUDGET.maxTriangles);

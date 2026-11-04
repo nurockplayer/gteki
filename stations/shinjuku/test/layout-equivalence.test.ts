@@ -20,7 +20,7 @@ describe("layout equivalence", () => {
     digest = layoutHash(buildLayout(bundle, planJson as unknown as Plan));
   }, 60_000);
   it("preserves the pre-optimization physical layout at millimetre precision", () => {
-    // Captured from cc9a2ca before any performance edits (six identical builds).
-    expect(digest).toBe("a6d062d218dec1e06fc241a0d4707a6b303b0f44d28a44f60bec21b6495a5b20");
+    // #789 intentionally repairs eight display rises; preserve that physical layout.
+    expect(digest).toBe("ce580bc8e83292a7c49faf07a52fec11fc03065a5771e2b79eb7d97c4c0a00f0");
   });
 });

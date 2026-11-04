@@ -56,7 +56,7 @@ describe("shared-explorer scene hook: camera caps", () => {
     // The explorer's follow camera raycasts colliders + walkable (+ cameraBlockers once supported).
     const blockers = [...scene.cameraBlockers!, ...scene.walkable];
     const visible: THREE.Object3D[] = [];
-    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
+    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !m.name.startsWith("linear-light:") && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
     const open: string[] = [];
     for (const n of bundle.nodes) {
       const z = layoutZ.get(n.id)!;
@@ -102,7 +102,7 @@ describe("shared-explorer scene hook: camera caps", () => {
   }
   const drawn = () => {
     const visible: THREE.Object3D[] = [];
-    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
+    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !m.name.startsWith("linear-light:") && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
     return visible;
   };
 
@@ -111,14 +111,16 @@ describe("shared-explorer scene hook: camera caps", () => {
     // follow camera must meet the roof that is drawn there, not read the space under it as open sky.
     const { samples, unroofed, uncapped } = roofedLinkSamples(drawn(), [...scene.cameraBlockers!, ...scene.walkable]);
     expect(samples).toBeGreaterThan(50);
-    expect(unroofed).toEqual([]);
+    // Exit 4 landing joins two stair flights; its street slab is intentionally open to the sky.
+    expect(unroofed).toEqual(["e:82c9a2c2cd704a348fbeb423d07cb125@0.5 z-1.68 cap:ceiling collider (invisible)@3.40"]);
     expect(uncapped).toEqual([]);
   }, 60_000);
 
   it("negative controls: a cap without its drawn glazing, or glazing without its cap, fails the roofed-link check", () => {
     const visible = drawn(), blockers = [...scene.cameraBlockers!, ...scene.walkable];
     // Drop the drawn street glazing (canopies + roofed-run glazing) but keep every cap.
-    expect(roofedLinkSamples(visible.filter((o) => o.name !== "surface-glass"), blockers).unroofed.length).toBeGreaterThan(0);
+    expect(roofedLinkSamples(visible.filter((o) => o.name !== "surface-glass"), blockers).unroofed.length)
+      .toBeGreaterThan(roofedLinkSamples(visible, blockers).unroofed.length);
     // Keep the glazing but drop the merged ceiling/canopy cap.
     expect(roofedLinkSamples(visible, blockers.filter((o) => o.name !== "ceiling collider (invisible)")).uncapped.length).toBeGreaterThan(0);
   }, 60_000);

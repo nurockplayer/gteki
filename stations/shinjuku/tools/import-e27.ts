@@ -366,6 +366,38 @@ function renderNodeHeights(H: Map<number, number>) {
     nodeZ.set(stairEnd, nodeZ.get(other)!);
   }
 
+  // #789: the southern B1 corridor is an intermediate level, not the main B1 datum.
+  // Its street exit is c690df6c + c3fe6342 (both NWD distance=3.2 m), with the flat
+  // 5ce3f318 landing between them. Anchor at the source floor=0 exit and use the
+  // existing symbolic stair ratio. Carry that height over its connected level walks;
+  // otherwise the parallel bdcdf922/dcbc1a25 stairs and c7fa5f74 escalator stay flat.
+  const exitFlights = ["c690df6cad7b48bba7b3b30fee65eda2", "c3fe6342f158400ab602dd610f636329"];
+  const exit = links.find((l) => l.properties.link_id === exitFlights[1])!;
+  const corridorZ = H.get(floorOfNode(exit.properties.end_id))! - exitFlights.reduce((sum, id) => sum + linkLen.get(id)!, 0) * STAIR_RATIO;
+  const corridor = new Set([links.find((l) => l.properties.link_id === exitFlights[0])!.properties.start_id]);
+  for (const id of corridor) {
+    nodeZ.set(id, corridorZ);
+    displayHeightAdjusted.push(`n:${id}`);
+    for (const l of incident.get(id) ?? []) {
+      if (modeEvidence.get(l.properties.link_id)!.mode !== "walk" || l.properties.lev_diff !== 1 || l.properties.vtcl_slope !== 1) continue;
+      corridor.add(l.properties.start_id === id ? l.properties.end_id : l.properties.start_id);
+    }
+  }
+
+  // The three isolated B1 stair ends have no second level anchor. NWD vtcl_slope
+  // 7/8 supplies the up/down direction (>18%); lev_diff=5 means >10 cm, not 5 m.
+  // Use their source run length and the same symbolic stair ratio as the floor fit.
+  for (const l of links) {
+    const p = l.properties;
+    if (modeEvidence.get(p.link_id)!.mode !== "stairs" || floorOfNode(p.start_id) !== floorOfNode(p.end_id) || p.lev_diff !== 5 || ![7, 8].includes(p.vtcl_slope)) continue;
+    const fromDead = incident.get(p.start_id)!.length === 1, toDead = incident.get(p.end_id)!.length === 1;
+    if (fromDead === toDead) continue;
+    const dz = p.distance * STAIR_RATIO * (p.vtcl_slope === 7 ? 1 : -1);
+    const id = toDead ? p.end_id : p.start_id;
+    nodeZ.set(id, nodeZ.get(toDead ? p.start_id : p.end_id)! + (toDead ? dz : -dz));
+    displayHeightAdjusted.push(`n:${id}`);
+  }
+
   // Stacked switchbacks: the source puts every landing of a multi-flight stair on one floor, so the
   // middle flights would render flat (and overlap the flights above/below them in plan, or leave the
   // last flight absurdly steep). For each stair/escalator link with both ends on one floor, take the
@@ -435,7 +467,8 @@ function renderNodeHeights(H: Map<number, number>) {
 // Sample the same straight run footprints as layout.ts; constrain unrelated plan overlaps,
 // retaining true abutments and the first/last 0.6 m where neighbouring proxies meet.
 const initialNodeZ = renderNodeHeights(H).nodeZ;
-const basis = floorOrdinals.map((o) => renderNodeHeights(new Map(floorOrdinals.map((f) => [f, f === o ? 1 : 0]))).nodeZ);
+const offset = renderNodeHeights(new Map(floorOrdinals.map((f) => [f, 0]))).nodeZ;
+const basis = floorOrdinals.map((o) => new Map([...renderNodeHeights(new Map(floorOrdinals.map((f) => [f, f === o ? 1 : 0]))).nodeZ].map(([id, z]) => [id, z - offset.get(id)!])));
 const xyNodes = new Map(raw.nodes.map((n) => [n.properties.node_id, enu(...n.geometry.coordinates)]));
 const flatWalks = links.filter((l) => ["walk", "gate", "ramp"].includes(modeEvidence.get(l.properties.link_id)!.mode) && Math.abs(initialNodeZ.get(l.properties.start_id)! - initialNodeZ.get(l.properties.end_id)!) < 0.05).flatMap((l) => {
   const pts = l.geometry.coordinates.map(([lon, lat]) => enu(lon, lat));
@@ -445,7 +478,7 @@ const runWidths = new Map(links.filter((l) => isVertical(l.properties.link_id)).
   const p = l.properties;
   return [p.link_id, runWidth(p.width, modeEvidence.get(p.link_id)!.mode, { ...xyNodes.get(p.start_id)!, z: initialNodeZ.get(p.start_id)! }, { ...xyNodes.get(p.end_id)!, z: initialNodeZ.get(p.end_id)! }, flatWalks)];
 }));
-const clearanceConstraints: { coefficients: number[]; lower: string; upper: string }[] = [];
+const clearanceConstraints: { coefficients: number[]; offset: number; lower: string; upper: string }[] = [];
 const nodeCoefficients = (id: string) => basis.map((b) => b.get(id)!);
 const interpolate = (a: number[], b: number[], t: number) => a.map((v, i) => v + (b[i]! - v) * t);
 for (const edge of links) {
@@ -506,7 +539,8 @@ for (const edge of links) {
         const rz = initialNodeZ.get(rp.start_id)! + (initialNodeZ.get(rp.end_id)! - initialNodeZ.get(rp.start_id)!) * u;
         if (rz - z <= 0.05) continue; // same walking surface or the lower run
         const upper = interpolate(nodeCoefficients(rp.start_id), nodeCoefficients(rp.end_id), u);
-        clearanceConstraints.push({ coefficients: upper.map((v, k) => v - lower[k]!), lower: ep.link_id, upper: rp.link_id });
+        const at = (a: string, b: string, t: number) => offset.get(a)! + (offset.get(b)! - offset.get(a)!) * t;
+        clearanceConstraints.push({ coefficients: upper.map((v, k) => v - lower[k]!), offset: at(rp.start_id, rp.end_id, u) - at(ep.start_id, ep.end_id, t), lower: ep.link_id, upper: rp.link_id });
       }
     }
     acc += length;
@@ -517,7 +551,7 @@ for (const edge of links) {
 for (let pass = 0; pass < 100; pass++) {
   let changed = false;
   for (const c of clearanceConstraints) {
-    const gap = c.coefficients.reduce((sum, v, i) => sum + v * H.get(floorOrdinals[i]!)!, 0);
+    const gap = c.coefficients.reduce((sum, v, i) => sum + v * H.get(floorOrdinals[i]!)!, c.offset);
     if (gap >= 2.33 - 1e-7) continue;
     const options = floorOrdinals.filter((o) => !pinned.has(o)).map((o) => ({ o, gain: -c.coefficients.reduce((sum, v, i) => sum + (floorOrdinals[i]! <= o ? v : 0), 0) })).filter((v) => v.gain > 1e-6);
     options.sort((a, b) => b.gain - a.gain || b.o - a.o);
