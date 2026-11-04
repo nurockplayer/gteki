@@ -53,6 +53,12 @@ describe("poiNoteText", () => {
     expect(poiNoteText(p, "ja")).toBe("2020年3月時点の情報です");
   });
 
+  it("does not show an origin note as a destination note", () => {
+    expect(poiNoteText(withNotes([
+      { lang: "en", text: "Directions start on the west side", at: "origin" },
+    ]), "en")).toBeNull();
+  });
+
   it("falls back to the ja note when the requested language has none", () => {
     expect(poiNoteText(withNotes([{ lang: "ja", text: "  現在の状況は不明  " }]), "en")).toBe("現在の状況は不明");
   });
