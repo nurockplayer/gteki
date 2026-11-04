@@ -899,6 +899,19 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("opens a flight guard beside its landing floor but keeps it above a drop", () => {
+    const station = stairThrough([[0, 0, 0], [4, 2, 0]]);
+    const wallAtTop = (height: number) => {
+      const result = buildConnectors(station, () => true, {
+        hasFloor: () => false, nearMesh: () => false,
+        floorHeight: (p, low, high) => p.x > 3.4 && height >= low && height <= high ? height : undefined,
+      }, "high");
+      return result.wallSegments.some((wall) => Math.min(wall.ax, wall.bx) < 3.75 && Math.max(wall.ax, wall.bx) > 3.75 && Math.abs(Math.abs(wall.az) - 0.78) < 0.02);
+    };
+    expect(wallAtTop(2)).toBe(false);
+    expect(wallAtTop(1)).toBe(true);
+  });
+
   // #710 review: each connector is its own model, so two flights 1.7 m apart keep the walls that face each other.
   it("keeps the facing side walls of two independent flights side by side", () => {
     const geometry = (y: number) => [{ x: 0, y, z: 0 }, { x: 4, y, z: 2 }];

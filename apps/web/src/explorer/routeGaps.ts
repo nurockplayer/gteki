@@ -42,6 +42,16 @@ export function floorProbe(ray: THREE.Raycaster, groundTargets: readonly THREE.O
   };
 }
 
+/** Highest walkable surface in a vertical band at a station-ENU point. */
+export function floorHeightProbe(ray: THREE.Raycaster, groundTargets: readonly THREE.Object3D[]): (p: V3, low: number, high: number) => number | undefined {
+  return (p, low, high) => {
+    ray.set(R(p.x, p.y, high + 0.001), new THREE.Vector3(0, -1, 0));
+    ray.near = 0;
+    ray.far = high - low + 0.002;
+    return castAll(ray, groundTargets).find((hit) => hit.point.y >= low - 1e-6 && hit.point.y <= high + 1e-6)?.point.y;
+  };
+}
+
 /** Sampling as in packages/godot route-clip-audit: every half metre of plan length, keeping each vertex. */
 const STEP_M = 0.5;
 /** Plan length of the floorless samples themselves; a shorter gap is a mesh seam, not unmodelled space. */

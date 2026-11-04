@@ -5,6 +5,7 @@ import * as THREE from "three";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { buildConnectors } from "./greyboxConnectors.ts";
 import { buildGreybox, splitWallsAtOpenings, type Box } from "./greybox.ts";
+import { floorHeightProbe } from "./routeGaps.ts";
 import { sceneMeshProbe } from "./routeGroundQa.ts";
 import type { ExplorerTargets } from "./raycast.ts";
 import { cutStairwells, stairwellWells, type StairwellCut } from "./stairwellCut.ts";
@@ -90,7 +91,8 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
   liveWalkable.push(...greybox.walkable);
   liveColliders.push(...greybox.colliders, ...stairwellCut.colliders);
   const targetsMs = elapsed();
-  const connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: sceneMeshProbe([root]) }, tier);
+  const floorHeight = floorHeightProbe(new THREE.Raycaster(), [...sceneGroundTargets, ...greybox.walkable]);
+  const connectors = buildConnectors(bundle, traversable, { hasFloor, floorHeight, nearMesh: sceneMeshProbe([root]) }, tier);
   const connectorsMs = elapsed();
   liveWalkable.push(...connectors.walkable);
   liveColliders.push(...connectors.colliders);
