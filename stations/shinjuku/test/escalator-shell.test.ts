@@ -113,10 +113,11 @@ describe("#49 render-only escalator enclosure", () => {
 
   it("closes both run mouths above the head band without blocking eye height", () => {
     const ray = new THREE.Raycaster(), misses: string[] = [];
+    const frontSide = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
     for (const r of runs) {
       const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, length = Math.hypot(dx, dy);
       const shell = escalatorShellGeometry({ ...layout, levels: [], pads: [], linkStrips: [], streetPads: [], runs: [r], soffits: [], shaftFinishes: [] }, { ...bundle, edges: [] });
-      const mesh = new THREE.Mesh(shell.sides!, doubleSide);
+      const mesh = new THREE.Mesh(shell.sides!, frontSide);
       for (const [p, sign] of [[r.a, -1], [r.b, 1]] as const) {
         const mouth = { x: p.x + sign * dx / length * 0.6, y: p.y + sign * dy / length * 0.6,
           z: p.z + sign * (r.b.z - r.a.z) / length * 0.6 };
@@ -130,6 +131,7 @@ describe("#49 render-only escalator enclosure", () => {
       }
       shell.sides?.dispose(); shell.soffits?.dispose();
     }
+    frontSide.dispose();
     expect(misses).toEqual([]);
   });
 

@@ -281,7 +281,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
         profile: { bottomA: topA - 4.5, bottomB: topB - 4.5, topA, topB } }, covered });
     }
     // Close only the upper band at the mouths; the walking openings stay clear.
-    for (const [a, b] of [[ring[3]!, ring[0]!], [ring[1]!, ring[2]!]]) {
+    for (const [a, b] of [[ring[0]!, ring[3]!], [ring[2]!, ring[1]!]]) {
       const topA = soffitHeight(roof, a), topB = soffitHeight(roof, b);
       const bottomA = headTop(a), bottomB = headTop(b);
       walls.push({ wall: { a, b, side: 1, kind: "wall", zMin: Math.min(bottomA, bottomB), zMax: Math.max(topA, topB),
