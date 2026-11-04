@@ -93,8 +93,8 @@ export function sceneMeshProbe(roots: readonly THREE.Object3D[]): (point: THREE.
         const size = index?.count ?? position.count;
         for (let i = 0; i + 2 < size; i += 3) {
           if (mesh.userData.greybox && edgeId !== undefined) {
-            const ranges = mesh.userData.edgeRanges as { start: number; end: number; edgeId?: string }[] | undefined;
-            if (ranges ? !ranges.some((r) => i >= r.start && i + 3 <= r.end && r.edgeId === edgeId) : mesh.userData.edgeId !== edgeId) continue;
+            const ranges = mesh.userData.edgeRanges as { start: number; end: number; edgeId?: string; edgeIds?: readonly string[] }[] | undefined;
+            if (ranges ? !ranges.some((r) => i >= r.start && i + 3 <= r.end && (r.edgeId === edgeId || r.edgeIds?.includes(edgeId))) : mesh.userData.edgeId !== edgeId) continue;
           }
           const read = (v: THREE.Vector3, k: number) => v.fromBufferAttribute(position, index ? index.getX(k) : k).applyMatrix4(matrix);
           read(triangle.a, i); read(triangle.b, i + 1); read(triangle.c, i + 2);

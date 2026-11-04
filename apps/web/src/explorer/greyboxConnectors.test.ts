@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { skippedConnectorPath, unmodelledVerticalEdges } from "./greyboxConnectors.ts";
+import { createRouter } from "@gteki/navigation";
+import { routeGroundCounts, sceneMeshProbe } from "./routeGroundQa.ts";
 import { cumulativeLengths, resolveWalls, samplePolyline } from "./walker.ts";
 
 const bundle = {
@@ -1420,6 +1422,21 @@ describe("turning landing guards", () => {
     expect(result.pathByEdge.has("stub")).toBe(false);
     const a = result.pathByEdge.get("lift")!, b = result.pathByEdge.get("lift-2")!;
     expect(a[1]!.x).toBeCloseTo(b[1]!.x); expect(a[1]!.z).toBeCloseTo(b[1]!.z);
+  });
+
+  it("finds the shared shaft for a route using its second elevator edge", () => {
+    const station = liftStation([syntheticEdge("lift-2", "b", "upper-2", { mode: "elevator", attributes: { sceneGap: true } })]);
+    station.nodes.find((n) => n.id === "b")!.position = { x: 0.3, y: 0.4, z: 0 };
+    station.nodes.find((n) => n.id === "upper-2")!.position = { x: 0.2, y: -0.3, z: 4 };
+    const route = createRouter(station).route("b", "upper-2");
+    expect(route.ok).toBe(true);
+    if (!route.ok) throw new Error(route.reason);
+    expect(route.steps.map((step) => step.edgeId)).toEqual(["lift-2"]);
+    for (const tier of ["low", "high"] as const) {
+      const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, tier);
+      const counts = routeGroundCounts([], () => null, route.steps, station, sceneMeshProbe([result.root]), result.pathByEdge);
+      expect(counts.verticalWithoutConnector, tier).toBe(0);
+    }
   });
 
   // A straight flight is built.

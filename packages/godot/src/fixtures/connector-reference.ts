@@ -70,7 +70,7 @@ export function unmodelledLiftEdges(
 }
 
 export type ConnectorMaterial = "tread" | "riser" | "nosing" | "escStep" | "escTruss" | "steel" | "rubber" | "glass" | "light" | "lampOk" | "lampNo";
-export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; role?: "walkable" | "collider"; walkableOnly?: boolean; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
+export interface ConnectorPart { material: ConnectorMaterial; position: number[]; normal: number[]; colour: number[]; edgeId?: string; edgeIds?: readonly string[]; role?: "walkable" | "collider"; walkableOnly?: boolean; soffit?: boolean; userData?: { fit: "exact" | "approximate"; omittedLandings?: number } }
 export interface ConnectorOptions { tier: "high" | "low" }
 
 const connectorColours: Record<ConnectorMaterial, string> = {
@@ -248,7 +248,7 @@ function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THR
   const mesh = new THREE.Mesh(geometry, material);
   const ids = [...new Set(parts.map((p) => p.edgeId).filter((id): id is string => id !== undefined))];
   let start = 0;
-  const edgeRanges = ordered.map((p) => { const range = { start, end: start + p.position.length / 3, edgeId: p.edgeId }; start = range.end; return range; });
+  const edgeRanges = ordered.map((p) => { const range = { start, end: start + p.position.length / 3, edgeId: p.edgeId, ...(p.edgeIds ? { edgeIds: p.edgeIds } : {}) }; start = range.end; return range; });
   mesh.userData = { greybox: true, connector: true, approximate: true, fit: parts.some((p) => p.userData?.fit === "approximate") ? "approximate" : "exact", edgeId: ids.length === 1 ? ids[0] : ids, edgeRanges };
   return mesh;
 }
@@ -1000,7 +1000,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       for (let i = 1; i < ride.length; i++) segments.push({ line: new THREE.Line3(ride[i - 1]!.clone(), ride[i]!.clone()), halfWidth: DOOR_HALF });
       counts.elevator++;
     }
-    for (const part of parts) part.edgeId = shaft.id;
+    const edgeIds = shaft.edges.map((edge) => edge.id).sort();
+    for (const part of parts) { part.edgeId = shaft.id; part.edgeIds = edgeIds; }
     const key = tier === "low" ? "all" : nodes.get(shaft.edges[0]!.from)?.floorId ?? "";
     const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => !p.walkableOnly)); batches.set(key, batch);
     const support = parts.filter((p) => p.role === "walkable"), shaftWalls = parts.filter((p) => p.role === "collider");
