@@ -285,6 +285,36 @@ describe("step-free routes to unverified store ties", () => {
     }
   });
 
+  it.each(["disconnected", "unpaidOnly", "verification", "strictHours", "stairs"] as const)("classifies each tie when the alternative is %s (#790)", (alternative) => {
+    for (const lang of ["ja", "en"] as const) {
+      const { a, bundle } = app(lang);
+      const target = alternative === "disconnected" ? "isolated" : "goal";
+      a.s.destination = shopPoi({
+        connectorNodeIds: ["a", target], paid: false,
+        evidence: { ...shopPoi().evidence, method: "STATION_TIE: entrance unverified" },
+      });
+      bundle.edges.push(syntheticEdge("stairs", "start", "a", { mode: "stairs", lengthM: 1 }));
+      if (alternative !== "disconnected") bundle.edges.push(syntheticEdge("other-tie", "start", target, {
+        lengthM: 20,
+        ...(alternative === "unpaidOnly" ? { paid: true } : {}),
+        ...(alternative === "verification" ? { verification: "unverified" as const } : {}),
+        ...(alternative === "strictHours" ? { hours: null } : {}),
+        ...(alternative === "stairs" ? { mode: "stairs" as const } : { wheelchair: null }),
+      }));
+      a.s.router = createRouter(bundle);
+      a.s.origin = { kind: "node", nodeId: "start" };
+      a.s.profile.stepFree = true;
+      if (alternative === "unpaidOnly" || alternative === "strictHours") a.s.profile[alternative] = true;
+      a.computeRoute();
+      expect(a.s.route).toMatchObject({ ok: false, reason: "no_path" });
+      expect(a.s.noPath).toMatchObject({ kind: "option", options: [{ option: "stepFree", evidence: "known", complete: true }] });
+      const message = alternative === "stairs" ? strings(lang).merchant.noStepFreeTie : strings(lang).merchant.unsurveyedStepFreeTie;
+      expect(a.ui.sheet.querySelector(".merchant-no-route")?.textContent).toBe(message);
+      expect(a.ui.sheet.querySelector(".card.no-route .entrance-unverified")?.textContent).toBe(message);
+      expect(a.ui.live.announce).toHaveBeenCalledWith(expect.stringContaining(message));
+    }
+  });
+
   it.each(["unpaidOnly", "strictHours"] as const)("keeps the existing explanation when %s blocks a step-free tie", (option) => {
     const { a, bundle } = app();
     a.s.destination = shopPoi({

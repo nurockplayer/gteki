@@ -80,6 +80,55 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
   } finally { corridor.polys.destroy(); }
 }
 
+/** Audit a gate using its own directed off-mesh connection, never a different gate or walking bypass. */
+export function auditGatePath(nav: NavMesh, query: NavMeshQuery, from: V3, to: V3, line: readonly PolylinePoint[], validateSnap: (node: V3, snap: V3) => boolean,
+  link: { connection: { userId: number; startPosition: V3; endPosition: V3 } } | undefined, reversed = false) {
+  const built = buildConnectorPath(query, from, to, line, validateSnap);
+  const reject = (pathRejection: "missing_link" | "wrong_link") => ({ ...built, points: null, missing: true, reason: "no_path" as const, pathRejection });
+  if (!link) return reject("missing_link");
+  if (!built.points) return { ...built, missing: true, pathRejection: null };
+  const a = reversed ? link.connection.endPosition : link.connection.startPosition;
+  const b = reversed ? link.connection.startPosition : link.connection.endPosition;
+  // Select this connection explicitly: a shortest walking path can bypass a valid wide gate.
+  let traversable = false;
+  for (let i=0;i<nav.getMaxTiles() && !traversable;i++) {
+    const tile=nav.getTile(i), header=tile.header(); if (!header) continue;
+    for (let j=0;j<header.offMeshConCount() && !traversable;j++) {
+      const connection=tile.offMeshCons(j);
+      if (connection.userId() !== link.connection.userId || (reversed && !(connection.flags() & 1))) continue; // DT_OFFMESH_CON_BIDIR
+      const endpoint=(offset:number)=>({x:connection.pos(offset),y:connection.pos(offset+1),z:connection.pos(offset+2)});
+      if (distance(a,endpoint(reversed ? 3 : 0))>0.01 || distance(b,endpoint(reversed ? 0 : 3))>0.01) continue;
+      const ends = new Map<number,number[]>();
+      let next=tile.polys(connection.poly()).firstLink(), guard=0;
+      while (next !== 0xffffffff && guard++ < header.maxLinkCount()) {
+        const adjacent=tile.links(next);
+        if (adjacent.ref()) ends.set(adjacent.edge(),[...(ends.get(adjacent.edge()) ?? []),adjacent.ref()]);
+        next=adjacent.next();
+      }
+      if (!ends.has(0) || !ends.has(1)) continue;
+      const connectionRef=nav.getPolyRefBase(tile)+connection.poly();
+      // Verify the directed floor→connection→floor corridor, including the incoming floor link.
+      for (const ref of ends.get(reversed ? 1 : 0)!) {
+        const ground=nav.getTileAndPolyByRef(ref), groundHeader=ground.success ? ground.tile.header() : null;
+        if (!ground.success || !groundHeader) continue;
+        let entry=ground.poly.firstLink(), count=0;
+        while (entry !== 0xffffffff && count++ < groundHeader.maxLinkCount()) {
+          const adjacent=ground.tile.links(entry);
+          if (adjacent.ref() === connectionRef) { traversable=true; break; }
+          entry=adjacent.next();
+        }
+        if (traversable) break;
+      }
+    }
+  }
+  if (!traversable) return reject("wrong_link");
+  return { ...built, missing: false, pathRejection: null, points: [
+    { ...built.points[0]!, x: a.x, y: -a.z, z: a.y },
+    ...built.points.slice(1,-1),
+    { ...built.points.at(-1)!, x: b.x, y: -b.z, z: b.y },
+  ] };
+}
+
 /** Snap a path's vertices to the floor height floorAt reports. Between two vertices the floor is sampled every 0.25 m of
  * plan length; where the straight line leaves it by more than 0.05 m, the path is split at the worst sample, at floor
  * height, and both halves are checked again (#669 r2: a ramp foot between vertices). */
@@ -230,12 +279,13 @@ async function main() {
       const entry: Entry = {suspect:true,points:line,missing:false,reason:null,stairLink:false,connector:false,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:false,toSnapped:false,connectivity:"unknown_snap",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
       cache.set(key,entry); return entry;
     }
-    // Fare gates walk their graph line between navmesh snaps, as the app draws them (gteki#669): the gate barriers
-    // block the navmesh, so a Detour path is either none or a detour round the gate.
+    // Gate transitions require their own attached link; a walk around the barrier is not the gate.
     if (["stairs","escalator","elevator","gate"].includes(step.mode)) {
       const line=routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]},connectorPaths);
-      const built=buildConnectorPath(query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null);
-      const entry: Entry = {suspect:false,points:built.points,missing:built.reason!==null,reason:built.reason,stairLink:false,connector:!!built.points,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:built.fromSnapped,toSnapped:built.toSnapped,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:null};
+      const built = step.mode === "gate"
+        ? auditGatePath(nav,query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null,link,step.reversed)
+        : (() => { const path=buildConnectorPath(query,from,to,line,(node,snapped)=>validateLinkSnap(probe,node,snapped)===null); return {...path,missing:path.reason!==null,pathRejection:null}; })();
+      const entry: Entry = {suspect:false,points:built.points,missing:built.missing,reason:built.reason,stairLink:false,connector:!!built.points,fallbackUsed:[],corridor:[],gapM:distance(from,to),gapWidthM:null,step,fromSnapped:built.fromSnapped,toSnapped:built.toSnapped,connectivity:link ? "link_attached" : "link_unattached",partialEndDistanceM:null,gaps:[],graph:line,pathRejection:built.pathRejection};
       cache.set(key,entry); return entry;
     }
     const a = link ? (step.reversed ? link.connection.endPosition : link.connection.startPosition) : snap(step.fromNodeId);

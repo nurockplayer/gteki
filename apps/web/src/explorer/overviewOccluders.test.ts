@@ -46,6 +46,29 @@ describe("the route sheet as an overview occluder (#385)", () => {
     }
   });
 
+  it("fits the network above the open sheet without the phone's minimum map size", () => {
+    const e = runtime();
+    e.panelEl = {
+      getClientRects: () => [{}],
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 390, height: 350 }),
+    };
+    e.creditEl = band(807);
+    e.sheetEl = band(480); // Only 130 px remain between the panel and the sheet.
+    const points = [new THREE.Vector3(-100, 0, -100), new THREE.Vector3(100, 0, 100)];
+    e.framed = new THREE.Box3().setFromPoints(points);
+    e.framedPts = e.routablePts = points;
+    e.camera = new THREE.PerspectiveCamera(48, 390 / 845, 0.1, 2000);
+    e.orbit = { target: new THREE.Vector3(), update: () => e.camera.lookAt(e.orbit.target) };
+    (Explorer.prototype as any).fitOverview.call(e);
+    const frame = e.overviewFrame();
+    const free = e.freeRect();
+    expect(frame.extentShare).toBeLessThanOrEqual(1);
+    expect(frame.bbox.x0).toBeGreaterThanOrEqual(free.x - 2);
+    expect(frame.bbox.x1).toBeLessThanOrEqual(free.x + free.w + 2);
+    expect(frame.bbox.y0).toBeGreaterThanOrEqual(free.y - 2);
+    expect(frame.bbox.y1).toBeLessThanOrEqual(free.y + free.h + 2);
+  });
+
   it("ignores a closed sheet and the transparent sheet in walk or guide", () => {
     const expected = runtime().freeRect();
     const closed = runtime();

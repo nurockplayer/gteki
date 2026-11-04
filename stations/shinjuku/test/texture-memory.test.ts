@@ -1,8 +1,7 @@
 /**
  * GPU texture-memory report for the Shinjuku scene in phone ("low") and desktop ("high") quality
  * (#72 follow-up). Builds the same scenes the explorer does (test/helpers/scene-digest.ts path), estimates
- * every texture once, and prints MiB per category. There is deliberately no budget assertion here: the lead
- * sets the threshold after reading the numbers.
+ * every texture once, and prints MiB per category. Pins #276's phone limits and the desktop measurement.
  */
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
@@ -38,6 +37,16 @@ describe("shinjuku texture memory", () => {
       if (budget.other.length) console.log(`${quality}: unclassified`, budget.other.map((e) => e.label));
 
       expect(budget.totalBytes).toBeGreaterThan(0);
+      if (quality === "low") {
+        // Keep the surface-sign and identity density shipped on low before #276; do not halve signs to meet 40 MiB.
+        expect(Number(budget.byCategory.find((c) => c.category === "signage")!.mib.toFixed(3))).toBeLessThanOrEqual(41.963);
+        expect(budget.byCategory.find((c) => c.category === "finish")!.mib).toBeLessThanOrEqual(40);
+        expect(budget.totalMib).toBeLessThanOrEqual(112);
+      } else {
+        // Measured before #276 on c2f6f0ee; keep every desktop category unchanged.
+        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([113.85, 13.333, 0.667, 0, 8, 0, 57, 0]);
+        expect(Number(budget.totalMib.toFixed(3))).toBe(192.85);
+      }
       expect(budget.textureCount).toBe(budget.entries.length);
       // Every texture gets exactly one category, and the category counts add up to the total.
       expect(budget.byCategory.reduce((sum, c) => sum + c.textures, 0)).toBe(budget.textureCount);
