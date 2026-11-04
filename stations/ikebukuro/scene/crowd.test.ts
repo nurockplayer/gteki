@@ -1,7 +1,7 @@
 // The ambient crowd keeps its route logic and draw budget while being drawn as articulated commuters.
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { LOW_QUALITY_MAX_COUNT, buildCrowd, type Lane } from "./crowd.ts";
+import { LOW_QUALITY_MAX_COUNT, buildCrowd, transformLowCrowdVertex, type Lane } from "./crowd.ts";
 import crowdLanes from "./crowd_lanes.json";
 import graph from "../gteki/graph.json";
 import station from "../gteki/station.json";
@@ -20,21 +20,22 @@ const make = (count: number, es = edges) => buildCrowd(THREE, es, toRenderer, co
 const LEGACY_TORSO_XZ: number[][] = [[26.6641,-0.0074,44.9118,4.3382,57.0351,9.2916,36.3194,2.4424,30,-10.4755,30,-9.9897,30,-20.9566,9.4406,0.4687,30,-9.3895,17.6655,0.3869,30,-24.1098,30.0269,-25,52.1941,-25,47.65,5.6721],[0,0,0,0,24.1982,0.2656,2.7966,0.3186,45.3472,-25,0,0,0,0,0,0,49.5102,-25,0,0,0,0,0,0,30,-16.6755,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43.2467,4.132,0,0]];
 
 const meshes = (c: ReturnType<typeof make>) => c.group.children as THREE.InstancedMesh[];
-const named = (c: ReturnType<typeof make>, n: string) => meshes(c).find((m) => m.name === `crowd_${n}`)!;
+const named = (c: ReturnType<typeof make>, n: string) => meshes(c).find((m) => m.name === `crowd_${n}` || (n === "torso" && m.name === "crowd_low"))!;
 const tris = (m: THREE.InstancedMesh) => m.geometry.index!.count / 3;
 
 describe("ikebukuro crowd", () => {
-  it("keeps the return shape and one instanced mesh per part within the draw budget", () => {
+  it("keeps the return shape and merged phone mesh within the draw budget", () => {
     const c = make(40);
     expect(Object.keys(c).sort()).toEqual(["dispose", "group", "nearby", "update"]);
     expect(c.group.name).toBe("ikebukuro_crowd");
     expect(c.nearby()).toBe(0);
     const ms = meshes(c);
-    expect(ms.length).toBeLessThanOrEqual(16);
+    expect(ms.length).toBeLessThanOrEqual(2);
     for (const m of ms) {
       expect(m).toBeInstanceOf(THREE.InstancedMesh);
       expect(m.userData.gteki_role).toBe("ambient_crowd");
-      expect(m.instanceColor).toBeTruthy();
+      expect(m.geometry.getAttribute("palette0")).toBeTruthy();
+      expect(m.geometry.getAttribute("palette1")).toBeTruthy();
       expect(m.geometry.getAttribute("color")).toBeTruthy(); // baked ambient occlusion
     }
     c.dispose();
@@ -63,6 +64,7 @@ describe("ikebukuro crowd", () => {
       torso: 336, shirt: 136, skirt: 108, head: 436, hair_short: 180, hair_long: 276, hair_tail: 252, upper_arm: 96, forearm: 96, hand: 84,
       thigh: 108, shin: 96, shoe: 176, backpack: 272, shoulder_bag: 184,
     };
+    expect(meshes(c)).toHaveLength(15);
     for (const [n, t] of Object.entries(expected)) expect(tris(named(c, n))).toBe(t);
     let all = 0;
     for (const m of meshes(c)) all += tris(m) * m.count;
@@ -70,23 +72,28 @@ describe("ikebukuro crowd", () => {
     c.dispose();
   });
 
-  it("holds the low-quality crowd (56 people) to 60k triangles in at most 15 draws", () => {
+  it("draws the low-quality crowd (56 moving people) in at most two draws", () => {
     expect(LOW_QUALITY_MAX_COUNT).toBeGreaterThanOrEqual(56);
     expect(LOW_QUALITY_MAX_COUNT).toBeLessThan(150);
     const count = 56;
     const c = make(count);
-    const high = make(150);
-    expect(meshes(c).length).toBeLessThanOrEqual(15);
-    let all = 0, allHigh = 0;
+    expect(meshes(c).length).toBeLessThanOrEqual(2);
+    let all = 0;
     for (const m of meshes(c)) all += tris(m) * m.count;
-    for (const m of meshes(high)) allHigh += tris(m) * m.count;
-    expect(all).toBeLessThanOrEqual(60_000); // triangles per person x count
-    expect(all / count).toBeLessThanOrEqual(60_000 / count);
-    expect(all / count).toBeLessThan((allHigh / 150) * 0.5); // coarser than high quality in every part that matters
-    // every part is no richer than its high-quality twin
-    for (const m of meshes(c)) expect(tris(m)).toBeLessThanOrEqual(tris(named(high, m.name.replace("crowd_", ""))));
+    expect(all).toBeLessThanOrEqual(60_000);
+    const mesh = meshes(c)[0]!;
+    expect(mesh.count).toBe(count);
+    const palette = mesh.geometry.getAttribute("palette1");
+    expect(new Set(Array.from({ length: count }, (_, i) => palette.getX(i))).size).toBeGreaterThan(4); // hair
+    expect(new Set(Array.from({ length: count }, (_, i) => palette.getW(i))).size).toBeGreaterThan(4); // bags
+    const before = mesh.instanceMatrix.array.slice();
+    const phase = mesh.geometry.getAttribute("phase");
+    const phaseBefore = phase.array.slice();
+    c.update(1 / 30, 1 / 30);
+    expect(mesh.instanceMatrix.array).not.toEqual(before);
+    expect(phase.array).not.toEqual(phaseBefore);
+    expect(mesh.geometry.getAttribute("look").count).toBe(count);
     c.dispose();
-    high.dispose();
   });
 
   it("gives people varied hair, outerwear and heights", () => {
@@ -147,7 +154,7 @@ describe("ikebukuro crowd gait", () => {
   /** One walker on a long straight edge, stepped at 120 Hz; tracks heel / ball / toe of each shoe and the knee angle. */
   function runOne() {
     const long = [{ id: "L", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 4000, y: 0, z: 0 }] }];
-    const c = buildCrowd(THREE, long, toRenderer, 1, new THREE.Texture(), {});
+    const c = buildCrowd(THREE, long, toRenderer, LOW_QUALITY_MAX_COUNT + 1, new THREE.Texture(), {});
     const shoe = named(c, "shoe"), shin = named(c, "shin"), thigh = named(c, "thigh");
     const landmarks = [[0, -0.072, -0.07], [0, -0.072, 0.105], [0, -0.05, 0.172]].map(([x, y, z]) => new THREE.Vector3(x, y, z));
     const m = new THREE.Matrix4(), a = new THREE.Matrix4(), b = new THREE.Matrix4(), p = new THREE.Vector3();
@@ -208,6 +215,91 @@ describe("ikebukuro crowd gait", () => {
     }
   });
 
+  it("keeps GPU-transformed low-quality shoes on the floor during stance and above it during swing", () => {
+    const long = [{ id: "L", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 4000, y: 0, z: 0 }] }];
+    const c = buildCrowd(THREE, long, toRenderer, 56, new THREE.Texture(), {});
+    const mesh = named(c, "low"), pos = mesh.geometry.getAttribute("position"), parts = mesh.geometry.getAttribute("part");
+    const shoes: number[][] = [[], []], support: number[] = [];
+    for (let v = 0; v < pos.count; v++) {
+      if (parts.getX(v) !== 6) continue;
+      const side = parts.getW(v) > 0 ? 0 : 1;
+      shoes[side]!.push(v);
+      if (side === 0 && pos.getY(v) - 0.072 <= -0.045) support.push(pos.getZ(v), pos.getY(v) - 0.072);
+    }
+    const sole = new Float64Array(support), m = new THREE.Matrix4(), p = new THREE.Vector3();
+    const phase = mesh.geometry.getAttribute("phase"), stride = mesh.geometry.getAttribute("stride");
+    mesh.getMatrixAt(0, m);
+    expect(shoes[0]!.length).toBeGreaterThan(10);
+    let stance = 0, swing = 0;
+    for (let k = 0; k <= 240; k++) {
+      phase.setX(0, k * Math.PI * 2 / 240);
+      for (let side = 0; side < 2; side++) {
+        let lowest = Infinity;
+        for (const v of shoes[side]!) {
+          const vertex = transformLowCrowdVertex(
+            [pos.getX(v), pos.getY(v), pos.getZ(v)],
+            [parts.getX(v), parts.getY(v), parts.getZ(v), parts.getW(v)], phase.getX(0), sole, stride.getX(0),
+          );
+          lowest = Math.min(lowest, p.fromArray(vertex).applyMatrix4(m).y);
+        }
+        expect(lowest).toBeGreaterThanOrEqual(-0.00001);
+        const lift = Math.sin(phase.getX(0)) * (side === 0 ? 1 : -1);
+        if (lift <= 0) { expect(Math.abs(lowest)).toBeLessThanOrEqual(0.01); stance++; }
+        if (lift > 0.9) { expect(lowest).toBeGreaterThan(0.03); swing++; }
+      }
+    }
+    expect(stance).toBeGreaterThan(200);
+    expect(swing).toBeGreaterThan(40);
+    c.dispose();
+  });
+
+  it("keeps low-tier stance sole contact vertices fixed in world space for all 56 walkers", () => {
+    const long = [{ id: "L", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 4000, y: 0, z: 0 }] }];
+    const c = buildCrowd(THREE, long, toRenderer, 56, new THREE.Texture(), {});
+    const mesh = named(c, "low"), pos = mesh.geometry.getAttribute("position"), parts = mesh.geometry.getAttribute("part");
+    const contact = [-1, -1], support: number[] = [];
+    for (let v = 0; v < pos.count; v++) {
+      if (parts.getX(v) !== 6) continue;
+      const side = parts.getW(v) > 0 ? 0 : 1;
+      if (contact[side] === -1 || pos.getY(v) < pos.getY(contact[side]!)) contact[side] = v;
+      if (side === 0 && pos.getY(v) - 0.072 <= -0.045) support.push(pos.getZ(v), pos.getY(v) - 0.072);
+    }
+    const sole = new Float64Array(support), m = new THREE.Matrix4(), world = new THREE.Vector3();
+    const phase = mesh.geometry.getAttribute("phase"), stride = mesh.geometry.getAttribute("stride");
+    const anchors = Array.from({ length: 56 }, () => [null, null] as (THREE.Vector3 | null)[]);
+    const samples = Array.from({ length: 56 }, () => [0, 0]);
+    let maxDrift = 0, maxFloorError = 0, completeStances = 0;
+    for (let k = 0; k < 480; k++) {
+      c.update(1 / 120, k / 120);
+      for (let i = 0; i < 56; i++) {
+        mesh.getMatrixAt(i, m);
+        for (const side of [0, 1]) {
+          const p = ((phase.getX(i) + side * Math.PI) / (2 * Math.PI)) % 1;
+          if (p < 0.5) {
+            if (samples[i]![side]! >= 30) completeStances++;
+            anchors[i]![side] = null;
+            samples[i]![side] = 0;
+            continue;
+          }
+          const v = contact[side]!;
+          world.fromArray(transformLowCrowdVertex(
+            [pos.getX(v), pos.getY(v), pos.getZ(v)],
+            [parts.getX(v), parts.getY(v), parts.getZ(v), parts.getW(v)], phase.getX(i), sole, stride.getX(i),
+          )).applyMatrix4(m);
+          const anchor = anchors[i]![side] ?? (anchors[i]![side] = world.clone());
+          maxDrift = Math.max(maxDrift, Math.hypot(world.x - anchor.x, world.z - anchor.z));
+          maxFloorError = Math.max(maxFloorError, Math.abs(world.y));
+          samples[i]![side]!++;
+        }
+      }
+    }
+    expect(completeStances).toBeGreaterThan(400);
+    expect(maxDrift).toBeLessThanOrEqual(0.02);
+    expect(maxFloorError).toBeLessThanOrEqual(0.01);
+    console.info({ maxDrift, maxFloorError, completeStances });
+    c.dispose();
+  });
+
   /** Every vertex of the rigid shoe (upper and sole), transformed by its instance matrix, over 6 s = several gait cycles. */
   function soleTrack(count: number) {
     const long = [{ id: "L", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 4000, y: 0, z: 0 }] }];
@@ -232,11 +324,11 @@ describe("ikebukuro crowd gait", () => {
     return { lowest, nSole, tris: tris(shoe) };
   }
 
-  for (const [label, count] of [["low", 56], ["high", 150]] as const) {
+  for (const [label, count] of [["high", 150]] as const) {
     it(`keeps every sole vertex above the floor through the whole gait cycle (${label} quality)`, () => {
       const { lowest, nSole, tris: t } = soleTrack(count);
       expect(nSole).toBeGreaterThan(10);
-      expect(t).toBe(label === "low" ? 84 : 176);
+      expect(t).toBe(176);
       for (const side of [0, 1]) {
         const lo = lowest[side]!;
         expect(Math.min(...lo)).toBeGreaterThanOrEqual(-0.002); // floor is y = 0
