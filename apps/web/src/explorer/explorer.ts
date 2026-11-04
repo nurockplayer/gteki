@@ -968,6 +968,10 @@ export class Explorer {
     }
     this.stationScene = built;
     this.sceneError = sceneError;
+    // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
+    const sharedSteps = this.quality === "low" ? built?.root.getObjectByName("escalator-steps:all") : undefined;
+    const prepareSteps = sharedSteps?.onBeforeRender;
+    if (sharedSteps) sharedSteps.onBeforeRender = () => {};
 
     // Overview may have been entered while loading (against an empty world): restore first, so the new
     // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
@@ -1104,6 +1108,7 @@ export class Explorer {
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
+    if (sharedSteps && prepareSteps) sharedSteps.onBeforeRender = prepareSteps;
     this.phase = "ready";
     return true;
   }

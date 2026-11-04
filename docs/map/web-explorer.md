@@ -78,7 +78,7 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 ## Pitfalls
 - The greybox is built in `loadStation` from the loaded graph and scene, exists only at runtime, and must never be exported or stored as geometry.
 - `explorer.ts` is one class. Change one method, not the file. Most of the 2300 lines are private state fields (lines 183-370) and never need to be read in full.
-- The camera uses the previous frame's pose for scene `update` (see the comment in `step`). Do not move that call. Low tier prepares Shinjuku's shared escalator-step batch in the scene's render callback, before Three uploads its instance matrices; the mesh callback also sets the per-view draw count.
+- The camera uses the previous frame's pose for scene `update` (see the comment in `step`). Do not move that call. Low tier prepares Shinjuku's shared escalator-step batch in the scene's render callback, before Three uploads its instance matrices; the mesh callback also sets the per-view draw count. Its callback is paused during station loading so connector coverage reads every run before render-only compaction begins.
 - Station scene failure must never hide routing data: `buildStationScene` falls back to the graph view. Keep that when editing `loadStation`.
 - Assets are fenced: every station request goes through `fencedUrlResolver` in `apps/web/src/explorer/assetFence.ts`. Do not add a plain URL load.
 - A load can be superseded: `loadGeneration` and `cancelPendingLoad` drop a stale load. Check the generation after every await.
