@@ -98,6 +98,15 @@ for (const key of STATIONS) {
     } else {
       await expect(page.locator(".field-to .results .result-name", { hasText: p.alias[1] }).first()).toBeVisible();
     }
+    if (key === "shinjuku" && testInfo.project.name.startsWith("phone-")) {
+      await page.locator("#gteki-to").fill("exit");
+      const options = page.locator('.field-to .results [role="option"]');
+      const count = await options.count();
+      expect(count, "exit query returns multiple suggestions").toBeGreaterThan(1);
+      for (let i = 0; i < count; i++) await page.keyboard.press("ArrowDown");
+      await expect(options.last()).toHaveAttribute("aria-selected", "true");
+      await expect(options.last()).toBeInViewport();
+    }
     await page.keyboard.press("Escape");
 
     await chooseBySearch(page, "from", p.from[0], p.from[1]);

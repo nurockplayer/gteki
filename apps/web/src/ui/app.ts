@@ -869,6 +869,7 @@ export class App {
     else box.removeAttribute("role");
     applyAria(input, inputAria(state, box.id));
     box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
+    if (state.active >= 0) (box.querySelectorAll('[role="option"]')[state.active] as HTMLElement | undefined)?.scrollIntoView({ block: "nearest" });
     this.syncPanelMascot();
   }
 
