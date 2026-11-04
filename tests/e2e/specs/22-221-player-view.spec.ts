@@ -93,6 +93,8 @@ test("shinjuku #221 player views: eye-height first person at the 5 stair ends @d
 
   await openStation(page, "shinjuku");
   await expect.poll(() => hooks.quality(page)).toBe("high");
+  // The station opens in overview; the first walk to a node is what enters walk mode.
+  expect(await hooks.walkFromNode(page, VIEWS[0]!.node), "walkFromNode(first view)").toBe(true);
   await expect.poll(() => hooks.mode(page)).toBe("walk");
   // First person: the camera sits at the walker's eye point (explorer.placeCamera), the avatar is hidden.
   await page.getByRole("button", { name: /^(First person|一人称)$/ }).click();
