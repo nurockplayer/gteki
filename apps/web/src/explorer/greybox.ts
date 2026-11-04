@@ -1,3 +1,4 @@
+import { privateHolePlanes, type PolygonRegion } from "./privateLevels.ts";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { WALKER_BODY } from "@gteki/scene-api";
 import * as THREE from "three";
@@ -317,7 +318,7 @@ class CorridorIndex {
 /** Incremental floor-run discovery. Bounds and focus use renderer coordinates.
  * Scene collider and wall probes still occur in emit; this is not yet a fully time-sliced builder.
  */
-export function createGreyboxBuilder(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", focus = new THREE.Vector3(), captureNav = false) {
+export function createGreyboxBuilder(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", focus = new THREE.Vector3(), captureNav = false, privateRegions: readonly PolygonRegion[] = []) {
   const detect = createRunDetector(bundle, traversable, hasFloor);
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
@@ -360,15 +361,15 @@ export function createGreyboxBuilder(bundle: StationBundle, traversable: (edge: 
         if (!previous || (pad.shifted && !previous.shifted) || (pad.shifted === previous.shifted && pad.width > previous.width)) pads.set(pad.nodeId, pad);
         else for (const side of pad.openSides) previous.openSides.add(side);
       }
-      return emitGreybox(bundle, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()], traversable);
+      return emitGreybox(bundle, [...runs, ...[...pads.values()].flatMap((p) => p.strip ? [p.strip] : [])], hasFloor, scene, tier, captureNav, [...pads.values()], traversable, privateRegions);
     },
   };
 }
 
 /** Procedural passages, built entirely in memory from the already-loaded graph and scene probes. */
-export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false) {
+export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) => boolean, hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, privateRegions: readonly PolygonRegion[] = []) {
   const started = performance.now();
-  const builder = createGreyboxBuilder(bundle, traversable, hasFloor, scene, tier, undefined, captureNav);
+  const builder = createGreyboxBuilder(bundle, traversable, hasFloor, scene, tier, undefined, captureNav, privateRegions);
   builder.probeStep(Infinity);
   const result = builder.emit();
   result.stats.buildMs = performance.now() - started;
@@ -376,7 +377,7 @@ export function buildGreybox(bundle: StationBundle, traversable: (edge: Edge) =>
 }
 
 /** Emit the globally deduplicated passage geometry for already-detected runs. */
-export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = [], traversable: (edge: Edge) => boolean = () => true) {
+export function emitGreybox(bundle: StationBundle, detected: readonly UnmodelledEdgeRun[], hasFloor: (p: V3) => boolean, scene: GreyboxScene, tier: "high" | "low", captureNav = false, pads: readonly LandingPad[] = [], traversable: (edge: Edge) => boolean = () => true, privateRegions: readonly PolygonRegion[] = []) {
   const started = performance.now();
   const index = new CorridorIndex();
   for (const pad of pads) index.add(pad.center.clone().addScaledVector(pad.along, -pad.width / 2), pad.center.clone().addScaledVector(pad.along, pad.width / 2), pad.width / 2);
@@ -468,17 +469,24 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const fromFloor = nodes.get(edge.from)?.floorId ?? "", toFloor = nodes.get(edge.to)?.floorId ?? "";
     return fromFloor === toFloor ? levelOf(fromFloor) : `run:${edge.id}`;
   };
+  const floorMembership = (edge: Edge) => {
+    const points = edgePoints(bundle, edge, nodes, floors);
+    return { floorLevels: [nodes.get(edge.from)?.floorId ?? "", nodes.get(edge.to)?.floorId ?? ""], floorHeights: [points[0]!.y, points.at(-1)!.y] };
+  };
   const regions: Region[] = [];
   for (const run of runs) {
-    regions.push({ kind: "strip", group: run.edge.id, level: runLevel(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
+    regions.push({ kind: "strip", group: run.edge.id, level: runLevel(run.edge), ...floorMembership(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
   }
   for (const pad of pads) {
     regions.push({ kind: "rect", level: levelOf(pad.floorId), center: { x: pad.center.x, y: pad.center.y, z: pad.center.z }, along: { x: pad.along.x, z: pad.along.z }, halfLength: pad.width / 2, halfWidth: pad.width / 2 });
   }
   for (const junction of activeJunctions) {
-    regions.push({ kind: "disc", ...(junction.bendOf ? { group: junction.bendOf.id } : {}), level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
+    regions.push({ kind: "disc", ...(junction.bendOf ? { group: junction.bendOf.id, ...floorMembership(junction.bendOf) } : {}), level: junction.bendOf ? runLevel(junction.bendOf) : levelOf(junction.floor), x: junction.at.x, y: junction.at.y, z: junction.at.z, radius: junction.width / 2 });
   }
-  const model = buildWalkableModel([...regions, ...flights], (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM);
+  const privateStart = regions.length;
+  regions.push(...privateRegions);
+  const holes = privateHolePlanes(privateRegions);
+  const model = buildWalkableModel([...regions, ...flights], (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM, 0, holes);
   // Floors and ceilings follow the level stack: a floor standing less than the clearance over another level leaves
   // that part out, and a ceiling another level's floor stands in does too. Regions are runs, then pads, then junctions.
   const uncut = (p: THREE.Vector3, q: THREE.Vector3, cuts: readonly PlanPoint[][]) => {
@@ -494,6 +502,18 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     cutFace(b.shell,b.colors,[ar,zr,zl,al],slabCut(region),0.62);
     if (captureNav) cutFace(navFloors,null,[ar,zr,zl,al],slabCut(region),1);
     cutFace(b.ceiling,b.ceilingColors,[corner(1,-1,2.6),corner(1,1,2.6),corner(-1,1,2.6),corner(-1,-1,2.6)],ceilingCut(region),0.62);
+  });
+  privateRegions.forEach((region, index) => {
+    if (!region.rings.length) return;
+    const b = getBatch(region.level), rings = region.rings.map((ring) => ring.map((p) => new THREE.Vector2(p.x, p.z)));
+    const triangles = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1)), points = rings.flat();
+    for (const triangle of triangles) {
+      const corners = triangle.map((i) => new THREE.Vector3(points[i]!.x, region.y, points[i]!.y));
+      if (corners[1]!.clone().sub(corners[0]!).cross(corners[2]!.clone().sub(corners[0]!)).y < 0) corners.reverse();
+      cutFace(b.shell, b.colors, corners, slabCut(privateStart + index), 0.62);
+      if (captureNav) cutFace(navFloors, null, corners, slabCut(privateStart + index), 1);
+      cutFace(b.ceiling, b.ceilingColors, corners.map((p) => p.clone().add(new THREE.Vector3(0, 2.6, 0))).reverse(), ceilingCut(privateStart + index), 0.62);
+    }
   });
   for (const wall of model.walls) {
     const wb = getBatch(wall.level);

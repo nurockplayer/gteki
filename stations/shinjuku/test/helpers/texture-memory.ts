@@ -104,7 +104,7 @@ function categorize(usages: Usage[], width: number, height: number): TextureCate
   const slots = usages.map((u) => u.slot);
   const mesh = (test: (name: string) => boolean) => names.some(test);
   // Sign plates are one row high (SIGN_ROW_HEIGHT = 128 in scene/textures.ts); some are unnamed.
-  if (height === 128 || roles.includes("sign") || mesh((n) => n.startsWith("sign-faces:") || n === "surface-signs")) return "signage";
+  if (height === 128 || roles.includes("sign") || mesh((n) => n.startsWith("sign-faces:") || n.startsWith("sign-faces-") || n === "identity-faces" || n === "surface-signs")) return "signage";
   if (mesh((n) => n.startsWith("surface-facade"))) return "facade";
   if (mesh((n) => n === "surface-ground" || n === "surface-asphalt" || n.startsWith("surface-street"))) return "paving";
   if (mesh((n) => n === "surface-sky" || n === "sky")) return "sky";

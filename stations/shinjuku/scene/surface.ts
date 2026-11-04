@@ -94,6 +94,14 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     leaf: track(daylight("#60754b")),
     facades: Array.from({length:5},(_,i)=>{const m=track(daylight("#ffffff",track(facadeTexture(i)),i===0?.65:.24));m.vertexColors=true;return m;}),
   };
+  if (opts.quality === "low") for (const material of mats.facades) {
+    const source = material.map!.image as HTMLCanvasElement;
+    const canvas = document.createElement("canvas");
+    canvas.width = source.width / 2;
+    canvas.height = source.height / 2;
+    canvas.getContext("2d", { willReadFrequently: true })!.drawImage(source, 0, 0, canvas.width, canvas.height);
+    material.map!.image = canvas;
+  }
   mats.glass.transparent = true; mats.glass.opacity = .38; mats.glass.depthWrite = false;
   const batches = new Map<string, { material: THREE.Material; geometries: THREE.BufferGeometry[] }>();
   const add = (key: string, geometry: THREE.BufferGeometry, material: THREE.Material) => {

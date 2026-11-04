@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { NavMeshQuery } from "recast-navigation";
+import { NavMeshQuery, type NavMesh } from "recast-navigation";
 import { bakeNavmesh } from "./navmesh-bake.ts";
-import { floorSnapPath, queryCompletePath, snapNode } from "./navmesh-audit.ts";
+import { assertPrivateRegionsProvenance, auditGatePath, floorSnapPath, queryCompletePath, queryPathWithLinks, snapNode } from "./navmesh-audit.ts";
 import { auditPolyline, sceneProbe } from "./route-clip-audit.ts";
 
-function fixture(open: boolean) {
+function fixture(open: boolean, width = 1.6) {
   const positions: number[] = [], indices: number[] = [];
   const quad = (...corners: number[][]) => {
     const n = positions.length / 3;
@@ -18,10 +18,27 @@ function fixture(open: boolean) {
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.05, 2.5, z1-z0), new THREE.MeshBasicMaterial());
     m.position.set(4, 1.25, (z0+z1)/2); walls.push(m);
   };
-  if (open) { wall(0,1.2); wall(2.8,4); } else wall(0,4);
+  if (open) { if (width < 4) { wall(0,2-width/2); wall(2+width/2,4); } } else wall(0,4);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(8,4).rotateX(-Math.PI/2).translate(4,0,2), new THREE.MeshBasicMaterial());
   const root = new THREE.Group().add(floor,...walls); root.updateMatrixWorld(true);
   return { positions, indices, probe: sceneProbe({ root, walkable: [floor], colliders: walls, walls: [] } as never) };
+}
+
+// Choose strict interior points from a real ground polygon; open floors can still tessellate into several polygons.
+function gatePointsInsideOnePoly(nav: NavMesh) {
+  for (let i=0;i<nav.getMaxTiles();i++) {
+    const tile=nav.getTile(i), header=tile.header(); if (!header) continue;
+    for (let j=0;j<header.polyCount();j++) {
+      const poly=tile.polys(j); if (poly.getType() !== 0) continue;
+      const vertices=Array.from({length:poly.vertCount()},(_,k)=>({x:tile.verts(poly.verts(k)*3),z:tile.verts(poly.verts(k)*3+2)}));
+      const center=vertices.reduce((c,v)=>({x:c.x+v.x/vertices.length,z:c.z+v.z/vertices.length}),{x:0,z:0});
+      const first=vertices[0]!;
+      const last=vertices.reduce((best,v)=>Math.hypot(v.x-first.x,v.z-first.z)>Math.hypot(best.x-first.x,best.z-first.z) ? v : best,first);
+      const inside=(v:typeof first)=>({x:center.x*0.8+v.x*0.2,y:0,z:center.z*0.8+v.z*0.2});
+      return {a:inside(first),b:inside(last)};
+    }
+  }
+  throw new Error("no walking polygon for wide gate fixture");
 }
 
 describe("navmesh route audit", () => {
@@ -107,4 +124,101 @@ describe("floorSnapPath", () => {
     expect(floorSnapPath([{ x:0, y:0, z:0.3 }, { x:2, y:0, z:0.3 }], floor)).toEqual([{ x:0, y:0, z:0 }, { x:2, y:0, z:0 }]);
     expect(floorSnapPath([{ x:2, y:0, z:0 }, { x:6, y:0, z:0 }], floor)).toHaveLength(2);
   });
+});
+
+
+it.each([0.5,4])("audits directional gates only through their own links (opening %s)", async width => {
+  const {positions,indices,probe}=fixture(true,width);
+  const {verticalLinkCandidates,validateLinkSnap}=await import("./navmesh-links.ts");
+  const points={a:{x:3,y:0,z:2},b:{x:5,y:0,z:2}};
+  const base=await bakeNavmesh(positions,indices); if (!base.success) throw new Error(base.error);
+  const query=new NavMeshQuery(base.navMesh);
+  if (width === 4) Object.assign(points,gatePointsInsideOnePoly(base.navMesh));
+  const candidates=verticalLinkCandidates([
+    {id:"gate-out",mode:"gate",from:"a",to:"b",direction:"forward"},
+    {id:"gate-in",mode:"gate",from:"b",to:"a",direction:"forward"},
+  ],id=>points[id as keyof typeof points],query,(id,node,snap)=>validateLinkSnap(probe,node,snap)===null).candidates;
+  expect(candidates).toHaveLength(2);
+  query.destroy(); base.navMesh.destroy();
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:candidates.map(c=>c.connection)});
+  if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh);
+  const outCandidate=candidates.find(c=>c.edgeId === "gate-out")!, inCandidate=candidates.find(c=>c.edgeId === "gate-in")!;
+  const out={connection:{...outCandidate.connection,userId:outCandidate.connection.userId!}};
+  const incoming={connection:{...inCandidate.connection,userId:inCandidate.connection.userId!}};
+  const line=[{x:points.a.x,y:-points.a.z,z:points.a.y,zKnown:true,floorId:"f",stepIndex:0},{x:points.b.x,y:-points.b.z,z:points.b.y,zKnown:true,floorId:"f",stepIndex:0}];
+  const validate=(node:typeof points.a,snap:typeof points.a)=>validateLinkSnap(probe,node,snap)===null;
+  if (width === 4) {
+    expect(q.findClosestPoint(out.connection.startPosition).polyRef).toBe(q.findClosestPoint(out.connection.endPosition).polyRef);
+    const walking=queryPathWithLinks(linked.navMesh,q,out.connection.startPosition,out.connection.endPosition);
+    expect(walking).not.toBeNull();
+    expect(walking!.some(p=>p.link)).toBe(false);
+  }
+  expect(auditGatePath(linked.navMesh,q,points.a,points.b,line,validate,out)).toMatchObject({missing:false,reason:null,pathRejection:null});
+  const reverse=[...line].reverse();
+  expect(auditGatePath(linked.navMesh,q,points.b,points.a,reverse,validate,incoming)).toMatchObject({missing:false,reason:null,pathRejection:null});
+  expect(auditGatePath(linked.navMesh,q,points.a,points.b,line,validate,undefined)).toMatchObject({points:null,missing:true,reason:"no_path",pathRejection:"missing_link"});
+  expect(auditGatePath(linked.navMesh,q,points.b,points.a,reverse,validate,out,true)).toMatchObject({points:null,missing:true,reason:"no_path",pathRejection:"wrong_link"});
+  const mislabeled={connection:{...out.connection,userId:incoming.connection.userId!}};
+  expect(auditGatePath(linked.navMesh,q,points.a,points.b,line,validate,mislabeled)).toMatchObject({points:null,missing:true,reason:"no_path",pathRejection:"wrong_link"});
+  q.destroy(); linked.navMesh.destroy();
+});
+
+
+it("audits a two-way gate backwards even when both endpoints share a walking polygon", async () => {
+  const {positions,indices,probe}=fixture(true,4);
+  const base=await bakeNavmesh(positions,indices); if (!base.success) throw new Error(base.error);
+  const {a:from,b:to}=gatePointsInsideOnePoly(base.navMesh);
+  const q0=new NavMeshQuery(base.navMesh);
+  const connection={startPosition:snapNode(q0,from)!,endPosition:snapNode(q0,to)!,radius:0.3,bidirectional:true,area:0,flags:1,userId:7};
+  q0.destroy(); base.navMesh.destroy();
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:[connection]});
+  if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh), {validateLinkSnap}=await import("./navmesh-links.ts");
+  const line=[{x:to.x,y:-to.z,z:to.y,zKnown:true,floorId:"f",stepIndex:0},{x:from.x,y:-from.z,z:from.y,zKnown:true,floorId:"f",stepIndex:0}];
+  const result=auditGatePath(linked.navMesh,q,to,from,line,(a,b)=>validateLinkSnap(probe,a,b)===null,{connection},true);
+  expect(result).toMatchObject({missing:false,reason:null,pathRejection:null});
+  expect([result.points![0]!,result.points!.at(-1)!].map(p=>[p.x,p.y,p.z])).toEqual([[connection.endPosition.x,-connection.endPosition.z,connection.endPosition.y],[connection.startPosition.x,-connection.startPosition.z,connection.startPosition.y]]);
+  q.destroy(); linked.navMesh.destroy();
+});
+
+
+it("rejects the authored gate bend when the explorer route crosses a machine", async () => {
+  const {positions,indices,probe}=fixture(true,0.5);
+  const {verticalLinkCandidates,validateLinkSnap}=await import("./navmesh-links.ts");
+  const {fallbackGate}=await import("./navmesh-fallback-audit.ts");
+  const points={a:{x:3,y:0,z:2},b:{x:5,y:0,z:2}};
+  const base=await bakeNavmesh(positions,indices); if (!base.success) throw new Error(base.error);
+  const q0=new NavMeshQuery(base.navMesh);
+  const candidate=verticalLinkCandidates([{id:"gate",mode:"gate",from:"a",to:"b",direction:"both"}],id=>points[id as keyof typeof points],q0,(_id,a,b)=>validateLinkSnap(probe,a,b)===null).candidates[0]!;
+  expect(candidate).toBeDefined();
+  q0.destroy(); base.navMesh.destroy();
+  const linked=await bakeNavmesh(positions,indices,{offMeshConnections:[candidate.connection]});
+  if (!linked.success) throw new Error(linked.error);
+  const q=new NavMeshQuery(linked.navMesh), link={connection:{...candidate.connection,userId:candidate.connection.userId!}};
+  const line=[{x:3,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0},{x:4.3,y:-1,z:0,zKnown:true,floorId:"f",stepIndex:0},{x:5,y:-2,z:0,zKnown:true,floorId:"f",stepIndex:0}];
+  const result=auditGatePath(linked.navMesh,q,points.a,points.b,line,(a,b)=>validateLinkSnap(probe,a,b)===null,link);
+  expect(result.missing).toBe(false);
+  const collision=auditPolyline(probe,result.points!);
+  expect(collision.wallHits).toBeGreaterThan(0);
+  expect(fallbackGate({fallback:{failed:[]},unlisted:[],navmesh:{offFloor:0,noFloor:0,wallHits:0},connector:collision,incompleteRoutes:0}).ok).toBe(false);
+  q.destroy(); linked.navMesh.destroy();
+});
+
+it("rejects stale private geometry even with an unchanged bundle and no suspect edges", async () => {
+  const { privateRegionsSha256 } = await import("./navmesh-input.ts");
+  const regions = [{ kind: "polygon" as const, level: "synthetic", y: 0, rings: [[{ x: 0, z: 0 }, { x: 10, z: 0 }, { x: 10, z: 10 }, { x: 0, z: 10 }]] }];
+  const provenance = { privateRegionsSha256: privateRegionsSha256(regions) };
+  expect(provenance.privateRegionsSha256).toMatch(/^[a-f0-9]{64}$/);
+  expect(() => assertPrivateRegionsProvenance(provenance, structuredClone(regions))).not.toThrow();
+  const changed = structuredClone(regions); changed[0]!.rings[0]![0]!.x = 1;
+  expect(() => assertPrivateRegionsProvenance(provenance, changed)).toThrow(/private regions differ; rebake/);
+  const withHole = structuredClone(regions);
+  withHole[0]!.rings.push([{ x: 3, z: 3 }, { x: 7, z: 3 }, { x: 7, z: 7 }]);
+  expect(() => assertPrivateRegionsProvenance(provenance, withHole)).toThrow(/rebake/);
+  const withMask = [{ ...regions[0]!, exclusions: [[[{ x: 30, z: 30 }, { x: 31, z: 30 }, { x: 31, z: 31 }]]] }];
+  expect(() => assertPrivateRegionsProvenance(provenance, withMask)).toThrow(/rebake/);
+  expect(() => assertPrivateRegionsProvenance({}, regions)).toThrow(/rebake/);
+  expect(() => assertPrivateRegionsProvenance(provenance, undefined)).toThrow(/rebake/);
+  expect(() => assertPrivateRegionsProvenance({}, undefined)).not.toThrow();
 });

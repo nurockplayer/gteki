@@ -285,11 +285,11 @@
         "normalized": "tobu",
         "top": [
           {
-            "poiId": "tobu-central-gate-1",
-            "score": 100
+            "poiId": "tobu-central-gate-2",
+            "score": 105
           },
           {
-            "poiId": "tobu-central-gate-2",
+            "poiId": "tobu-central-gate-1",
             "score": 100
           },
           {

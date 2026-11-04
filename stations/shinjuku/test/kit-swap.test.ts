@@ -51,13 +51,14 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // overhead query itself. The removed copied-cap mesh briefly made this four
 // camera blockers; this candidate retains three and the original listsDigest.
 // Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
-// #789 (2026-11-04 JST): remeasured after the evidence-based display-height repair.
+// #276 (2026-11-04 08:35 JST): reduced finish/facade dimensions, restored surface-sign density; geometry, appearance,
+// #789 (2026-11-04 JST): combined main and repaired-height scene remeasured below.
 const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "8577aa1f24886d6d4104efdcfa164e0859235b87c815f0521001422b07dbad0b",
     "appearanceDigest": "0f4a4d33f7c7a232490bf810f1dd29005a4305dc177e602fb50c5a6b6636f394",
     "nodesDigest": "ab0c1fc21e85a177ab1d72c30b72e29e02ddb92dca5decd50e8f6cee6934e074",
-    "texturesDigest": "703cc76f387c4d920b083cb8db389c734e3461ff97c469051a9eb79b8f31e525",
+    "texturesDigest": "9922ab5817fd39be21fa9ff31b55265af00bc50cc730f28bc4712a15dbcee640",
     "meshes": 146,
     "bytes": 16286922
   },

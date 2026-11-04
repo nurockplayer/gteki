@@ -81,15 +81,18 @@ All eight repaired edges were emitted and attached at both ends. Bake user IDs:
 | Routable / failed route pairs | 238 / 2 | 238 / 2 |
 
 No per-edge clip baseline increased; no new fallback edges or detours appeared.
-This branch base predates #783's `suspectPolyline` field and has `suspectEdges`. With no bake suspects, its route-used subset is empty.
+The merged main `9e90ac2c` still reports `suspectEdges`, not a literal
+`suspectPolyline` field (#783 remained open during reconciliation). The
+captured runtime audit reports `suspectEdges: []`, and the bake has no suspect
+candidates, so no route can use a suspect polyline.
 The regenerated fallback and clip-baseline files are byte-identical; paths and
 suspect files changed.
 
 Public bundle SHA-256: `61225ea3e89fe4732368f38c4023f7bce58bde7c3d390671980719695a05ec16`.
-Mesh SHA-256: `94801d37b89b6f02102311ddd38278b01afc9cc374852d346539bb896c2764f8`.
+Mesh SHA-256: `570353bce0911f285f175ca32e17782188012a5ad039f8dcec7248a64dabd009`.
 
 After the roof and portal corrections, the final heavy run completed at
-2026-11-04 10:41 JST. Both stairwell tiers were rebaked and passed
+2026-11-04 12:18 JST after merging main `9e90ac2c`. Both stairwell tiers were rebaked and passed
 `pnpm bake:stairwells:check`: 308 meshes, 68 cut meshes and 18,697 cut triangles,
 with maximum attribute error `0.0000152587890625`. The canonical public gate
 and attachment/baseline comparison then passed on that same geometry.
@@ -123,3 +126,17 @@ adjacent landing roof. Source walls and the camera solver are unchanged. The
 original five camera tests pass; at the default pitch the lower flight has
 minimum camera distance 2.33 m uphill and 3.45 m downhill (the comfort
 threshold remains 1.6 m), with maximum head share 0.16 and 0.11 respectively.
+
+## Main merge — 2026-11-04 JST
+
+Merged main `9e90ac2c` without rebasing. The only textual conflict was the
+measured `MAIN_BASELINE` in `kit-swap.test.ts`; it was regenerated from the
+combined scene rather than selecting either old digest. Main's runtime and
+rendering changes are retained. The importer, surface bake, kit catalog, fare
+cache, scene fixture, existing scene expectations, stairwell recipes, navmesh
+outputs and map symbols were regenerated with their generators.
+
+The merged public bake emitted and attached all eight repaired links, with
+zero bake suspects and zero audit-used suspects. The shrink-only comparison
+against main's saved baseline passed with no new fallback edges, detours or
+per-edge clips; all public totals in the table above remain unchanged.
