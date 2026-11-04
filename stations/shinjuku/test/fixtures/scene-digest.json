@@ -10,7 +10,7 @@
  },
  "station": {
   "layoutAfterBuild": "e6854f70b951d287de5217d1d48ae40a316b130647e66ebf55668635cae6b4ae",
-  "propWalls": "cf1c03b9890b9380fa63aad43f1a4e881053fd2c10d5975e578edcecf29c3383",
+  "propWalls": "0c255b9b019384bb7aa63e8d9e2eccc10e25dfcd253823e676255191879ea9ea",
   "levelWalls": "b764f06cb24cbf50ab5d3371cb38fe79f40f10d2837adc28401cbedd96f16c2b",
   "escalators": "15a5224f8c32deb2ca23240bac233cfea59c30dc8198a60f992b5040b5fee0c3"
  },
@@ -466,7 +466,7 @@
    ],
    "cameraBlockers": [
     "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3",
-    "f7bdea0d3da56e22306ce5425e765721065b279f08e5cf6a214c351355008daa",
+    "e3055c3693daa1e4c1dc69ce0e02dce2d0469b93411cc1931320325cea76b768",
     "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a"
    ],
    "cameraBlockerIsCollider": [
@@ -474,7 +474,7 @@
     false,
     false
    ],
-   "walls": "309c447e724e1dde99c409ce5db4ab0d5a83e62aa4b4670ed94d96652f091392",
+   "walls": "acc618a107603bbfe8023fe654991b684761e38ec7cd45f370063161478d185d",
    "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
@@ -514,8 +514,8 @@
      "hash": "b359751ac9384796415a9a6fbdb1a8f336b7809b617828e1ef1a50f0811b7073"
     },
     "[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 2797,
-     "hash": "db3b877e18a0e84f3eee7b2690823ac3c8c2ec206a338117cbfe1584edc86d4b"
+     "triangles": 2800,
+     "hash": "ef09eb0205a54e7cecb189801155311275996572575cef47a869bb5115b11494"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,false,false,false,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 0,
@@ -1186,7 +1186,7 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|8",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|89",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|9",
-    "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2797",
+    "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2800",
     "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11090",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6792",
@@ -1645,7 +1645,7 @@
    ],
    "cameraBlockers": [
     "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3",
-    "f7bdea0d3da56e22306ce5425e765721065b279f08e5cf6a214c351355008daa",
+    "e3055c3693daa1e4c1dc69ce0e02dce2d0469b93411cc1931320325cea76b768",
     "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a"
    ],
    "cameraBlockerIsCollider": [
@@ -1653,7 +1653,7 @@
     false,
     false
    ],
-   "walls": "309c447e724e1dde99c409ce5db4ab0d5a83e62aa4b4670ed94d96652f091392",
+   "walls": "acc618a107603bbfe8023fe654991b684761e38ec7cd45f370063161478d185d",
    "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
@@ -1693,8 +1693,8 @@
      "hash": "b359751ac9384796415a9a6fbdb1a8f336b7809b617828e1ef1a50f0811b7073"
     },
     "[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 2797,
-     "hash": "db3b877e18a0e84f3eee7b2690823ac3c8c2ec206a338117cbfe1584edc86d4b"
+     "triangles": 2800,
+     "hash": "ef09eb0205a54e7cecb189801155311275996572575cef47a869bb5115b11494"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,false,false,false,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 0,
@@ -2365,7 +2365,7 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|8",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|89",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|9",
-    "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2797",
+    "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2800",
     "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11090",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6792",

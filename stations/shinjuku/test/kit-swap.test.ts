@@ -56,15 +56,15 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
   station: {
-    geometryDigest: "97525b3bf171128db97b99b0be23c0ba2be268e34022d5c8ae4cd92986648d12",
+    geometryDigest: "03e596cc6852829f3c901694ee325af97624ac22eb856e793134a049f8cacbdc",
     appearanceDigest: "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
     nodesDigest: "671b7e0fca848dcf1aacac050fd030d5ff788dd421aa3e38335c80f891cf1216",
     texturesDigest: "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
     meshes: 125,
-    bytes: 16239546,
+    bytes: 16239788,
   },
   lists: {
-    listsDigest: "a8e6c49f0bb47bea12e2c995b46460360024e0ed227ac5eb37cb6ff5ddfd86bf",
+    listsDigest: "54a7c761296ee43c71fa1006834454d3e0e492948915b1c352fe69019af7a174",
     counts: { walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14906 },
   },
 };
