@@ -30,7 +30,6 @@ describe("scene floor draping", () => {
     try {
       const b = bundle();
       b.edges[0]!.attributes = { sceneGap: true, sceneGapReason: "drape-unresolved" };
-      for (const n of b.nodes) n.renderZ = 0.5;
       const ring = (x: number, z: number, size: number) => [
         { x, z }, { x: x + size, z }, { x: x + size, z: z + size }, { x, z: z + size },
       ];
