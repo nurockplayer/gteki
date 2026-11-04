@@ -544,7 +544,7 @@ function contactShade(geo: THREE.BufferGeometry, open: (p: THREE.Vector3) => num
 /**
  * One escalator step in its instance frame (+X uphill, tread top at y = 0): a level tread `depth` deep and the riser
  * under its downhill edge, `rise` tall. UVs map the tread into the top half of `escalatorStepTexture` and the riser into
- * the bottom half, so a step stays one geometry and one draw per escalator.
+ * the bottom half, so treads and risers share one geometry and material.
  */
 function escalatorStepGeometry(depth: number, rise: number, width: number): THREE.BufferGeometry {
   const half = (g: THREE.BufferGeometry, v0: number) => {
@@ -819,6 +819,18 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     root.add(mesh);
   }
   const escalators: BuiltStation["escalators"] = [];
+  const stepCount = (r: Run) => Math.ceil(Math.hypot(Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1, r.b.z - r.a.z) / 0.4);
+  const sharedSteps = opts.quality === "low"
+    ? new THREE.InstancedMesh(track(escalatorStepGeometry(1, 1, 1)), mat.escStep,
+      layout.runs.filter(r => r.mode === "escalator").reduce((sum, r) => sum + stepCount(r), 0))
+    : undefined;
+  if (sharedSteps) {
+    sharedSteps.name = "escalator-steps:all";
+    sharedSteps.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    sharedSteps.userData.ranges = {};
+    root.add(sharedSteps);
+  }
+  let stepOffset = 0;
   {
     const stairGeos: THREE.BufferGeometry[] = [...fasciaGeos];
     const nosingGeos: THREE.BufferGeometry[] = [];
@@ -886,13 +898,18 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const L3 = Math.hypot(L, dz);
         const stepLen = 0.4;
         const count = Math.ceil(L3 / stepLen);
-        const stepGeo = track(escalatorStepGeometry(stepLen * (L / L3), stepLen * (dz / L3), r.width - 0.1));
-        const steps = new THREE.InstancedMesh(stepGeo, mat.escStep, count);
+        const scale = new THREE.Vector3(stepLen * (L / L3), stepLen * (dz / L3), r.width - 0.1);
+        const steps = sharedSteps ?? new THREE.InstancedMesh(track(escalatorStepGeometry(scale.x, scale.y, scale.z)), mat.escStep, count);
         // Animated every frame: dynamic usage also tells the explorer's cuts to leave these instances alone.
         steps.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        steps.name = `escalator-steps:${r.edgeId}`;
-        steps.userData = { lo, hi, yaw, count, L3, stepLen };
-        root.add(steps);
+        if (sharedSteps) {
+          steps.userData.ranges[r.edgeId] = { lo, hi, yaw, count, L3, stepLen, offset: stepOffset, scale };
+          stepOffset += count;
+        } else {
+          steps.name = `escalator-steps:${r.edgeId}`;
+          steps.userData = { lo, hi, yaw, count, L3, stepLen };
+          root.add(steps);
+        }
         escalators.push({ run: r, steps, speed: 0.5 * (r.travel === 0 ? 0 : (r.a.z <= r.b.z ? 1 : -1) * r.travel) });
         // entry/exit indicators: green arrow where you board, red bar where you must not.
         // Low on the skirt end at the comb, facing the approach (not floating out over the landing).
@@ -1402,7 +1419,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       }
     }
     for (const esc of escalators) {
-      const { lo, hi, yaw, count, L3, stepLen } = esc.steps.userData as { lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number };
+      const { lo, hi, yaw, count, L3, stepLen, offset = 0, scale = tmpS } = (esc.steps.userData.ranges?.[esc.run.edgeId] ?? esc.steps.userData) as {
+        lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number; offset?: number; scale?: THREE.Vector3;
+      };
       const trim = combed.has(esc.run.edgeId) && (!kitSwap?.lod || kitSwap.lod.active.has(esc.run.edgeId)) ? stepLen / 2 : 0;
       tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
       const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
@@ -1413,8 +1432,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
         // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
         // Procedural runs have no comb, so hiding would open a gap at the landing instead.
-        tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : tmpS);
-        esc.steps.setMatrixAt(i, tmpM);
+        tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : scale);
+        esc.steps.setMatrixAt(offset + i, tmpM);
       }
       esc.steps.instanceMatrix.needsUpdate = true;
     }

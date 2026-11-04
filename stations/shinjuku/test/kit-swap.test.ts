@@ -51,16 +51,16 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // overhead query itself. The removed copied-cap mesh briefly made this four
 // camera blockers; this candidate retains three and the original listsDigest.
 // Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
-// #276 (2026-11-04 08:35 JST): reduced finish/facade dimensions, restored surface-sign density; geometry, appearance,
-// #789 (2026-11-04 JST): combined main and repaired-height scene remeasured below.
+// 2026-11-04 JST: low-tier steps share one geometry and 1,605 instances.
+// #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "8577aa1f24886d6d4104efdcfa164e0859235b87c815f0521001422b07dbad0b",
-    "appearanceDigest": "0f4a4d33f7c7a232490bf810f1dd29005a4305dc177e602fb50c5a6b6636f394",
-    "nodesDigest": "ab0c1fc21e85a177ab1d72c30b72e29e02ddb92dca5decd50e8f6cee6934e074",
-    "texturesDigest": "9922ab5817fd39be21fa9ff31b55265af00bc50cc730f28bc4712a15dbcee640",
-    "meshes": 146,
-    "bytes": 16286922
+    "geometryDigest": "4b3a87b952d034eaa72305b80ceb06ca4864c1a6c9219a91c59e9f88379ae21d",
+    "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
+    "nodesDigest": "bfed2974192fab84c438659ca5cbc55adc82157d2d1b3280c96db87dc296fdae",
+    "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
+    "meshes": 125,
+    "bytes": 16239546
   },
   "lists": {
     "listsDigest": "a8e6c49f0bb47bea12e2c995b46460360024e0ed227ac5eb37cb6ff5ddfd86bf",
@@ -774,7 +774,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.unstubAllGlobals();
     });
 
-    it("flag off: the scene matches the committed #789 geometry in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
+    it("flag off: the low-tier scene matches its mesh, node, texture and explorer-list digest", () => {
       expect(off.root.userData.kitSwap).toBeUndefined();
       // Meshes (geometry + appearance), all other nodes incl. lights and userData, and texture params of every material.
       expect(digestStation(off.root, isStationProxy)).toEqual(MAIN_BASELINE.station);

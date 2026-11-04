@@ -70,7 +70,7 @@ All eight repaired edges were emitted and attached at both ends. Bake user IDs:
 `4038cecf=16`, `45ebdab4=20`, `bdcdf922=45`, `c2c4ebb3=47`, `c3fe6342=48`,
 `c690df6c=49`, `c7fa5f74=52`, `dcbc1a25=57`.
 
-Latest-main reference: `9cbbfb29` (including #783).
+Latest-main reference: `a0ff47f9` (including #783).
 
 | Public metric | Main | Candidate audit |
 | --- | ---: | ---: |
@@ -91,10 +91,16 @@ evidence below. The main baseline limits are retained, rather than silently
 accepting the higher count. The generator's complete measured snapshot is
 recorded by this qualification; its proposed higher limit is not committed.
 
-The earlier heavy run at 2026-11-04 12:18 JST attached all eight links on
-main `9e90ac2c`. CI on the #783 merge candidate then measured the counters
-above. Fresh canonical regeneration for the latest main is queued; that run
-will replace the intermediate main path cache before final handoff.
+The latest heavy run completed at 2026-11-04 14:34 JST on the combined main
+`a0ff47f9` and height-repair source. Both stairwell tiers were rebaked and passed
+`pnpm bake:stairwells:check`: 308 meshes, 68 cut meshes and 18,697 cut triangles,
+with maximum attribute error `0.0000152587890625`. The canonical generator
+completed; the strict comparison then failed only on
+`total.unvalidatedJoins (48 → 56)`. All eight repaired links were emitted and
+attached. No acceptance threshold or route classification was changed.
+
+Public bundle SHA-256: `61225ea3e89fe4732368f38c4023f7bce58bde7c3d390671980719695a05ec16`.
+Mesh SHA-256: `570353bce0911f285f175ca32e17782188012a5ad039f8dcec7248a64dabd009`.
 
 ## Bounded review — 2026-11-04 JST
 
@@ -128,11 +134,14 @@ threshold remains 1.6 m), with maximum head share 0.16 and 0.11 respectively.
 
 ## Main merges — 2026-11-04 JST
 
-Merged main `9e90ac2c`, then `9cbbfb29`, without rebasing. The only textual
-conflict was the measured `MAIN_BASELINE` in `kit-swap.test.ts` during the first
+Merged main `9e90ac2c`, `9cbbfb29`, then `a0ff47f9`, without rebasing. The first
+textual conflict was the measured `MAIN_BASELINE` in `kit-swap.test.ts` during the first
 merge; it was regenerated from the combined scene. The second merge had no
 textual conflicts and retains #783's snap-to-snap paths and route outcome
-classification. Main's runtime and rendering changes are retained. The importer,
+classification. Main advanced again while the heavy gate was queued; the
+latest merge's scene-fixture, kit-digest and identity-draw conflicts were
+regenerated from the combined scene, preserving #812's shared low-tier step
+mesh and separate high-tier meshes. Main's runtime and rendering changes are retained. The importer,
 surface bake, kit catalog, fare cache, scene fixture, existing scene expectations,
 stairwell recipes, navmesh outputs and map symbols use their normal generators.
 Generated JSON was not hand-merged.
@@ -174,3 +183,10 @@ that a 48 → 56 increase cannot be offset against the suspect count's decrease.
 The route identities and unchanged directed sequences above were established
 by local public-data diagnostics after that diagnosis, rather than inferred
 from the difference of eight alone.
+
+The final low-tier scene measures 125 meshes, 16,239,546 geometry bytes and
+1,605 step instances in the shared mesh. The high-tier geometry-lifetime
+measurement remains 146 meshes and 16,286,922 bytes. Identity draw checks use
+the measured 125/146 split; physics lists remain 442 walkables, two colliders,
+three camera blockers and 14,906 walls. The high-tier lifetime oracle retains
+its independent high-tier measurement rather than adopting the low-tier digest.
