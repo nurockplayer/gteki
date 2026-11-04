@@ -1,7 +1,7 @@
 // The ambient crowd keeps its route logic and draw budget while being drawn as articulated commuters.
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { LOW_QUALITY_MAX_COUNT, buildCrowd, type Lane } from "./crowd.ts";
+import { LOW_QUALITY_MAX_COUNT, buildCrowd, transformLowCrowdVertex, type Lane } from "./crowd.ts";
 import crowdLanes from "./crowd_lanes.json";
 import graph from "../gteki/graph.json";
 import station from "../gteki/station.json";
@@ -213,6 +213,44 @@ describe("ikebukuro crowd gait", () => {
       expect(Math.min(...ys)).toBeGreaterThan(-0.012);
       expect(Math.max(...ys)).toBeLessThan(0.25);
     }
+  });
+
+  it("keeps GPU-transformed low-quality shoes on the floor during stance and above it during swing", () => {
+    const long = [{ id: "L", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 4000, y: 0, z: 0 }] }];
+    const c = buildCrowd(THREE, long, toRenderer, 56, new THREE.Texture(), {});
+    const mesh = named(c, "low"), pos = mesh.geometry.getAttribute("position"), parts = mesh.geometry.getAttribute("part");
+    const shoes: number[][] = [[], []], support: number[] = [];
+    for (let v = 0; v < pos.count; v++) {
+      if (parts.getX(v) !== 6) continue;
+      const side = parts.getW(v) > 0 ? 0 : 1;
+      shoes[side]!.push(v);
+      if (side === 0 && pos.getY(v) - 0.072 <= -0.045) support.push(pos.getZ(v), pos.getY(v) - 0.072);
+    }
+    const sole = new Float64Array(support), m = new THREE.Matrix4(), p = new THREE.Vector3();
+    const phase = mesh.geometry.getAttribute("phase");
+    mesh.getMatrixAt(0, m);
+    expect(shoes[0]!.length).toBeGreaterThan(10);
+    let stance = 0, swing = 0;
+    for (let k = 0; k <= 240; k++) {
+      phase.setX(0, k * Math.PI * 2 / 240);
+      for (let side = 0; side < 2; side++) {
+        let lowest = Infinity;
+        for (const v of shoes[side]!) {
+          const vertex = transformLowCrowdVertex(
+            [pos.getX(v), pos.getY(v), pos.getZ(v)],
+            [parts.getX(v), parts.getY(v), parts.getZ(v), parts.getW(v)], phase.getX(0), sole,
+          );
+          lowest = Math.min(lowest, p.fromArray(vertex).applyMatrix4(m).y);
+        }
+        expect(lowest).toBeGreaterThanOrEqual(-0.00001);
+        const lift = Math.sin(phase.getX(0)) * (side === 0 ? 1 : -1);
+        if (lift <= 0) { expect(Math.abs(lowest)).toBeLessThanOrEqual(0.01); stance++; }
+        if (lift > 0.9) { expect(lowest).toBeGreaterThan(0.03); swing++; }
+      }
+    }
+    expect(stance).toBeGreaterThan(200);
+    expect(swing).toBeGreaterThan(40);
+    c.dispose();
   });
 
   /** Every vertex of the rigid shoe (upper and sole), transformed by its instance matrix, over 6 s = several gait cycles. */

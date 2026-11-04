@@ -706,6 +706,16 @@ export function buildCrowd(
           float a = sin(phase) * part.w;
           return vec3(v.x, cos(a) * v.y - sin(a) * v.z, sin(a) * v.y + cos(a) * v.z);
         }
+        float crowdLegOffset() {
+          if (part.x != 5.0 && part.x != 6.0) return 0.0;
+          float a = sin(phase) * part.w;
+          float low = 1e9;
+          ${Array.from({ length: geo.solePts.length / 2 }, (_, i) => {
+            const z = geo.solePts[i * 2]!, y = geo.solePts[i * 2 + 1]!;
+            return `low = min(low, (${ANKLE_H} - part.z + ${y.toFixed(9)}) * cos(a) - ${z.toFixed(9)} * sin(a));`;
+          }).join("\n")}
+          return -part.z - low + ${LOW_SWING_LIFT} * max(0.0, sin(phase) * sign(part.w));
+        }
       `).replace("#include <color_vertex>", `#include <color_vertex>
         int slot = int(part.x);
         float hex = slot < 4 ? palette0[slot] : palette1[slot - 4];
@@ -724,8 +734,8 @@ export function buildCrowd(
         transformed.y -= part.z;
         transformed = crowdSwing(transformed);
         transformed.y += part.z;
-        // Lift the rigid swinging leg enough that the shoe cannot cut through the floor.
-        transformed.y += 0.05 * abs(sin(phase));
+        // Ground each rigid leg on its actual sole; only the swing side lifts.
+        transformed.y += crowdLegOffset();
         if (!shown) transformed = vec3(0.0);
       `);
     };
@@ -1043,4 +1053,20 @@ export function buildCrowd(
       lowMesh?.dispose();
     },
   };
+}
+
+const LOW_SWING_LIFT = 0.05;
+
+/** Phone vertex shader transform for the non-optional legs/shoes; sole points are ankle-relative (z, y) pairs. */
+export function transformLowCrowdVertex(position: readonly number[], part: readonly number[], phase: number, sole: Float64Array): V3 {
+  const [x, y, z] = position as V3;
+  const [slot, , pivot, swing] = part as [number, number, number, number];
+  const a = Math.sin(phase) * swing, c = Math.cos(a), s = Math.sin(a);
+  let dy = 0;
+  if (slot === 5 || slot === 6) {
+    const support = { dy: 0, dz: 0 };
+    pivotOffset(-a, sole, support);
+    dy = support.dy + (ANKLE_H - pivot) * (1 - c) + LOW_SWING_LIFT * Math.max(0, Math.sin(phase) * Math.sign(swing));
+  }
+  return [x, pivot + (y - pivot) * c - z * s + dy, (y - pivot) * s + z * c];
 }
