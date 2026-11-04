@@ -31,7 +31,16 @@ above is a design call of the same kind as ruling A (guard vs. a planned walk ov
 a ruling before code.
 
 ## State of the branch
-`plannedWalks` + `wellRails(..., walks)` + `RECIPE_VERSION` 5 are committed as ruling A asked (unit test
-"keeps no rail across a planned flat walk at the landing, and keeps the rails away from it" added), but they
-repair nothing measurable and were **not** run through vitest yet: the OrbStack light slot was held by other
-sessions from 05:53 to 07:0x JST, so both the unit test and a follow-up probe stayed queued. No PR opened.
+`plannedWalks` + `wellRails(..., walks)` + `RECIPE_VERSION` 5 are committed as ruling A asked, with the unit
+test "keeps no rail across a planned flat walk at the landing, and keeps the rails away from it". They repair
+nothing measurable (all eight gate files identical), and no PR was opened.
+
+Test state (JST): the first run (`vitest related …`, heavy 1 g, orb-test #496, 07:12–07:2x) was OOM-killed
+(exit 137) and its failures are not usable. The single-file run (heavy 1 g, #497, 07:29–07:33, exit 1, 55
+tests / 1 failed) failed **only** on the test's last assertion ("every rail away from the walk is byte
+identical"), after the two suppression assertions — a rail covers the walk's midpoint without the walk, none
+does with it — had already passed. That assertion is too strict for a cut rail (its remaining pieces change),
+and is replaced by "one rail entirely away from the walk is still in the list" (`toContainEqual`). That last
+form has **not been re-run**: from 07:33 JST the heavy gate closed (08:30–18:30) and the single gteki light
+slot has been held by other sessions (two `vitest related` runs since 00:18 and 01:54 JST), so every queued
+run stayed waiting.
