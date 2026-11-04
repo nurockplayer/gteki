@@ -135,6 +135,47 @@ describe("describeRoute", () => {
   });
 });
 
+describe("describeRoute note placement by route side (#799)", () => {
+  const ORIGIN_JA = "案内は中央通路西側の通路上から始まります。2022年1月版の豊島区案内図にある中央2改札への通路側の案内で、改札口の正確な位置は未確認です。";
+  const ORIGIN_EN = "Directions start on the west Central Passage approach to Central Gate 2 shown in the January 2022 Toshima guide. The exact gate opening is not verified.";
+
+  /** A POI at the route's start ("start") with the given notes. */
+  function atStart(category: Poi["category"], notes?: Poi["notes"]) {
+    const b = createSyntheticBundle([edge("s", "start", "goal")]);
+    const poi: Poi = {
+      id: "origin", category, names: [{ lang: "ja", text: "中央2改札" }, { lang: "en", text: "Central Gate 2" }], aliases: [],
+      floorId: "concourse", displayPosition: null, connectorNodeIds: ["start"], paid: false,
+      evidence: b.pois[0]!.evidence, ...(notes ? { notes } : {}),
+    };
+    return { b, poi };
+  }
+
+  it("puts an origin-only note on the first instruction, never on arrival", () => {
+    const { b, poi } = atStart("ticket_gate", [
+      { lang: "ja", text: ORIGIN_JA, at: "origin" },
+      { lang: "en", text: ORIGIN_EN, at: "origin" },
+    ]);
+    const r = route(b, "start", "goal");
+    const en = describeRoute(b, r, "en", undefined, poi);
+    expect(en[0]).toMatchObject({ kind: "start", text: `Start. ${ORIGIN_EN}` });
+    expect(en.at(-1)!.text).toBe("Arrive at destination");
+    const ja = describeRoute(b, r, "ja", undefined, poi);
+    expect(ja[0]!.text).toBe(`出発。${ORIGIN_JA}`);
+    expect(ja.at(-1)!.text).toBe("目的地に到着");
+  });
+
+  it("keeps a note without `at` on the arrival side only", () => {
+    const { b, poi } = atStart("other", [
+      { lang: "ja", text: "通路の西側で終わります。" },
+      { lang: "en", text: "Routes end on the west side." },
+    ]);
+    const r = route(b, "start", "goal");
+    expect(describeRoute(b, r, "en", undefined, poi)[0]!.text).toBe("Start");
+    expect(describeRoute(b, r, "ja", undefined, poi)[0]!.text).toBe("出発");
+    expect(describeRoute(b, r, "en", poi).at(-1)!.text).toBe("Arrive at destination. Routes end on the west side.");
+  });
+});
+
 describe("describeRoute arrival at a gate, an area or a POI with notes (#203 B7)", () => {
   /** A destination POI reached exactly at "goal" (a plain junction, so the connector branch is not taken). */
   function toPoi(category: Poi["category"], notes?: Poi["notes"]) {
