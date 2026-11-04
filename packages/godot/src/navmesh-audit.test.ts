@@ -250,7 +250,9 @@ it.each([false,true])("keeps a snap_failed stair fallback on the built floor (re
   const fallback=connectorFallbackPolyline(bundle,route,paths);
   expect(auditPolyline(probe,fallback)).toMatchObject({offFloor:0,noFloor:0,wallHits:0});
   expect(fallback.map(p=>[p.x,p.z])).toEqual(reversed ? [[10,4],[5,0],[0,0]]:[[0,0],[5,0],[10,4]]);
-  // An audit fallback does not manufacture a runtime path for the missing snap.
-  expect(routePolyline(bundle,route,paths,{})).toEqual([]);
+  const guide=routePolyline(bundle,route,paths,{});
+  expect(guide.map(p=>[p.x,p.y,p.z])).toEqual(fallback.map(p=>[p.x,p.y,p.z]));
+  expect(guide.every(p=>p.sceneGap)).toBe(true);
+  expect(auditPolyline(probe,guide)).toMatchObject({offFloor:0,noFloor:0,wallHits:0});
   query.destroy(); baked.navMesh.destroy(); geometry.dispose(); floor.material.dispose();
 });
