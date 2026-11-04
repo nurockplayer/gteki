@@ -98,7 +98,7 @@ export function candidateIdentity(): { sha: string | null; branch: string | null
 
 /**
  * Init script (page.addInitScript before the page loads). Keeps, per aspect ratio, the latest perspective
- * projectionMatrix uploaded or reused by a bound program and the latest viewMatrix uploaded after it;
+ * projectionMatrix and viewMatrix uploaded or reused by a bound program;
  * `window.__qaLensRead()` returns the ones whose
  * aspect matches the explorer canvas. m[5] = 1/tan(fov/2), m[0] = m[5]/aspect, m[11] = -1, m[15] = 0
  * identify a perspective matrix (orthographic post passes and UI quads are ignored). A shadow-casting
@@ -108,13 +108,13 @@ export function candidateIdentity(): { sha: string | null; branch: string | null
 export const LENS_PROBE = `(() => {
   // Three caches uniforms per program: returning to an overview program can reuse its 60-degree projection
   // without an upload after follow's 50. Observe program binds as well as uploads (#811).
-  // Keep the latest perspective projection per aspect (orthographic post-pass quads are ignored), and the latest viewMatrix next to the
-  // perspective aspect last uploaded. The lens comes from the projection alone; position and avatar share need a
+  // Keep the latest perspective projection and its program's view per aspect (orthographic post-pass quads are ignored).
+  // The lens comes from the projection alone; position and avatar share need a
   // view, which only programs using viewMatrix upload (envMap, shadows, custom shaders), so they can be null.
-  const L = { names: new WeakMap(), programProjs: new WeakMap(), projs: new Map(), views: new Map(), lastKey: null };
+  const L = { names: new WeakMap(), programProjs: new WeakMap(), programViews: new WeakMap(), projs: new Map(), views: new Map() };
   window.__qaLens = L;
   const persp = (v) => v && v.length === 16 && Math.abs(v[11] + 1) < 1e-6 && Math.abs(v[15]) < 1e-6;
-  const recordProjection = (v) => {
+  const recordProjection = (v, view) => {
     const now = performance.now(), aspect = v[5] / v[0], key = Math.round(aspect * 1000);
     const prev = L.projs.get(key);
     const fovs = prev ? prev.fovs.filter((f) => now - f.t < 1000) : [];
@@ -122,7 +122,7 @@ export const LENS_PROBE = `(() => {
     const same = fovs.find((f) => Math.abs(f.fov - fov) < 0.01);
     if (same) same.t = now; else fovs.push({ fov, t: now });
     L.projs.set(key, { proj: v, aspect, t: now, fovs });
-    L.lastKey = key;
+    if (view) L.views.set(key, view); else L.views.delete(key);
   };
   const wrap = (C) => {
     if (!C) return;
@@ -136,7 +136,7 @@ export const LENS_PROBE = `(() => {
     C.prototype.useProgram = function (p) {
       const result = use.call(this, p);
       const proj = p && L.programProjs.get(p);
-      if (proj) recordProjection(proj);
+      if (proj) recordProjection(proj, L.programViews.get(p));
       return result;
     };
     const um = C.prototype.uniformMatrix4fv;
@@ -146,9 +146,12 @@ export const LENS_PROBE = `(() => {
       if (n === "projectionMatrix" && persp(v)) {
         const proj = Float32Array.from(v);
         L.programProjs.set(info.program, proj);
-        recordProjection(proj);
-      } else if (n === "viewMatrix" && L.lastKey !== null && v && v.length === 16) {
-        L.views.set(L.lastKey, { view: Float32Array.from(v), t: now });
+        recordProjection(proj, L.programViews.get(info.program));
+      } else if (n === "viewMatrix" && v && v.length === 16) {
+        const view = { view: Float32Array.from(v), t: now };
+        L.programViews.set(info.program, view);
+        const proj = L.programProjs.get(info.program);
+        if (proj) L.views.set(Math.round(proj[5] / proj[0] * 1000), view);
       }
       return um.call(this, loc, tr, v, ...rest);
     };
