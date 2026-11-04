@@ -52,7 +52,7 @@ describe("#49 render-only escalator enclosure", () => {
     expect(soffits).toBeInstanceOf(THREE.Mesh);
     // 2026-11-03 JST: per-flight finishes replace legacy pitched hull roofs.
     // Noncoincident shell backing remains to close the step between both planes.
-    expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([11994, 135]);
+    expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([12586, 135]);
     const misses: string[] = [];
     const roofs: (SlabPoly & { origin?: XY; slope?: XY })[] = [...layout.levels.flatMap((lv) => lv.ceilings),
       ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
@@ -108,6 +108,48 @@ describe("#49 render-only escalator enclosure", () => {
     for (const mesh of [sides, soffits]) {
       const positions = mesh.geometry.attributes.position!;
       for (let i = 0; i < positions.count; i++) expect(positions.getY(i), `${mesh.name}:${i}`).toBeLessThan(STREET_UNDERSIDE);
+    }
+  });
+
+  it("closes both run mouths above the head band without blocking eye height", () => {
+    const ray = new THREE.Raycaster(), misses: string[] = [];
+    for (const r of runs) {
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, length = Math.hypot(dx, dy);
+      const shell = escalatorShellGeometry({ ...layout, levels: [], pads: [], linkStrips: [], streetPads: [], runs: [r], soffits: [], shaftFinishes: [] }, { ...bundle, edges: [] });
+      const mesh = new THREE.Mesh(shell.sides!, doubleSide);
+      for (const [p, sign] of [[r.a, -1], [r.b, 1]] as const) {
+        const mouth = { x: p.x + sign * dx / length * 0.6, y: p.y + sign * dy / length * 0.6,
+          z: p.z + sign * (r.b.z - r.a.z) / length * 0.6 };
+        for (const [height, expected] of [[HEAD_BAND + 0.2, true], [1.62, false]] as const) {
+          if (mouth.z + height >= STREET_UNDERSIDE - 0.001) continue;
+          ray.set(v3({ x: mouth.x - sign * dx / length * 0.2, y: mouth.y - sign * dy / length * 0.2, z: mouth.z + height }),
+            new THREE.Vector3(sign * dx / length, 0, -sign * dy / length));
+          ray.far = 0.4;
+          if ((ray.intersectObject(mesh).length > 0) !== expected) misses.push(`${r.edgeId}:${sign}:${height}`);
+        }
+      }
+      shell.sides?.dispose(); shell.soffits?.dispose();
+    }
+    expect(misses).toEqual([]);
+  });
+
+  it("joins the upper shoulder to the pitched shaft wall", () => {
+    const r = runs.find((run) => run.edgeId === "e:4fc06b0d45184e66aaa3bb1ea9ddcd62")!;
+    const wall = layout.levels.flatMap((level) => level.walls).find((w) => w.profile &&
+      Math.hypot(w.a.x + 25.9550945, w.a.y - 127.4008006) < 0.001 &&
+      Math.hypot(w.b.x + 25.8408353, w.b.y - 127.0206796) < 0.001)!;
+    expect(wall).toBeDefined();
+    const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, l2 = dx * dx + dy * dy;
+    const wd = { x: wall.b.x - wall.a.x, y: wall.b.y - wall.a.y }, length = Math.hypot(wd.x, wd.y);
+    const ray = new THREE.Raycaster();
+    for (const t of [0.2, 0.5, 0.8]) {
+      const p = { x: wall.a.x + wd.x * t, y: wall.a.y + wd.y * t };
+      const top = wall.profile!.topA + (wall.profile!.topB - wall.profile!.topA) * t;
+      const roof = r.a.z + SHELL_RISE + (dx * (p.x - r.a.x) + dy * (p.y - r.a.y)) * (r.b.z - r.a.z) / l2;
+      ray.set(v3({ x: p.x - wd.y / length * 0.02, y: p.y + wd.x / length * 0.02, z: (top + roof) / 2 }),
+        new THREE.Vector3(wd.y / length, 0, wd.x / length));
+      ray.far = 0.04;
+      expect(castAll(ray, [probes.sides]).length, `join@${t}`).toBeGreaterThan(0);
     }
   });
 

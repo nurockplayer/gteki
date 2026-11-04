@@ -280,6 +280,27 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       walls.push({ wall: { a: a!, b: b!, side: 1, kind: "wall", zMin: Math.min(topA, topB) - 4.5, zMax: Math.max(topA, topB),
         profile: { bottomA: topA - 4.5, bottomB: topB - 4.5, topA, topB } }, covered });
     }
+    // Close only the upper band at the mouths; the walking openings stay clear.
+    for (const [a, b] of [[ring[3]!, ring[0]!], [ring[1]!, ring[2]!]]) {
+      const topA = soffitHeight(roof, a), topB = soffitHeight(roof, b);
+      const bottomA = headTop(a), bottomB = headTop(b);
+      walls.push({ wall: { a, b, side: 1, kind: "wall", zMin: Math.min(bottomA, bottomB), zMax: Math.max(topA, topB),
+        profile: { bottomA, bottomB, topA, topB } }, covered });
+    }
+    if (r.edgeId === "e:4fc06b0d45184e66aaa3bb1ea9ddcd62") {
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, length = Math.hypot(dx, dy);
+      for (const w of layout.levels.flatMap((level) => level.walls)) {
+        if (w.finish !== "shaft" || w.kind !== "wall" || !w.profile) continue;
+        const wx = w.b.x - w.a.x, wy = w.b.y - w.a.y, wl = Math.hypot(wx, wy);
+        if (wl < 1e-4 || Math.abs(dx * wy - dy * wx) / (length * wl) > 0.01 ||
+          !pointInRings(w.a, roof.rings) || !pointInRings(w.b, roof.rings)) continue;
+        const topA = soffitHeight(roof, w.a), topB = soffitHeight(roof, w.b);
+        const bottomA = w.profile.topA, bottomB = w.profile.topB;
+        if (bottomA < headTop(w.a) || bottomB < headTop(w.b) || topA <= bottomA || topB <= bottomB) continue;
+        walls.push({ wall: { a: w.a, b: w.b, side: w.side, kind: "wall", zMin: Math.min(bottomA, bottomB), zMax: Math.max(topA, topB),
+          profile: { bottomA, bottomB, topA, topB } }, covered: [] });
+      }
+    }
     const points = roof.rings.flat();
     const minX = Math.min(...points.map((p) => p.x)), maxX = Math.max(...points.map((p) => p.x));
     const minY = Math.min(...points.map((p) => p.y)), maxY = Math.max(...points.map((p) => p.y));
