@@ -56,7 +56,7 @@ describe("shared-explorer scene hook: camera caps", () => {
     // The explorer's follow camera raycasts colliders + walkable (+ cameraBlockers once supported).
     const blockers = [...scene.cameraBlockers!, ...scene.walkable];
     const visible: THREE.Object3D[] = [];
-    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
+    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !m.name.startsWith("linear-light:") && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
     const open: string[] = [];
     for (const n of bundle.nodes) {
       const z = layoutZ.get(n.id)!;

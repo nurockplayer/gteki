@@ -51,19 +51,25 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // overhead query itself. The removed copied-cap mesh briefly made this four
 // camera blockers; this candidate retains three and the original listsDigest.
 // Keep the independent kit-on/off comparisons below; neither flag adds a proxy.
+// #789 (2026-11-04 JST): remeasured after the evidence-based display-height repair.
 const MAIN_BASELINE = {
-  station: {
-    geometryDigest: "8b501f6d2a9d6c6e95424959a72791df560a442abdcd9167440187b5d90d0bbd",
-    appearanceDigest: "bb90e82a587a6cfcd79a1d6a311dbd6e010a6d747417b3a96cb7c7e5553fabaf",
-    nodesDigest: "c3721bb561761689083bbf44bbaf8ed2e8689925827d73ddc722e7c4915690f2",
-    texturesDigest: "ffc241b92b736d65bbd408c5d766beed14df518857647e9dce1b02e53bbf0193",
-    meshes: 145,
-    bytes: 15897422,
+  "station": {
+    "geometryDigest": "8577aa1f24886d6d4104efdcfa164e0859235b87c815f0521001422b07dbad0b",
+    "appearanceDigest": "0f4a4d33f7c7a232490bf810f1dd29005a4305dc177e602fb50c5a6b6636f394",
+    "nodesDigest": "ab0c1fc21e85a177ab1d72c30b72e29e02ddb92dca5decd50e8f6cee6934e074",
+    "texturesDigest": "703cc76f387c4d920b083cb8db389c734e3461ff97c469051a9eb79b8f31e525",
+    "meshes": 146,
+    "bytes": 16286922
   },
-  lists: {
-    listsDigest: "ddd5c84df153fb71c2254a20ec8132134ef0aaa6bb4878cb683da4ffc967913f",
-    counts: { walkable: 433, colliders: 2, cameraBlockers: 3, walls: 14479 },
-  },
+  "lists": {
+    "listsDigest": "a8e6c49f0bb47bea12e2c995b46460360024e0ed227ac5eb37cb6ff5ddfd86bf",
+    "counts": {
+      "walkable": 442,
+      "colliders": 2,
+      "cameraBlockers": 3,
+      "walls": 14906
+    }
+  }
 };
 
 const sha = (parts: unknown[]) => createHash("sha256").update(JSON.stringify(parts)).digest("hex");
@@ -767,7 +773,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.unstubAllGlobals();
     });
 
-    it("flag off: the scene equals main 45250364 in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
+    it("flag off: the scene matches the committed #789 geometry in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
       expect(off.root.userData.kitSwap).toBeUndefined();
       // Meshes (geometry + appearance), all other nodes incl. lights and userData, and texture params of every material.
       expect(digestStation(off.root, isStationProxy)).toEqual(MAIN_BASELINE.station);
@@ -782,7 +788,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       const onLists = digestSceneLists(on);
       expect(onLists).toEqual(digestSceneLists(off));
       expect(onLists).toEqual(MAIN_BASELINE.lists);
-      expect(onLists.counts).toEqual({ walkable: 433, colliders: 2, cameraBlockers: 3, walls: 14479 });
+      expect(onLists.counts).toEqual({ walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14977 });
     });
 
     it("flag on: every placement lands on a real anchor, in the right role", () => {
@@ -826,17 +832,17 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     });
 
     it("flag on, stub library at the estimated triangle counts: the budget keeps the highest-ranked placements", () => {
-      // Stub counts (STUB_TRIANGLES): escalator 1352 (19 fitted runs), stairs 180 (24), gate 1800 (4 rows), lift 1090 (9 portals).
+      // Stub counts (STUB_TRIANGLES): escalator 1352 (21 fitted runs), stairs 180 (29), gate 1800 (4 rows), lift 1090 (9 portals).
       // Geometry is 45 B per merged triangle, so the 3 MB cap allows 66,666 triangles:
-      //   19*1352 + 24*180 + 4*1800 + 9*1090 = 47,018 triangles = 2,115,810 B, so all 9 portals fit and the
-      //   60k triangle cap (47,018) binds first. Toilets are never placed (a gap).
+      //   21*1352 + 29*180 + 4*1800 + 9*1090 = 50,622 triangles = 2,277,990 B, so all 9 portals fit and the
+      //   60k triangle cap (50,622) binds first. Toilets are never placed (a gap).
       const count = (role: string) => report.placed.filter((p) => p.role === role).length;
-      expect([count("escalator"), count("stairs"), count("gate"), count("lift"), count("toilet")]).toEqual([19, 24, 4, 9, 0]);
+      expect([count("escalator"), count("stairs"), count("gate"), count("lift"), count("toilet")]).toEqual([21, 29, 4, 9, 0]);
       expect(report.dropped.filter((d) => d.role === "lift")).toEqual([]);
       expect(report.dropped.filter((d) => d.role === "toilet")).toEqual([]);
       expect(report.gaps.filter((g) => g.role === "toilet")).toEqual([{ role: "toilet", anchors: 3, reason: ROLE_DISABLED.toilet }]);
       expect(report.dropped.filter((d) => d.role === "escalator").map((d) => d.anchorKey).sort()).toEqual(catalogResult.unfitted.map((u) => u.edgeId).sort());
-      expect(report.totals.triangles).toBe(19 * STUB_TRIANGLES.escalator + 24 * STUB_TRIANGLES.stairs + 4 * STUB_TRIANGLES.gate + 9 * STUB_TRIANGLES.lift);
+      expect(report.totals.triangles).toBe(21 * STUB_TRIANGLES.escalator + 29 * STUB_TRIANGLES.stairs + 4 * STUB_TRIANGLES.gate + 9 * STUB_TRIANGLES.lift);
       expect(report.totals.triangles).toBeLessThanOrEqual(KIT_BUDGET.maxTriangles);
       expect(report.totals.geometryBytes).toBeLessThanOrEqual(KIT_BUDGET.maxGeometryBytes);
       expect(report.totals.draws).toBeLessThanOrEqual(KIT_BUDGET.maxDraws);
@@ -847,15 +853,15 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     it("the real kit 0.1.0 places mobile gates and lifts; available dressing pieces fit no Shinjuku run", () => {
       const mobile = parseKitManifest(library("mobile/manifest.json"), "mobile");
       const anchors = collectKitAnchors({ layout: captured.layout, protection: captured.protection, plan: captured.plan, bundle, lifts: captured.liftAnchors });
-      expect(anchors.runs.filter((r) => r.role === "stairs").length).toBe(24);
-      expect(anchors.runs.filter((r) => r.role === "escalator").length).toBe(21);
+      expect(anchors.runs.filter((r) => r.role === "stairs").length).toBe(29);
+      expect(anchors.runs.filter((r) => r.role === "escalator").length).toBe(22);
       const r = planKitPlacements({ anchors, manifest: mobile, budget: KIT_BUDGET, caps: { ktx2: false } });
       expect(r.placed.map((p) => p.assetId)).toEqual([
         ...Array<string>(4).fill("gteki_gate_array_1w"), ...Array<string>(9).fill("gteki_lift_portal_w1000"),
       ]);
       expect(r.totals).toEqual({ draws: 4, triangles: 13_226, geometryBytes: 595_170, gpuTextureBytes: 65_536 });
-      expect(r.dropped.filter((d) => d.role === "stairs")).toHaveLength(24);
-      expect(r.dropped.filter((d) => d.role === "escalator")).toHaveLength(21);
+      expect(r.dropped.filter((d) => d.role === "stairs")).toHaveLength(29);
+      expect(r.dropped.filter((d) => d.role === "escalator")).toHaveLength(22);
       expect(r.dropped.every((d) => d.reason === "no piece fits this anchor")).toBe(true);
       expect(r.gaps.filter((g) => /none fits any/.test(g.reason)).map((g) => g.role).sort()).toEqual(["escalator", "stairs"]);
       expect(r.gaps.some((g) => g.role === "gate")).toBe(false);
@@ -1030,9 +1036,9 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       // per-run triangle count is whatever build.ts drew, so the identity below is the exact-size check.
       expect(report.hidden["escalator-balustrade"]).toBeGreaterThan(0);
       expect(report.hidden["escalator-balustrade"]).toBe(offTri - onTri - 192 * placed("lift").length - 96 * placed("gate").length - 12 * steps);
-      // No lifts and 2 escalators that were not placed keep every placeholder triangle.
+      // No lifts and the one unfitted escalator keep every placeholder triangle.
       expect(captured.liftAnchors.length - placed("lift").length).toBe(0);
-      expect(placed("escalator").length).toBe(19);
+      expect(placed("escalator").length).toBe(21);
     });
 
     it("flag on: the budget holds on what was actually built, and the report states it", () => {

@@ -2,8 +2,8 @@
 
 Source inspection: 2026-11-04 JST. Only the public E27 acquisition pinned by
 `stations/shinjuku/sources/manifest.json` is used. Heights below are symbolic ENU
-display metres, not measured elevations; source floors, coordinates and routing
-remain unchanged.
+display metres, not measured elevations; source floor IDs, XY coordinates and graph connectivity
+are preserved.
 
 All eight links have `lev_diff=5`, `vtcl_slope=7`, `H_F=0`, and both endpoint
 nodes have `H_F=0`. The pinned 2024 NWD specification (PDF page 15, link attribute
@@ -43,10 +43,24 @@ remain unchanged. The corridor's other street escalator, `4bee1c5e`, also picks
 up the corrected endpoint (−3.20 → 0); its source floor-0 endpoint is unchanged.
 
 Regenerate with `pnpm --filter @gteki/station-shinjuku import:e27`, then
-`pnpm --filter ./stations/shinjuku bake:surface` and the stairwell/navmesh bakes.
+`pnpm --filter ./stations/shinjuku bake:surface`,
+`pnpm --filter @gteki/station-shinjuku kit:catalog` and the stairwell/navmesh bakes.
+Refresh the existing fare cache with
+`pnpm exec tsx stations/shinjuku/test/helpers/generate-restricted-fences.ts`:
+its input key includes render heights. The fresh derivation has 768 fences
+(previously 773) and the same 30 conflict records. This is the same fresh
+geometry used by the canonical gate before the cache was refreshed.
+Refresh the existing scene fixture with
+`pnpm exec tsx stations/shinjuku/test/helpers/scene-digest-fixture.ts`.
 All eight approximation flags are removed; the steep/flat truth rule remains.
 Measured elevations still require field evidence, just as for the existing
 symbolic floor model.
+
+The derived kit catalog now contains 39 entries (26 stair, 12 escalator, one
+gate), covering 29 stair runs and 21 of 22 escalators. Only `27d3ed49` remains
+outside the catalog's angle range. The shipped GLB still fits the same 19
+escalators; `4bee1c5e` and `c7fa5f74` keep the existing procedural finishes until
+the asset lane builds their revised catalog entries. No GLB is changed here.
 
 ## Navmesh qualification — 2026-11-04 JST
 
@@ -67,10 +81,45 @@ All eight repaired edges were emitted and attached at both ends. Bake user IDs:
 | Routable / failed route pairs | 238 / 2 | 238 / 2 |
 
 No per-edge clip baseline increased; no new fallback edges or detours appeared.
-PR #783 is still open at qualification, so this base has `suspectEdges`, not the
-new `suspectPolyline` field. With no bake suspects, its route-used subset is empty.
+This branch base predates #783's `suspectPolyline` field and has `suspectEdges`. With no bake suspects, its route-used subset is empty.
 The regenerated fallback and clip-baseline files are byte-identical; paths and
 suspect files changed.
 
 Public bundle SHA-256: `61225ea3e89fe4732368f38c4023f7bce58bde7c3d390671980719695a05ec16`.
 Mesh SHA-256: `d0bd5911f41504b376c052ae0fa65130faf29cd102da9bbd74f307e03605b826`.
+
+After refreshing the fare cache, `orb-test -- pnpm bake:stairwells:check`
+passed both tiers at 2026-11-04 07:40 JST: the existing recipes replayed over
+308 meshes, 68 cut meshes and 18,696 cut triangles, with maximum attribute
+error `0.0000152587890625`. The subsequent roof and portal corrections
+require a fresh recipe bake and navmesh qualification.
+
+## Bounded review — 2026-11-04 JST
+
+The requested `oracle-ego` review (GPT-6, high effort) found no demonstrated
+code blocker. It accepted the signed source interpretation, six-node corridor
+propagation, isolated-end direction handling, affine clearance offsets and
+eight attached bake links. It explicitly left merge readiness conditional on
+reconciling the broader test failures and committing generated expectations.
+Optional source-shape assertions and an affine-specific regression test remain
+follow-ups; this change adds neither a new validation mechanism nor new assets.
+
+## Height-dependent roof correction — 2026-11-04 JST
+
+The related tests exposed a real consequence of the raised exit-4 landing:
+`5ce3f318` is source-roofed and now lies at −1.60 m inside the street-opening
+band, but the surface roof builder previously considered sloping flights only.
+Include the source-roofed walk links between flight endpoints, using their source
+width and derived node elevations. Join adjoining roof footprints into one
+glazing sheet so overlapping overhangs do not add a second translucent face.
+The existing surface-roof height and camera-cap construction are reused.
+The roof query excludes hanging linear lights: a luminaire is not a roof.
+
+The raised corridor also exposed a generated 2.45 m portal header at the
+lower mouth of `c690df6c`. The original camera replay hit that header at
+three uphill samples. Flat passages at intermediate elevations now use the
+existing 3.2 m landing clearance when carving generated walls, matching the
+adjacent landing roof. Source walls and the camera solver are unchanged. The
+original five camera tests pass; at the default pitch the lower flight has
+minimum camera distance 2.33 m uphill and 3.45 m downhill (the comfort
+threshold remains 1.6 m), with maximum head share 0.16 and 0.11 respectively.

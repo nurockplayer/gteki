@@ -697,6 +697,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   // Finish exit shafts against the 180 mm street slab underside, rather than
   // stopping 330 mm below it. This remains below the surface canopy and its walls.
   const streetUnderside = -0.18;
+  const landingClearance = 3.2;
   const underground = layout.levels.filter((lv) => lv.z < -0.5);
   const levelAt = (z: number) => underground.reduce((a, b) => Math.abs(a.z - z) < Math.abs(b.z - z) ? a : b);
   const union = (polys: XY[][][]) => polys.length ? polygonClipping.union(clipPoly(polys[0]!), ...polys.slice(1).map(clipPoly)).map(xyRings) : [];
@@ -723,11 +724,17 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     }
   }
 
-  const boundedPassages = passages.map((s) => ({ ...s,
-    minX: Math.min(s.a.x, s.b.x) - 0.65, maxX: Math.max(s.a.x, s.b.x) + 0.65,
-    minY: Math.min(s.a.y, s.b.y) - 0.65, maxY: Math.max(s.a.y, s.b.y) + 0.65,
-    minZ: Math.min(s.a.z, s.b.z) - 0.6, maxZ: Math.max(s.a.z, s.b.z) + 2.45,
-  }));
+  const boundedPassages = passages.map((s) => {
+    // Intermediate landings have their own enclosure below. Open its full height
+    // at a flat connection, rather than leaving a synthetic header across the join.
+    const clearance = Math.abs(s.a.z - s.b.z) < 0.05 && s.a.z < -0.5 &&
+      !underground.some((lv) => Math.abs(lv.z - s.a.z) < 0.1) ? landingClearance : 2.45;
+    return { ...s, clearance,
+      minX: Math.min(s.a.x, s.b.x) - 0.65, maxX: Math.max(s.a.x, s.b.x) + 0.65,
+      minY: Math.min(s.a.y, s.b.y) - 0.65, maxY: Math.max(s.a.y, s.b.y) + 0.65,
+      minZ: Math.min(s.a.z, s.b.z) - 0.6, maxZ: Math.max(s.a.z, s.b.z) + clearance,
+    };
+  });
 
   // Split only new walls; preserve all existing source wall/railing openings. Each kept piece
   // has the same conservative z band in collision and the rendered trapezoid fits inside it.
@@ -770,7 +777,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         }
         if (!zs.length) continue;
         if (len(d) < 1e-8) zs.push(s.b.z); // elevator travel is a vertical opening
-        const lo = Math.min(...zs) - 0.6, hi = Math.max(...zs) + 2.45;
+        const lo = Math.min(...zs) - 0.6, hi = Math.max(...zs) + s.clearance;
         bands = bands.flatMap(([a, b]): [number, number][] => b <= lo || a >= hi ? [[a, b]] : [[a, Math.min(b, lo)], [Math.max(a, hi), b]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
       }
       for (const [lo, hi] of bands) {
@@ -815,7 +822,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   const landingZ = [...new Set([...layout.pads, ...layout.linkStrips].map((p) => p.z))].filter((z) => z < -0.5 && !underground.some((lv) => Math.abs(lv.z - z) < 0.1));
   for (const z of landingZ) {
     const lv = levelAt(z);
-    const roofZ = Math.min(z + 3.2, streetUnderside);
+    const roofZ = Math.min(z + landingClearance, streetUnderside);
     const envelope = union([...layout.pads, ...layout.linkStrips].filter((p) => Math.abs(p.z - z) < 0.1).map((p) => p.rings));
     for (const [i, rings] of envelope.entries()) {
       addRoof({ spaceId: `landing-roof:${z}:${i}`, floorId: lv.floorId, kind: "landing", rings, z: roofZ, fare: null, category: "ceiling" });

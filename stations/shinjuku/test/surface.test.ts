@@ -140,8 +140,8 @@ describe("street geometry and collision", () => {
   });
   it("roofs only source-roofed runs (E27 roof = 2) that are open to the street beyond a canopy", () => {
     const roofs = surfaceRoofs(layout, bundle);
-    // exit 2's second flight above the street slab, and exit 4's stair beside its escalator canopy.
-    expect(roofs.map((r) => r.edgeId).sort()).toEqual(["e:636c6fc9d3ca4ba19cb9c690274a7943", "e:c3fe6342f158400ab602dd610f636329"]);
+    // Exit 2's flight and both exit 4 flights plus their roofed landing meet the street-opening band (#789).
+    expect(roofs.map((r) => r.edgeId).sort()).toEqual(["e:5ce3f318ea6947d293e646157109d628", "e:636c6fc9d3ca4ba19cb9c690274a7943", "e:c3fe6342f158400ab602dd610f636329", "e:c690df6cad7b48bba7b3b30fee65eda2"]);
     for (const r of roofs) expect(bundle.edges.find((e) => e.id === r.edgeId)!.attributes?.roof).toBe(2);
   });
   it("adds nothing for a run whose roof is unknown (99) or absent (1)", () => {
@@ -163,7 +163,7 @@ describe("street geometry and collision", () => {
     })).toBe(true);
     expect(surfaceVisibleAt(layout, bundle, { x: -39.13, y: 200.04, z: -10 })).toBe(false);
     expect(surfaceVisibleAt(layout, bundle, { x: -39.13, y: 200.04, z: -1.99 })).toBe(false); // solid ground above
-    expect(surfaceVisibleAt(layout, bundle, { x: exit.top.x-exit.u.x, y: exit.top.y-exit.u.y, z: -2.5 })).toBe(true);
+    expect(surfaceVisibleAt(layout, bundle, { x: exit.top.x-exit.u.x, y: exit.top.y-exit.u.y, z: exit.firstLandingZ + 1.62 })).toBe(true);
     expect(surfaceVisibleAt(layout, bundle, { x: 1.01, y: 1.14, z: -1.95 })).toBe(false); // B1 concourse follow camera
     expect(surfaceVisibleAt(layout, bundle, { x: -3.95, y: .13, z: -1.95 })).toBe(false); // B1 elevator follow camera
     expect(surfaceVisibleAt(layout, bundle, { x: exit.top.x + 10, y: exit.top.y, z: -3 })).toBe(false);

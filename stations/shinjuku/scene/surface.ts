@@ -4,6 +4,7 @@
  * the exported obstacle segments, which the integration hook adds to WalkWorld.
  */
 import * as THREE from "three";
+import polygonClipping, { type Polygon } from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, XY, XYZ } from "./layout.ts";
@@ -169,9 +170,17 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     }
   });
   // Roofed (E27 roof = 2) runs open to the street beyond the canopies: plain glazing just under canopy height.
-  for(const r of surfaceRoofs(layout,opts.bundle,entrances)){
+  const roofs=surfaceRoofs(layout,opts.bundle,entrances);
+  // Flights and their landing share one glazing sheet, including their overlapping overhangs.
+  const footprints: Polygon[]=[...roofs,...entrances].map(r=>[[[-1,-1],[1,-1],[1,1],[-1,1]].map(([along,across])=>[
+    r.center.x+r.u.x*r.halfLength*along!-r.u.y*r.halfWidth*across!,
+    r.center.y+r.u.y*r.halfLength*along!+r.u.x*r.halfWidth*across!,
+  ] as [number,number])]);
+  const roofPolys=footprints.slice(0,roofs.length);
+  // Entrance glazing is slightly higher; keep its footprint out of this sheet too.
+  if(roofPolys.length)for(const polygon of polygonClipping.difference(polygonClipping.union(roofPolys[0]!,...roofPolys.slice(1)),...footprints.slice(roofs.length)))add("glass",flat(polygon,3.05),mats.glass);
+  for(const r of roofs){
     const at=(along:number,across:number,z:number)=>new THREE.Vector3(r.center.x+r.u.x*along-r.u.y*across,z,-(r.center.y+r.u.y*along+r.u.x*across));
-    add("glass",glazingSheet(r.center,r.u,r.halfWidth,r.halfLength,3.05),mats.glass);
     for(const side of [-1,1]){
       add("steel",beam(at(-r.halfLength,side*r.halfWidth,2.97),at(r.halfLength,side*r.halfWidth,2.97),.075,.09),mats.steel);
       add("steel",beam(at(side*r.halfLength,-r.halfWidth,2.97),at(side*r.halfLength,r.halfWidth,2.97),.075,.09),mats.steel);
