@@ -45,7 +45,6 @@ failedRoutePairs 2, routablePairs 238; `links.failed` = 3× `unsafe_snap` (4b7d9
   (B1, z=-7.8) is the partner node in the same shaft void, so both need the `826-probe` boxes.
 
 ## Next
-`.qa/826/probe-navmesh.sh` (job `826-probe`, started 2026-11-05 05:13 JST) adds `qaEdgeProbe` to the
-audit dump: endpoint snaps + 1.5/3 m boxes, island grid, 0.25 m navmesh presence, wall crossings,
-ceiling clearance. Anything not source-backed is Blocked with the data location above; audit
-classification and tolerances are untouched.
+`.qa/826/probe-navmesh.sh` (job `826-probe`, started 2026-11-05 05:13 JST) dumps `qaEdgeProbe`:
+endpoint snaps + 1.5/3 m boxes, island grid, 0.25 m navmesh presence, wall crossings, clearance.
+Anything not source-backed is Blocked with the data location above; audit classification is untouched.
