@@ -60,7 +60,13 @@ describe("the route sheet as an overview occluder (#385)", () => {
     e.camera = new THREE.PerspectiveCamera(48, 390 / 845, 0.1, 2000);
     e.orbit = { target: new THREE.Vector3(), update: () => e.camera.lookAt(e.orbit.target) };
     (Explorer.prototype as any).fitOverview.call(e);
-    expect(e.overviewFrame().extentShare).toBeLessThanOrEqual(1);
+    const frame = e.overviewFrame();
+    const free = e.freeRect();
+    expect(frame.extentShare).toBeLessThanOrEqual(1);
+    expect(frame.bbox.x0).toBeGreaterThanOrEqual(free.x - 2);
+    expect(frame.bbox.x1).toBeLessThanOrEqual(free.x + free.w + 2);
+    expect(frame.bbox.y0).toBeGreaterThanOrEqual(free.y - 2);
+    expect(frame.bbox.y1).toBeLessThanOrEqual(free.y + free.h + 2);
   });
 
   it("ignores a closed sheet and the transparent sheet in walk or guide", () => {

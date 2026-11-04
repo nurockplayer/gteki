@@ -339,7 +339,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   width: var(--minimap-size); color: var(--text); font-size: 11px;
 }
 .minimap[hidden], .minimap [hidden], .app[data-mode="overview"] .minimap { display: none; }
-.minimap-body { position: relative; display: grid; gap: 4px; padding-bottom: 6px; border-radius: 95px 95px 12px 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, .35); box-shadow: var(--shadow); }
+.minimap-body { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding-bottom: 6px; border-radius: 95px 95px 12px 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, .35); box-shadow: var(--shadow); }
 /* Floor picker (#220): a pill over the map's lower rim, so it adds no height to the HUD. */
 .minimap-floor { position: absolute; top: calc(var(--minimap-size) - 31px); left: 50%; transform: translateX(-50%); max-width: calc(var(--minimap-size) - 56px); min-height: 22px; padding: 1px 6px; font-size: 10px; background: rgba(11, 24, 34, .92); border: 1px solid rgba(94, 240, 255, .35); border-radius: 11px; }
 .minimap-map { display: block; width: 100%; aspect-ratio: 1; }
@@ -365,24 +365,26 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .minimap-route-label div { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .minimap-notice { padding: 0 6px; color: var(--muted); font-size: 10px; line-height: 13px; text-align: center; }
 .minimap-controls { display: flex; justify-content: center; gap: 4px; padding: 0 4px; }
+.minimap-zoom { align-items: center; }
+.minimap-zoom button { min-width: 28px; }
 .minimap-controls button, .minimap-reopen { min-height: 28px; padding: 3px 6px; font-size: 11px; }
 .minimap-orientation[aria-pressed="true"] { border-color: #5ef0ff; color: #5ef0ff; }
 .minimap-collapse { flex: none; min-width: 28px; }
 .minimap[data-collapsed="true"] { width: auto; }
 .minimap-reopen { background: var(--glass-strong); }
-.app:has(.minimap:not([hidden])) .hint { top: calc(60px + env(safe-area-inset-top) + 190px + 120px); }
+.app:has(.minimap:not([hidden])) .hint { top: calc(60px + env(safe-area-inset-top) + 190px + 190px); }
 .app:has(.minimap:not([hidden])[data-collapsed="true"]) .hint { top: calc(100px + env(safe-area-inset-top)); }
 @media (max-width: 720px) {
   .minimap { --minimap-size: 128px; }
   .minimap-controls button { font-size: 10px; padding-inline: 4px; }
-  .app:has(.minimap:not([hidden])) .hint { top: calc(60px + env(safe-area-inset-top) + 128px + 120px); }
+  .app:has(.minimap:not([hidden])) .hint { top: calc(60px + env(safe-area-inset-top) + 128px + 190px); }
   .app:has(.minimap:not([hidden])[data-collapsed="true"]) .hint { top: calc(100px + env(safe-area-inset-top)); }
   .app:is([data-mode="walk"], [data-mode="guide"]):has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 128px + 8px); }
 }
 /* Desktop/tablet: the 190px minimap overlaps the instruction band too. A collapsed minimap is
    only its small reopen button, so it keeps no inset. The guide band right of the search panel
    is narrower than ~260px until 906px viewport width, so there the instruction drops below the
-   minimap (same 190px + 120px clearance as .hint above) instead of squeezing beside it. */
+   minimap (same 190px + 190px clearance as .hint above) instead of squeezing beside it. */
 @media (min-width: 721px) {
   .app[data-mode="walk"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 190px + 8px); }
 }
@@ -390,7 +392,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .app[data-mode="guide"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 190px + 8px); }
 }
 @media (min-width: 721px) and (max-width: 905px) {
-  .app[data-mode="guide"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { top: calc(60px + env(safe-area-inset-top) + 190px + 120px); }
+  .app[data-mode="guide"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { top: calc(60px + env(safe-area-inset-top) + 190px + 190px); }
 }
 /* Tap/click the HUD map for the full-width one (#220 follow-up). */
 .minimap-map { cursor: zoom-in; }
