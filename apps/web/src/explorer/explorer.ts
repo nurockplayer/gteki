@@ -403,6 +403,13 @@ export class Explorer {
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
+    // Mesh callbacks run after Three uploads instance matrices. Prepare this dynamic batch before upload too.
+    if (this.quality === "low") this.scene.onBeforeRender = (renderer, scene, camera) => {
+      const steps = this.stationScene?.root.getObjectByName("escalator-steps:all");
+      if (steps instanceof THREE.InstancedMesh) {
+        steps.onBeforeRender(renderer, scene, camera, steps.geometry, steps.material as THREE.Material, null as never);
+      }
+    };
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
