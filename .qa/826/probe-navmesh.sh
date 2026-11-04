@@ -6,7 +6,7 @@
 set -eu
 station="${1:?usage: probe-navmesh.sh <station>}"
 export QA_OUT=".qa/826/probe"
-mkdir -p "$QA_OUT"
+mkdir -p "$QA_OUT/$station"
 python3 - <<'PY'
 import os
 from pathlib import Path
