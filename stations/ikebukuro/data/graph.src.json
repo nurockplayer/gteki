@@ -5121,6 +5121,16 @@
     {
      "lang": "en",
      "text": "Directions end on the west Central Passage approach to Central Gate 2 shown in the January 2022 Toshima guide. The exact gate opening is not verified."
+    },
+    {
+     "lang": "ja",
+     "text": "案内は中央通路西側の通路上から始まります。2022年1月版の豊島区案内図にある中央2改札への通路側の案内で、改札口の正確な位置は未確認です。",
+     "at": "origin"
+    },
+    {
+     "lang": "en",
+     "text": "Directions start on the west Central Passage approach to Central Gate 2 shown in the January 2022 Toshima guide. The exact gate opening is not verified.",
+     "at": "origin"
     }
    ]
   },
