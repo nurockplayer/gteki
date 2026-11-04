@@ -154,12 +154,14 @@ export interface StationSceneModule {
   navmeshPaths?: () => Promise<NavmeshPaths | null>;
 }
 
-/** One walk edge's baked navmesh polylines in the station ENU frame ([x, y, z] metres), snapped end to end. */
+/** Baked guide paths in station ENU ([x, y, z] metres); suspectPolyline marks unvalidated graph geometry. */
 export interface NavmeshPaths {
   version: 1;
   station: string;
   frame: "ENU";
-  edges: Record<string, { forward?: [number, number, number][]; reverse?: [number, number, number][] }>;
+  edges: Record<string, { forward?: [number, number, number][]; reverse?: [number, number, number][]; suspectPolyline?:true }>;
+  /** Navmesh junction paths keyed by directed edge pair. */
+  joins?: Record<string, [number, number, number][]>;
 }
 
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);

@@ -51,6 +51,21 @@ describe("clip baseline ratchet",()=>{
   });
 });
 
+it("detects stale suspect guide flags even when coordinates match",()=>{
+  const forward=[[0,0,0],[1,0,0]];
+  expect(navPathsDiff({edge:{forward}},{edge:{forward,suspectPolyline:true}}).moved).toEqual(["edge:suspectPolyline"]);
+});
+
+it("admits the ruling-C suspect counters once, then rejects growth",()=>{
+  const base=makeClipBaseline({},0,{invalidJoins:0,routablePairs:10,failedRoutePairs:0,suspectPolyline:5,suspectPolylineEdges:2});
+  const head=makeClipBaseline({},0,{invalidJoins:0,routablePairs:10,failedRoutePairs:0,suspectPolyline:6,suspectPolylineEdges:3});
+  expect(clipBaselineDiff(base,head).increased).toEqual(expect.arrayContaining(["total.suspectPolyline (5 → 6)","total.suspectPolylineEdges (2 → 3)"]));
+  const legacy=JSON.parse(JSON.stringify(base));delete legacy.total.suspectPolyline;delete legacy.total.suspectPolylineEdges;
+  expect(clipBaselineDiff(legacy,head).increased).toEqual([]);
+  expect(()=>clipBaselineDiff(head,legacy)).toThrow("invalid coverage: suspectPolyline");
+  expect(clipBaselineDiff(head,base).lowered).toEqual(expect.arrayContaining(["total.suspectPolyline (6 → 5)","total.suspectPolylineEdges (3 → 2)"]));
+});
+
 describe("one-time gate reset",()=>{
   const c=(connectorWallHits:number)=>({connectorWallHits,fallbackWallHits:0,navmeshWallHits:0,offFloor:0});
   const base:GateSnapshot={fallback:["a"],suspect:[],detours:[],clipBaseline:makeClipBaseline({a:c(1)},0)};
@@ -88,6 +103,9 @@ describe("public station navmesh gate",()=>{
     const suspectComputed=result.audit.bakeProvenance.suspectEdges as {edgeId:string}[], suspectDiff=fallbackDiff(suspectAllowed,suspectComputed);
     console.log(`${station} gate ${Math.round(result.elapsedMs)} ms, bake ${Math.round(result.audit.bakeProvenance.bakeMs)} ms`);
     const errors:string[]=[];
+    const flagged=Object.entries(result.audit.navPaths as Record<string,{suspectPolyline?:true}>).filter(([,paths])=>paths.suspectPolyline).map(([id])=>id).sort();
+    if(JSON.stringify(flagged)!==JSON.stringify(suspectComputed.map(e=>e.edgeId).sort())) errors.push("suspect guide flags disagree with station suspect list");
+    if(result.audit.completeAuditedRoutes+result.audit.incompleteRoutes+(result.audit.suspectPolyline?.routes ?? 0)!==result.audit.auditedRoutePairs) errors.push("route outcome classes overlap or lose coverage");
     const committedPaths=JSON.parse(fs.readFileSync(path.resolve(`stations/${station}/navmesh-paths.json`),"utf8"));
     const committedDetours=(committedPaths.detours ?? []) as string[];
     // Shrink-only from the PR base, unless the PR adds a reviewed one-time reset record (navmesh-gate-reset.ts).
@@ -106,6 +124,9 @@ describe("public station navmesh gate",()=>{
     if(clips.increased.length) errors.push(`clip baseline exceeded: ${clips.increased.join(", ")}`);
     if(clips.lowered.length) errors.push(`lower the baseline for: ${clips.lowered.join(", ")}`);
     const pathsDiff=navPathsDiff(committedPaths.edges,result.audit.navPaths);
+    const asPaths=(joins:Record<string,number[][]>)=>Object.fromEntries(Object.entries(joins ?? {}).map(([key,forward])=>[key,{forward}]));
+    const joinsDiff=navPathsDiff(asPaths(committedPaths.joins),asPaths(result.audit.navJoins));
+    if (joinsDiff.missing.length+joinsDiff.extra.length+joinsDiff.moved.length) errors.push("navmesh junction paths stale: regenerate with --write-paths");
     const staleKeys=[...pathsDiff.missing,...pathsDiff.extra,...pathsDiff.moved].slice(0,10);
     const rejected=(result.audit.navPathsRejected ?? []) as string[];
     if(rejected.length) errors.push(`navmesh walk paths leave the floor or meet a wall (fix the scene or greybox, or list the edge as a fallback): ${rejected.join(", ")}`);

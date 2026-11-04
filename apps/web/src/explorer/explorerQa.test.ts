@@ -181,3 +181,14 @@ describe("Explorer QA hooks", () => {
     expect(qa(state).signClearance()).toMatchObject({ inside: true, count: 1 });
   });
 });
+
+
+it("fails closed when a public navmesh load failed while preserving intentional graph views", () => {
+  const state = qaStand() as any;
+  Object.assign(state, { navmeshPaths:null, stationScene:{}, station:{key:"public",scene:{navmeshPaths:async()=>null}} });
+  expect(state.navmeshRoutePaths()).toEqual({version:1,station:"public",frame:"ENU",edges:{}});
+  state.stationScene=null;
+  expect(state.navmeshRoutePaths()).toBeNull();
+  state.stationScene={}; state.station.scene={};
+  expect(state.navmeshRoutePaths()).toBeNull();
+});
