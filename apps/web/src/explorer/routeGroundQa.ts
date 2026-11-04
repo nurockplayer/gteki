@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { RouteStep } from "@gteki/navigation";
+import type { PolylinePoint, RouteStep } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import { roleOf } from "@gteki/scene-api";
 import type { StationBundle } from "@gteki/schema";
@@ -19,7 +19,7 @@ export function darkSampleDistances(total: number, stops: readonly number[]): nu
 }
 
 /** A deterministic half-metre sampling of the drawn route, including both ends. */
-export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean, connectorPaths?: ReadonlyMap<string, readonly V3[]>) {
+export function routeGroundCounts(points: readonly PolylinePoint[], ground: (p: THREE.Vector3) => number | null, verticalSteps: readonly RouteStep[], bundle: StationBundle | null, nearMesh: (p: THREE.Vector3, radius: number, edgeId: string) => boolean, connectorPaths?: ReadonlyMap<string, readonly V3[]>) {
   const pts = points.map((p) => R(p.x, p.y, p.z));
   let samples = 0, noFloor = 0;
   if (pts.length === 1) {
@@ -29,14 +29,26 @@ export function routeGroundCounts(points: readonly V3[], ground: (p: THREE.Vecto
   }
   if (pts.length > 1) {
     const cum = cumulativeLengths(pts), total = cum.at(-1)!;
+    const elevatorSpans: { start: number; end: number }[] = [];
+    for (let i = 1; i < points.length;) {
+      const stepIndex = points[i]!.stepIndex;
+      let end = i;
+      while (end + 1 < points.length && points[end + 1]!.stepIndex === stepIndex) end++;
+      // A lift ride has no supporting floor between its landings. Same-level stubs still need ground.
+      if (verticalSteps[stepIndex]?.mode === "elevator" && Math.abs(pts[end]!.y - pts[i - 1]!.y) > 0.5)
+        elevatorSpans.push({ start: cum[i - 1]!, end: cum[end]! });
+      i = end + 1;
+    }
     const at = (s: number) => {
+      if (elevatorSpans.some(({ start, end }) => s > start + 1e-6 && s < end - 1e-6)) return;
       const p = samplePolyline(pts, cum, s);
       const y = ground(new THREE.Vector3(p.x, p.y, p.z));
       samples++;
       if (y === null || Math.abs(y - p.y) > 0.3) noFloor++;
     };
-    for (let s = 0; s < total; s += 0.5) at(s);
-    at(total);
+    const distances = new Set([total, ...elevatorSpans.flatMap(({ start, end }) => [start, end])]);
+    for (let s = 0; s < total; s += 0.5) distances.add(s);
+    for (const s of [...distances].sort((a, b) => a - b)) at(s);
   }
   let verticalWithoutConnector = 0;
   if (bundle) {
