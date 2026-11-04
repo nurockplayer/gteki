@@ -30,6 +30,8 @@ const SPECS = {
   hours: { text: "string?", sourceUrl: "string", retrievedAt: "string", basis: "string", status: "string" },
   buildingHours: { text: "string?", sourceUrl: "string", retrievedAt: "string", basis: "string", status: "string", building: "array", floorRange: "string|null", note: "array?" },
   text: { lang: "string", text: "string" },
+  // A POI note may name its side: `at: "origin"` opens the route, absent means the arrival side (#799).
+  poiNote: { lang: "string", text: "string", at: "string?" },
   operator: { id: "string", names: "array" },
   code: { operatorId: "string", code: "string" },
   license: { name: "string|texts", url: "string" },
@@ -113,6 +115,14 @@ class ShapeChecker {
 
   texts(list: unknown, where: string): void {
     this.each(list, SPECS.text, where);
+  }
+
+  /** POI notes: localized text plus the optional route side they belong to (#799). */
+  poiNotes(list: unknown, where: string): void {
+    this.each(list, SPECS.poiNote, where, (note, at) => {
+      if (note.at !== undefined && note.at !== "origin")
+        this.issues.push({ level: "error", code: "shape.type", message: `${at}.at: expected "origin", got ${JSON.stringify(note.at)}`, ref: at });
+    });
   }
 
   /** Coverage text: a legacy plain string, or localized text in the POI-name shape (#259). */
@@ -266,7 +276,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown, ten
       c.evidence(poi.evidence, `${where}.evidence`);
       c.texts(poi.names, `${where}.names`);
       c.texts(poi.aliases, `${where}.aliases`);
-      c.texts(poi.notes, `${where}.notes`);
+      c.poiNotes(poi.notes, `${where}.notes`);
       c.texts(poi.descriptions, `${where}.descriptions`);
       c.strings(poi.connectorNodeIds, `${where}.connectorNodeIds`);
       if (poi.displayPosition !== null) c.check(poi.displayPosition, SPECS.position, `${where}.displayPosition`);

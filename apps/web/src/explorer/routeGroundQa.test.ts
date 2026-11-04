@@ -1,5 +1,6 @@
 import { expect, it, vi } from "vitest";
 import * as THREE from "three";
+import { createRouter, routePolyline } from "@gteki/navigation";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import { routeGroundCounts, sceneMeshNear, sceneMeshProbe } from "./routeGroundQa.ts";
 
@@ -50,11 +51,42 @@ it("checks the edge of the nearby triangles inside a shared connector mesh", () 
   expect(sceneMeshNear([mesh], point, 1, "second")).toBe(false);
 });
 
-it("reports missing vertical connector and unsupported interior on an elevator edge", () => {
+it("exempts elevator ride interiors while checking both landings and the connector", () => {
   const bundle = createSyntheticBundle([syntheticEdge("lift", "a", "upper", { mode: "elevator" })]);
-  const steps = [{ edgeId: "lift", mode: "elevator", fromNodeId: "a", toNodeId: "upper", reversed: false, lengthM: 4, fromFloorId: "concourse", toFloorId: "upper" }] as Parameters<typeof routeGroundCounts>[2];
-  const points = [{ x: 10, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }];
-  expect(routeGroundCounts(points, (p) => p.y === 0 || p.y === 4 ? p.y : null, steps, bundle, () => false)).toMatchObject({ samples: 9, noFloor: 7, verticalWithoutConnector: 1 });
+  for (const reversed of [false, true]) {
+    const route = createRouter(bundle).route(reversed ? "upper" : "a", reversed ? "a" : "upper");
+    if (!route.ok) throw new Error(route.reason);
+    const points = routePolyline(bundle, route);
+    const floor = (p: THREE.Vector3) => p.y === 0 || p.y === 4 ? p.y : null;
+    expect(routeGroundCounts(points, floor, route.steps, bundle, () => false)).toEqual({ samples: 2, noFloor: 0, verticalWithoutConnector: 1 });
+    expect(routeGroundCounts(points, () => null, route.steps, bundle, () => true)).toEqual({ samples: 2, noFloor: 2, verticalWithoutConnector: 0 });
+    for (const mode of ["stairs", "escalator"] as const) {
+      expect(routeGroundCounts(points, floor, route.steps.map(step => ({ ...step, mode })), bundle, () => true)).toMatchObject({ samples: 9, noFloor: 7 });
+    }
+  }
+});
+
+it("checks walking legs and off-grid elevator landings around a generated ride", () => {
+  const bundle = createSyntheticBundle([
+    syntheticEdge("approach", "start", "a"), syntheticEdge("lift", "a", "upper", { mode: "elevator" }), syntheticEdge("exit", "upper", "upper-2"),
+  ]);
+  bundle.nodes.find(n => n.id === "a")!.position = { x: 0.8, y: 0, z: 0 };
+  bundle.nodes.find(n => n.id === "upper")!.position = { x: 0.8, y: 0, z: 4.2 };
+  bundle.nodes.find(n => n.id === "upper-2")!.position = { x: 1.6, y: 0, z: 4.2 };
+  const route = createRouter(bundle).route("start", "upper-2");
+  if (!route.ok) throw new Error(route.reason);
+  const paths = new Map([["lift", [{ x: 0.8, y: 0, z: 0 }, { x: 1.3, y: 0, z: 0 }, { x: 1.3, y: 0, z: 4.2 }, { x: 0.8, y: 0, z: 4.2 }]]]);
+  const ground = vi.fn((p: THREE.Vector3) => Math.abs(p.x - 0.8) < 1e-6 ? p.y : null);
+  expect(routeGroundCounts(routePolyline(bundle, route, paths), ground, route.steps, bundle, () => true)).toMatchObject({ samples: 6, noFloor: 4 });
+  expect(ground.mock.calls.some(([p]) => p.distanceTo(new THREE.Vector3(0.8, 0, 0)) < 1e-6)).toBe(true);
+  expect(ground.mock.calls.some(([p]) => p.distanceTo(new THREE.Vector3(0.8, 4.2, 0)) < 1e-6)).toBe(true);
+});
+
+it("keeps floor checks on a same-level elevator-labelled stub", () => {
+  const bundle = createSyntheticBundle([syntheticEdge("stub", "start", "a", { mode: "elevator" })]);
+  const route = createRouter(bundle).route("start", "a");
+  if (!route.ok) throw new Error(route.reason);
+  expect(routeGroundCounts(routePolyline(bundle, route), () => null, route.steps, bundle, () => true)).toMatchObject({ samples: 21, noFloor: 21 });
 });
 
 
