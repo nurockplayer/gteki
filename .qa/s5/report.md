@@ -39,7 +39,7 @@ Exit stairs are stairs whose endpoint is a connector node of a public exit POI. 
 
 **Shrink-only FAIL.** Ikebukuro additionally grows connector wall samples 0 → 3604 and has 424 connector samples without floor; 36 published path directions are rejected. Shinjuku has eight rejected directions; six suspect edges enter the failure list. The first implementation used direct end-to-end off-mesh link segments, which do not preserve the built bends/landings of the Ikebukuro stairs. The final correction retains the built connector interior and replaces only its ends with the attached link snaps; it never restores graph polylines. These are real scene results, not a synthetic-only claim.
 
-All eight generated gate files were copied out of the disposable container into `.qa/s5/regen-output`. They were **not** promoted into `stations/`: doing so would violate the required shrink-only gate. Raw audit JSON stays local and untracked. The recorded comparison command is `python3 .qa/s5/compare-gates.py`; its result is `SHRINK-ONLY FAIL` (individual growth entries follow).
+All eight generated gate files were copied out of the disposable container into `.qa/s5/regen-output`. They were **not** promoted into `stations/`: doing so would violate the required shrink-only gate. Raw audit JSON stays local and untracked. The comparator lives at `.qa/s5/r5/compare.py` (the old `.qa/s5/compare-gates.py` reported failures but exited 0, so it was removed); the recorded result is `SHRINK-ONLY FAIL` (individual growth entries follow).
 
 Oracle corrections after this measurement block generic fare-gate bypasses, enforce rounded published join endpoints, retain the existing local join-length bound, and fail closed on public navmesh-load errors. The final corrected measurement is recorded separately below; this first table does not claim to measure those corrections.
 
@@ -106,7 +106,7 @@ Completed 2026-11-03 20:20 JST, exit 0. Last generator lines:
 | ikebukuro | 1 → 0 | 62 → 120 | 0 → 120 | 0 → 0 | 0 → 0 | 1 → 0 |
 | shinjuku | 6 → 15 | 146 → 208 | 0 → 0 | 2 → 2 | 0 → 0 | 0 → 1 |
 
-`python3 .qa/s5/compare-gates.py .qa/s5/final-output` reports **SHRINK-ONLY FAIL**. Both stations preserve routable/failed-pair coverage and have zero offFloor; connector samples without floor are now zero in both. Ikebukuro still grows connector wall samples 0 → 58 on `ne_j__x26` and has 120 invalid-join routes. Its only rejected published directions are `ne_j__x26:forward` and `ne_j__x26:reverse`. Shinjuku adds six suspect-edge failures and three gate failures; eight path directions remain rejected. Its detour list no longer grows after rejecting fare-gate bypasses.
+The comparator is now `.qa/s5/r5/compare.py`; the historical run over `.qa/s5/final-output` reported **SHRINK-ONLY FAIL**. Both stations preserve routable/failed-pair coverage and have zero offFloor; connector samples without floor are now zero in both. Ikebukuro still grows connector wall samples 0 → 58 on `ne_j__x26` and has 120 invalid-join routes. Its only rejected published directions are `ne_j__x26:forward` and `ne_j__x26:reverse`. Shinjuku adds six suspect-edge failures and three gate failures; eight path directions remain rejected. Its detour list no longer grows after rejecting fare-gate bypasses.
 
 All eight final generated files were copied back to `.qa/s5/final-output`. They remain untracked and were not promoted into the station directories because the required gate failed twice. No baseline reset, exemption list, height constant, probe, or legacy-builder patch was added.
 
