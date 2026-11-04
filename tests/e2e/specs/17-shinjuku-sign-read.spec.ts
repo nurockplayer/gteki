@@ -64,6 +64,16 @@ for (const r of routes) {
     const pending = onRoute.flatMap((t) => STANDOFFS.filter((d) => t.s! - d > 0.5).map((d) => ({ sign: t.id, d, at: t.s! - d })));
     await page.locator(".sheet .card.route button.primary").click();
     await expect.poll(() => guideMode(page)).toBe("guide");
+    // #838: the HUD (guide box, Ride-train button, control bar) keeps clear of the overhead-sign band, and on a
+    // phone ends above the view centre; the compact phone minimap does too.
+    const view = page.viewportSize()!;
+    const phone = testInfo.project.name.startsWith("phone");
+    const hud = (await page.locator(".hud").boundingBox())!;
+    expect.soft(hud.y, "HUD clears the overhead-sign band").toBeGreaterThanOrEqual(view.height * (phone ? 0.7 : 0.4));
+    if (phone) {
+      const map = (await page.locator(".minimap").boundingBox())!;
+      expect.soft(map.y + map.height, "minimap clears the view centre").toBeLessThanOrEqual(view.height * 0.3);
+    }
     const t0 = Date.now();
     while (pending.length && Date.now() - t0 < 360_000 && (await guideMode(page)) === "guide") {
       const av = await hooks.avatar(page);

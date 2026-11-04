@@ -188,8 +188,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
 /* ---- HUD ---- */
 .hud { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra)); display: grid; justify-items: center; gap: 8px; pointer-events: none; }
 .hud > * { pointer-events: auto; }
-/* The guide line box holds the mascot beside the instruction (never on top of it); the instruction keeps priority and the mascot figure shrinks first. */
-.hud-line { position: fixed; top: calc(64px + env(safe-area-inset-top)); left: 16px; right: 16px; width: fit-content; margin-inline: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+/* The guide line box holds the mascot beside the instruction (never on top of it); the instruction keeps priority and the mascot figure shrinks first.
+   It sits in the bottom HUD stack, above the controls, so overhead signs in the upper view band stay clear (#838). */
+.hud-line { width: fit-content; max-width: min(560px, calc(100vw - 32px)); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
 .hud-instruction { flex: 1 1 auto; min-width: 0; padding: 10px 18px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 18px; font-weight: 700; box-shadow: 0 0 30px rgba(94, 240, 255, 0.2); }
 .hud-row { display: flex; gap: 6px; padding: 6px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(12px); }
 /* Guide playback controls: ‹ pause › speed end. Previous/next are compact icon buttons; the group never wraps. */
@@ -199,12 +200,6 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .hud-guide .guide-step:disabled:active { transform: none; }
 .app[data-mode="walk"] .sheet, .app[data-mode="guide"] .sheet { opacity: 0.0; pointer-events: none; }
 .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { left: auto; right: 16px; transform: none; justify-items: end; }
-/* Centred in the band between its left and right insets (fit-content + auto margins); on desktop the guide's band starts right of the From/To panel. */
-@media (min-width: 721px) {
-  .app[data-mode="guide"] .hud-line { left: calc(16px + min(400px, 100vw - 32px) + 16px); }
-  /* The toast below it shares that band's centre. */
-  .app[data-mode="guide"] .toast { left: calc(50% + (16px + min(400px, 100vw - 32px)) / 2); }
-}
 
 .hint { position: absolute; z-index: 2; right: 16px; top: calc(60px + env(safe-area-inset-top)); font-size: 11px; color: var(--muted); padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.35); display: none; }
 .app[data-mode="walk"] .hint { display: block; }
@@ -276,7 +271,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .joystick-knob { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(94, 240, 255, 0.55); box-shadow: 0 0 18px rgba(94, 240, 255, 0.5); }
 
 /* ---- toast & dialog ---- */
-.toast { position: absolute; z-index: 9; left: 50%; top: var(--hud-clear, calc(70px + env(safe-area-inset-top))); transform: translateX(-50%) translateY(-8px); padding: 8px 14px; border-radius: 10px; background: var(--glass-strong); opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-size: 13px; }
+/* The toast keeps to the top band, unless the guide box (now bottom-anchored, #838) is up: then it sits just above it. */
+.toast { position: absolute; z-index: 9; left: 50%; top: calc(70px + env(safe-area-inset-top)); transform: translateX(-50%) translateY(-8px); padding: 8px 14px; border-radius: 10px; background: var(--glass-strong); opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-size: 13px; }
+.app:has(.hud-line) .toast { top: auto; bottom: var(--hud-clear, 0px); }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .coverage { max-width: min(560px, calc(100vw - 32px)); max-height: 80vh; border-radius: var(--radius); border: 1px solid var(--line); background: var(--glass-strong); color: var(--text); padding: 18px 20px; }
 .coverage::backdrop { background: rgba(0, 0, 0, 0.5); }
@@ -306,20 +303,29 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .station-select { max-width: 52vw; font-size: 13px; }
   .top-actions button { padding: 7px 9px; font-size: 12px; }
   .panel { left: 16px; right: 16px; width: auto; padding: 10px; max-height: calc(100% - 58px - env(safe-area-inset-top) - var(--credit-extra) - env(safe-area-inset-bottom) - 8px); overflow-y: auto; }
+  /* The overview is the map: the search panel is shortened (its content scrolls) so it leaves most of the slice visible (#838). */
+  .app[data-mode="overview"] .panel { max-height: 40vh; }
   .field { grid-template-columns: 52px 1fr; }
   .swap { grid-row: 2 / 3; top: -4px; }
   .results { position: static; grid-column: 1 / -1; margin-left: 60px; }
   .sheet { left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + var(--credit-extra)); width: auto; border-radius: var(--radius) var(--radius) 0 0; max-height: 38vh; }
   .app:not(.has-credit) .sheet { bottom: 0; padding-bottom: env(safe-area-inset-bottom); }
   .app[data-mode="walk"] .panel, .app[data-mode="guide"] .panel { display: none; }
-  .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { right: 16px; left: 16px; justify-items: stretch; }
+  .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { right: 16px; left: 16px; bottom: calc(10px + env(safe-area-inset-bottom) + var(--credit-extra)); justify-items: stretch; gap: 6px; }
   .hud-row { flex-wrap: wrap; justify-content: center; }
   /* 375 px: the group gets the row's full width (343 - 12 padding) and its five buttons fit on one line; smaller screens squeeze the text buttons rather than wrap. */
   .hud-guide { flex: 1 1 100%; min-width: 0; gap: 4px; justify-content: center; }
   .hud-guide button { min-width: 0; padding: 8px 4px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   /* 44 x 44 hit area for previous/next (the text buttons stretch to the same height); the 24 px it adds comes out of the text buttons' padding and shrink. */
   .hud-guide .guide-step { flex: 0 0 44px; min-width: 44px; min-height: 44px; padding: 0; font-size: 20px; }
-  .hud-instruction { font-size: 16px; text-align: center; }
+  /* Mode buttons share one row instead of wrapping to two: the guide stack keeps the view centre clear (#838). */
+  .hud-row > button { padding: 7px 8px; font-size: 12px; }
+  .hud-line { width: 100%; }
+  /* Two lines of instruction at most; the mascot's chatter bubble yields on the phone (its figure stays). */
+  .hud-instruction { font-size: 15px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hud-line .mascot-bubble { display: none; }
+  /* The guide screen keeps the map's circle and controls, dropping its text block so it ends above the view centre (#838). */
+  .app[data-mode="guide"] .minimap-label, .app[data-mode="guide"] .minimap-route-label, .app[data-mode="guide"] .minimap-notice { display: none; }
 }
 @media (max-width: 480px) {
   .mascot-figure { width: 32px; height: 32px; }
@@ -381,20 +387,6 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .minimap-controls button { padding-inline: 4px; }
   .app:has(.minimap:not([hidden])) .hint { top: calc(60px + env(safe-area-inset-top) + 128px + 190px); }
   .app:has(.minimap:not([hidden])[data-collapsed="true"]) .hint { top: calc(100px + env(safe-area-inset-top)); }
-  .app:is([data-mode="walk"], [data-mode="guide"]):has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 128px + 8px); }
-}
-/* Desktop/tablet: the 190px minimap overlaps the instruction band too. A collapsed minimap is
-   only its small reopen button, so it keeps no inset. The guide band right of the search panel
-   is narrower than ~260px until 906px viewport width, so there the instruction drops below the
-   minimap (same 190px + 190px clearance as .hint above) instead of squeezing beside it. */
-@media (min-width: 721px) {
-  .app[data-mode="walk"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 190px + 8px); }
-}
-@media (min-width: 906px) {
-  .app[data-mode="guide"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { right: calc(16px + 190px + 8px); }
-}
-@media (min-width: 721px) and (max-width: 905px) {
-  .app[data-mode="guide"]:has(.minimap:not([hidden]):not([data-collapsed="true"])) .hud-line { top: calc(60px + env(safe-area-inset-top) + 190px + 190px); }
 }
 /* Tap/click the HUD map for the full-width one (#220 follow-up). */
 .minimap-map { cursor: zoom-in; }

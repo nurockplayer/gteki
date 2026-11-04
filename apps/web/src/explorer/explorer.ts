@@ -391,6 +391,8 @@ export class Explorer {
   private panelEl: HTMLElement | null = null;
   /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
   private creditEl: HTMLElement | null = null;
+  /** The greybox disclaimer badge; no POI label is drawn over it (#838). */
+  private legendEl: HTMLElement | null = null;
   /** The route sheet: a full-width bottom sheet on a phone, so the overview keeps clear of it there (#385). */
   private sheetEl: HTMLElement | null = null;
   private minimapEl: HTMLElement | null = null;
@@ -1305,6 +1307,15 @@ export class Explorer {
     this.refitOverview();
   }
 
+  /**
+   * Name the greybox disclaimer badge (the app's `.greybox-legend`). The overview declutter drops a POI
+   * label that would land on it or on the credit line (#838). Null: the element is ignored.
+   */
+  setLegend(el: HTMLElement | null): void {
+    this.legendEl = el;
+    this.declutterDirty = true;
+  }
+
   /** Name the top-right minimap occluder; hidden maps leave the canvas free. */
   setMinimap(el: HTMLElement | null): void {
     this.minimapEl = el;
@@ -1732,6 +1743,8 @@ export class Explorer {
     if (visible !== this.greyboxLegendVisible) {
       this.greyboxLegendVisible = visible;
       this.events.onGreyboxLegend?.(visible);
+      // A badge that just appeared must push labels off itself on the next overview pass (#838).
+      this.declutterDirty = true;
     }
   }
 
@@ -1989,6 +2002,14 @@ export class Explorer {
       byId.set(l.poiId, l);
     }
     const keep = declutter(items);
+    // The credit footer and the disclaimer badge are never text under a label: drop a chip that lands on them (#838).
+    for (const el of [this.creditEl, this.legendEl]) {
+      if (!el || el.getClientRects().length === 0) continue;
+      const q = el.getBoundingClientRect();
+      for (const it of items) {
+        if (it.x - it.w / 2 < q.right && it.x + it.w / 2 > q.left && it.y - it.h / 2 < q.bottom && it.y + it.h / 2 > q.top) keep.delete(it.id);
+      }
+    }
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
     // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
