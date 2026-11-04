@@ -140,3 +140,11 @@ The merged public bake emitted and attached all eight repaired links, with
 zero bake suspects and zero audit-used suspects. The shrink-only comparison
 against main's saved baseline passed with no new fallback edges, detours or
 per-edge clips; all public totals in the table above remain unchanged.
+
+Merged-head CI identified four test expectations that the earlier container
+setup timeouts had not exercised. The B6 fence geometry is byte-equivalent
+except its generated ordinal changes from 628 to 623 after five fences are
+removed; the replay still uses the same endpoint. The repeated kit wall count
+is 14,906, matching the measured baseline. Both drawn-roof queries exclude
+hanging linear lights. The merged high-quality texture report measures
+107.503 MiB signage and 186.503 MiB total; texture-density settings are retained.

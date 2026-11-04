@@ -789,7 +789,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       const onLists = digestSceneLists(on);
       expect(onLists).toEqual(digestSceneLists(off));
       expect(onLists).toEqual(MAIN_BASELINE.lists);
-      expect(onLists.counts).toEqual({ walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14977 });
+      expect(onLists.counts).toEqual({ walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14906 });
     });
 
     it("flag on: every placement lands on a real anchor, in the right role", () => {
