@@ -8,7 +8,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { Floor, Poi, StationBundle } from "@gteki/schema";
 import { createRouter, routeBetween, type RouteEndpoint, type RouteProfile, type RouteResult } from "@gteki/navigation";
 import { createSearchIndex } from "@gteki/search";
-import { buildStation } from "../../scene/build.ts";
+import { buildStation, installLowTierSteps } from "../../scene/build.ts";
 import { stationSpawn } from "../../scene/spawn.ts";
 import { followCameraEnvironment, spawnView, LANE_CAMERA } from "./spawn-view.ts";
 import { pointInRings, type Plan } from "../../scene/layout.ts";
@@ -115,6 +115,8 @@ const camera = new THREE.PerspectiveCamera(LANE_CAMERA.fov, innerWidth / innerHe
 
 const station = startup.phase("station", () => buildStation(bundle, plan, { quality }));
 scene.add(station.root);
+// Low tier packs its one shared step batch from this hook, before Three uploads instance matrices (#822).
+installLowTierSteps(scene, station);
 const world = station.world;
 const layout = station.layout;
 
