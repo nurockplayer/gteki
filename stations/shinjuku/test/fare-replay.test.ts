@@ -69,7 +69,7 @@ describe("actual walker fence replay", () => {
   }, 30_000);
   it("replays the actual B6 Float32 corner fringe without admitting a body into unknown floor", () => {
     const env = replayEnvironment(built, scene, plan, undefined, { shortcuts: false });
-    const end = replayEnds(built).find(e => e.id === "restricted:f059e99c14b14a8f89235e9b4519ef41:628:a")!;
+    const end = replayEnds(built).find(e => e.id === "restricted:f059e99c14b14a8f89235e9b4519ef41:623:a")!;
     const start = { x: -46.375, y: 205.125, z: -42.869998931884766 };
     expect(env.labels(start, true).mapped).toBe(true);
     const fringe = { x: -46.73906288694196, y: 205.2002590080444, z: start.z };
