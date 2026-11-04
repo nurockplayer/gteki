@@ -238,7 +238,7 @@ export function restrictionDigest(input: string) {
 export function restrictedInputKey(layout: Layout, plan: Plan, bundle: StationBundle, base: Fence[]) {
   // Digest the complete source/graph/layout input; CI compares the fresh derivation
   // and separately requires review of every change to the conflict table.
-  return restrictionDigest(JSON.stringify(["restricted-boundary-v16", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
+  return restrictionDigest(JSON.stringify(["restricted-boundary-v17", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
     plan.levels.map(l => [l.label, l.renderElevationM, l.spaces.filter(s => s.restricted)]),
     bundle.edges.filter(e => e.verification === "verified"),
     bundle.nodes.map(n => [n.id, n.position]), [...layout.nodeZ], layout.gates,
@@ -272,7 +272,7 @@ export function deriveRestrictedAccess(layout: Layout, plan: Plan, bundle: Stati
   return result;
 }
 /** Local centreline depth, not a whole-room or whole-edge blanket exception. */
-export function restrictionAt(p: XY, region: RestrictedRegion, radius = VERIFIED_CORRIDOR_M) {
+export function restrictionAt(p: XY, region: Pick<RestrictedRegion, "source" | "paths">, radius = VERIFIED_CORRIDOR_M) {
   const depth = restrictedDepth(p, region.source);
   if (depth === 0) return { inside: false, depth: 0, permitted: true, corridor: false, edgeDepth: 0 };
   const paths = region.paths.filter(e => distance(p, e.a, e.b) <= radius + 1e-9);
@@ -301,7 +301,7 @@ export function protectFareAndAccess(
 ): FareProtection {
   const fences: Fence[] = [],
     removedAccess: FareProtection["removedAccess"] = [],
-    lifts = liftClearances(bundle);
+    lifts = liftClearances(bundle, plan, layout);
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const paths = bundle.edges
     .filter((e) => e.verification === "verified")
@@ -396,7 +396,7 @@ export function protectFareAndAccess(
     ];
     const onFloor = containsPolygons(floor.map(s => s.rings));
     // No fare or access fence stands in a lift door's clearance (#645 step 2c): every lift door stays open.
-    const inLift = containsPolygons(lifts.filter(l => Math.abs(l.z - lv.z) < .5).flatMap(l => l.rings).map(r => [r]));
+    const levelLifts = lifts.filter(l => Math.abs(l.z - lv.z) < .5);
     // Point membership needs no union. A paid perimeter matters only on mixed-fare floors.
     const free = source?.spaces.filter(s => !s.restricted && s.toll === "free").map(s => s.rings) ?? [];
     const paid = free.length ? union(source?.spaces.filter(s => !s.restricted && s.toll === "paid").map(s => poly(s.rings)) ?? []) : [];
@@ -471,7 +471,7 @@ export function protectFareAndAccess(
             for (const [lo, hi] of merged) {
               for (let i = lo!; i < hi!; i++) {
                 const p = at((i + 0.5) / steps);
-                const yes = keep(p, normal) && !existingWall(p) && !inLift(p) && !routeClear(p, lv.z);
+                const yes = keep(p, normal) && !existingWall(p) && !levelLifts.some(l => l.clear(p, normal)) && !routeClear(p, lv.z);
                 if (yes && !start) start = at(i / steps);
                 if (!yes && start) flush(at(i / steps));
               }
@@ -530,11 +530,9 @@ export function protectFareAndAccess(
   fences.push(...deriveRestrictedFences(layout, restricted, fences, lifts));
   closeBarrierEnds(layout, fences, gates, (a, b, z) => {
     const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / .03));
-    // A join never closes a lift door's clearance again (#645 step 2c).
-    const inLift = containsPolygons(lifts.filter(l => Math.abs(l.z - z) < .5).flatMap(l => l.rings).map(r => [r]));
     for (let i = 0; i <= steps; i++) {
       const p = { x: a.x + (b.x - a.x) * i / steps, y: a.y + (b.y - a.y) * i / steps };
-      if (routeClear(p, z, .3001) || inLift(p)) return false;
+      if (routeClear(p, z, .3001)) return false;
     }
     return true;
   });
@@ -543,20 +541,39 @@ export function protectFareAndAccess(
 }
 
 const restrictedBoundaries = new WeakMap<Layout, { level: string; z: number; points: XY[] }[]>();
-/** Pure general derivation. The generated cache is checked against this in Vitest. */
-/**
- * The door clearance of every lift stop (#645 step 2c): the door's width, clear in front of it, from the same shaft model
- * the greybox connectors build. No fare or access fence, return or join stands in it, so a fence always leaves each lift
- * door open. The shaft square itself is not cleared: a lift the scene models has no greybox shaft wall to keep a
- * restricted space closed there.
+/** Clear only the car footprint and door approaches that share the stop's public/restricted and fare labels.
+ * Probe both sides of a fence: a shaft wall cannot replace a source boundary inside the car square.
  */
-export function liftClearances(bundle: StationBundle): { z: number; rings: XY[][] }[] {
+export function liftClearances(bundle: StationBundle, plan: Plan, layout: Layout) {
   const nodes = new Map(bundle.nodes.map(n => [n.id, n])), floors = new Map(bundle.floors.map(f => [f.id, f]));
   const nodeZ = (id: string) => { const node = nodes.get(id)!; return nodeDisplayZ(node, floors.get(node.floorId)).z; };
-  return liftShafts(bundle, liftRides(bundle, nodeZ), nodeZ).flatMap(shaft => shaft.stops.map(stop => ({ z: stop.z, rings: [liftStopSquare(shaft), liftDoorClearance(stop)] })));
+  // Only the point classification is needed here, not the expensive clipped remainder polygons.
+  const segments = verifiedFloorSegments(layout, plan, bundle);
+  return liftShafts(bundle, liftRides(bundle, nodeZ), nodeZ).flatMap(shaft => shaft.stops.map(stop => {
+    const level = plan.levels.find(l => Math.abs(l.renderElevationM - stop.z) < .5);
+    const spaces = level?.spaces ?? [];
+    const regions = spaces.filter(s => s.restricted).map(s => ({ source: s.rings,
+      paths: segments.filter(e => e.floor === level!.label) }));
+    const publicFloor = containsPolygons(spaces.filter(s => !s.restricted).map(s => s.rings));
+    const network = containsPolygons([...layout.pads, ...layout.linkStrips, ...layout.streetPads]
+      .filter(s => Math.abs(s.z - stop.z) < .5).map(s => s.rings));
+    const paid = containsPolygons(spaces.filter(s => !s.restricted && s.toll === "paid").map(s => s.rings));
+    const free = containsPolygons(spaces.filter(s => !s.restricted && s.toll === "free").map(s => s.rings));
+    const label = (p: XY) => {
+      if (regions.some(r => !restrictionAt(p, r).permitted) || !(publicFloor(p) || network(p))) return undefined;
+      return paid(p) ? "paid" : free(p) ? "free" : "unlabelled";
+    };
+    const own = new Set(stop.nodeIds.map(id => label(nodes.get(id)!.position)).filter(v => v !== undefined));
+    const rs = [liftStopSquare(shaft), liftDoorClearance(stop)], inside = containsPolygons(rs.map(r => [r]));
+    return { z: stop.z, rings: rs, clear: (p: XY, normal: XY) => inside(p) && [-1, 1].every(sign => {
+      const value = label({ x: p.x + normal.x * sign, y: p.y + normal.y * sign });
+      return value !== undefined && own.has(value);
+    }) };
+  }));
 }
 
-export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAccess, base: Fence[], lifts: { z: number; rings: XY[][] }[] = []) {
+/** Pure general derivation. The generated cache is checked against this in Vitest. */
+export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAccess, base: Fence[], lifts: ReturnType<typeof liftClearances> = []) {
   const fences: Fence[] = [], boundaries: { level: string; z: number; points: XY[] }[] = [];
   restrictedBoundaries.set(layout, boundaries);
   // Union adjacent restricted fill: internal source-space borders need no duplicate fence.
@@ -590,7 +607,11 @@ export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAcc
       const anchor = points.reduce((best, p, i) => Math.hypot(p.x - points[0]!.x, p.y - points[0]!.y) > Math.hypot(points[best]!.x - points[0]!.x, points[best]!.y - points[0]!.y) ? i : best, 1);
       return [...reduce(points.slice(0, anchor + 1)).slice(0, -1), ...reduce([...points.slice(anchor), points[0]!])];
     };
-    const liftRings = lifts.filter(l => Math.abs(l.z - level.z) < .5).flatMap(l => l.rings), inLift = containsPolygons(liftRings.map(r => [r]));
+    const levelLifts = lifts.filter(l => Math.abs(l.z - level.z) < .5), liftRings = levelLifts.flatMap(l => l.rings);
+    const inLift = (p: XY, dx: number, dy: number) => {
+      const length = Math.hypot(dx, dy);
+      return levelLifts.some(l => l.clear(p, { x: -dy / length * .04, y: dx / length * .04 }));
+    };
     const cutEdges = [...wallCaps.flat(), ...liftRings];
     for (const rs of blocked.map(rings)) for (const raw of rs) {
       const ring = simplify(raw);
@@ -603,7 +624,7 @@ export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAcc
           const lo = divisions[j - 1]!, hi = divisions[j]!, middle = (lo + hi) / 2;
           const mid = { x: a.x + dx * middle, y: a.y + dy * middle };
           const from = { x: a.x + dx * lo, y: a.y + dy * lo }, to = { x: a.x + dx * hi, y: a.y + dy * hi };
-          if (inWall(mid) || inLift(mid) || !closeToFloor(from, to)) continue;
+          if (inWall(mid) || inLift(mid, dx, dy) || !closeToFloor(from, to)) continue;
           if (Math.hypot(to.x - from.x, to.y - from.y) < 1e-8) continue;
           const candidates = [-.01, .01, -.001, .001, -.00001, .00001].map(d => ({ x: mid.x - dy / length * d, y: mid.y + dx / length * d }));
           const source = regions.map(r => ({ r, p: candidates.find(p => pointInRings(p, r.source)) })).find(v => v.p);
@@ -635,7 +656,7 @@ export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAcc
         for (let j = 1; j < divisions.length; j++) {
           const lo = divisions[j - 1]!, hi = divisions[j]!, t = (lo + hi) / 2, mid = { x: a.x + dx * t, y: a.y + dy * t };
           const from = { x: a.x + dx * lo, y: a.y + dy * lo }, to = { x: a.x + dx * hi, y: a.y + dy * hi };
-          if (inSource(mid) || !inExpanded(mid) || inWall(mid) || inLift(mid) || !closeToFloor(from, to) || Math.hypot(to.x - from.x, to.y - from.y) < 1e-8) continue;
+          if (inSource(mid) || !inExpanded(mid) || inWall(mid) || inLift(mid, dx, dy) || !closeToFloor(from, to) || Math.hypot(to.x - from.x, to.y - from.y) < 1e-8) continue;
           const source = touched.find(r => r.source.some(rs => rs.some((p, k) => distance(mid, p, rs[(k + 1) % rs.length]!) <= reach)));
           guards.push({ id: `return:${level.label}:${base.length + fences.length + guards.length}`, restrictedSpaceId: source?.spaceId,
             reason: "access", level: level.label, a: from, b: to, zMin: level.z - .05, zMax: level.z + 1.15, side: 1, kind: "wall" });

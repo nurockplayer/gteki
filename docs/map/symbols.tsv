@@ -1246,11 +1246,11 @@ restrictedInputKey	function	stations/shinjuku/scene/fare-fence.ts	238
 deriveRestrictedAccess	function	stations/shinjuku/scene/fare-fence.ts	250
 restrictionAt	function	stations/shinjuku/scene/fare-fence.ts	275
 protectFareAndAccess	function	stations/shinjuku/scene/fare-fence.ts	288
-liftClearances	function	stations/shinjuku/scene/fare-fence.ts	553
-deriveRestrictedFences	function	stations/shinjuku/scene/fare-fence.ts	559
-gateMachines	function	stations/shinjuku/scene/fare-fence.ts	758
-ACCESS_WORDING	const	stations/shinjuku/scene/fare-fence.ts	767
-accessSigns	function	stations/shinjuku/scene/fare-fence.ts	771
+liftClearances	function	stations/shinjuku/scene/fare-fence.ts	547
+deriveRestrictedFences	function	stations/shinjuku/scene/fare-fence.ts	576
+gateMachines	function	stations/shinjuku/scene/fare-fence.ts	779
+ACCESS_WORDING	const	stations/shinjuku/scene/fare-fence.ts	788
+accessSigns	function	stations/shinjuku/scene/fare-fence.ts	792
 IDENTITY_FADE_FAR	const	stations/shinjuku/scene/identity-fade.ts	4
 IDENTITY_FADE_NEAR	const	stations/shinjuku/scene/identity-fade.ts	4
 IDENTITY_FADE_FRAGMENT	const	stations/shinjuku/scene/identity-fade.ts	6
