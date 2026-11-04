@@ -60,7 +60,11 @@ test("ikebukuro: overview refits above the open route sheet @phone", async ({ pa
   const readFrame = () => page.evaluate(() => (window as any).__gteki.overviewFrame());
   const open = await readFrame();
   expect(open).not.toBeNull();
+  const sheetTop = await page.locator(".sheet.open").evaluate((el) => el.getBoundingClientRect().top);
+  // overviewFrame includes the canvas offset: bbox and visibleRect are already page CSS px.
   expect.soft(open.extentShare, "network fits above the open route sheet").toBeLessThanOrEqual(1);
+  expect.soft(open.bbox.y1, "network bottom stays above the open route sheet (2 px tolerance)").toBeLessThanOrEqual(sheetTop + 2);
+  expect.soft(open.bbox.y0, "network top stays inside the free area (2 px tolerance)").toBeGreaterThanOrEqual(open.visibleRect.y - 2);
 
   // There is no sheet-close button: exercise its display:none transition without resetting the camera.
   await sheet.evaluate((el) => el.classList.remove("open"));
@@ -69,8 +73,8 @@ test("ikebukuro: overview refits above the open route sheet @phone", async ({ pa
   const closed = await readFrame();
   expect(closed).not.toBeNull();
   const measuredAt = new Date().toISOString(); // UTC
-  console.log(`[route-sheet] ${measuredAt} ${JSON.stringify({ open, closed })}`);
-  save(testInfo, "ikebukuro-overview-route-sheet.json", { measuredAt, open, closed });
+  console.log(`[route-sheet] ${measuredAt} ${JSON.stringify({ open, sheetTop, closed })}`);
+  save(testInfo, "ikebukuro-overview-route-sheet.json", { measuredAt, open, sheetTop, closed });
   expect(closed.extentShare, "network fits after closing the route sheet").toBeLessThanOrEqual(1);
   expect(Math.abs(closed.extentShare - open.extentShare), "closing the sheet changes extentShare").toBeGreaterThan(0.001);
   expect(closed.bbox, "the camera refits, beyond the free-rectangle measurement changing").not.toEqual(open.bbox);
