@@ -149,19 +149,34 @@ describe("committed shop data", () => {
     const data = JSON.parse(fs.readFileSync(path.resolve(HERE, "../../../docs/research/merchants/ikebukuro-merchants-batch4.json"), "utf8")) as {
       pois: { names: { text: string }[]; evidence: { sourceIds: string[] }; notes: { lang: string; text: string }[] }[];
     };
-    const directories = shops.filter((shop) => shop.directory);
-    expect(directories).toHaveLength(1);
-    for (const shop of directories) {
-      const directory = shop.directory!;
-      const names = data.pois.filter((row) => row.evidence.sourceIds.includes(directory.sourceIds[0]!) && row.notes.some((note) => note.lang === "ja" && note.text.includes("ルミネ池袋 B1")))
-        .map((row) => row.names[0]!.text.replaceAll("　", " "));
-      expect(directory.shops).toHaveLength(18);
-      expect(directory.shops).toEqual(names);
-    }
+    const directory = shops.find((shop) => shop.id === "real-ikb-lumine-b1")!.directory!;
+    const names = data.pois.filter((row) => row.evidence.sourceIds.includes(directory.sourceIds[0]!) && row.notes.some((note) => note.lang === "ja" && note.text.includes("ルミネ池袋 B1")))
+      .map((row) => row.names[0]!.text.replaceAll("　", " "));
+    expect(directory.shops).toHaveLength(18);
+    expect(directory.shops).toEqual(names);
   });
 
-  it("lists 10 shops whose every opening id is a surveyed opening row", () => {
-    expect(shops).toHaveLength(10);
+  it("prints one line per 本館 floor from the Seibu floor guide, B2F first", () => {
+    const data = JSON.parse(fs.readFileSync(path.resolve(HERE, "../../../docs/research/merchants/ikebukuro-seibu-honten-tenants.json"), "utf8")) as {
+      retrievedAt: string;
+      tenants: { floorLabel: string; category: string }[];
+    };
+    const directory = shops.find((shop) => shop.id === "real-ikb-seibu-honten-b1")!.directory!;
+    const floors = ["B2F", "B1F", "1F", "2F", "3F", "4F", "5F", "6F", "7F", "8F"];
+    const lines = floors.flatMap((floor) => {
+      const rows = data.tenants.filter((row) => row.floorLabel === floor);
+      if (!rows.length) return [];
+      const categories = rows.flatMap((row) => row.category.split(",").map((c) => c.trim()))
+        .filter((c, i, all) => c && all.indexOf(c) === i);
+      return [`${floor} ${categories.join("・")}`];
+    });
+    expect(directory.shops).toEqual(lines);
+    expect(directory.checkedDate).toBe(data.retrievedAt.slice(0, 10));
+    expect(directory.sourceIds).toEqual(["sogo-seibu-ikebukuro-floorguide-2026-10"]);
+  });
+
+  it("lists 11 shops whose every opening id is a surveyed opening row", () => {
+    expect(shops).toHaveLength(11);
     for (const shop of shops)
       for (const polygon of shop.openings) expect(byPolygon.get(polygon), `${shop.id} ${polygon}`).toBeTruthy();
   });
@@ -261,10 +276,10 @@ describe("visual only", () => {
       const loaded = await loadShopKit(THREE, host(all(low ? "low" : "high"), async (uri) => realShop(uri)), kit, shops, openings, low);
       const { group, stats } = loaded.build(THREE, env, toRenderer);
       console.log(`[shop stats] ${low ? "low" : "desktop"}: ${JSON.stringify(stats)}`);
-      expect(stats).toMatchObject({ shops: 10, modules: 22, tiles: 1,
-        drawCallsAllTiles: low ? 1 : 20, trianglesAllTiles: low ? 6846 : 7379,
-        trianglesWorstTile: low ? 6846 : 7379, signs: 9, signDrawCalls: low ? 0 : 1, signTriangles: 54,
-        interiorDrawCalls: low ? 0 : 1, interiorTriangles: 60, spillDrawCalls: 1, bladeSigns: 8, aBoards: 4, directoryBoards: 1 });
+      expect(stats).toMatchObject({ shops: 11, modules: 24, tiles: 1,
+        drawCallsAllTiles: low ? 1 : 20, trianglesAllTiles: low ? 7544 : 8144,
+        trianglesWorstTile: low ? 7544 : 8144, signs: 10, signDrawCalls: low ? 0 : 1, signTriangles: 64,
+        interiorDrawCalls: low ? 0 : 1, interiorTriangles: 64, spillDrawCalls: 1, bladeSigns: 9, aBoards: 4, directoryBoards: 2 });
       expect(group.children).toHaveLength(low ? 2 : 23);
       expect(((group.getObjectByName("kit_shop_spill") as THREE.Mesh).material as THREE.Material).forceSinglePass).toBe(low);
       if (low) {
