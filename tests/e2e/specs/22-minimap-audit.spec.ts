@@ -17,7 +17,7 @@ async function measure(page: Page) {
       }, 0);
     const frames: number[] = (window as any).__qa.frames.slice(-60);
     return {
-      width: circle.width, height: circle.height, right: box.right, bottom: box.bottom,
+      width: circle.width, height: circle.height, circleRight: circle.right, circleBottom: circle.bottom, right: box.right, bottom: box.bottom,
       viewportWidth: innerWidth, viewportHeight: innerHeight,
       label: map.querySelector(".minimap-label")!.textContent,
       routeLabel: map.querySelector(".minimap-route-label")!.textContent,
@@ -47,6 +47,7 @@ test("minimap station switch, orientation, zoom and HUD geometry @phone", async 
     expect.soft(m.width).toBeLessThanOrEqual(phone ? 140 : 200);
     expect.soft(m.width).toBeCloseTo(m.height, 1);
     expect.soft(m.right).toBeLessThanOrEqual(m.viewportWidth);
+    expect.soft(m.circleRight).toBeLessThanOrEqual(m.viewportWidth);
     expect.soft(m.bottom).toBeLessThanOrEqual(m.viewportHeight);
     for (const [name, area] of Object.entries(m.overlaps)) expect.soft(area, `${state}: ${name} overlap px²`).toBe(0);
     expect(m.minimapCanvasCount).toBe(0);
@@ -60,8 +61,12 @@ test("minimap station switch, orientation, zoom and HUD geometry @phone", async 
   await expect(page.locator(".minimap-orientation")).toHaveAttribute("aria-pressed", "false");
   await expect(page.locator(".minimap .minimap-arrow")).toHaveAttribute("transform", /rotate\(0\)/);
   if (phone) {
+    // Start above the bottom HUD: the joystick listens on the renderer canvas.
+    const touchTargets = await page.locator(".viewport canvas").evaluate((canvas) => [500, 650].map((y) => Number(canvas === document.elementFromPoint(70, y))));
+    console.log(JSON.stringify({ canvasAt500: touchTargets[0], canvasAt650: touchTargets[1] }));
+    expect(touchTargets[0]).toBe(1);
     const session = await page.context().newCDPSession(page);
-    await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 70, y: 650 }] });
+    await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 70, y: 500 }] });
     await expect(page.locator(".joystick.active")).toBeVisible();
     await check("ikebukuro-joystick");
     await session.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });

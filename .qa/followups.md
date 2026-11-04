@@ -1,6 +1,6 @@
 # #220 follow-up drafts
 
-Prepared 2026-11-04 09:07 JST. The code fixes are small; the remaining POI data work belongs to the station lane. Browser evidence is pending.
+Prepared 2026-11-04 09:07 JST; numeric results finalized 2026-11-04 11:25 JST. The code fixes are small; the remaining POI data work belongs to the station lane. Numeric browser evidence and its result are recorded in `.qa/audit.md`; screenshots and readability remain a lead task.
 
 ## Title: QA: finish #220 desktop/375 px visual acceptance on the merged minimap
 
