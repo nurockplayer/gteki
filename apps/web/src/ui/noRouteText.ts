@@ -15,7 +15,7 @@ export function isUnlocatedShop(poi: Poi | null | undefined): boolean {
 export function poiNoteText(poi: Poi | undefined | null, lang: Lang): string | null {
   const notes = poi?.notes ?? [];
   const textIn = (l: Lang): string | null => {
-    const text = notes.find((n) => n.lang === l)?.text.trim() ?? "";
+    const text = notes.find((n) => n.lang === l && n.at !== "origin")?.text.trim() ?? "";
     return text === "" ? null : text;
   };
   return textIn(lang) ?? textIn("ja");

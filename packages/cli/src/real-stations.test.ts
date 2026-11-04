@@ -50,9 +50,20 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     const tobu = route("ikebukuro", ["jr-central-gate-2", destination.id, "--from-poi", "--goal-poi"]);
     expect(tobu.status, tobu.stderr).toBe(0);
     for (const lang of ["en", "ja"] as const) {
-      const note = destination.notes!.find((note) => note.lang === lang)!.text;
+      const note = destination.notes!.find((note) => note.lang === lang && !note.at)!.text;
       expect(note).not.toBe("");
       expect(tobu.out.instructions[lang].at(-1)!.text).toContain(note);
+    }
+
+    // From the same gate, the origin-only note opens the route instead of ending it (#799).
+    const fromTobu = route("ikebukuro", [destination.id, "jr-central-gate-2", "--from-poi", "--goal-poi"]);
+    expect(fromTobu.status, fromTobu.stderr).toBe(0);
+    for (const lang of ["en", "ja"] as const) {
+      const note = destination.notes!.find((note) => note.lang === lang && note.at === "origin")!.text;
+      expect(note).not.toBe("");
+      expect(fromTobu.out.instructions[lang][0]).toMatchObject({ kind: "start" });
+      expect(fromTobu.out.instructions[lang][0]!.text).toContain(note);
+      expect(fromTobu.out.instructions[lang].at(-1)!.text).not.toContain(note);
     }
   });
 

@@ -361,6 +361,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
+    ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
     ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat, ...(shopKit ? [shopKit] : [])], envTarget),
   };
   return scene;
