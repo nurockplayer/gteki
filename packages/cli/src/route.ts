@@ -167,7 +167,9 @@ export async function runRoute(args: string[]): Promise<number> {
   const polyline = result.ok
     ? routePolyline(bundle, result).map((p) => ({ ...p, renderer: enuToRenderer({ x: p.x, y: p.y, z: p.z }) }))
     : [];
-  const instructions = result.ok ? { ja: describeRoute(bundle, result, "ja"), en: describeRoute(bundle, result, "en") } : { ja: [], en: [] };
+  const destination = options.goalPoi ? bundle.pois.find((poi) => poi.id === options.goals[0]) : undefined;
+  const origin = options.fromPoi ? bundle.pois.find((poi) => poi.id === options.from) : undefined;
+  const instructions = result.ok ? { ja: describeRoute(bundle, result, "ja", destination, origin), en: describeRoute(bundle, result, "en", destination, origin) } : { ja: [], en: [] };
   process.stdout.write(`${JSON.stringify({ contract: "gteki.route/0.1", stationId: bundle.station.id, result, path, polyline, instructions }, null, 2)}\n`);
   return result.ok ? 0 : 1;
 }
