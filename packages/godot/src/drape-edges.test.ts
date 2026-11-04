@@ -6,7 +6,7 @@ import path from "node:path";
 import * as THREE from "three";
 import { createSyntheticBundle, syntheticEdge } from "../../navigation/src/fixtures.ts";
 import { auditPolyline, violations, type SceneProbe } from "./route-clip-audit.ts";
-import { applyDrapeGeometry, drapeEdges, drapePaths } from "./drape-edges.ts";
+import { applyDrapeGeometry, drapeEdges, drapePaths, drapeSceneProbe } from "./drape-edges.ts";
 
 function probe(gap: boolean, z = 0): SceneProbe {
   const floor = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 10), new THREE.MeshBasicMaterial());
@@ -25,6 +25,66 @@ function bundle() {
   return b;
 }
 describe("scene floor draping", () => {
+  it.each(["scene", "polygon"])("snaps to %s floors without using a graph-generated ribbon as height evidence", async (source) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "drape-source-height-"));
+    try {
+      const b = bundle(), original = source === "scene" ? probe(true, 1.5) : { ground: [], collider: [] };
+      const origin = source === "scene" ? 20 : -5, size = source === "scene" ? 4 : 10;
+      fs.writeFileSync(path.join(dir, "private_regions.json"), JSON.stringify([
+        { kind: "polygon", level: "concourse", y: 1.5, rings: [[
+          { x: origin, z: origin }, { x: origin + size, z: origin }, { x: origin + size, z: origin + size }, { x: origin, z: origin + size },
+        ]] },
+      ]));
+      const root = new THREE.Group().add(...original.ground, ...original.collider);
+      root.updateMatrixWorld(true);
+      const p = await drapeSceneProbe({ root, walkable: original.ground, colliders: original.collider, walls: [] } as never, b, dir);
+      const result = drapeEdges(p, b, new Set(["edge"]));
+      expect(result.nodes.get("start")).toBeCloseTo(1.5);
+      expect(result.nodes.get("goal")).toBeCloseTo(1.5);
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  });
+  it("loads polygon floors for the drape and audit while retaining explicit holes", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "drape-regions-"));
+    try {
+      const b = bundle();
+      b.edges[0]!.attributes = { sceneGap: true, sceneGapReason: "drape-unresolved" };
+      const ring = (x: number, z: number, size: number) => [
+        { x, z }, { x: x + size, z }, { x: x + size, z: z + size }, { x, z: z + size },
+      ];
+      fs.writeFileSync(path.join(dir, "private_regions.json"), JSON.stringify([
+        { kind: "polygon", level: "concourse", y: 0, rings: [ring(-5, -5, 10), ring(-1, 2, 2)], exclusions: [[ring(-1, 2, 2)]] },
+      ]));
+      const root = new THREE.Group();
+      const p = await drapeSceneProbe({ root, walkable: [], colliders: [], walls: [] } as never, b, dir);
+      const result = drapeEdges(p, b, new Set(["edge"]));
+      expect(result.nodes.get("start")).toBeCloseTo(0);
+      expect(result.nodes.get("goal")).toBeCloseTo(0);
+      expect(result.sceneGaps.get("edge")).toBe(false);
+      const point = (x: number, y: number) => ({ x, y, z: 0, zKnown: false, stepIndex: 0, floorId: "concourse" });
+      // Away from the graph ribbon, only the selected polygon can support this point.
+      expect(violations(auditPolyline(p, [point(3, 3)]))).toBe(0);
+      expect(auditPolyline(p, [point(0, -3)]).noFloor).toBe(1);
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  });
+  it("does not clear an automatic gap using the wall opening that its flag creates", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "drape-flag-opening-"));
+    try {
+      const b = bundle(), original = probe(false);
+      b.edges[0]!.attributes = { sceneGap: true, sceneGapReason: "drape-unresolved" };
+      fs.writeFileSync(path.join(dir, "private_regions.json"), JSON.stringify([
+        { kind: "polygon", level: "concourse", y: 0, rings: [[
+          { x: 20, z: 20 }, { x: 24, z: 20 }, { x: 24, z: 24 }, { x: 20, z: 24 },
+        ]] },
+      ]));
+      const root = new THREE.Group().add(...original.ground, ...original.collider);
+      root.updateMatrixWorld(true);
+      const p = await drapeSceneProbe({ root, walkable: original.ground, colliders: original.collider, walls: [] } as never, b, dir);
+      const result = drapeEdges(p, b, new Set(["edge"]));
+      expect(result.geometry.has("edge")).toBe(false);
+      expect(result.sceneGaps.get("edge")).toBe(true);
+      expect(b.edges[0]!.attributes).toEqual({ sceneGap: true, sceneGapReason: "drape-unresolved" });
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  });
   it("routes through a wall gap and audits clean", () => {
     const scene = probe(true), result = drapeEdges(scene, bundle(), new Set(["edge"]));
     expect(result.unresolved).toEqual([]);
