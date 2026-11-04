@@ -1,0 +1,42 @@
+{
+  "ikebukuro": {
+    "main": {
+      "directions": {
+        "stairs": 0,
+        "escalator": 0,
+        "elevator": 0,
+        "gate": 0
+      },
+      "junctions": 0
+    },
+    "adopted": {
+      "directions": {
+        "stairs": 48,
+        "escalator": 0,
+        "elevator": 0,
+        "gate": 0
+      },
+      "junctions": 0
+    }
+  },
+  "shinjuku": {
+    "main": {
+      "directions": {
+        "stairs": 0,
+        "escalator": 0,
+        "elevator": 0,
+        "gate": 0
+      },
+      "junctions": 0
+    },
+    "adopted": {
+      "directions": {
+        "stairs": 44,
+        "escalator": 18,
+        "elevator": 14,
+        "gate": 10
+      },
+      "junctions": 0
+    }
+  }
+}

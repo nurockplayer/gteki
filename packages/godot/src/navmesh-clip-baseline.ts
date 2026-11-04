@@ -1,13 +1,13 @@
 export const clipFields=["connectorWallHits","fallbackWallHits","navmeshWallHits","offFloor"] as const;
 type Field=typeof clipFields[number];
 export type ClipCounts=Record<Field,number>;
-type Coverage={unvalidatedJoins:number;invalidJoins:number;routablePairs:number;failedRoutePairs:number};
+type Coverage={unvalidatedJoins:number;invalidJoins:number;routablePairs:number;failedRoutePairs:number;suspectPolyline:number;suspectPolylineEdges:number};
 export type ClipBaseline=Record<string,ClipCounts | (ClipCounts & Coverage)> & {total:ClipCounts & Coverage};
 const zero=():ClipCounts=>({connectorWallHits:0,fallbackWallHits:0,navmeshWallHits:0,offFloor:0});
 
 /** Construct a sorted baseline; zero-valued edges do not occupy the list. */
-export function makeClipBaseline(counts:Record<string,ClipCounts>,unvalidatedJoins:number,coverage:{invalidJoins:number;routablePairs:number;failedRoutePairs:number}={invalidJoins:0,routablePairs:0,failedRoutePairs:0}):ClipBaseline {
-  const total={...zero(),unvalidatedJoins,...coverage};
+export function makeClipBaseline(counts:Record<string,ClipCounts>,unvalidatedJoins:number,coverage:{invalidJoins:number;routablePairs:number;failedRoutePairs:number;suspectPolyline?:number;suspectPolylineEdges?:number}={invalidJoins:0,routablePairs:0,failedRoutePairs:0}):ClipBaseline {
+  const total={...zero(),unvalidatedJoins,suspectPolyline:coverage.suspectPolyline ?? 0,suspectPolylineEdges:coverage.suspectPolylineEdges ?? 0,...coverage};
   const result:Record<string,ClipCounts | typeof total>={};
   for(const id of Object.keys(counts).sort()) {
     if(id==="total") throw new Error("reserved baseline edge id");
@@ -15,12 +15,12 @@ export function makeClipBaseline(counts:Record<string,ClipCounts>,unvalidatedJoi
     for(const f of clipFields) {if(!Number.isSafeInteger(count[f]) || count[f]<0) throw new Error("invalid clip count");total[f]+=count[f];}
     if(clipFields.some(f=>count[f])) result[id]={...count};
   }
-  for(const value of [unvalidatedJoins,coverage.invalidJoins,coverage.routablePairs,coverage.failedRoutePairs]) if(!Number.isSafeInteger(value) || value<0) throw new Error("invalid coverage count");
+  for(const value of [unvalidatedJoins,coverage.invalidJoins,coverage.routablePairs,coverage.failedRoutePairs,total.suspectPolyline,total.suspectPolylineEdges]) if(!Number.isSafeInteger(value) || value<0) throw new Error("invalid coverage count");
   return {...result,total} as ClipBaseline;
 }
 
-export function baselineForAudit(audit:{clipCounts:Record<string,ClipCounts>;incompleteRoutes:number;invalidJoinRoutes:number;routesAudited:number;failedRoutePairs:number}) {
-  return makeClipBaseline(audit.clipCounts,audit.incompleteRoutes,{invalidJoins:audit.invalidJoinRoutes,routablePairs:audit.routesAudited,failedRoutePairs:audit.failedRoutePairs});
+export function baselineForAudit(audit:{clipCounts:Record<string,ClipCounts>;incompleteRoutes:number;invalidJoinRoutes:number;routesAudited:number;failedRoutePairs:number;suspectPolyline?:{routes:number;edges:number}}) {
+  return makeClipBaseline(audit.clipCounts,audit.incompleteRoutes,{invalidJoins:audit.invalidJoinRoutes,routablePairs:audit.routesAudited,failedRoutePairs:audit.failedRoutePairs,suspectPolyline:audit.suspectPolyline?.routes ?? 0,suspectPolylineEdges:audit.suspectPolyline?.edges ?? 0});
 }
 
 /** Every field must match: a decrease requires committing the smaller baseline. */
@@ -49,6 +49,13 @@ export function clipBaselineDiff(baseline:ClipBaseline,actual:ClipBaseline) {
   for(const field of ["invalidJoins","routablePairs","failedRoutePairs"] as const) {
     const a=baseline.total[field],b=actual.total[field];if(!Number.isSafeInteger(a) || a<0 || !Number.isSafeInteger(b) || b<0) throw new Error(`invalid coverage: ${field}`);
     if(field==="routablePairs" ? b<a : b>a) increased.push(`total.${field} (${a} → ${b})`);
+  }
+  // Ruling C introduces these counters once; every persisted value then ratchets down.
+  for(const field of ["suspectPolyline","suspectPolylineEdges"] as const) {
+    const a=baseline.total[field],b=actual.total[field];
+    if(a===undefined && b===undefined) continue;
+    if(!Number.isSafeInteger(b) || b<0 || (a!==undefined && (!Number.isSafeInteger(a) || a<0))) throw new Error(`invalid coverage: ${field}`);
+    if(a!==undefined) { if(b>a) increased.push(`total.${field} (${a} → ${b})`); if(b<a) lowered.push(`total.${field} (${a} → ${b})`); }
   }
   return {increased,lowered};
 }
