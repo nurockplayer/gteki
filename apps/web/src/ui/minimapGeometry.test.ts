@@ -284,4 +284,12 @@ describe("floor POIs by evidence", () => {
     // The shop has a position but no connector: search-only, so it never gets a dot.
     expect(floorPois(createSyntheticBundle(), "upper")).toEqual([]);
   });
+  it("never gives search-only or area-only evidence a precise dot even with a connector", () => {
+    const bundle = createSyntheticBundle();
+    const located = bundle.pois[0]!;
+    bundle.pois = ["SEARCH_ONLY", "AREA_ONLY"].map((method) => ({
+      ...located, id: method, evidence: { ...located.evidence, method },
+    }));
+    expect(floorPois(bundle, located.floorId!)).toEqual([]);
+  });
 });

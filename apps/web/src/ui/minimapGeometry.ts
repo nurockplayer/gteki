@@ -232,8 +232,9 @@ export function rimBearing(px: { x: number; y: number }, radiusPx: number): { in
 /**
  * POIs the map may draw on a floor: a recorded display position on that floor AND a verified connector
  * (a routable entrance). A centroid without a connector, a null position or a null floor is search-only
- * evidence and gets no point.
+ * evidence and gets no point, even if a search-only/area-only record carries a connector.
  */
 export function floorPois(bundle: StationBundle, floorId: string): Poi[] {
-  return bundle.pois.filter((poi) => poi.displayPosition !== null && poi.floorId === floorId && poi.connectorNodeIds.length > 0);
+  return bundle.pois.filter((poi) => poi.displayPosition !== null && poi.floorId === floorId
+    && poi.connectorNodeIds.length > 0 && !/\b(?:SEARCH_ONLY|AREA_ONLY)\b/.test(poi.evidence.method));
 }

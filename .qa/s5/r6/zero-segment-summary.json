@@ -1,0 +1,17 @@
+{
+  "measuredAt": "2026-11-04 11:28 JST",
+  "allNearZeroSegmentCount": 20,
+  "modes": [
+    "gate"
+  ],
+  "routeNearZeroSegmentCount": 2,
+  "routeGateInstructionIndex": 7,
+  "routeGateSpanM": [
+    60.23051078393576,
+    63.33357378684111
+  ],
+  "zeroLengthMovementInstructions": {
+    "before": [],
+    "after": []
+  }
+}

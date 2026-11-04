@@ -1026,7 +1026,14 @@ export class App {
     this.ui.live.announce(routeLiveMessage(this.t, best, failureText));
     if (best.ok) {
       // Baked navmesh paths are public-graph data: the private build keeps its graph polylines (gteki-private#4).
-      this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths(), PRIVATE_BUILD ? null : this.explorer.navmeshRoutePaths());
+      const nav = PRIVATE_BUILD ? null : this.explorer.navmeshRoutePaths();
+      this.s.polyline = routePolyline(loaded.bundle, best, this.explorer.connectorRoutePaths(), nav?.edges, nav?.joins);
+      if (!this.s.polyline.length) {
+        this.s.route = { ok:false, reason:"no_path", message:"No continuous navmesh guide path" };
+        this.ui.live.announce(routeLiveMessage(this.t, this.s.route));
+        this.renderSheet();
+        return;
+      }
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);

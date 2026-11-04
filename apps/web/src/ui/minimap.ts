@@ -9,7 +9,7 @@ import { advanceRouteSeg, arrowRotationDeg, currentFloorId, floorPois, floorTran
 const ORIENTATION_KEY = "gteki.minimap.orientation";
 const COLLAPSED_KEY = "gteki.minimap.collapsed";
 const METRES_PER_PX = 0.5;
-const CENTRE = 95; // Fixed viewBox: mobile shows the same 95 m span as desktop.
+const CENTRE = 95; // Fixed viewBox: mobile and desktop share the selected span.
 const RIM_RADIUS = 93; // Matches the rim circle in the viewBox.
 const RIM_MARKER_RADIUS = RIM_RADIUS - 9; // Just inside the marker margin, so a chevron sits on the rim.
 let nextClipId = 0;
@@ -46,6 +46,10 @@ export class Minimap {
   private readonly toggle = document.createElement("button");
   private readonly collapseButton = document.createElement("button");
   private readonly reopen = document.createElement("button");
+  private readonly zoomIn = document.createElement("button");
+  private readonly zoomOut = document.createElement("button");
+  private readonly zoomLabel = document.createElement("span");
+  private metresPerPx = METRES_PER_PX;
   private readonly graph = svg("g", { class: "minimap-graph" });
   private readonly routeGroup = svg("g", { class: "minimap-route" });
   private readonly poiGroup = svg("g", { class: "minimap-pois" });
@@ -178,7 +182,17 @@ export class Minimap {
     this.collapseButton.addEventListener("click", () => this.collapse());
     this.reopen.addEventListener("click", () => this.show());
     controls.append(this.toggle, this.collapseButton);
-    this.body.append(this.map, this.floorSelect, this.label, this.routeLabel, this.notice, controls);
+    const zoom = document.createElement("div");
+    zoom.className = "minimap-controls minimap-zoom";
+    this.zoomIn.type = this.zoomOut.type = "button";
+    this.zoomIn.className = "minimap-zoom-in";
+    this.zoomOut.className = "minimap-zoom-out";
+    this.zoomIn.textContent = "+";
+    this.zoomOut.textContent = "−";
+    this.zoomIn.addEventListener("click", () => this.setZoom(this.metresPerPx / 2));
+    this.zoomOut.addEventListener("click", () => this.setZoom(this.metresPerPx * 2));
+    zoom.append(this.zoomOut, this.zoomLabel, this.zoomIn);
+    this.body.append(this.map, this.floorSelect, this.label, this.routeLabel, this.notice, zoom, controls);
     this.el.append(this.body, this.reopen);
     this.buildOverlay();
     this.applyCollapsed();
@@ -330,6 +344,14 @@ export class Minimap {
   show(): void { this.setCollapsed(false); }
   collapse(): void { this.setCollapsed(true); }
 
+  private setZoom(metresPerPx: number): void {
+    this.metresPerPx = Math.max(0.25, Math.min(1, metresPerPx));
+    this.floorId = undefined; // Rebuild cached geometry at the new scale.
+    this.lastPose = "";
+    this.updateText();
+    this.refresh();
+  }
+
   /**
    * Re-evaluate whether the map belongs on screen, outside the polling timer. A collapsed map keeps no timer,
    * so a mode change (overview -> walk/guide) is the only thing that can bring its reopen button back.
@@ -388,6 +410,11 @@ export class Minimap {
     this.collapseButton.textContent = "−";
     this.collapseButton.setAttribute("aria-label", t.minimapCollapse);
     this.reopen.textContent = t.minimapShow;
+    this.zoomIn.setAttribute("aria-label", t.minimapZoomIn);
+    this.zoomOut.setAttribute("aria-label", t.minimapZoomOut);
+    this.zoomIn.disabled = this.metresPerPx === 0.25;
+    this.zoomOut.disabled = this.metresPerPx === 1;
+    this.zoomLabel.textContent = `${METRES_PER_PX / this.metresPerPx}×`;
     const station = this.bundle?.station;
     const floor = this.bundle?.floors.find((f) => f.id === this.floorId);
     this.label.replaceChildren();
@@ -476,7 +503,7 @@ export class Minimap {
       this.drawFloorLayers();
     }
     const rotation = this.orientation === "player-up" ? -pose.headingDeg : 0;
-    const transform = `translate(${CENTRE} ${CENTRE}) rotate(${rotation}) translate(${-pose.east / METRES_PER_PX} ${pose.north / METRES_PER_PX})`;
+    const transform = `translate(${CENTRE} ${CENTRE}) rotate(${rotation}) translate(${-pose.east / this.metresPerPx} ${pose.north / this.metresPerPx})`;
     this.graph.setAttribute("transform", transform);
     if (this.routeGroup.getAttribute("transform") !== transform) this.routeGroup.setAttribute("transform", transform);
     if (this.poiGroup.getAttribute("transform") !== transform) this.poiGroup.setAttribute("transform", transform);
@@ -496,7 +523,7 @@ export class Minimap {
     this.graph.replaceChildren(...segments.map((segment) => svg("polyline", {
       "data-mode": segment.mode,
       points: segment.points.map((point) => {
-        const p = toMinimap(point.east, point.north, origin, "north-up", METRES_PER_PX);
+        const p = toMinimap(point.east, point.north, origin, "north-up", this.metresPerPx);
         return `${p.x},${p.y}`;
       }).join(" "),
     })));
@@ -524,14 +551,14 @@ export class Minimap {
       this.routeGroup.append(svg("polyline", {
         class: "minimap-route-line",
         points: run.map((point) => {
-          const p = toMinimap(point.x, point.y, origin, "north-up", METRES_PER_PX);
+          const p = toMinimap(point.x, point.y, origin, "north-up", this.metresPerPx);
           return `${p.x},${p.y}`;
         }).join(" "),
       }));
     }
     // A POI earns a dot, and the destination's highlight, only through the same evidence rule.
     for (const poi of floorPois(this.bundle, floorId)) {
-      const p = toMinimap(poi.displayPosition!.x, poi.displayPosition!.y, origin, "north-up", METRES_PER_PX);
+      const p = toMinimap(poi.displayPosition!.x, poi.displayPosition!.y, origin, "north-up", this.metresPerPx);
       const dot = svg("circle", { cx: String(p.x), cy: String(p.y), r: "2.5", class: "minimap-poi", "data-category": poi.category });
       if (poi.id === this.destination?.id) {
         dot.classList.add("is-destination");
@@ -582,7 +609,7 @@ export class Minimap {
 
   /**
    * The expanded map, drawn from the same walk graph, route runs and evidenced POIs as the HUD (same
-   * station coordinates and 95 m span, just rendered at full width). Geometry is rebuilt only when the
+   * station coordinates and selected span, just rendered at full width). Geometry is rebuilt only when the
    * floor, route, language or hint changes; each tick moves the world groups. Called only while open.
    */
   private renderOverlay(pose: ExplorerPose): void {
@@ -595,7 +622,7 @@ export class Minimap {
       this.overlayGraph.replaceChildren(...segments.map((segment) => svg("polyline", {
         "data-mode": segment.mode,
         points: segment.points.map((point) => {
-          const p = toMinimap(point.east, point.north, origin, "north-up", METRES_PER_PX);
+          const p = toMinimap(point.east, point.north, origin, "north-up", this.metresPerPx);
           return `${p.x},${p.y}`;
         }).join(" "),
       })));
@@ -606,13 +633,13 @@ export class Minimap {
           this.overlayRoute.append(svg("polyline", {
             class: "minimap-route-line",
             points: run.map((point) => {
-              const p = toMinimap(point.x, point.y, origin, "north-up", METRES_PER_PX);
+              const p = toMinimap(point.x, point.y, origin, "north-up", this.metresPerPx);
               return `${p.x},${p.y}`;
             }).join(" "),
           }));
         }
         for (const poi of floorPois(this.bundle, floorId)) {
-          const p = toMinimap(poi.displayPosition!.x, poi.displayPosition!.y, origin, "north-up", METRES_PER_PX);
+          const p = toMinimap(poi.displayPosition!.x, poi.displayPosition!.y, origin, "north-up", this.metresPerPx);
           const dot = svg("circle", { cx: String(p.x), cy: String(p.y), r: "2.5", class: "minimap-poi", "data-category": poi.category });
           if (poi.id === this.destination?.id) dot.classList.add("is-destination");
           const title = svg("title");
@@ -622,7 +649,7 @@ export class Minimap {
         }
         const last = this.route && this.route.length > 0 ? this.route[this.route.length - 1]! : null;
         if (last && last.floorId === floorId) {
-          const p = toMinimap(last.x, last.y, origin, "north-up", METRES_PER_PX);
+          const p = toMinimap(last.x, last.y, origin, "north-up", this.metresPerPx);
           this.overlayRoute.append(svg("circle", { cx: String(p.x), cy: String(p.y), r: "3", class: "minimap-route-end-dot" }));
         }
       }
@@ -647,20 +674,20 @@ export class Minimap {
         : t.minimapLargeMap;
     }
     const rotation = this.orientation === "player-up" ? -pose.headingDeg : 0;
-    const transform = `translate(${CENTRE} ${CENTRE}) rotate(${rotation}) translate(${-pose.east / METRES_PER_PX} ${pose.north / METRES_PER_PX})`;
+    const transform = `translate(${CENTRE} ${CENTRE}) rotate(${rotation}) translate(${-pose.east / this.metresPerPx} ${pose.north / this.metresPerPx})`;
     setTransform(this.overlayGraph, transform);
     setTransform(this.overlayRoute, transform);
     setTransform(this.overlayPoi, transform);
     setTransform(this.overlayArrow, `translate(${CENTRE} ${CENTRE}) rotate(${arrowRotationDeg(pose, this.orientation)})`);
     setTransform(this.overlayNorth, `rotate(${rotation} ${CENTRE} ${CENTRE})`);
-    // The destination keeps a marker even when its point lies beyond the drawn 95 m span.
+    // The destination keeps a marker even when its point lies beyond the drawn span.
     const route = this.route;
     const last = route && route.length > 0 ? route[route.length - 1]! : null;
     const routeEnd = floorId && last && last.floorId === floorId
-      ? toMinimap(last.x, last.y, pose, this.orientation, METRES_PER_PX)
+      ? toMinimap(last.x, last.y, pose, this.orientation, this.metresPerPx)
       : null;
     const destination = this.destinationPoint
-      ? toMinimap(this.destinationPoint.x, this.destinationPoint.y, pose, this.orientation, METRES_PER_PX)
+      ? toMinimap(this.destinationPoint.x, this.destinationPoint.y, pose, this.orientation, this.metresPerPx)
       : null;
     this.placeRim(this.overlayDestinationRim, destination ?? routeEnd, "square");
   }
@@ -671,11 +698,11 @@ export class Minimap {
     const route = this.route;
     const last = route && route.length > 0 ? route[route.length - 1]! : null;
     const routeEnd = floorId && last && last.floorId === floorId ? last : null;
-    const endScreen = routeEnd ? toMinimap(routeEnd.x, routeEnd.y, pose, this.orientation, METRES_PER_PX) : null;
+    const endScreen = routeEnd ? toMinimap(routeEnd.x, routeEnd.y, pose, this.orientation, this.metresPerPx) : null;
     // Rim arrow: an evidenced POI position wins; otherwise the route's own end. Both are on this floor.
     const poiPoint = this.destinationPoint;
     const rimTarget = poiPoint
-      ? toMinimap(poiPoint.x, poiPoint.y, pose, this.orientation, METRES_PER_PX)
+      ? toMinimap(poiPoint.x, poiPoint.y, pose, this.orientation, this.metresPerPx)
       : endScreen;
     this.placeRim(this.destinationRim, rimTarget);
     // The neutral route-end dot is not a POI and carries no destination meaning; it yields to the
@@ -683,7 +710,7 @@ export class Minimap {
     const coincident = !!poiPoint && !!routeEnd && Math.hypot(poiPoint.x - routeEnd.x, poiPoint.y - routeEnd.y) < 0.5;
     this.placeMarker(this.routeEnd, endScreen, coincident);
     const hint = this.connectorHint;
-    const connectorScreen = hint ? toMinimap(hint.x, hint.y, pose, this.orientation, METRES_PER_PX) : null;
+    const connectorScreen = hint ? toMinimap(hint.x, hint.y, pose, this.orientation, this.metresPerPx) : null;
     this.placeMarker(this.connectorMarker, connectorScreen, false);
     // The connector marker only exists inside the circle; outside, the same rim chevron takes over.
     this.placeRim(this.connectorRim, connectorScreen);

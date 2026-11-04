@@ -1363,9 +1363,10 @@ export class Explorer {
     if (!this.framed) return;
     const { w, h } = this.viewSize;
     const free = this.freeRect();
-    // #109: with the panel or the open route card covering a phone, the free band is short and the plain
-    // fill leaves the station at 0.26 of the viewport's shorter side. There, keep at least half of it.
-    const share = w <= PHONE_MAX_PX && (free.w < w || free.h < h) ? OVERVIEW_MIN_VIEWPORT_SHARE : 0;
+    // #109: keep the map readable below the phone panel. An open route sheet leaves a much shorter band;
+    // there the free-area fit wins, otherwise this minimum grows the network underneath the sheet (#385).
+    const sheetOpen = this.sheetInset(this.host.getBoundingClientRect()) > 0;
+    const share = w <= PHONE_MAX_PX && !sheetOpen && (free.w < w || free.h < h) ? OVERVIEW_MIN_VIEWPORT_SHARE : 0;
     const pose = frameBounds(
       this.framed,
       { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free, points: this.framedPts ?? undefined, minViewportShare: share },
@@ -1484,8 +1485,12 @@ export class Explorer {
 
   /** Connector centre lines converted from renderer coordinates to station ENU. */
   /** The station's baked navmesh walk paths per edge (ENU), or null: no file, a failed load or the L0 graph view. */
-  navmeshRoutePaths(): NavmeshPaths["edges"] | null {
-    return this.navmeshPaths?.edges ?? null;
+  navmeshRoutePaths(): NavmeshPaths | null {
+    if (this.navmeshPaths) return this.navmeshPaths;
+    // A failed public bake load is a missing guide, not permission to walk graph geometry.
+    return this.stationScene && this.station?.scene?.navmeshPaths
+      ? { version:1, station:this.station.key, frame:"ENU", edges:{} }
+      : null;
   }
 
   connectorRoutePaths(): Map<string, { x: number; y: number; z: number }[]> {

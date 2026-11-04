@@ -1,0 +1,17 @@
+| Station | fallback | unvalidatedJoins | invalidJoins | detours | offFloor | snap_failed exit stairs |
+|---|---:|---:|---:|---:|---:|---:|
+| ikebukuro | 1 → 0 | 62 → 120 | 0 → 120 | 0 → 0 | 0 → 0 | 1 → 0 |
+ikebukuro rejected paths 2 junctions 4
+ikebukuro failure edges []
+ikebukuro uniqueEdgeScene {'navmesh': {'samples': 5370, 'offFloor': 0, 'noFloor': 0, 'wallHits': 0}, 'connector': {'samples': 2290, 'offFloor': 0, 'noFloor': 0, 'wallHits': 2}}
+| shinjuku | 6 → 15 | 146 → 208 | 0 → 0 | 2 → 2 | 0 → 0 | 0 → 1 |
+shinjuku rejected paths 8 junctions 2
+shinjuku failure edges [('e:3763bee44e4740ac86216e99e212f8d1', 'gate', 'no_path'), ('e:45ebdab487134925b3b47cd29bffb99c', 'stairs', 'snap_failed'), ('e:65edd7ca50844b609d4dcb25bd296936', 'elevator', 'snap_failed'), ('e:6ac033af77914fe5a9786676088b952c', 'walk', 'disconnected'), ('e:80b372f586204d5cbe5769beffcfbf56', 'gate', 'no_path'), ('e:82c9a2c2cd704a348fbeb423d07cb125', 'walk', 'other'), ('e:967e8b882ad14db2979c375ad229d32a', 'gate', 'no_path'), ('e:a4ed9fc953984c52a914f0cbe73cd318', 'walk', 'other'), ('e:bdcdf9229c9f49dc9bc02bec79c4a8fe', 'stairs', 'snap_failed'), ('e:c3fe6342f158400ab602dd610f636329', 'stairs', 'snap_failed'), ('e:c690df6cad7b48bba7b3b30fee65eda2', 'stairs', 'snap_failed'), ('e:c7fa5f74d72f43498ef2cb3b1dbea7e4', 'escalator', 'snap_failed'), ('e:dcbc1a258ceb41b09ab50e417aabc8b4', 'stairs', 'snap_failed'), ('e:ed7e56a8e6234197be06280fcb24aecc', 'elevator', 'snap_failed'), ('e:f7671c07bc8d4f059fafa42d307f6873', 'walk', 'other')]
+shinjuku uniqueEdgeScene {'navmesh': {'samples': 3112, 'offFloor': 0, 'noFloor': 0, 'wallHits': 0}, 'connector': {'samples': 854, 'offFloor': 0, 'noFloor': 0, 'wallHits': 0}}
+SHRINK-ONLY FAIL
+ikebukuro ne_j__x26.connectorWallHits: 0 → 58
+ikebukuro total.connectorWallHits: 0 → 58
+ikebukuro total.unvalidatedJoins: 62 → 120
+ikebukuro total.invalidJoins: 0 → 120
+shinjuku navmesh-fallback grew: ['e:3763bee44e4740ac86216e99e212f8d1', 'e:45ebdab487134925b3b47cd29bffb99c', 'e:80b372f586204d5cbe5769beffcfbf56', 'e:967e8b882ad14db2979c375ad229d32a', 'e:bdcdf9229c9f49dc9bc02bec79c4a8fe', 'e:c3fe6342f158400ab602dd610f636329', 'e:c690df6cad7b48bba7b3b30fee65eda2', 'e:c7fa5f74d72f43498ef2cb3b1dbea7e4', 'e:dcbc1a258ceb41b09ab50e417aabc8b4']
+shinjuku total.unvalidatedJoins: 146 → 208

@@ -1,0 +1,26 @@
+ikebukuro suspectPolyline: {'routes': 0, 'edges': 0, 'edgeIds': []} (excluded from pass)
+ikebukuro fallback after: [{'edgeId': 'ne_j__x26', 'mode': 'stairs', 'reason': 'snap_failed'}]
+ikebukuro unexpected_link walk entries: []
+ikebukuro unexpected link identities: []
+ikebukuro failed gate entries: []
+ikebukuro routes complete/incomplete/suspect: 992 64 0
+shinjuku suspectPolyline: {'routes': 58, 'edges': 6, 'edgeIds': ['e:45ebdab487134925b3b47cd29bffb99c', 'e:bdcdf9229c9f49dc9bc02bec79c4a8fe', 'e:c3fe6342f158400ab602dd610f636329', 'e:c690df6cad7b48bba7b3b30fee65eda2', 'e:c7fa5f74d72f43498ef2cb3b1dbea7e4', 'e:dcbc1a258ceb41b09ab50e417aabc8b4']} (excluded from pass)
+shinjuku fallback after: [{'edgeId': 'e:65edd7ca50844b609d4dcb25bd296936', 'mode': 'elevator', 'reason': 'snap_failed'}, {'edgeId': 'e:6ac033af77914fe5a9786676088b952c', 'mode': 'walk', 'reason': 'disconnected'}, {'edgeId': 'e:82c9a2c2cd704a348fbeb423d07cb125', 'mode': 'walk', 'reason': 'other'}, {'edgeId': 'e:ed7e56a8e6234197be06280fcb24aecc', 'mode': 'elevator', 'reason': 'snap_failed'}]
+shinjuku unexpected_link walk entries: []
+shinjuku unexpected link identities: []
+shinjuku failed gate entries: []
+shinjuku routes complete/incomplete/suspect: 132 48 58
+| Metric | Ikebukuro main -> r5 | Shinjuku main -> r5 |
+|---|---:|---:|
+| fallback | 1 -> 1 | 4 -> 4 |
+| unvalidatedJoins | 64 -> 64 | 56 -> 48 |
+| invalidJoins | 0 -> 0 | 0 -> 0 |
+| connectorWallHits | 0 -> 0 | 0 -> 0 |
+| fallbackWallHits | 0 -> 0 | 6 -> 6 |
+| navmeshWallHits | 0 -> 0 | 0 -> 0 |
+| offFloor | 0 -> 0 | 0 -> 0 |
+| failedRoutePairs | 0 -> 0 | 2 -> 2 |
+| detours | 0 -> 0 | 0 -> 0 |
+| exit-stair snap_failed | 1 -> 1 | 0 -> 0 |
+| routablePairs | 1252 -> 1252 | 238 -> 238 |
+SHRINK-ONLY PASS

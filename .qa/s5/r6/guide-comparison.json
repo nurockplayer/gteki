@@ -1,0 +1,342 @@
+{
+  "measuredAt": "2026-11-04 JST",
+  "main": "3f3c026b",
+  "branch": "6e881692",
+  "from": "poi:exit:1",
+  "to": "poi:platform:oedo",
+  "graphLengthM": 193.40000000000003,
+  "stepCount": 23,
+  "instructionCount": 17,
+  "before": {
+    "points": 65,
+    "lengthM": 204.47163259615687,
+    "startsM": [
+      0,
+      0,
+      8.533644499575926,
+      15.438418919225754,
+      19.4443270559658,
+      24.63355628582258,
+      50.58664681979193,
+      60.22892870739509,
+      63.331991710300436,
+      71.20957196919656,
+      79.04586131787643,
+      86.33575157768144,
+      120.47518918289104,
+      129.67499896353326,
+      155.02518315135293,
+      160.65443709836936,
+      204.47163259615687
+    ],
+    "instructions": [
+      {
+        "text": "Start",
+        "kind": "start",
+        "steps": [],
+        "pathLengthM": 0
+      },
+      {
+        "text": "Take the stairs down to GL–B1 landing",
+        "kind": "stairs",
+        "steps": [
+          0,
+          1
+        ],
+        "pathLengthM": 8.533644499575926
+      },
+      {
+        "text": "Continue on the stairs",
+        "kind": "stairs",
+        "steps": [
+          2,
+          3
+        ],
+        "pathLengthM": 6.904774419649826
+      },
+      {
+        "text": "Take the stairs down to B1",
+        "kind": "stairs",
+        "steps": [
+          4
+        ],
+        "pathLengthM": 4.005908136740041
+      },
+      {
+        "text": "Go straight ~5 m",
+        "kind": "walk",
+        "steps": [
+          5
+        ],
+        "pathLengthM": 5.189229229856778
+      },
+      {
+        "text": "Turn left, ~26 m. After ~16 m, continue straight through the junction.",
+        "kind": "turn_left",
+        "steps": [
+          6,
+          7
+        ],
+        "pathLengthM": 25.953090533969352
+      },
+      {
+        "text": "Turn right, ~10 m",
+        "kind": "turn_right",
+        "steps": [
+          8
+        ],
+        "pathLengthM": 9.642281887603163
+      },
+      {
+        "text": "Pass the ticket gate",
+        "kind": "gate",
+        "steps": [
+          9
+        ],
+        "pathLengthM": 3.1030630029053423
+      },
+      {
+        "text": "Go straight ~8 m",
+        "kind": "walk",
+        "steps": [
+          10,
+          11
+        ],
+        "pathLengthM": 7.877580258896127
+      },
+      {
+        "text": "Turn left, ~8 m",
+        "kind": "turn_left",
+        "steps": [
+          12,
+          13
+        ],
+        "pathLengthM": 7.836289348679873
+      },
+      {
+        "text": "Turn right, ~7 m",
+        "kind": "turn_right",
+        "steps": [
+          14
+        ],
+        "pathLengthM": 7.289890259805002
+      },
+      {
+        "text": "Turn right, then take the escalator down to B3",
+        "kind": "escalator",
+        "steps": [
+          15
+        ],
+        "pathLengthM": 34.13943760520961
+      },
+      {
+        "text": "Go straight ~9 m",
+        "kind": "walk",
+        "steps": [
+          16
+        ],
+        "pathLengthM": 9.1998097806422
+      },
+      {
+        "text": "Turn left, then left again, ~21 m. After ~17 m, continue straight through the junction.",
+        "kind": "turn_left",
+        "steps": [
+          17,
+          18,
+          19
+        ],
+        "pathLengthM": 25.35018418781968
+      },
+      {
+        "text": "Turn right, ~6 m",
+        "kind": "turn_right",
+        "steps": [
+          20
+        ],
+        "pathLengthM": 5.629253947016433
+      },
+      {
+        "text": "Take the escalator down to B6",
+        "kind": "escalator",
+        "steps": [
+          21,
+          22
+        ],
+        "pathLengthM": 43.81719549778751
+      },
+      {
+        "text": "Arrive at destination. Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name, for search, from Tokyo Metropolitan Government data as of March 2020; some gates and transfers also carry an approximate position derived from that data's shapes (search display only, not for routing). There is no route for them. The Toei Shinjuku Line and other lines are not modelled.",
+        "kind": "arrive",
+        "steps": [],
+        "pathLengthM": 0
+      }
+    ],
+    "zeroSegments": 0
+  },
+  "after": {
+    "points": 67,
+    "lengthM": 204.47321467269754,
+    "startsM": [
+      0,
+      0,
+      8.5339191294781,
+      15.439327711258686,
+      19.445909132506472,
+      24.63513836236325,
+      50.5882288963326,
+      60.23051078393576,
+      63.33357378684111,
+      71.21115404573723,
+      79.0474433944171,
+      86.3373336542221,
+      120.47677125943171,
+      129.67658104007393,
+      155.0267652278936,
+      160.65601917491003,
+      204.47321467269754
+    ],
+    "instructions": [
+      {
+        "text": "Start",
+        "kind": "start",
+        "steps": [],
+        "pathLengthM": 0
+      },
+      {
+        "text": "Take the stairs down to GL–B1 landing",
+        "kind": "stairs",
+        "steps": [
+          0,
+          1
+        ],
+        "pathLengthM": 8.5339191294781
+      },
+      {
+        "text": "Continue on the stairs",
+        "kind": "stairs",
+        "steps": [
+          2,
+          3
+        ],
+        "pathLengthM": 6.905408581780588
+      },
+      {
+        "text": "Take the stairs down to B1",
+        "kind": "stairs",
+        "steps": [
+          4
+        ],
+        "pathLengthM": 4.006581421247782
+      },
+      {
+        "text": "Go straight ~5 m",
+        "kind": "walk",
+        "steps": [
+          5
+        ],
+        "pathLengthM": 5.189229229856778
+      },
+      {
+        "text": "Turn left, ~26 m. After ~16 m, continue straight through the junction.",
+        "kind": "turn_left",
+        "steps": [
+          6,
+          7
+        ],
+        "pathLengthM": 25.953090533969352
+      },
+      {
+        "text": "Turn right, ~10 m",
+        "kind": "turn_right",
+        "steps": [
+          8
+        ],
+        "pathLengthM": 9.642281887603163
+      },
+      {
+        "text": "Pass the ticket gate",
+        "kind": "gate",
+        "steps": [
+          9
+        ],
+        "pathLengthM": 3.1030630029053423
+      },
+      {
+        "text": "Go straight ~8 m",
+        "kind": "walk",
+        "steps": [
+          10,
+          11
+        ],
+        "pathLengthM": 7.877580258896127
+      },
+      {
+        "text": "Turn left, ~8 m",
+        "kind": "turn_left",
+        "steps": [
+          12,
+          13
+        ],
+        "pathLengthM": 7.836289348679873
+      },
+      {
+        "text": "Turn right, ~7 m",
+        "kind": "turn_right",
+        "steps": [
+          14
+        ],
+        "pathLengthM": 7.289890259805002
+      },
+      {
+        "text": "Turn right, then take the escalator down to B3",
+        "kind": "escalator",
+        "steps": [
+          15
+        ],
+        "pathLengthM": 34.13943760520961
+      },
+      {
+        "text": "Go straight ~9 m",
+        "kind": "walk",
+        "steps": [
+          16
+        ],
+        "pathLengthM": 9.1998097806422
+      },
+      {
+        "text": "Turn left, then left again, ~21 m. After ~17 m, continue straight through the junction.",
+        "kind": "turn_left",
+        "steps": [
+          17,
+          18,
+          19
+        ],
+        "pathLengthM": 25.35018418781968
+      },
+      {
+        "text": "Turn right, ~6 m",
+        "kind": "turn_right",
+        "steps": [
+          20
+        ],
+        "pathLengthM": 5.629253947016433
+      },
+      {
+        "text": "Take the escalator down to B6",
+        "kind": "escalator",
+        "steps": [
+          21,
+          22
+        ],
+        "pathLengthM": 43.81719549778751
+      },
+      {
+        "text": "Arrive at destination. Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name, for search, from Tokyo Metropolitan Government data as of March 2020; some gates and transfers also carry an approximate position derived from that data's shapes (search display only, not for routing). There is no route for them. The Toei Shinjuku Line and other lines are not modelled.",
+        "kind": "arrive",
+        "steps": [],
+        "pathLengthM": 0
+      }
+    ],
+    "zeroSegments": 2
+  }
+}
