@@ -311,7 +311,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .sheet { left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + var(--credit-extra)); width: auto; border-radius: var(--radius) var(--radius) 0 0; max-height: 38vh; }
   .app:not(.has-credit) .sheet { bottom: 0; padding-bottom: env(safe-area-inset-bottom); }
   .app[data-mode="walk"] .panel, .app[data-mode="guide"] .panel { display: none; }
-  .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { right: 16px; left: 16px; bottom: calc(10px + env(safe-area-inset-bottom) + var(--credit-extra)); justify-items: stretch; gap: 6px; }
+  .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { right: 16px; left: 16px; bottom: calc(10px + env(safe-area-inset-bottom) + var(--credit-extra)); justify-items: stretch; gap: 3px; }
   .hud-row { flex-wrap: wrap; justify-content: center; }
   /* 375 px: the group gets the row's full width (343 - 12 padding) and its five buttons fit on one line; smaller screens squeeze the text buttons rather than wrap. */
   .hud-guide { flex: 1 1 100%; min-width: 0; gap: 4px; justify-content: center; }
@@ -319,15 +319,23 @@ button.on { border-color: var(--accent); color: var(--accent); }
   /* 44 x 44 hit area for previous/next (the text buttons stretch to the same height); the 24 px it adds comes out of the text buttons' padding and shrink. */
   .hud-guide .guide-step { flex: 0 0 44px; min-width: 44px; min-height: 44px; padding: 0; font-size: 20px; }
   /* Mode buttons share one row instead of wrapping to two: the guide stack keeps the view centre clear (#838). */
-  .hud-row > button { padding: 7px 8px; font-size: 12px; }
+  .hud-row > button { padding: 5px 8px; font-size: 12px; }
   .hud-line { width: 100%; }
   /* Two lines of instruction at most; the mascot's chatter bubble yields on the phone (its figure stays). */
   .hud-instruction { font-size: 15px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .hud-line .mascot-bubble { display: none; }
+  /* The guide stack is bottom-anchored, so its own height is what decides how far up the view it reaches: the
+     guide box, the Ride-train button and the control row are compacted here so the stack ends below 70 % of the
+     height and the middle band stays map (#838). The 44 px prev/next hit area is kept. */
+  .app[data-mode="guide"] .hud-instruction { padding: 7px 12px; }
+  .app[data-mode="guide"] .hud-row { padding: 5px; }
+  .app[data-mode="guide"] .rail-launch { min-height: 32px; padding: 4px 12px; font-size: 12px; }
   /* The guide screen keeps the map's circle and controls, dropping its text block so it ends above the view centre (#838).
      120 px is the compact map spec 22 still accepts; with it and the two control rows the block ends above 30 % of the height. */
   .app[data-mode="guide"] .minimap { --minimap-size: 120px; }
   .app[data-mode="guide"] .minimap-body { padding-bottom: 2px; }
+  /* Two slimmer control rows keep the block's bottom above 30 % of the height with room to spare. */
+  .app[data-mode="guide"] .minimap-controls button { min-height: 24px; padding-block: 1px; }
   .app[data-mode="guide"] .minimap-label, .app[data-mode="guide"] .minimap-route-label, .app[data-mode="guide"] .minimap-notice { display: none; }
 }
 @media (max-width: 480px) {
