@@ -281,7 +281,7 @@ boxCorners	function	apps/web/src/explorer/overviewFraming.ts	160
 FrameView	interface	apps/web/src/explorer/overviewFraming.ts	166
 FramePose	interface	apps/web/src/explorer/overviewFraming.ts	197
 frameBounds	function	apps/web/src/explorer/overviewFraming.ts	228
-OverviewLook	class	apps/web/src/explorer/overviewLook.ts	10
+OverviewLook	class	apps/web/src/explorer/overviewLook.ts	11
 Plane	type	apps/web/src/explorer/portalCut.ts	12
 CutRegion	interface	apps/web/src/explorer/portalCut.ts	15
 PortalCutResources	interface	apps/web/src/explorer/portalCut.ts	114
