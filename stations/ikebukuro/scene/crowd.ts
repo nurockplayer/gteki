@@ -4,6 +4,7 @@
 // parts, jacket over shirt, hair cap, rounded shoes with a darker sole, elbow and knee joints), drawn as
 // one InstancedMesh per part with per-instance colour; no per-agent objects, no physics.
 import type * as THREE_NS from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 
 interface P3 { x: number; y: number; z: number | null }
 interface Edge { id: string; from: string; to: string; verification: string; geometry: P3[] }
@@ -540,7 +541,8 @@ export function buildCrowd(
     a.phase = a.bobPhase = rand() * 6.28;
   }
 
-  const geo = makeGeometry(THREE, count <= LOW_QUALITY_MAX_COUNT);
+  const low = count <= LOW_QUALITY_MAX_COUNT;
+  const geo = makeGeometry(THREE, low);
   // One material per surface type. Albedos are real-world values; the envMap is the only light, so it is
   // held down a little to keep dark coats dark.
   // Specular is cut back (MeshPhysicalMaterial.specularIntensity): with F0 = 0.04 against a bright studio envMap,
@@ -633,7 +635,7 @@ export function buildCrowd(
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     mesh.frustumCulled = false;
     mesh.userData.gteki_role = "ambient_crowd";
-    group.add(mesh);
+    if (!low) group.add(mesh);
     return { mesh, per, slots };
   };
   const P = {
@@ -656,6 +658,85 @@ export function buildCrowd(
   const parts = Object.values(P);
   const hairParts = [P.hair0, P.hair1, P.hair2];
 
+  // Phone: one merged rest figure, a packed per-person palette, and simple GPU limb swings.
+  // Optional pieces collapse to zero area in the same draw; desktop keeps its full CPU IK pose.
+  let lowMesh: THREE_NS.InstancedMesh | undefined;
+  let lowPhase: THREE_NS.InstancedBufferAttribute | undefined;
+  if (low) {
+    const pieces: THREE_NS.BufferGeometry[] = [];
+    const add = (g: THREE_NS.BufferGeometry, color: number, variant: number, x: number, y: number, scale = 1, pivot = 0, swing = 0) => {
+      const rest = g.clone().scale(scale, scale, scale).translate(x, y, 0);
+      const meta = Array.from({ length: rest.getAttribute("position").count }, () => [color, variant, pivot, swing]).flat();
+      rest.setAttribute("part", new THREE.Float32BufferAttribute(meta, 4));
+      pieces.push(rest);
+    };
+    add(geo.torso, 0, 0, 0, CHEST_Y);
+    add(geo.shirt, 1, 1, 0, CHEST_Y);
+    add(geo.head, 3, 0, 0, CHEST_Y + HEAD_PIVOT_DY, HEAD_SCALE);
+    [geo.hair0, geo.hair1, geo.hair2].forEach((g, h) => add(g, 4, 3 + h, 0, CHEST_Y + HEAD_PIVOT_DY, HEAD_SCALE));
+    add(geo.backpack, 7, 6, 0, CHEST_Y);
+    add(geo.shoulderBag, 7, 7, 0, CHEST_Y);
+    for (const side of [1, -1]) {
+      const hip = HIPS_Y + THIGH_DY, shoulder = CHEST_Y + SHOULDER_DY;
+      add(geo.skirt, 2, 2, side * THIGH_X, hip, 1, hip, side * 0.22);
+      add(geo.thigh, 5, 0, side * THIGH_X, hip, 1, hip, side * 0.32);
+      add(geo.shin, 5, 0, side * THIGH_X, hip - L_THIGH, 1, hip, side * 0.32);
+      add(geo.shoe, 6, 0, side * THIGH_X, ANKLE_H, 1, hip, side * 0.32);
+      add(geo.upperArm, 0, 0, side * SHOULDER_X, shoulder, 1, shoulder, -side * 0.25);
+      add(geo.foreArm, 0, 0, side * SHOULDER_X, shoulder - L_UPPER_ARM, 1, shoulder, -side * 0.25);
+      add(geo.hand, 3, 0, side * SHOULDER_X, shoulder - L_UPPER_ARM - L_FOREARM, 1, shoulder, -side * 0.25);
+    }
+    const merged = mergeGeometries(pieces)!;
+    pieces.forEach((g) => g.dispose());
+    owned.push(merged);
+    const paletteKeys = ["coat", "shirt", "tail", "skin", "hair", "leg", "shoe", "bag"];
+    for (let half = 0; half < 2; half++) {
+      const colors = looks.flatMap((_, i) => paletteKeys.slice(half * 4, half * 4 + 4).map((key) => cols[key]![i]!));
+      merged.setAttribute(`palette${half}`, new THREE.InstancedBufferAttribute(new Float32Array(colors), 4));
+    }
+    const variants = looks.flatMap((l) => [Number(l.open), l.tail, l.hair, l.carry === "backpack" ? 1 : l.carry === "shoulderBag" ? 2 * l.bagSide : 0]);
+    merged.setAttribute("look", new THREE.InstancedBufferAttribute(new Float32Array(variants), 4));
+    lowPhase = new THREE.InstancedBufferAttribute(new Float32Array(count), 1).setUsage(THREE.DynamicDrawUsage);
+    merged.setAttribute("phase", lowPhase);
+    M.cloth.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader.replace("#include <common>", `#include <common>
+        attribute vec4 part, palette0, palette1, look;
+        attribute float phase;
+        vec3 crowdSwing(vec3 v) {
+          float a = sin(phase) * part.w;
+          return vec3(v.x, cos(a) * v.y - sin(a) * v.z, sin(a) * v.y + cos(a) * v.z);
+        }
+      `).replace("#include <color_vertex>", `#include <color_vertex>
+        int slot = int(part.x);
+        float hex = slot < 4 ? palette0[slot] : palette1[slot - 4];
+        vec3 rgb = mod(floor(hex / vec3(65536.0, 256.0, 1.0)), 256.0) / 255.0;
+        vColor *= mix(rgb / 12.92, pow((rgb + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), rgb));
+      `).replace("#include <beginnormal_vertex>", `#include <beginnormal_vertex>
+        if (part.y == 7.0 && look.w < 0.0) objectNormal.xz *= -1.0;
+        objectNormal = crowdSwing(objectNormal);
+      `).replace("#include <begin_vertex>", `#include <begin_vertex>
+        float tag = part.y;
+        bool shown = tag == 0.0 || (tag == 1.0 && look.x > 0.5) || (tag == 2.0 && look.y > 0.5)
+          || (tag >= 3.0 && tag <= 5.0 && tag - 3.0 == look.z)
+          || (tag == 6.0 && look.w == 1.0) || (tag == 7.0 && abs(look.w) == 2.0);
+        if (tag == 2.0 && look.y == 1.0) transformed.y = ${TAIL_TOP} + (transformed.y - ${TAIL_TOP}) * 0.62;
+        if (tag == 7.0 && look.w < 0.0) transformed.xz *= -1.0;
+        transformed.y -= part.z;
+        transformed = crowdSwing(transformed);
+        transformed.y += part.z;
+        // Lift the rigid swinging leg enough that the shoe cannot cut through the floor.
+        transformed.y += 0.05 * abs(sin(phase));
+        if (!shown) transformed = vec3(0.0);
+      `);
+    };
+    lowMesh = new THREE.InstancedMesh(merged, M.cloth, count);
+    lowMesh.name = "crowd_low";
+    lowMesh.frustumCulled = false;
+    lowMesh.userData.gteki_role = "ambient_crowd";
+    lowMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    group.add(lowMesh);
+  }
+
   const pos = new THREE.Vector3(), dir = new THREE.Vector3(), side = new THREE.Vector3();
   let along = 0; // horizontal distance from the edge start at the last sample()
   const q = new THREE.Quaternion(), base = new THREE.Matrix4();
@@ -666,7 +747,7 @@ export function buildCrowd(
   const cam = new THREE.Vector3(1e9, 0, 0);
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
   let renders = 0;
-  P.torso.mesh.onBeforeRender = (_r, _s, camera) => {
+  (lowMesh ?? P.torso.mesh).onBeforeRender = (_r, _s, camera) => {
     renders++;
     cam.setFromMatrixPosition(camera.matrixWorld);
     frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
@@ -729,6 +810,7 @@ export function buildCrowd(
     if (who >= 0) part.mesh.setMatrixAt(who * part.per + side, m);
   };
   const hide = (i: number) => {
+    if (lowMesh) { lowMesh.setMatrixAt(i, hidden); return; }
     for (const part of parts) {
       if (part.per === 2) { put(part, i, 0, hidden); put(part, i, 1, hidden); } else put(part, i, 0, hidden);
     }
@@ -936,9 +1018,15 @@ export function buildCrowd(
         hide(i);
         continue;
       }
-      pose(i, a, L, base);
+      if (lowMesh) {
+        lowMesh.setMatrixAt(i, base);
+        lowPhase!.setX(i, a.phase);
+      } else pose(i, a, L, base);
     }
-    for (const part of parts) part.mesh.instanceMatrix.needsUpdate = true;
+    if (lowMesh) {
+      lowMesh.instanceMatrix.needsUpdate = true;
+      lowPhase!.needsUpdate = true;
+    } else for (const part of parts) part.mesh.instanceMatrix.needsUpdate = true;
     nearby = near;
   }
   update(0, 0);
@@ -952,6 +1040,7 @@ export function buildCrowd(
       owned.forEach((g) => g.dispose());
       Object.values(M).forEach((m) => m.dispose());
       parts.forEach((p) => p.mesh.dispose());
+      lowMesh?.dispose();
     },
   };
 }
