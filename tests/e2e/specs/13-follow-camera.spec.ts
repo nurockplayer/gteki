@@ -298,7 +298,10 @@ for (const key of STATIONS) {
     await page.waitForTimeout(1000);
     await run("first-person off (guide)", () => hud(/^First person$/).click(), declared.follow);
     await page.waitForTimeout(1000);
-    await run("end-guide (guide to walk)", async () => { await hud(/^End guide$/).click(); await expect.poll(() => hooks.mode(page)).toBe("walk"); }, declared.follow);
+    // placeCamera keeps the slope lens through stepSlope's smoothing and landing hold before easing to 50.
+    // Ending a guide on stairs must allow that release time as well as the normal 900 ms lens window.
+    const slopeReleaseMs = Math.ceil(((k.lensSlope.hold ?? 0) + 3 * (k.lensSlope.smooth ?? 0)) * 1000);
+    await run("end-guide (guide to walk)", async () => { await hud(/^End guide$/).click(); await expect.poll(() => hooks.mode(page)).toBe("walk"); }, declared.follow, "ease", 900 + slopeReleaseMs);
     await page.waitForTimeout(800);
     await run("first-person on (walk)", () => hud(/^First person$/).click(), declared.firstPerson);
     await page.waitForTimeout(800);
