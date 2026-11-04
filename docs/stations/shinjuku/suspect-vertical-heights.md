@@ -86,13 +86,13 @@ The regenerated fallback and clip-baseline files are byte-identical; paths and
 suspect files changed.
 
 Public bundle SHA-256: `61225ea3e89fe4732368f38c4023f7bce58bde7c3d390671980719695a05ec16`.
-Mesh SHA-256: `d0bd5911f41504b376c052ae0fa65130faf29cd102da9bbd74f307e03605b826`.
+Mesh SHA-256: `94801d37b89b6f02102311ddd38278b01afc9cc374852d346539bb896c2764f8`.
 
-After refreshing the fare cache, `orb-test -- pnpm bake:stairwells:check`
-passed both tiers at 2026-11-04 07:40 JST: the existing recipes replayed over
-308 meshes, 68 cut meshes and 18,696 cut triangles, with maximum attribute
-error `0.0000152587890625`. The subsequent roof and portal corrections
-require a fresh recipe bake and navmesh qualification.
+After the roof and portal corrections, the final heavy run completed at
+2026-11-04 10:41 JST. Both stairwell tiers were rebaked and passed
+`pnpm bake:stairwells:check`: 308 meshes, 68 cut meshes and 18,697 cut triangles,
+with maximum attribute error `0.0000152587890625`. The canonical public gate
+and attachment/baseline comparison then passed on that same geometry.
 
 ## Bounded review — 2026-11-04 JST
 
