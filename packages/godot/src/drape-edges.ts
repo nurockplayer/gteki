@@ -9,9 +9,12 @@ import { nodeDisplayZ, routePolyline, type PolylinePoint, type RouteResult } fro
 import { parseStationFiles, type Edge, type Node, type StationBundle } from "@gteki/schema";
 import type { StationScene } from "@gteki/scene-api";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
+import { buildGreybox } from "../../../apps/web/src/explorer/greybox.ts";
+import type { PolygonRegion } from "../../../apps/web/src/explorer/privateLevels.ts";
 import { auditPolyline, loadScene, privateSceneProbe, sceneProbe, violations, type SampleDetail, type SceneProbe } from "./route-clip-audit.ts";
 
 type Point = { x: number; y: number; z: number };
+type DrapeProbe = SceneProbe & { nodeGround?: THREE.Object3D[] };
 const point = (p: Point): PolylinePoint => ({ ...p, zKnown: false, stepIndex: 0, floorId: "" });
 const clean = (probe: SceneProbe, pts: Point[]) => violations(auditPolyline(probe, pts.map(point))) === 0;
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -28,7 +31,8 @@ function drawn(bundle: StationBundle, edge: Edge): PolylinePoint[] {
 }
 
 /** Automatic gap flags must not supply the floor or wall opening used to clear themselves. */
-export async function drapeSceneProbe(scene: StationScene, bundle: StationBundle, overlayDir: string): Promise<SceneProbe> {
+export async function drapeSceneProbe(scene: StationScene, bundle: StationBundle, overlayDir: string): Promise<DrapeProbe> {
+  const source = sceneProbe(scene);
   const withoutAutomaticGaps = { ...bundle, edges: bundle.edges.map(edge => {
     if (edge.attributes?.sceneGapReason !== "drape-unresolved") return edge;
     const attributes = { ...edge.attributes };
@@ -36,21 +40,32 @@ export async function drapeSceneProbe(scene: StationScene, bundle: StationBundle
     delete attributes.sceneGapReason;
     return { ...edge, attributes };
   }) };
-  return await privateSceneProbe(scene, withoutAutomaticGaps, overlayDir) ?? sceneProbe(scene);
+  const probe = await privateSceneProbe(scene, withoutAutomaticGaps, overlayDir);
+  if (!probe) return source;
+  // Height evidence comes from the source scene and selected polygons, never graph-built ribbons or landings.
+  const regions = JSON.parse(fs.readFileSync(path.join(overlayDir, "private_regions.json"), "utf8")) as PolygonRegion[];
+  const polygons = buildGreybox({ ...bundle, edges: [] }, () => false, () => false,
+    { colliderNear: () => false, wallHit: () => null }, "low", true, regions);
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(polygons.navFloors ?? [], 3));
+  const floor = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+  floor.updateMatrixWorld(true);
+  return { ...probe, nodeGround: [...source.ground, floor] };
 }
 
 /** Drape selected edges without mutating the input bundle. */
-export function drapeEdges(probe: SceneProbe, bundle: StationBundle, edgeIds: Set<string>, opts: { maxCells?: number; nodeIds?: Set<string> } = {}): {
+export function drapeEdges(probe: DrapeProbe, bundle: StationBundle, edgeIds: Set<string>, opts: { maxCells?: number; nodeIds?: Set<string> } = {}): {
   nodes: Map<string, number>; geometry: Map<string, Point[]>; unresolved: { edgeId: string; reason: string }[]; sceneGaps: Map<string, boolean>;
 } {
   const selected = bundle.edges.filter(e => edgeIds.has(e.id)).sort((a, b) => a.id.localeCompare(b.id));
   const nodes = new Map<string, number>(), geometry = new Map<string, Point[]>(), unresolved: { edgeId: string; reason: string }[] = [];
   const byId = new Map(bundle.nodes.map(n => [n.id, n]));
   const floors = new Map(bundle.floors.map(f => [f.id, f]));
+  const nodeProbe = probe.nodeGround ? { ...probe, ground: probe.nodeGround } : probe;
   for (const id of [...new Set(selected.flatMap(e => [e.from, e.to]))].sort()) {
     const n = byId.get(id)!;
     if (n.position.z !== null || opts.nodeIds && !opts.nodeIds.has(id)) continue;
-    const z = floorAt(probe, n.position.x, n.position.y, floors.get(n.floorId)?.renderElevationM ?? 0, 2);
+    const z = floorAt(nodeProbe, n.position.x, n.position.y, floors.get(n.floorId)?.renderElevationM ?? 0, 2);
     if (z !== undefined) nodes.set(id, z);
   }
   const updated = { ...bundle, nodes: bundle.nodes.map(n => nodes.has(n.id) ? { ...n, renderZ: nodes.get(n.id)! } : n) };

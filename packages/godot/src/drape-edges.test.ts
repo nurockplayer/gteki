@@ -25,6 +25,24 @@ function bundle() {
   return b;
 }
 describe("scene floor draping", () => {
+  it.each(["scene", "polygon"])("snaps to %s floors without using a graph-generated ribbon as height evidence", async (source) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "drape-source-height-"));
+    try {
+      const b = bundle(), original = source === "scene" ? probe(true, 1.5) : { ground: [], collider: [] };
+      const origin = source === "scene" ? 20 : -5, size = source === "scene" ? 4 : 10;
+      fs.writeFileSync(path.join(dir, "private_regions.json"), JSON.stringify([
+        { kind: "polygon", level: "concourse", y: 1.5, rings: [[
+          { x: origin, z: origin }, { x: origin + size, z: origin }, { x: origin + size, z: origin + size }, { x: origin, z: origin + size },
+        ]] },
+      ]));
+      const root = new THREE.Group().add(...original.ground, ...original.collider);
+      root.updateMatrixWorld(true);
+      const p = await drapeSceneProbe({ root, walkable: original.ground, colliders: original.collider, walls: [] } as never, b, dir);
+      const result = drapeEdges(p, b, new Set(["edge"]));
+      expect(result.nodes.get("start")).toBeCloseTo(1.5);
+      expect(result.nodes.get("goal")).toBeCloseTo(1.5);
+    } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  });
   it("loads polygon floors for the drape and audit while retaining explicit holes", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "drape-regions-"));
     try {
