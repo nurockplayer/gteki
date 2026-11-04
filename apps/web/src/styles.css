@@ -324,7 +324,10 @@ button.on { border-color: var(--accent); color: var(--accent); }
   /* Two lines of instruction at most; the mascot's chatter bubble yields on the phone (its figure stays). */
   .hud-instruction { font-size: 15px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .hud-line .mascot-bubble { display: none; }
-  /* The guide screen keeps the map's circle and controls, dropping its text block so it ends above the view centre (#838). */
+  /* The guide screen keeps the map's circle and controls, dropping its text block so it ends above the view centre (#838).
+     120 px is the compact map spec 22 still accepts; with it and the two control rows the block ends above 30 % of the height. */
+  .app[data-mode="guide"] .minimap { --minimap-size: 120px; }
+  .app[data-mode="guide"] .minimap-body { padding-bottom: 2px; }
   .app[data-mode="guide"] .minimap-label, .app[data-mode="guide"] .minimap-route-label, .app[data-mode="guide"] .minimap-notice { display: none; }
 }
 @media (max-width: 480px) {
