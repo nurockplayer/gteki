@@ -1,50 +1,51 @@
 # #826 Shinjuku: four missing navmesh paths — diagnosis
 
-2026-11-05 JST. Bake data: `.qa/826/diag/shinjuku/audit.json` (job `826-diag`, orb-test #487, exit 0,
-bake 30.4 s, 05:05–05:10 JST), which reproduces main exactly (`python3 .qa/826/compare.py diag shinjuku`
-→ SHRINK-ONLY PASS, all counters equal): fallback 4, unvalidatedJoins 56, fallbackWallHits 6,
-failedRoutePairs 2, routablePairs 238; `links.failed` = 3× `unsafe_snap` (4b7d9463, 6113a228,
-7628a98a) + 2× `snap_failed` (the elevators); `snapRejections {floor:3,wall:0}` = the 3 unsafe_snap.
+2026-11-05 JST. Data: `.qa/826/diag/shinjuku/audit.json` (job `826-diag`, orb-test #487, 05:05–05:10 JST)
+and `.qa/826/probe/shinjuku/audit.json` (job `826-probe2`, orb-test #491, 05:36–05:47 JST, `qaEdgeProbe`).
+Both reproduce main exactly: fallback 4, unvalidatedJoins 56, fallbackWallHits 6, failedRoutePairs 2,
+routablePairs 238; `links.failed` = 3× `unsafe_snap` + 2× `snap_failed` (the elevators);
+`snapRejections {floor:3,wall:0}` = exactly the three `unsafe_snap` edges.
 
-## 1. e:82c9a2c2cd704a348fbeb423d07cb125 — walk, toei-nwd-m0_5
-- forward+reverse: `no_path`, both endpoints snapped, `connectivity: disconnected`,
-  `sampledWallCrossSectionM` 2.42, one gap: 3.82–4.30 m of a 5.02 m edge (reverse: 0.72–1.19),
-  length 0.48 m, left 1.40 / right 1.40, clearance 2.80, `floorMissing: false`,
-  `class: "other"`, `colliderKinds: ["wall"]`.
-- Reading: the landing strip is 2.8 m wide (layout `linkStrips` halfWidth 1.4) and a **wall spans
-  its full width** near the middle; the 0.48 m gap is that wall. The layout's own `walls`/`runWalls`
-  do not cross the line (`.qa/826/layout-probe.ts`), so the wall comes from the **live scene** —
-  candidate: a stairwell rail emitted by `cutStairwells` (`apps/web/src/explorer/stairwellCut.ts:404-413`,
-  rails are added to the navmesh `walls` at `well.upperY`). Pending `qaEdgeProbe.wallCrossings`
-  (job `826-probe`) to name it exactly.
-- Source support: not yet established. A rail across the walk line is correct geometry if the walk
-  must go around the well; it is a bug only if the rail closes the run's own mouth.
+**Verdict: neither group is a source-backed repair for this task. Both are Blocked below, no source change.**
 
-## 2. e:6ac033af77914fe5a9786676088b952c — walk, toei-nwd-m0_5
-- forward+reverse: `no_path`, both endpoints snapped, `connectivity: disconnected`,
-  `sampledWallCrossSectionM` 4.07, **`gaps: []`**.
-- Reading: no scene-side obstruction (no wall, no missing floor, wide cross-section) yet Detour has
-  no path → the navmesh is missing or split along a clean line. Candidates: clearance below
-  `walkableHeight` 1.7 m over part of the line, a strip cut into islands, or an eroded neck.
-  Pending `qaEdgeProbe.navAlong` (0.25 m polygon presence) and `.headroom` (job `826-probe`).
+## Walk edges: one stairwell rail crosses each landing strip
+- `e:82c9a2c2…` (m0_5, 5.02 m): both ends snap (dy 0.014 / 0.059, dxz 0); navmesh present at all 22
+  samples along the authored line (dy +0.014…+0.067); island of A reaches 11/25 points of a ±2 m grid,
+  B is unreachable (`disconnected`). Headroom 4.63–5.08 m, so clearance is not the cause.
+- `e:6ac033af…` (m0_5, 3.57 m): both ends snap (0.035 / 0.082); navmesh at all 16 samples; island of A
+  12/25, B unreachable. Headroom 3.20 m everywhere.
+- Exactly one wall crosses each walk line; both are the same shape, perpendicular to the walk, 0.49 m
+  long (this is the 0.478 m `colliderKinds:["wall"]` gap the audit reports):
+  - 82c9a2c2: (-47.70,145.22)→(-47.25,145.40), z −1.899…−0.720 (landing −1.68)
+  - 6ac033af: (-48.63,145.97)→(-48.17,146.15), z −6.458…−5.280 (landing −6.24)
+- Source: `apps/web/src/explorer/stairwellCut.ts:404-413` — `wellRails` output is emitted as both a rail
+  mesh and a navmesh wall. `wellRails` suppresses rails only inside stair pieces and the well's own
+  landings (`:120-126`); the *planned flat walk across the landing* (the layout's link strip) is not in
+  that set, so the cut cannot know a route crosses there.
+- Reading: the rail splits each landing into two navmesh islands, and it is also a real barrier for the
+  walker in the 3D scene — so the authored route across the well mouth conflicts with the source
+  geometry. Removing the rail is forbidden (it guards a real drop); teaching the cut about planned flat
+  walks is a design change in `liveScene.ts` plumbing plus a crossing rule, not a source-backed patch.
 
-## 3. e:65edd7ca50844b609d4dcb25bd296936 — elevator, toei-nwd-1 (1.30 m)
-- `snap_failed` / `link_unattached`; endpoint snaps absent (`fromSnapped`/`toSnapped` false).
-- `snap_failed` in `verticalLinkCandidates` (`packages/godot/src/navmesh-links.ts:92-105`) is emitted
-  only when `snap()` finds no polygon within ±1.5 m horizontally and ±0.6 m in height. It is **not**
-  a `validateLinkSnap` rejection (that would be `unsafe_snap`; the three of those are other edges).
-- Layout: `n:5b824a37…` (1F, z=0) sits in the elevator shaft void — the lift cut removes the slab,
-  so there is no floor at the node itself. Whether a floor exists within the 1.5 m box decides the
-  fix; pending `qaEdgeProbe.fromEnd/toEnd` (job `826-probe`).
-- Candidate root cause: the snap runs on the **initial** bake, before `linkPadGeometry` pads exist,
-  so an endpoint inside a shaft void can never snap. Adding `--snap-fallback` would be a fallback
-  (forbidden); the honest repair needs source geometry (a landing floor at the shaft mouth).
+## Elevator edges: the 1F exit 3/4/5 cluster has no navmesh at all
+- Both fail on the same 1F node `n:5b824a37…` (-3.84, 0, 3.22): `snap: null` **and**
+  `findClosestPoint` returns nothing even with a ±3 m box (`.qaEdgeProbe[2..3]`).
+- `e:ed7e56a8…`: its B1 node `n:cbaeded0…` snaps normally (dy 0.034, dxz 0.191) — only the 1F end fails.
+- `e:65edd7ca…`: both ends (`n:5b824a37…`, `n:e6feaa2c…`) are null in the ±3 m box.
+- The adjacent walk edge `e:e65b70241dc5462c893ee0aacc3b935f` from `n:e6feaa2c…` also fails
+  `snap_failed`; it is a dead-end stub, so it never enters the fallback list.
+- The audit queries the **final** bake (link pads included), so this is not link admission and not the
+  initial-bake/`linkPad` ordering: the 1F floor of that exit cluster is simply not in the mesh.
+  Layout cover at 1F: elevator node `[]` (shaft void), exit node only the link strip
+  `link:e:e65b7024…:1:clear0`.
+- Repairing it needs the plan's 1F floor at that cluster, not a snap change — a separate geometry task.
 
-## 4. e:ed7e56a8e6234197be06280fcb24aecc — elevator, m1 ↔ toei-nwd-1 (7.81 m)
-- Same shape as #3: `snap_failed`, `link_unattached`, both endpoint snaps absent; `n:cbaeded02c…`
-  (B1, z=-7.8) is the partner node in the same shaft void, so both need the `826-probe` boxes.
-
-## Next
-`.qa/826/probe-navmesh.sh` (job `826-probe`, started 2026-11-05 05:13 JST) dumps `qaEdgeProbe`:
-endpoint snaps + 1.5/3 m boxes, island grid, 0.25 m navmesh presence, wall crossings, clearance.
-Anything not source-backed is Blocked with the data location above; audit classification is untouched.
+## Blocked (data locations)
+1. Rails vs planned walks: `apps/web/src/explorer/stairwellCut.ts:81-127` (`wellRails`) and the
+   `cutStairwells` call site in `apps/web/src/explorer/liveScene.ts`; evidence
+   `.qa/826/probe/shinjuku/audit.json` → `qaEdgeProbe[0..1].wallCrossings`, `island`, `navAlong`.
+2. Missing 1F exit floor: `stations/shinjuku/data/plan.json` (1F levels/spaces around x ≈ −3,
+   north ≈ 3.2–3.6) and `stations/shinjuku/scene/layout.ts` (`linkStrips`, `liftCuts`); evidence
+   `.qa/826/probe/shinjuku/audit.json` → `qaEdgeProbe[2..3].fromEnd/toEnd`, and the diag
+   `qaEntries` for `e:e65b70241dc5462c893ee0aacc3b935f`.
+No audit classification or tolerance was changed; no fallback was added; no PR was opened.
