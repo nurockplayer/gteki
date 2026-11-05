@@ -848,7 +848,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       const floors = junctionFloors.get(j.edgeId) ?? [];
       floors.push({ at: j.at, radius: along, level: j.level, otherEdge: m.edgeId, otherLevel: meets!.level, points: otherPath, ownPoints: ownPath, polygons }); junctionFloors.set(j.edgeId, floors);
       const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, otherPath);
-      for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
+      const graded = junctionOpenings(near, discRing(j.at, along), junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level)), junctionPath(m.points, other));
+      for (const polygon of graded) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
     } catch { legacyEdgeIds.add(j.edgeId); legacyEdgeIds.add(m.edgeId); }
   }
   const edgeById = new Map(bundle.edges.map((edge) => [edge.id, edge]));

@@ -1170,10 +1170,10 @@ describe("turning landing guards", () => {
     // Two flights leave one node 10 degrees apart: the junction reach is 2 * half / sin(10 degrees), about 9 m.
     const a = g([[0, 0, 0], [10.5, 5.78, 0]]), b = g([[0, 0, 0], [15.7567, 8.8, 2.7784]]);
     const station = createSyntheticBundle([
-      syntheticEdge("long", "node", "atop", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
-      syntheticEdge("second", "node", "btop", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+      syntheticEdge("long", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "start", "b", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
     ] as Parameters<typeof createSyntheticBundle>[0]);
-    for (const [id, p] of [["node", a[0]!], ["atop", a[1]!], ["btop", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["b", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
     const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
     expect(result.stats.legacyConnectors).toBe(0);
     // 7.5 m out, the long flight's drawn surface is at 3.92 m and the other's at 4.47 m; both polylines are at 4.13 m.
