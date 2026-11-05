@@ -46,11 +46,12 @@ describe("station geometry lifetime", () => {
     expect(result.retained).toBe(0);
     // #789 (2026-11-04 JST): geometry remeasured after repairing the node display heights.
     expect(result.live).toBe(146); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss)
-    expect(result.bytes).toBe(16287164); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
+    // #645 step 2c: lift-door clearances split two restricted boundaries (+5,184 B).
+    expect(result.bytes).toBe(16292348); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
     // #49 retains two clipped render-only shell batches: +217,498 B and +5,055 triangles
     // after #316 stopped letting surfaces below the runs suppress the shell.
     // #789 updates the expected buffers for the repaired display heights; the
     // scene-digest fixture records those changes. Retired arrays stay collectible.
-    expect(result.geometryHash).toBe("86ec55837cb584f0c6ee9b3478f8329bf65d5a768abc3dd61b3aef9f49c2f9ef");
+    expect(result.geometryHash).toBe("1fbffe9da493e663cfcda49ef1ecce0ff8a32bfdf9a482d97ca10a6fbf607261");
   }, 60_000);
 });
