@@ -10,7 +10,22 @@ export function floorProbe(ray: THREE.Raycaster, groundTargets: readonly THREE.O
     ray.far = 6;
     return castAll(ray, groundTargets).some((h) => Math.abs(h.point.y - p.z) <= 1);
   };
+  const candidatesAt = staticFloorCandidates(groundTargets);
   const hits: THREE.Intersection[] = [];
+  return (p) => {
+    ray.set(R(p.x, p.y, p.z + 3), new THREE.Vector3(0, -1, 0));
+    ray.far = 6;
+    for (const target of candidatesAt(p)) {
+      if (!target.layers.test(ray.layers)) continue;
+      hits.length = 0;
+      raycastObject(target, ray, hits);
+      if (hits.some((h) => !portalPassable(h) && Math.abs(h.point.y - p.z) <= 1)) return true;
+    }
+    return false;
+  };
+}
+
+function staticFloorCandidates(groundTargets: readonly THREE.Object3D[]): (p: V3) => THREE.Object3D[] {
   const cells = new Map<string, THREE.Object3D[]>();
   const fallback: THREE.Object3D[] = [];
   const cellSize = 16;
@@ -28,27 +43,17 @@ export function floorProbe(ray: THREE.Raycaster, groundTargets: readonly THREE.O
       cell.push(target);
     }
   }
-  return (p) => {
-    ray.set(R(p.x, p.y, p.z + 3), new THREE.Vector3(0, -1, 0));
-    ray.far = 6;
-    const candidates = cells.get(`${Math.floor(p.x / cellSize)},${Math.floor(-p.y / cellSize)}`) ?? [];
-    for (const target of [...candidates, ...fallback]) {
-      if (!target.layers.test(ray.layers)) continue;
-      hits.length = 0;
-      raycastObject(target, ray, hits);
-      if (hits.some((h) => !portalPassable(h) && Math.abs(h.point.y - p.z) <= 1)) return true;
-    }
-    return false;
-  };
+  return (p) => [...(cells.get(`${Math.floor(p.x / cellSize)},${Math.floor(-p.y / cellSize)}`) ?? []), ...fallback];
 }
 
 /** Highest walkable surface in a vertical band at a station-ENU point. */
 export function floorHeightProbe(ray: THREE.Raycaster, groundTargets: readonly THREE.Object3D[]): (p: V3, low: number, high: number) => number | undefined {
+  const candidatesAt = staticFloorCandidates(groundTargets);
   return (p, low, high) => {
     ray.set(R(p.x, p.y, high + 0.001), new THREE.Vector3(0, -1, 0));
     ray.near = 0;
     ray.far = high - low + 0.002;
-    return castAll(ray, groundTargets).find((hit) => hit.point.y >= low - 1e-6 && hit.point.y <= high + 1e-6)?.point.y;
+    return castAll(ray, candidatesAt(p)).find((hit) => hit.point.y >= low - 1e-6 && hit.point.y <= high + 1e-6)?.point.y;
   };
 }
 

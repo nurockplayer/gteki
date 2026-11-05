@@ -884,7 +884,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     if (edge.mode === "stairs" || edge.mode === "escalator") counts[edge.mode]--;
   }
   const partsByEdge = new Map(built.map((b) => [b.edge.id, b.parts]));
-  const removedGuards = new Map<string, Segment2[]>();
+  const removedGuards = new Map<string, (Segment2 & { ya: number; yb: number })[]>();
   for (const wall of modelWalls) {
     const owner = levels.get(wall.level);
     const parts = owner && partsByEdge.get(owner.edge.id);
@@ -927,12 +927,13 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     // A flight's side wall, in pieces of at most 0.5 m so each follows the slope; stairs also get a walk-only collider.
     // An overhead guard must not borrow a lower endpoint's height across half a metre of slope.
     const n = Math.max(1, Math.ceil(length / (joined ? 0.05 : 0.5)));
+    const ownPath = junctionPath(pathByEdge.get(owner.edge.id)!, builtRegions.get(owner.edge.id)!.filter((r) => r.level === wall.level));
+    const endPoints = [ownPath[0]!, ownPath.at(-1)!];
     for (let k = 0; k < n; k++) {
       const t0 = k / n, t1 = (k + 1) / n;
       const ax = wall.ax + (wall.bx - wall.ax) * t0, az = wall.az + (wall.bz - wall.az) * t0, ya = wall.ay + (wall.by - wall.ay) * t0;
       const bx = wall.ax + (wall.bx - wall.ax) * t1, bz = wall.az + (wall.bz - wall.az) * t1, yb = wall.ay + (wall.by - wall.ay) * t1;
       const segment = { ax, az, bx, bz, yMin: Math.min(ya, yb) - below, yMax: Math.max(ya, yb) + 0.96 };
-      const ownPath = built.find((item) => item.edge.id === owner.edge.id)!.path;
       const mx = (ax + bx) / 2, mz = (az + bz) / 2;
       const nearest = ownPath.slice(1).map((p, i) => {
         const a = ownPath[i]!, dx = p.x - a.x, dz = p.z - a.z;
@@ -941,10 +942,11 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       }).sort((a, b) => Math.hypot(mx - a.x, mz - a.z) - Math.hypot(mx - b.x, mz - b.z))[0]!;
       const distance = Math.hypot(mx - nearest.x, mz - nearest.z) || 1;
       const outside = { x: mx + (mx - nearest.x) / distance * 0.05, y: -(mz + (mz - nearest.z) / distance * 0.05), z: Math.min(ya, yb) };
-      const floor = scope.floorHeight?.(outside, Math.min(ya, yb) - WALKER_BODY.stepUpM, Math.max(ya, yb) + WALKER_BODY.stepUpM);
+      const nearEnd = endPoints.some((p) => Math.hypot(nearest.x - p.x, nearest.z - p.z) <= length / n + 1e-6);
+      const floor = nearEnd ? scope.floorHeight?.(outside, Math.min(ya, yb) - WALKER_BODY.stepUpM, Math.max(ya, yb) + WALKER_BODY.stepUpM) : undefined;
       if (floor !== undefined) {
         const removed = removedGuards.get(owner.edge.id) ?? [];
-        removed.push(segment); removedGuards.set(owner.edge.id, removed);
+        removed.push({ ...segment, ya, yb }); removedGuards.set(owner.edge.id, removed);
         continue;
       }
       capGuard(segment, Math.max(ya, yb)); wallSegments.push(segment);
@@ -963,11 +965,15 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       const start = new THREE.Vector3(-rail.length / 2, 0, 0).applyMatrix4(rail.transform);
       const end = new THREE.Vector3(rail.length / 2, 0, 0).applyMatrix4(rail.transform);
       const dx = end.x - start.x, dz = end.z - start.z, length2 = dx * dx + dz * dz;
+      const railBase = 0.96 * Math.sqrt(length2) / rail.length;
+      const baseStart = new THREE.Vector3(-rail.length / 2, -railBase, 0).applyMatrix4(rail.transform);
+      const baseEnd = new THREE.Vector3(rail.length / 2, -railBase, 0).applyMatrix4(rail.transform);
       const cuts: [number, number][] = [];
       for (const wall of removed) {
         const project = (x: number, z: number) => ((x - start.x) * dx + (z - start.z) * dz) / length2;
         const t0 = project(wall.ax, wall.az), t1 = project(wall.bx, wall.bz);
         const mid = (t0 + t1) / 2;
+        if (Math.abs((wall.ya + wall.yb) / 2 - (baseStart.y + (baseEnd.y - baseStart.y) * mid)) > 0.05) continue;
         if (Math.hypot((wall.ax + wall.bx) / 2 - (start.x + dx * mid), (wall.az + wall.bz) / 2 - (start.z + dz * mid)) > 0.12) continue;
         const lo = Math.max(0, Math.min(t0, t1)), hi = Math.min(1, Math.max(t0, t1));
         if (hi > lo) cuts.push([lo, hi]);
