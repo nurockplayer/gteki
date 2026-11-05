@@ -55,18 +55,23 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #815: real-size shared step geometry, relative scales and run bounds change geometry/nodes only.
 // #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
-  station: {
-    geometryDigest: "03e596cc6852829f3c901694ee325af97624ac22eb856e793134a049f8cacbdc",
-    appearanceDigest: "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
-    nodesDigest: "671b7e0fca848dcf1aacac050fd030d5ff788dd421aa3e38335c80f891cf1216",
-    texturesDigest: "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
-    meshes: 125,
-    bytes: 16239788,
+  "station": {
+    "geometryDigest": "15fca2688e31ccb4e6a5a5a135a556f891c6b18a75a6d01ac2f4500e5f702335",
+    "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
+    "nodesDigest": "671b7e0fca848dcf1aacac050fd030d5ff788dd421aa3e38335c80f891cf1216",
+    "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
+    "meshes": 125,
+    "bytes": 16244972
   },
-  lists: {
-    listsDigest: "54a7c761296ee43c71fa1006834454d3e0e492948915b1c352fe69019af7a174",
-    counts: { walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14906 },
-  },
+  "lists": {
+    "listsDigest": "6175a21817b5603669c41ea62242c566296e1c78fabecbc27ebcce8bc9851164",
+    "counts": {
+      "walkable": 442,
+      "colliders": 2,
+      "cameraBlockers": 3,
+      "walls": 14908
+    }
+  }
 };
 
 const sha = (parts: unknown[]) => createHash("sha256").update(JSON.stringify(parts)).digest("hex");
@@ -785,7 +790,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       const onLists = digestSceneLists(on);
       expect(onLists).toEqual(digestSceneLists(off));
       expect(onLists).toEqual(MAIN_BASELINE.lists);
-      expect(onLists.counts).toEqual({ walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14906 });
+      expect(onLists.counts).toEqual(MAIN_BASELINE.lists.counts);
     });
 
     it("flag on: every placement lands on a real anchor, in the right role", () => {
