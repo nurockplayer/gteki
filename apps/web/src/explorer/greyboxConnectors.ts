@@ -821,9 +821,15 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   // At a junction the other connectors' own walkable footprint near the node is a connector footprint of this end's level
   // too: neither's walls stand across the other's exit, and only where the other really has floor (its own level keeps
   // its walls). Near means within 2 * half of the wider of the two, or where they leave the node at an acute angle, as far
-  // as the other takes to clear this one (2 * half / sin of the angle). Clip that opening wherever the actual polyline
-  // surfaces differ by more than a step, including after level approaches and later pitch changes.
+  // as the other takes to clear this one (2 * half / sin of the angle). Clip that opening wherever the drawn walking
+  // surfaces differ by more than a step, including after level approaches, pitch changes and mid-flight landings.
   const builtRegions = new Map([...regionsByEdge].map(([id, list]) => [id, [...list]]));
+  // The drawn walking surface: generated treads and mid-flight landings, not the polyline between the endpoints.
+  const drawnPath = (edgeId: string, points: readonly V3[], level: string) => {
+    const path = pathByEdge.get(edgeId)!, at = points[0]!;
+    const distance = (p: V3) => Math.hypot(p.x - at.x, p.y - at.y, p.z - at.z);
+    return junctionPath(distance(path[0]!) <= distance(path.at(-1)!) ? path : [...path].reverse(), builtRegions.get(edgeId)!.filter((r) => r.level === level));
+  };
   const junctionFloors = new Map<string, { at: PlanPoint; radius: number; level: string; otherEdge: string; otherLevel: string; points: readonly V3[]; ownPoints: readonly V3[]; polygons: MultiPolygon }[]>();
   for (const j of junctions) for (const m of mouths.get(j.node) ?? []) {
     // Only the other connector's level that meets this node: a flight of it passing overhead is no opening.
@@ -833,8 +839,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const reach = 2 * Math.max(m.half, j.half), sin = Math.abs(j.dir.x * m.dir.z - j.dir.z * m.dir.x);
     const along = j.dir.x * m.dir.x + j.dir.z * m.dir.z > 0 ? Math.max(reach, reach / Math.max(sin, 0.1)) : reach;
     const own = mouths.get(j.node)!.find((mouth) => mouth.edgeId === j.edgeId)!;
-    const ownPath = junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level));
-    const otherPath = junctionPath(m.points, other);
+    const ownPath = drawnPath(j.edgeId, own.points, j.level);
+    const otherPath = drawnPath(m.edgeId, m.points, meets!.level);
     const asClipping = (ring: readonly PlanPoint[]) => ring.map((p): [number, number] => [p.x, p.z]);
     try {
       const polygons = other.flatMap((r) => regionPolygon(r)).map((polygon) => insetJunctionRing(polygon[0]!)).filter((ring) => ring.length >= 3).map((ring) => [asClipping(ring)]);
@@ -846,16 +852,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     } catch { legacyEdgeIds.add(j.edgeId); legacyEdgeIds.add(m.edgeId); }
   }
   const edgeById = new Map(bundle.edges.map((edge) => [edge.id, edge]));
-  // Guard caps follow the drawn walking surface too, including generated treads and mid-flight landings.
-  const drawnPath = (edgeId: string, points: readonly V3[], level: string) => {
-    const path = pathByEdge.get(edgeId)!, at = points[0]!;
-    const distance = (p: V3) => Math.hypot(p.x - at.x, p.y - at.y, p.z - at.z);
-    return junctionPath(distance(path[0]!) <= distance(path.at(-1)!) ? path : [...path].reverse(), builtRegions.get(edgeId)!.filter((r) => r.level === level));
-  };
-  for (const [edgeId, floors] of junctionFloors) for (const floor of floors) {
-    floor.points = drawnPath(floor.otherEdge, floor.points, floor.otherLevel);
-    floor.ownPoints = drawnPath(edgeId, floor.ownPoints, floor.level);
-  }
   const groupOf = new Map<string, string>(), byNode = new Map<string, string>();
   const findGroup = (id: string): string => { const up = groupOf.get(id) ?? id; if (up === id) return id; const top = findGroup(up); groupOf.set(id, top); return top; };
   for (const edgeId of regionsByEdge.keys()) {
