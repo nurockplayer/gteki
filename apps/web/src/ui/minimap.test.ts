@@ -355,10 +355,10 @@ describe("Minimap route overlay (#220 PR2)", () => {
   it("clears the connector hint when the route is cleared while the floor is unknown", () => {
     const map = create();
     map.setRoute({ points: loopPoints, steps: loopSteps }, null);
-    // An unknown floor leaves refresh() no floor to recompute the hint for.
+    expect(display(map, ".minimap-connector-marker")).toBe("");
     pose = { ...pose!, up: 100 };
     tick();
-    expect(display(map, ".minimap-connector-marker")).toBe("");
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
     map.setRoute(null, null);
     expect(display(map, ".minimap-connector-marker")).toBe("none");
   });
