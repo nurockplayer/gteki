@@ -1,0 +1,16 @@
+kit swap: dropped escalator e:4bee1c5e3544452db681f9aeccfe2346 (gteki_escalator_dress_s600_r3500_panel): no piece fits this anchor
+kit swap: dropped escalator e:c7fa5f74d72f43498ef2cb3b1dbea7e4 (gteki_escalator_dress_s600_r3500_panel): no piece fits this anchor
+kit swap: dropped escalator e:27d3ed498cc9423683ee7f502c5d2460 (gteki_escalator_dress_s600_r3500_panel): no piece fits this anchor
+kit swap (mobile): placed gate 0, lift 0, stairs 0, escalator 19, exit 0, toilet 0; 14 draws, 58008 triangles; 3 dropped, 1 gaps
+kit swap gap: toilet x3: toilet facility points are room representatives, not doors; no placement until a door source exists
+2026-11-05 16:22:21 JST scene loaded, rays 786
+2026-11-05 16:22:30 JST asLoaded misses 647 of 786
+2026-11-05 16:22:45 JST viewer misses 786 of 786
+2026-11-05 16:28:12 JST e:7628a98a51 {"rays":73,"asLoadedMiss":68,"viewerMiss":73}
+2026-11-05 16:28:12 JST e:abdb4369e9 {"rays":122,"asLoadedMiss":120,"viewerMiss":122}
+2026-11-05 16:28:12 JST e:6113a2285c {"rays":79,"asLoadedMiss":57,"viewerMiss":79}
+2026-11-05 16:28:12 JST e:06a78a8f61 {"rays":90,"asLoadedMiss":64,"viewerMiss":90}
+2026-11-05 16:28:12 JST e:d1463e426f {"rays":97,"asLoadedMiss":69,"viewerMiss":97}
+2026-11-05 16:28:12 JST e:2768d162a2 {"rays":171,"asLoadedMiss":129,"viewerMiss":171}
+2026-11-05 16:28:12 JST e:fc787100b1 {"rays":154,"asLoadedMiss":140,"viewerMiss":154}
+2026-11-05 16:28:12 JST PASS
