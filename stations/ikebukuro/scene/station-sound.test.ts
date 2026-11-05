@@ -167,7 +167,7 @@ describe("station sound", () => {
     sound.dispose();
   });
 
-  it("cancels speech on dispose", () => {
+  it("cancels speech on dispose, and only the speech it started", () => {
     const { context } = fakeContext();
     const speech = fakeSpeech();
     const sound = createStationSound({ context, destination, stationNameJa: "新宿", sites: { gates: [], announce: [AT], chime: [] }, speech: speech.port, random: () => 0 });
@@ -177,5 +177,11 @@ describe("station sound", () => {
     expect(speech.state.cancels).toBe(1);
     run(sound, 30, camera());
     expect(speech.said).toHaveLength(1);
+
+    // The speech queue is document-global; a station that never spoke must leave it alone.
+    const other = fakeSpeech();
+    const quiet = createStationSound({ context, destination, stationNameJa: "新宿", sites: { gates: [], announce: [AT], chime: [] }, speech: other.port, random: () => 0 });
+    quiet.dispose();
+    expect(other.state.cancels).toBe(0);
   });
 });

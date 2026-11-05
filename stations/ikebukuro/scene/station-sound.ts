@@ -287,8 +287,9 @@ export function createStationSound(opts: StationSoundOptions): StationSound {
   function dispose(): void {
     if (disposed) return;
     disposed = true;
+    // The speech queue is document-global: cancel only this station's own in-flight utterance.
+    if (speakingAt) speech?.cancel();
     speakingAt = null;
-    speech?.cancel();
     speech?.dispose?.();
     for (const osc of activeTaps) {
       try { osc.stop(); } catch { /* already stopped */ }
