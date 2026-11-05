@@ -4,10 +4,14 @@ import { ditherFade, sanitizeAvatarFade } from "./avatarDither.ts";
 import type { AvatarRig } from "./avatar.ts";
 
 /**
- * Procedural cat protagonist (#854 stage 1): an original orange cat in the mascot-v1 palette, built from
- * smooth three.js geometry only (no assets, no textures). One SkinnedMesh + one MeshStandardMaterial keeps
- * the low tier at one draw call plus its shadow pass. Origin at the feet (y = 0 is the floor); faces -Z, like
- * the human avatar. Three proportion sets share the same code: A near-realistic, B semi-stylised, C mascot.
+ * Procedural cat protagonist (#854 stage 1): a neutral realistic short-hair cat, built from smooth three.js
+ * geometry only (no assets, no textures). One SkinnedMesh + one MeshStandardMaterial keeps the low tier at one
+ * draw call plus its shadow pass. Origin at the feet (y = 0 is the floor); faces -Z, like the human avatar.
+ *
+ * PLACEHOLDER LOOK: plain grey coat, breed and coat pattern pending the Owner (#854). Four-legged and
+ * realistic in proportion (Stray-like reference, nothing copied): no clothing, no collar, never upright.
+ * The three styles are scale/finish variants of the same animal: A real scale, B 1.15x and the default
+ * (phone readability), C the same size as B with subtle mackerel tabby stripes.
  */
 export type CatStyle = "A" | "B" | "C";
 
@@ -26,20 +30,31 @@ const smoothstep = (a: number, b: number, x: number): number => {
   return t * t * (3 - 2 * t);
 };
 
-/** sRGB hex to linear RGB, matching the avatar's vertex-colour convention. */
+/**
+ * sRGB hex to linear RGB. three's hex constructor already converts into the linear working space
+ * (colour management is on), so converting again would darken every colour (#856).
+ */
 function linear(hex: number): readonly [number, number, number] {
-  const c = new THREE.Color(hex).convertSRGBToLinear();
+  const c = new THREE.Color(hex);
   return [c.r, c.g, c.b];
 }
 
-const ORANGE = linear(0xe8a15a);
-const WHITE = linear(0xffffff);
-const PINK = linear(0xf6b8b0);
-const DARK = linear(0x2b1e18);
-const NAVY = linear(0x0e2554);
+/** Placeholder coat: grey back, lighter flanks, pale belly. The Owner picks the real breed/coat (#854). */
+const BACK = linear(0x7f7a75);
+const FLANK = linear(0x9a948e);
+const BELLY = linear(0xc8c2ba);
+const NOSE = linear(0xb88e8c);
+const INNER_EAR = linear(0xc9a3a0);
+const EYE = linear(0xa39a52);
+const PUPIL = linear(0x141210);
+const STRIPE = linear(0x5e5953);
 
 type Rgb = readonly [number, number, number];
 const shade = (c: Rgb, k: number): Rgb => [c[0] * k, c[1] * k, c[2] * k];
+const mix = (a: Rgb, b: Rgb, t: number): Rgb => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+/** Narrow periodic bars: 1 at the bar centre, 0 between bars. */
+const bar = (u: number, period: number): number => Math.pow(0.5 + 0.5 * Math.cos((u / period) * TAU), 8);
+const fract = (x: number): number => x - Math.floor(x);
 
 /* ------------------------------------------------------------------------------------------ */
 /* level of detail and proportions                                                             */
@@ -56,12 +71,11 @@ interface Detail {
   tailSeg: number;
   pawSeg: number;
   earSeg: number;
-  kerchiefSeg: number;
 }
 
 const DETAIL: Record<"low" | "high", Detail> = {
-  high: { bodySeg: 22, bodyRings: 16, headSeg: 24, headRings: 16, clumpSeg: 9, clumpRings: 7, legSeg: 10, tailSeg: 12, pawSeg: 9, earSeg: 8, kerchiefSeg: 18 },
-  low: { bodySeg: 14, bodyRings: 10, headSeg: 14, headRings: 10, clumpSeg: 6, clumpRings: 5, legSeg: 7, tailSeg: 8, pawSeg: 6, earSeg: 5, kerchiefSeg: 12 },
+  high: { bodySeg: 22, bodyRings: 16, headSeg: 24, headRings: 16, clumpSeg: 9, clumpRings: 7, legSeg: 10, tailSeg: 12, pawSeg: 9, earSeg: 8 },
+  low: { bodySeg: 14, bodyRings: 10, headSeg: 14, headRings: 10, clumpSeg: 6, clumpRings: 5, legSeg: 7, tailSeg: 8, pawSeg: 6, earSeg: 5 },
 };
 
 /**
@@ -85,22 +99,40 @@ interface CatProfile {
   readonly earH: number;
   readonly earW: number;
   readonly eyeR: number;
-  readonly kerchief: number;
   readonly legX: number;
   readonly neckR: number;
+  /** Mackerel tabby bars painted into the vertex colours (style C only). */
+  readonly stripes: boolean;
+}
+
+/**
+ * Real-scale base (metres): a domestic cat about 0.30 m to the ear tips, body ~0.28 m chest to rump.
+ * `headTop` is the overall model height each style must reach and sits outside the scale factor, so B keeps
+ * its head at exactly 0.34 m rather than 1.15x the real 0.30 m.
+ */
+function profile(k: number, headTop: number, stripes: boolean): CatProfile {
+  return {
+    headTop, stripes,
+    legUpper: 0.0875 * k, legLower: 0.0792 * k, pawH: 0.0217 * k,
+    bodyW: 0.0417 * k, bodyR: 0.0458 * k, bodyY: 0.2042 * k,
+    bodyFront: -0.1417 * k, bodyBack: 0.1333 * k,
+    headW: 0.04 * k, headR: 0.0417 * k, headD: 0.0433 * k, headZ: -0.1708 * k,
+    earH: 0.0217 * k, earW: 0.015 * k, eyeR: 0.0092 * k,
+    legX: 0.0317 * k, neckR: 0.0317 * k,
+  };
 }
 
 const PROFILES: Record<CatStyle, CatProfile> = {
-  // Near-realistic: small head, long legs, slim body.
-  A: { headTop: 0.36, legUpper: 0.105, legLower: 0.095, pawH: 0.026, bodyW: 0.05, bodyR: 0.055, bodyY: 0.245, bodyFront: -0.17, bodyBack: 0.16, headW: 0.048, headR: 0.05, headD: 0.052, headZ: -0.205, earH: 0.026, earW: 0.018, eyeR: 0.011, kerchief: 0.85, legX: 0.038, neckR: 0.038 },
-  // Semi-stylised: head about 1.3x real, shorter legs, rounder body.
-  B: { headTop: 0.40, legUpper: 0.088, legLower: 0.08, pawH: 0.03, bodyW: 0.066, bodyR: 0.072, bodyY: 0.232, bodyFront: -0.17, bodyBack: 0.16, headW: 0.075, headR: 0.068, headD: 0.072, headZ: -0.215, earH: 0.035, earW: 0.026, eyeR: 0.016, kerchief: 1, legX: 0.046, neckR: 0.05 },
-  // Mascot v1: big head and round eyes, shortest legs, large neckerchief.
-  C: { headTop: 0.45, legUpper: 0.075, legLower: 0.068, pawH: 0.027, bodyW: 0.078, bodyR: 0.082, bodyY: 0.207, bodyFront: -0.18, bodyBack: 0.16, headW: 0.088, headR: 0.085, headD: 0.082, headZ: -0.23, earH: 0.045, earW: 0.032, eyeR: 0.028, kerchief: 1.5, legX: 0.052, neckR: 0.058 },
+  // Real scale, plain grey.
+  A: profile(1, 0.30, false),
+  // 1.15x, plain grey: readable on a phone; the default.
+  B: profile(1.15, 0.34, false),
+  // Same size as B, subtle mackerel tabby stripes.
+  C: profile(1.15, 0.34, true),
 };
 
 /* ------------------------------------------------------------------------------------------ */
-/* skeleton: 22 bones (hips, 3 spine, neck, head, 4 tail, 4 legs x upper/lower/paw)            */
+/* skeleton: 24 bones (hips, 3 spine, neck, head, 2 ears, 4 tail, 4 legs x upper/lower/paw)     */
 /* ------------------------------------------------------------------------------------------ */
 
 const HIPS = 0;
@@ -109,11 +141,13 @@ const SPINE2 = 2;
 const SPINE3 = 3;
 const NECK = 4;
 const HEAD = 5;
-const TAIL1 = 6;
-const LEG_FL = 10;
-const LEG_FR = 13;
-const LEG_HL = 16;
-const LEG_HR = 19;
+const EAR_L = 6;
+const EAR_R = 7;
+const TAIL1 = 8;
+const LEG_FL = 12;
+const LEG_FR = 15;
+const LEG_HL = 18;
+const LEG_HR = 21;
 
 type Weights = readonly (readonly [number, number])[];
 
@@ -202,14 +236,6 @@ function between(a: THREE.Vector3, b: THREE.Vector3, rA: number, rB: number, rad
   return g;
 }
 
-/** Open band around `dir`, centred at `centre`. */
-function band(centre: THREE.Vector3, dir: THREE.Vector3, rTop: number, rBottom: number, height: number, radial: number): THREE.BufferGeometry {
-  const g = new THREE.CylinderGeometry(rTop, rBottom, height, radial, 1, true);
-  g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize()));
-  g.translate(centre.x, centre.y, centre.z);
-  return g;
-}
-
 /** Parameter of a point projected onto segment a -> b, clamped to 0..1. */
 function along(a: THREE.Vector3, b: THREE.Vector3, x: number, y: number, z: number): number {
   const ax = b.x - a.x, ay = b.y - a.y, az = b.z - a.z;
@@ -285,6 +311,8 @@ class CatAvatar implements AvatarRig {
   private readonly spine3: THREE.Bone;
   private readonly neck: THREE.Bone;
   private readonly head: THREE.Bone;
+  private readonly earL: THREE.Bone;
+  private readonly earR: THREE.Bone;
   private readonly fade = { value: 1 };
 
   private readonly hipsBase = new THREE.Vector3();
@@ -300,6 +328,15 @@ class CatAvatar implements AvatarRig {
   private idle = 0;
   private sit = 0;
   private disposed = false;
+  /** Idle head look-around: current yaw, the yaw it is easing to, and when to pick the next one. */
+  private lookYaw = 0;
+  private lookTarget = 0;
+  private lookNext = 2.5;
+  /** Per-ear flick: when the current flick ends and when the next one is due. */
+  private readonly earFlick = [
+    { until: -1, next: 1.9 },
+    { until: -1, next: 3.7 },
+  ];
 
   private readonly v1 = new THREE.Vector3();
   private readonly v2 = new THREE.Vector3();
@@ -342,6 +379,9 @@ class CatAvatar implements AvatarRig {
     this.spine3 = this.bone("spine3", this.spine2, 0, 0.002, -0.065);
     this.neck = this.bone("neck", this.spine3, 0, 0.02, -0.045);
     this.head = this.bone("head", this.neck, 0, this.headY - this.neckY, p.headZ + 0.13);
+    // Ear bones pivot at each ear's base, so an idle twitch moves only that ear.
+    this.earL = this.bone("earL", this.head, -p.headW * 0.52, 0.02 + p.headR * 0.78, 0.004);
+    this.earR = this.bone("earR", this.head, p.headW * 0.52, 0.02 + p.headR * 0.78, 0.004);
 
     // Tail: four bones curving back and up from the rump.
     const deltas: readonly (readonly [number, number])[] = [[0.022, 0.055], [0.03, 0.055], [0.026, 0.05], [0.006, 0.045]];
@@ -393,10 +433,9 @@ class CatAvatar implements AvatarRig {
     this.buildBody(parts);
     this.buildNeck(parts);
     this.buildHead(parts);
-    this.buildKerchief(parts);
     this.buildLegs(parts);
     this.buildTail(parts);
-    if (this.bones.length !== 22) throw new Error(`cat avatar: expected 22 bones, got ${this.bones.length}`);
+    if (this.bones.length !== 24) throw new Error(`cat avatar: expected 24 bones, got ${this.bones.length}`);
     return mergeParts(parts);
   }
 
@@ -416,10 +455,15 @@ class CatAvatar implements AvatarRig {
     }
     flipWinding(g);
     const body = smoothed(g);
-    paint(body, (x, y, z) => {
-      const k = 0.8 + 0.2 * smoothstep(p.bodyY - p.bodyR, p.bodyY + p.bodyR, y);
-      const white = z < p.bodyFront + 0.09 && y < p.bodyY + 0.005;
-      return shade(white ? WHITE : ORANGE, k);
+    paint(body, (_x, y, z) => {
+      const ny = clamp((y - p.bodyY) / p.bodyR, -1, 1);
+      // Soft gradient, no hard bands: pale belly, mid flanks, darker back.
+      let c = mix(BELLY, FLANK, smoothstep(-0.85, 0.05, ny));
+      c = mix(c, BACK, smoothstep(0.05, 0.85, ny));
+      const chest = smoothstep(p.bodyFront + 0.12, p.bodyFront + 0.02, z) * smoothstep(p.bodyY + 0.03, p.bodyY - 0.03, y);
+      c = mix(c, BELLY, 0.8 * chest);
+      if (p.stripes) c = mix(c, STRIPE, 0.5 * bar(z, p.bodyR * 1.3) * smoothstep(-0.1, 0.6, ny));
+      return c;
     });
     skinGeometry(body, (x, _y, z) => trunkWeights(z));
     parts.push(body);
@@ -430,7 +474,7 @@ class CatAvatar implements AvatarRig {
     const a = this.v1.set(0, this.neckY + 0.005, this.neckZ + 0.01);
     const b = this.v2.set(0, this.headY - p.headR * 0.2, p.headZ + p.headD * 0.5);
     const g = between(a.clone(), b.clone(), p.neckR, p.neckR * 0.8, this.d.legSeg);
-    paint(g, () => shade(ORANGE, 0.95));
+    paint(g, () => BACK);
     skinGeometry(g, (x, y, z) => {
       const t = along(a, b, x, y, z);
       return t < 0.5
@@ -461,39 +505,52 @@ class CatAvatar implements AvatarRig {
       sp.setXYZ(i, nx * p.headW * cheek, hy + cy + ny * p.headR, hz + nz * p.headD + 0.004);
     }
     const head = smoothed(skull);
-    paint(head, (_x, y) => shade(ORANGE, 0.86 + 0.14 * smoothstep(hy + cy - p.headR, hy + cy + p.headR, y)));
+    paint(head, (x, y) => {
+      const ny = clamp((y - (hy + cy)) / p.headR, -1, 1);
+      let c = mix(BELLY, FLANK, smoothstep(-0.9, 0.1, ny));
+      c = mix(c, BACK, smoothstep(0.1, 0.9, ny));
+      // C: short bars down the forehead, the reading of a mackerel tabby.
+      if (p.stripes) c = mix(c, STRIPE, 0.45 * bar(x, p.headW * 0.5) * smoothstep(0.3, 0.8, ny));
+      return c;
+    });
     rigid(head, HEAD);
     parts.push(head);
 
-    // Muzzle and nose.
+    // Muzzle and nose: pale muzzle, dusty-rose nose.
     const muzzle = ellipsoid(p.headW * 0.5, p.headR * 0.36, p.headD * 0.42, 0, hy + cy - p.headR * 0.42, hz - p.headD * 0.9, d.clumpSeg, d.clumpRings);
-    paint(muzzle, () => WHITE);
+    paint(muzzle, () => BELLY);
     rigid(muzzle, HEAD);
     parts.push(muzzle);
     const nose = ellipsoid(p.headW * 0.13, p.headR * 0.09, p.headD * 0.07, 0, hy + cy - p.headR * 0.28, hz - p.headD * 0.985, d.clumpSeg, d.clumpRings);
-    paint(nose, () => PINK);
+    paint(nose, () => NOSE);
     rigid(nose, HEAD);
     parts.push(nose);
 
-    // Round eyes on the skull surface.
+    // Eyes: yellow-green iris with a near-black pupil on the skull surface.
     const ex = p.headW * 0.42;
     const ey = cy + p.headR * 0.22;
     const nz = -Math.sqrt(Math.max(0.05, 1 - (ex / p.headW) ** 2 - ((ey - cy) / p.headR) ** 2));
     for (const side of [-1, 1] as const) {
-      const eye = ellipsoid(p.eyeR, p.eyeR, p.eyeR, side * ex, hy + ey, hz + nz * p.headD - p.eyeR * 0.55, d.clumpSeg, d.clumpRings);
-      paint(eye, () => DARK);
-      rigid(eye, HEAD);
-      parts.push(eye);
+      const z = hz + nz * p.headD;
+      const iris = ellipsoid(p.eyeR, p.eyeR, p.eyeR, side * ex, hy + ey, z - p.eyeR * 0.55, d.clumpSeg, d.clumpRings);
+      paint(iris, () => EYE);
+      rigid(iris, HEAD);
+      parts.push(iris);
+      const pupil = ellipsoid(p.eyeR * 0.55, p.eyeR * 0.8, p.eyeR * 0.5, side * ex, hy + ey, z - p.eyeR * 0.9, d.clumpSeg, d.clumpRings);
+      paint(pupil, () => PUPIL);
+      rigid(pupil, HEAD);
+      parts.push(pupil);
     }
 
-    // Ears: cones on top, pink inner cone just in front of each.
+    // Ears: grey cones with a dusty-rose inner cone; each rides its own bone for the idle flick.
     for (const side of [-1, 1] as const) {
-      parts.push(this.ear(side, 1, p.headW * 0.52, ORANGE, 0));
-      parts.push(this.ear(side, 0.62, p.headW * 0.5, PINK, -0.008));
+      const bone = side < 0 ? EAR_L : EAR_R;
+      parts.push(this.ear(side, 1, p.headW * 0.52, BACK, 0, bone));
+      parts.push(this.ear(side, 0.62, p.headW * 0.5, INNER_EAR, -0.008, bone));
     }
   }
 
-  private ear(side: -1 | 1, scale: number, x: number, color: Rgb, zOff: number): THREE.BufferGeometry {
+  private ear(side: -1 | 1, scale: number, x: number, color: Rgb, zOff: number, bone: number): THREE.BufferGeometry {
     const p = this.p;
     const h = p.earH * scale;
     const g = new THREE.ConeGeometry(p.earW * scale, h, this.d.earSeg);
@@ -502,26 +559,8 @@ class CatAvatar implements AvatarRig {
     g.rotateX(-0.08);
     g.translate(side * x, this.headY + 0.02 + p.headR * 0.78, p.headZ + 0.004);
     paint(g, () => color);
-    rigid(g, HEAD);
+    rigid(g, bone);
     return g;
-  }
-
-  private buildKerchief(parts: THREE.BufferGeometry[]): void {
-    const p = this.p;
-    const k = p.kerchief;
-    const a = this.v3.set(0, this.neckY + 0.005, this.neckZ + 0.01);
-    const b = this.v4.set(0, this.headY - p.headR * 0.2, p.headZ + p.headD * 0.5);
-    const centre = this.v5.copy(a).lerp(b, 0.35);
-    const dir = this.v6.copy(b).sub(a).normalize();
-    const r = p.neckR * 1.35;
-    const cloth = band(centre.clone(), dir, r * 1.05 * k, r * 1.25 * k, 0.035 * k, this.d.kerchiefSeg);
-    paint(cloth, () => NAVY);
-    rigid(cloth, NECK);
-    parts.push(cloth);
-    const knot = ellipsoid(p.neckR * 0.4 * k, p.neckR * 0.34 * k, p.neckR * 0.3 * k, 0, centre.y - 0.01 * k, centre.z - r * 0.95 * k, this.d.clumpSeg, this.d.clumpRings);
-    paint(knot, () => NAVY);
-    rigid(knot, NECK);
-    parts.push(knot);
   }
 
   private buildLegs(parts: THREE.BufferGeometry[]): void {
@@ -550,15 +589,19 @@ class CatAvatar implements AvatarRig {
       const knee = this.v7.set(bx, this.hipY - this.p.legUpper, bz);
       const foot = this.v8.set(bx, this.p.pawH, bz);
       const thigh = between(new THREE.Vector3(bx, this.hipY, bz), knee.clone(), 0.032 * k, 0.024 * k, this.d.legSeg);
-      paint(thigh, () => shade(ORANGE, 0.94));
+      paint(thigh, (_x, y) => {
+        let c = mix(BELLY, FLANK, smoothstep(this.hipY - this.p.legUpper * 0.8, this.hipY, y));
+        if (this.p.stripes) c = mix(c, STRIPE, 0.4 * bar(y, this.p.legUpper * 0.55));
+        return c;
+      });
       rigid(thigh, index);
       parts.push(thigh);
       const shin = between(knee.clone(), foot.clone(), 0.022 * k, 0.016 * k, this.d.legSeg);
-      paint(shin, () => shade(ORANGE, 0.9));
+      paint(shin, (_x, y) => mix(BELLY, FLANK, smoothstep(this.p.pawH, this.hipY - this.p.legUpper, y)));
       rigid(shin, index + 1);
       parts.push(shin);
       const pawGeo = ellipsoid(0.034 * k, this.p.pawH, 0.048 * k, bx, this.p.pawH, bz - 0.012, this.d.pawSeg, Math.max(4, this.d.pawSeg - 2));
-      paint(pawGeo, () => WHITE);
+      paint(pawGeo, () => BELLY);
       rigid(pawGeo, index + 2);
       parts.push(pawGeo);
     }
@@ -584,8 +627,10 @@ class CatAvatar implements AvatarRig {
       const g = between(a.clone(), b.clone(), radii[i]! * k, radii[i + 1]! * k, this.d.tailSeg);
       paint(g, (x, yy, zz) => {
         const t = (i + along(a, b, x, yy, zz)) / 4;
-        const ring = (t > 0.42 && t < 0.5) || (t > 0.6 && t < 0.68);
-        return shade(t > 0.84 || ring ? DARK : ORANGE, 0.94);
+        // Grey tail, slightly darker towards the tip; C adds faint tabby rings.
+        let c = shade(BACK, 1 - 0.12 * smoothstep(0.55, 1, t));
+        if (p.stripes) c = mix(c, STRIPE, 0.4 * bar(t, 0.18));
+        return c;
       });
       skinGeometry(g, (x, yy, zz) => {
         const t = along(a, b, x, yy, zz);
@@ -660,8 +705,27 @@ class CatAvatar implements AvatarRig {
     this.spine1.rotation.set(-0.015 * moving + 0.01 * breathe * (1 - moving), 0.04 * Math.sin(TAU * this.phase + 0.6) * moving, 0, "YXZ");
     this.spine2.rotation.set(-0.02 * moving + 0.014 * breathe * (1 - moving), 0.03 * Math.sin(TAU * this.phase + 1.1) * moving, 0, "YXZ");
     this.spine3.rotation.set(-0.02 * moving, 0.02 * Math.sin(TAU * this.phase + 1.6) * moving, 0, "YXZ");
-    this.neck.rotation.set(-0.5 * this.hips.rotation.x + 0.03 * Math.sin(t * 0.7) * (1 - moving), 0.04 * Math.sin(t * 0.4) * (1 - moving), 0, "YXZ");
-    this.head.rotation.set(-0.3 * this.hips.rotation.x + 0.05 * Math.sin(t * 0.9 + 1) * (1 - moving), 0.06 * Math.sin(t * 0.35) * (1 - moving), 0, "YXZ");
+    // Idle look-around: a new head yaw in ±35° every 3-6 s, eased into place; the neck follows a third of it.
+    if (t >= this.lookNext) {
+      this.lookTarget = (2 * fract(Math.sin(t * 7.7) * 43758.5453) - 1) * 0.61;
+      this.lookNext = t + 3 + 3 * fract(Math.sin(t * 12.9) * 24634.6345);
+    }
+    this.lookYaw = clamp(this.lookYaw + (this.lookTarget - this.lookYaw) * Math.min(1, step * 4), -0.61, 0.61);
+    const look = this.lookYaw * (1 - moving);
+    this.neck.rotation.set(-0.5 * this.hips.rotation.x + 0.03 * Math.sin(t * 0.7) * (1 - moving), 0.3 * look, 0, "YXZ");
+    this.head.rotation.set(-0.3 * this.hips.rotation.x + 0.05 * Math.sin(t * 0.9 + 1) * (1 - moving), look, 0, "YXZ");
+
+    // Ear flick: a quick 0.2 s twitch of one ear every 3-6 s while standing still.
+    for (let i = 0; i < 2; i++) {
+      const flick = this.earFlick[i]!;
+      if (t >= flick.next) {
+        flick.until = t + 0.2;
+        flick.next = t + 3 + 3 * fract(Math.sin(t * (5.1 + i)) * 15731.743);
+      }
+      const k = t < flick.until ? Math.sin((Math.PI * (t - (flick.until - 0.2))) / 0.2) : 0;
+      const bone = i === 0 ? this.earL : this.earR;
+      bone.rotation.set(0, 0, (i === 0 ? 1 : -1) * 0.3 * k * (1 - moving));
+    }
 
     // Tail: slow idle sway, a travelling wave on the move, curled around when sitting.
     const sway = 0.16 * Math.sin(t * 1.1) * (1 - 0.5 * moving) + 0.09 * Math.sin(TAU * this.phase) * moving;
