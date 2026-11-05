@@ -1,7 +1,7 @@
 import type { Edge, StationBundle } from "@gteki/schema";
 import { edgePoints } from "./geometry.ts";
 import { privateHolePlanes, type PolygonRegion } from "./privateLevels.ts";
-import { floorExclusionCuts, outsideIntervals } from "./walkableModel.ts";
+import { segmentExclusionCuts, outsideIntervals } from "./walkableModel.ts";
 
 /** Private overlay only: close paths on a private floor inside an explicit hole, retaining a QA reason. */
 export function privateFloorRoutingEdges(graph: Pick<StationBundle, "nodes" | "edges" | "floors">, regions: readonly PolygonRegion[]): Edge[] {
@@ -13,10 +13,11 @@ export function privateFloorRoutingEdges(graph: Pick<StationBundle, "nodes" | "e
     const levels = [nodes.get(edge.from)?.floorId ?? "", nodes.get(edge.to)?.floorId ?? ""];
     const path = edgePoints(graph, edge, nodes, floors);
     if (path.length < 2) return edge;
-    const cuts = planes.flatMap((plane) => floorExclusionCuts(plane, levels, [path[0]!.y, path.at(-1)!.y]));
-    if (!cuts.length) return edge;
+    const heights = [path[0]!.y, path.at(-1)!.y];
     for (let i = 1; i < path.length; i++) {
       const a = path[i - 1]!, b = path[i]!;
+      const cuts = planes.flatMap((plane) => segmentExclusionCuts(plane, levels, a, b, heights));
+      if (!cuts.length) continue;
       const dx = b.x - a.x, dz = b.z - a.z, length2 = dx * dx + dz * dz;
       if (length2 < 1e-18) continue;
       const kept = outsideIntervals(a, b, cuts);
