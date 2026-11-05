@@ -227,7 +227,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
 
   it("keeps the E27 departure floor and route at the Shinjuku escalator midpoint (#839)", async () => {
     const fs = await import("node:fs");
-    const read = (f: string): unknown => JSON.parse(fs.readFileSync(new URL(`../../../../stations/shinjuku/gteki/${f}`, import.meta.url), "utf8"));
+    const read = (f: string): unknown => JSON.parse(fs.readFileSync(`stations/shinjuku/gteki/${f}`, "utf8"));
     const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
     if (!parsed.ok || !parsed.bundle) throw new Error("Shinjuku bundle failed to parse");
     const bundle = parsed.bundle;
