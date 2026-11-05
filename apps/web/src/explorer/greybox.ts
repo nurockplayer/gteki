@@ -180,7 +180,7 @@ export function widthOf(edge: Edge): number {
 
 // A shifted pad reaches this far past its node, so the node and the walk edges leaving it stand on floor, not on the pad's rim.
 const PAD_OVERLAP_M = 0.3;
-type LandingPad = { nodeId:string; floorId:string; center:THREE.Vector3; along:THREE.Vector3; width:number; openSides:Set<number>; shifted:boolean; strip?:UnmodelledEdgeRun };
+type LandingPad = { nodeId:string; floorId:string; center:THREE.Vector3; along:THREE.Vector3; width:number; openSides:Set<number>; shifted:boolean; lift?:boolean; strip?:UnmodelledEdgeRun };
 
 /** A pad uses the node's render elevation; its optional strip follows an adjacent graph edge. */
 function landingPadsForEdge(bundle:StationBundle, edge:Edge, traversable:(edge:Edge)=>boolean, hasFloor:(p:V3)=>boolean, nodes:Map<string,StationBundle["nodes"][number]>, floors:Map<string,StationBundle["floors"][number]>): LandingPad[] {
@@ -231,7 +231,7 @@ function landingPadsForEdge(bundle:StationBundle, edge:Edge, traversable:(edge:E
       }
     }
     const width=Math.max(1.5,widthOf(edge));
-    result.push({nodeId:id,floorId:node.floorId,center:center.clone().addScaledVector(along,away*(width/2-PAD_OVERLAP_M)),along,width,openSides,shifted:away!==0,...(best ? {strip:best.strip} : {})});
+    result.push({nodeId:id,floorId:node.floorId,center:center.clone().addScaledVector(along,away*(width/2-PAD_OVERLAP_M)),along,width,openSides,shifted:away!==0,...(edge.mode==="elevator" ? {lift:true} : {}),...(best ? {strip:best.strip} : {})});
   }
   return result;
 }
@@ -499,8 +499,10 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     const b=getBatch(pad.floorId), half=pad.width/2, across=new THREE.Vector3(-pad.along.z,0,pad.along.x);
     const corner=(a:number,s:number,h:number)=>pad.center.clone().addScaledVector(pad.along,a*half).addScaledVector(across,s*half).add(new THREE.Vector3(0,h,0));
     const al=corner(-1,-1,0), ar=corner(-1,1,0), zl=corner(1,-1,0), zr=corner(1,1,0), region = runs.length + k;
-    cutFace(b.shell,b.colors,[ar,zr,zl,al],slabCut(region),0.62);
     if (captureNav) cutFace(navFloors,null,[ar,zr,zl,al],slabCut(region),1);
+    // Lift pads keep the model's nav floor; the shaft draws the stop floor and leaves the ride open above it.
+    if (pad.lift) return;
+    cutFace(b.shell,b.colors,[ar,zr,zl,al],slabCut(region),0.62);
     cutFace(b.ceiling,b.ceilingColors,[corner(1,-1,2.6),corner(1,1,2.6),corner(-1,1,2.6),corner(-1,-1,2.6)],ceilingCut(region),0.62);
   });
   privateRegions.forEach((region, index) => {
