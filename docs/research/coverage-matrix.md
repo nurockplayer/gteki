@@ -67,6 +67,13 @@ Step-free counts refreshed 2026-11-03 18:39 JST. `step-free k/n` counts successf
 | 新宿 小田急エース / 京王モール | refuse every use (OD-34 §3; OD-35 class, terms re-read 2026-11-02T16:57Z, unchanged); 15 recovered POIs facts-only (#604) | n | n | 15 shop POIs (`shop-sjk-rec-`); tenants GAP (terms) | search y; route n; step-free 0/0 | field (unscheduled) entrances |
 | 新宿 メトロプロムナード | Tokyo Metro 2018 press release (M08 tie) | n | n | 4 shop POIs (`shop-sjk-metro-`) | search y; route n; step-free 0/0 | field (unscheduled) item 56 |
 
+## Station shops
+
+| Station · shop | Source / rights | 3D | Walk / navmesh | POIs / tenants | Search / route | Open |
+|---|---|---|---|---|---|---|
+| 池袋 NewDays（NewDays 池袋） | SMART EXCHANGE machine listing (facts only, no reuse clause; jr-cross.co.jp corroboration only, OD-34); lead ruling 2026-11-06 JST (#862) | n | n: no position asserted | 1 shop POI (`shop-ikb-newdays-ikebukuro`), s | search y; route n; step-free 0/0 | 新宿 GAP: position waits on #557 (held S03 graph) or a field reading |
+| 池袋 acure（アキュア） | 池袋タイムズ https://ikebukuro-times.com/archives/soymilk-jr.html (facts) | n | GAP: B1 inside the gates near the 3・4番線 lift; the graph has no elevator edge | none placed | search n; route n; step-free 0/0 | GAP: graph has no elevator edge |
+
 ## What the matrix says
 
 - **Routed today:** Toei E27 (16 of 16 POIs by connector), JR Ikebukuro (3 gates on the B1 graph), 東武東上線 中央2改札 (to the west Central Passage approach `c_w`), ルミネ池袋 and 西武池袋本店 (via the JR south gate), and ISP (via the printed `x36f` tie). Everything else, 16 of 20 line rows and 16 of 19 store rows, is search-only. A station/printed tie does not verify the store entrance.
