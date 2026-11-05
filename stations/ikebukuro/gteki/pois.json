@@ -22764,6 +22764,51 @@
      "text": "One search entry records facility availability, not a device count. Individual locations and quantities are unknown. Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
     }
    ]
+  },
+  {
+   "id": "shop-ikb-newdays-ikebukuro",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "NewDays 池袋"
+    },
+    {
+     "lang": "en",
+     "text": "NewDays Ikebukuro"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ニューデイズ"
+    },
+    {
+     "lang": "en",
+     "text": "NewDays"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "smartexchange-newdays-ikebukuro-2026-11"
+    ],
+    "method": "facts-only location listing, UNVERIFIED, AREA_ONLY",
+    "checkedDate": "2026-11-06"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "JR池袋駅 1F JR改札外東口。正確な位置は未確認・案内ルートなし。"
+    },
+    {
+     "lang": "en",
+     "text": "JR Ikebukuro Station, 1F, East Exit side, outside the JR gates. Exact position unverified; no guided route."
+    }
+   ]
   }
  ]
 }
