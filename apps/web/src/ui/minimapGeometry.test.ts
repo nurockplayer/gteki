@@ -317,3 +317,18 @@ it("shows only evidenced Ikebukuro POIs on their floor", async () => {
     for (const pin of pins) expect(pin.displayPosition).toEqual(parsed.bundle.nodes.find((n) => n.id === pin.connectorNodeIds[0])?.position);
   }
 });
+
+it("finds the floor at the midpoint of Ikebukuro's long B1 walkway", async () => {
+  const fs = await import("node:fs");
+  const { parseStationFiles } = await import("@gteki/schema");
+  const { nodeDisplayZ } = await import("@gteki/navigation");
+  const read = (f: string): unknown => JSON.parse(fs.readFileSync(new URL(`../../../../stations/ikebukuro/gteki/${f}`, import.meta.url), "utf8"));
+  const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+  if (!parsed.ok || !parsed.bundle) throw new Error("Ikebukuro bundle failed to parse");
+  const bundle = parsed.bundle;
+  const edge = bundle.edges.find((e) => e.id === "sw_h__w_cj")!;
+  const node = bundle.nodes.find((n) => n.id === edge.from)!;
+  const floor = bundle.floors.find((f) => f.id === node.floorId);
+  const a = edge.geometry![2]!, b = edge.geometry![3]!;
+  expect(currentFloorId(bundle, nodeDisplayZ(node, floor).z, (a.x + b.x) / 2, (a.y + b.y) / 2)).toBe(node.floorId);
+});

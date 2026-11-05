@@ -121,6 +121,16 @@ describe("Minimap HUD", () => {
     expect(map.el.textContent).toContain("概略歩行経路（実際の構内図ではありません）");
   });
 
+  it("clears a known floor after relocation far from the graph", () => {
+    const map = create();
+    expect(map.el.querySelectorAll(".minimap-graph polyline").length).toBeGreaterThan(0);
+    pose = { ...pose!, east: 1000, north: 1000, up: 100 };
+    tick();
+    expect(map.el.textContent).toContain("Floor unknown");
+    expect(map.el.querySelectorAll(".minimap-graph polyline")).toHaveLength(0);
+    expect(map.el.querySelector<SVGElement>(".minimap-arrow")!.style.display).toBe("none");
+  });
+
   it("makes no DOM writes for an unchanged pose and preserves paths during movement and orientation changes", () => {
     const map = create();
     const graph = map.el.querySelector(".minimap-graph")!;

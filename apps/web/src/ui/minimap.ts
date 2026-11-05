@@ -4,7 +4,7 @@ import type { Poi, StationBundle } from "@gteki/schema";
 import type { ExplorerPose } from "../explorer/explorer.ts";
 import { pick, strings, type Lang } from "../i18n.ts";
 import { poiLabel } from "./labels.ts";
-import { advanceRouteSeg, arrowRotationDeg, currentFloorId, floorPois, floorTransitions, floorWalkGraph, rimBearing, routeOnFloor, toMinimap, type FloorTransition, type MinimapOrientation } from "./minimapGeometry.ts";
+import { advanceRouteSeg, arrowRotationDeg, currentFloorId, floorPois, floorTransitions, floorWalkGraph, nearFloorConnector, rimBearing, routeOnFloor, toMinimap, type FloorTransition, type MinimapOrientation } from "./minimapGeometry.ts";
 
 const ORIENTATION_KEY = "gteki.minimap.orientation";
 const COLLAPSED_KEY = "gteki.minimap.collapsed";
@@ -460,7 +460,8 @@ export class Minimap {
     this.lastPose = key;
     const playerFloorId = currentFloorId(this.bundle, pose.up, pose.east, pose.north);
     // Follow mode draws the player's floor; a picked floor replaces it until follow is chosen again.
-    const drawnFloorId = this.pickedFloorId ?? playerFloorId ?? this.lastKnownFloor ?? null;
+    const connectorFloor = this.lastKnownFloor && nearFloorConnector(this.bundle, this.lastKnownFloor, pose.east, pose.north) ? this.lastKnownFloor : null;
+    const drawnFloorId = this.pickedFloorId ?? playerFloorId ?? connectorFloor;
     const floorChanged = drawnFloorId !== this.floorId;
     if (floorChanged) {
       this.floorId = drawnFloorId;
