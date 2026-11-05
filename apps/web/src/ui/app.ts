@@ -4,7 +4,7 @@ import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
-import { avatarGlbUrl } from "../explorer/avatarSelection.ts";
+import { avatarGlbUrl, avatarKind } from "../explorer/avatarSelection.ts";
 import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
@@ -153,6 +153,7 @@ export class App {
   async start(): Promise<void> {
     this.layout();
     const params = new URLSearchParams(location.search);
+    const avatar = avatarKind(params);
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
       onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
@@ -162,7 +163,7 @@ export class App {
         const poi = this.s.loaded?.bundle.pois.find((p) => p.id === id);
         if (poi) this.setDestination(poi);
       },
-    }, { avatarGlbUrl: avatarGlbUrl(params, location.href) });
+    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatar.kind, catStyle: avatar.catStyle });
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);

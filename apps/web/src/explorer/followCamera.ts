@@ -59,6 +59,12 @@ export const FOLLOW = {
   raiseDamping: 10,
 } as const;
 
+/**
+ * Cat protagonist (#854): a small body needs a lower pivot and a shorter boom so the cat fills a readable
+ * share of the frame; at pitch -0.12 the camera sits ~1.84 m high, below the ~2.5 m the human's boom reaches.
+ */
+export const FOLLOW_CAT = { pivotY: 1.0, shoulder: 0.25, distance: 2.6, lift: 0.22, drop: 0.5 } as const;
+
 /** Vertical field of view (degrees) per camera mode. */
 export const FOV = {
   /** Third person (walk and guide): narrower, closer to the Blender reference renders (43-49 degrees). */
@@ -160,13 +166,13 @@ export function viewDirection(yaw: number, pitch: number): THREE.Vector3 {
   return new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
 }
 
-export function followPose(head: THREE.Vector3, yaw: number, pitch: number, shoulder: number = FOLLOW.shoulder): FollowPose {
+export function followPose(head: THREE.Vector3, yaw: number, pitch: number, shoulder: number = FOLLOW.shoulder, lift: number = FOLLOW.lift, drop: number = FOLLOW.drop): FollowPose {
   const dir = viewDirection(yaw, pitch);
   const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
   const pivot = head.clone().addScaledVector(right, shoulder);
-  const back = dir.clone().negate().add(new THREE.Vector3(0, FOLLOW.lift, 0)).normalize();
+  const back = dir.clone().negate().add(new THREE.Vector3(0, lift, 0)).normalize();
   const target = pivot.clone().addScaledVector(dir, FOLLOW.aim);
-  target.y -= FOLLOW.drop;
+  target.y -= drop;
   return { pivot, back, target };
 }
 

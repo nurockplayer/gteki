@@ -1,5 +1,8 @@
 import * as THREE from "three";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
+import { createCatAvatar, type CatStyle } from "./catAvatar.ts";
+
+export type { CatStyle };
 import { loadGlbAvatar, type AvatarGlbLoader } from "./avatarGlb.ts";
 import { sanitizeAvatarFade } from "./avatarDither.ts";
 
@@ -25,6 +28,21 @@ export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string |
   } catch { return undefined; }
 }
 
+/** Which procedural protagonist a page asks for; the human stays the default in stage 1. */
+export type AvatarKind = "human" | "cat";
+
+export interface AvatarChoice {
+  kind: AvatarKind;
+  catStyle?: CatStyle;
+}
+
+/** `?avatar=cat` (with `?catStyle=A|B|C`, default B) selects the cat; anything else keeps the human. */
+export function avatarKind(params: URLSearchParams): AvatarChoice {
+  if (params.get("avatar") !== "cat") return { kind: "human" };
+  const style = params.get("catStyle");
+  return { kind: "cat", catStyle: style === "A" || style === "B" || style === "C" ? style : "B" };
+}
+
 export interface AvatarSelection extends AvatarRig {
   /** Invalidates in-flight work when leaving a station (or disposing). */
   cancelPendingLoad(): void;
@@ -33,8 +51,10 @@ export interface AvatarSelection extends AvatarRig {
 }
 
 /** The procedural rig is shown while loading and on GLB failure, or via ?avatar=procedural. */
-export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader }): AvatarSelection {
-  let current = createAvatar({ quality: opts.quality });
+export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; catStyle?: CatStyle }): AvatarSelection {
+  let current = opts.kind === "cat"
+    ? createCatAvatar({ quality: opts.quality, style: opts.catStyle })
+    : createAvatar({ quality: opts.quality });
   let generation = 0;
   let disposed = false;
   let loaded = false;
