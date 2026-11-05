@@ -41,20 +41,28 @@ CLIPS = {
     "trot": dict(frames=9, sample=1),     # 0.3 s loop
     "run": dict(frames=6, sample=1),      # 0.2 s loop
 }
-CALIB = {"walk": 0.6, "trot": 1.4, "run": 3.0}
-# Footfall offsets as a fraction of the cycle, and the duty factor (stance share of the cycle).
+# Footfall offsets as a fraction of the cycle, the stance share (`duty`), the stance travel in
+# metres and the chest/hip drop of the body. The stride speed follows from the travel.
 GAITS = {
-    "walk": dict(offset={"hind_L": 0.00, "fore_L": 0.25, "hind_R": 0.50, "fore_R": 0.75}, duty=0.60, lift=0.045),
-    "trot": dict(offset={"hind_L": 0.00, "fore_R": 0.00, "hind_R": 0.50, "fore_L": 0.50}, duty=0.50, lift=0.045),
-    "run": dict(offset={"hind_L": 0.00, "hind_R": 0.06, "fore_L": 0.50, "fore_R": 0.56}, duty=0.35, lift=0.060),
+    "walk": dict(offset={"hind_L": 0.00, "fore_L": 0.25, "hind_R": 0.50, "fore_R": 0.75},
+                 duty=0.60, lift=0.045, travel=0.13, chest=0.020, hip=0.012),
+    "trot": dict(offset={"hind_L": 0.00, "fore_R": 0.00, "hind_R": 0.50, "fore_L": 0.50},
+                 duty=0.50, lift=0.045, travel=0.15, chest=0.022, hip=0.015),
+    "run": dict(offset={"hind_L": 0.00, "hind_R": 0.06, "fore_L": 0.50, "fore_R": 0.56},
+                duty=0.35, lift=0.060, travel=0.16, chest=0.030, hip=0.025),
 }
-# Body crouch per gait: the shoulders/hips drop until every stance target sits inside 98% of
-# that leg's reach (see `solve_leg`); it is body height, never a leg stretch.
-CROUCH = {"walk": 0.050, "trot": 0.060, "run": 0.060}
+CALIB = {clip: gait["travel"] / (gait["duty"] * CLIPS[clip]["frames"] / FPS) for clip, gait in GAITS.items()}
+# Horizontal levers from spine_01's head to the shoulder and the hip, used to turn the two drops
+# into a root translation plus a small body pitch.
+SHOULDER_LEVER, HIP_LEVER = 0.268, 0.040
+# Stance ranges are centred on the shoulder (fore) and the hip (hind).
+STANCE_CENTRE = {True: 0.098, False: -0.130}
 
 # Colours, sRGB hex as authored in the brief; converted to linear for the COLOR_0 attribute.
 BACK, FLANK, BELLY = "#7F7A75", "#9A948E", "#C8C2BA"
-INNER_EAR, NOSE, EYE, PUPIL, STRIPE = "#C9A3A0", "#B88E8C", "#A39A52", "#141210", "#5E5953"
+INNER_EAR, NOSE, EYE, PUPIL, STRIPE = "#C9A3A0", "#B88E8C", "#A39A52", "#141210", "#4A4540"
+# Mackerel body bars: period along the body and the coat-ramp band they cover.
+STRIPE_PERIOD, STRIPE_RAMP, STRIPE_SHARP = 0.042, (0.30, 0.60), 6
 
 # Body nodes: (x, y along, z height, half-width, half-length, half-height), Blender frame.
 TORSO = [(0, -0.190, 0.175, 0.030, 0.030, 0.034), (0, -0.155, 0.172, 0.052, 0.040, 0.060),
@@ -125,19 +133,23 @@ def mix(a, b, t):
     return tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
 
 
-def bar(u, period):
-    """Soft stripe profile in [0, 1]."""
-    return (0.5 + 0.5 * math.cos((u / period) * math.tau)) ** 6
+def bar(u, period, sharp=6):
+    """Soft stripe profile in [0, 1]; a lower `sharp` widens the dark band."""
+    return (0.5 + 0.5 * math.cos((u / period) * math.tau)) ** sharp
+
+
+def coat_t(co):
+    """How far up the back/flank ramp a point sits (0 belly, 1 back); the head has its own ramp."""
+    x, y, z = co
+    if y > 0.13:  # head: paler muzzle and chin
+        return clamp01(smoothstep(0.215, 0.26, z) if y < 0.20 else 0.1)
+    return clamp01(smoothstep(0.09, 0.20, z) - 0.35 * smoothstep(0.02, 0.05, abs(x)))
 
 
 def body_colour(co, tabby):
     """The prototype's back/flank/belly ramp, with the same stripe profile layered on top."""
     x, y, z = co
-    side = abs(x)
-    t = smoothstep(0.09, 0.20, z) - 0.35 * smoothstep(0.02, 0.05, side)
-    if y > 0.13:  # head: paler muzzle and chin
-        t = smoothstep(0.215, 0.26, z) if y < 0.20 else 0.1
-    t = clamp01(t)
+    t = coat_t(co)
     colour = mix(BELLY_L, BACK_L, t) if t < 0.5 else mix(FLANK_L, BACK_L, t)
     if tabby:
         if y < -0.21:                                   # tail rings
@@ -145,7 +157,7 @@ def body_colour(co, tabby):
         elif z < 0.11 and abs(x) > 0.018:               # leg rings
             strength = 0.50 * bar(z, 0.040)
         else:                                           # mackerel bars across the back
-            strength = 0.60 * bar(y, 0.062) * smoothstep(0.35, 0.70, t)
+            strength = 0.90 * bar(y, STRIPE_PERIOD, STRIPE_SHARP) * smoothstep(STRIPE_RAMP[0], STRIPE_RAMP[1], t)
         colour = mix(colour, STRIPE_L, strength)
     return colour
 
@@ -331,7 +343,7 @@ def skin_candidate(name, co):
             return False
         if name.startswith("hind") and not (y < -0.06):
             return False
-        if name.startswith("fore") and not (0.03 < y < 0.15):
+        if name.startswith("fore") and not (0.055 < y < 0.15):
             return False
         return True
     if name.startswith("tail"):
@@ -350,7 +362,10 @@ def leg_falloff(name, co):
 
 
 def skin_body(body, arm):
-    """Distance skinning: w = 1 / max(d, 4 mm)^4 over the region's bones, top 3, normalised."""
+    """Distance skinning: w = 1 / max(d, 4 mm)^4 over the region's bones, top 3, normalised.
+
+    `smooth_weights` then relaxes the seams and keeps the strongest four.
+    """
     from mathutils import Vector
     bones = [(b.name, b.head_local.copy(), b.tail_local.copy()) for b in arm.data.bones if b.use_deform]
     groups = {}
@@ -378,8 +393,9 @@ def rigid_paws(body, arm):
     """The toe half of each paw is rigid to its bone: the floor contact is then the bone's own.
 
     Only the distal half is forced; the pastern keeps its distance weights, so the hock and the
-    wrist bend instead of tearing open at a hard seam.
+    wrist bend instead of tearing open at a hard seam. Returns the forced vertex indices.
     """
+    rigid = set()
     index = {g.name: g.index for g in body.vertex_groups}
     names = {name: index[name] for name in index if name.startswith(("forepaw_", "hindpaw_"))}
     bones = {b.name: (b.head_local.copy(), b.tail_local.copy()) for b in arm.data.bones if b.name in names}
@@ -400,7 +416,42 @@ def rigid_paws(body, arm):
                 if other != group:
                     other.remove([vertex.index])
             group.add([vertex.index], 1.0, 'REPLACE')
+            rigid.add(vertex.index)
             break
+    return rigid
+
+
+def smooth_weights(body, rigid, iterations=3, keep=4, factor=0.5):
+    """Relax the distance seams with 1-ring averaging, then keep the strongest `keep` and normalise."""
+    groups = list(body.vertex_groups)
+    neighbours = [[] for _ in body.data.vertices]
+    for edge in body.data.edges:
+        a, b = edge.vertices
+        neighbours[a].append(b)
+        neighbours[b].append(a)
+    weights = [{groups[g.group].name: g.weight for g in vertex.groups if g.weight > 0.0}
+               for vertex in body.data.vertices]
+    for _ in range(iterations):
+        relaxed = []
+        for i, row in enumerate(weights):
+            ring = neighbours[i]
+            if i in rigid or not ring:
+                relaxed.append(row)
+                continue
+            around = {}
+            for j in ring:
+                for name, weight in weights[j].items():
+                    around[name] = around.get(name, 0.0) + weight
+            relaxed.append({name: (1.0 - factor) * row.get(name, 0.0) + factor * around.get(name, 0.0) / len(ring)
+                            for name in set(row) | set(around)})
+        weights = relaxed
+    for i, vertex in enumerate(body.data.vertices):
+        best = sorted(weights[i].items(), key=lambda item: -item[1])[:keep]
+        total = sum(weight for _name, weight in best) or 1.0
+        for group in groups:
+            group.remove([vertex.index])
+        for name, weight in best:
+            body.vertex_groups[name].add([vertex.index], weight / total, 'REPLACE')
 
 
 # --------------------------------------------------------------------------------------------
@@ -564,18 +615,20 @@ def paw_angle_for(leg, phase, gait):
     return -math.radians(35.0) * math.sin(math.pi * s) ** 2
 
 
-def foot_path(front, phase, gait, speed, cycle_s, offset):
-    """Distal joint (wrist/hock) target: stance moves backward at exactly the stride speed."""
-    rest_y, rest_z = REST_DISTAL[front]
-    duty = gait["duty"]
-    excursion = speed * duty * cycle_s
+def foot_path(front, phase, gait, offset):
+    """Distal joint (wrist/hock) target: stance moves backward at exactly the stride speed.
+
+    The stance range is centred on the shoulder (fore) or the hip (hind) so neither end of the
+    travel leaves the leg's comfortable reach.
+    """
+    centre, rest_z = STANCE_CENTRE[front], REST_DISTAL[front][1]
+    duty, travel = gait["duty"], gait["travel"]
     p = phase % 1.0
     if p < duty:
-        s = p / duty
-        return rest_y + excursion * (0.5 - s), rest_z + offset
+        return centre + travel * (0.5 - p / duty), rest_z + offset
     s = (p - duty) / (1.0 - duty)
     ease = s * s * (3.0 - 2.0 * s)
-    return rest_y + excursion * (ease - 0.5), rest_z + offset + gait["lift"] * math.sin(math.pi * s) ** 2
+    return centre + travel * (ease - 0.5), rest_z + offset + gait["lift"] * math.sin(math.pi * s) ** 2
 
 
 def idle_pose(t, dz):
@@ -615,11 +668,11 @@ def sit_setup(arm, offsets):
         "head": (-0.22, 0.0, 0.0),
         "ear_L": (0.0, 0.0, 0.0),
         "ear_R": (0.0, 0.0, 0.0),
-        # The tail leaves the rump almost level and curls to one side along the floor.
-        "tail_01": (-0.12, 0.0, 0.95),
-        "tail_02": (-0.05, 0.0, 0.55),
-        "tail_03": (0.0, 0.0, 0.45),
-        "tail_04": (0.0, 0.0, 0.30),
+        # Tail: counter-rotates the spine pitch and stays level on the floor, curling to one side.
+        "tail_01": (-pitch - 0.28, 0.0, 0.85),
+        "tail_02": (0.53, 0.0, 0.55),
+        "tail_03": (0.63, 0.0, 0.45),
+        "tail_04": (0.66, 0.0, 0.30),
     }
     fore_wrist_z = REST_DISTAL[True][1] + offsets["fore_L"]
     # Reach from the shoulder to the wrist that keeps the foreleg just short of straight.
@@ -664,28 +717,37 @@ def sit_paw_heights(arm, body, groups, pose):
 
 def locomotion_pose(clip, t, dz):
     gait = GAITS[clip]
-    speed = CALIB[clip]
     cycle_s = CLIPS[clip]["frames"] / FPS
     p = (t / cycle_s) % 1.0
+    # Static body height: a root drop plus a small pitch that turns the chest/hip drops into the
+    # two joint heights asked for, at the shoulder and the hip.
+    theta = (gait["hip"] - gait["chest"]) / (SHOULDER_LEVER - HIP_LEVER)
+    root_z = -gait["hip"] - HIP_LEVER * theta
     if clip == "walk":
-        bob = 0.004 * math.sin(math.tau * 2.0 * p)
-        spine = (0.015 * math.sin(math.tau * 2.0 * p + 0.5), 0.0, 0.03 * math.sin(math.tau * p))
+        bob = 0.003 * math.sin(math.tau * 2.0 * p)
+        flex, pitch = 0.0, 0.0
+        sway = 0.03 * math.sin(math.tau * p)
         head = (-0.02 * math.sin(math.tau * 2.0 * p), 0.0, 0.02 * math.sin(math.tau * p))
         tail_base = (-0.10, 0.0, 0.06 * math.sin(math.tau * p))
     elif clip == "trot":
-        bob = 0.006 * math.sin(math.tau * 2.0 * p)
-        spine = (0.03 * math.sin(math.tau * 2.0 * p + 0.4), 0.0, 0.0)
+        bob = 0.003 * math.sin(math.tau * 2.0 * p)
+        flex, pitch = 0.0, 0.0
+        sway = 0.02 * math.sin(math.tau * p)
         head = (-0.03 * math.sin(math.tau * 2.0 * p), 0.0, 0.0)
         tail_base = (-0.16, 0.0, 0.05 * math.sin(math.tau * p))
     else:
-        bob = 0.012 * math.sin(math.tau * p + 0.6)
-        spine = (0.09 * math.sin(math.tau * p + 0.9), 0.0, 0.0)
-        head = (-0.10 * math.sin(math.tau * p + 0.9), 0.0, 0.0)
+        bob = 0.002 * math.sin(math.tau * p + 0.6)
+        # +-8 degrees of spine flex, and a pitch that swings the other way so the chest keeps clear
+        # of the floor at the bottom of the flex.
+        flex = 0.14 * math.sin(math.tau * p + 0.9)
+        pitch = -0.04 * math.sin(math.tau * p + 0.9)
+        sway = 0.0
+        head = (-0.6 * flex, 0.0, 0.0)
         tail_base = (-0.24, 0.0, 0.04 * math.sin(math.tau * p))
     fk = {
-        "spine_01": spine,
-        "spine_02": (spine[0] * 0.5, 0.0, 0.0),
-        "spine_03": (spine[0] * 0.3, 0.0, 0.0),
+        "spine_01": (theta + pitch, 0.0, sway),
+        "spine_02": (flex, 0.0, sway * 0.5),
+        "spine_03": (flex * 0.5, 0.0, sway * 0.3),
         "neck": (head[0] * 0.4, 0.0, 0.0),
         "head": head,
         "tail_01": tail_base,
@@ -693,8 +755,7 @@ def locomotion_pose(clip, t, dz):
         "tail_03": (tail_base[0] * 0.2, 0.0, 0.06 * math.sin(math.tau * p - 1.0)),
         "tail_04": (0.0, 0.0, 0.07 * math.sin(math.tau * p - 1.5)),
     }
-    return dict(root=(0.0, 0.0, bob - CROUCH[clip]), fk=fk, gait=gait, speed=speed,
-                cycle_s=cycle_s, phase=p)
+    return dict(root=(0.0, 0.0, root_z + bob), fk=fk, gait=gait, phase=p)
 
 
 def reset_pose(arm):
@@ -722,10 +783,10 @@ def apply_pose(arm, pose, offsets):
         for leg in LEGS:
             solve_leg(arm, leg, pose["targets"][leg["key"]], pose.get("paw", {}).get(leg["key"], 0.0))
         return
-    gait, speed, cycle_s, base = pose["gait"], pose["speed"], pose["cycle_s"], pose["phase"]
+    gait, base = pose["gait"], pose["phase"]
     for leg in LEGS:
         phase = base + gait["offset"][leg["key"]]
-        y, z = foot_path(leg["front"], phase, gait, speed, cycle_s, offsets[leg["key"]])
+        y, z = foot_path(leg["front"], phase, gait, offsets[leg["key"]])
         solve_leg(arm, leg, (leg["side"] * LEG_X[leg["front"]], y, z), paw_angle_for(leg, phase, gait))
 
 
@@ -1084,6 +1145,22 @@ def main():
     body, dz = build_body(args.tabby)
     fix_body_colours(body, args.tabby)
 
+    def luma(channel):
+        return 0.2126 * channel[0] + 0.7152 * channel[1] + 0.0722 * channel[2]
+
+    if args.tabby:
+        attribute = body.data.color_attributes["Col"]
+        darker = total = 0
+        for i, vertex in enumerate(body.data.vertices):
+            if coat_t(vertex.co) < 0.5:
+                continue
+            total += 1
+            if luma(attribute.data[i].color) <= 0.75 * luma(body_colour(vertex.co, False)):
+                darker += 1
+        share = darker / max(total, 1)
+        checker.check(total > 0 and share >= 0.20,
+                      f"tabby {share * 100:.0f} % of {total} back vertices >= 25 % darker than grey (>= 20 %)")
+
     mesh = body.data
     checker.check(mesh_triangles(mesh) <= BODY_TRI_TARGET * 1.1, f"body triangles {mesh_triangles(mesh)}")
     components = body_components(mesh)
@@ -1108,9 +1185,10 @@ def main():
     body.parent = arm
     body.matrix_parent_inverse = arm.matrix_world.inverted()
 
-    rigid_paws(body, arm)
+    rigid = rigid_paws(body, arm)
+    smooth_weights(body, rigid)
     bpy.context.view_layer.objects.active = body
-    bpy.ops.object.vertex_group_limit_total(group_select_mode='ALL', limit=3)
+    bpy.ops.object.vertex_group_limit_total(group_select_mode='ALL', limit=4)
     bpy.ops.object.vertex_group_normalize_all(group_select_mode='ALL', lock_active=False)
 
     material = bpy.data.materials.new("cat_coat")
@@ -1127,9 +1205,14 @@ def main():
     body.data.calc_loop_triangles()
     checker.check(mesh_triangles(body.data) <= TRI_BUDGET, f"mesh triangles {mesh_triangles(body.data)} <= {TRI_BUDGET}")
     worst = max((len(v.groups) for v in body.data.vertices), default=0)
-    checker.check(worst <= 3, f"max {worst} bone influences per vertex (<= 3)")
+    checker.check(worst <= 4, f"max {worst} bone influences per vertex (<= 4)")
 
     groups = [paw_group(leg) for leg in LEGS]
+    spine_groups = {g.index for g in body.vertex_groups if g.name in ("spine_01", "spine_02", "spine_03")}
+    belly = [v.index for v in body.data.vertices
+             if -0.10 < v.co.y < 0.08 and v.groups
+             and max(v.groups, key=lambda g: g.weight).group in spine_groups]
+    spine_rest = arm.data.bones["spine_02"].head_local.z
     offsets = stance_offset(arm, body, groups)
     print("INFO stance offsets: " + ", ".join(f"{k} {v * 1000:+.1f} mm" for k, v in offsets.items()))
 
@@ -1173,9 +1256,16 @@ def main():
         lowest = {leg["key"]: 1.0 for leg in LEGS}
         bend = {leg["key"]: 1e9 for leg in LEGS}
         midline = 1e9
+        body_low, spine_worst, tail_tip = 1.0, 0.0, -1.0
         for frame in frames:
             scene.frame_set(frame)
             data = evaluated_paw_points(body, groups)
+            evaluated = body.evaluated_get(bpy.context.evaluated_depsgraph_get())
+            skinned = evaluated.to_mesh()
+            body_low = min(body_low, min((skinned.vertices[i].co.z for i in belly), default=1.0))
+            evaluated.to_mesh_clear()
+            spine_worst = max(spine_worst, abs(arm.pose.bones["spine_02"].head.z - spine_rest))
+            tail_tip = max(tail_tip, arm.pose.bones["tail_04"].tail.z)
             for leg in LEGS:
                 info = data[paw_group(leg)]
                 contacts[(frame, leg["key"])] = info[0]
@@ -1213,6 +1303,12 @@ def main():
                     expected_y = run_start[1][1] - speed * t
                     drift = max(drift, abs(point[0] - run_start[1][0]), abs(point[1] - expected_y))
             checker.check(drift <= 0.01, f"{clip} {leg['key']} planted drift {drift * 1000:.1f} mm (<= 10)")
+        if clip in GAITS:
+            floor = 0.05 if clip == "run" else 0.07
+            checker.check(body_low >= floor, f"{clip} lowest body vertex {body_low:.3f} m (>= {floor})")
+            checker.check(spine_worst <= 0.035, f"{clip} spine_02 height within {spine_worst * 1000:.0f} mm of rest (<= 35)")
+        if clip == "sit":
+            checker.check(tail_tip <= 0.04, f"sit tail tip z {tail_tip:.3f} m (<= 0.04)")
 
     # Extras on the armature node: the clip calibration speeds read at runtime.
     arm["gteki_cat"] = {"calib": dict(CALIB)}
