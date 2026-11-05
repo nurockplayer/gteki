@@ -16,7 +16,16 @@ function isDrawable(object: THREE.Object3D): object is Drawable {
   return object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points;
 }
 
-export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"; loader?: AvatarGlbLoader }): Promise<AvatarRig> {
+export interface GlbAvatarOptions {
+  quality: "low" | "high";
+  loader?: AvatarGlbLoader;
+  /** Bind-pose height in metres; the human protagonist's 1.70 is the default. */
+  heightM?: number;
+  /** Four-legged protagonist: gait clip policy and floor-hugging draw order (see `catClips`). */
+  cat?: boolean;
+}
+
+export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promise<AvatarRig> {
   // Both quality tiers use the supplied URL for now; Lane E supplies the tiered assets later.
   const loader = opts.loader ?? new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const gltf = await loader.loadAsync(url);
@@ -77,9 +86,9 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
       throw new Error("Avatar GLB has invalid bounds");
     }
     // Contract: Y up, faces -Z (unlike the station kit's +Z); no axis rotation is applied.
-    // Scale bind-pose height to 1.70 metres and centre X/Z with the feet at Y=0. Keep animated nodes intact.
+    // Scale bind-pose height to the requested size and centre X/Z with the feet at Y=0. Keep animated nodes intact.
     const normalized = new THREE.Group();
-    const scale = 1.7 / height;
+    const scale = (opts.heightM ?? 1.7) / height;
     normalized.scale.setScalar(scale);
     normalized.position.set(-(bounds.min.x + bounds.max.x) * 0.5 * scale, -bounds.min.y * scale, -(bounds.min.z + bounds.max.z) * 0.5 * scale);
     normalized.add(gltf.scene);
