@@ -378,7 +378,7 @@ function junctionHeight(points: readonly V3[], p: PlanPoint): number {
 }
 
 // Height is affine where the nearest leg and its endpoint clamp stay fixed; ambiguous 1 cm cells keep their guard.
-function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPoint[], aPoints: readonly V3[], bPoints: readonly V3[]): MultiPolygon {
+function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPoint[], aPoints: readonly V3[], bPoints: readonly V3[], rawA: readonly V3[], rawB: readonly V3[]): MultiPolygon {
   const ox = aPoints[0]!.x, oz = aPoints[0]!.z;
   const local = (p: V3) => ({ x: p.x - ox, y: p.y, z: p.z - oz });
   const a = aPoints.map(local), b = bPoints.map(local), disc = outline.map((p) => ({ x: p.x - ox, z: p.z - oz }));
@@ -411,7 +411,7 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
     const p = points[i]!, dx = q.x - p.x, dz = q.z - p.z, length2 = dx * dx + dz * dz;
     return length2 > 1e-12 ? [{ p, q, dx, dz, length2, box: { x0: Math.min(p.x, q.x), z0: Math.min(p.z, q.z), x1: Math.max(p.x, q.x), z1: Math.max(p.z, q.z) } }] : [];
   });
-  const aLegs = legsOf(a), bLegs = legsOf(b);
+  const pairs = [[legsOf(a), legsOf(b)], [legsOf(rawA.map(local)), legsOf(rawB.map(local))]] as const;
   const range = (legs: ReturnType<typeof legsOf>, box: ReturnType<typeof boxOf>, corners: PlanPoint[]) => {
     const choices = legs.map((leg) => {
       const ts = corners.map((p) => ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2);
@@ -435,18 +435,21 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
   const visit = (box: ReturnType<typeof boxOf>) => {
     if (!boxes.some((other) => overlaps(box, other))) return;
     let ring = [{ x: box.x0, z: box.z0 }, { x: box.x1, z: box.z0 }, { x: box.x1, z: box.z1 }, { x: box.x0, z: box.z1 }];
-    const ar = range(aLegs, box, ring), br = range(bLegs, box, ring), step = WALKER_BODY.stepUpM;
-    if (ar.low - br.high > step || br.low - ar.high > step) return;
-    if (!(ar.high - br.low <= step && br.high - ar.low <= step)) {
-      if (ar.at && br.at) {
-        for (const side of [-1, 1]) ring = clip(ring, (p) => step - side * (ar.at!(p) - br.at!(p)));
-      } else {
-        const width = box.x1 - box.x0, depth = box.z1 - box.z0, x = (box.x0 + box.x1) / 2, z = (box.z0 + box.z1) / 2;
-        if (Math.max(width, depth) <= 0.01) return;
-        if (width >= depth) { visit({ ...box, x1: x }); visit({ ...box, x0: x }); }
-        else { visit({ ...box, z1: z }); visit({ ...box, z0: z }); }
-        return;
+    for (const [aLegs, bLegs] of pairs) {
+      const ar = range(aLegs, box, ring), br = range(bLegs, box, ring), step = WALKER_BODY.stepUpM;
+      if (ar.low - br.high > step || br.low - ar.high > step) return;
+      if (!(ar.high - br.low <= step && br.high - ar.low <= step)) {
+        if (ar.at && br.at) {
+          for (const side of [-1, 1]) ring = clip(ring, (p) => step - side * (ar.at!(p) - br.at!(p)));
+        } else {
+          const width = box.x1 - box.x0, depth = box.z1 - box.z0, x = (box.x0 + box.x1) / 2, z = (box.z0 + box.z1) / 2;
+          if (Math.max(width, depth) <= 0.01) return;
+          if (width >= depth) { visit({ ...box, x1: x }); visit({ ...box, x0: x }); }
+          else { visit({ ...box, z1: z }); visit({ ...box, z0: z }); }
+          return;
+        }
       }
+      if (ring.length < 3) return;
     }
     if (ring.length < 3) return;
     ring = within(ring, disc);
@@ -821,9 +824,16 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   // At a junction the other connectors' own walkable footprint near the node is a connector footprint of this end's level
   // too: neither's walls stand across the other's exit, and only where the other really has floor (its own level keeps
   // its walls). Near means within 2 * half of the wider of the two, or where they leave the node at an acute angle, as far
-  // as the other takes to clear this one (2 * half / sin of the angle). Clip that opening wherever the actual polyline
-  // surfaces differ by more than a step, including after level approaches and later pitch changes.
+  // as the other takes to clear this one (2 * half / sin of the angle). Clip that opening wherever the drawn walking
+  // surfaces differ by more than a step, including after level approaches, pitch changes and mid-flight landings.
   const builtRegions = new Map([...regionsByEdge].map(([id, list]) => [id, [...list]]));
+  // The drawn walking surface: generated treads and mid-flight landings, not the polyline between the endpoints.
+  const drawnPath = (edgeId: string, points: readonly V3[], level: string) => {
+    const path = pathByEdge.get(edgeId)!, at = points[0]!;
+    const distance = (p: V3) => Math.hypot(p.x - at.x, p.y - at.y, p.z - at.z);
+    const ordered = distance(path[0]!) <= distance(path.at(-1)!) ? path : [...path].reverse();
+    return simplifyPlan(junctionPath(ordered, builtRegions.get(edgeId)!.filter((r) => r.level === level)).map((p) => new THREE.Vector3(p.x, p.y, p.z)));
+  };
   const junctionFloors = new Map<string, { at: PlanPoint; radius: number; level: string; otherEdge: string; otherLevel: string; points: readonly V3[]; ownPoints: readonly V3[]; polygons: MultiPolygon }[]>();
   for (const j of junctions) for (const m of mouths.get(j.node) ?? []) {
     // Only the other connector's level that meets this node: a flight of it passing overhead is no opening.
@@ -833,15 +843,15 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const reach = 2 * Math.max(m.half, j.half), sin = Math.abs(j.dir.x * m.dir.z - j.dir.z * m.dir.x);
     const along = j.dir.x * m.dir.x + j.dir.z * m.dir.z > 0 ? Math.max(reach, reach / Math.max(sin, 0.1)) : reach;
     const own = mouths.get(j.node)!.find((mouth) => mouth.edgeId === j.edgeId)!;
-    const ownPath = junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level));
-    const otherPath = junctionPath(m.points, other);
+    const ownPath = drawnPath(j.edgeId, own.points, j.level);
+    const otherPath = drawnPath(m.edgeId, m.points, meets!.level);
     const asClipping = (ring: readonly PlanPoint[]) => ring.map((p): [number, number] => [p.x, p.z]);
     try {
       const polygons = other.flatMap((r) => regionPolygon(r)).map((polygon) => insetJunctionRing(polygon[0]!)).filter((ring) => ring.length >= 3).map((ring) => [asClipping(ring)]);
       if (!polygons.length) continue;
       const floors = junctionFloors.get(j.edgeId) ?? [];
       floors.push({ at: j.at, radius: along, level: j.level, otherEdge: m.edgeId, otherLevel: meets!.level, points: otherPath, ownPoints: ownPath, polygons }); junctionFloors.set(j.edgeId, floors);
-      const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, otherPath);
+      const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, otherPath, junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level)), junctionPath(m.points, other));
       for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
     } catch { legacyEdgeIds.add(j.edgeId); legacyEdgeIds.add(m.edgeId); }
   }
@@ -863,16 +873,6 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
   }
   const edgeById = new Map(bundle.edges.map((edge) => [edge.id, edge]));
-  // Guard caps follow the drawn walking surface too, including generated treads and mid-flight landings.
-  const drawnPath = (edgeId: string, points: readonly V3[], level: string) => {
-    const path = pathByEdge.get(edgeId)!, at = points[0]!;
-    const distance = (p: V3) => Math.hypot(p.x - at.x, p.y - at.y, p.z - at.z);
-    return junctionPath(distance(path[0]!) <= distance(path.at(-1)!) ? path : [...path].reverse(), builtRegions.get(edgeId)!.filter((r) => r.level === level));
-  };
-  for (const [edgeId, floors] of junctionFloors) for (const floor of floors) {
-    floor.points = drawnPath(floor.otherEdge, floor.points, floor.otherLevel);
-    floor.ownPoints = drawnPath(edgeId, floor.ownPoints, floor.level);
-  }
   const groupOf = new Map<string, string>(), byNode = new Map<string, string>();
   const findGroup = (id: string): string => { const up = groupOf.get(id) ?? id; if (up === id) return id; const top = findGroup(up); groupOf.set(id, top); return top; };
   for (const edgeId of regionsByEdge.keys()) {

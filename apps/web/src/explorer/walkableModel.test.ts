@@ -34,6 +34,16 @@ describe("walkable model", () => {
     return polygons.some((polygon) => inRing(polygon[0]!) && !polygon.slice(1).some(inRing));
   };
 
+  it("clips a cross-level strip's flat segment and keeps its rise", () => {
+    const region: Region = { kind: "strip", level: "concourse", floorLevels: ["concourse", "upper"], floorHeights: [0, 4],
+      points: [{ x: 1, y: 0, z: 5 }, { x: 9, y: 0, z: 5 }, { x: 9, y: 4, z: 6 }], halfWidth: 0.25 };
+    const { levels } = buildWalkableModel([region], undefined, 0, 0, [{ level: "concourse", y: 0, triangles: [square(3, 7)] }]);
+    const polygons = levels.get("concourse")!;
+    expect(contains(polygons, 5, 5)).toBe(false);
+    expect(contains(polygons, 2, 5)).toBe(true);
+    expect(contains(polygons, 9, 5.7)).toBe(true);
+  });
+
   it.each([false, true])("keeps an atrium hole and both boundaries (reversed rings: %s)", (reverse) => {
     const region = atrium();
     if (region.kind !== "polygon") throw new Error("expected polygon");

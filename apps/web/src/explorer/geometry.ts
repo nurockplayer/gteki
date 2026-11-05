@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { floorExclusionCuts, subtractPlan, type PlanExclusion, type PlanPoint } from "./walkableModel.ts";
+import { segmentExclusionCuts, subtractPlan, type PlanExclusion, type PlanPoint } from "./walkableModel.ts";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { nodeDisplayZ } from "@gteki/navigation";
 
@@ -113,11 +113,15 @@ export function dashTexture(): THREE.CanvasTexture {
 
 /** Remove explicit holes from graph triangles on their floor, preserving the authored surface height. */
 export function clipFlatGeometry(geometry: THREE.BufferGeometry, holes: readonly PlanExclusion[], levels: readonly string[], heights: readonly number[], offset = new THREE.Vector3()): THREE.BufferGeometry {
-  const cuts = holes.flatMap((plane) => floorExclusionCuts(plane, levels, heights));
-  if (!cuts.length) return geometry;
+  if (!holes.length) return geometry;
   const position = geometry.getAttribute("position"), count = geometry.index?.count ?? position.count, out: number[] = [];
+  let hasCuts = false;
   for (let i = 0; i < count; i += 3) {
     const corners = [0, 1, 2].map((j) => new THREE.Vector3().fromBufferAttribute(position, geometry.index?.getX(i + j) ?? i + j).add(offset));
+    const low = Math.min(...corners.map((p) => p.y)), high = Math.max(...corners.map((p) => p.y));
+    const cuts = holes.flatMap((plane) => segmentExclusionCuts(plane, levels, { y: low }, { y: high }, heights));
+    if (!cuts.length) { for (const p of corners) out.push(p.x - offset.x, p.y - offset.y, p.z - offset.z); continue; }
+    hasCuts = true;
     const a = corners[0]!, normal = corners[1]!.clone().sub(a).cross(corners[2]!.clone().sub(a));
     const height = (p: PlanPoint) => a.y - (normal.x * (p.x - a.x) + normal.z * (p.z - a.z)) / normal.y;
     if (Math.abs(normal.y) < 1e-12) { for (const p of corners) out.push(p.x - offset.x, p.y - offset.y, p.z - offset.z); continue; }
@@ -132,6 +136,7 @@ export function clipFlatGeometry(geometry: THREE.BufferGeometry, holes: readonly
       }
     }
   }
+  if (!hasCuts) return geometry;
   const clipped = new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
   clipped.computeVertexNormals();
   return clipped;
