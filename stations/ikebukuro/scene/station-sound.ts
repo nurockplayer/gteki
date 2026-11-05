@@ -10,7 +10,8 @@ export type V3 = { x: number; y: number; z: number };
 /** Speech backend. Voices are re-read on every attempt because browsers load them asynchronously. */
 export interface SpeechPort {
   voices(): { lang: string }[];
-  speak(text: string, opts: { lang: string; volume: number; rate: number; voice: unknown }): void;
+  /** `onDone` fires when the utterance ends or errors; until then it may still be queued, not yet speaking. */
+  speak(text: string, opts: { lang: string; volume: number; rate: number; voice: unknown }, onDone: () => void): void;
   cancel(): void;
   speaking(): boolean;
   /** Optional: drop host listeners the adapter installed (the one-shot unlock). */
@@ -78,6 +79,8 @@ const ANNOUNCE_MIN_INTERVAL_S = 60;
 const ANNOUNCE_MAX_INTERVAL_S = 120;
 /** With no voices loaded yet, retry soon; they arrive asynchronously. */
 const ANNOUNCE_VOICE_RETRY_S = 5;
+/** Some browsers never fire `end`: an announcement older than this no longer counts as ours. */
+const ANNOUNCE_MAX_SECONDS = 30;
 
 /** Distances over hundreds of sites are refreshed a few times a second, never per frame. */
 const DISTANCE_REFRESH_S = 0.25;
@@ -113,6 +116,8 @@ export function createStationSound(opts: StationSoundOptions): StationSound {
   let nextSpeechAt = ANNOUNCE_FIRST_MIN_S + random() * (ANNOUNCE_FIRST_MAX_S - ANNOUNCE_FIRST_MIN_S);
   let lineIndex = 0;
   let speakingAt: V3 | null = null;
+  let spokeAtTime = 0;
+  let utterance = 0;
   const activeTaps = new Set<OscillatorNode>();
 
   function setParam(param: AudioParam, value: number): void {
@@ -261,11 +266,10 @@ export function createStationSound(opts: StationSoundOptions): StationSound {
 
     // Speech: cancel when muted or once the listener has walked away from the site.
     if (speakingAt) {
-      if (!speech || !speech.speaking()) speakingAt = null;
-      else if (muted || distance(listener, speakingAt) > ANNOUNCE_CANCEL_RANGE_M) {
-        speech.cancel();
+      if (muted || distance(listener, speakingAt) > ANNOUNCE_CANCEL_RANGE_M) {
+        speech?.cancel();
         speakingAt = null;
-      }
+      } else if (time - spokeAtTime > ANNOUNCE_MAX_SECONDS) speakingAt = null;
     }
 
     if (speech && !muted && !speakingAt && !speech.speaking() && time >= nextSpeechAt) {
@@ -275,9 +279,14 @@ export function createStationSound(opts: StationSoundOptions): StationSound {
         const voice = speech.voices().find((v) => v.lang.toLowerCase().startsWith("ja"));
         if (voice) {
           const volume = 0.7 * Math.max(0.15, Math.min(1, 1 - site.distance / 30));
-          speech.speak(lines[lineIndex % lines.length]!, { lang: "ja-JP", volume, rate: 0.95, voice });
-          lineIndex += 1;
+          // A cancelled utterance reports its end late: only the current one may clear speakingAt.
+          const mine = ++utterance;
           speakingAt = announce[site.index]!;
+          spokeAtTime = time;
+          speech.speak(lines[lineIndex % lines.length]!, { lang: "ja-JP", volume, rate: 0.95, voice }, () => {
+            if (mine === utterance) speakingAt = null;
+          });
+          lineIndex += 1;
           nextSpeechAt = time + ANNOUNCE_MIN_INTERVAL_S + random() * (ANNOUNCE_MAX_INTERVAL_S - ANNOUNCE_MIN_INTERVAL_S);
         } else nextSpeechAt = time + ANNOUNCE_VOICE_RETRY_S;
       }
@@ -337,12 +346,14 @@ export function webSpeechPort(): SpeechPort | null {
 
   return {
     voices: () => synth.getVoices(),
-    speak: (text, o) => {
+    speak: (text, o, onDone) => {
       const utterance = new Utterance(text);
       utterance.lang = o.lang;
       utterance.volume = o.volume;
       utterance.rate = o.rate;
       if (o.voice) utterance.voice = o.voice as SpeechSynthesisVoice;
+      utterance.onend = onDone;
+      utterance.onerror = onDone;
       synth.speak(utterance);
     },
     cancel: () => synth.cancel(),
