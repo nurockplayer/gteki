@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
         ...(heavy ? [] : ["tools/*.test.mjs", "tools/map/*.test.ts", "tools/private-overlay/*.test.ts", "tools/data-age/*.test.ts", "tools/coverage-matrix/*.test.ts", "tools/field-ingest/*.test.ts"]),
       ],
       exclude: heavy ? configDefaults.exclude : [...configDefaults.exclude, "**/*.heavy.test.ts"],
-      execArgv: [`--max-old-space-size=${process.env.GTEKI_TEST_HEAP_MB ?? "3072"}`],
+      execArgv: [`--max-old-space-size=${process.env.GTEKI_TEST_HEAP_MB ?? process.env.ORB_TEST_HEAP_MB ?? "3072"}`],
     },
   };
 });
