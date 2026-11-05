@@ -100,6 +100,11 @@ for (const key of STATIONS) {
     const overlapsReadable = overlapPairs(readable);
     const overlapsAll = overlapPairs(visible);
 
+    // #838: no POI label covers the persistent credit footer or the greybox disclaimer badge.
+    const footers = await page.evaluate(() => [".credit-line", ".greybox-legend"].flatMap((s) => [...document.querySelectorAll<HTMLElement>(s)])
+      .filter((e) => e.offsetParent !== null).map((e) => { const r = e.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }));
+    const footerHits = visible.filter((b) => footers.some((f) => b.x < f.x + f.w && b.x + b.w > f.x && b.y < f.y + f.h && b.y + b.h > f.y)).map((b) => b.text);
+
     // Framing proxy (see header).
     const spreadAll = anchorSpread(visible, view);
     const routable = visible.filter((b) => !b.searchOnly);
@@ -176,7 +181,7 @@ for (const key of STATIONS) {
         domCount: boxes.length, visibleCount: visible.length, readableCount: readable.length,
         hooksLabels: await page.evaluate(() => (window as any).__gteki.labels()),
         byCategory,
-        overlapsReadable, overlapsAllVisible: overlapsAll, labelLabelOverlapsFromSmoke: smoke.labelLabelOverlaps,
+        overlapsReadable, overlapsAllVisible: overlapsAll, footerHits, footers, labelLabelOverlapsFromSmoke: smoke.labelLabelOverlaps,
         uiOverlaps: smoke.uiOverlaps,
         boxes: boxes.map((b) => ({ ...b, x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.w), h: Math.round(b.h) })),
       },
@@ -191,6 +196,8 @@ for (const key of STATIONS) {
     expect.soft(overlapsReadable, "visible, non-faded POI labels overlapping each other").toEqual([]);
     // 4. C1: labels never above the UI.
     expect.soft(smoke.uiOverlaps.filter((o) => o.labelOnTop), "POI labels painted over UI controls").toEqual([]);
+    // #838: the credit footer and the disclaimer badge stay legible under no label.
+    expect.soft(footerHits, "POI labels clear of the credit footer and disclaimer badge").toEqual([]);
     // 1. Framing: the direct measure when the app has it, else the label-anchor proxy.
     // `viewportShare` is #109's measure: the free-rect share can read over 1 when the map deliberately
     // reaches past a short phone band, so the band is checked against the viewport's shorter side.

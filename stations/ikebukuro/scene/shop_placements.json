@@ -80,6 +80,52 @@
    }
   },
   {
+   "id": "real-ikb-seibu-honten-b1",
+   "kind": "real",
+   "poiId": "shop-ikb-seibu-honten",
+   "openings": [
+    "poly-2a71c32a-05e0-44c2-8811-343513009a18",
+    "poly-46775a2c-cb1f-4123-97eb-709f949c8a51"
+   ],
+   "front": "door_glazing",
+   "sign": {
+    "ja": "西武池袋本店",
+    "en": "SEIBU IKEBUKURO"
+   },
+   "accent": "#2e4a6d",
+   "display": "department",
+   "position_basis": "station tie via g_jr_s (JR south gate); store entrance not surveyed",
+   "sourceIds": [
+    "sogo-seibu-ikebukuro-floorguide-2026-10"
+   ],
+   "field_check": "field (unscheduled) entrance; present layout (renovation)",
+   "ruling": "R1, director 2026-10-28 03:0x JST: visual only; no connector, node or coordinate; no 'you are here' or distance on the facade; moves or goes if the entrance field check differs",
+   "directory": {
+    "title": {
+     "ja": "西武池袋本店 フロアガイド（本館）",
+     "en": "SEIBU IKEBUKURO FLOOR GUIDE"
+    },
+    "note": {
+     "ja": "2026年10月 公開フロアガイドより・営業状況は未確認",
+     "en": "From the public floor guide, Oct 2026; status not verified"
+    },
+    "sourceIds": [
+     "sogo-seibu-ikebukuro-floorguide-2026-10"
+    ],
+    "checkedDate": "2026-10-27",
+    "shops": [
+     "B2F グルメ＆スイーツ",
+     "B1F グルメ＆スイーツ・ギフトサロン・サービス・その他",
+     "1F コスメ＆ビューティー・ファッション・プレステージブティック",
+     "2F プレステージブティック",
+     "3F コスメ＆ビューティー・カフェ＆レストラン・グルメ＆スイーツ",
+     "4F プレステージブティック・カフェ＆レストラン・サービス・その他",
+     "5F プレステージブティック・サービス・その他",
+     "6F ファッション・プレステージブティック・サービス・その他・カフェ＆レストラン"
+    ]
+   }
+  },
+  {
    "id": "ph-ikb-b1e-01",
    "kind": "placeholder",
    "openings": [

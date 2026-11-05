@@ -7,6 +7,8 @@ describe("overview look", () => {
     const scene = new THREE.Scene();
     const fog = new THREE.Fog(0x111111, 25, 180);
     scene.fog = fog;
+    const background = new THREE.Color(0x0e0d0b);
+    scene.background = background;
     const root = new THREE.Group();
     const ceiling = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
     const sign = new THREE.MeshBasicMaterial({ side: THREE.BackSide });
@@ -15,11 +17,13 @@ describe("overview look", () => {
     const look = new OverviewLook();
     look.set(scene, root, true);
     expect(scene.fog).toBeNull();
+    expect(scene.background).toEqual(new THREE.Color(0x555a60));
     expect(ceiling.side).toBe(THREE.FrontSide);
     expect(sign.side).toBe(THREE.BackSide);
     look.set(scene, root, true); // idempotent
     look.set(scene, root, false);
     expect(scene.fog).toBe(fog);
+    expect(scene.background).toBe(background);
     expect(ceiling.side).toBe(THREE.DoubleSide);
     expect(sign.side).toBe(THREE.BackSide);
     expect(look.isActive).toBe(false);
