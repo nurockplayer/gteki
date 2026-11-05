@@ -238,7 +238,7 @@ export function restrictionDigest(input: string) {
 export function restrictedInputKey(layout: Layout, plan: Plan, bundle: StationBundle, base: Fence[]) {
   // Digest the complete source/graph/layout input; CI compares the fresh derivation
   // and separately requires review of every change to the conflict table.
-  return restrictionDigest(JSON.stringify(["restricted-boundary-v19", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
+  return restrictionDigest(JSON.stringify(["restricted-boundary-v20", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
     plan.levels.map(l => [l.label, l.renderElevationM, l.spaces.filter(s => s.restricted)]),
     bundle.edges.filter(e => e.verification === "verified"),
     bundle.nodes.map(n => [n.id, n.position]), [...layout.nodeZ], layout.gates,
@@ -552,7 +552,12 @@ export function protectFareAndAccess(
     if (!nearby.length || length < 1e-8) { clipped.push(fence); continue; }
     const normal = { x: -dy / length * .04, y: dx / length * .04 };
     const steps = Math.ceil(length / .005), at = (t: number) => ({ x: fence.a.x + dx * t, y: fence.a.y + dy * t });
-    const clear = (t: number) => nearby.some(l => l.clear(at(t), normal));
+    // `clear` classifies by label, which is undefined inside the shaft square, so a procedural
+    // join/return piece lying in a stop square is never cut. Those pieces use the geometry instead;
+    // source (restricted/fare/access) fences keep the label test: lift-clearance.test.ts relies on a
+    // restricted fence inside the shaft still blocking the west approach.
+    const geometric = fence.id.startsWith("join:") || fence.id.startsWith("return:");
+    const clear = (t: number) => nearby.some(l => geometric ? l.inside(at(t)) : l.clear(at(t), normal));
     let start: number | undefined, pieces = 0;
     for (let i = 0; i < steps; i++) {
       const keep = !clear(i / steps) && !clear((i + .5) / steps) && !clear((i + 1) / steps);
@@ -594,7 +599,7 @@ export function liftClearances(bundle: StationBundle, plan: Plan, layout: Layout
     };
     const own = new Set(stop.nodeIds.map(id => label(nodes.get(id)!.position)).filter(v => v !== undefined));
     const rs = [liftStopSquare(shaft), liftDoorClearance(stop)], inside = containsPolygons(rs.map(r => [r]));
-    return { z: stop.z, rings: rs, clear: (p: XY, normal: XY) => inside(p) && [-1, 1].every(sign => {
+    return { z: stop.z, rings: rs, inside, clear: (p: XY, normal: XY) => inside(p) && [-1, 1].every(sign => {
       const value = label({ x: p.x + normal.x * sign, y: p.y + normal.y * sign });
       return value !== undefined && own.has(value);
     }) };
