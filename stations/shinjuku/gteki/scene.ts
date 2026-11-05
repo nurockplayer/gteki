@@ -18,7 +18,6 @@ import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
 import { createAmbience } from "../../ikebukuro/scene/ambience.ts";
 import { createStationSound, type V3 } from "../../ikebukuro/scene/station-sound.ts";
-import graph from "./graph.json" with { type: "json" };
 import shopKitManifest from "../scene/shop_kit.json" with { type: "json" };
 import shopBays from "../scene/shop_bays.json" with { type: "json" };
 import shopPlacements from "../scene/shop_placements.json" with { type: "json" };
@@ -350,10 +349,10 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   }
 
   // Explorer ambience and station sound (#859): an original bed plus gate taps, an original approach
-  // chime and our own ja-JP announcements. Sites come from graph.json, converted to renderer space.
+  // chime and our own ja-JP announcements. Sites come from the bundle's graph nodes, converted to renderer space.
   const ambience = ctx.audio ? createAmbience(ctx.audio.context, ctx.audio.destination) : null;
-  const graphNodes = (graph as { nodes: { kind?: string; position: { x: number; y: number; z: number | null }; renderZ?: number }[] }).nodes;
-  const siteAt = (n: { position: { x: number; y: number; z: number | null }; renderZ?: number }): V3 => {
+  const graphNodes = ctx.bundle.nodes;
+  const siteAt = (n: (typeof graphNodes)[number]): V3 => {
     const [x, y, z] = ctx.enuToRenderer({ x: n.position.x, y: n.position.y, z: n.position.z ?? n.renderZ ?? 0 });
     return { x, y, z };
   };
