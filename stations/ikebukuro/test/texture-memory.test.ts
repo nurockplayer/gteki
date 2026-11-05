@@ -91,9 +91,9 @@ describe("ikebukuro texture memory", () => {
         expect(budget.totalMib).toBeLessThanOrEqual(112);
       } else {
         // Shipped scene measured before #276 on c2f6f0ee, including the settled catalog.
-        // +#833 Seibu facade + floor board +#834 ISP x36f sign
-        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([177.092, 0, 0, 0, 188.333, 0, 13.667, 53.720]);
-        expect(Number(budget.totalMib.toFixed(3))).toBe(432.813);
+        // +#833 Seibu facade + floor board; #834 ISP facade removed
+        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([177.092, 0, 0, 0, 188.333, 0, 13.667, 53.257]);
+        expect(Number(budget.totalMib.toFixed(3))).toBe(432.350);
       }
     }, 120_000);
   }
