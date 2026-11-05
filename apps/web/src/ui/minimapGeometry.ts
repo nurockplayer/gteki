@@ -8,14 +8,19 @@ export type MinimapOrientation = "player-up" | "north-up";
 export interface MapPoint { east: number; north: number }
 export interface WalkSegment { mode: Edge["mode"]; points: MapPoint[] }
 
-/** Nearest node in 3D within the display-height floor band; ties keep bundle order. */
+// The false Shinjuku landing is over 80 m from the escalator; 30 m keeps floor readings local.
+const FLOOR_HORIZONTAL_CAP_M = 30;
+
+/** Nearest local node in 3D within the display-height floor band; ties keep bundle order. */
 export function currentFloorId(bundle: StationBundle, up: number, east: number, north: number): string | null {
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   let best = Infinity, floorId: string | null = null;
   for (const node of bundle.nodes) {
     const dz = nodeDisplayZ(node, floors.get(node.floorId)).z - up;
     if (Math.abs(dz) > FLOOR_BAND_M) continue;
-    const distance = (node.position.x - east) ** 2 + (node.position.y - north) ** 2 + dz ** 2;
+    const horizontal = (node.position.x - east) ** 2 + (node.position.y - north) ** 2;
+    if (horizontal > FLOOR_HORIZONTAL_CAP_M ** 2) continue;
+    const distance = horizontal + dz ** 2;
     if (distance < best) { best = distance; floorId = node.floorId; }
   }
   return floorId;

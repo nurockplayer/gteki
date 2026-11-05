@@ -460,7 +460,7 @@ export class Minimap {
     this.lastPose = key;
     const playerFloorId = currentFloorId(this.bundle, pose.up, pose.east, pose.north);
     // Follow mode draws the player's floor; a picked floor replaces it until follow is chosen again.
-    const drawnFloorId = this.pickedFloorId ?? playerFloorId;
+    const drawnFloorId = this.pickedFloorId ?? playerFloorId ?? this.lastKnownFloor ?? null;
     const floorChanged = drawnFloorId !== this.floorId;
     if (floorChanged) {
       this.floorId = drawnFloorId;

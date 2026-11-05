@@ -46,6 +46,12 @@ describe("minimap orientation and player translation", () => {
 });
 
 describe("current floor", () => {
+  it("ignores nodes beyond the horizontal floor cap", () => {
+    const bundle = createSyntheticBundle([]);
+    bundle.nodes = [bundle.nodes[0]!];
+    expect(currentFloorId(bundle, 0, 30, 0)).toBe("concourse");
+    expect(currentFloorId(bundle, 0, 30.01, 0)).toBeNull();
+  });
   it("selects B1F versus 1F by display height and nearest 3D node, not floor order", () => {
     const bundle = createSyntheticBundle([]);
     bundle.floors = bundle.floors.slice(0, 2);
