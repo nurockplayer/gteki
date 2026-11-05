@@ -460,7 +460,7 @@ export class Minimap {
     this.lastPose = key;
     const playerFloorId = currentFloorId(this.bundle, pose.up, pose.east, pose.north);
     // Follow mode draws the player's floor; a picked floor replaces it until follow is chosen again.
-    const connectorFloor = this.lastKnownFloor && nearFloorConnector(this.bundle, this.lastKnownFloor, pose.east, pose.north) ? this.lastKnownFloor : null;
+    const connectorFloor = this.lastKnownFloor && nearFloorConnector(this.bundle, this.lastKnownFloor, pose.east, pose.north, pose.up) ? this.lastKnownFloor : null;
     const drawnFloorId = this.pickedFloorId ?? playerFloorId ?? connectorFloor;
     const floorChanged = drawnFloorId !== this.floorId;
     if (floorChanged) {
@@ -472,7 +472,7 @@ export class Minimap {
     }
     // Progress crosses floors only on a known-to-known change. First acquisition (undefined → F)
     // and a reading that dips to null mid-stairs are not floor changes; while the floor is unknown
-    // neither seg nor the hint moves, so nothing can jump ahead and be impossible to undo.
+    // the segment does not advance, so nothing can jump ahead and be impossible to undo.
     const progressFloorChanged = playerFloorId !== null && this.lastKnownFloor !== undefined && playerFloorId !== this.lastKnownFloor;
     if (playerFloorId !== null) this.lastKnownFloor = playerFloorId;
     if (playerFloorId) {
@@ -492,7 +492,10 @@ export class Minimap {
         this.renderLabel();
         this.connectorDirty = false;
       }
-    } else if ((floorChanged || this.connectorDirty) && this.floorId !== null) {
+    } else if (this.floorId === null) {
+      this.connectorHint = null;
+      this.renderLabel();
+    } else if (floorChanged || this.connectorDirty) {
       // The player's floor is unknown, but a picked floor still has its own next floor change. The
       // dirty flag stays set: the segment is recomputed only once a known floor reading returns.
       this.updateConnectorHint();

@@ -266,6 +266,18 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(display(map, ".minimap-arrow")).toBe("");
   });
 
+  it("clears the old transition label and chevron after relocating off-graph", () => {
+    const map = create();
+    map.setRoute({ points: upRoute, steps: upSteps }, null);
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    pose = { ...pose!, east: 1000, north: 1000, up: 100 };
+    tick();
+    expect(map.el.textContent).toContain("Floor unknown");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).not.toContain("To 1F by stairs");
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+    expect(display(map, ".minimap-connector-rim")).toBe("none");
+  });
+
   it("draws only the current floor's run of the route and names the next floor change", () => {
     const map = create();
     map.setRoute({ points: upRoute, steps: upSteps }, poi());
@@ -492,15 +504,16 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
   });
 
-  it("keeps progress and the hint while the floor reading drops out and returns", () => {
+  it("clears the hint when the floor is unknown and restores it without advancing progress", () => {
     const map = create();
     map.setRoute({ points: loopPoints, steps: loopSteps }, null);
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
-    // Mid-stairs the floor is unknown: nothing moves, and the stairs hint stays.
+    // A remote height near the stairs is outside their vertical span.
     pose = { ...pose!, up: 100 };
     tick();
-    expect(display(map, ".minimap-connector-marker")).toBe("");
-    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    expect(map.el.textContent).toContain("Floor unknown");
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).not.toContain("To 1F by stairs");
     // Back on the same floor, the earlier stairs are still the hint, not the later escalator.
     pose = { ...pose!, up: 0 };
     tick();

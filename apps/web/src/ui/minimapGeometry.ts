@@ -56,12 +56,16 @@ export function currentFloorId(bundle: StationBundle, up: number, east: number, 
   return floorId;
 }
 
-export function nearFloorConnector(bundle: StationBundle, floorId: string, east: number, north: number): boolean {
+export function nearFloorConnector(bundle: StationBundle, floorId: string, east: number, north: number, up: number): boolean {
+  const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   return bundle.edges.some((edge) => {
     if (edge.mode !== "stairs" && edge.mode !== "escalator" && edge.mode !== "ramp") return false;
     const from = nodes.get(edge.from), to = nodes.get(edge.to);
-    return !!from && !!to && from.floorId !== to.floorId && (from.floorId === floorId || to.floorId === floorId)
+    if (!from || !to || from.floorId === to.floorId || (from.floorId !== floorId && to.floorId !== floorId)) return false;
+    const fromZ = nodeDisplayZ(from, floors.get(from.floorId)).z;
+    const toZ = nodeDisplayZ(to, floors.get(to.floorId)).z;
+    return up >= Math.min(fromZ, toZ) - FLOOR_BAND_M && up <= Math.max(fromZ, toZ) + FLOOR_BAND_M
       && distanceToPoints(edgePoints(edge, from, to), east, north) <= FLOOR_HORIZONTAL_CAP_M ** 2;
   });
 }
