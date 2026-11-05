@@ -46,7 +46,7 @@ export function segmentExclusionCuts(cut: PlanExclusion, edgeLevels: readonly st
   const whole = floorExclusionCuts(cut, edgeLevels, edgeHeights);
   if (whole.length) return whole;
   const near = (y: number) => Math.abs(y - cut.y) <= PRIVATE_FLOOR_TOLERANCE_M;
-  if (Math.abs(a.y - b.y) > PRIVATE_FLOOR_TOLERANCE_M || !near(a.y) || !near(b.y)) return [];
+  if (a.y !== b.y || !near(a.y) || !near(b.y)) return [];
   const matchingEndpoints = edgeHeights.map((y, i) => ({ y, level: edgeLevels[i] ?? "" })).filter(({ y }) => near(y));
   return matchingEndpoints.length && matchingEndpoints.every(({ level }) => !level || level === cut.level) ? cut.triangles : [];
 }

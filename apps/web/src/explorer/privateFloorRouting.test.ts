@@ -43,6 +43,19 @@ describe("private floor routing exclusions", () => {
     bundle.nodes.forEach(n => { n.floorId = "other-concourse"; });
     expect(privateFloorRoutingEdges(bundle, thin)[0]).toBe(bundle.edges[0]);
   });
+
+  it("keeps a ramp open whether or not its rise has an intermediate vertex", () => {
+    const start = point(1, 5, -2), end = point(6, 5, 0), middle = point(5.5, 5, -0.2);
+    const results = [[start, end], [start, middle, end]].map((path) => {
+      const bundle = createSyntheticBundle([syntheticEdge("edge", "start", "a", { geometry: path })]);
+      bundle.nodes.find(n => n.id === "start")!.position = start;
+      bundle.nodes.find(n => n.id === "a")!.position = end;
+      bundle.nodes.find(n => n.id === "start")!.floorId = "lower";
+      bundle.nodes.find(n => n.id === "a")!.floorId = "concourse";
+      return privateFloorRoutingEdges(bundle, regions)[0]!.closed;
+    });
+    expect(results).toEqual([false, false]);
+  });
 });
 
 it("does not infer a routing exclusion from an intrinsic gap in a selected polygon", () => {
