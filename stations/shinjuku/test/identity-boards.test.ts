@@ -14,7 +14,8 @@ import { Explorer } from "../../../apps/web/src/explorer/explorer.ts";
 import { FOLLOW, FOV, NO_SLOPE } from "../../../apps/web/src/explorer/followCamera.ts";
 import { collectIdentityBoards } from "../../../apps/web/src/explorer/identityBoards.ts";
 import { freeArea } from "../../../apps/web/src/explorer/overviewFraming.ts";
-import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { castAll, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { spawnHeading } from "../../../apps/web/src/ui/spawnHeading.ts";
 import { loadScene } from "../../../packages/godot/src/route-clip-audit.ts";
 import type { StationScene } from "@gteki/scene-api";
@@ -82,6 +83,7 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
       const mesh = o as THREE.Mesh;
       if (mesh.isMesh && !mesh.name.startsWith("identity") && [mesh.material].flat().some(m => m.visible && !m.transparent)) opaque.push(mesh);
     });
+    prepareRayTrees([...opaque, ...explorerTargets(explorerScene.walkable, explorerScene.colliders ?? [], explorerScene.cameraBlockers ?? []).camera]);
     gate.position.set(node.position.x, -5.25, -node.position.y).addScaledVector(forward, -8);
     let accepted = 0;
     try {
@@ -93,7 +95,7 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
           const points = corners(board.userData.gteki_identity.regions[0]).map(p => board.localToWorld(p));
           const blockers = [...new Set(points.map(p => {
             const delta = p.clone().sub(camera.position);
-            return new THREE.Raycaster(camera.position, delta.clone().normalize(), 0, delta.length() - 0.06).intersectObjects(opaque, false)[0]?.object.name;
+            return castAll(new THREE.Raycaster(camera.position, delta.clone().normalize(), 0, delta.length() - 0.06), opaque)[0]?.object.name;
           }).filter(Boolean))];
           const projected = points.map(p => p.clone().project(camera));
           const rect = { left: Math.min(...projected.map(p => (p.x + 1) * w! / 2)), right: Math.max(...projected.map(p => (p.x + 1) * w! / 2)),
