@@ -994,10 +994,10 @@ describe("turning landing guards", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
     const stair = g([[0, 0, 0], [4, 2, 0]]), walk = g([[0, 0, -3], [0, 0, 0]]);
     const station = createSyntheticBundle([
-      syntheticEdge("stair", "gate", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: stair }),
-      syntheticEdge("walk", "approach", "gate", { mode: "walk", geometry: walk }),
+      syntheticEdge("stair", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: stair }),
+      syntheticEdge("walk", "start", "a", { mode: "walk", geometry: walk }),
     ] as Parameters<typeof createSyntheticBundle>[0]);
-    for (const [id, p] of [["gate", stair[0]!], ["upper", stair[1]!], ["approach", walk[0]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    for (const [id, p] of [["a", stair[0]!], ["upper", stair[1]!], ["start", walk[0]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
     const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
     for (let z = -1.2; z <= 0; z += 0.1) {
       const r = resolveWalls(0, z, 0.3, 0, 1.7, result.wallSegments);
