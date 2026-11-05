@@ -66,8 +66,10 @@ bodyBlock	function	apps/web/src/explorer/bodyCollision.ts	70
 slideAlong	function	apps/web/src/explorer/bodyCollision.ts	124
 CameraCut	class	apps/web/src/explorer/cameraCut.ts	16
 injectCut	function	apps/web/src/explorer/cameraCut.ts	158
-CatStyle	type	apps/web/src/explorer/catAvatar.ts	16
-createCatAvatar	function	apps/web/src/explorer/catAvatar.ts	18
+CatStyle	type	apps/web/src/explorer/catAvatar.ts	19
+createCatAvatar	function	apps/web/src/explorer/catAvatar.ts	21
+CatSection	interface	apps/web/src/explorer/catAvatar.ts	71
+CAT_BODY_SECTIONS	const	apps/web/src/explorer/catAvatar.ts	82
 contactShadow	function	apps/web/src/explorer/contactShadow.ts	7
 RECIPE_VERSION	const	apps/web/src/explorer/cutRecipe.ts	8
 StaleRecipe	class	apps/web/src/explorer/cutRecipe.ts	13

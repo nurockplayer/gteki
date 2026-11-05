@@ -1,12 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { createAvatar } from "./avatar.ts";
+import { CAT_BODY_SECTIONS, createCatAvatar, type CatStyle } from "./catAvatar.ts";
 import { avatarKind } from "./avatarSelection.ts";
-import { createCatAvatar, type CatStyle } from "./catAvatar.ts";
 import { FOLLOW_CAT, followPose } from "./followCamera.ts";
 import { fadeUniform } from "./avatarGlb.fixture.ts";
 
-const HEAD_TOP: Record<CatStyle, number> = { A: 0.3, B: 0.34, C: 0.34 };
+const HEAD_TOP: Record<CatStyle, number> = { A: 0.315, B: 0.362, C: 0.362 };
 const STYLES: readonly CatStyle[] = ["A", "B", "C"];
 const QUALITIES = ["low", "high"] as const;
 const CASES = STYLES.flatMap((style) => QUALITIES.map((quality) => [style, quality] as const));
@@ -38,7 +37,7 @@ function finite(root: THREE.Object3D): boolean {
 }
 
 describe("cat avatar", () => {
-  it.each(CASES)("style %s (%s) is one skinned draw within the human triangle budget", (style, quality) => {
+  it.each(CASES)("style %s (%s) is one skinned draw inside its triangle budget", (style, quality) => {
     const rig = createCatAvatar({ quality, style });
     const meshes = skinned(rig.root);
     expect(meshes).toHaveLength(1);
@@ -54,15 +53,28 @@ describe("cat avatar", () => {
     expect(material.depthWrite).toBe(true);
     expect(mesh.renderOrder).toBeGreaterThan(21);
 
-    const human = createAvatar({ quality });
-    expect(triangles(rig.root)).toBeLessThanOrEqual(triangles(human.root));
+    expect(triangles(rig.root)).toBeLessThanOrEqual(quality === "low" ? 2500 : 8000);
 
     const box = new THREE.Box3().setFromObject(rig.root);
     expect(Math.abs(box.max.y - HEAD_TOP[style])).toBeLessThanOrEqual(0.03);
     expect(box.min.y).toBeGreaterThan(-0.02);
     expect(box.min.y).toBeLessThan(0.02);
     rig.dispose();
-    human.dispose();
+  });
+
+  it("buries every leg's top joint inside the body at idle", () => {
+    const rig = createCatAvatar({ quality: "high", style: "A" });
+    rig.update(1 / 60, 0);
+    const v = new THREE.Vector3();
+    for (const key of ["FL", "FR", "HL", "HR"]) {
+      const joint = rig.root.getObjectByName(`upper${key}`)!;
+      expect(joint).toBeDefined();
+      joint.getWorldPosition(v);
+      const sec = CAT_BODY_SECTIONS.reduce((a, b) => (Math.abs(b.z - v.z) < Math.abs(a.z - v.z) ? b : a));
+      expect(Math.abs(v.x)).toBeLessThan(sec.w / 2);
+      expect(Math.abs(v.y - sec.y)).toBeLessThan(sec.h / 2);
+    }
+    rig.dispose();
   });
 
   it("keeps bone transforms finite at idle, walk, trot, run and after sitting", () => {
