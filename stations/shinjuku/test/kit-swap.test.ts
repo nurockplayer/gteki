@@ -45,7 +45,9 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * Vertical batch 3 adds contact-shade vertex colours (truss, risers, escalator steps) and luminaires under the escalator
  * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged.
  * Vertical item 3 adds a fill light at the guided-walk escalator bank head in the slot a ceilingless anchor wasted (7 → 8 lights): nodes
- * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged. */
+ * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged.
+ * #645 step 2c cuts the join:/return: lift pieces that lay inside a stop square by the shaft geometry: 24 fewer
+ * explorer walls (14,908 → 14,884) and geometry re-measured; meshes, appearance, nodes, textures unchanged. */
 // #221 per-flight shaft finishes; station physical lists unchanged (2026-11-03 JST).
 // 2026-11-03 18:00 JST: the attributed ceiling proxy intentionally supplies the
 // overhead query itself. The removed copied-cap mesh briefly made this four
@@ -56,20 +58,20 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "15fca2688e31ccb4e6a5a5a135a556f891c6b18a75a6d01ac2f4500e5f702335",
+    "geometryDigest": "a7a1dbd68e225daada56da5c727cbb11bd71b710e8d49c6e37266a99dac3e90c",
     "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
     "nodesDigest": "671b7e0fca848dcf1aacac050fd030d5ff788dd421aa3e38335c80f891cf1216",
     "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
     "meshes": 125,
-    "bytes": 16244972
+    "bytes": 16200380
   },
   "lists": {
-    "listsDigest": "6175a21817b5603669c41ea62242c566296e1c78fabecbc27ebcce8bc9851164",
+    "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",
     "counts": {
       "walkable": 442,
       "colliders": 2,
       "cameraBlockers": 3,
-      "walls": 14908
+      "walls": 14884
     }
   }
 };
