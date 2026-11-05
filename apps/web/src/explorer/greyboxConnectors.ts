@@ -866,10 +866,10 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const half = (rawWidth && rawWidth > 0 ? rawWidth : 2) / 2;
     const own = mouths.get(j.node)?.find((mouth) => mouth.edgeId === j.edgeId);
     if (!own) continue;
-    const ownPath = junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level));
+    const ownPath = drawnPath(j.edgeId, own.points, j.level);
     const walk: Region = { kind: "strip", level: j.level, points, halfWidth: half };
     const polygons = regionPolygon(walk).map((polygon) => polygon.map((ring) => ring.map((p): [number, number] => [p.x, p.z])));
-    const near = junctionOpenings(polygons, discRing(j.at, 2 * Math.max(j.half, half)), ownPath, points);
+    const near = junctionOpenings(polygons, discRing(j.at, 2 * Math.max(j.half, half)), ownPath, points, junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level)), points);
     for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
   }
   const edgeById = new Map(bundle.edges.map((edge) => [edge.id, edge]));
