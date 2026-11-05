@@ -402,10 +402,16 @@ class CatAvatar implements AvatarRig {
     }
 
     this.geometry = this.buildGeometry();
-    this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0, envMapIntensity: 0.6 });
+    // Transparent so the cat renders in the transparent pass: opaque would place it before the route's
+    // always-on-top overlays (the dashed amber "not modelled" band, depthTest:false, renderOrder 21).
+    // Those paint over anything opaque drawn earlier, so a 0.34 m cat standing inside one vanishes under the
+    // tint. Drawn last in the transparent pass instead, the cat overwrites them while still writing depth, so
+    // real geometry in front of it (glass, walls) still hides it. Human avatar and overlay look unchanged.
+    this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, metalness: 0, envMapIntensity: 0.6, transparent: true, depthWrite: true });
     ditherFade(this.material, this.fade);
     this.mesh = new THREE.SkinnedMesh(this.geometry, this.material);
     this.mesh.name = "cat-body";
+    this.mesh.renderOrder = 30;
     this.mesh.castShadow = true;
     this.mesh.receiveShadow = false;
     this.mesh.frustumCulled = false;

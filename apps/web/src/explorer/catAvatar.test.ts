@@ -48,6 +48,11 @@ describe("cat avatar", () => {
     expect(material.isMeshStandardMaterial).toBe(true);
     expect(material.vertexColors).toBe(true);
     expect(mesh.castShadow).toBe(true);
+    // Drawn after the route's always-on-top overlays (the amber no-model band renders at 21) but still writing
+    // depth, so a cat standing inside one is visible and real geometry still occludes it.
+    expect(material.transparent).toBe(true);
+    expect(material.depthWrite).toBe(true);
+    expect(mesh.renderOrder).toBeGreaterThan(21);
 
     const human = createAvatar({ quality });
     expect(triangles(rig.root)).toBeLessThanOrEqual(triangles(human.root));
