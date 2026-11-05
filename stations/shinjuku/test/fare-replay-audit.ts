@@ -74,9 +74,12 @@ export function endpointClosure(built: BuiltStation, scene: StationScene, lifts:
     return min <= max ? [{ ...w, min, max }] : [];
   }));
   const localLane = nearbyBands(common), localShared = nearbyBands(shared);
-  // A piece cut on a lift clear-box boundary ends flush with the box edge, which is closure too.
+  // Closed: within 0.03 m of any lift ring edge, or inside rings[0], the stop square, whose real
+  // collider walls (greyboxConnectors.ts, role "collider") enclose it; rings[1], the door clearance,
+  // has no walls, so only its edge (a fence cut flush with it) counts there.
   const onLiftBox = (p: XYZ) => lifts.some(l => Math.abs(l.z - p.z) < .5 &&
-    l.rings.some(r => r.some((a, i) => distance(p, closest(p, a, r[(i + 1) % r.length]!)) <= .03)));
+    (pointInRings(p, [l.rings[0]!]) ||
+      l.rings.some(r => r.some((a, i) => distance(p, closest(p, a, r[(i + 1) % r.length]!)) <= .03))));
   return barrierEnds(built).flatMap(end => {
     // The SAME joining segment must block both bodies, not two unrelated nearest walls.
     const candidates = (bands: typeof lane) => bands.filter(w => end.p.z >= w.min && end.p.z <= w.max &&
