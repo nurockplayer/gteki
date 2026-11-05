@@ -8,17 +8,66 @@ export type MinimapOrientation = "player-up" | "north-up";
 export interface MapPoint { east: number; north: number }
 export interface WalkSegment { mode: Edge["mode"]; points: MapPoint[] }
 
-/** Nearest node in 3D within the display-height floor band; ties keep bundle order. */
+// The false Shinjuku landing is over 80 m from the escalator; 30 m keeps floor readings local.
+const FLOOR_HORIZONTAL_CAP_M = 30;
+
+function edgePoints(edge: Edge, from: StationBundle["nodes"][number], to: StationBundle["nodes"][number]): MapPoint[] {
+  const raw = edge.geometry && edge.geometry.length >= 2 ? edge.geometry : [from.position, to.position];
+  return raw.map((p, i) => ({
+    east: i === 0 ? from.position.x : i === raw.length - 1 ? to.position.x : p.x,
+    north: i === 0 ? from.position.y : i === raw.length - 1 ? to.position.y : p.y,
+  }));
+}
+
+function distanceToPoints(points: MapPoint[], east: number, north: number): number {
+  let best = Infinity;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1]!, b = points[i]!;
+    const dx = b.east - a.east, dy = b.north - a.north;
+    const length = dx * dx + dy * dy;
+    const t = length ? Math.max(0, Math.min(1, ((east - a.east) * dx + (north - a.north) * dy) / length)) : 0;
+    best = Math.min(best, (east - a.east - t * dx) ** 2 + (north - a.north - t * dy) ** 2);
+  }
+  return best;
+}
+
+/** Nearest local floor geometry within the display-height floor band. */
 export function currentFloorId(bundle: StationBundle, up: number, east: number, north: number): string | null {
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
+  const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   let best = Infinity, floorId: string | null = null;
+  const consider = (id: string, dz: number, horizontal: number) => {
+    if (Math.abs(dz) > FLOOR_BAND_M || horizontal > FLOOR_HORIZONTAL_CAP_M ** 2) return;
+    const distance = horizontal + dz ** 2;
+    if (distance < best) { best = distance; floorId = id; }
+  };
   for (const node of bundle.nodes) {
     const dz = nodeDisplayZ(node, floors.get(node.floorId)).z - up;
-    if (Math.abs(dz) > FLOOR_BAND_M) continue;
-    const distance = (node.position.x - east) ** 2 + (node.position.y - north) ** 2 + dz ** 2;
-    if (distance < best) { best = distance; floorId = node.floorId; }
+    const horizontal = (node.position.x - east) ** 2 + (node.position.y - north) ** 2;
+    consider(node.floorId, dz, horizontal);
+  }
+  for (const edge of bundle.edges) {
+    const from = nodes.get(edge.from), to = nodes.get(edge.to);
+    if (!from || !to || from.floorId !== to.floorId || edge.mode === "elevator") continue;
+    const horizontal = distanceToPoints(edgePoints(edge, from, to), east, north);
+    consider(from.floorId, nodeDisplayZ(from, floors.get(from.floorId)).z - up, horizontal);
+    consider(to.floorId, nodeDisplayZ(to, floors.get(to.floorId)).z - up, horizontal);
   }
   return floorId;
+}
+
+export function nearFloorConnector(bundle: StationBundle, floorId: string, east: number, north: number, up: number): boolean {
+  const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
+  const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
+  return bundle.edges.some((edge) => {
+    if (edge.mode !== "stairs" && edge.mode !== "escalator" && edge.mode !== "ramp") return false;
+    const from = nodes.get(edge.from), to = nodes.get(edge.to);
+    if (!from || !to || from.floorId === to.floorId || (from.floorId !== floorId && to.floorId !== floorId)) return false;
+    const fromZ = nodeDisplayZ(from, floors.get(from.floorId)).z;
+    const toZ = nodeDisplayZ(to, floors.get(to.floorId)).z;
+    return up >= Math.min(fromZ, toZ) - FLOOR_BAND_M && up <= Math.max(fromZ, toZ) + FLOOR_BAND_M
+      && distanceToPoints(edgePoints(edge, from, to), east, north) <= FLOOR_HORIZONTAL_CAP_M ** 2;
+  });
 }
 
 /** Evidenced centreline geometry only: no widths, footprints or cross-floor connectors. */
@@ -28,12 +77,7 @@ export function floorWalkGraph(bundle: StationBundle, floorId: string): WalkSegm
   for (const edge of bundle.edges) {
     const from = nodes.get(edge.from), to = nodes.get(edge.to);
     if (!from || !to || from.floorId !== floorId || to.floorId !== floorId || edge.mode === "elevator") continue;
-    // Same normalisation as edgePoints(): a polyline needs ≥2 points, and its ends are the nodes.
-    const raw = edge.geometry && edge.geometry.length >= 2 ? edge.geometry : [from.position, to.position];
-    const points = raw.map((p, i) => ({
-      east: i === 0 ? from.position.x : i === raw.length - 1 ? to.position.x : p.x,
-      north: i === 0 ? from.position.y : i === raw.length - 1 ? to.position.y : p.y,
-    }));
+    const points = edgePoints(edge, from, to);
     segments.push({ mode: edge.mode, points });
   }
   return segments;
