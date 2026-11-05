@@ -61,11 +61,29 @@ Top flights (rays, void/street): `e:0564105d…` stairs m0_5→0 6,201 (1,595/4,
 called "not a missing floor". Residue: **786 rays on seven deep escalator flights** (m1↔m3, m3↔m6), all `void`,
 within ±15° of the up-slope at +20…30°, spread along the run (d/L ≈ 0, 0.25, 0.5, 1.0).
 
-## 4. Root cause for the 786 deep-escalator rays — PENDING
+## 4. Root cause for the 786 deep-escalator rays
 
-No crossing in `fix2-crossings.json` lies on these flights, so this is not the head-band mouth case. Open: a real gap
-in the shell, or culling in the audit draw set (its opaque BVH is rebuilt from the app's draw-nothing viewer probe at
-the eye but a fixed default orientation). `gap-probe.ts` compares both for the 786 rays; `221-gap3` still queued.
+The fully loaded scene (`asLoaded`) misses 647 of 786 rays: those 647 are real shell gaps, with no geometry at all.
+The other 139 rays hit loaded geometry but miss in the audit viewer, so those are audit cull artefacts, not player-visible
+gaps. The viewer misses 786/786. Probe result lines (2026-11-05 JST): `asLoaded misses 647 of 786`; `viewer misses 786
+of 786`; per-flight results below; `PASS`; `exit=0`.
+
+| flight | rays | asLoaded miss = real gap | cull only |
+| --- | ---: | ---: | ---: |
+| `e:2768d162a2` | 171 | 129 | 42 |
+| `e:fc787100b1` | 154 | 140 | 14 |
+| `e:abdb4369e9` | 122 | 120 | 2 |
+| `e:d1463e426f` | 97 | 69 | 28 |
+| `e:06a78a8f61` | 90 | 64 | 26 |
+| `e:6113a2285c` | 79 | 57 | 22 |
+| `e:7628a98a51` | 73 | 68 | 5 |
+
+The defect probe sampled the same 786 rays and found 0 coplanar face pairs within 1 mm (`noHit 647`, `single-surface 139`,
+0 pairs): there is no numeric z-fighting on these rays. Patrol shot 28 (`453ea111`, 6 m) remains a visual-only confirmation;
+the probe did not sample that wall. Defect probe result lines (2026-11-05 JST): `noHit 647 single 139 coplanar-pair rays 0
+pairs 0`; `PASS`; `exit=0`.
+
+**#221 closable: no — fix = close the shell over the 7 deep escalator flights (647 rays, m1↔m3 / m3↔m6, pitch +20…30° looking up the flight).**
 
 ## 5. Quality patrol #837 escalator-area reports (visual, numeric pending)
 
@@ -77,4 +95,4 @@ those frames. **38, 40** ceiling polygons: angular but continuous. **22, 32, 36*
 ## Status
 
 - Walking on E27: **no impact** (section 2). Player view: **VISIBLE BREAKUP 0 / CLEAN 16** (section 1). Escapes:
-  bucket (a) **15,610**, (b) 6,306 (section 3); deep-flight root cause open (`221-gap3`), so #221 stays open.
+  bucket (a) **15,610**, (b) 6,306 (section 3); section 4 finds 647 real shell gaps on the seven deep flights, so #221 is not closable.
