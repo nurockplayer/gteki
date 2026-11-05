@@ -38,8 +38,8 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
 
   it("dressings carry category AO and linear_run anchor at entry level; the gate array carries neither", () => {
     const dressings = committed.assets.filter((e) => e.generator !== "gate_array");
-    expect(dressings.map((e) => e.generator).filter((g) => g === "escalator_dressing").length).toBe(10);
-    expect(dressings.map((e) => e.generator).filter((g) => g === "stair_dressing").length).toBe(22);
+    expect(dressings.map((e) => e.generator).filter((g) => g === "escalator_dressing").length).toBe(12);
+    expect(dressings.map((e) => e.generator).filter((g) => g === "stair_dressing").length).toBe(26);
     for (const e of dressings) {
       expect(e.ao_res).toBe(e.generator === "stair_dressing" ? STAIR_AO_RES : ESCALATOR_AO_RES);
       expect(e.anchor).toBe("linear_run");
@@ -64,15 +64,15 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
 
   it("covers every verified gate row and every stair and escalator run the kit can fit, grouped by identical params", () => {
     const stairs = runs.filter((r) => r.role === "stairs"), escalators = runs.filter((r) => r.role === "escalator");
-    expect([stairs.length, escalators.length, protection.gates.length]).toEqual([24, 21, 4]);
+    expect([stairs.length, escalators.length, protection.gates.length]).toEqual([29, 22, 4]);
     const covered = (g: string) => committed.assets.filter((e) => e.generator === g);
-    expect(fresh.unfitted.map((u) => [u.role, u.edgeId.slice(2, 8)])).toEqual([["escalator", "4bee1c"], ["escalator", "27d3ed"]]);
+    expect(fresh.unfitted.map((u) => [u.role, u.edgeId.slice(2, 8)])).toEqual([["escalator", "27d3ed"]]);
     expect(stairs.every((r) => fresh.byAnchor.has(r.key))).toBe(true);
-    expect(escalators.filter((r) => fresh.byAnchor.has(r.key)).length).toBe(19);
+    expect(escalators.filter((r) => fresh.byAnchor.has(r.key)).length).toBe(21);
     expect(protection.gates.every((g) => fresh.byAnchor.has(g.edgeId))).toBe(true);
     // Identical params share one id (the scene has more runs than the catalog has entries).
-    expect(covered("escalator_dressing").length).toBeLessThan(19);
-    expect(covered("stair_dressing").length).toBeLessThanOrEqual(24);
+    expect(covered("escalator_dressing").length).toBeLessThan(21);
+    expect(covered("stair_dressing").length).toBeLessThanOrEqual(29);
     expect(covered("gate_array").length).toBe(1);
     const paramKeys = committed.assets.map((e) => `${e.generator}:${JSON.stringify(e.params)}`);
     expect(new Set(paramKeys).size).toBe(paramKeys.length);

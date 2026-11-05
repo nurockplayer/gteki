@@ -167,6 +167,7 @@ export class App {
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
     this.explorer.setMinimap(this.ui.minimap.el);
+    this.explorer.setLegend(this.ui.greyboxLegend);
     // On a phone the open route sheet is a bottom occluder of the same kind (#385).
     this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
@@ -1381,7 +1382,7 @@ export class App {
   private instructionEl: Element | null = null;
   private instructionSize: ResizeObserver | null = null;
 
-  /** Keep `--hud-clear` (the guide instruction's bottom edge + 8 px) current for the toast, which sits below the instruction while one shows; unset otherwise. */
+  /** Keep `--hud-clear` (the gap from the viewport bottom to the guide box's top edge + 8 px) current for the toast, which sits above the box while one shows; unset otherwise. */
   private trackInstruction(): void {
     const cur = this.ui.hud.querySelector(".hud-line");
     if (cur !== this.instructionEl) {
@@ -1390,7 +1391,7 @@ export class App {
       if (cur && typeof ResizeObserver !== "undefined") (this.instructionSize ??= new ResizeObserver(() => this.trackInstruction())).observe(cur);
     }
     const r = cur?.getBoundingClientRect();
-    if (r) this.root.style.setProperty("--hud-clear", `${Math.round(r.bottom) + 8}px`);
+    if (r) this.root.style.setProperty("--hud-clear", `${Math.round(window.innerHeight - r.top) + 8}px`);
     else this.root.style.removeProperty("--hud-clear");
   }
 
