@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { type Layout, type LevelLayout, type WalkWorld, type XY, type XYZ } from "./layout.ts";
-import { stationSpawn } from "./spawn.ts";
 import { IDENTITY_ART, identityTexture } from "./textures.ts";
 import { identityClearance, platformIdentityPlacement } from "./identity-placement.ts";
 import { identityNearFade } from "./identity-fade.ts";
@@ -52,7 +51,6 @@ export function identityGlyphBox(kind: "ja" | "en"): LocalBox {
 /** Original render-only identity boards; no routing, collision or source-data changes. */
 export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group,
   track: <T extends { dispose(): void }>(value: T) => T, quality: "low" | "high"): THREE.Object3D[] {
-  const spawn = stationSpawn(bundle, layout.nodeZ, world);
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const faces: THREE.BufferGeometry[] = [], hardware: THREE.BufferGeometry[] = [], boards: THREE.Object3D[] = [];
   const { width, height, depth } = IDENTITY_SIZE;
@@ -113,18 +111,15 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
         .translate(x, height / 2 + rodLength / 2, 0).applyMatrix4(board.matrix), "#888888", 0.8));
     }
   };
-  // The normal spawn faces the ticket-gate display and stands 4 m back from the gate; stationSpawn
-  // is the shared anchor for the lane app, the identity builder and the CPU recognition proxy.
-  // Hang the plate 2 m ahead along that heading, in front of the arrival player, and let the
-  // clearance search fall back to nearer spots. The corridor wall corner cuts the left column at
-  // 7.6 m from the spawn camera and the station wayfinding sign sits 5 cm behind a 6 m plate, so
-  // 6/8/10/12 m all fail the spawn sightline; the normal-spawn projection also drops below the
-  // 960x600 EN threshold beyond ~2.4 m. Facing is backwards along `forward`, so ahead is negative;
-  // the front reads back toward the player.
-  const forward = { x: Math.sin(spawn.heading), y: Math.cos(spawn.heading) };
-  add("identity:spawn", spawn.nodeId, spawn.position,
-    { x: -forward.x, y: -forward.y }, "GTEki placement at the normal spawn; not surveyed, not a replica of an on-site sign",
-    undefined, [2, 1.6, 1.2].map((metres) => -metres));
+  // Explorer arrives at spawnNodeIds[0], using spawnHeadings (not the lane app's
+  // stationSpawn, which backs away from a gate and faces the opposite direction).
+  // Original wayfinding placement, five metres into that view; never a route node.
+  const spawn = nodes.get(bundle.spawnNodeIds![0]!)!;
+  const heading = (bundle.spawnHeadings?.[spawn.id] ?? 0) * Math.PI / 180;
+  const forward = { x: Math.sin(heading), y: Math.cos(heading) };
+  add("identity:spawn", spawn.id,
+    { x: spawn.position.x + forward.x * 5, y: spawn.position.y + forward.y * 5, z: layout.nodeZ.get(spawn.id)! },
+    { x: -forward.x, y: -forward.y }, "GTEki placement at the Explorer spawn; not surveyed, not a replica of an on-site sign");
   for (const poi of bundle.pois.filter((p) => p.category === "ticket_gate")) {
     const node = nodes.get(poi.connectorNodeIds[0] ?? "");
     if (!node || !poi.displayPosition) continue;
