@@ -28,7 +28,7 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * regenerated, every other field unchanged.
  * #789 (2026-11-04 JST) repairs 13 node display heights and removes eight approximation flags.
  * Regenerated with the existing helper and fare cache: physical buffers follow the repaired levels.
- * #342 (2026-11-06 JST) moves identity:spawn 2 m ahead of stationSpawn along its gate heading;
+ * #342 (2026-11-06 JST) moves identity:spawn 5 m ahead of the Explorer spawn node at 70 degrees;
  * regenerated, only the two identity visual hashes change.
  */
 const { bundle } = loadShinjukuBundle();

@@ -39,7 +39,7 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
   const free = freeArea({ w: width, h: height }, width > 600 ? { x: 16, y: 58, w: 400, h: 327 } : null,
     width > 600 ? 30 : 38, width > 600 ? { x: width - 236, y: 76, w: 220, h: 180 } : { x: width - 156, y: 68, w: 140, h: 148 });
   const state = Object.assign(Object.create(Explorer.prototype), {
-    scene: root, stationScene: scene, camera: new THREE.PerspectiveCamera(FOV.overview, width / height, 0.05, 400),
+    mode: "overview", scene: root, stationScene: scene, camera: new THREE.PerspectiveCamera(FOV.overview, width / height, 0.05, 400),
     pos: new THREE.Vector3(), ray: new THREE.Raycaster(), groundTargets: targets.ground,
     cameraTargets: targets.camera, cameraSides: new Set(targets.camera), blockerTargets: targets.blockers,
     identityBoards: collectIdentityBoards(scene.root), identityPlaced: false, viewSize: { w: width, h: height },
