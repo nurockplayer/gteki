@@ -45,7 +45,9 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
  * Vertical batch 3 adds contact-shade vertex colours (truss, risers, escalator steps) and luminaires under the escalator
  * shell soffits: +39,792 B, same meshes; geometry, nodes and textures re-measured, appearance and lists unchanged.
  * Vertical item 3 adds a fill light at the guided-walk escalator bank head in the slot a ceilingless anchor wasted (7 → 8 lights): nodes
- * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged. */
+ * re-measured; geometry, appearance, textures, meshes, bytes and lists unchanged.
+ * #645 step 2c cuts the join:/return: lift pieces that lay inside a stop square by the shaft geometry: 24 fewer
+ * explorer walls (14,908 → 14,884) and geometry re-measured; meshes, appearance, nodes, textures unchanged. */
 // #221 per-flight shaft finishes; station physical lists unchanged (2026-11-03 JST).
 // 2026-11-03 18:00 JST: the attributed ceiling proxy intentionally supplies the
 // overhead query itself. The removed copied-cap mesh briefly made this four
@@ -55,18 +57,23 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #815: real-size shared step geometry, relative scales and run bounds change geometry/nodes only.
 // #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 const MAIN_BASELINE = {
-  station: {
-    geometryDigest: "03e596cc6852829f3c901694ee325af97624ac22eb856e793134a049f8cacbdc",
-    appearanceDigest: "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
-    nodesDigest: "671b7e0fca848dcf1aacac050fd030d5ff788dd421aa3e38335c80f891cf1216",
-    texturesDigest: "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
-    meshes: 125,
-    bytes: 16239788,
+  "station": {
+    "geometryDigest": "a7a1dbd68e225daada56da5c727cbb11bd71b710e8d49c6e37266a99dac3e90c",
+    "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
+    "nodesDigest": "671b7e0fca848dcf1aacac050fd030d5ff788dd421aa3e38335c80f891cf1216",
+    "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
+    "meshes": 125,
+    "bytes": 16200380
   },
-  lists: {
-    listsDigest: "54a7c761296ee43c71fa1006834454d3e0e492948915b1c352fe69019af7a174",
-    counts: { walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14906 },
-  },
+  "lists": {
+    "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",
+    "counts": {
+      "walkable": 442,
+      "colliders": 2,
+      "cameraBlockers": 3,
+      "walls": 14884
+    }
+  }
 };
 
 const sha = (parts: unknown[]) => createHash("sha256").update(JSON.stringify(parts)).digest("hex");
@@ -785,7 +792,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       const onLists = digestSceneLists(on);
       expect(onLists).toEqual(digestSceneLists(off));
       expect(onLists).toEqual(MAIN_BASELINE.lists);
-      expect(onLists.counts).toEqual({ walkable: 442, colliders: 2, cameraBlockers: 3, walls: 14906 });
+      expect(onLists.counts).toEqual(MAIN_BASELINE.lists.counts);
     });
 
     it("flag on: every placement lands on a real anchor, in the right role", () => {
