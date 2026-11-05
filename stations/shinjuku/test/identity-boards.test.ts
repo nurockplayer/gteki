@@ -10,10 +10,8 @@ import { pointInRings, soffitHeight, type Plan } from "../scene/layout.ts";
 import { buildIdentityBoards, IDENTITY_GENERATED, IDENTITY_SIZE, identityGlyphBox, type LocalBox } from "../scene/identity.ts";
 import { IDENTITY_FADE_NEAR, IDENTITY_FADE_FAR, IDENTITY_FADE_FRAGMENT, identityFadeCoverage, identityDitherVisible } from "../scene/identity-fade.ts";
 import { stationSpawn } from "../scene/spawn.ts";
-import { LANE_CAMERA } from "../app/src/spawn-view.ts";
-import { WALKER_BODY } from "@gteki/scene-api";
-import { FOV, FOLLOW, followPose } from "../../../apps/web/src/explorer/followCamera.ts";
-import { IDENTITY_RANGE_M, identityFraming, type FramingBoard } from "../../../apps/web/src/explorer/identityFraming.ts";
+import { followCameraEnvironment, LANE_CAMERA, spawnView } from "../app/src/spawn-view.ts";
+import { Player } from "../app/src/player.ts";
 import { withCanvasStub } from "./helpers/scene-digest.ts";
 import { textureBudget } from "./helpers/texture-memory.ts";
 
@@ -385,8 +383,11 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     }
   });
 
-  /** Every opaque mesh the Explorer's camera targets can stop a ray. */
-  const opaqueMeshes = () => {
+  it("has a direct static-geometry sightline to the spawn name block", () => {
+    const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
+    const { eye } = spawnView(spawn.position, spawn.heading, followCameraEnvironment(station.layout, station.propWalls));
+    const origin = new THREE.Vector3(eye.x, eye.z, -eye.y);
+    const board = station.root.getObjectByName("identity:spawn")!;
     const meshes: THREE.Mesh[] = [];
     station.root.traverseVisible((o) => {
       const m = o as THREE.Mesh;
@@ -394,69 +395,14 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
       const materials = Array.isArray(m.material) ? m.material : [m.material];
       if (materials.some((material) => material.visible && !material.transparent)) meshes.push(m);
     });
-    return meshes;
-  };
-
-  /**
-   * #342: the Explorer's arrival pose. walkFromNode puts the player on the spawn node facing
-   * `spawnHeadings`, then frameInitialIdentity aims the follow camera at the nearest identity board
-   * it can frame (identityFraming at the 50° follow lens). Replaying that aim measures what the
-   * player actually sees, unlike a camera stuck on the arrival heading.
-   */
-  const arrival = (aspect = 412 / 839) => {
-    const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
-    const node = bundle.nodes.find((n) => n.id === spawn.nodeId)!;
-    const headingDeg = bundle.spawnHeadings?.[spawn.nodeId];
-    const heading = headingDeg === undefined ? spawn.heading : (headingDeg * Math.PI) / 180;
-    const head = new THREE.Vector3(node.position.x, spawn.position.z + WALKER_BODY.eyeM, -node.position.y);
-    // The placement probe sees through signs (seeThroughMeshes); walls and fixtures still block.
-    const targets = opaqueMeshes().filter((m) => !m.name.startsWith("sign-") && !m.name.startsWith("identity-"));
-    const ray = new THREE.Raycaster();
-    const visible = (from: THREE.Vector3, to: THREE.Vector3) => {
-      const direction = to.clone().sub(from);
-      ray.set(from, direction.clone().normalize());
-      ray.near = 0;
-      ray.far = Math.max(0, direction.length() - 0.05);
-      return ray.intersectObjects(targets, false).length === 0;
-    };
-    const boards: FramingBoard[] = station.identityBoards.map((object) => {
-      const region = object.userData.gteki_identity.regions[0] as LocalBox;
-      const centre = new THREE.Box3(new THREE.Vector3(...region.min), new THREE.Vector3(...region.max))
-        .getCenter(new THREE.Vector3()).applyMatrix4(object.matrixWorld);
-      return {
-        centre,
-        front: new THREE.Vector3(...object.userData.gteki_identity.front as [number, number, number]).transformDirection(object.matrixWorld),
-        blocked: head.distanceTo(centre) > IDENTITY_RANGE_M || !visible(head, centre),
-        nameCorners: corners(region).map((p) => object.localToWorld(p.clone())),
-        visible,
-      };
-    });
-    const look = identityFraming(head, -heading, -0.12, boards, aspect, FOV.follow)!;
-    const pose = followPose(head, look.yaw, look.pitch);
-    const camera = new THREE.PerspectiveCamera(FOV.follow, aspect, 0.05, 400);
-    camera.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
-    camera.lookAt(pose.target);
-    camera.updateMatrixWorld(true);
-    return { spawn, head, camera, look };
-  };
-
-  it("the arrival frames the spawn board with an unobstructed name block", () => {
-    const { camera, look } = arrival();
-    const board = station.root.getObjectByName("identity:spawn")!;
-    const region = board.userData.gteki_identity.regions[0] as LocalBox;
-    const centre = new THREE.Box3(new THREE.Vector3(...region.min), new THREE.Vector3(...region.max))
-      .getCenter(new THREE.Vector3()).applyMatrix4(board.matrixWorld);
-    // The gate boards hang at the ticket line 1.3 m from the arrival head; the spawn board must win the frame.
-    expect(look.centre.distanceTo(centre), "the arrival frames identity:spawn").toBeLessThan(1e-6);
-    const meshes = opaqueMeshes();
     const ray = new THREE.Raycaster();
     for (const kind of ["ja", "en"] as const) {
       const box = identityGlyphBox(kind);
       for (const x of [box.min[0], (box.min[0] + box.max[0]) / 2, box.max[0]]) {
         for (const y of [box.min[1], box.max[1]]) {
           const target = board.localToWorld(new THREE.Vector3(x, y, IDENTITY_SIZE.depth / 2 + 0.002));
-          const delta = target.clone().sub(camera.position);
-          ray.set(camera.position, delta.clone().normalize());
+          const delta = target.clone().sub(origin);
+          ray.set(origin, delta.clone().normalize());
           ray.far = delta.length() + 0.005;
           expect(ray.intersectObjects(meshes, false)[0]?.object.name, `${kind} ${x},${y}`).toBe("identity-faces");
         }
@@ -466,21 +412,23 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
 
   for (const [width, height] of [[393, 852], [412, 915], [1440, 900], [960, 600]]) {
     it(`projects actual assumed ink/cap heights at normal spawn into ${width}x${height} CSS pixels`, () => {
-      const { camera } = arrival(width! / height!);
+      const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
+      const player = new Player(station.world, spawn.position);
+      player.heading = spawn.heading;
+      const { eye, look } = spawnView({ x: player.x, y: player.y, z: player.z }, player.heading, followCameraEnvironment(station.layout, station.propWalls));
+      const camera = new THREE.PerspectiveCamera(LANE_CAMERA.fov, width! / height!, LANE_CAMERA.near, 400);
+      camera.position.set(eye.x, eye.z, -eye.y);
+      camera.lookAt(look.x, look.z, -look.y);
+      camera.updateMatrixWorld(true);
       const board = station.root.getObjectByName("identity:spawn")!;
       const nameDistances = station.identityBoards.flatMap((front) => [front, ...front.children]).map((face) => {
         const region = face.userData.gteki_identity.regions[0] as LocalBox;
         const box = new THREE.Box3(new THREE.Vector3(...region.min), new THREE.Vector3(...region.max));
         const nearest = box.clampPoint(face.worldToLocal(camera.position.clone()), new THREE.Vector3());
-        return { face, board: face.name, metres: face.localToWorld(nearest).distanceTo(camera.position) };
+        return { board: face.name, metres: face.localToWorld(nearest).distanceTo(camera.position) };
       });
-      // The gate boards sit at the ticket line, behind the arrival camera; only boards the player
-      // faces must stay outside the near fade. Farness is checked per board below.
-      const view = camera.getWorldDirection(new THREE.Vector3());
-      const facing = nameDistances.filter((d) => view.dot(d.face.getWorldPosition(new THREE.Vector3()).sub(camera.position)) > 0);
-      expect(facing.length, "the spawn board is in view").toBeGreaterThan(0);
-      const nearestNameMetres = Math.min(...facing.map((d) => d.metres));
-      expect(nearestNameMetres, "every name box in view stays beyond the fade at normal spawn").toBeGreaterThan(IDENTITY_FADE_FAR);
+      const nearestNameMetres = Math.min(...nameDistances.map((d) => d.metres));
+      expect(nearestNameMetres, "every name box stays beyond the fade at normal spawn").toBeGreaterThan(IDENTITY_FADE_FAR);
       const normal = new THREE.Vector3(...board.userData.gteki_identity.front as [number, number, number]).transformDirection(board.matrixWorld);
       expect(normal.dot(camera.position.clone().sub(board.position).normalize())).toBeGreaterThan(0.8);
       const project = (box: LocalBox) => corners(box).map((p) => board.localToWorld(p).project(camera));

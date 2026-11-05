@@ -113,21 +113,18 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
         .translate(x, height / 2 + rodLength / 2, 0).applyMatrix4(board.matrix), "#888888", 0.8));
     }
   };
-  // The arrival player stands on the spawn node facing `spawnHeadings`; the Explorer's follow
-  // camera trails 3.45 m behind at eye height, so 5 m ahead puts the plate ~8.6 m from the lens:
-  // the whole 1.72 m plate fits a portrait phone frame (26 px JA cap, 14 px EN) with every name
-  // sample clear of the station wayfinding sign that hangs above the spawn. 6 m stays readable
-  // (13 px EN) as a fallback; 4 m puts the name's right column behind the corridor wall corner.
-  // Facing is backwards along `forward`, so ahead is negative.
-  const spawnNode = nodes.get(spawn.nodeId);
-  const spawnHeading = bundle.spawnHeadings?.[spawn.nodeId];
-  const heading = spawnHeading === undefined ? spawn.heading : (spawnHeading * Math.PI) / 180;
-  const forward = { x: Math.sin(heading), y: Math.cos(heading) };
-  const spawnOrigin = spawnNode?.position ?? spawn.position;
-  add("identity:spawn", spawn.nodeId,
-    { x: spawnOrigin.x, y: spawnOrigin.y, z: spawn.position.z },
+  // The normal spawn faces the ticket-gate display and stands 4 m back from the gate; stationSpawn
+  // is the shared anchor for the lane app, the identity builder and the CPU recognition proxy.
+  // Hang the plate 2 m ahead along that heading, in front of the arrival player, and let the
+  // clearance search fall back to nearer spots. The corridor wall corner cuts the left column at
+  // 7.6 m from the spawn camera and the station wayfinding sign sits 5 cm behind a 6 m plate, so
+  // 6/8/10/12 m all fail the spawn sightline; the normal-spawn projection also drops below the
+  // 960x600 EN threshold beyond ~2.4 m. Facing is backwards along `forward`, so ahead is negative;
+  // the front reads back toward the player.
+  const forward = { x: Math.sin(spawn.heading), y: Math.cos(spawn.heading) };
+  add("identity:spawn", spawn.nodeId, spawn.position,
     { x: -forward.x, y: -forward.y }, "GTEki placement at the normal spawn; not surveyed, not a replica of an on-site sign",
-    undefined, [5, 6, 4].map((metres) => -metres));
+    undefined, [2, 1.6, 1.2].map((metres) => -metres));
   for (const poi of bundle.pois.filter((p) => p.category === "ticket_gate")) {
     const node = nodes.get(poi.connectorNodeIds[0] ?? "");
     if (!node || !poi.displayPosition) continue;
