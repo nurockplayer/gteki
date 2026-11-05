@@ -58,7 +58,7 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
   const { width, height, depth } = IDENTITY_SIZE;
   const region = IDENTITY_ART.name;
   const nameBox = identityBox(region.left, region.top, region.right, region.bottom);
-  const add = (name: string, nodeId: string, center: XYZ, facing: XY, placement: string, fixed?: { top: number; level: LevelLayout }) => {
+  const add = (name: string, nodeId: string, center: XYZ, facing: XY, placement: string, fixed?: { top: number; level: LevelLayout }, alongs?: number[]) => {
     const level = fixed?.level ?? layout.levels.find((lv) => Math.abs(lv.z - center.z) < 0.3);
     if (!level) return;
     // 2.1 m clear below the casing; 0.12 m below the ceiling. Lower than route signs.
@@ -69,10 +69,10 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
       const result = identityClearance(board, center.z, level, layout, world, IDENTITY_SIZE);
       return result.wallsClear && result.roofClear;
     };
-    // Search only small offsets from the source anchor. In particular, the normal
-    // spawn backs up near a wall: its board needs a little lateral clearance.
+    // Search small offsets from the source anchor unless the caller passes its own along
+    // list. The normal spawn backs up near a wall, so its lateral clearance stays small.
     let found = false;
-    for (const along of fixed ? [0] : [0, 0.3, -0.3, 0.6, -0.6, 0.9]) {
+    for (const along of fixed ? [0] : alongs ?? [0, 0.3, -0.3, 0.6, -0.6, 0.9]) {
       for (const lateral of fixed ? [0] : [0, 0.2, -0.2, 0.4, -0.4, 0.6, -0.6]) {
         board.position.set(center.x + facing.x * along - facing.y * lateral, top - height / 2, -(center.y + facing.y * along + facing.x * lateral));
         board.lookAt(board.position.x + facing.x, board.position.y, board.position.z - facing.y);
@@ -113,10 +113,19 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
         .translate(x, height / 2 + rodLength / 2, 0).applyMatrix4(board.matrix), "#888888", 0.8));
     }
   };
-  const forward = { x: Math.sin(spawn.heading), y: Math.cos(spawn.heading) };
+  // The arrival player stands on the spawn node facing `spawnHeadings` (the lane app's
+  // stationSpawn is 4 m farther along that facing). The follow camera trails ~3.5 m behind,
+  // so a board 4 m ahead of the node is ~7.5 m away: the whole 1.72 m plate and its name fit a
+  // portrait phone frame. Facing is backwards along `forward`, so ahead is negative.
+  const spawnNode = nodes.get(spawn.nodeId);
+  const spawnHeading = bundle.spawnHeadings?.[spawn.nodeId];
+  const heading = spawnHeading === undefined ? spawn.heading : (spawnHeading * Math.PI) / 180;
+  const forward = { x: Math.sin(heading), y: Math.cos(heading) };
+  const spawnOrigin = spawnNode?.position ?? spawn.position;
   add("identity:spawn", spawn.nodeId,
-    { x: spawn.position.x + forward.x * 0.9, y: spawn.position.y + forward.y * 0.9, z: spawn.position.z },
-    { x: -forward.x, y: -forward.y }, "GTEki placement at the normal spawn; not surveyed, not a replica of an on-site sign");
+    { x: spawnOrigin.x, y: spawnOrigin.y, z: spawn.position.z },
+    { x: -forward.x, y: -forward.y }, "GTEki placement at the normal spawn; not surveyed, not a replica of an on-site sign",
+    undefined, [4, 6, 8].map((metres) => -metres));
   for (const poi of bundle.pois.filter((p) => p.category === "ticket_gate")) {
     const node = nodes.get(poi.connectorNodeIds[0] ?? "");
     if (!node || !poi.displayPosition) continue;

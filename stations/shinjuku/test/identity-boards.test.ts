@@ -383,9 +383,21 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     }
   });
 
-  it("has a direct static-geometry sightline to the spawn name block", () => {
+  /** The product's arrival pose: the spawn node with its `spawnHeadings` yaw (#342). */
+  const arrival = () => {
     const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
-    const { eye } = spawnView(spawn.position, spawn.heading, followCameraEnvironment(station.layout, station.propWalls));
+    const node = bundle.nodes.find((n) => n.id === spawn.nodeId)!;
+    const headingDeg = bundle.spawnHeadings?.[spawn.nodeId];
+    return {
+      spawn,
+      position: { x: node.position.x, y: node.position.y, z: spawn.position.z },
+      heading: headingDeg === undefined ? spawn.heading : headingDeg * Math.PI / 180,
+    };
+  };
+
+  it("has a direct static-geometry sightline to the spawn name block", () => {
+    const { position, heading } = arrival();
+    const { eye } = spawnView(position, heading, followCameraEnvironment(station.layout, station.propWalls));
     const origin = new THREE.Vector3(eye.x, eye.z, -eye.y);
     const board = station.root.getObjectByName("identity:spawn")!;
     const meshes: THREE.Mesh[] = [];
@@ -412,9 +424,9 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
 
   for (const [width, height] of [[393, 852], [412, 915], [1440, 900], [960, 600]]) {
     it(`projects actual assumed ink/cap heights at normal spawn into ${width}x${height} CSS pixels`, () => {
-      const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
-      const player = new Player(station.world, spawn.position);
-      player.heading = spawn.heading;
+      const { position, heading } = arrival();
+      const player = new Player(station.world, position);
+      player.heading = heading;
       const { eye, look } = spawnView({ x: player.x, y: player.y, z: player.z }, player.heading, followCameraEnvironment(station.layout, station.propWalls));
       const camera = new THREE.PerspectiveCamera(LANE_CAMERA.fov, width! / height!, LANE_CAMERA.near, 400);
       camera.position.set(eye.x, eye.z, -eye.y);
