@@ -990,6 +990,21 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("leaves a walk approach clear at a shared stair node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const stair = g([[0, 0, 0], [4, 2, 0]]), walk = g([[0, 0, -3], [0, 0, 0]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("stair", "gate", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: stair }),
+      syntheticEdge("walk", "approach", "gate", { mode: "walk", geometry: walk }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["gate", stair[0]!], ["upper", stair[1]!], ["approach", walk[0]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    for (let z = -1.2; z <= 0; z += 0.1) {
+      const r = resolveWalls(0, z, 0.3, 0, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x, r.z - z), `z=${z.toFixed(1)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
   // #710 review: at a junction of a narrow stair and a wide one, the opening reaches the wide one's side wall.
   it("lets a walker from a narrow stair onto a wide one that shares its node", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
