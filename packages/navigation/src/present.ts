@@ -648,9 +648,11 @@ function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
 /**
  * The POI's own note in the requested language only (null when it has none): a note is a statement by the
  * station data, and one written in another language is not shown as if it were the requested one.
+ * `at: "origin"` selects the start-side note; without it, destination notes only (a start note never
+ * reads as an arrival, #799).
  */
-function poiNote(poi: Poi, lang: "ja" | "en"): string | null {
-  const note = poi.notes?.find((n) => n.lang === lang);
+function poiNote(poi: Poi, lang: "ja" | "en", at?: "origin"): string | null {
+  const note = poi.notes?.find((n) => n.lang === lang && (at ? n.at === at : n.at !== "origin"));
   return note && note.text.trim() !== "" ? note.text.trim() : null;
 }
 
@@ -750,6 +752,15 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const out: Draft[] = [startConnector
     ? { kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, connector: startConnector, text: t.startAtConnector(startConnector, poiDisplayName(origin!, lang)), label: null }
     : { kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start(), label: null }];
+  // The origin's start-side note opens the route, with the arrival note's separator rule (#799).
+  const startNote = origin && origin.category !== "exit" ? poiNote(origin, lang, "origin") : null;
+  if (startNote) {
+    const base = out[0]!.text;
+    const separator = lang === "ja"
+      ? (base.endsWith("。") ? "" : "。")
+      : (base.endsWith(".") ? " " : ". ");
+    out[0]!.text = `${base}${separator}${startNote}`;
+  }
   let current: Draft | null = null;
   /** Evidenced sense of the last vertical instruction, including "level". */
   let lastSense: "up" | "down" | "level" | null = null;

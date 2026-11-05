@@ -397,12 +397,19 @@ export class Explorer {
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
+  /** A station load is mid-flight: keep the station's full step pose until its connector coverage finishes. */
+  private stepsPaused = false;
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
   private disposed = false;
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
+    // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
+    // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
+    if (this.quality === "low") this.scene.onBeforeRender = (renderer, _scene, camera) => {
+      if (!this.stepsPaused) this.stationScene?.beforeRender?.(renderer, camera);
+    };
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
@@ -961,6 +968,8 @@ export class Explorer {
     }
     this.stationScene = built;
     this.sceneError = sceneError;
+    // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
+    this.stepsPaused = this.stationScene?.beforeRender !== undefined;
 
     // Overview may have been entered while loading (against an empty world): restore first, so the new
     // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
@@ -1097,6 +1106,7 @@ export class Explorer {
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
+    this.stepsPaused = false;
     this.phase = "ready";
     return true;
   }

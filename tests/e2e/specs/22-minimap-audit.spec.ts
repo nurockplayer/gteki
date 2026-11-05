@@ -15,8 +15,16 @@ async function measure(page: Page) {
         return sum + Math.max(0, Math.min(box.right, r.right) - Math.max(box.left, r.left))
           * Math.max(0, Math.min(box.bottom, r.bottom) - Math.max(box.top, r.top));
       }, 0);
+    const labels = [...map.querySelectorAll<HTMLElement>(".minimap-label span, .minimap-label strong, .minimap-route-label div, .minimap-notice")]
+      .filter((el) => el.getClientRects().length);
+    const north = map.querySelector<SVGTextElement>(".minimap-north")!;
+    const northTransform = north.getScreenCTM()!;
     const frames: number[] = (window as any).__qa.frames.slice(-60);
     return {
+      fontMin: Math.min(...labels.map((el) => parseFloat(getComputedStyle(el).fontSize)),
+        parseFloat(getComputedStyle(north).fontSize) * Math.hypot(northTransform.a, northTransform.b)),
+      ellipsized: labels.filter((el) => el.scrollWidth > el.clientWidth || getComputedStyle(el).textOverflow === "ellipsis").length,
+      pickerHeight: map.querySelector(".minimap-floor")!.getBoundingClientRect().height,
       width: circle.width, height: circle.height, circleRight: circle.right, circleBottom: circle.bottom, right: box.right, bottom: box.bottom,
       viewportWidth: innerWidth, viewportHeight: innerHeight,
       label: map.querySelector(".minimap-label")!.textContent,
@@ -43,6 +51,9 @@ test("minimap station switch, orientation, zoom and HUD geometry @phone", async 
     const m = await measure(page);
     rows.push({ state, ...m });
     save(info, "minimap-audit.json", { rows });
+    expect.soft(m.fontMin, `${state}: minimum rendered font size`).toBeGreaterThanOrEqual(phone ? 11 : 12);
+    expect.soft(m.ellipsized, `${state}: overflowing or ellipsized labels`).toBe(0);
+    if (phone) expect.soft(m.pickerHeight, `${state}: floor picker height`).toBeGreaterThanOrEqual(24);
     expect.soft(m.width).toBeGreaterThanOrEqual(phone ? 120 : 180);
     expect.soft(m.width).toBeLessThanOrEqual(phone ? 140 : 200);
     expect.soft(m.width).toBeCloseTo(m.height, 1);

@@ -296,9 +296,16 @@ for (const key of STATIONS) {
     await page.waitForTimeout(1500);
     await run("first-person on (guide)", () => hud(/^First person$/).click(), declared.firstPerson);
     await page.waitForTimeout(1000);
-    await run("first-person off (guide)", () => hud(/^First person$/).click(), declared.follow);
+    // #819: after the click the lens stays at 60 while a wide cause still holds (the slope state through SLOPE.hold
+    // plus stepSlope's smoothing, or a boom squeezed under FOLLOW.comfortDistance) and eases to 50 only after it.
+    // That declared ease alone is 749 ms for 60 -> 50 (0.25 s settle, FOV_TOL_DEG 0.5), so the default 900 ms window
+    // leaves 151 ms; #817's GPU run was still mid-ease on Ikebukuro (56.59 phone / 52.95 desktop, i.e. the ease began
+    // about 600-800 ms after the click). Allow the widest release on top of the default window, as end-guide does.
+    const wideReleaseMs = Math.ceil(((k.lensSlope.hold ?? 0) + 3 * (k.lensSlope.smooth ?? 0)) * 1000);
+    await run("first-person off (guide)", () => hud(/^First person$/).click(), declared.follow, "ease", 900 + wideReleaseMs);
     await page.waitForTimeout(1000);
-    await run("end-guide (guide to walk)", async () => { await hud(/^End guide$/).click(); await expect.poll(() => hooks.mode(page)).toBe("walk"); }, declared.follow);
+    // Ending a guide on stairs needs the same slope release before the lens reaches 50 (#805).
+    await run("end-guide (guide to walk)", async () => { await hud(/^End guide$/).click(); await expect.poll(() => hooks.mode(page)).toBe("walk"); }, declared.follow, "ease", 900 + wideReleaseMs);
     await page.waitForTimeout(800);
     await run("first-person on (walk)", () => hud(/^First person$/).click(), declared.firstPerson);
     await page.waitForTimeout(800);

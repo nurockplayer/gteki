@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { parseStationFiles, type Poi } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
+import { createRouter, type Router } from "@gteki/navigation";
 import { createSyntheticBundle } from "../../../../packages/navigation/src/fixtures.ts";
 import { strings, type Lang } from "../i18n.ts";
 import sjkStation from "../../../../stations/shinjuku/gteki/station.json" with { type: "json" };
@@ -15,12 +16,22 @@ vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, 
 import { App } from "./app.ts";
 
 type Harness = {
-  s: { lang: Lang; loaded: unknown; route: unknown; noPath: null; origin: unknown; destination: Poi | null; search?: unknown };
-  ui: { sheet: HTMLElement; fromNote: HTMLElement; toNote: HTMLElement; fromInput: HTMLInputElement; toInput: HTMLInputElement; fromResults: HTMLElement; toResults: HTMLElement };
+  s: {
+    lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | unknown; route: unknown; noPath: null; origin: unknown;
+    destination: Poi | null; search?: unknown; router?: Router | null; profile?: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
+    polyline?: unknown[]; instructions?: unknown[]; activeInstruction?: number;
+  };
+  ui: {
+    sheet: HTMLElement; fromNote: HTMLElement; toNote: HTMLElement; fromInput: HTMLInputElement; toInput: HTMLInputElement;
+    fromResults: HTMLElement; toResults: HTMLElement; minimap?: { setRoute: ReturnType<typeof vi.fn> }; live?: { announce: ReturnType<typeof vi.fn> };
+    coverage: HTMLDialogElement;
+  };
   stationReady: boolean;
   renderEndpointNote: (box: HTMLElement, poi: Poi | null) => void;
   renderResults: (which: "from" | "to") => void;
   renderSheet: () => void;
+  computeRoute: () => void;
+  openCoverage: () => void;
   releaseMascot: () => void;
   mascotSay: () => void;
   openStation: (e: { key: string; label: string; synthetic: boolean; load: () => Promise<never> }) => Promise<void>;
@@ -48,6 +59,35 @@ function app(lang: Lang = "ja") {
   return a;
 }
 afterEach(() => { vi.restoreAllMocks(); document.body.replaceChildren(); });
+
+describe("coverage dialog source deduplication", () => {
+  it.each([
+    ["en", "not used for directions"],
+    ["ja", "経路案内には不使用"],
+  ] as const)("retains distinct links once and words routing restrictions plainly in %s", (lang, restriction) => {
+    const a = app(lang);
+    const bundle = createSyntheticBundle([]);
+    const source = { ...bundle.sources[0]!, title: "Shared source", attribution: "", license: null };
+    const first = "https://example.invalid/source-a";
+    const second = "https://example.invalid/source-b";
+    bundle.sources = [
+      { ...source, id: "a", url: first },
+      { ...source, id: "b", url: second },
+      { ...source, id: "a-copy", url: first },
+    ];
+    bundle.coverage.gaps = [{ id: "gap:position", floorId: null, zone: "NOT_FOR_ROUTING", missingFact: "Position unknown", fieldWorkNeeded: "Verify on site" }];
+    a.s.loaded = { bundle };
+    a.ui.coverage.showModal = vi.fn();
+    a.openCoverage();
+
+    const heading = [...a.ui.coverage.querySelectorAll("h3")].find((h) => h.textContent === strings(lang).sources)!;
+    const rows = heading.nextElementSibling!.querySelectorAll("li");
+    expect(rows).toHaveLength(1);
+    expect([...rows[0]!.querySelectorAll("a")].map((link) => link.getAttribute("href"))).toEqual([first, second]);
+    expect(a.ui.coverage.textContent).toContain(restriction);
+    expect(a.ui.coverage.textContent).not.toContain("NOT_FOR_ROUTING");
+  });
+});
 
 describe("search-only POI notes outside a route", () => {
   it("shows a picked search-only endpoint's note under its field, in the UI language, and hides it otherwise", () => {
@@ -119,6 +159,49 @@ describe("search-only POI notes outside a route", () => {
     a.s.route = { ok: false, reason: "no_path", message: "" };
     a.renderSheet();
     expect(a.ui.sheet.textContent).not.toContain(NOTE_JA);
+  });
+});
+
+describe("Central Gate 2 notes in the route panel (#787, #799)", () => {
+  /** The real Ikebukuro bundle, routed through the app's own computeRoute. */
+  function ikebukuro(lang: Lang) {
+    const read = (file: string) => JSON.parse(readFileSync(`stations/ikebukuro/gteki/${file}.json`, "utf8"));
+    const parsed = parseStationFiles(read("station"), read("graph"), read("pois"));
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+    const a = app(lang);
+    a.s.loaded = { bundle: parsed.bundle };
+    a.s.router = createRouter(parsed.bundle);
+    a.explorer = {
+      refitOverview: vi.fn(), clearRoute: vi.fn(), showRoute: vi.fn(), focusPoints: vi.fn(),
+      connectorRoutePaths: () => null, navmeshRoutePaths: () => null, currentMode: "overview",
+    };
+    a.ui.minimap = { setRoute: vi.fn() };
+    a.ui.live = { announce: vi.fn() };
+    return a;
+  }
+  const instructions = (a: Harness) => [...a.ui.sheet.querySelectorAll(".ins-text")].map((n) => n.textContent ?? "");
+
+  it("shows the destination note when routing to 中央2改札 and the origin note when routing from it", () => {
+    for (const lang of ["ja", "en"] as const) {
+      const a = ikebukuro(lang);
+      const bundle = (a.s.loaded as { bundle: ReturnType<typeof createSyntheticBundle> }).bundle;
+      const gate = bundle.pois.find((p) => p.id === "tobu-central-gate-2")!;
+      const jr = bundle.pois.find((p) => p.id === "jr-central-gate-2")!;
+      const destinationNote = gate.notes!.find((n) => n.lang === lang && !n.at)!.text;
+      const originNote = gate.notes!.find((n) => n.lang === lang && n.at === "origin")!.text;
+
+      a.s.origin = { kind: "poi", poi: jr };
+      a.s.destination = gate;
+      a.computeRoute();
+      expect(instructions(a).at(-1)).toContain(destinationNote);
+      expect(instructions(a).join("\n")).not.toContain(originNote);
+
+      a.s.origin = { kind: "poi", poi: gate };
+      a.s.destination = jr;
+      a.computeRoute();
+      expect(instructions(a)[0]).toContain(originNote);
+      expect(instructions(a).join("\n")).not.toContain(destinationNote);
+    }
   });
 });
 

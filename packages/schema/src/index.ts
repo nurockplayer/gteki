@@ -29,6 +29,14 @@ export interface LocalizedText {
   text: string;
 }
 
+/**
+ * A POI note. `at: "origin"` marks text about starting at the POI: it opens the route there and is never
+ * shown on arrival. A note without `at` is destination text, shown as before (#799).
+ */
+export interface PoiNote extends LocalizedText {
+  at?: "origin";
+}
+
 export type RightsStatus = "REUSABLE_WITH_CONDITIONS" | "PUBLISHED_UNDER_OWNER_OVERRIDE" | "REFERENCE_ONLY" | "RESTRICTED" | "UNVERIFIED";
 
 export interface Source {
@@ -328,7 +336,7 @@ export interface Poi {
   paid: Tri;
   evidence: EvidenceRef;
   /** Human-facing freshness/limits, e.g. operating hours text from source. */
-  notes?: LocalizedText[];
+  notes?: PoiNote[];
   /** Opening hours as an official page printed them (OD-32); shown with the date it was read. */
   hours?: HoursText;
 }
