@@ -40,7 +40,7 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
     width > 600 ? 30 : 38, width > 600 ? { x: width - 236, y: 76, w: 220, h: 180 } : { x: width - 156, y: 68, w: 140, h: 148 });
   const state = Object.assign(Object.create(Explorer.prototype), {
     mode: "overview", scene: root, stationScene: scene, camera: new THREE.PerspectiveCamera(FOV.overview, width / height, 0.05, 400),
-    pos: new THREE.Vector3(), ray: new THREE.Raycaster(), groundTargets: targets.ground,
+    pos: new THREE.Vector3(), ray: new THREE.Raycaster(), walkable: scene.walkable, groundTargets: targets.ground,
     cameraTargets: targets.camera, cameraSides: new Set(targets.camera), blockerTargets: targets.blockers,
     identityBoards: collectIdentityBoards(scene.root), identityPlaced: false, viewSize: { w: width, h: height },
     pitch: -0.12, yaw: 0, camDistance: FOLLOW.defaultDistance, qaCamera: {}, qaCameraSnap: false,
