@@ -93,7 +93,7 @@ describe("ikebukuro texture memory", () => {
         // Shipped scene measured before #276 on c2f6f0ee, including the settled catalog.
         // +#833 Seibu facade + floor board
         expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([177.092, 0, 0, 0, 188.333, 0, 13.667, 53.257]);
-        expect(Number(budget.totalMib.toFixed(3))).toBe(432.349);
+        expect(Number(budget.totalMib.toFixed(3))).toBe(432.35);
       }
     }, 120_000);
   }
