@@ -1990,7 +1990,7 @@ export class Explorer {
     // The credit footer and the disclaimer badge are never text under a label (#838). Blocked chips stay out of
     // the declutter itself, so the chip they would have beaten still gets its place.
     const footers = [this.creditEl, this.legendEl]
-      .filter((el): el is HTMLElement => el !== null && el.getClientRects().length > 0)
+      .filter((el): el is HTMLElement => el != null && el.getClientRects().length > 0)
       .map((el) => el.getBoundingClientRect());
     const blocked = new Set<string>();
     const p = new THREE.Vector3();
