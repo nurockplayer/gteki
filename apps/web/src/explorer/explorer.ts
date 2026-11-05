@@ -397,18 +397,18 @@ export class Explorer {
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
+  /** A station load is mid-flight: keep the station's full step pose until its connector coverage finishes. */
+  private stepsPaused = false;
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
   private disposed = false;
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
-    // Mesh callbacks run after Three uploads instance matrices. Prepare this dynamic batch before upload too.
-    if (this.quality === "low") this.scene.onBeforeRender = (renderer, scene, camera) => {
-      const steps = this.stationScene?.root.getObjectByName("escalator-steps:all");
-      if (steps instanceof THREE.InstancedMesh) {
-        steps.onBeforeRender(renderer, scene, camera, steps.geometry, steps.material as THREE.Material, null as never);
-      }
+    // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
+    // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
+    if (this.quality === "low") this.scene.onBeforeRender = (renderer, _scene, camera) => {
+      if (!this.stepsPaused) this.stationScene?.beforeRender?.(renderer, camera);
     };
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
@@ -969,9 +969,7 @@ export class Explorer {
     this.stationScene = built;
     this.sceneError = sceneError;
     // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
-    const sharedSteps = this.quality === "low" ? built?.root.getObjectByName("escalator-steps:all") : undefined;
-    const prepareSteps = sharedSteps?.onBeforeRender;
-    if (sharedSteps) sharedSteps.onBeforeRender = () => {};
+    this.stepsPaused = this.stationScene?.beforeRender !== undefined;
 
     // Overview may have been entered while loading (against an empty world): restore first, so the new
     // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
@@ -1108,7 +1106,7 @@ export class Explorer {
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
-    if (sharedSteps && prepareSteps) sharedSteps.onBeforeRender = prepareSteps;
+    this.stepsPaused = false;
     this.phase = "ready";
     return true;
   }
