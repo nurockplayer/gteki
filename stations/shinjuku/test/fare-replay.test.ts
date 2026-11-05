@@ -7,7 +7,7 @@ import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { buildScene } from "../gteki/scene.ts";
 import { pointInRings, type Plan } from "../scene/layout.ts";
 import type { StationScene } from "@gteki/scene-api";
-import { derivedRestrictedAccess, restrictionAt } from "../scene/fare-fence.ts";
+import { derivedRestrictedAccess, liftClearances, restrictionAt } from "../scene/fare-fence.ts";
 import { Player } from "../app/src/player.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
 import { castAll, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
@@ -36,7 +36,7 @@ describe("actual walker fence replay", () => {
   }, 60_000);
   afterAll(() => { restore?.(); built?.dispose(); scene?.dispose(); vi.unstubAllGlobals(); });
   it("endpoints overlap blocking neighbours in both walkers", () => {
-    const ends = endpointClosure(built, scene);
+    const ends = endpointClosure(built, scene, liftClearances(bundle, plan, built.layout));
     if (process.env.FARE_END_REPORT) writeFileSync(process.env.FARE_END_REPORT, JSON.stringify(ends, null, 2));
     expect(ends.map(e => ({ id: e.id, x: e.p.x, y: e.p.y, z: e.p.z, gap: e.nearestLane?.distance }))).toEqual([]);
   }, 30_000);

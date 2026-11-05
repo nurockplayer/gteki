@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { WALKER_BODY, type StationScene } from "@gteki/scene-api";
 import type { BuiltStation } from "../scene/build.ts";
 import { pointInRings, railingWalls, WalkWorld, type XY, type XYZ, type Plan, type WallSeg } from "../scene/layout.ts";
-import { gateMachines, containsPolygons, derivedRestrictedAccess, restrictionAt, type RestrictedRegion, type Fence } from "../scene/fare-fence.ts";
+import { gateMachines, containsPolygons, derivedRestrictedAccess, restrictionAt, liftClearances, type RestrictedRegion, type Fence } from "../scene/fare-fence.ts";
 import { laneBands, explorerBands, segmentDistance2, lanePatches, proxyPatches, gateCrossing, type WalkerAudit, type Patch } from "./fare-boundary-audit.ts";
 import { resolveWalls, acceptGround, wallToRenderer, DEFAULT_GROUND, type Segment2 } from "../../../apps/web/src/explorer/walker.ts";
 import { castAll, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
@@ -64,7 +64,7 @@ export function replayEnds(built: BuiltStation): End[] {
   }
   return [...ends, ...extra];
 }
-export function endpointClosure(built: BuiltStation, scene: StationScene) {
+export function endpointClosure(built: BuiltStation, scene: StationScene, lifts: ReturnType<typeof liftClearances> = []) {
   const lane = laneBands([...built.layout.levels.flatMap(l => l.walls), ...built.layout.runWalls, ...railingWalls(built.layout), ...built.propWalls]), shared = explorerBands(scene.walls ?? []);
   const segmentKey = (w: { a: XY; b: XY }) => `${w.a.x},${w.a.y},${w.b.x},${w.b.y}`;
   const sharedBySegment = new Map<string, typeof shared>();
@@ -74,6 +74,9 @@ export function endpointClosure(built: BuiltStation, scene: StationScene) {
     return min <= max ? [{ ...w, min, max }] : [];
   }));
   const localLane = nearbyBands(common), localShared = nearbyBands(shared);
+  // A piece cut on a lift clear-box boundary ends flush with the box edge, which is closure too.
+  const onLiftBox = (p: XYZ) => lifts.some(l => Math.abs(l.z - p.z) < .5 &&
+    l.rings.some(r => r.some((a, i) => distance(p, closest(p, a, r[(i + 1) % r.length]!)) <= .03)));
   return barrierEnds(built).flatMap(end => {
     // The SAME joining segment must block both bodies, not two unrelated nearest walls.
     const candidates = (bands: typeof lane) => bands.filter(w => end.p.z >= w.min && end.p.z <= w.max &&
@@ -83,7 +86,7 @@ export function endpointClosure(built: BuiltStation, scene: StationScene) {
       .map(w => ({ distance: distance(end.p, closest(end.p, w.a, w.b)), a: w.a, b: w.b }))
       .sort((a, b) => a.distance - b.distance);
     const a = candidates(localLane(end.p)), b = candidates(localShared(end.p));
-    return (a[0]?.distance ?? Infinity) <= .020000001 && (b[0]?.distance ?? Infinity) <= .020000001 ? [] : [{ ...end, nearestLane: a[0], nearestExplorer: b[0] }];
+    return onLiftBox(end.p) || (a[0]?.distance ?? Infinity) <= .020000001 && (b[0]?.distance ?? Infinity) <= .020000001 ? [] : [{ ...end, nearestLane: a[0], nearestExplorer: b[0] }];
   });
 }
 
