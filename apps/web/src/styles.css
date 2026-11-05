@@ -339,17 +339,19 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .app[data-mode="guide"] .minimap-controls button { min-height: 24px; padding-block: 1px; }
   .app[data-mode="guide"] .minimap-label, .app[data-mode="guide"] .minimap-route-label, .app[data-mode="guide"] .minimap-notice { display: none; }
 }
-/* Short phones (e.g. 393 x 659): the guide stack and the minimap still owe the same bands — the stack ends below
-   70 % of the height, the map above 30 % — and 120 px of map plus two control rows does not fit in 30 % of 659.
-   The demo ride button leaves the guide stack, the box and the mode buttons tighten, and the map is sized from
-   the viewport height, keeping the 120 px minimum wherever there is room (812 px and up, spec 22's phone). */
-@media (max-width: 720px) and (max-height: 720px) {
+/* Short phones (800 px and under, e.g. 393 x 659): the guide stack owes the band below 70 % of the height and the
+   minimap the one above 30 %, and neither fits at the sizes above — 190 px of stack and a 120 px map with its
+   two control rows need 238 px, 30 % of 659 is 198. The demo ride button leaves the guide stack, the box and the
+   mode buttons tighten, and the map keeps the 120 px wide panel (its control rows stay on one line) with a
+   72 px circle: the map + its chrome is 192 px, below 30 % of any height from 640 px up. The 120 px map is kept
+   where there is room (812 px and up, spec 22's phone). */
+@media (max-width: 720px) and (max-height: 800px) {
   .app[data-mode="guide"] .rail-launch { display: none; }
   .app[data-mode="guide"] .hud { gap: 2px; }
   .app[data-mode="guide"] .hud-instruction { padding: 6px 12px; }
   .app[data-mode="guide"] .hud-row > button { padding: 4px 8px; }
   .app[data-mode="guide"] .hud-guide .guide-step { flex: 0 0 38px; min-width: 38px; min-height: 38px; }
-  .app[data-mode="guide"] .minimap { --minimap-size: clamp(64px, calc(30vh - 132px), 120px); }
+  .app[data-mode="guide"] .minimap-map { width: 72px; justify-self: center; }
 }
 @media (max-width: 480px) {
   .mascot-figure { width: 32px; height: 32px; }
