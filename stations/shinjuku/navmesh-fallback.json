@@ -1,5 +1,10 @@
 [
   {
+    "edgeId": "e:65edd7ca50844b609d4dcb25bd296936",
+    "mode": "elevator",
+    "reason": "snap_failed"
+  },
+  {
     "edgeId": "e:6ac033af77914fe5a9786676088b952c",
     "mode": "walk",
     "reason": "disconnected"
@@ -8,5 +13,10 @@
     "edgeId": "e:82c9a2c2cd704a348fbeb423d07cb125",
     "mode": "walk",
     "reason": "other"
+  },
+  {
+    "edgeId": "e:ed7e56a8e6234197be06280fcb24aecc",
+    "mode": "elevator",
+    "reason": "snap_failed"
   }
 ]
