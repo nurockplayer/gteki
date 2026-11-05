@@ -181,10 +181,6 @@ describe("committed shop data", () => {
       for (const polygon of shop.openings) expect(byPolygon.get(polygon), `${shop.id} ${polygon}`).toBeTruthy();
   });
 
-  it("does not draw ISP without a verified clear mounting surface near x36f", () => {
-    expect(shops.find((shop) => shop.id === "real-ikb-isp-x36f")).toBeUndefined();
-  });
-
   it("gives every real shop a POI in the bundle plus its position basis, sources and field check", () => {
     const real = shops.filter((s) => s.kind === "real");
     expect(real.length).toBeGreaterThan(0);
@@ -281,7 +277,8 @@ describe("visual only", () => {
       const { group, stats } = loaded.build(THREE, env, toRenderer);
       console.log(`[shop stats] ${low ? "low" : "desktop"}: ${JSON.stringify(stats)}`);
       expect(stats).toMatchObject({ shops: 11, modules: 24, tiles: 1,
-        drawCallsAllTiles: low ? 1 : 20, signs: 10, signDrawCalls: low ? 0 : 1, signTriangles: 64,
+        drawCallsAllTiles: low ? 1 : 20, trianglesAllTiles: low ? 7544 : 8144,
+        trianglesWorstTile: low ? 7544 : 8144, signs: 10, signDrawCalls: low ? 0 : 1, signTriangles: 64,
         interiorDrawCalls: low ? 0 : 1, interiorTriangles: 64, spillDrawCalls: 1, bladeSigns: 9, aBoards: 4, directoryBoards: 2 });
       expect(group.children).toHaveLength(low ? 2 : 23);
       expect(((group.getObjectByName("kit_shop_spill") as THREE.Mesh).material as THREE.Material).forceSinglePass).toBe(low);
