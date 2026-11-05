@@ -553,7 +553,7 @@ export class Explorer {
   }
 
   /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
-  identity(): { id: string; worldPosition: number[]; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
+  identity(): { id: string; worldPosition: number[]; cameraDirection: number[]; cameraFov: number; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
     this.camera.updateMatrixWorld();
     this.refreshOccluders();
     const host = this.host.getBoundingClientRect();
@@ -583,6 +583,7 @@ export class Explorer {
       return {
         id: board.object.name || board.object.uuid,
         worldPosition: board.object.getWorldPosition(new THREE.Vector3()).toArray(),
+        cameraDirection: this.camera.getWorldDirection(new THREE.Vector3()).toArray(), cameraFov: this.camera.fov,
         inFrame,
         frontFacing: facing > 0.2, facingDeg: THREE.MathUtils.radToDeg(Math.acos(facing)),
         nameRect: inFrame && name ? pageRect(name) : null, nameHeightPx: inFrame && name ? name.y1 - name.y0 : null, coveredByChip,

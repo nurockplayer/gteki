@@ -1,3 +1,4 @@
+/// <reference path="../../../apps/web/src/env.d.ts" />
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { loadShinjukuBundle } from "../data/bundle.ts";
@@ -35,9 +36,9 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
   const root = new THREE.Scene();
   root.add(scene.root);
   root.updateMatrixWorld(true);
-  const targets = explorerTargets(scene.walkable, scene.colliders, scene.cameraBlockers);
+  const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);
   const free = freeArea({ w: width, h: height }, width > 600 ? { x: 16, y: 58, w: 400, h: 327 } : null,
-    width > 600 ? 30 : 38, width > 600 ? { x: width - 236, y: 76, w: 220, h: 180 } : { x: width - 156, y: 68, w: 140, h: 148 });
+    width > 600 ? 30 : 38, width > 600 ? { x: width - 206, y: 60, w: 190, h: 370 } : { x: width - 144, y: 60, w: 128, h: 376 });
   const state = Object.assign(Object.create(Explorer.prototype), {
     mode: "overview", scene: root, stationScene: scene, camera: new THREE.PerspectiveCamera(FOV.overview, width / height, 0.05, 400),
     pos: new THREE.Vector3(), ray: new THREE.Raycaster(), walkable: scene.walkable, groundTargets: targets.ground,
@@ -68,6 +69,50 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     explorerScene = await loadScene("shinjuku", bundle, "high", false);
   }, 120_000);
   afterAll(() => { station?.dispose(); explorerScene?.dispose(); });
+
+  it("measures clear arrival placements against the real scene", () => {
+    const board = explorerScene.root.getObjectByName("identity:spawn")!;
+    const gate = explorerScene.root.getObjectByName("identity:gate:poi:gate:1")!;
+    const originalBoard = board.position.clone(), originalGate = gate.position.clone();
+    const node = bundle.nodes.find(n => n.id === bundle.spawnNodeIds![0])!;
+    const forward = new THREE.Vector3(Math.sin(70 * Math.PI / 180), 0, -Math.cos(70 * Math.PI / 180));
+    const right = new THREE.Vector3(-forward.z, 0, forward.x);
+    const opaque: THREE.Mesh[] = [];
+    explorerScene.root.traverseVisible(o => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh && !mesh.name.startsWith("identity") && [mesh.material].flat().some(m => m.visible && !m.transparent)) opaque.push(mesh);
+    });
+    gate.position.set(node.position.x, -5.25, -node.position.y).addScaledVector(forward, -8);
+    let accepted = 0;
+    try {
+      for (const along of [3, 4, 5, 6, 7, 8]) for (const lateral of [0, -1, 1, -2, 2]) {
+        board.position.set(node.position.x, -5.25, -node.position.y).addScaledVector(forward, along).addScaledVector(right, lateral);
+        explorerScene.root.updateMatrixWorld(true);
+        const views = [[1440, 900], [412, 839]].map(([w, h]) => {
+          const { camera, free } = explorerSpawnCamera(explorerScene, w!, h!);
+          const points = corners(board.userData.gteki_identity.regions[0]).map(p => board.localToWorld(p));
+          const blockers = [...new Set(points.map(p => {
+            const delta = p.clone().sub(camera.position);
+            return new THREE.Raycaster(camera.position, delta.clone().normalize(), 0, delta.length() - 0.06).intersectObjects(opaque, false)[0]?.object.name;
+          }).filter(Boolean))];
+          const projected = points.map(p => p.clone().project(camera));
+          const rect = { left: Math.min(...projected.map(p => (p.x + 1) * w! / 2)), right: Math.max(...projected.map(p => (p.x + 1) * w! / 2)),
+            top: Math.min(...projected.map(p => (1 - p.y) * h! / 2)), bottom: Math.max(...projected.map(p => (1 - p.y) * h! / 2)) };
+          const glyph = identityGlyphBox("en");
+          const a = board.localToWorld(new THREE.Vector3(...glyph.min)).project(camera);
+          const b = board.localToWorld(new THREE.Vector3(glyph.min[0], glyph.max[1], glyph.min[2])).project(camera);
+          const en = Math.abs(a.y - b.y) * h! / 2;
+          return { pass: !blockers.length && rect.left >= free.x && rect.right <= free.x + free.w && rect.top >= free.y && rect.bottom <= free.y + free.h && en >= 12,
+            width: w, camera: camera.position.toArray(), direction: camera.getWorldDirection(new THREE.Vector3()).toArray(), rect, free, en, blockers };
+        });
+        if (views.every(v => v.pass)) { accepted++; console.log(JSON.stringify({ clearSpawnCandidate: { along, lateral, board: board.position.toArray(), gate: gate.position.toArray(), views } })); }
+        else if (along === 5 && lateral === 0) console.log(JSON.stringify({ blockedSpawnCandidate: { along, lateral, views } }));
+      }
+      console.log(JSON.stringify({ clearSpawnCandidates: accepted }));
+    } finally {
+      board.position.copy(originalBoard); gate.position.copy(originalGate); explorerScene.root.updateMatrixWorld(true);
+    }
+  }, 120_000);
 
   it("patches both opaque identity materials using the active camera, with distinct compile keys", () => {
     const meshes = ["identity-faces", "identity-cases-rods"].map((name) => station.root.getObjectByName(name) as THREE.Mesh);
