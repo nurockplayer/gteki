@@ -44,12 +44,13 @@ describe("station geometry lifetime", () => {
     const result = JSON.parse(stdout);
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
-    expect(result.live).toBe(145); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss)
-    expect(result.bytes).toBe(15897422); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
+    // #789 (2026-11-04 JST): geometry remeasured after repairing the node display heights.
+    expect(result.live).toBe(146); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss)
+    expect(result.bytes).toBe(16287164); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
     // #49 retains two clipped render-only shell batches: +217,498 B and +5,055 triangles
     // after #316 stopped letting surfaces below the runs suppress the shell.
-    // Removing only those batches reproduces the previous visual digest; all physical
-    // buffers remain byte-identical (scene-digest.test.ts). Retired arrays stay collectible.
-    expect(result.geometryHash).toBe("8b501f6d2a9d6c6e95424959a72791df560a442abdcd9167440187b5d90d0bbd");
+    // #789 updates the expected buffers for the repaired display heights; the
+    // scene-digest fixture records those changes. Retired arrays stay collectible.
+    expect(result.geometryHash).toBe("86ec55837cb584f0c6ee9b3478f8329bf65d5a768abc3dd61b3aef9f49c2f9ef");
   }, 60_000);
 });
