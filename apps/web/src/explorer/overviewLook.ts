@@ -3,6 +3,7 @@ import * as THREE from "three";
 /**
  * Presentation of the overview (orbit) camera, which sits hundreds of metres from the station:
  * - No fog: a station's fog is tuned for walking (tens of metres) and would black the whole model out.
+ * - A neutral background makes the slice legible; the station backdrop returns for walking.
  * - Cutaway: double-sided surfaces draw front faces only, so ceilings and slabs seen from above (their
  *   back faces) drop away and the lit floors, columns and people inside read like a dollhouse.
  * Both are restored exactly when the camera returns to walking, or before the station is cleared.
@@ -10,6 +11,7 @@ import * as THREE from "three";
 export class OverviewLook {
   private active = false;
   private fog: THREE.Scene["fog"] = null;
+  private background: THREE.Scene["background"] = null;
   private readonly sides = new Map<THREE.Material, THREE.Side>();
   private readonly hidden = new Map<THREE.Object3D, boolean>();
 
@@ -22,7 +24,9 @@ export class OverviewLook {
     this.active = on;
     if (on) {
       this.fog = scene.fog;
+      this.background = scene.background;
       scene.fog = null;
+      scene.background = new THREE.Color(0x555a60);
       root.traverse((o) => {
         if (o.userData.greybox && (o.name === "greybox-lights" || o.name === "greybox-kerb")) {
           this.hidden.set(o, o.visible); o.visible = false;
@@ -37,7 +41,9 @@ export class OverviewLook {
       });
     } else {
       scene.fog = this.fog;
+      scene.background = this.background;
       this.fog = null;
+      this.background = null;
       for (const [mat, side] of this.sides) mat.side = side;
       this.sides.clear();
       for (const [object, visible] of this.hidden) object.visible = visible;

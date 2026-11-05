@@ -68,11 +68,14 @@ describe("routePolyline", () => {
     expect(routePolyline(b, route(b, "upper", "start"), new Map([["stairs", line]]), paths).map(p => [p.x, p.y, p.z])).toEqual(paths.stairs.reverse);
   });
 
-  it("fails a missing snap or join instead of bridging the gap", () => {
+  it("uses earlier edge geometry for a missing path or join", () => {
     const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal")]);
     const paths = { "s-a": { forward: [[0, 1, 0], [9, 1, 0]] } };
-    expect(routePolyline(b, route(b, "start", "goal"), undefined, paths)).toEqual([]);
-    expect(routePolyline(b, route(b, "start", "goal"), undefined, { ...paths, "a-goal": { forward: [[11, 1, 0], [20, 1, 0]] } })).toEqual([]);
+    const missing = routePolyline(b, route(b, "start", "goal"), undefined, paths);
+    expect(missing.map(p => [p.x, p.y])).toEqual([[0, 1], [9, 1], [10, 0], [20, 0]]);
+    expect(missing.at(-1)?.sceneGap).toBe(true);
+    const noJoin = routePolyline(b, route(b, "start", "goal"), undefined, { ...paths, "a-goal": { forward: [[11, 1, 0], [20, 1, 0]] } });
+    expect(noJoin.map(p => [p.x, p.y])).toEqual([[0, 0], [10, 0], [20, 0]]);
   });
 
   it("leaves graph polylines undashed when the station has no navmesh paths", () => {
@@ -129,6 +132,47 @@ describe("describeRoute", () => {
     const kinds = describeRoute(b, route(b, "start", "upper-2"), "en");
     expect(kinds.map((i) => i.kind)).toEqual(["start", "gate", "escalator", "arrive"]);
     expect(kinds[2]!.stepIndexes).toEqual([1, 2]);
+  });
+});
+
+describe("describeRoute note placement by route side (#799)", () => {
+  const ORIGIN_JA = "案内は中央通路西側の通路上から始まります。2022年1月版の豊島区案内図にある中央2改札への通路側の案内で、改札口の正確な位置は未確認です。";
+  const ORIGIN_EN = "Directions start on the west Central Passage approach to Central Gate 2 shown in the January 2022 Toshima guide. The exact gate opening is not verified.";
+
+  /** A POI at the route's start ("start") with the given notes. */
+  function atStart(category: Poi["category"], notes?: Poi["notes"]) {
+    const b = createSyntheticBundle([edge("s", "start", "goal")]);
+    const poi: Poi = {
+      id: "origin", category, names: [{ lang: "ja", text: "中央2改札" }, { lang: "en", text: "Central Gate 2" }], aliases: [],
+      floorId: "concourse", displayPosition: null, connectorNodeIds: ["start"], paid: false,
+      evidence: b.pois[0]!.evidence, ...(notes ? { notes } : {}),
+    };
+    return { b, poi };
+  }
+
+  it("puts an origin-only note on the first instruction, never on arrival", () => {
+    const { b, poi } = atStart("ticket_gate", [
+      { lang: "ja", text: ORIGIN_JA, at: "origin" },
+      { lang: "en", text: ORIGIN_EN, at: "origin" },
+    ]);
+    const r = route(b, "start", "goal");
+    const en = describeRoute(b, r, "en", undefined, poi);
+    expect(en[0]).toMatchObject({ kind: "start", text: `Start. ${ORIGIN_EN}` });
+    expect(en.at(-1)!.text).toBe("Arrive at destination");
+    const ja = describeRoute(b, r, "ja", undefined, poi);
+    expect(ja[0]!.text).toBe(`出発。${ORIGIN_JA}`);
+    expect(ja.at(-1)!.text).toBe("目的地に到着");
+  });
+
+  it("keeps a note without `at` on the arrival side only", () => {
+    const { b, poi } = atStart("other", [
+      { lang: "ja", text: "通路の西側で終わります。" },
+      { lang: "en", text: "Routes end on the west side." },
+    ]);
+    const r = route(b, "start", "goal");
+    expect(describeRoute(b, r, "en", undefined, poi)[0]!.text).toBe("Start");
+    expect(describeRoute(b, r, "ja", undefined, poi)[0]!.text).toBe("出発");
+    expect(describeRoute(b, r, "en", poi).at(-1)!.text).toBe("Arrive at destination. Routes end on the west side.");
   });
 });
 

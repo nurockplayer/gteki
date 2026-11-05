@@ -1,25 +1,23 @@
 {
  "protect": {
-  "layoutAfterProtect": "8d995ed2d70ff80f8b5d138e3865fb452bf6b52d7a53900eca52176da02fdfe0",
-  "protection": "2e5d284f4fd473e3ab75ea24d979bb55593df4ae632965ed57ba361ee9158f8c",
-  "fences": "cdcca93046be4808a310df9d123965848ba3db6446f51bdb047305f3ccbbc060",
+  "layoutAfterProtect": "a44d1a452325ab0efcc601189afdd6ec43a8fa6c6e24b1e3dd44fe7c59b1b67b",
+  "protection": "bd788fd3397bac235a14aea4df2e7419aca75c5e38fc1f9e9a34a82d92596928",
+  "fences": "41385157ae479de4955eaef17621953dcbb12e0b44041d1ccdd877e591785f2b",
   "gates": "b12d68f308c2d3bf796c28f3a5d0ee120d78795bbbc799a1e077757d6f3e92c5",
   "removedAccess": "a8bea4ec00c75027b962716885b78396b0d008e6298561de838d4bb6b6e747ba",
   "restrictedConflicts": "58e9b61e14dac3ac18d7df2430f0ef1f368ffce1f35e73009f92c2f781264c12",
   "cacheHit": true
  },
  "station": {
-  "layoutAfterBuild": "a5a811f8a1042c511dc92849b1f65af0c3ffbea37c0036c4ddb9c7ae4f58b871",
-  "propWalls": "f625d42460d0754990f686d66dc7e1b508e768f24ecf977c1c8cc72f28b27f6b",
-  "levelWalls": "d9aa3d6bc51360f496bfb3c4cc83db767ec873d491ba4387414e46c91988b636",
-  "escalators": "4470beaba0a912934fbe55591aedf9ed144d62c6ce8ec31802c065a826fe53ac"
+  "layoutAfterBuild": "e6854f70b951d287de5217d1d48ae40a316b130647e66ebf55668635cae6b4ae",
+  "propWalls": "0c255b9b019384bb7aa63e8d9e2eccc10e25dfcd253823e676255191879ea9ea",
+  "levelWalls": "b764f06cb24cbf50ab5d3371cb38fe79f40f10d2837adc28401cbedd96f16c2b",
+  "escalators": "15a5224f8c32deb2ca23240bac233cfea59c30dc8198a60f992b5040b5fee0c3"
  },
  "scene": {
   "low": {
    "walkable": [
-    "cec4b5b9c3175c8cb2607c31ada3cf57ed7e1c1a40868f257b0490980cdf2c90",
-    "d408d83ac11dd3ec32e81e27022e9da106999738c9e30720ee5f79ec288d54a9",
-    "12f093d8cc165d38ec657c75a24d6caa3f924c82dc18a89ece3bb7a75b5d5e51",
+    "460baba941ed74bac611e1e55b4587a4114d4635557fb5f57af2a780abcdef66",
     "0230897d553da8465bb762a722e95f844e95394feda35e442efca8b3b56cebcc",
     "c420b951d186ea9ce53f85b09a7ba3edff63e478cac2e0fcdc396dbb85791bcb",
     "9f83e2f8abe0800a7817b253611be487e92f0492a5a6db1ba16da1295b2c1bf0",
@@ -98,10 +96,14 @@
     "bac02673b4cee0d6d6d3e1dac8d7e93aa281e90bf28155c811a73f14deafe3ae",
     "2873603854479f133de474da7615b7c4ef62922cebc92e3953460abd833642e7",
     "c4c4874f98e2da0705275de363cdb7af901d54f23a486da1667f9eccf69419f3",
-    "65dc9849f4b568b9b67424be52e3aa2d65ade27aee102d7a4c57e91f1be397be",
-    "50fe79fbb9bd18656cbe683bc558489bf246c1e7c796662fb058fbcb138aa957",
-    "f5a3e36de561eaf8e06a3f61d229d380fbd6a897bd1f98fff30dfd659fc71c59",
-    "28e135621d758c14b690219f3f67127e8b0a77cfd6f54f80d87cad83711f05d2",
+    "1475419896ed3fdd1c0d6145f9ce1311265005550c6981e81372a58dc899b023",
+    "d582783c10977427c65df779850659fa3b7e573ee8c6ad769adb56c58bb81256",
+    "23e6720253f3768d547991a54da30c11d363a1a05396fd9fe2a63e1a5358292d",
+    "58f35dcb267ac514c0452108cddb31525705300520baa5563139c30906cbbfab",
+    "32c22e46de0aaa5e61cc594dd23b31cb15ab8591f2b651efed8f46b16de28a55",
+    "6d928e6caa7d8b3705029d1d0c88f5b96396b95ad5538099119fef5889a5378a",
+    "31e3833ed2f70ed8037cc2f72a66d97fb74eaf38e848bce35486aa58d7035b73",
+    "2d11f8c60b34f720fc1d59b2420240efc55abc03e5b46126a968a5c28888650d",
     "1a4a1190e65c83a8cc399c0164f67da572872976f9c800296aad6be67a9f9c68",
     "fc2d95ee3b4008f8a45d9685821680c08fcc2f55fa7a7ad04f802af37fbbc3fa",
     "56b5f8aa57fb9b1bc1ceec0b356e25f16d9342fa855a7db65ff1bd4ea8205d77",
@@ -112,6 +114,12 @@
     "f6a4c426d582a0322033b80c175e1df8535104dbee98fe876207df7ef3f42f9b",
     "1eb4af8b4a7c243431f2c8bb25bfb72434bf9766efcc125187a42c6afe0dda80",
     "db9d21be973720b7a357e802c7f5be1d3f150979b086a07faea6416accd47dbd",
+    "90d4c965a3e067c7b7da2ad1af409631fb76375441643730c281067bd3d91384",
+    "1a04986f66013649f46e32918b1d5dbfc2c0af7fa5d57361144798c9b0e4ab4a",
+    "3079c1535c29edc3a2de0fecd6eeeebe2b4b62b3304646b7b04e8dde446747c2",
+    "e39fed3bd6e58ad84a42616d71994927157d21d9dbb1a42fd5973e1a325c9d33",
+    "de0d064b65a6021c3a45031981ae7c3805b7a3ef268ecc8f9121fb7fc1b35a8f",
+    "83234418124adaa7b0c3611e68df54053997b432c89fd539efc3e49bc54a2800",
     "9ef0b2766b7bc92c6b4db8051c7cad096184c52ecd81094e9d2fb359506dc794",
     "cca1e587a0d0b25d17a45098a24baa596f3e3ff30d488a837c804885b734396e",
     "e1dc8a4a4110903184398a21f9d398fd88e4e3c5c4850fb7571ab35317eb9037",
@@ -176,7 +184,9 @@
     "eba824dedfe8712a1a51ef5a5e1a16489e13d9236e80b788aaebafef4ce257a0",
     "849520e20efe4a6d00d776e389459b0192ec03152856ac66ce55aabb66861297",
     "699cddf4aa2bf31cb931248caa2309941fc24afb86320aac42d8950e9653c2b5",
-    "e73e295b351efbd016f9934cbf7084f5ebeaa37452a6ef8842e5eab39f572098",
+    "a5c8bd68fb56e5dc97bc96e4eb9f03b8fa487e30d2acf2ea1aa53e775face30f",
+    "e5ae729ba8f8c73ef080c8509c38341a197d399dc7b8fa88d7e8e907f541b007",
+    "7fccc213e8cb5815a90247e89b8cd9a393da3f129027934e362a03699a3c5fc6",
     "37b36f4e0829aa9783018b0104d0b5a028b09c27084678fe215a9867540451b8",
     "9761ac0cd9ca0daad3d1f3ad8d89845d18ad1dff26f34ae1657c57ef9d78e6e9",
     "e852f7b61f50f7f8505c00a29913f3d68e3957d7bc691fe68d278b8e75057bee",
@@ -197,17 +207,15 @@
     "79119e3a9c469df61c4b0f2adcdff8c0bd0d39c98bee597dafcbf8288e5dc5c8",
     "7c2013a335dae24529ac644cd6b805f2962cd4e9ffbaaba660edb4ca24b47366",
     "0ec4cee4f85372c953953a84ae7d050f339962921314669403872fda36bcfd21",
-    "9871b06208b344494d347d2565dc5f8349eb34961eeaaed3c83d40c014c0f755",
+    "07be1c87eeca9043dc448edb5f36c94fadd9e074cfb3b3fefaeea90e519f0fef",
     "3929d40c0fcf0d11d354ed89f081743dd47db286256016134dbcd4e52e6df0b0",
     "dc7e85a72dbc4aea193b9c5312f1fc48ce425af70926618598f289fc6bd93656",
-    "8e297cc3e7332cd95bc830f48118426a1128e9d362726bee954b0e929500c557",
-    "59250a3656a633c652aac77706675016f4c91bbdf66cc10f596346bc9f6f2521",
-    "e0b8747bcf9dadb505c6c7959aba7415aa9c70c3dba40ce2a5e86db299dec90e",
-    "102fa125c88d9cff534746c3eb6ba8921fd786066230e98a3b26e136378fad7c",
-    "a4a914ea267d717c5701ae93c42d4327744b348715e9e3f811c212a345d1ebab",
-    "73247fcdec1f378bd1bdfd7f45a50cf519f7af743ed81ac682c2bcb673c59250",
-    "b49e28153c0cfbfefa3e5bccb2ad10ce0d24067e6cbe3a6720dfa2a198ebf27a",
-    "500234621c04c7e5336d391a2eed2f9b1e25227947c220d017efc71536fb45ba",
+    "dbe09dce58e914aea42da7058ca3de30a05b78defee5f6405ae4cb616338757a",
+    "36e04c845a87b8ed2bd28dd6d355d5fa6f2ebe2d1637b8506f6797c73c035a08",
+    "1c0b17d8a54d2cc0ba10ec829e54ae97f39648347145b87388dae183e5fabee9",
+    "b0c89d291e0307a60c2ee80845b4d746bc9ca0183fc5c99ccb5284f657f39706",
+    "0cb53ca1e6cb9a725c5ca4c8b791f620cf01c5d435cc7fb273025750b9111102",
+    "8eb70faa1e491dceba59d3466143a386e35db4e69620f8221c381bf1b1312928",
     "3d1ecd7a7c7b18b5cae4a44bbadd957cf9e7ff44b2913e6cb08eb44e9c304450",
     "9eb4eb64a39e096a7bcc14aeaa18cd2e211ea8da99f5372297246f3bb7b1f882",
     "b9276a0b4aa2508e370102cb767bcd50eecf36f5bbe9a4b5c5d3db001bd276cd",
@@ -231,8 +239,7 @@
     "409980cf0272f5301691fbae7796bed4f31cad5285651a609a68ea8253e868fa",
     "4984ad8db846f72be00e8d98057ddf5f4893934bea5aba5dc118203dd3a4e689",
     "a2e2b1ebc71b4e15fce6298f2abaf766aa82f9d9e5463cf2cc7833ff3140ff9e",
-    "c05aa1f8f5be058683fe6985a602126d2bd53ab1b1eff4cafa9e4d380dd2a9ba",
-    "b943bff0a7eb4e841e50316feea8a8f1be410f5b52151428a4b930f26328fc43",
+    "4041135fafe85f66439e93bde1389148c50275dbb749c020a994b9894f610dad",
     "fe8afc635e4ca64a46a40a7ce51524f005b545f3bf4d83794a054c1592d04cdf",
     "57ac140c519810a2de5780435f74211faefebb72d30f5c98e8208c9437accb96",
     "f3310c45464a12dd717bf3e0623dc3b4829b08b59bdf634e09cbe1bf52263196",
@@ -244,17 +251,15 @@
     "2f0cddb773e7b90bfd424a0a38fa288dcedf30f5e5e14faf7b1c948ec6b237ca",
     "9dba55fda0ae35481359a3d5bbf938f3d26af0c8b4ef48dcc1e1293ff476c7aa",
     "b745e64a08935073df2b8ddd8e9ae2d8dd0b99c3d27d8c462f138259cab4c34e",
-    "3d42b8ab225ca1635f14b19d1d525d7d48654db4a9827f99d9949bb2092cd58f",
+    "bdc24361dffc27024cb61ac2c5175ab1ef2f9f649d24af0058156f1584358f20",
     "1fa325b3fd4c7e92a9e36a9c6cea8b643c015ac933633b29f0cfcbf776ea46a1",
     "c6ef9e5016a81dbb2721281db1ae608ba615843e6386dc49b9bf9259e0e8bca1",
     "f6e4820044d9bbf682696ff9faf0387a647d96407effb1a681cfc5132e86e0b3",
     "b4f1969f7ca2c440ead8e976550ef699b626947a1b769fe8b419896a102b9799",
     "868faafd1960d933a04d577394292d90fcaddc72a54a33c5298328445d733580",
-    "8a8ec75693cae95cc5e00afbff302f42db2b1f08b97bbdc4f83987efac6ebe64",
     "6d27de6f57e5a9e83c4f3ea20a8525b93d7af19ee0a355f1bb40638f1ffa084b",
     "312ed25075dfc7c7be0395e1915dfe78ae1e9c9eab4d0ddb09d7452f757b48c4",
-    "3181bf28e39578d81a7509ea37d11e3ba10bcfd74d075a32f581f22dbcd3aa55",
-    "6e2d965454c25e3a9f4e1d1515fb93296bce8c3545048de7bb29076d39b7ef94",
+    "80381923394705c6c1f7cc0aba391705dfc43a2b16b45749614e9976f5ad4427",
     "67ce71cbf6514297037b245a6747e9b8ad3ad5111490df4cde3b9b40a2dcd4c5",
     "fd4620f66ddabba38d378b37f35e5bf4819f12bc9b3e3ab069c7d3239e845eb7",
     "7dd2a262da1166d7ea127460fb7483184c70353c273c7f2290ae10558205a205",
@@ -387,33 +392,36 @@
     "a0289e56d4ac185409eb07eb8630c3cbfac2740f0e0ad889dcca5a9294d64603",
     "7c3325aeba0c12b399ad70b68a3628f49c74998f9d08478ca7968a3dd8b7aae6",
     "72f8d2abcc9183726cf448905810f62a7633657d7955b0f8464306f26ba69d5d",
-    "bffcd522156e7e4cc6eb606b148e4a4a814649501d51b81becc330844b2256e1",
-    "80cd1e8d44ca351a0cb998d717321edff36d807d2ff73806b7b2314b02a967aa",
+    "ab0b95de3a131a3a7a7ac752be56468929f6391d6fc79f81ee257edcedd1fdd0",
+    "39e9487de7e9547ab4d4947a014f3fc6481771db5d002a62e4464df915361875",
     "c2d4069a5feab7d72fb10a7fe89bed804e4f68bddca19b3ac99528be77dddcad",
     "2814116c270885e5fc2ec08e159b0870c05fe0bd0849cf57566a8290a8091dad",
     "632b18b425671c8efe8678c709a0ec31c5791c596b5d88233a89fe843a01bcfc",
-    "f66b000a5cfa167b573ff3d065391c291b3c96f647043df85cc4204dab18eca7",
-    "e3e24e22a337209cf5ed7b9052f74edacf54fca08ee4f8b59e88853f1c12dd8b",
-    "a38672dd6c9756233046dffbdf8d07901a9d1f7b85670b2994fa07b9e97af7f6",
+    "1e8759dd1733afcd40cada69c2d01fa9472709c8923925357074269a90b1146d",
+    "0765260b517bfb91bac96735c5423eaf6a2c22183cc694c64f498153ddc066c5",
     "2fc63d8d41de5f6c548865407155ce7de255b6e953a94cc57ffbc69a221390ae",
     "f0322e48d9a6111f84b3ce7bb22df5f47a6ee74df6c08d32849aafb1d085ea9f",
     "02a7cde904343295190846577e08f12abf10fd8f9eb44c5c86ec5bde3e1807d1",
     "40b8ffffc070dc984478abdfe624c6f9044fe8c2cef337dabdf3b05562dad28f",
     "347aefda2dd86014990c284c147f9df67c41ae41b0866d65f19ac051eada39cf",
-    "2cb90959064f5dbe7e8a77a669157586e83a658c6745c8922db15488bfd0984a",
-    "a1ee8445124d1814b43513ea12c3bdb5e4ecafe910784597e8b9aebbde2daaa0",
-    "59c78ca0c15269187a5aafb9a2b9b050fce0ce46d31a69a3e42665384d839630",
+    "a38895edd1f50fc9517903909bbf1d6fed2b9dbbc513779ff3277fe8ed778fc7",
+    "21c5617dbcf415c4e824194db89b482bc59dd9c8425ad6281e8e2b0b39a41174",
     "b40e210b04d5531c865476843619a2e9828e2d5bade9437575ded19c5b2c6707",
     "a1b7ffe36df74bc84d6e90464afc8bf7615f2edea14901ed544cea4f35f6d208",
     "94cf96e09669b3d0afe4428737a90556fda73b277898cb28908c8e8e872a0420",
     "a4ec6121795395e84e8e4a2603db78a65b7be100f73a30b02dae10486510bdbf",
-    "27957faef6c0cc706b4041a92a4aad44e993c01e3b037404a50b41f68ccc677d",
-    "a850374100a5f5af176b9864d2f389bc4c97ad2cbd1aca92a1d0c9310fa9adbb",
+    "c3022a6c7b3584a868d9bb4945150d10ef9135e798d968482a17e8314b56f72b",
+    "66d5c00cd7ab039beb69a316ec16e6ad0574eec03e141fbbd92dec8c6c69c591",
+    "4aaaabe2773995fa67e48c3fb707bfa8785439d37b7db4c6d5ae80cefb8cd556",
+    "8402e789aa8268fb078c5cf02460425519dbade2437537f3cee8a915a333b386",
     "8b3a7e1d9fb096a49088bf7ae55fd914f388c269cbae40339037ff6288f27efd",
     "afdade4ff9102aceb0884cb6645cb72448b1aa0b87bf14c7599a3746b32af62f",
     "8e7072ee22fc2cc0159497f597afa05a55cc9b58f8507bb0e372cb08bc360d4e",
     "107dbff4d213207bb4d216f66b26f9ee6077f75155b7a878944aa913b86cf1b5",
     "02b1693e7ca3027ee2a82038c13fb7584bdb2e08839d1a8b9691ddd0171ae509",
+    "01c305760ecf547a7d7bd19af5271e6906ad26f140a5bea61360e6ed036ad1c9",
+    "5bb4ac4433c9621acbbb1a6f52b79e95a75d52b0f5ecf0b823499d8dd1c0b17b",
+    "d6e18bb0e808ad2df8d43c06ecd76f7ab3bfb06464b776947b19d5a1d9c6d54e",
     "8087e24812fe87eb3afca9a05fabc9d59d5ecae4460a4fe7470a846fb53f7b96",
     "a59bfd9eff465f67849521f62ef870e702213ffe76787fa210e8a69923af4da7",
     "c6db1228861c4681a527851a10feef4d304e001bac689efa7049ceef55892690",
@@ -446,26 +454,27 @@
     "466ed13cd76b897023cc91058110015e408be34b451baa02c5a2088f7dd68929",
     "6df93b80fd0e764a8f54b625be83abc528646555bbcd9c6e86cf128b52d0d549",
     "196d79f319dbf34ecdc7cdebf40c066dc6717c8a73c002335fb9498a26ca1bd5",
-    "c7daaef42957f8e71f329e5616d9ebc53c4ac7206012de1a651adcc38a8936de",
+    "868b9adad8a3e1fe025c87f4c02dbce2b56b8821e3198f4cf3d2cdb44880590c",
+    "097ec8e7a7d5090bebd3037c4fa9fd61da0eb1e536c7d9315e59c752024ea7b0",
     "407330b3a2312bda32a46a5d697209f1ec06722e2fe606a74d2053f43178612b",
     "04c3b78b9a1965c711444ab0191bcbcd9c470e42d10dc94afee80e9c05f6e993",
     "12220236104b5f1757a8673ce5a19b7e8dc6130ce0773eeb1a4a4e0daa2f69b6"
    ],
    "colliders": [
-    "b1d420152a099a55c539cfad0ace1171cf3d2863aa5470a1e9a0b41896305409",
-    "3ff8f1eee138e7ec6a64d2ea332d12f2ae844c4f25f6578b8ae3a8187428cbb0"
+    "5051772915ee3cb90c89b3364423007e29223e8efc7e2219993f27f08377db50",
+    "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3"
    ],
    "cameraBlockers": [
-    "3ff8f1eee138e7ec6a64d2ea332d12f2ae844c4f25f6578b8ae3a8187428cbb0",
-    "28115fdffccceadc92beea189494bee4d3faec38f3ae777b3c5d81c890380b2f",
-    "aa756629d68477d9b79cc5e82639173f3cf008c13bf3c111f0431f4240b3c2cc"
+    "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3",
+    "e3055c3693daa1e4c1dc69ce0e02dce2d0469b93411cc1931320325cea76b768",
+    "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a"
    ],
    "cameraBlockerIsCollider": [
     true,
     false,
     false
    ],
-   "walls": "a714c93a0a556bf7eee01bef060c9de986e65f219a4130791c2533cd307a5dd1",
+   "walls": "acc618a107603bbfe8023fe654991b684761e38ec7cd45f370063161478d185d",
    "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
@@ -477,20 +486,20 @@
      "hash": "78fdc0a7cad1b77e94bdce5ca7caad26afbe860ced3c8069d89a79e0c775c714"
     },
     "[\"MeshBasicMaterial\",\"\",\"8aafb9\",null,null,0.38,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 30,
-     "hash": "569a63936f75be923696382b54e91617a5c07d5dab2b5995d42fca5dcaf54f75"
+     "triangles": 38,
+     "hash": "67e28ea057cc0b64d33b1c408f6405252ffe51937decbe2c79b3bf8732f2d08b"
     },
     "[\"MeshBasicMaterial\",\"\",\"aebcc2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 6496,
-     "hash": "423a4e3ccc9b4556cbdb3f47aa5c92dd8f839d94962a7e04803d1edcc5536a4c"
+     "triangles": 5872,
+     "hash": "7020174a0923c348aa555ad080630e406276fd998acafe61dfe0a5d6f5e7e9d3"
     },
     "[\"MeshBasicMaterial\",\"\",\"aebcc2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 704,
      "hash": "7527c097fee083a58f444005ac6d2cd548a46f228fef8b0d9abeec8e55c05b37"
     },
     "[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 11234,
-     "hash": "91211e73c9975579df24f97b9e532f2d26eb2ddcabdfdc303b611dbc1e809b03"
+     "triangles": 11090,
+     "hash": "f743d1148adf7168c15360fec8d72fa8d8ac16259d3d582ece8516cce2d46f20"
     },
     "[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 696,
@@ -505,16 +514,16 @@
      "hash": "b359751ac9384796415a9a6fbdb1a8f336b7809b617828e1ef1a50f0811b7073"
     },
     "[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 2793,
-     "hash": "e5b2a0244ab151624388dc921c118e6bdc19098c734e0ded56010b6ddcb25d02"
+     "triangles": 2800,
+     "hash": "ef09eb0205a54e7cecb189801155311275996572575cef47a869bb5115b11494"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,false,false,false,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 0,
      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 11256,
-     "hash": "68982a5d153edebec65192d9f874c111db861d946c5c2de96d82979615f98a33"
+     "triangles": 11232,
+     "hash": "426cffeba5ed11683c8e86e2f0d3e4fcfc3597b00440111eee40d444aa13c0e4"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 8,
@@ -526,11 +535,11 @@
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 360,
-     "hash": "f6c3c2f57c26ee3a7e2a8d84a2529efc3205801320c597fa69dcf8693c098154"
+     "hash": "8c15f6bc90c1b6a518fe93b806930e08326cc1fa1a784b524048982a448b0488"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,2,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 26,
-     "hash": "095faffe0dde256ddf68c7dff4bc2e0cfff418ee7f7aebbbec10bac8ae85b0ec"
+     "hash": "8b3c29c9dcd9bbcc1237cdfb89584223c52c11cd7ef59b0936f489a577f69a16"
     },
     "[\"MeshBasicMaterial\",\"mat.identityFaces\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 20,
@@ -538,19 +547,19 @@
     },
     "[\"MeshBasicMaterial\",\"mat.portal\",\"7fd3ff\",null,null,0.16,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 26,
-     "hash": "b6ffdeb098f404177b910e64a66dbfd4f96167d1ca8edeb6c19cb8e8f3a99ed6"
+     "hash": "3d2432a025772eb12970b3ba8ec6d37a695a52b2656f20e0ff25970a8902f131"
     },
     "[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 264,
-     "hash": "2e288950e207ea8d06f85da11676b0b5af403b0cdd2b4c39620e988958e6dc4d"
+     "triangles": 252,
+     "hash": "0a0c73d2f516f4cfaa6c2b660bcad40e9ee504bacbf98fbc15b75573698eba9b"
     },
     "[\"MeshStandardMaterial\",\"\",\"888888\",\"000000\",1,1,false,0,true,0.4,0.8,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 1056,
-     "hash": "f7628af7dfb54cfd6a74835092866784e398405b2c85926c2934685490cf8f69"
+     "triangles": 1008,
+     "hash": "20c86b3d129e94ce66505873a922232e695469e6f7fd4df5c1ea06cbe28151d4"
     },
     "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 88,
-     "hash": "bfbe84436aa1d7e85e66d30dc2b13733531f4ac60b0f04b06369a3d0cb779639"
+     "triangles": 84,
+     "hash": "6c85aa12539637c51dd3e072d3b69521478ad171716606f9f0c86f307f1cdb64"
     },
     "[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
@@ -569,40 +578,40 @@
      "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
     },
     "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 35661,
-     "hash": "9e2780119f93d843c95ec5741f3f475727e17bb970d046024aa42a13ec34a2f2"
+     "triangles": 37980,
+     "hash": "0b82619838580f022fd3f99779db9725aff7c81508ad41454a750021447d276a"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
      "hash": "3988b5240e4b11c0b613658e22ecc8c998b8d62411b2c94f7549eeb7c9c92b95"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 6832,
-     "hash": "4668f5889aeeff78f58329a3d4c6f265b75b611d399c68544c197548efc3d317"
+     "triangles": 6792,
+     "hash": "fce9d850c685c991b01012179decd3935dafda1cb8f98aaf9d8e45064d7b08f7"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 96,
      "hash": "7884048760eb01274be6f7d424e79ab14d2959282b878396e643be002f1d9635"
     },
     "[\"MeshStandardMaterial\",\"mat.escStep\",\"ffffff\",\"000000\",1,1,false,0,true,0.51,0.3,true,true,true,true,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 37968,
-     "hash": "50fb40cb8b8248f9d013d67d42d723c47323af9803c80e7c67d5d953d2a2ffd6"
+     "triangles": 38520,
+     "hash": "32f6e54e0e11848218e12b50dafb99c4cea501f9a17b1f937bfbf202f9bad4d6"
     },
     "[\"MeshStandardMaterial\",\"mat.escTruss\",\"ccccc7\",\"000000\",1,1,false,0,true,0.34,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 252,
-     "hash": "1be955f74ff40a4151be335e5f47c04fd93fa27e6a88a9a0958b6235c1a1bb6c"
+     "triangles": 264,
+     "hash": "744473c95cbae5868c373483c641c94bebbcd7114f829094688f3d5ba0687b56"
     },
     "[\"MeshStandardMaterial\",\"mat.flap\",\"e64060\",\"000000\",1,0.85,true,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 252,
-     "hash": "d137a192f4319a5d572496ff27ee8ca407aaf9a57f31b2b7d0b7e21f99062914"
+     "triangles": 264,
+     "hash": "d4c9bb681bc1b0f1da8b1eb30543799c6170f3aa9d1f15560d35e46d75a6964e"
     },
     "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
-     "triangles": 37,
-     "hash": "11a884267ee13ad5be9ac66cdc3daf8a54c3d96eeb21751c21fff1665716bf2c"
+     "triangles": 29,
+     "hash": "fbbe953ef2b2679af4d0d6d0468c8e2ba926ec1d8fbdf77444a44027c6e25851"
     },
     "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 1448,
-     "hash": "87e2b0e32bc02bb05e3a0f493eaf2b09bde0fca13d9a93ef726b10c2dac6cac4"
+     "triangles": 1465,
+     "hash": "ff00000553e86e6dd048997b3886ba9bad63416e822ee7da0dfc4a4667985575"
     },
     "[\"MeshStandardMaterial\",\"mat.floorPaid\",\"ffffff\",\"000000\",1,1,false,0,true,0.68,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
      "triangles": 790,
@@ -621,16 +630,16 @@
      "hash": "503b6e367798feb5ddc7f1ae7d81898bc742f12cbd0596c6a69ee45747ffc4da"
     },
     "[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 672,
-     "hash": "d5675447ce2baffe8b58208cc90b60b032bcac6bceea77e832c867e867bd9387"
+     "triangles": 684,
+     "hash": "64a470b965553a7be33c4a2a61240c5478929a82b77d29c5af0994b9783ac532"
     },
     "[\"MeshStandardMaterial\",\"mat.gateTop\",\"303634\",\"000000\",1,1,false,0,true,0.58,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 96,
      "hash": "c78243cf74512aab885bde303cf9266c42b87472b4b9de42e4c1e2e1575a60d0"
     },
     "[\"MeshStandardMaterial\",\"mat.glass\",\"b4ccd1\",\"000000\",1,0.28,true,2,true,0.32,0.08,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 3942,
-     "hash": "a409ccb421bf2d438d369bf43f3c075cc32f14e16ee073693a5c0c87260dc60a"
+     "triangles": 3996,
+     "hash": "6dc3b21aec57cbdb9be2d38e6c52c008cf426f90a456ba6c211d69d934a53036"
     },
     "[\"MeshStandardMaterial\",\"mat.identityHardware\",\"ffffff\",\"000000\",1,1,false,0,true,0.4,1,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 300,
@@ -645,8 +654,8 @@
      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "[\"MeshStandardMaterial\",\"mat.nosing\",\"2a2b2c\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 5974,
-     "hash": "71586f9fd4bcf4c2a740767bc019e0acaa319212687b90afc79419524a680a73"
+     "triangles": 6324,
+     "hash": "6a36b0d69736dd9478cb58f1daf0573339d3cef392e97fe58e1ada2cf1228a57"
     },
     "[\"MeshStandardMaterial\",\"mat.psd\",\"d4d8dc\",\"000000\",1,1,false,0,true,0.3,0.5,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 576,
@@ -661,28 +670,28 @@
      "hash": "24375c43cd3ef9e16884b2473cbd7279a8241ac76f9b6c2a3c371de1d53c8956"
     },
     "[\"MeshStandardMaterial\",\"mat.riser\",\"dbdbd6\",\"000000\",1,1,false,0,true,0.3,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 902,
-     "hash": "8a9e2004e5ae159f50920e14757fb69bbbb52ac01a1ad4abdd9aeba0967e6ba0"
+     "triangles": 948,
+     "hash": "e71733c94a24405b63e98bc1409513a527b817fdd8ac9ad21610b37f57137a34"
     },
     "[\"MeshStandardMaterial\",\"mat.rubber\",\"121314\",\"000000\",1,1,false,0,true,0.55,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 13488,
-     "hash": "1e092a3af36360e462c4edd092e57823474df98de72d075334a4494145495d1e"
+     "triangles": 13752,
+     "hash": "b94901f56232f0f8946461186588f579338e787b340e9370345ba89d908ddee4"
     },
     "[\"MeshStandardMaterial\",\"mat.sidewalk\",\"a39e96\",\"000000\",1,1,false,0,true,0.9,0,true,true,true,false,false,false]#visible=false#order=0#instanced=false": {
-     "triangles": 60,
-     "hash": "5c966d49ae5e8eea847c5f5a096dd6b9378134b7f01fe4a17a21119ded4a2b3e"
+     "triangles": 48,
+     "hash": "9b1cbd003549fd1201f98abaac092273b7ccee8164541c251c247a0a3aa9c5bb"
     },
     "[\"MeshStandardMaterial\",\"mat.stair\",\"c7c2b8\",\"000000\",1,1,false,0,true,0.42,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 10998,
-     "hash": "bb732b7c158a0b5eb1484ff594e0c6f7f9629331ca0db6d9abc368ee3e7aef14"
+     "triangles": 11344,
+     "hash": "4ab42ac918b1d1895440912ca27bbc51cffe4d8cc246c3dee0804cb6904b7736"
     },
     "[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 54720,
-     "hash": "97df1e6bb6366f1b91b0e5f1b12ac7e52f6e1f78670847bf4b31368d0ec02aa1"
+     "triangles": 57396,
+     "hash": "312c063c78e04f5135bce5dd71c8a8ef7622dc23cb6a7b2984e62d573f628daa"
     },
     "[\"MeshStandardMaterial\",\"mat.tactile\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
      "triangles": 214,
-     "hash": "7bfc988bef80a5a037b573116f06f22f92008abe1988b328c5e9e27df83c424c"
+     "hash": "09157c1e6dfa9d109843fb5b1e21a47cc86098f6531e12f8053e2b4d94e2c864"
     },
     "[\"MeshStandardMaterial\",\"mat.trackBed\",\"2a2826\",\"000000\",1,1,false,0,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 12504,
@@ -717,8 +726,8 @@
      "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 26034,
-     "hash": "a8ecdaf77009288140bb27b004ec23c61a258b093cceea2e85fbf4d773d9e301"
+     "triangles": 27232,
+     "hash": "14b504b62ef303817ec37f746db3f9ca86b302fcb8fa9913b5a3f7a7464a4fa6"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -726,13 +735,13 @@
     }
    },
    "semantic": [
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|28794",
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4439",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29628",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4636",
     "sign|No entry||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|12",
     "sign|Restricted area||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|348",
-    "sign|sign-cases||[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]|264",
+    "sign|sign-cases||[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]|252",
     "sign|sign-faces:station:0||[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]|60",
-    "sign|sign-faces:station:1||[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]|28",
+    "sign|sign-faces:station:1||[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]|24",
     "sign|||[\"MeshBasicMaterial\",\"mat.identityFaces\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,true,false,false]|20",
     "sign|||[\"MeshStandardMaterial\",\"mat.identityHardware\",\"ffffff\",\"000000\",1,1,false,0,true,0.4,1,true,true,true,false,false,false]|300",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|1",
@@ -747,6 +756,17 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|18",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|18",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|197",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
@@ -1110,8 +1130,6 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
-    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
-    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|30",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|33",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|34",
@@ -1132,9 +1150,9 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4",
-    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|46",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|49",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|5",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|5",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|5",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|5",
@@ -1168,19 +1186,17 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|8",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|89",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|9",
-    "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2793",
-    "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11234",
+    "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2800",
+    "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11090",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6832",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|672",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|54720"
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6792",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|684",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|57396"
    ]
   },
   "high": {
    "walkable": [
-    "cec4b5b9c3175c8cb2607c31ada3cf57ed7e1c1a40868f257b0490980cdf2c90",
-    "d408d83ac11dd3ec32e81e27022e9da106999738c9e30720ee5f79ec288d54a9",
-    "12f093d8cc165d38ec657c75a24d6caa3f924c82dc18a89ece3bb7a75b5d5e51",
+    "460baba941ed74bac611e1e55b4587a4114d4635557fb5f57af2a780abcdef66",
     "0230897d553da8465bb762a722e95f844e95394feda35e442efca8b3b56cebcc",
     "c420b951d186ea9ce53f85b09a7ba3edff63e478cac2e0fcdc396dbb85791bcb",
     "9f83e2f8abe0800a7817b253611be487e92f0492a5a6db1ba16da1295b2c1bf0",
@@ -1259,10 +1275,14 @@
     "bac02673b4cee0d6d6d3e1dac8d7e93aa281e90bf28155c811a73f14deafe3ae",
     "2873603854479f133de474da7615b7c4ef62922cebc92e3953460abd833642e7",
     "c4c4874f98e2da0705275de363cdb7af901d54f23a486da1667f9eccf69419f3",
-    "65dc9849f4b568b9b67424be52e3aa2d65ade27aee102d7a4c57e91f1be397be",
-    "50fe79fbb9bd18656cbe683bc558489bf246c1e7c796662fb058fbcb138aa957",
-    "f5a3e36de561eaf8e06a3f61d229d380fbd6a897bd1f98fff30dfd659fc71c59",
-    "28e135621d758c14b690219f3f67127e8b0a77cfd6f54f80d87cad83711f05d2",
+    "1475419896ed3fdd1c0d6145f9ce1311265005550c6981e81372a58dc899b023",
+    "d582783c10977427c65df779850659fa3b7e573ee8c6ad769adb56c58bb81256",
+    "23e6720253f3768d547991a54da30c11d363a1a05396fd9fe2a63e1a5358292d",
+    "58f35dcb267ac514c0452108cddb31525705300520baa5563139c30906cbbfab",
+    "32c22e46de0aaa5e61cc594dd23b31cb15ab8591f2b651efed8f46b16de28a55",
+    "6d928e6caa7d8b3705029d1d0c88f5b96396b95ad5538099119fef5889a5378a",
+    "31e3833ed2f70ed8037cc2f72a66d97fb74eaf38e848bce35486aa58d7035b73",
+    "2d11f8c60b34f720fc1d59b2420240efc55abc03e5b46126a968a5c28888650d",
     "1a4a1190e65c83a8cc399c0164f67da572872976f9c800296aad6be67a9f9c68",
     "fc2d95ee3b4008f8a45d9685821680c08fcc2f55fa7a7ad04f802af37fbbc3fa",
     "56b5f8aa57fb9b1bc1ceec0b356e25f16d9342fa855a7db65ff1bd4ea8205d77",
@@ -1273,6 +1293,12 @@
     "f6a4c426d582a0322033b80c175e1df8535104dbee98fe876207df7ef3f42f9b",
     "1eb4af8b4a7c243431f2c8bb25bfb72434bf9766efcc125187a42c6afe0dda80",
     "db9d21be973720b7a357e802c7f5be1d3f150979b086a07faea6416accd47dbd",
+    "90d4c965a3e067c7b7da2ad1af409631fb76375441643730c281067bd3d91384",
+    "1a04986f66013649f46e32918b1d5dbfc2c0af7fa5d57361144798c9b0e4ab4a",
+    "3079c1535c29edc3a2de0fecd6eeeebe2b4b62b3304646b7b04e8dde446747c2",
+    "e39fed3bd6e58ad84a42616d71994927157d21d9dbb1a42fd5973e1a325c9d33",
+    "de0d064b65a6021c3a45031981ae7c3805b7a3ef268ecc8f9121fb7fc1b35a8f",
+    "83234418124adaa7b0c3611e68df54053997b432c89fd539efc3e49bc54a2800",
     "9ef0b2766b7bc92c6b4db8051c7cad096184c52ecd81094e9d2fb359506dc794",
     "cca1e587a0d0b25d17a45098a24baa596f3e3ff30d488a837c804885b734396e",
     "e1dc8a4a4110903184398a21f9d398fd88e4e3c5c4850fb7571ab35317eb9037",
@@ -1337,7 +1363,9 @@
     "eba824dedfe8712a1a51ef5a5e1a16489e13d9236e80b788aaebafef4ce257a0",
     "849520e20efe4a6d00d776e389459b0192ec03152856ac66ce55aabb66861297",
     "699cddf4aa2bf31cb931248caa2309941fc24afb86320aac42d8950e9653c2b5",
-    "e73e295b351efbd016f9934cbf7084f5ebeaa37452a6ef8842e5eab39f572098",
+    "a5c8bd68fb56e5dc97bc96e4eb9f03b8fa487e30d2acf2ea1aa53e775face30f",
+    "e5ae729ba8f8c73ef080c8509c38341a197d399dc7b8fa88d7e8e907f541b007",
+    "7fccc213e8cb5815a90247e89b8cd9a393da3f129027934e362a03699a3c5fc6",
     "37b36f4e0829aa9783018b0104d0b5a028b09c27084678fe215a9867540451b8",
     "9761ac0cd9ca0daad3d1f3ad8d89845d18ad1dff26f34ae1657c57ef9d78e6e9",
     "e852f7b61f50f7f8505c00a29913f3d68e3957d7bc691fe68d278b8e75057bee",
@@ -1358,17 +1386,15 @@
     "79119e3a9c469df61c4b0f2adcdff8c0bd0d39c98bee597dafcbf8288e5dc5c8",
     "7c2013a335dae24529ac644cd6b805f2962cd4e9ffbaaba660edb4ca24b47366",
     "0ec4cee4f85372c953953a84ae7d050f339962921314669403872fda36bcfd21",
-    "9871b06208b344494d347d2565dc5f8349eb34961eeaaed3c83d40c014c0f755",
+    "07be1c87eeca9043dc448edb5f36c94fadd9e074cfb3b3fefaeea90e519f0fef",
     "3929d40c0fcf0d11d354ed89f081743dd47db286256016134dbcd4e52e6df0b0",
     "dc7e85a72dbc4aea193b9c5312f1fc48ce425af70926618598f289fc6bd93656",
-    "8e297cc3e7332cd95bc830f48118426a1128e9d362726bee954b0e929500c557",
-    "59250a3656a633c652aac77706675016f4c91bbdf66cc10f596346bc9f6f2521",
-    "e0b8747bcf9dadb505c6c7959aba7415aa9c70c3dba40ce2a5e86db299dec90e",
-    "102fa125c88d9cff534746c3eb6ba8921fd786066230e98a3b26e136378fad7c",
-    "a4a914ea267d717c5701ae93c42d4327744b348715e9e3f811c212a345d1ebab",
-    "73247fcdec1f378bd1bdfd7f45a50cf519f7af743ed81ac682c2bcb673c59250",
-    "b49e28153c0cfbfefa3e5bccb2ad10ce0d24067e6cbe3a6720dfa2a198ebf27a",
-    "500234621c04c7e5336d391a2eed2f9b1e25227947c220d017efc71536fb45ba",
+    "dbe09dce58e914aea42da7058ca3de30a05b78defee5f6405ae4cb616338757a",
+    "36e04c845a87b8ed2bd28dd6d355d5fa6f2ebe2d1637b8506f6797c73c035a08",
+    "1c0b17d8a54d2cc0ba10ec829e54ae97f39648347145b87388dae183e5fabee9",
+    "b0c89d291e0307a60c2ee80845b4d746bc9ca0183fc5c99ccb5284f657f39706",
+    "0cb53ca1e6cb9a725c5ca4c8b791f620cf01c5d435cc7fb273025750b9111102",
+    "8eb70faa1e491dceba59d3466143a386e35db4e69620f8221c381bf1b1312928",
     "3d1ecd7a7c7b18b5cae4a44bbadd957cf9e7ff44b2913e6cb08eb44e9c304450",
     "9eb4eb64a39e096a7bcc14aeaa18cd2e211ea8da99f5372297246f3bb7b1f882",
     "b9276a0b4aa2508e370102cb767bcd50eecf36f5bbe9a4b5c5d3db001bd276cd",
@@ -1392,8 +1418,7 @@
     "409980cf0272f5301691fbae7796bed4f31cad5285651a609a68ea8253e868fa",
     "4984ad8db846f72be00e8d98057ddf5f4893934bea5aba5dc118203dd3a4e689",
     "a2e2b1ebc71b4e15fce6298f2abaf766aa82f9d9e5463cf2cc7833ff3140ff9e",
-    "c05aa1f8f5be058683fe6985a602126d2bd53ab1b1eff4cafa9e4d380dd2a9ba",
-    "b943bff0a7eb4e841e50316feea8a8f1be410f5b52151428a4b930f26328fc43",
+    "4041135fafe85f66439e93bde1389148c50275dbb749c020a994b9894f610dad",
     "fe8afc635e4ca64a46a40a7ce51524f005b545f3bf4d83794a054c1592d04cdf",
     "57ac140c519810a2de5780435f74211faefebb72d30f5c98e8208c9437accb96",
     "f3310c45464a12dd717bf3e0623dc3b4829b08b59bdf634e09cbe1bf52263196",
@@ -1405,17 +1430,15 @@
     "2f0cddb773e7b90bfd424a0a38fa288dcedf30f5e5e14faf7b1c948ec6b237ca",
     "9dba55fda0ae35481359a3d5bbf938f3d26af0c8b4ef48dcc1e1293ff476c7aa",
     "b745e64a08935073df2b8ddd8e9ae2d8dd0b99c3d27d8c462f138259cab4c34e",
-    "3d42b8ab225ca1635f14b19d1d525d7d48654db4a9827f99d9949bb2092cd58f",
+    "bdc24361dffc27024cb61ac2c5175ab1ef2f9f649d24af0058156f1584358f20",
     "1fa325b3fd4c7e92a9e36a9c6cea8b643c015ac933633b29f0cfcbf776ea46a1",
     "c6ef9e5016a81dbb2721281db1ae608ba615843e6386dc49b9bf9259e0e8bca1",
     "f6e4820044d9bbf682696ff9faf0387a647d96407effb1a681cfc5132e86e0b3",
     "b4f1969f7ca2c440ead8e976550ef699b626947a1b769fe8b419896a102b9799",
     "868faafd1960d933a04d577394292d90fcaddc72a54a33c5298328445d733580",
-    "8a8ec75693cae95cc5e00afbff302f42db2b1f08b97bbdc4f83987efac6ebe64",
     "6d27de6f57e5a9e83c4f3ea20a8525b93d7af19ee0a355f1bb40638f1ffa084b",
     "312ed25075dfc7c7be0395e1915dfe78ae1e9c9eab4d0ddb09d7452f757b48c4",
-    "3181bf28e39578d81a7509ea37d11e3ba10bcfd74d075a32f581f22dbcd3aa55",
-    "6e2d965454c25e3a9f4e1d1515fb93296bce8c3545048de7bb29076d39b7ef94",
+    "80381923394705c6c1f7cc0aba391705dfc43a2b16b45749614e9976f5ad4427",
     "67ce71cbf6514297037b245a6747e9b8ad3ad5111490df4cde3b9b40a2dcd4c5",
     "fd4620f66ddabba38d378b37f35e5bf4819f12bc9b3e3ab069c7d3239e845eb7",
     "7dd2a262da1166d7ea127460fb7483184c70353c273c7f2290ae10558205a205",
@@ -1548,33 +1571,36 @@
     "a0289e56d4ac185409eb07eb8630c3cbfac2740f0e0ad889dcca5a9294d64603",
     "7c3325aeba0c12b399ad70b68a3628f49c74998f9d08478ca7968a3dd8b7aae6",
     "72f8d2abcc9183726cf448905810f62a7633657d7955b0f8464306f26ba69d5d",
-    "bffcd522156e7e4cc6eb606b148e4a4a814649501d51b81becc330844b2256e1",
-    "80cd1e8d44ca351a0cb998d717321edff36d807d2ff73806b7b2314b02a967aa",
+    "ab0b95de3a131a3a7a7ac752be56468929f6391d6fc79f81ee257edcedd1fdd0",
+    "39e9487de7e9547ab4d4947a014f3fc6481771db5d002a62e4464df915361875",
     "c2d4069a5feab7d72fb10a7fe89bed804e4f68bddca19b3ac99528be77dddcad",
     "2814116c270885e5fc2ec08e159b0870c05fe0bd0849cf57566a8290a8091dad",
     "632b18b425671c8efe8678c709a0ec31c5791c596b5d88233a89fe843a01bcfc",
-    "f66b000a5cfa167b573ff3d065391c291b3c96f647043df85cc4204dab18eca7",
-    "e3e24e22a337209cf5ed7b9052f74edacf54fca08ee4f8b59e88853f1c12dd8b",
-    "a38672dd6c9756233046dffbdf8d07901a9d1f7b85670b2994fa07b9e97af7f6",
+    "1e8759dd1733afcd40cada69c2d01fa9472709c8923925357074269a90b1146d",
+    "0765260b517bfb91bac96735c5423eaf6a2c22183cc694c64f498153ddc066c5",
     "2fc63d8d41de5f6c548865407155ce7de255b6e953a94cc57ffbc69a221390ae",
     "f0322e48d9a6111f84b3ce7bb22df5f47a6ee74df6c08d32849aafb1d085ea9f",
     "02a7cde904343295190846577e08f12abf10fd8f9eb44c5c86ec5bde3e1807d1",
     "40b8ffffc070dc984478abdfe624c6f9044fe8c2cef337dabdf3b05562dad28f",
     "347aefda2dd86014990c284c147f9df67c41ae41b0866d65f19ac051eada39cf",
-    "2cb90959064f5dbe7e8a77a669157586e83a658c6745c8922db15488bfd0984a",
-    "a1ee8445124d1814b43513ea12c3bdb5e4ecafe910784597e8b9aebbde2daaa0",
-    "59c78ca0c15269187a5aafb9a2b9b050fce0ce46d31a69a3e42665384d839630",
+    "a38895edd1f50fc9517903909bbf1d6fed2b9dbbc513779ff3277fe8ed778fc7",
+    "21c5617dbcf415c4e824194db89b482bc59dd9c8425ad6281e8e2b0b39a41174",
     "b40e210b04d5531c865476843619a2e9828e2d5bade9437575ded19c5b2c6707",
     "a1b7ffe36df74bc84d6e90464afc8bf7615f2edea14901ed544cea4f35f6d208",
     "94cf96e09669b3d0afe4428737a90556fda73b277898cb28908c8e8e872a0420",
     "a4ec6121795395e84e8e4a2603db78a65b7be100f73a30b02dae10486510bdbf",
-    "27957faef6c0cc706b4041a92a4aad44e993c01e3b037404a50b41f68ccc677d",
-    "a850374100a5f5af176b9864d2f389bc4c97ad2cbd1aca92a1d0c9310fa9adbb",
+    "c3022a6c7b3584a868d9bb4945150d10ef9135e798d968482a17e8314b56f72b",
+    "66d5c00cd7ab039beb69a316ec16e6ad0574eec03e141fbbd92dec8c6c69c591",
+    "4aaaabe2773995fa67e48c3fb707bfa8785439d37b7db4c6d5ae80cefb8cd556",
+    "8402e789aa8268fb078c5cf02460425519dbade2437537f3cee8a915a333b386",
     "8b3a7e1d9fb096a49088bf7ae55fd914f388c269cbae40339037ff6288f27efd",
     "afdade4ff9102aceb0884cb6645cb72448b1aa0b87bf14c7599a3746b32af62f",
     "8e7072ee22fc2cc0159497f597afa05a55cc9b58f8507bb0e372cb08bc360d4e",
     "107dbff4d213207bb4d216f66b26f9ee6077f75155b7a878944aa913b86cf1b5",
     "02b1693e7ca3027ee2a82038c13fb7584bdb2e08839d1a8b9691ddd0171ae509",
+    "01c305760ecf547a7d7bd19af5271e6906ad26f140a5bea61360e6ed036ad1c9",
+    "5bb4ac4433c9621acbbb1a6f52b79e95a75d52b0f5ecf0b823499d8dd1c0b17b",
+    "d6e18bb0e808ad2df8d43c06ecd76f7ab3bfb06464b776947b19d5a1d9c6d54e",
     "8087e24812fe87eb3afca9a05fabc9d59d5ecae4460a4fe7470a846fb53f7b96",
     "a59bfd9eff465f67849521f62ef870e702213ffe76787fa210e8a69923af4da7",
     "c6db1228861c4681a527851a10feef4d304e001bac689efa7049ceef55892690",
@@ -1607,26 +1633,27 @@
     "466ed13cd76b897023cc91058110015e408be34b451baa02c5a2088f7dd68929",
     "6df93b80fd0e764a8f54b625be83abc528646555bbcd9c6e86cf128b52d0d549",
     "196d79f319dbf34ecdc7cdebf40c066dc6717c8a73c002335fb9498a26ca1bd5",
-    "c7daaef42957f8e71f329e5616d9ebc53c4ac7206012de1a651adcc38a8936de",
+    "868b9adad8a3e1fe025c87f4c02dbce2b56b8821e3198f4cf3d2cdb44880590c",
+    "097ec8e7a7d5090bebd3037c4fa9fd61da0eb1e536c7d9315e59c752024ea7b0",
     "407330b3a2312bda32a46a5d697209f1ec06722e2fe606a74d2053f43178612b",
     "04c3b78b9a1965c711444ab0191bcbcd9c470e42d10dc94afee80e9c05f6e993",
     "12220236104b5f1757a8673ce5a19b7e8dc6130ce0773eeb1a4a4e0daa2f69b6"
    ],
    "colliders": [
-    "b1d420152a099a55c539cfad0ace1171cf3d2863aa5470a1e9a0b41896305409",
-    "3ff8f1eee138e7ec6a64d2ea332d12f2ae844c4f25f6578b8ae3a8187428cbb0"
+    "5051772915ee3cb90c89b3364423007e29223e8efc7e2219993f27f08377db50",
+    "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3"
    ],
    "cameraBlockers": [
-    "3ff8f1eee138e7ec6a64d2ea332d12f2ae844c4f25f6578b8ae3a8187428cbb0",
-    "28115fdffccceadc92beea189494bee4d3faec38f3ae777b3c5d81c890380b2f",
-    "aa756629d68477d9b79cc5e82639173f3cf008c13bf3c111f0431f4240b3c2cc"
+    "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3",
+    "e3055c3693daa1e4c1dc69ce0e02dce2d0469b93411cc1931320325cea76b768",
+    "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a"
    ],
    "cameraBlockerIsCollider": [
     true,
     false,
     false
    ],
-   "walls": "a714c93a0a556bf7eee01bef060c9de986e65f219a4130791c2533cd307a5dd1",
+   "walls": "acc618a107603bbfe8023fe654991b684761e38ec7cd45f370063161478d185d",
    "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
@@ -1638,20 +1665,20 @@
      "hash": "78fdc0a7cad1b77e94bdce5ca7caad26afbe860ced3c8069d89a79e0c775c714"
     },
     "[\"MeshBasicMaterial\",\"\",\"8aafb9\",null,null,0.38,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 30,
-     "hash": "569a63936f75be923696382b54e91617a5c07d5dab2b5995d42fca5dcaf54f75"
+     "triangles": 38,
+     "hash": "67e28ea057cc0b64d33b1c408f6405252ffe51937decbe2c79b3bf8732f2d08b"
     },
     "[\"MeshBasicMaterial\",\"\",\"aebcc2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 6496,
-     "hash": "423a4e3ccc9b4556cbdb3f47aa5c92dd8f839d94962a7e04803d1edcc5536a4c"
+     "triangles": 5872,
+     "hash": "7020174a0923c348aa555ad080630e406276fd998acafe61dfe0a5d6f5e7e9d3"
     },
     "[\"MeshBasicMaterial\",\"\",\"aebcc2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 704,
      "hash": "7527c097fee083a58f444005ac6d2cd548a46f228fef8b0d9abeec8e55c05b37"
     },
     "[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 11234,
-     "hash": "91211e73c9975579df24f97b9e532f2d26eb2ddcabdfdc303b611dbc1e809b03"
+     "triangles": 11090,
+     "hash": "f743d1148adf7168c15360fec8d72fa8d8ac16259d3d582ece8516cce2d46f20"
     },
     "[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 696,
@@ -1666,16 +1693,16 @@
      "hash": "b359751ac9384796415a9a6fbdb1a8f336b7809b617828e1ef1a50f0811b7073"
     },
     "[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 2793,
-     "hash": "e5b2a0244ab151624388dc921c118e6bdc19098c734e0ded56010b6ddcb25d02"
+     "triangles": 2800,
+     "hash": "ef09eb0205a54e7cecb189801155311275996572575cef47a869bb5115b11494"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,false,false,false,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 0,
      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 11256,
-     "hash": "68982a5d153edebec65192d9f874c111db861d946c5c2de96d82979615f98a33"
+     "triangles": 11232,
+     "hash": "426cffeba5ed11683c8e86e2f0d3e4fcfc3597b00440111eee40d444aa13c0e4"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 8,
@@ -1687,11 +1714,11 @@
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 360,
-     "hash": "f6c3c2f57c26ee3a7e2a8d84a2529efc3205801320c597fa69dcf8693c098154"
+     "hash": "8c15f6bc90c1b6a518fe93b806930e08326cc1fa1a784b524048982a448b0488"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,2,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 26,
-     "hash": "095faffe0dde256ddf68c7dff4bc2e0cfff418ee7f7aebbbec10bac8ae85b0ec"
+     "hash": "8b3c29c9dcd9bbcc1237cdfb89584223c52c11cd7ef59b0936f489a577f69a16"
     },
     "[\"MeshBasicMaterial\",\"mat.identityFaces\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 20,
@@ -1699,19 +1726,19 @@
     },
     "[\"MeshBasicMaterial\",\"mat.portal\",\"7fd3ff\",null,null,0.16,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 26,
-     "hash": "b6ffdeb098f404177b910e64a66dbfd4f96167d1ca8edeb6c19cb8e8f3a99ed6"
+     "hash": "3d2432a025772eb12970b3ba8ec6d37a695a52b2656f20e0ff25970a8902f131"
     },
     "[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 264,
-     "hash": "2e288950e207ea8d06f85da11676b0b5af403b0cdd2b4c39620e988958e6dc4d"
+     "triangles": 252,
+     "hash": "0a0c73d2f516f4cfaa6c2b660bcad40e9ee504bacbf98fbc15b75573698eba9b"
     },
     "[\"MeshStandardMaterial\",\"\",\"888888\",\"000000\",1,1,false,0,true,0.4,0.8,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 1056,
-     "hash": "f7628af7dfb54cfd6a74835092866784e398405b2c85926c2934685490cf8f69"
+     "triangles": 1008,
+     "hash": "20c86b3d129e94ce66505873a922232e695469e6f7fd4df5c1ea06cbe28151d4"
     },
     "[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 88,
-     "hash": "bfbe84436aa1d7e85e66d30dc2b13733531f4ac60b0f04b06369a3d0cb779639"
+     "triangles": 84,
+     "hash": "6c85aa12539637c51dd3e072d3b69521478ad171716606f9f0c86f307f1cdb64"
     },
     "[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
@@ -1730,40 +1757,40 @@
      "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
     },
     "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 35661,
-     "hash": "9e2780119f93d843c95ec5741f3f475727e17bb970d046024aa42a13ec34a2f2"
+     "triangles": 37980,
+     "hash": "0b82619838580f022fd3f99779db9725aff7c81508ad41454a750021447d276a"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
      "hash": "3988b5240e4b11c0b613658e22ecc8c998b8d62411b2c94f7549eeb7c9c92b95"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 6832,
-     "hash": "4668f5889aeeff78f58329a3d4c6f265b75b611d399c68544c197548efc3d317"
+     "triangles": 6792,
+     "hash": "fce9d850c685c991b01012179decd3935dafda1cb8f98aaf9d8e45064d7b08f7"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 96,
      "hash": "7884048760eb01274be6f7d424e79ab14d2959282b878396e643be002f1d9635"
     },
     "[\"MeshStandardMaterial\",\"mat.escStep\",\"ffffff\",\"000000\",1,1,false,0,true,0.51,0.3,true,true,true,true,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 37968,
-     "hash": "611d5a00342728457892a0f405242c90325988274295e3eeb7d69968dce6ac1c"
+     "triangles": 38520,
+     "hash": "7f12f13cfaaec9b206dd5731d4c055f1a240e83c99d75cd0c45b79336ac93841"
     },
     "[\"MeshStandardMaterial\",\"mat.escTruss\",\"ccccc7\",\"000000\",1,1,false,0,true,0.34,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 252,
-     "hash": "1be955f74ff40a4151be335e5f47c04fd93fa27e6a88a9a0958b6235c1a1bb6c"
+     "triangles": 264,
+     "hash": "744473c95cbae5868c373483c641c94bebbcd7114f829094688f3d5ba0687b56"
     },
     "[\"MeshStandardMaterial\",\"mat.flap\",\"e64060\",\"000000\",1,0.85,true,0,true,0.4,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 252,
-     "hash": "d137a192f4319a5d572496ff27ee8ca407aaf9a57f31b2b7d0b7e21f99062914"
+     "triangles": 264,
+     "hash": "d4c9bb681bc1b0f1da8b1eb30543799c6170f3aa9d1f15560d35e46d75a6964e"
     },
     "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=false#order=0#instanced=false": {
-     "triangles": 37,
-     "hash": "11a884267ee13ad5be9ac66cdc3daf8a54c3d96eeb21751c21fff1665716bf2c"
+     "triangles": 29,
+     "hash": "fbbe953ef2b2679af4d0d6d0468c8e2ba926ec1d8fbdf77444a44027c6e25851"
     },
     "[\"MeshStandardMaterial\",\"mat.floor\",\"ffffff\",\"000000\",1,1,false,0,true,0.72,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 1448,
-     "hash": "87e2b0e32bc02bb05e3a0f493eaf2b09bde0fca13d9a93ef726b10c2dac6cac4"
+     "triangles": 1465,
+     "hash": "ff00000553e86e6dd048997b3886ba9bad63416e822ee7da0dfc4a4667985575"
     },
     "[\"MeshStandardMaterial\",\"mat.floorPaid\",\"ffffff\",\"000000\",1,1,false,0,true,0.68,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
      "triangles": 790,
@@ -1782,16 +1809,16 @@
      "hash": "503b6e367798feb5ddc7f1ae7d81898bc742f12cbd0596c6a69ee45747ffc4da"
     },
     "[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 672,
-     "hash": "d5675447ce2baffe8b58208cc90b60b032bcac6bceea77e832c867e867bd9387"
+     "triangles": 684,
+     "hash": "64a470b965553a7be33c4a2a61240c5478929a82b77d29c5af0994b9783ac532"
     },
     "[\"MeshStandardMaterial\",\"mat.gateTop\",\"303634\",\"000000\",1,1,false,0,true,0.58,0.15,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 96,
      "hash": "c78243cf74512aab885bde303cf9266c42b87472b4b9de42e4c1e2e1575a60d0"
     },
     "[\"MeshStandardMaterial\",\"mat.glass\",\"b4ccd1\",\"000000\",1,0.28,true,2,true,0.32,0.08,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 3942,
-     "hash": "a409ccb421bf2d438d369bf43f3c075cc32f14e16ee073693a5c0c87260dc60a"
+     "triangles": 3996,
+     "hash": "6dc3b21aec57cbdb9be2d38e6c52c008cf426f90a456ba6c211d69d934a53036"
     },
     "[\"MeshStandardMaterial\",\"mat.identityHardware\",\"ffffff\",\"000000\",1,1,false,0,true,0.4,1,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 300,
@@ -1806,8 +1833,8 @@
      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "[\"MeshStandardMaterial\",\"mat.nosing\",\"2a2b2c\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 5974,
-     "hash": "71586f9fd4bcf4c2a740767bc019e0acaa319212687b90afc79419524a680a73"
+     "triangles": 6324,
+     "hash": "6a36b0d69736dd9478cb58f1daf0573339d3cef392e97fe58e1ada2cf1228a57"
     },
     "[\"MeshStandardMaterial\",\"mat.psd\",\"d4d8dc\",\"000000\",1,1,false,0,true,0.3,0.5,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 576,
@@ -1822,28 +1849,28 @@
      "hash": "24375c43cd3ef9e16884b2473cbd7279a8241ac76f9b6c2a3c371de1d53c8956"
     },
     "[\"MeshStandardMaterial\",\"mat.riser\",\"dbdbd6\",\"000000\",1,1,false,0,true,0.3,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 902,
-     "hash": "8a9e2004e5ae159f50920e14757fb69bbbb52ac01a1ad4abdd9aeba0967e6ba0"
+     "triangles": 948,
+     "hash": "e71733c94a24405b63e98bc1409513a527b817fdd8ac9ad21610b37f57137a34"
     },
     "[\"MeshStandardMaterial\",\"mat.rubber\",\"121314\",\"000000\",1,1,false,0,true,0.55,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 13488,
-     "hash": "1e092a3af36360e462c4edd092e57823474df98de72d075334a4494145495d1e"
+     "triangles": 13752,
+     "hash": "b94901f56232f0f8946461186588f579338e787b340e9370345ba89d908ddee4"
     },
     "[\"MeshStandardMaterial\",\"mat.sidewalk\",\"a39e96\",\"000000\",1,1,false,0,true,0.9,0,true,true,true,false,false,false]#visible=false#order=0#instanced=false": {
-     "triangles": 60,
-     "hash": "5c966d49ae5e8eea847c5f5a096dd6b9378134b7f01fe4a17a21119ded4a2b3e"
+     "triangles": 48,
+     "hash": "9b1cbd003549fd1201f98abaac092273b7ccee8164541c251c247a0a3aa9c5bb"
     },
     "[\"MeshStandardMaterial\",\"mat.stair\",\"c7c2b8\",\"000000\",1,1,false,0,true,0.42,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 10998,
-     "hash": "bb732b7c158a0b5eb1484ff594e0c6f7f9629331ca0db6d9abc368ee3e7aef14"
+     "triangles": 11344,
+     "hash": "4ab42ac918b1d1895440912ca27bbc51cffe4d8cc246c3dee0804cb6904b7736"
     },
     "[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 54720,
-     "hash": "97df1e6bb6366f1b91b0e5f1b12ac7e52f6e1f78670847bf4b31368d0ec02aa1"
+     "triangles": 57396,
+     "hash": "312c063c78e04f5135bce5dd71c8a8ef7622dc23cb6a7b2984e62d573f628daa"
     },
     "[\"MeshStandardMaterial\",\"mat.tactile\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
      "triangles": 214,
-     "hash": "7bfc988bef80a5a037b573116f06f22f92008abe1988b328c5e9e27df83c424c"
+     "hash": "09157c1e6dfa9d109843fb5b1e21a47cc86098f6531e12f8053e2b4d94e2c864"
     },
     "[\"MeshStandardMaterial\",\"mat.trackBed\",\"2a2826\",\"000000\",1,1,false,0,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 12504,
@@ -1878,8 +1905,8 @@
      "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 26034,
-     "hash": "a8ecdaf77009288140bb27b004ec23c61a258b093cceea2e85fbf4d773d9e301"
+     "triangles": 27232,
+     "hash": "14b504b62ef303817ec37f746db3f9ca86b302fcb8fa9913b5a3f7a7464a4fa6"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -1887,13 +1914,13 @@
     }
    },
    "semantic": [
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|28794",
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4439",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29628",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4636",
     "sign|No entry||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|12",
     "sign|Restricted area||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|348",
-    "sign|sign-cases||[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]|264",
+    "sign|sign-cases||[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]|252",
     "sign|sign-faces:station:0||[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]|60",
-    "sign|sign-faces:station:1||[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]|28",
+    "sign|sign-faces:station:1||[\"MeshStandardMaterial\",\"\",\"ffffff\",\"ffffff\",0.2,1,false,0,true,0.5,0,true,true,true,true,false,false]|24",
     "sign|||[\"MeshBasicMaterial\",\"mat.identityFaces\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,true,false,false]|20",
     "sign|||[\"MeshStandardMaterial\",\"mat.identityHardware\",\"ffffff\",\"000000\",1,1,false,0,true,0.4,1,true,true,true,false,false,false]|300",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|1",
@@ -1908,6 +1935,17 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|18",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|18",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|197",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|2",
@@ -2271,8 +2309,6 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
-    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
-    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|3",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|30",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|33",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|34",
@@ -2293,9 +2329,9 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4",
-    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|46",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|49",
+    "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|5",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|5",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|5",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|5",
@@ -2329,12 +2365,12 @@
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|8",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|89",
     "walkable|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|9",
-    "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2793",
-    "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11234",
+    "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2800",
+    "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11090",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6832",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|672",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|54720"
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6792",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|684",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|57396"
    ]
   }
  }

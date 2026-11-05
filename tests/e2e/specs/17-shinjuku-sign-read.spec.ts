@@ -40,6 +40,19 @@ function along(wps: Waypoint[], p: Vec3): { s: number; off: number } {
 
 async function guideMode(page: Page) { return hooks.mode(page); }
 
+/**
+ * #838: the HUD stack ends below the overhead-sign band (top 40 % on desktop, 70 % on a phone, so the view
+ * centre stays clear), and on a phone the guide minimap ends above 30 % of the height.
+ */
+async function expectHudClear(page: Page, phone: boolean, at: string): Promise<void> {
+  const view = page.viewportSize()!;
+  const hud = (await page.locator(".hud").boundingBox())!;
+  expect.soft(hud.y, `${at}: HUD clears the overhead-sign band`).toBeGreaterThanOrEqual(view.height * (phone ? 0.7 : 0.4));
+  if (!phone) return;
+  const map = (await page.locator(".minimap").boundingBox())!;
+  expect.soft(map.y + map.height, `${at}: minimap clears the view centre`).toBeLessThanOrEqual(view.height * 0.3);
+}
+
 for (const r of routes) {
   test(`shinjuku signs on ${r.label}: shots at 15/10/6 m @phone`, async ({ page }, testInfo) => {
     test.setTimeout(420_000);
@@ -64,6 +77,19 @@ for (const r of routes) {
     const pending = onRoute.flatMap((t) => STANDOFFS.filter((d) => t.s! - d > 0.5).map((d) => ({ sign: t.id, d, at: t.s! - d })));
     await page.locator(".sheet .card.route button.primary").click();
     await expect.poll(() => guideMode(page)).toBe("guide");
+    // #838: the HUD (guide box, Ride-train button, control bar) keeps clear of the overhead-sign band, and on a
+    // phone ends above the view centre; the compact phone minimap does too. The same holds on the small phone
+    // (393 x 659) the app documents, where the guide stack has less than 150 px to fit in.
+    const view = page.viewportSize()!;
+    const phone = testInfo.project.name.startsWith("phone");
+    await expectHudClear(page, phone, `${view.width}x${view.height}`);
+    if (phone) {
+      await page.setViewportSize({ width: 393, height: 659 });
+      await page.waitForTimeout(500); // Canvas resize and the minimap's own layout settle.
+      await expectHudClear(page, true, "393x659");
+      await page.setViewportSize(view);
+      await page.waitForTimeout(500);
+    }
     const t0 = Date.now();
     while (pending.length && Date.now() - t0 < 360_000 && (await guideMode(page)) === "guide") {
       const av = await hooks.avatar(page);

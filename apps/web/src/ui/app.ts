@@ -167,6 +167,7 @@ export class App {
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
     this.explorer.setMinimap(this.ui.minimap.el);
+    this.explorer.setLegend(this.ui.greyboxLegend);
     // On a phone the open route sheet is a bottom occluder of the same kind (#385).
     this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
@@ -869,6 +870,10 @@ export class App {
     else box.removeAttribute("role");
     applyAria(input, inputAria(state, box.id));
     box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
+    if (state.active >= 0) {
+      const opt = box.querySelectorAll<HTMLElement>('[role="option"]')[state.active];
+      if (opt && typeof opt.scrollIntoView === "function") opt.scrollIntoView({ block: "nearest" });
+    }
     this.syncPanelMascot();
   }
 
@@ -1377,7 +1382,7 @@ export class App {
   private instructionEl: Element | null = null;
   private instructionSize: ResizeObserver | null = null;
 
-  /** Keep `--hud-clear` (the guide instruction's bottom edge + 8 px) current for the toast, which sits below the instruction while one shows; unset otherwise. */
+  /** Keep `--hud-clear` (the gap from the viewport bottom to the guide box's top edge + 8 px) current for the toast, which sits above the box while one shows; unset otherwise. */
   private trackInstruction(): void {
     const cur = this.ui.hud.querySelector(".hud-line");
     if (cur !== this.instructionEl) {
@@ -1386,7 +1391,7 @@ export class App {
       if (cur && typeof ResizeObserver !== "undefined") (this.instructionSize ??= new ResizeObserver(() => this.trackInstruction())).observe(cur);
     }
     const r = cur?.getBoundingClientRect();
-    if (r) this.root.style.setProperty("--hud-clear", `${Math.round(r.bottom) + 8}px`);
+    if (r) this.root.style.setProperty("--hud-clear", `${Math.round(window.innerHeight - r.top) + 8}px`);
     else this.root.style.removeProperty("--hud-clear");
   }
 
@@ -1702,6 +1707,29 @@ export class App {
           ul.append(li);
         }
         d.append(el("h3", undefined, this.t.dataFileDerivations), ul);
+      }
+    }
+    // Provenance is stored verbatim; show its routing restriction in plain language.
+    const textNodes = document.createTreeWalker(d, NodeFilter.SHOW_TEXT);
+    while (textNodes.nextNode()) {
+      const node = textNodes.currentNode;
+      node.textContent = node.textContent!.replace(/\bNOT_FOR_ROUTING\b/g, this.s.lang === "ja" ? "経路案内には不使用" : "not used for directions");
+    }
+    // Separate source records and coverage polygons can have identical visible rows.
+    // Combine their wording while retaining every distinct source link.
+    for (const ul of d.querySelectorAll("ul")) {
+      const seen = new Map<string, Element>();
+      for (const li of [...ul.children]) {
+        const key = li.textContent ?? "";
+        const previous = seen.get(key);
+        if (!previous) { seen.set(key, li); continue; }
+        const hrefs = new Set([...previous.querySelectorAll("a")].map((a) => a.getAttribute("href")));
+        for (const a of li.querySelectorAll("a")) {
+          if (hrefs.has(a.getAttribute("href"))) continue;
+          previous.append(" / ", a.cloneNode(true));
+          hrefs.add(a.getAttribute("href"));
+        }
+        li.remove();
       }
     }
     d.showModal();

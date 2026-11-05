@@ -1,7 +1,7 @@
 /** Surface geometry/collision contracts. Procedural context never adds a walk surface. */
 import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clipping";
 import type { StationBundle } from "@gteki/schema";
-import { pointInRings, type Layout, type XY, type WallSeg } from "./layout.ts";
+import { pointInRings, widthFromClass, type Layout, type XY, type WallSeg } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
 
 /** Within `withSurfaceMemo`, the pure derivations below are computed once per (layout, bundle[, surface]).
@@ -70,6 +70,28 @@ export function surfaceOpenings(layout: Layout, bundle: StationBundle): MultiPol
       const nx = -dy / L * (r.width / 2 + 0.08), ny = dx / L * (r.width / 2 + 0.08);
       const a = { x: r.a.x + dx * lo, y: r.a.y + dy * lo }, b = { x: r.a.x + dx * hi, y: r.a.y + dy * hi };
       holes.push([[[a.x + nx, a.y + ny], [b.x + nx, b.y + ny], [b.x - nx, b.y - ny], [a.x - nx, a.y - ny], [a.x + nx, a.y + ny]]]);
+    }
+    // Flat links between flights are landings, not solid street slabs. Cut the
+    // connecting corridor when the two flights together span street level.
+    const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+    const vertical = bundle.edges.filter((e) => e.mode === "stairs" || e.mode === "escalator");
+    for (const e of bundle.edges.filter((e) => e.mode === "walk")) {
+      const za = layout.nodeZ.get(e.from)!, zb = layout.nodeZ.get(e.to)!;
+      if (Math.abs(za - zb) >= 0.01 || za >= -0.012 || za < -2.6) continue;
+      const first = vertical.filter((v) => v.from === e.from || v.to === e.from);
+      const second = vertical.filter((v) => v.from === e.to || v.to === e.to);
+      if (!first.some((a) => second.some((b) => {
+        const heights = [za, zb, layout.nodeZ.get(a.from)!, layout.nodeZ.get(a.to)!, layout.nodeZ.get(b.from)!, layout.nodeZ.get(b.to)!];
+        return a.id !== b.id && Math.max(...heights) >= -0.012 && Math.min(...heights) < -0.012;
+      }))) continue;
+      const points = e.geometry?.length ? e.geometry : [nodes.get(e.from)!.position, nodes.get(e.to)!.position];
+      const halfWidth = widthFromClass(e.attributes?.width, e.mode) / 2 + 0.08;
+      for (let i = 1; i < points.length; i++) {
+        const a = points[i - 1]!, b = points[i]!, dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
+        if (!length) continue;
+        const nx = -dy / length * halfWidth, ny = dx / length * halfWidth;
+        holes.push([[[a.x + nx, a.y + ny], [b.x + nx, b.y + ny], [b.x - nx, b.y - ny], [a.x - nx, a.y - ny], [a.x + nx, a.y + ny]]]);
+      }
     }
     // CAD elevator shaft polygons where available; otherwise the graph-end shaft
     // uses an explicitly generic 2.2 m opening, never a claim about equipment size.
@@ -249,7 +271,7 @@ export function surfaceEntrances(layout: Layout, bundle: StationBundle): Surface
 }
 
 /**
- * Roof over each stair/escalator run whose E27 link is roofed (屋根の有無 = 2 in the MLIT pedestrian network
+ * Roof over each stair/escalator run and its connecting landing whose E27 link is roofed (屋根の有無 = 2 in the MLIT pedestrian network
  * spec) where the run is open to the street (the surfaceOpenings band) and no entrance canopy covers it.
  * The source states only that the link is roofed, so this is generic glazing at canopy height, not a claim
  * about the real structure.
@@ -263,10 +285,21 @@ export function surfaceRoofs(layout: Layout, bundle: StationBundle, entrances = 
     return Math.abs(dx * e.u.x + dy * e.u.y) <= e.halfLength && Math.abs(-dx * e.u.y + dy * e.u.x) <= e.halfWidth;
   });
   const roofs: SurfaceRoof[] = [];
-  for (const r of layout.runs) {
+  const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+  const runEnds = new Set(bundle.edges.filter((e) => e.mode === "stairs" || e.mode === "escalator").flatMap((e) => [e.from, e.to]));
+  // A source-roofed flat link between flights still needs a roof when its corrected
+  // display height puts the landing inside the street opening (#789).
+  const landings = bundle.edges.filter((e) => e.mode === "walk" && roofed.has(e.id) && runEnds.has(e.from) && runEnds.has(e.to))
+    .map((e) => ({ edgeId: e.id, from: e.from, to: e.to, a: { ...nodes.get(e.from)!.position, z: layout.nodeZ.get(e.from)! },
+      b: { ...nodes.get(e.to)!.position, z: layout.nodeZ.get(e.to)! }, width: widthFromClass(e.attributes?.width, e.mode) }));
+  for (const r of [...layout.runs, ...landings]) {
+    // Bridge two exposed flight roofs; a flight under an entrance canopy already
+    // belongs to that entrance's roof, rather than a second glazing extension.
+    if ("from" in r && ![r.from, r.to].every((id) => bundle.edges.some((e) =>
+      (e.mode === "stairs" || e.mode === "escalator") && (e.from === id || e.to === id) && roofs.some((roof) => roof.edgeId === e.id)))) continue;
     const dz = r.b.z - r.a.z;
-    if (!roofed.has(r.edgeId) || Math.abs(dz) < 0.01 || Math.max(r.a.z, r.b.z) < -2.6 || Math.min(r.a.z, r.b.z) > 0.1) continue;
-    const ts = [-2.6, 0.02].map((z) => (z - r.a.z) / dz).sort((a, b) => a - b);
+    if (!roofed.has(r.edgeId) || Math.max(r.a.z, r.b.z) < -2.6 || Math.min(r.a.z, r.b.z) > 0.1) continue;
+    const ts = Math.abs(dz) < 0.01 ? [0, 1] : [-2.6, 0.02].map((z) => (z - r.a.z) / dz).sort((a, b) => a - b);
     const lo = Math.max(0, ts[0]!), hi = Math.min(1, ts[1]!);
     if (hi <= lo) continue;
     const at = (t: number) => ({ x: r.a.x + (r.b.x - r.a.x) * t, y: r.a.y + (r.b.y - r.a.y) * t });

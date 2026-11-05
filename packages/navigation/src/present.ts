@@ -41,16 +41,31 @@ export function nodeDisplayZ(node: Node, floor: Floor | undefined): { z: number;
 /** Baked guide paths in station ENU; suspectPolyline is the explicit station-list graph exception. */
 export type NavmeshEdgePaths = Readonly<Record<string, { forward?: readonly (readonly number[])[]; reverse?: readonly (readonly number[])[]; suspectPolyline?:true }>>;
 
-/** With baked paths, missing snaps or junction paths fail closed (an empty polyline). */
+/** Use baked paths where available, retaining the previous geometry for missing paths or joins. */
 export function routePolyline(bundle: StationBundle, route: RouteResult, edgePaths?: ReadonlyMap<string, readonly { x: number; y: number; z: number }[]>, navPaths?: NavmeshEdgePaths | null, joins?: Readonly<Record<string, readonly (readonly number[])[]>>): PolylinePoint[] {
   if (navPaths) {
+    const fallback = (stepIndex:number) => {
+      const step = route.steps[stepIndex]!;
+      return routePolyline(bundle, {...route, nodeIds:[step.fromNodeId,step.toNodeId], steps:[step]}, edgePaths)
+        .map(p => ({...p, stepIndex, sceneGap:true as const}));
+    };
     const steps = route.steps.map((step, stepIndex) => {
       const suspect=navPaths[step.edgeId]?.suspectPolyline;
-      if (suspect) return routePolyline(bundle,{...route,nodeIds:[step.fromNodeId,step.toNodeId],steps:[step]}).map(p=>({...p,stepIndex,suspectPolyline:true as const,sceneGap:true as const}));
+      if (suspect) return fallback(stepIndex).map(p=>({...p,suspectPolyline:true as const}));
       const path = navPaths[step.edgeId]?.[step.reversed ? "reverse" : "forward"];
-      return path?.map((p, i) => ({ x:p[0]!, y:p[1]!, z:p[2]!, zKnown:false, stepIndex, floorId:i === path.length - 1 ? step.toFloorId : step.fromFloorId })) ?? null;
+      return path && path.length >= 2 ? path.map((p, i) => ({ x:p[0]!, y:p[1]!, z:p[2]!, zKnown:false, stepIndex, floorId:i === path.length - 1 ? step.toFloorId : step.fromFloorId })) : fallback(stepIndex);
     });
-    const result = assembleSnapPath(steps, (from, to, i) => joins?.[snapJoinKey(route.steps[i-1]!, route.steps[i]!)]?.map(p => ({ ...to, x:p[0]!, y:p[1]!, z:p[2]! })) ?? null);
+    let failedJoin = 0;
+    const assemble = () => assembleSnapPath(steps, (from, to, i) => {
+      failedJoin = i;
+      return joins?.[snapJoinKey(route.steps[i-1]!, route.steps[i]!)]?.map(p => ({ ...to, x:p[0]!, y:p[1]!, z:p[2]! })) ?? null;
+    });
+    let result = assemble();
+    while (!result.points && result.reason === "join_gap") {
+      steps[failedJoin - 1] = fallback(failedJoin - 1);
+      steps[failedJoin] = fallback(failedJoin);
+      result = assemble();
+    }
     if (!result.points) return [];
     if (result.points[0]) result.points[0].stepIndex = -1;
     return result.points;
@@ -633,9 +648,11 @@ function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
 /**
  * The POI's own note in the requested language only (null when it has none): a note is a statement by the
  * station data, and one written in another language is not shown as if it were the requested one.
+ * `at: "origin"` selects the start-side note; without it, destination notes only (a start note never
+ * reads as an arrival, #799).
  */
-function poiNote(poi: Poi, lang: "ja" | "en"): string | null {
-  const note = poi.notes?.find((n) => n.lang === lang);
+function poiNote(poi: Poi, lang: "ja" | "en", at?: "origin"): string | null {
+  const note = poi.notes?.find((n) => n.lang === lang && (at ? n.at === at : n.at !== "origin"));
   return note && note.text.trim() !== "" ? note.text.trim() : null;
 }
 
@@ -735,6 +752,15 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const out: Draft[] = [startConnector
     ? { kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, connector: startConnector, text: t.startAtConnector(startConnector, poiDisplayName(origin!, lang)), label: null }
     : { kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start(), label: null }];
+  // The origin's start-side note opens the route, with the arrival note's separator rule (#799).
+  const startNote = origin && origin.category !== "exit" ? poiNote(origin, lang, "origin") : null;
+  if (startNote) {
+    const base = out[0]!.text;
+    const separator = lang === "ja"
+      ? (base.endsWith("。") ? "" : "。")
+      : (base.endsWith(".") ? " " : ". ");
+    out[0]!.text = `${base}${separator}${startNote}`;
+  }
   let current: Draft | null = null;
   /** Evidenced sense of the last vertical instruction, including "level". */
   let lastSense: "up" | "down" | "level" | null = null;

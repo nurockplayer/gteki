@@ -43,9 +43,9 @@ describe("shinjuku texture memory", () => {
         expect(budget.byCategory.find((c) => c.category === "finish")!.mib).toBeLessThanOrEqual(40);
         expect(budget.totalMib).toBeLessThanOrEqual(112);
       } else {
-        // Measured before #276 on c2f6f0ee; keep every desktop category unchanged.
-        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([113.85, 13.333, 0.667, 0, 8, 0, 57, 0]);
-        expect(Number(budget.totalMib.toFixed(3))).toBe(192.85);
+        // #789 (2026-11-04 JST): remeasured after the display-height repair; desktop texture density is unchanged.
+        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([107.503, 13.333, 0.667, 0, 8, 0, 57, 0]);
+        expect(Number(budget.totalMib.toFixed(3))).toBe(186.503);
       }
       expect(budget.textureCount).toBe(budget.entries.length);
       // Every texture gets exactly one category, and the category counts add up to the total.

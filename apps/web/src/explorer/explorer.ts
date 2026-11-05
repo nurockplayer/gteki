@@ -391,18 +391,27 @@ export class Explorer {
   private panelEl: HTMLElement | null = null;
   /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
   private creditEl: HTMLElement | null = null;
+  /** The greybox disclaimer badge; no POI label is drawn over it (#838). */
+  private legendEl: HTMLElement | null = null;
   /** The route sheet: a full-width bottom sheet on a phone, so the overview keeps clear of it there (#385). */
   private sheetEl: HTMLElement | null = null;
   private minimapEl: HTMLElement | null = null;
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
+  /** A station load is mid-flight: keep the station's full step pose until its connector coverage finishes. */
+  private stepsPaused = false;
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
   private disposed = false;
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
+    // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
+    // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
+    if (this.quality === "low") this.scene.onBeforeRender = (renderer, _scene, camera) => {
+      if (!this.stepsPaused) this.stationScene?.beforeRender?.(renderer, camera);
+    };
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
@@ -961,6 +970,8 @@ export class Explorer {
     }
     this.stationScene = built;
     this.sceneError = sceneError;
+    // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
+    this.stepsPaused = this.stationScene?.beforeRender !== undefined;
 
     // Overview may have been entered while loading (against an empty world): restore first, so the new
     // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
@@ -1097,6 +1108,7 @@ export class Explorer {
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
+    this.stepsPaused = false;
     this.phase = "ready";
     return true;
   }
@@ -1293,6 +1305,15 @@ export class Explorer {
     this.sheetEl = el;
     this.watchOccluders();
     this.refitOverview();
+  }
+
+  /**
+   * Name the greybox disclaimer badge (the app's `.greybox-legend`). The overview declutter drops a POI
+   * label that would land on it or on the credit line (#838). Null: the element is ignored.
+   */
+  setLegend(el: HTMLElement | null): void {
+    this.legendEl = el;
+    this.declutterDirty = true;
   }
 
   /** Name the top-right minimap occluder; hidden maps leave the canvas free. */
@@ -1722,6 +1743,8 @@ export class Explorer {
     if (visible !== this.greyboxLegendVisible) {
       this.greyboxLegendVisible = visible;
       this.events.onGreyboxLegend?.(visible);
+      // A badge that just appeared must push labels off itself on the next overview pass (#838).
+      this.declutterDirty = true;
     }
   }
 
@@ -1964,6 +1987,12 @@ export class Explorer {
     const { w: vw, h: vh } = this.viewSize;
     const items: DeclutterItem[] = [];
     const byId = new Map<string, PoiLabel>();
+    // The credit footer and the disclaimer badge are never text under a label (#838). Blocked chips stay out of
+    // the declutter itself, so the chip they would have beaten still gets its place.
+    const footers = [this.creditEl, this.legendEl]
+      .filter((el): el is HTMLElement => el != null && el.getClientRects().length > 0)
+      .map((el) => el.getBoundingClientRect());
+    const blocked = new Set<string>();
     const p = new THREE.Vector3();
     for (const l of labels) {
       l.decluttered = false;
@@ -1972,13 +2001,13 @@ export class Explorer {
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
       const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
-      // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
       const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
       if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
+      if (footers.some((q) => x - size.w / 2 < q.right && x + size.w / 2 > q.left && y - size.h / 2 < q.bottom && y + size.h / 2 > q.top)) blocked.add(l.poiId);
     }
-    const keep = declutter(items);
+    const keep = declutter(items.filter((it) => !blocked.has(it.id)));
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
     // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
