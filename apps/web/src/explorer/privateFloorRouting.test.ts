@@ -22,7 +22,7 @@ describe("private floor routing exclusions", () => {
     { name: "detour geometry", path: [point(1, 5), point(1, 1), point(9, 1), point(9, 5)], blocked: false },
     { name: "another level above", path: [point(1, 5, 4), point(9, 5, 4)], levels: ["upper", "upper"], blocked: false },
     { name: "sloping path above the hole", path: [point(1, 5), point(9, 5, 4)], levels: ["concourse", "upper"], blocked: false },
-    { name: "flat segment of an edge rising over the height tolerance", path: [point(1, 5), point(9, 5), point(9, 6, 4)], blocked: false },
+    { name: "flat segment of an edge rising over the height tolerance", path: [point(1, 5), point(9, 5), point(9, 6, 4)], blocked: true },
   ])("checks the complete $name", ({ path, blocked, levels }) => {
     const bundle = createSyntheticBundle([syntheticEdge("edge", "start", "a", { geometry: path })]);
     bundle.nodes.find(n => n.id === "start")!.position = path[0]!;
@@ -42,6 +42,19 @@ describe("private floor routing exclusions", () => {
     expect(privateFloorRoutingEdges(bundle, thin)[0]).toMatchObject({ closed: true, attributes: { existing: "retained", privateFloorBlockedReason: "explicit-private-hole" } });
     bundle.nodes.forEach(n => { n.floorId = "other-concourse"; });
     expect(privateFloorRoutingEdges(bundle, thin)[0]).toBe(bundle.edges[0]);
+  });
+
+  it("keeps a ramp open whether or not its rise has an intermediate vertex", () => {
+    const start = point(1, 5, -2), end = point(6, 5, 0), middle = point(5.5, 5, -0.2);
+    const results = [[start, end], [start, middle, end]].map((path) => {
+      const bundle = createSyntheticBundle([syntheticEdge("edge", "start", "a", { geometry: path })]);
+      bundle.nodes.find(n => n.id === "start")!.position = start;
+      bundle.nodes.find(n => n.id === "a")!.position = end;
+      bundle.nodes.find(n => n.id === "start")!.floorId = "lower";
+      bundle.nodes.find(n => n.id === "a")!.floorId = "concourse";
+      return privateFloorRoutingEdges(bundle, regions)[0]!.closed;
+    });
+    expect(results).toEqual([false, false]);
   });
 });
 
