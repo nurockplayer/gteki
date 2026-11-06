@@ -1,9 +1,10 @@
 import { expect, it } from "vitest";
+import * as THREE from "three";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, carDoorCenters, psdOpeningCenters, PLATFORM_DOOR_WIDTH, TRAIN_CARS } from "../scene/build.ts";
 import { withCanvasStub } from "./helpers/scene-digest.ts";
-import type { Plan } from "../scene/layout.ts";
+import { pointInRings, type Plan } from "../scene/layout.ts";
 
 it("puts every platform door opening on a car door, keeping only openings wholly on the platform", () => {
   const stopS = 80, platA = 2, platB = 158;
@@ -33,6 +34,39 @@ it("keeps the platform door collision modules identical to origin/main", () => {
   expect(round(walls.at(-1)!.b)).toEqual([-257.7, -84.2]);
   expect(walls[0]!.zMin).toBe(-42.97);
   expect(walls[0]!.zMax).toBe(-41.519999999999996);
+  built.dispose();
+}, 120_000);
+
+it("keeps platform markings in the existing tactile mesh on the platform floor", () => {
+  const { bundle } = loadShinjukuBundle();
+  const built = withCanvasStub(() => buildStation(bundle, planJson as unknown as Plan, { quality: "low", reuseLayout: true, verifyRestrictedInput: true }));
+  const tactile: THREE.Mesh[] = [];
+  let leaves = 0;
+  built.root.traverse(o => {
+    if (!(o instanceof THREE.Mesh) || Array.isArray(o.material)) return;
+    if (o.material.name === "mat.tactile") tactile.push(o);
+    if (o.material.name === "mat.psdLeaf" && o instanceof THREE.InstancedMesh) leaves += o.count;
+  });
+  expect(tactile).toHaveLength(1); // origin/main has one tactile mesh
+  const geometry = tactile[0]!.geometry;
+  const positions = geometry.getAttribute("position"), uv = geometry.getAttribute("uv");
+  // Existing tactile has 214 triangles (107 quads); new quads precede it in the merge.
+  const newVertices = positions.count - 107 * 4;
+  expect(newVertices).toBeGreaterThan(0);
+  const level = built.layout.levels.find(l => l.walls.some(w => w.kind === "trackside"))!;
+  let doorQuads = 0;
+  const outside: { x: number; y: number; quad: number; door: boolean }[] = [];
+  for (let i = 0; i < newVertices; i += 4) {
+    if (Math.abs(uv.getY(i) - 0.03) < 1e-5) doorQuads++;
+    for (let j = 0; j < 4; j++) {
+      const k = i + j;
+      expect(positions.getY(k)).toBeCloseTo(level.z + 0.006, 4);
+      const p = { x: positions.getX(k), y: -positions.getZ(k) };
+      if (!level.slabs.some(s => pointInRings(p, s.rings))) outside.push({ ...p, quad: i / 4, door: Math.abs(uv.getY(i) - 0.03) < 1e-5 });
+    }
+  }
+  expect(outside).toEqual([]);
+  expect(doorQuads).toBe(leaves / 2);
   built.dispose();
 }, 120_000);
 
