@@ -18,6 +18,8 @@ export interface AvatarRig {
   setLookPitch?(pitch: number): void;
   /** Start the meow overlay; false when it's already playing or this rig has none. */
   meow?(): boolean;
+  /** How far the body still has to turn, radians, positive = counter-clockwise from above; only the cat reacts. */
+  setTurnLead?(radians: number): void;
   setEnvMap(env: THREE.Texture | null, intensity?: number): void;
   /** Screen-door fade of the whole body: 1 opaque, 0 hidden. Sets a uniform only (no program rebuild, no transparency). */
   setFade(opacity: number): void;

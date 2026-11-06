@@ -88,6 +88,11 @@ export function guideOnStairs(s: number, spans: readonly PaceSpan[]): boolean {
   return spans.some((sp) => (sp.mode === "stairs" || sp.mode === "escalator") && s >= sp.fromS && s < sp.toS);
 }
 
+/** True while `s` is on an escalator span: the rider stands still and the steps carry them. */
+export function guideOnEscalator(s: number, spans: readonly PaceSpan[]): boolean {
+  return spans.some((sp) => sp.mode === "escalator" && s >= sp.fromS && s < sp.toS);
+}
+
 /** The guide's speed (m/s) at distance `s`: the tier's, capped by every span containing `s`, never below MIN_GUIDE_MPS. */
 export function guideSpeedAt(s: number, tier: GuideTierId, spans: readonly PaceSpan[]): number {
   let mps = guideTierSpeed(tier);
