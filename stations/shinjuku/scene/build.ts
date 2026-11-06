@@ -21,6 +21,7 @@ import { surfaceSeed } from "./surface-bake.ts";
 
 import { OEDO_MAGENTA } from "./palette.ts";
 import { buildIdentityBoards } from "./identity.ts";
+import type { TimeBand } from "../../ikebukuro/scene/time-band.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -72,7 +73,38 @@ export interface BuildOptions {
   /** false derives the street layer's polygons instead of reading data/surface-baked.json. Default true; the
    * baked table is used only if it was made from exactly this surface, bundle and plan (surface-bake.ts). */
   useBakedSurface?: boolean;
+  /** Decorative train rhythm (#870). Read once at build time; absent = "midday", so tests stay deterministic. */
+  timeBand?: TimeBand;
 }
+
+/** Car pitch along the platform (m). */
+export const CAR_PITCH = 16.6;
+/** Car door pitch (m): three door pairs per car. */
+export const DOOR_PITCH = CAR_PITCH / 3;
+/** Clear width of one platform door opening (m). */
+export const PLATFORM_DOOR_WIDTH = 2.4;
+/** Cars per decorative train. */
+export const TRAIN_CARS = 8;
+
+/** Door centre positions (platform arc length) of a stationary train. */
+export function carDoorCenters(stopS: number, cars: number): number[] {
+  const centers: number[] = [];
+  for (let i = 0; i < cars; i++) {
+    const car = stopS + (i - (cars - 1) / 2) * CAR_PITCH;
+    for (const k of [-1, 0, 1]) centers.push(car + k * DOOR_PITCH);
+  }
+  return centers;
+}
+
+/** Platform door opening centres for that train, keeping only openings wholly on the platform. */
+export function psdOpeningCenters(stopS: number, platA: number, platB: number): number[] {
+  const half = PLATFORM_DOOR_WIDTH / 2;
+  return carDoorCenters(stopS, TRAIN_CARS).filter((c) => c - half >= platA && c + half <= platB);
+}
+
+/** Decorative train headway per time band (s). Historical reference from the 2025-03-17 weekday
+ * timetable; decorative only, never shown to the player. */
+const HEADWAY: Record<TimeBand, number> = { morning: 210, midday: 360, evening: 390 };
 
 // ---------------------------------------------------------------- helpers
 function shapeFromRings(rings: XY[][]): THREE.Shape {
@@ -588,6 +620,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // Recording only reads geometry, so a build without a kit swap is byte-identical.
   const ledger = opts.kit ? new PlaceholderLedger(track) : null;
   const aniso = opts.quality === "high" ? 8 : 4;
+  /** Decorative train headway for this build's band (#870); see HEADWAY. */
+  const headway = HEADWAY[opts.timeBand ?? "midday"];
 
   // ---- materials
   const concourseTiles = tileTextures({ base: "#817c71", grout: "#56534d", n: 4, seed: 11, speckle: 0.13 });
@@ -1299,17 +1333,30 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         add(merged(tunnel), mat.tunnel);
         add(merged(lamps), mat.light);
 
-        // Platform screen doors: 5.6 m modules (fixed panel + bi-parting leaves). Generic simplified design.
+        // Platform screen doors (#870): the openings line up with the train doors, and the fixed panels
+        // and caps fill between them out to the same two ends as before. Generic simplified design.
+        const stopS = (platA + platB) / 2;
+        const module = 5.6;
+        const doorW = PLATFORM_DOOR_WIDTH;
+        const visStart = platA + 0.3;
+        const visEnd = visStart + module * Math.floor((platB + 0.01 - visStart) / module);
+        const openings = psdOpeningCenters(stopS, platA, platB).filter((c) => c - doorW / 2 >= visStart && c + doorW / 2 <= visEnd);
         const panels: THREE.BufferGeometry[] = [];
         const caps: THREE.BufferGeometry[] = [];
         const leaves: { s: number; dir: number }[] = [];
-        const module = 5.6;
-        const doorW = 2.4;
+        const panel = (a: number, b: number) => {
+          panels.push(boxAlong(P(at(a, 0.06), z + 0.65), P(at(b, 0.06), z + 0.65), 0.16, 1.3));
+          caps.push(boxAlong(P(at(a, 0.06), z + 1.31), P(at(b, 0.06), z + 1.31), 0.2, 0.04));
+        };
+        let fillFrom = visStart;
+        for (const c of openings) {
+          if (c - doorW / 2 > fillFrom + 0.01) panel(fillFrom, c - doorW / 2);
+          leaves.push({ s: c - doorW * 0.25, dir: -1 }, { s: c + doorW * 0.25, dir: 1 });
+          fillFrom = c + doorW / 2;
+        }
+        if (visEnd > fillFrom + 0.01) panel(fillFrom, visEnd);
+        // Collision keeps the original 5.6 m modules (#870: unchanged on purpose; see enclosure.test.ts).
         for (let s = platA + 0.3; s + module <= platB + 0.01; s += module) {
-          const p1 = s + module - doorW;
-          panels.push(boxAlong(P(at(s, 0.06), z + 0.65), P(at(p1, 0.06), z + 0.65), 0.16, 1.3));
-          caps.push(boxAlong(P(at(s, 0.06), z + 1.31), P(at(p1, 0.06), z + 1.31), 0.2, 0.04));
-          leaves.push({ s: p1 + doorW * 0.25, dir: -1 }, { s: p1 + doorW * 0.75, dir: 1 });
           propWalls.push({ a: at(s, 0.02), b: at(s + module, 0.02), zMin: z - 0.1, zMax: z + 1.35, side: 1, kind: "wall", bodyMin: z - 0.5 });
         }
         add(merged(panels), mat.psd);
@@ -1320,9 +1367,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         g.add(leafMesh);
 
         // Train: 8 small-profile cars (generic original design; line-colour accent only).
-        const cars = buildTrain(8);
+        const cars = buildTrain(TRAIN_CARS);
         for (const c of cars) g.add(c);
-        platformTracks.push({ at, tangentAt, z, trackOff, stopS: (platA + platB) / 2, dirSign: gi % 2 === 0 ? 1 : -1, cars, leafMesh, leaves, phase: gi * 55, far: EXT + 60 });
+        platformTracks.push({ at, tangentAt, z, trackOff, stopS, dirSign: gi % 2 === 0 ? 1 : -1, cars, leafMesh, leaves, phase: gi * headway / 2, far: EXT + 60 });
       });
   }
 
@@ -1346,7 +1393,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     windowBand.translate(0, 1.75, 0);
     const stripe = track(new THREE.BoxGeometry(w + 0.03, 0.12, carLen - 0.4));
     stripe.translate(0, 1.18, 0);
-    const doorGeo = track(merged([-5.2, 0, 5.2].map((z) => new THREE.BoxGeometry(w + 0.025, 1.85, 1.3).translate(0, 1.18, z)))!);
+    const doorGeo = track(merged([-DOOR_PITCH, 0, DOOR_PITCH].map((z) => new THREE.BoxGeometry(w + 0.025, 1.85, 1.3).translate(0, 1.18, z)))!);
     const skirt = track(new THREE.BoxGeometry(w - 0.1, 0.45, carLen - 0.6));
     skirt.translate(0, 0.2, 0);
     for (let i = 0; i < n; i++) {
@@ -1386,13 +1433,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const zeroS = new THREE.Vector3(0, 0, 0);
   const tmpP = new THREE.Vector3();
   const tmpE = new THREE.Euler();
-  /** Train cycle (s): 0–14 arrive (decelerate), 14–40 dwell (doors 16–37), 40–54 depart, 54–110 empty. */
-  const CYCLE = 110;
+  /** Train cycle (s): 0–14 arrive (decelerate), 14–40 dwell (doors 16–37), 40–54 depart, then empty until
+   * the band's headway. Decorative only (#870). */
   let trainClock = 0;
   let stepTime = 0;
   /** QA: phase of each platform's train cycle (s) and whether a train is in. */
   const trainStatus = () => platformTracks.map((tr) => {
-    const tt = (trainClock + tr.phase) % CYCLE;
+    const tt = (trainClock + tr.phase) % headway;
     return { tt: Math.round(tt), present: trainS(tt, tr) !== null, doorsOpen: tt > 16 && tt < 37 };
   });
   function trainS(tt: number, tr: (typeof platformTracks)[number]) {
@@ -1404,13 +1451,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   function update(_dt: number, t: number) {
     trainClock = t;
     for (const tr of platformTracks) {
-      const tt = (t + tr.phase) % CYCLE;
+      const tt = (t + tr.phase) % headway;
       const s = trainS(tt, tr);
       const n = tr.cars.length;
       tr.cars.forEach((car, i) => {
         car.visible = s !== null;
         if (s === null) return;
-        const sc = s + (i - (n - 1) / 2) * 16.6;
+        const sc = s + (i - (n - 1) / 2) * CAR_PITCH;
         const p = tr.at(sc, tr.trackOff);
         const tg = tr.tangentAt(sc);
         car.position.set(p.x, tr.z - 1.1, -p.y);

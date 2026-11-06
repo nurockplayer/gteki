@@ -28,6 +28,8 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * regenerated, every other field unchanged.
  * #789 (2026-11-04 JST) repairs 13 node display heights and removes eight approximation flags.
  * Regenerated with the existing helper and fare cache: physical buffers follow the repaired levels.
+ * #870 replaces the platform door leaves with openings that line up with the train doors; the
+ * psd/psdLeaf/accent visual triangle sets change, every physical field and propWall stays identical.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
