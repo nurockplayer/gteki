@@ -49,7 +49,7 @@ export function classifyZone(pos: { x: number; y: number; z: number }, outdoors:
  */
 export const ZONE_LOOK: Record<StationZone, { exposure: number; fogFar: number; tint: readonly [number, number, number] }> = {
   outdoor: { exposure: 1, fogFar: 1, tint: [1, 1, 1] },
-  concourse: { exposure: 1, fogFar: 1, tint: [1, 0.97, 0.92] },
-  platform: { exposure: 0.9, fogFar: 0.8, tint: [1, 1, 1] },
-  passage: { exposure: 0.85, fogFar: 0.6, tint: [1, 0.93, 0.82] },
+  concourse: { exposure: 1.1, fogFar: 1, tint: [1, 0.95, 0.86] },
+  platform: { exposure: 0.88, fogFar: 0.75, tint: [0.88, 0.95, 1] },
+  passage: { exposure: 0.7, fogFar: 0.5, tint: [1, 0.9, 0.74] },
 };
