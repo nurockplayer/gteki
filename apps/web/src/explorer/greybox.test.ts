@@ -597,6 +597,23 @@ describe("buildGreybox", () => {
     expect(Math.abs(resolveWalls(2.25, 2.3, 0.2, 0, 1.8, split).x - 2.25)).toBeGreaterThan(0.1);
   });
 
+  it("uses the walls-only normal once for an oblique floor-transition portal", () => {
+    const station = {
+      floors: [{ id: "f", renderElevationM: 0 }, { id: "g", renderElevationM: 4 }],
+      nodes: [{ id: "a", floorId: "f", position: { x: 0, y: 0, z: 0 } }, { id: "c", floorId: "g", position: { x: 10, y: 0, z: 4 } }],
+      edges: [{ id: "transition", from: "a", to: "c", mode: "walk", attributes: { sceneGap: true } }],
+    } as unknown as StationBundle;
+    const normal = new THREE.Vector3(Math.SQRT1_2, 0, -Math.SQRT1_2);
+    const result = buildGreybox(station, () => true, () => false, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => a.x < 5 && b.x >= 5
+        ? { x: 5, y: a.y + (b.y - a.y) * ((5 - a.x) / (b.x - a.x)), z: a.z + (b.z - a.z) * ((5 - a.x) / (b.x - a.x)), ...(wallsOnly ? { wallNormal: normal } : {}) }
+        : null,
+    }, "high");
+    expect(result.stats.portals).toBe(1);
+    expect(result.openings[0]!.width).toBeCloseTo(2 * MODE_WIDTH.walk!);
+  });
+
   it("limits the wall-tangent opening at a 70 degree crossing while fitting the walker", () => {
     const angle = THREE.MathUtils.degToRad(70);
     const normal = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
