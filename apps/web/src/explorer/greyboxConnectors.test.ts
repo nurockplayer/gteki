@@ -619,6 +619,14 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("contains a walker at the raised end of a trimmed flight", () => {
+    const station = stairThrough([[0, 0, 0], [4, 2, 0], [4, 4, 4]]);
+    (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const resolved = resolveWalls(1.97, 2.1, 0.3, 1.97, 1.7, result.wallSegments);
+    expect(resolved.z).toBeLessThan(2.1);
+  });
+
   // #673 r12: an earlier flight's side wall stops at its own landing's square, whatever its height there, so it never stands
   // in the outgoing flight's lane.
   it("keeps the outgoing lane clear on a 3 m wide stair with a shallow bend before its landing", () => {

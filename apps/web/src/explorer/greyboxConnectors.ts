@@ -587,6 +587,18 @@ function liftShafts(edges: readonly Edge[], ends: (edge: Edge) => [{ id: string;
  * The walkable regions of one connector: a strip level per flight (the legs between turning landings, discs at shallow
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
  */
+function flightEnds(points: readonly THREE.Vector3[], i: number, width: number, isTurn: (index: number) => boolean): [THREE.Vector3, THREE.Vector3] {
+  const from = points[i - 1]!, to = points[i]!, a = from.clone(), b = to.clone();
+  const dx = to.x - from.x, dz = to.z - from.z, length = Math.hypot(dx, dz);
+  const start = i > 1 && isTurn(i - 1) ? width / 2 : 0;
+  const end = i < points.length - 1 && isTurn(i) ? width / 2 : 0;
+  if (length - start - end >= 0.5) {
+    a.x += dx / length * start; a.z += dz / length * start;
+    b.x -= dx / length * end; b.z -= dz / length * end;
+  }
+  return [a, b];
+}
+
 function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean, junction: (index: number, level: string, side: "from" | "to") => void, regions: Region[], levels: Map<string, { edge: Edge; landing: boolean }>) {
   // Level legs at either end that lie on station floor are that floor, not part of the stair: they carry no wall, so a
   // walk edge that meets the same node from the side is not cut off. Off the floor they keep their walls, or a walker
@@ -611,7 +623,16 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
   for (let k = 1; k < bounds.length; k++) {
     const lo = bounds[k - 1]!, hi = bounds[k]!, level = `connector:${edge.id}:flight:${k - 1}`;
     levels.set(level, { edge, landing: false });
-    regions.push({ kind: "strip", level, points: points.slice(lo, hi + 1).map((p) => ({ x: p.x, y: p.y, z: p.z })), halfWidth: half });
+    const strip = [points[lo]!];
+    for (let i = lo + 1; i <= hi; i++) {
+      if (edge.mode === "stairs") {
+        const [a, b] = flightEnds(points, i, 2 * (half - FOOTPRINT_PAD_M), isTurn);
+        if (a.distanceTo(points[i - 1]!) > 1e-6) strip.push(a);
+        if (b.distanceTo(points[i]!) > 1e-6) strip.push(b);
+      }
+      strip.push(points[i]!);
+    }
+    regions.push({ kind: "strip", level, points: strip.map((p) => ({ x: p.x, y: p.y, z: p.z })), halfWidth: half });
     for (let i = soft.has(lo) ? lo : lo + 1; i <= (soft.has(hi) ? hi : hi - 1); i++) {
       // Radius half: out at the mitre distance, a disc vertex lands exactly on a strip corner and trips polygon-clipping.
       if (bendAngle(points, i) > 1e-6) regions.push({ kind: "disc", level, x: points[i]!.x, y: points[i]!.y, z: points[i]!.z, radius: half });
@@ -779,16 +800,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     let edgeOmitted = 0;
     for (let i = 1; i < points.length; i++) {
       const from = points[i - 1]!, to = points[i]!;
-      const flightFrom = from.clone(), flightTo = to.clone();
-      if (edge.mode === "stairs") {
-        const dx = to.x - from.x, dz = to.z - from.z, length = Math.hypot(dx, dz);
-        const startTrim = i > 1 && isTurn(i - 1) ? width / 2 : 0;
-        const endTrim = i < points.length - 1 && isTurn(i) ? width / 2 : 0;
-        if (length - startTrim - endTrim >= 0.5) {
-          flightFrom.x += dx / length * startTrim; flightFrom.z += dz / length * startTrim;
-          flightTo.x -= dx / length * endTrim; flightTo.z -= dz / length * endTrim;
-        }
-      }
+      const [flightFrom, flightTo] = edge.mode === "stairs" ? flightEnds(points, i, width, isTurn) : [from, to];
       let flightPath: THREE.Vector3[];
       if (Math.abs(to.y - from.y) > 1e-6) {
         const flight = edge.mode === "stairs" ? buildStairs(flightFrom, flightTo, width, tier) : buildEscalator(from, to, tier);
