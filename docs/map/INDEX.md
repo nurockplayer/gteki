@@ -75,3 +75,5 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - GIS CI: in `tools/gis/`, `pnpm typecheck` and `pnpm test`
 - Dev server: `pnpm dev`. Build: `pnpm build`
 - Regenerate symbols: `pnpm map:gen`
+
+- Station audio: shared gate taps, chime and speech in `stations/ikebukuro/scene/station-sound.ts`; Shinjuku's train-cycle rumble and cues in `stations/shinjuku/gteki/train-sound.ts`, routed through zone acoustics. Updated 2026-11-06 JST.
