@@ -216,6 +216,7 @@ describe("English queries after the verbatim-name audit (#595)", () => {
     expect(ikbIds("Coin lockers").filter((id) => id.startsWith("locker-ikb-tobudept-"))).toEqual(expect.arrayContaining(["locker-ikb-tobudept-001", "locker-ikb-tobudept-007"]));
     expect(ikbIds("Marunouchi")).toContain("metro-m-central-west-gate");
     expect(ikbIds("West Gate")).toContain("metro-m-central-west-gate");
+    expect(ikbIds("Marunouchi Line Central Passage West Gate")).toContain("metro-m-central-west-gate");
   });
 
   it("still finds the separate station by its conventional English form", () => {

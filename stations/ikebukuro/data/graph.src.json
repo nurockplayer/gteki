@@ -4725,6 +4725,10 @@
     {
      "lang": "en",
      "text": "Central Passage"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage West Gate"
     }
    ],
    "floorId": "b1",
@@ -4829,6 +4833,10 @@
     {
      "lang": "en",
      "text": "South Passage"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line South Passage West Gate"
     }
    ],
    "floorId": "b1",
@@ -4926,6 +4934,10 @@
     {
      "lang": "en",
      "text": "Central Passage"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage Central Gate"
     }
    ],
    "floorId": "b1",
@@ -5022,6 +5034,10 @@
     {
      "lang": "en",
      "text": "Central Passage"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage East Gate"
     }
    ],
    "floorId": "b1",
