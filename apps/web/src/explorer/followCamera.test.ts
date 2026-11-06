@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("scales the cat shoulder for portrait aspect", () => {
@@ -605,5 +605,39 @@ describe("QA camera holds", () => {
     expect(fadeHold(null)).toBeNull();
     expect(fadeHold(NaN)).toBeNull();
     expect(fadeHold(Infinity)).toBeNull();
+  });
+});
+
+describe("cat aim under a raised boom", () => {
+  const cat = new THREE.Vector3(3, 10, -4);
+  const ahead = () => new THREE.Vector3(3, 10.42, -6.5);
+
+  it("leaves the aim alone up to the start of the range", () => {
+    for (const raise of [0, CAT_RAISE_AIM.start]) {
+      const target = ahead();
+      aimAtRaisedCat(target, cat, raise);
+      expect(target.equals(ahead())).toBe(true);
+    }
+  });
+
+  it("aims at the cat's body from the end of the range", () => {
+    const target = ahead();
+    aimAtRaisedCat(target, cat, CAT_RAISE_AIM.end);
+    expect(target.distanceTo(new THREE.Vector3(3, 10 + CAT_RAISE_AIM.height, -4))).toBeCloseTo(0);
+  });
+
+  // The spots measured on the default-cat patrol (raise, boom), where the feet projected to NDC y -1.4 to -3.1.
+  it.each([[0.52, 2.4], [0.7, 1.66], [0.87, 1.93], [0.87, 0.95]])("keeps the whole cat in frame at raise %f, boom %f", (raise, boom) => {
+    const pivot = new THREE.Vector3(cat.x, cat.y + 0.42, cat.z);
+    const camera = new THREE.PerspectiveCamera(FOV.follow, 16 / 10, 0.05, 400);
+    camera.position.set(pivot.x, pivot.y + Math.sin(raise) * boom, pivot.z + Math.cos(raise) * boom);
+    const target = ahead();
+    aimAtRaisedCat(target, cat, raise);
+    camera.lookAt(target);
+    camera.updateMatrixWorld(true);
+    for (const y of [0, 0.34]) {
+      const p = new THREE.Vector3(cat.x, cat.y + y, cat.z).project(camera);
+      expect(Math.abs(p.y)).toBeLessThan(1);
+    }
   });
 });
