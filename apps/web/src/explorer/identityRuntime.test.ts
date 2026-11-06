@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { Explorer } from "./explorer.ts";
+import { InteractionController } from "./interaction.ts";
 import { collectIdentityBoards, identityNameCentre, intersectsRect } from "./identityBoards.ts";
 import { OcclusionSweep } from "./labelVisibility.ts";
 import { CameraCut } from "./cameraCut.ts";
@@ -19,6 +20,7 @@ function runtime(boardZ = -10) {
   // Private runtime fields/methods are intentionally accessed only by this stand-in.
   const e = Object.create(Explorer.prototype) as any;
   Object.assign(e, {
+    interactionController: new InteractionController([]), interactionSnapshot: "",
     scene, stationScene: { root }, identityBoards: collectIdentityBoards(root), identityPlaced: false,
     greybox: null, greyboxOpenings: [], greyboxSegments: [], greyboxLegendVisible: false, sceneGroundTargets: [],
     pos: new THREE.Vector3(), lastAvatarPos: new THREE.Vector3(), yaw: 0, pitch: -0.12, bodyYaw: 0,

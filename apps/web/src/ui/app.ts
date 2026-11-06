@@ -34,6 +34,7 @@ import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 import { Minimap } from "./minimap.ts";
 import { PanelFold } from "./panelFold.ts";
+import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 
@@ -142,8 +143,11 @@ export class App {
   private panelExpanded = false;
   /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
   private compositionEndMs = -Infinity;
+  private readonly interactionPrompt = new InteractionPrompt(() => this.t, () => this.explorer.interact(), (text) => this.ui.live.announce(text));
 
-  constructor(private readonly root: HTMLElement) {}
+  constructor(private readonly root: HTMLElement) {
+    this.panelFold = new PanelFold(root, this.ui.panel, this.ui.panelEntry, () => Boolean(this.explorer?.sceneError));
+  }
 
   dispose(): void {
     this.ui.minimap.dispose();
@@ -159,6 +163,7 @@ export class App {
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
       onWalkStart: () => this.panelFold.fold(true),
+      onInteraction: (state) => this.interactionPrompt.render(state),
       onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
       onGuideProgress: (p) => this.onGuideProgress(p),
       onGuideStop: (index) => this.onGuideStop(index),
@@ -211,6 +216,7 @@ export class App {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
       this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
+      this.interactionPrompt.refresh();
       this.refreshAll();
     });
     this.ui.coverageBtn.addEventListener("click", () => this.openCoverage());
@@ -275,7 +281,6 @@ export class App {
 
     this.ui.hint.setAttribute("role", "note");
     this.ui.greyboxLegend.hidden = true;
-    this.panelFold = new PanelFold(this.root, panel, this.ui.panelEntry, () => Boolean(this.explorer?.sceneError));
     this.root.append(viewport, top, panel, this.ui.panelEntry, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit, this.ui.greyboxLegend);
     this.layoutText();
   }
@@ -1259,7 +1264,7 @@ export class App {
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
     if (mode === "overview") this.panelFold.open();
-    else if (mode === "guide" || (mode === "walk" && matchMedia("(max-width: 720px)").matches)) this.panelFold.fold();
+    else if (mode === "guide" || (mode === "walk" && typeof matchMedia === "function" && matchMedia("(max-width: 720px)").matches)) this.panelFold.fold();
     this.renderIdentity(mode);
     this.renderSpawnChips(this.s.loaded?.bundle);
     this.renderHud();
@@ -1287,6 +1292,7 @@ export class App {
     };
     this.releaseMascot(hud);
     hud.innerHTML = "";
+    hud.append(this.interactionPrompt.el);
     const mode = this.explorer.currentMode;
     this.announceInstruction();
     if (mode === "overview") {
@@ -1532,6 +1538,11 @@ export class App {
         this.panelFold.open(true);
         return;
       }
+      if (e.code === "KeyE" && !e.repeat && !e.isComposing && this.explorer.currentMode === "walk" &&
+          shouldHandleGuideKey("next", e.target as HTMLElement | null, this.ui.coverage.open, this.railRide !== null)) {
+        e.preventDefault();
+        this.explorer.interact();
+      }
       const action = guideKeyActionGuarded(e, this.compositionEndMs, performance.now());
       if (this.explorer.currentMode !== "guide" || !shouldHandleGuideKey(
         action,
@@ -1774,6 +1785,8 @@ export class App {
       route: () => this.s.route,
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
+      interaction: () => this.explorer.interaction,
+      interactables: () => this.explorer.interactableInfo(),
       startGuide: () => this.startGuide(),
       guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier), instruction: this.s.activeInstruction, distanceM: this.guideS, arrived: this.arrived }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),

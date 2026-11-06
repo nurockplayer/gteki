@@ -191,6 +191,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
 /* ---- HUD ---- */
 .hud { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra)); display: grid; justify-items: center; gap: 8px; pointer-events: none; }
 .hud > * { pointer-events: auto; }
+.interaction-prompt { display: grid; justify-items: center; gap: 3px; padding: 5px 8px; border-radius: 10px; background: var(--glass-strong); font-size: 12px; }
+.interaction-prompt[hidden] { display: none; }
+.interaction-prompt button { min-height: 44px; }
 /* The guide line box holds the mascot beside the instruction (never on top of it); the instruction keeps priority and the mascot figure shrinks first.
    It sits in the bottom HUD stack, above the controls, so overhead signs in the upper view band stay clear (#838). */
 .hud-line { width: fit-content; max-width: min(560px, calc(100vw - 32px)); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
@@ -314,7 +317,6 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .results { position: static; grid-column: 1 / -1; margin-left: 60px; }
   .sheet { left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + var(--credit-extra)); width: auto; border-radius: var(--radius) var(--radius) 0 0; max-height: 38vh; }
   .app:not(.has-credit) .sheet { bottom: 0; padding-bottom: env(safe-area-inset-bottom); }
-
   .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { right: 16px; left: 16px; bottom: calc(10px + env(safe-area-inset-bottom) + var(--credit-extra)); justify-items: stretch; gap: 3px; }
   .hud-row { flex-wrap: wrap; justify-content: center; }
   /* 375 px: the group gets the row's full width (343 - 12 padding) and its five buttons fit on one line; smaller screens squeeze the text buttons rather than wrap. */

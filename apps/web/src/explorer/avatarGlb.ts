@@ -120,8 +120,9 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
       object.material = Array.isArray(object.material) ? object.material.map(clone) : clone(object.material);
     });
     mixer = new THREE.AnimationMixer(gltf.scene);
+    let hold: "sit" | null = null;
     const animate = opts.cat
-      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene))
+      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold)
       : clipCrossfade(mixer, gltf.animations);
     return {
       root,
@@ -131,6 +132,7 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
         animate(speedMps, step);
         mixer!.update(step);
       },
+      setHold(pose) { hold = pose; },
       setFade(opacity) { fade.value = sanitizeAvatarFade(opacity); },
       setEnvMap(env, intensity = 0.6) {
         for (const material of clones.values()) {
@@ -200,6 +202,7 @@ export function catClips(
   mixer: THREE.AnimationMixer,
   clips: THREE.AnimationClip[],
   calib: CatCalibration | undefined,
+  hold: () => "sit" | null = () => null,
 ): (speed: number, dt: number) => void {
   const action = (name: string): THREE.AnimationAction | undefined => {
     const clip = clips.find((candidate) => candidate.name.toLowerCase() === name);
@@ -211,7 +214,9 @@ export function catClips(
   let restSeconds = 0;
   return (speed, dt) => {
     let next: THREE.AnimationAction | undefined;
-    if (!(speed > 0.05)) {
+    if (hold() === "sit") {
+      next = sit ?? idle;
+    } else if (!(speed > 0.05)) {
       restSeconds += Number.isFinite(dt) ? Math.max(0, dt) : 0;
       next = restSeconds >= 4 ? sit ?? idle : idle;
     } else {
