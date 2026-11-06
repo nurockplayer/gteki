@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { measureLoadBudget } from "../lib/loadBudget.ts";
-import { hooks, imageStats, textIf, toasts, labelUiOverlaps, openStation, save, shotPath, STATIONS, watch } from "../lib/gteki.ts";
+import { hooks, imageStats, textIf, toasts, labelUiOverlaps, openStation, save, settleFrames, shotPath, STATIONS, watch } from "../lib/gteki.ts";
 
 /** CI's e2e-smoke sets this (.github/workflows/e2e-smoke.yml): under SwiftShader the spec checks flow only and skips screenshots that time out (#76, #118). */
 const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
@@ -29,6 +29,7 @@ for (const key of STATIONS) {
       const failedRequestCount = diag.failedRequests.length;
       await page.reload();
       await page.waitForFunction(() => (window as any).__gteki?.phase?.() === "ready", null, { timeout: 120_000, polling: 250 });
+      await settleFrames(page, `reopen ${key}`);
       const addedFailures = diag.failedRequests.slice(failedRequestCount);
       diag.failedRequests.splice(failedRequestCount, diag.failedRequests.length - failedRequestCount, ...addedFailures.filter((entry) => !entry.startsWith("net::ERR_ABORTED")));
       info = await hooks.sceneInfo(page);
