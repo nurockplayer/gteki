@@ -450,6 +450,13 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
 }
 
 /** Unit plan direction from `a` to `b`. */
+/** Plan length of the leading segments that stay within a step of the path's start: past it, a walk at that height no longer meets the path. */
+function levelRun(points: readonly THREE.Vector3[]): number {
+  let run = 0;
+  for (let i = 1; i < points.length && Math.abs(points[i]!.y - points[0]!.y) <= WALKER_BODY.stepUpM; i++) run += Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.z - points[i - 1]!.z);
+  return run;
+}
+
 function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
   const d = b.clone().sub(a); d.y = 0;
   return d.lengthSq() > 1e-12 ? d.normalize() : new THREE.Vector3(1, 0, 0);
@@ -828,6 +835,25 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, otherPath);
       for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
     } catch { legacyEdgeIds.add(j.edgeId); legacyEdgeIds.add(m.edgeId); }
+  }
+  // A plain walk edge can also approach a connector from its side. Open only its actual footprint
+  // near the shared node, and only where its walking height meets the flight.
+  for (const j of junctions) for (const edge of bundle.edges) {
+    if (edge.mode !== "walk" || !traversable(edge) || (edge.from !== j.node && edge.to !== j.node)) continue;
+    const points = edgePoints(bundle, edge, nodes, floors);
+    if (edge.to === j.node) points.reverse();
+    if (points.length < 2) continue;
+    const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
+    const half = (rawWidth && rawWidth > 0 ? rawWidth : 2) / 2;
+    const own = mouths.get(j.node)?.find((mouth) => mouth.edgeId === j.edgeId);
+    if (!own) continue;
+    const ownPath = junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level));
+    const walk: Region = { kind: "strip", level: j.level, points, halfWidth: half };
+    const polygons = regionPolygon(walk).map((polygon) => polygon.map((ring) => ring.map((p): [number, number] => [p.x, p.z])));
+    const reach = 2 * Math.max(j.half, half), walkDir = planDir(points[0]!, points[1]!), sin = Math.abs(j.dir.x * walkDir.z - j.dir.z * walkDir.x);
+    const level = levelRun(own.points), along = level > reach && j.dir.x * walkDir.x + j.dir.z * walkDir.z > 0 ? Math.min(Math.max(reach, reach / Math.max(sin, 0.1)), Math.hypot(level, reach)) : reach;
+    const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, points);
+    for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
   }
   const edgeById = new Map(bundle.edges.map((edge) => [edge.id, edge]));
   // Guard caps follow the drawn walking surface too, including generated treads and mid-flight landings.

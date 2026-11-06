@@ -33,6 +33,7 @@ import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 import { Minimap } from "./minimap.ts";
+import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 
@@ -139,6 +140,7 @@ export class App {
   private panelExpanded = false;
   /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
   private compositionEndMs = -Infinity;
+  private readonly interactionPrompt = new InteractionPrompt(() => this.t, () => this.explorer.interact(), (text) => this.ui.live.announce(text));
 
   constructor(private readonly root: HTMLElement) {}
 
@@ -155,6 +157,7 @@ export class App {
     const params = new URLSearchParams(location.search);
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
+      onInteraction: (state) => this.interactionPrompt.render(state),
       onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
       onGuideProgress: (p) => this.onGuideProgress(p),
       onGuideStop: (index) => this.onGuideStop(index),
@@ -207,6 +210,7 @@ export class App {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
       this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
+      this.interactionPrompt.refresh();
       this.refreshAll();
     });
     this.ui.coverageBtn.addEventListener("click", () => this.openCoverage());
@@ -1278,6 +1282,7 @@ export class App {
     };
     this.releaseMascot(hud);
     hud.innerHTML = "";
+    hud.append(this.interactionPrompt.el);
     const mode = this.explorer.currentMode;
     this.announceInstruction();
     if (mode === "overview") {
@@ -1518,6 +1523,11 @@ export class App {
     // non-input target. Track the end of composition document-wide so no guide shortcut fires from it.
     document.addEventListener("compositionend", () => { this.compositionEndMs = performance.now(); }, true);
     window.addEventListener("keydown", (e) => {
+      if (e.code === "KeyE" && !e.repeat && !e.isComposing && this.explorer.currentMode === "walk" &&
+          shouldHandleGuideKey("next", e.target as HTMLElement | null, this.ui.coverage.open, this.railRide !== null)) {
+        e.preventDefault();
+        this.explorer.interact();
+      }
       const action = guideKeyActionGuarded(e, this.compositionEndMs, performance.now());
       if (this.explorer.currentMode !== "guide" || !shouldHandleGuideKey(
         action,
@@ -1759,6 +1769,8 @@ export class App {
       route: () => this.s.route,
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
+      interaction: () => this.explorer.interaction,
+      interactables: () => this.explorer.interactableInfo(),
       startGuide: () => this.startGuide(),
       guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier), instruction: this.s.activeInstruction, distanceM: this.guideS, arrived: this.arrived }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),

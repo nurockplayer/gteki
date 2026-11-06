@@ -162,6 +162,10 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
     if (v.facing) await face(page, v.facing.from, v.facing.to);
     await hooks.simulate(page, 1.0, []);
     const camera = await hooks.sceneInfo(page).then((s: any) => ({ position: s.camera, direction: s.cameraDirection, fov: s.fov, aspect: s.aspect, mode: s.mode }));
+    Object.assign(camera, await page.evaluate(() => {
+      const { yaw, pitch, boomActual, boomWanted, raise, avatarFade } = (window as any).__gteki.camera();
+      return { yaw, pitch, boomActual, boomWanted, raise, avatarFade };
+    }));
     for (let i = 0; i < FRAMES; i++) {
       if (i) await hooks.simulate(page, FRAME_S, v.keys);
       const file = shotPath(testInfo, `rec-${key}-${v.id}-${String(i).padStart(2, "0")}.png`);

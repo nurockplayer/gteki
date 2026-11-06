@@ -10,6 +10,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { OEDO_MAGENTA, STREET_UNDERSIDE, buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { kitSwapRequested, prepareKitSwap, type KitSwap } from "../scene/kit/index.ts";
+import { currentTimeBand } from "../../ikebukuro/scene/time-band.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
 import { clearLayoutCache } from "../scene/build-cache.ts";
@@ -140,7 +141,10 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
 export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit): StationScene => {
   const T = ctx.THREE;
   const sceneBundle = planBundle(ctx.bundle);
-  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(kit ? { kit } : {}) });
+  // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
+  // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
+  const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
