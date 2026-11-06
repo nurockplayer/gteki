@@ -59,6 +59,8 @@ export interface IdentityBoardTag {
   regions?: { kind: "name" | "arrow"; min: [number, number, number]; max: [number, number, number] }[];
 }
 
+export type AcousticZone = "outdoor" | "platform" | "concourse" | "passage";
+
 /** A session-only interaction in the fictional presentation layer. */
 export interface InteractableSpec {
   id: string;
@@ -105,6 +107,8 @@ export interface StationScene {
      */
     envIntensity?: number;
   };
+  /** Host calls this when the walker's zone changes. */
+  setAcousticZone?(zone: AcousticZone): void;
   /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
   /**
@@ -112,6 +116,8 @@ export interface StationScene {
    * Present only for stations that pack a dynamic batch per view (Shinjuku's low-tier escalator steps).
    */
   beforeRender?(renderer: THREE.WebGLRenderer | null, camera: THREE.Camera): void;
+  /** Fades scene-owned people out near the camera: fully gone inside startM, untouched beyond endM. 0, 0 turns it off. */
+  setCameraNearFade?(startM: number, endM: number): void;
   /**
    * Resolves once presentation content the scene loads in the background (after the first frame) is in place.
    * Renderers need not wait for it; hosts that export a snapshot instead of rendering await it first. Never rejects.

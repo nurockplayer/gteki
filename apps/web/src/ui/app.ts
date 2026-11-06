@@ -177,6 +177,9 @@ export class App {
     this.explorer.setPanel(this.ui.panel);
     this.explorer.setMinimap(this.ui.minimap.el);
     this.explorer.setLegend(this.ui.greyboxLegend);
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(() => this.root.style.setProperty("--hud-height", `${this.ui.hud.offsetHeight}px`)).observe(this.ui.hud);
+    }
     // On a phone the open route sheet is a bottom occluder of the same kind (#385).
     this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());

@@ -27,6 +27,16 @@ test('folds, expands and refolds on walking, unless focus is inside', () => {
   fold.fold(true);
   expect(root.dataset.panel).toBe('folded');
 });
+test('Escape yields to an open suggestion list and to an IME composition', () => {
+  input.focus();
+  input.addEventListener('keydown', (e) => e.preventDefault(), { once: true });
+  input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+  expect(root.dataset.panel).toBe('open');
+  input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true, isComposing: true }));
+  expect(root.dataset.panel).toBe('open');
+  input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+  expect(root.dataset.panel).toBe('folded');
+});
 test('Escape returns focus to the entry and scene errors prevent folding', () => {
   input.focus();
   input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));

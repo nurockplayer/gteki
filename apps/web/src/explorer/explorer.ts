@@ -34,7 +34,7 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -44,7 +44,7 @@ import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
-import { avatarMotion } from "./avatarMotion.ts";
+import { avatarMotion, stepCatBodyPitch } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
@@ -312,6 +312,7 @@ export class Explorer {
   private avatarMarker: [THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>, THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>] | null = null;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
+  private catBodyPitch = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
   /** Core hemisphere + sun; hidden when a scene declares `environment.lighting: "scene"`. */
   private readonly coreLights: THREE.Light[] = [];
@@ -328,6 +329,7 @@ export class Explorer {
   /** Zone lighting (#861): the loaded station's anchors, and the values eased from ZONE_LOOK. */
   private zoneAnchors: readonly ZoneAnchor[] = [];
   private zone: StationZone = "passage";
+  private zoneHeard: StationZone | null = null;
   private readonly zoneAt = new THREE.Vector3(Infinity, 0, 0);
   /** The station's own fog object, mutated in place; its authored colour and near/far are kept for restores. */
   private zoneFog: THREE.Fog | null = null;
@@ -813,6 +815,7 @@ export class Explorer {
    * presets multiply, and the platform/ticket-gate anchors to classify against.
    */
   private attachZone(bundle: StationBundle): void {
+    this.zoneHeard = null;
     this.zoneAnchors = zoneAnchors(bundle.nodes, bundle.floors);
     this.zoneFog = this.scene.fog instanceof THREE.Fog ? this.scene.fog : null;
     if (!this.zoneFog) return;
@@ -853,6 +856,10 @@ export class Explorer {
     if (snap || this.zoneAt.distanceToSquared(this.pos) >= ZONE_RECHECK_M2) {
       this.zoneAt.copy(this.pos);
       this.zone = classifyZone(this.pos, this.streetProbe.outdoors, this.zoneAnchors);
+      if (this.zone !== this.zoneHeard) {
+        this.zoneHeard = this.zone;
+        this.stationScene?.setAcousticZone?.(this.zone);
+      }
     }
     const look = ZONE_LOOK[this.zone];
     const tinted = this.zone !== "outdoor";
@@ -1002,9 +1009,11 @@ export class Explorer {
   }
 
   private fallBackToHumanAvatar(): void {
+    this.catBodyPitch = 0;
     this.catAvatar = false;
     this.camDistance = FOLLOW.defaultDistance;
     this.pitch = -0.12;
+    this.stationScene?.setCameraNearFade?.(0, 0);
     this.buildAvatarMarker();
   }
 
@@ -1110,6 +1119,7 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
+    if (this.catAvatar) built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
     this.interactionController = new InteractionController(built?.interactables ?? []);
     this.interactionSnapshot = "";
     this.interactionVisual = undefined;
@@ -2566,9 +2576,14 @@ export class Explorer {
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
+    if (this.catAvatar) this.avatarRig?.setLookPitch?.(this.mode === "overview" ? 0 : this.pitch);
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
+    if (this.catAvatar && this.avatarRig) {
+      this.catBodyPitch = stepCatBodyPitch(this.catBodyPitch, this.slope.velocity, this.mode === "overview" ? 0 : motion.speed, dt);
+      this.avatarRig.root.rotation.x = this.catBodyPitch;
+    }
     const state = this.interactionController.state;
     if (state.phase === "active") {
       const target = this.interactionVisual;

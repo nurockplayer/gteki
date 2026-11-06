@@ -196,6 +196,48 @@ describe("loadGlbAvatar", () => {
 });
 
 describe("cat avatar", () => {
+  it("lifts the head without accumulating and ignores downward pitch", async () => {
+    const asset = catAvatarFixture();
+    const neck = new THREE.Bone();
+    neck.name = "neck";
+    neck.rotation.z = 0.4;
+    const head = new THREE.Bone();
+    head.name = "head";
+    head.rotation.y = 0.3;
+    const point = new THREE.Object3D();
+    point.position.z = -10;
+    asset.scene.add(neck);
+    neck.add(head);
+    head.add(point);
+    const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => asset }, cat: true });
+    rig.root.rotation.y = 0.7;
+    const height = () => point.getWorldPosition(new THREE.Vector3()).y;
+    rig.update(0.1, 0);
+    const level = height();
+    rig.setLookPitch!(0.5);
+    for (let i = 0; i < 300; i++) rig.update(0.016, 0);
+    expect(height()).toBeGreaterThan(level);
+    const pose = head.quaternion.clone();
+    for (let i = 0; i < 300; i++) rig.update(0.016, 0);
+    expect(head.quaternion.angleTo(pose)).toBeLessThan(0.00001);
+    rig.setLookPitch!(-0.4);
+    for (let i = 0; i < 300; i++) rig.update(0.016, 0);
+    expect(height()).toBeCloseTo(level);
+    rig.dispose();
+  });
+
+  it("accepts missing bones and leaves human rigs without a look control", async () => {
+    const cat = catAvatarFixture();
+    const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => cat }, cat: true });
+    rig.setLookPitch!(0.5);
+    expect(() => rig.update(0.1, 0)).not.toThrow();
+    rig.dispose();
+    const human = catAvatarFixture();
+    const humanRig = await loadGlbAvatar("/human.glb", { quality: "low", loader: { loadAsync: async () => human } });
+    expect(humanRig.setLookPitch).toBeUndefined();
+    humanRig.dispose();
+  });
+
   it("scales to the cat body height, flags its materials and draws above the route band", async () => {
     const asset = catAvatarFixture();
     const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => asset }, heightM: 0.345, cat: true });

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { clickTiming } from "../lib/clickTiming.ts";
 import { chooseBySearch, hooks, textIf, toasts, imageStats, labelUiOverlaps, openStation, perfWindow, save, shotPath, stationData, STATIONS, type StationKey } from "../lib/gteki.ts";
 
 /** The HUD's "fast" guide tier (m/s), `GUIDE_TIERS` in apps/web/src/explorer/guidePace.ts. */
@@ -42,7 +43,7 @@ for (const key of STATIONS) {
       await chooseBySearch(page, "to", w.to[0], w.to[1]);
       const route = await hooks.route(page);
       expect(route?.ok, "route exists").toBe(true);
-      await page.locator(".sheet .card.route button.primary").click();
+      await clickTiming(page, () => page.locator(".sheet .card.route button.primary").click());
       await expect.poll(() => hooks.mode(page)).toBe("guide");
 
       // The fast tier (top speed FAST_MPS, close to the old ×4 at 1.6 m/s) keeps recordings reviewable; other tiers narrate the same instructions.
