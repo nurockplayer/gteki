@@ -3,7 +3,6 @@ import * as T from '../../packages/godot/node_modules/three/build/three.module.j
 import { loadScene } from '../../packages/godot/src/route-clip-audit.ts';
 import { navmeshBundle } from '../../packages/godot/src/navmesh-input.ts';
 import { createRouter, DEFAULT_PROFILE, routeBetween } from '../../packages/navigation/src/index.ts';
-import { routeWaypoints } from '../../tests/e2e/lib/gteki.ts';
 import { castAll, explorerTargets } from '../../apps/web/src/explorer/raycast.ts';
 import { prepareRayTrees } from '../../apps/web/src/explorer/meshBvh.ts';
 import { greyboxSceneProbes } from '../../apps/web/src/explorer/greyboxScene.ts';
@@ -14,7 +13,6 @@ import { cutPortals } from '../../apps/web/src/explorer/portalCut.ts';
 import { buildLiveScene } from '../../apps/web/src/explorer/liveScene.ts';
 
 if (process.env.GTEKI_PRIVATE_DIR) throw new Error('Public data only');
-process.env.GTEKI_ROOT = process.cwd();
 const stamp = () => new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Tokyo' }) + ' JST';
 const { bundle } = await navmeshBundle('shinjuku');
 const scene = await loadScene('shinjuku', bundle, 'high');
@@ -23,7 +21,21 @@ const from = bundle.pois.find(p => p.id === 'poi:exit:1')!;
 const to = bundle.pois.find(p => p.id === 'poi:platform:oedo')!;
 const route = routeBetween(router, { kind: 'poi', poi: from }, to, DEFAULT_PROFILE);
 if (!route.ok) throw new Error(JSON.stringify(route));
-const wps = routeWaypoints('shinjuku', route.steps).map(w => w.p);
+// Mirror spec 17's routeWaypoints without importing its Playwright harness.
+const nodes = new Map(bundle.graph.nodes.map(n => [n.id, n]));
+const edges = new Map(bundle.graph.edges.map(e => [e.id, e]));
+const floors = new Map(bundle.station.floors.map(f => [f.id, f]));
+const dz = (n: any) => n.position.z ?? n.renderZ ?? floors.get(n.floorId)?.renderElevationM ?? 0;
+const first = nodes.get(route.steps[0]!.fromNodeId)!;
+const wps = [{x:first.position.x,y:first.position.y,z:dz(first)}];
+for (const step of route.steps) {
+ const from = nodes.get(step.fromNodeId)!, to = nodes.get(step.toNodeId)!, edge = edges.get(step.edgeId)!;
+ const raw = edge.geometry && edge.geometry.length >= 2 ? [...edge.geometry] : [from.position,to.position];
+ if(step.reversed && edge.geometry && edge.geometry.length >= 2) raw.reverse();
+ const lengths=[0]; for(let i=1;i<raw.length;i++) lengths.push(lengths[i-1]!+Math.hypot(raw[i]!.x-raw[i-1]!.x,raw[i]!.y-raw[i-1]!.y));
+ const total=lengths.at(-1)! || 1;
+ for(let i=1;i<raw.length;i++){const p=raw[i]!, last=i===raw.length-1,t=lengths[i]!/total; wps.push({x:last?to.position.x:p.x,y:last?to.position.y:p.y,z:last?dz(to):p.z ?? dz(from)+(dz(to)-dz(from))*t});}
+}
 const node = bundle.graph.nodes.find(n => n.id === 'n:453ea111f1524cef8f3ac139bbf2e26b')!;
 const target = { x: node.position.x, y: node.position.y, z: node.position.z ?? node.renderZ ?? 0 };
 let acc = 0, best = { s: 0, d: Infinity };
