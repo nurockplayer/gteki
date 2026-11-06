@@ -138,6 +138,8 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
     const world = new THREE.Quaternion();
     let targetLift = 0;
     let lift = 0;
+    let targetTurn = 0;
+    let turn = 0;
     /** Seconds into the meow overlay; negative when it is not playing. */
     let meowClock = -1;
     /** Whether last frame's update left an overlay on the bones, so this one must undo it first. */
@@ -160,6 +162,7 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
           meowClock = 0;
           return true;
         },
+        setTurnLead(radians: number) { targetTurn = Number.isFinite(radians) ? Math.max(-0.7, Math.min(0.7, radians)) : 0; },
       } : {}),
       update(dt, speedMps) {
         if (disposed) return;
@@ -173,23 +176,30 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
         mixer!.update(step);
         lift += (targetLift - lift) * (1 - Math.exp(-step / 0.2));
         if (lift < 0.001 && targetLift < 0.001) lift = 0;
+        turn += (targetTurn - turn) * (1 - Math.exp(-step / 0.12));
+        if (targetTurn === 0 && Math.abs(turn) < 0.001) turn = 0;
         if (meowClock >= 0) {
           meowClock += step;
           if (meowClock >= MEOW_SECONDS) meowClock = -1;
         }
         const pose = meowClock >= 0 ? meowPose(meowClock) : null;
         // Nothing to overlay: leave the bones untouched, so an idle cat costs nothing per frame.
-        if (lift < 0.001 && !pose) return;
+        if (lift < 0.001 && !pose && turn === 0) return;
         for (const { bone, saved } of bones) if (bone) saved.copy(bone.quaternion);
         overlaid = true;
         for (const { name, bone } of bones) {
           if (!bone) continue;
-          if (name === "head") rotateAbout(bone, lateral, lift * 0.7 + (pose?.head ?? 0));
-          else if (name === "neck") rotateAbout(bone, lateral, lift * 0.3);
-          else if (name === "ear_L" || name === "ear_R") rotateAbout(bone, lateral, pose?.ears ?? 0);
+          if (name === "head") {
+            rotateAbout(bone, lateral, lift * 0.7 + (pose?.head ?? 0));
+            rotateAbout(bone, up, turn * 0.65);
+          } else if (name === "neck") {
+            rotateAbout(bone, lateral, lift * 0.3);
+            rotateAbout(bone, up, turn * 0.35);
+          } else if (name === "ear_L" || name === "ear_R") rotateAbout(bone, lateral, pose?.ears ?? 0);
           else {
             rotateAbout(bone, lateral, -(pose?.tailLift ?? 0) * TAIL_WEIGHTS[name]!);
-            if (name === "tail_01" || name === "tail_02") rotateAbout(bone, up, pose?.tailSway ?? 0);
+            if (name === "tail_01") rotateAbout(bone, up, (pose?.tailSway ?? 0) - turn * 0.25);
+            else if (name === "tail_02") rotateAbout(bone, up, (pose?.tailSway ?? 0) - turn * 0.15);
           }
         }
       },

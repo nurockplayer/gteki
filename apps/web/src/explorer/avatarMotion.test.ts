@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avatarMotion, CAT_BODY_PITCH, stepCatBodyPitch } from "./avatarMotion.ts";
+import { avatarMotion, CAT_BODY_PITCH, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 
 describe("avatar motion", () => {
   it("turns toward the direction of travel and reports ground speed", () => {
@@ -16,6 +16,13 @@ describe("avatar motion", () => {
 
   it("treats a long jump as a teleport: no speed, faces the camera", () => {
     expect(avatarMotion({ x: 0, z: 0 }, { x: 50, z: 0 }, 1 / 60, 0.3, 1.2)).toEqual({ yaw: 1.2, speed: 0 });
+  });
+
+  it("keeps the human's rate by default and turns the cat slower", () => {
+    const prev = { x: 0, z: 0 }, cur = { x: 0.025, z: 0 };
+    const once = (rate?: number) => avatarMotion(prev, cur, 1 / 60, 0, 0, rate).yaw;
+    expect(once(10)).toBe(once());
+    expect(Math.abs(once(CAT_TURN_RATE))).toBeLessThan(Math.abs(once()));
   });
 });
 
