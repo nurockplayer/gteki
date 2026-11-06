@@ -328,6 +328,7 @@ export class Explorer {
   /** Zone lighting (#861): the loaded station's anchors, and the values eased from ZONE_LOOK. */
   private zoneAnchors: readonly ZoneAnchor[] = [];
   private zone: StationZone = "passage";
+  private zoneHeard: StationZone | null = null;
   private readonly zoneAt = new THREE.Vector3(Infinity, 0, 0);
   /** The station's own fog object, mutated in place; its authored colour and near/far are kept for restores. */
   private zoneFog: THREE.Fog | null = null;
@@ -813,6 +814,7 @@ export class Explorer {
    * presets multiply, and the platform/ticket-gate anchors to classify against.
    */
   private attachZone(bundle: StationBundle): void {
+    this.zoneHeard = null;
     this.zoneAnchors = zoneAnchors(bundle.nodes, bundle.floors);
     this.zoneFog = this.scene.fog instanceof THREE.Fog ? this.scene.fog : null;
     if (!this.zoneFog) return;
@@ -853,6 +855,10 @@ export class Explorer {
     if (snap || this.zoneAt.distanceToSquared(this.pos) >= ZONE_RECHECK_M2) {
       this.zoneAt.copy(this.pos);
       this.zone = classifyZone(this.pos, this.streetProbe.outdoors, this.zoneAnchors);
+      if (this.zone !== this.zoneHeard) {
+        this.zoneHeard = this.zone;
+        this.stationScene?.setAcousticZone?.(this.zone);
+      }
     }
     const look = ZONE_LOOK[this.zone];
     const tinted = this.zone !== "outdoor";
