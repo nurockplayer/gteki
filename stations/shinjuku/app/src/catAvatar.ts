@@ -22,6 +22,8 @@ type Drawable = THREE.Mesh | THREE.Line | THREE.Points;
 export interface CatAvatarOptions {
   loader?: CatAvatarLoader;
   url?: string;
+  /** Called once after the human is shown in place of a failed cat load. */
+  onFallback?: () => void;
 }
 
 /** One rigged cat from a GLB: an empty group at once, filled in when the asset arrives. */
@@ -61,6 +63,7 @@ export function createCatAvatar(T: typeof THREE, opts: CatAvatarOptions = {}): A
     console.warn("Cat avatar failed to load; showing the human instead.", error);
     human = createAvatar(T, 0);
     object.add(human.object);
+    opts.onFallback?.();
   };
   const setup = (loaded: CatAsset): void => {
     let skinned = false;

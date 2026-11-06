@@ -258,10 +258,10 @@ describe("cat avatar selection", () => {
 
 describe("avatarKind", () => {
   const parse = (query: string) => avatarKind(new URLSearchParams(query));
-  it("selects the cat only with ?avatar=cat", () => {
-    expect(parse("avatar=cat")).toBe("cat");
+  it.each(["", "avatar=cat", "avatar=cat2"])("selects the cat by default for %s", (query) => {
+    expect(parse(query)).toBe("cat");
   });
-  it.each(["", "avatar=procedural", "avatar=soft", "avatar=glb", "avatar=cat2"])("keeps the human avatar for %s", (query) => {
+  it.each(["avatar=procedural", "avatar=soft", "avatar=glb"])("keeps the human avatar for %s", (query) => {
     expect(parse(query)).toBe("human");
   });
 });
