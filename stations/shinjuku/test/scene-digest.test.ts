@@ -128,7 +128,7 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     clearLayoutCache();
     expect(prepareLayout(bundle, plan).cached).toBe(false);
     expect(prepareLayout(bundle, plan, { reuse: true }).cached).toBe(false);
-  }, 180_000);
+  }, 60_000);
 
   it("restricted input hashing is a pure check: skipping it yields the same fences as verifying it", () => {
     const verified = protectOnly(bundle, plan);
@@ -142,5 +142,5 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     protectFareAndAccess(buildLayout(bundle, plan), plan, bundle, { recomputeRestricted: true, onRestricted: (r) => { fresh = r; } });
     expect(fresh?.inputKey).toBe(generated.inputKey);
     expect(fresh).toEqual(generated);
-  }, 180_000);
+  }, 60_000);
 });
