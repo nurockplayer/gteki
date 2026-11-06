@@ -95,7 +95,8 @@ ROUTE_Z_PAD_M = 0.3
 ROUTE_SAMPLE_M = 0.25
 # Lane E triangle counts (#143): mobile profile, escalators 20.3k over the 5 ids and nosings 7.2k over the 61 ids;
 # full profile, all 61 rails ids at rail_segments 6 153k. Per-id estimates scale these evenly.
-TRIS_ESCALATORS_MOBILE = 20300
+# #703's rebuilt phone escalators measure 20 328 triangles (5 GLBs, 2026-11-07 JST).
+TRIS_ESCALATORS_MOBILE = 20328
 TRIS_NOSING_MOBILE = 7200
 TRIS_RAILS_FULL_ALL = 153000
 ROUTES_REL = os.path.join("tests", "e2e", "specs", "__goldens__", "02-navigation.spec.ts", "ikebukuro-routes.json")
