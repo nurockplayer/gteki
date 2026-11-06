@@ -39,6 +39,12 @@ export function streetRenderY(floors: readonly { ordinal: number | null; interme
   return streets.length ? Math.max(...streets.map((f) => f.renderElevationM)) : null;
 }
 
+/** Facade brightness at pavement level, and the height above it where the shading ends. */
+const CONTEXT_GROUND_SHADE = 0.68;
+const CONTEXT_GROUND_SHADE_M = 12;
+/** The road surface: dark enough to read as asphalt against the pale facades. */
+export const CONTEXT_ROAD_COLOR = 0x62635f;
+
 /**
  * Pale concrete, unlit by the scene's rig: the station's lights are a faint hemisphere (baked B1 lighting),
  * so a Lambert material would read near-black outside. The shading is a fixed sun and sky term in the
@@ -46,17 +52,20 @@ export function streetRenderY(floors: readonly { ordinal: number | null; interme
  * explorer's street fog and haze (this material takes fog). Falls back to a flat colour if a shader chunk the
  * patch anchors on is missing in a future three.
  */
-export function createContextMaterial(THREE: ThreeNS): THREE_NS.MeshBasicMaterial {
-  const mat = new THREE.MeshBasicMaterial({ color: 0xb9b5ad, side: THREE.DoubleSide });
+export function createContextMaterial(THREE: ThreeNS, options: { color?: number; streetY?: number | null } = {}): THREE_NS.MeshBasicMaterial {
+  const mat = new THREE.MeshBasicMaterial({ color: options.color ?? 0xb9b5ad, side: THREE.DoubleSide });
+  // Facades darken toward the pavement, so the walls around an exit are not one flat pale surface (#858 item 4).
+  const streetY = options.streetY ?? null;
+  const groundShade = streetY === null ? "" : `outgoingLight *= mix( ${CONTEXT_GROUND_SHADE.toFixed(2)}, 1.0, smoothstep( ${streetY.toFixed(2)}, ${(streetY + CONTEXT_GROUND_SHADE_M).toFixed(2)}, vCtxY ) );`;
   mat.name = "ctx_concrete";
   mat.onBeforeCompile = (shader) => {
     const v = shader.vertexShader, f = shader.fragmentShader;
     if (!(v.includes("#include <common>") && v.includes("#include <begin_vertex>") && f.includes("#include <common>") && f.includes("#include <opaque_fragment>"))) return;
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", "#include <common>\nvarying vec3 vCtxN;")
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvCtxN = normalize( mat3( modelMatrix ) * normal );");
+      .replace("#include <common>", "#include <common>\nvarying vec3 vCtxN;\nvarying float vCtxY;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvCtxY = ( modelMatrix * vec4( transformed, 1.0 ) ).y;\nvCtxN = normalize( mat3( modelMatrix ) * normal );");
     shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nvarying vec3 vCtxN;")
+      .replace("#include <common>", "#include <common>\nvarying vec3 vCtxN;\nvarying float vCtxY;")
       .replace(
         "#include <opaque_fragment>",
         [
@@ -64,11 +73,12 @@ export function createContextMaterial(THREE: ThreeNS): THREE_NS.MeshBasicMateria
           "if ( ! gl_FrontFacing ) ctxN = - ctxN;",
           "vec3 ctxSun = normalize( vec3( 0.45, 0.75, 0.4 ) );",
           "outgoingLight *= 0.55 + 0.28 * max( dot( ctxN, ctxSun ), 0.0 ) + 0.17 * ( 0.5 + 0.5 * ctxN.y );",
+          ...(groundShade ? [groundShade] : []),
           "#include <opaque_fragment>",
         ].join("\n"),
       );
   };
-  mat.customProgramCacheKey = () => "gteki-ctx-concrete";
+  mat.customProgramCacheKey = () => `gteki-ctx-concrete:${streetY}`;
   return mat;
 }
 
@@ -76,12 +86,12 @@ export function createContextMaterial(THREE: ThreeNS): THREE_NS.MeshBasicMateria
  * Dress a loaded context GLB: the shared daylight material on every mesh, nothing else changed (names, roles
  * and geometry stay as the GIS tool wrote them). Returns the meshes.
  */
-export function dressContext(gltfScene: THREE_NS.Object3D, material: THREE_NS.Material): THREE_NS.Mesh[] {
+export function dressContext(gltfScene: THREE_NS.Object3D, material: THREE_NS.Material, roadMaterial: THREE_NS.Material = material): THREE_NS.Mesh[] {
   const meshes: THREE_NS.Mesh[] = [];
   gltfScene.traverse((o) => {
     const m = o as THREE_NS.Mesh;
     if (!m.isMesh) return;
-    m.material = material;
+    m.material = /^ctx_road_/.test(m.name) ? roadMaterial : material;
     m.castShadow = false;
     m.receiveShadow = false;
     meshes.push(m);

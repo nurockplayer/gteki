@@ -89,6 +89,7 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
   const liveBlockers = [...new Set([...retain(cameraBlockers), ...blockerCopies])];
   liveWalkable.push(...greybox.walkable);
   liveColliders.push(...greybox.colliders, ...stairwellCut.colliders);
+  liveBlockers.push(...stairwellCut.cameraBlockers);
   const targetsMs = elapsed();
   const connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: sceneMeshProbe([root]) }, tier);
   const connectorsMs = elapsed();

@@ -359,6 +359,15 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("stops the follow camera at the edge band, unlit so it cannot fill the view black", () => {
+    const s = scene();
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
+    expect(result.cameraBlockers).toEqual([band]);
+    expect((band.material as THREE.Material).type).toBe("MeshBasicMaterial");
+    result.dispose();
+  });
+
   it("merges the well edge into the greybox shell instead of adding a mesh", () => {
     const s = scene();
     const shellGeometry = new THREE.BufferGeometry();
