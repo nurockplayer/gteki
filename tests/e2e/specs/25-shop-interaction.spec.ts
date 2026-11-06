@@ -3,7 +3,7 @@ import { hooks, openStation } from "../lib/gteki.ts";
 
 for (const avatar of ["human", "cat"] as const) {
   test(`${avatar} can interact with the simulated bakery @phone`, async ({ page, isMobile }, info) => {
-    await openStation(page, "ikebukuro", avatar === "cat" ? "&avatar=cat" : "");
+    await openStation(page, "ikebukuro", avatar === "cat" ? "&avatar=cat" : "&avatar=procedural");
     expect(await hooks.walkFromNode(page, "n_e")).toBe(true);
     const spec = await page.evaluate(() => (window as any).__gteki.interactables().specs[0]);
     expect(spec.id).toBe("ph-ikb-b1e-12");

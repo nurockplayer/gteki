@@ -25,7 +25,7 @@ export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string |
   } catch { return undefined; }
 }
 
-/** Which protagonist a page asks for; the human stays the default in stage 1. */
+/** Which protagonist a page asks for; the cat is the default. */
 export type AvatarKind = "human" | "cat";
 
 /** #854 scripted cat, picked by gteki-lead on 2026-11-06; a placeholder until the Owner sets breed and coat. */
@@ -38,9 +38,9 @@ function emptyRig(): AvatarRig {
   return { root, update() {}, setEnvMap() {}, setFade() {}, dispose() { root.removeFromParent(); } };
 }
 
-/** `?avatar=cat` selects the cat; anything else keeps the human. */
+/** The cat is the default (#854); `?avatar=procedural|soft|glb` keep the human. */
 export function avatarKind(params: URLSearchParams): AvatarKind {
-  return params.get("avatar") === "cat" ? "cat" : "human";
+  return ["procedural", "soft", "glb"].includes(params.get("avatar") ?? "") ? "human" : "cat";
 }
 
 export interface AvatarSelection extends AvatarRig {
@@ -50,7 +50,7 @@ export interface AvatarSelection extends AvatarRig {
   loadGlb(): Promise<void>;
 }
 
-/** The human rig is shown while loading and on GLB failure; ?avatar=cat starts empty instead. */
+/** The human rig is shown while loading and on GLB failure; cat mode (the default) starts empty instead. */
 export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; onCatFallback?: () => void }): AvatarSelection {
   const cat = opts.kind === "cat";
   let current = cat ? emptyRig() : createAvatar({ quality: opts.quality });
