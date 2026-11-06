@@ -568,12 +568,16 @@ function liftShafts(edges: readonly Edge[], ends: (edge: Edge) => [{ id: string;
  * The walkable regions of one connector: a strip level per flight (the legs between turning landings, discs at shallow
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
  */
+const MAX_TRIMMED_PITCH_DEG = 45;
+
 function flightEnds(points: readonly THREE.Vector3[], i: number, width: number, isTurn: (index: number) => boolean): [THREE.Vector3, THREE.Vector3] {
   const from = points[i - 1]!, to = points[i]!, a = from.clone(), b = to.clone();
   const dx = to.x - from.x, dz = to.z - from.z, length = Math.hypot(dx, dz);
   const start = i > 1 && isTurn(i - 1) ? width / 2 : 0;
   const end = i < points.length - 1 && isTurn(i) ? width / 2 : 0;
-  if (length - start - end >= 0.5) {
+  const remaining = length - start - end;
+  const pitchDeg = Math.atan2(Math.abs(to.y - from.y), remaining) * 180 / Math.PI;
+  if (remaining >= 0.5 && pitchDeg <= MAX_TRIMMED_PITCH_DEG + 1e-9) {
     a.x += dx / length * start; a.z += dz / length * start;
     b.x -= dx / length * end; b.z -= dz / length * end;
   }
