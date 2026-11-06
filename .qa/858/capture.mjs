@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 const root = process.cwd();
-const { chromium } = createRequire(path.join(root, 'tests/e2e/package.json'))('@playwright/test');
+const { chromium } = createRequire(path.join(root, 'stations/shinjuku/package.json'))('playwright-core');
 const server = spawn('pnpm', ['--filter', '@gteki/web', 'dev', '--port', '5199', '--strictPort', '--host', '127.0.0.1'], { stdio: 'inherit' });
 let browser;
 try {
