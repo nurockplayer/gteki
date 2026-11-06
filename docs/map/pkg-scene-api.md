@@ -19,6 +19,7 @@ The contract between a station's scene module (the station's gteki/scene.ts, exp
 - `packages/scene-api/src/index.ts:190-204` — `roleOf()`: role from an object's authored name or extras only.
 - `packages/scene-api/src/index.ts:232-261` — `sceneFromGlbRoles()`: splits a GLB root into walkable, colliders and camera blockers.
 - `packages/scene-api/src/index.ts:267-276` — `seeThroughMeshes()`: meshes such as signs that stay visible but do not block.
+- `packages/scene-api/src/wallProps.ts` — `buildWallProps()` (#858 item 12): one merged mesh per station for neutral decorative wall props, with the interactive prop's reaction boxes appended last so the station extends the mesh's draw range instead of adding a draw. `wallPropDrawRanges()` returns the idle/full index counts.
 
 ## Data flow
 - Station the station's gteki/scene.ts `buildScene(ctx)` → `apps/web/src/explorer/explorer.ts:951` (`station.scene.buildScene(ctx)`) → `walkable`, `colliders` and `cameraBlockers` feed the explorer's collision (`apps/web/src/explorer/walker.ts` and `apps/web/src/explorer/explorer.ts` use `WALKER_BODY`).

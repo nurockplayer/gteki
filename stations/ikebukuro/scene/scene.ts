@@ -37,6 +37,8 @@ import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
 import type { AcousticZone, SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
+import { buildWallProps, wallPropDrawRanges } from "@gteki/scene-api";
+import wallPropPlacements from "./wall-props.ts";
 
 type ThreeNS = typeof THREE_NS;
 
@@ -437,6 +439,26 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // concourse) has no verified access: it stays visible, but their outline is fenced and labelled.
   root.add(fences.visual, fences.collider);
 
+  // Neutral decorative wall props (#858 item 12): one merged mesh (one draw; the interactive machine's reaction
+  // shares that draw) and one invisible box collider per prop for the walker.
+  const wallProps = buildWallProps(THREE, mergeGeometries, toRenderer, wallPropPlacements, "ikebukuro");
+  root.add(wallProps);
+  const propColliderMaterial = new THREE.MeshBasicMaterial({ visible: false });
+  const propColliders: THREE_NS.Mesh[] = [];
+  for (const p of wallPropPlacements) {
+    const height = p.kind === "kiosk" ? 2 : 1.85;
+    const geometry = new THREE.BoxGeometry(p.w, height, p.d);
+    const centre = toRenderer(p.wall[0] + p.n[0] * (p.d / 2 - 0.02), p.wall[1] + p.n[1] * (p.d / 2 - 0.02), p.z + height / 2);
+    geometry.rotateY(Math.atan2(p.n[0], -p.n[1]));
+    geometry.translate(centre.x, centre.y, centre.z);
+    const collider = new THREE.Mesh(geometry, propColliderMaterial);
+    collider.name = `wall-prop-collider:${p.id}`;
+    collider.userData.gteki_role = "collider";
+    collider.userData.gteki_source = "procedural";
+    propColliders.push(collider);
+    colliders.push(collider);
+  }
+
   // Street-level context buildings (#39): visual only, so they never join walkable or colliders (and
   // assembleCollision never sees them). They do stop the follow camera, through separate low-poly blockers
   // (context.ts) that the explorer reads once at resolve, so they exist now and fill when the context arrives.
@@ -623,9 +645,21 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   reaction.visible = false;
   reaction.userData.gtekiInteractionId = shop.id;
   root.add(reaction);
-  const interactables = [{ id: shop.id, kind: "shop", layer: "fictional" as const, simulated: true as const,
-    anchor: { x: anchor.x, y: anchor.y, z: anchor.z }, radiusM: 0.9,
-    steps: interactionData.steps, reward: interactionData.reward, once: interactionData.once }];
+  // The interactive wall prop (#858 item 12): decorative, never a POI. Its reaction is part of the same mesh's
+  // index, so the station extends the draw range while the explorer shows the marker.
+  const vending = wallPropPlacements.find((p) => p.interaction)!;
+  const [vx, vy, vz] = ctx.enuToRenderer({ x: vending.wall[0] + vending.n[0] * (vending.d + 0.6), y: vending.wall[1] + vending.n[1] * (vending.d + 0.6), z: vending.z });
+  const propMarkers = wallProps.children.filter((o) => typeof o.userData.gtekiInteractionId === "string");
+  const propDraws = wallPropDrawRanges(wallProps);
+  let propFull = false;
+  const interactables = [
+    { id: shop.id, kind: "shop", layer: "fictional" as const, simulated: true as const,
+      anchor: { x: anchor.x, y: anchor.y, z: anchor.z }, radiusM: 0.9,
+      steps: interactionData.steps, reward: interactionData.reward, once: interactionData.once },
+    { id: vending.interaction!, kind: "vending", layer: "fictional" as const, simulated: true as const,
+      anchor: { x: vx, y: vy, z: vz }, radiusM: 0.9,
+      steps: [{ id: "look", seconds: 1.2 }, { id: "sit", seconds: 1.5 }, { id: "react", seconds: 2.0 }], once: false },
+  ];
   return {
     root,
     interactables,
@@ -647,10 +681,19 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
         const seen = cameraTrack.read();
         setContext(seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
       }
+      const full = propMarkers.some((o) => o.visible);
+      if (full !== propFull) {
+        propFull = full;
+        wallProps.geometry.setDrawRange(0, full ? propDraws.full : propDraws.idle);
+      }
     },
     dispose() {
       geometry.dispose();
       material.dispose();
+      wallProps.geometry.dispose();
+      (wallProps.material as THREE_NS.Material).dispose();
+      for (const collider of propColliders) collider.geometry.dispose();
+      propColliderMaterial.dispose();
       stationSound?.dispose();
       ambience?.dispose();
       acoustics?.dispose();

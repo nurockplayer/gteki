@@ -32,6 +32,8 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * psd/psdLeaf/accent visual triangle sets change, every physical field and propWall stays identical.
  * #342 (2026-11-06 JST) moves identity:spawn 4 m ahead / 0.5 m left of the Explorer spawn at 70 degrees and gate 1 toward its paid side;
  * regenerated, only the two identity visual hashes change.
+ * #858 item 12 (2026-11-06 JST) adds one merged wall-props mesh; only the visual map gains its material
+ * entry. protect, station, walkable, colliders, camera blockers, walls, semantic and spawn are unchanged.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
@@ -96,14 +98,19 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
   }, 120_000);
 
   it("derives the street layer itself when the baked table is not used, with the same result", () => {
+    // The scene hook adds the merged wall-props mesh (#858 item 12) on top of the station root;
+    // buildStation has none, so drop that group from the hook-built fixture before comparing.
+    const WALL_PROPS_VISUAL = '["MeshBasicMaterial","","ffffff",null,null,1,false,0,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false';
+    const stationVisual = { ...base.scene.low.visual };
+    delete stationVisual[WALL_PROPS_VISUAL];
     for (const useBakedSurface of [true, false]) {
       const built = withCanvasStub(() => buildStation(bundle, plan, { quality: "low", useBakedSurface }));
       // The flag is set where the seed is chosen: the table was really used, or really not.
       expect(built.root.getObjectByName("surface-render-only")!.userData.bakedSurface, `table used, useBakedSurface=${useBakedSurface}`).toBe(useBakedSurface);
       expect(stationDigest(built), `useBakedSurface=${useBakedSurface}`).toEqual(base.station);
-      // The scene hook adds an empty viewer probe on top of the station root; compare drawn triangles only.
+      // The scene hook also adds an empty viewer probe; compare drawn triangles only.
       const drawn = (v: FullDigest["scene"]["low"]["visual"]) => Object.fromEntries(Object.entries(v).filter(([, g]) => g.triangles > 0));
-      expect(drawn(visualDigest(built.root)), `useBakedSurface=${useBakedSurface}`).toEqual(drawn(base.scene.low.visual));
+      expect(drawn(visualDigest(built.root)), `useBakedSurface=${useBakedSurface}`).toEqual(drawn(stationVisual));
       built.dispose();
     }
   }, 120_000);
