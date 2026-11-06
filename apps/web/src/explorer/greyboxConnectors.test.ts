@@ -619,6 +619,14 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("leaves a flight untrimmed when trimming would exceed 45 degrees", () => {
+    const station = stairThrough([[0, 0, 0], [4, 3, 0], [4, 6, 4]]);
+    (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
+    const path = buildConnectors(station, () => true, flat, "high").pathByEdge.get("turn")!;
+    expect(path.some((p) => Math.abs(p.x - 4) < 1e-6 && Math.abs(p.y - 3) < 1e-6 && Math.abs(p.z) < 1e-6)).toBe(true);
+    expect(path.some((p) => Math.abs(p.x - 2) < 1e-6 && Math.abs(p.y - 3) < 1e-6)).toBe(false);
+  });
+
   it("contains a walker at the raised end of a trimmed flight", () => {
     const station = stairThrough([[0, 0, 0], [4, 2, 0], [4, 4, 4]]);
     (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
