@@ -34,16 +34,16 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
-import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
+import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
-import { createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
+import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
@@ -379,7 +379,6 @@ export class Explorer {
   /** The framed board's name centre, and the framed look's offset from that board's bearing: the hold keeps the board in view. */
   private readonly guideIdentityCentre = new THREE.Vector3();
   private readonly guideIdentityOffset = { yaw: 0, pitch: 0 };
-  private readonly identityHead = new THREE.Vector3();
   private readonly identityToward = new THREE.Vector3();
   /** The user's guide speed tier; kept across instruction changes and later guides. */
   private tier: GuideTierId = DEFAULT_GUIDE_TIER;
@@ -441,7 +440,7 @@ export class Explorer {
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
     this.catAvatar = options.avatarKind === "cat";
-    if (this.catAvatar) this.camDistance = FOLLOW_CAT.distance;
+    if (this.catAvatar) { this.camDistance = FOLLOW_CAT.distance; this.pitch = FOLLOW_CAT.pitch; }
     // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
     // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
     if (this.quality === "low") this.scene.onBeforeRender = (renderer, _scene, camera) => {
@@ -1571,11 +1570,15 @@ export class Explorer {
     return this.firstPerson;
   }
 
+  private followHead(): THREE.Vector3 {
+    return this.pos.clone().add(new THREE.Vector3(0, this.catAvatar ? FOLLOW_CAT.pivotY : EYE, 0));
+  }
+
   /** Initial placement only: camera look changes, never the body heading or subsequent seeks. */
   private frameInitialIdentity(guideHeading?: number): boolean {
     if (this.identityPlaced) return false;
     this.identityPlaced = true;
-    const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
+    const head = this.followHead();
     // Signs stay transparent to this placement probe, including solid sign materials.
     const signs = new Set(this.stationScene ? seeThroughMeshes(this.stationScene.root) : []);
     const boards = this.identityBoards.filter((b) => inScene(b.object, this.scene) && objectVisible(b.object)).map((board) => {
@@ -1595,7 +1598,29 @@ export class Explorer {
     const { w, h } = this.viewSize;
     const free = this.freeRect();
     const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
-    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree);
+    // The cat's low boom can't reach most look-up poses (the floor squeezes it), so only its framing checks the walker.
+    let rig: FramingRig | undefined;
+    if (this.catAvatar) {
+      const feet = this.pos.clone(), top = feet.clone().add(new THREE.Vector3(0, CAT_AVATAR_HEIGHT_M, 0));
+      const walkerTargets = this.cameraTargets.filter((o) => !signs.has(o));
+      rig = {
+        shoulder: catShoulder(this.camera.aspect), lift: FOLLOW_CAT.lift, drop: FOLLOW_CAT.drop, distance: FOLLOW_CAT.distance,
+        body: [feet, top],
+        clear: (cameraPos, pivot) => {
+          const boom = cameraPos.clone().sub(pivot);
+          this.ray.set(pivot, boom.clone().normalize());
+          this.ray.near = 0;
+          this.ray.far = boom.length() + FOLLOW.clearance;
+          if (castCamera(this.ray, this.cameraTargets, this.cameraSides).length) return false;
+          const direction = feet.clone().lerp(top, 0.5).sub(cameraPos);
+          this.ray.set(cameraPos, direction.clone().normalize());
+          this.ray.near = 0;
+          this.ray.far = Math.max(0, direction.length() - 0.05);
+          return castAll(this.ray, walkerTargets).length === 0;
+        },
+      };
+    }
+    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree, rig);
     if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;
@@ -2613,7 +2638,7 @@ export class Explorer {
    * (returns false) when the board is out of range, behind the walker, or would turn the look too far from the route.
    */
   private trackGuideIdentity(p: { tx: number; tz: number }, dt: number): boolean {
-    const toward = this.identityToward.copy(this.guideIdentityCentre).sub(this.identityHead.set(this.pos.x, this.pos.y + EYE, this.pos.z));
+    const toward = this.identityToward.copy(this.guideIdentityCentre).sub(this.followHead());
     const bearingYaw = Math.atan2(-toward.x, -toward.z);
     const bearingPitch = Math.atan2(toward.y, Math.hypot(toward.x, toward.z));
     const targetYaw = bearingYaw + this.guideIdentityOffset.yaw;
@@ -2689,8 +2714,7 @@ export class Explorer {
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
-    // The cat's follow pivot is much lower than eye height; first person keeps the human eye height.
-    const head = this.catAvatar ? this.pos.clone().add(new THREE.Vector3(0, FOLLOW_CAT.pivotY, 0)) : eye;
+    const head = this.followHead();
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
       this.boomActual = 0;
@@ -2704,7 +2728,7 @@ export class Explorer {
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
     // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
     const cameraSides = this.cameraSides;
-    const shoulderMax = this.catAvatar ? FOLLOW_CAT.shoulder : FOLLOW.shoulder;
+    const shoulderMax = this.catAvatar ? catShoulder(this.camera.aspect) : FOLLOW.shoulder;
     let shoulder: number = shoulderMax;
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
