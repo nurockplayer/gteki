@@ -7,7 +7,7 @@ vi.mock("./stairwellCut.ts", () => ({
   stairwellWells: () => [],
   cutStairwells: () => {
     clock.now += 11;
-    return { resources: { instances: [] }, colliders: [], walls: [] };
+    return { resources: { instances: [] }, colliders: [], cameraBlockers: [], walls: [] };
   },
 }));
 vi.mock("./greyboxConnectors.ts", () => ({

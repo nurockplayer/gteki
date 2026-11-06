@@ -5,6 +5,7 @@
 // one InstancedMesh per part with per-instance colour; no per-agent objects, no physics.
 import type * as THREE_NS from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { buildTripTable, pickDestination, queueLimit } from "./crowd-trips.ts";
 import type { TimeBand } from "./time-band.ts";
 
 interface P3 { x: number; y: number; z: number | null }
@@ -16,7 +17,23 @@ interface Path { pts: THREE_NS.Vector3[]; cum: number[]; hcum: number[]; length:
 export interface Lane { stepM: number; left: number[]; right: number[] }
 /** phase: gait phase in radians, advanced by distance walked (one cycle per two steps). bobPhase: the earlier build's bob phase
  * (one cycle per ~1.45 m); it only feeds the near-camera / visibility decisions, which must not change with the new pose. */
-interface Agent { path: number; forward: boolean; s: number; speed: number; offset: number; phase: number; bobPhase: number; hiddenUntil: number }
+interface Agent {
+  path: number; forward: boolean; s: number; speed: number; offset: number; phase: number; bobPhase: number; hiddenUntil: number;
+  /** Node this commuter is walking to (a dead-end), or null when it has no onward route to one. */
+  dest: string | null;
+  /** Seconds spent standing at the front of a gate line this visit. */
+  hold: number;
+  /** Passed the gate queue on this trip: walks on to the dead-end without queueing again. */
+  through: boolean;
+}
+
+/** Gate queue (#627): stop this far short of the gate, keep this gap to the person ahead, hold this long. */
+export const QUEUE_STOP_M = 1.0;
+export const QUEUE_GAP_M = 0.8;
+export const GATE_HOLD_S = 2.5;
+export const QUEUE_MAX = 6;
+/** A queueing walker settles onto a planted gait within this long (s). */
+const PLANT_EASE_S = 0.3;
 
 /* ------------------------------------------------------------------------------------------ */
 /* appearance palettes (sRGB hex; albedos kept realistic so nothing washes out to grey)        */
@@ -114,6 +131,15 @@ function sampleFoot(phi: number, stride: number, out: FootSample) {
     out.lift = 0.09 * Math.sin(Math.PI * (q + 0.07 * Math.sin(TAU * q))) ** 1.2;
     out.pitch = lerp(-0.29, 0.3, smoothstep(0.1, 0.9, q));
   }
+}
+
+/** Nearest gait phase (radians, near `phase`) where both feet are planted in both quality tiers: high-quality
+ * double support (cycle fraction in [0, 0.1) or [0.5, 0.6)) and no low-tier swing lift (sin(phase) = 0, i.e.
+ * a multiple of pi). */
+function plantedPhase(phase: number): number {
+  const lower = Math.floor(phase / Math.PI) * Math.PI;
+  const upper = lower + Math.PI;
+  return phase - lower <= upper - phase ? lower : upper;
 }
 
 // The planted foot is a rigid shoe that rolls about its lowest support point: the heel while the toes are up
@@ -503,10 +529,10 @@ interface Look {
  * Game simulation, art direction: not real or live passenger data (#627). density scales the head-count;
  * suitBias shifts the outfit draw toward suits (positive) or away from them (negative).
  */
-export const CROWD_BANDS: Record<TimeBand, { density: number; suitBias: number }> = {
-  morning: { density: 1, suitBias: 0.25 },
-  midday: { density: 0.6, suitBias: -0.2 },
-  evening: { density: 0.4, suitBias: 0 },
+export const CROWD_BANDS: Record<TimeBand, { density: number; suitBias: number; toGate: number }> = {
+  morning: { density: 1, suitBias: 0.25, toGate: 0.7 },
+  midday: { density: 0.6, suitBias: -0.2, toGate: 0.5 },
+  evening: { density: 0.4, suitBias: 0, toGate: 0.35 },
 };
 
 export function buildCrowd(
@@ -517,8 +543,9 @@ export function buildCrowd(
   envMap: THREE_NS.Texture,
   lanes: Record<string, Lane> = {},
   band?: TimeBand,
+  gates: readonly string[] = [],
 ) {
-  const preset = band ? CROWD_BANDS[band] : { density: 1, suitBias: 0 };
+  const preset = band ? CROWD_BANDS[band] : { density: 1, suitBias: 0, toGate: 0.5 };
   const count = Math.max(1, Math.round(maxCount * preset.density));
   const paths: Path[] = [];
   for (const e of edges) {
@@ -543,6 +570,34 @@ export function buildCrowd(
     if (byNode.get(p.from)?.length === 1) deadEnds.push({ path: i, forward: true });
     if (byNode.get(p.to)?.length === 1) deadEnds.push({ path: i, forward: false });
   });
+  // Trips (#627): each commuter aims at a dead-end. Destinations use their own random stream, like the
+  // appearance stream `vr` below, so the walking stream (`rand`) is consumed exactly as it was.
+  const table = buildTripTable(paths);
+  const tr = rng(0x627d3e5);
+
+  // Gate queues: a gate is a dead-end node whose single path carries everyone heading through it.
+  interface GateLine { id: string; path: number; agents: number[]; rems: number[] }
+  const gateLines: GateLine[] = [];
+  const gateIndex = new Map<string, number>();
+  const pathGate = new Int32Array(paths.length).fill(-1);
+  for (const id of gates) {
+    const at = byNode.get(id);
+    if (at?.length !== 1 || gateIndex.has(id)) continue;
+    gateIndex.set(id, gateLines.length);
+    pathGate[at[0]!] = gateLines.length;
+    gateLines.push({ id, path: at[0]!, agents: [], rems: [] });
+  }
+
+  /** Pick the destination for the node ahead of `a`, from the node ahead and the one behind. */
+  function setDest(a: Agent) {
+    const p = paths[a.path]!;
+    const ahead = a.forward ? p.to : p.from;
+    const behind = a.forward ? p.from : p.to;
+    a.dest = pickDestination(table, ahead, behind, gates, preset.toGate, tr);
+    a.hold = 0;
+    a.through = false;
+  }
+
   const rand = rng(7);
   const total = paths.reduce((s, p) => s + p.length, 0);
   const agents: Agent[] = [];
@@ -550,9 +605,10 @@ export function buildCrowd(
     // place proportionally to path length
     let r = rand() * total, k = 0;
     while (k < paths.length - 1 && r > paths[k]!.length) r -= paths[k++]!.length;
-    agents.push({ path: k, forward: rand() < 0.5, s: r, speed: 1.15 + rand() * 0.5, offset: (rand() * 2 - 1) * 0.9, phase: 0, bobPhase: 0, hiddenUntil: -1 });
+    agents.push({ path: k, forward: rand() < 0.5, s: r, speed: 1.15 + rand() * 0.5, offset: (rand() * 2 - 1) * 0.9, phase: 0, bobPhase: 0, hiddenUntil: -1, dest: null, hold: 0, through: false });
     const a = agents[i]!;
     a.phase = a.bobPhase = rand() * 6.28;
+    setDest(a);
   }
 
   const low = maxCount <= LOW_QUALITY_MAX_COUNT;
@@ -858,6 +914,7 @@ export function buildCrowd(
       a.s = Math.min(paths[k]!.length, r);
       a.forward = rand() < 0.5;
       a.hiddenUntil = renders;
+      setDest(a);
       return true;
     }
     return false;
@@ -1014,30 +1071,113 @@ export function buildCrowd(
   }
 
   let nearby = 0;
+  // Gate line membership this frame (reused; no per-frame objects). lineOf: gate index or -1.
+  const lineOf = new Int32Array(agents.length).fill(-1);
+  const lineLead = new Uint8Array(agents.length);
+  const lineLimit = new Float64Array(agents.length);
+  let queued = 0;
+
+  function collectGateLines() {
+    for (const gl of gateLines) { gl.agents.length = 0; gl.rems.length = 0; }
+    lineOf.fill(-1);
+    for (let i = 0; i < agents.length; i++) {
+      const a = agents[i]!;
+      if (a.through || a.dest === null) continue;
+      const gi = gateIndex.get(a.dest);
+      if (gi === undefined) continue;
+      const gl = gateLines[gi]!;
+      const p = paths[a.path]!;
+      if (a.path !== gl.path) continue;
+      if (!(a.forward ? p.to === gl.id : p.from === gl.id)) continue;
+      const rem = a.forward ? p.length - a.s : a.s;
+      gl.agents.push(0);
+      gl.rems.push(0);
+      let k = gl.agents.length - 1;
+      while (k > 0 && gl.rems[k - 1]! > rem) { gl.rems[k] = gl.rems[k - 1]!; gl.agents[k] = gl.agents[k - 1]!; k--; }
+      gl.agents[k] = i;
+      gl.rems[k] = rem;
+    }
+    for (let g = 0; g < gateLines.length; g++) {
+      const gl = gateLines[g]!;
+      for (let k = 0; k < gl.agents.length; k++) {
+        const i = gl.agents[k]!;
+        lineOf[i] = g;
+        lineLead[i] = k === 0 ? 1 : 0;
+        lineLimit[i] = k === 0 ? QUEUE_STOP_M : queueLimit(gl.rems[k - 1]!, QUEUE_GAP_M);
+      }
+    }
+  }
+
   function update(dt: number, _elapsed: number) {
     let near = 0, moves = 0;
     const hideRadius = Math.max(NEAR_CAM_M, nearFade.value.x);
     clock += dt;
+    collectGateLines();
+    queued = 0;
     for (let i = 0; i < agents.length; i++) {
       const a = agents[i]!;
       if (moves < MAX_MOVES_PER_FRAME && cam.x < 1e8) {
         sample(paths[a.path]!, a.s);
         const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
         const d = Math.hypot(dx, dy, dz);
-        if (d > FAR_M && !inView(pos) && relocate(a)) moves++;
+        if (d > FAR_M && !inView(pos) && relocate(a)) {
+          moves++;
+          lineOf[i] = -1; // its line membership was collected for the path it just left
+        }
       }
       let p = paths[a.path]!;
       const L = looks[i]!;
-      a.s += (a.forward ? 1 : -1) * a.speed * dt;
-      a.phase += (a.speed * dt * TAU) / (L.stride * L.sw); // gait phase follows distance walked: planted feet do not slide
-      a.bobPhase += (a.speed * dt * TAU) / 1.45; // the earlier build's phase: one cycle per ~1.45 m
+      // Walk by the distance actually walked: a queued person stands still, and a stand-holding
+      // person's feet keep their phase instead of skating.
+      const step = a.speed * dt;
+      const gi = lineOf[i]!;
+      let move = step;
+      if (gi >= 0) {
+        const rem = a.forward ? p.length - a.s : a.s;
+        if (rem - step < lineLimit[i]!) move = Math.max(0, rem - lineLimit[i]!);
+      }
+      a.s += (a.forward ? 1 : -1) * move;
+      a.phase += (move * TAU) / (L.stride * L.sw); // gait phase follows distance walked: planted feet do not slide
+      a.bobPhase += (move * TAU) / 1.45; // the earlier build's phase: one cycle per ~1.45 m
+      if (gi >= 0) {
+        if (lineLead[i]) {
+          const rem = a.forward ? p.length - a.s : a.s;
+          if (rem <= QUEUE_STOP_M + 1e-6) {
+            a.hold += dt;
+            if (a.hold >= GATE_HOLD_S) { a.hold = 0; a.through = true; }
+          } else a.hold = 0;
+        }
+        if (move <= 1e-9 && !a.through) {
+          // Standing in line: settle the gait onto a phase with both feet planted (<= PLANT_EASE_S).
+          const target = plantedPhase(a.phase);
+          const d = target - a.phase;
+          a.phase += Math.sign(d) * Math.min(Math.abs(d), ((Math.PI / 2) / PLANT_EASE_S) * dt);
+          queued++;
+        }
+      }
       if (a.s > p.length || a.s < 0) {
         const node = a.s > p.length ? p.to : p.from;
+        const other = p.from === node ? p.to : p.from;
         const options = (byNode.get(node) ?? []).filter((j) => j !== a.path);
-        const next = options.length ? options[Math.floor(rand() * options.length)]! : a.path;
+        // The walking stream is drawn exactly as before (only when there is a choice to make).
+        const draw = options.length ? Math.floor(rand() * options.length) : -1;
+        let next = draw >= 0 ? options[draw]! : a.path;
+        const wanted = a.dest === null ? undefined : table.row(a.dest)?.next.get(node);
+        if (wanted !== undefined) next = wanted;
+        const atGate = pathGate[next]!;
+        if (wanted !== undefined && next !== a.path && atGate >= 0 && gateLines[atGate]!.agents.length >= QUEUE_MAX) {
+          // The line at this gate is full: choose another destination, never this gate.
+          const gateId = gateLines[atGate]!.id;
+          a.dest = pickDestination(table, node, other, gates, preset.toGate, tr, [gateId]);
+          a.hold = 0;
+          a.through = false;
+          const again = a.dest === null ? undefined : table.row(a.dest)?.next.get(node);
+          next = again ?? (draw >= 0 ? options[draw]! : a.path);
+        }
         if (next === a.path && !deadEnds.length) {
           a.forward = !a.forward;
           a.s = Math.min(p.length, Math.max(0, a.s));
+          setDest(a);
         } else if (next === a.path) {
           // Dead end = an exit stair top: this person leaves; someone else enters at another exit,
           // one out of view. With every exit in view, they turn back instead.
@@ -1054,9 +1194,11 @@ export function buildCrowd(
             a.forward = enter.forward;
             a.s = a.forward ? 0 : p.length;
             a.hiddenUntil = renders;
+            setDest(a);
           } else {
             a.forward = !a.forward;
             a.s = Math.min(p.length, Math.max(0, a.s));
+            setDest(a);
           }
         } else {
           a.path = next;
@@ -1071,6 +1213,14 @@ export function buildCrowd(
       // keep to the left like Tokyo pedestrians tend to, plus personal offset, clamped to the
       // surveyed walkable lane so nobody stands in a wall or off the floor.
       let off = -0.3 + a.offset * 0.4;
+      // On a gate's edge heading to it, the line narrows towards the gate.
+      const gateHere = pathGate[a.path]!;
+      if (gateHere >= 0) {
+        const gl = gateLines[gateHere]!;
+        if (a.forward ? p.to === gl.id : p.from === gl.id) {
+          off *= Math.min(1, (a.forward ? p.length - a.s : a.s) / 6);
+        }
+      }
       if (p.lane?.left.length) {
         // The interval the walker is in; each value already holds over the whole interval. Lanes are
         // indexed by horizontal distance, so on stairs the 3D arc length a.s would run ahead of them.
@@ -1123,6 +1273,8 @@ export function buildCrowd(
     setCameraNearFade(startM: number, endM: number) { nearFade.value.set(startM, endM); },
     /** Pedestrians within 8 m of the last rendered camera (for ambience). */
     nearby: () => nearby,
+    /** People currently standing in gate lines (for tests and QA). */
+    queued: () => queued,
     dispose() {
       owned.forEach((g) => g.dispose());
       Object.values(M).forEach((m) => m.dispose());
