@@ -1088,7 +1088,7 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
-    if (this.catAvatar) built.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
+    if (this.catAvatar) built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
     this.interactionController = new InteractionController(built?.interactables ?? []);
     this.interactionSnapshot = "";
     this.interactionVisual = undefined;
