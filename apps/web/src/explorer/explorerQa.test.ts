@@ -1,11 +1,13 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { Explorer } from "./explorer.ts";
+import { InteractionController } from "./interaction.ts";
 
 function qaStand(mode = "walk") {
   const virtualKeys = new Set<string>();
   const state = Object.assign(Object.create(Explorer.prototype), {
     mode,
+    interactionController: new InteractionController([]), interactionSnapshot: "", events: {},
     pos: new THREE.Vector3(),
     camera: new THREE.PerspectiveCamera(),
     input: {

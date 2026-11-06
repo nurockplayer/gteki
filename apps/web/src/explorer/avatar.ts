@@ -13,6 +13,7 @@ export interface AvatarRig {
   readonly root: THREE.Group;
   /** speedMps: actual horizontal speed this frame (0 idle, ~1.45 walk, ~3.4 run). */
   update(dt: number, speedMps: number): void;
+  setHold?(pose: "sit" | null): void;
   setEnvMap(env: THREE.Texture | null, intensity?: number): void;
   /** Screen-door fade of the whole body: 1 opaque, 0 hidden. Sets a uniform only (no program rebuild, no transparency). */
   setFade(opacity: number): void;
