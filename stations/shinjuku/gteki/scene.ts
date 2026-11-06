@@ -8,7 +8,7 @@ import type * as THREE from "three";
 import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { OEDO_MAGENTA, STREET_UNDERSIDE, buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
+import { OEDO_MAGENTA, STREET_UNDERSIDE, buildStation, slabGeometry, soffitGeometry, type BuiltStation } from "../scene/build.ts";
 import { kitSwapRequested, prepareKitSwap, type KitSwap } from "../scene/kit/index.ts";
 import { currentTimeBand } from "../../ikebukuro/scene/time-band.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
@@ -91,6 +91,57 @@ function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt
       for (const o of owned) o.dispose();
       envTarget?.dispose(); // render target owns the texture plus its framebuffer/depth
     },
+  };
+}
+
+/** Wall props' own draw step (#946): the reaction range is drawn only while an interaction marker is visible. */
+function wallPropStepper(markers: THREE.Object3D[], mesh: THREE.Mesh, draws: { idle: number; full: number }) {
+  let full = false;
+  return () => {
+    const next = markers.some((o) => o.visible);
+    if (next === full) return;
+    full = next;
+    mesh.geometry.setDrawRange(0, next ? draws.full : draws.idle);
+  };
+}
+
+/** Runs the built station's step, then the wall prop step. Module level so neither can retain buildScene (#968). */
+function sequence(stepBuilt: (dt: number, t: number) => void, stepProps: () => void) {
+  return (dt: number, t: number) => { stepBuilt(dt, t); stepProps(); };
+}
+
+/**
+ * Explorer ambience and station sound (#859/#863/#926), with the acoustic zone setter. Lives out here for the
+ * same reason as sceneLifecycle: the closures keep only the audio nodes and the train-audio sampler, never the
+ * build layout or the built station (#968). Conditions and order are unchanged.
+ */
+function stationAudio({ ambience, stationSound, trainSound, acoustics, trainAudio }: {
+  ambience: ReturnType<typeof createAmbience> | null;
+  stationSound: ReturnType<typeof createStationSound> | null;
+  trainSound: ReturnType<typeof createTrainSound> | null;
+  acoustics: ReturnType<typeof createZoneAcoustics> | null;
+  trainAudio: BuiltStation["trainAudio"];
+}) {
+  let zone: AcousticZone = "passage";
+  let trainAudioElapsed = 0.25;
+  const on = ambience !== null || stationSound !== null;
+  return {
+    stepAudio: on ? (dt: number, camera?: THREE.Camera) => {
+      ambience?.update({ nearby: 6, openness: ZONE_ACOUSTICS[zone].openness });
+      stationSound?.update(dt, camera);
+      trainAudioElapsed += dt;
+      if (trainSound && camera && trainAudioElapsed >= 0.25) {
+        trainAudioElapsed = 0;
+        trainSound.update(trainAudio(), camera.position);
+      }
+    } : null,
+    disposeAudio: on ? () => {
+      trainSound?.dispose();
+      stationSound?.dispose();
+      ambience?.dispose();
+      acoustics?.dispose();
+    } : null,
+    setAcousticZone: acoustics ? (next: AcousticZone) => { zone = next; acoustics.setZone(next); } : null,
   };
 }
 
@@ -197,14 +248,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   const wallProps = buildWallProps(T, mergeGeometries, toRenderer, wallPropPlacements, "shinjuku");
   built.root.add(wallProps);
   const propMarkers = wallProps.children.filter((o) => typeof o.userData.gtekiInteractionId === "string");
-  const propDraws = wallPropDrawRanges(wallProps);
-  let propFull = false;
-  const stepWallProps = () => {
-    const full = propMarkers.some((o) => o.visible);
-    if (full === propFull) return;
-    propFull = full;
-    wallProps.geometry.setDrawRange(0, full ? propDraws.full : propDraws.idle);
-  };
+  const stepWallProps = wallPropStepper(propMarkers, wallProps, wallPropDrawRanges(wallProps));
 
   // The street context (PLATEAU surface) is shown only when the viewer is where it can be seen; the lane
   // app reports its camera via setViewer, but scene-api's update() carries no camera. A draw-nothing probe
@@ -375,7 +419,6 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
 
   // Explorer ambience and station sound (#859): an original bed plus gate taps, an original approach
   // chime and our own ja-JP announcements. Sites come from the bundle's graph nodes, converted to renderer space.
-  let zone: AcousticZone = "passage";
   const acoustics = ctx.audio ? createZoneAcoustics(ctx.audio.context, ctx.audio.destination) : null;
   const ambience = ctx.audio && acoustics ? createAmbience(ctx.audio.context, acoustics.input) : null;
   const graphNodes = ctx.bundle.nodes;
@@ -395,26 +438,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     },
   }) : null;
   const trainSound = ctx.audio && acoustics && stationSound ? createTrainSound({ context: ctx.audio.context, destination: acoustics.input, isMuted: ctx.audio.isMuted, chimeAt: stationSound.chimeAt }) : null;
-  let trainAudioElapsed = 0.25;
-  const stepAudio = (ambience || stationSound)
-    ? (dt: number, camera?: THREE.Camera) => {
-      ambience?.update({ nearby: 6, openness: ZONE_ACOUSTICS[zone].openness });
-      stationSound?.update(dt, camera);
-      trainAudioElapsed += dt;
-      if (trainSound && camera && trainAudioElapsed >= 0.25) {
-        trainAudioElapsed = 0;
-        trainSound.update(built.trainAudio(), camera.position);
-      }
-    }
-    : null;
-  const disposeAudio = (ambience || stationSound)
-    ? () => {
-      trainSound?.dispose();
-      stationSound?.dispose();
-      ambience?.dispose();
-      acoustics?.dispose();
-    }
-    : null;
+  const audio = stationAudio({ ambience, stationSound, trainSound, acoustics, trainAudio: built.trainAudio });
 
   const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
@@ -443,9 +467,9 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
-    ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); } } : {}),
+    ...(audio.setAcousticZone ? { setAcousticZone: audio.setAcousticZone } : {}),
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
-    ...sceneLifecycle((dt: number, t: number) => { built.update(dt, t); stepWallProps(); }, built.dispose, viewer.refresh, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, stepAudio, disposeAudio),
+    ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
   return scene;
 };

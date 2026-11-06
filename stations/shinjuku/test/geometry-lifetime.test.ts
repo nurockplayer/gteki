@@ -44,6 +44,9 @@ describe("station geometry lifetime", () => {
     const result = JSON.parse(stdout);
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
+    // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the
+    // layout copy, the built station, every intermediate array) is collected while the scene is still held.
+    expect(result.sceneScopeCollected).toBe(true);
     // #789 (2026-11-04 JST): geometry remeasured after repairing the node display heights.
     expect(result.live).toBe(146); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss)
     // #645 step 2c: lift-door clearances split two restricted boundaries (+5,184 B); the shaft-geometry
