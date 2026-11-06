@@ -203,6 +203,18 @@ describe("station sound", () => {
     sound.dispose();
   });
 
+  it("cancels an announcement whose end never fires instead of losing track of it", () => {
+    const { context } = fakeContext();
+    const speech = fakeSpeech();
+    const sound = createStationSound({ context, destination, isMuted: () => false, stationNameJa: "新宿", sites: { gates: [], announce: [AT], chime: [] }, speech: speech.port, random: () => 0 });
+    run(sound, 12);
+    expect(speech.said).toHaveLength(1);
+    expect(speech.state.cancels).toBe(0);
+    run(sound, 31);
+    expect(speech.state.cancels).toBe(1);
+    sound.dispose();
+  });
+
   it("cancels speech on dispose, and only the speech it started", () => {
     const { context } = fakeContext();
     const speech = fakeSpeech();

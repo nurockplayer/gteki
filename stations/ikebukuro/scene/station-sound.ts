@@ -79,7 +79,7 @@ const ANNOUNCE_MIN_INTERVAL_S = 60;
 const ANNOUNCE_MAX_INTERVAL_S = 120;
 /** With no voices loaded yet, retry soon; they arrive asynchronously. */
 const ANNOUNCE_VOICE_RETRY_S = 5;
-/** Some browsers never fire `end`: an announcement older than this no longer counts as ours. */
+/** Some browsers never fire `end`: an announcement older than this is cancelled, so mute can never miss it. */
 const ANNOUNCE_MAX_SECONDS = 30;
 
 /** Distances over hundreds of sites are refreshed a few times a second, never per frame. */
@@ -269,7 +269,10 @@ export function createStationSound(opts: StationSoundOptions): StationSound {
       if (muted || distance(listener, speakingAt) > ANNOUNCE_CANCEL_RANGE_M) {
         speech?.cancel();
         speakingAt = null;
-      } else if (time - spokeAtTime > ANNOUNCE_MAX_SECONDS) speakingAt = null;
+      } else if (time - spokeAtTime > ANNOUNCE_MAX_SECONDS) {
+        speech?.cancel();
+        speakingAt = null;
+      }
     }
 
     if (speech && !muted && !speakingAt && !speech.speaking() && time >= nextSpeechAt) {
