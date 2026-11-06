@@ -1,7 +1,14 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Explorer } from "./explorer.ts";
 import { InteractionController } from "./interaction.ts";
 import type { InteractableSpec } from "@gteki/scene-api";
+
+// Keep catSound's pure helpers real; only the WebAudio tap is replaced.
+vi.mock("./catSound.ts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./catSound.ts")>();
+  return { ...actual, playPawStep: vi.fn() };
+});
+import { playPawStep } from "./catSound.ts";
 
 const info: InteractableSpec = {
   id: "info", layer: "fictional", simulated: true, kind: "board",
@@ -79,5 +86,30 @@ describe("Explorer.interact", () => {
     const e = explorer({ avatarRig: { meow: () => false, setHold() {} }, catMeowSound: sound, audio: { context: {}, master: {} } });
     e.interact();
     expect(sound).not.toHaveBeenCalled();
+  });
+});
+
+describe("Explorer.stepPaws", () => {
+  beforeEach(() => {
+    vi.mocked(playPawStep).mockClear();
+  });
+
+  it("never steps for the human avatar", () => {
+    const e = explorer({ catAvatar: false, mode: "walk", audio: { context: {}, master: {} } });
+    e.stepPaws(0.1, 5);
+    expect(playPawStep).not.toHaveBeenCalled();
+  });
+
+  it("does not step before the audio context exists", () => {
+    const e = explorer({ audio: null, mode: "walk" });
+    e.stepPaws(0.1, 5);
+    expect(playPawStep).not.toHaveBeenCalled();
+  });
+
+  it("taps the tile under the walking cat once a step is due", () => {
+    const e = explorer({ mode: "walk", audio: { context: {}, master: {} } });
+    e.stepPaws(0.1, 5); // 0.5 m of travel: two steps due, one tap per frame
+    expect(playPawStep).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(playPawStep).mock.calls[0]![2]).toBe("tile");
   });
 });

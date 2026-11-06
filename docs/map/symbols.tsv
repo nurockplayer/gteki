@@ -78,6 +78,14 @@ MEOW_SECONDS	const	apps/web/src/explorer/catMeow.ts
 MeowPose	interface	apps/web/src/explorer/catMeow.ts
 catTapHit	function	apps/web/src/explorer/catMeow.ts
 meowPose	function	apps/web/src/explorer/catMeow.ts
+MEOW_GLIDE_S	const	apps/web/src/explorer/catSound.ts
+MEOW_HZ	const	apps/web/src/explorer/catSound.ts
+PAW_STEP_M	const	apps/web/src/explorer/catSound.ts
+PawSurface	type	apps/web/src/explorer/catSound.ts
+advancePaws	function	apps/web/src/explorer/catSound.ts
+pawSurface	function	apps/web/src/explorer/catSound.ts
+playCatMeow	function	apps/web/src/explorer/catSound.ts
+playPawStep	function	apps/web/src/explorer/catSound.ts
 contactShadow	function	apps/web/src/explorer/contactShadow.ts
 CutRecipe	interface	apps/web/src/explorer/cutRecipe.ts
 MeshRecord	interface	apps/web/src/explorer/cutRecipe.ts

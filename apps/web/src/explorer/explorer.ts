@@ -46,6 +46,7 @@ import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel,
 import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 import { catTapHit } from "./catMeow.ts";
+import { advancePaws, pawSurface, playCatMeow, playPawStep } from "./catSound.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
@@ -362,9 +363,11 @@ export class Explorer {
    */
   private stationAudio: GainNode | null = null;
   private audioUnlock: (() => void) | null = null;
-  private catMeowSound: ((context: AudioContext, destination: AudioNode) => void) | null = null;
+  private catMeowSound: ((context: AudioContext, destination: AudioNode) => void) | null = playCatMeow;
   /** The synth for the cat's meow; plays through the master bus, so mute applies. */
   setCatMeowSound(play: ((context: AudioContext, destination: AudioNode) => void) | null): void { this.catMeowSound = play; }
+  /** Ground left over from the last paw step, under PAW_STEP_M. */
+  private pawCarriedM = 0;
   private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
@@ -2606,6 +2609,7 @@ export class Explorer {
     if (this.catAvatar) this.avatarRig?.setTurnLead?.(this.mode !== "overview" && motion.speed > 0 && dt > 0 ? angleDelta(previousYaw, motion.yaw) / (dt * CAT_TURN_RATE) : 0);
     if (this.catAvatar) this.avatarRig?.setLookPitch?.(this.mode === "overview" ? 0 : this.pitch);
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
+    this.stepPaws(dt, motion.speed);
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
     if (this.catAvatar && this.avatarRig) {
@@ -2638,6 +2642,19 @@ export class Explorer {
 
   private catRidingEscalator(): boolean {
     return this.catAvatar && this.mode === "guide" && this.guide !== null && guideOnEscalator(this.guide.s, this.guide.spans);
+  }
+
+  /**
+   * The cat's paw taps, one at most per frame, on the surface underfoot. Silent until a gesture has
+   * unlocked the audio context; the human avatar has no step sounds.
+   */
+  private stepPaws(dt: number, speed: number): void {
+    if (!this.catAvatar || this.mode === "overview" || this.catRidingEscalator() || this.audio === null) return;
+    const { carriedM, steps } = advancePaws(this.pawCarriedM, speed * dt);
+    this.pawCarriedM = carriedM;
+    if (steps < 1) return;
+    const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
+    playPawStep(this.audio.context, this.audio.master, pawSurface(this.zone, onStairs));
   }
 
   /** Start the cat's meow overlay, with its synth when the station audio work has supplied one. */
