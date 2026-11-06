@@ -1154,6 +1154,8 @@ TimeBand	type	stations/ikebukuro/scene/time-band.ts	7
 tokyoHour	function	stations/ikebukuro/scene/time-band.ts	16
 bandForHour	function	stations/ikebukuro/scene/time-band.ts	23
 currentTimeBand	function	stations/ikebukuro/scene/time-band.ts	30
+ZONE_ACOUSTICS	const	stations/ikebukuro/scene/zone-acoustics.ts	4
+createZoneAcoustics	function	stations/ikebukuro/scene/zone-acoustics.ts	11
 StationAudio	interface	stations/shinjuku/app/src/audio.ts	3
 createStationAudio	function	stations/shinjuku/app/src/audio.ts	29
 Avatar	interface	stations/shinjuku/app/src/avatar.ts	5
