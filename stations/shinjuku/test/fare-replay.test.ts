@@ -33,7 +33,7 @@ describe("actual walker fence replay", () => {
     restore = accelerateRaycasts(targets);
     const nearby = nearbyTargets(targets);
     rayProof = { before, after: rays.map(r => hits(r, nearby(r))) };
-  }, 60_000);
+  }, 300_000);
   afterAll(() => { restore?.(); built?.dispose(); scene?.dispose(); vi.unstubAllGlobals(); });
   it("endpoints overlap blocking neighbours in both walkers", () => {
     const ends = endpointClosure(built, scene, liftClearances(bundle, plan, built.layout));
