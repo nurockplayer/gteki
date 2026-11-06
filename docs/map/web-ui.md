@@ -9,6 +9,7 @@ updated: 2026-10-26 JST
 `apps/web/src/ui/app.ts` is the shell: one `App` class that builds the DOM, owns the state object `s` (station, router, search index, origin, destination, route, guide), and wires the search panel, route sheet, HUD, credit line and coverage dialog around the `Explorer`. Each small module beside it is a pure helper (keyboard rules for comboboxes, minimap geometry, card models, live-region text) with its own test. Language switching (ja and en) and the URL state (`station`, `from`, `to`) are handled here too.
 
 ## Main files and functions
+- `apps/web/src/ui/interactionPrompt.ts` — simulated interaction button, status and session-held item.
 - `apps/web/src/ui/app.ts:83-1479` — class App, the whole shell.
 - `apps/web/src/ui/app.ts:131-161` — start(): builds the Explorer (click and guide callbacks), sets the panel, minimap and sheet elements, lists stations, opens the station named in the URL or the first real one.
 - `apps/web/src/ui/app.ts:165-215` — layout(): the DOM tree (viewport, panel, sheet, HUD, minimap, toast, credit footer).

@@ -8,6 +8,13 @@ export interface FramingBoard {
   nameCorners: readonly THREE.Vector3[];
   visible?: (cameraPos: THREE.Vector3, centre: THREE.Vector3) => boolean;
 }
+export interface FramingRig {
+  shoulder: number; lift: number; drop: number; distance: number;
+  /** World points of the walker (feet, top) that must stay inside the free area. */
+  body?: readonly THREE.Vector3[];
+  /** False when the boom can't reach this camera from the pivot, or the walker is hidden from it. */
+  clear?: (cameraPos: THREE.Vector3, pivot: THREE.Vector3) => boolean;
+}
 /** NDC rectangle: x increases right, y increases up. */
 export interface NdcRect { x0: number; y0: number; x1: number; y1: number }
 // NDC spans 2 vertically: cap the name box at half the viewport height to avoid oversized close boards.
@@ -16,7 +23,7 @@ export const IDENTITY_RANGE_M = 30;
 export const LOOK_PITCH = { min: -1.1, max: 0.5 } as const;
 
 /** Pure placement: choose a nearby readable board and frame its name at the follow lens. */
-export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number, boards: readonly FramingBoard[], aspect: number, fovDeg: number, guideHeading?: number, free: NdcRect = { x0: -1, y0: -1, x1: 1, y1: 1 }): { yaw: number; pitch: number; centre: THREE.Vector3 } | null {
+export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number, boards: readonly FramingBoard[], aspect: number, fovDeg: number, guideHeading?: number, free: NdcRect = { x0: -1, y0: -1, x1: 1, y1: 1 }, rig: FramingRig = { shoulder: FOLLOW.shoulder, lift: FOLLOW.lift, drop: FOLLOW.drop, distance: FOLLOW.defaultDistance }): { yaw: number; pitch: number; centre: THREE.Vector3 } | null {
   const camera = new THREE.PerspectiveCamera(fovDeg, aspect, 0.05, 100);
   const tanV = Math.tan(THREE.MathUtils.degToRad(fovDeg / 2)), tanH = tanV * camera.aspect;
   const left = Math.max(-1, free.x0), right = Math.min(1, free.x1);
@@ -35,8 +42,8 @@ export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number
     if (guideHeading !== undefined && Math.cos(y - guideHeading) < -1e-9) continue;
     let p = THREE.MathUtils.clamp(Math.atan2(toward.y, Math.hypot(toward.x, toward.z)), LOOK_PITCH.min, LOOK_PITCH.max);
     const project = () => {
-      const pose = followPose(head, y, p);
-      camera.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
+      const pose = followPose(head, y, p, rig.shoulder, rig.lift, rig.drop);
+      camera.position.copy(pose.pivot).addScaledVector(pose.back, rig.distance);
       camera.lookAt(pose.target);
       camera.updateMatrixWorld(true);
       return board.centre.clone().project(camera);
@@ -54,6 +61,11 @@ export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number
     const nameBox = new THREE.Box3().setFromPoints(name);
     if (nameBox.max.y - nameBox.min.y > MAX_NAME_HEIGHT_NDC ||
       nameBox.min.x < left || nameBox.max.x > right || nameBox.min.y < freeBottom || nameBox.max.y > freeTop) continue;
+    if (rig.body?.some((point) => {
+      const p = point.clone().project(camera);
+      return Math.abs(p.z) > 1 || p.x < left || p.x > right || p.y < freeBottom || p.y > freeTop;
+    })) continue;
+    if (rig.clear && !rig.clear(camera.position.clone(), followPose(head, y, p, rig.shoulder, rig.lift, rig.drop).pivot)) continue;
     if (board.front.dot(camera.position.clone().sub(board.centre).normalize()) <= 0.2) continue;
     if (board.visible && !board.visible(camera.position.clone(), board.centre.clone())) continue;
     // Keep yaw continuous around the current camera heading.

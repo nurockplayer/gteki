@@ -60,11 +60,13 @@ export const FOLLOW = {
 } as const;
 
 /**
- * Cat protagonist (#854): low, close, Stray-like. The pivot sits at the cat's back and a short boom keeps the
- * animal large in frame while the player still has room to pitch up at overhead signs; at pitch -0.12 the
- * camera sits ~1.25 m high (the human's boom reaches ~2.5 m).
+ * Cat camera sits ~0.7 m high with a near-level look, so the station fills the frame and the cat is small
+ * and low. Overhead signs are visible by looking up; numbers chosen from runtime shots on #854.
  */
-export const FOLLOW_CAT = { pivotY: 0.6, shoulder: 0.2, distance: 2.0, lift: 0.22, drop: 0.3 } as const;
+export const FOLLOW_CAT = { pivotY: 0.42, shoulder: 0.2, distance: 2.4, lift: 0.12, drop: 0, pitch: 0 } as const;
+
+/** A portrait phone's narrow horizontal FOV needs a smaller shoulder offset. */
+export function catShoulder(aspect: number): number { return FOLLOW_CAT.shoulder * Math.min(1, aspect); }
 
 /** Vertical field of view (degrees) per camera mode. */
 export const FOV = {

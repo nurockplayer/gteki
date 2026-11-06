@@ -254,3 +254,17 @@ describe("cat avatar", () => {
     mixer.stopAllAction();
   });
 });
+
+it("holds the cat sit clip immediately when requested", () => {
+  const root = new THREE.Group();
+  const mixer = new THREE.AnimationMixer(root);
+  const idle = new THREE.AnimationClip("idle", 1, []);
+  const sit = new THREE.AnimationClip("sit", 1, []);
+  let holding = true;
+  const update = catClips(mixer, [idle, sit], undefined, () => holding ? "sit" : null);
+  update(0, 0.01);
+  expect(mixer.clipAction(sit).isRunning()).toBe(true);
+  holding = false;
+  update(0, 0.01);
+  expect(mixer.clipAction(idle).isRunning()).toBe(true);
+});
