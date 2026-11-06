@@ -1341,20 +1341,19 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const visStart = platA + 0.3;
         const visEnd = visStart + module * Math.floor((platB + 0.01 - visStart) / module);
         const openings = psdOpeningCenters(stopS, platA, platB).filter((c) => c - doorW / 2 >= visStart && c + doorW / 2 <= visEnd);
-        const panels: THREE.BufferGeometry[] = [];
-        const caps: THREE.BufferGeometry[] = [];
+        const spans: [number, number][] = [];
         const leaves: { s: number; dir: number }[] = [];
-        const panel = (a: number, b: number) => {
-          panels.push(boxAlong(P(at(a, 0.06), z + 0.65), P(at(b, 0.06), z + 0.65), 0.16, 1.3));
-          caps.push(boxAlong(P(at(a, 0.06), z + 1.31), P(at(b, 0.06), z + 1.31), 0.2, 0.04));
-        };
         let fillFrom = visStart;
         for (const c of openings) {
-          if (c - doorW / 2 > fillFrom + 0.01) panel(fillFrom, c - doorW / 2);
+          if (c - doorW / 2 > fillFrom + 0.01) spans.push([fillFrom, c - doorW / 2]);
           leaves.push({ s: c - doorW * 0.25, dir: -1 }, { s: c + doorW * 0.25, dir: 1 });
           fillFrom = c + doorW / 2;
         }
-        if (visEnd > fillFrom + 0.01) panel(fillFrom, visEnd);
+        if (visEnd > fillFrom + 0.01) spans.push([fillFrom, visEnd]);
+        // No closure may capture panels/caps: it would share this block's scope with the train closures,
+        // keeping the merged source arrays alive (geometry-lifetime.test.ts).
+        const panels = spans.map(([a, b]) => boxAlong(P(at(a, 0.06), z + 0.65), P(at(b, 0.06), z + 0.65), 0.16, 1.3));
+        const caps = spans.map(([a, b]) => boxAlong(P(at(a, 0.06), z + 1.31), P(at(b, 0.06), z + 1.31), 0.2, 0.04));
         // Collision keeps the original 5.6 m modules (#870: unchanged on purpose; see enclosure.test.ts).
         for (let s = platA + 0.3; s + module <= platB + 0.01; s += module) {
           propWalls.push({ a: at(s, 0.02), b: at(s + module, 0.02), zMin: z - 0.1, zMax: z + 1.35, side: 1, kind: "wall", bodyMin: z - 0.5 });
