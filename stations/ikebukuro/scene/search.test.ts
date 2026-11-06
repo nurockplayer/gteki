@@ -111,6 +111,7 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "カフェカルディーノ", top1: "shop-ikb-isp-000066" },
     { q: "青山フラワーマーケット", top1: "shop-ikb-hope-001" },
     { q: "リンツ ショコラ ブティック", top1: "shop-ikb-echika-1104" },
+    { q: "ニューデイズ", top1: "shop-ikb-newdays-ikebukuro" }, // #862 NewDays 池袋, facts-only machine listing
   ],
   "search-only line POIs (#414, #420)": [
     { q: "C1番出口", top1: "exit-c1" },
@@ -169,6 +170,14 @@ describe("Ikebukuro golden search", () => {
     const searchOnly = index.search("東武東上線 中央1改札")[0]!;
     expect(searchOnly.poi.id).toBe("tobu-central-gate-1");
     expect(searchOnly.routable).toBe(false);
+  });
+
+  it("finds NewDays 池袋 as search-only with no position (#862)", () => {
+    const hit = index.search("ニューデイズ")[0]!;
+    expect(hit.poi.id).toBe("shop-ikb-newdays-ikebukuro");
+    expect(hit.routable).toBe(false);
+    expect(hit.poi.displayPosition).toBeNull();
+    expect(hit.poi.connectorNodeIds).toEqual([]);
   });
 
   for (const [group, rows] of Object.entries(GOLDEN)) {
