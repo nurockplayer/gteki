@@ -98,14 +98,19 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
   }, 120_000);
 
   it("derives the street layer itself when the baked table is not used, with the same result", () => {
+    // The scene hook adds the merged wall-props mesh (#858 item 12) on top of the station root;
+    // buildStation has none, so drop that group from the hook-built fixture before comparing.
+    const WALL_PROPS_VISUAL = '["MeshBasicMaterial","","ffffff",null,null,1,false,0,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false';
+    const stationVisual = { ...base.scene.low.visual };
+    delete stationVisual[WALL_PROPS_VISUAL];
     for (const useBakedSurface of [true, false]) {
       const built = withCanvasStub(() => buildStation(bundle, plan, { quality: "low", useBakedSurface }));
       // The flag is set where the seed is chosen: the table was really used, or really not.
       expect(built.root.getObjectByName("surface-render-only")!.userData.bakedSurface, `table used, useBakedSurface=${useBakedSurface}`).toBe(useBakedSurface);
       expect(stationDigest(built), `useBakedSurface=${useBakedSurface}`).toEqual(base.station);
-      // The scene hook adds an empty viewer probe on top of the station root; compare drawn triangles only.
+      // The scene hook also adds an empty viewer probe; compare drawn triangles only.
       const drawn = (v: FullDigest["scene"]["low"]["visual"]) => Object.fromEntries(Object.entries(v).filter(([, g]) => g.triangles > 0));
-      expect(drawn(visualDigest(built.root)), `useBakedSurface=${useBakedSurface}`).toEqual(drawn(base.scene.low.visual));
+      expect(drawn(visualDigest(built.root)), `useBakedSurface=${useBakedSurface}`).toEqual(drawn(stationVisual));
       built.dispose();
     }
   }, 120_000);
