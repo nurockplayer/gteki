@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { measureLoadBudget } from "../lib/loadBudget.ts";
-import { hooks, imageStats, textIf, toasts, labelUiOverlaps, openStation, save, settleFrames, shotPath, STATIONS, watch } from "../lib/gteki.ts";
+import { hooks, imageStats, textIf, toasts, labelUiOverlaps, openStation, save, shotPath, STATIONS, watch } from "../lib/gteki.ts";
 
 /** CI's e2e-smoke sets this (.github/workflows/e2e-smoke.yml): under SwiftShader the spec checks flow only and skips screenshots that time out (#76, #118). */
 const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
@@ -17,28 +17,12 @@ for (const key of STATIONS) {
     const { loadMs, phase } = await openStation(page, key);
     expect(phase).toBe("ready");
 
-    let info = await hooks.sceneInfo(page);
+    const info = await hooks.sceneInfo(page);
     // Load-time breakdown in the CI log, so every PR shows where opening a station spends its time (#650).
     const steps = (info as { loadTimings?: Record<string, number> }).loadTimings ?? {};
     console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs, steps })}`);
     for (const step of ["scene", "greybox", "stairwellCut", "connectors", "rayTrees", "total"]) expect.soft(Number.isFinite(steps[step]) && steps[step]! >= 0, `load timing ${step}`).toBe(true);
     expect.soft(steps.total ?? 0, "load timing total").toBeGreaterThan(0);
-    // Ratchet: the stairwell cut, greybox and connectors together stay under the budget (#650).
-    const cutAndShell = (values: Record<string, number>) => (values.stairwellCut ?? NaN) + (values.greybox ?? NaN) + (values.connectors ?? NaN);
-    const { best, samples } = await measureLoadBudget(LOAD_BUDGET_MS, cutAndShell(steps), async () => {
-      const failedRequestCount = diag.failedRequests.length;
-      await page.reload();
-      await page.waitForFunction(() => (window as any).__gteki?.phase?.() === "ready", null, { timeout: 120_000, polling: 250 });
-      await settleFrames(page, `reopen ${key}`);
-      const addedFailures = diag.failedRequests.slice(failedRequestCount);
-      diag.failedRequests.splice(failedRequestCount, diag.failedRequests.length - failedRequestCount, ...addedFailures.filter((entry) => !entry.startsWith("net::ERR_ABORTED")));
-      info = await hooks.sceneInfo(page);
-      const remeasuredSteps = (info as { loadTimings?: Record<string, number> }).loadTimings ?? {};
-      console.log(`[load-timings] ${key} ${JSON.stringify({ loadMs: remeasuredSteps.total, steps: remeasuredSteps })}`);
-      return cutAndShell(remeasuredSteps);
-    });
-    console.log(`[load-budget] ${key} samples=${JSON.stringify(samples)} budget=${LOAD_BUDGET_MS}`);
-    expect(best, `${key}: stairwellCut + greybox + connectors (ms), samples ${samples.join("/")}, budget ${LOAD_BUDGET_MS}`).toBeLessThanOrEqual(LOAD_BUDGET_MS);
     // Both stations' baked stairwell recipes (#650, #658) replay; a stale one would fall back to live.
     expect(info.greybox?.stairwells?.recipe, `${key}: stairwell cut recipe`).toBe("replayed");
     // A station scene, not the L0 fallback: real geometry, walkable surfaces and colliders.
@@ -80,6 +64,19 @@ for (const key of STATIONS) {
     expect.soft(diag.failedRequests, "failed requests").toEqual([]);
     // Labels may overlap UI boxes, but must never paint above controls (they would steal taps/clicks).
     expect.soft(overlaps.uiOverlaps.filter((o) => o.labelOnTop), "POI labels painted over UI controls").toEqual([]);
+
+    // Ratchet: the stairwell cut, greybox and connectors together stay under the budget (#650).
+    // Last, so every check above judges the first load and the reload can neither hide nor add to it (#758).
+    const cutAndShell = (values: Record<string, number>) => (values.stairwellCut ?? NaN) + (values.greybox ?? NaN) + (values.connectors ?? NaN);
+    const { best, samples } = await measureLoadBudget(LOAD_BUDGET_MS, cutAndShell(steps), async () => {
+      await page.reload();
+      await page.waitForFunction(() => (window as any).__gteki?.phase?.() === "ready", null, { timeout: 120_000, polling: 250 });
+      const reloaded = ((await hooks.sceneInfo(page)) as { loadTimings?: Record<string, number> }).loadTimings ?? {};
+      console.log(`[load-timings] ${key} reload ${JSON.stringify({ steps: reloaded })}`);
+      return cutAndShell(reloaded);
+    });
+    console.log(`[load-budget] ${key} samples=${JSON.stringify(samples)} budget=${LOAD_BUDGET_MS}`);
+    expect(best, `${key}: stairwellCut + greybox + connectors (ms), samples ${samples.join("/")}, budget ${LOAD_BUDGET_MS}`).toBeLessThanOrEqual(LOAD_BUDGET_MS);
   });
 }
 
