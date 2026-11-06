@@ -387,6 +387,37 @@ describe("ikebukuro crowd near-camera hiding", () => {
     c.dispose();
   });
 
+  it("gives every high-tier part mesh one normal twin carrying the colour shader's near-fade uniform", () => {
+    const c = make(150);
+    const ms = meshes(c);
+    expect(ms.length).toBeGreaterThan(1);
+    const twins = ms.map((m) => m.userData.gteki_gtao_twin as THREE.Material | undefined);
+    expect(twins[0]).toBeInstanceOf(THREE.MeshNormalMaterial);
+    expect(twins.every((t) => t === twins[0])).toBe(true);
+    expect(twins[0]!.allowOverride).toBe(false);
+    expect(twins[0]!.blending).toBe(THREE.NoBlending);
+
+    const compile = (material: THREE.Material) => {
+      const shader = { uniforms: {} as Record<string, THREE.IUniform>, vertexShader: "void main() {}\n#include <project_vertex>", fragmentShader: "void main() {\n#include <clipping_planes_fragment>\n}" };
+      material.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, null as unknown as THREE.WebGLRenderer);
+      return shader;
+    };
+    const colour = compile(named(c, "torso").material as THREE.Material);
+    const normal = compile(twins[0]!);
+    expect(normal.uniforms.uNearFade).toBe(colour.uniforms.uNearFade);
+    expect(normal.fragmentShader).toContain("discard");
+    expect(normal.vertexShader).toContain("vCrowdView = -mvPosition.xyz;");
+    c.setCameraNearFade(1.4, 2.6);
+    expect((colour.uniforms.uNearFade!.value as THREE.Vector2).toArray()).toEqual([1.4, 2.6]);
+    c.dispose();
+  });
+
+  it("gives the low-tier merged mesh no twin", () => {
+    const c = make(40);
+    expect(meshes(c)[0]!.userData.gteki_gtao_twin).toBeUndefined();
+    c.dispose();
+  });
+
   it("hides the walker at exactly the legacy distances (1.0947 m at camera height 1.6 m, bob 0.02381 m)", () => {
     const w = firstWalker();
     const c = buildCrowd(THREE, LONG, toRenderer, 1, new THREE.Texture(), {});

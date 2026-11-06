@@ -64,6 +64,30 @@ describe("symbolic heights stay display-only", () => {
     expect(main).toContain("高さは推定 Heights estimated");
   });
 
+  it("keeps every escalator run inside the 35° incline range except the stated data limit (gteki #730)", () => {
+    const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
+    const floorById = new Map(bundle.floors.map((f) => [f.id, f]));
+    const displayZ = (id: string) => {
+      const n = nodeById.get(id)!;
+      return n.position.z ?? n.renderZ ?? floorById.get(n.floorId)!.renderElevationM;
+    };
+    // 27d3ed49 is 35.8° on a symbolic height (the source has no z, gap:heights); it stays procedural.
+    const ABOVE_RANGE = new Set(["e:27d3ed498cc9423683ee7f502c5d2460"]);
+    const runs = bundle.edges.filter((e) => e.mode === "escalator").map((e) => {
+      const a = nodeById.get(e.from)!;
+      const b = nodeById.get(e.to)!;
+      const plan = Math.hypot(a.position.x - b.position.x, a.position.y - b.position.y);
+      const rise = Math.abs(displayZ(e.from) - displayZ(e.to));
+      const angle = (Math.atan(rise / Math.max(1e-6, plan - 2.4)) * 180) / Math.PI;
+      return { id: e.id, angle };
+    });
+    expect(runs.length).toBe(22);
+    for (const r of runs) {
+      if (ABOVE_RANGE.has(r.id)) expect(r.angle, `${r.id} is listed as above 35°`).toBeGreaterThan(35);
+      else expect(r.angle, r.id).toBeLessThanOrEqual(35);
+    }
+  });
+
   it("marks stairs and escalators whose anchored display rise is impossible (gteki #644)", () => {
     const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
     const floorById = new Map(bundle.floors.map((f) => [f.id, f]));

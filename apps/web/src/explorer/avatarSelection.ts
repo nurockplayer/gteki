@@ -62,6 +62,7 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
   let fade = 1;
   let hold: "sit" | null = null;
   let lookPitch = 0;
+  let turnLead = 0;
   let env: THREE.Texture | null = null;
   let intensity = 0.6;
   const selection: AvatarSelection = {
@@ -70,6 +71,7 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
     setHold(pose) { hold = pose; current.setHold?.(pose); },
     setLookPitch(pitch) { lookPitch = pitch; current.setLookPitch?.(pitch); },
     meow() { return current.meow?.() ?? false; },
+    setTurnLead(radians) { turnLead = radians; current.setTurnLead?.(radians); },
     setFade(value) { fade = sanitizeAvatarFade(value); if (!disposed) current.setFade(fade); },
     setEnvMap(value, strength = 0.6) { env = value; intensity = strength; if (!disposed) current.setEnvMap(env, intensity); },
     cancelPendingLoad() { generation++; pending = null; },
@@ -83,6 +85,7 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
         if (disposed || token !== generation) { next.dispose(); return; }
         next.setHold?.(hold);
         next.setLookPitch?.(lookPitch);
+        next.setTurnLead?.(turnLead);
         next.setFade(fade);
         next.setEnvMap(env, intensity);
         const previous = current;
