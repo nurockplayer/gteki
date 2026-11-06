@@ -5,11 +5,11 @@ import { PanelFold } from "./panelFold.ts";
 let root: HTMLElement, panel: HTMLElement, entry: HTMLButtonElement, input: HTMLInputElement;
 let error: boolean, fold: PanelFold;
 beforeEach(() => {
-  document.body.innerHTML = '<main><section><input id="gteki-to"></section><button>Search</button></main>';
+  document.body.innerHTML = '<main><section><input id="gteki-from"><input id="gteki-to"></section><button>Search</button></main>';
   root = document.querySelector('main')!;
   panel = root.querySelector('section')!;
   entry = root.querySelector('button')!;
-  input = root.querySelector('input')!;
+  input = root.querySelector('#gteki-to')!;
   error = false;
   fold = new PanelFold(root, panel, entry, () => error);
 });

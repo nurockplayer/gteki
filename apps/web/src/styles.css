@@ -69,7 +69,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   backdrop-filter: blur(16px); box-shadow: var(--shadow);
 }
 .app[data-panel="folded"] .panel { display: none; }
-.panel-entry { display: none; position: absolute; z-index: 4; left: 16px; top: calc(60px + env(safe-area-inset-top)); background: var(--glass-strong); }
+.panel-entry { display: none; position: absolute; z-index: 4; left: 16px; top: calc(66px + env(safe-area-inset-top)); background: var(--glass-strong); }
 .app[data-panel="folded"] .panel-entry { display: block; }
 .banner { font-size: 12px; line-height: 1.45; padding: 7px 10px; border-radius: 9px; margin-bottom: 10px; }
 .banner.warn { background: rgba(255, 179, 71, 0.14); color: #ffd59a; border: 1px solid rgba(255, 179, 71, 0.4); }

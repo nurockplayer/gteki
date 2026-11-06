@@ -16,7 +16,7 @@ export class PanelFold {
   open(focus = false): void {
     this.root.dataset.panel = "open";
     this.entry.setAttribute("aria-expanded", "true");
-    if (focus) this.panel.querySelector<HTMLElement>("#gteki-to, input, select, textarea")?.focus();
+    if (focus) (this.panel.querySelector<HTMLElement>("#gteki-to") ?? this.panel.querySelector<HTMLElement>("input, select, textarea"))?.focus();
   }
 
   fold(guardFocus = false, focusEntry = false): void {
