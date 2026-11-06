@@ -18,3 +18,13 @@ export function avatarMotion(prev: { x: number; z: number }, cur: { x: number; z
   const heading = Math.atan2(-dx, -dz);
   return { yaw: bodyYaw + angleDelta(bodyYaw, heading) * Math.min(1, dt * TURN_RATE), speed: d / dt };
 }
+
+/** Cat body pitch: nose up on a climb (radians, positive = up), eased, level when not travelling. */
+export const CAT_BODY_PITCH = { max: 0.52, settle: 0.18, minSpeed: 0.2 } as const;
+export function stepCatBodyPitch(prev: number, verticalSpeed: number, horizontalSpeed: number, dt: number): number {
+  if (!(dt > 0)) return prev;
+  const target = horizontalSpeed > CAT_BODY_PITCH.minSpeed
+    ? Math.max(-CAT_BODY_PITCH.max, Math.min(CAT_BODY_PITCH.max, Math.atan2(verticalSpeed, horizontalSpeed)))
+    : 0;
+  return prev + (target - prev) * (1 - Math.exp(-dt / CAT_BODY_PITCH.settle));
+}
