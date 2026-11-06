@@ -56,11 +56,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // 2026-11-04 JST: low-tier steps share one geometry and 1,605 instances across 21 runs.
 // #815: real-size shared step geometry, relative scales and run bounds change geometry/nodes only.
 // #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
+// #342 (2026-11-06 JST): identity board geometry and metadata positions moved.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "a7a1dbd68e225daada56da5c727cbb11bd71b710e8d49c6e37266a99dac3e90c",
+    "geometryDigest": "f506dd14a743bd1ba8ac349e2ed287d2b54d85d3a1e09f21e15dc368ff16a0d5",
     "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
-    "nodesDigest": "671b7e0fca848dcf1aacac050fd030d5ff788dd421aa3e38335c80f891cf1216",
+    "nodesDigest": "7436504abd6375cba37b36a6564503fcc5b31d954a4cdd17c11c3e37b1d53c55",
     "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
     "meshes": 125,
     "bytes": 16200380

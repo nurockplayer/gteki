@@ -53,6 +53,7 @@ describe("station geometry lifetime", () => {
     // after #316 stopped letting surfaces below the runs suppress the shell.
     // #789 updates the expected buffers for the repaired display heights; the
     // scene-digest fixture records those changes. Retired arrays stay collectible.
-    expect(result.geometryHash).toBe("99c3a076d1d6ca99fa90bcfabbbf6da9072709c7030bcfd437835780416a3b27");
+    // #342 (2026-11-06 JST): only the identity faces and hardware moved.
+    expect(result.geometryHash).toBe("bc7b7cd48b714d333b76d70571ebf9e41e479394ebed7642be6217389a5d6f66");
   }, 60_000);
 });
