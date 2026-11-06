@@ -3,7 +3,7 @@
 // collision all round, plus a labelled panel where floor carries on outside. No route data.
 import type * as THREE_NS from "three";
 import { FONT } from "./signs.ts";
-import { RAIL_FACE_OFFSET, RAIL_LABEL_H } from "./kit.ts";
+import { RAIL_FACE_OFFSET } from "./kit.ts";
 
 export interface AccessFences {
   label: { ja: string; en: string };
@@ -13,8 +13,8 @@ export interface AccessFences {
   marks: { a: number[]; b: number[]; z: number }[];
 }
 
-const TILE_W = 2.4; // m of fence per label repeat
-const PANEL_H = 1.2; // visible panel height (m); the collider is full height
+const TILE_W = 1.2; // m of fence per label repeat
+const PANEL_H = 0.6; // visible panel height (m), under the cat camera's 0.7 m eye line (#854); the collider is full height
 
 function paintLabel(label: { ja: string; en: string }): HTMLCanvasElement {
   const c = document.createElement("canvas");
@@ -85,7 +85,7 @@ export function buildFenceCollider(THREE: typeof THREE_NS, fences: AccessFences[
 
 /**
  * `railed`: indices of `data.marks` that a kit rail (scene/kit.ts) now stands on. Their label faces sit just off the
- * rail's two faces and stop at its cap; every other stretch keeps the free-standing board. The collider is unchanged.
+ * rail's two faces, low on it; every other stretch keeps the free-standing board. The collider is unchanged.
  */
 export function buildAccessFences(
   THREE: typeof THREE_NS,
@@ -100,7 +100,7 @@ export function buildAccessFences(
     const onRail = railed.has(i);
     // One single-sided face per side, each with its own UVs, so the label never reads mirrored.
     for (const [a, b] of [[m.a, m.b], [m.b, m.a]] as const) {
-      quad(vis, a, b, m.z + 0.05, m.z + 0.05 + (onRail ? RAIL_LABEL_H : PANEL_H), onRail ? RAIL_FACE_OFFSET : 0);
+      quad(vis, a, b, m.z + 0.05, m.z + 0.05 + PANEL_H, onRail ? RAIL_FACE_OFFSET : 0);
       uv.push(0, 0, u, 0, u, 1, 0, 0, u, 1, 0, 1);
     }
   });
