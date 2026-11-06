@@ -4,7 +4,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import * as THREE from "three";
-import { init, importNavMesh, NavMeshQuery, Detour, statusDetail, type NavMesh } from "recast-navigation";
+import { init, importNavMesh, NavMeshQuery, QueryFilter, Detour, statusDetail, type NavMesh } from "recast-navigation";
 import { assembleSnapPath, snapJoinKey, buildConnectorPath, createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult, type RouteStep } from "@gteki/navigation";
 import { skippedConnectorPath } from "../../../apps/web/src/explorer/greyboxConnectors.ts";
 import { navmeshBundle, privateRegionsSha256 } from "./navmesh-input.ts";
@@ -20,6 +20,7 @@ import { dataWidth, diagnoseGaps } from "./navmesh-gaps.ts";
 import { objectNames } from "./navmesh-source.ts";
 
 type V3 = { x: number; y: number; z: number };
+function walkFilter() { const filter = new QueryFilter(); filter.excludeFlags = 2; return filter; }
 const extents = { x: 1, y: 0.6, z: 1 };
 const distance = (a: V3, b: V3) => Math.hypot(a.x-b.x, a.y-b.y, a.z-b.z);
 const length = (points: readonly V3[]) => points.slice(1).reduce((n, p, i) => n + distance(points[i]!, p), 0);
@@ -36,8 +37,8 @@ export function connectorFallbackPolyline(bundle: Parameters<typeof routePolylin
 }
 
 /** Query between already snapped renderer points, rejecting Detour's partial paths. */
-export function queryCompletePath(query: NavMeshQuery, from: V3, to: V3): V3[] | null {
-  const result = query.computePath(from, to, { halfExtents: extents, maxPathPolys: 2048, maxStraightPathPoints: 2048 });
+export function queryCompletePath(query: NavMeshQuery, from: V3, to: V3, filter?: QueryFilter): V3[] | null {
+  const result = query.computePath(from, to, { filter, halfExtents: extents, maxPathPolys: 2048, maxStraightPathPoints: 2048 });
   const last = result.path.at(-1);
   const first = result.path[0];
   if (!result.success || !first || !last || distance(first, from) > 0.01 || distance(last, to) > 0.01) return null;
@@ -51,10 +52,10 @@ export function snapNode(query: NavMeshQuery, p: V3): V3 | null {
 }
 
 /** Obtain the complete corridor and preserve Detour off-mesh link identity and direction. */
-export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, to: V3, diagnostics?: { straightLimit: boolean }): ({ point: V3; link?: { userId: number; end: V3 } })[] | null {
+export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, to: V3, diagnostics?: { straightLimit: boolean }, filter?: QueryFilter): ({ point: V3; link?: { userId: number; end: V3 } })[] | null {
   const a=query.findClosestPoint(from, { halfExtents:extents }), b=query.findClosestPoint(to, { halfExtents:extents });
   if (!a.success || !a.polyRef || !b.success || !b.polyRef) return null;
-  const corridor=query.findPath(a.polyRef,b.polyRef,from,to,{ maxPathPolys:2048 });
+  const corridor=query.findPath(a.polyRef,b.polyRef,from,to,{ filter, maxPathPolys:2048 });
   try {
     if (!corridor.success || !corridor.polys.size || corridor.polys.get(corridor.polys.size-1)!==b.polyRef || statusDetail(corridor.status,Detour.DT_BUFFER_TOO_SMALL) || statusDetail(corridor.status,Detour.DT_OUT_OF_NODES)) return null;
     const refs=Array.from({length:corridor.polys.size},(_,i)=>corridor.polys.get(i));
@@ -204,7 +205,7 @@ async function main() {
   if (bridgeGaps && provenance.bridgePolicy !== "no-exemptions-v1") throw new Error("obsolete bridge mesh; rebake without exemptions");
   if (!!provenance.snapFallback !== snapFallback) throw new Error("navmesh bake and audit disagree on --snap-fallback");
   await init();
-  const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav, { maxNodes: 8192 });
+  const nav = importNavMesh(meshBytes).navMesh, query = new NavMeshQuery(nav, { maxNodes: 8192 }), walking = walkFilter();
   const loadMs = performance.now() - loadStart, memoryAfterLoad = process.memoryUsage();
   const { bundle, privateBuild, privateRegions, outOfSplit = [], sceneBundle = bundle } = await navmeshBundle(station, floorIds);
   if (provenance.privateBuild !== privateBuild) throw new Error("navmesh bake and audit disagree on private overlay; rebake first");
@@ -317,7 +318,7 @@ async function main() {
     const a = link ? (step.reversed ? link.connection.endPosition : link.connection.startPosition) : snap(step.fromNodeId);
     const b = link ? (step.reversed ? link.connection.startPosition : link.connection.endPosition) : snap(step.toNodeId);
     const pathDiagnostics = { straightLimit:false };
-    let path = a && b ? queryPathWithLinks(nav,query,a,b,pathDiagnostics) : null;
+    let path = a && b ? queryPathWithLinks(nav,query,a,b,pathDiagnostics,walking) : null;
     let pathRejection: Entry["pathRejection"] = null;
     // Vertical steps were resolved by their own attached link above. Walking never borrows another link.
     if (path?.some(p=>p.link)) { pathRejection="unexpected_link"; path=null; }
@@ -333,7 +334,7 @@ async function main() {
       const start = query.findClosestPoint(a, { halfExtents: extents });
       const end = query.findClosestPoint(b, { halfExtents: extents });
       if (start.polyRef && end.polyRef) {
-        const found = query.findPath(start.polyRef, end.polyRef, a, b, { maxPathPolys:2048 });
+        const found = query.findPath(start.polyRef, end.polyRef, a, b, { filter:walking, maxPathPolys:2048 });
         if (found.success) {
           corridor = Array.from({ length:found.polys.size }, (_,i) => found.polys.get(i));
           const reached = corridor.at(-1) === end.polyRef;
@@ -430,7 +431,7 @@ async function main() {
     const assembled = assembleSnapPath<Marked>(entries.map((entry, i) => entry.points!.map(p => ({ ...p, stepIndex:i, fallback:entry.stairLink, suspect:entry.suspect }))), (p,q,i) => {
       const key=snapJoinKey(entries[i-1]!.step,entries[i]!.step);
       if (!joinChecks.has(key)) {
-        const path=queryPathWithLinks(nav,query,{x:p.x,y:p.z,z:-p.y},{x:q.x,y:q.z,z:-q.y});
+        const path=queryPathWithLinks(nav,query,{x:p.x,y:p.z,z:-p.y},{x:q.x,y:q.z,z:-q.y},undefined,walking);
         const points=path && !path.some(v=>v.link) && length(path.map(v=>v.point))<=distance(p,q)+0.3 ? path.map(v=>({...q,x:v.point.x,y:-v.point.z,z:v.point.y})) : null;
         joinChecks.set(key,points);
       }
@@ -561,7 +562,7 @@ async function main() {
     if (["stairs","escalator","elevator"].includes(step.mode)) return;
     const a = snap(step.fromNodeId), b = snap(step.toNodeId);
     if (!a || !b) return;
-    const start = performance.now(); queryCompletePath(query, a, b); edgeTimes.push(performance.now()-start);
+    const start = performance.now(); queryCompletePath(query, a, b, step.mode === "gate" ? undefined : walking); edgeTimes.push(performance.now()-start);
   };
   for (const entry of cache.values()) timedEdge(entry.step);
   const uniqueQueryTimes = edgeTimes.slice(); edgeTimes.length = 0;
@@ -645,7 +646,7 @@ async function main() {
     publishedJoinEnds.set(key,[start,end]);
     if(start.every((v,i)=>v===end[i])) continue;
     const from={...a.point,x:start[0]!,y:start[1]!,z:start[2]!},to={...b.point,x:end[0]!,y:end[1]!,z:end[2]!};
-    const path=queryPathWithLinks(nav,query,{x:from.x,y:from.z,z:-from.y},{x:to.x,y:to.z,z:-to.y});
+    const path=queryPathWithLinks(nav,query,{x:from.x,y:from.z,z:-from.y},{x:to.x,y:to.z,z:-to.y},undefined,walking);
     joinChecks.set(key,path && !path.some(v=>v.link) && length(path.map(v=>v.point))<=distance(from,to)+0.3 ? path.map(v=>({...to,x:v.point.x,y:-v.point.z,z:v.point.y})) : null);
   }
   const navJoins: Record<string,number[][]> = {};
