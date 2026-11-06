@@ -1458,11 +1458,11 @@ runWidth	function	stations/shinjuku/scene/layout.ts	257
 STREET_PAD	const	stations/shinjuku/scene/layout.ts	278
 buildLayout	function	stations/shinjuku/scene/layout.ts	281
 clearSoffit	function	stations/shinjuku/scene/layout.ts	672
-cutWallsByVoids	function	stations/shinjuku/scene/layout.ts	1388
-roomFloorFill	function	stations/shinjuku/scene/layout.ts	1532
-centroid	function	stations/shinjuku/scene/layout.ts	1555
-WalkSurface	interface	stations/shinjuku/scene/layout.ts	1568
-WalkWorld	class	stations/shinjuku/scene/layout.ts	1581
+cutWallsByVoids	function	stations/shinjuku/scene/layout.ts	1391
+roomFloorFill	function	stations/shinjuku/scene/layout.ts	1535
+centroid	function	stations/shinjuku/scene/layout.ts	1558
+WalkSurface	interface	stations/shinjuku/scene/layout.ts	1571
+WalkWorld	class	stations/shinjuku/scene/layout.ts	1584
 OEDO_MAGENTA	const	stations/shinjuku/scene/palette.ts	2
 stationSpawn	function	stations/shinjuku/scene/spawn.ts	5
 SURFACE_BAKE_VERSION	const	stations/shinjuku/scene/surface-bake.ts	28
