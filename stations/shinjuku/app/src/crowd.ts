@@ -103,8 +103,8 @@ export function createCrowd(
       points.set(n.id, { x: n.position.x, y: n.position.y, z });
     }
   }
-  // Commuters tap through ticket gates one at a time: each gate's directed
-  // segment holds the clock time at which the next commuter may start.
+  // Commuters tap through ticket gates one at a time: per gate node, the
+  // clock time at which the next commuter may start, in either direction.
   const gateNodes = new Set<string>();
   for (const n of bundle.nodes) if (n.kind === "ticket_gate") gateNodes.add(n.id);
   const gateFreeAt = new Map<string, number>();
