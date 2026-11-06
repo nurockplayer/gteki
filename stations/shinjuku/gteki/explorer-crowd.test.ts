@@ -8,6 +8,7 @@ import { crowdEdges } from "./explorer-crowd.ts";
 
 const graphFile = graph as GraphFile;
 const nodeById = new Map(graphFile.nodes.map((n) => [n.id, n]));
+const edgeById = new Map(graphFile.edges.map((e) => [e.id, e]));
 /** The adapter's node height, as the scene passes it: the node's own z, else its display height. */
 const nodeZ = (id: string) => {
   const n = nodeById.get(id);
@@ -38,7 +39,7 @@ describe("shinjuku explorer crowd edges", () => {
       expect(e.geometry[e.geometry.length - 1]!.z).toBe(nodeZ(e.to));
       expect(lanes[e.id]).toBeDefined();
       expect(lanes[e.id]!.stepM).toBe(1000);
-      const w = e.mode === "stairs" ? 0.45 : 0.8;
+      const w = edgeById.get(e.id)!.mode === "stairs" ? 0.45 : 0.8;
       expect(lanes[e.id]!.left).toEqual([w]);
       expect(lanes[e.id]!.right).toEqual([w]);
     }
