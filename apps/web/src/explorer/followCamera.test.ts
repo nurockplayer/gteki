@@ -610,13 +610,13 @@ describe("QA camera holds", () => {
 
 describe("cat aim under a raised boom", () => {
   const cat = new THREE.Vector3(3, 10, -4);
-  const shot = (raise: number, boom: number) => {
+  const shot = (raise: number, boom: number, aspect = 16 / 10) => {
     const pivot = new THREE.Vector3(cat.x, cat.y + 0.42, cat.z);
-    const camera = new THREE.PerspectiveCamera(FOV.follow, 16 / 10, 0.05, 400);
+    const camera = new THREE.PerspectiveCamera(FOV.follow, aspect, 0.05, 400);
     camera.position.set(pivot.x, pivot.y + Math.sin(raise) * boom, pivot.z + Math.cos(raise) * boom);
     const target = new THREE.Vector3(cat.x, pivot.y, cat.z - 2.5);
     const aimed = target.clone();
-    aimAtRaisedCat(aimed, camera.position, cat, raise, camera.fov);
+    aimAtRaisedCat(aimed, camera.position, cat, raise, camera.fov, aspect);
     camera.lookAt(aimed);
     camera.updateMatrixWorld(true);
     const y = (height: number) => new THREE.Vector3(cat.x, cat.y + height, cat.z).project(camera).y;
@@ -640,5 +640,9 @@ describe("cat aim under a raised boom", () => {
     const { feet, head } = shot(raise, boom);
     expect(feet).toBeCloseTo(-CAT_RAISE_AIM.feetNdc, 1);
     expect(head).toBeLessThan(1);
+  });
+
+  it("holds the feet higher in portrait, clear of the phone's bottom controls", () => {
+    expect(shot(0.87, 1.93, 9 / 19.5).feet).toBeCloseTo(-CAT_RAISE_AIM.feetNdcPortrait, 1);
   });
 });
