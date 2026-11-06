@@ -39,7 +39,7 @@ import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
-import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming.ts";
+import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
@@ -1584,28 +1584,28 @@ export class Explorer {
     const { w, h } = this.viewSize;
     const free = this.freeRect();
     const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
-    const height = this.catAvatar ? CAT_AVATAR_HEIGHT_M : EYE;
-    const feet = this.pos.clone(), top = feet.clone().add(new THREE.Vector3(0, height, 0));
-    const walkerTargets = this.cameraTargets.filter((o) => !signs.has(o));
-    const rig = {
-      shoulder: this.catAvatar ? catShoulder(this.camera.aspect) : FOLLOW.shoulder,
-      lift: this.catAvatar ? FOLLOW_CAT.lift : FOLLOW.lift,
-      drop: this.catAvatar ? FOLLOW_CAT.drop : FOLLOW.drop,
-      distance: this.catAvatar ? FOLLOW_CAT.distance : this.camDistance,
-      body: [feet, top],
-      clear: (cameraPos: THREE.Vector3, pivot: THREE.Vector3): boolean => {
-        const boom = cameraPos.clone().sub(pivot);
-        this.ray.set(pivot, boom.clone().normalize());
-        this.ray.near = 0;
-        this.ray.far = boom.length() + FOLLOW.clearance;
-        if (castCamera(this.ray, this.cameraTargets, this.cameraSides).length) return false;
-        const direction = feet.clone().lerp(top, 0.5).sub(cameraPos);
-        this.ray.set(cameraPos, direction.clone().normalize());
-        this.ray.near = 0;
-        this.ray.far = Math.max(0, direction.length() - 0.05);
-        return castAll(this.ray, walkerTargets).length === 0;
-      },
-    };
+    // The cat's low boom can't reach most look-up poses (the floor squeezes it), so only its framing checks the walker.
+    let rig: FramingRig | undefined;
+    if (this.catAvatar) {
+      const feet = this.pos.clone(), top = feet.clone().add(new THREE.Vector3(0, CAT_AVATAR_HEIGHT_M, 0));
+      const walkerTargets = this.cameraTargets.filter((o) => !signs.has(o));
+      rig = {
+        shoulder: catShoulder(this.camera.aspect), lift: FOLLOW_CAT.lift, drop: FOLLOW_CAT.drop, distance: FOLLOW_CAT.distance,
+        body: [feet, top],
+        clear: (cameraPos, pivot) => {
+          const boom = cameraPos.clone().sub(pivot);
+          this.ray.set(pivot, boom.clone().normalize());
+          this.ray.near = 0;
+          this.ray.far = boom.length() + FOLLOW.clearance;
+          if (castCamera(this.ray, this.cameraTargets, this.cameraSides).length) return false;
+          const direction = feet.clone().lerp(top, 0.5).sub(cameraPos);
+          this.ray.set(cameraPos, direction.clone().normalize());
+          this.ray.near = 0;
+          this.ray.far = Math.max(0, direction.length() - 0.05);
+          return castAll(this.ray, walkerTargets).length === 0;
+        },
+      };
+    }
     const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree, rig);
     if (!look) return false;
     this.yaw = look.yaw;
