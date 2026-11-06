@@ -42,6 +42,62 @@ describe("portal cuts", () => {
     for (const owned of [a, b, c]) disposePortalCuts(owned);
   });
 
+  it("replays a packed normalized attribute with the same values as the live cut", () => {
+    const scene = () => {
+      const root = new THREE.Group(), geometry = new THREE.BufferGeometry();
+      // Two contiguous-index triangles: the first crosses the opening, the second is copied through whole, so the
+      // replay's run copy is exercised. Kit meshes carry Int8 normals: the raw storage is not the value.
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute([-3, 0, 0, 3, 0, 0, 0, 0, 3, 5, 0, 5, 6, 0, 5, 5, 0, 6], 3));
+      geometry.setAttribute("normal", new THREE.Int8BufferAttribute([0, -127, 0, 0, -127, 0, 0, -127, 0, 0, -127, 0, 0, -127, 0, 0, -127, 0], 3, true));
+      geometry.setIndex([0, 1, 2, 3, 4, 5]);
+      const slab = new THREE.Mesh(geometry); root.add(slab); return { root, slab };
+    };
+    const region = {
+      key: opening, bounds: new THREE.Box3(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1)),
+      planes: [(p: THREE.Vector3) => p.x + 1, (p: THREE.Vector3) => 1 - p.x, (p: THREE.Vector3) => p.z + 1, (p: THREE.Vector3) => 1 - p.z],
+      clip: null, accepts: () => true,
+    };
+    const baked = scene(), browser = scene(), live = scene();
+    const recorded: MeshRecord[] = [], a = resources(), b = resources(), c = resources();
+    cutRegions(baked.root, [region], a, new Set(), false, Infinity, { keys: [opening], record: recorded });
+    cutRegions(browser.root, [region], b, new Set(), false, Infinity, { keys: [opening], replay: recorded });
+    cutRegions(live.root, [region], c, new Set(), false);
+    for (const name of ["position", "normal"]) {
+      expect(Array.from(browser.slab.geometry.getAttribute(name).array)).toEqual(Array.from(live.slab.geometry.getAttribute(name).array));
+    }
+    for (const owned of [a, b, c]) disposePortalCuts(owned);
+  });
+
+  it("replays an interleaved attribute with the same values as the live cut", () => {
+    const scene = () => {
+      const root = new THREE.Group(), geometry = new THREE.BufferGeometry();
+      // Position and normal share one interleaved buffer (stride 6), so a word-for-word copy from the attribute's
+      // array would read the wrong numbers; two contiguous-index triangles exercise the replay's run copy.
+      const buffer = new THREE.InterleavedBuffer(new Float32Array([
+        -3, 0, 0, 0, -1, 0, 3, 0, 0, 0, -1, 0, 0, 0, 3, 0, -1, 0,
+        5, 0, 5, 0, -1, 0, 6, 0, 5, 0, -1, 0, 5, 0, 6, 0, -1, 0,
+      ]), 6);
+      geometry.setAttribute("position", new THREE.InterleavedBufferAttribute(buffer, 3, 0));
+      geometry.setAttribute("normal", new THREE.InterleavedBufferAttribute(buffer, 3, 3));
+      geometry.setIndex([0, 1, 2, 3, 4, 5]);
+      const slab = new THREE.Mesh(geometry); root.add(slab); return { root, slab };
+    };
+    const region = {
+      key: opening, bounds: new THREE.Box3(new THREE.Vector3(-1, -1, -1), new THREE.Vector3(1, 1, 1)),
+      planes: [(p: THREE.Vector3) => p.x + 1, (p: THREE.Vector3) => 1 - p.x, (p: THREE.Vector3) => p.z + 1, (p: THREE.Vector3) => 1 - p.z],
+      clip: null, accepts: () => true,
+    };
+    const baked = scene(), browser = scene(), live = scene();
+    const recorded: MeshRecord[] = [], a = resources(), b = resources(), c = resources();
+    cutRegions(baked.root, [region], a, new Set(), false, Infinity, { keys: [opening], record: recorded });
+    cutRegions(browser.root, [region], b, new Set(), false, Infinity, { keys: [opening], replay: recorded });
+    cutRegions(live.root, [region], c, new Set(), false);
+    for (const name of ["position", "normal"]) {
+      expect(Array.from(browser.slab.geometry.getAttribute(name).array)).toEqual(Array.from(live.slab.geometry.getAttribute(name).array));
+    }
+    for (const owned of [a, b, c]) disposePortalCuts(owned);
+  });
+
   it("keeps ordinary tagged signs in the recipe key (Shinjuku)", () => {
     const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1));
     mesh.userData.gteki_role = "sign"; root.add(mesh);

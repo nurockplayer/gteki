@@ -29,8 +29,9 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const params = new URLSearchParams(location.search);
 const isTouch = matchMedia("(pointer: coarse)").matches;
 const quality: "low" | "high" = (params.get("q") as "low" | "high") ?? (isTouch ? "low" : "high");
-const catAvatar = params.get("avatar") === "cat";
-const laneCamera = catAvatar ? LANE_CAMERA_CAT : LANE_CAMERA;
+/** The cat is the default (#854); `?avatar=procedural|soft|glb` keep the human. */
+let catAvatar = !["procedural", "soft", "glb"].includes(params.get("avatar") ?? "");
+let laneCamera: typeof LANE_CAMERA | typeof LANE_CAMERA_CAT = catAvatar ? LANE_CAMERA_CAT : LANE_CAMERA;
 const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
 let reducedMotion = motionPreference.matches;
 let bobEnabled = !reducedMotion;
@@ -221,7 +222,7 @@ $("loading").classList.add("has-frame");
 loadingStep(2, "通行人を準備中", "Preparing ambient commuters");
 await paintStartupFrame();
 
-const avatar = catAvatar ? createCatAvatar(THREE) : createAvatar(THREE, 0);
+const avatar = catAvatar ? createCatAvatar(THREE, { onFallback }) : createAvatar(THREE, 0);
 // Decorative ambient commuters (invented, not crowd data). ?crowd=0 disables.
 const crowdDefault = quality === "high" ? 36 : 16;
 const crowdParam = Number(params.get("crowd") ?? crowdDefault);
@@ -236,6 +237,13 @@ startup.begin("surface-hooks");
 
 // ------------------------------------------------------------ camera rig
 const cam = { yaw: player.heading, pitch: laneCamera.pitch as number, dist: laneCamera.distance as number, firstPerson: false, userTurnedAt: -10 };
+/** A failed cat GLB leaves the human on screen, so the camera returns to the human lane pose (#945). */
+function onFallback() {
+  catAvatar = false;
+  laneCamera = LANE_CAMERA;
+  cam.pitch = LANE_CAMERA.pitch;
+  cam.dist = LANE_CAMERA.distance;
+}
 const camPos = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
 let cameraDistance = cam.dist;
