@@ -2614,7 +2614,7 @@ export class Explorer {
     if (this.catMeowSound && this.ensureAudio()) this.catMeowSound(this.audio!.context, this.audio!.master);
   }
 
-  /** A still tap on the projected cat starts the meow; drags, joystick touches and other modes never do. */
+  /** A still tap on the projected cat starts the meow; drags, stick pushes and other modes never do. */
   private stepCatTap(): void {
     const tap = this.input.consumeTap();
     if (!tap || !this.catAvatar || this.mode !== "walk") return;

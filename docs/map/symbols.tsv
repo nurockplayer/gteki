@@ -46,7 +46,7 @@ AvatarGlbLoader	interface	apps/web/src/explorer/avatarGlb.ts	11
 CatCalibration	interface	apps/web/src/explorer/avatarGlb.ts	21
 GlbAvatarOptions	interface	apps/web/src/explorer/avatarGlb.ts	26
 loadGlbAvatar	function	apps/web/src/explorer/avatarGlb.ts	35
-catClips	function	apps/web/src/explorer/avatarGlb.ts	261
+catClips	function	apps/web/src/explorer/avatarGlb.ts	262
 avatarMotion	function	apps/web/src/explorer/avatarMotion.ts	13
 CAT_BODY_PITCH	const	apps/web/src/explorer/avatarMotion.ts	23
 stepCatBodyPitch	function	apps/web/src/explorer/avatarMotion.ts	24

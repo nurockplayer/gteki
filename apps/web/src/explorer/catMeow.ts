@@ -26,7 +26,7 @@ function ramp(t: number, from: number, to: number): number {
 /** The overlay at `t` seconds after the meow starts: zero before and after, smooth in between. */
 export function meowPose(t: number): MeowPose {
   if (!(t > 0) || t >= MEOW_SECONDS) return { head: 0, ears: 0, tailLift: 0, tailSway: 0 };
-  const tailLift = 1 - ramp(t, 0.2, MEOW_SECONDS);
+  const tailLift = Math.min(ramp(t, 0, 0.2), 1 - ramp(t, 0.2, MEOW_SECONDS));
   return {
     head: 0.22 * Math.min(ramp(t, 0, 0.25), 1 - ramp(t, 0.7, MEOW_SECONDS)),
     ears: 0.45 * Math.min(ramp(t, 0, 0.15), 1 - ramp(t, 0.15, 0.5)),

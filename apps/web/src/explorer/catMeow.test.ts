@@ -15,6 +15,7 @@ describe("meowPose", () => {
     expect(meowPose(0.25).head).toBeCloseTo(0.22);
     expect(meowPose(0.5).head).toBeCloseTo(0.22);
     expect(meowPose(0.15).ears).toBeCloseTo(0.45);
+    expect(meowPose(0.05).tailLift).toBeLessThan(0.5);
     expect(meowPose(0.2).tailLift).toBeCloseTo(1);
     expect(meowPose(0.6).tailLift).toBeGreaterThan(0);
     expect(meowPose(0.6).tailLift).toBeLessThan(1);

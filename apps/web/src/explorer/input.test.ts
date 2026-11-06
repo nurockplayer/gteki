@@ -76,9 +76,12 @@ describe("Input tap", () => {
     expect(input.consumeTap()).toBeNull();
   });
 
-  it("never taps from the joystick side", () => {
+  it("taps from a still touch on the joystick side, not from a stick push", () => {
     surface.dispatch("pointerdown", pointer("pointerdown", 100, 400, "touch"));
     surface.dispatch("pointerup", pointer("pointerup", 100, 400, "touch"));
+    expect(input.consumeTap()).toEqual({ x: 100, y: 400 });
+    surface.dispatch("pointerdown", pointer("pointerdown", 100, 400, "touch"));
+    surface.dispatch("pointerup", pointer("pointerup", 130, 400, "touch"));
     expect(input.consumeTap()).toBeNull();
   });
 });
