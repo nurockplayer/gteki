@@ -132,9 +132,11 @@ export interface SceneContext {
   /**
    * Optional host-owned audio. The explorer creates the context (resumed on the first user gesture)
    * and a master gain with a mute toggle; connect station sound to `destination`, never to
-   * `context.destination`. Absent (e.g. no WebAudio) = stay silent.
+   * `context.destination`. Absent (e.g. no WebAudio) = stay silent. `isMuted` reports the host mute
+   * live: graph sound is already silenced by the master gain, but speech (Web Speech) is not, so a
+   * scene that speaks must cancel it. Absent = not muted.
    */
-  audio?: { context: AudioContext; destination: AudioNode };
+  audio?: { context: AudioContext; destination: AudioNode; isMuted?: () => boolean };
 }
 
 export type BuildScene = (ctx: SceneContext) => StationScene | Promise<StationScene>;

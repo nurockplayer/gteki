@@ -1055,7 +1055,7 @@ export class Explorer {
       },
       quality: this.quality,
       renderer: this.renderer,
-      ...(audioBus ? { audio: { context: this.audio!.context, destination: audioBus } } : {}),
+      ...(audioBus ? { audio: { context: this.audio!.context, destination: audioBus, isMuted: () => this.muted } } : {}),
     };
 
     this.sceneError = null;
