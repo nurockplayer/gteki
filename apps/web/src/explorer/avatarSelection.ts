@@ -25,6 +25,24 @@ export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string |
   } catch { return undefined; }
 }
 
+/** Which protagonist a page asks for; the human stays the default in stage 1. */
+export type AvatarKind = "human" | "cat";
+
+/** #854 scripted cat, picked by gteki-lead on 2026-11-06; a placeholder until the Owner sets breed and coat. */
+export const CAT_AVATAR_GLB_URL = "/avatars/cat.glb";
+export const CAT_AVATAR_HEIGHT_M = 0.345;
+
+/** Cat mode draws nothing until its GLB arrives: the human must never appear there. */
+function emptyRig(): AvatarRig {
+  const root = new THREE.Group();
+  return { root, update() {}, setEnvMap() {}, setFade() {}, dispose() { root.removeFromParent(); } };
+}
+
+/** `?avatar=cat` selects the cat; anything else keeps the human. */
+export function avatarKind(params: URLSearchParams): AvatarKind {
+  return params.get("avatar") === "cat" ? "cat" : "human";
+}
+
 export interface AvatarSelection extends AvatarRig {
   /** Invalidates in-flight work when leaving a station (or disposing). */
   cancelPendingLoad(): void;
@@ -32,9 +50,10 @@ export interface AvatarSelection extends AvatarRig {
   loadGlb(): Promise<void>;
 }
 
-/** The procedural rig is shown while loading and on GLB failure, or via ?avatar=procedural. */
-export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader }): AvatarSelection {
-  let current = createAvatar({ quality: opts.quality });
+/** The human rig is shown while loading and on GLB failure; ?avatar=cat starts empty instead. */
+export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind }): AvatarSelection {
+  const cat = opts.kind === "cat";
+  let current = cat ? emptyRig() : createAvatar({ quality: opts.quality });
   let generation = 0;
   let disposed = false;
   let loaded = false;
@@ -50,10 +69,12 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
     setEnvMap(value, strength = 0.6) { env = value; intensity = strength; if (!disposed) current.setEnvMap(env, intensity); },
     cancelPendingLoad() { generation++; pending = null; },
     loadGlb() {
-      if (disposed || loaded || !opts.glbUrl) return Promise.resolve();
+      const url = cat ? CAT_AVATAR_GLB_URL : opts.glbUrl;
+      if (disposed || loaded || !url) return Promise.resolve();
       if (pending) return pending;
       const token = ++generation;
-      pending = loadGlbAvatar(opts.glbUrl, opts).then((next) => {
+      const load = cat ? { quality: opts.quality, loader: opts.loader, heightM: CAT_AVATAR_HEIGHT_M, cat: true } : opts;
+      pending = loadGlbAvatar(url, load).then((next) => {
         if (disposed || token !== generation) { next.dispose(); return; }
         next.setFade(fade);
         next.setEnvMap(env, intensity);
@@ -64,7 +85,19 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
         loaded = true;
         previous.dispose();
       }).catch((error: unknown) => {
-        if (!disposed && token === generation && !warned) {
+        if (disposed || token !== generation) return;
+        // A broken cat GLB leaves nothing to draw, so cat mode falls back to the human once.
+        if (cat) {
+          loaded = true;
+          const human = createAvatar({ quality: opts.quality });
+          human.setFade(fade);
+          human.setEnvMap(env, intensity);
+          current.root.parent?.add(human.root);
+          current.root.removeFromParent();
+          current.dispose();
+          current = human;
+        }
+        if (!warned) {
           warned = true;
           console.warn("GLB avatar unavailable; keeping the procedural avatar.", error);
         }
