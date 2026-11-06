@@ -112,6 +112,8 @@ export interface StationScene {
    * Present only for stations that pack a dynamic batch per view (Shinjuku's low-tier escalator steps).
    */
   beforeRender?(renderer: THREE.WebGLRenderer | null, camera: THREE.Camera): void;
+  /** Fades scene-owned people out near the camera: fully gone inside startM, untouched beyond endM. 0, 0 turns it off. */
+  setCameraNearFade?(startM: number, endM: number): void;
   /**
    * Resolves once presentation content the scene loads in the background (after the first frame) is in place.
    * Renderers need not wait for it; hosts that export a snapshot instead of rendering await it first. Never rejects.
