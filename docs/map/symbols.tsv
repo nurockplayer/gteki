@@ -30,7 +30,7 @@ joinStationPath	function	apps/web/src/explorer/assetFence.ts	12
 stationDir	function	apps/web/src/explorer/assetFence.ts	25
 fencedUrlResolver	function	apps/web/src/explorer/assetFence.ts	31
 AvatarRig	interface	apps/web/src/explorer/avatar.ts	12
-createAvatar	function	apps/web/src/explorer/avatar.ts	23
+createAvatar	function	apps/web/src/explorer/avatar.ts	25
 AVATAR_DITHER_ACTIVE_BELOW	const	apps/web/src/explorer/avatarDither.ts	7
 AVATAR_DITHER_CACHE_KEY	const	apps/web/src/explorer/avatarDither.ts	8
 avatarDitherActive	function	apps/web/src/explorer/avatarDither.ts	11
@@ -46,7 +46,7 @@ AvatarGlbLoader	interface	apps/web/src/explorer/avatarGlb.ts	10
 CatCalibration	interface	apps/web/src/explorer/avatarGlb.ts	20
 GlbAvatarOptions	interface	apps/web/src/explorer/avatarGlb.ts	22
 loadGlbAvatar	function	apps/web/src/explorer/avatarGlb.ts	31
-catClips	function	apps/web/src/explorer/avatarGlb.ts	201
+catClips	function	apps/web/src/explorer/avatarGlb.ts	225
 avatarMotion	function	apps/web/src/explorer/avatarMotion.ts	13
 DEFAULT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts	7
 SOFT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts	10
@@ -156,9 +156,9 @@ buildStairs	function	apps/web/src/explorer/greyboxConnectors.ts	121
 buildEscalator	function	apps/web/src/explorer/greyboxConnectors.ts	158
 ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	250
 skippedConnectorPath	function	apps/web/src/explorer/greyboxConnectors.ts	315
-buildElevator	function	apps/web/src/explorer/greyboxConnectors.ts	527
-buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	688
-withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	1097
+buildElevator	function	apps/web/src/explorer/greyboxConnectors.ts	540
+buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	701
+withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	1110
 unmodelledVerticalEdges	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	11
 ConnectorMaterial	type	apps/web/src/explorer/greyboxConnectorsLegacy.ts	45
 ConnectorPart	interface	apps/web/src/explorer/greyboxConnectorsLegacy.ts	46

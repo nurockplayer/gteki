@@ -14,6 +14,8 @@ export interface AvatarRig {
   /** speedMps: actual horizontal speed this frame (0 idle, ~1.45 walk, ~3.4 run). */
   update(dt: number, speedMps: number): void;
   setHold?(pose: "sit" | null): void;
+  /** Camera pitch in radians (positive = looking up); only the cat reacts. */
+  setLookPitch?(pitch: number): void;
   setEnvMap(env: THREE.Texture | null, intensity?: number): void;
   /** Screen-door fade of the whole body: 1 opaque, 0 hidden. Sets a uniform only (no program rebuild, no transparency). */
   setFade(opacity: number): void;

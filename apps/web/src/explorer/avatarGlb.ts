@@ -124,13 +124,37 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
     const animate = opts.cat
       ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold)
       : clipCrossfade(mixer, gltf.animations);
+    const bones = opts.cat ? [
+      { bone: gltf.scene.getObjectByName("neck"), weight: 0.3, saved: new THREE.Quaternion() },
+      { bone: gltf.scene.getObjectByName("head"), weight: 0.7, saved: new THREE.Quaternion() },
+    ] : [];
+    const axis = new THREE.Vector3();
+    const world = new THREE.Quaternion();
+    let targetLift = 0;
+    let lift = 0;
     return {
       root,
+      ...(opts.cat ? { setLookPitch(pitch: number) { targetLift = Number.isFinite(pitch) ? Math.max(0, Math.min(0.5, pitch)) : 0; } } : {}),
       update(dt, speedMps) {
         if (disposed) return;
         const step = Number.isFinite(dt) ? Math.max(0, dt) : 0;
+        const active = targetLift >= 0.001 || lift >= 0.001;
+        if (active && lift >= 0.001) for (const { bone, saved } of bones) bone?.quaternion.copy(saved);
         animate(speedMps, step);
         mixer!.update(step);
+        if (active) {
+          lift += (targetLift - lift) * (1 - Math.exp(-step / 0.2));
+          if (lift < 0.001 && targetLift < 0.001) lift = 0;
+          if (lift >= 0.001) for (const { bone, weight, saved } of bones) {
+            if (!bone) continue;
+            saved.copy(bone.quaternion);
+            root.getWorldQuaternion(world);
+            axis.set(1, 0, 0).applyQuaternion(world);
+            bone.getWorldQuaternion(world).invert();
+            axis.applyQuaternion(world).normalize();
+            bone.rotateOnAxis(axis, lift * weight);
+          }
+        }
       },
       setHold(pose) { hold = pose; },
       setFade(opacity) { fade.value = sanitizeAvatarFade(opacity); },
