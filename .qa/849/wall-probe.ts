@@ -1,4 +1,6 @@
 // 2026-11-06 JST: #849 public high-tier wall intersection probe.
+import { buildStation } from '../../stations/shinjuku/scene/build.ts';
+import plan from '../../stations/shinjuku/data/plan.json' with { type: 'json' };
 import * as T from '../../packages/godot/node_modules/three/build/three.module.js';
 import { loadScene } from '../../packages/godot/src/route-clip-audit.ts';
 import { navmeshBundle } from '../../packages/godot/src/navmesh-input.ts';
@@ -70,16 +72,19 @@ prepareRayTrees(meshes);
 console.log(stamp(),'route target',target,'projection',best,'walker',walker,'heading',heading.toArray(),'eye',eye.toArray(),'camera near/far 0.05/2000 m','meshes',meshes.length);
 const counts=new Map<string,{n1:number;n20:number;point:number[];gap:number;first:number;min:number[];max:number[]}>(), extents=new Map<string,T.Box3>();
 const label=(h:T.Intersection)=>{const m=h.object as T.Mesh, mat=Array.isArray(m.material)?m.material[h.face?.materialIndex ?? 0]:m.material; return `${m.name || m.type}|${mat?.name || mat?.type}|${m.uuid.slice(0,8)}`;};
-for(let ix=-120;ix<=120;ix++) for(let iy=0;iy<=80;iy++) {
+for(let ix=-120;ix<=120;ix+=10) for(let iy=0;iy<=80;iy+=10) {
  const aim=new T.Vector3(walker.x,walker.z+iy*.05,-walker.y).addScaledVector(heading,15).addScaledVector(right,ix*.05);
  const ray=new T.Raycaster(eye,aim.sub(eye).normalize(),0.001,30);
  const hits=castAll(ray,meshes).filter(h=>{const m=h.object as T.Mesh, mat=Array.isArray(m.material)?m.material[h.face?.materialIndex ?? 0]:m.material; return mat?.visible && mat.opacity>0;});
  for(let j=0;j<Math.min(hits.length,8);j++) {const h=hits[j]!, name=label(h); if(!extents.has(name))extents.set(name,new T.Box3()); extents.get(name)!.expandByPoint(h.point);
   for(let k=j+1;k<Math.min(hits.length,8);k++){const b=hits[k]!,gap=b.distance-h.distance;if(gap>.02)break;if(h.object===b.object && h.instanceId===b.instanceId)continue;
-   const key=[name,label(b)].sort().join(' <> '), v=counts.get(key) ?? {n1:0,n20:0,point:h.point.toArray(),gap,first:0,min:h.point.toArray(),max:h.point.toArray()};v.n20++;if(gap<=.001)v.n1++;if(j===0 && k===1)v.first++;for(let d=0;d<3;d++){v.min[d]=Math.min(v.min[d]!,h.point.getComponent(d));v.max[d]=Math.max(v.max[d]!,h.point.getComponent(d));}counts.set(key,v);
+   const key=[name,label(b)].sort().join(' <> '), v=counts.get(key) ?? {n1:0,n20:0,point:h.point.toArray(),gap,first:0,min:h.point.toArray(),max:h.point.toArray()};v.n20++;if(gap<=.001)v.n1++;if(j===0 && k===1){v.first++; if(v.first===1) console.log(stamp(),'FIRST',key,JSON.stringify({point:h.point.toArray(), parents:[h.object.parent?.name,b.object.parent?.name]}));}for(let d=0;d<3;d++){v.min[d]=Math.min(v.min[d]!,h.point.getComponent(d));v.max[d]=Math.max(v.max[d]!,h.point.getComponent(d));}counts.set(key,v);
   }
  }
 }
 for(const [key,v] of [...counts].sort((a,b)=>b[1].n20-a[1].n20)) console.log(stamp(),'PAIR',key,JSON.stringify(v));
 for(const [key,box] of extents) console.log(stamp(),'SAMPLED EXTENT',key,JSON.stringify({min:box.min.toArray(),max:box.max.toArray()}));
-scene.dispose(); console.log(stamp(),'PASS');
+const built=buildStation(bundle, plan as any, {quality:'high'});
+const p={x:-57.02350168020482,y:157.7584254064088,z:-22.86699446514392};
+const near=(w:any)=>{const dx=w.b.x-w.a.x,dy=w.b.y-w.a.y,l=Math.hypot(dx,dy),t=((p.x-w.a.x)*dx+(p.y-w.a.y)*dy)/(l*l);return t>=-0.01&&t<=1.01&&Math.abs((p.x-w.a.x)*dy-(p.y-w.a.y)*dx)/l<0.03&&p.z>=w.zMin-0.1&&p.z<=w.zMax+0.1};
+console.log(stamp(),'CANDIDATES',JSON.stringify({walls:built.layout.levels.flatMap(l=>l.walls.filter(near).map(w=>({level:l.label,w}))),fascias:built.layout.shaftFascias.filter(f=>near(f.wall))})); built.dispose(); scene.dispose(); console.log(stamp(),'PASS');
