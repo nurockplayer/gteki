@@ -1087,11 +1087,12 @@ tierParts	function	stations/ikebukuro/scene/kit_catalog_loader.ts	139
 piecePose	function	stations/ikebukuro/scene/kit_catalog_loader.ts	148
 CatalogStats	interface	stations/ikebukuro/scene/kit_catalog_loader.ts	152
 LoadedCatalogKit	interface	stations/ikebukuro/scene/kit_catalog_loader.ts	163
-loadKitCatalog	function	stations/ikebukuro/scene/kit_catalog_loader.ts	179
-NosingStats	interface	stations/ikebukuro/scene/kit_catalog_loader.ts	316
-LoadedNosingKit	interface	stations/ikebukuro/scene/kit_catalog_loader.ts	326
-loadNosingKit	function	stations/ikebukuro/scene/kit_catalog_loader.ts	427
-lazyKitCatalog	function	stations/ikebukuro/scene/kit_catalog_loader.ts	581
+AtlasCache	type	stations/ikebukuro/scene/kit_catalog_loader.ts	177
+loadKitCatalog	function	stations/ikebukuro/scene/kit_catalog_loader.ts	185
+NosingStats	interface	stations/ikebukuro/scene/kit_catalog_loader.ts	344
+LoadedNosingKit	interface	stations/ikebukuro/scene/kit_catalog_loader.ts	354
+loadNosingKit	function	stations/ikebukuro/scene/kit_catalog_loader.ts	455
+lazyKitCatalog	function	stations/ikebukuro/scene/kit_catalog_loader.ts	609
 COLUMN_USES	const	stations/ikebukuro/scene/kit_columns.ts	18
 SLEEVE_MARGIN_M	const	stations/ikebukuro/scene/kit_columns.ts	20
 SLEEVE_TOP_GAP_M	const	stations/ikebukuro/scene/kit_columns.ts	22

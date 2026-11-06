@@ -172,15 +172,22 @@ export interface LoadedCatalogKit {
 
 type Host = Pick<SceneContext, "assetUrl" | "loadGlb" | "loadTexture">;
 
+/** One entry per kind: the tier's packed AO atlas, or null when it failed to load. A caller that passes this map
+ *  (lazyKitCatalog) loads each atlas once for all its ids and owns the textures; the kits never dispose them. */
+export type AtlasCache = Map<string, Promise<THREE_NS.Texture | null>>;
+
 const trianglesOf = (g: THREE_NS.BufferGeometry) => (g.index ? g.index.count : g.getAttribute("position").count) / 3;
 
 /** Loads the instanced catalog parts this tier draws (batches A and B). Never throws: an id that cannot be used
- *  drops its own placements only. Nosing parts are excluded here: batch C merges them (loadNosingKit). */
+ *  drops its own placements only. Nosing parts are excluded here: batch C merges them (loadNosingKit).
+ *  `atlasCache` shares one texture per kind across the calls of one lazyKitCatalog; without it the kit owns and
+ *  disposes its own atlas, as a direct call always did. */
 export async function loadKitCatalog(
   THREE: ThreeNS,
   host: Host,
   placements: readonly CatalogPlacement[],
   low: boolean,
+  atlasCache?: AtlasCache,
 ): Promise<LoadedCatalogKit> {
   const wanted = tierParts(placements, low).filter((w) => w.part !== "nosing");
   const assets = new Map<string, ReturnType<typeof visibleParts>>();
@@ -214,18 +221,38 @@ export async function loadKitCatalog(
   const owned: { dispose(): void }[] = [];
   // Batch A's escalators (and any later kind with a packed atlas) sample it through TEXCOORD_1. One texture per kind
   // per tier; without it the parts still draw, just without AO.
+  const shared = new Set<THREE_NS.Texture>();
+  const loadAtlas = async (kind: string, uri: string): Promise<THREE_NS.Texture | null> => {
+    try {
+      const texture = await host.loadTexture(uri, { colorSpace: "linear", flipY: false });
+      prepareAtlas(THREE, texture, uri, kind, low);
+      return texture;
+    } catch (err) {
+      console.warn(`[ikebukuro] kit catalog: ${kind} atlas ${uri}: ${err instanceof Error ? err.message : String(err)}; drawing without AO`);
+      return null;
+    }
+  };
   const atlases = new Map<string, THREE_NS.Texture>();
   for (const kind of [...new Set(drawn.map((w) => atlasKindOf(w.id)).filter((k): k is string => k !== null))].sort()) {
     const uri = atlasUri(kind, low);
     if (!uri || host.assetUrl(uri) === null) continue;
-    try {
-      const texture = await host.loadTexture(uri, { colorSpace: "linear", flipY: false });
-      prepareAtlas(THREE, texture, uri, kind, low);
-      atlases.set(kind, texture);
-      owned.push(texture);
-    } catch (err) {
-      console.warn(`[ikebukuro] kit catalog: ${kind} atlas ${uri}: ${err instanceof Error ? err.message : String(err)}; drawing without AO`);
+    let texture: THREE_NS.Texture | null;
+    const cached = atlasCache?.get(kind);
+    if (cached) {
+      texture = await cached; // a failed load is cached as null: it warns once, for the whole lazy kit
+      if (texture) shared.add(texture);
+    } else {
+      const promise = loadAtlas(kind, uri);
+      if (atlasCache) {
+        atlasCache.set(kind, promise); // before the await: the next id shares this load
+        texture = await promise;
+        if (texture) shared.add(texture);
+      } else {
+        texture = await promise;
+        if (texture) owned.push(texture); // a direct call owns its atlas, as before
+      }
     }
+    if (texture) atlases.set(kind, texture);
   }
   return {
     placements: drawn,
@@ -296,19 +323,20 @@ export async function loadKitCatalog(
     },
     dispose() {
       for (const o of owned) o.dispose();
-      for (const gltf of gltfs) disposeGltf(gltf);
+      for (const gltf of gltfs) disposeGltf(gltf, shared);
     },
   };
 }
 
-/** Free a loaded GLTF's geometries, materials and their maps (shared maps are disposed once per material). */
-function disposeGltf(gltf: GLTF) {
+/** Free a loaded GLTF's geometries, materials and their maps (shared maps are disposed once per material), except
+ *  the atlases `keep` owns: a lazy kit's cache disposes those once, when the lazy kit is disposed. */
+function disposeGltf(gltf: GLTF, keep?: ReadonlySet<THREE_NS.Texture>) {
   gltf.scene.traverse((o) => {
     const m = o as THREE_NS.Mesh;
     if (!m.isMesh) return;
     m.geometry.dispose();
     const mat = m.material as THREE_NS.MeshStandardMaterial;
-    for (const t of [mat.map, mat.normalMap, mat.roughnessMap, mat.metalnessMap, mat.emissiveMap, mat.aoMap]) t?.dispose();
+    for (const t of [mat.map, mat.normalMap, mat.roughnessMap, mat.metalnessMap, mat.emissiveMap, mat.aoMap]) if (!keep?.has(t as THREE_NS.Texture)) t?.dispose();
     mat.dispose();
   });
 }
@@ -595,6 +623,9 @@ export function lazyKitCatalog(
   const nosingIds = [...new Set(wanted.filter((w) => w.part === "nosing").map((w) => w.id))];
   const loaded: (LoadedCatalogKit | LoadedNosingKit)[] = [];
   const groups: THREE_NS.Group[] = [];
+  // The 5 escalator ids all sample one atlas per tier: load it once here, not once per id (5 GPU copies before).
+  // This lazy kit owns the shared textures and frees them in dispose(), which the per-id kits never do.
+  const atlasCache: AtlasCache = new Map();
   const visibility = catalogVisibility(THREE);
   let disposed = false;
   let started = false;
@@ -618,7 +649,7 @@ export function lazyKitCatalog(
       const selected = instanced.filter((w) => w.id === id).map((w) => ({
         ...w.placement, ids: { [w.part]: id },
       }));
-      const kit = await loadKitCatalog(THREE, host, selected, low);
+      const kit = await loadKitCatalog(THREE, host, selected, low, atlasCache);
       if (disposed) { kit.dispose(); return; }
       loaded.push(kit);
       attach(kit);
@@ -658,6 +689,9 @@ export function lazyKitCatalog(
       loaded.length = 0;
       groups.length = 0;
       visibility.clear();
+      // Once, here: a texture whose load was still in flight is freed when it arrives.
+      for (const pending of atlasCache.values()) void pending.then((texture) => texture?.dispose());
+      atlasCache.clear();
     },
   };
 }
