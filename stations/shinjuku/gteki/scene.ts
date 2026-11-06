@@ -1,3 +1,5 @@
+import { createZoneAcoustics, ZONE_ACOUSTICS } from "../../ikebukuro/scene/zone-acoustics.ts";
+import type { AcousticZone } from "@gteki/scene-api";
 /**
  * @gteki/scene-api hook for the shared explorer (apps/web). Reuses the Shinjuku lane's
  * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
@@ -354,15 +356,17 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
 
   // Explorer ambience and station sound (#859): an original bed plus gate taps, an original approach
   // chime and our own ja-JP announcements. Sites come from the bundle's graph nodes, converted to renderer space.
-  const ambience = ctx.audio ? createAmbience(ctx.audio.context, ctx.audio.destination) : null;
+  let zone: AcousticZone = "passage";
+  const acoustics = ctx.audio ? createZoneAcoustics(ctx.audio.context, ctx.audio.destination) : null;
+  const ambience = ctx.audio && acoustics ? createAmbience(ctx.audio.context, acoustics.input) : null;
   const graphNodes = ctx.bundle.nodes;
   const siteAt = (n: (typeof graphNodes)[number]): V3 => {
     const [x, y, z] = ctx.enuToRenderer({ x: n.position.x, y: n.position.y, z: n.position.z ?? n.renderZ ?? 0 });
     return { x, y, z };
   };
-  const stationSound = ctx.audio ? createStationSound({
+  const stationSound = ctx.audio && acoustics ? createStationSound({
     context: ctx.audio.context,
-    destination: ctx.audio.destination,
+    destination: acoustics.input,
     isMuted: ctx.audio.isMuted,
     stationNameJa: "新宿",
     sites: {
@@ -373,7 +377,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   }) : null;
   const stepAudio = (ambience || stationSound)
     ? (dt: number, camera?: THREE.Camera) => {
-      ambience?.update({ nearby: 6, openness: 0.8 });
+      ambience?.update({ nearby: 6, openness: ZONE_ACOUSTICS[zone].openness });
       stationSound?.update(dt, camera);
     }
     : null;
@@ -381,6 +385,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     ? () => {
       stationSound?.dispose();
       ambience?.dispose();
+      acoustics?.dispose();
     }
     : null;
 
@@ -401,6 +406,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
+    ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); } } : {}),
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
     ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat, ...(shopKit ? [shopKit] : [])], envTarget, stepAudio, disposeAudio),
   };
