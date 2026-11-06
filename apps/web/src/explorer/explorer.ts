@@ -248,7 +248,7 @@ export class Explorer {
   private interactionController = new InteractionController([]);
   private interactionSnapshot = "";
   /** Reaction objects by interactable id, and the station's decorative wall-prop mesh (#858 item 12). */
-  private readonly interactionVisuals = new Map<string, THREE.Object3D>();
+  private interactionVisuals: Map<string, THREE.Object3D> | undefined;
   private wallProps: THREE.Object3D | undefined;
   private navmeshPaths: NavmeshPaths | null = null;
   /** What the last station switch freed from the previous scene (for the e2e log). */
@@ -1122,11 +1122,11 @@ export class Explorer {
     if (this.catAvatar) built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
     this.interactionController = new InteractionController(built?.interactables ?? []);
     this.interactionSnapshot = "";
-    this.interactionVisuals.clear();
+    this.interactionVisuals = new Map();
     this.wallProps = undefined;
     built?.root.traverse((object) => {
       const id = object.userData.gtekiInteractionId;
-      if (typeof id === "string" && id) this.interactionVisuals.set(id, object);
+      if (typeof id === "string" && id) this.interactionVisuals!.set(id, object);
       if (object.userData.gtekiWallProps === true) this.wallProps = object;
     });
     this.sceneError = sceneError;
@@ -1301,7 +1301,7 @@ export class Explorer {
   private clearStation(leaving = false): void {
     this.interactionController = new InteractionController([]);
     this.interactionSnapshot = "";
-    this.interactionVisuals.clear();
+    this.interactionVisuals = undefined;
     this.wallProps = undefined;
     this.avatarRig?.setHold?.(null);
     this.publishInteraction(this.interactionController.state);
@@ -2588,7 +2588,7 @@ export class Explorer {
     this.avatar.rotation.y = this.bodyYaw;
     const state = this.interactionController.state;
     if (state.phase === "active" && state.nearId) {
-      const target = this.interactionVisuals.get(state.nearId);
+      const target = this.interactionVisuals?.get(state.nearId);
       if (target) this.avatar.rotation.y = Math.atan2(this.pos.x - target.position.x, this.pos.z - target.position.z);
     }
     this.updateShadows();
@@ -2597,7 +2597,7 @@ export class Explorer {
   interactableInfo() {
     const specs = this.stationScene?.interactables ?? [];
     // `visual` stays the first spec's object for the shop spec; `visuals` is every reaction by id.
-    return { specs, visual: specs[0] ? this.interactionVisuals.get(specs[0].id) : undefined, visuals: this.interactionVisuals, props: this.wallProps };
+    return { specs, visual: specs[0] ? this.interactionVisuals?.get(specs[0].id) : undefined, visuals: this.interactionVisuals, props: this.wallProps };
   }
 
   get interaction(): InteractionState { return this.interactionController.state; }
@@ -2611,7 +2611,7 @@ export class Explorer {
       this.events.onInteraction?.(state);
     }
     this.avatarRig?.setHold?.(state.phase === "active" && state.step !== "look" ? "sit" : null);
-    for (const [id, visual] of this.interactionVisuals) {
+    for (const [id, visual] of this.interactionVisuals ?? []) {
       visual.visible = state.phase === "active" && id === state.nearId && (state.step === "react" || state.step === "give");
     }
   }

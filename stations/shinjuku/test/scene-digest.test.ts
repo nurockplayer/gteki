@@ -32,6 +32,8 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * psd/psdLeaf/accent visual triangle sets change, every physical field and propWall stays identical.
  * #342 (2026-11-06 JST) moves identity:spawn 4 m ahead / 0.5 m left of the Explorer spawn at 70 degrees and gate 1 toward its paid side;
  * regenerated, only the two identity visual hashes change.
+ * #858 item 12 (2026-11-06 JST) adds one merged wall-props mesh; only the visual map gains its material
+ * entry. protect, station, walkable, colliders, camera blockers, walls, semantic and spawn are unchanged.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;

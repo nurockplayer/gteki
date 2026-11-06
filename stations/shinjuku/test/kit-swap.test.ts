@@ -58,14 +58,15 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #276 (2026-11-04 JST): retain reduced finish/facade dimensions and restored surface-sign density.
 // #342 (2026-11-06 JST): identity board geometry and metadata positions moved.
 // #870 (2026-11-06 JST): platform door panels and caps split around the openings aligned to the train doors.
+// #858 item 12 (2026-11-06 JST): one merged wall-props mesh (126 meshes, +48,504 bytes); every list below unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "f52a9f187111d42447918c27b95ae62251a2fdfe208b06bf8e5d560788213f7c",
-    "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
-    "nodesDigest": "7436504abd6375cba37b36a6564503fcc5b31d954a4cdd17c11c3e37b1d53c55",
-    "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
-    "meshes": 125,
-    "bytes": 16203740
+    "geometryDigest": "124e8080e23b6fe31b7516a453d1d15b07a16643c263122a811215c0d4293082",
+    "appearanceDigest": "e3cc57f3f852198e957b52a1b1b6e5f6aa505e61abd8b48eed85598d3f7d732f",
+    "nodesDigest": "ca99002e8c4f558e3da8f1e13b02e4426437b2446ea1c53142f4cb879799e1a8",
+    "texturesDigest": "502867f0f235268c1c47ed632f4fe1b0397f8fd2424c45ec9cb3fc4a6a74b5fb",
+    "meshes": 126,
+    "bytes": 16252244
   },
   "lists": {
     "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",
@@ -1008,7 +1009,8 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       const ids = new Set(report.placed.map((p) => p.assetId));
       for (const id of ids) expect(id).not.toMatch(/bench|vending|kiosk|shop/);
       const names: string[] = [];
-      on.root.traverse((o) => names.push(o.name));
+      // Wall props are placed by the station, not the kit swap (ruled by gteki-lead 2026-11-06).
+      on.root.traverse((o) => { if (!o.name.startsWith("wall-props")) names.push(o.name); });
       expect(names.join("|")).not.toMatch(/bench|vending|kiosk|shop/);
     });
 

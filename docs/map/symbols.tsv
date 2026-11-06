@@ -857,8 +857,8 @@ liftShafts	function	packages/scene-api/src/liftShaft.ts	37
 liftStopSquare	function	packages/scene-api/src/liftShaft.ts	119
 liftDoorClearance	function	packages/scene-api/src/liftShaft.ts	125
 WallPropPlacement	interface	packages/scene-api/src/wallProps.ts	13
-buildWallProps	function	packages/scene-api/src/wallProps.ts	120
-wallPropDrawRanges	function	packages/scene-api/src/wallProps.ts	180
+buildWallProps	function	packages/scene-api/src/wallProps.ts	122
+wallPropDrawRanges	function	packages/scene-api/src/wallProps.ts	182
 LocalTime	interface	packages/schema/src/hours.ts	4
 parseHm	function	packages/schema/src/hours.ts	13
 isOpenAt	function	packages/schema/src/hours.ts	26
