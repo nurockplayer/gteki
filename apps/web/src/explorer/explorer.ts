@@ -2588,7 +2588,8 @@ export class Explorer {
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
     if (this.catAvatar && this.avatarRig) {
-      this.catBodyPitch = stepCatBodyPitch(this.catBodyPitch, this.slope.velocity, this.mode === "overview" ? 0 : motion.speed, dt);
+      // Escalator steps are level, so a rider stays level however fast it climbs.
+      this.catBodyPitch = stepCatBodyPitch(this.catBodyPitch, this.slope.velocity, this.mode === "overview" || this.catRidingEscalator() ? 0 : motion.speed, dt);
       this.avatarRig.root.rotation.x = this.catBodyPitch;
     }
     const state = this.interactionController.state;
@@ -2608,6 +2609,10 @@ export class Explorer {
     this.publishInteraction(state);
     // Near a usable interactable the interaction wins; anywhere else E meows.
     if (this.catAvatar && state.phase !== "active") this.meow();
+  }
+
+  private catRidingEscalator(): boolean {
+    return this.catAvatar && this.mode === "guide" && this.guide !== null && guideOnEscalator(this.guide.s, this.guide.spans);
   }
 
   /** Start the cat's meow overlay, with its synth when the station audio work has supplied one. */
@@ -2632,8 +2637,7 @@ export class Explorer {
       this.interactionSnapshot = snapshot;
       this.events.onInteraction?.(state);
     }
-    const riding = this.catAvatar && this.mode === "guide" && this.guide !== null && guideOnEscalator(this.guide.s, this.guide.spans);
-    this.avatarRig?.setHold?.(riding || (state.phase === "active" && state.step !== "look") ? "sit" : null);
+    this.avatarRig?.setHold?.(this.catRidingEscalator() || (state.phase === "active" && state.step !== "look") ? "sit" : null);
     if (this.interactionVisual) this.interactionVisual.visible = state.phase === "active" &&
       this.interactionVisual.userData.gtekiInteractionId === state.nearId && (state.step === "react" || state.step === "give");
   }
