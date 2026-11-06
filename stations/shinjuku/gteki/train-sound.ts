@@ -1,6 +1,6 @@
 import type { V3 } from "../../ikebukuro/scene/station-sound.ts";
 
-type Track = { tt: number; headway: number; stop: V3; pos: V3 | null };
+type Track = { tt: number; headway: number; stop: V3; stopEnds: [V3, V3]; pos: V3 | null };
 type Cue = "approach" | "brake" | "doorOpen" | "doorClose";
 
 export function trainSoundCues(prevTt: number, tt: number, headway: number): Cue[] {
@@ -52,7 +52,13 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
       let nearest: Track | undefined; let distance = Infinity;
       tracks.forEach((track, i) => {
         if (prev[i] !== undefined) for (const cue of trainSoundCues(prev[i]!, track.tt, track.headway)) {
-          if (context.state === "running" && !isMuted() && Math.hypot(track.stop.x - listener.x, track.stop.y - listener.y, track.stop.z - listener.z) <= 40) oneShot(cue, track.stop);
+          const offset = cue === "brake" && track.pos ? { x: track.pos.x - track.stop.x, y: track.pos.y - track.stop.y, z: track.pos.z - track.stop.z } : { x: 0, y: 0, z: 0 };
+          const [a, b] = track.stopEnds;
+          const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+          const lengthSquared = dx * dx + dy * dy + dz * dz;
+          const along = lengthSquared ? Math.max(0, Math.min(1, ((listener.x - a.x - offset.x) * dx + (listener.y - a.y - offset.y) * dy + (listener.z - a.z - offset.z) * dz) / lengthSquared)) : 0;
+          const at = { x: a.x + along * dx + offset.x, y: a.y + along * dy + offset.y, z: a.z + along * dz + offset.z };
+          if (context.state === "running" && !isMuted() && Math.hypot(at.x - listener.x, at.y - listener.y, at.z - listener.z) <= 40) oneShot(cue, at);
         }
         prev[i] = track.tt;
         if (track.pos) { const d = Math.hypot(track.pos.x - listener.x, track.pos.y - listener.y, track.pos.z - listener.z); if (d < distance) { distance = d; nearest = track; } }

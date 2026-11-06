@@ -49,7 +49,7 @@ export interface BuiltStation {
   setViewer?(pos: XYZ): void;
   /** QA readout of the decorative train cycle per platform track. */
   trainStatus(): { tt: number; present: boolean; doorsOpen: boolean }[];
-  trainAudio(): { tt: number; headway: number; stop: { x: number; y: number; z: number }; pos: { x: number; y: number; z: number } | null }[];
+  trainAudio(): { tt: number; headway: number; stop: { x: number; y: number; z: number }; stopEnds: [{ x: number; y: number; z: number }, { x: number; y: number; z: number }]; pos: { x: number; y: number; z: number } | null }[];
   /** Present only when the optional Lane E kit swap ran (Issue #94). */
   kitSwap?: KitSwapReport;
   dispose(): void;
@@ -95,8 +95,13 @@ function makeTrainAudio(tracks: { at: (s: number, off: number) => { x: number; y
     const p = tr.at(tr.stopS, tr.trackOff);
     const stop = new THREE.Vector3(p.x, tr.z - 1.1, -p.y);
     car.parent?.localToWorld(stop);
+    const stopEnds = [-1, 1].map((direction) => {
+      const end = tr.at(tr.stopS + direction * (tr.cars.length - 1) * CAR_PITCH / 2, tr.trackOff);
+      const point = new THREE.Vector3(end.x, tr.z - 1.1, -end.y);
+      return car.parent ? car.parent.localToWorld(point) : point;
+    }) as [THREE.Vector3, THREE.Vector3];
     const pos = tt >= 14 && tt < 40 ? stop.clone() : tt < 54 ? car.getWorldPosition(new THREE.Vector3()).add(tr.cars[tr.cars.length / 2 - 1]!.getWorldPosition(new THREE.Vector3())).multiplyScalar(0.5) : null;
-    return { tt, headway, stop, pos };
+    return { tt, headway, stop, stopEnds, pos };
   });
 }
 
