@@ -87,4 +87,7 @@ for(const [key,box] of extents) console.log(stamp(),'SAMPLED EXTENT',key,JSON.st
 const built=buildStation(bundle, plan as any, {quality:'high'});
 const p={x:-57.02350168020482,y:157.7584254064088,z:-22.86699446514392};
 const near=(w:any)=>{const dx=w.b.x-w.a.x,dy=w.b.y-w.a.y,l=Math.hypot(dx,dy),t=((p.x-w.a.x)*dx+(p.y-w.a.y)*dy)/(l*l);return t>=-0.01&&t<=1.01&&Math.abs((p.x-w.a.x)*dy-(p.y-w.a.y)*dx)/l<0.03&&p.z>=w.zMin-0.1&&p.z<=w.zMax+0.1};
-console.log(stamp(),'CANDIDATES',JSON.stringify({walls:built.layout.levels.flatMap(l=>l.walls.filter(near).map(w=>({level:l.label,w}))),fascias:built.layout.shaftFascias.filter(f=>near(f.wall))})); built.dispose(); scene.dispose(); console.log(stamp(),'PASS');
+console.log(stamp(),'CANDIDATES',JSON.stringify({walls:built.layout.levels.flatMap(l=>l.walls.filter(near).map(w=>({level:l.label,w}))),fascias:built.layout.shaftFascias.filter(f=>near(f.wall))})); built.dispose(); scene.dispose();
+const visibleWallFascia = [...counts].filter(([key, value]) => value.first > 0 && key.includes('|mat.wall|') && key.includes('|mat.ceiling|'));
+if (visibleWallFascia.length) { console.error(stamp(), 'FAIL visible wall–fascia first hits', visibleWallFascia.length); process.exitCode = 1; }
+else console.log(stamp(), 'PASS');

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
+import polygonClipping from "polygon-clipping";
 import type { StationBundle } from "@gteki/schema";
 import { buildLayout, pointInRings, soffitHeight, WalkWorld, type Plan, type Soffit } from "../scene/layout.ts";
 import { loadShinjukuBundle } from "../data/bundle.ts";
@@ -9,6 +10,28 @@ import { withCanvasStub } from "./helpers/scene-digest.ts";
 
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
+
+it("keeps B3 shot 28 shaft fascias clear of kept wall planes within 2 mm", () => {
+  const layout = buildLayout(bundle, plan);
+  const walls = layout.levels.flatMap(l => l.walls.filter(w => w.kind !== "trackside" && w.finish !== "fascia"));
+  for (const fascia of layout.shaftFascias) {
+    const panel = fascia.polygon!;
+    for (const wall of walls) {
+      const distance = (p: { x: number; y: number }) => Math.abs(-p.x * panel.axis.y + p.y * panel.axis.x - panel.offset);
+      if (distance(wall.a) >= 0.002 || distance(wall.b) >= 0.002) continue;
+      const project = (p: { x: number; y: number }) => p.x * panel.axis.x + p.y * panel.axis.y;
+      const a = project(wall.a), b = project(wall.b);
+      if (Math.abs(a - b) < 1e-6) continue;
+      const p = wall.profile ?? { bottomA: wall.zMin, bottomB: wall.zMin, topA: wall.zMax, topB: wall.zMax };
+      const snap = (v: number) => Math.round(v * 1e4) / 1e4;
+      const cover: [number, number][][] = [[[snap(a), snap(p.bottomA)], [snap(b), snap(p.bottomB)], [snap(b), snap(p.topB)], [snap(a), snap(p.topA)], [snap(a), snap(p.bottomA)]]];
+      const rings: [number, number][][] = panel.rings.map(r => r.map(p => [p.x, p.y]));
+      const overlap = polygonClipping.intersection(rings, cover);
+      const area = overlap.flatMap(poly => poly).reduce((sum, ring) => sum + Math.abs(ring.slice(1).reduce((n, point, i) => n + ring[i]![0]! * point[1]! - point[0]! * ring[i]![1]!, 0)) / 2, 0);
+      expect(area, `fascia ${fascia.floorId} wall ${wall.a.x},${wall.a.y}`).toBeLessThan(1e-8);
+    }
+  }
+}, 120_000);
 
 it("finishes grouped flights on their own planes with flat landings and shoulders", () => {
   const coordinates = [{ x: 0, y: 0, z: -12 }, { x: 4, y: 0, z: -10 }, { x: 5, y: 0, z: -10 }, { x: 9, y: 0, z: -7.96 }];
