@@ -105,6 +105,27 @@ describe("createCatAvatar", () => {
     avatar.dispose();
   });
 
+  it("calls onFallback once on load failure, not on a good load, not after dispose", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const onFallback = vi.fn();
+    const failed = createCatAvatar(THREE, { loader: { loadAsync: async () => { throw new Error("404"); } }, onFallback });
+    await flush();
+    expect(onFallback).toHaveBeenCalledTimes(1);
+    failed.dispose();
+
+    const ok = createCatAvatar(THREE, { loader: immediate(catFixture()), onFallback });
+    await flush();
+    ok.dispose();
+    expect(onFallback).toHaveBeenCalledTimes(1);
+
+    const pending = deferred();
+    const disposed = createCatAvatar(THREE, { loader: pending.loader, onFallback });
+    disposed.dispose();
+    pending.reject(new Error("404"));
+    await flush();
+    expect(onFallback).toHaveBeenCalledTimes(1);
+  });
+
   it("disposes the asset instead of attaching it when dispose runs before the load resolves", async () => {
     const pending = deferred();
     const asset = catFixture();
