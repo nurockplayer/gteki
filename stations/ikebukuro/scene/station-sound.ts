@@ -91,6 +91,7 @@ type GatePattern = (typeof GATE_PATTERNS)[keyof typeof GATE_PATTERNS];
 
 export interface StationSound {
   update(dtSeconds: number, camera?: Camera): void;
+  chimeAt(at: V3): void;
   dispose(): void;
 }
 
@@ -310,7 +311,9 @@ export function createStationSound(opts: StationSoundOptions): StationSound {
     activeTaps.clear();
   }
 
-  return { update, dispose };
+  return { update, dispose, chimeAt(at) {
+    if (!disposed && context.state === "running" && !isMuted() && distance(listener, at) <= CHIME_RANGE_M) playChime(at);
+  } };
 }
 
 type SpeechGlobal = typeof globalThis & {
