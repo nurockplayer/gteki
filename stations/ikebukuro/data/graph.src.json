@@ -2986,10 +2986,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 80.0,
-        "y": 114.5,
-        "z": 32.422
-      },
+    "x": 80.0,
+    "y": 114.5,
+    "z": 32.422
+   },
    "connectorNodeIds": [
     "x22"
    ],
@@ -3038,10 +3038,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 101.0,
-        "y": 92.0,
-        "z": 32.246
-      },
+    "x": 101.0,
+    "y": 92.0,
+    "z": 32.246
+   },
    "connectorNodeIds": [
     "x26"
    ],
@@ -3089,10 +3089,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 127.0,
-        "y": 95.0,
-        "z": 32.37
-      },
+    "x": 127.0,
+    "y": 95.0,
+    "z": 32.37
+   },
    "connectorNodeIds": [
     "x28"
    ],
@@ -3140,10 +3140,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 157.0,
-        "y": 115.5,
-        "z": 32.426
-      },
+    "x": 157.0,
+    "y": 115.5,
+    "z": 32.426
+   },
    "connectorNodeIds": [
     "x32"
    ],
@@ -3191,10 +3191,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 148.0,
-        "y": 73.0,
-        "z": 32.078
-      },
+    "x": 148.0,
+    "y": 73.0,
+    "z": 32.078
+   },
    "connectorNodeIds": [
     "x33"
    ],
@@ -3242,10 +3242,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 83.0,
-        "y": 47.0,
-        "z": 32.267
-      },
+    "x": 83.0,
+    "y": 47.0,
+    "z": 32.267
+   },
    "connectorNodeIds": [
     "x27"
    ],
@@ -3293,10 +3293,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 139.5,
-        "y": 53.5,
-        "z": 31.891
-      },
+    "x": 139.5,
+    "y": 53.5,
+    "z": 31.891
+   },
    "connectorNodeIds": [
     "x34"
    ],
@@ -3344,10 +3344,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 154.0,
-        "y": 18.5,
-        "z": 31.268
-      },
+    "x": 154.0,
+    "y": 18.5,
+    "z": 31.268
+   },
    "connectorNodeIds": [
     "x35"
    ],
@@ -3462,10 +3462,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 38.0,
-        "y": 19.0,
-        "z": 32.345
-      },
+    "x": 38.0,
+    "y": 19.0,
+    "z": 32.345
+   },
    "connectorNodeIds": [
     "x37"
    ],
@@ -3514,10 +3514,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 91.0,
-        "y": -30.5,
-        "z": 31.969
-      },
+    "x": 91.0,
+    "y": -30.5,
+    "z": 31.969
+   },
    "connectorNodeIds": [
     "x42"
    ],
@@ -3565,10 +3565,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 108.5,
-        "y": -7.5,
-        "z": 31.791
-      },
+    "x": 108.5,
+    "y": -7.5,
+    "z": 31.791
+   },
    "connectorNodeIds": [
     "x43"
    ],
@@ -3616,10 +3616,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 84.5,
-        "y": -39.5,
-        "z": 32.153
-      },
+    "x": 84.5,
+    "y": -39.5,
+    "z": 32.153
+   },
    "connectorNodeIds": [
     "x41"
    ],
@@ -3687,10 +3687,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 53.5,
-        "y": -52.5,
-        "z": 32.642
-      },
+    "x": 53.5,
+    "y": -52.5,
+    "z": 32.642
+   },
    "connectorNodeIds": [
     "x38"
    ],
@@ -3739,10 +3739,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 172.5,
-        "y": -179.0,
-        "z": 32.646
-      },
+    "x": 172.5,
+    "y": -179.0,
+    "z": 32.646
+   },
    "connectorNodeIds": [
     "x39"
    ],
@@ -3790,10 +3790,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": 131.0,
-        "y": -129.0,
-        "z": 32.506
-      },
+    "x": 131.0,
+    "y": -129.0,
+    "z": 32.506
+   },
    "connectorNodeIds": [
     "x40"
    ],
@@ -4651,10 +4651,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路西改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage West Gate"
     }
    ],
    "aliases": [
@@ -4721,6 +4717,10 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage West Gate"
     }
    ],
    "floorId": "b1",
@@ -4743,10 +4743,6 @@
     {
      "lang": "ja",
      "text": "有楽町線 南通路西改札"
-    },
-    {
-     "lang": "en",
-     "text": "Yurakucho Line South Passage West Gate"
     }
    ],
    "aliases": [
@@ -4821,6 +4817,10 @@
     {
      "lang": "en",
      "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line South Passage West Gate"
     }
    ],
    "floorId": "b1",
@@ -4844,10 +4844,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路中央改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage Central Gate"
     }
    ],
    "aliases": [
@@ -4914,6 +4910,10 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage Central Gate"
     }
    ],
    "floorId": "b1",
@@ -4936,10 +4936,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路東改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage East Gate"
     }
    ],
    "aliases": [
@@ -5006,6 +5002,10 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage East Gate"
     }
    ],
    "floorId": "b1",
@@ -5288,10 +5288,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": -155.5,
-        "y": 153.0,
-        "z": 33.146
-      },
+    "x": -155.5,
+    "y": 153.0,
+    "z": 33.146
+   },
    "connectorNodeIds": [
     "x10"
    ],
@@ -5339,10 +5339,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": -145.0,
-        "y": 179.0,
-        "z": 33.146
-      },
+    "x": -145.0,
+    "y": 179.0,
+    "z": 33.146
+   },
    "connectorNodeIds": [
     "x11"
    ],
@@ -5390,10 +5390,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": -117.5,
-        "y": 137.0,
-        "z": 33.146
-      },
+    "x": -117.5,
+    "y": 137.0,
+    "z": 33.146
+   },
    "connectorNodeIds": [
     "x15"
    ],
@@ -5441,10 +5441,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": -107.0,
-        "y": 164.0,
-        "z": 33.146
-      },
+    "x": -107.0,
+    "y": 164.0,
+    "z": 33.146
+   },
    "connectorNodeIds": [
     "x17"
    ],
@@ -5492,10 +5492,10 @@
    ],
    "floorId": "street",
    "displayPosition": {
-        "x": -98.5,
-        "y": 156.0,
-        "z": 33.168
-      },
+    "x": -98.5,
+    "y": 156.0,
+    "z": 33.168
+   },
    "connectorNodeIds": [
     "x18"
    ],
@@ -22956,7 +22956,16 @@
      "text": "コインロッカー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -22988,7 +22997,16 @@
      "text": "東京メトロッカー＋（Tokyo Metlocker PLUS）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24319,13 +24337,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24356,13 +24379,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24393,13 +24421,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24430,13 +24463,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24467,13 +24505,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
