@@ -1,12 +1,12 @@
 # Ikebukuro field-run packet (phone version)
 
-**As of 2026-11-02 JST.** Basis: `origin/main` at `ef8067fd`; public field work only. 16 stable stops.
+**As of 2026-11-02 JST.** Basis: `origin/main` at `ef8067fd`; public field work only. 16 stable stops. Added 2026-11-06 JST: Exit 26 landing extent (#809) at IK-09.
 
 | Part | Item minutes | Walking between stops | Total |
 |---|---:|---:|---|
-| Free-side stops IK-01–IK-10 | 375 | 35 | 6 h 50 min |
+| Free-side stops IK-01–IK-10 | 380 | 35 | 6 h 55 min |
 | Ticket-needed stops IK-11–IK-15 | 51 | 26 | 1 h 17 min |
-| On-site total | 426 | 61 | **8 h 07 min (8.12 h)** |
+| On-site total | 431 | 61 | **8 h 12 min (8.20 h)** |
 | Off-site phone check IK-16, no ticket | 5 | 0 | 5 min, outside station total |
 
 **Walking estimate (planning, not measured).** Use the existing [B1 checklist plan](ikebukuro-field-checklist.md): 277.4 m west→east→north loop, South Passage 48.7 + 9.7 m and West Passage 12.9 + 43.9 m from the October field run. At 60 m/min the core is about 7 min; round each adjacent move to 2–4 min and allow 5–7 min for returns to distant operator gates/street detours. The incoming-walk minutes printed at every stop sum to the table; platform inspection/access is in item budgets, not these transfers. No walking is charged twice for a running sheet. Breaks, crowds, lift queues, barred-route detours and train travel/waits are extra. Do not attempt to fit the full packet into the old shorter field-run estimate.
@@ -117,10 +117,12 @@ Start at 西口（地下）. For doors aim for 11:00 JST or later; check actual 
 
 ### IK-09 · North-east shopping-park passage → Sunshine 地下道入口
 
-- **Items:** G1, G2; FC-IK-03, FC-SH-06
-- **Minutes:** 20 item; 4 walk from previous stop.
+- **Items:** G1, G2; FC-IK-03, FC-SH-06; #809 (Exit 26 landing)
+- **Minutes:** 25 item; 4 walk from previous stop.
 - Read 24/25 stair labels and find the other; inspect underground reachability and starts of 23/29/30/31; distinguish one stair with two numbers from two stairs. Private sign photos.
-- Copy plate/shutter hours wording at Sunshine City 地下道入口; complete the running hours collection from ISP entrances and Metro exits 34–37 passed earlier. Keep passage hours distinct from shop hours. Minutes: 15 + 5.
+- Copy plate/shutter hours wording at Sunshine City 地下道入口; complete the running hours collection from ISP entrances and Metro exits 34–37 passed earlier. Keep passage hours distinct from shop hours.
+- **#809, Exit 26 landing:** find the stair signed 26 by its plate. At each end, B1 and street, measure how far the landing runs past the last step, in metres, along the stair's direction, and say whether you used a tape or paced it. Take one photo from the side at each end showing the last step and the landing edge: **[private]** if a sign, logo, ad or face is in frame. Not found, barred or unmeasured stays OPEN, with the reason. Keep this in the dated field notes under #809; it is not a numbered receipt item.
+- Minutes: 15 + 5 + 5 (est.).
 
 ### IK-10 · Exit 22 street → 池袋PARCO public door; close the running sheet
 
@@ -231,6 +233,7 @@ An em dash means no FC alias is assigned in the source; numbered and FC question
 | V3 | Public supplemental facility/retry question | IK-07 |
 | FC-SH-06 | Merged public alias; no second item-time charge | IK-09 |
 | V4 | Public supplemental facility/retry question | IK-10 |
+| #809 | Exit 26 landing extent at both ends, with a photo | IK-09 |
 | Matrix: 池袋 JR 山手線 | field (unscheduled) items 1, A2 / FC-IK-01 (北・メトロポリタン口); #684 | IK-08 |
 | Matrix: 池袋 JR 埼京線・湘南新宿ライン | as above | IK-08 |
 | Matrix: 池袋 東武東上線 | field (unscheduled) items 11, 26 | IK-06 |
