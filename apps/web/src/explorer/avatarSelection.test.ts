@@ -184,6 +184,17 @@ describe("cat avatar selection", () => {
     rig.dispose();
   });
 
+  it("forwards the meow to the loaded cat and refuses before the load", async () => {
+    const load = deferred<ReturnType<typeof catAvatarFixture>>();
+    const rig = createAvatarRig({ quality: "low", kind: "cat", loader: { loadAsync: () => load.promise } });
+    expect(rig.meow!()).toBe(false);
+    load.resolve(catAvatarFixture());
+    await rig.loadGlb();
+    expect(rig.meow!()).toBe(true);
+    expect(rig.meow!()).toBe(false);
+    rig.dispose();
+  });
+
   it("falls back to the human once when the cat GLB fails, warning once", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const loader = { loadAsync: vi.fn().mockRejectedValue(new Error("404")) };

@@ -10,7 +10,9 @@ export class Input {
   /** Keys held by deterministic test simulation (QA hooks), merged with real keys. */
   readonly virtualKeys = new Set<string>();
   private look = { dx: 0, dy: 0, zoom: 0 };
-  private drag: { id: number; x: number; y: number } | null = null;
+  private drag: { id: number; x: number; y: number; sx: number; sy: number; at: number } | null = null;
+  /** A short, still pointerup: read once by consumeTap. */
+  private tap: { x: number; y: number } | null = null;
   private stick: { id: number; ox: number; oy: number; x: number; y: number } | null = null;
   private readonly stickEl: HTMLDivElement;
   private readonly knobEl: HTMLDivElement;
@@ -45,7 +47,7 @@ export class Input {
         this.stickEl.style.top = `${e.clientY - rect.top}px`;
         this.stickEl.classList.add("active");
       } else if (!this.drag) {
-        this.drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+        this.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, at: performance.now() };
       }
       surface.setPointerCapture(e.pointerId);
     });
@@ -68,7 +70,14 @@ export class Input {
         this.stickEl.classList.remove("active");
         this.knobEl.style.transform = "";
       }
-      if (this.drag?.id === e.pointerId) this.drag = null;
+      if (this.drag?.id === e.pointerId) {
+        const drag = this.drag;
+        this.drag = null;
+        // Only a real pointerup taps: pointercancel (a scroll or system gesture) never does.
+        if (e.type === "pointerup" && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 8 && performance.now() - drag.at < 300) {
+          this.tap = { x: e.clientX, y: e.clientY };
+        }
+      }
     };
     on(surface, "pointerup", end);
     on(surface, "pointercancel", end);
@@ -96,6 +105,13 @@ export class Input {
     if (m > 1) { x /= m; y /= m; }
     const run = k.has("ShiftLeft") || k.has("ShiftRight") || Math.hypot(s.x, s.y) > 0.95;
     return { x, y, run };
+  }
+
+  /** The last short still tap, in CSS pixels; clears it so it fires once. */
+  consumeTap(): { x: number; y: number } | null {
+    const tap = this.tap;
+    this.tap = null;
+    return tap;
   }
 
   consumeLook(): { dx: number; dy: number; zoom: number } {

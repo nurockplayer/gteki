@@ -45,6 +45,7 @@ import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion, stepCatBodyPitch } from "./avatarMotion.ts";
+import { catTapHit } from "./catMeow.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
@@ -359,6 +360,9 @@ export class Explorer {
    */
   private stationAudio: GainNode | null = null;
   private audioUnlock: (() => void) | null = null;
+  private catMeowSound: ((context: AudioContext, destination: AudioNode) => void) | null = null;
+  /** The synth for the cat's meow; plays through the master bus, so mute applies. */
+  setCatMeowSound(play: ((context: AudioContext, destination: AudioNode) => void) | null): void { this.catMeowSound = play; }
   private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
@@ -2576,6 +2580,7 @@ export class Explorer {
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
+    this.stepCatTap();
     if (this.catAvatar) this.avatarRig?.setLookPitch?.(this.mode === "overview" ? 0 : this.pitch);
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
@@ -2596,7 +2601,28 @@ export class Explorer {
 
   get interaction(): InteractionState { return this.interactionController.state; }
 
-  interact(): void { this.publishInteraction(this.interactionController.start()); }
+  interact(): void {
+    const state = this.interactionController.start();
+    this.publishInteraction(state);
+    // Near a usable interactable the interaction wins; anywhere else E meows.
+    if (this.catAvatar && state.phase !== "active") this.meow();
+  }
+
+  /** Start the cat's meow overlay, with its synth when the station audio work has supplied one. */
+  private meow(): void {
+    if (!this.avatarRig?.meow?.()) return;
+    if (this.catMeowSound && this.ensureAudio()) this.catMeowSound(this.audio!.context, this.audio!.master);
+  }
+
+  /** A still tap on the projected cat starts the meow; drags, joystick touches and other modes never do. */
+  private stepCatTap(): void {
+    const tap = this.input.consumeTap();
+    if (!tap || !this.catAvatar || this.mode !== "walk") return;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const at = this.pos.clone().add(new THREE.Vector3(0, 0.15, 0)).project(this.camera);
+    const cat = { x: rect.left + ((at.x + 1) * rect.width) / 2, y: rect.top + ((1 - at.y) * rect.height) / 2, behind: at.z > 1 };
+    if (catTapHit(tap, cat)) this.meow();
+  }
 
   private publishInteraction(state: InteractionState): void {
     const snapshot = JSON.stringify(state);
