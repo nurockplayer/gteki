@@ -124,6 +124,8 @@ All `checked` = 2026-10-22.
 
 ## 5. What this does not establish
 
+- **GAP:** the platform 6/7 direction (which side each platform face serves) has third-party sources only (Jorudan and similar), not in the station data, and is neither shown nor announced in the scene; waiting for an operator source.
+- The 1.3 m platform door height in the scene is a generic value (RTRI gives 1.3–1.4 m for platform doors), not an E27 measurement.
 - The real floor, ceiling, column and lighting finishes of E27 (platform, concourse, connecting passages); light colour temperature; any E27 design theme. Not stated in anything read.
 - The numeric Oedo Line colour as published by Toei or Tokyo. `#b6007a` is not an official statement.
 - Toei's sign-board ground and text colours as numbers, the Toei typeface, and whether Toei signs use JIS Z 8210 pictograms. The Tokyo guidelines read set a framework only.
