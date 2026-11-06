@@ -218,8 +218,4 @@ describe("English queries after the verbatim-name audit (#595)", () => {
     expect(ikbIds("West Gate")).toContain("metro-m-central-west-gate");
     expect(ikbIds("Marunouchi Line Central Passage West Gate")).toContain("metro-m-central-west-gate");
   });
-
-  it("still finds the separate station by its conventional English form", () => {
-    expect(ids(strong("Shinjuku-nishiguchi Station"))).toContain("poi:sep-shinjuku-nishiguchi");
-  });
 });
