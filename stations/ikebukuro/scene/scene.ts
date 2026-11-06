@@ -14,6 +14,7 @@ import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
 import { type Opening, type Shop, loadShopKit } from "./kit_shops.ts";
 import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
+import { currentTimeBand } from "./time-band.ts";
 import { createAmbience } from "./ambience.ts";
 import { createStationSound } from "./station-sound.ts";
 import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
@@ -530,7 +531,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   root.add(signs.group);
   root.add(signKit.build(THREE, env, toRenderer, signs.layouts).group);
 
-  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
+  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes, currentTimeBand(globalThis.location?.search, new Date()));
   root.add(crowd.group);
 
   const ambience = ctx.audio ? createAmbience(ctx.audio.context, ctx.audio.destination) : null;
