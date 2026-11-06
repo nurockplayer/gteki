@@ -23,7 +23,8 @@ interface IndexedText {
   normalized: string;
   /** Set for brand texts; the store POI itself stays the hit. */
   tenant?: Tenant;
-  crossText?: boolean;
+  /** Set for a POI's own names and aliases, the texts a cross-text match may use. */
+  wordBreaks?: Set<number>;
 }
 
 interface IndexedPoi {
@@ -139,6 +140,26 @@ function stripTrailingStation(query: string, prefixes: readonly string[], tokens
   return makeForm(normalized, remainingTokens.length < 2 ? [] : remainingTokens, STRIPPED_PENALTY);
 }
 
+/** Offsets in a search key where the text had a word break; the key itself has lost its separators. */
+function wordBreaks(text: string): Set<number> {
+  const breaks = new Set([0]);
+  let at = 0;
+  for (const word of text.normalize("NFKC").split(/[\s\p{P}]+/u)) breaks.add(at += normalizeJa(word).length);
+  return breaks;
+}
+
+/** A token with a digit must be a whole identifier: "a1" is in "A1 West Gate" but not "A10", "2" not in "22番出口" or "A2". */
+function hasCrossToken(text: IndexedText, token: string): boolean {
+  const key = text.normalized;
+  if (!/\d/.test(token)) return key.includes(token);
+  for (let at = key.indexOf(token); at >= 0; at = key.indexOf(token, at + 1)) {
+    const end = at + token.length;
+    if ((text.wordBreaks!.has(at) || !/[a-z0-9]/.test(key[at - 1]!)) &&
+        (text.wordBreaks!.has(end) || !/[a-z0-9]/.test(key[end] ?? ""))) return true;
+  }
+  return false;
+}
+
 /** Ordered subsequence matching, penalising skipped characters within the match. */
 function fuzzyScore(query: string[], text: string): number {
   // Reject impossible subsequences before allocating the per-character scoring maps.
@@ -246,7 +267,7 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
     else tenantsByPoi.set(tenant.poiId, [tenant]);
   }
   const entries: IndexedPoi[] = bundle.pois.map((poi) => {
-    const texts: IndexedText[] = [...poi.names, ...poi.aliases].map(({ text }) => ({ original: text, normalized: searchKey(text), crossText: true }));
+    const texts: IndexedText[] = [...poi.names, ...poi.aliases].map(({ text }) => ({ original: text, normalized: searchKey(text), wordBreaks: wordBreaks(text) }));
     for (const { text } of poi.descriptions ?? []) texts.push({ original: text, normalized: searchKey(text) });
     // A store's directory only adds texts to the store itself: one card per store, never one per brand.
     for (const tenant of tenantsByPoi.get(poi.id) ?? [])
@@ -303,15 +324,8 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
           const termMatch = terms.some((term) => term === form.normalized ||
             (form.normalized.length >= 3 && term.startsWith(form.normalized)));
           const crossMatch = form.tokens.length > 1 && form.tokens.every((token) =>
-            [...entry.texts.filter((text) => text.crossText).map((text) => text.normalized), ...terms].some((text) => {
-              if (!/\d/.test(token)) return text.includes(token);
-              const boundary = /^\d+$/.test(token) ? /\p{Nd}/u : /[a-z0-9]/;
-              for (let at = text.indexOf(token); at >= 0; at = text.indexOf(token, at + 1)) {
-                if ((at === 0 || !boundary.test(text[at - 1]!)) &&
-                    !boundary.test(text[at + token.length] ?? "")) return true;
-              }
-              return false;
-            }));
+            terms.some((term) => term.includes(token)) ||
+            entry.texts.some((text) => text.wordBreaks && hasCrossToken(text, token)));
           const score = WEAK_MATCH_SCORE - form.penalty;
           if ((termMatch || crossMatch) && score > direct.score) {
             const name = entry.poi.names[0]?.text ?? "";

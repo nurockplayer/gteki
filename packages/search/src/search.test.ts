@@ -226,6 +226,16 @@ describe("English facility search", () => {
     expect(createSearchIndex(bundle).search("Marunouchi Line West Gate")).toEqual([]);
   });
 
+  it("keeps an identifier that was its own word in a multi-word text", () => {
+    const index = indexFor(bundleWith([
+      poi("a1", "西改札", { category: "exit", aliases: [{ lang: "en", text: "Marunouchi Line" }, { lang: "en", text: "A1 West Gate" }] }),
+      poi("a10", "A10", { category: "exit" }),
+    ]));
+    expect(index.search("Marunouchi Line A1 Gate").map((hit) => hit.poi.id)).toEqual(["a1"]);
+    expect(index.search("exit A1").map((hit) => hit.poi.id)).toEqual(["a1"]);
+    expect(index.search("exit 1")).toEqual([]);
+  });
+
   it("strips a trailing station word but keeps a station-only query", () => {
     const bundle = bundleWith([poi("separate", "Shinjuku-nishiguchi"), poi("station", "Shinjuku Station platform")]);
     bundle.station.names = [{ lang: "en", text: "Shinjuku Station" }];

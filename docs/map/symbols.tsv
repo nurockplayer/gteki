@@ -920,8 +920,8 @@ SearchOptions	interface	packages/search/src/index.ts	38
 SearchIndex	interface	packages/search/src/index.ts	47
 normalizeJa	function	packages/search/src/search.ts	5
 searchKey	function	packages/search/src/search.ts	16
-scriptRuns	function	packages/search/src/search.ts	71
-createSearchIndex	function	packages/search/src/search.ts	241
+scriptRuns	function	packages/search/src/search.ts	72
+createSearchIndex	function	packages/search/src/search.ts	262
 stairwellRecipeUrl	const	stations/ikebukuro/gteki/scene.ts	6
 navmeshPaths	const	stations/ikebukuro/gteki/scene.ts	10
 @gteki/station-ikebukuro:dev	script	stations/ikebukuro/package.json	6
