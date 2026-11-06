@@ -105,14 +105,18 @@ describe("actual walker fence replay", () => {
       ].filter(s => env.labels(s, true).mapped);
       if (!starts.length) { failures.push({ id, missing: "start" }); continue; }
       combos(end, env, starts, failures);
+      // A single sub-body-width piece leaves no walkable hole; widen it with every piece of the same
+      // run within 1.0 m of the end, chaining the removals through the mutated built/scene.
+      const pieces = fencesOf(built).filter(f => Math.abs(f.zMin - end.fence!.zMin) < .01 && distance(end.p, closest(end.p, f.a, f.b)) <= 1);
       try {
-        const mutated = mutateFence(built, scene, end.fence!, "remove");
+        const mutations: ReturnType<typeof mutateFence>[] = [];
         try {
-          const menv = replayEnvironment(mutated.built, mutated.scene, plan), witnesses: unknown[] = [];
+          for (const fence of pieces) { const prev = mutations.at(-1); mutations.push(mutateFence(prev?.built ?? built, prev?.scene ?? scene, fence, "remove")); }
+          const last = mutations.at(-1)!, menv = replayEnvironment(last.built, last.scene, plan), witnesses: unknown[] = [];
           combos(end, menv, starts, witnesses);
-          controls.push({ id, length: len, witnesses: witnesses.length });
+          controls.push({ id, length: len, pieces: pieces.length, totalLength: pieces.reduce((s, f) => s + distance(f.a, f.b), 0), witnesses: witnesses.length });
           if (!witnesses.length) failures.push({ id, length: len, control: "null" });
-        } finally { mutated.dispose(); }
+        } finally { for (let i = mutations.length - 1; i >= 0; i--) mutations[i]!.dispose(); }
       } catch (error) { failures.push({ id, length: len, control: String(error) }); }
     }
     if (process.env.FARE_LIFT_REPLAY_REPORT) writeFileSync(process.env.FARE_LIFT_REPLAY_REPORT, JSON.stringify({ failures, controls }, null, 2));
