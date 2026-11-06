@@ -5,7 +5,7 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { buildScene } from "../gteki/scene.ts";
-import { pointInRings, type Plan } from "../scene/layout.ts";
+import { pointInRings, type Plan, type XYZ } from "../scene/layout.ts";
 import type { StationScene } from "@gteki/scene-api";
 import { derivedRestrictedAccess, liftClearances, restrictionAt } from "../scene/fare-fence.ts";
 import { Player } from "../app/src/player.ts";
@@ -83,6 +83,42 @@ describe("actual walker fence replay", () => {
     expect(env.fringes().contacts).toBeGreaterThan(0);
     expect(env.fringes().maxM).toBeLessThan(.00002);
   }, 30_000);
+  it("proves the two open door-clearance lift ends cannot be walked around", () => {
+    const ids = ["return:B6:690:b", "join:1:708:b"] as const, lifts = liftClearances(bundle, plan, built.layout);
+    const ends = replayEnds(built), env = replayEnvironment(built, scene, plan), failures: unknown[] = [], controls: { id: string; witnesses: number }[] = [];
+    const combos = (end: (typeof ends)[number], environment: ReturnType<typeof replayEnvironment>, starts: XYZ[], out: unknown[]) => {
+      for (const start of starts) for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true])
+        for (const approach of APPROACHES) { const leak = environment.replay(end, start, approach, walker, fps, run); if (leak) out.push({ start, leak }); }
+    };
+    for (const id of ids) {
+      const end = ends.find(e => e.id === id)!;
+      const len = distance(end.fence!.a, end.fence!.b), normal = { x: -(end.fence!.b.y - end.fence!.a.y) / len, y: (end.fence!.b.x - end.fence!.a.x) / len };
+      const lift = lifts.filter(l => Math.abs(l.z - end.p.z) < .5).map(l => {
+        const ring = l.rings[1]!, centre = { x: ring.reduce((s, p) => s + p.x, 0) / ring.length, y: ring.reduce((s, p) => s + p.y, 0) / ring.length };
+        return { centre, d: distance(centre, end.p) };
+      }).sort((a, b) => a.d - b.d)[0];
+      if (!lift) { failures.push({ id, missing: "lift" }); continue; }
+      const starts = [
+        { x: end.p.x + normal.x * .6, y: end.p.y + normal.y * .6, z: end.p.z },
+        { x: end.p.x - normal.x * .6, y: end.p.y - normal.y * .6, z: end.p.z },
+        { ...lift.centre, z: end.p.z },
+      ].filter(s => env.labels(s, true).mapped);
+      if (!starts.length) { failures.push({ id, missing: "start" }); continue; }
+      combos(end, env, starts, failures);
+      try {
+        const mutated = mutateFence(built, scene, end.fence!, "shorten");
+        try {
+          const mutatedEnd = replayEnds(mutated.built).find(e => e.id === id)!, menv = replayEnvironment(mutated.built, mutated.scene, plan), witnesses: unknown[] = [];
+          combos(mutatedEnd, menv, starts, witnesses);
+          controls.push({ id, witnesses: witnesses.length });
+          if (!witnesses.length) failures.push({ id, control: "null" });
+        } finally { mutated.dispose(); }
+      } catch (error) { failures.push({ id, control: String(error) }); }
+    }
+    if (process.env.FARE_LIFT_REPLAY_REPORT) writeFileSync(process.env.FARE_LIFT_REPLAY_REPORT, JSON.stringify({ failures, controls }, null, 2));
+    expect(failures, JSON.stringify({ failures, controls })).toEqual([]);
+    expect(controls).toHaveLength(ids.length);
+  }, 300_000);
   it("negative controls expose removed fare/access pieces and a shortened end", () => {
     const controls: unknown[] = [], baseline = replayEnvironment(built, scene, plan);
     for (const kind of ["fare", "access", "shorten"] as const) for (const walker of ["explorer", "lane"] as const) {
