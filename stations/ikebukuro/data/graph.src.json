@@ -4717,6 +4717,14 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "West Gate"
+    },
+    {
+     "lang": "en",
+     "text": "Central Passage"
     }
    ],
    "floorId": "b1",
@@ -4813,6 +4821,14 @@
     {
      "lang": "en",
      "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "West Gate"
+    },
+    {
+     "lang": "en",
+     "text": "South Passage"
     }
    ],
    "floorId": "b1",
@@ -4902,6 +4918,14 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "Central Gate"
+    },
+    {
+     "lang": "en",
+     "text": "Central Passage"
     }
    ],
    "floorId": "b1",
@@ -4990,6 +5014,14 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "East Gate"
+    },
+    {
+     "lang": "en",
+     "text": "Central Passage"
     }
    ],
    "floorId": "b1",
@@ -22940,7 +22972,16 @@
      "text": "コインロッカー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -22972,7 +23013,16 @@
      "text": "東京メトロッカー＋（Tokyo Metlocker PLUS）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24305,7 +24355,16 @@
      "text": "コインロッカー（有料）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24338,7 +24397,16 @@
      "text": "コインロッカー（有料）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24371,7 +24439,16 @@
      "text": "コインロッカー（有料）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24404,7 +24481,16 @@
      "text": "コインロッカー（有料）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -24437,7 +24523,16 @@
      "text": "コインロッカー（有料）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],

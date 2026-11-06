@@ -9,6 +9,9 @@ import { createSearchIndex } from "@gteki/search";
 import manifest from "../../../stations/shinjuku/gteki/station.json" with { type: "json" };
 import graph from "../../../stations/shinjuku/gteki/graph.json" with { type: "json" };
 import pois from "../../../stations/shinjuku/gteki/pois.json" with { type: "json" };
+import ikbManifest from "../../../stations/ikebukuro/gteki/station.json" with { type: "json" };
+import ikbGraph from "../../../stations/ikebukuro/gteki/graph.json" with { type: "json" };
+import ikbPois from "../../../stations/ikebukuro/gteki/pois.json" with { type: "json" };
 
 const parsed = parseStationFiles(manifest, graph, pois);
 if (!parsed.ok) throw new Error(`Shinjuku station files failed validation: ${parsed.issues.filter((i) => i.level === "error").map((i) => i.message).join("; ")}`);
@@ -200,5 +203,22 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
 
   it.each(NO_HIT)("%s returns no hit at all", (q) => {
     expect(hits(q)).toEqual([]);
+  });
+});
+
+describe("English queries after the verbatim-name audit (#595)", () => {
+  const ikb = parseStationFiles(ikbManifest, ikbGraph, ikbPois);
+  if (!ikb.ok) throw new Error("Ikebukuro station files failed validation");
+  const ikbIndex = createSearchIndex(ikb.bundle);
+  const ikbIds = (q: string) => ikbIndex.search(q, { limit: 20 }).filter((h) => h.score >= STRONG).map((h) => h.poi.id);
+
+  it("still finds lockers and Metro gates that have no English name", () => {
+    expect(ikbIds("Coin lockers").filter((id) => id.startsWith("locker-ikb-tobudept-"))).toEqual(expect.arrayContaining(["locker-ikb-tobudept-001", "locker-ikb-tobudept-007"]));
+    expect(ikbIds("Marunouchi")).toContain("metro-m-central-west-gate");
+    expect(ikbIds("West Gate")).toContain("metro-m-central-west-gate");
+  });
+
+  it("still finds the separate station by its conventional English form", () => {
+    expect(ids(strong("Shinjuku-nishiguchi Station"))).toContain("poi:sep-shinjuku-nishiguchi");
   });
 });
