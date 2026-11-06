@@ -254,6 +254,8 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .credit-btn { pointer-events: auto; flex: none; min-height: 24px; padding: 2px 8px; font-size: 11px; line-height: 1.2; border-radius: 7px; }
 .greybox-legend { position: absolute; z-index: 4; right: 12px; bottom: calc(8px + env(safe-area-inset-bottom) + var(--credit-extra)); padding: 4px 8px; border: 1px solid #ffb547; border-radius: 8px; background: var(--glass-strong); color: #ffcf80; font-size: 11px; pointer-events: none; }
 .greybox-legend[hidden] { display: none; }
+/* While walking or guided the HUD owns this corner, so the badge sits just above the HUD stack (#902). */
+.app[data-mode="walk"] .greybox-legend, .app[data-mode="guide"] .greybox-legend { bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra) + var(--hud-height, 0px) + 6px); }
 
 /* ---- POI labels ---- */
 .poi-label {
@@ -318,6 +320,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .sheet { left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + var(--credit-extra)); width: auto; border-radius: var(--radius) var(--radius) 0 0; max-height: 38vh; }
   .app:not(.has-credit) .sheet { bottom: 0; padding-bottom: env(safe-area-inset-bottom); }
   .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { right: 16px; left: 16px; bottom: calc(10px + env(safe-area-inset-bottom) + var(--credit-extra)); justify-items: stretch; gap: 3px; }
+  .app[data-mode="walk"] .greybox-legend, .app[data-mode="guide"] .greybox-legend { bottom: calc(10px + env(safe-area-inset-bottom) + var(--credit-extra) + var(--hud-height, 0px) + 4px); }
   .hud-row { flex-wrap: wrap; justify-content: center; }
   /* 375 px: the group gets the row's full width (343 - 12 padding) and its five buttons fit on one line; smaller screens squeeze the text buttons rather than wrap. */
   .hud-guide { flex: 1 1 100%; min-width: 0; gap: 4px; justify-content: center; }
