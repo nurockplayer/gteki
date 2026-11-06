@@ -37,7 +37,6 @@ it("keeps the platform door collision modules identical to origin/main", () => {
   built.dispose();
 }, 120_000);
 
-
 it("keeps platform markings in the existing tactile mesh on the platform floor", () => {
   const { bundle } = loadShinjukuBundle();
   const built = withCanvasStub(() => buildStation(bundle, planJson as unknown as Plan, { quality: "low", reuseLayout: true, verifyRestrictedInput: true }));
@@ -68,5 +67,21 @@ it("keeps platform markings in the existing tactile mesh on the platform floor",
   }
   expect(outside).toEqual([]);
   expect(doorQuads).toBe(leaves / 2);
+  built.dispose();
+}, 120_000);
+
+it("reports train audio positions at the stops during dwell", () => {
+  const { bundle } = loadShinjukuBundle();
+  const built = withCanvasStub(() => buildStation(bundle, planJson as unknown as Plan, { quality: "low", reuseLayout: true, verifyRestrictedInput: true }));
+  built.update(0, 20);
+  const tracks = built.trainAudio();
+  expect(tracks).toHaveLength(built.trainStatus().length);
+  const dwelling = tracks.filter((track) => track.tt >= 14 && track.tt < 40);
+  expect(dwelling.length).toBeGreaterThan(0);
+  for (const track of dwelling) {
+    expect(track.pos!.x).toBeCloseTo(track.stop.x, 4);
+    expect(track.pos!.y).toBeCloseTo(track.stop.y, 4);
+    expect(track.pos!.z).toBeCloseTo(track.stop.z, 4);
+  }
   built.dispose();
 }, 120_000);

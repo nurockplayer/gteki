@@ -17,6 +17,7 @@ import { clearLayoutCache } from "../scene/build-cache.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
+import { createTrainSound } from "./train-sound.ts";
 import { createAmbience } from "../../ikebukuro/scene/ambience.ts";
 import { createZoneAcoustics, ZONE_ACOUSTICS } from "../../ikebukuro/scene/zone-acoustics.ts";
 import { createStationSound, type V3 } from "../../ikebukuro/scene/station-sound.ts";
@@ -371,17 +372,25 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     sites: {
       gates: graphNodes.filter((n) => n.kind === "ticket_gate").map(siteAt),
       announce: graphNodes.filter((n) => n.kind === "ticket_gate" || n.kind === "escalator_end").map(siteAt),
-      chime: graphNodes.filter((n) => n.kind === "platform").map(siteAt),
+      chime: [],
     },
   }) : null;
+  const trainSound = ctx.audio && acoustics && stationSound ? createTrainSound({ context: ctx.audio.context, destination: acoustics.input, isMuted: ctx.audio.isMuted, chimeAt: stationSound.chimeAt }) : null;
+  let trainAudioElapsed = 0.25;
   const stepAudio = (ambience || stationSound)
     ? (dt: number, camera?: THREE.Camera) => {
       ambience?.update({ nearby: 6, openness: ZONE_ACOUSTICS[zone].openness });
       stationSound?.update(dt, camera);
+      trainAudioElapsed += dt;
+      if (trainSound && camera && trainAudioElapsed >= 0.25) {
+        trainAudioElapsed = 0;
+        trainSound.update(built.trainAudio(), camera.position);
+      }
     }
     : null;
   const disposeAudio = (ambience || stationSound)
     ? () => {
+      trainSound?.dispose();
       stationSound?.dispose();
       ambience?.dispose();
       acoustics?.dispose();
