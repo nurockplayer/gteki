@@ -48,6 +48,8 @@ GlbAvatarOptions	interface	apps/web/src/explorer/avatarGlb.ts	22
 loadGlbAvatar	function	apps/web/src/explorer/avatarGlb.ts	31
 catClips	function	apps/web/src/explorer/avatarGlb.ts	225
 avatarMotion	function	apps/web/src/explorer/avatarMotion.ts	13
+CAT_BODY_PITCH	const	apps/web/src/explorer/avatarMotion.ts	23
+stepCatBodyPitch	function	apps/web/src/explorer/avatarMotion.ts	24
 DEFAULT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts	7
 SOFT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts	10
 avatarGlbUrl	function	apps/web/src/explorer/avatarSelection.ts	13
