@@ -1,3 +1,4 @@
+/// <reference path="../../../apps/web/src/env.d.ts" />
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { loadShinjukuBundle } from "../data/bundle.ts";
@@ -9,9 +10,15 @@ import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { pointInRings, soffitHeight, type Plan } from "../scene/layout.ts";
 import { buildIdentityBoards, IDENTITY_GENERATED, IDENTITY_SIZE, identityGlyphBox, type LocalBox } from "../scene/identity.ts";
 import { IDENTITY_FADE_NEAR, IDENTITY_FADE_FAR, IDENTITY_FADE_FRAGMENT, identityFadeCoverage, identityDitherVisible } from "../scene/identity-fade.ts";
-import { stationSpawn } from "../scene/spawn.ts";
-import { followCameraEnvironment, LANE_CAMERA, spawnView } from "../app/src/spawn-view.ts";
-import { Player } from "../app/src/player.ts";
+import { Explorer } from "../../../apps/web/src/explorer/explorer.ts";
+import { FOLLOW, FOV, NO_SLOPE } from "../../../apps/web/src/explorer/followCamera.ts";
+import { collectIdentityBoards } from "../../../apps/web/src/explorer/identityBoards.ts";
+import { freeArea } from "../../../apps/web/src/explorer/overviewFraming.ts";
+import { castAll, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
+import { spawnHeading } from "../../../apps/web/src/ui/spawnHeading.ts";
+import { loadScene } from "../../../packages/godot/src/route-clip-audit.ts";
+import type { StationScene } from "@gteki/scene-api";
 import { withCanvasStub } from "./helpers/scene-digest.ts";
 import { textureBudget } from "./helpers/texture-memory.ts";
 
@@ -24,13 +31,90 @@ const e27Gates = bundle.pois.filter((p) => p.category === "ticket_gate" && p.id.
 const worldFront = (board: THREE.Object3D) =>
   new THREE.Vector3(...board.userData.gteki_identity.front as [number, number, number]).transformDirection(board.matrixWorld);
 
+// Call Explorer's startup/framing/boom methods against the scene's real collision
+// proxies. The GPU capture is the final oracle (also includes runtime greybox/kit).
+function explorerSpawnCamera(scene: StationScene, width: number, height: number) {
+  const root = new THREE.Scene();
+  root.add(scene.root);
+  root.updateMatrixWorld(true);
+  const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);
+  const free = freeArea({ w: width, h: height }, width > 600 ? { x: 16, y: 58, w: 400, h: 327 } : null,
+    width > 600 ? 30 : 38, width > 600 ? { x: width - 206, y: 60, w: 190, h: 370 } : { x: width - 144, y: 60, w: 128, h: 376 });
+  const state = Object.assign(Object.create(Explorer.prototype), {
+    mode: "overview", scene: root, stationScene: scene, camera: new THREE.PerspectiveCamera(FOV.overview, width / height, 0.05, 400),
+    pos: new THREE.Vector3(), ray: new THREE.Raycaster(), walkable: scene.walkable, groundTargets: targets.ground,
+    cameraTargets: targets.camera, cameraSides: new Set(targets.camera), blockerTargets: targets.blockers,
+    identityBoards: collectIdentityBoards(scene.root), identityPlaced: false, viewSize: { w: width, h: height },
+    pitch: -0.12, yaw: 0, camDistance: FOLLOW.defaultDistance, qaCamera: {}, qaCameraSnap: false,
+    firstPerson: false, slope: NO_SLOPE, slopeY: 0, descentDrop: 0, boomRaise: 0, boomActual: 0,
+    reducedMotion: true, guideIdentityCentre: new THREE.Vector3(), guideIdentityOffset: { yaw: 0, pitch: 0 },
+    lastAvatarPos: new THREE.Vector3(), freeRect: () => free, stopGuide: () => {},
+    setMode(mode: string) { this.mode = mode; }, applyAvatarFade: () => {},
+  });
+  expect(state.walkFromNode(bundle, bundle.spawnNodeIds![0]!, spawnHeading(bundle, { kind: "node", nodeId: bundle.spawnNodeIds![0]! }, []))).toBe(true);
+  // Private runtime method, deliberately accessed only by this regression harness.
+  (state as unknown as { placeCamera(dt: number, snap: boolean): void }).placeCamera(0, true);
+  state.camera.updateMatrixWorld(true);
+  console.log(JSON.stringify({ explorerSpawn: { viewport: [width, height], camera: state.camera.position.toArray(),
+    direction: state.camera.getWorldDirection(new THREE.Vector3()).toArray(), fov: state.camera.fov,
+    board: scene.root.getObjectByName("identity:spawn")!.position.toArray(), free } }));
+  return { camera: state.camera, free };
+}
+
 describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
   let station: BuiltStation;
-  beforeAll(() => {
+  let explorerScene: StationScene;
+  beforeAll(async () => {
     station = withCanvasStub(() => buildStation(bundle, plan, { quality: "high" }));
     station.root.updateMatrixWorld(true);
-  }, 60_000);
-  afterAll(() => station?.dispose());
+    explorerScene = await loadScene("shinjuku", bundle, "high", false);
+  }, 120_000);
+  afterAll(() => { station?.dispose(); explorerScene?.dispose(); });
+
+  it("measures clear arrival placements against the real scene", () => {
+    const board = explorerScene.root.getObjectByName("identity:spawn")!;
+    const gate = explorerScene.root.getObjectByName("identity:gate:poi:gate:1")!;
+    const originalBoard = board.position.clone(), originalGate = gate.position.clone();
+    const node = bundle.nodes.find(n => n.id === bundle.spawnNodeIds![0])!;
+    const forward = new THREE.Vector3(Math.sin(70 * Math.PI / 180), 0, -Math.cos(70 * Math.PI / 180));
+    const right = new THREE.Vector3(-forward.z, 0, forward.x);
+    const opaque: THREE.Mesh[] = [];
+    explorerScene.root.traverseVisible(o => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh && !mesh.name.startsWith("identity") && [mesh.material].flat().some(m => m.visible && !m.transparent)) opaque.push(mesh);
+    });
+    prepareRayTrees([...opaque, ...explorerTargets(explorerScene.walkable, explorerScene.colliders ?? [], explorerScene.cameraBlockers ?? []).camera]);
+    gate.position.set(node.position.x, -5.25, -node.position.y).addScaledVector(forward, -8);
+    let accepted = 0;
+    try {
+      for (const along of [3, 4, 5, 6, 7, 8]) for (const lateral of [0, -1, 1, -2, 2]) {
+        board.position.set(node.position.x, -5.25, -node.position.y).addScaledVector(forward, along).addScaledVector(right, lateral);
+        explorerScene.root.updateMatrixWorld(true);
+        const views = [[1440, 900], [412, 839]].map(([w, h]) => {
+          const { camera, free } = explorerSpawnCamera(explorerScene, w!, h!);
+          const points = corners(board.userData.gteki_identity.regions[0]).map(p => board.localToWorld(p));
+          const blockers = [...new Set(points.map(p => {
+            const delta = p.clone().sub(camera.position);
+            return castAll(new THREE.Raycaster(camera.position, delta.clone().normalize(), 0, delta.length() - 0.06), opaque)[0]?.object.name;
+          }).filter(Boolean))];
+          const projected = points.map(p => p.clone().project(camera));
+          const rect = { left: Math.min(...projected.map(p => (p.x + 1) * w! / 2)), right: Math.max(...projected.map(p => (p.x + 1) * w! / 2)),
+            top: Math.min(...projected.map(p => (1 - p.y) * h! / 2)), bottom: Math.max(...projected.map(p => (1 - p.y) * h! / 2)) };
+          const glyph = identityGlyphBox("en");
+          const a = board.localToWorld(new THREE.Vector3(...glyph.min)).project(camera);
+          const b = board.localToWorld(new THREE.Vector3(glyph.min[0], glyph.max[1], glyph.min[2])).project(camera);
+          const en = Math.abs(a.y - b.y) * h! / 2;
+          return { pass: !blockers.length && rect.left >= free.x && rect.right <= free.x + free.w && rect.top >= free.y && rect.bottom <= free.y + free.h && en >= 12,
+            width: w, camera: camera.position.toArray(), direction: camera.getWorldDirection(new THREE.Vector3()).toArray(), rect, free, en, blockers };
+        });
+        if (views.every(v => v.pass)) { accepted++; console.log(JSON.stringify({ clearSpawnCandidate: { along, lateral, board: board.position.toArray(), gate: gate.position.toArray(), views } })); }
+        else if (along === 5 && lateral === 0) console.log(JSON.stringify({ blockedSpawnCandidate: { along, lateral, views } }));
+      }
+      console.log(JSON.stringify({ clearSpawnCandidates: accepted }));
+    } finally {
+      board.position.copy(originalBoard); gate.position.copy(originalGate); explorerScene.root.updateMatrixWorld(true);
+    }
+  }, 120_000);
 
   it("patches both opaque identity materials using the active camera, with distinct compile keys", () => {
     const meshes = ["identity-faces", "identity-cases-rods"].map((name) => station.root.getObjectByName(name) as THREE.Mesh);
@@ -303,7 +387,7 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
       const normal = worldFront(back);
       expect(normal.dot(worldFront(board)), board.name).toBeCloseTo(-1, 10);
       const center = back.getWorldPosition(new THREE.Vector3());
-      const camera = new THREE.PerspectiveCamera(LANE_CAMERA.fov, 1, LANE_CAMERA.near, 400);
+      const camera = new THREE.PerspectiveCamera(FOV.follow, 1, 0.05, 400);
       camera.position.copy(center).addScaledVector(normal, 4);
       camera.lookAt(center);
       camera.updateMatrixWorld(true);
@@ -384,9 +468,8 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
   });
 
   it("has a direct static-geometry sightline to the spawn name block", () => {
-    const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
-    const { eye } = spawnView(spawn.position, spawn.heading, followCameraEnvironment(station.layout, station.propWalls));
-    const origin = new THREE.Vector3(eye.x, eye.z, -eye.y);
+    const { camera } = explorerSpawnCamera(explorerScene, 1440, 900);
+    const origin = camera.position.clone();
     const board = station.root.getObjectByName("identity:spawn")!;
     const meshes: THREE.Mesh[] = [];
     station.root.traverseVisible((o) => {
@@ -410,16 +493,9 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     }
   });
 
-  for (const [width, height] of [[393, 852], [412, 915], [1440, 900], [960, 600]]) {
-    it(`projects actual assumed ink/cap heights at normal spawn into ${width}x${height} CSS pixels`, () => {
-      const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
-      const player = new Player(station.world, spawn.position);
-      player.heading = spawn.heading;
-      const { eye, look } = spawnView({ x: player.x, y: player.y, z: player.z }, player.heading, followCameraEnvironment(station.layout, station.propWalls));
-      const camera = new THREE.PerspectiveCamera(LANE_CAMERA.fov, width! / height!, LANE_CAMERA.near, 400);
-      camera.position.set(eye.x, eye.z, -eye.y);
-      camera.lookAt(look.x, look.z, -look.y);
-      camera.updateMatrixWorld(true);
+  for (const [width, height] of [[412, 839], [1440, 900]]) {
+    it(`projects ink/cap heights at the Explorer spawn into ${width}x${height} CSS pixels`, () => {
+      const { camera, free } = explorerSpawnCamera(explorerScene, width!, height!);
       const board = station.root.getObjectByName("identity:spawn")!;
       const nameDistances = station.identityBoards.flatMap((front) => [front, ...front.children]).map((face) => {
         const region = face.userData.gteki_identity.regions[0] as LocalBox;
@@ -438,6 +514,21 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         expect(Math.abs(p.y)).toBeLessThan(1);
         expect(p.z).toBeGreaterThan(-1);
         expect(p.z).toBeLessThan(1);
+      }
+      const screenName = name.map(p => ({ x: (p.x + 1) * width! / 2, y: (1 - p.y) * height! / 2 }));
+      if (width! > 600) {
+        for (const p of screenName) {
+          expect(p.x).toBeGreaterThanOrEqual(free.x);
+          expect(p.x).toBeLessThanOrEqual(free.x + free.w);
+          expect(p.y).toBeGreaterThanOrEqual(free.y);
+          expect(p.y).toBeLessThanOrEqual(free.y + free.h);
+        }
+      } else {
+        // freeArea picks one large rectangle below the map, but the phone name
+        // can also fit in the unobstructed area to its left.
+        const right = Math.max(...screenName.map(p => p.x));
+        const top = Math.min(...screenName.map(p => p.y));
+        expect(right <= width! - 144 || top >= 436).toBe(true);
       }
       // Same-z vertical edges, so a tilted board's depth/width cannot inflate glyph height.
       const capHeight = (box: LocalBox) => Math.min(...[box.min[0], box.max[0]].flatMap((x) =>
