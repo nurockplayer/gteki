@@ -97,6 +97,7 @@ export interface ExplorerEvents {
   onPoiClick?(poiId: string): void;
 }
 
+const HUMAN_PITCH = -0.12;
 const EYE = WALKER_BODY.eyeM;
 const RADIUS = WALKER_BODY.radiusM;
 const WALK = WALKER_SPEED.walkMps;
@@ -302,7 +303,8 @@ export class Explorer {
   private readonly avatar = new THREE.Group();
   private avatarRig: AvatarSelection | null = null;
   /** Cat protagonist: lower follow pivot, shorter boom and a smaller marker ring. */
-  private readonly catAvatar: boolean;
+  private catAvatar: boolean;
+  private avatarMarker: [THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>, THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>] | null = null;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
@@ -353,7 +355,7 @@ export class Explorer {
   private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
-  private pitch = -0.12;
+  private pitch = HUMAN_PITCH;
   private camDistance: number = FOLLOW.defaultDistance;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
@@ -966,17 +968,38 @@ export class Explorer {
   }
 
   private buildAvatar(options: ExplorerOptions): void {
-    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind });
+    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind, onCatFallback: () => this.fallBackToHumanAvatar() });
     this.avatar.add(this.avatarRig.root);
+    this.buildAvatarMarker();
+    this.avatar.visible = false;
+  }
+
+  private buildAvatarMarker(): void {
+    if (this.avatarMarker) {
+      for (const mesh of this.avatarMarker) {
+        mesh.removeFromParent();
+        mesh.geometry.dispose();
+        mesh.material.map?.dispose();
+        mesh.material.dispose();
+      }
+      this.avatarMarker = null;
+    }
     if (this.quality === "high") {
       // A slim marker ring keeps "this is you" readable without outshining the character.
       const inner = this.catAvatar ? 0.3 : 0.46;
       const outer = this.catAvatar ? 0.33 : 0.5;
       const ring = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
       ring.position.y = 0.02;
-      this.avatar.add(contactShadow(this.catAvatar ? 0.28 : 0.42), ring);
+      this.avatarMarker = [contactShadow(this.catAvatar ? 0.28 : 0.42), ring];
+      this.avatar.add(...this.avatarMarker);
     }
-    this.avatar.visible = false;
+  }
+
+  private fallBackToHumanAvatar(): void {
+    this.catAvatar = false;
+    this.camDistance = FOLLOW.defaultDistance;
+    this.pitch = HUMAN_PITCH;
+    this.buildAvatarMarker();
   }
 
   /** Loading phase, exposed for diagnosing stalled station scenes. */

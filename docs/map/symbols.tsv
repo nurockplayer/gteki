@@ -87,7 +87,7 @@ ExplorerMode	type	apps/web/src/explorer/explorer.ts	61
 ExplorerPose	interface	apps/web/src/explorer/explorer.ts	63
 ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	65
 ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	91
-Explorer	class	apps/web/src/explorer/explorer.ts	203
+Explorer	class	apps/web/src/explorer/explorer.ts	204
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts	12
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts	26
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts	138
