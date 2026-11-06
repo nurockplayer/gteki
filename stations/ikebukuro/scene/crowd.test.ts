@@ -14,7 +14,7 @@ const edges = [
 ];
 const lanes = { e1: { stepM: 2, left: Array(15).fill(1.2), right: Array(15).fill(0.9) }, e3: { stepM: 2, left: Array(16).fill(0.8), right: Array(16).fill(1.1) } };
 const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
-const make = (count: number, es = edges) => buildCrowd(THREE, es, toRenderer, count, new THREE.Texture(), lanes);
+const make = (count: number, es = edges, band?: "morning" | "midday" | "evening") => buildCrowd(THREE, es, toRenderer, count, new THREE.Texture(), lanes, band);
 
 /** Torso positions (x, z) of a 14-person crowd from the build before the look upgrade, after 0, 1500 and 3000 steps of 1/60 s. */
 const LEGACY_TORSO_XZ: number[][] = [[26.6641,-0.0074,44.9118,4.3382,57.0351,9.2916,36.3194,2.4424,30,-10.4755,30,-9.9897,30,-20.9566,9.4406,0.4687,30,-9.3895,17.6655,0.3869,30,-24.1098,30.0269,-25,52.1941,-25,47.65,5.6721],[0,0,0,0,24.1982,0.2656,2.7966,0.3186,45.3472,-25,0,0,0,0,0,0,49.5102,-25,0,0,0,0,0,0,30,-16.6755,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43.2467,4.132,0,0]];
@@ -24,6 +24,26 @@ const named = (c: ReturnType<typeof make>, n: string) => meshes(c).find((m) => m
 const tris = (m: THREE.InstancedMesh) => m.geometry.index!.count / 3;
 
 describe("ikebukuro crowd", () => {
+  it("scales head-count by time band while preserving the unbanded and morning counts", () => {
+    const maxCount = 100;
+    for (const [band, expected] of [[undefined, 100], ["morning", 100], ["midday", 60], ["evening", 40]] as const) {
+      const c = make(maxCount, edges, band);
+      const count = named(c, "torso").count;
+      expect(count).toBe(expected);
+      c.dispose();
+    }
+    const rounded = make(7, edges, "midday");
+    expect(named(rounded, "torso").count).toBe(4);
+    rounded.dispose();
+  });
+
+  it("keeps high-quality geometry when a high-tier crowd is thinned by its band", () => {
+    const c = make(150, edges, "evening");
+    expect(meshes(c)).toHaveLength(15);
+    expect(tris(named(c, "torso"))).toBe(336);
+    expect(named(c, "torso").count).toBe(60);
+    c.dispose();
+  });
   it("keeps the return shape and merged phone mesh within the draw budget", () => {
     const c = make(40);
     expect(Object.keys(c).sort()).toEqual(["dispose", "group", "nearby", "update"]);
