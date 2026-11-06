@@ -146,9 +146,9 @@ buildStairs	function	apps/web/src/explorer/greyboxConnectors.ts	121
 buildEscalator	function	apps/web/src/explorer/greyboxConnectors.ts	158
 ConnectorScope	interface	apps/web/src/explorer/greyboxConnectors.ts	250
 skippedConnectorPath	function	apps/web/src/explorer/greyboxConnectors.ts	315
-buildElevator	function	apps/web/src/explorer/greyboxConnectors.ts	520
-buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	681
-withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	1090
+buildElevator	function	apps/web/src/explorer/greyboxConnectors.ts	527
+buildConnectors	function	apps/web/src/explorer/greyboxConnectors.ts	688
+withinGreyboxBudget	function	apps/web/src/explorer/greyboxConnectors.ts	1097
 unmodelledVerticalEdges	function	apps/web/src/explorer/greyboxConnectorsLegacy.ts	11
 ConnectorMaterial	type	apps/web/src/explorer/greyboxConnectorsLegacy.ts	45
 ConnectorPart	interface	apps/web/src/explorer/greyboxConnectorsLegacy.ts	46
@@ -643,9 +643,9 @@ buildStairs	function	packages/godot/src/fixtures/connector-reference.ts	110
 buildEscalator	function	packages/godot/src/fixtures/connector-reference.ts	147
 ConnectorScope	interface	packages/godot/src/fixtures/connector-reference.ts	239
 skippedConnectorPath	function	packages/godot/src/fixtures/connector-reference.ts	300
-buildElevator	function	packages/godot/src/fixtures/connector-reference.ts	501
-buildConnectors	function	packages/godot/src/fixtures/connector-reference.ts	662
-withinGreyboxBudget	function	packages/godot/src/fixtures/connector-reference.ts	1073
+buildElevator	function	packages/godot/src/fixtures/connector-reference.ts	508
+buildConnectors	function	packages/godot/src/fixtures/connector-reference.ts	669
+withinGreyboxBudget	function	packages/godot/src/fixtures/connector-reference.ts	1080
 greyboxStats	function	packages/godot/src/greybox-stats.ts	21
 ShimUsage	interface	packages/godot/src/headless-dom.ts	13
 newShimUsage	function	packages/godot/src/headless-dom.ts	24

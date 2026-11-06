@@ -468,6 +468,13 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
 }
 
 /** Unit plan direction from `a` to `b`. */
+/** Plan length of the leading segments that stay within a step of the path's start: past it, a walk at that height no longer meets the path. */
+function levelRun(points: readonly THREE.Vector3[]): number {
+  let run = 0;
+  for (let i = 1; i < points.length && Math.abs(points[i]!.y - points[0]!.y) <= WALKER_BODY.stepUpM; i++) run += Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.z - points[i - 1]!.z);
+  return run;
+}
+
 function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
   const d = b.clone().sub(a); d.y = 0;
   return d.lengthSq() > 1e-12 ? d.normalize() : new THREE.Vector3(1, 0, 0);
@@ -870,7 +877,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const walk: Region = { kind: "strip", level: j.level, points, halfWidth: half };
     const polygons = regionPolygon(walk).map((polygon) => polygon.map((ring) => ring.map((p): [number, number] => [p.x, p.z])));
     const reach = 2 * Math.max(j.half, half), walkDir = planDir(points[0]!, points[1]!), sin = Math.abs(j.dir.x * walkDir.z - j.dir.z * walkDir.x);
-    const along = j.dir.x * walkDir.x + j.dir.z * walkDir.z > 0 ? Math.max(reach, reach / Math.max(sin, 0.1)) : reach;
+    const along = j.dir.x * walkDir.x + j.dir.z * walkDir.z > 0 ? Math.min(Math.max(reach, reach / Math.max(sin, 0.1)), Math.hypot(levelRun(own.points), reach)) : reach;
     const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, points, junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level)), points);
     for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
   }
