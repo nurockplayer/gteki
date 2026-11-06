@@ -11,7 +11,7 @@ import { derivedRestrictedAccess, liftClearances, restrictionAt } from "../scene
 import { Player } from "../app/src/player.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
 import { castAll, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
-import { endpointClosure, barrierEnds, replayEnds, closest, replayEnvironment, APPROACHES, laneReplayWorld, fencesOf, mutateFence, distance } from "./fare-replay-audit.ts";
+import { endpointClosure, barrierEnds, replayEnds, closest, replayEnvironment, APPROACHES, laneReplayWorld, fencesOf, mutateFence, removeFences, distance } from "./fare-replay-audit.ts";
 const { bundle } = loadShinjukuBundle(), plan = planJson as Plan;
 describe("actual walker fence replay", () => {
   let built: BuiltStation, scene: StationScene, restore: () => void;
@@ -106,17 +106,16 @@ describe("actual walker fence replay", () => {
       if (!starts.length) { failures.push({ id, missing: "start" }); continue; }
       combos(end, env, starts, failures);
       // A single sub-body-width piece leaves no walkable hole; widen it with every piece of the same
-      // run within 1.0 m of the end, chaining the removals through the mutated built/scene.
+      // run within 1.0 m of the end.
       const pieces = fencesOf(built).filter(f => Math.abs(f.zMin - end.fence!.zMin) < .01 && distance(end.p, closest(end.p, f.a, f.b)) <= 1);
       try {
-        const mutations: ReturnType<typeof mutateFence>[] = [];
+        const mutated = removeFences(built, scene, pieces);
         try {
-          for (const fence of pieces) { const prev = mutations.at(-1); mutations.push(mutateFence(prev?.built ?? built, prev?.scene ?? scene, fence, "remove")); }
-          const last = mutations.at(-1)!, menv = replayEnvironment(last.built, last.scene, plan), witnesses: unknown[] = [];
+          const menv = replayEnvironment(mutated.built, mutated.scene, plan), witnesses: unknown[] = [];
           combos(end, menv, starts, witnesses);
           controls.push({ id, length: len, pieces: pieces.length, totalLength: pieces.reduce((s, f) => s + distance(f.a, f.b), 0), witnesses: witnesses.length });
           if (!witnesses.length) failures.push({ id, length: len, control: "null" });
-        } finally { for (let i = mutations.length - 1; i >= 0; i--) mutations[i]!.dispose(); }
+        } finally { mutated.dispose(); }
       } catch (error) { failures.push({ id, length: len, control: String(error) }); }
     }
     if (process.env.FARE_LIFT_REPLAY_REPORT) writeFileSync(process.env.FARE_LIFT_REPLAY_REPORT, JSON.stringify({ failures, controls }, null, 2));

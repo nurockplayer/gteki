@@ -518,3 +518,32 @@ export function mutateFence(built: BuiltStation, scene: StationScene, fence: Fen
     dispose: () => { restore(); geometry.dispose(); },
   };
 }
+
+/** Delete several shipped pieces in BOTH physical representations in one pass. Chaining mutateFence
+ * loses the wall collider mesh (the clone carries no name), so a widened control removes them here. */
+export function removeFences(built: BuiltStation, scene: StationScene, fences: Fence[]) {
+  const match = (w: { a: XY; b: XY; zMin: number; zMax: number }) => fences.find(f => distance(w.a, f.a) < 1e-8 && distance(w.b, f.b) < 1e-8 && Math.abs(w.zMin - f.zMin) < 1e-7 && Math.abs(w.zMax - f.zMax) < 1e-7);
+  const props = built.propWalls.filter(w => !match(w));
+  const world = new WalkWorld(built.layout); world.addWalls(props);
+  const wallMesh = scene.colliders!.find(o => o.name === "wall collider (invisible)") as THREE.Mesh;
+  const geometry = wallMesh.geometry.clone(), positions = geometry.getAttribute("position");
+  let vertex = 0, removed = 0;
+  for (const w of scene.walls ?? []) {
+    if (w.zMax <= w.zMin) continue;
+    if (match(w)) {
+      removed++;
+      for (let i = 0; i < 4; i++) { positions.setX(vertex + i, w.a.x); positions.setZ(vertex + i, -w.a.y); }
+    }
+    vertex += 4;
+  }
+  if (removed !== fences.length) throw new Error(`Mutation must affect exactly one collider quad per piece, got ${removed} for ${fences.length}`);
+  geometry.computeBoundingBox(); geometry.computeBoundingSphere();
+  const mesh = new THREE.Mesh(geometry, wallMesh.material); mesh.matrixWorld.copy(wallMesh.matrixWorld);
+  const restore = accelerateRaycasts([mesh]);
+  const walls = scene.walls!.flatMap(w => match(w) ? [] : [w]);
+  return {
+    built: { ...built, world, propWalls: props },
+    scene: { ...scene, walls, colliders: scene.colliders!.map(o => o === wallMesh ? mesh : o) },
+    dispose: () => { restore(); geometry.dispose(); },
+  };
+}
