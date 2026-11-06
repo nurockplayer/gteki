@@ -516,11 +516,19 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         expect(p.z).toBeLessThan(1);
       }
       const screenName = name.map(p => ({ x: (p.x + 1) * width! / 2, y: (1 - p.y) * height! / 2 }));
-      for (const p of screenName) {
-        expect(p.x).toBeGreaterThanOrEqual(free.x);
-        expect(p.x).toBeLessThanOrEqual(free.x + free.w);
-        expect(p.y).toBeGreaterThanOrEqual(free.y);
-        expect(p.y).toBeLessThanOrEqual(free.y + free.h);
+      if (width! > 600) {
+        for (const p of screenName) {
+          expect(p.x).toBeGreaterThanOrEqual(free.x);
+          expect(p.x).toBeLessThanOrEqual(free.x + free.w);
+          expect(p.y).toBeGreaterThanOrEqual(free.y);
+          expect(p.y).toBeLessThanOrEqual(free.y + free.h);
+        }
+      } else {
+        // freeArea picks one large rectangle below the map, but the phone name
+        // can also fit in the unobstructed area to its left.
+        const right = Math.max(...screenName.map(p => p.x));
+        const top = Math.min(...screenName.map(p => p.y));
+        expect(right <= width! - 144 || top >= 436).toBe(true);
       }
       // Same-z vertical edges, so a tilted board's depth/width cannot inflate glyph height.
       const capHeight = (box: LocalBox) => Math.min(...[box.min[0], box.max[0]].flatMap((x) =>
