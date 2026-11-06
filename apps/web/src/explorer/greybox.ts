@@ -629,8 +629,10 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       if (transition) {
         const hit = scene.wallHit(pa, pz);
         if (hit) {
-          const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
-          openAt(R(hit.x, hit.y, hit.z), width * Math.min(2, 1 / Math.max(cosine, 1e-9)), hit.wallNormal);
+          const walls = hit.wallNormal ? null : scene.wallHit(pa, pz, true);
+          const normal = hit.wallNormal ?? (walls && (walls.x - hit.x) ** 2 + (walls.z - hit.z) ** 2 < 0.01 ? walls.wallNormal : undefined);
+          const cosine = normal ? Math.abs(along.dot(normal)) : 1;
+          openAt(R(hit.x, hit.y, hit.z), width * Math.min(2, 1 / Math.max(cosine, 1e-9)), normal);
         }
       }
       // A floorless run is a passage the station model lacks. It can cross a station wall where its floor never changes

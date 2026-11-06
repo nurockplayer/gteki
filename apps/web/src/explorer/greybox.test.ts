@@ -597,6 +597,18 @@ describe("buildGreybox", () => {
     expect(Math.abs(resolveWalls(2.25, 2.3, 0.2, 0, 1.8, split).x - 2.25)).toBeGreaterThan(0.1);
   });
 
+  it("uses the walls-only normal once for an oblique floor-transition portal", () => {
+    const normal = new THREE.Vector3(Math.SQRT1_2, 0, -Math.SQRT1_2);
+    const result = buildGreybox(bundle, () => true, (p) => p.x <= 2, {
+      colliderNear: () => false,
+      wallHit: (a, b, wallsOnly) => a.x < 2.25 && b.x >= 2.25
+        ? { x: 2.25, y: 0, z: 0, ...(wallsOnly ? { wallNormal: normal } : {}) }
+        : null,
+    }, "high");
+    expect(result.stats.portals).toBe(1);
+    expect(result.openings[0]!.width).toBeCloseTo(Math.SQRT2 * MODE_WIDTH.walk!);
+  });
+
   it("limits the wall-tangent opening at a 70 degree crossing while fitting the walker", () => {
     const angle = THREE.MathUtils.degToRad(70);
     const normal = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
