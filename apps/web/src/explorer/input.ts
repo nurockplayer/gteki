@@ -10,8 +10,10 @@ export class Input {
   /** Keys held by deterministic test simulation (QA hooks), merged with real keys. */
   readonly virtualKeys = new Set<string>();
   private look = { dx: 0, dy: 0, zoom: 0 };
-  private drag: { id: number; x: number; y: number } | null = null;
-  private stick: { id: number; ox: number; oy: number; x: number; y: number } | null = null;
+  private drag: { id: number; x: number; y: number; sx: number; sy: number; at: number } | null = null;
+  /** A short, still pointerup: read once by consumeTap. */
+  private tap: { x: number; y: number } | null = null;
+  private stick: { id: number; ox: number; oy: number; x: number; y: number; at: number } | null = null;
   private readonly stickEl: HTMLDivElement;
   private readonly knobEl: HTMLDivElement;
   private readonly off: (() => void)[] = [];
@@ -40,12 +42,12 @@ export class Input {
       if (!this.enabled) return;
       const rect = surface.getBoundingClientRect();
       if (e.pointerType === "touch" && e.clientX - rect.left < rect.width * 0.45 && !this.stick) {
-        this.stick = { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY };
+        this.stick = { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY, at: performance.now() };
         this.stickEl.style.left = `${e.clientX - rect.left}px`;
         this.stickEl.style.top = `${e.clientY - rect.top}px`;
         this.stickEl.classList.add("active");
       } else if (!this.drag) {
-        this.drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+        this.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, at: performance.now() };
       }
       surface.setPointerCapture(e.pointerId);
     });
@@ -63,12 +65,23 @@ export class Input {
       }
     });
     const end = (e: PointerEvent) => {
+      // Only a real pointerup taps: pointercancel (a scroll or system gesture) never does.
+      const tapFrom = (sx: number, sy: number, at: number) => {
+        if (e.type === "pointerup" && Math.hypot(e.clientX - sx, e.clientY - sy) < 8 && performance.now() - at < 300) {
+          this.tap = { x: e.clientX, y: e.clientY };
+        }
+      };
       if (this.stick?.id === e.pointerId) {
+        // The cat stands around the screen centre, so a still touch on the stick side can land on it too.
+        tapFrom(this.stick.ox, this.stick.oy, this.stick.at);
         this.stick = null;
         this.stickEl.classList.remove("active");
         this.knobEl.style.transform = "";
       }
-      if (this.drag?.id === e.pointerId) this.drag = null;
+      if (this.drag?.id === e.pointerId) {
+        tapFrom(this.drag.sx, this.drag.sy, this.drag.at);
+        this.drag = null;
+      }
     };
     on(surface, "pointerup", end);
     on(surface, "pointercancel", end);
@@ -96,6 +109,13 @@ export class Input {
     if (m > 1) { x /= m; y /= m; }
     const run = k.has("ShiftLeft") || k.has("ShiftRight") || Math.hypot(s.x, s.y) > 0.95;
     return { x, y, run };
+  }
+
+  /** The last short still tap, in CSS pixels; clears it so it fires once. */
+  consumeTap(): { x: number; y: number } | null {
+    const tap = this.tap;
+    this.tap = null;
+    return tap;
   }
 
   consumeLook(): { dx: number; dy: number; zoom: number } {
