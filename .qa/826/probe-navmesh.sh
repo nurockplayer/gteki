@@ -12,8 +12,7 @@ import os
 from pathlib import Path
 out = os.environ["QA_OUT"]
 p = Path('packages/godot/src/navmesh-fallback.ts'); s = p.read_text()
-assert s.count('timeout:180_000') == 1
-s = s.replace('timeout:180_000', 'timeout:900_000', 1)
+assert s.count('timeout:900_000') == 1
 needle = '  const result=measureFallbacks(station,undefined,!!baselineDest);'
 assert s.count(needle) == 1
 s = s.replace(needle, needle + '\n  fs.mkdirSync(`${process.env.QA_OUT}/${station}`,{recursive:true}); fs.writeFileSync(`${process.env.QA_OUT}/${station}/audit.json`,JSON.stringify(result.audit));')
