@@ -17,7 +17,7 @@ conversion writes final GLB (x, z, -y), so the exported cat has Y up, feet at y 
 the avatar contract avatarGlb.ts and the human GLB already assume.
 
 The body, its colour ramp and the ear/eye/nose shells follow the look prototype the lead accepted
-on 2026-11-06 (briefs/visual-854-cat-look-proto.py); its numbers are copied, not retuned.
+on 2026-11-06 (briefs/visual-854-cat-look-proto.py); its numbers are copied, not retuned. The coat values were then darkened on 2026-11-06 (#854) so the cat reads against station floors.
 """
 
 import argparse
@@ -59,8 +59,8 @@ SHOULDER_LEVER, HIP_LEVER = 0.268, 0.040
 STANCE_CENTRE = {True: 0.098, False: -0.130}
 
 # Colours, sRGB hex as authored in the brief; converted to linear for the COLOR_0 attribute.
-BACK, FLANK, BELLY = "#7F7A75", "#9A948E", "#C8C2BA"
-INNER_EAR, NOSE, EYE, PUPIL, STRIPE = "#C9A3A0", "#B88E8C", "#A39A52", "#141210", "#4A4540"
+BACK, FLANK, BELLY = "#4D4A47", "#5E5B57", "#7C7873"
+INNER_EAR, NOSE, EYE, PUPIL, STRIPE = "#C9A3A0", "#B88E8C", "#A39A52", "#141210", "#2B2824"
 # Mackerel body bars: period along the body and the coat-ramp band they cover.
 STRIPE_PERIOD, STRIPE_RAMP, STRIPE_SHARP = 0.042, (0.30, 0.60), 6
 
