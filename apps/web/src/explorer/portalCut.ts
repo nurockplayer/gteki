@@ -368,6 +368,9 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     const output: Record<string, number[]> = Object.fromEntries(attrs.map(([name]) => [name, []]));
     const outGroups: { start: number; count: number; materialIndex: number }[] = [];
     let removed = 0;
+    // Replay fills typed arrays sized from the recipe (every output triangle is 3 vertices) instead of pushing
+    // one number at a time; the geometry then takes those arrays as they are.
+    let replayOut: Record<string, Float32Array> | null = null;
     if (replaying) {
       if (replaying.events.length && replaying.groups.length !== groups.length) throw new StaleRecipe(`${mesh.name || mesh.uuid}: group layout changed`);
       // Replay: the recorded removals in live order, then the recorded output triangles, group by group.
@@ -380,25 +383,49 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
         maxHeights.push(replaying.events[e + 2]!); result.maxHeights.set(regionKey, maxHeights);
         removed++;
       }
-      let t = 0, p = 0;
+      const vertices = replaying.groups.reduce((n, count) => n + count * 3, 0);
+      replayOut = {};
+      // One output buffer per attribute, with the source array when it can be read word for word.
+      // An interleaved attribute's `array` is the shared buffer, not this attribute's values: read it through getComponent.
+      const outs = attrs.map(([name, attr]) => {
+        const array = (attr as THREE.BufferAttribute).array;
+        const interleaved = (attr as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute;
+        const out = new Float32Array(vertices * attr.itemSize);
+        replayOut![name] = out;
+        return { attr, size: attr.itemSize, out, src: !interleaved && ArrayBuffer.isView(array) ? array as ArrayLike<number> : null };
+      });
+      let t = 0, p = 0, vertex = 0;
       for (let g = 0; g < groups.length; g++) {
         const group = groups[g]!;
-        const start = output.position!.length / position.itemSize;
-        for (let n = 0; n < replaying.groups[g]!; n++, t++) {
+        const start = vertex;
+        for (let n = 0; n < replaying.groups[g]!; n++, t++, vertex += 3) {
           const code = replaying.codes[t]!, i = code >>> 1;
-          const corners = [0, 1, 2].map(j => (index ? index.getX(i + j) : i + j));
+          const c0 = index ? index.getX(i) : i, c1 = index ? index.getX(i + 1) : i + 1, c2 = index ? index.getX(i + 2) : i + 2;
           if (!(code & 1)) {
-            for (let j = 0; j < 3; j++) for (const [name, attr] of attrs) for (let c = 0; c < attr.itemSize; c++) output[name]!.push(attr.getComponent(corners[j]!, c));
+            // Whole triangle copied from the source: a contiguous source run when the index keeps its corners together.
+            // A normalized attribute goes through getComponent, which unpacks it; its raw storage is not its value.
+            const contiguous = c1 === c0 + 1 && c2 === c0 + 2;
+            for (let a = 0; a < outs.length; a++) {
+              const { attr, size, out, src } = outs[a]!, base = vertex * size;
+              if (contiguous && src && !attr.normalized) for (let k = 0, from = c0 * size; k < size * 3; k++) out[base + k] = src[from + k]!;
+              else for (let j = 0; j < 3; j++) {
+                const corner = j === 0 ? c0 : j === 1 ? c1 : c2;
+                for (let c = 0; c < size; c++) out[base + j * size + c] = attr.getComponent(corner, c);
+              }
+            }
           } else {
             for (let j = 0; j < 3; j++, p += 2) {
               const u = replaying.weights[p]!, w = replaying.weights[p + 1]!;
-              for (const [name, attr] of attrs) for (let c = 0; c < attr.itemSize; c++) {
-                output[name]!.push((1 - u - w) * attr.getComponent(corners[0]!, c) + u * attr.getComponent(corners[1]!, c) + w * attr.getComponent(corners[2]!, c));
+              for (let a = 0; a < outs.length; a++) {
+                const { attr, size, out } = outs[a]!, at = vertex * size + j * size;
+                for (let c = 0; c < size; c++) {
+                  out[at + c] = (1 - u - w) * attr.getComponent(c0, c) + u * attr.getComponent(c1, c) + w * attr.getComponent(c2, c);
+                }
               }
             }
           }
         }
-        outGroups.push({ start, count: output.position!.length / position.itemSize - start, materialIndex: group.materialIndex ?? 0 });
+        outGroups.push({ start, count: vertex - start, materialIndex: group.materialIndex ?? 0 });
       }
     }
     for (const group of replaying ? [] : groups) {
@@ -461,7 +488,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
       return;
     }
     const clone = new THREE.BufferGeometry();
-    for (const [name, attr] of attrs) clone.setAttribute(name, new THREE.Float32BufferAttribute(output[name]!, attr.itemSize, false));
+    for (const [name, attr] of attrs) clone.setAttribute(name, replayOut ? new THREE.BufferAttribute(replayOut[name]!, attr.itemSize) : new THREE.Float32BufferAttribute(output[name]!, attr.itemSize, false));
     if (geometry.groups.length) for (const group of outGroups) clone.addGroup(group.start, group.count, group.materialIndex);
     clone.computeBoundingBox(); clone.computeBoundingSphere();
     opts.originals.set(mesh, { geometry: mesh.geometry, material: mesh.material });
