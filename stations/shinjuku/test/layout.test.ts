@@ -25,11 +25,13 @@ it("keeps B3 shot 28 shaft fascias clear of kept wall planes within 2 mm", () =>
       const snap = (v: number) => Math.round(v * 1e4) / 1e4;
       const cover = [new THREE.Vector2(snap(a), snap(p.bottomA)), new THREE.Vector2(snap(b), snap(p.bottomB)),
         new THREE.Vector2(snap(b), snap(p.topB)), new THREE.Vector2(snap(a), snap(p.topA))];
+      if (Math.abs(snap(a) - snap(b)) < 1e-6) continue;
       const rings = panel.rings.map(r => r.slice(0, -1).map(p => new THREE.Vector2(p.x, p.y)));
       const vertices = rings.flat();
       const triangles = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1));
       const cross = (a: THREE.Vector2, b: THREE.Vector2, p: THREE.Vector2) => (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
       const orientation = Math.sign(cover.reduce((sum, v, i) => sum + v.cross(cover[(i+1)%cover.length]!), 0));
+      if (orientation === 0) continue;
       let area = 0;
       for (const triangle of triangles) {
         let clipped = triangle.map(i => vertices[i]!);
