@@ -610,34 +610,39 @@ describe("QA camera holds", () => {
 
 describe("cat aim under a raised boom", () => {
   const cat = new THREE.Vector3(3, 10, -4);
-  const ahead = () => new THREE.Vector3(3, 10.42, -6.5);
+  const shot = (raise: number, boom: number, aspect = 16 / 10) => {
+    const pivot = new THREE.Vector3(cat.x, cat.y + 0.42, cat.z);
+    const camera = new THREE.PerspectiveCamera(FOV.follow, aspect, 0.05, 400);
+    camera.position.set(pivot.x, pivot.y + Math.sin(raise) * boom, pivot.z + Math.cos(raise) * boom);
+    const target = new THREE.Vector3(cat.x, pivot.y, cat.z - 2.5);
+    const aimed = target.clone();
+    aimAtRaisedCat(aimed, camera.position, cat, raise, camera.fov, aspect);
+    camera.lookAt(aimed);
+    camera.updateMatrixWorld(true);
+    const y = (height: number) => new THREE.Vector3(cat.x, cat.y + height, cat.z).project(camera).y;
+    return { target, aimed, feet: y(0), head: y(0.34) };
+  };
 
   it("leaves the aim alone up to the start of the range", () => {
     for (const raise of [0, CAT_RAISE_AIM.start]) {
-      const target = ahead();
-      aimAtRaisedCat(target, cat, raise);
-      expect(target.equals(ahead())).toBe(true);
+      const { target, aimed } = shot(raise, 2.4);
+      expect(aimed.equals(target)).toBe(true);
     }
   });
 
-  it("aims at the cat's body from the end of the range", () => {
-    const target = ahead();
-    aimAtRaisedCat(target, cat, CAT_RAISE_AIM.end);
-    expect(target.distanceTo(new THREE.Vector3(3, 10 + CAT_RAISE_AIM.height, -4))).toBeCloseTo(0);
+  it("leaves the aim alone when the feet are already in frame", () => {
+    const { target, aimed } = shot(0.35, 8);
+    expect(aimed.equals(target)).toBe(true);
   });
 
   // The spots measured on the default-cat patrol (raise, boom), where the feet projected to NDC y -1.4 to -3.1.
-  it.each([[0.52, 2.4], [0.7, 1.66], [0.87, 1.93], [0.87, 0.95]])("keeps the whole cat in frame at raise %f, boom %f", (raise, boom) => {
-    const pivot = new THREE.Vector3(cat.x, cat.y + 0.42, cat.z);
-    const camera = new THREE.PerspectiveCamera(FOV.follow, 16 / 10, 0.05, 400);
-    camera.position.set(pivot.x, pivot.y + Math.sin(raise) * boom, pivot.z + Math.cos(raise) * boom);
-    const target = ahead();
-    aimAtRaisedCat(target, cat, raise);
-    camera.lookAt(target);
-    camera.updateMatrixWorld(true);
-    for (const y of [0, 0.34]) {
-      const p = new THREE.Vector3(cat.x, cat.y + y, cat.z).project(camera);
-      expect(Math.abs(p.y)).toBeLessThan(1);
-    }
+  it.each([[0.52, 2.4], [0.7, 1.66], [0.87, 1.93], [0.87, 0.95]])("tilts only as far as the feet need at raise %f, boom %f", (raise, boom) => {
+    const { feet, head } = shot(raise, boom);
+    expect(feet).toBeCloseTo(-CAT_RAISE_AIM.feetNdc, 1);
+    expect(head).toBeLessThan(1);
+  });
+
+  it("holds the feet higher in portrait, clear of the phone's bottom controls", () => {
+    expect(shot(0.87, 1.93, 9 / 19.5).feet).toBeCloseTo(-CAT_RAISE_AIM.feetNdcPortrait, 1);
   });
 });
