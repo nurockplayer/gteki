@@ -51,4 +51,6 @@ export const rowMap: RowSpec[] = [
   {"label": "新宿 サブナード", "station": "shinjuku", "buildings": ["shop-sjk-subnade"], "prefixes": []},
   {"label": "新宿 小田急エース / 京王モール", "station": "shinjuku", "buildings": [], "prefixes": ["shop-sjk-rec-"]},
   {"label": "新宿 メトロプロムナード", "station": "shinjuku", "buildings": [], "prefixes": ["shop-sjk-metro-"]},
+  {"label": "池袋 NewDays（NewDays 池袋）", "station": "ikebukuro", "ids": ["shop-ikb-newdays-ikebukuro"]},
+  {"label": "池袋 acure（アキュア）", "station": "ikebukuro"},
 ];
