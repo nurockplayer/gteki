@@ -623,6 +623,50 @@ describe("ikebukuro crowd gate queues", () => {
     c.dispose();
   }, 60_000);
 
+  it("keeps a gate in the camera's view lined up for a visible share of the morning (#627)", () => {
+    // Tuning target for the evidence shots: at 150 morning commuters, the gate the player stands at
+    // has three or more people standing still for at least a third of the time (measured 44%).
+    const count = 150;
+    const c = build(count);
+    const torso = named(c, "torso");
+    const gateId = "g_jr_c2";
+    const node = nodes.find((n) => n.id === gateId)!;
+    const edge = edges.find((e) => e.from === gateId || e.to === gateId)!;
+    const other = nodes.find((n) => n.id === (edge.from === gateId ? edge.to : edge.from))!;
+    // Stand at the gate and look down its approach, the way the evidence spec shoots it.
+    const camera = new THREE.PerspectiveCamera(70, 1.5, 0.05, 200);
+    camera.position.set(node.position.x, 1.6, -node.position.y);
+    camera.lookAt(other.position.x, 1.2, -other.position.y);
+    camera.updateMatrixWorld(true);
+    const fire = () => torso.onBeforeRender(null as never, null as never, camera, null as never, null as never, null as never);
+    fire(); // the crowd reads the camera before its first update, as the rendered scene does
+    const gx = node.position.x, gz = -node.position.y;
+
+    const m = new THREE.Matrix4(), v = new THREE.Vector3();
+    const prev = new Float32Array(count * 2), seen = new Uint8Array(count);
+    const dt = 1 / 60;
+    for (let f = 0; f < 60 / dt; f++) { c.update(dt, f * dt); fire(); }
+    let samples = 0, atLeast3 = 0;
+    for (let f = 0; f < 180 / dt; f++) {
+      c.update(dt, f * dt);
+      if (f % 30) continue; // sample every 0.5 s of station time
+      fire();
+      let standing = 0;
+      for (let i = 0; i < count; i++) {
+        torso.getMatrixAt(i, m);
+        if (m.elements[0] === 0) { seen[i] = 0; continue; } // hidden near the lens
+        v.setFromMatrixPosition(m);
+        const still = seen[i] === 1 && Math.hypot(v.x - prev[i * 2]!, v.z - prev[i * 2 + 1]!) < 0.05;
+        prev[i * 2] = v.x; prev[i * 2 + 1] = v.z; seen[i] = 1;
+        if (still && Math.hypot(v.x - gx, v.z - gz) <= 12) standing++;
+      }
+      samples++;
+      if (standing >= 3) atLeast3++;
+    }
+    expect(atLeast3 / samples).toBeGreaterThanOrEqual(0.35);
+    c.dispose();
+  }, 120_000);
+
   it("stands a queued walker with both soles planted (high quality)", () => {
     const count = 150;
     const c = build(count);
