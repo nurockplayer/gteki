@@ -10,18 +10,19 @@ the repo. Only the (id, tier) pairs some placement actually loads are copied:
     <src-full>/glb/<id>.glb     -> gteki/kit/catalog/high/<id>.glb   (desktop, "high" tier)
     <src-mobile>/glb/<id>.glb   -> gteki/kit/catalog/low/<id>.glb    (phone, "low" tier)
 
-Batch A is `--kinds escalator`: the 5 escalator ids, high tier only, because every escalator placement lists `high`
-alone. Batch B adds `rails` (the 21 stair handrails, also high only: rails are drawn on `main_route` flights only and
-that tier filter keeps them off phones); batch C adds `nosing` (the 61 nosing strips, drawn on low and high).
+Batch A is `--kinds escalator`: the 5 escalator ids, on both tiers since #703 dressed them on the phone tier. Batch
+B adds `rails` (the 21 stair handrails, high only: rails are drawn on `main_route` flights only and that tier filter
+keeps them off phones); batch C adds `nosing` (the 61 nosing strips, drawn on low and high).
 BATCH_KINDS is the union the station ships, so plain `--check` covers all three. A kind is read from the catalog
 entry's generator (`escalator_dressing`) or the id's maker suffix (`_nosing`, `_rails_...`).
 
 Batches A and C carry no per-image AO: Lane E packs each batch's AO into one atlas per tier, which is copied next
 to the tier's GLBs, under `atlas/`:
 
-    <src-full>/atlas/escalator_ao.png -> gteki/kit/catalog/high/atlas/escalator_ao.png   (batch A, desktop only)
-    <src-full>/atlas/nosing_ao.png    -> gteki/kit/catalog/high/atlas/nosing_ao.png
-    <src-mobile>/atlas/nosing_ao.png  -> gteki/kit/catalog/low/atlas/nosing_ao.png
+    <src-full>/atlas/escalator_ao.png   -> gteki/kit/catalog/high/atlas/escalator_ao.png   (batch A)
+    <src-full>/atlas/nosing_ao.png      -> gteki/kit/catalog/high/atlas/nosing_ao.png
+    <src-mobile>/atlas/escalator_ao.png -> gteki/kit/catalog/low/atlas/escalator_ao.png    (batch A, #703)
+    <src-mobile>/atlas/nosing_ao.png    -> gteki/kit/catalog/low/atlas/nosing_ao.png
 
 Each atlas is checked against `manifest.atlases.<kind>` the same way a GLB is checked against its own entry, and the
 sizes and mip limits the loader needs at runtime are written to scene/kit_catalog_atlas.json.
@@ -30,6 +31,8 @@ Each source must match the sha256 and size its tier's manifest.json records. --c
 non-zero when a copy is missing or stale (byte-compared with the source manifest when the Lane E tree is present,
 and always with the sha256 the source record gteki-ikb-catalog-0-1-0 pins in gteki/station.json), when a file sits
 in the catalog folder that the plan does not produce, or when the source record pins a file no placement loads.
+The default LANE_E tree predates the phone escalators (#703), so a local run without a rebuilt tree checks pins the
+way CI does with `--src-full /nonexistent/full --src-mobile /nonexistent/mobile`.
 Without --check it copies and prints the paths to keep in data/graph.src.json assets[id=b1].files, plus the sha256
 map for the source record.
 
