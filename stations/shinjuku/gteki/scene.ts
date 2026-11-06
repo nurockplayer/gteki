@@ -3,7 +3,7 @@
  * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
  * never adds routes (the explorer routes only on graph.json).
  */
-import { WALKER_BODY, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
+import { WALKER_BODY, buildWallProps, wallPropDrawRanges, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
 import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
@@ -18,12 +18,15 @@ import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
 import { createTrainSound } from "./train-sound.ts";
+import { crowdEdges } from "./explorer-crowd.ts";
+import { buildCrowd } from "../../ikebukuro/scene/crowd.ts";
 import { createAmbience } from "../../ikebukuro/scene/ambience.ts";
 import { createZoneAcoustics, ZONE_ACOUSTICS } from "../../ikebukuro/scene/zone-acoustics.ts";
 import { createStationSound, type V3 } from "../../ikebukuro/scene/station-sound.ts";
 import shopKitManifest from "../scene/shop_kit.json" with { type: "json" };
 import shopBays from "../scene/shop_bays.json" with { type: "json" };
 import shopPlacements from "../scene/shop_placements.json" with { type: "json" };
+import wallPropPlacements from "../scene/wall-props.ts";
 
 /** Supplement the existing attributed cap only for a camera looking above
  * the walker. The default follow boom and every horizontal walking ray retain
@@ -73,18 +76,23 @@ function viewerTracker(setViewer: ((pos: { x: number; y: number; z: number }) =>
   };
 }
 
+/** The shared crowd builder's handle (Ikebukuro's instanced commuters). */
+type Crowd = ReturnType<typeof buildCrowd>;
+
 /** update/dispose of the returned scene. They live out here, not inside buildScene, on purpose: a closure
  * keeps its entire defining scope alive, and buildScene's scope holds the layout, the built station and
  * every intermediate array (#72: ~9 MB retained for the life of the scene). Pass only what they use. */
-function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt: () => void, refreshViewer: () => void, meshes: THREE.Object3D[], owned: { dispose(): void }[], envTarget: THREE.WebGLRenderTarget | null, stepAudio: ((dt: number, camera?: THREE.Camera) => void) | null, disposeAudio: (() => void) | null) {
+function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt: () => void, refreshViewer: () => void, crowd: Crowd | null, meshes: THREE.Object3D[], owned: { dispose(): void }[], envTarget: THREE.WebGLRenderTarget | null, stepAudio: ((dt: number, camera?: THREE.Camera) => void) | null, disposeAudio: (() => void) | null) {
   return {
     update: (dt: number, t: number, camera?: THREE.Camera) => {
       refreshViewer();
       stepBuilt(dt, t);
+      crowd?.update(dt, t);
       stepAudio?.(dt, camera);
     },
     dispose() {
       disposeBuilt();
+      crowd?.dispose();
       disposeAudio?.();
       for (const m of meshes) (m as THREE.Mesh).geometry.dispose();
       for (const o of owned) o.dispose();
@@ -142,6 +150,7 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
 /** The scene build itself, with an optional, already prepared kit swap. Exported for tests. */
 export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit): StationScene => {
   const T = ctx.THREE;
+  const low = ctx.quality === "low";
   const sceneBundle = planBundle(ctx.bundle);
   // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
@@ -186,6 +195,24 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     addProxy(g);
   }
   built.root.add(proxies);
+
+  // Neutral decorative wall props (#858 item 12): one merged mesh, one draw. They are at most
+  // WALKER_BODY.radiusM deep and flush to a layout wall, so no collider is added; the wall already
+  // keeps the walker's centre out of them. The interactive machine's reaction shares the same draw.
+  // The renderer frame is fixed by the scene contract (enuToRenderer = (x, z, -y)); headless tests build the
+  // scene without a context mapping, so derive it here instead of reading ctx.
+  const toRenderer = (x: number, y: number, z: number) => new T.Vector3(x, z, -y);
+  const wallProps = buildWallProps(T, mergeGeometries, toRenderer, wallPropPlacements, "shinjuku");
+  built.root.add(wallProps);
+  const propMarkers = wallProps.children.filter((o) => typeof o.userData.gtekiInteractionId === "string");
+  const propDraws = wallPropDrawRanges(wallProps);
+  let propFull = false;
+  const stepWallProps = () => {
+    const full = propMarkers.some((o) => o.visible);
+    if (full === propFull) return;
+    propFull = full;
+    wallProps.geometry.setDrawRange(0, full ? propDraws.full : propDraws.idle);
+  };
 
   // The street context (PLATEAU surface) is shown only when the viewer is where it can be seen; the lane
   // app reports its camera via setViewer, but scene-api's update() carries no camera. A draw-nothing probe
@@ -338,6 +365,15 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       }
     });
   }
+  const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
+  // Commuters (#938): the shared instanced crowd over Shinjuku's verified walk ways. Not the standalone
+  // createCrowd, which builds one object per agent. Its materials take the scene's environment map, so a
+  // headless build (no renderer, no env map) gets none; nothing renders there anyway.
+  const adapted = crowdEdges(sceneBundle, (id) => layout.nodeZ.get(id) ?? nodes.get(id)?.renderZ ?? 0);
+  const crowd = envTarget
+    ? buildCrowd(T, adapted.edges, (x, y, z) => new T.Vector3(...ctx.enuToRenderer({ x, y, z })), low ? 56 : 150, envTarget.texture, adapted.lanes, timeBand)
+    : null;
+  if (crowd) built.root.add(crowd.group);
   if (shopKit && !shopKit.placements.length) {
     shopKit.dispose();
     shopKit = undefined;
@@ -379,7 +415,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   let trainAudioElapsed = 0.25;
   const stepAudio = (ambience || stationSound)
     ? (dt: number, camera?: THREE.Camera) => {
-      ambience?.update({ nearby: 6, openness: ZONE_ACOUSTICS[zone].openness });
+      ambience?.update({ nearby: crowd?.nearby() ?? 6, openness: ZONE_ACOUSTICS[zone].openness });
       stationSound?.update(dt, camera);
       trainAudioElapsed += dt;
       if (trainSound && camera && trainAudioElapsed >= 0.25) {
@@ -397,7 +433,6 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     }
     : null;
 
-  const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
     const n = nodes.get(id);
     if (!n) return [];
@@ -406,8 +441,18 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     return [{ x: n.position.x, y: n.position.y, z: layout.nodeZ.get(id) ?? n.renderZ ?? 0, headingDeg: 0, nodeId: id, ...(label ? { label } : {}) }];
   });
 
+  // The interactive wall prop (#858 item 12): decorative, never a POI.
+  const vending = wallPropPlacements.find((p) => p.interaction)!;
+  const anchor = toRenderer(vending.wall[0] + vending.n[0] * (vending.d + 0.6), vending.wall[1] + vending.n[1] * (vending.d + 0.6), vending.z);
+  const interactables = [
+    { id: vending.interaction!, kind: "vending", layer: "fictional" as const, simulated: true as const,
+      anchor: { x: anchor.x, y: anchor.y, z: anchor.z }, radiusM: 0.9,
+      steps: [{ id: "look", seconds: 1.2 }, { id: "sit", seconds: 1.5 }, { id: "react", seconds: 2.0 }], once: false },
+  ];
+
   const scene: StationScene = {
     root: built.root,
+    interactables,
     walkable,
     colliders,
     cameraBlockers,
@@ -416,7 +461,8 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
     ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); } } : {}),
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
-    ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat, ...(shopKit ? [shopKit] : [])], envTarget, stepAudio, disposeAudio),
+    ...(crowd ? { setCameraNearFade: (s: number, e: number) => crowd.setCameraNearFade(s, e) } : {}),
+    ...sceneLifecycle((dt: number, t: number) => { built.update(dt, t); stepWallProps(); }, built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, stepAudio, disposeAudio),
   };
   return scene;
 };

@@ -17,13 +17,15 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STATION = path.resolve(HERE, "..");
 const ROOT = path.resolve(STATION, "../..");
 const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
+/** #703 dressed the 5 escalators on the phone tier; #751 caps the phone kit's triangles and draws against regressions. */
+const IKB_LOW_KIT_BUDGET = { maxTriangles: 60_000, maxDraws: 30 };
 
 interface GlbJson {
   scene?: number;
   scenes: { nodes: number[] }[];
   nodes: { name?: string; mesh?: number; children?: number[]; matrix?: number[]; translation?: number[]; rotation?: number[]; scale?: number[] }[];
-  meshes: { primitives: { attributes: { POSITION: number } }[] }[];
-  accessors: { min: [number, number, number]; max: [number, number, number] }[];
+  meshes: { primitives: { attributes: { POSITION: number }; indices?: number }[] }[];
+  accessors: { count: number; min: [number, number, number]; max: [number, number, number] }[];
 }
 
 /** Just bounds and node transforms; no vertex decoding, textures, network or renderer. */
@@ -65,6 +67,19 @@ function boundsGlb(uri: string): GLTF {
   return { scene, scenes: [scene] } as unknown as GLTF;
 }
 
+/** Triangle and primitive counts of a committed GLB, read from its JSON chunk (no vertex decoding). */
+function glbCounts(uri: string): { triangles: number; draws: number } {
+  const bytes = fs.readFileSync(path.join(STATION, "gteki", uri));
+  expect(bytes.toString("ascii", 0, 4)).toBe("glTF");
+  const json = JSON.parse(bytes.toString("utf8", 20, 20 + bytes.readUInt32LE(12))) as GlbJson;
+  let triangles = 0, draws = 0;
+  for (const mesh of json.meshes) for (const p of mesh.primitives) {
+    triangles += Math.round(json.accessors[p.indices ?? p.attributes.POSITION]!.count / 3);
+    draws += 1;
+  }
+  return { triangles, draws };
+}
+
 const byId = new Map(graph.nodes.map((n) => [n.id, n]));
 type Pt = { x: number; y: number };
 
@@ -81,6 +96,25 @@ function edgeBearing(id: string): number {
   const target = points.slice(1).find((p) => distance(p) >= 2) ?? points.at(-1)!;
   return Math.round(((Math.atan2(target.x - here.x, target.y - here.y) * 180) / Math.PI + 360) % 360);
 }
+
+it("holds the phone tier's 5 escalators and merged nosings under the #751 triangle and draw caps", () => {
+  const placements = (placementsFile as unknown as { placements: CatalogPlacement[] }).placements;
+  const escalators = placements.filter((p) => p.kind === "escalator" && (p.tiers.dressing ?? []).includes("low"));
+  expect(escalators).toHaveLength(5);
+  let triangles = 0, draws = 0;
+  for (const p of escalators) {
+    const counts = glbCounts(`kit/catalog/low/${p.ids.dressing!}.glb`);
+    triangles += counts.triangles;
+    draws += counts.draws;
+  }
+  // Batch C merges every low placement into at most NOSING_CLUSTERS meshes; its triangles are what it merges.
+  const nosings = placements.filter((p) => (p.tiers.nosing ?? []).includes("low"));
+  expect(nosings).toHaveLength(69);
+  for (const p of nosings) triangles += glbCounts(`kit/catalog/low/${p.ids.nosing!}.glb`).triangles;
+  draws += NOSING_CLUSTERS;
+  expect(triangles).toBeLessThanOrEqual(IKB_LOW_KIT_BUDGET.maxTriangles);
+  expect(draws).toBeLessThanOrEqual(IKB_LOW_KIT_BUDGET.maxDraws);
+});
 
 it("estimates spec-13 catalog draws before/after distance culling at every default and spawn viewpoint", async () => {
   // Read the authoritative lists without importing Playwright or building the station scene.
