@@ -1595,6 +1595,7 @@ laneReplayWorld	function	stations/shinjuku/test/fare-replay-audit.ts
 lazySurfaceGrid	function	stations/shinjuku/test/fare-replay-audit.ts
 mutateFence	function	stations/shinjuku/test/fare-replay-audit.ts
 publicLabels	function	stations/shinjuku/test/fare-replay-audit.ts
+removeFences	function	stations/shinjuku/test/fare-replay-audit.ts
 replayEnds	function	stations/shinjuku/test/fare-replay-audit.ts
 replayEnvironment	function	stations/shinjuku/test/fare-replay-audit.ts
 accessFixture	function	stations/shinjuku/test/fare-replay-fixture.ts
