@@ -10,7 +10,7 @@ export interface AmbienceInput {
   openness: number;
 }
 
-function noiseBuffer(ctx: AudioContext, seconds: number, brown: boolean) {
+export function noiseBuffer(ctx: AudioContext, seconds: number, brown: boolean) {
   const len = Math.floor(ctx.sampleRate * seconds);
   const buf = ctx.createBuffer(1, len, ctx.sampleRate);
   const d = buf.getChannelData(0);
