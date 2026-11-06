@@ -230,6 +230,7 @@ describe("cat avatar", () => {
     const cat = catAvatarFixture();
     const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => cat }, cat: true });
     rig.setLookPitch!(0.5);
+    rig.setTurnLead!(0.7);
     expect(rig.meow!()).toBe(true);
     expect(() => rig.update(0.1, 0)).not.toThrow();
     rig.dispose();
@@ -237,7 +238,41 @@ describe("cat avatar", () => {
     const humanRig = await loadGlbAvatar("/human.glb", { quality: "low", loader: { loadAsync: async () => human } });
     expect(humanRig.setLookPitch).toBeUndefined();
     expect(humanRig.meow).toBeUndefined();
+    expect(humanRig.setTurnLead).toBeUndefined();
     humanRig.dispose();
+  });
+
+  it("turns the head toward a positive lead without accumulating, alongside the meow and the look lift", async () => {
+    const asset = catAvatarFixture();
+    // A point ahead of the fixture's own head bone, the way the cat faces (-Z).
+    const point = new THREE.Object3D();
+    point.position.z = -40;
+    asset.scene.getObjectByName("head")!.add(point);
+    const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => asset }, cat: true });
+    const at = () => point.getWorldPosition(new THREE.Vector3());
+    // Trot steadily: a moving cat never reaches the 4 s sit switch, so the clip stays put.
+    for (let i = 0; i < 20; i++) rig.update(0.016, 1.2);
+    const level = at();
+    rig.setTurnLead!(0.7);
+    for (let i = 0; i < 60; i++) rig.update(0.016, 1.2);
+    // Positive rotation about up swings a point ahead of the head toward -X.
+    expect(at().x).toBeLessThan(level.x - 0.01);
+    rig.setTurnLead!(0);
+    for (let i = 0; i < 300; i++) rig.update(0.016, 1.2);
+    expect(at().distanceTo(level)).toBeLessThan(1e-9);
+    // The lead adds to the meow and the camera-pitch lift instead of replacing them.
+    rig.setTurnLead!(0.7);
+    rig.setLookPitch!(0.5);
+    expect(rig.meow!()).toBe(true);
+    for (let i = 0; i < 20; i++) rig.update(0.016, 1.2);
+    const mixed = at();
+    expect(mixed.x).toBeLessThan(level.x - 0.01);
+    expect(mixed.y).toBeGreaterThan(level.y + 0.001);
+    rig.setTurnLead!(0);
+    rig.setLookPitch!(0);
+    for (let i = 0; i < 300; i++) rig.update(0.016, 1.2);
+    expect(at().distanceTo(level)).toBeLessThan(1e-9);
+    rig.dispose();
   });
 
   it("moves the ears and tail for one meow and restores them afterwards", async () => {

@@ -59,6 +59,21 @@ describe("Explorer.interact", () => {
     expect(sound).not.toHaveBeenCalled();
   });
 
+  it("sits only the cat riding an escalator in the guide", () => {
+    const escalator = [{ fromS: 0, toS: 10, maxMps: 0.75, scales: true, mode: "escalator" as const }];
+    const stairs = [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: "stairs" as const }];
+    const idle = { phase: "idle" as const, step: null };
+    const ride = (overrides: Record<string, unknown>) => {
+      const setHold = vi.fn();
+      const e = explorer({ mode: "guide", avatarRig: { meow: () => true, setHold }, ...overrides });
+      e.publishInteraction(idle);
+      return setHold;
+    };
+    expect(ride({ guide: { s: 5, spans: escalator } })).toHaveBeenLastCalledWith("sit");
+    expect(ride({ guide: { s: 5, spans: stairs } })).toHaveBeenLastCalledWith(null);
+    expect(ride({ catAvatar: false, guide: { s: 5, spans: escalator } })).toHaveBeenLastCalledWith(null);
+  });
+
   it("does not play the synth when the rig refuses a second meow", () => {
     const sound = vi.fn();
     const e = explorer({ avatarRig: { meow: () => false, setHold() {} }, catMeowSound: sound, audio: { context: {}, master: {} } });

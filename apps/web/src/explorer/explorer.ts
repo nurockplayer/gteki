@@ -28,7 +28,7 @@ import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollisio
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, guideOnEscalator, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
@@ -44,7 +44,7 @@ import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
-import { avatarMotion, stepCatBodyPitch } from "./avatarMotion.ts";
+import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 import { catTapHit } from "./catMeow.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
@@ -2577,10 +2577,12 @@ export class Explorer {
     this.camera.updateMatrixWorld();
     const cutY = this.catAvatar && !this.firstPerson ? FOLLOW_CAT.pivotY : EYE;
     this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, cutY, 0)), this.mode !== "overview");
-    const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
+    const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw, this.catAvatar ? CAT_TURN_RATE : undefined);
+    const previousYaw = this.bodyYaw;
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
     this.stepCatTap();
+    if (this.catAvatar) this.avatarRig?.setTurnLead?.(this.mode !== "overview" && motion.speed > 0 && dt > 0 ? angleDelta(previousYaw, motion.yaw) / (dt * CAT_TURN_RATE) : 0);
     if (this.catAvatar) this.avatarRig?.setLookPitch?.(this.mode === "overview" ? 0 : this.pitch);
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
@@ -2630,7 +2632,8 @@ export class Explorer {
       this.interactionSnapshot = snapshot;
       this.events.onInteraction?.(state);
     }
-    this.avatarRig?.setHold?.(state.phase === "active" && state.step !== "look" ? "sit" : null);
+    const riding = this.catAvatar && this.mode === "guide" && this.guide !== null && guideOnEscalator(this.guide.s, this.guide.spans);
+    this.avatarRig?.setHold?.(riding || (state.phase === "active" && state.step !== "look") ? "sit" : null);
     if (this.interactionVisual) this.interactionVisual.visible = state.phase === "active" &&
       this.interactionVisual.userData.gtekiInteractionId === state.nearId && (state.step === "react" || state.step === "give");
   }
