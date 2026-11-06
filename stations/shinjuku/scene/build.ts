@@ -1361,7 +1361,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         }
         for (const c of openings) {
           // Rotation maps v to texture x; v=0.03 is inside the plain yellow margin.
-          floorQuad([at(c - doorW / 2, -0.08), at(c + doorW / 2, -0.08), at(c + doorW / 2, -0.49), at(c - doorW / 2, -0.49)], [0.5, 0.03, 0.5, 0.03, 0.5, 0.03, 0.5, 0.03]);
+          floorQuad([at(c - doorW / 2, -0.2), at(c + doorW / 2, -0.2), at(c + doorW / 2, -0.49), at(c - doorW / 2, -0.49)], [0.5, 0.03, 0.5, 0.03, 0.5, 0.03, 0.5, 0.03]);
         }
         const spans: [number, number][] = [];
         const leaves: { s: number; dir: number }[] = [];
