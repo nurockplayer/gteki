@@ -49,6 +49,7 @@ export interface BuiltStation {
   setViewer?(pos: XYZ): void;
   /** QA readout of the decorative train cycle per platform track. */
   trainStatus(): { tt: number; present: boolean; doorsOpen: boolean }[];
+  /** Train cycle and world positions for the sound layer (#870); see stations/shinjuku/gteki/train-sound.ts. */
   trainAudio(): { tt: number; headway: number; stop: { x: number; y: number; z: number }; stopEnds: [{ x: number; y: number; z: number }, { x: number; y: number; z: number }]; pos: { x: number; y: number; z: number } | null }[];
   /** Present only when the optional Lane E kit swap ran (Issue #94). */
   kitSwap?: KitSwapReport;
@@ -87,7 +88,6 @@ export const PLATFORM_DOOR_WIDTH = 2.4;
 /** Cars per decorative train. */
 export const TRAIN_CARS = 8;
 
-/** Door centre positions (platform arc length) of a stationary train. */
 function makeTrainAudio(tracks: { at: (s: number, off: number) => { x: number; y: number }; trackOff: number; stopS: number; z: number; phase: number; cars: THREE.Group[] }[], headway: number, clock: { value: number }): BuiltStation["trainAudio"] {
   return () => tracks.map((tr) => {
     const tt = (clock.value + tr.phase) % headway;
@@ -105,6 +105,7 @@ function makeTrainAudio(tracks: { at: (s: number, off: number) => { x: number; y
   });
 }
 
+/** Door centre positions (platform arc length) of a stationary train. */
 export function carDoorCenters(stopS: number, cars: number): number[] {
   const centers: number[] = [];
   for (let i = 0; i < cars; i++) {

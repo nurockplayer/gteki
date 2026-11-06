@@ -1,3 +1,4 @@
+// Original synthesized train sound (#870): no recordings and no imitation of any real train or door chime.
 import type { V3 } from "../../ikebukuro/scene/station-sound.ts";
 
 type Track = { tt: number; headway: number; stop: V3; stopEnds: [V3, V3]; pos: V3 | null };

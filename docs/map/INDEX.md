@@ -20,6 +20,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - Private preview deployment: local-only deployment of the private overlay to the Pages `private` branch · `scripts/deploy-private.sh`
 
 ### App (`apps/web`)
+- Station audio: shared gate taps, chime and speech in `stations/ikebukuro/scene/station-sound.ts`; Shinjuku's train-cycle rumble and cues in `stations/shinjuku/gteki/train-sound.ts`, routed through zone acoustics. Updated 2026-11-06 JST.
 - Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup, model-derived connector guards · `apps/web/src/explorer/` · [[web-explorer]]
 - UI shell: app frame, search combobox, minimap, identity/merchant cards, rail travel, live region · `apps/web/src/ui/` · [[web-ui]]
 - Field recorder: phone walk, offline notes, public/private receipt JSON and optional private-stop overlay · `apps/web/src/field/` · [[web-field]]
@@ -75,5 +76,3 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - GIS CI: in `tools/gis/`, `pnpm typecheck` and `pnpm test`
 - Dev server: `pnpm dev`. Build: `pnpm build`
 - Regenerate symbols: `pnpm map:gen`
-
-- Station audio: shared gate taps, chime and speech in `stations/ikebukuro/scene/station-sound.ts`; Shinjuku's train-cycle rumble and cues in `stations/shinjuku/gteki/train-sound.ts`, routed through zone acoustics. Updated 2026-11-06 JST.
