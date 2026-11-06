@@ -59,6 +59,8 @@ export interface IdentityBoardTag {
   regions?: { kind: "name" | "arrow"; min: [number, number, number]; max: [number, number, number] }[];
 }
 
+export type AcousticZone = "outdoor" | "platform" | "concourse" | "passage";
+
 /** A session-only interaction in the fictional presentation layer. */
 export interface InteractableSpec {
   id: string;
@@ -105,6 +107,8 @@ export interface StationScene {
      */
     envIntensity?: number;
   };
+  /** Host calls this when the walker's zone changes. */
+  setAcousticZone?(zone: AcousticZone): void;
   /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
   /**
