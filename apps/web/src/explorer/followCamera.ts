@@ -65,6 +65,9 @@ export const FOLLOW = {
  */
 export const FOLLOW_CAT = { pivotY: 0.42, shoulder: 0.2, distance: 2.4, lift: 0.12, drop: 0, pitch: 0 } as const;
 
+/** NPCs dither out near the cat camera so they do not hide the cat: gone inside startM, untouched beyond endM. */
+export const CAT_NPC_FADE = { startM: 1.4, endM: 2.6 } as const;
+
 /** A portrait phone's narrow horizontal FOV needs a smaller shoulder offset. */
 export function catShoulder(aspect: number): number { return FOLLOW_CAT.shoulder * Math.min(1, aspect); }
 

@@ -630,6 +630,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
     ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); } } : {}),
     settled: () => catalogKit.settled(),
+    setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
     update: (dt, elapsed, camera) => {
       catalogKit.start();
       if (camera) catalogKit.update(camera);
