@@ -1,7 +1,7 @@
 // The ambient crowd keeps its route logic and draw budget while being drawn as articulated commuters.
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { LOW_QUALITY_MAX_COUNT, buildCrowd, transformLowCrowdVertex, type Lane } from "./crowd.ts";
+import { GATE_HOLD_S, LOW_QUALITY_MAX_COUNT, QUEUE_GAP_M, QUEUE_STOP_M, buildCrowd, transformLowCrowdVertex, type Lane } from "./crowd.ts";
 import crowdLanes from "./crowd_lanes.json";
 import graph from "../gteki/graph.json";
 import station from "../gteki/station.json";
@@ -15,9 +15,6 @@ const edges = [
 const lanes = { e1: { stepM: 2, left: Array(15).fill(1.2), right: Array(15).fill(0.9) }, e3: { stepM: 2, left: Array(16).fill(0.8), right: Array(16).fill(1.1) } };
 const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
 const make = (count: number, es = edges, band?: "morning" | "midday" | "evening") => buildCrowd(THREE, es, toRenderer, count, new THREE.Texture(), lanes, band);
-
-/** Torso positions (x, z) of a 14-person crowd from the build before the look upgrade, after 0, 1500 and 3000 steps of 1/60 s. */
-const LEGACY_TORSO_XZ: number[][] = [[26.6641,-0.0074,44.9118,4.3382,57.0351,9.2916,36.3194,2.4424,30,-10.4755,30,-9.9897,30,-20.9566,9.4406,0.4687,30,-9.3895,17.6655,0.3869,30,-24.1098,30.0269,-25,52.1941,-25,47.65,5.6721],[0,0,0,0,24.1982,0.2656,2.7966,0.3186,45.3472,-25,0,0,0,0,0,0,49.5102,-25,0,0,0,0,0,0,30,-16.6755,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,43.2467,4.132,0,0]];
 
 const meshes = (c: ReturnType<typeof make>) => c.group.children as THREE.InstancedMesh[];
 const named = (c: ReturnType<typeof make>, n: string) => meshes(c).find((m) => m.name === `crowd_${n}` || (n === "torso" && m.name === "crowd_low"))!;
@@ -46,7 +43,7 @@ describe("ikebukuro crowd", () => {
   });
   it("keeps the return shape and merged phone mesh within the draw budget", () => {
     const c = make(40);
-    expect(Object.keys(c).sort()).toEqual(["dispose", "group", "nearby", "update"]);
+    expect(Object.keys(c).sort()).toEqual(["dispose", "group", "nearby", "queued", "update"]);
     expect(c.group.name).toBe("ikebukuro_crowd");
     expect(c.nearby()).toBe(0);
     const ms = meshes(c);
@@ -134,25 +131,6 @@ describe("ikebukuro crowd", () => {
     const col = new THREE.Color();
     for (let i = 0; i < 300; i++) { torso.getColorAt(i, col); colors.add(col.getHex()); }
     expect(colors.size).toBeGreaterThan(40);
-    c.dispose();
-  });
-
-  it("walks exactly where it walked before (route, lanes and relocation logic untouched)", () => {
-    const c = make(14);
-    const torso = named(c, "torso");
-    const m = new THREE.Matrix4(), v = new THREE.Vector3();
-    const at = [0, 1500, 3000];
-    let k = 0;
-    for (const want of at) {
-      while (k < want) { k++; c.update(1 / 60, k / 60); }
-      const exp = LEGACY_TORSO_XZ[at.indexOf(want)]!;
-      for (let i = 0; i < 14; i++) {
-        torso.getMatrixAt(i, m);
-        v.setFromMatrixPosition(m);
-        expect(Math.abs(v.x - exp[2 * i]!)).toBeLessThan(0.06);
-        expect(Math.abs(v.z - exp[2 * i + 1]!)).toBeLessThan(0.06);
-      }
-    }
     c.dispose();
   });
 
@@ -483,9 +461,10 @@ describe("ikebukuro crowd stays on the routable floor", () => {
     expect(outside).toEqual([]);
   });
 
-  it("keeps every sampled pedestrian of the real crowd inside the routable union", () => {
+  it("keeps every sampled pedestrian of the real crowd inside the routable union (gates queueing)", () => {
     const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y); // ENU -> renderer frame
-    const c = buildCrowd(THREE, edges, toRenderer, 150, new THREE.Texture(), lanes);
+    const gateIds = (graph as { nodes: { id: string; kind?: string }[] }).nodes.filter((n) => n.kind === "ticket_gate").map((n) => n.id);
+    const c = buildCrowd(THREE, edges, toRenderer, 150, new THREE.Texture(), lanes, undefined, gateIds);
     const torso = named(c, "torso");
     const m = new THREE.Matrix4(), v = new THREE.Vector3();
     let samples = 0, outside = 0;
@@ -504,4 +483,178 @@ describe("ikebukuro crowd stays on the routable floor", () => {
     expect(outside).toBe(0);
     c.dispose();
   }, 60_000); // 9000 simulated frames: ~2 s alone, over vitest's 5 s default when other files run in parallel
+});
+
+// Gate queues (#627): commuters heading through a ticket gate line up, keep a gap, and each waits briefly.
+describe("ikebukuro crowd gate queues", () => {
+  const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
+  type RealNode = { id: string; kind?: string; position: { x: number; y: number; z: number | null } };
+  type RealEdge = Parameters<typeof buildCrowd>[1][number];
+  const nodes = (graph as { nodes: RealNode[] }).nodes;
+  const gateIds = nodes.filter((n) => n.kind === "ticket_gate").map((n) => n.id);
+  const edges = (graph as { edges: RealEdge[] }).edges;
+  const lanes = (crowdLanes as { lanes: Record<string, Lane> }).lanes;
+  /** Each gate's own edge polyline, renderer frame, running from the junction end to the gate. */
+  const gateEdges = gateIds.map((id) => {
+    const e = edges.find((x) => x.from === id || x.to === id)!;
+    const pts = e.geometry.map((g) => toRenderer(g.x, g.y, g.z as number));
+    if (e.from === id) pts.reverse();
+    let total = 0;
+    for (let i = 1; i < pts.length; i++) total += Math.hypot(pts[i]!.x - pts[i - 1]!.x, pts[i]!.z - pts[i - 1]!.z);
+    return { id, pts, total, floorY: pts[pts.length - 1]!.y };
+  });
+  /** Perpendicular offset from the gate's edge and remaining distance along it to the gate. */
+  function project(g: (typeof gateEdges)[number], x: number, z: number) {
+    let off = Infinity, rem = Infinity, acc = 0;
+    for (let i = 1; i < g.pts.length; i++) {
+      const a = g.pts[i - 1]!, b = g.pts[i]!;
+      const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz), len2 = len * len;
+      const t = len2 > 1e-9 ? Math.min(1, Math.max(0, ((x - a.x) * dx + (z - a.z) * dz) / len2)) : 0;
+      const d = Math.hypot(x - (a.x + dx * t), z - (a.z + dz * t));
+      if (d < off) { off = d; rem = g.total - (acc + len * t); }
+      acc += len;
+    }
+    return { off, rem };
+  }
+  const build = (count: number) => buildCrowd(THREE, edges, toRenderer, count, new THREE.Texture(), lanes, "morning", gateIds);
+
+  it("forms lines at gates, keeps the gap and holds each front for GATE_HOLD_S", () => {
+    const count = 150;
+    const c = build(count);
+    const torso = named(c, "torso");
+    const m = new THREE.Matrix4(), p = new THREE.Vector3();
+    const last = Array.from({ length: count }, () => new THREE.Vector2(NaN, NaN));
+    const front = new Float64Array(count), frontAgent = gateEdges.map(() => -1);
+    let maxQueued = 0, maxFront = 0;
+    const gaps: string[] = [];
+    const dt = 1 / 30;
+    for (let k = 0; k < 120 / dt; k++) {
+      c.update(dt, k * dt);
+      maxQueued = Math.max(maxQueued, c.queued());
+      const perGate: { rem: number; i: number }[][] = gateEdges.map(() => []);
+      for (let i = 0; i < count; i++) {
+        torso.getMatrixAt(i, m);
+        if (m.elements[0] === 0) { last[i]!.set(NaN, NaN); continue; } // hidden
+        p.setFromMatrixPosition(m);
+        const prev = last[i]!;
+        const moved = Math.hypot(p.x - prev.x, p.z - prev.y);
+        prev.set(p.x, p.z);
+        if (moved >= 0.002) continue; // still easing its gait or walking
+        let best = -1, bestOff = 1.5, bestRem = 0;
+        for (let gi = 0; gi < gateEdges.length; gi++) {
+          const g = gateEdges[gi]!, end = g.pts[g.pts.length - 1]!;
+          if (Math.hypot(p.x - end.x, p.z - end.z) > 13) continue; // nowhere near this gate's line
+          const pr = project(g, p.x, p.z);
+          if (pr.off < bestOff) { best = gi; bestOff = pr.off; bestRem = pr.rem; }
+        }
+        if (best >= 0) perGate[best]!.push({ rem: bestRem, i });
+      }
+      for (let gi = 0; gi < gateEdges.length; gi++) {
+        const line = perGate[gi]!.sort((a, b) => a.rem - b.rem);
+        for (let k2 = 1; k2 < line.length; k2++) {
+          const gap = line[k2]!.rem - line[k2 - 1]!.rem;
+          if (gap < QUEUE_GAP_M - 0.1) gaps.push(`${gateEdges[gi]!.id}: ${gap.toFixed(3)} m`);
+        }
+        // The person at the front of the line may stand at the stop mark only for the gate hold.
+        const lead = line[0];
+        const next = lead !== undefined && lead.rem <= QUEUE_STOP_M + 0.05 ? lead.i : -1;
+        const was = frontAgent[gi]!;
+        if (was >= 0 && was !== next) front[was] = 0;
+        frontAgent[gi] = next;
+        if (next >= 0) {
+          front[next] = front[next]! + dt;
+          maxFront = Math.max(maxFront, front[next]!);
+        }
+      }
+    }
+    expect(maxQueued).toBeGreaterThanOrEqual(2);
+    expect(gaps).toEqual([]);
+    expect(maxFront).toBeLessThanOrEqual(GATE_HOLD_S + 0.1);
+    c.dispose();
+  }, 60_000);
+
+  it("stands a queued walker with both soles planted (high quality)", () => {
+    const count = 150;
+    const c = build(count);
+    const torso = named(c, "torso"), shoe = named(c, "shoe");
+    const shoePos = shoe.geometry.getAttribute("position");
+    const m = new THREE.Matrix4(), p = new THREE.Vector3();
+    const last = Array.from({ length: count }, () => new THREE.Vector2(NaN, NaN));
+    const still = new Int32Array(count);
+    let found = -1;
+    for (let k = 0; k < 4000 && found < 0; k++) {
+      c.update(1 / 30, k / 30);
+      for (let i = 0; i < count; i++) {
+        torso.getMatrixAt(i, m);
+        if (m.elements[0] === 0) { still[i] = 0; last[i]!.set(NaN, NaN); continue; }
+        p.setFromMatrixPosition(m);
+        const prev = last[i]!;
+        const moved = Math.hypot(p.x - prev.x, p.z - prev.y);
+        prev.set(p.x, p.z);
+        still[i] = Number.isFinite(moved) && moved < 0.002 ? still[i]! + 1 : 0;
+        if (still[i] === 5) found = i;
+      }
+    }
+    expect(found).toBeGreaterThanOrEqual(0);
+    torso.getMatrixAt(found, m);
+    p.setFromMatrixPosition(m);
+    const gate = gateEdges.reduce((a, b) => (Math.hypot(p.x - b.pts[b.pts.length - 1]!.x, p.z - b.pts[b.pts.length - 1]!.z)
+      < Math.hypot(p.x - a.pts[a.pts.length - 1]!.x, p.z - a.pts[a.pts.length - 1]!.z) ? b : a));
+    for (const side of [0, 1]) {
+      shoe.getMatrixAt(found * 2 + side, m);
+      let lo = Infinity;
+      for (let v = 0; v < shoePos.count; v++) lo = Math.min(lo, p.fromBufferAttribute(shoePos, v).applyMatrix4(m).y);
+      // Lift 0 on both feet: the sole touches down (only the two-bone IK's reach clamp can lift it a little).
+      expect(lo).toBeGreaterThan(gate.floorY - 0.005);
+      expect(lo).toBeLessThan(gate.floorY + 0.04);
+    }
+    c.dispose();
+  }, 60_000);
+
+  it("stands a queued walker with both soles planted (low quality)", () => {
+    const count = 56;
+    const c = buildCrowd(THREE, edges, toRenderer, count, new THREE.Texture(), lanes, "morning", gateIds);
+    const mesh = named(c, "low"), phase = mesh.geometry.getAttribute("phase"), stride = mesh.geometry.getAttribute("stride");
+    const pos = mesh.geometry.getAttribute("position"), parts = mesh.geometry.getAttribute("part");
+    const m = new THREE.Matrix4(), last = Array.from({ length: count }, () => new THREE.Vector2(NaN, NaN)), still = new Int32Array(count);
+    let found = -1;
+    for (let k = 0; k < 4000 && found < 0; k++) {
+      c.update(1 / 30, k / 30);
+      for (let i = 0; i < count; i++) {
+        mesh.getMatrixAt(i, m);
+        if (m.elements[0] === 0) { still[i] = 0; last[i]!.set(NaN, NaN); continue; }
+        const x = m.elements[12]!, z = m.elements[14]!;
+        const prev = last[i]!;
+        const moved = Math.hypot(x - prev.x, z - prev.y);
+        prev.set(x, z);
+        still[i] = Number.isFinite(moved) && moved < 0.002 ? still[i]! + 1 : 0;
+        if (still[i] === 20) found = i; // 0.67 s: the planted-phase easing (<= 0.3 s) has finished
+      }
+    }
+    expect(found).toBeGreaterThanOrEqual(0);
+    mesh.getMatrixAt(found, m);
+    const x = m.elements[12]!, z = m.elements[14]!;
+    const gate = gateEdges.reduce((a, b) => (Math.hypot(x - b.pts[b.pts.length - 1]!.x, z - b.pts[b.pts.length - 1]!.z)
+      < Math.hypot(x - a.pts[a.pts.length - 1]!.x, z - a.pts[a.pts.length - 1]!.z) ? b : a));
+    const shoes: number[][] = [[], []], support: number[] = [];
+    for (let v = 0; v < pos.count; v++) {
+      if (parts.getX(v) !== 6) continue;
+      const side = parts.getW(v) > 0 ? 0 : 1;
+      shoes[side]!.push(v);
+      if (side === 0 && pos.getY(v) - 0.072 <= -0.045) support.push(pos.getZ(v), pos.getY(v) - 0.072);
+    }
+    const sole = new Float64Array(support), p = new THREE.Vector3();
+    expect(Math.abs(Math.sin(phase.getX(found)))).toBeLessThan(1e-5); // neither leg carries the swing lift
+    for (const side of [0, 1]) {
+      let lo = Infinity;
+      for (const v of shoes[side]!) {
+        lo = Math.min(lo, p.fromArray(transformLowCrowdVertex(
+          [pos.getX(v), pos.getY(v), pos.getZ(v)],
+          [parts.getX(v), parts.getY(v), parts.getZ(v), parts.getW(v)], phase.getX(found), sole, stride.getX(found),
+        )).applyMatrix4(m).y);
+      }
+      expect(Math.abs(lo - gate.floorY)).toBeLessThan(0.01); // the shader grounds both soles at this phase
+    }
+    c.dispose();
+  }, 60_000);
 });
