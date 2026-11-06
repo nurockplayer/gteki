@@ -1120,7 +1120,7 @@ export function buildCrowd(
         if (wanted !== undefined && next !== a.path && atGate >= 0 && gateLines[atGate]!.agents.length >= QUEUE_MAX) {
           // The line at this gate is full: choose another destination, never this gate.
           const gateId = gateLines[atGate]!.id;
-          a.dest = pickDestination(table, node, other, gates.filter((g) => g !== gateId), preset.toGate, tr);
+          a.dest = pickDestination(table, node, other, gates, preset.toGate, tr, [gateId]);
           a.hold = 0;
           a.through = false;
           const again = a.dest === null ? undefined : table.row(a.dest)?.next.get(node);

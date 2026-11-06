@@ -54,6 +54,14 @@ describe("crowd trips", () => {
       if (dest !== null) nonGates.add(dest);
     }
     expect([...nonGates].sort()).toEqual(["B", "C"]);
+    // An excluded dead-end is no candidate at all: a full gate line must not be picked as a "non-gate".
+    const withoutGate = new Set<string>();
+    for (let k = 0; k < 200; k++) {
+      const dest = pickDestination(table, "K", "H", ["G"], 0.5, rand, ["G"]);
+      expect(dest).not.toBe("G");
+      if (dest !== null) withoutGate.add(dest);
+    }
+    expect([...withoutGate].sort()).toEqual(["B", "C"]);
   });
 
   it("spaces a queue by the gap", () => {

@@ -81,7 +81,8 @@ export function buildTripTable(paths: readonly TripEdge[]): TripTable {
 /**
  * A destination the walker can reach without turning back: a dead-end strictly closer through the node
  * ahead than through the node behind. With probability `toGate` a ticket gate if one qualifies, else a
- * non-gate dead-end; null when nothing qualifies.
+ * non-gate dead-end; null when nothing qualifies. `exclude` names dead-ends that are never candidates
+ * (a full gate line, for one): they are skipped entirely, not reclassified as non-gates.
  */
 export function pickDestination(
   table: TripTable,
@@ -90,9 +91,11 @@ export function pickDestination(
   gates: readonly string[],
   toGate: number,
   rand: () => number,
+  exclude: readonly string[] = [],
 ): string | null {
   const gateSet = new Set(gates);
   const eligible = (d: string): boolean => {
+    if (exclude.includes(d)) return false;
     const row = table.row(d);
     if (!row) return false;
     const a = row.dist.get(ahead);

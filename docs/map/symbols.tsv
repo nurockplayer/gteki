@@ -994,8 +994,8 @@ TripEdge	interface	stations/ikebukuro/scene/crowd-trips.ts	6
 TripRow	interface	stations/ikebukuro/scene/crowd-trips.ts	13
 TripTable	interface	stations/ikebukuro/scene/crowd-trips.ts	18
 buildTripTable	function	stations/ikebukuro/scene/crowd-trips.ts	28
-pickDestination	function	stations/ikebukuro/scene/crowd-trips.ts	86
-queueLimit	function	stations/ikebukuro/scene/crowd-trips.ts	121
+pickDestination	function	stations/ikebukuro/scene/crowd-trips.ts	87
+queueLimit	function	stations/ikebukuro/scene/crowd-trips.ts	124
 Lane	interface	stations/ikebukuro/scene/crowd.ts	17
 QUEUE_STOP_M	const	stations/ikebukuro/scene/crowd.ts	31
 QUEUE_GAP_M	const	stations/ikebukuro/scene/crowd.ts	32
