@@ -2,6 +2,8 @@ import type { InteractableSpec } from "@gteki/scene-api";
 
 export interface InteractionState {
   nearId: string | null;
+  /** The kind of the interactable in reach ("shop", "vending"), so the prompt can name it. */
+  nearKind: string | null;
   phase: "idle" | "active" | "done";
   step: string | null;
   unavailable: "already-done" | null;
@@ -25,6 +27,7 @@ export class InteractionController {
   get state(): InteractionState {
     return {
       nearId: this.near?.id ?? null,
+      nearKind: this.near?.kind ?? null,
       phase: this.phase,
       step: this.active?.steps[this.index]?.id ?? null,
       unavailable: this.near?.once && this.completed.has(this.near.id) ? "already-done" : null,
