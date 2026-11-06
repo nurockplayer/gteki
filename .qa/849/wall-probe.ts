@@ -68,7 +68,7 @@ const meshes:T.Mesh[]=[];
 for (const root of [scene.root, ...live.walkable]) root.traverseVisible(o=>{const m=o as T.Mesh;if(m.isMesh && !meshes.includes(m) && m.name !== 'walk proxies (invisible)' && m.name !== 'viewer probe (draws nothing)') meshes.push(m);});
 prepareRayTrees(meshes);
 console.log(stamp(),'route target',target,'projection',best,'walker',walker,'heading',heading.toArray(),'eye',eye.toArray(),'camera near/far 0.05/2000 m','meshes',meshes.length);
-const counts=new Map<string,{n1:number;n20:number;point:number[];gap:number}>(), extents=new Map<string,T.Box3>();
+const counts=new Map<string,{n1:number;n20:number;point:number[];gap:number;first:number;min:number[];max:number[]}>(), extents=new Map<string,T.Box3>();
 const label=(h:T.Intersection)=>{const m=h.object as T.Mesh, mat=Array.isArray(m.material)?m.material[h.face?.materialIndex ?? 0]:m.material; return `${m.name || m.type}|${mat?.name || mat?.type}|${m.uuid.slice(0,8)}`;};
 for(let ix=-120;ix<=120;ix++) for(let iy=0;iy<=80;iy++) {
  const aim=new T.Vector3(walker.x,walker.z+iy*.05,-walker.y).addScaledVector(heading,15).addScaledVector(right,ix*.05);
@@ -76,7 +76,7 @@ for(let ix=-120;ix<=120;ix++) for(let iy=0;iy<=80;iy++) {
  const hits=castAll(ray,meshes).filter(h=>{const m=h.object as T.Mesh, mat=Array.isArray(m.material)?m.material[h.face?.materialIndex ?? 0]:m.material; return mat?.visible && mat.opacity>0;});
  for(let j=0;j<Math.min(hits.length,8);j++) {const h=hits[j]!, name=label(h); if(!extents.has(name))extents.set(name,new T.Box3()); extents.get(name)!.expandByPoint(h.point);
   for(let k=j+1;k<Math.min(hits.length,8);k++){const b=hits[k]!,gap=b.distance-h.distance;if(gap>.02)break;if(h.object===b.object && h.instanceId===b.instanceId)continue;
-   const key=[name,label(b)].sort().join(' <> '), v=counts.get(key) ?? {n1:0,n20:0,point:h.point.toArray(),gap};v.n20++;if(gap<=.001)v.n1++;counts.set(key,v);
+   const key=[name,label(b)].sort().join(' <> '), v=counts.get(key) ?? {n1:0,n20:0,point:h.point.toArray(),gap,first:0,min:h.point.toArray(),max:h.point.toArray()};v.n20++;if(gap<=.001)v.n1++;if(j===0 && k===1)v.first++;for(let d=0;d<3;d++){v.min[d]=Math.min(v.min[d]!,h.point.getComponent(d));v.max[d]=Math.max(v.max[d]!,h.point.getComponent(d));}counts.set(key,v);
   }
  }
 }
