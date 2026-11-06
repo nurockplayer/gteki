@@ -291,9 +291,12 @@ is skipped by it. An id the station does not ship is skipped without a fetch; a 
 drops only its own anchors, never the scene. Batch A's escalators carry no per-id AO image either: their TEXCOORD_1
 addresses one packed escalator atlas per tier (`gteki/kit/catalog/<tier>/atlas/escalator_ao.png`, 1024x1536 on the
 desktop tier and 512x768 on the phone tier),
-and `loadKitCatalog` loads it once per tier and kind, sets `aoMap` (`channel = 1`, `flipY = false`,
-`colorSpace = THREE.NoColorSpace`, `aoMapIntensity = 1`) on each cloned material, and disposes it with the kit. If the
-atlas fails to load the loader warns and draws the escalators without AO. The pieces are visual only: no colliders,
+and `loadKitCatalog` sets `aoMap` (`channel = 1`, `flipY = false`,
+`colorSpace = THREE.NoColorSpace`, `aoMapIntensity = 1`) on each cloned material. `lazyKitCatalog` fetches and keeps
+one atlas per tier and kind for all its ids (one `Promise` per kind in a `Map`, so the 5 escalator ids hold one GPU
+copy, not five) and disposes it once, when the lazy kit is disposed, even if a load was still in flight; a direct
+`loadKitCatalog` call without that cache owns and disposes its own atlas. If the atlas fails to load the loader warns
+once and draws the escalators without AO. The pieces are visual only: no colliders,
 not in `walkable` or the walk graph.
 
 Batch C does not instance one mesh per flight: 61 strips would be 61 draws per tier. Lane E's C3 build carries no
@@ -319,7 +322,10 @@ Cost on the desktop tier: 26 part instances of 26 GLBs, 77 draws before frustum 
 triangles (escalators 5 / 35 draws / 66 480; handrails 21 / 42 draws / 89 232), plus the 69 nosings merged into at
 most 8 draws and 25 830 triangles. The phone tier draws the 5 mobile escalators (10 draws, 20 328 triangles) and the
 69 nosings merged into at most 8 draws and 8 610 triangles, so at most 18 draws and 28 938 triangles; batch B is not
-drawn there. `scene/kit_catalog_budget.test.ts` caps that phone kit at 60 000 triangles and 30 draws (#751).
+drawn there. `scene/kit_catalog_budget.test.ts` caps that phone kit at 60 000 triangles, 30 draws and 8 MiB of GPU
+atlas texture (#751), the last counted over one copy of each phone atlas with mips (the escalator 512x768 cost
+2,097,152 B; before the sharing the 5 ids held 5 copies, +10,485,760 B on the phone tier and +32 MiB on the desktop
+tier).
 `scene/kit_catalog_loader.test.ts` pins the batches, the placement maths, the merge
 and the credit, and `pipeline/sync_kit_catalog.test.ts` the copies.
 

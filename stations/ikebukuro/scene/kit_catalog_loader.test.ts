@@ -312,6 +312,77 @@ describe("loadKitCatalog", () => {
     expect(dispose).toHaveBeenCalledTimes(1);
   });
 
+  it("shares one atlas across the lazy kit's escalator ids, fetched once per tier", async () => {
+    for (const low of [false, true]) {
+      const uris = ESCALATOR_IDS.map((id) => catalogUri(id, low));
+      const atlas = atlasUri("escalator", low)!;
+      const texture = new THREE.Texture();
+      const h = host([...uris, atlas]);
+      h.loadTexture.mockResolvedValue(texture);
+      const root = new THREE.Group();
+      const lazy = lazyKitCatalog(THREE, h, escalators, low, root, env, toRenderer);
+      await lazy.settled();
+      // Five ids, one fetch and one GPU texture (each id used to load and keep its own copy).
+      expect(h.loadTexture).toHaveBeenCalledTimes(1);
+      expect(h.loadTexture.mock.calls[0]).toEqual([atlas, { colorSpace: "linear", flipY: false }]);
+      expect(root.children).toHaveLength(ESCALATOR_IDS.length);
+      const mats = root.children.flatMap((g) => (g.children as THREE.InstancedMesh[]).map((m) => m.material as THREE.MeshStandardMaterial));
+      expect(mats).toHaveLength(10);
+      for (const m of mats) expect(m.aoMap).toBe(texture);
+      // Freed once, by the lazy kit: no per-id kit touches the shared texture.
+      const dispose = vi.spyOn(texture, "dispose");
+      expect(dispose).not.toHaveBeenCalled();
+      lazy.dispose();
+      await Promise.resolve(); // the cache settles its entry on a microtask, so an in-flight load is freed too
+      expect(dispose).toHaveBeenCalledTimes(1);
+      expect(root.children).toHaveLength(0);
+    }
+  });
+
+  it("warns once for a failed shared atlas and still attaches every lazy id", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const h = host([...allUris, atlasUri("escalator", false)!]);
+      h.loadTexture.mockRejectedValue(new Error("404 atlas"));
+      const root = new THREE.Group();
+      const lazy = lazyKitCatalog(THREE, h, escalators, false, root, env, toRenderer);
+      await lazy.settled();
+      expect(h.loadTexture).toHaveBeenCalledTimes(1); // the failed load is cached too: one warning, not five
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0]![0]).toContain("escalator atlas");
+      expect(root.children).toHaveLength(ESCALATOR_IDS.length);
+      for (const g of root.children) for (const im of g.children as THREE.InstancedMesh[])
+        expect((im.material as THREE.MeshStandardMaterial).aoMap).toBeNull();
+      lazy.dispose();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("frees a shared atlas whose load is still in flight when the lazy kit is disposed", async () => {
+    vi.useFakeTimers();
+    const texture = new THREE.Texture();
+    let finish!: (texture: THREE.Texture) => void;
+    const h = host([...allUris, atlasUri("escalator", false)!]);
+    h.loadTexture.mockImplementation(() => new Promise<THREE.Texture>((resolve) => { finish = resolve; }));
+    const lazy = lazyKitCatalog(THREE, h, escalators, false, new THREE.Group(), env, toRenderer);
+    try {
+      lazy.start();
+      await vi.runOnlyPendingTimersAsync();
+      expect(h.loadTexture).toHaveBeenCalledTimes(1);
+      const dispose = vi.spyOn(texture, "dispose");
+      lazy.dispose(); // the atlas is not back yet
+      expect(dispose).not.toHaveBeenCalled();
+      finish(texture);
+      await vi.runOnlyPendingTimersAsync();
+      expect(dispose).toHaveBeenCalledTimes(1);
+      expect(h.loadGlb).toHaveBeenCalledTimes(1); // no further ids after teardown
+    } finally {
+      lazy.dispose();
+      vi.useRealTimers();
+    }
+  });
+
   it("skips ids outside the batch silently, with one summary line", async () => {
     const info = vi.spyOn(console, "info").mockImplementation(() => {});
     const shipped = allUris.slice(0, 2);
