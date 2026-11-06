@@ -4,6 +4,7 @@ import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js"
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import type { AvatarRig } from "./avatar.ts";
 import { ditherFade, sanitizeAvatarFade } from "./avatarDither.ts";
+import { MEOW_SECONDS, meowPose } from "./catMeow.ts";
 
 type AvatarAsset = Pick<GLTF, "scene" | "animations"> & Partial<Pick<GLTF, "scenes">>;
 /** Like GLTFLoader, an injected loader transfers ownership of the asset's resources to the rig. */
@@ -18,6 +19,9 @@ function isDrawable(object: THREE.Object3D): object is Drawable {
 
 /** Per-clip stride speeds baked into the cat GLB's `extras.gteki_cat.calib`, in m/s. */
 export interface CatCalibration { walk: number; trot: number; run: number }
+
+/** #854: each tail bone's share of the meow's lift; the tail points +Z, so a negative rotation lifts it. */
+const TAIL_WEIGHTS: Record<string, number> = { tail_01: 0.35, tail_02: 0.25, tail_03: 0.15, tail_04: 0.15 };
 
 export interface GlbAvatarOptions {
   quality: "low" | "high";
@@ -124,35 +128,68 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
     const animate = opts.cat
       ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold)
       : clipCrossfade(mixer, gltf.animations);
-    const bones = opts.cat ? [
-      { bone: gltf.scene.getObjectByName("neck"), weight: 0.3, saved: new THREE.Quaternion() },
-      { bone: gltf.scene.getObjectByName("head"), weight: 0.7, saved: new THREE.Quaternion() },
-    ] : [];
+    // One overlay bone list for both the camera-pitch lift and the meow; any bone may be missing.
+    const bones = opts.cat ? ["neck", "head", "ear_L", "ear_R", "tail_01", "tail_02", "tail_03", "tail_04"].map((name) => ({
+      name, bone: gltf.scene.getObjectByName(name), saved: new THREE.Quaternion(),
+    })) : [];
+    const lateral = new THREE.Vector3(1, 0, 0);
+    const up = new THREE.Vector3(0, 1, 0);
     const axis = new THREE.Vector3();
     const world = new THREE.Quaternion();
     let targetLift = 0;
     let lift = 0;
+    /** Seconds into the meow overlay; negative when it is not playing. */
+    let meowClock = -1;
+    /** Whether last frame's update left an overlay on the bones, so this one must undo it first. */
+    let overlaid = false;
+    /** Rotate `bone` about a rig-space axis, compensating for its world orientation (the look code's maths). */
+    const rotateAbout = (bone: THREE.Object3D, rigAxis: THREE.Vector3, angle: number): void => {
+      if (angle === 0) return;
+      root.getWorldQuaternion(world);
+      axis.copy(rigAxis).applyQuaternion(world);
+      bone.getWorldQuaternion(world).invert();
+      axis.applyQuaternion(world).normalize();
+      bone.rotateOnAxis(axis, angle);
+    };
     return {
       root,
-      ...(opts.cat ? { setLookPitch(pitch: number) { targetLift = Number.isFinite(pitch) ? Math.max(0, Math.min(0.5, pitch)) : 0; } } : {}),
+      ...(opts.cat ? {
+        setLookPitch(pitch: number) { targetLift = Number.isFinite(pitch) ? Math.max(0, Math.min(0.5, pitch)) : 0; },
+        meow() {
+          if (meowClock >= 0) return false;
+          meowClock = 0;
+          return true;
+        },
+      } : {}),
       update(dt, speedMps) {
         if (disposed) return;
         const step = Number.isFinite(dt) ? Math.max(0, dt) : 0;
-        const active = targetLift >= 0.001 || lift >= 0.001;
-        if (active && lift >= 0.001) for (const { bone, saved } of bones) bone?.quaternion.copy(saved);
+        // The mixer writes over last frame's overlay, so restore the clip's own pose first.
+        if (overlaid) {
+          for (const { bone, saved } of bones) bone?.quaternion.copy(saved);
+          overlaid = false;
+        }
         animate(speedMps, step);
         mixer!.update(step);
-        if (active) {
-          lift += (targetLift - lift) * (1 - Math.exp(-step / 0.2));
-          if (lift < 0.001 && targetLift < 0.001) lift = 0;
-          if (lift >= 0.001) for (const { bone, weight, saved } of bones) {
-            if (!bone) continue;
-            saved.copy(bone.quaternion);
-            root.getWorldQuaternion(world);
-            axis.set(1, 0, 0).applyQuaternion(world);
-            bone.getWorldQuaternion(world).invert();
-            axis.applyQuaternion(world).normalize();
-            bone.rotateOnAxis(axis, lift * weight);
+        lift += (targetLift - lift) * (1 - Math.exp(-step / 0.2));
+        if (lift < 0.001 && targetLift < 0.001) lift = 0;
+        if (meowClock >= 0) {
+          meowClock += step;
+          if (meowClock >= MEOW_SECONDS) meowClock = -1;
+        }
+        const pose = meowClock >= 0 ? meowPose(meowClock) : null;
+        // Nothing to overlay: leave the bones untouched, so an idle cat costs nothing per frame.
+        if (lift < 0.001 && !pose) return;
+        for (const { bone, saved } of bones) if (bone) saved.copy(bone.quaternion);
+        overlaid = true;
+        for (const { name, bone } of bones) {
+          if (!bone) continue;
+          if (name === "head") rotateAbout(bone, lateral, lift * 0.7 + (pose?.head ?? 0));
+          else if (name === "neck") rotateAbout(bone, lateral, lift * 0.3);
+          else if (name === "ear_L" || name === "ear_R") rotateAbout(bone, lateral, pose?.ears ?? 0);
+          else {
+            rotateAbout(bone, lateral, -(pose?.tailLift ?? 0) * TAIL_WEIGHTS[name]!);
+            if (name === "tail_01" || name === "tail_02") rotateAbout(bone, up, pose?.tailSway ?? 0);
           }
         }
       },
