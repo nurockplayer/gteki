@@ -65,6 +65,22 @@ export const FOLLOW = {
  */
 export const FOLLOW_CAT = { pivotY: 0.42, shoulder: 0.2, distance: 2.4, lift: 0.12, drop: 0, pitch: 0 } as const;
 
+/**
+ * A raised boom keeps aiming ahead of the pivot, which looks past a body this low: above `start` radians the aim
+ * eases onto the cat, so a squeeze never frames it out. Up to `start` the board-and-cat arrival look is untouched.
+ */
+export const CAT_RAISE_AIM = { start: 0.17, end: 0.52, height: 0.17 } as const;
+
+/** Moves `target` toward the cat at `catPos` by how far the boom is raised. */
+export function aimAtRaisedCat(target: THREE.Vector3, catPos: THREE.Vector3, raise: number): void {
+  const t = Math.min(1, Math.max(0, (raise - CAT_RAISE_AIM.start) / (CAT_RAISE_AIM.end - CAT_RAISE_AIM.start)));
+  if (t === 0) return;
+  const blend = t * t * (3 - 2 * t);
+  target.x += (catPos.x - target.x) * blend;
+  target.y += (catPos.y + CAT_RAISE_AIM.height - target.y) * blend;
+  target.z += (catPos.z - target.z) * blend;
+}
+
 /** NPCs dither out near the cat camera so they do not hide the cat: gone inside startM, untouched beyond endM. */
 export const CAT_NPC_FADE = { startM: 1.4, endM: 2.6 } as const;
 
