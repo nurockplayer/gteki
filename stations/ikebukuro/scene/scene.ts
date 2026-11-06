@@ -556,7 +556,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   root.add(signs.group);
   root.add(signKit.build(THREE, env, toRenderer, signs.layouts).group);
 
-  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes, currentTimeBand(globalThis.location?.search, new Date()));
+  // Ticket gates are the graph's `ticket_gate` nodes: commuters queue briefly at them (#627).
+  const gateIds = (graph as { nodes: { id: string; kind?: string }[] }).nodes.filter((n) => n.kind === "ticket_gate").map((n) => n.id);
+  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes, currentTimeBand(globalThis.location?.search, new Date()), gateIds);
   root.add(crowd.group);
 
   let zone: AcousticZone = "passage";
