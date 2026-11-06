@@ -87,7 +87,7 @@ describe("actual walker fence replay", () => {
   }, 30_000);
   it("proves the two open door-clearance lift ends cannot be walked around", () => {
     const ids = ["return:B6:690:b", "join:1:708:b"] as const, lifts = liftClearances(bundle, plan, built.layout);
-    const ends = replayEnds(built), env = replayEnvironment(built, scene, plan), failures: unknown[] = [], controls: { id: string; witnesses: number }[] = [];
+    const ends = replayEnds(built), env = replayEnvironment(built, scene, plan), failures: unknown[] = [], controls: { id: string; length: number; pieces: number; totalLength: number; witnesses: number }[] = [];
     const combos = (end: (typeof ends)[number], environment: ReturnType<typeof replayEnvironment>, starts: XYZ[], out: unknown[]) => {
       for (const start of starts) for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true])
         for (const approach of APPROACHES) { const leak = environment.replay(end, start, approach, walker, fps, run); if (leak) out.push({ start, leak }); }
