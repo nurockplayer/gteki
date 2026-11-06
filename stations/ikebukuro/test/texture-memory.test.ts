@@ -92,8 +92,9 @@ describe("ikebukuro texture memory", () => {
       } else {
         // Shipped scene measured before #276 on c2f6f0ee, including the settled catalog.
         // +#833 Seibu facade + floor board
-        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([177.092, 0, 0, 0, 188.333, 0, 13.667, 53.257]);
-        expect(Number(budget.totalMib.toFixed(3))).toBe(432.35);
+        // +sharing the escalator atlas between the 5 ids: lighting drops by 4 copies of the 1024x1536 atlas (4 x 8 MiB)
+        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([177.092, 0, 0, 0, 156.333, 0, 13.667, 53.257]);
+        expect(Number(budget.totalMib.toFixed(3))).toBe(400.35);
       }
     }, 120_000);
   }

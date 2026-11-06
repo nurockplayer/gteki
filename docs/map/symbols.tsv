@@ -1068,6 +1068,7 @@ tierDir	const	stations/ikebukuro/scene/kit.ts
 tileGroups	function	stations/ikebukuro/scene/kit.ts
 tileSize	const	stations/ikebukuro/scene/kit.ts
 visibleParts	function	stations/ikebukuro/scene/kit.ts
+AtlasCache	type	stations/ikebukuro/scene/kit_catalog_loader.ts
 CULL_M	const	stations/ikebukuro/scene/kit_catalog_loader.ts
 CatalogPart	interface	stations/ikebukuro/scene/kit_catalog_loader.ts
 CatalogPlacement	interface	stations/ikebukuro/scene/kit_catalog_loader.ts
