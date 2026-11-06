@@ -413,23 +413,36 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
   });
   const pairs = [[legsOf(a), legsOf(b)], [legsOf(rawA.map(local)), legsOf(rawB.map(local))]] as const;
   const range = (legs: ReturnType<typeof legsOf>, box: ReturnType<typeof boxOf>, corners: PlanPoint[]) => {
-    const choices = legs.map((leg) => {
-      const ts = corners.map((p) => ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2);
-      const at = (p: PlanPoint) => leg.p.y + (leg.q.y - leg.p.y) * Math.max(0, Math.min(1, ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2));
-      const heights = corners.map(at);
-      const upper = Math.max(...corners.map((p, i) => {
-        const t = Math.max(0, Math.min(1, ts[i]!));
-        return (p.x - leg.p.x - t * leg.dx) ** 2 + (p.z - leg.p.z - t * leg.dz) ** 2;
-      }));
+    const choices: { leg: typeof legs[number]; heights: number[]; upper: number; lower: number; affine: boolean }[] = [];
+    let upper = Infinity;
+    for (const leg of legs) {
+      const heights: number[] = [];
+      let maxDistance = -Infinity, before = true, after = true, inside = true;
+      for (const p of corners) {
+        const t = ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2;
+        before &&= t <= 0; after &&= t >= 1; inside &&= t >= 0 && t <= 1;
+        const clamped = Math.max(0, Math.min(1, t));
+        heights.push(leg.p.y + (leg.q.y - leg.p.y) * clamped);
+        maxDistance = Math.max(maxDistance, (p.x - leg.p.x - clamped * leg.dx) ** 2 + (p.z - leg.p.z - clamped * leg.dz) ** 2);
+      }
       const lower = Math.max(leg.box.x0 - box.x1, box.x0 - leg.box.x1, 0) ** 2 + Math.max(leg.box.z0 - box.z1, box.z0 - leg.box.z1, 0) ** 2;
-      const affine = leg.p.y === leg.q.y || ts.every((t) => t <= 0) || ts.every((t) => t >= 1) || ts.every((t) => t >= 0 && t <= 1);
-      return { at, heights, upper, lower, affine };
-    });
+      choices.push({ leg, heights, upper: maxDistance, lower, affine: leg.p.y === leg.q.y || before || after || inside });
+      upper = Math.min(upper, maxDistance);
+    }
     // A box-distance lower bound cannot omit a leg that is nearest anywhere in the cell.
-    const upper = Math.min(...choices.map((c) => c.upper));
-    const possible = choices.filter((c) => c.lower <= upper + 1e-12), first = possible[0]!;
-    const samePlane = possible.every((c) => c.affine && c.heights.every((h, i) => Math.abs(h - first.heights[i]!) < 1e-9));
-    return { low: Math.min(...possible.flatMap((c) => c.heights)), high: Math.max(...possible.flatMap((c) => c.heights)), at: samePlane ? first.at : undefined };
+    let first: typeof choices[number] | undefined, samePlane = true, low = Infinity, high = -Infinity;
+    for (const c of choices) if (c.lower <= upper + 1e-12) {
+      first ??= c;
+      if (!c.affine) samePlane = false;
+      for (let i = 0; i < c.heights.length; i++) {
+        const h = c.heights[i]!;
+        if (!(Math.abs(h - first.heights[i]!) < 1e-9)) samePlane = false;
+        low = Math.min(low, h); high = Math.max(high, h);
+      }
+    }
+    const leg = first!.leg;
+    const at = (p: PlanPoint) => leg.p.y + (leg.q.y - leg.p.y) * Math.max(0, Math.min(1, ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2));
+    return { low, high, at: samePlane ? at : undefined };
   };
   const kept: PlanPoint[][] = [];
   const visit = (box: ReturnType<typeof boxOf>) => {
@@ -864,46 +877,21 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   }
   // A plain walk edge can also approach a connector from its side. Open only its actual footprint
   // near the shared node, and only where its walking height meets the flight.
-  const walksByNode = new Map<string, Edge[]>();
-  for (const edge of bundle.edges) {
-    if (edge.mode !== "walk" || !traversable(edge)) continue;
-    for (const node of new Set([edge.from, edge.to])) {
-      const list = walksByNode.get(node) ?? [];
-      list.push(edge); walksByNode.set(node, list);
-    }
-  }
-  const walkGeometry = new Map<string, { points: THREE.Vector3[]; half: number; polygons: MultiPolygon; bounds: [number, number, number, number] }>();
-  const walkOwnPaths = new Map<typeof junctions[number], { drawn: THREE.Vector3[]; raw: readonly V3[] }>();
-  for (const j of junctions) for (const edge of walksByNode.get(j.node) ?? []) {
-    const key = `${edge.id}:${edge.to === j.node ? "to" : "from"}`;
-    let geometry = walkGeometry.get(key);
-    if (!geometry) {
-      const points = edgePoints(bundle, edge, nodes, floors);
-      if (edge.to === j.node) points.reverse();
-      if (points.length < 2) continue;
-      const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
-      const half = (rawWidth && rawWidth > 0 ? rawWidth : 2) / 2;
-      const walk: Region = { kind: "strip", level: j.level, points, halfWidth: half };
-      const polygons = regionPolygon(walk).map((polygon) => polygon.map((ring) => ring.map((p): [number, number] => [p.x, p.z])));
-      const bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
-      for (const polygon of polygons) for (const ring of polygon) for (const [x, z] of ring) {
-        bounds[0] = Math.min(bounds[0], x); bounds[1] = Math.min(bounds[1], z);
-        bounds[2] = Math.max(bounds[2], x); bounds[3] = Math.max(bounds[3], z);
-      }
-      geometry = { points, half, polygons, bounds }; walkGeometry.set(key, geometry);
-    }
-    const { points, half, polygons, bounds } = geometry;
+  for (const j of junctions) for (const edge of bundle.edges) {
+    if (edge.mode !== "walk" || !traversable(edge) || (edge.from !== j.node && edge.to !== j.node)) continue;
+    const points = edgePoints(bundle, edge, nodes, floors);
+    if (edge.to === j.node) points.reverse();
+    if (points.length < 2) continue;
+    const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
+    const half = (rawWidth && rawWidth > 0 ? rawWidth : 2) / 2;
     const own = mouths.get(j.node)?.find((mouth) => mouth.edgeId === j.edgeId);
     if (!own) continue;
+    const ownPath = drawnPath(j.edgeId, own.points, j.level);
+    const walk: Region = { kind: "strip", level: j.level, points, halfWidth: half };
+    const polygons = regionPolygon(walk).map((polygon) => polygon.map((ring) => ring.map((p): [number, number] => [p.x, p.z])));
     const reach = 2 * Math.max(j.half, half), walkDir = planDir(points[0]!, points[1]!), sin = Math.abs(j.dir.x * walkDir.z - j.dir.z * walkDir.x);
     const level = levelRun(own.points), along = level > reach && j.dir.x * walkDir.x + j.dir.z * walkDir.z > 0 ? Math.min(Math.max(reach, reach / Math.max(sin, 0.1)), Math.hypot(level, reach)) : reach;
-    if (bounds[2] < j.at.x - along || bounds[0] > j.at.x + along || bounds[3] < j.at.z - along || bounds[1] > j.at.z + along) continue;
-    let paths = walkOwnPaths.get(j);
-    if (!paths) {
-      paths = { drawn: drawnPath(j.edgeId, own.points, j.level), raw: junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level)) };
-      walkOwnPaths.set(j, paths);
-    }
-    const near = junctionOpenings(polygons, discRing(j.at, along), paths.drawn, points, paths.raw, points);
+    const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, points, junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level)), points);
     for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
   }
   const edgeById = new Map(bundle.edges.map((edge) => [edge.id, edge]));
