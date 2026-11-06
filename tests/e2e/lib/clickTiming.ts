@@ -18,6 +18,20 @@ function topSelfTime(profile: { nodes: { id: number; callFrame: { functionName: 
 
 /** Log browser and Playwright timing around a click that starts the guide, with what the main thread ran. */
 export async function clickTiming(page: Page, click: () => Promise<unknown>): Promise<void> {
+  // SwiftShader falls behind by seconds of queued frames, and a click then waits on that backlog (#921). A synchronous GL
+  // call returns only once the queue has caught up, so a few frames of them let the click start from an idle GPU.
+  const drainMs = await within(page.evaluate(() => new Promise<number[]>((done) => {
+    const gl = document.querySelector<HTMLCanvasElement>("canvas.gteki-canvas")?.getContext("webgl2");
+    const waits: number[] = [];
+    const step = () => setTimeout(() => {
+      const start = performance.now();
+      gl?.getError();
+      waits.push(Math.round(performance.now() - start));
+      if (waits.length >= 6) done(waits); else requestAnimationFrame(step);
+    }, 0);
+    requestAnimationFrame(step);
+  })), 45_000);
+  console.log(`[click-drain] ${JSON.stringify(drainMs)}`);
   await page.evaluate(() => {
     const state = { longTasks: [] as number[], maxFrameGapMs: 0, frames: 0, handlerStart: null as number | null, handlerMs: null as number | null };
     (window as any).__clickTiming = state;

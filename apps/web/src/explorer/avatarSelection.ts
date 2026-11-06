@@ -69,6 +69,7 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
     update(dt, speed) { if (!disposed) current.update(dt, speed); },
     setHold(pose) { hold = pose; current.setHold?.(pose); },
     setLookPitch(pitch) { lookPitch = pitch; current.setLookPitch?.(pitch); },
+    meow() { return current.meow?.() ?? false; },
     setFade(value) { fade = sanitizeAvatarFade(value); if (!disposed) current.setFade(fade); },
     setEnvMap(value, strength = 0.6) { env = value; intensity = strength; if (!disposed) current.setEnvMap(env, intensity); },
     cancelPendingLoad() { generation++; pending = null; },

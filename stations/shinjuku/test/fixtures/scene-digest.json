@@ -1,6 +1,6 @@
 {
  "protect": {
-  "layoutAfterProtect": "a44d1a452325ab0efcc601189afdd6ec43a8fa6c6e24b1e3dd44fe7c59b1b67b",
+  "layoutAfterProtect": "cb7359af4f482ea4aced1e3e4973f33b33a3876e680b613a0b3c6cab8830b28f",
   "protection": "1cef6b3f949890f6b36fd2323f297b3ad03530b74da48240fc9c37af396e4d7f",
   "fences": "1527d1aca21ba2311d781262f6d7f1af576ebf0ad4253784bd9ebd9500b866a7",
   "gates": "b12d68f308c2d3bf796c28f3a5d0ee120d78795bbbc799a1e077757d6f3e92c5",
@@ -9,7 +9,7 @@
   "cacheHit": true
  },
  "station": {
-  "layoutAfterBuild": "e6854f70b951d287de5217d1d48ae40a316b130647e66ebf55668635cae6b4ae",
+  "layoutAfterBuild": "c343a6848f2b25e81e940e6eb2d5f844dec82ed49f5d22eb222e24fd05f8d110",
   "propWalls": "69aa5d1992b652ec3d5a3916ee2ae86689d3bdf3d3a8512bbce7948726322865",
   "levelWalls": "b764f06cb24cbf50ab5d3371cb38fe79f40f10d2837adc28401cbedd96f16c2b",
   "escalators": "15a5224f8c32deb2ca23240bac233cfea59c30dc8198a60f992b5040b5fee0c3"
@@ -582,8 +582,8 @@
      "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
     },
     "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 37980,
-     "hash": "0b82619838580f022fd3f99779db9725aff7c81508ad41454a750021447d276a"
+     "triangles": 43577,
+     "hash": "266dfa2594e8c93fcca4d62d948ff540c02617bd00a506c20f1d3450bccc17b7"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
@@ -1765,8 +1765,8 @@
      "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
     },
     "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 37980,
-     "hash": "0b82619838580f022fd3f99779db9725aff7c81508ad41454a750021447d276a"
+     "triangles": 43577,
+     "hash": "266dfa2594e8c93fcca4d62d948ff540c02617bd00a506c20f1d3450bccc17b7"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,

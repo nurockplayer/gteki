@@ -61,12 +61,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #858 item 12 (2026-11-06 JST): one merged wall-props mesh (126 meshes, +48,504 bytes); every list below unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "124e8080e23b6fe31b7516a453d1d15b07a16643c263122a811215c0d4293082",
-    "appearanceDigest": "e3cc57f3f852198e957b52a1b1b6e5f6aa505e61abd8b48eed85598d3f7d732f",
-    "nodesDigest": "ca99002e8c4f558e3da8f1e13b02e4426437b2446ea1c53142f4cb879799e1a8",
-    "texturesDigest": "502867f0f235268c1c47ed632f4fe1b0397f8fd2424c45ec9cb3fc4a6a74b5fb",
-    "meshes": 126,
-    "bytes": 16252244
+    "geometryDigest": "9bfc9496e8c41f5d4880708c878aed8f09619c7e0696b5154e07f2de0b383c8e",
+    "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
+    "nodesDigest": "7436504abd6375cba37b36a6564503fcc5b31d954a4cdd17c11c3e37b1d53c55",
+    "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
+    "meshes": 125,
+    "bytes": 16429738
   },
   "lists": {
     "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",
