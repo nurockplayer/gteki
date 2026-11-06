@@ -51,7 +51,7 @@ export interface AvatarSelection extends AvatarRig {
 }
 
 /** The human rig is shown while loading and on GLB failure; ?avatar=cat starts empty instead. */
-export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind }): AvatarSelection {
+export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; onCatFallback?: () => void }): AvatarSelection {
   const cat = opts.kind === "cat";
   let current = cat ? emptyRig() : createAvatar({ quality: opts.quality });
   let generation = 0;
@@ -99,6 +99,7 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
           current.root.removeFromParent();
           current.dispose();
           current = human;
+          opts.onCatFallback?.();
         }
         if (!warned) {
           warned = true;

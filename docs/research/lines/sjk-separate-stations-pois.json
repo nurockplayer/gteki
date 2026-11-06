@@ -143,6 +143,60 @@
         "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
         "date": "2026-10-21"
       }
+    },
+    {
+      "id": "sep-seibu-en",
+      "title": "Digital train tickets",
+      "publisher": "Seibu Railway",
+      "url": "https://www.seiburailway.jp/en/ticket/digitalpass/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "Digital train tickets (station name only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-06T00:00:00+09:00",
+      "datasetDate": null,
+      "notes": "Official English page prints Seibu-Shinjuku Station; station name only.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-metro-en",
+      "title": "Shinjuku-sanchome Station",
+      "publisher": "Tokyo Metro",
+      "url": "https://www.tokyometro.jp/lang_en/station/shinjuku-sanchome/index.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "Shinjuku-sanchome Station (station name only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-06T00:00:00+09:00",
+      "datasetDate": null,
+      "notes": "Official English page prints Shinjuku-sanchome Station; station name only.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
+    },
+    {
+      "id": "sep-toei-en",
+      "title": "Shinjuku-nishiguchi",
+      "publisher": "Tokyo Metropolitan Bureau of Transportation",
+      "url": "https://www.kotsu.metro.tokyo.jp/eng/subway_stations/shinjuku-nishiguchi.html",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "attribution": "Shinjuku-nishiguchi (station name only; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-06T00:00:00+09:00",
+      "datasetDate": null,
+      "notes": "Official English page prints Shinjuku-nishiguchi; station name only.",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+        "date": "2026-10-21"
+      }
     }
   ],
   "pois": [
@@ -156,7 +210,7 @@
         },
         {
           "lang": "en",
-          "text": "Seibu-Shinjuku Station (separate station)"
+          "text": "Seibu-Shinjuku Station"
         }
       ],
       "aliases": [
@@ -180,7 +234,8 @@
       "evidence": {
         "sourceIds": [
           "sep-seibu-s2",
-          "sep-seibu-s1"
+          "sep-seibu-s1",
+          "sep-seibu-en"
         ],
         "method": "facts-only operator page (OD-01 A/OD-25), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-29"
@@ -194,6 +249,12 @@
           "lang": "en",
           "text": "Connects to Shinjuku Subnade. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
         }
+      ],
+      "descriptions": [
+        {
+          "lang": "en",
+          "text": "(separate station)"
+        }
       ]
     },
     {
@@ -206,7 +267,7 @@
         },
         {
           "lang": "en",
-          "text": "Shinjuku-sanchome Station (separate station)"
+          "text": "Shinjuku-sanchome Station"
         }
       ],
       "aliases": [
@@ -240,7 +301,8 @@
           "sep-metro-m2",
           "sep-metro-m1",
           "sep-toei-t2",
-          "sep-metro-m3"
+          "sep-metro-m3",
+          "sep-metro-en"
         ],
         "method": "facts-only operator page (OD-01 A/OD-25), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-29"
@@ -254,6 +316,12 @@
           "lang": "en",
           "text": "Connected to Shinjuku Station by an underground passage. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
         }
+      ],
+      "descriptions": [
+        {
+          "lang": "en",
+          "text": "(separate station)"
+        }
       ]
     },
     {
@@ -266,7 +334,7 @@
         },
         {
           "lang": "en",
-          "text": "Shinjuku-nishiguchi Station (separate station)"
+          "text": "Shinjuku-nishiguchi"
         }
       ],
       "aliases": [
@@ -291,7 +359,8 @@
         "sourceIds": [
           "sep-toei-t3",
           "sep-toei-t1",
-          "sep-metro-m3"
+          "sep-metro-m3",
+          "sep-toei-en"
         ],
         "method": "facts-only operator page (OD-01 A/OD-25), UNVERIFIED, SEARCH_ONLY",
         "checkedDate": "2026-10-29"
@@ -304,6 +373,12 @@
         {
           "lang": "en",
           "text": "Signs lead from the JR Shinjuku Station west exit. Separate station. Location, route, opening hours and accessibility not verified (search only, no navigation route)."
+        }
+      ],
+      "descriptions": [
+        {
+          "lang": "en",
+          "text": "(separate station)"
         }
       ]
     }
