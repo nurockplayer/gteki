@@ -33,7 +33,8 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
+import { FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -42,7 +43,7 @@ import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
-import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
+import { createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
@@ -61,7 +62,11 @@ export type ExplorerMode = "overview" | "walk" | "guide";
 
 export interface ExplorerPose { east: number; north: number; up: number; headingDeg: number; mode: ExplorerMode }
 
-export interface ExplorerOptions { avatarGlbUrl?: string }
+export interface ExplorerOptions {
+  avatarGlbUrl?: string;
+  /** Cat protagonist (#854 stage 1): proportions and follow-camera framing change; the human stays default. */
+  avatarKind?: AvatarKind;
+}
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
 interface ShadowFit {
@@ -96,6 +101,10 @@ const EYE = WALKER_BODY.eyeM;
 const RADIUS = WALKER_BODY.radiusM;
 const WALK = WALKER_SPEED.walkMps;
 const RUN = WALKER_SPEED.runMps;
+/** Zone lighting (#861): re-classify every half metre walked, and ease the preset with a ~1.2 s time constant. */
+const ZONE_RECHECK_M2 = 0.25;
+const ZONE_DAMP = 1 / 1.2;
+const ZONE_EPS = 1e-3;
 /** POI labels float this high above their entrance. */
 const LABEL_LIFT = 2.4;
 
@@ -292,6 +301,8 @@ export class Explorer {
 
   private readonly avatar = new THREE.Group();
   private avatarRig: AvatarSelection | null = null;
+  /** Cat protagonist: lower follow pivot, shorter boom and a smaller marker ring. */
+  private readonly catAvatar: boolean;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
@@ -307,6 +318,23 @@ export class Explorer {
   private probeWanted = false;
   private lighting: "default" | "scene" = "default";
   private sun: THREE.DirectionalLight | null = null;
+  /** Zone lighting (#861): the loaded station's anchors, and the values eased from ZONE_LOOK. */
+  private zoneAnchors: readonly ZoneAnchor[] = [];
+  private zone: StationZone = "passage";
+  private readonly zoneAt = new THREE.Vector3(Infinity, 0, 0);
+  /** The station's own fog object, mutated in place; its authored colour and near/far are kept for restores. */
+  private zoneFog: THREE.Fog | null = null;
+  private readonly zoneFogBase = new THREE.Color();
+  private zoneFogNear = 0;
+  private zoneFogFar = 0;
+  private readonly zoneHemiBase = new THREE.Color(1, 1, 1);
+  /** The current plan's exposure before the zone multiplier (see applyLighting). */
+  private zonePlanExposure = 1;
+  private zoneExposure = 1;
+  private zoneFogFarMul = 1;
+  private readonly zoneTint = new THREE.Color(1, 1, 1);
+  /** Set when walking resumes after the overview: the next zone check classifies and applies at once. */
+  private zoneSnap = false;
   /**
    * The walker-following sun shadow (high tier, default lighting, a station attached); null leaves the sun's
    * default ±150 m frustum. `fitted` is what the frustum currently holds, so overview can switch it off without losing the follow fit.
@@ -391,24 +419,28 @@ export class Explorer {
   private panelEl: HTMLElement | null = null;
   /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
   private creditEl: HTMLElement | null = null;
+  /** The greybox disclaimer badge; no POI label is drawn over it (#838). */
+  private legendEl: HTMLElement | null = null;
   /** The route sheet: a full-width bottom sheet on a phone, so the overview keeps clear of it there (#385). */
   private sheetEl: HTMLElement | null = null;
   private minimapEl: HTMLElement | null = null;
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
+  /** A station load is mid-flight: keep the station's full step pose until its connector coverage finishes. */
+  private stepsPaused = false;
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
   private disposed = false;
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
-    // Mesh callbacks run after Three uploads instance matrices. Prepare this dynamic batch before upload too.
-    if (this.quality === "low") this.scene.onBeforeRender = (renderer, scene, camera) => {
-      const steps = this.stationScene?.root.getObjectByName("escalator-steps:all");
-      if (steps instanceof THREE.InstancedMesh) {
-        steps.onBeforeRender(renderer, scene, camera, steps.geometry, steps.material as THREE.Material, null as never);
-      }
+    this.catAvatar = options.avatarKind === "cat";
+    if (this.catAvatar) this.camDistance = FOLLOW_CAT.distance;
+    // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
+    // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
+    if (this.quality === "low") this.scene.onBeforeRender = (renderer, _scene, camera) => {
+      if (!this.stepsPaused) this.stationScene?.beforeRender?.(renderer, camera);
     };
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
@@ -434,7 +466,7 @@ export class Explorer {
     this.envProbe.visible = false;
     this.scene.add(this.world, this.overlays, this.avatar, this.street.group, this.envProbe);
     this.overlays.add(this.routeGroup, this.poiGroup);
-    this.buildAvatar(options.avatarGlbUrl);
+    this.buildAvatar(options);
     this.defaultEnvironment();
     this.applyLighting();
 
@@ -481,17 +513,17 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { loadTimings: Record<string, number>; greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number }; releasedTextures?: { textures: number; canvases: number } | null } {
+  sceneInfo(): { loadTimings: Record<string, number>; greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; cameraDirection: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; zone: StationZone; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number }; releasedTextures?: { textures: number; canvases: number } | null } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       greybox: this.greybox ? { ...this.greybox.stats, overBudget: this.connectors?.stats.overBudget ?? this.greybox.stats.overBudget, connectors: this.connectors?.stats.connectors ?? { escalator: 0, stairs: 0 }, colliderExemptions: this.portalExemptions, portalCut: this.portalCutStats, stairwells: this.stairwellStats } : null, world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 }, loadTimings: { ...this.loadTimings },
       bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
-      camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), fov: Math.round(this.camera.fov * 100) / 100, far: this.camera.far, aspect: Math.round(this.camera.aspect * 1000) / 1000, mode: this.mode,
+      camera: this.camera.position.toArray(), cameraDirection: this.camera.getWorldDirection(new THREE.Vector3()).toArray(), fov: Math.round(this.camera.fov * 100) / 100, far: this.camera.far, aspect: Math.round(this.camera.aspect * 1000) / 1000, mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
       environment: this.envProbe.visible ? "probe" : this.scene.environment ? "envMap" : null,
-      environmentIntensity: this.envProbe.visible || this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
+      environmentIntensity: this.envProbe.visible || this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, zone: this.zone, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
       street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
       shadows: { following: this.shadowFit !== null, fit: this.shadowFit?.fitted ?? null, texelM: this.shadowFit?.fitted === "follow" ? this.shadowOut.texelM : 0, halfExtent: this.shadowFit?.walkHalf ?? 0, casters: this.shadowFit?.casters ?? 0, candidates: this.shadowFit?.candidates.length ?? 0, tallCandidates: this.shadowFit?.tallCandidates ?? 0, receivers: this.shadowFit?.receivers ?? 0 },
       releasedTextures: this.releasedTextures,
@@ -551,7 +583,7 @@ export class Explorer {
   }
 
   /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
-  identity(): { id: string; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
+  identity(): { id: string; worldPosition: number[]; cameraDirection: number[]; cameraFov: number; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
     this.camera.updateMatrixWorld();
     this.refreshOccluders();
     const host = this.host.getBoundingClientRect();
@@ -580,6 +612,8 @@ export class Explorer {
         names.length === visibleNames.length && name !== null && name.x0 >= 0 && name.y0 >= 0 && name.x1 <= w && name.y1 <= h;
       return {
         id: board.object.name || board.object.uuid,
+        worldPosition: board.object.getWorldPosition(new THREE.Vector3()).toArray(),
+        cameraDirection: this.camera.getWorldDirection(new THREE.Vector3()).toArray(), cameraFov: this.camera.fov,
         inFrame,
         frontFacing: facing > 0.2, facingDeg: THREE.MathUtils.radToDeg(Math.acos(facing)),
         nameRect: inFrame && name ? pageRect(name) : null, nameHeightPx: inFrame && name ? name.y1 - name.y0 : null, coveredByChip,
@@ -751,6 +785,7 @@ export class Explorer {
     this.lighting = plan.mode;
     for (const l of this.coreLights) l.visible = plan.coreLights;
     if (this.hemi) this.hemi.intensity = plan.hemiIntensity;
+    this.zonePlanExposure = plan.toneMappingExposure;
     this.renderer.toneMappingExposure = plan.toneMappingExposure;
     this.bloomThreshold = plan.bloomThreshold;
     this.composer?.setBloomThreshold(plan.bloomThreshold);
@@ -764,6 +799,84 @@ export class Explorer {
     this.envProbe.visible = this.probeWanted && this.probeBake === "ready";
     if (this.probeWanted && this.probeBake === "idle") this.bakeEnvProbe();
     this.avatarRig?.setEnvMap(plan.avatarEnvMap ? envMap : null);
+  }
+
+  /**
+   * Zone lighting (#861 slice A): captures the station's own fog and hemisphere colour as the base the
+   * presets multiply, and the platform/ticket-gate anchors to classify against.
+   */
+  private attachZone(bundle: StationBundle): void {
+    this.zoneAnchors = zoneAnchors(bundle.nodes, bundle.floors);
+    this.zoneFog = this.scene.fog instanceof THREE.Fog ? this.scene.fog : null;
+    if (!this.zoneFog) return;
+    this.zoneFogBase.copy(this.zoneFog.color);
+    this.zoneFogNear = this.zoneFog.near;
+    this.zoneFogFar = this.zoneFog.far;
+    if (this.hemi) this.zoneHemiBase.copy(this.hemi.color);
+    this.zoneExposure = 1;
+    this.zoneFogFarMul = 1;
+    this.zoneTint.setRGB(1, 1, 1);
+    this.zoneAt.set(Infinity, 0, 0);
+  }
+
+  /** Back to the station's own look at once (overview, unload): exposure x1, the base fog object and hemisphere colour. */
+  private restoreZone(snap = false): void {
+    if (!this.zoneFog) return;
+    this.zoneExposure = 1;
+    this.zoneFogFarMul = 1;
+    this.zoneTint.setRGB(1, 1, 1);
+    this.renderer.toneMappingExposure = this.zonePlanExposure;
+    this.zoneFog.color.copy(this.zoneFogBase);
+    this.zoneFog.near = this.zoneFogNear;
+    this.zoneFog.far = this.zoneFogFar;
+    if (this.hemi) this.hemi.color.copy(this.zoneHemiBase);
+    this.zoneSnap = snap;
+    this.zoneAt.set(Infinity, 0, 0);
+    this.applyOverlayTone();
+  }
+
+  /**
+   * Per walking frame, after the street backdrop: re-classify when the walker moved half a metre (or
+   * snapped), then ease exposure, fog and hemisphere tint toward the zone's preset. Once settled, writes
+   * nothing until the zone changes. Outdoors the street backdrop owns fog, so only exposure eases.
+   */
+  private updateZone(dt: number, snap: boolean): void {
+    const fog = this.zoneFog;
+    if (!fog) return;
+    if (snap || this.zoneAt.distanceToSquared(this.pos) >= ZONE_RECHECK_M2) {
+      this.zoneAt.copy(this.pos);
+      this.zone = classifyZone(this.pos, this.streetProbe.outdoors, this.zoneAnchors);
+    }
+    const look = ZONE_LOOK[this.zone];
+    const tinted = this.zone !== "outdoor";
+    const near = (a: number, b: number) => Math.abs(a - b) <= ZONE_EPS;
+    const atTarget = () => near(this.zoneExposure, look.exposure)
+      && (!tinted || (near(this.zoneFogFarMul, look.fogFar) && near(this.zoneTint.r, look.tint[0]) && near(this.zoneTint.g, look.tint[1]) && near(this.zoneTint.b, look.tint[2])));
+    if (atTarget()) return;
+    const damp = (current: number, target: number) => snap ? target : THREE.MathUtils.damp(current, target, ZONE_DAMP, dt);
+    this.zoneExposure = damp(this.zoneExposure, look.exposure);
+    if (tinted) {
+      this.zoneFogFarMul = damp(this.zoneFogFarMul, look.fogFar);
+      this.zoneTint.setRGB(damp(this.zoneTint.r, look.tint[0]), damp(this.zoneTint.g, look.tint[1]), damp(this.zoneTint.b, look.tint[2]));
+    }
+    const settled = atTarget();
+    if (settled) {
+      this.zoneExposure = look.exposure;
+      if (tinted) {
+        this.zoneFogFarMul = look.fogFar;
+        this.zoneTint.setRGB(look.tint[0], look.tint[1], look.tint[2]);
+      }
+    }
+    this.renderer.toneMappingExposure = this.zonePlanExposure * this.zoneExposure;
+    if (tinted) {
+      fog.color.copy(this.zoneFogBase).multiply(this.zoneTint);
+      fog.far = this.zoneFogFar * this.zoneFogFarMul;
+      // Near follows the base value unless the zone's far would swallow it.
+      fog.near = Math.min(this.zoneFogNear, fog.far);
+      if (this.hemi?.visible) this.hemi.color.copy(this.zoneHemiBase).multiply(this.zoneTint);
+    }
+    // The high tier's overlays follow exposure; one pass when the transition settles, never per frame.
+    if (settled) this.applyOverlayTone();
   }
 
   private coreEnv(): THREE.Texture {
@@ -853,14 +966,16 @@ export class Explorer {
     this.applyOverlayTone();
   }
 
-  private buildAvatar(glbUrl?: string): void {
-    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl });
+  private buildAvatar(options: ExplorerOptions): void {
+    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind });
     this.avatar.add(this.avatarRig.root);
     if (this.quality === "high") {
       // A slim marker ring keeps "this is you" readable without outshining the character.
-      const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
+      const inner = this.catAvatar ? 0.3 : 0.46;
+      const outer = this.catAvatar ? 0.33 : 0.5;
+      const ring = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
       ring.position.y = 0.02;
-      this.avatar.add(contactShadow(0.42), ring);
+      this.avatar.add(contactShadow(this.catAvatar ? 0.28 : 0.42), ring);
     }
     this.avatar.visible = false;
   }
@@ -940,7 +1055,7 @@ export class Explorer {
       },
       quality: this.quality,
       renderer: this.renderer,
-      ...(audioBus ? { audio: { context: this.audio!.context, destination: audioBus } } : {}),
+      ...(audioBus ? { audio: { context: this.audio!.context, destination: audioBus, isMuted: () => this.muted } } : {}),
     };
 
     this.sceneError = null;
@@ -969,9 +1084,7 @@ export class Explorer {
     this.stationScene = built;
     this.sceneError = sceneError;
     // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
-    const sharedSteps = this.quality === "low" ? built?.root.getObjectByName("escalator-steps:all") : undefined;
-    const prepareSteps = sharedSteps?.onBeforeRender;
-    if (sharedSteps) sharedSteps.onBeforeRender = () => {};
+    this.stepsPaused = this.stationScene?.beforeRender !== undefined;
 
     // Overview may have been entered while loading (against an empty world): restore first, so the new
     // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
@@ -990,6 +1103,7 @@ export class Explorer {
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);
       this.applyLighting(env);
+      this.attachZone(station.bundle);
       const streets = station.bundle.floors.filter((f) => f.ordinal === 0 && !f.intermediate);
       this.streetY = env?.lighting === "scene" && streets.length ? Math.max(...streets.map((f) => f.renderElevationM)) : null;
       this.streetTops = station.bundle.nodes
@@ -1108,7 +1222,7 @@ export class Explorer {
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
-    if (sharedSteps && prepareSteps) sharedSteps.onBeforeRender = prepareSteps;
+    this.stepsPaused = false;
     this.phase = "ready";
     return true;
   }
@@ -1217,6 +1331,10 @@ export class Explorer {
     this.loadedAssets = [];
     this.shadowFit = null;
     this.resetSun();
+    this.restoreZone();
+    this.zoneAnchors = [];
+    this.zoneFog = null;
+    this.zone = "passage";
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
     this.applyLighting();
@@ -1305,6 +1423,15 @@ export class Explorer {
     this.sheetEl = el;
     this.watchOccluders();
     this.refitOverview();
+  }
+
+  /**
+   * Name the greybox disclaimer badge (the app's `.greybox-legend`). The overview declutter drops a POI
+   * label that would land on it or on the credit line (#838). Null: the element is ignored.
+   */
+  setLegend(el: HTMLElement | null): void {
+    this.legendEl = el;
+    this.declutterDirty = true;
   }
 
   /** Name the top-right minimap occluder; hidden maps leave the canvas free. */
@@ -1396,9 +1523,13 @@ export class Explorer {
 
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
+    const previous = this.mode;
     this.guideIdentityHoldS = 0;
     if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
+    // Zone lighting (#861): overview shows the station exactly as before; walking resumes with a snapped re-classify.
+    if (mode === "overview") this.restoreZone();
+    else if (previous === "overview") this.zoneSnap = true;
     this.labelSweepDoneAt = -Infinity;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
     if (mode !== "overview" && this.camera.far !== CAMERA_FAR_M) { this.camera.far = CAMERA_FAR_M; this.camera.updateProjectionMatrix(); }
@@ -1734,6 +1865,8 @@ export class Explorer {
     if (visible !== this.greyboxLegendVisible) {
       this.greyboxLegendVisible = visible;
       this.events.onGreyboxLegend?.(visible);
+      // A badge that just appeared must push labels off itself on the next overview pass (#838).
+      this.declutterDirty = true;
     }
   }
 
@@ -1976,6 +2109,12 @@ export class Explorer {
     const { w: vw, h: vh } = this.viewSize;
     const items: DeclutterItem[] = [];
     const byId = new Map<string, PoiLabel>();
+    // The credit footer and the disclaimer badge are never text under a label (#838). Blocked chips stay out of
+    // the declutter itself, so the chip they would have beaten still gets its place.
+    const footers = [this.creditEl, this.legendEl]
+      .filter((el): el is HTMLElement => el != null && el.getClientRects().length > 0)
+      .map((el) => el.getBoundingClientRect());
+    const blocked = new Set<string>();
     const p = new THREE.Vector3();
     for (const l of labels) {
       l.decluttered = false;
@@ -1984,13 +2123,13 @@ export class Explorer {
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
       const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
-      // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
       const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
       if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
+      if (footers.some((q) => x - size.w / 2 < q.right && x + size.w / 2 > q.left && y - size.h / 2 < q.bottom && y + size.h / 2 > q.top)) blocked.add(l.poiId);
     }
-    const keep = declutter(items);
+    const keep = declutter(items.filter((it) => !blocked.has(it.id)));
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
     // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
@@ -2347,14 +2486,18 @@ export class Explorer {
       this.placeCamera(dt, this.teleported);
       // A teleport re-probes at once and snaps the backdrop to its target (no daylight carried underground).
       const snap = this.teleported;
+      const zoneSnap = this.zoneSnap;
       this.teleported = false;
+      this.zoneSnap = false;
       if (snap) this.streetProbe.at.set(Infinity, 0, 0);
       this.updateStreetProbe(dt);
       this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level, snap);
+      this.updateZone(dt, snap || zoneSnap);
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
     this.camera.updateMatrixWorld();
-    this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, EYE, 0)), this.mode !== "overview");
+    const cutY = this.catAvatar && !this.firstPerson ? FOLLOW_CAT.pivotY : EYE;
+    this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, cutY, 0)), this.mode !== "overview");
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
@@ -2507,28 +2650,33 @@ export class Explorer {
     this.slope = stepSlope(resetSlope ? NO_SLOPE : this.slope, resetSlope ? 0 : this.pos.y - this.slopeY, resetSlope ? 0 : dt, onStairs);
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
-    const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
+    const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
+    // The cat's follow pivot is much lower than eye height; first person keeps the human eye height.
+    const head = this.catAvatar ? this.pos.clone().add(new THREE.Vector3(0, FOLLOW_CAT.pivotY, 0)) : eye;
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
       this.boomActual = 0;
       this.boomRaise = 0;
       this.applyAvatarFade(dt, snap);
-      this.camera.position.copy(head);
-      this.camera.lookAt(head.clone().add(dir));
+      this.camera.position.copy(eye);
+      this.camera.lookAt(eye.clone().add(dir));
       this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
     // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
     const cameraSides = this.cameraSides;
-    let shoulder: number = FOLLOW.shoulder;
+    const shoulderMax = this.catAvatar ? FOLLOW_CAT.shoulder : FOLLOW.shoulder;
+    let shoulder: number = shoulderMax;
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
-      this.ray.far = FOLLOW.shoulder + 0.25;
+      this.ray.far = shoulderMax + 0.25;
       const side = castCamera(this.ray, this.cameraTargets, cameraSides)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
-    const pose = followPose(head, this.yaw, this.pitch, shoulder);
+    const pose = this.catAvatar
+      ? followPose(head, this.yaw, this.pitch, shoulder, FOLLOW_CAT.lift, FOLLOW_CAT.drop)
+      : followPose(head, this.yaw, this.pitch, shoulder);
     if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
     let dist = this.camDistance;

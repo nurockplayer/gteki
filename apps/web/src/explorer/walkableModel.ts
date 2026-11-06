@@ -41,6 +41,16 @@ export function floorExclusionCuts(cut: PlanExclusion, levels: readonly string[]
   return heights.every((y) => Math.abs(y - cut.y) <= PRIVATE_FLOOR_TOLERANCE_M) ? cut.triangles : [];
 }
 
+/** Preserve whole-edge cuts, otherwise cut only segments at a matching endpoint floor. */
+export function segmentExclusionCuts(cut: PlanExclusion, edgeLevels: readonly string[], a: { y: number }, b: { y: number }, edgeHeights: readonly number[]): PlanPoint[][] {
+  const whole = floorExclusionCuts(cut, edgeLevels, edgeHeights);
+  if (whole.length) return whole;
+  const near = (y: number) => Math.abs(y - cut.y) <= PRIVATE_FLOOR_TOLERANCE_M;
+  if (a.y !== b.y || !near(a.y) || !near(b.y)) return [];
+  const matchingEndpoints = edgeHeights.map((y, i) => ({ y, level: edgeLevels[i] ?? "" })).filter(({ y }) => near(y));
+  return matchingEndpoints.length && matchingEndpoints.every(({ level }) => !level || level === cut.level) ? cut.triangles : [];
+}
+
 const WALL_TOLERANCE_M = 1e-3;
 const MIN_WALL_M = 1e-3;
 const OUTSIDE_TEST_M = 1e-4;
@@ -774,7 +784,9 @@ export function buildWalkableModel(
     const region = regions[piece.region]!, levels = region.floorLevels ?? [piece.level];
     const heights = region.floorHeights ?? (region.kind === "strip" ? [region.points[0]!.y, region.points.at(-1)!.y] : [piece.low, piece.high]);
     const cuts = masks.filter((cut) => cut.box.maxX >= piece.box.minX && cut.box.minX <= piece.box.maxX
-      && cut.box.maxZ >= piece.box.minZ && cut.box.minZ <= piece.box.maxZ).flatMap((cut) => floorExclusionCuts(cut, levels, heights));
+      && cut.box.maxZ >= piece.box.minZ && cut.box.minZ <= piece.box.maxZ).flatMap((cut) => region.kind === "strip"
+        ? segmentExclusionCuts(cut, levels, region.points[piece.segment - 1]!, region.points[piece.segment]!, heights)
+        : floorExclusionCuts(cut, levels, heights));
     if (!cuts.length) return [piece];
     const key = `${piece.region}:${piece.segment}`, all = explicitCuts.get(key) ?? [];
     for (const cut of cuts) if (!all.includes(cut)) all.push(cut);

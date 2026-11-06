@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createRouter, nodeDisplayZ, routeBetween, routePolyline } from "@gteki/navigation";
 import type { PolylinePoint, RouteStep } from "@gteki/navigation";
+import { parseStationFiles } from "@gteki/schema";
 import type { Poi, StationBundle } from "@gteki/schema";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import type { ExplorerPose } from "../explorer/explorer.ts";
 import { Minimap } from "./minimap.ts";
+import { currentFloorId } from "./minimapGeometry.ts";
 
 /** A synthetic destination: the fixture's restroom is on the concourse at (10, 0) with a connector. */
 const poi = (over: Partial<Poi> = {}): Poi => ({ ...createSyntheticBundle().pois[0]!, ...over });
@@ -107,9 +110,8 @@ describe("Minimap HUD", () => {
   });
 
   it("shows an unknown-floor notice with no graph or player marker", () => {
-    const map = create();
     pose = { ...pose!, up: 100 };
-    tick();
+    const map = create();
     expect(map.el.textContent).toContain("Floor unknown");
     expect(map.el.textContent).toContain("Schematic walk graph (not a floor plan)");
     expect(map.el.querySelectorAll("polyline")).toHaveLength(0);
@@ -117,6 +119,16 @@ describe("Minimap HUD", () => {
     map.setLang("ja");
     expect(map.el.textContent).toContain("階不明");
     expect(map.el.textContent).toContain("概略歩行経路（実際の構内図ではありません）");
+  });
+
+  it("clears a known floor after relocation far from the graph", () => {
+    const map = create();
+    expect(map.el.querySelectorAll(".minimap-graph polyline").length).toBeGreaterThan(0);
+    pose = { ...pose!, east: 1000, north: 1000, up: 100 };
+    tick();
+    expect(map.el.textContent).toContain("Floor unknown");
+    expect(map.el.querySelectorAll(".minimap-graph polyline")).toHaveLength(0);
+    expect(map.el.querySelector<SVGElement>(".minimap-arrow")!.style.display).toBe("none");
   });
 
   it("makes no DOM writes for an unchanged pose and preserves paths during movement and orientation changes", () => {
@@ -223,6 +235,49 @@ describe("Minimap route overlay (#220 PR2)", () => {
     vi.useRealTimers();
   });
 
+  it("keeps the E27 departure floor and route at the Shinjuku escalator midpoint (#839)", async () => {
+    const fs = await import("node:fs");
+    const read = (f: string): unknown => JSON.parse(fs.readFileSync(`stations/shinjuku/gteki/${f}`, "utf8"));
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+    if (!parsed.ok || !parsed.bundle) throw new Error("Shinjuku bundle failed to parse");
+    const bundle = parsed.bundle;
+    const from = bundle.pois.find((p) => p.id === "poi:exit:1")!;
+    const to = bundle.pois.find((p) => p.id === "poi:platform:oedo")!;
+    const route = routeBetween(createRouter(bundle), { kind: "poi", poi: from }, to, { fare: "ticketed", stepFree: false });
+    if (!route.ok) throw new Error(route.reason);
+    expect(route.steps.some((s) => s.fromFloorId === "toei-nwd-m4_5" || s.toFloorId === "toei-nwd-m4_5")).toBe(false);
+    const escalator = route.steps.find((s) => s.edgeId === "e:ac906cd95e89401b9b11858e02f20895")!;
+    expect(escalator.mode).toBe("escalator");
+    const start = bundle.nodes.find((n) => n.id === escalator.fromNodeId)!;
+    const end = bundle.nodes.find((n) => n.id === escalator.toNodeId)!;
+    const floors = new Map(bundle.floors.map((f) => [f.id, f]));
+    const startZ = nodeDisplayZ(start, floors.get(start.floorId)).z;
+    const endZ = nodeDisplayZ(end, floors.get(end.floorId)).z;
+    pose = { east: start.position.x, north: start.position.y, up: startZ, headingDeg: 0, mode: "walk" };
+    const map = create(bundle);
+    map.setRoute({ points: routePolyline(bundle, route), steps: route.steps }, to);
+    expect(currentFloorId(bundle, startZ, start.position.x, start.position.y)).toBe(escalator.fromFloorId);
+    pose = { ...pose, east: (start.position.x + end.position.x) / 2, north: (start.position.y + end.position.y) / 2, up: (startZ + endZ) / 2 };
+    expect(currentFloorId(bundle, pose.up, pose.east, pose.north)).toBeNull();
+    tick();
+    expect(map.el.querySelector(".minimap-label")?.textContent).toContain("B3");
+    expect(map.el.querySelectorAll(".minimap-graph polyline").length).toBeGreaterThan(0);
+    expect(routeLines(map).length).toBeGreaterThan(0);
+    expect(display(map, ".minimap-arrow")).toBe("");
+  });
+
+  it("clears the old transition label and chevron after relocating off-graph", () => {
+    const map = create();
+    map.setRoute({ points: upRoute, steps: upSteps }, null);
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    pose = { ...pose!, east: 1000, north: 1000, up: 100 };
+    tick();
+    expect(map.el.textContent).toContain("Floor unknown");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).not.toContain("To 1F by stairs");
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+    expect(display(map, ".minimap-connector-rim")).toBe("none");
+  });
+
   it("draws only the current floor's run of the route and names the next floor change", () => {
     const map = create();
     map.setRoute({ points: upRoute, steps: upSteps }, poi());
@@ -300,10 +355,10 @@ describe("Minimap route overlay (#220 PR2)", () => {
   it("clears the connector hint when the route is cleared while the floor is unknown", () => {
     const map = create();
     map.setRoute({ points: loopPoints, steps: loopSteps }, null);
-    // An unknown floor leaves refresh() no floor to recompute the hint for.
+    expect(display(map, ".minimap-connector-marker")).toBe("");
     pose = { ...pose!, up: 100 };
     tick();
-    expect(display(map, ".minimap-connector-marker")).toBe("");
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
     map.setRoute(null, null);
     expect(display(map, ".minimap-connector-marker")).toBe("none");
   });
@@ -449,15 +504,16 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
   });
 
-  it("keeps progress and the hint while the floor reading drops out and returns", () => {
+  it("clears the hint when the floor is unknown and restores it without advancing progress", () => {
     const map = create();
     map.setRoute({ points: loopPoints, steps: loopSteps }, null);
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
-    // Mid-stairs the floor is unknown: nothing moves, and the stairs hint stays.
+    // A remote height near the stairs is outside their vertical span.
     pose = { ...pose!, up: 100 };
     tick();
-    expect(display(map, ".minimap-connector-marker")).toBe("");
-    expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
+    expect(map.el.textContent).toContain("Floor unknown");
+    expect(display(map, ".minimap-connector-marker")).toBe("none");
+    expect(map.el.querySelector(".minimap-route-label")!.textContent).not.toContain("To 1F by stairs");
     // Back on the same floor, the earlier stairs are still the hint, not the later escalator.
     pose = { ...pose!, up: 0 };
     tick();

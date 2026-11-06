@@ -1,3 +1,5 @@
+import { routePolyline, type RouteResult } from "@gteki/navigation";
+import { auditPolyline } from "../../../../packages/godot/src/route-clip-audit.ts";
 import { describe, expect, it } from "vitest";
 import type { Edge, StationBundle } from "@gteki/schema";
 import { skippedConnectorPath, unmodelledVerticalEdges } from "./greyboxConnectors.ts";
@@ -988,6 +990,37 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("leaves a walk approach clear at a shared stair node", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const stair = g([[0, 0, 0], [4, 2, 0]]), walk = g([[0, 0, -3], [0, 0, 0]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("stair", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: stair }),
+      syntheticEdge("walk", "start", "a", { mode: "walk", geometry: walk }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["a", stair[0]!], ["upper", stair[1]!], ["start", walk[0]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    for (let z = -1.2; z <= 0; z += 0.1) {
+      const r = resolveWalls(0, z, 0.3, 0, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x, r.z - z), `z=${z.toFixed(1)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
+  it("leaves a shallow walk approach clear along a stair's level run", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    const slope = Math.tan((15 * Math.PI) / 180);
+    const stair = g([[0, 0, 0], [4, 0, 0], [8, 2, 0]]), walk = g([[0, 0, 0], [6, 0, 6 * slope]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("stair", "a", "upper", { mode: "stairs", attributes: { sceneGap: true }, geometry: stair }),
+      syntheticEdge("walk", "a", "start", { mode: "walk", geometry: walk }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["a", stair[0]!], ["upper", stair[2]!], ["start", walk[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    for (let x = 0; x <= 3.8; x += 0.1) {
+      const z = x * slope, r = resolveWalls(x, z, 0.3, 0, 1.7, result.wallSegments);
+      expect(Math.hypot(r.x - x, r.z - z), `x=${x.toFixed(1)}`).toBeLessThanOrEqual(0.05);
+    }
+  });
+
   // #710 review: at a junction of a narrow stair and a wide one, the opening reaches the wide one's side wall.
   it("lets a walker from a narrow stair onto a wide one that shares its node", () => {
     const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
@@ -1157,6 +1190,26 @@ describe("turning landing guards", () => {
     const result = buildConnectors(station, () => true, landing, "high");
     const r = resolveWalls(3, -0.7, 0.3, 1.5, 1.7, result.wallSegments);
     expect(Math.hypot(r.x - 3, r.z + 0.7)).toBeGreaterThan(0.05);
+  });
+
+  // #688: the junction opening follows the drawn walking surface. Both flights climb at 0.55 m per plan metre, so their
+  // straight polylines are the same height all the way; their drawn surfaces are not: 7.5 m out the long one's treads
+  // are 0.56 m above the short one's, because each flight climbs between its mid-flight landings and the landings sit at
+  // different plan positions. A walker must not step across that drop.
+  it("keeps a guard where mid-flight landings part one flight's drawn surface from another's", () => {
+    const g = (pts: [number, number, number][]) => pts.map(([x, h, z]) => ({ x, y: -z, z: h }));
+    // Two flights leave one node 10 degrees apart: the junction reach is 2 * half / sin(10 degrees), about 9 m.
+    const a = g([[0, 0, 0], [10.5, 5.78, 0]]), b = g([[0, 0, 0], [15.7567, 8.8, 2.7784]]);
+    const station = createSyntheticBundle([
+      syntheticEdge("long", "start", "a", { mode: "stairs", attributes: { sceneGap: true }, geometry: a }),
+      syntheticEdge("second", "start", "b", { mode: "stairs", attributes: { sceneGap: true }, geometry: b }),
+    ] as Parameters<typeof createSyntheticBundle>[0]);
+    for (const [id, p] of [["start", a[0]!], ["a", a[1]!], ["b", b[1]!]] as const) station.nodes.find((n) => n.id === id)!.position = { ...p };
+    const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+    expect(result.stats.legacyConnectors).toBe(0);
+    // 7.5 m out, the long flight's drawn surface is at 3.92 m and the other's at 4.47 m; both polylines are at 4.13 m.
+    const r = resolveWalls(7.5, 0.65, 0.3, 4.125, 1.7, result.wallSegments);
+    expect(Math.hypot(r.x - 7.5, r.z - 0.65)).toBeGreaterThan(0.05);
   });
 
   // #710 review: two flights of one stair side by side, a 0.2 m empty gap apart, keep the guards on their facing sides.
@@ -1450,3 +1503,17 @@ describe("turning landing guards", () => {
 
 });
 
+
+it.each([
+  ["escalator", 2, 3.6],
+  ["stairs", 3, 3.6],
+] as const)("keeps the drawn %s route on its own connector", (mode, length, height) => {
+  const station = { ...bundle, nodes: [bundle.nodes[0]!, { ...bundle.nodes[1]!, position: { x: length, y: 0, z: height } }], edges: [{ ...bundle.edges[0]!, mode, attributes: { sceneGap: true } }] } as StationBundle;
+  const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+  result.root.updateMatrixWorld(true);
+  const route = { nodeIds: ["a", "b"], steps: [{ edgeId: "e", fromNodeId: "a", toNodeId: "b", fromFloorId: "low", toFloorId: "high", mode, reversed: false }] } as unknown as RouteResult;
+  const audit = auditPolyline({ ground: result.walkable, collider: result.colliders, walls: [] }, routePolyline(station, route));
+  expect(audit.wallHits).toBe(0);
+  expect(audit.offFloor).toBe(0);
+  expect(audit.noFloor).toBe(0);
+});

@@ -14,7 +14,9 @@ import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
 import { type Opening, type Shop, loadShopKit } from "./kit_shops.ts";
 import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
+import { currentTimeBand } from "./time-band.ts";
 import { createAmbience } from "./ambience.ts";
+import { createStationSound } from "./station-sound.ts";
 import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import { loadN02Overlay } from "./n02_overlay.ts";
 import crowdLanes from "./crowd_lanes.json";
@@ -529,10 +531,27 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   root.add(signs.group);
   root.add(signKit.build(THREE, env, toRenderer, signs.layouts).group);
 
-  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
+  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes, currentTimeBand(globalThis.location?.search, new Date()));
   root.add(crowd.group);
 
   const ambience = ctx.audio ? createAmbience(ctx.audio.context, ctx.audio.destination) : null;
+  // Station sound (#859): gates are ticket_gate nodes; with no escalator or platform nodes here,
+  // announcements also come from the stairs and the approach chime is heard from behind the gates.
+  const stationNodes = (graph as { nodes: { id: string; kind?: string; position: { x: number; y: number; z: number | null }; renderZ?: number }[] }).nodes;
+  const siteAt = (n: { position: { x: number; y: number; z: number | null }; renderZ?: number }) =>
+    toRenderer(n.position.x, n.position.y, n.position.z ?? n.renderZ ?? 0);
+  const gateSites = stationNodes.filter((n) => n.kind === "ticket_gate");
+  const stationSound = ctx.audio ? createStationSound({
+    context: ctx.audio.context,
+    destination: ctx.audio.destination,
+    isMuted: ctx.audio.isMuted,
+    stationNameJa: "池袋",
+    sites: {
+      gates: gateSites.map(siteAt),
+      announce: stationNodes.filter((n) => n.kind === "ticket_gate" || n.kind === "stair_end").map(siteAt),
+      chime: gateSites.map(siteAt),
+    },
+  }) : null;
 
   const nodes = new Map((graph as { nodes: { id: string; position: { x: number; y: number; z: number | null } }[] }).nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = [];
@@ -558,12 +577,14 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       if (camera) catalogKit.update(camera);
       crowd.update(dt, elapsed);
       ambience?.update({ nearby: crowd.nearby(), openness: 0.8 });
+      stationSound?.update(dt, camera);
       if (context && cameraTrack) {
         const seen = cameraTrack.read();
         setContext(seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
       }
     },
     dispose() {
+      stationSound?.dispose();
       ambience?.dispose();
       cameraTrack?.dispose();
       disposed = true;

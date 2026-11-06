@@ -622,7 +622,7 @@ export async function loadShopKit(
 
       if (signs.length || directories.length) {
         // One unlit atlas face batch: every sign quad lit from within, one draw call.
-        const { canvas, slots } = paintSignAtlas([...signs, ...blades, ...directories], low ? 128 : SIGN_PX_PER_M, signs.length, signs.length + blades.length, shops);
+        const { canvas, slots } = paintSignAtlas([...signs, ...blades, ...directories], low ? 128 : SIGN_PX_PER_M / 2, signs.length, signs.length + blades.length, shops);
         const texture = new THREE.CanvasTexture(canvas);
         texture.colorSpace = THREE.SRGBColorSpace;
         const material = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });

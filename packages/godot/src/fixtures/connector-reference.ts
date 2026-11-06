@@ -112,10 +112,12 @@ export function buildStairs(from: THREE.Vector3, to: THREE.Vector3, widthM: numb
   const count = Math.max(1, Math.round(f.rise / 0.18)), rise = f.rise / count;
   const flightSteps = Math.max(1, Math.floor(3 / (rise || 0.18))), landing = 1.2;
   const needed = Math.floor((count - 1) / flightSteps);
-  const omitted = f.length < count * 0.25 + needed * landing ? needed : 0;
+  const nominalOmitted = f.length < count * 0.25 + needed * landing;
+  const nominalTread = (f.length - (nominalOmitted ? 0 : needed * landing)) / count;
+  const fit = rise < 0.15 || rise > 0.21 || nominalTread < 0.25 || nominalTread > 0.35 || f.length < f.rise / Math.tan(35 * Math.PI / 180) ? "approximate" : "exact";
+  const omitted = nominalOmitted || fit === "approximate" ? needed : 0;
   const placed = needed - omitted;
   const tread = (f.length - placed * landing) / count;
-  const fit = rise < 0.15 || rise > 0.21 || tread < 0.25 || tread > 0.35 || f.length < f.rise / Math.tan(35 * Math.PI / 180) ? "approximate" : "exact";
   const xAt = (i: number) => i * tread + (omitted ? 0 : Math.floor(i / flightSteps) * landing);
   for (let i = 0; i < count; i++) {
     const x = xAt(i), y = i * rise;
@@ -144,9 +146,11 @@ export function buildStairs(from: THREE.Vector3, to: THREE.Vector3, widthM: numb
 /** Build the escalator from lower to higher landing; indicators retain the supplied direction. */
 export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "high" | "low"): ConnectorPart[] {
   const f = frame(from, to), parts: ConnectorPart[] = [];
-  const landing = Math.min(0.8, f.length / 4), run = Math.max(0, f.length - 2 * landing);
+  const nominalLanding = Math.min(0.8, f.length / 4);
+  const nominalAngle = Math.atan2(f.rise, f.length - 2 * nominalLanding);
+  const fit = nominalLanding < 0.8 || nominalAngle < 27 * Math.PI / 180 || nominalAngle > 33 * Math.PI / 180 ? "approximate" : "exact";
+  const landing = fit === "approximate" ? 0 : nominalLanding, run = f.length - 2 * landing;
   const angle = Math.atan2(f.rise, run), incline = Math.hypot(run, f.rise);
-  const fit = landing < 0.8 || angle < 27 * Math.PI / 180 || angle > 33 * Math.PI / 180 ? "approximate" : "exact";
   const count = Math.ceil(incline / 0.4 - 1e-9), group = tier === "low" ? 3 : 1;
   const retained = Array.from({ length: count }, (_, i) => i).filter((i) => (i + 0.5) * 0.4 > 0.2 + 1e-9 && (i + 0.5) * 0.4 < incline - 0.2 - 1e-9);
   const firstX = retained.length ? landing + retained[0]! * 0.4 * Math.cos(angle) : f.length / 2;
@@ -202,7 +206,10 @@ export function buildEscalator(from: THREE.Vector3, to: THREE.Vector3, tier: "hi
 function stairWalk(from: THREE.Vector3, to: THREE.Vector3, width: number, parts: ConnectorPart[]): THREE.Vector3[] {
   const f = frame(from, to), count = Math.max(1, Math.round(f.rise / 0.18)), rise = f.rise / count;
   const block = Math.max(1, Math.floor(3 / (rise || 0.18))), needed = Math.floor((count - 1) / block);
-  const omitted = f.length < count * 0.25 + needed * 1.2, tread = (f.length - (omitted ? 0 : needed * 1.2)) / count;
+  const nominalOmitted = f.length < count * 0.25 + needed * 1.2;
+  const nominalTread = (f.length - (nominalOmitted ? 0 : needed * 1.2)) / count;
+  const omitted = nominalOmitted || rise < 0.15 || rise > 0.21 || nominalTread < 0.25 || nominalTread > 0.35 || f.length < f.rise / Math.tan(35 * Math.PI / 180);
+  const tread = (f.length - (omitted ? 0 : needed * 1.2)) / count;
   const at = (x: number, y: number) => new THREE.Vector3(x, y, 0).applyMatrix4(f.matrix);
   const path = [at(0, 0)];
   for (let start = 0; start < count; start += block) {
@@ -221,7 +228,9 @@ function stairWalk(from: THREE.Vector3, to: THREE.Vector3, width: number, parts:
 }
 
 function escalatorWalk(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] {
-  const f = frame(from, to), landing = Math.min(0.8, f.length / 4);
+  const f = frame(from, to), nominalLanding = Math.min(0.8, f.length / 4);
+  const angle = Math.atan2(f.rise, f.length - 2 * nominalLanding);
+  const landing = nominalLanding < 0.8 || angle < 27 * Math.PI / 180 || angle > 33 * Math.PI / 180 ? 0 : nominalLanding;
   const at = (x: number, y: number) => new THREE.Vector3(x, y, 0).applyMatrix4(f.matrix);
   const path = [at(0, 0), at(landing, 0), at(f.length - landing, f.rise), at(f.length, f.rise)];
   return from.y <= to.y ? path : path.reverse();
@@ -441,6 +450,13 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
 }
 
 /** Unit plan direction from `a` to `b`. */
+/** Plan length of the leading segments that stay within a step of the path's start: past it, a walk at that height no longer meets the path. */
+function levelRun(points: readonly THREE.Vector3[]): number {
+  let run = 0;
+  for (let i = 1; i < points.length && Math.abs(points[i]!.y - points[0]!.y) <= WALKER_BODY.stepUpM; i++) run += Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.z - points[i - 1]!.z);
+  return run;
+}
+
 function planDir(a: THREE.Vector3, b: THREE.Vector3): THREE.Vector3 {
   const d = b.clone().sub(a); d.y = 0;
   return d.lengthSq() > 1e-12 ? d.normalize() : new THREE.Vector3(1, 0, 0);
@@ -819,6 +835,25 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, otherPath);
       for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
     } catch { legacyEdgeIds.add(j.edgeId); legacyEdgeIds.add(m.edgeId); }
+  }
+  // A plain walk edge can also approach a connector from its side. Open only its actual footprint
+  // near the shared node, and only where its walking height meets the flight.
+  for (const j of junctions) for (const edge of bundle.edges) {
+    if (edge.mode !== "walk" || !traversable(edge) || (edge.from !== j.node && edge.to !== j.node)) continue;
+    const points = edgePoints(bundle, edge, nodes, floors);
+    if (edge.to === j.node) points.reverse();
+    if (points.length < 2) continue;
+    const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
+    const half = (rawWidth && rawWidth > 0 ? rawWidth : 2) / 2;
+    const own = mouths.get(j.node)?.find((mouth) => mouth.edgeId === j.edgeId);
+    if (!own) continue;
+    const ownPath = junctionPath(own.points, builtRegions.get(j.edgeId)!.filter((r) => r.level === j.level));
+    const walk: Region = { kind: "strip", level: j.level, points, halfWidth: half };
+    const polygons = regionPolygon(walk).map((polygon) => polygon.map((ring) => ring.map((p): [number, number] => [p.x, p.z])));
+    const reach = 2 * Math.max(j.half, half), walkDir = planDir(points[0]!, points[1]!), sin = Math.abs(j.dir.x * walkDir.z - j.dir.z * walkDir.x);
+    const level = levelRun(own.points), along = level > reach && j.dir.x * walkDir.x + j.dir.z * walkDir.z > 0 ? Math.min(Math.max(reach, reach / Math.max(sin, 0.1)), Math.hypot(level, reach)) : reach;
+    const near = junctionOpenings(polygons, discRing(j.at, along), ownPath, points);
+    for (const polygon of near) regionsByEdge.get(j.edgeId)!.push({ kind: "connector", level: j.level, y: j.at.y, quad: polygon[0]!.slice(0, -1).map(([x, z]) => ({ x, z })) });
   }
   const edgeById = new Map(bundle.edges.map((edge) => [edge.id, edge]));
   // Guard caps follow the drawn walking surface too, including generated treads and mid-flight landings.

@@ -125,7 +125,7 @@ describe("public station navmesh gate",()=>{
     if(clips.lowered.length) errors.push(`lower the baseline for: ${clips.lowered.join(", ")}`);
     const pathsDiff=navPathsDiff(committedPaths.edges,result.audit.navPaths);
     const asPaths=(joins:Record<string,number[][]>)=>Object.fromEntries(Object.entries(joins ?? {}).map(([key,forward])=>[key,{forward}]));
-    const joinsDiff=navPathsDiff(asPaths(committedPaths.joins),asPaths(result.audit.navJoins));
+    const joinsDiff=navPathsDiff(asPaths(committedPaths.joins),asPaths(result.audit.navJoins),1e-6);
     if (joinsDiff.missing.length+joinsDiff.extra.length+joinsDiff.moved.length) errors.push("navmesh junction paths stale: regenerate with --write-paths");
     const staleKeys=[...pathsDiff.missing,...pathsDiff.extra,...pathsDiff.moved].slice(0,10);
     const rejected=(result.audit.navPathsRejected ?? []) as string[];

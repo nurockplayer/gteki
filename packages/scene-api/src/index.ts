@@ -94,6 +94,11 @@ export interface StationScene {
   /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
   /**
+   * Render hook the host calls from its scene's onBeforeRender, before Three.js uploads instance matrices.
+   * Present only for stations that pack a dynamic batch per view (Shinjuku's low-tier escalator steps).
+   */
+  beforeRender?(renderer: THREE.WebGLRenderer | null, camera: THREE.Camera): void;
+  /**
    * Resolves once presentation content the scene loads in the background (after the first frame) is in place.
    * Renderers need not wait for it; hosts that export a snapshot instead of rendering await it first. Never rejects.
    */
@@ -127,9 +132,11 @@ export interface SceneContext {
   /**
    * Optional host-owned audio. The explorer creates the context (resumed on the first user gesture)
    * and a master gain with a mute toggle; connect station sound to `destination`, never to
-   * `context.destination`. Absent (e.g. no WebAudio) = stay silent.
+   * `context.destination`. Absent (e.g. no WebAudio) = stay silent. `isMuted` reports the host mute
+   * live: graph sound is already silenced by the master gain, but speech (Web Speech) is not, so a
+   * scene that speaks must cancel it. Absent = not muted.
    */
-  audio?: { context: AudioContext; destination: AudioNode };
+  audio?: { context: AudioContext; destination: AudioNode; isMuted?: () => boolean };
 }
 
 export type BuildScene = (ctx: SceneContext) => StationScene | Promise<StationScene>;
@@ -298,3 +305,4 @@ export function seeThroughMeshes(root: THREE.Object3D): THREE.Object3D[] {
   visit(root, null);
   return found;
 }
+export * from "./liftShaft.ts";
