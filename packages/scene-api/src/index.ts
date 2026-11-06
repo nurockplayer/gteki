@@ -59,8 +59,22 @@ export interface IdentityBoardTag {
   regions?: { kind: "name" | "arrow"; min: [number, number, number]; max: [number, number, number] }[];
 }
 
+/** A session-only interaction in the fictional presentation layer. */
+export interface InteractableSpec {
+  id: string;
+  layer: "fictional";
+  simulated: true;
+  kind: string;
+  anchor: { x: number; y: number; z: number };
+  radiusM: number;
+  steps: { id: string; seconds: number }[];
+  reward?: string;
+  once?: boolean;
+}
+
 export interface StationScene {
   root: THREE.Object3D;
+  interactables?: InteractableSpec[];
   /** Surfaces the walker can stand on (raycast from above). Empty = no free walking. */
   walkable: THREE.Object3D[];
   /** Meshes blocking horizontal movement. */
