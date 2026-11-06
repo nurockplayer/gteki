@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
     test: {
       include: [
         ...testRoots.map((root) => `${root}/**/${testPattern}`),
-        ...(heavy ? [] : ["tools/*.test.mjs", "tools/map/*.test.ts", "tools/private-overlay/*.test.ts", "tools/data-age/*.test.ts", "tools/coverage-matrix/*.test.ts", "tools/field-ingest/*.test.ts"]),
+        ...(heavy ? [] : ["tools/*.test.mjs", "tools/map/*.test.ts", "tools/private-overlay/*.test.ts", "tools/data-age/*.test.ts", "tools/coverage-matrix/*.test.ts", "tools/field-ingest/*.test.ts", "tests/e2e/lib/*.test.ts"]),
       ],
       exclude: heavy ? configDefaults.exclude : [...configDefaults.exclude, "**/*.heavy.test.ts"],
       execArgv: [`--max-old-space-size=${process.env.GTEKI_TEST_HEAP_MB ?? process.env.ORB_TEST_HEAP_MB ?? "3072"}`],
