@@ -107,8 +107,8 @@ describe("actual walker fence replay", () => {
       ].filter(s => env.labels(s, true).mapped);
       if (!starts.length) { failures.push({ id, missing: "start" }); continue; }
       combos(end, env, starts, failures);
-      // A single sub-body-width piece leaves no walkable hole; widen it with every piece of the same
-      // run within 1.0 m of the end.
+      // A single sub-body-width piece leaves no walkable hole; widen it with every fence piece at this
+      // level within 1.0 m of the end. A witness shows the probe can see a leak here, not which piece stops it.
       const pieces = fencesOf(built).filter(f => Math.abs(f.zMin - end.fence!.zMin) < .01 && distance(end.p, closest(end.p, f.a, f.b)) <= 1);
       try {
         const mutated = removeFences(built, scene, pieces);
