@@ -32,6 +32,8 @@ const VENDING_H = 1.85;
 const KIOSK_H = 2;
 /** The prop's back face sits this far inside the wall. */
 const BACK_INSET_M = 0.02;
+/** The base stands this much wider and deeper than the body, so their faces are not coplanar and never z-fight. */
+const BASE_PROUD_M = 0.01;
 
 const COLOUR = {
   body: 0xd7d7d0,
@@ -76,7 +78,7 @@ function vendingParts(THREE: ThreeNs, parts: THREE_NS.BufferGeometry[], p: WallP
   const { w, d } = p;
   const front = d - BACK_INSET_M;
   box(THREE, parts, w, VENDING_H, d, 0, VENDING_H / 2, d / 2 - BACK_INSET_M, COLOUR.body);
-  box(THREE, parts, w, 0.18, d, 0, 0.09, d / 2 - BACK_INSET_M, COLOUR.base);
+  box(THREE, parts, w + BASE_PROUD_M, 0.18, d + BASE_PROUD_M, 0, 0.09, d / 2 - BACK_INSET_M, COLOUR.base);
   box(THREE, parts, w - 0.16, 0.88, 0.008, 0, 1.28, front + 0.004, COLOUR.window);
   for (let row = 0; row < 3; row++) {
     for (let col = 0; col < 3; col++) {
@@ -102,7 +104,7 @@ function kioskParts(THREE: ThreeNs, parts: THREE_NS.BufferGeometry[], p: WallPro
   const { w, d } = p;
   const front = d - BACK_INSET_M;
   box(THREE, parts, w, KIOSK_H, d, 0, KIOSK_H / 2, d / 2 - BACK_INSET_M, COLOUR.kioskBody);
-  box(THREE, parts, w, 0.15, d, 0, 0.075, d / 2 - BACK_INSET_M, COLOUR.base);
+  box(THREE, parts, w + BASE_PROUD_M, 0.15, d + BASE_PROUD_M, 0, 0.075, d / 2 - BACK_INSET_M, COLOUR.base);
   box(THREE, parts, w - 0.1, 0.35, 0.008, 0, 1.72, front + 0.004, COLOUR.kioskHeader);
   for (const y of [0.72, 1.12]) box(THREE, parts, w - 0.2, 0.03, 0.008, 0, y, front + 0.004, COLOUR.shelf);
   for (let row = 0; row < 2; row++) {
