@@ -36,21 +36,21 @@ for (const station of ["ikebukuro", "shinjuku"] as const) {
 
     // Same frame, camera and avatar: props hidden, then shown. Only the props' own draws may differ.
     await page.evaluate(() => { window.requestAnimationFrame = () => 0; });
-    const frameDraws = () => page.evaluate(() => { const q = (window as any).__qa; const a = q.cur; (window as any).__gteki.simulate(0); return q.cur - a; });
-    const { hidden, shown } = await page.evaluate(() => {
+    // Whole-frame counts move with NPCs, so measure the props' own contribution: hide them, draw, show them, draw.
+    const propsDelta = () => page.evaluate(() => {
       const g = (window as any).__gteki, q = (window as any).__qa, props = g.interactables().props;
       const draws = () => { const a = q.cur; g.simulate(0); return q.cur - a; };
       props.visible = false;
       const hidden = draws();
       props.visible = true;
-      return { hidden, shown: draws() };
+      const shown = draws();
+      return { hidden, shown, delta: shown - hidden };
     });
-    const delta = shown - hidden;
+    const { hidden, shown, delta } = await propsDelta();
     console.log(`RESULT ${station} tier=${tier} propsHidden=${hidden} propsShown=${shown} delta=${delta}`);
     expect(delta).toBeGreaterThan(0);
     expect(delta).toBeLessThanOrEqual(isMobile ? 1 : 2);
 
-    const idleDraws = await frameDraws();
     const trigger = async () => { if (isMobile) await button.tap(); else await page.keyboard.press("KeyE"); };
     await trigger();
     for (const step of spec.steps as { id: string; seconds: number }[]) {
@@ -58,11 +58,12 @@ for (const station of ["ikebukuro", "shinjuku"] as const) {
       await hooks.simulate(page, step.seconds * 0.9);
       expect((await page.evaluate(() => (window as any).__gteki.interaction())).step).toBe(step.id);
       if (step.id === "react") {
-        // The reaction is the same mesh's appended index range. Frames differ in NPCs, so check the range; the
-        // draw counts are logged only.
-        const reactDraws = await frameDraws();
+        // The reaction is the same mesh's appended index range: the range grows, and the props' own hidden/shown
+        // draw delta stays the same as at idle (whole-frame counts differ in NPCs, so only the delta is stable).
+        const reactDelta = await propsDelta();
         const range = await page.evaluate(() => { const props = (window as any).__gteki.interactables().props; return { count: props.geometry.drawRange.count, idle: props.userData.gtekiWallPropsIdleCount }; });
-        console.log(`RESULT ${station} tier=${tier} idleDraws=${idleDraws} reactDraws=${reactDraws}`);
+        console.log(`RESULT ${station} tier=${tier} reactDelta=${reactDelta.delta}`);
+        expect(reactDelta.delta).toBe(delta);
         expect(range.count).toBeGreaterThan(range.idle);
         await shot("react");
       }
