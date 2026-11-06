@@ -113,12 +113,12 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
   };
   // Explorer arrives at spawnNodeIds[0], using spawnHeadings (not the lane app's
   // stationSpawn, which backs away from a gate and faces the opposite direction).
-  // Original wayfinding placement, five metres into that view; never a route node.
+  // Original wayfinding placement, four metres ahead and one metre left; never a route node.
   const spawn = nodes.get(bundle.spawnNodeIds![0]!)!;
   const heading = (bundle.spawnHeadings?.[spawn.id] ?? 0) * Math.PI / 180;
   const forward = { x: Math.sin(heading), y: Math.cos(heading) };
   add("identity:spawn", spawn.id,
-    { x: spawn.position.x + forward.x * 5, y: spawn.position.y + forward.y * 5, z: layout.nodeZ.get(spawn.id)! },
+    { x: spawn.position.x + forward.x * 4 - forward.y, y: spawn.position.y + forward.y * 4 + forward.x, z: layout.nodeZ.get(spawn.id)! },
     { x: -forward.x, y: -forward.y }, "GTEki placement at the Explorer spawn; not surveyed, not a replica of an on-site sign");
   for (const poi of bundle.pois.filter((p) => p.category === "ticket_gate")) {
     const node = nodes.get(poi.connectorNodeIds[0] ?? "");
@@ -130,7 +130,12 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     // Gate POI connectors are the verified unpaid approach nodes (import-e27.ts).
     const dx = node.position.x - poi.displayPosition.x, dy = node.position.y - poi.displayPosition.y;
     const length = Math.hypot(dx, dy) || 1;
-    add(`identity:gate:${poi.id}`, node.id, gate.center, { x: dx / length, y: dy / length },
+    // Gate 1's unpaid-side centre overlaps the arrival camera. Hang its original
+    // board eight metres toward the paid side, retaining the gate-facing axis.
+    const center = poi.id === "poi:gate:1"
+      ? { x: gate.center.x - dx / length * 8, y: gate.center.y - dy / length * 8, z: gate.center.z }
+      : gate.center;
+    add(`identity:gate:${poi.id}`, node.id, center, { x: dx / length, y: dy / length },
       "GTEki placement at the ticket-gate POI; not surveyed, not a replica of an on-site sign");
   }
   const platform = platformIdentityPlacement(bundle, layout, world, IDENTITY_SIZE, nameBox);
