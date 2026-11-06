@@ -1184,6 +1184,9 @@ StationAudio	interface	stations/shinjuku/app/src/audio.ts	3
 createStationAudio	function	stations/shinjuku/app/src/audio.ts	29
 Avatar	interface	stations/shinjuku/app/src/avatar.ts	5
 createAvatar	function	stations/shinjuku/app/src/avatar.ts	30
+CatAvatarLoader	interface	stations/shinjuku/app/src/catAvatar.ts	9
+CatAvatarOptions	interface	stations/shinjuku/app/src/catAvatar.ts	22
+createCatAvatar	function	stations/shinjuku/app/src/catAvatar.ts	28
 CharacterBatch	interface	stations/shinjuku/app/src/characters/batch.ts	4
 createCharacterBatch	function	stations/shinjuku/app/src/characters/batch.ts	34
 FootPose	interface	stations/shinjuku/app/src/characters/gait.ts	2
@@ -1241,8 +1244,9 @@ SearchOnlyRole	type	stations/shinjuku/app/src/search-card.ts	12
 searchRowSub	function	stations/shinjuku/app/src/search-card.ts	20
 searchOnlyText	function	stations/shinjuku/app/src/search-card.ts	33
 LANE_CAMERA	const	stations/shinjuku/app/src/spawn-view.ts	5
-followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts	8
-spawnView	function	stations/shinjuku/app/src/spawn-view.ts	18
+LANE_CAMERA_CAT	const	stations/shinjuku/app/src/spawn-view.ts	8
+followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts	11
+spawnView	function	stations/shinjuku/app/src/spawn-view.ts	21
 loadShinjukuBundle	function	stations/shinjuku/data/bundle.ts	11
 releaseShinjukuCaches	function	stations/shinjuku/gteki/scene.ts	102
 releaseCaches	const	stations/shinjuku/gteki/scene.ts	105
