@@ -171,7 +171,8 @@ describe("avatar flag", () => {
 describe("cat avatar selection", () => {
   it("starts from an empty rig and swaps in the cat GLB without ever showing the human", async () => {
     const loader = { loadAsync: vi.fn().mockResolvedValue(catAvatarFixture()) };
-    const rig = createAvatarRig({ quality: "low", kind: "cat", loader });
+    const onCatFallback = vi.fn();
+    const rig = createAvatarRig({ quality: "low", kind: "cat", loader, onCatFallback });
     const empty = rig.root;
     expect(empty.children).toHaveLength(0);
     expect(rig.root.getObjectByName("shoeL")).toBeUndefined();
@@ -179,13 +180,15 @@ describe("cat avatar selection", () => {
     await rig.loadGlb();
     expect(rig.root).not.toBe(empty);
     expect(rig.root.getObjectByName("shoeL")).toBeUndefined();
+    expect(onCatFallback).not.toHaveBeenCalled();
     rig.dispose();
   });
 
   it("falls back to the human once when the cat GLB fails, warning once", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const loader = { loadAsync: vi.fn().mockRejectedValue(new Error("404")) };
-    const rig = createAvatarRig({ quality: "low", kind: "cat", loader });
+    const onCatFallback = vi.fn();
+    const rig = createAvatarRig({ quality: "low", kind: "cat", loader, onCatFallback });
     await rig.loadGlb();
     expect(rig.root.getObjectByName("shoeL")).toBeDefined();
     expect(warn).toHaveBeenCalledTimes(1);
@@ -193,6 +196,28 @@ describe("cat avatar selection", () => {
     await rig.loadGlb();
     expect(loader.loadAsync).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledTimes(1);
+    expect(onCatFallback).toHaveBeenCalledTimes(1);
+    rig.dispose();
+  });
+
+  it.each(["dispose", "cancelPendingLoad"] as const)("does not fall back after %s", async (action) => {
+    const load = deferred<ReturnType<typeof catAvatarFixture>>();
+    const onCatFallback = vi.fn();
+    const rig = createAvatarRig({ quality: "low", kind: "cat", loader: { loadAsync: () => load.promise }, onCatFallback });
+    const pending = rig.loadGlb();
+    rig[action]();
+    load.reject(new Error("stale"));
+    await pending;
+    expect(onCatFallback).not.toHaveBeenCalled();
+    rig.dispose();
+  });
+
+  it("does not call the cat fallback for a human load failure", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const onCatFallback = vi.fn();
+    const rig = createAvatarRig({ quality: "low", kind: "human", glbUrl: "/missing.glb", loader: { loadAsync: vi.fn().mockRejectedValue(new Error("404")) }, onCatFallback });
+    await rig.loadGlb();
+    expect(onCatFallback).not.toHaveBeenCalled();
     rig.dispose();
   });
 });
