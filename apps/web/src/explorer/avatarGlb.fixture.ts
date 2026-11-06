@@ -32,6 +32,17 @@ export function skinnedAvatarFixture() {
   return { scene, animations, mesh, accessory, skeleton, spine, geometry, materials, textures: [map, normalMap] };
 }
 
+/** #854 cat stand-in: five gait clips with distinct spine values plus the GLB's calib extras. */
+export function catAvatarFixture() {
+  const asset = skinnedAvatarFixture();
+  const pose = (name: string, value: number) => new THREE.AnimationClip(name, 1, [
+    new THREE.NumberKeyframeTrack("spine.rotation[z]", [0, 1], [value, value]),
+  ]);
+  asset.animations = [pose("idle", 0.1), pose("sit", 0.5), pose("walk", 0.2), pose("trot", 0.3), pose("run", 0.4)];
+  asset.spine.userData.gteki_cat = { calib: { walk: 0.40625, trot: 1, run: 2.285714285714286 } };
+  return asset;
+}
+
 export function fadeUniform(material: THREE.Material): THREE.IUniform {
   const shader = { uniforms: {} as Record<string, THREE.IUniform>, fragmentShader: THREE.ShaderLib.standard.fragmentShader };
   material.onBeforeCompile(shader as THREE.WebGLProgramParametersWithUniforms, null as unknown as THREE.WebGLRenderer);
