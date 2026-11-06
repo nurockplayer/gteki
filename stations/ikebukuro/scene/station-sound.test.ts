@@ -233,3 +233,16 @@ describe("station sound", () => {
     expect(other.state.cancels).toBe(0);
   });
 });
+
+it("plays a requested chime only in range and unmuted", () => {
+  const { context, tones } = fakeContext();
+  let muted = false;
+  const sound = createStationSound({ context, destination, stationNameJa: "池袋", sites: { gates: [], announce: [], chime: [] }, speech: null, isMuted: () => muted });
+  sound.update(0, camera());
+  sound.chimeAt(AT);
+  expect(tones).toHaveLength(4);
+  sound.chimeAt(far(41));
+  muted = true; sound.chimeAt(AT);
+  expect(tones).toHaveLength(4);
+  sound.dispose();
+});
