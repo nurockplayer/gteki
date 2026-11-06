@@ -6,7 +6,7 @@ updated: 2026-10-26 JST
 # pkg-search: station, POI and store-brand search
 
 ## What it does
-Name, alias and description search over one station's POIs, built once per bundle with `createSearchIndex`. Matching is Japanese-aware: NFKC, case folding, katakana to hiragana, long-vowel and punctuation folding, romaji aliases from the bundle, exit-number folding (号 and 號 to 番 before 出口), and dropping the station's own name from the front of a query. Store brands listed in a tenant directory (`tenants.json`) are extra texts on their store POI and rank below a direct match. Each hit says whether the POI is routable (`routable`, false for search-only POIs without a verified connector).
+Name, alias and description search over one station's POIs, built once per bundle with `createSearchIndex`. Matching is Japanese-aware: NFKC, case folding, katakana to hiragana, long-vowel and punctuation folding, romaji aliases from the bundle, exit-number folding (号 and 號 to 番 before 出口), dropping the station's own name from the front of a query, and dropping a trailing station word. Multi-word Latin queries can match across a POI's names, aliases and search-only English category terms at a weak score; category terms also support exact and three-character prefix queries. Descriptions and tenant texts do not contribute to cross-text matches. Store brands listed in a tenant directory (`tenants.json`) are extra texts on their store POI and rank below a direct match. Each hit says whether the POI is routable (`routable`, false for search-only POIs without a verified connector).
 
 ## Main files and functions
 - `packages/search/src/search.ts:5-9` — `normalizeJa()`: the fold used for queries and the Godot goldens. Leave it unchanged.

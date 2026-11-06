@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validateBundle } from "@gteki/schema";
 import type { Poi, StationBundle } from "@gteki/schema";
-import { createSyntheticBundle, syntheticEvidence } from "../../navigation/src/fixtures.ts";
+import { createSyntheticBundle, createTenantFixtureBundle, syntheticEvidence } from "../../navigation/src/fixtures.ts";
 import { createSearchIndex, normalizeJa } from "./index.ts";
 
 function indexFor(bundle = createSyntheticBundle()) {
@@ -188,6 +188,61 @@ describe("station POI search", () => {
     expect(order(poi("a", "East Gate Plaza Annex", { aliases: [alias] }))).toEqual(expected);
     expect(order(poi("a", "East Gate Hall", { aliases: [name] }))).toEqual(expected);
     expect(order(poi("a", "x", { names: [{ lang: "en", text: name.text }, { lang: "en", text: alias.text }] }))).toEqual(expected);
+  });
+});
+
+describe("English facility search", () => {
+  it("matches tokens across a POI's names and aliases", () => {
+    const index = indexFor(bundleWith([
+      poi("gate", "丸ノ内線西改札", { aliases: [{ lang: "en", text: "Marunouchi Line" }, { lang: "en", text: "West Gate" }] }),
+      poi("partial", "改札", { aliases: [{ lang: "en", text: "Marunouchi Line" }] }),
+    ]));
+    expect(index.search("Marunouchi Line West Gate")).toMatchObject([{ poi: { id: "gate" }, score: 24, matched: "丸ノ内線西改札" }]);
+  });
+
+  it("finds categories weakly without changing POI texts", () => {
+    const japanese = poi("ja", "便所", { category: "toilet", names: [{ lang: "ja", text: "便所" }] });
+    const english = poi("en", "便所", { category: "toilet", aliases: [{ lang: "en", text: "Toilet" }] });
+    const index = indexFor(bundleWith([japanese, english]));
+    const hits = index.search("toilet");
+    expect(hits.map((hit) => [hit.poi.id, hit.score])).toEqual([["en", 100], ["ja", 24]]);
+    expect(hits[1]!.poi.names).toEqual(japanese.names);
+    expect(hits[1]!.poi.aliases).toEqual([]);
+    expect(index.search("to").map((hit) => hit.poi.id)).toEqual(["en"]);
+    expect(index.search("rest").map((hit) => hit.poi.id)).toContain("ja");
+  });
+
+  it("requires whole numbers and excludes descriptions and tenants from cross-text matches", () => {
+    const bundle = bundleWith([
+      poi("22", "22番出口", { category: "exit" }),
+      poi("a10", "A10", { category: "exit", connectorNodeIds: ["a"] }),
+      poi("description", "Marunouchi Line", { descriptions: [{ lang: "en", text: "West Gate" }] }),
+      poi("tenant", "Marunouchi Line"),
+    ]);
+    const original = createTenantFixtureBundle().tenants![0]!;
+    bundle.tenants = [{ ...original, poiId: "tenant", names: [{ lang: "en", text: "West Gate" }], aliases: [] }];
+    expect(createSearchIndex(bundle).search("exit 2")).toEqual([]);
+    expect(createSearchIndex(bundle).search("exit A1")).toEqual([]);
+    expect(createSearchIndex(bundle).search("Marunouchi Line West Gate")).toEqual([]);
+  });
+
+  it("keeps an identifier that was its own word in a multi-word text", () => {
+    const index = indexFor(bundleWith([
+      poi("a1", "西改札", { category: "exit", aliases: [{ lang: "en", text: "Marunouchi Line" }, { lang: "en", text: "A1 West Gate" }] }),
+      poi("a10", "A10", { category: "exit" }),
+    ]));
+    expect(index.search("Marunouchi Line A1 Gate").map((hit) => hit.poi.id)).toEqual(["a1"]);
+    expect(index.search("exit A1").map((hit) => hit.poi.id)).toEqual(["a1"]);
+    expect(index.search("exit 1")).toEqual([]);
+  });
+
+  it("strips a trailing station word but keeps a station-only query", () => {
+    const bundle = bundleWith([poi("separate", "Shinjuku-nishiguchi"), poi("station", "Shinjuku Station platform")]);
+    bundle.station.names = [{ lang: "en", text: "Shinjuku Station" }];
+    const index = indexFor(bundle);
+    expect(index.search("Shinjuku-nishiguchi Station")[0]).toMatchObject({ poi: { id: "separate" }, score: 98 });
+    expect(index.search("Shinjuku Station")).toEqual(index.search("Shinjuku Station "));
+    expect(index.search("Shinjuku Station").map((hit) => hit.poi.id)).not.toContain("separate");
   });
 });
 

@@ -1,4 +1,4 @@
-import type { LocalizedText, Poi, StationBundle, Tenant } from "@gteki/schema";
+import type { LocalizedText, Poi, PoiCategory, StationBundle, Tenant } from "@gteki/schema";
 import type { SearchHit, SearchIndex, TenantMatch } from "./index.ts";
 
 /** Fold scripts and formatting only; readings and translations come from aliases. */
@@ -23,6 +23,8 @@ interface IndexedText {
   normalized: string;
   /** Set for brand texts; the store POI itself stays the hit. */
   tenant?: Tenant;
+  /** Set for a POI's own names and aliases, the texts a cross-text match may use. */
+  wordBreaks?: Set<number>;
 }
 
 interface IndexedPoi {
@@ -50,6 +52,12 @@ const MIN_FUZZY_CHARS = 4;
 /** Station-name stripping needs at least this many characters left to search. */
 const MIN_REMAINDER_CHARS = 2;
 const STRIPPED_PENALTY = 2;
+const WEAK_MATCH_SCORE = 24;
+const CATEGORY_TERMS: Partial<Record<PoiCategory, string[]>> = {
+  toilet: ["toilet", "restroom", "washroom", "bathroom"],
+  locker: ["locker", "coin locker"], exit: ["exit"], ticket_gate: ["gate", "ticket gate"],
+  elevator: ["elevator", "lift"], escalator: ["escalator"], atm: ["atm"], platform: ["platform"],
+};
 /**
  * A brand in a store's directory scores this much below the same match on the store's own name/alias,
  * so 「東武」 still finds 東武百貨店 itself before a store that merely lists 東武ストア (#419).
@@ -120,6 +128,36 @@ function stripStation(prefixes: readonly string[], normalized: string, latinToke
     return makeForm(rest, tokens, STRIPPED_PENALTY);
   }
   return null;
+}
+
+/** Drop a final station word, retaining a station-only query as typed. */
+function stripTrailingStation(query: string, prefixes: readonly string[], tokens: string[]): QueryForm | null {
+  const rest = query.normalize("NFKC").trim().replace(/(?:駅|站|えき|(?<![a-z0-9])(?:station|eki))$/iu, "");
+  if (rest === query.normalize("NFKC").trim()) return null;
+  const normalized = searchKey(rest);
+  if ([...normalized].length < MIN_REMAINDER_CHARS || prefixes.includes(normalized)) return null;
+  const remainingTokens = /(?:^|\s)(?:station|eki)$/i.test(query.normalize("NFKC").trim()) ? tokens.slice(0, -1) : tokens;
+  return makeForm(normalized, remainingTokens.length < 2 ? [] : remainingTokens, STRIPPED_PENALTY);
+}
+
+/** Offsets in a search key where the text had a word break; the key itself has lost its separators. */
+function wordBreaks(text: string): Set<number> {
+  const breaks = new Set([0]);
+  let at = 0;
+  for (const word of text.normalize("NFKC").split(/[\s\p{P}]+/u)) breaks.add(at += normalizeJa(word).length);
+  return breaks;
+}
+
+/** A token with a digit must be a whole identifier: "a1" is in "A1 West Gate" but not "A10", "2" not in "22番出口" or "A2". */
+function hasCrossToken(text: IndexedText, token: string): boolean {
+  const key = text.normalized;
+  if (!/\d/.test(token)) return key.includes(token);
+  for (let at = key.indexOf(token); at >= 0; at = key.indexOf(token, at + 1)) {
+    const end = at + token.length;
+    if ((text.wordBreaks!.has(at) || !/[a-z0-9]/.test(key[at - 1]!)) &&
+        (text.wordBreaks!.has(end) || !/[a-z0-9]/.test(key[end] ?? ""))) return true;
+  }
+  return false;
 }
 
 /** Ordered subsequence matching, penalising skipped characters within the match. */
@@ -229,7 +267,8 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
     else tenantsByPoi.set(tenant.poiId, [tenant]);
   }
   const entries: IndexedPoi[] = bundle.pois.map((poi) => {
-    const texts: IndexedText[] = [...poi.names, ...poi.aliases, ...(poi.descriptions ?? [])].map(({ text }) => ({ original: text, normalized: searchKey(text) }));
+    const texts: IndexedText[] = [...poi.names, ...poi.aliases].map(({ text }) => ({ original: text, normalized: searchKey(text), wordBreaks: wordBreaks(text) }));
+    for (const { text } of poi.descriptions ?? []) texts.push({ original: text, normalized: searchKey(text) });
     // A store's directory only adds texts to the store itself: one card per store, never one per brand.
     for (const tenant of tenantsByPoi.get(poi.id) ?? [])
       for (const { text } of [...tenant.names, ...tenant.aliases])
@@ -249,6 +288,8 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
       // A query that is only the station name stays as typed; "池袋東口" also searches "東口".
       const stripped = prefixes.length ? stripStation(prefixes, normalized, tokens) : null;
       if (stripped) forms.push(stripped);
+      const trailing = stripTrailingStation(query, prefixes, tokens);
+      if (trailing) forms.push(trailing);
       const categories = opts.categories === undefined ? null : new Set(opts.categories);
       const floors = opts.floorIds === undefined ? null : new Set(opts.floorIds);
       const hits: { hit: SearchHit; quality: Quality }[] = [];
@@ -276,6 +317,19 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
             } else {
               direct = betterText(direct, candidateScore, text.original, quality);
             }
+          }
+        }
+        const terms = (CATEGORY_TERMS[entry.poi.category] ?? []).map(searchKey);
+        for (const form of forms) {
+          const termMatch = terms.some((term) => term === form.normalized ||
+            (form.normalized.length >= 3 && term.startsWith(form.normalized)));
+          const crossMatch = form.tokens.length > 1 && form.tokens.every((token) =>
+            terms.some((term) => term.includes(token)) ||
+            entry.texts.some((text) => text.wordBreaks && hasCrossToken(text, token)));
+          const score = WEAK_MATCH_SCORE - form.penalty;
+          if ((termMatch || crossMatch) && score > direct.score) {
+            const name = entry.poi.names[0]?.text ?? "";
+            direct = { score, matched: name, quality: qualityOf(searchKey(name), form) };
           }
         }
         // A brand listed by the store only wins when the store itself matched nothing better.

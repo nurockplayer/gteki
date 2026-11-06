@@ -548,6 +548,14 @@
           {
             "poiId": "poi:platform:oedo",
             "score": 75
+          },
+          {
+            "poiId": "poi:jreast-platform:9",
+            "score": 24
+          },
+          {
+            "poiId": "poi:jreast-platform:10",
+            "score": 24
           }
         ]
       },
