@@ -976,6 +976,9 @@ export class Explorer {
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
     this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
+    // The composer is built after the station scene is attached, so the cat's depth twins are registered here
+    // on the first load; later loads register them in the scene step.
+    if (this.catAvatar) this.composer.setDepthTwins(this.stationScene?.root ?? null);
     this.composer.setBloomThreshold(this.bloomThreshold);
     this.applyOverlayTone();
   }
@@ -1014,6 +1017,7 @@ export class Explorer {
     this.camDistance = FOLLOW.defaultDistance;
     this.pitch = -0.12;
     this.stationScene?.setCameraNearFade?.(0, 0);
+    this.composer?.setDepthTwins(null);
     this.buildAvatarMarker();
   }
 
@@ -1119,7 +1123,11 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
-    if (this.catAvatar) built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
+    if (this.catAvatar) {
+      built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
+      // The crowd's distance fade must reach GTAO's depth/normal buffers too (high tier only).
+      this.composer?.setDepthTwins(built?.root ?? null);
+    }
     this.interactionController = new InteractionController(built?.interactables ?? []);
     this.interactionSnapshot = "";
     this.interactionVisual = undefined;

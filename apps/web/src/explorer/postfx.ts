@@ -97,6 +97,7 @@ export class FadeAwareGTAOPass extends GTAOPass {
   private twins: THREE.Material[] = [];
   private originals: THREE.Material[] = [];
   private readonly twinBySource = new Map<THREE.Material, THREE.MeshNormalMaterial>();
+  private depthTwins: { mesh: THREE.Mesh; twin: THREE.Material; original: THREE.Material }[] = [];
 
   /** Call once per frame before the composer renders; `fade` is the object's opacity (1 opaque). */
   setFade(object: THREE.Object3D | null, fade: number): void {
@@ -132,12 +133,25 @@ export class FadeAwareGTAOPass extends GTAOPass {
     return twin;
   }
 
+  /** Scene-owned meshes that fade by distance: their `userData.gteki_gtao_twin` replaces them in this pass. */
+  setDepthTwins(root: THREE.Object3D | null): void {
+    this.depthTwins = [];
+    root?.traverse((child) => {
+      const mesh = child as THREE.Mesh;
+      if (!mesh.isMesh || Array.isArray(mesh.material)) return;
+      const twin = mesh.userData.gteki_gtao_twin as THREE.Material | undefined;
+      if (twin) this.depthTwins.push({ mesh, twin, original: mesh.material });
+    });
+  }
+
   override render(...args: Parameters<GTAOPass["render"]>): void {
-    if (!this.active) return super.render(...args);
-    const { meshes, twins, originals } = this;
+    if (!this.active && this.depthTwins.length === 0) return super.render(...args);
+    const { meshes, twins, originals, depthTwins } = this;
     for (let i = 0; i < meshes.length; i++) { originals[i] = meshes[i]!.material as THREE.Material; meshes[i]!.material = twins[i]!; }
+    for (const depth of depthTwins) { depth.original = depth.mesh.material as THREE.Material; depth.mesh.material = depth.twin; }
     try { super.render(...args); } finally {
       for (let i = 0; i < meshes.length; i++) meshes[i]!.material = originals[i]!;
+      for (const depth of depthTwins) depth.mesh.material = depth.original;
     }
   }
 
@@ -203,6 +217,11 @@ export class PostFx {
   /** Mirrors a dithered `avatar` into GTAO and so the floor reflection (both read GTAO's depth/normals); null clears it. */
   setAvatarFade(avatar: THREE.Object3D | null, fade: number): void {
     this.gtao.setFade(avatar, fade);
+  }
+
+  /** Registers the scene's own distance-faded meshes with GTAO; null clears them. */
+  setDepthTwins(root: THREE.Object3D | null): void {
+    this.gtao.setDepthTwins(root);
   }
 
   render(dt: number): void {

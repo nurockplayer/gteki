@@ -793,6 +793,35 @@ export function buildCrowd(
     material.customProgramCacheKey = () => low && material === M.cloth ? "crowd-near-fade-low" : "crowd-near-fade";
   }
 
+  // GTAO draws the scene with one override material, which would ignore that discard and put the whole person
+  // into its depth/normal buffers (a dark halo on the walls behind a faded pedestrian). Each high-tier part is
+  // therefore drawn with this normal-material twin instead (`allowOverride = false` keeps GTAO's override off
+  // it), carrying the same dither on the same nearFade uniform. `meshnormal` has no vViewPosition without
+  // FLAT_SHADED, so the twin carries its own view-space varying. One twin for every part: one program, no
+  // allocation per frame. Low tier has no GTAO.
+  let normalTwin: THREE_NS.MeshNormalMaterial | undefined;
+  if (!low) {
+    normalTwin = new THREE.MeshNormalMaterial();
+    normalTwin.blending = THREE.NoBlending;
+    normalTwin.allowOverride = false;
+    normalTwin.onBeforeCompile = (shader) => {
+      shader.uniforms.uNearFade = nearFade;
+      shader.vertexShader = shader.vertexShader
+        .replace("#include <common>", `varying vec3 vCrowdView;\n#include <common>`)
+        .replace("#include <project_vertex>", `#include <project_vertex>\nvCrowdView = -mvPosition.xyz;`);
+      shader.fragmentShader = shader.fragmentShader
+        .replace("void main() {", "uniform vec2 uNearFade;\nvarying vec3 vCrowdView;\nvoid main() {")
+        .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
+          if (uNearFade.y > 0.0) {
+            float crowdFade = smoothstep(uNearFade.x, uNearFade.y, length(vCrowdView));
+            float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+            if (ign >= crowdFade) discard;
+          }`);
+    };
+    normalTwin.customProgramCacheKey = () => "crowd-near-fade-normal";
+    for (const part of parts) part.mesh.userData.gteki_gtao_twin = normalTwin;
+  }
+
   const pos = new THREE.Vector3(), dir = new THREE.Vector3(), side = new THREE.Vector3();
   let along = 0; // horizontal distance from the edge start at the last sample()
   const q = new THREE.Quaternion(), base = new THREE.Matrix4();
@@ -1098,6 +1127,7 @@ export function buildCrowd(
       owned.forEach((g) => g.dispose());
       Object.values(M).forEach((m) => m.dispose());
       parts.forEach((p) => p.mesh.dispose());
+      normalTwin?.dispose();
       lowMesh?.dispose();
     },
   };
