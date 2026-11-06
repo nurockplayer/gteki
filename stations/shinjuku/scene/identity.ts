@@ -113,13 +113,13 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
   };
   // Explorer arrives at spawnNodeIds[0], using spawnHeadings (not the lane app's
   // stationSpawn, which backs away from a gate and faces the opposite direction).
-  // Original wayfinding placement, four metres ahead and 0.5 metres left; never a route node.
+  // Original wayfinding placement, four metres ahead and 0.1 metres left; never a route node.
   const spawn = nodes.get(bundle.spawnNodeIds?.[0] ?? "");
   if (spawn) {
     const heading = (bundle.spawnHeadings?.[spawn.id] ?? 0) * Math.PI / 180;
     const forward = { x: Math.sin(heading), y: Math.cos(heading) };
     add("identity:spawn", spawn.id,
-      { x: spawn.position.x + forward.x * 4 - forward.y * 0.5, y: spawn.position.y + forward.y * 4 + forward.x * 0.5, z: layout.nodeZ.get(spawn.id)! },
+      { x: spawn.position.x + forward.x * 4 - forward.y * 0.1, y: spawn.position.y + forward.y * 4 + forward.x * 0.1, z: layout.nodeZ.get(spawn.id)! },
       { x: -forward.x, y: -forward.y }, "GTEki placement at the Explorer spawn; not surveyed, not a replica of an on-site sign");
   }
   for (const poi of bundle.pois.filter((p) => p.category === "ticket_gate")) {
