@@ -6,8 +6,8 @@ import { createCharacterBatch } from "./characters/batch.ts";
 
 /** Upper bound on ambient route agents; visible ones receive a rig lazily. */
 export const CROWD_LIMIT = 80;
-/** Commuters stop this far before a ticket gate to tap through. */
-const GATE_STOP_M = 0.5;
+/** Commuters stop this far before a ticket gate to tap through, clear of the node taper. */
+const GATE_STOP_M = 1.2;
 /** How long one commuter stands at a ticket gate. */
 const GATE_HOLD_S = 2.5;
 export interface CrowdOptions {
@@ -103,8 +103,10 @@ export function createCrowd(
       points.set(n.id, { x: n.position.x, y: n.position.y, z });
     }
   }
-  // Commuters tap through ticket gates one at a time: per gate node, the
-  // clock time at which the next commuter may start, in either direction.
+  // Commuters tap through ticket gates one at a time: per gate node, the clock
+  // time at which the next commuter may start. In this station a `gate` edge
+  // joins a pair of ticket_gate nodes, so opposing directions queue on
+  // different nodes of the pair and never hold each other across the gate.
   const gateNodes = new Set<string>();
   for (const n of bundle.nodes) if (n.kind === "ticket_gate") gateNodes.add(n.id);
   const gateFreeAt = new Map<string, number>();
@@ -154,7 +156,7 @@ export function createCrowd(
           segment = { a, b, dx, dy, dz, length, horizontal,
             nx: horizontal > 0 ? -dy / horizontal : 0, ny: horizontal > 0 ? dx / horizontal : 0,
             mode, width: mode === "stairs" || mode === "escalator" ? 0.25 : 0.6,
-            gate: gateNodes.has(toId) ? toId : undefined };
+            gate: gateNodes.has(toId) && mode !== "gate" ? toId : undefined };
           segmentsByEdge.set(key, segment);
         }
         segments.push(segment);

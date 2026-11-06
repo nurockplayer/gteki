@@ -63,6 +63,27 @@ function gateFixture() {
   ];
   return { bundle, nodeZ: () => 0 };
 }
+/** Exit → ticket_gate → (gate edge) → ticket_gate → platform, as Shinjuku's graph pairs them. */
+function gatePairFixture() {
+  const bundle = createSyntheticBundle([
+    syntheticEdge("p1-g1", "p1", "g1", { lengthM: 4 }),
+    syntheticEdge("g1-g2", "g1", "g2", { mode: "gate", lengthM: 6 }),
+    syntheticEdge("g2-p2", "g2", "p2", { lengthM: 4 }),
+  ]);
+  const node = bundle.nodes[0]!;
+  bundle.nodes = [
+    { ...node, id: "p1", position: { x: 6, y: 12, z: -999 } },
+    { ...node, id: "g1", position: { x: 10, y: 12, z: -999 }, kind: "ticket_gate" },
+    { ...node, id: "g2", position: { x: 16, y: 12, z: -999 }, kind: "ticket_gate" },
+    { ...node, id: "p2", position: { x: 20, y: 12, z: -999 } },
+  ];
+  const poi = bundle.pois[0]!;
+  bundle.pois = [
+    { ...poi, id: "exit-p1", category: "exit", connectorNodeIds: ["p1"] },
+    { ...poi, id: "platform-p2", category: "platform", connectorNodeIds: ["p2"] },
+  ];
+  return { bundle, nodeZ: () => 0 };
+}
 /** Standstills in an avatar's sampled positions, with the frame ranges (inclusive) they cover. */
 function stillRuns(track: Array<{ x: number; y: number }>): Array<{ start: number; end: number; x: number; y: number }> {
   const runs: Array<{ start: number; end: number; x: number; y: number }> = [];
@@ -226,7 +247,7 @@ describe("decorative crowd", () => {
     const start = { x: -10, y: 12, z: 0 };
     const { crowd } = crowdFor(gateFixture(), 2, 4711, start);
     const dt = 1 / 30;
-    const gate = { x: 14, y: 12 }, stop = { x: 13.5, y: 12 };
+    const gate = { x: 14, y: 12 }, stop = { x: 12.8, y: 12 };
     const tracks: Array<Array<{ x: number; y: number }>> = [[], []];
     for (let frame = 0; frame < 1500; frame++) {
       crowd.update(dt, start);
@@ -253,6 +274,10 @@ describe("decorative crowd", () => {
       return Infinity;
     })();
     expect((passedAt - queued.start) * dt).toBeGreaterThanOrEqual(2.5);
+    // Once the first has gone, the second's own stand is again one gate hold.
+    const secondHold = runs[second]!.find(atStop)!;
+    expect((secondHold.end - secondHold.start + 1) * dt).toBeGreaterThan(2.3);
+    expect((secondHold.end - secondHold.start + 1) * dt).toBeLessThan(2.7);
     // The queue never overlaps: both stay ≥ 0.5 m apart while the first stands.
     for (let frame = firstHold.start; frame <= firstHold.end; frame++) {
       expect(dist(tracks[0]![frame]!, tracks[1]![frame]!)).toBeGreaterThanOrEqual(0.49);
@@ -265,7 +290,7 @@ describe("decorative crowd", () => {
     const start = { x: -10, y: 12, z: 0 };
     const { crowd } = crowdFor(gateFixture(), 1, 99, start);
     const dt = 1 / 30;
-    const stop = { x: 13.5, y: 12 };
+    const stop = { x: 12.8, y: 12 };
     const track: Array<{ x: number; y: number }> = [];
     for (let frame = 0; frame < 900; frame++) {
       crowd.update(dt, start);
@@ -286,6 +311,41 @@ describe("decorative crowd", () => {
       }
     }
     expect(gateStands).toBeGreaterThan(0);
+  });
+
+  it("holds a commuter once through a gate pair, not at both nodes", () => {
+    const start = { x: -10, y: 12, z: 0 };
+    const { crowd } = crowdFor(gatePairFixture(), 1, 99, start);
+    const dt = 1 / 30;
+    const track: Array<{ x: number; y: number }> = [];
+    for (let frame = 0; frame < 450; frame++) { // 15 s: one route at most
+      crowd.update(dt, start);
+      const object = actors(crowd)[0]!;
+      track.push({ x: object.position.x, y: -object.position.z });
+    }
+    const stands = stillRuns(track).filter((run) => run.end < track.length - 1
+      && (run.end - run.start + 1) * dt >= 0.5);
+    expect(stands).toHaveLength(1);
+    expect((stands[0]!.end - stands[0]!.start + 1) * dt).toBeGreaterThan(2.3);
+    expect((stands[0]!.end - stands[0]!.start + 1) * dt).toBeLessThan(2.7);
+  });
+
+  it("passes opposing commuters through a gate pair without deadlocking", () => {
+    const start = { x: -10, y: 12, z: 0 };
+    const { crowd } = crowdFor(gatePairFixture(), 2, 812, start);
+    const dt = 1 / 30;
+    const tracks: Array<Array<{ x: number; y: number }>> = [[], []];
+    for (let frame = 0; frame < 900; frame++) { // 30 s
+      crowd.update(dt, start);
+      actors(crowd).slice(0, 2).forEach((object, i) => {
+        tracks[i]!.push({ x: object.position.x, y: -object.position.z });
+      });
+    }
+    // Each commuter starts at one end and must reach the other end.
+    for (const track of tracks) {
+      if (track[0]!.x < 10) expect(Math.max(...track.map((p) => p.x))).toBeGreaterThanOrEqual(19.99);
+      else expect(Math.min(...track.map((p) => p.x))).toBeLessThanOrEqual(6.01);
+    }
   });
 
   it("waits agents at real ticket gates and lets them finish into the station", () => {
@@ -312,6 +372,7 @@ describe("decorative crowd", () => {
       }
     }
     let waits = 0, tappedThrough = 0, finishedRoutes = 0;
+    const stuck: Array<{ at: number[]; gate: number[]; seconds: number }> = [];
     for (const track of tracks.values()) {
       let start = -1;
       for (let i = 1; i <= track.length; i++) {
@@ -321,8 +382,11 @@ describe("decorative crowd", () => {
         if (still || start < 0) continue;
         const run = track.slice(start, i);
         start = -1;
+        const seconds = (run.length - 1) * dt;
+        const gate = gates.find((g) => g.distanceTo(run[0]!.p) < 2);
+        if (gate && seconds > 60) stuck.push({ at: run[0]!.p.toArray(), gate: gate.toArray(), seconds });
         if (i === track.length) continue; // still standing when sampling stopped
-        if ((run.length - 1) * dt < 2) continue;
+        if (seconds < 2) continue;
         if (!gates.some((g) => g.distanceTo(run[0]!.p) < 1.5)) continue;
         waits++;
         const after = track.slice(i);
@@ -330,6 +394,7 @@ describe("decorative crowd", () => {
         if (after.some((s) => connectors.some((c) => !gateSet.has(c) && c.distanceTo(s.p) < 0.2))) finishedRoutes++;
       }
     }
+    expect(stuck).toEqual([]);
     expect(waits).toBeGreaterThan(0);
     expect(tappedThrough).toBe(waits);
     expect(finishedRoutes).toBeGreaterThan(0);
