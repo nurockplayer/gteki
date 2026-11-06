@@ -18,7 +18,7 @@ import { currentTimeBand } from "./time-band.ts";
 import { createAmbience } from "./ambience.ts";
 import { createZoneAcoustics, ZONE_ACOUSTICS } from "./zone-acoustics.ts";
 import { createStationSound } from "./station-sound.ts";
-import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
+import { CONTEXT_GLB, CONTEXT_ROAD_COLOR, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import { loadN02Overlay } from "./n02_overlay.ts";
 import crowdLanes from "./crowd_lanes.json";
 import finishManifest from "./finishes.json";
@@ -475,15 +475,18 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   );
   let context: THREE_NS.Object3D | null = null;
   let contextMaterial: THREE_NS.Material | null = null;
+  let contextRoadMaterial: THREE_NS.Material | null = null;
   let disposed = false;
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
   ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     (loaded) => {
-      const material = createContextMaterial(THREE);
-      dressContext(loaded.scene, material);
+      const material = createContextMaterial(THREE, { streetY });
+      const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
+      dressContext(loaded.scene, material, roadMaterial);
       if (disposed) {
         loaded.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
         material.dispose();
+        roadMaterial.dispose();
         return;
       }
       loaded.scene.name = "street-context";
@@ -493,6 +496,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       contextBlockers.fill(loaded.scene);
       context = loaded.scene;
       contextMaterial = material;
+      contextRoadMaterial = roadMaterial;
     },
     () => undefined,
   );
@@ -701,6 +705,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
         setContext(false);
         context.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
         contextMaterial?.dispose();
+        contextRoadMaterial?.dispose();
       }
       crowd.dispose();
       mats.dispose();
