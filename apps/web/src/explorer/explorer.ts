@@ -2527,7 +2527,7 @@ export class Explorer {
     this.updateShadows();
   }
 
-  interactableInfo() { return { specs: this.stationScene?.interactables ?? [] }; }
+  interactableInfo() { return { specs: this.stationScene?.interactables ?? [], visual: this.interactionVisual }; }
 
   get interaction(): InteractionState { return this.interactionController.state; }
 

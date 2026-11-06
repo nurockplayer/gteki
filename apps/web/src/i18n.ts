@@ -7,7 +7,7 @@ export type Lang = "ja" | "en";
 
 const STRINGS = {
   ja: {
-    interactionStart: "のぞく（E）", interactionReceived: "もらいました",
+    interactionStart: "のぞく", interactionReceived: "もらいました",
     interactionSimulated: "模擬店（実在の店舗ではありません）", interactionInterrupted: "中断しました", interactionBag: "持ち物：紙袋",
     greyboxLegend: "示意，非實測",
     minimap: "ミニマップ",
@@ -262,7 +262,7 @@ const STRINGS = {
     language: "English",
   },
   en: {
-    interactionStart: "Look inside (E)", interactionReceived: "Already received",
+    interactionStart: "Look inside", interactionReceived: "Already received",
     interactionSimulated: "Simulated shop (not a real store)", interactionInterrupted: "Interrupted", interactionBag: "Held: paper bag",
     greyboxLegend: "Approximate, not surveyed",
     minimap: "Minimap",

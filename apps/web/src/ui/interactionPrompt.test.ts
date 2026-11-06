@@ -17,3 +17,15 @@ it("shows the simulation, starts from its button, and reports the held item and 
   expect(prompt.el.textContent).toContain("Held: paper bag");
   expect(announce).toHaveBeenCalled();
 });
+
+it("shows the keyboard hint only without a touch pointer", () => {
+  const state = { nearId: "shop", phase: "idle" as const, step: null, unavailable: null, items: [], interrupted: false };
+  const prompt = new InteractionPrompt(() => strings("en"), () => {}, () => {});
+  vi.stubGlobal("matchMedia", (query: string) => ({ matches: query === "(pointer: coarse)" }));
+  prompt.render(state);
+  expect(prompt.button.textContent).toBe("Look inside");
+  vi.stubGlobal("matchMedia", () => ({ matches: false }));
+  prompt.render(state);
+  expect(prompt.button.textContent).toBe("Look inside (E)");
+  vi.unstubAllGlobals();
+});

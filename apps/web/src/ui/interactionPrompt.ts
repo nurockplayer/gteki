@@ -24,7 +24,8 @@ export class InteractionPrompt {
     this.el.hidden = !visible && state.items.length === 0 && !state.interrupted;
     this.button.hidden = !state.nearId || state.phase === "active";
     this.button.disabled = state.unavailable !== null;
-    this.button.textContent = state.unavailable ? t.interactionReceived : t.interactionStart;
+    const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
+    this.button.textContent = state.unavailable ? t.interactionReceived : coarse ? t.interactionStart : `${t.interactionStart} (E)`;
     this.status.textContent = visible ? t.interactionSimulated : state.interrupted ? t.interactionInterrupted : "";
     if (visible && state.interrupted) this.status.textContent += ` · ${t.interactionInterrupted}`;
     this.item.textContent = state.items.includes("paper-bag") ? t.interactionBag : "";

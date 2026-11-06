@@ -45,9 +45,18 @@ for (const avatar of ["human", "cat"] as const) {
       expect((await page.evaluate(() => (window as any).__gteki.interaction())).step).toBe(phase);
       await page.screenshot({ path: info.outputPath(`${avatar}-${phase}.png`) });
       if (phase === "react") {
-        const active = await frameDraws();
-        console.log(`activeDraws=${active}`);
-        expect(active - idle).toBeLessThanOrEqual(1);
+        // Same frame and camera, reaction hidden then shown, so only the reaction's own draws differ.
+        const { off, on } = await page.evaluate(() => {
+          const g = (window as any).__gteki, q = (window as any).__qa, visual = g.interactables().visual;
+          const draws = () => { const a = q.cur; g.simulate(0); return q.cur - a; };
+          visual.visible = false;
+          const off = draws();
+          visual.visible = true;
+          return { off, on: draws() };
+        });
+        console.log(`reactionOff=${off} reactionOn=${on}`);
+        expect(on).toBeGreaterThan(off);
+        expect(on - off).toBeLessThanOrEqual(1);
       }
     }
     await hooks.simulate(page, 1.1);
