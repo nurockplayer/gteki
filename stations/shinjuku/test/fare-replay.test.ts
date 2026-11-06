@@ -106,14 +106,14 @@ describe("actual walker fence replay", () => {
       if (!starts.length) { failures.push({ id, missing: "start" }); continue; }
       combos(end, env, starts, failures);
       try {
-        const mutated = mutateFence(built, scene, end.fence!, "shorten");
+        const mutated = mutateFence(built, scene, end.fence!, "remove");
         try {
-          const mutatedEnd = replayEnds(mutated.built).find(e => e.id === id)!, menv = replayEnvironment(mutated.built, mutated.scene, plan), witnesses: unknown[] = [];
-          combos(mutatedEnd, menv, starts, witnesses);
-          controls.push({ id, witnesses: witnesses.length });
-          if (!witnesses.length) failures.push({ id, control: "null" });
+          const menv = replayEnvironment(mutated.built, mutated.scene, plan), witnesses: unknown[] = [];
+          combos(end, menv, starts, witnesses);
+          controls.push({ id, length: len, witnesses: witnesses.length });
+          if (!witnesses.length) failures.push({ id, length: len, control: "null" });
         } finally { mutated.dispose(); }
-      } catch (error) { failures.push({ id, control: String(error) }); }
+      } catch (error) { failures.push({ id, length: len, control: String(error) }); }
     }
     if (process.env.FARE_LIFT_REPLAY_REPORT) writeFileSync(process.env.FARE_LIFT_REPLAY_REPORT, JSON.stringify({ failures, controls }, null, 2));
     expect(failures, JSON.stringify({ failures, controls })).toEqual([]);
