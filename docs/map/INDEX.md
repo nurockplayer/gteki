@@ -7,7 +7,7 @@ updated: 2026-11-03 JST
 
 Read this first, then open the note for your area, then open exactly the files and line ranges it names. Don't scan the repo.
 
-- Symbols: `docs/map/symbols.tsv` lists every exported function, class, type, interface, enum and const, plus every package.json script, as `symbol, kind, path, line`. Look a name up with grep, e.g. `grep -P '^createRouter\t' docs/map/symbols.tsv`. Regenerate it with `pnpm map:gen`. CI (root-test, `tools/map/map.test.ts`) fails when it's stale, and also when a backtick path or a double-bracket wikilink in `docs/map/` doesn't exist.
+- Symbols: `docs/map/symbols.tsv` lists every exported function, class, type, interface, enum and const, plus every package.json script, as `symbol, kind, path`, with no line numbers, so moving code does not make it stale. Look a name up with grep, e.g. `grep -P '^createRouter\t' docs/map/symbols.tsv`. Regenerate it with `pnpm map:gen`. CI (root-test, `tools/map/map.test.ts`) fails when it's stale, and also when a backtick path or a double-bracket wikilink in `docs/map/` doesn't exist.
 - Rule: a PR that moves files or changes the architecture updates the map in the same PR: the note, this index, and `pnpm map:gen`.
 - Obsidian: open `docs/map/` as a vault. Its .obsidian folder is git-ignored.
 
