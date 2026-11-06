@@ -1720,10 +1720,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路西改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage West Gate"
     }
    ],
    "aliases": [
@@ -1790,6 +1786,10 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage West Gate"
     }
    ],
    "floorId": "b1",
@@ -1812,10 +1812,6 @@
     {
      "lang": "ja",
      "text": "有楽町線 南通路西改札"
-    },
-    {
-     "lang": "en",
-     "text": "Yurakucho Line South Passage West Gate"
     }
    ],
    "aliases": [
@@ -1890,6 +1886,10 @@
     {
      "lang": "en",
      "text": "Y09"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line South Passage West Gate"
     }
    ],
    "floorId": "b1",
@@ -1913,10 +1913,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路中央改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage Central Gate"
     }
    ],
    "aliases": [
@@ -1983,6 +1979,10 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage Central Gate"
     }
    ],
    "floorId": "b1",
@@ -2005,10 +2005,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路東改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage East Gate"
     }
    ],
    "aliases": [
@@ -2075,6 +2071,10 @@
     {
      "lang": "en",
      "text": "Marunouchi Line"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage East Gate"
     }
    ],
    "floorId": "b1",
@@ -20025,7 +20025,16 @@
      "text": "コインロッカー"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -20057,7 +20066,16 @@
      "text": "東京メトロッカー＋（Tokyo Metlocker PLUS）"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
+    },
+    {
+     "lang": "en",
+     "text": "Coin locker"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -21388,13 +21406,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -21425,13 +21448,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -21462,13 +21490,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -21499,13 +21532,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -21536,13 +21574,18 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Coin lockers"
     },
     {
      "lang": "en",
-     "text": "Coin lockers (charged)"
+     "text": "Coin locker"
     }
    ],
-   "aliases": [],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
