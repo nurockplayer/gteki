@@ -161,7 +161,7 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
     await hooks.simulate(page, 0.5, []);
     if (v.facing) await face(page, v.facing.from, v.facing.to);
     await hooks.simulate(page, 1.0, []);
-    const camera = await hooks.sceneInfo(page).then((s: any) => ({ position: s.camera, fov: s.fov, aspect: s.aspect, mode: s.mode }));
+    const camera = await hooks.sceneInfo(page).then((s: any) => ({ position: s.camera, direction: s.cameraDirection, fov: s.fov, aspect: s.aspect, mode: s.mode }));
     Object.assign(camera, await page.evaluate(() => {
       const { yaw, pitch, boomActual, boomWanted, raise, avatarFade } = (window as any).__gteki.camera();
       return { yaw, pitch, boomActual, boomWanted, raise, avatarFade };

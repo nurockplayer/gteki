@@ -1,7 +1,7 @@
 // Procedural station ambience (WebAudio only, no recordings, so no licensing questions):
 // an HVAC/concourse bed, a distant crowd murmur and footsteps whose density follows the
-// number of pedestrians near the listener. No chimes or announcements (operator melodies
-// and voices are not ours to imitate).
+// number of pedestrians near the listener. Chimes and announcements now live in
+// station-sound.ts under the #858 ruling (original chime, own sentences, no recordings).
 
 export interface AmbienceInput {
   /** Pedestrians within ~8 m of the listener. */

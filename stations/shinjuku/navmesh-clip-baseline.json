@@ -1,25 +1,7 @@
 {
-  "e:6ac033af77914fe5a9786676088b952c": {
-    "connectorWallHits": 0,
-    "fallbackWallHits": 2,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
-  "e:82c9a2c2cd704a348fbeb423d07cb125": {
-    "connectorWallHits": 0,
-    "fallbackWallHits": 2,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
-  "e:ed7e56a8e6234197be06280fcb24aecc": {
-    "connectorWallHits": 0,
-    "fallbackWallHits": 0,
-    "navmeshWallHits": 0,
-    "offFloor": 0
-  },
   "total": {
     "connectorWallHits": 0,
-    "fallbackWallHits": 4,
+    "fallbackWallHits": 0,
     "navmeshWallHits": 0,
     "offFloor": 0,
     "unvalidatedJoins": 56,

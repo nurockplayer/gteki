@@ -10,12 +10,15 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { OEDO_MAGENTA, STREET_UNDERSIDE, buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { kitSwapRequested, prepareKitSwap, type KitSwap } from "../scene/kit/index.ts";
+import { currentTimeBand } from "../../ikebukuro/scene/time-band.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
 import { clearLayoutCache } from "../scene/build-cache.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
+import { createAmbience } from "../../ikebukuro/scene/ambience.ts";
+import { createStationSound, type V3 } from "../../ikebukuro/scene/station-sound.ts";
 import shopKitManifest from "../scene/shop_kit.json" with { type: "json" };
 import shopBays from "../scene/shop_bays.json" with { type: "json" };
 import shopPlacements from "../scene/shop_placements.json" with { type: "json" };
@@ -71,14 +74,16 @@ function viewerTracker(setViewer: ((pos: { x: number; y: number; z: number }) =>
 /** update/dispose of the returned scene. They live out here, not inside buildScene, on purpose: a closure
  * keeps its entire defining scope alive, and buildScene's scope holds the layout, the built station and
  * every intermediate array (#72: ~9 MB retained for the life of the scene). Pass only what they use. */
-function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt: () => void, refreshViewer: () => void, meshes: THREE.Object3D[], owned: { dispose(): void }[], envTarget: THREE.WebGLRenderTarget | null) {
+function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt: () => void, refreshViewer: () => void, meshes: THREE.Object3D[], owned: { dispose(): void }[], envTarget: THREE.WebGLRenderTarget | null, stepAudio: ((dt: number, camera?: THREE.Camera) => void) | null, disposeAudio: (() => void) | null) {
   return {
-    update: (dt: number, t: number) => {
+    update: (dt: number, t: number, camera?: THREE.Camera) => {
       refreshViewer();
       stepBuilt(dt, t);
+      stepAudio?.(dt, camera);
     },
     dispose() {
       disposeBuilt();
+      disposeAudio?.();
       for (const m of meshes) (m as THREE.Mesh).geometry.dispose();
       for (const o of owned) o.dispose();
       envTarget?.dispose(); // render target owns the texture plus its framebuffer/depth
@@ -136,7 +141,10 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
 export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit): StationScene => {
   const T = ctx.THREE;
   const sceneBundle = planBundle(ctx.bundle);
-  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(kit ? { kit } : {}) });
+  // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
+  // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
+  const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
@@ -344,6 +352,38 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     }
   }
 
+  // Explorer ambience and station sound (#859): an original bed plus gate taps, an original approach
+  // chime and our own ja-JP announcements. Sites come from the bundle's graph nodes, converted to renderer space.
+  const ambience = ctx.audio ? createAmbience(ctx.audio.context, ctx.audio.destination) : null;
+  const graphNodes = ctx.bundle.nodes;
+  const siteAt = (n: (typeof graphNodes)[number]): V3 => {
+    const [x, y, z] = ctx.enuToRenderer({ x: n.position.x, y: n.position.y, z: n.position.z ?? n.renderZ ?? 0 });
+    return { x, y, z };
+  };
+  const stationSound = ctx.audio ? createStationSound({
+    context: ctx.audio.context,
+    destination: ctx.audio.destination,
+    isMuted: ctx.audio.isMuted,
+    stationNameJa: "新宿",
+    sites: {
+      gates: graphNodes.filter((n) => n.kind === "ticket_gate").map(siteAt),
+      announce: graphNodes.filter((n) => n.kind === "ticket_gate" || n.kind === "escalator_end").map(siteAt),
+      chime: graphNodes.filter((n) => n.kind === "platform").map(siteAt),
+    },
+  }) : null;
+  const stepAudio = (ambience || stationSound)
+    ? (dt: number, camera?: THREE.Camera) => {
+      ambience?.update({ nearby: 6, openness: 0.8 });
+      stationSound?.update(dt, camera);
+    }
+    : null;
+  const disposeAudio = (ambience || stationSound)
+    ? () => {
+      stationSound?.dispose();
+      ambience?.dispose();
+    }
+    : null;
+
   const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
     const n = nodes.get(id);
@@ -362,7 +402,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
-    ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat, ...(shopKit ? [shopKit] : [])], envTarget),
+    ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat, ...(shopKit ? [shopKit] : [])], envTarget, stepAudio, disposeAudio),
   };
   return scene;
 };
