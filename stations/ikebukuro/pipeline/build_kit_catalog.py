@@ -36,8 +36,8 @@ true when a polyline of one of Lane F's golden guided routes (tests/e2e/specs/__
 ikebukuro-routes.json, built from the edges' `geometry` in gteki/graph.json) passes within 1.0 m horizontally of the
 flight's centre line, between its bottom and top, at a height within the flight's z range +- 0.3 m (a route
 whose stairs edge matches no flight, because the graph edge is a coarse straight segment, falls back to flights within
-4 m of that edge, recorded as `fallback_radius_m` in the summary). Nosings draw on
-low and high, escalators on high only (low waits for phone measurement), rails on high only and only on main-route
+4 m of that edge, recorded as `fallback_radius_m` in the summary). Nosings and escalators draw on
+low and high (#703 dressed the escalators on the phone tier), rails on high only and only on main-route
 flights.
 
 Frame of a placement: ENU metres. The piece's local +Y (travel, up the flight) maps to `dir`, local +X (width)
@@ -95,8 +95,10 @@ ROUTE_Z_PAD_M = 0.3
 ROUTE_SAMPLE_M = 0.25
 # Lane E triangle counts (#143): mobile profile, escalators 20.3k over the 5 ids and nosings 7.2k over the 61 ids;
 # full profile, all 61 rails ids at rail_segments 6 153k. Per-id estimates scale these evenly.
-TRIS_ESCALATORS_MOBILE = 20300
-TRIS_NOSING_MOBILE = 7200
+# #703's rebuilt phone kit measures 20 328 escalator triangles (5 GLBs) and 8 610 nosing triangles over the 69 low
+# placements (61 ids), both from the committed mobile GLBs (2026-11-07 JST).
+TRIS_ESCALATORS_MOBILE = 20328
+TRIS_NOSING_MOBILE = 8610
 TRIS_RAILS_FULL_ALL = 153000
 ROUTES_REL = os.path.join("tests", "e2e", "specs", "__goldens__", "02-navigation.spec.ts", "ikebukuro-routes.json")
 RAIL_PROBE_M = 0.9            # height above the tread at which the wall probe is taken
@@ -347,15 +349,15 @@ def tier_summary(placements, entries, route_flights, polylines, route_fallback):
         "routes": {rid: {"stairs_edge": bool(polylines[rid][1]), "flights": route_flights[rid],
                                   "fallback_radius_m": ROUTE_FALLBACK_M if rid in route_fallback else None} for rid in sorted(route_flights)},
         "tiers": {
-            "low": {"nosing_ids": n_nosing, "rails_ids": 0, "escalator_ids": 0},
+            "low": {"nosing_ids": n_nosing, "rails_ids": 0, "escalator_ids": n_esc},
             "high": {"nosing_ids": n_nosing, "rails_ids": len(rails_main), "escalator_ids": n_esc,
                      "rails_placements_dropped_vs_all": sum(1 for p in stairs if not p["main_route"])},
         },
         "triangle_estimate": {
-            "basis": "Lane E (#143): mobile 20.3k escalators over 5 ids and 7.2k nosings over 61 ids; full 153k for all 61 "
-                     "rails ids at rail_segments 6; per-id scaling is even, so rails are rough (they grow with step_count). "
-                     "Unique GLB triangles, not instanced draw totals.",
-            "low": {"nosing_mobile": nosing, "total": nosing},
+            "basis": "Lane E (#143): mobile 20.3k escalators over 5 ids and 8.6k nosings over the 69 low placements (61 "
+                     "ids, #703 measured); full 153k for all 61 rails ids at rail_segments 6; per-id scaling is even, so "
+                     "rails are rough (they grow with step_count). Unique GLB triangles, not instanced draw totals.",
+            "low": {"nosing_mobile": nosing, "escalators_mobile": esc, "total": nosing + esc},
             "high": {"nosing_mobile": nosing, "escalators_mobile": esc, "rails_full": rails,
                      "rails_full_if_all_61": TRIS_RAILS_FULL_ALL},
         },
@@ -509,7 +511,7 @@ def main(argv=None):
                 "anchor": lane["id"], "kind": "escalator", "scope": lane["scope"], "bank": lane["bank"],
                 "ids": {"dressing": eid},
                 "origin": origin, "dir": lower["dir"], "yaw_deg": yaw_deg(lower["dir"]), "mirror": False,
-                "tiers": {"dressing": ["high"]},
+                "tiers": {"dressing": ["low", "high"]},
                 "incline_deg": angle, "quantisation_mm": err,
             })
 
