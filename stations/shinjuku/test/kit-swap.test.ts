@@ -60,12 +60,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #870 (2026-11-06 JST): platform door panels and caps split around the openings aligned to the train doors.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "f52a9f187111d42447918c27b95ae62251a2fdfe208b06bf8e5d560788213f7c",
+    "geometryDigest": "5c92c5497e9116ba001ddc97489c8ac395521a55ad3dd5f74b64dbfba4edd1fc",
     "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
     "nodesDigest": "7436504abd6375cba37b36a6564503fcc5b31d954a4cdd17c11c3e37b1d53c55",
     "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
     "meshes": 125,
-    "bytes": 16203740
+    "bytes": 16219980
   },
   "lists": {
     "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",
