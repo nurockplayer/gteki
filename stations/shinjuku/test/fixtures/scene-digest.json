@@ -694,8 +694,8 @@
      "hash": "60ad14216c7f63fe71584ac043b85928e62f7afe8451e552513385298fa67d43"
     },
     "[\"MeshStandardMaterial\",\"mat.tactile\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
-     "triangles": 214,
-     "hash": "09157c1e6dfa9d109843fb5b1e21a47cc86098f6531e12f8053e2b4d94e2c864"
+     "triangles": 446,
+     "hash": "7efb51c19bab6ad37e0a3593927f3cca1eb1f1b193d51933376fdcf5d586143d"
     },
     "[\"MeshStandardMaterial\",\"mat.trackBed\",\"2a2826\",\"000000\",1,1,false,0,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 12504,
@@ -1877,8 +1877,8 @@
      "hash": "60ad14216c7f63fe71584ac043b85928e62f7afe8451e552513385298fa67d43"
     },
     "[\"MeshStandardMaterial\",\"mat.tactile\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
-     "triangles": 214,
-     "hash": "09157c1e6dfa9d109843fb5b1e21a47cc86098f6531e12f8053e2b4d94e2c864"
+     "triangles": 446,
+     "hash": "7efb51c19bab6ad37e0a3593927f3cca1eb1f1b193d51933376fdcf5d586143d"
     },
     "[\"MeshStandardMaterial\",\"mat.trackBed\",\"2a2826\",\"000000\",1,1,false,0,true,0.95,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 12504,

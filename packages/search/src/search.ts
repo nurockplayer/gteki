@@ -282,7 +282,7 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
       const normalized = searchKey(query);
       if (!normalized) return [];
       const latinQuery = query.normalize("NFKC").toLowerCase().trim();
-      const tokens = /^[a-z0-9]+(?:[\s\p{P}]+[a-z0-9]+)+[\s\p{P}]*$/u.test(latinQuery)
+      const tokens = /^[\s\p{P}]*[a-z0-9]+(?:[\s\p{P}]+[a-z0-9]+)+[\s\p{P}]*$/u.test(latinQuery)
         ? latinQuery.split(/[\s\p{P}]+/u).filter(Boolean) : [];
       const forms = [makeForm(normalized, tokens, 0)];
       // A query that is only the station name stays as typed; "池袋東口" also searches "東口".

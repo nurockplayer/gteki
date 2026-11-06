@@ -40,6 +40,7 @@ Format: fact, then [source_id], then date and an "outdated" flag where the item 
 | --- | --- | --- | --- |
 | Platform wall | Grey; curved, tall narrow panels; thick wall zone near platform ends (shield tunnel) | [DR-VF-04] hobby page, photo 2021-05, page updated 2026-02-03 | Secondary; photo older than the 2025-09 snapshot, may be outdated |
 | Platform floor | Not stated | none | gap |
+| Platform warning line and door floor markings | Generic simplified design in the scene; not measured at E27 | none | gap |
 | Platform ceiling | Not stated | none | gap |
 | Lighting type and colour temperature | Not stated anywhere read | none | gap |
 | Column cladding | Not stated | none | gap |

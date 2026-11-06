@@ -982,6 +982,9 @@ export class Explorer {
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
     this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
+    // The composer is built after the station scene is attached, so the cat's depth twins are registered here
+    // on the first load; later loads register them in the scene step.
+    if (this.catAvatar) this.composer.setDepthTwins(this.stationScene?.root ?? null);
     this.composer.setBloomThreshold(this.bloomThreshold);
     this.applyOverlayTone();
   }
@@ -1020,6 +1023,7 @@ export class Explorer {
     this.camDistance = FOLLOW.defaultDistance;
     this.pitch = -0.12;
     this.stationScene?.setCameraNearFade?.(0, 0);
+    this.composer?.setDepthTwins(null);
     this.buildAvatarMarker();
   }
 
@@ -1125,7 +1129,11 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
-    if (this.catAvatar) built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
+    if (this.catAvatar) {
+      built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
+      // The crowd's distance fade must reach GTAO's depth/normal buffers too (high tier only).
+      this.composer?.setDepthTwins(built?.root ?? null);
+    }
     this.interactionController = new InteractionController(built?.interactables ?? []);
     this.interactionSnapshot = "";
     this.interactionVisuals = new Map();
@@ -1645,7 +1653,7 @@ export class Explorer {
     const { w, h } = this.viewSize;
     const free = this.freeRect();
     const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
-    // The cat's low boom can't reach most look-up poses (the floor squeezes it), so only its framing checks the walker.
+    // The cat's low boom meets the floor on a look-up, so only its framing checks the walker and the settled boom.
     let rig: FramingRig | undefined;
     if (this.catAvatar) {
       const feet = this.pos.clone(), top = feet.clone().add(new THREE.Vector3(0, CAT_AVATAR_HEIGHT_M, 0));
@@ -1654,13 +1662,18 @@ export class Explorer {
         shoulder: catShoulder(this.camera.aspect), lift: FOLLOW_CAT.lift, drop: FOLLOW_CAT.drop, distance: FOLLOW_CAT.distance,
         body: [feet, top],
         clear: (cameraPos, pivot) => {
-          const boom = cameraPos.clone().sub(pivot);
-          this.ray.set(pivot, boom.clone().normalize());
-          this.ray.near = 0;
-          this.ray.far = boom.length() + FOLLOW.clearance;
-          if (castCamera(this.ray, this.cameraTargets, this.cameraSides).length) return false;
-          const direction = feet.clone().lerp(top, 0.5).sub(cameraPos);
-          this.ray.set(cameraPos, direction.clone().normalize());
+          // The live rig raises its boom over the floor, so judge the pose it would really settle on.
+          const cast = (back: THREE.Vector3) => {
+            this.ray.set(pivot, back);
+            this.ray.near = 0;
+            this.ray.far = FOLLOW_CAT.distance + FOLLOW.clearance;
+            return castCamera(this.ray, this.cameraTargets, this.cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+          };
+          const solved = solveRaisedBoom(FOLLOW_CAT.distance, cameraPos.clone().sub(pivot).normalize(), cast, 0, 0, true);
+          if (solved.distance < FOLLOW.comfortDistance) return false;
+          const settled = pivot.clone().addScaledVector(solved.back, solved.distance);
+          const direction = feet.clone().lerp(top, 0.5).sub(settled);
+          this.ray.set(settled, direction.clone().normalize());
           this.ray.near = 0;
           this.ray.far = Math.max(0, direction.length() - 0.05);
           return castAll(this.ray, walkerTargets).length === 0;
