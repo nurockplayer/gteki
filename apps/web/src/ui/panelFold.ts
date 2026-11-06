@@ -4,7 +4,8 @@ export class PanelFold {
     entry.setAttribute("aria-controls", panel.id);
     entry.addEventListener("click", () => this.open(true));
     panel.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
+      // An open suggestion list or an IME composition takes this Escape; the next one folds the panel (#903).
+      if (e.key === "Escape" && !e.defaultPrevented && !e.isComposing && e.keyCode !== 229) {
         e.preventDefault();
         e.stopPropagation();
         this.fold(false, true);
