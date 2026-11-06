@@ -3,10 +3,10 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 const root = process.cwd();
 const { chromium } = createRequire(path.join(root, 'stations/shinjuku/package.json'))('playwright-core');
-const server = spawn('pnpm', ['--filter', '@gteki/web', 'dev', '--port', '5199', '--strictPort', '--host', '127.0.0.1'], { stdio: 'inherit' });
+const server = spawn('pnpm', ['--filter', '@gteki/web', 'dev', '--port', '5298', '--strictPort', '--host', '127.0.0.1'], { stdio: 'inherit', detached: true });
 let browser;
 try {
-  const url = 'http://127.0.0.1:5199/qa/station-858.html';
+  const url = 'http://127.0.0.1:5298/qa/station-858.html';
   for (let i = 0; i < 120; i++) { try { if ((await fetch(url)).ok) break; } catch {} await new Promise(r => setTimeout(r, 500)); }
   browser = await chromium.launch({headless:true, executablePath:'/Applications/Brave Browser.app/Contents/MacOS/Brave Browser', args:['--enable-gpu','--ignore-gpu-blocklist','--use-angle=metal','--enable-unsafe-webgpu']});
   for (const base of [1, 0]) for (const quality of ['low','high']) {
@@ -18,4 +18,4 @@ try {
     if (!base && quality === 'high') await page.screenshot({path:'.qa/858/platform.png'});
     await page.close();
   }
-} finally { if (browser) await browser.close(); server.kill(); }
+} finally { if (browser) await browser.close(); process.kill(-server.pid, 'SIGTERM'); }
