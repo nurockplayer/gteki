@@ -658,8 +658,8 @@ buildEscalator	function	packages/godot/src/fixtures/connector-reference.ts	147
 ConnectorScope	interface	packages/godot/src/fixtures/connector-reference.ts	239
 skippedConnectorPath	function	packages/godot/src/fixtures/connector-reference.ts	300
 buildElevator	function	packages/godot/src/fixtures/connector-reference.ts	508
-buildConnectors	function	packages/godot/src/fixtures/connector-reference.ts	669
-withinGreyboxBudget	function	packages/godot/src/fixtures/connector-reference.ts	1080
+buildConnectors	function	packages/godot/src/fixtures/connector-reference.ts	690
+withinGreyboxBudget	function	packages/godot/src/fixtures/connector-reference.ts	1103
 greyboxStats	function	packages/godot/src/greybox-stats.ts	21
 ShimUsage	interface	packages/godot/src/headless-dom.ts	13
 newShimUsage	function	packages/godot/src/headless-dom.ts	24
