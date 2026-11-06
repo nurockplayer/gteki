@@ -1194,7 +1194,7 @@ Avatar	interface	stations/shinjuku/app/src/avatar.ts	5
 createAvatar	function	stations/shinjuku/app/src/avatar.ts	30
 CatAvatarLoader	interface	stations/shinjuku/app/src/catAvatar.ts	9
 CatAvatarOptions	interface	stations/shinjuku/app/src/catAvatar.ts	22
-createCatAvatar	function	stations/shinjuku/app/src/catAvatar.ts	28
+createCatAvatar	function	stations/shinjuku/app/src/catAvatar.ts	30
 CharacterBatch	interface	stations/shinjuku/app/src/characters/batch.ts	4
 createCharacterBatch	function	stations/shinjuku/app/src/characters/batch.ts	34
 FootPose	interface	stations/shinjuku/app/src/characters/gait.ts	2
