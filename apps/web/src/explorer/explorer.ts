@@ -34,7 +34,7 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -44,7 +44,8 @@ import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
-import { avatarMotion } from "./avatarMotion.ts";
+import { avatarMotion, stepCatBodyPitch } from "./avatarMotion.ts";
+import { catTapHit } from "./catMeow.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
@@ -312,6 +313,7 @@ export class Explorer {
   private avatarMarker: [THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>, THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>] | null = null;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
+  private catBodyPitch = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
   /** Core hemisphere + sun; hidden when a scene declares `environment.lighting: "scene"`. */
   private readonly coreLights: THREE.Light[] = [];
@@ -358,6 +360,9 @@ export class Explorer {
    */
   private stationAudio: GainNode | null = null;
   private audioUnlock: (() => void) | null = null;
+  private catMeowSound: ((context: AudioContext, destination: AudioNode) => void) | null = null;
+  /** The synth for the cat's meow; plays through the master bus, so mute applies. */
+  setCatMeowSound(play: ((context: AudioContext, destination: AudioNode) => void) | null): void { this.catMeowSound = play; }
   private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
@@ -1008,9 +1013,11 @@ export class Explorer {
   }
 
   private fallBackToHumanAvatar(): void {
+    this.catBodyPitch = 0;
     this.catAvatar = false;
     this.camDistance = FOLLOW.defaultDistance;
     this.pitch = -0.12;
+    this.stationScene?.setCameraNearFade?.(0, 0);
     this.buildAvatarMarker();
   }
 
@@ -1116,6 +1123,7 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
+    if (this.catAvatar) built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
     this.interactionController = new InteractionController(built?.interactables ?? []);
     this.interactionSnapshot = "";
     this.interactionVisual = undefined;
@@ -2572,10 +2580,15 @@ export class Explorer {
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
+    this.stepCatTap();
     if (this.catAvatar) this.avatarRig?.setLookPitch?.(this.mode === "overview" ? 0 : this.pitch);
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
+    if (this.catAvatar && this.avatarRig) {
+      this.catBodyPitch = stepCatBodyPitch(this.catBodyPitch, this.slope.velocity, this.mode === "overview" ? 0 : motion.speed, dt);
+      this.avatarRig.root.rotation.x = this.catBodyPitch;
+    }
     const state = this.interactionController.state;
     if (state.phase === "active") {
       const target = this.interactionVisual;
@@ -2588,7 +2601,28 @@ export class Explorer {
 
   get interaction(): InteractionState { return this.interactionController.state; }
 
-  interact(): void { this.publishInteraction(this.interactionController.start()); }
+  interact(): void {
+    const state = this.interactionController.start();
+    this.publishInteraction(state);
+    // Near a usable interactable the interaction wins; anywhere else E meows.
+    if (this.catAvatar && state.phase !== "active") this.meow();
+  }
+
+  /** Start the cat's meow overlay, with its synth when the station audio work has supplied one. */
+  private meow(): void {
+    if (!this.avatarRig?.meow?.()) return;
+    if (this.catMeowSound && this.ensureAudio()) this.catMeowSound(this.audio!.context, this.audio!.master);
+  }
+
+  /** A still tap on the projected cat starts the meow; drags, stick pushes and other modes never do. */
+  private stepCatTap(): void {
+    const tap = this.input.consumeTap();
+    if (!tap || !this.catAvatar || this.mode !== "walk") return;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const at = this.pos.clone().add(new THREE.Vector3(0, 0.15, 0)).project(this.camera);
+    const cat = { x: rect.left + ((at.x + 1) * rect.width) / 2, y: rect.top + ((1 - at.y) * rect.height) / 2, behind: at.z > 1 };
+    if (catTapHit(tap, cat)) this.meow();
+  }
 
   private publishInteraction(state: InteractionState): void {
     const snapshot = JSON.stringify(state);

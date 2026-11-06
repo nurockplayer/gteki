@@ -619,6 +619,7 @@ export function buildCrowd(
   // the fresnel term alone would turn a navy coat mid-grey.
   const mat = (rough: number, envMapIntensity: number, specularIntensity: number) =>
     new THREE.MeshPhysicalMaterial({ roughness: rough, metalness: 0, envMap, envMapIntensity, specularIntensity, vertexColors: true });
+  const nearFade = { value: new THREE.Vector2(0, 0) };
   const M = { cloth: mat(0.95, 0.7, 0.22), skin: mat(0.6, 0.7, 0.5), hair: mat(0.6, 0.7, 0.45), shoe: mat(0.5, 0.7, 0.6), bag: mat(0.85, 0.7, 0.3) };
 
   // Appearance has its own random stream: the walking stream (`rand`) is consumed exactly as before, so
@@ -829,6 +830,23 @@ export function buildCrowd(
     lowMesh.userData.gteki_role = "ambient_crowd";
     lowMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     group.add(lowMesh);
+  }
+
+  for (const material of Object.values(M)) {
+    const previous = material.onBeforeCompile;
+    material.onBeforeCompile = (shader, renderer) => {
+      previous.call(material, shader, renderer);
+      shader.uniforms.uNearFade = nearFade;
+      shader.fragmentShader = shader.fragmentShader
+        .replace("void main() {", "uniform vec2 uNearFade;\nvoid main() {")
+        .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
+          if (uNearFade.y > 0.0) {
+            float crowdFade = smoothstep(uNearFade.x, uNearFade.y, length(vViewPosition));
+            float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+            if (ign >= crowdFade) discard;
+          }`);
+    };
+    material.customProgramCacheKey = () => low && material === M.cloth ? "crowd-near-fade-low" : "crowd-near-fade";
   }
 
   const pos = new THREE.Vector3(), dir = new THREE.Vector3(), side = new THREE.Vector3();
@@ -1063,6 +1081,7 @@ export function buildCrowd(
 
   function update(dt: number, _elapsed: number) {
     let near = 0, moves = 0;
+    const hideRadius = Math.max(NEAR_CAM_M, nearFade.value.x);
     clock += dt;
     collectGateLines();
     queued = 0;
@@ -1202,7 +1221,7 @@ export function buildCrowd(
         else shown = false;
       }
       pos.y = floorY;
-      if (!shown || dx * dx + dz * dz + dy * dy < NEAR_CAM_M * NEAR_CAM_M) {
+      if (!shown || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
         hide(i);
         continue;
       }
@@ -1222,6 +1241,7 @@ export function buildCrowd(
   return {
     group,
     update,
+    setCameraNearFade(startM: number, endM: number) { nearFade.value.set(startM, endM); },
     /** Pedestrians within 8 m of the last rendered camera (for ambience). */
     nearby: () => nearby,
     /** People currently standing in gate lines (for tests and QA). */

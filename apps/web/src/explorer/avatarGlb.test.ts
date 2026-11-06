@@ -230,12 +230,57 @@ describe("cat avatar", () => {
     const cat = catAvatarFixture();
     const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => cat }, cat: true });
     rig.setLookPitch!(0.5);
+    expect(rig.meow!()).toBe(true);
     expect(() => rig.update(0.1, 0)).not.toThrow();
     rig.dispose();
     const human = catAvatarFixture();
     const humanRig = await loadGlbAvatar("/human.glb", { quality: "low", loader: { loadAsync: async () => human } });
     expect(humanRig.setLookPitch).toBeUndefined();
+    expect(humanRig.meow).toBeUndefined();
     humanRig.dispose();
+  });
+
+  it("moves the ears and tail for one meow and restores them afterwards", async () => {
+    const asset = catAvatarFixture();
+    const ear = new THREE.Bone();
+    ear.name = "ear_L";
+    const tail = new THREE.Bone();
+    tail.name = "tail_04";
+    const earTip = new THREE.Object3D();
+    earTip.position.set(0, 40, 0);
+    const tailTip = new THREE.Object3D();
+    tailTip.position.set(0, 0, 40);
+    ear.add(earTip);
+    tail.add(tailTip);
+    asset.scene.add(ear, tail);
+    const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => asset }, cat: true });
+    rig.root.rotation.y = 0.7;
+    rig.update(0.1, 0);
+    const earLevel = earTip.getWorldPosition(new THREE.Vector3());
+    const tailLevel = tailTip.getWorldPosition(new THREE.Vector3());
+    expect(rig.meow!()).toBe(true);
+    rig.update(0.2, 0);
+    expect(earTip.getWorldPosition(new THREE.Vector3()).distanceTo(earLevel)).toBeGreaterThan(0.001);
+    expect(tailTip.getWorldPosition(new THREE.Vector3()).distanceTo(tailLevel)).toBeGreaterThan(0.001);
+    for (let i = 0; i < 80; i++) rig.update(0.016, 0);
+    expect(earTip.getWorldPosition(new THREE.Vector3()).distanceTo(earLevel)).toBeLessThan(1e-9);
+    expect(tailTip.getWorldPosition(new THREE.Vector3()).distanceTo(tailLevel)).toBeLessThan(1e-9);
+    // The camera-pitch lift still works once the meow has ended.
+    rig.setLookPitch!(0.5);
+    for (let i = 0; i < 300; i++) rig.update(0.016, 0);
+    const head = asset.scene.getObjectByName("head")!;
+    expect(head.quaternion.angleTo(new THREE.Quaternion())).toBeGreaterThan(0.05);
+    rig.dispose();
+  });
+
+  it("ignores a second meow while one plays and accepts it afterwards", async () => {
+    const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => catAvatarFixture() }, cat: true });
+    expect(rig.meow!()).toBe(true);
+    rig.update(0.1, 0);
+    expect(rig.meow!()).toBe(false);
+    for (let i = 0; i < 80; i++) rig.update(0.016, 0);
+    expect(rig.meow!()).toBe(true);
+    rig.dispose();
   });
 
   it("scales to the cat body height, flags its materials and draws above the route band", async () => {

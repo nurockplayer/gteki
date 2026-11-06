@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { avatarMotion } from "./avatarMotion.ts";
+import { avatarMotion, CAT_BODY_PITCH, stepCatBodyPitch } from "./avatarMotion.ts";
 
 describe("avatar motion", () => {
   it("turns toward the direction of travel and reports ground speed", () => {
@@ -16,5 +16,38 @@ describe("avatar motion", () => {
 
   it("treats a long jump as a teleport: no speed, faces the camera", () => {
     expect(avatarMotion({ x: 0, z: 0 }, { x: 50, z: 0 }, 1 / 60, 0.3, 1.2)).toEqual({ yaw: 1.2, speed: 0 });
+  });
+});
+
+
+describe("cat body pitch", () => {
+  const run = (prev: number, vertical: number, horizontal: number) => {
+    for (let i = 0; i < 600; i++) prev = stepCatBodyPitch(prev, vertical, horizontal, 1 / 60);
+    return prev;
+  };
+
+  it("stays level on level ground", () => {
+    expect(run(0, 0, 1)).toBe(0);
+  });
+
+  it("converges to the slope on climbs and descents", () => {
+    expect(run(0, 0.5, 1)).toBeCloseTo(Math.atan2(0.5, 1));
+    expect(run(0, -0.5, 1)).toBeCloseTo(-Math.atan2(0.5, 1));
+  });
+
+  it("clamps steep slopes", () => {
+    expect(run(0, 10, 1)).toBeCloseTo(CAT_BODY_PITCH.max);
+    expect(run(0, -10, 1)).toBeCloseTo(-CAT_BODY_PITCH.max);
+  });
+
+  it("eases back to level below minimum speed", () => {
+    const next = stepCatBodyPitch(0.4, 1, CAT_BODY_PITCH.minSpeed / 2, 1 / 60);
+    expect(next).toBeGreaterThan(0);
+    expect(next).toBeLessThan(0.4);
+    expect(run(0.4, 1, CAT_BODY_PITCH.minSpeed / 2)).toBeCloseTo(0);
+  });
+
+  it.each([0, -1])("holds the previous pitch when dt is %s", (dt) => {
+    expect(stepCatBodyPitch(0.3, 1, 1, dt)).toBe(0.3);
   });
 });
