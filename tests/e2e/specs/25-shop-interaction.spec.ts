@@ -19,6 +19,8 @@ for (const avatar of ["human", "cat"] as const) {
     const idle = await page.evaluate(() => (window as any).__gteki.interactables().calls);
     console.log(`stand=${JSON.stringify(spec.anchor)} idleCalls=${idle}`);
     await page.screenshot({ path: info.outputPath(`${avatar}-idle.png`) });
+    // Drive the interaction with simulate() so screenshots do not advance its clock.
+    await page.evaluate(() => { window.requestAnimationFrame = () => 0; });
     const trigger = async () => { if (isMobile) await button.tap(); else await page.keyboard.press("KeyE"); };
     if (isMobile) {
       const rects = await page.evaluate(() => {
