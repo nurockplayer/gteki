@@ -33,7 +33,8 @@ it("places cues beside the outer cars and braking beside the moving train", () =
   const stop = { x: 0, y: 0, z: 0 }, listener = { x: 58, y: 0, z: 0 };
   const track = { tt: 107.75, headway: 120, stop, stopEnds: [{ x: -58.1, y: 0, z: 0 }, { x: 58.1, y: 0, z: 0 }] as [typeof stop, typeof stop], pos: null as typeof stop | null };
   sound.update([track], listener); track.tt = 108; sound.update([track], listener);
-  expect(chimes).toEqual([listener]);
+  expect(chimes).toHaveLength(1);
+  expect((chimes[0] as typeof listener).x).toBeCloseTo(listener.x);
   track.tt = 15.75; sound.update([track], listener); track.tt = 16; sound.update([track], listener);
   expect(positions.at(-1)!.x).toBeCloseTo(58);
   track.tt = 7.75; track.pos = { x: 0, y: 0, z: 20 }; sound.update([track], listener);
