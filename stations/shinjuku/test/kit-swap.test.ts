@@ -59,9 +59,9 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #342 (2026-11-06 JST): identity board geometry and metadata positions moved.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "f506dd14a743bd1ba8ac349e2ed287d2b54d85d3a1e09f21e15dc368ff16a0d5",
+    "geometryDigest": "fb6e4dd23e7ecced8693a04c23a6368f394983f6a20908c1fbbe5f9c7bd16945",
     "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
-    "nodesDigest": "7436504abd6375cba37b36a6564503fcc5b31d954a4cdd17c11c3e37b1d53c55",
+    "nodesDigest": "5b664780ec6936e27efc50f5b7682d0b204612df49c285ab269d67be41aa0a72",
     "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
     "meshes": 125,
     "bytes": 16200380
