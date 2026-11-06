@@ -589,13 +589,25 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     if (floor && clear) { anchor = p; anchor.y = floor.point.y; break; }
   }
   const windowPos = toRenderer(...opening.centre);
-  const glow = new THREE.PlaneGeometry(2.5, 1.25);
-  glow.translate(0, 1.2, 0);
-  const bag = new THREE.BoxGeometry(0.22, 0.28, 0.12);
-  bag.translate(0, 0.75, 0.08);
-  const geometry = mergeGeometries([glow, bag])!;
-  glow.dispose(); bag.dispose();
-  const material = new THREE.MeshBasicMaterial({ color: 0xf3c77f, side: THREE.DoubleSide });
+  const parts: THREE.BufferGeometry[] = [];
+  const part = (width: number, height: number, depth: number, x: number, y: number, z: number, color: number) => {
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    geometry.translate(x, y, z);
+    const c = new THREE.Color(color);
+    const colors = new Float32Array(geometry.attributes.position.count * 3);
+    for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    parts.push(geometry);
+  };
+  part(2.5, 0.05, 0.03, 0, 0.6, 0, 0xffd28a);
+  part(2.5, 0.05, 0.03, 0, 1.8, 0, 0xffd28a);
+  part(0.05, 1.15, 0.03, -1.225, 1.2, 0, 0xffd28a);
+  part(0.05, 1.15, 0.03, 1.225, 1.2, 0, 0xffd28a);
+  part(0.30, 0.38, 0.16, 0, 0.765, 0.08, 0xf4ead6);
+  part(0.31, 0.08, 0.17, 0, 0.815, 0.08, 0x1f5a45);
+  const geometry = mergeGeometries(parts)!;
+  parts.forEach((part) => part.dispose());
+  const material = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
   const reaction = new THREE.Mesh(geometry, material);
   reaction.position.copy(windowPos).add(new THREE.Vector3(nx * 0.16, 0, -ny * 0.16));
   reaction.rotation.y = Math.atan2(nx, -ny);
