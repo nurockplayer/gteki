@@ -87,7 +87,7 @@ ExplorerMode	type	apps/web/src/explorer/explorer.ts	61
 ExplorerPose	interface	apps/web/src/explorer/explorer.ts	63
 ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	65
 ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	91
-Explorer	class	apps/web/src/explorer/explorer.ts	203
+Explorer	class	apps/web/src/explorer/explorer.ts	204
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts	12
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts	26
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts	138
@@ -440,11 +440,11 @@ printedHours	function	apps/web/src/hours.ts	15
 HOURS_STALE_DAYS	const	apps/web/src/hours.ts	29
 hoursStale	function	apps/web/src/hours.ts	32
 Lang	type	apps/web/src/i18n.ts	6
-Strings	type	apps/web/src/i18n.ts	507
-strings	function	apps/web/src/i18n.ts	509
-pick	function	apps/web/src/i18n.ts	514
-coverageText	function	apps/web/src/i18n.ts	523
-initialLang	function	apps/web/src/i18n.ts	528
+Strings	type	apps/web/src/i18n.ts	509
+strings	function	apps/web/src/i18n.ts	511
+pick	function	apps/web/src/i18n.ts	516
+coverageText	function	apps/web/src/i18n.ts	525
+initialLang	function	apps/web/src/i18n.ts	530
 FormClock	interface	apps/web/src/merchant/form-state.ts	9
 FormState	interface	apps/web/src/merchant/form-state.ts	18
 newFormState	function	apps/web/src/merchant/form-state.ts	32
@@ -491,7 +491,7 @@ SIGN_FONT_TIMEOUT_MS	const	apps/web/src/signFont.ts	4
 loadSignFont	function	apps/web/src/signFont.ts	9
 StationClock	interface	apps/web/src/stationClock.ts	5
 stationClock	function	apps/web/src/stationClock.ts	17
-App	class	apps/web/src/ui/app.ts	93
+App	class	apps/web/src/ui/app.ts	94
 isAccessibleToilet	function	apps/web/src/ui/barrierFree.ts	6
 barrierFreeResults	function	apps/web/src/ui/barrierFree.ts	11
 CATEGORY_ORDER	const	apps/web/src/ui/categoryFilter.ts	7

@@ -90,6 +90,7 @@ interface ShadowFit {
 
 export interface ExplorerEvents {
   onMode?(mode: ExplorerMode): void;
+  onWalkStart?(): void;
   onGreyboxLegend?(visible: boolean): void;
   onGuideProgress?(p: { s: number; total: number; stepIndex: number; done: boolean }): void;
   /** The guide stopped (and paused) at `stops[index]` given to startGuide. */
@@ -367,6 +368,7 @@ export class Explorer {
   private qaAvatarFade: number | null = null;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
+  private moving = false;
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
@@ -1527,6 +1529,7 @@ export class Explorer {
     this.guideIdentityHoldS = 0;
     if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
+    this.moving = false;
     // Zone lighting (#861): overview shows the station exactly as before; walking resumes with a snapped re-classify.
     if (mode === "overview") this.restoreZone();
     else if (previous === "overview") this.zoneSnap = true;
@@ -2513,7 +2516,10 @@ export class Explorer {
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
     const mv = this.input.move();
-    if (mv.x === 0 && mv.y === 0) return;
+    const moving = mv.x !== 0 || mv.y !== 0;
+    if (moving && !this.moving) this.events?.onWalkStart?.();
+    this.moving = moving;
+    if (!moving) return;
     const speed = mv.run ? RUN : WALK;
     // Camera-relative: forward = -Z rotated by yaw.
     const fx = -Math.sin(this.yaw), fz = -Math.cos(this.yaw);
