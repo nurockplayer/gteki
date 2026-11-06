@@ -30,7 +30,7 @@ joinStationPath	function	apps/web/src/explorer/assetFence.ts	12
 stationDir	function	apps/web/src/explorer/assetFence.ts	25
 fencedUrlResolver	function	apps/web/src/explorer/assetFence.ts	31
 AvatarRig	interface	apps/web/src/explorer/avatar.ts	12
-createAvatar	function	apps/web/src/explorer/avatar.ts	23
+createAvatar	function	apps/web/src/explorer/avatar.ts	25
 AVATAR_DITHER_ACTIVE_BELOW	const	apps/web/src/explorer/avatarDither.ts	7
 AVATAR_DITHER_CACHE_KEY	const	apps/web/src/explorer/avatarDither.ts	8
 avatarDitherActive	function	apps/web/src/explorer/avatarDither.ts	11
@@ -46,7 +46,7 @@ AvatarGlbLoader	interface	apps/web/src/explorer/avatarGlb.ts	10
 CatCalibration	interface	apps/web/src/explorer/avatarGlb.ts	20
 GlbAvatarOptions	interface	apps/web/src/explorer/avatarGlb.ts	22
 loadGlbAvatar	function	apps/web/src/explorer/avatarGlb.ts	31
-catClips	function	apps/web/src/explorer/avatarGlb.ts	201
+catClips	function	apps/web/src/explorer/avatarGlb.ts	225
 avatarMotion	function	apps/web/src/explorer/avatarMotion.ts	13
 CAT_BODY_PITCH	const	apps/web/src/explorer/avatarMotion.ts	23
 stepCatBodyPitch	function	apps/web/src/explorer/avatarMotion.ts	24
