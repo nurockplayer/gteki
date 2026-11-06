@@ -453,6 +453,7 @@ export class Explorer {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
+    (window as any).__renderer = this.renderer;
     this.renderer.toneMapping = THREE.AgXToneMapping;
     this.renderer.toneMappingExposure = resolveLighting().toneMappingExposure;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
