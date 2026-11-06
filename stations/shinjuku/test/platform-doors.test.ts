@@ -56,15 +56,17 @@ it("keeps platform markings in the existing tactile mesh on the platform floor",
   expect(newVertices).toBeGreaterThan(0);
   const level = built.layout.levels.find(l => l.walls.some(w => w.kind === "trackside"))!;
   let doorQuads = 0;
+  const outside: { x: number; y: number; quad: number; door: boolean }[] = [];
   for (let i = 0; i < newVertices; i += 4) {
     if (Math.abs(uv.getY(i) - 0.03) < 1e-5) doorQuads++;
     for (let j = 0; j < 4; j++) {
       const k = i + j;
       expect(positions.getY(k)).toBeCloseTo(level.z + 0.006, 4);
       const p = { x: positions.getX(k), y: -positions.getZ(k) };
-      expect(level.slabs.some(s => pointInRings(p, s.rings))).toBe(true);
+      if (!level.slabs.some(s => pointInRings(p, s.rings))) outside.push({ ...p, quad: i / 4, door: Math.abs(uv.getY(i) - 0.03) < 1e-5 });
     }
   }
+  expect(outside).toEqual([]);
   expect(doorQuads).toBe(leaves / 2);
   built.dispose();
 }, 120_000);
