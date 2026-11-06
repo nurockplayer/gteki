@@ -44,7 +44,7 @@ import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
-import { avatarMotion } from "./avatarMotion.ts";
+import { avatarMotion, stepCatBodyPitch } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
@@ -312,6 +312,7 @@ export class Explorer {
   private avatarMarker: [THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>, THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>] | null = null;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
+  private catBodyPitch = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
   /** Core hemisphere + sun; hidden when a scene declares `environment.lighting: "scene"`. */
   private readonly coreLights: THREE.Light[] = [];
@@ -1008,6 +1009,7 @@ export class Explorer {
   }
 
   private fallBackToHumanAvatar(): void {
+    this.catBodyPitch = 0;
     this.catAvatar = false;
     this.camDistance = FOLLOW.defaultDistance;
     this.pitch = -0.12;
@@ -2575,6 +2577,10 @@ export class Explorer {
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
+    if (this.catAvatar && this.avatarRig) {
+      this.catBodyPitch = stepCatBodyPitch(this.catBodyPitch, this.slope.velocity, this.mode === "overview" ? 0 : motion.speed, dt);
+      this.avatarRig.root.rotation.x = this.catBodyPitch;
+    }
     const state = this.interactionController.state;
     if (state.phase === "active") {
       const target = this.interactionVisual;
