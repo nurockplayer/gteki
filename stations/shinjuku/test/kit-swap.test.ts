@@ -61,10 +61,10 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #858 item 12 (2026-11-06 JST): one merged wall-props mesh (126 meshes, +48,504 bytes); every list below unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "090f937c6fd4ea746f672b1741dac0faa4e64580fad541f93d06a5994952bf0c",
-    "appearanceDigest": "07cc7f5e5e744c240cc7beb79059612173cb9f9a280dd3fd78133746a2ba5241",
-    "nodesDigest": "7436504abd6375cba37b36a6564503fcc5b31d954a4cdd17c11c3e37b1d53c55",
-    "texturesDigest": "05e5310622fc1a2e5781a4f7352cc9854690a53c7630a8b1b42c8c5ef54856b4",
+    "geometryDigest": "22ecc823a00e02a080233f32ef31414088c36ba6b60150f95ec30ec72e67aad2",
+    "appearanceDigest": "e3cc57f3f852198e957b52a1b1b6e5f6aa505e61abd8b48eed85598d3f7d732f",
+    "nodesDigest": "ca99002e8c4f558e3da8f1e13b02e4426437b2446ea1c53142f4cb879799e1a8",
+    "texturesDigest": "502867f0f235268c1c47ed632f4fe1b0397f8fd2424c45ec9cb3fc4a6a74b5fb",
     "meshes": 126,
     "bytes": 16494482
   },
