@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Instruction, PolylinePoint } from "@gteki/navigation";
-import { DEFAULT_GUIDE_TIER, GUIDE_TIERS, MIN_GUIDE_MPS, effectivePace, guideOnStairs, guidePaceSpans, guideSpeedAt, guideTierSpeed, isGuideTier, MIN_INSTRUCTION_S, nextGuideTier, paceReadout, pacedDistance, pacedDuration, polylineLengthM, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, GUIDE_TIERS, MIN_GUIDE_MPS, effectivePace, guideOnEscalator, guideOnStairs, guidePaceSpans, guideSpeedAt, guideTierSpeed, isGuideTier, MIN_INSTRUCTION_S, nextGuideTier, paceReadout, pacedDistance, pacedDuration, polylineLengthM, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { strings } from "../i18n.ts";
 
 const pt = (x: number, stepIndex: number): PolylinePoint => ({ x, y: 0, z: 0, zKnown: true, stepIndex, floorId: "f" });
@@ -36,6 +36,14 @@ describe("connector pace caps", () => {
     expect(guideOnStairs(60, spans)).toBe(false);
     expect(guideOnStairs(90, spans)).toBe(false);
     expect(guideOnStairs(1, [{ fromS: 0, toS: 2, maxMps: 0.9, scales: true }])).toBe(false);
+  });
+
+  it("marks only escalator spans as a ride, half-open at toS", () => {
+    expect(guideOnEscalator(30, spans)).toBe(false); // stairs
+    expect(guideOnEscalator(40, spans)).toBe(true); // escalator starts
+    expect(guideOnEscalator(50, spans)).toBe(true);
+    expect(guideOnEscalator(60, spans)).toBe(false); // escalator toS
+    expect(guideOnEscalator(70, spans)).toBe(false); // elevator
   });
 
   it("caps stairs, escalator, elevator and gate; leaves walk, ramp and moving walkway at the tier speed", () => {
