@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
+  it("scales the cat shoulder for portrait aspect", () => {
+    expect(catShoulder(0.49)).toBeCloseTo(0.098);
+    expect(catShoulder(1.6)).toBeCloseTo(0.2);
+  });
+
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
     const head = new THREE.Vector3(0, 1.62, 0);
     const { pivot, back } = followPose(head, 0, -0.12);
