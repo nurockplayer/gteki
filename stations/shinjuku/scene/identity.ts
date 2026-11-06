@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { type Layout, type LevelLayout, type WalkWorld, type XY, type XYZ } from "./layout.ts";
-import { stationSpawn } from "./spawn.ts";
 import { IDENTITY_ART, identityTexture } from "./textures.ts";
 import { identityClearance, platformIdentityPlacement } from "./identity-placement.ts";
 import { identityNearFade } from "./identity-fade.ts";
@@ -52,13 +51,12 @@ export function identityGlyphBox(kind: "ja" | "en"): LocalBox {
 /** Original render-only identity boards; no routing, collision or source-data changes. */
 export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group,
   track: <T extends { dispose(): void }>(value: T) => T, quality: "low" | "high"): THREE.Object3D[] {
-  const spawn = stationSpawn(bundle, layout.nodeZ, world);
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const faces: THREE.BufferGeometry[] = [], hardware: THREE.BufferGeometry[] = [], boards: THREE.Object3D[] = [];
   const { width, height, depth } = IDENTITY_SIZE;
   const region = IDENTITY_ART.name;
   const nameBox = identityBox(region.left, region.top, region.right, region.bottom);
-  const add = (name: string, nodeId: string, center: XYZ, facing: XY, placement: string, fixed?: { top: number; level: LevelLayout }) => {
+  const add = (name: string, nodeId: string, center: XYZ, facing: XY, placement: string, fixed?: { top: number; level: LevelLayout }, alongs?: number[]) => {
     const level = fixed?.level ?? layout.levels.find((lv) => Math.abs(lv.z - center.z) < 0.3);
     if (!level) return;
     // 2.1 m clear below the casing; 0.12 m below the ceiling. Lower than route signs.
@@ -69,10 +67,10 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
       const result = identityClearance(board, center.z, level, layout, world, IDENTITY_SIZE);
       return result.wallsClear && result.roofClear;
     };
-    // Search only small offsets from the source anchor. In particular, the normal
-    // spawn backs up near a wall: its board needs a little lateral clearance.
+    // Search small offsets from the source anchor unless the caller passes its own along
+    // list. The normal spawn backs up near a wall, so its lateral clearance stays small.
     let found = false;
-    for (const along of fixed ? [0] : [0, 0.3, -0.3, 0.6, -0.6, 0.9]) {
+    for (const along of fixed ? [0] : alongs ?? [0, 0.3, -0.3, 0.6, -0.6, 0.9]) {
       for (const lateral of fixed ? [0] : [0, 0.2, -0.2, 0.4, -0.4, 0.6, -0.6]) {
         board.position.set(center.x + facing.x * along - facing.y * lateral, top - height / 2, -(center.y + facing.y * along + facing.x * lateral));
         board.lookAt(board.position.x + facing.x, board.position.y, board.position.z - facing.y);
@@ -113,10 +111,17 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
         .translate(x, height / 2 + rodLength / 2, 0).applyMatrix4(board.matrix), "#888888", 0.8));
     }
   };
-  const forward = { x: Math.sin(spawn.heading), y: Math.cos(spawn.heading) };
-  add("identity:spawn", spawn.nodeId,
-    { x: spawn.position.x + forward.x * 0.9, y: spawn.position.y + forward.y * 0.9, z: spawn.position.z },
-    { x: -forward.x, y: -forward.y }, "GTEki placement at the normal spawn; not surveyed, not a replica of an on-site sign");
+  // Explorer arrives at spawnNodeIds[0], using spawnHeadings (not the lane app's
+  // stationSpawn, which backs away from a gate and faces the opposite direction).
+  // Original wayfinding placement, four metres ahead and 0.5 metres left; never a route node.
+  const spawn = nodes.get(bundle.spawnNodeIds?.[0] ?? "");
+  if (spawn) {
+    const heading = (bundle.spawnHeadings?.[spawn.id] ?? 0) * Math.PI / 180;
+    const forward = { x: Math.sin(heading), y: Math.cos(heading) };
+    add("identity:spawn", spawn.id,
+      { x: spawn.position.x + forward.x * 4 - forward.y * 0.5, y: spawn.position.y + forward.y * 4 + forward.x * 0.5, z: layout.nodeZ.get(spawn.id)! },
+      { x: -forward.x, y: -forward.y }, "GTEki placement at the Explorer spawn; not surveyed, not a replica of an on-site sign");
+  }
   for (const poi of bundle.pois.filter((p) => p.category === "ticket_gate")) {
     const node = nodes.get(poi.connectorNodeIds[0] ?? "");
     if (!node || !poi.displayPosition) continue;
@@ -127,7 +132,12 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     // Gate POI connectors are the verified unpaid approach nodes (import-e27.ts).
     const dx = node.position.x - poi.displayPosition.x, dy = node.position.y - poi.displayPosition.y;
     const length = Math.hypot(dx, dy) || 1;
-    add(`identity:gate:${poi.id}`, node.id, gate.center, { x: dx / length, y: dy / length },
+    // Gate 1's unpaid-side centre overlaps the arrival camera. Hang its original
+    // board eight metres toward the paid side, retaining the gate-facing axis.
+    const center = poi.id === "poi:gate:1"
+      ? { x: gate.center.x - dx / length * 8, y: gate.center.y - dy / length * 8, z: gate.center.z }
+      : gate.center;
+    add(`identity:gate:${poi.id}`, node.id, center, { x: dx / length, y: dy / length },
       "GTEki placement at the ticket-gate POI; not surveyed, not a replica of an on-site sign");
   }
   const platform = platformIdentityPlacement(bundle, layout, world, IDENTITY_SIZE, nameBox);

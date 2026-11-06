@@ -16,7 +16,19 @@ function isDrawable(object: THREE.Object3D): object is Drawable {
   return object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points;
 }
 
-export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"; loader?: AvatarGlbLoader }): Promise<AvatarRig> {
+/** Per-clip stride speeds baked into the cat GLB's `extras.gteki_cat.calib`, in m/s. */
+export interface CatCalibration { walk: number; trot: number; run: number }
+
+export interface GlbAvatarOptions {
+  quality: "low" | "high";
+  loader?: AvatarGlbLoader;
+  /** Bind-pose height in metres; the human protagonist's 1.70 is the default. */
+  heightM?: number;
+  /** Four-legged protagonist: gait clip policy and floor-hugging draw order (see `catClips`). */
+  cat?: boolean;
+}
+
+export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promise<AvatarRig> {
   // Both quality tiers use the supplied URL for now; Lane E supplies the tiered assets later.
   const loader = opts.loader ?? new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const gltf = await loader.loadAsync(url);
@@ -77,9 +89,9 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
       throw new Error("Avatar GLB has invalid bounds");
     }
     // Contract: Y up, faces -Z (unlike the station kit's +Z); no axis rotation is applied.
-    // Scale bind-pose height to 1.70 metres and centre X/Z with the feet at Y=0. Keep animated nodes intact.
+    // Scale bind-pose height to the requested size and centre X/Z with the feet at Y=0. Keep animated nodes intact.
     const normalized = new THREE.Group();
-    const scale = 1.7 / height;
+    const scale = (opts.heightM ?? 1.7) / height;
     normalized.scale.setScalar(scale);
     normalized.position.set(-(bounds.min.x + bounds.max.x) * 0.5 * scale, -bounds.min.y * scale, -(bounds.min.z + bounds.max.z) * 0.5 * scale);
     normalized.add(gltf.scene);
@@ -87,11 +99,18 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
     gltf.scene.traverse((object) => {
       if (!isDrawable(object)) return;
       object.castShadow = true;
+      // The cat walks the station floor under the always-on-top route band (renderOrder 21):
+      // draw it later so that band never covers it.
+      if (opts.cat) object.renderOrder = 30;
       if (object instanceof THREE.SkinnedMesh) object.frustumCulled = false;
       const clone = (source: THREE.Material): THREE.Material => {
         let material = clones.get(source);
         if (!material) {
           material = source.userData.gteki_toon ? toonClone(source) : source.clone();
+          if (opts.cat) {
+            material.transparent = true;
+            material.depthWrite = true;
+          }
           clones.set(source, material);
           materials.add(material);
           ditherFade(material, fade);
@@ -101,10 +120,17 @@ export async function loadGlbAvatar(url: string, opts: { quality: "low" | "high"
       object.material = Array.isArray(object.material) ? object.material.map(clone) : clone(object.material);
     });
     mixer = new THREE.AnimationMixer(gltf.scene);
-    const animate = clipCrossfade(mixer, gltf.animations);
+    const animate = opts.cat
+      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene))
+      : clipCrossfade(mixer, gltf.animations);
     return {
       root,
-      update(dt, speedMps) { if (!disposed) { animate(speedMps); mixer!.update(Number.isFinite(dt) ? Math.max(0, dt) : 0); } },
+      update(dt, speedMps) {
+        if (disposed) return;
+        const step = Number.isFinite(dt) ? Math.max(0, dt) : 0;
+        animate(speedMps, step);
+        mixer!.update(step);
+      },
       setFade(opacity) { fade.value = sanitizeAvatarFade(opacity); },
       setEnvMap(env, intensity = 0.6) {
         for (const material of clones.values()) {
@@ -156,8 +182,60 @@ function toonClone(source: THREE.Material): THREE.MeshToonMaterial {
   return material;
 }
 
+/** The cat GLB carries its stride speeds in `extras.gteki_cat.calib` on a node. */
+function catCalibration(scene: THREE.Object3D): CatCalibration | undefined {
+  let calib: CatCalibration | undefined;
+  scene.traverse((object) => {
+    const value = (object.userData as { gteki_cat?: { calib?: CatCalibration } }).gteki_cat?.calib;
+    if (!calib && value && (["walk", "trot", "run"] as const).every((key) => Number.isFinite(value[key]))) calib = value;
+  });
+  return calib;
+}
+
+/**
+ * Cat gait policy (#854): below 0.05 m/s the cat idles and sits after 4 s, then walk below 0.7,
+ * trot below 1.9, run above. Each locomotion clip plays at `speed / calib` so the paws stay planted.
+ */
+export function catClips(
+  mixer: THREE.AnimationMixer,
+  clips: THREE.AnimationClip[],
+  calib: CatCalibration | undefined,
+): (speed: number, dt: number) => void {
+  const action = (name: string): THREE.AnimationAction | undefined => {
+    const clip = clips.find((candidate) => candidate.name.toLowerCase() === name);
+    return clip ? mixer.clipAction(clip) : undefined;
+  };
+  const idle = action("idle"), sit = action("sit"), walk = action("walk"), trot = action("trot"), run = action("run");
+  let active = idle ?? sit ?? walk ?? trot ?? run;
+  active?.play();
+  let restSeconds = 0;
+  return (speed, dt) => {
+    let next: THREE.AnimationAction | undefined;
+    if (!(speed > 0.05)) {
+      restSeconds += Number.isFinite(dt) ? Math.max(0, dt) : 0;
+      next = restSeconds >= 4 ? sit ?? idle : idle;
+    } else {
+      restSeconds = 0;
+      next = speed < 0.7 ? walk ?? trot ?? run ?? idle
+        : speed < 1.9 ? trot ?? walk ?? run ?? idle
+        : run ?? trot ?? walk ?? idle;
+    }
+    next ??= active;
+    if (!next) return;
+    if (next !== active) {
+      next.reset().play();
+      active?.crossFadeTo(next, 0.2, false);
+      active = next;
+    }
+    if (!active) return;
+    const gait = next === walk ? "walk" : next === trot ? "trot" : next === run ? "run" : undefined;
+    const stride = gait && calib ? calib[gait] : 0;
+    active.timeScale = stride && Number.isFinite(stride) && stride > 0 ? speed / stride : 1;
+  };
+}
+
 /** Temporary X1 policy: named clips only, no phase/stride correction or terrain logic. */
-function clipCrossfade(mixer: THREE.AnimationMixer, clips: THREE.AnimationClip[]): (speed: number) => void {
+function clipCrossfade(mixer: THREE.AnimationMixer, clips: THREE.AnimationClip[]): (speed: number, dt: number) => void {
   const action = (name: string): THREE.AnimationAction | undefined => {
     const clip = clips.find((clip) => clip.name.toLowerCase() === name);
     return clip ? mixer.clipAction(clip) : undefined;
