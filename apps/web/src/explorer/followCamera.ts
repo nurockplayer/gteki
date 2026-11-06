@@ -63,8 +63,10 @@ export const FOLLOW = {
  * Cat camera sits ~0.7 m high with a near-level look, so the station fills the frame and the cat is small
  * and low. Overhead signs are visible by looking up; numbers chosen from runtime shots on #854.
  */
-export const CAT_NPC_FADE = { startM: 1.4, endM: 2.6 } as const;
 export const FOLLOW_CAT = { pivotY: 0.42, shoulder: 0.2, distance: 2.4, lift: 0.12, drop: 0, pitch: 0 } as const;
+
+/** NPCs dither out near the cat camera so they do not hide the cat: gone inside startM, untouched beyond endM. */
+export const CAT_NPC_FADE = { startM: 1.4, endM: 2.6 } as const;
 
 /** A portrait phone's narrow horizontal FOV needs a smaller shoulder offset. */
 export function catShoulder(aspect: number): number { return FOLLOW_CAT.shoulder * Math.min(1, aspect); }
