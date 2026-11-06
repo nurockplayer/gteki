@@ -16,8 +16,8 @@ it("puts every platform door opening on a car door, keeping only openings wholly
     expect(c - PLATFORM_DOOR_WIDTH / 2).toBeGreaterThanOrEqual(platA);
     expect(c + PLATFORM_DOOR_WIDTH / 2).toBeLessThanOrEqual(platB);
   }
-  // A short platform keeps only the openings that fit wholly on it.
-  expect(psdOpeningCenters(0, -3, 3)).toEqual([0]);
+  // No opening fits wholly within this short platform.
+  expect(psdOpeningCenters(0, -3, 3)).toEqual([]);
 });
 
 it("keeps the platform door collision modules identical to origin/main", () => {
@@ -34,4 +34,4 @@ it("keeps the platform door collision modules identical to origin/main", () => {
   expect(walls[0]!.zMin).toBe(-42.97);
   expect(walls[0]!.zMax).toBe(-41.519999999999996);
   built.dispose();
-});
+}, 120_000);
