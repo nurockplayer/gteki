@@ -589,12 +589,12 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     if (floor && clear) { anchor = p; anchor.y = floor.point.y; break; }
   }
   const windowPos = toRenderer(...opening.centre);
-  const parts: THREE.BufferGeometry[] = [];
+  const parts: THREE_NS.BufferGeometry[] = [];
   const part = (width: number, height: number, depth: number, x: number, y: number, z: number, color: number) => {
     const geometry = new THREE.BoxGeometry(width, height, depth);
     geometry.translate(x, y, z);
     const c = new THREE.Color(color);
-    const colors = new Float32Array(geometry.attributes.position.count * 3);
+    const colors = new Float32Array(geometry.getAttribute("position").count * 3);
     for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
     geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     parts.push(geometry);
