@@ -12,7 +12,8 @@ const SOURCE_ROOTS = ["packages", "apps/web/src", "tools", "stations"];
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".mjs", ".js", ".cjs"]);
 const EXCLUDED_SEGMENTS = new Set(["node_modules", "dist", "build", "vendor"]);
 
-const HEADER = "symbol\tkind\tpath\tline";
+// No line numbers: they moved on almost every PR, and a merge of main left them stale or in conflict.
+const HEADER = "symbol\tkind\tpath";
 
 function compare(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
@@ -79,13 +80,13 @@ function rowsForDeclaration(declaration, relPath) {
   const kind = kindForDeclaration(declaration.type);
   if (kind) {
     if (!declaration.id) return [];
-    return [[declaration.id.name, kind, relPath, declaration.loc.start.line]];
+    return [[declaration.id.name, kind, relPath]];
   }
   if (declaration.type === "VariableDeclaration") {
     const rows = [];
     for (const declarator of declaration.declarations) {
       if (declarator.id.type !== "Identifier") continue;
-      rows.push([declarator.id.name, declaration.kind, relPath, declaration.loc.start.line]);
+      rows.push([declarator.id.name, declaration.kind, relPath]);
     }
     return rows;
   }
@@ -115,33 +116,12 @@ function sourceRows(root, relPath) {
   return rows;
 }
 
-function escapeRegExp(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 function scriptRows(root, relPath) {
-  const text = fs.readFileSync(path.join(root, relPath), "utf8");
-  const pkg = JSON.parse(text);
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, relPath), "utf8"));
   if (!pkg.scripts || typeof pkg.scripts !== "object") return [];
   const dir = path.posix.dirname(relPath);
   const owner = typeof pkg.name === "string" && pkg.name ? pkg.name : dir;
-  const lines = text.split("\n");
-  const scriptsLine = lines.findIndex((line) => /"scripts"\s*:/.test(line));
-  const rows = [];
-  for (const key of Object.keys(pkg.scripts)) {
-    let line = 0;
-    if (scriptsLine >= 0) {
-      const pattern = new RegExp(`"${escapeRegExp(key)}"\\s*:`);
-      for (let i = scriptsLine; i < lines.length; i++) {
-        if (pattern.test(lines[i])) {
-          line = i + 1;
-          break;
-        }
-      }
-    }
-    rows.push([`${owner}:${key}`, "script", relPath, line]);
-  }
-  return rows;
+  return Object.keys(pkg.scripts).map((key) => [`${owner}:${key}`, "script", relPath]);
 }
 
 /** TSV text for docs/map/symbols.tsv: top-level exports plus package.json scripts. */
@@ -160,7 +140,7 @@ export function generateSymbols(root = repoRoot) {
   }
 
   rows.sort(
-    (a, b) => compare(a[2], b[2]) || a[3] - b[3] || compare(a[0], b[0]),
+    (a, b) => compare(a[2], b[2]) || compare(a[0], b[0]) || compare(a[1], b[1]),
   );
   return [HEADER, ...rows.map((row) => row.join("\t"))].join("\n") + "\n";
 }
