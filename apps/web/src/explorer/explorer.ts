@@ -1005,6 +1005,7 @@ export class Explorer {
     this.catAvatar = false;
     this.camDistance = FOLLOW.defaultDistance;
     this.pitch = -0.12;
+    this.stationScene?.setCameraNearFade?.(0, 0);
     this.buildAvatarMarker();
   }
 
