@@ -7,7 +7,7 @@ export class InteractionPrompt {
   private readonly status = document.createElement("div");
   private readonly item = document.createElement("div");
   private lastAnnouncement = "";
-  private state: InteractionState = { nearId: null, phase: "idle", step: null, unavailable: null, items: [], interrupted: false };
+  private state: InteractionState = { nearId: null, nearKind: null, phase: "idle", step: null, unavailable: null, items: [], interrupted: false };
 
   constructor(private readonly strings: () => Strings, start: () => void, private readonly announce: (text: string) => void) {
     this.el.className = "interaction-prompt";
@@ -26,10 +26,13 @@ export class InteractionPrompt {
     this.button.disabled = state.unavailable !== null;
     const coarse = typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches;
     this.button.textContent = state.unavailable ? t.interactionReceived : coarse ? t.interactionStart : `${t.interactionStart} (E)`;
-    this.status.textContent = visible ? t.interactionSimulated : state.interrupted ? t.interactionInterrupted : "";
+    const simulated = state.nearKind === "vending" ? t.interactionSimulatedVending : t.interactionSimulated;
+    this.status.textContent = visible ? simulated : state.interrupted ? t.interactionInterrupted : "";
     if (visible && state.interrupted) this.status.textContent += ` · ${t.interactionInterrupted}`;
-    this.item.textContent = state.items.includes("paper-bag") ? t.interactionBag : "";
-    const announcement = state.interrupted ? t.interactionInterrupted : state.phase === "done" ? t.interactionBag : "";
+    const hasBag = state.items.includes("paper-bag");
+    this.item.textContent = hasBag ? t.interactionBag : "";
+    // Only the shop hands out the paper bag; a vending interaction ends with nothing held.
+    const announcement = state.interrupted ? t.interactionInterrupted : state.phase === "done" && hasBag ? t.interactionBag : "";
     if (announcement && announcement !== this.lastAnnouncement) this.announce(announcement);
     this.lastAnnouncement = announcement;
   }
