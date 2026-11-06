@@ -50,6 +50,7 @@ import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
+import { InteractionController, type InteractionState } from "./interaction.ts";
 import { headingFromYaw } from "./pose.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
 import { OcclusionSweep, SIGN_BACKDROP_M, labelState, onFocusFloor, type LabelOcclusion, type LabelState } from "./labelVisibility.ts";
@@ -89,6 +90,7 @@ interface ShadowFit {
 }
 
 export interface ExplorerEvents {
+  onInteraction?(state: InteractionState): void;
   onMode?(mode: ExplorerMode): void;
   onGreyboxLegend?(visible: boolean): void;
   onGuideProgress?(p: { s: number; total: number; stepIndex: number; done: boolean }): void;
@@ -242,6 +244,9 @@ export class Explorer {
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
+  private interactionController = new InteractionController([]);
+  private interactionSnapshot = "";
+  private interactionVisual: THREE.Object3D | undefined;
   private navmeshPaths: NavmeshPaths | null = null;
   /** What the last station switch freed from the previous scene (for the e2e log). */
   private releasedTextures: { textures: number; canvases: number } | null = null;
@@ -1081,6 +1086,10 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
+    this.interactionController = new InteractionController(built?.interactables ?? []);
+    this.interactionSnapshot = "";
+    this.interactionVisual = undefined;
+    built?.root.traverse((object) => { if (object.userData.gtekiInteractionId) this.interactionVisual = object; });
     this.sceneError = sceneError;
     // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
     this.stepsPaused = this.stationScene?.beforeRender !== undefined;
@@ -1251,6 +1260,11 @@ export class Explorer {
 
   /** `leaving`: the explorer is switching to a different station (or disposing), so the previous station's GPU textures are freed. */
   private clearStation(leaving = false): void {
+    this.interactionController = new InteractionController([]);
+    this.interactionSnapshot = "";
+    this.interactionVisual = undefined;
+    this.avatarRig?.setHold?.(null);
+    this.publishInteraction(this.interactionController.state);
     this.avatarRig?.cancelPendingLoad();
     this.street.restore(this.scene);
     this.street.attach(null);
@@ -2505,6 +2519,7 @@ export class Explorer {
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
     else this.orbit.update();
+    if (this.mode !== "walk") this.publishInteraction(this.interactionController.update(dt, { position: this.pos, moving: false, mode: this.mode }));
     this.updateGreyboxLegend();
 
     if (this.mode !== "overview") {
@@ -2529,7 +2544,29 @@ export class Explorer {
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
+    const state = this.interactionController.state;
+    if (state.phase === "active") {
+      const target = this.interactionVisual;
+      if (target) this.avatar.rotation.y = Math.atan2(this.pos.x - target.position.x, this.pos.z - target.position.z);
+    }
     this.updateShadows();
+  }
+
+  interactableInfo() { return { specs: this.stationScene?.interactables ?? [], visual: this.interactionVisual }; }
+
+  get interaction(): InteractionState { return this.interactionController.state; }
+
+  interact(): void { this.publishInteraction(this.interactionController.start()); }
+
+  private publishInteraction(state: InteractionState): void {
+    const snapshot = JSON.stringify(state);
+    if (snapshot !== this.interactionSnapshot) {
+      this.interactionSnapshot = snapshot;
+      this.events.onInteraction?.(state);
+    }
+    this.avatarRig?.setHold?.(state.phase === "active" && state.step !== "look" ? "sit" : null);
+    if (this.interactionVisual) this.interactionVisual.visible = state.phase === "active" &&
+      this.interactionVisual.userData.gtekiInteractionId === state.nearId && (state.step === "react" || state.step === "give");
   }
 
   private stepWalk(dt: number): void {
@@ -2538,6 +2575,7 @@ export class Explorer {
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
     const mv = this.input.move();
+    this.publishInteraction(this.interactionController.update(dt, { position: this.pos, moving: mv.x !== 0 || mv.y !== 0, mode: this.mode }));
     if (mv.x === 0 && mv.y === 0) return;
     const speed = mv.run ? RUN : WALK;
     // Camera-relative: forward = -Z rotated by yaw.
