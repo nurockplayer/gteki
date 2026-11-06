@@ -50,6 +50,24 @@ export async function clickTiming(page: Page, click: () => Promise<unknown>): Pr
   await within(Promise.resolve(cdp?.send("Profiler.enable")), 5_000);
   await within(Promise.resolve(cdp?.send("Profiler.setSamplingInterval", { interval: 5000 })), 5_000);
   await within(Promise.resolve(cdp?.send("Profiler.start")), 5_000);
+  // How long a plain synchronous GL call waits on an ordinary frame, with no program involved.
+  const probe = await within(page.evaluate(() => new Promise<{ gapMs: number; syncMs: number }[]>((done) => {
+    const gl = (window as any).__renderer?.getContext();
+    const out: { gapMs: number; syncMs: number }[] = [];
+    let last = performance.now();
+    const step = () => {
+      const now = performance.now(), gapMs = Math.round(now - last);
+      setTimeout(() => {
+        const t = performance.now();
+        gl?.getError();
+        out.push({ gapMs, syncMs: Math.round(performance.now() - t) });
+        last = performance.now();
+        if (out.length >= 6) done(out); else requestAnimationFrame(step);
+      }, 0);
+    };
+    requestAnimationFrame(step);
+  })), 45_000);
+  console.log(`[sync-probe] ${JSON.stringify(probe)}`);
   await page.evaluate(() => {
     const programs = (window as any).__renderer?.info.programs ?? [];
     (window as any).__programsBefore = programs.map((p: any) => ({ id: p.id, name: p.name, key: p.cacheKey }));

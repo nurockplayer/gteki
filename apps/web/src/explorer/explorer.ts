@@ -1260,7 +1260,6 @@ export class Explorer {
     lap("composer");
     // The overview drops fog and hides lights, so its first frames build none of the walking programs. Start them here,
     // while the walking look is still on, or the first frame after "Start guide" stalls on all of them at once (#921).
-    this.renderer.compile(this.scene, this.camera);
     lap("walkShaders");
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
