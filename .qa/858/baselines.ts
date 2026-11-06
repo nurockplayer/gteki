@@ -1,0 +1,10 @@
+import * as THREE from "three";
+import { loadShinjukuBundle } from "../../stations/shinjuku/data/bundle.ts";
+import { buildScene } from "../../stations/shinjuku/gteki/scene.ts";
+import { digestStation } from "../../stations/shinjuku/test/helpers/station-digest.ts";
+import { withCanvasStub } from "../../stations/shinjuku/test/helpers/scene-digest.ts";
+const { bundle } = loadShinjukuBundle();
+Object.assign(globalThis, { location: { search: "?kit=0" } });
+const scene = await withCanvasStub(() => buildScene({ THREE, bundle, quality: "low" } as never));
+console.log(JSON.stringify(digestStation(scene.root, o => ["walk proxies (invisible)", "viewer probe (draws nothing)", "kit-fallback"].includes(o.name))));
+scene.dispose();

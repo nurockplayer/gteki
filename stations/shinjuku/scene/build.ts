@@ -721,6 +721,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     far: number;
   }[] = [];
 
+  const platformTactile: THREE.BufferGeometry[] = [];
   const fasciaGeos: THREE.BufferGeometry[] = [];
   const roomFill = roomFloorFill(layout, plan);
   // ---- per level: slabs, ceilings, walls, railings, lights
@@ -842,7 +843,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- tactile paving
   {
-    const tg: THREE.BufferGeometry[] = [];
+    const tg: THREE.BufferGeometry[] = platformTactile.splice(0);
     for (const t of layout.tactile) {
       for (let i = 1; i < t.pts.length; i++) {
         const a = t.pts[i - 1]!;
@@ -1360,6 +1361,27 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const visStart = platA + 0.3;
         const visEnd = visStart + module * Math.floor((platB + 0.01 - visStart) / module);
         const openings = psdOpeningCenters(stopS, platA, platB).filter((c) => c - doorW / 2 >= visStart && c + doorW / 2 <= visEnd);
+        // Generic floor decoration on the walkable (negative-offset) side of the doors.
+        const floorQuad = (points: XY[], uv: number[]) => {
+          const geo = new THREE.BufferGeometry();
+          geo.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap(p => [p.x, z + 0.006, -p.y]), 3));
+          geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+          geo.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));
+          const [a, b, c] = points;
+          const cross = (b!.x - a!.x) * (c!.y - a!.y) - (b!.y - a!.y) * (c!.x - a!.x);
+          geo.setIndex(cross > 0 ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2]);
+          platformTactile.push(geo);
+        };
+        const breaks = [visStart, ...cum.filter(s => s > visStart && s < visEnd), visEnd];
+        for (let i = 1; i < breaks.length; i++) {
+          const a = breaks[i - 1]!, b = breaks[i]!;
+          const length = b - a;
+          floorQuad([at(a, -0.49), at(b, -0.49), at(b, -0.79), at(a, -0.79)], [0, 0, length / 0.3, 0, length / 0.3, 1, 0, 1]);
+        }
+        for (const c of openings) {
+          // Rotation maps v to texture x; v=0.03 is inside the plain yellow margin.
+          floorQuad([at(c - doorW / 2, -0.2), at(c + doorW / 2, -0.2), at(c + doorW / 2, -0.49), at(c - doorW / 2, -0.49)], [0.5, 0.03, 0.5, 0.03, 0.5, 0.03, 0.5, 0.03]);
+        }
         const spans: [number, number][] = [];
         const leaves: { s: number; dir: number }[] = [];
         let fillFrom = visStart;

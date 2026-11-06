@@ -1284,7 +1284,7 @@ cladWallGeometry	function	stations/shinjuku/scene/build.ts	429
 disposeRetiredGeometries	function	stations/shinjuku/scene/build.ts	482
 guardBumpNormals	function	stations/shinjuku/scene/build.ts	564
 buildStation	function	stations/shinjuku/scene/build.ts	630
-installLowTierSteps	function	stations/shinjuku/scene/build.ts	1616
+installLowTierSteps	function	stations/shinjuku/scene/build.ts	1638
 contentKey	function	stations/shinjuku/scene/content-key.ts	6
 Fence	interface	stations/shinjuku/scene/fare-fence.ts	21
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts	30
