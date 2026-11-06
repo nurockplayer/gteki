@@ -51,7 +51,7 @@ export interface AvatarSelection extends AvatarRig {
 }
 
 /** The human rig is shown while loading and on GLB failure; ?avatar=cat starts empty instead. */
-export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind }): AvatarSelection {
+export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; onCatFallback?: () => void }): AvatarSelection {
   const cat = opts.kind === "cat";
   let current = cat ? emptyRig() : createAvatar({ quality: opts.quality });
   let generation = 0;
@@ -61,12 +61,14 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
   let pending: Promise<void> | null = null;
   let fade = 1;
   let hold: "sit" | null = null;
+  let lookPitch = 0;
   let env: THREE.Texture | null = null;
   let intensity = 0.6;
   const selection: AvatarSelection = {
     get root() { return current.root; },
     update(dt, speed) { if (!disposed) current.update(dt, speed); },
     setHold(pose) { hold = pose; current.setHold?.(pose); },
+    setLookPitch(pitch) { lookPitch = pitch; current.setLookPitch?.(pitch); },
     setFade(value) { fade = sanitizeAvatarFade(value); if (!disposed) current.setFade(fade); },
     setEnvMap(value, strength = 0.6) { env = value; intensity = strength; if (!disposed) current.setEnvMap(env, intensity); },
     cancelPendingLoad() { generation++; pending = null; },
@@ -79,6 +81,7 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
       pending = loadGlbAvatar(url, load).then((next) => {
         if (disposed || token !== generation) { next.dispose(); return; }
         next.setHold?.(hold);
+        next.setLookPitch?.(lookPitch);
         next.setFade(fade);
         next.setEnvMap(env, intensity);
         const previous = current;
@@ -99,6 +102,7 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
           current.root.removeFromParent();
           current.dispose();
           current = human;
+          opts.onCatFallback?.();
         }
         if (!warned) {
           warned = true;

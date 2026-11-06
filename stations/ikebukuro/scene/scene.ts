@@ -16,6 +16,7 @@ import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { currentTimeBand } from "./time-band.ts";
 import { createAmbience } from "./ambience.ts";
+import { createZoneAcoustics, ZONE_ACOUSTICS } from "./zone-acoustics.ts";
 import { createStationSound } from "./station-sound.ts";
 import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import { loadN02Overlay } from "./n02_overlay.ts";
@@ -35,7 +36,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
-import type { SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
+import type { AcousticZone, SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
 
 type ThreeNS = typeof THREE_NS;
 
@@ -536,16 +537,18 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes, currentTimeBand(globalThis.location?.search, new Date()));
   root.add(crowd.group);
 
-  const ambience = ctx.audio ? createAmbience(ctx.audio.context, ctx.audio.destination) : null;
+  let zone: AcousticZone = "passage";
+  const acoustics = ctx.audio ? createZoneAcoustics(ctx.audio.context, ctx.audio.destination) : null;
+  const ambience = ctx.audio && acoustics ? createAmbience(ctx.audio.context, acoustics.input) : null;
   // Station sound (#859): gates are ticket_gate nodes; with no escalator or platform nodes here,
   // announcements also come from the stairs and the approach chime is heard from behind the gates.
   const stationNodes = (graph as { nodes: { id: string; kind?: string; position: { x: number; y: number; z: number | null }; renderZ?: number }[] }).nodes;
   const siteAt = (n: { position: { x: number; y: number; z: number | null }; renderZ?: number }) =>
     toRenderer(n.position.x, n.position.y, n.position.z ?? n.renderZ ?? 0);
   const gateSites = stationNodes.filter((n) => n.kind === "ticket_gate");
-  const stationSound = ctx.audio ? createStationSound({
+  const stationSound = ctx.audio && acoustics ? createStationSound({
     context: ctx.audio.context,
-    destination: ctx.audio.destination,
+    destination: acoustics.input,
     isMuted: ctx.audio.isMuted,
     stationNameJa: "池袋",
     sites: {
@@ -625,12 +628,14 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     cameraBlockers: contextBlockers.meshes,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
+    ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); } } : {}),
     settled: () => catalogKit.settled(),
+    setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
     update: (dt, elapsed, camera) => {
       catalogKit.start();
       if (camera) catalogKit.update(camera);
       crowd.update(dt, elapsed);
-      ambience?.update({ nearby: crowd.nearby(), openness: 0.8 });
+      ambience?.update({ nearby: crowd.nearby(), openness: ZONE_ACOUSTICS[zone].openness });
       stationSound?.update(dt, camera);
       if (context && cameraTrack) {
         const seen = cameraTrack.read();
@@ -642,6 +647,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       material.dispose();
       stationSound?.dispose();
       ambience?.dispose();
+      acoustics?.dispose();
       cameraTrack?.dispose();
       disposed = true;
       n02Overlay.dispose();

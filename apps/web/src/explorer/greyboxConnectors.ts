@@ -413,23 +413,36 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
   });
   const pairs = [[legsOf(a), legsOf(b)], [legsOf(rawA.map(local)), legsOf(rawB.map(local))]] as const;
   const range = (legs: ReturnType<typeof legsOf>, box: ReturnType<typeof boxOf>, corners: PlanPoint[]) => {
-    const choices = legs.map((leg) => {
-      const ts = corners.map((p) => ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2);
-      const at = (p: PlanPoint) => leg.p.y + (leg.q.y - leg.p.y) * Math.max(0, Math.min(1, ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2));
-      const heights = corners.map(at);
-      const upper = Math.max(...corners.map((p, i) => {
-        const t = Math.max(0, Math.min(1, ts[i]!));
-        return (p.x - leg.p.x - t * leg.dx) ** 2 + (p.z - leg.p.z - t * leg.dz) ** 2;
-      }));
+    const choices: { leg: typeof legs[number]; heights: number[]; upper: number; lower: number; affine: boolean }[] = [];
+    let upper = Infinity;
+    for (const leg of legs) {
+      const heights: number[] = [];
+      let maxDistance = -Infinity, before = true, after = true, inside = true;
+      for (const p of corners) {
+        const t = ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2;
+        before &&= t <= 0; after &&= t >= 1; inside &&= t >= 0 && t <= 1;
+        const clamped = Math.max(0, Math.min(1, t));
+        heights.push(leg.p.y + (leg.q.y - leg.p.y) * clamped);
+        maxDistance = Math.max(maxDistance, (p.x - leg.p.x - clamped * leg.dx) ** 2 + (p.z - leg.p.z - clamped * leg.dz) ** 2);
+      }
       const lower = Math.max(leg.box.x0 - box.x1, box.x0 - leg.box.x1, 0) ** 2 + Math.max(leg.box.z0 - box.z1, box.z0 - leg.box.z1, 0) ** 2;
-      const affine = leg.p.y === leg.q.y || ts.every((t) => t <= 0) || ts.every((t) => t >= 1) || ts.every((t) => t >= 0 && t <= 1);
-      return { at, heights, upper, lower, affine };
-    });
+      choices.push({ leg, heights, upper: maxDistance, lower, affine: leg.p.y === leg.q.y || before || after || inside });
+      upper = Math.min(upper, maxDistance);
+    }
     // A box-distance lower bound cannot omit a leg that is nearest anywhere in the cell.
-    const upper = Math.min(...choices.map((c) => c.upper));
-    const possible = choices.filter((c) => c.lower <= upper + 1e-12), first = possible[0]!;
-    const samePlane = possible.every((c) => c.affine && c.heights.every((h, i) => Math.abs(h - first.heights[i]!) < 1e-9));
-    return { low: Math.min(...possible.flatMap((c) => c.heights)), high: Math.max(...possible.flatMap((c) => c.heights)), at: samePlane ? first.at : undefined };
+    let first: typeof choices[number] | undefined, samePlane = true, low = Infinity, high = -Infinity;
+    for (const c of choices) if (c.lower <= upper + 1e-12) {
+      first ??= c;
+      if (!c.affine) samePlane = false;
+      for (let i = 0; i < c.heights.length; i++) {
+        const h = c.heights[i]!;
+        if (!(Math.abs(h - first.heights[i]!) < 1e-9)) samePlane = false;
+        low = Math.min(low, h); high = Math.max(high, h);
+      }
+    }
+    const leg = first!.leg;
+    const at = (p: PlanPoint) => leg.p.y + (leg.q.y - leg.p.y) * Math.max(0, Math.min(1, ((p.x - leg.p.x) * leg.dx + (p.z - leg.p.z) * leg.dz) / leg.length2));
+    return { low, high, at: samePlane ? at : undefined };
   };
   const kept: PlanPoint[][] = [];
   const visit = (box: ReturnType<typeof boxOf>) => {
