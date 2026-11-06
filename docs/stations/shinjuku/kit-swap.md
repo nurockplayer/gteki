@@ -144,11 +144,11 @@ Lane E (PR #143) builds the dressing pieces from a catalog in our tree, in the s
 `tools/blender/catalog/kit_v0_1.json` (`id`, `generator`, `params`, `tags`, plus `dimension_basis` and `notes`, both of which
 `build.py` reads). Stair dressings carry `ao_res: 128`; escalator dressings carry `ao_res: 256` so their many parts fit the AO atlas. Every stair and escalator dressing carries `anchor: "linear_run"` as required by contract §10; the gate array carries no anchor. The reported mobile AO GPU estimate above is inside the upstream provisional 12 MiB warning line; this has not been measured on device, and the swap enforces its own 8 MB retained-texture cap. We bundle with `tools/blender/bundle_kit.py` ourselves. Do not run Blender or the bundler from this lane.
 
-- 33 entries: 22 `stair_dressing` (`parts: ["nosing"]`), 10 `escalator_dressing` (`parts: ["comb","newel"]`),
+- 39 entries: 26 `stair_dressing` (`parts: ["nosing"]`), 12 `escalator_dressing` (`parts: ["comb","newel"]`),
   1 `gate_array` (`aisles 1, wide_aisles [0], wide_w 1.02`). Ids are `gteki_sj_stair_<edge>`, `gteki_sj_escalator_<edge>` and
   `gteki_sj_gate_1w_w1020`, all matching `^gteki_[a-z0-9_]+$` (`<edge>` = first 8 hex characters of the first graph edge of the group).
-- Runs with identical (quantised) params share one entry. Stairs barely group (24 runs, 22 ids) because their drawn rises differ;
-  escalators group 19 runs into 10 ids. Quantisation: stair riser 2 mm and tread 10 mm; escalator rise 100 mm and run 250 mm.
+- Runs with identical (quantised) params share one entry. Stairs barely group (29 runs, 26 ids) because their drawn rises differ;
+  escalators group 21 of the 22 runs into 12 ids. Quantisation: stair riser 2 mm and tread 10 mm; escalator rise 100 mm and run 250 mm.
   The worst error from rounding is written in each entry's `notes` and is inside the fit tolerance (rise 0.1 m, length 0.25 m, width 0.15 m).
 - Every param has its derivation in the entry's `notes`: stair `step_count = max(2, round(rise / 0.165))` (the stepping `build.ts` draws),
   `riser_mm = rise / step_count`, `tread_mm = plan length / step_count`, `width_mm` = the scene's MLIT width-class estimate; escalator
@@ -159,8 +159,12 @@ Lane E (PR #143) builds the dressing pieces from a catalog in our tree, in the s
 - **Gate width is not a fact.** `wide_w 1.02` is the kit default (a visual default); no source in this dataset states a clear width,
   and no gate count is claimed. It matches the +/-0.62 m machine spacing the scene already draws. The entry equals the kit's own
   `gteki_gate_array_1w`; Lane E may alias it instead of building a second copy.
-- Two escalators stay as drawn because their drawn incline is outside the kit range 15 to 35 degrees: `e:4bee1c5e...` (rise 7.80 m
-  over 9.33 m, implied kit incline 48.3 degrees) and `e:27d3ed49...` (rise 7.54 m over 12.86 m, implied kit incline 35.7 degrees). They are reported as `dropped: no piece fits`.
+- **One escalator stays as drawn, as a stated height data limit.** `e:27d3ed49...` (B3→B2) is 35.8° (rise 7.54 m over 12.86 m) on
+  symbolic heights, not measured elevations: the source has no z and `gap:heights` stays open. That is above the kit's 35° escalator
+  range, so it keeps its procedural balustrade and is reported as `dropped: no piece fits`. Moving B2 down to fit it was tried on
+  2026-11-06 JST: it pulls the neighbouring B2→B1 run `e:d573063b...` out of its navmesh snap (a new `snap_failed` fallback) and raises
+  unvalidated joins 56 → 78, so it was reverted. The run stays procedural until measured elevations exist. The two runs #808 put in
+  range, `e:4bee1c5e...` (24.8°) and `e:c7fa5f74...` (29.4°), are dressed.
 - Assumed names from Lane E's addendum (#143 at 465a3d5): escalator `parts` values `balustrade|handrail|newel|comb`, stair `parts` values
   `nosing|handrail|skirt`; the escalator's `comb_run_m` is read from the built manifest when present (otherwise computed from
   `run_mm` / `angle_deg` with the kit's flat steps).

@@ -111,20 +111,46 @@ describe("the shipped mobile kit bundle dresses the escalators", () => {
     expect(report.placed.every((p) => p.role === "escalator" && p.replaces === "escalator-balustrade")).toBe(true);
     const keys = new Set(report.placed.map((p) => p.anchorKey));
     for (const edge of GOLDEN_SLICE) expect([edge, keys.has(edge)]).toEqual([edge, true]);
-    // All 19 runs a piece fits get dressed: 19 fitted runs, no budget drops, 58,008 triangles under the 60k cap.
-    // After #789, 4bee1c5e and c7fa5f74 need newly fitted assets; 27d3ed49 remains outside the dressing
-    // generator's angle range. All three retain procedural finishes.
-    expect(report.placed.length).toBe(19);
+    // 21 runs a piece fits get dressed, with no budget drops. 27d3ed49 stays procedural: 35.8° on a
+    // symbolic height is outside the generator's range and is a stated data limit (kit-swap.md), not a
+    // missing asset.
+    expect(report.placed.length).toBe(21);
     expect(report.dropped.filter((d) => /budget/.test(d.reason))).toEqual([]);
     expect(report.dropped.filter((d) => /no piece fits/.test(d.reason)).map((d) => d.anchorKey).sort()).toEqual([
-      "e:27d3ed498cc9423683ee7f502c5d2460", "e:4bee1c5e3544452db681f9aeccfe2346", "e:c7fa5f74d72f43498ef2cb3b1dbea7e4",
+      "e:27d3ed498cc9423683ee7f502c5d2460",
     ]);
     expect(report.totals.draws).toBeLessThanOrEqual(KIT_BUDGET.maxDraws);
-    expect(report.totals.triangles).toBeLessThanOrEqual(KIT_BUDGET.maxTriangles);
+    // #751: 60k triangles and 30 draws are ACTIVE limits the distance LOD enforces at runtime; the resident
+    // kit is guarded by whole-station geometry bytes, and 21 runs sit near 64,050 resident triangles by design.
     expect(report.totals.geometryBytes).toBeLessThanOrEqual(KIT_BUDGET.maxGeometryBytes);
     expect(report.measured.geometryBytes).toBeLessThanOrEqual(report.totals.geometryBytes);
     expect(report.totals.gpuTextureBytes).toBeLessThanOrEqual(KIT_BUDGET.maxGpuTextureBytes);
     expect(report.hidden["escalator-balustrade"]).toBeGreaterThan(0);
+  });
+
+  it("keeps the distance LOD's active kit inside the #751 active limits at every dressed run", () => {
+    const layer = on.root.getObjectByName("kit-swap")!;
+    const near = layer.children.filter((g) => g.name.startsWith("kit-near:"));
+    // What the LOD leaves visible: its merged kit batches, counted the way lod.ts counts a draw.
+    const load = () => {
+      let triangles = 0, draws = 0;
+      for (const group of near) for (const child of group.visible ? group.children : []) {
+        const mesh = child as THREE.Mesh;
+        if (!mesh.isMesh) continue;
+        triangles += (mesh.geometry.index?.count ?? mesh.geometry.attributes.position.count) / 3;
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        draws += materials.reduce((n, m) => n + (m.transparent && m.side === THREE.DoubleSide && !m.forceSinglePass ? 2 : 1), 0);
+      }
+      return { triangles, draws };
+    };
+    for (const p of report.placed) {
+      report.lod!.update({ x: p.position[0], y: -p.position[2], z: p.position[1] });
+      const { triangles, draws } = load();
+      expect(triangles, `${p.anchorKey} draws its own batch`).toBeGreaterThan(0);
+      expect(draws, `${p.anchorKey} active draws`).toBeLessThanOrEqual(KIT_BUDGET.maxDraws);
+      expect(triangles, `${p.anchorKey} active triangles`).toBeLessThanOrEqual(KIT_BUDGET.maxTriangles);
+      expect([p.anchorKey, report.lod!.active.has(p.anchorKey)]).toEqual([p.anchorKey, true]);
+    }
   });
 
   it("leaves walkable, colliders, camera blockers and the scene lists exactly as the flag-off scene", () => {
