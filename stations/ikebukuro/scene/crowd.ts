@@ -5,6 +5,7 @@
 // one InstancedMesh per part with per-instance colour; no per-agent objects, no physics.
 import type * as THREE_NS from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import type { TimeBand } from "./time-band.ts";
 
 interface P3 { x: number; y: number; z: number | null }
 interface Edge { id: string; from: string; to: string; verification: string; geometry: P3[] }
@@ -498,14 +499,27 @@ interface Look {
   hair: 0 | 1 | 2; open: boolean; tail: number; carry: "backpack" | "shoulderBag" | null; bagSide: 1 | -1;
 }
 
+/**
+ * Game simulation, art direction: not real or live passenger data (#627). density scales the head-count;
+ * suitBias shifts the outfit draw toward suits (positive) or away from them (negative).
+ */
+export const CROWD_BANDS: Record<TimeBand, { density: number; suitBias: number }> = {
+  morning: { density: 1, suitBias: 0.25 },
+  midday: { density: 0.6, suitBias: -0.2 },
+  evening: { density: 0.4, suitBias: 0 },
+};
+
 export function buildCrowd(
   THREE: typeof THREE_NS,
   edges: Edge[],
   toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3,
-  count: number,
+  maxCount: number,
   envMap: THREE_NS.Texture,
   lanes: Record<string, Lane> = {},
+  band?: TimeBand,
 ) {
+  const preset = band ? CROWD_BANDS[band] : { density: 1, suitBias: 0 };
+  const count = Math.max(1, Math.round(maxCount * preset.density));
   const paths: Path[] = [];
   for (const e of edges) {
     if (e.verification !== "verified" || e.geometry.some((p) => p.z === null)) continue;
@@ -541,7 +555,7 @@ export function buildCrowd(
     a.phase = a.bobPhase = rand() * 6.28;
   }
 
-  const low = count <= LOW_QUALITY_MAX_COUNT;
+  const low = maxCount <= LOW_QUALITY_MAX_COUNT;
   const geo = makeGeometry(THREE, low);
   // One material per surface type. Albedos are real-world values; the envMap is the only light, so it is
   // held down a little to keep dark coats dark.
@@ -567,7 +581,7 @@ export function buildCrowd(
     rand(); rand(); // skin, hair
     for (let k = 0; k < 11; k++) rand(); // bag colour per part
     const male = vr() < 0.52;
-    const o = vr();
+    const o = Math.min(0.999, Math.max(0, vr() - preset.suitBias));
     // 0 suit, 1 casual jacket, 2 hoodie / knit, 3 trench, 4 skirt outfit
     const outfit = male ? (o < 0.36 ? 0 : o < 0.68 ? 1 : o < 0.85 ? 2 : 3) : o < 0.1 ? 0 : o < 0.28 ? 1 : o < 0.42 ? 2 : o < 0.64 ? 3 : 4;
     let coat: number, shirtHex = 0, open = false, tail = 0, leg: number;
