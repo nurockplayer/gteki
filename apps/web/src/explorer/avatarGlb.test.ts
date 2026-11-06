@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { loadGlbAvatar } from "./avatarGlb.ts";
-import { fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
+import { catClips, loadGlbAvatar } from "./avatarGlb.ts";
+import { catAvatarFixture, fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -192,5 +192,65 @@ describe("loadGlbAvatar", () => {
     const rig = await loadGlbAvatar("/avatar.glb", { quality: "low", loader: { loadAsync: async () => asset } });
     expect(() => rig.update(0.1, 3)).not.toThrow();
     rig.dispose();
+  });
+});
+
+describe("cat avatar", () => {
+  it("scales to the cat body height, flags its materials and draws above the route band", async () => {
+    const asset = catAvatarFixture();
+    const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => asset }, heightM: 0.345, cat: true });
+    const bounds = new THREE.Box3().setFromObject(rig.root);
+    expect(bounds.min.y).toBeCloseTo(0);
+    expect(bounds.max.y).toBeCloseTo(0.345);
+    for (const material of asset.mesh.material as THREE.Material[]) {
+      expect(material.transparent).toBe(true);
+      expect(material.depthWrite).toBe(true);
+    }
+    expect(asset.mesh.renderOrder).toBe(30);
+    expect(asset.accessory.renderOrder).toBe(30);
+    rig.dispose();
+  });
+
+  it("follows the cat gait thresholds and the 4 s sit timer", async () => {
+    const asset = catAvatarFixture();
+    const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => asset }, cat: true });
+    const pose = () => asset.spine.rotation.z;
+    rig.update(0.4, 0.02);
+    expect(pose()).toBeCloseTo(0.1); // idle
+    rig.update(0.4, 0.5);
+    expect(pose()).toBeCloseTo(0.2); // walk
+    rig.update(0.4, 1.2);
+    expect(pose()).toBeCloseTo(0.3); // trot
+    rig.update(0.4, 2.5);
+    expect(pose()).toBeCloseTo(0.4); // run
+    for (let step = 0; step < 10; step++) rig.update(0.5, 0);
+    expect(pose()).toBeCloseTo(0.5); // idle long enough to sit
+    rig.update(0.5, 0.5);
+    expect(pose()).toBeCloseTo(0.2); // moving again
+    rig.dispose();
+  });
+
+  it("plays each locomotion clip at speed / calib and leaves idle alone", () => {
+    const asset = catAvatarFixture();
+    const mixer = new THREE.AnimationMixer(asset.scene);
+    const calib = { walk: 0.40625, trot: 1, run: 2.285714285714286 };
+    const action = (name: string) => mixer.clipAction(asset.animations.find((clip) => clip.name === name)!);
+    const animate = catClips(mixer, asset.animations, calib);
+    animate(0.5, 0.1);
+    mixer.update(0.1);
+    expect(action("walk").isRunning()).toBe(true);
+    expect(action("walk").getEffectiveTimeScale()).toBeCloseTo(0.5 / calib.walk);
+    animate(1.5, 0.1);
+    mixer.update(0.1);
+    expect(action("trot").isRunning()).toBe(true);
+    expect(action("trot").getEffectiveTimeScale()).toBeCloseTo(1.5);
+    animate(2.5, 0.1);
+    mixer.update(0.1);
+    expect(action("run").getEffectiveTimeScale()).toBeCloseTo(2.5 / calib.run);
+    animate(0, 0.5);
+    mixer.update(0.5);
+    expect(action("idle").isRunning()).toBe(true);
+    expect(action("idle").getEffectiveTimeScale()).toBeCloseTo(1);
+    mixer.stopAllAction();
   });
 });

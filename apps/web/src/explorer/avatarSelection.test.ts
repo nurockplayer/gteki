@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { avatarGlbUrl, createAvatarRig, DEFAULT_AVATAR_GLB_URL, SOFT_AVATAR_GLB_URL } from "./avatarSelection.ts";
-import { fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
+import { avatarGlbUrl, avatarKind, catGlb, createAvatarRig, DEFAULT_AVATAR_GLB_URL, SOFT_AVATAR_GLB_URL } from "./avatarSelection.ts";
+import { catAvatarFixture, fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -165,5 +165,54 @@ describe("avatar flag", () => {
   });
   it.each(["https://evil.example/avatar.glb", "https://gteki.example/avatar.glb", "//evil.example/a.glb", "/..//evil.example/a.glb", "/avatars/..//evil.example/a.glb", "/%2e%2e//evil.example/a.glb", "data:abc", "javascript:alert(1)", "file:///a.glb", "\\\\evil.example/a.glb", "/\\evil.example/a.glb", " /avatar.glb", "/ava\ntar.glb", "", "?url=evil", "#avatar"])("rejects a non-relative or malformed avatarUrl: %s", (input) => {
     expect(avatarGlbUrl(new URLSearchParams({ avatar: "glb", avatarUrl: input }), page)).toBeUndefined();
+  });
+});
+
+describe("cat avatar selection", () => {
+  it("maps each cat style to its GLB and height", () => {
+    expect(catGlb("A")).toEqual({ url: "/avatars/cat.glb", heightM: 0.3 });
+    expect(catGlb("B")).toEqual({ url: "/avatars/cat.glb", heightM: 0.345 });
+    expect(catGlb("C")).toEqual({ url: "/avatars/cat_tabby.glb", heightM: 0.345 });
+    expect(catGlb()).toEqual({ url: "/avatars/cat.glb", heightM: 0.345 });
+  });
+
+  it("starts from an empty rig and swaps in the cat GLB without ever showing the human", async () => {
+    const loader = { loadAsync: vi.fn().mockResolvedValue(catAvatarFixture()) };
+    const rig = createAvatarRig({ quality: "low", kind: "cat", catStyle: "C", loader });
+    const empty = rig.root;
+    expect(empty.children).toHaveLength(0);
+    expect(rig.root.getObjectByName("shoeL")).toBeUndefined();
+    expect(loader.loadAsync).toHaveBeenCalledWith("/avatars/cat_tabby.glb");
+    await rig.loadGlb();
+    expect(rig.root).not.toBe(empty);
+    expect(rig.root.getObjectByName("shoeL")).toBeUndefined();
+    rig.dispose();
+  });
+
+  it("falls back to the human once when the cat GLB fails, warning once", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const loader = { loadAsync: vi.fn().mockRejectedValue(new Error("404")) };
+    const rig = createAvatarRig({ quality: "low", kind: "cat", loader });
+    await rig.loadGlb();
+    expect(rig.root.getObjectByName("shoeL")).toBeDefined();
+    expect(warn).toHaveBeenCalledTimes(1);
+    rig.cancelPendingLoad();
+    await rig.loadGlb();
+    expect(loader.loadAsync).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledTimes(1);
+    rig.dispose();
+  });
+});
+
+describe("avatarKind", () => {
+  const parse = (query: string) => avatarKind(new URLSearchParams(query));
+  it("defaults the cat style to B and accepts A and C", () => {
+    expect(parse("avatar=cat")).toEqual({ kind: "cat", catStyle: "B" });
+    expect(parse("avatar=cat&catStyle=C")).toEqual({ kind: "cat", catStyle: "C" });
+    expect(parse("avatar=cat&catStyle=A")).toEqual({ kind: "cat", catStyle: "A" });
+    expect(parse("avatar=cat&catStyle=Z")).toEqual({ kind: "cat", catStyle: "B" });
+  });
+  it.each(["", "avatar=procedural", "avatar=soft", "avatar=glb", "avatar=cat2", "catStyle=A"])("keeps the human avatar for %s", (query) => {
+    expect(parse(query)).toEqual({ kind: "human" });
   });
 });
