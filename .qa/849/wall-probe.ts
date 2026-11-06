@@ -22,9 +22,9 @@ const to = bundle.pois.find(p => p.id === 'poi:platform:oedo')!;
 const route = routeBetween(router, { kind: 'poi', poi: from }, to, DEFAULT_PROFILE);
 if (!route.ok) throw new Error(JSON.stringify(route));
 // Mirror spec 17's routeWaypoints without importing its Playwright harness.
-const nodes = new Map(bundle.graph.nodes.map(n => [n.id, n]));
-const edges = new Map(bundle.graph.edges.map(e => [e.id, e]));
-const floors = new Map(bundle.station.floors.map(f => [f.id, f]));
+const nodes = new Map(bundle.nodes.map(n => [n.id, n]));
+const edges = new Map(bundle.edges.map(e => [e.id, e]));
+const floors = new Map(bundle.floors.map(f => [f.id, f]));
 const dz = (n: any) => n.position.z ?? n.renderZ ?? floors.get(n.floorId)?.renderElevationM ?? 0;
 const first = nodes.get(route.steps[0]!.fromNodeId)!;
 const wps = [{x:first.position.x,y:first.position.y,z:dz(first)}];
@@ -36,7 +36,7 @@ for (const step of route.steps) {
  const total=lengths.at(-1)! || 1;
  for(let i=1;i<raw.length;i++){const p=raw[i]!, last=i===raw.length-1,t=lengths[i]!/total; wps.push({x:last?to.position.x:p.x,y:last?to.position.y:p.y,z:last?dz(to):p.z ?? dz(from)+(dz(to)-dz(from))*t});}
 }
-const node = bundle.graph.nodes.find(n => n.id === 'n:453ea111f1524cef8f3ac139bbf2e26b')!;
+const node = bundle.nodes.find(n => n.id === 'n:453ea111f1524cef8f3ac139bbf2e26b')!;
 const target = { x: node.position.x, y: node.position.y, z: node.position.z ?? node.renderZ ?? 0 };
 let acc = 0, best = { s: 0, d: Infinity };
 for (let i = 1; i < wps.length; i++) {
