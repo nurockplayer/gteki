@@ -172,14 +172,14 @@
     }
    },
    "triangle_estimate": {
-    "basis": "Lane E (#143): mobile 20.3k escalators over 5 ids and 7.2k nosings over 61 ids; full 153k for all 61 rails ids at rail_segments 6; per-id scaling is even, so rails are rough (they grow with step_count). Unique GLB triangles, not instanced draw totals.",
+    "basis": "Lane E (#143): mobile 20.3k escalators over 5 ids and 8.6k nosings over the 69 low placements (61 ids, #703 measured); full 153k for all 61 rails ids at rail_segments 6; per-id scaling is even, so rails are rough (they grow with step_count). Unique GLB triangles, not instanced draw totals.",
     "low": {
-     "nosing_mobile": 7200,
+     "nosing_mobile": 8610,
      "escalators_mobile": 20328,
-     "total": 27528
+     "total": 28938
     },
     "high": {
-     "nosing_mobile": 7200,
+     "nosing_mobile": 8610,
      "escalators_mobile": 20328,
      "rails_full": 52672,
      "rails_full_if_all_61": 153000

@@ -95,9 +95,10 @@ ROUTE_Z_PAD_M = 0.3
 ROUTE_SAMPLE_M = 0.25
 # Lane E triangle counts (#143): mobile profile, escalators 20.3k over the 5 ids and nosings 7.2k over the 61 ids;
 # full profile, all 61 rails ids at rail_segments 6 153k. Per-id estimates scale these evenly.
-# #703's rebuilt phone escalators measure 20 328 triangles (5 GLBs, 2026-11-07 JST).
+# #703's rebuilt phone kit measures 20 328 escalator triangles (5 GLBs) and 8 610 nosing triangles over the 69 low
+# placements (61 ids), both from the committed mobile GLBs (2026-11-07 JST).
 TRIS_ESCALATORS_MOBILE = 20328
-TRIS_NOSING_MOBILE = 7200
+TRIS_NOSING_MOBILE = 8610
 TRIS_RAILS_FULL_ALL = 153000
 ROUTES_REL = os.path.join("tests", "e2e", "specs", "__goldens__", "02-navigation.spec.ts", "ikebukuro-routes.json")
 RAIL_PROBE_M = 0.9            # height above the tread at which the wall probe is taken
@@ -353,9 +354,9 @@ def tier_summary(placements, entries, route_flights, polylines, route_fallback):
                      "rails_placements_dropped_vs_all": sum(1 for p in stairs if not p["main_route"])},
         },
         "triangle_estimate": {
-            "basis": "Lane E (#143): mobile 20.3k escalators over 5 ids and 7.2k nosings over 61 ids; full 153k for all 61 "
-                     "rails ids at rail_segments 6; per-id scaling is even, so rails are rough (they grow with step_count). "
-                     "Unique GLB triangles, not instanced draw totals.",
+            "basis": "Lane E (#143): mobile 20.3k escalators over 5 ids and 8.6k nosings over the 69 low placements (61 "
+                     "ids, #703 measured); full 153k for all 61 rails ids at rail_segments 6; per-id scaling is even, so "
+                     "rails are rough (they grow with step_count). Unique GLB triangles, not instanced draw totals.",
             "low": {"nosing_mobile": nosing, "escalators_mobile": esc, "total": nosing + esc},
             "high": {"nosing_mobile": nosing, "escalators_mobile": esc, "rails_full": rails,
                      "rails_full_if_all_61": TRIS_RAILS_FULL_ALL},
