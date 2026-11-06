@@ -97,7 +97,6 @@ export interface ExplorerEvents {
   onPoiClick?(poiId: string): void;
 }
 
-const HUMAN_PITCH = -0.12;
 const EYE = WALKER_BODY.eyeM;
 const RADIUS = WALKER_BODY.radiusM;
 const WALK = WALKER_SPEED.walkMps;
@@ -355,7 +354,7 @@ export class Explorer {
   private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
-  private pitch = HUMAN_PITCH;
+  private pitch = -0.12;
   private camDistance: number = FOLLOW.defaultDistance;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
@@ -998,7 +997,7 @@ export class Explorer {
   private fallBackToHumanAvatar(): void {
     this.catAvatar = false;
     this.camDistance = FOLLOW.defaultDistance;
-    this.pitch = HUMAN_PITCH;
+    this.pitch = -0.12;
     this.buildAvatarMarker();
   }
 
