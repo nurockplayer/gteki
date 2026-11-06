@@ -19,6 +19,12 @@ test("search panel folds while walking @phone", async ({ page }, info) => {
   expect(a).not.toBeNull(); expect(b).not.toBeNull(); expect(c).not.toBeNull();
   const overlap = (x: NonNullable<typeof a>, y: NonNullable<typeof a>) => x.x < y.x + y.width && x.x + x.width > y.x && x.y < y.y + y.height && x.y + x.height > y.y;
   expect(overlap(a!, b!)).toBe(false); expect(overlap(a!, c!)).toBe(false);
+  const legend = await page.locator(".greybox-legend").boundingBox();
+  const hudButtons = await page.locator(".hud button:visible").evaluateAll((els) => els.map((e) => { const r = e.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; }));
+  console.log(`[panel-fold] ${new Date().toISOString()} ${tier} legend/hudButtons ${JSON.stringify({ legend, hudButtons })}`);
+  expect(legend).not.toBeNull();
+  expect(hudButtons.length).toBeGreaterThan(0);
+  for (const button of hudButtons) expect(overlap(legend!, button)).toBe(false);
   await page.screenshot({ path: shotPath(info, `${tier}-folded.png`) });
   if (phone) await entry.tap(); else await entry.click();
   await expect(panel).toBeVisible();
