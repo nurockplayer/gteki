@@ -87,7 +87,7 @@ ExplorerMode	type	apps/web/src/explorer/explorer.ts	62
 ExplorerPose	interface	apps/web/src/explorer/explorer.ts	64
 ExplorerOptions	interface	apps/web/src/explorer/explorer.ts	66
 ExplorerEvents	interface	apps/web/src/explorer/explorer.ts	92
-Explorer	class	apps/web/src/explorer/explorer.ts	205
+Explorer	class	apps/web/src/explorer/explorer.ts	206
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts	12
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts	26
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts	138
@@ -444,11 +444,11 @@ printedHours	function	apps/web/src/hours.ts	15
 HOURS_STALE_DAYS	const	apps/web/src/hours.ts	29
 hoursStale	function	apps/web/src/hours.ts	32
 Lang	type	apps/web/src/i18n.ts	6
-Strings	type	apps/web/src/i18n.ts	511
-strings	function	apps/web/src/i18n.ts	513
-pick	function	apps/web/src/i18n.ts	518
-coverageText	function	apps/web/src/i18n.ts	527
-initialLang	function	apps/web/src/i18n.ts	532
+Strings	type	apps/web/src/i18n.ts	513
+strings	function	apps/web/src/i18n.ts	515
+pick	function	apps/web/src/i18n.ts	520
+coverageText	function	apps/web/src/i18n.ts	529
+initialLang	function	apps/web/src/i18n.ts	534
 FormClock	interface	apps/web/src/merchant/form-state.ts	9
 FormState	interface	apps/web/src/merchant/form-state.ts	18
 newFormState	function	apps/web/src/merchant/form-state.ts	32
@@ -495,7 +495,7 @@ SIGN_FONT_TIMEOUT_MS	const	apps/web/src/signFont.ts	4
 loadSignFont	function	apps/web/src/signFont.ts	9
 StationClock	interface	apps/web/src/stationClock.ts	5
 stationClock	function	apps/web/src/stationClock.ts	17
-App	class	apps/web/src/ui/app.ts	94
+App	class	apps/web/src/ui/app.ts	95
 isAccessibleToilet	function	apps/web/src/ui/barrierFree.ts	6
 barrierFreeResults	function	apps/web/src/ui/barrierFree.ts	11
 CATEGORY_ORDER	const	apps/web/src/ui/categoryFilter.ts	7
@@ -579,6 +579,7 @@ watchReducedMotion	function	apps/web/src/ui/motion.ts	11
 isUnlocatedShop	function	apps/web/src/ui/noRouteText.ts	6
 poiNoteText	function	apps/web/src/ui/noRouteText.ts	15
 noRouteText	function	apps/web/src/ui/noRouteText.ts	25
+PanelFold	class	apps/web/src/ui/panelFold.ts	1
 WalkKeyEventLike	interface	apps/web/src/ui/railKeyGuard.ts	5
 shouldHandleGuideKey	function	apps/web/src/ui/railKeyGuard.ts	13
 swallowBackgroundWalkKey	function	apps/web/src/ui/railKeyGuard.ts	30
@@ -920,8 +921,8 @@ SearchOptions	interface	packages/search/src/index.ts	38
 SearchIndex	interface	packages/search/src/index.ts	47
 normalizeJa	function	packages/search/src/search.ts	5
 searchKey	function	packages/search/src/search.ts	16
-scriptRuns	function	packages/search/src/search.ts	64
-createSearchIndex	function	packages/search/src/search.ts	224
+scriptRuns	function	packages/search/src/search.ts	72
+createSearchIndex	function	packages/search/src/search.ts	262
 stairwellRecipeUrl	const	stations/ikebukuro/gteki/scene.ts	6
 navmeshPaths	const	stations/ikebukuro/gteki/scene.ts	10
 @gteki/station-ikebukuro:dev	script	stations/ikebukuro/package.json	6

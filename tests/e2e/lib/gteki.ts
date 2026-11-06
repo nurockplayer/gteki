@@ -143,6 +143,8 @@ export const hooks = {
 
 /** Pick an endpoint the way a user does: type into the field and click a search result by its visible text (name or its description subtitle, #595). */
 export async function chooseBySearch(page: Page, which: "from" | "to", query: string, resultName: string | RegExp): Promise<void> {
+  const entry = page.locator(".panel-entry");
+  if (await entry.isVisible()) await entry.click();
   const input = page.locator(`#gteki-${which}`);
   await input.click();
   await input.fill("");
