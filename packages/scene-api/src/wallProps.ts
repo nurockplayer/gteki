@@ -36,11 +36,11 @@ const BACK_INSET_M = 0.02;
 const BASE_PROUD_M = 0.01;
 
 const COLOUR = {
-  body: 0xd7d7d0,
+  body: 0x4f5a66,
   base: 0x4c4c48,
-  window: 0xfff3d0,
+  window: 0x1f2329,
   slot: 0x2b2b2a,
-  frame: 0xffffff,
+  frame: 0xffc25c,
   kioskBody: 0xcfcfc8,
   kioskHeader: 0xfff0c8,
   shelf: 0x8d8880,
