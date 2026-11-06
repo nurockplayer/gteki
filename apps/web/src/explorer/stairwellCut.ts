@@ -191,6 +191,8 @@ export interface StairwellCut {
   walls: Segment2[];
   /** Rail and glass meshes, to add to the collider and camera targets. */
   colliders: THREE.Object3D[];
+  /** Stops the follow camera only: without this it can pass behind a band, which then fills the view. */
+  cameraBlockers: THREE.Object3D[];
   /** Rail, glass and (when no greybox shell takes it) the edge band. */
   finish: THREE.Group | null;
   bandTriangles: number;
@@ -414,7 +416,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
 
   const finish = new THREE.Group();
   finish.name = "greybox-stairwell";
-  const colliders: THREE.Object3D[] = [];
+  const colliders: THREE.Object3D[] = [], cameraBlockers: THREE.Object3D[] = [];
   const bandTarget = options.greyboxRoot ? (options.greyboxRoot.getObjectByName("greybox-shell") as THREE.Mesh | undefined) : undefined;
   let bandTriangles = 0;
   if (bands.length) {
@@ -423,10 +425,11 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute("position", new THREE.Float32BufferAttribute(bands, 3));
       geometry.computeVertexNormals();
-      const mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({ color: 0x8a8c88, side: THREE.DoubleSide }));
+      // Basic, not Lambert: a station with baked lighting has no lights in the scene, so Lambert renders black.
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 0x8a8c88, side: THREE.DoubleSide }));
       mesh.name = "greybox-stairwell-band";
       mesh.userData = { greybox: true, approximate: true };
-      finish.add(mesh);
+      finish.add(mesh); cameraBlockers.push(mesh);
       bandTriangles = bands.length / 9;
     }
   }
@@ -451,7 +454,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   return {
     stats: { wells: cutWells.length, cutTriangles: cut.cutTriangles, skippedMeshes: cut.skipped.length, railM, cutMeshes: cut.cutMeshes, cutMs: cut.cutMs, skippedWells: wells.length - live.length, recipe },
     meshKeysHash: cut.meshKeysHash,
-    walls, colliders, finish: finish.children.length ? finish : null, bandTriangles, finishTriangles, skipped: cut.skipped,
+    walls, colliders, cameraBlockers, finish: finish.children.length ? finish : null, bandTriangles, finishTriangles, skipped: cut.skipped,
     resources, dispose: () => {
       // The finish meshes are ours; the cut meshes' originals are restored by disposePortalCuts.
       finish.traverse((object) => {
