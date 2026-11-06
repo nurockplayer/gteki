@@ -10,7 +10,6 @@ const wallProps: WallPropPlacement[] = [
   // East exit passage, south face. The interactive machine stands here.
   { id: "ikb-vending-w", kind: "vending", wall: [-28.75, 63.38], n: [0.395, 0.919], z: 27.91, w: 1.1, d: 0.75, interaction: "ikb-vending-1" },
   { id: "ikb-vending-e", kind: "vending", wall: [66.81, 31.07], n: [-0.395, -0.919], z: 28.49, w: 1.1, d: 0.75 },
-  { id: "ikb-vending-n", kind: "vending", wall: [-112.5, -26.81], n: [-0.294, -0.956], z: 27.58, w: 1.1, d: 0.75 },
   { id: "ikb-kiosk-s", kind: "kiosk", wall: [60.94, 113.53], n: [0.919, -0.395], z: 28.35, w: 2.1, d: 0.75 },
 ];
 
