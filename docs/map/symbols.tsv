@@ -1254,7 +1254,9 @@ searchOnlyText	function	stations/shinjuku/app/src/search-card.ts	33
 LANE_CAMERA	const	stations/shinjuku/app/src/spawn-view.ts	5
 LANE_CAMERA_CAT	const	stations/shinjuku/app/src/spawn-view.ts	8
 followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts	11
-spawnView	function	stations/shinjuku/app/src/spawn-view.ts	21
+CAT_ARRIVAL	const	stations/shinjuku/app/src/spawn-view.ts	21
+catArrivalRise	function	stations/shinjuku/app/src/spawn-view.ts	24
+spawnView	function	stations/shinjuku/app/src/spawn-view.ts	55
 loadShinjukuBundle	function	stations/shinjuku/data/bundle.ts	11
 crowdEdges	function	stations/shinjuku/gteki/explorer-crowd.ts	22
 releaseShinjukuCaches	function	stations/shinjuku/gteki/scene.ts	110
