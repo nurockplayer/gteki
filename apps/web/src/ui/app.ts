@@ -33,6 +33,7 @@ import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 import { shouldHandleGuideKey } from "./railKeyGuard.ts";
 import { Minimap } from "./minimap.ts";
+import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
@@ -98,6 +99,7 @@ export class App {
     route: null, noPath: null, filter: null, openNow: false, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
+  private panelFold!: PanelFold;
   private readonly identityView = new StationIdentityView();
   private railRide: RailRideDemo | null = null;
   private readonly ui = {
@@ -129,6 +131,7 @@ export class App {
     credit: el("footer", "credit-line"),
     greyboxLegend: el("div", "greybox-legend"),
     panel: el("section", "panel"),
+    panelEntry: el("button", "panel-entry"),
     more: el("button", "ghost more", "⋯"),
     live: new LiveRegion(() => this.t),
     mascot: new MascotSlot(() => this.t, (text) => this.ui.live.announce(text)),
@@ -142,7 +145,9 @@ export class App {
   private compositionEndMs = -Infinity;
   private readonly interactionPrompt = new InteractionPrompt(() => this.t, () => this.explorer.interact(), (text) => this.ui.live.announce(text));
 
-  constructor(private readonly root: HTMLElement) {}
+  constructor(private readonly root: HTMLElement) {
+    this.panelFold = new PanelFold(root, this.ui.panel, this.ui.panelEntry, () => Boolean(this.explorer?.sceneError));
+  }
 
   dispose(): void {
     this.ui.minimap.dispose();
@@ -157,6 +162,7 @@ export class App {
     const params = new URLSearchParams(location.search);
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
+      onWalkStart: () => this.panelFold.fold(true),
       onInteraction: (state) => this.interactionPrompt.render(state),
       onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
       onGuideProgress: (p) => this.onGuideProgress(p),
@@ -171,6 +177,9 @@ export class App {
     this.explorer.setPanel(this.ui.panel);
     this.explorer.setMinimap(this.ui.minimap.el);
     this.explorer.setLegend(this.ui.greyboxLegend);
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(() => this.root.style.setProperty("--hud-height", `${this.ui.hud.offsetHeight}px`)).observe(this.ui.hud);
+    }
     // On a phone the open route sheet is a bottom occluder of the same kind (#385).
     this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
@@ -275,7 +284,7 @@ export class App {
 
     this.ui.hint.setAttribute("role", "note");
     this.ui.greyboxLegend.hidden = true;
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit, this.ui.greyboxLegend);
+    this.root.append(viewport, top, panel, this.ui.panelEntry, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit, this.ui.greyboxLegend);
     this.layoutText();
   }
 
@@ -286,6 +295,7 @@ export class App {
     this.ui.langBtn.textContent = t.language;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
     this.ui.coverageBtn.textContent = t.coverage;
+    this.ui.panelEntry.textContent = t.searchEntry;
     this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る（デモ・未調査）" : "Ride train (demo, not surveyed)";
     this.ui.railBtn.title = this.s.lang === "ja" ? "埼京線 乗車デモ（仮設ホーム）" : "JR Saikyo ride demo (temporary platform)";
     this.ui.more.setAttribute("aria-label", t.options);
@@ -356,6 +366,7 @@ export class App {
 
   private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null, fromRide = false): Promise<void> {
     if (!fromRide) { this.railRide?.dispose(); this.railRide = null; }
+    this.panelFold.open();
     this.ui.railBtn.hidden = true;
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
@@ -1255,6 +1266,8 @@ export class App {
 
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
+    if (mode === "overview") this.panelFold.open();
+    else if (mode === "guide" || (mode === "walk" && typeof matchMedia === "function" && matchMedia("(max-width: 720px)").matches)) this.panelFold.fold();
     this.renderIdentity(mode);
     this.renderSpawnChips(this.s.loaded?.bundle);
     this.renderHud();
@@ -1523,6 +1536,11 @@ export class App {
     // non-input target. Track the end of composition document-wide so no guide shortcut fires from it.
     document.addEventListener("compositionend", () => { this.compositionEndMs = performance.now(); }, true);
     window.addEventListener("keydown", (e) => {
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey && !e.isComposing && shouldHandleGuideKey("next", e.target as HTMLElement | null, this.ui.coverage.open, this.railRide !== null)) {
+        e.preventDefault();
+        this.panelFold.open(true);
+        return;
+      }
       if (e.code === "KeyE" && !e.repeat && !e.isComposing && this.explorer.currentMode === "walk" &&
           shouldHandleGuideKey("next", e.target as HTMLElement | null, this.ui.coverage.open, this.railRide !== null)) {
         e.preventDefault();
@@ -1660,6 +1678,7 @@ export class App {
     close.addEventListener("click", () => d.close());
     d.append(close, el("h2", undefined, this.t.coverage));
     if (b) {
+      d.append(el("p", undefined, `${b.station.synthetic ? this.t.synthetic : this.t.realCandidate} · ${this.t.noIndoorPositioning}`));
       d.append(el("p", undefined, pick(b.coverage.summary, this.s.lang)));
       if (b.coverage.areas.length) {
         const ul = el("ul");

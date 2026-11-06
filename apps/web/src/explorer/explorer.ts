@@ -92,6 +92,7 @@ interface ShadowFit {
 export interface ExplorerEvents {
   onInteraction?(state: InteractionState): void;
   onMode?(mode: ExplorerMode): void;
+  onWalkStart?(): void;
   onGreyboxLegend?(visible: boolean): void;
   onGuideProgress?(p: { s: number; total: number; stepIndex: number; done: boolean }): void;
   /** The guide stopped (and paused) at `stops[index]` given to startGuide. */
@@ -307,7 +308,8 @@ export class Explorer {
   private readonly avatar = new THREE.Group();
   private avatarRig: AvatarSelection | null = null;
   /** Cat protagonist: lower follow pivot, shorter boom and a smaller marker ring. */
-  private readonly catAvatar: boolean;
+  private catAvatar: boolean;
+  private avatarMarker: [THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>, THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>] | null = null;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
@@ -326,6 +328,7 @@ export class Explorer {
   /** Zone lighting (#861): the loaded station's anchors, and the values eased from ZONE_LOOK. */
   private zoneAnchors: readonly ZoneAnchor[] = [];
   private zone: StationZone = "passage";
+  private zoneHeard: StationZone | null = null;
   private readonly zoneAt = new THREE.Vector3(Infinity, 0, 0);
   /** The station's own fog object, mutated in place; its authored colour and near/far are kept for restores. */
   private zoneFog: THREE.Fog | null = null;
@@ -372,6 +375,7 @@ export class Explorer {
   private qaAvatarFade: number | null = null;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
+  private moving = false;
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
@@ -810,6 +814,7 @@ export class Explorer {
    * presets multiply, and the platform/ticket-gate anchors to classify against.
    */
   private attachZone(bundle: StationBundle): void {
+    this.zoneHeard = null;
     this.zoneAnchors = zoneAnchors(bundle.nodes, bundle.floors);
     this.zoneFog = this.scene.fog instanceof THREE.Fog ? this.scene.fog : null;
     if (!this.zoneFog) return;
@@ -850,6 +855,10 @@ export class Explorer {
     if (snap || this.zoneAt.distanceToSquared(this.pos) >= ZONE_RECHECK_M2) {
       this.zoneAt.copy(this.pos);
       this.zone = classifyZone(this.pos, this.streetProbe.outdoors, this.zoneAnchors);
+      if (this.zone !== this.zoneHeard) {
+        this.zoneHeard = this.zone;
+        this.stationScene?.setAcousticZone?.(this.zone);
+      }
     }
     const look = ZONE_LOOK[this.zone];
     const tinted = this.zone !== "outdoor";
@@ -971,17 +980,38 @@ export class Explorer {
   }
 
   private buildAvatar(options: ExplorerOptions): void {
-    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind });
+    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind, onCatFallback: () => this.fallBackToHumanAvatar() });
     this.avatar.add(this.avatarRig.root);
+    this.buildAvatarMarker();
+    this.avatar.visible = false;
+  }
+
+  private buildAvatarMarker(): void {
+    if (this.avatarMarker) {
+      for (const mesh of this.avatarMarker) {
+        mesh.removeFromParent();
+        mesh.geometry.dispose();
+        mesh.material.map?.dispose();
+        mesh.material.dispose();
+      }
+      this.avatarMarker = null;
+    }
     if (this.quality === "high") {
       // A slim marker ring keeps "this is you" readable without outshining the character.
       const inner = this.catAvatar ? 0.3 : 0.46;
       const outer = this.catAvatar ? 0.33 : 0.5;
       const ring = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
       ring.position.y = 0.02;
-      this.avatar.add(contactShadow(this.catAvatar ? 0.28 : 0.42), ring);
+      this.avatarMarker = [contactShadow(this.catAvatar ? 0.28 : 0.42), ring];
+      this.avatar.add(...this.avatarMarker);
     }
-    this.avatar.visible = false;
+  }
+
+  private fallBackToHumanAvatar(): void {
+    this.catAvatar = false;
+    this.camDistance = FOLLOW.defaultDistance;
+    this.pitch = -0.12;
+    this.buildAvatarMarker();
   }
 
   /** Loading phase, exposed for diagnosing stalled station scenes. */
@@ -1540,6 +1570,7 @@ export class Explorer {
     this.guideIdentityHoldS = 0;
     if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
+    this.moving = false;
     // Zone lighting (#861): overview shows the station exactly as before; walking resumes with a snapped re-classify.
     if (mode === "overview") this.restoreZone();
     else if (previous === "overview") this.zoneSnap = true;
@@ -2575,8 +2606,11 @@ export class Explorer {
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
     const mv = this.input.move();
-    this.publishInteraction(this.interactionController.update(dt, { position: this.pos, moving: mv.x !== 0 || mv.y !== 0, mode: this.mode }));
-    if (mv.x === 0 && mv.y === 0) return;
+    const moving = mv.x !== 0 || mv.y !== 0;
+    if (moving && !this.moving) this.events?.onWalkStart?.();
+    this.moving = moving;
+    this.publishInteraction(this.interactionController.update(dt, { position: this.pos, moving, mode: this.mode }));
+    if (!moving) return;
     const speed = mv.run ? RUN : WALK;
     // Camera-relative: forward = -Z rotated by yaw.
     const fx = -Math.sin(this.yaw), fz = -Math.cos(this.yaw);

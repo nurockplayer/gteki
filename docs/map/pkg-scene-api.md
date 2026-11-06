@@ -6,7 +6,7 @@ updated: 2026-10-26 JST
 # pkg-scene-api: station scene contract for the explorer and the Godot export
 
 ## What it does
-The contract between a station's scene module (the station's gteki/scene.ts, exporting `buildScene(ctx)`) and its hosts: the web explorer, the walk and replay tools, and the Godot scene export. It defines the walker body (`WALKER_BODY`, shared with the explorer's collision), walker speeds, and the `StationScene` shape: `root`, `walkable` surfaces, `colliders`, `cameraBlockers`, walls, spawn points, environment, and optional `update`, `settled` and `dispose`. Changing `WALKER_BODY` is a contract change.
+The contract between a station's scene module (the station's gteki/scene.ts, exporting `buildScene(ctx)`) and its hosts: the web explorer, the walk and replay tools, and the Godot scene export. It defines the walker body (`WALKER_BODY`, shared with the explorer's collision), walker speeds, and the `StationScene` shape: `root`, `walkable` surfaces, `colliders`, `cameraBlockers`, walls, spawn points, environment, and optional `update`, `setAcousticZone`, and `settled`, plus `dispose`. Changing `WALKER_BODY` is a contract change.
 
 ## Main files and functions
 - `packages/scene-api/src/index.ts:16` — `SCENE_API_VERSION` (gteki.scene/0.1).
