@@ -1720,10 +1720,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路西改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage West Gate"
     }
    ],
    "aliases": [
@@ -1812,10 +1808,6 @@
     {
      "lang": "ja",
      "text": "有楽町線 南通路西改札"
-    },
-    {
-     "lang": "en",
-     "text": "Yurakucho Line South Passage West Gate"
     }
    ],
    "aliases": [
@@ -1913,10 +1905,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路中央改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage Central Gate"
     }
    ],
    "aliases": [
@@ -2005,10 +1993,6 @@
     {
      "lang": "ja",
      "text": "丸ノ内線 中央通路東改札"
-    },
-    {
-     "lang": "en",
-     "text": "Marunouchi Line Central Passage East Gate"
     }
    ],
    "aliases": [
@@ -21388,10 +21372,6 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
-    },
-    {
-     "lang": "en",
-     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21425,10 +21405,6 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
-    },
-    {
-     "lang": "en",
-     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21462,10 +21438,6 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
-    },
-    {
-     "lang": "en",
-     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21499,10 +21471,6 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
-    },
-    {
-     "lang": "en",
-     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
@@ -21536,10 +21504,6 @@
     {
      "lang": "ja",
      "text": "コインロッカー（有料）"
-    },
-    {
-     "lang": "en",
-     "text": "Coin lockers (charged)"
     }
    ],
    "aliases": [],
