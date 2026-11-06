@@ -26,12 +26,12 @@ it("keeps the platform door collision modules identical to origin/main", () => {
   const round = (p: { x: number; y: number }) => [Math.round(p.x * 1000) / 1000, Math.round(p.y * 1000) / 1000];
   const walls = built.propWalls;
   // Snapshot from origin/main (same values: the collision loop is untouched).
-  expect(walls.length).toBe(PENDING_COUNT);
-  expect(round(walls[0]!.a)).toEqual(PENDING_FIRST_A);
-  expect(round(walls[0]!.b)).toEqual(PENDING_FIRST_B);
-  expect(round(walls.at(-1)!.a)).toEqual(PENDING_LAST_A);
-  expect(round(walls.at(-1)!.b)).toEqual(PENDING_LAST_B);
-  expect(walls[0]!.zMin).toBe(PENDING_ZMIN);
-  expect(walls[0]!.zMax).toBe(PENDING_ZMAX);
+  expect(walls.length).toBe(4704);
+  expect(round(walls[0]!.a)).toEqual([-2.87, 74.736]);
+  expect(round(walls[0]!.b)).toEqual([-4.104, 80.197]);
+  expect(round(walls.at(-1)!.a)).toEqual([-252.6, -68.9]);
+  expect(round(walls.at(-1)!.b)).toEqual([-257.7, -84.2]);
+  expect(walls[0]!.zMin).toBe(-42.97);
+  expect(walls[0]!.zMax).toBe(-41.519999999999996);
   built.dispose();
 });
