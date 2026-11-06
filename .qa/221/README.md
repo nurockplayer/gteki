@@ -8,7 +8,10 @@ centre and both lateral offsets, with 160 directions (788,160 rays). Before
 casting at each eye, `viewer.ts` invokes the app's draw-nothing viewer probe and
 scene update. Its actual visible draw set invalidates the merged opaque BVH.
 Older scenes without that probe retain their original visibility. No LOD
-visibility is forced. `escape/compare.py HEAD_LABEL BASE_LABEL` compares identical
+visibility is forced. A ray with no hit inside the 25 m range is recast to a 250 m
+horizon: an underground hit there is a range miss (`range-misses.json`), and only
+rays that climb above the street or hit nothing count as real escapes
+(`escapes.json`). `escape/compare.py HEAD_LABEL BASE_LABEL` compares identical
 sample/direction pairs and writes new escape records. `diagnose.ts --live` casts
 the original 16 first-person views after the same camera update.
 
