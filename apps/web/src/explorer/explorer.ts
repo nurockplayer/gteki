@@ -34,7 +34,7 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -248,7 +248,9 @@ export class Explorer {
   private stationScene: StationScene | null = null;
   private interactionController = new InteractionController([]);
   private interactionSnapshot = "";
-  private interactionVisual: THREE.Object3D | undefined;
+  /** Reaction objects by interactable id, and the station's decorative wall-prop mesh (#858 item 12). */
+  private interactionVisuals: Map<string, THREE.Object3D> | undefined;
+  private wallProps: THREE.Object3D | undefined;
   private navmeshPaths: NavmeshPaths | null = null;
   /** What the last station switch freed from the previous scene (for the e2e log). */
   private releasedTextures: { textures: number; canvases: number } | null = null;
@@ -1134,8 +1136,13 @@ export class Explorer {
     }
     this.interactionController = new InteractionController(built?.interactables ?? []);
     this.interactionSnapshot = "";
-    this.interactionVisual = undefined;
-    built?.root.traverse((object) => { if (object.userData.gtekiInteractionId) this.interactionVisual = object; });
+    this.interactionVisuals = new Map();
+    this.wallProps = undefined;
+    built?.root.traverse((object) => {
+      const id = object.userData.gtekiInteractionId;
+      if (typeof id === "string" && id) this.interactionVisuals!.set(id, object);
+      if (object.userData.gtekiWallProps === true) this.wallProps = object;
+    });
     this.sceneError = sceneError;
     // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
     this.stepsPaused = this.stationScene?.beforeRender !== undefined;
@@ -1308,7 +1315,8 @@ export class Explorer {
   private clearStation(leaving = false): void {
     this.interactionController = new InteractionController([]);
     this.interactionSnapshot = "";
-    this.interactionVisual = undefined;
+    this.interactionVisuals = undefined;
+    this.wallProps = undefined;
     this.avatarRig?.setHold?.(null);
     this.publishInteraction(this.interactionController.state);
     this.avatarRig?.cancelPendingLoad();
@@ -2606,14 +2614,18 @@ export class Explorer {
       this.avatarRig.root.rotation.x = this.catBodyPitch;
     }
     const state = this.interactionController.state;
-    if (state.phase === "active") {
-      const target = this.interactionVisual;
+    if (state.phase === "active" && state.nearId) {
+      const target = this.interactionVisuals?.get(state.nearId);
       if (target) this.avatar.rotation.y = Math.atan2(this.pos.x - target.position.x, this.pos.z - target.position.z);
     }
     this.updateShadows();
   }
 
-  interactableInfo() { return { specs: this.stationScene?.interactables ?? [], visual: this.interactionVisual }; }
+  interactableInfo() {
+    const specs = this.stationScene?.interactables ?? [];
+    // `visual` stays the first spec's object for the shop spec; `visuals` is every reaction by id.
+    return { specs, visual: specs[0] ? this.interactionVisuals?.get(specs[0].id) : undefined, visuals: this.interactionVisuals, props: this.wallProps };
+  }
 
   get interaction(): InteractionState { return this.interactionController.state; }
 
@@ -2651,8 +2663,9 @@ export class Explorer {
       this.events.onInteraction?.(state);
     }
     this.avatarRig?.setHold?.(this.catRidingEscalator() || (state.phase === "active" && state.step !== "look") ? "sit" : null);
-    if (this.interactionVisual) this.interactionVisual.visible = state.phase === "active" &&
-      this.interactionVisual.userData.gtekiInteractionId === state.nearId && (state.step === "react" || state.step === "give");
+    for (const [id, visual] of this.interactionVisuals ?? []) {
+      visual.visible = state.phase === "active" && id === state.nearId && (state.step === "react" || state.step === "give");
+    }
   }
 
   private stepWalk(dt: number): void {
@@ -2867,6 +2880,7 @@ export class Explorer {
       const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
+    if (this.catAvatar) aimAtRaisedCat(pose.target, this.pos, this.boomRaise);
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);

@@ -13,11 +13,13 @@ describe("InteractionController", () => {
   it("runs steps, grants once, and hides prompts outside walk mode", () => {
     const controller = new InteractionController(fixtures);
     expect(controller.update(0, input()).nearId).toBe("shop");
+    expect(controller.update(0, input()).nearKind).toBe("shop");
     expect(controller.start().step).toBe("look");
     expect(controller.update(1, input()).step).toBe("give");
     expect(controller.update(1, input())).toMatchObject({ phase: "done", items: ["bag"], unavailable: "already-done" });
     expect(controller.start().phase).toBe("done");
     expect(controller.update(0, input(anchor, false, "overview")).nearId).toBeNull();
+    expect(controller.update(0, input(anchor, false, "overview")).nearKind).toBeNull();
   });
 
   it("cancels on movement and supports another kind with its own steps", () => {
@@ -25,7 +27,7 @@ describe("InteractionController", () => {
     controller.update(0, input());
     controller.start();
     expect(controller.update(0.5, input(anchor, true))).toMatchObject({ phase: "idle", interrupted: true, items: [] });
-    controller.update(0, input({ x: 10, y: 0, z: 0 }));
+    expect(controller.update(0, input({ x: 10, y: 0, z: 0 })).nearKind).toBe("vending");
     expect(controller.start().step).toBe("choose");
     expect(controller.update(1, input({ x: 10, y: 0, z: 0 }))).toMatchObject({ phase: "done", items: ["can"] });
   });
