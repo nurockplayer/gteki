@@ -153,7 +153,6 @@ export class App {
   async start(): Promise<void> {
     this.layout();
     const params = new URLSearchParams(location.search);
-    const avatar = avatarKind(params);
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
       onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
@@ -163,7 +162,7 @@ export class App {
         const poi = this.s.loaded?.bundle.pois.find((p) => p.id === id);
         if (poi) this.setDestination(poi);
       },
-    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatar.kind, catStyle: avatar.catStyle });
+    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params) });
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { avatarGlbUrl, avatarKind, catGlb, createAvatarRig, DEFAULT_AVATAR_GLB_URL, SOFT_AVATAR_GLB_URL } from "./avatarSelection.ts";
+import { avatarGlbUrl, avatarKind, createAvatarRig, DEFAULT_AVATAR_GLB_URL, SOFT_AVATAR_GLB_URL } from "./avatarSelection.ts";
 import { catAvatarFixture, fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
 
 afterEach(() => vi.restoreAllMocks());
@@ -169,20 +169,13 @@ describe("avatar flag", () => {
 });
 
 describe("cat avatar selection", () => {
-  it("maps each cat style to its GLB and height", () => {
-    expect(catGlb("A")).toEqual({ url: "/avatars/cat.glb", heightM: 0.3 });
-    expect(catGlb("B")).toEqual({ url: "/avatars/cat.glb", heightM: 0.345 });
-    expect(catGlb("C")).toEqual({ url: "/avatars/cat_tabby.glb", heightM: 0.345 });
-    expect(catGlb()).toEqual({ url: "/avatars/cat.glb", heightM: 0.345 });
-  });
-
   it("starts from an empty rig and swaps in the cat GLB without ever showing the human", async () => {
     const loader = { loadAsync: vi.fn().mockResolvedValue(catAvatarFixture()) };
-    const rig = createAvatarRig({ quality: "low", kind: "cat", catStyle: "C", loader });
+    const rig = createAvatarRig({ quality: "low", kind: "cat", loader });
     const empty = rig.root;
     expect(empty.children).toHaveLength(0);
     expect(rig.root.getObjectByName("shoeL")).toBeUndefined();
-    expect(loader.loadAsync).toHaveBeenCalledWith("/avatars/cat_tabby.glb");
+    expect(loader.loadAsync).toHaveBeenCalledWith("/avatars/cat.glb");
     await rig.loadGlb();
     expect(rig.root).not.toBe(empty);
     expect(rig.root.getObjectByName("shoeL")).toBeUndefined();
@@ -206,13 +199,10 @@ describe("cat avatar selection", () => {
 
 describe("avatarKind", () => {
   const parse = (query: string) => avatarKind(new URLSearchParams(query));
-  it("defaults the cat style to B and accepts A and C", () => {
-    expect(parse("avatar=cat")).toEqual({ kind: "cat", catStyle: "B" });
-    expect(parse("avatar=cat&catStyle=C")).toEqual({ kind: "cat", catStyle: "C" });
-    expect(parse("avatar=cat&catStyle=A")).toEqual({ kind: "cat", catStyle: "A" });
-    expect(parse("avatar=cat&catStyle=Z")).toEqual({ kind: "cat", catStyle: "B" });
+  it("selects the cat only with ?avatar=cat", () => {
+    expect(parse("avatar=cat")).toBe("cat");
   });
-  it.each(["", "avatar=procedural", "avatar=soft", "avatar=glb", "avatar=cat2", "catStyle=A"])("keeps the human avatar for %s", (query) => {
-    expect(parse(query)).toEqual({ kind: "human" });
+  it.each(["", "avatar=procedural", "avatar=soft", "avatar=glb", "avatar=cat2"])("keeps the human avatar for %s", (query) => {
+    expect(parse(query)).toBe("human");
   });
 });

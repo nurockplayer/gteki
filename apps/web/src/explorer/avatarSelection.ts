@@ -28,18 +28,9 @@ export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string |
 /** Which protagonist a page asks for; the human stays the default in stage 1. */
 export type AvatarKind = "human" | "cat";
 
-/** #854 cat looks: A small walk-through size, B the protagonist, C the tabby coat. */
-export type CatStyle = "A" | "B" | "C";
-
+/** #854 scripted cat, picked by gteki-lead on 2026-11-06; a placeholder until the Owner sets breed and coat. */
 export const CAT_AVATAR_GLB_URL = "/avatars/cat.glb";
-export const CAT_TABBY_GLB_URL = "/avatars/cat_tabby.glb";
-
-/** The scripted cat GLB and its body height for a style. */
-export function catGlb(style: CatStyle = "B"): { url: string; heightM: number } {
-  return style === "C"
-    ? { url: CAT_TABBY_GLB_URL, heightM: 0.345 }
-    : { url: CAT_AVATAR_GLB_URL, heightM: style === "A" ? 0.3 : 0.345 };
-}
+export const CAT_AVATAR_HEIGHT_M = 0.345;
 
 /** Cat mode draws nothing until its GLB arrives: the human must never appear there. */
 function emptyRig(): AvatarRig {
@@ -47,16 +38,9 @@ function emptyRig(): AvatarRig {
   return { root, update() {}, setEnvMap() {}, setFade() {}, dispose() { root.removeFromParent(); } };
 }
 
-export interface AvatarChoice {
-  kind: AvatarKind;
-  catStyle?: CatStyle;
-}
-
-/** `?avatar=cat` (with `?catStyle=A|B|C`, default B) selects the cat; anything else keeps the human. */
-export function avatarKind(params: URLSearchParams): AvatarChoice {
-  if (params.get("avatar") !== "cat") return { kind: "human" };
-  const style = params.get("catStyle");
-  return { kind: "cat", catStyle: style === "A" || style === "B" || style === "C" ? style : "B" };
+/** `?avatar=cat` selects the cat; anything else keeps the human. */
+export function avatarKind(params: URLSearchParams): AvatarKind {
+  return params.get("avatar") === "cat" ? "cat" : "human";
 }
 
 export interface AvatarSelection extends AvatarRig {
@@ -67,8 +51,8 @@ export interface AvatarSelection extends AvatarRig {
 }
 
 /** The human rig is shown while loading and on GLB failure; ?avatar=cat starts empty instead. */
-export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; catStyle?: CatStyle }): AvatarSelection {
-  const cat = opts.kind === "cat" ? catGlb(opts.catStyle) : undefined;
+export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind }): AvatarSelection {
+  const cat = opts.kind === "cat";
   let current = cat ? emptyRig() : createAvatar({ quality: opts.quality });
   let generation = 0;
   let disposed = false;
@@ -85,11 +69,11 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
     setEnvMap(value, strength = 0.6) { env = value; intensity = strength; if (!disposed) current.setEnvMap(env, intensity); },
     cancelPendingLoad() { generation++; pending = null; },
     loadGlb() {
-      const url = cat?.url ?? opts.glbUrl;
+      const url = cat ? CAT_AVATAR_GLB_URL : opts.glbUrl;
       if (disposed || loaded || !url) return Promise.resolve();
       if (pending) return pending;
       const token = ++generation;
-      const load = cat ? { quality: opts.quality, loader: opts.loader, heightM: cat.heightM, cat: true } : opts;
+      const load = cat ? { quality: opts.quality, loader: opts.loader, heightM: CAT_AVATAR_HEIGHT_M, cat: true } : opts;
       pending = loadGlbAvatar(url, load).then((next) => {
         if (disposed || token !== generation) { next.dispose(); return; }
         next.setFade(fade);

@@ -42,7 +42,7 @@ import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming } from "./identityFraming
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
-import { createAvatarRig, type AvatarKind, type AvatarSelection, type CatStyle } from "./avatarSelection.ts";
+import { createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
@@ -65,7 +65,6 @@ export interface ExplorerOptions {
   avatarGlbUrl?: string;
   /** Cat protagonist (#854 stage 1): proportions and follow-camera framing change; the human stays default. */
   avatarKind?: AvatarKind;
-  catStyle?: CatStyle;
 }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
@@ -865,7 +864,7 @@ export class Explorer {
   }
 
   private buildAvatar(options: ExplorerOptions): void {
-    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind, catStyle: options.catStyle });
+    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind });
     this.avatar.add(this.avatarRig.root);
     if (this.quality === "high") {
       // A slim marker ring keeps "this is you" readable without outshining the character.
