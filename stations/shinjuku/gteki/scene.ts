@@ -117,6 +117,11 @@ function sequence(stepBuilt: (dt: number, t: number) => void, stepProps: () => v
   return (dt: number, t: number) => { stepBuilt(dt, t); stepProps(); };
 }
 
+/** The crowd's converter. Every closure in buildCrowd shares the context holding it, so it must not close over buildScene (#968). */
+function crowdVector(T: typeof THREE, enuToRenderer: (point: { x: number; y: number; z: number }) => [number, number, number]) {
+  return (x: number, y: number, z: number) => new T.Vector3(...enuToRenderer({ x, y, z }));
+}
+
 /**
  * Explorer ambience and station sound (#859/#863/#926), with the acoustic zone setter. Lives out here for the
  * same reason as sceneLifecycle: the closures keep only the audio nodes and the train-audio sampler, never the
@@ -416,7 +421,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // headless build (no renderer, no env map) gets none; nothing renders there anyway.
   const adapted = crowdEdges(sceneBundle, (id) => layout.nodeZ.get(id) ?? nodes.get(id)?.renderZ ?? 0);
   const crowd = envTarget
-    ? buildCrowd(T, adapted.edges, (x, y, z) => new T.Vector3(...ctx.enuToRenderer({ x, y, z })), low ? 56 : 150, envTarget.texture, adapted.lanes, timeBand)
+    ? buildCrowd(T, adapted.edges, crowdVector(T, ctx.enuToRenderer), low ? 56 : 150, envTarget.texture, adapted.lanes, timeBand)
     : null;
   if (crowd) built.root.add(crowd.group);
   if (shopKit && !shopKit.placements.length) {
