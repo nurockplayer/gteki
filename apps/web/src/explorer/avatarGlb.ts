@@ -144,6 +144,7 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
     let overlaid = false;
     /** Rotate `bone` about a rig-space axis, compensating for its world orientation (the look code's maths). */
     const rotateAbout = (bone: THREE.Object3D, rigAxis: THREE.Vector3, angle: number): void => {
+      if (angle === 0) return;
       root.getWorldQuaternion(world);
       axis.copy(rigAxis).applyQuaternion(world);
       bone.getWorldQuaternion(world).invert();
