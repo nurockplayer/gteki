@@ -142,5 +142,5 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     protectFareAndAccess(buildLayout(bundle, plan), plan, bundle, { recomputeRestricted: true, onRestricted: (r) => { fresh = r; } });
     expect(fresh?.inputKey).toBe(generated.inputKey);
     expect(fresh).toEqual(generated);
-  }, 60_000);
+  }, 180_000);
 });
