@@ -798,11 +798,10 @@ export class Explorer {
   private attachZone(bundle: StationBundle): void {
     this.zoneAnchors = zoneAnchors(bundle.nodes, bundle.floors);
     this.zoneFog = this.scene.fog instanceof THREE.Fog ? this.scene.fog : null;
-    if (this.zoneFog) {
-      this.zoneFogBase.copy(this.zoneFog.color);
-      this.zoneFogNear = this.zoneFog.near;
-      this.zoneFogFar = this.zoneFog.far;
-    }
+    if (!this.zoneFog) return;
+    this.zoneFogBase.copy(this.zoneFog.color);
+    this.zoneFogNear = this.zoneFog.near;
+    this.zoneFogFar = this.zoneFog.far;
     if (this.hemi) this.zoneHemiBase.copy(this.hemi.color);
     this.zoneExposure = 1;
     this.zoneFogFarMul = 1;
@@ -812,15 +811,14 @@ export class Explorer {
 
   /** Back to the station's own look at once (overview, unload): exposure x1, the base fog object and hemisphere colour. */
   private restoreZone(snap = false): void {
+    if (!this.zoneFog) return;
     this.zoneExposure = 1;
     this.zoneFogFarMul = 1;
     this.zoneTint.setRGB(1, 1, 1);
     this.renderer.toneMappingExposure = this.zonePlanExposure;
-    if (this.zoneFog) {
-      this.zoneFog.color.copy(this.zoneFogBase);
-      this.zoneFog.near = this.zoneFogNear;
-      this.zoneFog.far = this.zoneFogFar;
-    }
+    this.zoneFog.color.copy(this.zoneFogBase);
+    this.zoneFog.near = this.zoneFogNear;
+    this.zoneFog.far = this.zoneFogFar;
     if (this.hemi) this.hemi.color.copy(this.zoneHemiBase);
     this.zoneSnap = snap;
     this.zoneAt.set(Infinity, 0, 0);
