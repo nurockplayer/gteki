@@ -528,6 +528,7 @@ DEMO_PAIRS	const	apps/web/src/ui/firstRun.ts	16
 demoPair	function	apps/web/src/ui/firstRun.ts	22
 identityNamesOf	function	apps/web/src/ui/identityCard.ts	7
 StationIdentityView	class	apps/web/src/ui/identityCard.ts	54
+InteractionPrompt	class	apps/web/src/ui/interactionPrompt.ts	4
 poiLabel	function	apps/web/src/ui/labels.ts	13
 nodeLabel	function	apps/web/src/ui/labels.ts	22
 unknownLabel	function	apps/web/src/ui/live.ts	5

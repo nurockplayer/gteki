@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import data from "./interactables.json";
+import data from "./interactables.ts";
 import placements from "./shop_placements.json";
 import openings from "./shop_openings.json";
 

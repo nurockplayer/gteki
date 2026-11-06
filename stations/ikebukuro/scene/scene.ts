@@ -30,7 +30,7 @@ import kitPlacements from "./kit_placements.json";
 import columnsFile from "./columns.json";
 import shopPlacements from "./shop_placements.json";
 import shopOpenings from "./shop_openings.json";
-import interactionData from "./interactables.json";
+import interactionData from "./interactables.ts";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
