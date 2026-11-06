@@ -1222,7 +1222,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   for (const f of compactShaftFascias(joins)) for (const span of fasciaSpans(f)) for (const wall of cutWallsByVoids([span], [...voids, ...platformVoids])) {
     layout.shaftFascias.push({ floorId: f.floorId, wall });
   }
-  layout.shaftFascias = compactShaftFascias(layout.shaftFascias, layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind === "wall")));
+  layout.shaftFascias = compactShaftFascias(layout.shaftFascias, layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia")));
 }
 
 /** Union vertical finish panels in their own plane, retaining openings and
@@ -1231,25 +1231,28 @@ function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[]
   type Plane = { floorId: string; u: XY; offset: number; panels: ClipPolygon[]; covered: ClipPolygon[] };
   const planes = new Map<string, Plane>();
   const snap = (v: number) => Math.round(v * 1e4) / 1e4;
-  const add = (wall: WallSeg, floorId?: string) => {
+  const add = (wall: WallSeg, floorId?: string, target?: Plane) => {
     const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = Math.hypot(dx, dy);
     const p = wall.profile ?? { bottomA: wall.zMin, bottomB: wall.zMin, topA: wall.zMax, topB: wall.zMax };
     if (length < 1e-6 || Math.max(p.topA - p.bottomA, p.topB - p.bottomB) < 1e-6) return;
     const sign = (Math.abs(dx) > Math.abs(dy) ? dx : dy) >= 0 ? 1 : -1;
     const u = { x: dx / length * sign, y: dy / length * sign }, offset = -wall.a.x * u.y + wall.a.y * u.x;
     const key = `${u.x.toFixed(5)},${u.y.toFixed(5)},${offset.toFixed(4)}`;
-    let plane = planes.get(key);
+    let plane = target ?? planes.get(key);
     if (!plane && floorId !== undefined) { plane = { floorId, u, offset, panels: [], covered: [] }; }
     if (!plane) return;
     const a = snap(wall.a.x * plane.u.x + wall.a.y * plane.u.y), b = snap(wall.b.x * plane.u.x + wall.b.y * plane.u.y);
     if (Math.abs(a - b) < 1e-6) return;
     if (Math.max(snap(p.topA) - snap(p.bottomA), snap(p.topB) - snap(p.bottomB)) < 1e-6) return;
     const polygon: ClipPolygon = [[[a, snap(p.bottomA)], [b, snap(p.bottomB)], [b, snap(p.topB)], [a, snap(p.topA)], [a, snap(p.bottomA)]]];
-    planes.set(key, plane);
+    if (floorId !== undefined) planes.set(key, plane);
     (floorId === undefined ? plane.covered : plane.panels).push(polygon);
   };
   for (const f of fascias) add(f.wall, f.floorId);
-  for (const w of covered) add(w);
+  for (const w of covered) for (const plane of planes.values()) {
+    const distance = (p: XY) => Math.abs(-p.x * plane.u.y + p.y * plane.u.x - plane.offset);
+    if (distance(w.a) < 0.002 && distance(w.b) < 0.002) add(w, undefined, plane);
+  }
   const out: Layout["shaftFascias"] = [];
   for (const plane of planes.values()) {
     // Exact copies are common when a shoulder is referenced by several flights.
