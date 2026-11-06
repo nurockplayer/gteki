@@ -58,11 +58,17 @@ def name(p, lang):
     return next((t["text"] for t in p["names"] if t["lang"] == lang), None)
 
 
+# Exit sign wording where the operator's own print adds a store: Tokyo Metro's accessibility page
+# prints 「南通路西改札～4番出入口（エソラ）」 (Wayback 2024-02-06 00:44:04 UTC).
+EXIT_NAMES = {"exit-4": ("4番出口（エソラ）", "Exit 4 (Esola)")}
+
+
 def exit_item(p):
     # Signs name the exit itself, as the real ones do, even where the route stops at the stair foot
     # (Exits 4 and 13, whose POI names say so).
     n = p["id"].split("-")[1]
-    return {"id": p["id"], "label": n, "ja": f"{n}番出口", "en": f"Exit {n}"}
+    ja, en = EXIT_NAMES.get(p["id"], (f"{n}番出口", f"Exit {n}"))
+    return {"id": p["id"], "label": n, "ja": ja, "en": en}
 
 
 def gate_item(p):
