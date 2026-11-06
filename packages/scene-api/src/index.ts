@@ -61,8 +61,22 @@ export interface IdentityBoardTag {
 
 export type AcousticZone = "outdoor" | "platform" | "concourse" | "passage";
 
+/** A session-only interaction in the fictional presentation layer. */
+export interface InteractableSpec {
+  id: string;
+  layer: "fictional";
+  simulated: true;
+  kind: string;
+  anchor: { x: number; y: number; z: number };
+  radiusM: number;
+  steps: { id: string; seconds: number }[];
+  reward?: string;
+  once?: boolean;
+}
+
 export interface StationScene {
   root: THREE.Object3D;
+  interactables?: InteractableSpec[];
   /** Surfaces the walker can stand on (raycast from above). Empty = no free walking. */
   walkable: THREE.Object3D[];
   /** Meshes blocking horizontal movement. */
@@ -93,9 +107,9 @@ export interface StationScene {
      */
     envIntensity?: number;
   };
-  /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   /** Host calls this when the walker's zone changes. */
   setAcousticZone?(zone: AcousticZone): void;
+  /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
   /**
    * Render hook the host calls from its scene's onBeforeRender, before Three.js uploads instance matrices.

@@ -1,5 +1,3 @@
-import { createZoneAcoustics, ZONE_ACOUSTICS } from "./zone-acoustics.ts";
-import type { AcousticZone } from "@gteki/scene-api";
 // Ikebukuro station scene (gteki.scene/0.1): PLATEAU B1 passages dressed for an L2 look.
 // Truth stays in gteki/*.json; this file is presentation only and never adds routes.
 // Uses ctx.THREE so it shares the explorer's three instance.
@@ -18,6 +16,7 @@ import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { currentTimeBand } from "./time-band.ts";
 import { createAmbience } from "./ambience.ts";
+import { createZoneAcoustics, ZONE_ACOUSTICS } from "./zone-acoustics.ts";
 import { createStationSound } from "./station-sound.ts";
 import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import { loadN02Overlay } from "./n02_overlay.ts";
@@ -32,10 +31,12 @@ import kitPlacements from "./kit_placements.json";
 import columnsFile from "./columns.json";
 import shopPlacements from "./shop_placements.json";
 import shopOpenings from "./shop_openings.json";
+import interactionData from "./interactables.ts";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
-import type { SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
+import type { AcousticZone, SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
 
 type ThreeNS = typeof THREE_NS;
 
@@ -568,8 +569,60 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // full triangle scan per ray; ~8 m tiles let three.js skip every tile out of a short ray's reach.
   const { walkable: walkTiles, colliders: colliderTiles } = tileCollision(THREE, { walkable, colliders });
   const rayTiles = [...walkTiles, ...colliderTiles];
+  // The stand point is 1.6 m toward the passage. Probe the authored floor and nearby
+  // collision; if necessary, slide along the window in 0.1 m increments.
+  const shop = (shopPlacements as unknown as { shops: Shop[] }).shops.find((s) => s.id === interactionData.shopId)!;
+  const opening = (shopOpenings as unknown as { openings: Opening[] }).openings.find((o) => o.polygon_ids.some((id) => shop.openings.includes(id)))!;
+  const angle = opening.normal_deg * Math.PI / 180;
+  const nx = Math.cos(angle), ny = Math.sin(angle);
+  const groundRay = new THREE.Raycaster(), wallRay = new THREE.Raycaster();
+  root.updateMatrixWorld(true);
+  let anchor = toRenderer(opening.centre[0] + nx * 1.6, opening.centre[1] + ny * 1.6, opening.base_z);
+  for (let i = 0; i <= 40; i++) {
+    const offset = i === 0 ? 0 : Math.ceil(i / 2) * 0.1 * (i % 2 ? 1 : -1);
+    const p = toRenderer(opening.centre[0] + nx * 1.6 - ny * offset, opening.centre[1] + ny * 1.6 + nx * offset, opening.base_z);
+    groundRay.set(p.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0));
+    groundRay.far = 1.5;
+    const floor = groundRay.intersectObjects(walkTiles, true)[0];
+    const clear = [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2].every((a) => {
+      wallRay.set(p.clone().add(new THREE.Vector3(0, 0.8, 0)), new THREE.Vector3(Math.cos(a), 0, Math.sin(a)));
+      wallRay.far = 0.3;
+      return wallRay.intersectObjects(colliderTiles, true).length === 0;
+    });
+    if (floor && clear) { anchor = p; anchor.y = floor.point.y; break; }
+  }
+  const windowPos = toRenderer(...opening.centre);
+  const parts: THREE_NS.BufferGeometry[] = [];
+  const part = (width: number, height: number, depth: number, x: number, y: number, z: number, color: number) => {
+    const geometry = new THREE.BoxGeometry(width, height, depth);
+    geometry.translate(x, y, z);
+    const c = new THREE.Color(color);
+    const colors = new Float32Array(geometry.getAttribute("position").count * 3);
+    for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    parts.push(geometry);
+  };
+  part(2.5, 0.05, 0.03, 0, 0.6, 0, 0xffd28a);
+  part(2.5, 0.05, 0.03, 0, 1.8, 0, 0xffd28a);
+  part(0.05, 1.15, 0.03, -1.225, 1.2, 0, 0xffd28a);
+  part(0.05, 1.15, 0.03, 1.225, 1.2, 0, 0xffd28a);
+  part(0.30, 0.38, 0.16, 0, 0.765, 0.08, 0xf4ead6);
+  part(0.31, 0.08, 0.17, 0, 0.815, 0.08, 0x1f5a45);
+  const geometry = mergeGeometries(parts)!;
+  parts.forEach((part) => part.dispose());
+  const material = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  const reaction = new THREE.Mesh(geometry, material);
+  reaction.position.copy(windowPos).add(new THREE.Vector3(nx * 0.16, 0, -ny * 0.16));
+  reaction.rotation.y = Math.atan2(nx, -ny);
+  reaction.visible = false;
+  reaction.userData.gtekiInteractionId = shop.id;
+  root.add(reaction);
+  const interactables = [{ id: shop.id, kind: "shop", layer: "fictional" as const, simulated: true as const,
+    anchor: { x: anchor.x, y: anchor.y, z: anchor.z }, radiusM: 0.9,
+    steps: interactionData.steps, reward: interactionData.reward, once: interactionData.once }];
   return {
     root,
+    interactables,
     walkable: walkTiles,
     colliders: colliderTiles,
     cameraBlockers: contextBlockers.meshes,
@@ -589,6 +642,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       }
     },
     dispose() {
+      geometry.dispose();
+      material.dispose();
       stationSound?.dispose();
       ambience?.dispose();
       acoustics?.dispose();

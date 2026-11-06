@@ -1,11 +1,9 @@
-import { createZoneAcoustics, ZONE_ACOUSTICS } from "../../ikebukuro/scene/zone-acoustics.ts";
-import type { AcousticZone } from "@gteki/scene-api";
 /**
  * @gteki/scene-api hook for the shared explorer (apps/web). Reuses the Shinjuku lane's
  * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
  * never adds routes (the explorer routes only on graph.json).
  */
-import { WALKER_BODY, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
+import { WALKER_BODY, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
 import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
@@ -20,6 +18,7 @@ import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
 import { createAmbience } from "../../ikebukuro/scene/ambience.ts";
+import { createZoneAcoustics, ZONE_ACOUSTICS } from "../../ikebukuro/scene/zone-acoustics.ts";
 import { createStationSound, type V3 } from "../../ikebukuro/scene/station-sound.ts";
 import shopKitManifest from "../scene/shop_kit.json" with { type: "json" };
 import shopBays from "../scene/shop_bays.json" with { type: "json" };

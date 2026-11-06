@@ -164,3 +164,35 @@ describe("identity framing safeguards", () => {
     expect(identityFraming(head, 0, 0, [board(0, 3, -10)], 1, 50, undefined, { x0: -1, x1: 1, y0: 0.8, y1: 1 })).toBeNull();
   });
 });
+
+
+describe("identity framing rigs", () => {
+  const rig = { shoulder: FOLLOW.shoulder, lift: FOLLOW.lift, drop: FOLLOW.drop, distance: FOLLOW.defaultDistance };
+  const b = board(0, 3, -10);
+
+  it("uses the rig lift and distance to choose the look", () => {
+    const normal = identityFraming(head, 0, 0, [b], 16 / 9, 50);
+    const changed = identityFraming(head, 0, 0, [b], 16 / 9, 50, undefined, undefined, { ...rig, lift: 0.4, distance: 2 });
+    expect(normal).not.toBeNull();
+    expect(changed).not.toBeNull();
+    expect(changed!.pitch).not.toBeCloseTo(normal!.pitch, 3);
+  });
+
+  it("rejects a body point outside the free area", () => {
+    expect(identityFraming(head, 0, 0, [b], 16 / 9, 50)).not.toBeNull();
+    expect(identityFraming(head, 0, 0, [b], 16 / 9, 50, undefined, undefined, { ...rig, body: [new THREE.Vector3(100, 0, 0)] })).toBeNull();
+  });
+
+  it("passes the camera and pivot to clear and rejects a blocked pose", () => {
+    const look = identityFraming(head, 0, 0, [b], 16 / 9, 50)!;
+    let checked = false;
+    const clear = (cameraPos: THREE.Vector3, pivot: THREE.Vector3) => {
+      checked = true;
+      expect(cameraPos.distanceTo(cameraAt(look, 16 / 9).position)).toBeLessThan(1e-8);
+      expect(pivot.distanceTo(followPose(head, look.yaw, look.pitch).pivot)).toBeLessThan(1e-8);
+      return false;
+    };
+    expect(identityFraming(head, 0, 0, [b], 16 / 9, 50, undefined, undefined, { ...rig, clear })).toBeNull();
+    expect(checked).toBe(true);
+  });
+});
