@@ -10,11 +10,12 @@ import { createRouter, routeBetween, type RouteEndpoint, type RouteProfile, type
 import { createSearchIndex } from "@gteki/search";
 import { buildStation, installLowTierSteps } from "../../scene/build.ts";
 import { stationSpawn } from "../../scene/spawn.ts";
-import { followCameraEnvironment, spawnView, LANE_CAMERA } from "./spawn-view.ts";
+import { followCameraEnvironment, spawnView, LANE_CAMERA, LANE_CAMERA_CAT } from "./spawn-view.ts";
 import { pointInRings, type Plan } from "../../scene/layout.ts";
 import { Player, PLAYER_RADIUS, sweepCamera, chooseFollowCamera, type GuidePoint, type MoveInput } from "./player.ts";
 import { floorLabel, narrate, summarizeRoute, routeMapFrame, nearbyExits, explainStepFreeFailure, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
 import { createAvatar } from "./avatar.ts";
+import { createCatAvatar } from "./catAvatar.ts";
 import { createStationAudio } from "./audio.ts";
 import { CROWD_LIMIT, createCrowd } from "./crowd.ts";
 
@@ -28,6 +29,8 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const params = new URLSearchParams(location.search);
 const isTouch = matchMedia("(pointer: coarse)").matches;
 const quality: "low" | "high" = (params.get("q") as "low" | "high") ?? (isTouch ? "low" : "high");
+const catAvatar = params.get("avatar") === "cat";
+const laneCamera = catAvatar ? LANE_CAMERA_CAT : LANE_CAMERA;
 const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
 let reducedMotion = motionPreference.matches;
 let bobEnabled = !reducedMotion;
@@ -218,12 +221,12 @@ $("loading").classList.add("has-frame");
 loadingStep(2, "通行人を準備中", "Preparing ambient commuters");
 await paintStartupFrame();
 
-const avatar = createAvatar(THREE, 0);
+const avatar = catAvatar ? createCatAvatar(THREE) : createAvatar(THREE, 0);
 // Decorative ambient commuters (invented, not crowd data). ?crowd=0 disables.
 const crowdDefault = quality === "high" ? 36 : 16;
 const crowdParam = Number(params.get("crowd") ?? crowdDefault);
 const crowdMax = Number.isNaN(crowdParam) ? crowdDefault : Math.max(0, Math.min(CROWD_LIMIT, Math.floor(crowdParam)));
-const crowd = startup.phase("crowd", () => createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27, playerAvatar: avatar }));
+const crowd = startup.phase("crowd", () => createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27, playerAvatar: catAvatar ? undefined : avatar }));
 scene.add(crowd.group);
 scene.add(avatar.object);
 avatar.object.traverse((o) => ((o as THREE.Mesh).castShadow = false));
@@ -232,7 +235,7 @@ await paintStartupFrame();
 startup.begin("surface-hooks");
 
 // ------------------------------------------------------------ camera rig
-const cam = { yaw: player.heading, pitch: LANE_CAMERA.pitch as number, dist: LANE_CAMERA.distance as number, firstPerson: false, userTurnedAt: -10 };
+const cam = { yaw: player.heading, pitch: laneCamera.pitch as number, dist: laneCamera.distance as number, firstPerson: false, userTurnedAt: -10 };
 const camPos = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
 let cameraDistance = cam.dist;
@@ -260,13 +263,13 @@ function updateCamera(dt: number, t: number) {
   const targetPitch = onRun ? -0.22 - Math.max(0, -player.climbing) * 0.06 : 0;
   stairPitch += (targetPitch - stairPitch) * (camInit ? 1 - Math.exp(-5 * dt) : 1);
   const bob = bobEnabled && !reducedMotion && !player.carriedByEscalator ? -Math.cos(player.stridePhase * 2) * 0.012 * Math.min(1, player.speed / 1.45) : 0;
-  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : LANE_CAMERA.headHeight) + bob };
+  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? (catAvatar ? 0.3 : 1.62) : laneCamera.headHeight) + bob };
   transitionFocus *= Math.exp(-3 * dt);
-  const pitch = cam.pitch + LANE_CAMERA.pitchBias + stairPitch - (reducedMotion ? 0 : transitionFocus * 0.04);
+  const pitch = cam.pitch + laneCamera.pitchBias + stairPitch - (reducedMotion ? 0 : transitionFocus * 0.04);
   const safe = cam.firstPerson ? head : chooseFollowCamera(head, cam.yaw, pitch, cam.dist, cameraWorld, cameraSurfaces);
   const want = new THREE.Vector3(safe.x, safe.z, -safe.y);
-  const lookAhead = cam.firstPerson ? 4 : LANE_CAMERA.lookAhead;
-  const look = new THREE.Vector3(head.x + Math.sin(cam.yaw) * lookAhead, head.z + (cam.firstPerson ? Math.sin(cam.pitch) * 4 : LANE_CAMERA.lookRise), -(head.y + Math.cos(cam.yaw) * lookAhead));
+  const lookAhead = cam.firstPerson ? 4 : laneCamera.lookAhead;
+  const look = new THREE.Vector3(head.x + Math.sin(cam.yaw) * lookAhead, head.z + (cam.firstPerson ? Math.sin(cam.pitch) * 4 : laneCamera.lookRise), -(head.y + Math.cos(cam.yaw) * lookAhead));
   if (!camInit || reducedMotion || cam.firstPerson) {
     camPos.copy(want);
     camTarget.copy(look);
