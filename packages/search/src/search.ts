@@ -304,10 +304,11 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
             (form.normalized.length >= 3 && term.startsWith(form.normalized)));
           const crossMatch = form.tokens.length > 1 && form.tokens.every((token) =>
             [...entry.texts.filter((text) => text.crossText).map((text) => text.normalized), ...terms].some((text) => {
-              if (!/^\d+$/.test(token)) return text.includes(token);
+              if (!/\d/.test(token)) return text.includes(token);
+              const boundary = /^\d+$/.test(token) ? /\p{Nd}/u : /[a-z0-9]/;
               for (let at = text.indexOf(token); at >= 0; at = text.indexOf(token, at + 1)) {
-                if ((at === 0 || !/\p{Nd}/u.test(text[at - 1]!)) &&
-                    !/\p{Nd}/u.test(text[at + token.length] ?? "")) return true;
+                if ((at === 0 || !boundary.test(text[at - 1]!)) &&
+                    !boundary.test(text[at + token.length] ?? "")) return true;
               }
               return false;
             }));

@@ -215,12 +215,14 @@ describe("English facility search", () => {
   it("requires whole numbers and excludes descriptions and tenants from cross-text matches", () => {
     const bundle = bundleWith([
       poi("22", "22番出口", { category: "exit" }),
+      poi("a10", "A10", { category: "exit", connectorNodeIds: ["a"] }),
       poi("description", "Marunouchi Line", { descriptions: [{ lang: "en", text: "West Gate" }] }),
       poi("tenant", "Marunouchi Line"),
     ]);
     const original = createTenantFixtureBundle().tenants![0]!;
     bundle.tenants = [{ ...original, poiId: "tenant", names: [{ lang: "en", text: "West Gate" }], aliases: [] }];
     expect(createSearchIndex(bundle).search("exit 2")).toEqual([]);
+    expect(createSearchIndex(bundle).search("exit A1")).toEqual([]);
     expect(createSearchIndex(bundle).search("Marunouchi Line West Gate")).toEqual([]);
   });
 
