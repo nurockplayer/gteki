@@ -8,7 +8,8 @@ export type Lang = "ja" | "en";
 const STRINGS = {
   ja: {
     interactionStart: "のぞく", interactionReceived: "もらいました",
-    interactionSimulated: "模擬店（実在の店舗ではありません）", interactionInterrupted: "中断しました", interactionBag: "持ち物：紙袋",
+    interactionSimulated: "模擬店（実在の店舗ではありません）", interactionSimulatedVending: "模擬の自動販売機（実在の設備ではありません）",
+    interactionInterrupted: "中断しました", interactionBag: "持ち物：紙袋",
     greyboxLegend: "示意，非實測",
     minimap: "ミニマップ",
     minimapPlayerUp: "キャラクターの向きが上",
@@ -264,7 +265,8 @@ const STRINGS = {
   },
   en: {
     interactionStart: "Look inside", interactionReceived: "Already received",
-    interactionSimulated: "Simulated shop (not a real store)", interactionInterrupted: "Interrupted", interactionBag: "Held: paper bag",
+    interactionSimulated: "Simulated shop (not a real store)", interactionSimulatedVending: "Simulated vending machine (not a real one)",
+    interactionInterrupted: "Interrupted", interactionBag: "Held: paper bag",
     greyboxLegend: "Approximate, not surveyed",
     minimap: "Minimap",
     minimapPlayerUp: "Player facing up",

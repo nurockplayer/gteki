@@ -3,7 +3,7 @@
  * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
  * never adds routes (the explorer routes only on graph.json).
  */
-import { WALKER_BODY, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
+import { WALKER_BODY, buildWallProps, wallPropDrawRanges, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
 import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
@@ -23,6 +23,7 @@ import { createStationSound, type V3 } from "../../ikebukuro/scene/station-sound
 import shopKitManifest from "../scene/shop_kit.json" with { type: "json" };
 import shopBays from "../scene/shop_bays.json" with { type: "json" };
 import shopPlacements from "../scene/shop_placements.json" with { type: "json" };
+import wallPropPlacements from "../scene/wall-props.ts";
 
 /** Supplement the existing attributed cap only for a camera looking above
  * the walker. The default follow boom and every horizontal walking ray retain
@@ -185,6 +186,24 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     addProxy(g);
   }
   built.root.add(proxies);
+
+  // Neutral decorative wall props (#858 item 12): one merged mesh, one draw. They are at most
+  // WALKER_BODY.radiusM deep and flush to a layout wall, so no collider is added; the wall already
+  // keeps the walker's centre out of them. The interactive machine's reaction shares the same draw.
+  // The renderer frame is fixed by the scene contract (enuToRenderer = (x, z, -y)); headless tests build the
+  // scene without a context mapping, so derive it here instead of reading ctx.
+  const toRenderer = (x: number, y: number, z: number) => new T.Vector3(x, z, -y);
+  const wallProps = buildWallProps(T, mergeGeometries, toRenderer, wallPropPlacements, "shinjuku");
+  built.root.add(wallProps);
+  const propMarkers = wallProps.children.filter((o) => typeof o.userData.gtekiInteractionId === "string");
+  const propDraws = wallPropDrawRanges(wallProps);
+  let propFull = false;
+  const stepWallProps = () => {
+    const full = propMarkers.some((o) => o.visible);
+    if (full === propFull) return;
+    propFull = full;
+    wallProps.geometry.setDrawRange(0, full ? propDraws.full : propDraws.idle);
+  };
 
   // The street context (PLATEAU surface) is shown only when the viewer is where it can be seen; the lane
   // app reports its camera via setViewer, but scene-api's update() carries no camera. A draw-nothing probe
@@ -397,8 +416,18 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     return [{ x: n.position.x, y: n.position.y, z: layout.nodeZ.get(id) ?? n.renderZ ?? 0, headingDeg: 0, nodeId: id, ...(label ? { label } : {}) }];
   });
 
+  // The interactive wall prop (#858 item 12): decorative, never a POI.
+  const vending = wallPropPlacements.find((p) => p.interaction)!;
+  const anchor = toRenderer(vending.wall[0] + vending.n[0] * (vending.d + 0.6), vending.wall[1] + vending.n[1] * (vending.d + 0.6), vending.z);
+  const interactables = [
+    { id: vending.interaction!, kind: "vending", layer: "fictional" as const, simulated: true as const,
+      anchor: { x: anchor.x, y: anchor.y, z: anchor.z }, radiusM: 0.9,
+      steps: [{ id: "look", seconds: 1.2 }, { id: "sit", seconds: 1.5 }, { id: "react", seconds: 2.0 }], once: false },
+  ];
+
   const scene: StationScene = {
     root: built.root,
+    interactables,
     walkable,
     colliders,
     cameraBlockers,
@@ -407,7 +436,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
     ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); } } : {}),
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
-    ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat, ...(shopKit ? [shopKit] : [])], envTarget, stepAudio, disposeAudio),
+    ...sceneLifecycle((dt: number, t: number) => { built.update(dt, t); stepWallProps(); }, built.dispose, viewer.refresh, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, stepAudio, disposeAudio),
   };
   return scene;
 };
