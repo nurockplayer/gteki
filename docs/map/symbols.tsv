@@ -1234,6 +1234,10 @@ buildScene	const	stations/shinjuku/gteki/scene.ts	117
 planBundle	function	stations/shinjuku/gteki/scene.ts	132
 assembleScene	const	stations/shinjuku/gteki/scene.ts	143
 navmeshPaths	const	stations/shinjuku/gteki/scene.ts	425
+trainSoundCues	function	stations/shinjuku/gteki/train-sound.ts	6
+rumbleLevel	function	stations/shinjuku/gteki/train-sound.ts	13
+rumbleCutoffHz	function	stations/shinjuku/gteki/train-sound.ts	19
+createTrainSound	function	stations/shinjuku/gteki/train-sound.ts	21
 @gteki/station-shinjuku:dev	script	stations/shinjuku/package.json	24
 @gteki/station-shinjuku:build	script	stations/shinjuku/package.json	25
 @gteki/station-shinjuku:preview	script	stations/shinjuku/package.json	26
