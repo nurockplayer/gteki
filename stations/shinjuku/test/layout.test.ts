@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import polygonClipping from "polygon-clipping";
 import type { StationBundle } from "@gteki/schema";
 import { buildLayout, pointInRings, soffitHeight, WalkWorld, type Plan, type Soffit } from "../scene/layout.ts";
 import { loadShinjukuBundle } from "../data/bundle.ts";
@@ -24,10 +23,27 @@ it("keeps B3 shot 28 shaft fascias clear of kept wall planes within 2 mm", () =>
       if (Math.abs(a - b) < 1e-6) continue;
       const p = wall.profile ?? { bottomA: wall.zMin, bottomB: wall.zMin, topA: wall.zMax, topB: wall.zMax };
       const snap = (v: number) => Math.round(v * 1e4) / 1e4;
-      const cover: [number, number][][] = [[[snap(a), snap(p.bottomA)], [snap(b), snap(p.bottomB)], [snap(b), snap(p.topB)], [snap(a), snap(p.topA)], [snap(a), snap(p.bottomA)]]];
-      const rings: [number, number][][] = panel.rings.map(r => r.map(p => [p.x, p.y]));
-      const overlap = polygonClipping.intersection(rings, cover);
-      const area = overlap.flatMap(poly => poly).reduce((sum, ring) => sum + Math.abs(ring.slice(1).reduce((n, point, i) => n + ring[i]![0]! * point[1]! - point[0]! * ring[i]![1]!, 0)) / 2, 0);
+      const cover = [new THREE.Vector2(snap(a), snap(p.bottomA)), new THREE.Vector2(snap(b), snap(p.bottomB)),
+        new THREE.Vector2(snap(b), snap(p.topB)), new THREE.Vector2(snap(a), snap(p.topA))];
+      const rings = panel.rings.map(r => r.slice(0, -1).map(p => new THREE.Vector2(p.x, p.y)));
+      const vertices = rings.flat();
+      const triangles = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1));
+      const cross = (a: THREE.Vector2, b: THREE.Vector2, p: THREE.Vector2) => (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
+      const orientation = Math.sign(cover.reduce((sum, v, i) => sum + v.cross(cover[(i+1)%cover.length]!), 0));
+      let area = 0;
+      for (const triangle of triangles) {
+        let clipped = triangle.map(i => vertices[i]!);
+        for (let i = 0; i < cover.length && clipped.length; i++) {
+          const a = cover[i]!, b = cover[(i+1)%cover.length]!, input = clipped;
+          clipped = [];
+          for (let j = 0; j < input.length; j++) {
+            const p = input[j]!, q = input[(j+1)%input.length]!, dp = orientation * cross(a,b,p), dq = orientation * cross(a,b,q);
+            if (dp >= 0) clipped.push(p);
+            if ((dp < 0 && dq > 0) || (dp > 0 && dq < 0)) clipped.push(p.clone().lerp(q, dp / (dp-dq)));
+          }
+        }
+        area += Math.abs(clipped.reduce((sum, v, i) => sum + v.cross(clipped[(i+1)%clipped.length]!), 0)) / 2;
+      }
       expect(area, `fascia ${fascia.floorId} wall ${wall.a.x},${wall.a.y}`).toBeLessThan(1e-8);
     }
   }
