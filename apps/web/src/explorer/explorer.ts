@@ -2649,7 +2649,7 @@ export class Explorer {
    * unlocked the audio context; the human avatar has no step sounds.
    */
   private stepPaws(dt: number, speed: number): void {
-    if (!this.catAvatar || this.mode === "overview" || this.catRidingEscalator() || this.audio === null) return;
+    if (!this.catAvatar || this.mode === "overview" || this.catRidingEscalator() || this.audio?.context.state !== "running") return;
     const { carriedM, steps } = advancePaws(this.pawCarriedM, speed * dt);
     this.pawCarriedM = carriedM;
     if (steps < 1) return;

@@ -106,8 +106,14 @@ describe("Explorer.stepPaws", () => {
     expect(playPawStep).not.toHaveBeenCalled();
   });
 
+  it("does not queue taps while the audio context is still suspended", () => {
+    const e = explorer({ mode: "walk", audio: { context: { state: "suspended" }, master: {} } });
+    e.stepPaws(0.1, 5);
+    expect(playPawStep).not.toHaveBeenCalled();
+  });
+
   it("taps the tile under the walking cat once a step is due", () => {
-    const e = explorer({ mode: "walk", audio: { context: {}, master: {} } });
+    const e = explorer({ mode: "walk", audio: { context: { state: "running" }, master: {} } });
     e.stepPaws(0.1, 5); // 0.5 m of travel: two steps due, one tap per frame
     expect(playPawStep).toHaveBeenCalledTimes(1);
     expect(vi.mocked(playPawStep).mock.calls[0]![2]).toBe("tile");
