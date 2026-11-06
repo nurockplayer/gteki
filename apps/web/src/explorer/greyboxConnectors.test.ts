@@ -608,6 +608,17 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("meets the turning landing within one step along the walking path", () => {
+    const station = stairThrough([[0, 0, 0], [4, 2, 0], [4, 4, 4]]);
+    (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
+    const path = buildConnectors(station, () => true, flat, "high").pathByEdge.get("turn")!;
+    const cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s);
+      if (p.x >= 2 && p.x <= 6 && p.z >= -2 && p.z <= 2) expect(Math.abs(p.y - 2)).toBeLessThanOrEqual(0.2);
+    }
+  });
+
   // #673 r12: an earlier flight's side wall stops at its own landing's square, whatever its height there, so it never stands
   // in the outgoing flight's lane.
   it("keeps the outgoing lane clear on a 3 m wide stair with a shallow bend before its landing", () => {
