@@ -1585,21 +1585,21 @@ export class Explorer {
     const free = this.freeRect();
     const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
     const height = this.catAvatar ? CAT_AVATAR_HEIGHT_M : EYE;
-    const body = [this.pos.clone(), this.pos.clone().add(new THREE.Vector3(0, height, 0))];
+    const feet = this.pos.clone(), top = feet.clone().add(new THREE.Vector3(0, height, 0));
     const walkerTargets = this.cameraTargets.filter((o) => !signs.has(o));
     const rig = {
       shoulder: this.catAvatar ? catShoulder(this.camera.aspect) : FOLLOW.shoulder,
       lift: this.catAvatar ? FOLLOW_CAT.lift : FOLLOW.lift,
       drop: this.catAvatar ? FOLLOW_CAT.drop : FOLLOW.drop,
       distance: this.catAvatar ? FOLLOW_CAT.distance : this.camDistance,
-      body,
+      body: [feet, top],
       clear: (cameraPos: THREE.Vector3, pivot: THREE.Vector3): boolean => {
         const boom = cameraPos.clone().sub(pivot);
         this.ray.set(pivot, boom.clone().normalize());
         this.ray.near = 0;
         this.ray.far = boom.length() + FOLLOW.clearance;
         if (castCamera(this.ray, this.cameraTargets, this.cameraSides).length) return false;
-        const direction = body[0].clone().lerp(body[1], 0.5).sub(cameraPos);
+        const direction = feet.clone().lerp(top, 0.5).sub(cameraPos);
         this.ray.set(cameraPos, direction.clone().normalize());
         this.ray.near = 0;
         this.ray.far = Math.max(0, direction.length() - 0.05);
