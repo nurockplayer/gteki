@@ -4,15 +4,15 @@
 //
 // Files: scene/kit_catalog.json names the pieces; scene/kit_placements.json gives each surveyed anchor the catalog id
 // of each part, its ENU origin and travel direction, and the quality tiers that draw that part (`tiers`). The station
-// ships batch A (the 5 escalator ids) and batch B (the 21 `main_route` stair handrails), desktop tier only, and
-// batch C: the 61 stair nosing strips, on both tiers. An id whose GLB the station does not ship is treated as "not
-// in this batch" and skipped silently (one summary line); a GLB that is declared but fails to load warns and drops
-// its own placements only.
+// ships batch A (the 5 escalator ids) and batch C (the 61 stair nosing strips) on both tiers, and batch B (the 21
+// `main_route` stair handrails) on the desktop tier alone. An id whose GLB the station does not ship is treated as
+// "not in this batch" and skipped silently (one summary line); a GLB that is declared but fails to load warns and
+// drops its own placements only.
 //
 // Batch C is merged, not instanced: 61 strips would be 61 draws per tier, so the loader bakes each placement into a
 // cloned geometry and merges them into a handful of spatial clusters (one BufferGeometry each) that share one
-// material. Lane E's C3 build drops every per-id AO image; the strips sample one packed AO atlas per tier through
-// TEXCOORD_1 (three's `aoMap` with `channel = 1`), which the loader fetches with the host's texture loader.
+// material. Lane E's C3 build drops every per-id AO image; batches A and C sample one packed AO atlas per tier
+// through TEXCOORD_1 (three's `aoMap` with `channel = 1`), which the loader fetches with the host's texture loader.
 //
 // Frame: the Lane E pieces put the start socket at the origin with travel along local -Z (the end socket is at
 // -Z), width along local X and up along +Y. The catalog's `yaw_deg` is a counter-clockwise turn about ENU +Z taking
