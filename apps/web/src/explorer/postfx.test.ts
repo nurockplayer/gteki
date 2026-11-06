@@ -159,6 +159,84 @@ describe("FadeAwareGTAOPass", () => {
   });
 });
 
+describe("FadeAwareGTAOPass depth twins", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const args = [null, null, null] as unknown as Parameters<GTAOPass["render"]>;
+  const makePass = () => new FadeAwareGTAOPass(new THREE.Scene(), new THREE.PerspectiveCamera(), 8, 8);
+  /** A scene-owned mesh that fades by distance: it carries the normal-material twin GTAO must draw it with. */
+  const makeFading = () => {
+    const root = new THREE.Group();
+    const twin = new THREE.MeshNormalMaterial();
+    twin.blending = THREE.NoBlending;
+    twin.allowOverride = false;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());
+    mesh.userData.gteki_gtao_twin = twin;
+    root.add(mesh);
+    return { root, mesh, twin, original: mesh.material as THREE.Material };
+  };
+
+  it("draws a registered depth-faded mesh with its twin inside GTAO and restores it after", () => {
+    const { root, mesh, twin, original } = makeFading();
+    const draws: THREE.Material[] = [];
+    vi.spyOn(GTAOPass.prototype, "render").mockImplementation(() => { draws.push(mesh.material as THREE.Material); });
+    const pass = makePass();
+    pass.setDepthTwins(root);
+    pass.render(...args);
+    expect(draws[0]).toBe(twin);
+    expect(mesh.material).toBe(original);
+  });
+
+  it("restores depth twins even when the draw throws", () => {
+    const { root, mesh, original } = makeFading();
+    vi.spyOn(GTAOPass.prototype, "render").mockImplementation(() => { throw new Error("boom"); });
+    const pass = makePass();
+    pass.setDepthTwins(root);
+    expect(() => pass.render(...args)).toThrow("boom");
+    expect(mesh.material).toBe(original);
+  });
+
+  it("stops swapping once the twins are cleared", () => {
+    const { root, mesh, original } = makeFading();
+    const draws: THREE.Material[] = [];
+    vi.spyOn(GTAOPass.prototype, "render").mockImplementation(() => { draws.push(mesh.material as THREE.Material); });
+    const pass = makePass();
+    pass.setDepthTwins(root);
+    pass.setDepthTwins(null);
+    pass.render(...args);
+    expect(draws).toEqual([original]);
+  });
+
+  it("leaves every mesh alone when no twins are registered and no avatar fades", () => {
+    const { mesh, original } = makeFading();
+    const render = vi.spyOn(GTAOPass.prototype, "render").mockImplementation(() => { expect(mesh.material).toBe(original); });
+    const pass = makePass();
+    pass.setFade(null, 0.1);
+    pass.render(...args);
+    expect(render).toHaveBeenCalledTimes(1);
+    expect(mesh.material).toBe(original);
+  });
+
+  it("swaps depth twins and the dithered avatar together", () => {
+    const { root, mesh, twin, original } = makeFading();
+    const avatar = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial());
+    avatar.add(body);
+    const bodyOriginal = body.material as THREE.Material;
+    let seen: THREE.Material[] = [];
+    vi.spyOn(GTAOPass.prototype, "render").mockImplementation(() => { seen = [mesh.material as THREE.Material, body.material as THREE.Material]; });
+    const pass = makePass();
+    pass.setDepthTwins(root);
+    pass.setFade(avatar, 0.4);
+    pass.render(...args);
+    expect(seen[0]).toBe(twin);
+    expect(seen[1]).toBeInstanceOf(THREE.MeshNormalMaterial);
+    expect(seen[1]).not.toBe(bodyOriginal);
+    expect(mesh.material).toBe(original);
+    expect(body.material).toBe(bodyOriginal);
+  });
+});
+
 describe("QA postprocessing settings", () => {
   it("keeps reflections enabled when the parameter is absent", () => {
     expect(qaPostFxSettings("").reflections).toBe(true);

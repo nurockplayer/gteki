@@ -5,11 +5,12 @@ import type { Page } from "@playwright/test";
 import type { Vec3, Waypoint } from "./gteki.ts";
 
 /**
- * Follow-camera measurement helpers (#49 follow-camera half, #70 crowding, #94/#136 lens).
+ * Follow-camera measurement helpers (#49 follow-camera half, #70 crowding, #94/#136 lens, #919 avatar in frame).
  *
  * Nothing here needs a new app hook. From `window.__gteki` it uses `sceneInfo().camera` (renderer frame,
- * rounded to 0.1 m) and `avatar()` (station ENU, feet). The lens (vertical FOV, aspect), the exact camera
- * position and the avatar's on-screen height come from LENS_PROBE: an init script that wraps
+ * rounded to 0.1 m), `avatar()` (station ENU, feet) and `projectEnu()` (feet and head to canvas CSS pixels
+ * with the camera as last rendered, so the avatar's screen share works in walking programs too). The lens
+ * (vertical FOV, aspect) and the exact camera position come from LENS_PROBE: an init script that wraps
  * WebGL `getUniformLocation`/`uniformMatrix4fv` and keeps the perspective `projectionMatrix` and
  * `viewMatrix` the renderer actually uploaded. So the FOV is what was rendered, not what a constant says.
  */
@@ -109,8 +110,9 @@ export const LENS_PROBE = `(() => {
   // Three caches uniforms per program: returning to an overview program can reuse its 60-degree projection
   // without an upload after follow's 50. Observe program binds as well as uploads (#811).
   // Keep the latest perspective projection and its program's view per aspect (orthographic post-pass quads are ignored).
-  // The lens comes from the projection alone; position and avatar share need a
-  // view, which only programs using viewMatrix upload (envMap, shadows, custom shaders), so they can be null.
+  // The lens comes from the projection alone; the camera position needs a view, which only programs using
+  // viewMatrix upload (envMap, shadows, custom shaders), so it can be null. The avatar's screen share is not
+  // measured here: it comes from __gteki.projectEnu, which works in every program.
   const L = { names: new WeakMap(), programProjs: new WeakMap(), programViews: new WeakMap(), projs: new Map(), views: new Map() };
   window.__qaLens = L;
   const persp = (v) => v && v.length === 16 && Math.abs(v[11] + 1) < 1e-6 && Math.abs(v[15]) < 1e-6;
@@ -158,8 +160,8 @@ export const LENS_PROBE = `(() => {
   };
   wrap(self.WebGL2RenderingContext);
   wrap(self.WebGLRenderingContext);
-  /** Latest main-camera lens, camera position (renderer frame) and, with an avatar, its screen height share. */
-  window.__qaLensRead = (avatar, bodyTopM) => {
+  /** Latest main-camera lens and camera position (renderer frame). */
+  window.__qaLensRead = () => {
     const c = document.querySelector("canvas.gteki-canvas");
     if (!c || !c.clientHeight) return null;
     const ca = c.clientWidth / c.clientHeight;
@@ -168,41 +170,34 @@ export const LENS_PROBE = `(() => {
     if (!best) return null;
     const P = best.proj, vw = L.views.get(bestKey) ?? null, V = vw ? vw.view : null;
     const cam = V ? [0, 1, 2].map((j) => -(V[j * 4] * V[12] + V[j * 4 + 1] * V[13] + V[j * 4 + 2] * V[14])) : null;
-    let share = null, inFrame = null, headIn = null, feetIn = null, cx = null;
-    if (avatar && V) {
-      const proj = (x, y, z) => {
-        const v = [0, 1, 2].map((i) => V[i] * x + V[4 + i] * y + V[8 + i] * z + V[12 + i]);
-        const cl = [0, 1, 2, 3].map((i) => P[i] * v[0] + P[4 + i] * v[1] + P[8 + i] * v[2] + P[12 + i]);
-        return cl[3] > 0 ? [cl[0] / cl[3], cl[1] / cl[3]] : null;
-      };
-      // station ENU (x, y, z up) -> renderer (x, z, -y)
-      const f = proj(avatar.x, avatar.z, -avatar.y), h = proj(avatar.x, avatar.z + bodyTopM, -avatar.y);
-      if (f && h) {
-        share = Math.round(((h[1] - f[1]) / 2) * 1000) / 1000;
-        headIn = Math.abs(h[0]) <= 1 && Math.abs(h[1]) <= 1;
-        feetIn = Math.abs(f[0]) <= 1 && Math.abs(f[1]) <= 1;
-        inFrame = headIn && feetIn;
-        cx = Math.round(((f[0] + h[0]) / 2) * 1000) / 1000;
-      }
-    }
     const now = performance.now();
     return {
       fovV: Math.round(2 * Math.atan(1 / P[5]) * 180 / Math.PI * 1000) / 1000, aspect: Math.round(ca * 1000) / 1000,
-      cam: cam ? cam.map((v) => Math.round(v * 1000) / 1000) : null, ageMs: Math.round(now - best.t), viewAgeMs: vw ? Math.round(now - vw.t) : null, share, inFrame, headIn, feetIn, cx,
+      cam: cam ? cam.map((v) => Math.round(v * 1000) / 1000) : null, ageMs: Math.round(now - best.t), viewAgeMs: vw ? Math.round(now - vw.t) : null,
       candidates: best.fovs.map((f) => Math.round(f.fov * 100) / 100),
     };
   };
 })();`;
 
-export interface LensRead { fovV: number; aspect: number; cam: number[] | null; ageMs: number; viewAgeMs: number | null; share: number | null; inFrame: boolean | null; headIn: boolean | null; feetIn: boolean | null; cx: number | null; candidates: number[] }
+export interface LensRead { fovV: number; aspect: number; cam: number[] | null; ageMs: number; viewAgeMs: number | null; candidates: number[] }
 
 // ---- Samplers -------------------------------------------------------------------------------------
 
-/** Raw in-page sample: renderer-frame camera position, ENU avatar position, explorer mode, lens. */
-export interface RawCameraSample { t: number; camera: number[] | null; avatar: Vec3 | null; mode: string | null; lens: LensRead | null }
+/** Raw in-page sample: renderer-frame camera position, ENU avatar position, explorer mode, lens, avatar screen share. */
+export interface RawCameraSample {
+  t: number; camera: number[] | null; avatar: Vec3 | null; mode: string | null; lens: LensRead | null;
+  /** Avatar feet-to-top height as a share of the canvas client height (__gteki.projectEnu); null without an avatar. */
+  share: number | null;
+  /** Avatar head (feet + bodyTopM) inside the canvas and in front of the camera; null without an avatar. */
+  headIn: boolean | null;
+  /** Avatar feet inside the canvas and in front of the camera; null without an avatar. */
+  feetIn: boolean | null;
+  /** Both ends inside the frame. */
+  inFrame: boolean | null;
+}
 
 /**
- * Start a sampler inside the page (setInterval; one `sceneInfo()` + `avatar()` + lens read per tick),
+ * Start a sampler inside the page (setInterval; one `sceneInfo()` + `avatar()` + `projectEnu()` + lens read per tick),
  * independent of the Playwright round trip, so it keeps a steady cadence while screenshots are taken.
  * `sceneInfo()` re-measures two bounding boxes per call (a lighter hook is on the request list), so keep
  * the interval at >= 250 ms.
@@ -217,7 +212,21 @@ export async function startCameraSampler(page: Page, intervalMs: number, bodyTop
       try {
         const g = w.__gteki;
         const avatar = g.avatar() ?? null;
-        st.samples.push({ t: performance.now(), camera: g.sceneInfo()?.camera ?? null, avatar, mode: g.mode() ?? null, lens: w.__qaLensRead?.(avatar, top) ?? null });
+        // The avatar's on-screen extent from the app's own projector (no viewMatrix needed): feet and head in one
+        // tick, in canvas CSS pixels, with the camera as last rendered.
+        let share = null, headIn = null, feetIn = null, inFrame = null;
+        const c = document.querySelector("canvas.gteki-canvas");
+        if (avatar && c && c.clientHeight && g.projectEnu) {
+          const [feet, head] = g.projectEnu([{ x: avatar.x, y: avatar.y, z: avatar.z }, { x: avatar.x, y: avatar.y, z: avatar.z + top }]);
+          if (feet && head) {
+            const inside = (p) => !p.behind && p.x >= 0 && p.x <= c.clientWidth && p.y >= 0 && p.y <= c.clientHeight;
+            share = Math.round(((feet.y - head.y) / c.clientHeight) * 1000) / 1000;
+            headIn = inside(head);
+            feetIn = inside(feet);
+            inFrame = headIn && feetIn;
+          }
+        }
+        st.samples.push({ t: performance.now(), camera: g.sceneInfo()?.camera ?? null, avatar, mode: g.mode() ?? null, lens: w.__qaLensRead?.() ?? null, share, headIn, feetIn, inFrame });
       } catch { st.errors++; }
     }, ms);
   }, [intervalMs, bodyTopM] as const);
@@ -268,7 +277,7 @@ export interface CameraSample {
   fovV: number | null;
   aspect: number | null;
   fovH: number | null;
-  /** Avatar feet-to-top height as a share of the viewport height (exact projection); null when not projectable. */
+  /** Avatar feet-to-top height as a share of the viewport height (projectEnu, canvas CSS pixels); null without an avatar. */
   avatarHeightShare: number | null;
   /** Avatar feet and top both inside the viewport. */
   avatarInFrame: boolean | null;
@@ -307,7 +316,7 @@ export function toSample(raw: RawCameraSample, t0: number, k: FollowConstants, w
     overheadBlocker: null,
     fovV, aspect,
     fovH: fovV !== null && aspect !== null ? r(2 * Math.atan(Math.tan((fovV / 2) / DEG) * aspect) * DEG, 100) : null,
-    avatarHeightShare: raw.lens?.share ?? null, avatarInFrame: raw.lens?.inFrame ?? null, avatarHeadInFrame: raw.lens?.headIn ?? null, avatarFeetInFrame: raw.lens?.feetIn ?? null,
+    avatarHeightShare: raw.share ?? null, avatarInFrame: raw.inFrame ?? null, avatarHeadInFrame: raw.headIn ?? null, avatarFeetInFrame: raw.feetIn ?? null,
     stepMode: wps && wps.length > 1 ? stepModeAt(wps, raw.avatar) : null,
   };
 }
@@ -350,6 +359,11 @@ const rnd = (v: number | null, d = 1000) => (v === null ? null : Math.round(v * 
 function stats(samples: CameraSample[], intervalMs: number) {
   const n = samples.length;
   const frac = (f: (s: CameraSample) => boolean) => (n ? Math.round((samples.filter(f).length / n) * 1000) / 1000 : null);
+  /** Share of the samples where `f` is known (not null) and true; null when no sample knows the value. */
+  const fracOf = (f: (s: CameraSample) => boolean | null) => {
+    const known = samples.map(f).filter((v): v is boolean => v !== null);
+    return known.length ? Math.round((known.filter(Boolean).length / known.length) * 1000) / 1000 : null;
+  };
   const d = samples.map((s) => s.headDistance).sort((a, b) => a - b);
   const share = samples.map((s) => s.avatarHeightShare).filter((v): v is number => v !== null).sort((a, b) => a - b);
   return {
@@ -364,9 +378,11 @@ function stats(samples: CameraSample[], intervalMs: number) {
     minCameraAboveHead: n ? Math.min(...samples.map((s) => s.cameraAboveHead)) : null,
     avatarHeightShare: { min: share[0] ?? null, median: quantile(share, 0.5), max: share.at(-1) ?? null, n: share.length },
     // Combined (feet or head out), kept for comparison with earlier runs; the split says which end left the frame.
-    fractionAvatarOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarInFrame === false).length / n) * 1000) / 1000 : null,
-    fractionHeadOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarHeadInFrame === false).length / n) * 1000) / 1000 : null,
-    fractionFeetOutOfFrame: n ? Math.round((samples.filter((s) => s.avatarFeetInFrame === false).length / n) * 1000) / 1000 : null,
+    // Samples without a projection (no avatar) are left out of the denominator, so a walk with no usable data
+    // reads null instead of 0.
+    fractionAvatarOutOfFrame: fracOf((s) => s.avatarInFrame === null ? null : !s.avatarInFrame),
+    fractionHeadOutOfFrame: fracOf((s) => s.avatarHeadInFrame === null ? null : !s.avatarHeadInFrame),
+    fractionFeetOutOfFrame: fracOf((s) => s.avatarFeetInFrame === null ? null : !s.avatarFeetInFrame),
   };
 }
 
@@ -405,7 +421,7 @@ export async function startFovRecorder(page: Page): Promise<void> {
     document.addEventListener("click", onClick, true);
     const loop = () => {
       if (st.stop) return;
-      const l = w.__qaLensRead?.(null, 0);
+      const l = w.__qaLensRead?.();
       st.frames.push({ t: performance.now(), fovV: l ? l.fovV : null, mode: w.__gteki?.mode?.() ?? null });
       requestAnimationFrame(loop);
     };
