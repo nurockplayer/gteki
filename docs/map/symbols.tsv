@@ -1186,9 +1186,9 @@ SURFACE	const	stations/shinjuku/app/src/characters/mesh.ts	36
 ROUGHNESS	const	stations/shinjuku/app/src/characters/mesh.ts	37
 buildCharacter	function	stations/shinjuku/app/src/characters/mesh.ts	44
 CROWD_LIMIT	const	stations/shinjuku/app/src/crowd.ts	8
-CrowdOptions	interface	stations/shinjuku/app/src/crowd.ts	9
-Crowd	interface	stations/shinjuku/app/src/crowd.ts	15
-createCrowd	function	stations/shinjuku/app/src/crowd.ts	66
+CrowdOptions	interface	stations/shinjuku/app/src/crowd.ts	13
+Crowd	interface	stations/shinjuku/app/src/crowd.ts	19
+createCrowd	function	stations/shinjuku/app/src/crowd.ts	74
 HudRect	interface	stations/shinjuku/app/src/hud-layout.ts	1
 hudRectsOverlap	const	stations/shinjuku/app/src/hud-layout.ts	2
 placeProjectedLabel	function	stations/shinjuku/app/src/hud-layout.ts	7

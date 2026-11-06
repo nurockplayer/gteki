@@ -6,6 +6,10 @@ import { createCharacterBatch } from "./characters/batch.ts";
 
 /** Upper bound on ambient route agents; visible ones receive a rig lazily. */
 export const CROWD_LIMIT = 80;
+/** Commuters stop this far before a ticket gate to tap through. */
+const GATE_STOP_M = 0.5;
+/** How long one commuter stands at a ticket gate. */
+const GATE_HOLD_S = 2.5;
 export interface CrowdOptions {
   max: number;
   seed?: number;
@@ -35,6 +39,8 @@ interface Segment {
   ny: number;
   mode: StationBundle["edges"][number]["mode"];
   width: number;
+  /** Ticket-gate node this directed segment arrives at, if any. */
+  gate?: string;
 }
 interface Origin { id: string; point: Point; routes: Segment[][]; nextTarget: number }
 interface SpawnPoint { route: Segment[]; edge: number; progress: number }
@@ -57,6 +63,8 @@ interface Agent {
   localWait: number;
   localMoveUntilWait: number;
   localWaitsRemaining: number;
+  gateWait: number;
+  gatePassed: boolean;
   x: number;
   y: number;
   z: number;
@@ -95,6 +103,12 @@ export function createCrowd(
       points.set(n.id, { x: n.position.x, y: n.position.y, z });
     }
   }
+  // Commuters tap through ticket gates one at a time: each gate's directed
+  // segment holds the clock time at which the next commuter may start.
+  const gateNodes = new Set<string>();
+  for (const n of bundle.nodes) if (n.kind === "ticket_gate") gateNodes.add(n.id);
+  const gateFreeAt = new Map<string, number>();
+  let clock = 0;
   const connectors = new Set<string>();
   for (const poi of bundle.pois) {
     if (poi.category !== "exit" && poi.category !== "ticket_gate" && poi.category !== "platform" && poi.category !== "toilet") continue;
@@ -139,7 +153,8 @@ export function createCrowd(
           if (length < 1e-6 && mode !== "elevator") continue;
           segment = { a, b, dx, dy, dz, length, horizontal,
             nx: horizontal > 0 ? -dy / horizontal : 0, ny: horizontal > 0 ? dx / horizontal : 0,
-            mode, width: mode === "stairs" || mode === "escalator" ? 0.25 : 0.6 };
+            mode, width: mode === "stairs" || mode === "escalator" ? 0.25 : 0.6,
+            gate: gateNodes.has(toId) ? toId : undefined };
           segmentsByEdge.set(key, segment);
         }
         segments.push(segment);
@@ -187,6 +202,8 @@ export function createCrowd(
     const s = segment(a);
     a.lift = s.mode === "elevator" ? 20 : 0;
     a.offset = Math.max(-s.width, Math.min(s.width, a.offset));
+    a.gateWait = 0;
+    a.gatePassed = false;
   }
   function spawn(a: Agent, focus: Point): void {
     // Prefer an interior point on an already routed segment near the player.
@@ -240,6 +257,8 @@ export function createCrowd(
       a.localWait = 0;
       a.localMoveUntilWait = 3.5 + random() * 1.5;
       a.localWaitsRemaining = 2;
+      a.gateWait = 0;
+      a.gatePassed = false;
       count++;
       place(a);
       return;
@@ -287,6 +306,7 @@ export function createCrowd(
 
   function update(dt: number, focus: Point): void {
     if (disposed || !Number.isFinite(dt) || dt < 0 || !Number.isFinite(focus.x) || !Number.isFinite(focus.y) || !Number.isFinite(focus.z)) return;
+    clock += dt;
     // The first update is on the station's first-frame path. Only the player
     // is rendered then; ambient routing/rig generation starts next update.
     if (!started) { started = true; return; }
@@ -352,6 +372,31 @@ export function createCrowd(
             continue;
           }
         }
+        if (s.gate && !a.gatePassed) {
+          const stopAt = Math.max(0, s.length - GATE_STOP_M);
+          if (a.progress >= stopAt - 1e-8) {
+            // Standing after tapping through: animationSpeed stays 0.
+            if (a.gateWait > 0) {
+              const elapsed = Math.min(time, a.gateWait);
+              a.gateWait -= elapsed;
+              time -= elapsed;
+              if (a.gateWait > 1e-8) break;
+              a.gatePassed = true;
+              continue;
+            }
+            // Someone ahead still holds the gate; wait out this frame,
+            // the same consume-and-break shape as the localWait block.
+            const freeAt = gateFreeAt.get(s.gate) ?? 0;
+            if (clock < freeAt) {
+              const elapsed = Math.min(time, freeAt - clock);
+              time -= elapsed;
+              break;
+            }
+            gateFreeAt.set(s.gate, clock + GATE_HOLD_S);
+            a.gateWait = GATE_HOLD_S;
+            continue;
+          }
+        }
         if (a.lift > 0) {
           const elapsed = Math.min(time, a.lift);
           a.lift -= elapsed;
@@ -365,12 +410,19 @@ export function createCrowd(
           if (a.edge < a.route.length) enter(a);
           break;
         }
-        const target = Math.max(-s.width, Math.min(s.width, a.lane + a.steer));
+        // Everyone stands on the left of an escalator, whichever way it runs:
+        // (nx, ny) is the left of travel in ENU.
+        const target = s.mode === "escalator" ? s.width
+          : Math.max(-s.width, Math.min(s.width, a.lane + a.steer));
         a.offset += Math.max(-time, Math.min(time, target - a.offset));
         const speed = (s.mode === "escalator" ? 0.5 : s.mode === "stairs" ? 0.7 : a.speed) * a.pace;
         animationSpeed = s.mode === "escalator" ? 0 : speed;
         if (speed <= 0) { place(a); break; }
         let elapsed = Math.min(time, (s.length - a.progress) / speed);
+        if (s.gate && !a.gatePassed) {
+          const stopAt = Math.max(0, s.length - GATE_STOP_M);
+          elapsed = Math.min(elapsed, Math.max(0, (stopAt - a.progress) / speed));
+        }
         if (a.localSpawn && s.mode === "walk" && a.localWaitsRemaining > 0 && a.localMoveUntilWait > 0) {
           elapsed = Math.min(elapsed, a.localMoveUntilWait);
         }
@@ -446,7 +498,7 @@ export function createCrowd(
       agents.push({ outfit: 1 + (agents.length % 7), pose: { climbing: 0, onStairs: false }, route: [],
         active: false, edge: 0, progress: 0, lift: 0, speed: 0, lane: 0,
         offset: 0, steer: 0, pace: 1, localSpawn: false, localWait: 0,
-        localMoveUntilWait: 0, localWaitsRemaining: 0, x: 0, y: 0, z: 0 });
+        localMoveUntilWait: 0, localWaitsRemaining: 0, gateWait: 0, gatePassed: false, x: 0, y: 0, z: 0 });
     }
     batch.sync(avatars);
   }
@@ -459,6 +511,7 @@ export function createCrowd(
     routedSegments.length = 0;
     seenSegments.clear();
     segmentsByEdge.clear();
+    gateFreeAt.clear();
     group.clear();
     group.removeFromParent();
   }

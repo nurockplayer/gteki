@@ -39,6 +39,41 @@ function fixture(mode: EdgeMode = "walk", z = 4, forward = false) {
   }));
   return { bundle, nodeZ: (id: string) => id === "b" ? z : 0 };
 }
+/** Two exits feed one ticket gate that leads to a single platform. */
+function gateFixture() {
+  const bundle = createSyntheticBundle([
+    syntheticEdge("a1-a", "a1", "a", { lengthM: 4, direction: "forward" }),
+    syntheticEdge("a2-a", "a2", "a", { lengthM: 2, direction: "forward" }),
+    syntheticEdge("a-g", "a", "g", { lengthM: 4, direction: "forward" }),
+    syntheticEdge("g-b", "g", "b", { lengthM: 6, direction: "forward" }),
+  ]);
+  const node = bundle.nodes[0]!;
+  bundle.nodes = [
+    { ...node, id: "a1", position: { x: 6, y: 12, z: -999 } },
+    { ...node, id: "a2", position: { x: 8, y: 12, z: -999 } },
+    { ...node, id: "a", position: { x: 10, y: 12, z: -999 } },
+    { ...node, id: "g", position: { x: 14, y: 12, z: -999 }, kind: "ticket_gate" },
+    { ...node, id: "b", position: { x: 20, y: 12, z: -999 } },
+  ];
+  const poi = bundle.pois[0]!;
+  bundle.pois = [
+    { ...poi, id: "exit-a1", category: "exit", connectorNodeIds: ["a1"] },
+    { ...poi, id: "exit-a2", category: "exit", connectorNodeIds: ["a2"] },
+    { ...poi, id: "platform-b", category: "platform", connectorNodeIds: ["b"] },
+  ];
+  return { bundle, nodeZ: () => 0 };
+}
+/** Standstills in an avatar's sampled positions, with the frame ranges (inclusive) they cover. */
+function stillRuns(track: Array<{ x: number; y: number }>): Array<{ start: number; end: number; x: number; y: number }> {
+  const runs: Array<{ start: number; end: number; x: number; y: number }> = [];
+  let start = -1;
+  for (let i = 1; i <= track.length; i++) {
+    const still = i < track.length && Math.hypot(track[i]!.x - track[i - 1]!.x, track[i]!.y - track[i - 1]!.y) < 1e-9;
+    if (still && start < 0) start = i;
+    if (!still && start >= 0) { runs.push({ start, end: i - 1, x: track[start]!.x, y: track[start]!.y }); start = -1; }
+  }
+  return runs;
+}
 function crowdFor(f: ReturnType<typeof fixture>, max = 1, seed = 123, initialFocus = focus) {
   const router = createRouter(f.bundle);
   const route = vi.spyOn(router, "route");
@@ -172,6 +207,132 @@ describe("decorative crowd", () => {
     expect(update.mock.lastCall![2]!.onStairs).toBe(mode === "stairs");
     if (mode === "escalator") expect(update.mock.lastCall![2]!.climbing).toBe(0);
     else expect(Math.abs(update.mock.lastCall![2]!.climbing!)).toBeGreaterThan(0);
+  });
+
+  it("stands commuters on the left of an escalator in both directions", () => {
+    const { crowd } = crowdFor(fixture("escalator"), 2);
+    for (let frame = 0; frame < 180; frame++) crowd.update(1 / 60, focus);
+    const onRun = actors(crowd).filter((object) => object.position.x > 10.5 && object.position.x < 29.5);
+    expect(onRun).toHaveLength(2);
+    for (const object of onRun) {
+      const up = object.rotation.y < 0; // -atan2(20, 0): travelling a → b
+      const lateral = -object.position.z - 10; // offset from the y = 10 centre line
+      expect(Math.abs(lateral)).toBeCloseTo(0.25, 6);
+      expect(Math.sign(lateral)).toBe(up ? 1 : -1);
+    }
+  });
+
+  it("queues two commuters through a ticket gate, one hold each", () => {
+    const start = { x: -10, y: 12, z: 0 };
+    const { crowd } = crowdFor(gateFixture(), 2, 4711, start);
+    const dt = 1 / 30;
+    const gate = { x: 14, y: 12 }, stop = { x: 13.5, y: 12 };
+    const tracks: Array<Array<{ x: number; y: number }>> = [[], []];
+    for (let frame = 0; frame < 1500; frame++) {
+      crowd.update(dt, start);
+      actors(crowd).slice(0, 2).forEach((object, i) => {
+        tracks[i]!.push({ x: object.position.x, y: -object.position.z });
+      });
+    }
+    const dist = (p: { x: number; y: number }, q: { x: number; y: number }) => Math.hypot(p.x - q.x, p.y - q.y);
+    const atStop = (run: { x: number }) => Math.abs(run.x - stop.x) < 0.05;
+    const runs = tracks.map(stillRuns);
+    // Whichever commuter reached the gate first holds it for GATE_HOLD_S.
+    const first = runs[0]!.find(atStop)!.start <= runs[1]!.find(atStop)!.start ? 0 : 1;
+    const second = 1 - first;
+    const firstHold = runs[first]!.find(atStop)!;
+    const held = ((firstHold.end - firstHold.start + 1) * dt);
+    expect(held).toBeGreaterThan(2.3);
+    expect(held).toBeLessThan(2.7);
+    // The other commuter waits behind the held gate, at least the hold long.
+    const queued = runs[second]!.find((run) => dist(run, stop) < 1.5)!;
+    const passedAt = (() => {
+      for (let frame = queued.end + 1; frame < tracks[second]!.length; frame++) {
+        if (Math.abs(tracks[second]![frame]!.x - gate.x) < 0.01) return frame;
+      }
+      return Infinity;
+    })();
+    expect((passedAt - queued.start) * dt).toBeGreaterThanOrEqual(2.5);
+    // The queue never overlaps: both stay ≥ 0.5 m apart while the first stands.
+    for (let frame = firstHold.start; frame <= firstHold.end; frame++) {
+      expect(dist(tracks[0]![frame]!, tracks[1]![frame]!)).toBeGreaterThanOrEqual(0.49);
+    }
+    // Both then finish the route at the platform connector.
+    for (const track of tracks) expect(Math.max(...track.map((p) => p.x))).toBeCloseTo(20, 6);
+  });
+
+  it("delays a lone commuter at a ticket gate by the hold alone", () => {
+    const start = { x: -10, y: 12, z: 0 };
+    const { crowd } = crowdFor(gateFixture(), 1, 99, start);
+    const dt = 1 / 30;
+    const stop = { x: 13.5, y: 12 };
+    const track: Array<{ x: number; y: number }> = [];
+    for (let frame = 0; frame < 900; frame++) {
+      crowd.update(dt, start);
+      const object = actors(crowd)[0]!;
+      track.push({ x: object.position.x, y: -object.position.z });
+    }
+    // With nobody ahead every gate wait is the hold alone, and nothing else stops.
+    let gateStands = 0;
+    for (const run of stillRuns(track)) {
+      if (run.end >= track.length - 1) continue; // still standing when sampling stopped
+      const frames = (run.end - run.start + 1) * dt;
+      if (Math.abs(run.x - stop.x) < 0.05) {
+        gateStands++;
+        expect(frames).toBeGreaterThan(2.3);
+        expect(frames).toBeLessThan(2.7);
+      } else {
+        expect(frames).toBeLessThan(0.5);
+      }
+    }
+    expect(gateStands).toBeGreaterThan(0);
+  });
+
+  it("waits agents at real ticket gates and lets them finish into the station", () => {
+    const { bundle } = loadShinjukuBundle();
+    const heights: Record<string, number> = planJson.nodeRenderZ;
+    const nodeZ = (id: string) => heights[id] ?? 0;
+    const points = new Map(bundle.nodes.map((n) => [n.id, new THREE.Vector3(n.position.x, nodeZ(n.id), -n.position.y)]));
+    const gates = bundle.nodes.filter((n) => n.kind === "ticket_gate").map((n) => points.get(n.id)!);
+    const gateSet = new Set(gates);
+    const connectors = [...new Set(bundle.pois
+      .filter((p) => p.category === "exit" || p.category === "ticket_gate" || p.category === "platform" || p.category === "toilet")
+      .flatMap((p) => p.connectorNodeIds))].map((id) => points.get(id)).filter((p) => p !== undefined);
+    const vantage = { x: -64.26, y: 182.25, z: nodeZ("n:fe13251e6885410b870179837c3832cf") };
+    const { crowd } = crowdFor({ bundle, nodeZ }, 80, 3812, vantage);
+    const dt = 0.25;
+    const tracks = new Map<THREE.Object3D, Array<{ frame: number; p: THREE.Vector3 }>>();
+    for (let frame = 0; frame < 1200; frame++) { // 300 simulated seconds
+      crowd.update(dt, vantage);
+      for (const object of actors(crowd)) {
+        if (!object.visible) continue;
+        const track = tracks.get(object) ?? [];
+        tracks.set(object, track);
+        track.push({ frame, p: object.position.clone() });
+      }
+    }
+    let waits = 0, tappedThrough = 0, finishedRoutes = 0;
+    for (const track of tracks.values()) {
+      let start = -1;
+      for (let i = 1; i <= track.length; i++) {
+        const still = i < track.length && track[i]!.frame === track[i - 1]!.frame + 1
+          && track[i]!.p.distanceTo(track[i - 1]!.p) < 1e-9;
+        if (still && start < 0) start = i - 1;
+        if (still || start < 0) continue;
+        const run = track.slice(start, i);
+        start = -1;
+        if (i === track.length) continue; // still standing when sampling stopped
+        if ((run.length - 1) * dt < 2) continue;
+        if (!gates.some((g) => g.distanceTo(run[0]!.p) < 1.5)) continue;
+        waits++;
+        const after = track.slice(i);
+        if (after.some((s) => gates.some((g) => g.distanceTo(s.p) < 0.2))) tappedThrough++;
+        if (after.some((s) => connectors.some((c) => !gateSet.has(c) && c.distanceTo(s.p) < 0.2))) finishedRoutes++;
+      }
+    }
+    expect(waits).toBeGreaterThan(0);
+    expect(tappedThrough).toBe(waits);
+    expect(finishedRoutes).toBeGreaterThan(0);
   });
 
   it("carries time over directed edges and changes height and mode at each node", () => {
