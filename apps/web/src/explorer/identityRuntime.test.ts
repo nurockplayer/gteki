@@ -116,6 +116,36 @@ describe("initial identity placement", () => {
     expect(e.yaw).toBeCloseTo(0);
   });
 
+  describe("cat arrival framing", () => {
+    // Looking 5 m ahead at a 3 m board tips a 2.4 m boom into the floor.
+    const cat = () => {
+      const { e, root } = runtime(-5);
+      Object.assign(e, { catAvatar: true, pitch: 0, cameraSides: new Set(), blockerTargets: new Set(), viewSize: { w: 1440, h: 900 } });
+      e.camera.aspect = 1440 / 900; e.camera.updateProjectionMatrix();
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+      floor.rotation.x = -Math.PI / 2; root.add(floor);
+      e.cameraTargets = [floor];
+      return { e, root };
+    };
+
+    it("frames a board the boom only reaches by rising over the floor", () => {
+      const { e, root } = cat();
+      root.updateMatrixWorld(true);
+      e.walkFrom({ x: 0, y: 0, z: 0 });
+      expect(e.identityPlaced).toBe(true);
+      expect(e.pitch).toBeGreaterThan(0);
+    });
+
+    it("keeps the spawn look when a wall squeezes the settled boom", () => {
+      const { e, root } = cat();
+      const wall = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+      wall.position.set(0, 0, 0.9); root.add(wall); root.updateMatrixWorld(true);
+      e.cameraTargets.push(wall);
+      e.walkFrom({ x: 0, y: 0, z: 0 });
+      expect(e.pitch).toBe(0);
+    });
+  });
+
   it.each([{ w: 1280, h: 720, panelW: 415, panelH: 720 }, { w: 390, h: 845, panelW: 390, panelH: 300 }])("uses the canvas free area for walk and guide at $w x $h", ({ w, h, panelW, panelH }) => {
     for (const mode of ["walk", "guide"]) {
       const { e } = runtime();
