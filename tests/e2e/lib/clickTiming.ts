@@ -47,9 +47,9 @@ export async function clickTiming(page: Page, click: () => Promise<unknown>): Pr
 
   // CDP is Chromium only; other projects log the timing without a profile.
   const cdp = await within(page.context().newCDPSession(page), 5_000);
-  await cdp?.send("Profiler.enable");
-  await cdp?.send("Profiler.setSamplingInterval", { interval: 5000 });
-  await cdp?.send("Profiler.start");
+  await within(Promise.resolve(cdp?.send("Profiler.enable")), 5_000);
+  await within(Promise.resolve(cdp?.send("Profiler.setSamplingInterval", { interval: 5000 })), 5_000);
+  await within(Promise.resolve(cdp?.send("Profiler.start")), 5_000);
   const started = Date.now();
   let clickMs = 0;
   try {
