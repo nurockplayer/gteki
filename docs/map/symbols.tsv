@@ -1148,7 +1148,7 @@ APPROACH_CHIME	const	stations/ikebukuro/scene/station-sound.ts	41
 announcementLines	function	stations/ikebukuro/scene/station-sound.ts	53
 StationSound	interface	stations/ikebukuro/scene/station-sound.ts	92
 createStationSound	function	stations/ikebukuro/scene/station-sound.ts	97
-webSpeechPort	function	stations/ikebukuro/scene/station-sound.ts	327
+webSpeechPort	function	stations/ikebukuro/scene/station-sound.ts	330
 TimeBand	type	stations/ikebukuro/scene/time-band.ts	7
 tokyoHour	function	stations/ikebukuro/scene/time-band.ts	16
 bandForHour	function	stations/ikebukuro/scene/time-band.ts	23
