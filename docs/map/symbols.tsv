@@ -383,6 +383,7 @@ cutStairwells	function	apps/web/src/explorer/stairwellCut.ts
 stairwellRegions	function	apps/web/src/explorer/stairwellCut.ts
 stairwellWells	function	apps/web/src/explorer/stairwellCut.ts
 wellRails	function	apps/web/src/explorer/stairwellCut.ts
+wellsSha256	function	apps/web/src/explorer/stairwellCut.ts
 StationCaches	class	apps/web/src/explorer/stationCaches.ts
 shouldRelease	function	apps/web/src/explorer/stationCaches.ts
 STREET	const	apps/web/src/explorer/streetBackdrop.ts

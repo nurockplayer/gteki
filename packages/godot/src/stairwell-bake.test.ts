@@ -13,8 +13,8 @@ import { floorProbe } from "../../../apps/web/src/explorer/routeGaps.ts";
 import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
-import { cutStairwells, stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
-import { canonicalJson, decodeRecipe, sha256Hex, type MeshRecord } from "../../../apps/web/src/explorer/cutRecipe.ts";
+import { cutStairwells, stairwellWells, wellsSha256 } from "../../../apps/web/src/explorer/stairwellCut.ts";
+import { decodeRecipe, type MeshRecord } from "../../../apps/web/src/explorer/cutRecipe.ts";
 import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { loadScene } from "./route-clip-audit.ts";
 
@@ -76,7 +76,7 @@ describe("stairwell recipes", () => {
         collision: [...scene.walkable, ...(scene.colliders ?? []), ...(scene.cameraBlockers ?? [])], record: recorded,
       });
       try {
-        expect(sha256Hex(canonicalJson(wells))).toBe(recipe.wellsSha256);
+        expect(wellsSha256(wells)).toBe(recipe.wellsSha256);
         expect(wells.flatMap(w => w.skipped ? [] : w.rects).length).toBe(recipe.keyCount);
         expect(cut.meshKeysHash).toBe(recipe.meshKeysHash);
         const keys = (meshes: MeshRecord[]) => meshes.map(({ count, hash, matrix }) => ({ count, hash, matrix }));
