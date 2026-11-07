@@ -2880,7 +2880,7 @@ export class Explorer {
       const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
-    if (this.catAvatar) aimAtRaisedCat(pose.target, this.pos, this.boomRaise);
+    if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);

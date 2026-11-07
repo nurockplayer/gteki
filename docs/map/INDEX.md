@@ -7,7 +7,7 @@ updated: 2026-11-03 JST
 
 Read this first, then open the note for your area, then open exactly the files and line ranges it names. Don't scan the repo.
 
-- Symbols: `docs/map/symbols.tsv` lists every exported function, class, type, interface, enum and const, plus every package.json script, as `symbol, kind, path, line`. Look a name up with grep, e.g. `grep -P '^createRouter\t' docs/map/symbols.tsv`. Regenerate it with `pnpm map:gen`. CI (root-test, `tools/map/map.test.ts`) fails when it's stale, and also when a backtick path or a double-bracket wikilink in `docs/map/` doesn't exist.
+- Symbols: `docs/map/symbols.tsv` lists every exported function, class, type, interface, enum and const, plus every package.json script, as `symbol, kind, path`, with no line numbers, so moving code does not make it stale. Look a name up with grep, e.g. `grep -P '^createRouter\t' docs/map/symbols.tsv`. Regenerate it with `pnpm map:gen`. CI (root-test, `tools/map/map.test.ts`) fails when it's stale, and also when a backtick path or a double-bracket wikilink in `docs/map/` doesn't exist.
 - Rule: a PR that moves files or changes the architecture updates the map in the same PR: the note, this index, and `pnpm map:gen`.
 - Obsidian: open `docs/map/` as a vault. Its .obsidian folder is git-ignored.
 
@@ -39,6 +39,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 ### Stations (`stations/`)
 - Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · data generation and raw-data runs: [[data-stations]]; vertical kit: [[shinjuku-kit]]; other scene areas: no note yet (station lead)
 - Ikebukuro: data (`stations/ikebukuro/gteki/`), scene (`stations/ikebukuro/scene/`), pipeline (`stations/ikebukuro/pipeline/`), lane docs (`stations/ikebukuro/docs/`), entry point `stations/ikebukuro/README.md` · data generation and receipts: [[data-stations]]; scene: no note yet (station lead)
+- Street ambience (#861): synthesized traffic bed and pedestrian-signal chirp, crossfaded by acoustic zone and wired into both explorer stations · `stations/ikebukuro/scene/street-ambience.ts` · no note yet (station lead)
 - Shinjuku explorer crowd (#938): the graph's verified walk, stairs, ramp and gate edges adapted for Ikebukuro's `buildCrowd`, wired into the explorer scene as instanced commuters; no escalator or lift riders, no gate queues here · `stations/shinjuku/gteki/explorer-crowd.ts` · no note yet (station lead)
 
 ### Tools (`tools/`)

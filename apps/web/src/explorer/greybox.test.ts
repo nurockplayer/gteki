@@ -374,9 +374,31 @@ describe("buildGreybox", () => {
       { id: "p", floorId: "f", position: { x: x0, y: 1, z: 0 } }, { id: "q", floorId: "f", position: { x: x0 + 0.3, y: 6, z: 0 } }];
     const edges = [bundle.edges[0]!, { id: "s", from: "b", to: "c", mode: "stairs" }, { id: "pq", from: "p", to: "q", mode: "walk" }];
     const result = buildGreybox({ ...bundle, floors, nodes, edges } as unknown as StationBundle, () => true, floorOnlyAt(nodes, ["b", "c"]), emptyScene, "high");
-    // Near q the wall is inside the footprint at about 2.6 m up the flight: no full-height wall may stand there.
-    const near = result.wallSegments.filter((w) => Math.max(w.az, w.bz) < -5 && Math.min(w.ax, w.bx) > 10 - stairHalf - 0.01 && Math.min(w.ax, w.bx) < 10 - stairHalf + 0.4);
-    expect(near.every((w) => w.yMax < 2.9 + 0.5)).toBe(true);
+    const b = nodes.find((n) => n.id === "b")!.position, c = nodes.find((n) => n.id === "c")!.position;
+    const dx = c.x - b.x, dy = c.y - b.y;
+    const [fx0, fx1, fy0, fy1] = [Math.min(b.x, c.x) - stairHalf, Math.max(b.x, c.x) + stairHalf, Math.min(b.y, c.y), Math.max(b.y, c.y)];
+    // The walker's height on the flight at a plan point, linear along b → c.
+    const height = (x: number, y: number) => b.z! + (c.z! - b.z!) * Math.max(0, Math.min(1, ((x - b.x) * dx + (y - b.y) * dy) / (dx * dx + dy * dy)));
+    // The part of a piece inside the flight's plan footprint as [from, to] along it, if it runs through it at all.
+    const inside = (w: { ax: number; az: number; bx: number; bz: number }) => {
+      let lo = 0, hi = 1;
+      for (const [p, d, min, max] of [[w.ax, w.bx - w.ax, fx0, fx1], [-w.az, w.az - w.bz, fy0, fy1]] as const) {
+        if (Math.abs(d) < 1e-9) { if (p < min || p > max) return null; continue; }
+        const t1 = (min - p) / d, t2 = (max - p) / d;
+        lo = Math.max(lo, Math.min(t1, t2)); hi = Math.min(hi, Math.max(t1, t2));
+      }
+      return lo < hi ? [lo, hi] : null;
+    };
+    // The wall reaching the last metre before q, where it has drifted into the footprint (the old check's window).
+    const near = result.wallSegments.filter((w) => Math.min(w.az, w.bz) < -5).flatMap((w) => { const part = inside(w); return part ? [{ w, part }] : []; });
+    // An empty near is a fully opened wall, so the corridor's other wall must show the passage was built.
+    expect(result.wallSegments.some((w) => Math.min(w.ax, w.bx) > x0 - half - 0.01 && Math.max(w.ax, w.bx) < x0 - half + 0.4)).toBe(true);
+    // A walker on the flight carries their body from a lower margin above the feet to its top: the wall must clear it.
+    const blocked = near.filter(({ w, part }) => part.some((t) => {
+      const h = height(w.ax + (w.bx - w.ax) * t, -(w.az + (w.bz - w.az) * t));
+      return w.yMin < h + WALKER_BODY.bodyTopM && w.yMax > h + WALKER_BODY.bodyBottomM;
+    }));
+    expect(blocked).toEqual([]);
   });
 
   it("keeps the wall between a flight passing below it and one passing above", () => {

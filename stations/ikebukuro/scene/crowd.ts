@@ -29,8 +29,8 @@ interface Agent {
 
 /** Gate queue (#627): stop this far short of the gate, keep this gap to the person ahead, hold this long. */
 export const QUEUE_STOP_M = 1.0;
-export const QUEUE_GAP_M = 0.8;
-export const GATE_HOLD_S = 2.5;
+export const QUEUE_GAP_M = 0.7;
+export const GATE_HOLD_S = 4;
 export const QUEUE_MAX = 6;
 /** A queueing walker settles onto a planted gait within this long (s). */
 const PLANT_EASE_S = 0.3;
@@ -530,7 +530,7 @@ interface Look {
  * suitBias shifts the outfit draw toward suits (positive) or away from them (negative).
  */
 export const CROWD_BANDS: Record<TimeBand, { density: number; suitBias: number; toGate: number }> = {
-  morning: { density: 1, suitBias: 0.25, toGate: 0.7 },
+  morning: { density: 1, suitBias: 0.25, toGate: 0.85 },
   midday: { density: 0.6, suitBias: -0.2, toGate: 0.5 },
   evening: { density: 0.4, suitBias: 0, toGate: 0.35 },
 };
