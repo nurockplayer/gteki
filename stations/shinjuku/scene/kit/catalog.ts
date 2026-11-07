@@ -15,6 +15,7 @@ import type { Layout } from "../layout.ts";
 import { gateRowAnchors, runAnchors } from "./anchors.ts";
 import { ESCALATOR_FLAT_STEPS, ESCALATOR_STEP_DEPTH_M, ESCALATOR_STEP_INSET_M, ESCALATOR_TRANSITION_M, GATE_CLEAR_RANGE_M, RUN_FIT } from "./config.ts";
 import type { GateRowAnchor, RunAnchor } from "./types.ts";
+import { stableHypot } from "../stable-hypot.ts";
 
 export const CATALOG_NAME = "gteki-station-shinjuku";
 export const CATALOG_VERSION = "0.1.0";
@@ -105,7 +106,7 @@ function group<A extends { key: string }>(items: { anchor: A; params: CatalogPar
   return [...groups.values()].map((g) => ({ ...g, runs: sortedByEdge(g.runs) })).sort((a, b) => a.runs[0]!.key.localeCompare(b.runs[0]!.key));
 }
 
-const geometry = (a: RunAnchor) => ({ rise: a.hi.z - a.lo.z, length: Math.hypot(a.hi.x - a.lo.x, a.hi.y - a.lo.y) });
+const geometry = (a: RunAnchor) => ({ rise: a.hi.z - a.lo.z, length: stableHypot(a.hi.x - a.lo.x, a.hi.y - a.lo.y) });
 const edgeList = (runs: { key: string }[]) => runs.map((r) => r.key).join(", ");
 const cm = (m: number) => `${(m * 100).toFixed(1)} cm`;
 

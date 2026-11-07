@@ -5,6 +5,7 @@ import { type Layout, type LevelLayout, type WalkWorld, type XY, type XYZ } from
 import { IDENTITY_ART, identityTexture } from "./textures.ts";
 import { identityClearance, platformIdentityPlacement } from "./identity-placement.ts";
 import { identityNearFade } from "./identity-fade.ts";
+import { stableHypot } from "./stable-hypot.ts";
 
 export const IDENTITY_SIZE = { width: 1.72, height: 0.86, depth: 0.07 } as const;
 export const IDENTITY_GENERATED = "GTEki station identity board (original design; not operator signage)";
@@ -127,11 +128,11 @@ export function buildIdentityBoards(bundle: StationBundle, layout: Layout, world
     if (!node || !poi.displayPosition) continue;
     const z = layout.nodeZ.get(node.id) ?? 0;
     const gate = layout.gates.filter((g) => Math.abs(g.center.z - z) < 0.3)
-      .sort((a, b) => Math.hypot(a.center.x - poi.displayPosition!.x, a.center.y - poi.displayPosition!.y) - Math.hypot(b.center.x - poi.displayPosition!.x, b.center.y - poi.displayPosition!.y))[0];
+      .sort((a, b) => stableHypot(a.center.x - poi.displayPosition!.x, a.center.y - poi.displayPosition!.y) - stableHypot(b.center.x - poi.displayPosition!.x, b.center.y - poi.displayPosition!.y))[0];
     if (!gate) continue;
     // Gate POI connectors are the verified unpaid approach nodes (import-e27.ts).
     const dx = node.position.x - poi.displayPosition.x, dy = node.position.y - poi.displayPosition.y;
-    const length = Math.hypot(dx, dy) || 1;
+    const length = stableHypot(dx, dy) || 1;
     // Gate 1's unpaid-side centre overlaps the arrival camera. Hang its original
     // board eight metres toward the paid side, retaining the gate-facing axis.
     const center = poi.id === "poi:gate:1"

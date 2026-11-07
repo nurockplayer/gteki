@@ -13,6 +13,7 @@ import { selectAssets, socketOf } from "./manifest.ts";
 import type {
   ExitTopAnchor, GateRowAnchor, KitAnchors, KitAsset, KitBudget, KitDrop, KitGap, KitManifest, KitPlacement, KitRole, KitTotals, LiftAnchor, RunAnchor,
 } from "./types.ts";
+import { stableHypot } from "../stable-hypot.ts";
 
 export interface PlaceInput {
   anchors: KitAnchors;
@@ -87,7 +88,7 @@ function runFrame(a: RunAnchor): Pick<KitPlacement, "position" | "yaw"> {
 
 const runGeometry = (a: RunAnchor) => ({
   rise: a.hi.z - a.lo.z,
-  length: Math.hypot(a.hi.x - a.lo.x, a.hi.y - a.lo.y),
+  length: stableHypot(a.hi.x - a.lo.x, a.hi.y - a.lo.y),
 });
 
 /**

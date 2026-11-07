@@ -10,6 +10,7 @@
  */
 import type { Edge, StationBundle } from "@gteki/schema";
 import polygonClipping, { type Polygon as ClipPolygon } from "polygon-clipping";
+import { stableHypot } from "./stable-hypot.ts";
 
 export interface XY {
   x: number;
@@ -232,7 +233,7 @@ function ringArea(r: XY[]): number {
   return s / 2;
 }
 const sub = (a: XY, b: XY) => ({ x: a.x - b.x, y: a.y - b.y });
-const len = (v: XY) => Math.hypot(v.x, v.y);
+const len = (v: XY) => stableHypot(v.x, v.y);
 const lerp = (a: XY, b: XY, t: number) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
 
 /** Width-class → metres (MLIT width code: 1 <1 m, 2 1–2 m, 3 2–3 m, 4 ≥3 m). Visual estimate. */
@@ -262,7 +263,7 @@ export function runWidth(code: unknown, mode: string, a: XYZ, b: XYZ, walks: { a
   if (!l2) return width;
   for (const walk of walks) {
     if (Math.abs(walk.a.z - foot.z) > 0.05 || Math.abs(walk.b.z - foot.z) > 0.05) continue;
-    const wx = walk.b.x - walk.a.x, wy = walk.b.y - walk.a.y, wl = Math.hypot(wx, wy);
+    const wx = walk.b.x - walk.a.x, wy = walk.b.y - walk.a.y, wl = stableHypot(wx, wy);
     if (wl < 0.5 || Math.abs(dx * wx + dy * wy) / Math.sqrt(l2) / wl < 0.98) continue;
     for (const t of [0, 0.5, 1]) {
       const p = lerp(walk.a, walk.b, t), u = ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2;
@@ -678,7 +679,7 @@ export function clearSoffit<T extends SlabPoly & { origin?: XY; slope?: XY }>(s:
     const reach = halfWidth + 0.6;
     if (Math.max(a.x, b.x) + reach < minX || Math.min(a.x, b.x) - reach > maxX || Math.max(a.y, b.y) + reach < minY || Math.min(a.y, b.y) - reach > maxY) continue;
     // Account for transverse roof pitch across the walker's radius as well.
-    const pitch = Math.hypot(s.slope?.x ?? 0, s.slope?.y ?? 0);
+    const pitch = stableHypot(s.slope?.x ?? 0, s.slope?.y ?? 0);
     const safeBand = parameterBand(soffitHeight(s, a) - a.z, soffitHeight(s, b) - b.z, minClearance - pitch * 0.35, maxClearance + pitch * 0.35);
     if (!safeBand) continue;
     cuts.push(clipPoly([passageRing(lerp(a, b, safeBand[0]), lerp(a, b, safeBand[1]), halfWidth, extend)]));
@@ -845,7 +846,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     if (an < 1e-6 || bn < 1e-6 || (ad.x * bd.x + ad.y * bd.y) / (an * bn) < 0.995) return false;
     const as = { x: ad.x * (ah.z - al.z) / (an * an), y: ad.y * (ah.z - al.z) / (an * an) };
     const bs = { x: bd.x * (bh.z - bl.z) / (bn * bn), y: bd.y * (bh.z - bl.z) / (bn * bn) };
-    return Math.hypot(as.x - bs.x, as.y - bs.y) < 0.025;
+    return stableHypot(as.x - bs.x, as.y - bs.y) < 0.025;
   };
   const joined = (a: Run, b: Run) => {
     if (!similarAxis(a, b)) return false;
@@ -1081,7 +1082,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     lifts.delete(first);
     const group = [first];
     for (let i = 0; i < group.length; i++) for (const candidate of [...lifts]) {
-      if (group.some((s) => [s.a, s.b].some((a) => [candidate.a, candidate.b].some((b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) < 0.02)))) {
+      if (group.some((s) => [s.a, s.b].some((a) => [candidate.a, candidate.b].some((b) => stableHypot(a.x - b.x, a.y - b.y, a.z - b.z) < 0.02)))) {
         group.push(candidate); lifts.delete(candidate);
       }
     }
@@ -1232,7 +1233,7 @@ function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[]
   const planes = new Map<string, Plane>();
   const snap = (v: number) => Math.round(v * 1e4) / 1e4;
   const add = (wall: WallSeg, floorId?: string, target?: Plane) => {
-    const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = Math.hypot(dx, dy);
+    const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = stableHypot(dx, dy);
     const p = wall.profile ?? { bottomA: wall.zMin, bottomB: wall.zMin, topA: wall.zMax, topB: wall.zMax };
     if (length < 1e-6 || Math.max(p.topA - p.bottomA, p.topB - p.bottomB) < 1e-6) return;
     const sign = (Math.abs(dx) > Math.abs(dy) ? dx : dy) >= 0 ? 1 : -1;

@@ -22,6 +22,7 @@ import { surfaceSeed } from "./surface-bake.ts";
 import { OEDO_MAGENTA } from "./palette.ts";
 import { buildIdentityBoards } from "./identity.ts";
 import type { TimeBand } from "../../ikebukuro/scene/time-band.ts";
+import { stableHypot } from "./stable-hypot.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -166,7 +167,7 @@ export function soffitGeometry(s: Soffit): THREE.BufferGeometry {
 
 /** Vertical quad strip for a wall segment, UV u = metres/2.4, v = height/3.2. */
 function wallQuad(a: XY, b: XY, z0: number, z1: number, uOff = 0): THREE.BufferGeometry {
-  const L = Math.hypot(b.x - a.x, b.y - a.y);
+  const L = stableHypot(b.x - a.x, b.y - a.y);
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute([a.x, z0, -a.y, b.x, z0, -b.y, b.x, z1, -b.y, a.x, z1, -a.y], 3));
   const vTop = (z1 - z0) / 3.2;
@@ -180,7 +181,7 @@ function enclosureWallGeometry(w: WallSeg): THREE.BufferGeometry {
   const g = wallQuad(w.a, w.b, w.zMin, w.zMax, w.a.x + w.a.y);
   if (!w.profile) return g;
   const p = g.attributes.position!, uv = g.attributes.uv!;
-  const dx = w.b.x - w.a.x, dy = w.b.y - w.a.y, length = Math.hypot(dx, dy);
+  const dx = w.b.x - w.a.x, dy = w.b.y - w.a.y, length = stableHypot(dx, dy);
   const sign = (Math.abs(dx) > Math.abs(dy) ? dx : dy) >= 0 ? 1 : -1;
   const along = (q: XY) => (q.x * dx + q.y * dy) / length * sign / 2.4;
   const heights = [w.profile.bottomA, w.profile.bottomB, w.profile.topB, w.profile.topA];
@@ -232,7 +233,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   const polygon = (rings: XY[][]): polygonClipping.Polygon => rings.map((ring) => ring.map((p) => [p.x, p.y]));
   const ringsOf = (poly: polygonClipping.Polygon): XY[][] => poly.map((ring) => ring.map(([x, y]) => ({ x: x!, y: y! })));
   const strip = (r: Run, margin: number, extend: number): XY[][] => {
-    const length = Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y);
+    const length = stableHypot(r.b.x - r.a.x, r.b.y - r.a.y);
     const u = { x: (r.b.x - r.a.x) / length, y: (r.b.y - r.a.y) / length };
     const at = (p: XY, along: number, side: number) => ({ x: p.x + u.x * along - u.y * side, y: p.y + u.y * along + u.x * side });
     const half = r.width / 2 + margin;
@@ -360,7 +361,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   }
   const sides: THREE.BufferGeometry[] = [];
   for (const { wall, covered } of walls) {
-    const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = Math.hypot(dx, dy);
+    const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = stableHypot(dx, dy);
     const u = { x: dx / length, y: dy / length };
     const along = (p: XY) => (p.x - wall.a.x) * u.x + (p.y - wall.a.y) * u.y;
     const roofVoids = covered.map(({ rings, roof }) => ({ rings,
@@ -405,9 +406,9 @@ export function coalesceWallPanels(walls: WallSeg[]): WallSeg[] {
   for (const w of walls) {
     const p = out.at(-1), a = p?.profile, b = w.profile;
     if (p && a && b && p.finish === w.finish && p.kind === w.kind && p.surfaceBase && w.surfaceBase &&
-      Math.hypot(p.b.x - w.a.x, p.b.y - w.a.y) < 1e-6) {
+      stableHypot(p.b.x - w.a.x, p.b.y - w.a.y) < 1e-6) {
       const dx = p.b.x - p.a.x, dy = p.b.y - p.a.y, ex = w.b.x - w.a.x, ey = w.b.y - w.a.y;
-      const l = Math.hypot(dx, dy), m = Math.hypot(ex, ey);
+      const l = stableHypot(dx, dy), m = stableHypot(ex, ey);
       const joins = (a0: number, a1: number, b0: number, b1: number) =>
         Math.abs(a1 - b0) < 1e-6 && Math.abs((a1 - a0) * m - (b1 - b0) * l) < 1e-5;
       if (l > 1e-6 && m > 1e-6 && dx * ex + dy * ey > 0 && Math.abs(dx * ey - dy * ex) < 1e-6 * l * m &&
@@ -431,7 +432,7 @@ export function cladWallGeometry(walls: WallSeg[]): THREE.BufferGeometry | null 
   const planes = new Map<string, Plane>(), geometries: THREE.BufferGeometry[] = [];
   const priority = (w: WallSeg) => !w.finish ? 0 : w.surfaceBase && Math.abs(w.surfaceBase.a - w.surfaceBase.b) > 1e-5 ? 1 : 2;
   for (const w of coalesceWallPanels(walls).sort((a, b) => priority(a) - priority(b))) {
-    const dx = w.b.x - w.a.x, dy = w.b.y - w.a.y, length = Math.hypot(dx, dy);
+    const dx = w.b.x - w.a.x, dy = w.b.y - w.a.y, length = stableHypot(dx, dy);
     if (length < 1e-6) continue;
     const sign = (Math.abs(dx) > Math.abs(dy) ? dx : dy) >= 0 ? 1 : -1;
     const u = { x: dx / length * sign, y: dy / length * sign };
@@ -816,7 +817,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       if (A.floorId !== B.floorId || A.inOut === "outside") continue;
       const lv = layout.levels.find((l) => l.floorId === A.floorId) ?? layout.levels.find((l) => Math.abs(l.z - (layout.nodeZ.get(A.id) ?? 0)) < 0.5);
       if (!lv) continue;
-      const L = Math.hypot(B.position.x - A.position.x, B.position.y - A.position.y);
+      const L = stableHypot(B.position.x - A.position.x, B.position.y - A.position.y);
       if (L < 2.5) continue;
       const z = lv.ceilingZ - 0.03;
       const shrink = 0.6 / L;
@@ -848,7 +849,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       for (let i = 1; i < t.pts.length; i++) {
         const a = t.pts[i - 1]!;
         const b = t.pts[i]!;
-        const L = Math.hypot(b.x - a.x, b.y - a.y);
+        const L = stableHypot(b.x - a.x, b.y - a.y);
         if (L < 0.05) continue;
         const dx = (b.x - a.x) / L;
         const dy = (b.y - a.y) / L;
@@ -879,11 +880,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     root.add(mesh);
   }
   const escalators: BuiltStation["escalators"] = [];
-  const stepCount = (r: Run) => Math.ceil(Math.hypot(Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1, r.b.z - r.a.z) / 0.4);
+  const stepCount = (r: Run) => Math.ceil(stableHypot(stableHypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1, r.b.z - r.a.z) / 0.4);
   const lowStepSizes = opts.quality === "low" ? layout.runs.filter(r => r.mode === "escalator").map(r => {
-    const L = Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1;
+    const L = stableHypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1;
     const rise = Math.abs(r.b.z - r.a.z);
-    const L3 = Math.hypot(L, rise);
+    const L3 = stableHypot(L, rise);
     return { depth: 0.4 * L / L3, rise: 0.4 * rise / L3 };
   }) : [];
   const median = (values: number[]) => {
@@ -923,7 +924,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const dz = hi.z - lo.z;
       const dx = hi.x - lo.x;
       const dy = hi.y - lo.y;
-      const L = Math.hypot(dx, dy) || 1;
+      const L = stableHypot(dx, dy) || 1;
       const u = { x: dx / L, y: dy / L };
       const n = { x: -u.y, y: u.x };
       const hw = r.width / 2;
@@ -969,7 +970,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const inclineAt = (p: THREE.Vector3) => lo.z + dz * THREE.MathUtils.clamp(((p.x - lo.x) * dx + (-p.z - lo.y) * dy) / (L * L), 0, 1);
         trussGeos.push(contactShade(boxAlong(v3({ ...lo, z: lo.z - 0.7 }), v3({ ...hi, z: hi.z - 0.7 }), r.width + 0.3, 0.9), (p) => (inclineAt(p) - 0.25 - p.y) / 0.9, 0.6));
         // animated steps: a level tread and the riser under its downhill edge, so the run reads as steps, not a ramp
-        const L3 = Math.hypot(L, dz);
+        const L3 = stableHypot(L, dz);
         const stepLen = 0.4;
         const count = Math.ceil(L3 / stepLen);
         const scale = new THREE.Vector3(stepLen * (L / L3), stepLen * (dz / L3), r.width - 0.1);
@@ -1154,7 +1155,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const material = track(new THREE.MeshBasicMaterial({ map: tex.texture, side: THREE.FrontSide, transparent: true }));
       const signGeos: THREE.BufferGeometry[] = [];
       for (const { fence, z } of selected) {
-        const width = Math.min(1.25, Math.hypot(fence.b.x - fence.a.x, fence.b.y - fence.a.y) - .05);
+        const width = Math.min(1.25, stableHypot(fence.b.x - fence.a.x, fence.b.y - fence.a.y) - .05);
         const geo = new THREE.PlaneGeometry(width, width / tex.aspect);
         geo.translate(0, 0, .035);
         const mesh = new THREE.Mesh(geo, material);
@@ -1195,7 +1196,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const e = bundle.edges.find((x) => x.from === node.id || x.to === node.id)!;
       const other = nodeById.get(e.from === node.id ? e.to : e.from)!;
       const d = { x: node.position.x - other.position.x, y: node.position.y - other.position.y };
-      const L = Math.hypot(d.x, d.y) || 1;
+      const L = stableHypot(d.x, d.y) || 1;
       const u = { x: d.x / L, y: d.y / L };
       const z = layout.nodeZ.get(node.id) ?? 0;
       const c = { x: node.position.x + u.x * 1.2, y: node.position.y + u.y * 1.2 };
@@ -1268,7 +1269,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     type Grp = { out: XY; walls: WallSeg[]; len: number };
     const groups: Grp[] = [];
     for (const w of walls) {
-      const L = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y);
+      const L = stableHypot(w.b.x - w.a.x, w.b.y - w.a.y);
       if (L < 0.3) continue;
       const out = { x: ((w.b.y - w.a.y) / L) * w.side, y: (-(w.b.x - w.a.x) / L) * w.side };
       const grp = groups.find((q) => q.out.x * out.x + q.out.y * out.y > 0.7);
@@ -1301,14 +1302,14 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         }
         if (edge.length < 2) return;
         const dirAt = (a: XY, b: XY) => {
-          const l = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+          const l = stableHypot(b.x - a.x, b.y - a.y) || 1;
           return { x: (b.x - a.x) / l, y: (b.y - a.y) / l };
         };
         const t0 = dirAt(edge[0]!, edge[1]!);
         const tn = dirAt(edge[edge.length - 2]!, edge[edge.length - 1]!);
         const line = [{ x: edge[0]!.x - t0.x * EXT, y: edge[0]!.y - t0.y * EXT }, ...edge, { x: edge[edge.length - 1]!.x + tn.x * EXT, y: edge[edge.length - 1]!.y + tn.y * EXT }];
         const cum = [0];
-        for (let i = 1; i < line.length; i++) cum.push(cum[i - 1]! + Math.hypot(line[i]!.x - line[i - 1]!.x, line[i]!.y - line[i - 1]!.y));
+        for (let i = 1; i < line.length; i++) cum.push(cum[i - 1]! + stableHypot(line[i]!.x - line[i - 1]!.x, line[i]!.y - line[i - 1]!.y));
         const total = cum[cum.length - 1]!;
         const platA = cum[1]!;
         const platB = cum[cum.length - 2]!;
@@ -1730,7 +1731,7 @@ function buildElevatorPortals(
   const groups: (typeof nodes)[] = [];
   for (const n of nodes) {
     const z = layout.nodeZ.get(n.id)!;
-    const group = groups.find(([a]) => Math.abs(layout.nodeZ.get(a!.id)! - z) < 0.1 && Math.hypot(a!.position.x - n.position.x, a!.position.y - n.position.y) < 1.9);
+    const group = groups.find(([a]) => Math.abs(layout.nodeZ.get(a!.id)! - z) < 0.1 && stableHypot(a!.position.x - n.position.x, a!.position.y - n.position.y) < 1.9);
     if (group) group.push(n); else groups.push([n]);
   }
   for (const group of groups) {
@@ -1745,15 +1746,15 @@ function buildElevatorPortals(
     const incident = hasCabNode ? undefined : bundle.edges.find((e) => e.mode !== "elevator" && group.some((n) => n.id === e.from || n.id === e.to));
     if (incident) {
       const other = bundle.nodes.find((n) => n.id === (group.some((n) => n.id === incident.from) ? incident.to : incident.from))!;
-      const d = { x: c.x - other.position.x, y: c.y - other.position.y }, length = Math.hypot(d.x, d.y);
+      const d = { x: c.x - other.position.x, y: c.y - other.position.y }, length = stableHypot(d.x, d.y);
       if (length > 0.1) approach = { x: d.x / length, y: d.y / length };
     }
     const candidates = lv.walls.flatMap((w) => {
-      const dx = w.b.x - w.a.x, dy = w.b.y - w.a.y, length = Math.hypot(dx, dy);
+      const dx = w.b.x - w.a.x, dy = w.b.y - w.a.y, length = stableHypot(dx, dy);
       if (w.finish === "fascia" || w.zMin > z + 0.02 || w.zMax < z + 2.5 || length < 1.95) return [];
       const t = Math.max(0.98 / length, Math.min(1 - 0.98 / length, ((c.x - w.a.x) * dx + (c.y - w.a.y) * dy) / (length * length)));
       const p = { x: w.a.x + dx * t, y: w.a.y + dy * t };
-      const distance = Math.hypot(p.x - c.x, p.y - c.y);
+      const distance = stableHypot(p.x - c.x, p.y - c.y);
       if (distance > 5.5 || distance < 0.4) return [];
       const toward = ((p.x - c.x) * approach.x + (p.y - c.y) * approach.y) / distance;
       return [{ w, p, distance, score: distance + (1 - toward) * 2.3, u: { x: dx / length, y: dy / length } }];
@@ -1771,18 +1772,18 @@ function buildElevatorPortals(
         const a = nodeById.get(e.from)!, b = nodeById.get(e.to)!;
         const za = layout.nodeZ.get(a.id)!, zb = layout.nodeZ.get(b.id)!;
         const points = e.geometry?.length ? e.geometry : [a.position, b.position];
-        const lengths = points.slice(1).map((q, i) => Math.hypot(q.x - points[i]!.x, q.y - points[i]!.y));
+        const lengths = points.slice(1).map((q, i) => stableHypot(q.x - points[i]!.x, q.y - points[i]!.y));
         const total = lengths.reduce((s, v) => s + v, 0);
         let acc = 0;
         return points.slice(1).some((q, i) => {
-          const a = points[i]!, length = lengths[i]!, count = Math.max(1, Math.ceil(Math.hypot(length, zb - za) / 0.2));
+          const a = points[i]!, length = lengths[i]!, count = Math.max(1, Math.ceil(stableHypot(length, zb - za) / 0.2));
           const start = acc; acc += length;
           for (let k = 0; k <= count; k++) {
             const t = k / count, height = za + (zb - za) * (total ? (start + length * t) / total : t);
             if (height + 1.8 < w.zMin || height + 0.2 > w.zMax) continue;
             const x = a.x + (q.x - a.x) * t, y = a.y + (q.y - a.y) * t;
             const along = Math.max(-1.03, Math.min(1.03, (x - p.x) * u.x + (y - p.y) * u.y));
-            if (Math.hypot(x - p.x - u.x * along, y - p.y - u.y * along) < 0.65) return true;
+            if (stableHypot(x - p.x - u.x * along, y - p.y - u.y * along) < 0.65) return true;
           }
           return false;
         });
@@ -1931,7 +1932,7 @@ function buildUndergroundLighting(
     const a = nodes.get(e.from)!, b = nodes.get(e.to)!;
     const za = layout.nodeZ.get(a.id) ?? 0, zb = layout.nodeZ.get(b.id) ?? 0;
     if (Math.min(za, zb) >= -0.5) continue;
-    const length = Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y);
+    const length = stableHypot(b.position.x - a.position.x, b.position.y - a.position.y);
     const count = Math.floor(length / 3.2);
     for (let i = 0; i < count; i++) {
       const t0 = (i + 0.18) / count, t1 = (i + 0.82) / count;
@@ -1988,20 +1989,20 @@ function buildUndergroundLighting(
   // underground level. Most of the perceived illumination remains emissive fixtures + IBL.
   const anchors: XYZ[] = [];
   for (const g of layout.gates) {
-    if (g.center.z >= -0.5 || anchors.some((p) => Math.abs(p.z - g.center.z) < 1 && Math.hypot(p.x - g.center.x, p.y - g.center.y) < 12)) continue;
+    if (g.center.z >= -0.5 || anchors.some((p) => Math.abs(p.z - g.center.z) < 1 && stableHypot(p.x - g.center.x, p.y - g.center.y) < 12)) continue;
     anchors.push(g.center);
   }
   // The guided-walk escalator bank gets one over its upper landing, 2 m past the head, where the soffit fixtures alone
   // leave the arrival flat (vertical-gap expansion item 3). A bank is the runs whose heads lie within 8 m on one level.
   // Only that bank: with the cap of 8, a head on every level would push out the hall fills of other corridors.
-  const runLength = (r: (typeof layout.runs)[number]) => Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y);
+  const runLength = (r: (typeof layout.runs)[number]) => stableHypot(r.b.x - r.a.x, r.b.y - r.a.y);
   const banks: { head: XYZ; runs: number; length: number; guided: boolean }[] = [];
   for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
     const [lo, hi] = r.a.z <= r.b.z ? [r.a, r.b] : [r.b, r.a];
     const len = runLength(r);
     if (hi.z >= -0.5 || len < 1e-6) continue;
     const head = { x: hi.x + ((hi.x - lo.x) / len) * 2, y: hi.y + ((hi.y - lo.y) / len) * 2, z: hi.z };
-    const bank = banks.find((b) => Math.abs(b.head.z - head.z) < 0.3 && Math.hypot(b.head.x - head.x, b.head.y - head.y) < 8);
+    const bank = banks.find((b) => Math.abs(b.head.z - head.z) < 0.3 && stableHypot(b.head.x - head.x, b.head.y - head.y) < 8);
     const guided = GUIDED_WALK_EDGES.has(r.edgeId);
     if (bank) { bank.runs++; bank.guided ||= guided; if (len > bank.length) Object.assign(bank, { head, length: len }); }
     else banks.push({ head, runs: 1, length: len, guided });
@@ -2009,14 +2010,14 @@ function buildUndergroundLighting(
   const heads: XYZ[] = [];
   for (const b of banks.filter((b) => b.guided).sort((x, y) => y.runs - x.runs || y.length - x.length)) {
     if (heads.some((p) => Math.abs(p.z - b.head.z) < 0.3)) continue;
-    if (!anchors.some((p) => Math.abs(p.z - b.head.z) < 1 && Math.hypot(p.x - b.head.x, p.y - b.head.y) < 8)) heads.push(b.head);
+    if (!anchors.some((p) => Math.abs(p.z - b.head.z) < 1 && stableHypot(p.x - b.head.x, p.y - b.head.y) < 8)) heads.push(b.head);
   }
   anchors.push(...heads);
   for (const lv of layout.levels.filter((l) => l.z < -0.5)) {
     const candidates = bundle.nodes.filter((n) => n.floorId === lv.floorId && n.inOut === "inside" && n.kind !== "elevator" && Math.abs((layout.nodeZ.get(n.id) ?? 0) - lv.z) < 0.1);
     const junctions = candidates.filter((n) => bundle.edges.filter((e) => e.from === n.id || e.to === n.id).length >= 3);
     const sameLevel = anchors.filter((p) => Math.abs(p.z - lv.z) < 0.3);
-    const score = (n: (typeof candidates)[number]) => sameLevel.length ? Math.min(...sameLevel.map((p) => Math.hypot(p.x - n.position.x, p.y - n.position.y))) : 0;
+    const score = (n: (typeof candidates)[number]) => sameLevel.length ? Math.min(...sameLevel.map((p) => stableHypot(p.x - n.position.x, p.y - n.position.y))) : 0;
     const n = (junctions.length ? junctions : candidates).sort((a, b) => score(b) - score(a))[0];
     if (n) anchors.push({ ...n.position, z: lv.z });
   }
@@ -2071,7 +2072,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     const z = layout.nodeZ.get(n.id) ?? 0;
     const lv = layout.levels.find((l) => Math.abs(l.z - z) < 0.3);
     if (!lv) continue;
-    if (placed.some((p) => Math.abs(p.z - z) < 1 && Math.hypot(p.x - n.position.x, p.y - n.position.y) < 14)) continue;
+    if (placed.some((p) => Math.abs(p.z - z) < 1 && stableHypot(p.x - n.position.x, p.y - n.position.y) < 14)) continue;
     // main corridor axis = longest incident walk edge
     const inc = bundle.edges.filter((e) => (e.from === n.id || e.to === n.id) && (e.mode === "walk" || e.mode === "gate"));
     if (!inc.length) continue;
@@ -2079,7 +2080,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     let best = -1;
     for (const e of inc) {
       const o = nodeById.get(e.from === n.id ? e.to : e.from)!.position;
-      const L = Math.hypot(o.x - n.position.x, o.y - n.position.y);
+      const L = stableHypot(o.x - n.position.x, o.y - n.position.y);
       if (L > best) (best = L), (axis = { x: (o.x - n.position.x) / L, y: (o.y - n.position.y) / L });
     }
     const isPaid = inc.some((e) => e.paid === true);
@@ -2099,13 +2100,13 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
       let prev = n.position;
       for (const id of res.nodeIds.slice(1)) {
         const q = nodeById.get(id)!.position;
-        acc += Math.hypot(q.x - prev.x, q.y - prev.y);
+        acc += stableHypot(q.x - prev.x, q.y - prev.y);
         prev = q;
         p = q;
         if (acc >= 2) break;
       }
       const d = { x: p.x - n.position.x, y: p.y - n.position.y };
-      const L = Math.hypot(d.x, d.y);
+      const L = stableHypot(d.x, d.y);
       return L < 0.5 ? null : { x: d.x / L, y: d.y / L };
     });
     const valid = rows.map((r, i) => ({ r, d: dirs[i] })).filter((x) => x.d);
