@@ -1618,6 +1618,105 @@ it("#922 keeps flightEnds' untrimmed behaviour when the rise cannot fit under th
   expect(heightAlongPath(path, centre, 1, 0.75)! - path[centre]!.y).toBeGreaterThan(0.3);
 });
 
+/**
+ * #922: real Ikebukuro stair edges the merge now runs on, in the bundle's geometry as renderer waypoints (x, height, -graph y).
+ * All their plan points sit on the 0.5 m sampling grid, and each carries short legs at its turning landings.
+ */
+const realStairShapes: { name: string; waypoints: [number, number, number][] }[] = [
+  {
+    name: "s39_f__x39",
+    waypoints: [[168, 26.039, 168], [173.5, 26.05, 168.5], [174.5, 26.05, 169.5], [174, 26.216, 170], [173, 27.378, 172.5], [173, 27.378, 173.5], [173, 27.544, 174], [173.5, 29.2, 177.5], [174, 29.3, 180], [173.5, 29.3, 180.5], [173, 29.86, 181], [172.5, 29.86, 181.5], [172, 30.363, 181], [171, 31.07, 180.5], [170.5, 31.22, 180], [171, 31.41, 179.5], [172.5, 32.646, 179]],
+  },
+  {
+    name: "w_n__x18",
+    waypoints: [[-108, 27.91, -151], [-100.5, 27.91, -152.5], [-99.5, 27.91, -152.5], [-99, 27.91, -153], [-99, 27.91, -153.5], [-98, 27.91, -154.5], [-97.5, 28.238, -155], [-96.5, 28.894, -156], [-96, 29.058, -156.5], [-95.5, 29.224, -156.5], [-93.5, 30.38, -155.5], [-93, 30.545, -155], [-93, 30.545, -154.5], [-94, 30.545, -154], [-94.5, 30.709, -154], [-98.5, 33.168, -156]],
+  },
+  {
+    name: "ne_m__x28",
+    waypoints: [[128, 26.24, -100], [125.5, 26.24, -95], [125, 26.414, -94.5], [123.5, 29.029, -90], [124.5, 29.029, -89], [125, 29.029, -89.5], [127, 32.051, -94.5], [127, 32.37, -95]],
+  },
+];
+
+/**
+ * #922: the turning landings the merge left on a built path — every vertex whose plan bend is 20 degrees or more, with its
+ * height and the two flight directions pointing away from it. The raw waypoints are not used: a landing the merge removed
+ * is no landing and has no guard.
+ */
+function pathLandings(path: readonly PathPoint[]) {
+  const landings: { centre: THREE.Vector2; height: number; flights: THREE.Vector2[] }[] = [];
+  for (let i = 1; i + 1 < path.length; i++) {
+    const back = new THREE.Vector2(path[i - 1]!.x - path[i]!.x, path[i - 1]!.z - path[i]!.z);
+    const forward = new THREE.Vector2(path[i + 1]!.x - path[i]!.x, path[i + 1]!.z - path[i]!.z);
+    if (back.length() < 1e-9 || forward.length() < 1e-9) continue;
+    if (Math.PI - back.angleTo(forward) < (20 * Math.PI) / 180) continue;
+    landings.push({ centre: new THREE.Vector2(path[i]!.x, path[i]!.z), height: path[i]!.y, flights: [back.normalize(), forward.normalize()] });
+  }
+  return landings;
+}
+
+it("#922 lets a centreline walker and a walker 0.5 m off centre pass every real stair bottom to top", () => {
+  for (const { name, waypoints } of realStairShapes) {
+    const result = stairAt(waypoints);
+    const path = result.pathByEdge.get("turn")!;
+    expect(path, name).toBeTruthy();
+    const cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    const landings = pathLandings(path);
+    expect(landings.length, name).toBeGreaterThan(0);
+    // Offsets fade to the centreline at each turn, as in the guard suite's own walk.
+    const turnS = landings.map((landing) => {
+      const i = path.findIndex((p) => Math.hypot(p.x - landing.centre.x, p.z - landing.centre.y) < 1e-6 && Math.abs(p.y - landing.height) < 1e-6);
+      return cumulative[i]!;
+    });
+    for (const offset of [-0.5, 0, 0.5]) for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s);
+      const next = cumulative.findIndex((c) => c > s + 1e-9), j = next < 0 ? path.length - 1 : Math.max(1, next);
+      const dx = path[j]!.x - path[j - 1]!.x, dz = path[j]!.z - path[j - 1]!.z, length = Math.hypot(dx, dz);
+      const amount = offset * Math.min(1, Math.min(...turnS.map((b) => Math.abs(s - b))) / 0.75);
+      const x = p.x - (length > 1e-9 ? dz / length : 1) * amount, z = p.z + (length > 1e-9 ? dx / length : 0) * amount;
+      const resolved = resolveWalls(x, z, 0.3, p.y, 1.7, result.wallSegments);
+      expect(Math.hypot(resolved.x - x, resolved.z - z), `${name} offset=${offset} s=${s.toFixed(2)}`).toBeLessThanOrEqual(0.05);
+    }
+  }
+}, 30_000);
+
+it("#922 stops a walker on every turning landing left in a real stair except through a flight opening", () => {
+  const half = 0.75 + 0.03;
+  // The guard suite's own square test, applied to the path's landings.
+  const insideLanding = (p: THREE.Vector2, landing: { centre: THREE.Vector2; flights: THREE.Vector2[] }) => {
+    const axis = landing.flights[0]!.clone().negate(), across = new THREE.Vector2(-axis.y, axis.x), rel = p.clone().sub(landing.centre);
+    return Math.abs(rel.dot(axis)) <= half + 1e-6 && Math.abs(rel.dot(across)) <= half + 1e-6;
+  };
+  for (const { name, waypoints } of realStairShapes) {
+    const result = stairAt(waypoints);
+    const landings = pathLandings(result.pathByEdge.get("turn")!);
+    expect(landings.length, name).toBeGreaterThan(0);
+    for (const landing of landings) {
+      const { centre, height, flights } = landing;
+      const axis = flights[0]!.clone().negate(), normal = new THREE.Vector2(-axis.y, axis.x);
+      let checked = 0;
+      for (let k = 0; k < 36; k++) {
+        const heading = (k * Math.PI) / 18, dir = new THREE.Vector2(Math.cos(heading), Math.sin(heading));
+        const r = half / Math.max(Math.abs(dir.dot(axis)), Math.abs(dir.dot(normal)));
+        const exit = dir.clone().multiplyScalar(r);
+        // An exit inside a flight's footprint is the landing's own opening; an exit inside another landing square is open into
+        // it, not a gap.
+        if (flights.some((u) => exit.dot(u) > 1e-6 && Math.abs(exit.x * u.y - exit.y * u.x) < half - 1e-6)) continue;
+        const absolute = centre.clone().add(exit);
+        if (landings.some((other) => other !== landing && insideLanding(absolute, other))) continue;
+        checked++;
+        let stopped = false;
+        for (let step = 1; step <= 50 && !stopped; step++) {
+          const x = centre.x + dir.x * 0.03 * step, z = centre.y + dir.y * 0.03 * step;
+          const resolved = resolveWalls(x, z, 0.3, height, 1.7, result.wallSegments);
+          if (Math.hypot(resolved.x - x, resolved.z - z) > 0.05) stopped = true;
+        }
+        expect(stopped, `${name} landing=(${centre.x}, ${centre.y}) heading=${k * 10}`).toBe(true);
+      }
+      expect(checked, `${name} landing=(${centre.x}, ${centre.y})`).toBeGreaterThan(0);
+    }
+  }
+}, 30_000);
+
 it.each([
   ["escalator", 2, 3.6],
   ["stairs", 3, 3.6],
