@@ -20,9 +20,11 @@ export function followCameraEnvironment(layout: Layout, propWalls: WallSeg[]) {
 /** Arrival look for the cat: where the board's centre and the cat's feet should sit, in NDC, and how far a board counts. */
 export const CAT_ARRIVAL = { boardNdc: 0.55, feetNdc: 0.85, maxRangeM: 30, maxFloorDiffM: 6 } as const;
 
-/** Extra look height (m) that brings the nearest board ahead into frame, capped so the cat's feet stay in frame; 0 if none. */
+/** Extra look height (m) that brings the nearest board ahead into frame, capped so the cat's feet stay in frame; 0 if none or in portrait. */
 export function catArrivalRise(opts: { eye: XYZ; look: XYZ; feet: XYZ; heading: number; boards: readonly XYZ[]; fovDeg: number; aspect: number }): number {
   const { eye, look, feet, heading, boards, fovDeg, aspect } = opts;
+  // Portrait has no room: the board would clip under the top HUD and push the cat behind the bottom panel.
+  if (aspect < 1) return 0;
   const tanV = Math.tan((fovDeg * Math.PI) / 360);
   const halfH = Math.atan(tanV * aspect);
   let nearest: XYZ | null = null;

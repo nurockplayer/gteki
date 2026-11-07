@@ -42,6 +42,12 @@ describe("catArrivalRise", () => {
     expect(ndcY(board, extra)).toBeGreaterThan(CAT_ARRIVAL.boardNdc);
   });
 
+  it("keeps the view level in portrait", () => {
+    const boards = [{ x: 0, y: 2, z: 3 }];
+    expect(rise(boards)).toBeGreaterThan(0);
+    expect(catArrivalRise({ eye, look, feet, heading, boards, fovDeg, aspect: 0.46 })).toBe(0);
+  });
+
   it("keeps the view level with no board", () => {
     expect(rise([])).toBe(0);
   });
