@@ -607,6 +607,9 @@ const MIN_TRIMMED_RUN_M = 0.5;
 const SHORT_STAIR_LEG_TOLERANCE_M = 0.4;
 /** A leg at least a stair width long and this near level is a landing, not a slope: it anchors the regrade. */
 const NEAR_LEVEL_PITCH_DEG = 5;
+/** The station's sampled stair paths sit on a 0.5 m plan grid, within this tolerance; a designed shape keeps its own legs. */
+const STAIR_PLAN_GRID_M = 0.5;
+const STAIR_PLAN_GRID_TOLERANCE_M = 0.001;
 
 /** The plan distance flightEnds pulls a flight back from a turning landing. */
 function flightTrim(width: number): number {
@@ -753,6 +756,16 @@ function planDistanceToSegment(p: THREE.Vector3, a: THREE.Vector3, b: THREE.Vect
 }
 
 /**
+ * #922 merges and regrades only a stair edge whose plan points all sit on the station's 0.5 m sampling grid. A path that
+ * leaves short legs at its landings is a sampled path, and joining those legs back into one flight repairs that sampling;
+ * a designed shape keeps its own legs, so its landing corners are never absorbed. Plan axes are the bundle's (x, -z).
+ */
+function onStairSamplingGrid(points: readonly THREE.Vector3[]): boolean {
+  const on = (value: number) => Math.abs(value - Math.round(value / STAIR_PLAN_GRID_M) * STAIR_PLAN_GRID_M) <= STAIR_PLAN_GRID_TOLERANCE_M;
+  return points.every((p) => on(p.x) && on(-p.z));
+}
+
+/**
  * Join sampled stair legs shorter than the stair width into one flight (#922). A sampled stair path often carries a short
  * leg at each turning landing, which flightEnds then treats as a landing edge and leaves a step on. Merging the short legs
  * into the flight above the landing removes both the step and the steep trimmed pitch, as long as every merged chord stays
@@ -892,7 +905,13 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
     let points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
-    if (edge.mode === "stairs") points = mergeShortStairLegs(points, width);
+    const sampledStairs = edge.mode === "stairs" && onStairSamplingGrid(points);
+    let mergedStairs = false;
+    if (sampledStairs) {
+      const merged = mergeShortStairLegs(points, width);
+      mergedStairs = merged.length !== points.length;
+      points = merged;
+    }
     if (shortRun(points)) { skip("short_run", edge.id); continue; }
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
     const half = halfWidth + FOOTPRINT_PAD_M;
@@ -914,7 +933,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       for (let k = 0; k <= count; k++) if (!onFloor(a.clone().lerp(b, k / count))) return false;
       return true;
     };
-    if (edge.mode === "stairs") points = regradeStairRise(points, width, isTurn, floored);
+    // Regrade repairs what the merge changed: an edge the merge left alone keeps its own heights.
+    if (mergedStairs) points = regradeStairRise(points, width, isTurn, floored);
     // An end at a node another generated connector also meets is a junction (on station floor, or on the endpoint pad built
     // where floor is missing); it is opened once every connector's regions exist.
     // An end is its node's even where a floor-backed level leg before it was trimmed off.
