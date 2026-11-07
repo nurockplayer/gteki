@@ -1002,6 +1002,7 @@ thin	function	stations/ikebukuro/pipeline/walker_replay.ts
 yawToward	const	stations/ikebukuro/pipeline/walker_replay.ts
 AmbienceInput	interface	stations/ikebukuro/scene/ambience.ts
 createAmbience	function	stations/ikebukuro/scene/ambience.ts
+noiseBuffer	function	stations/ikebukuro/scene/ambience.ts
 BLOCKER_REACH_M	const	stations/ikebukuro/scene/context.ts
 CONTEXT_GATE	const	stations/ikebukuro/scene/context.ts
 CONTEXT_GLB	const	stations/ikebukuro/scene/context.ts
@@ -1191,6 +1192,8 @@ V3	type	stations/ikebukuro/scene/station-sound.ts
 announcementLines	function	stations/ikebukuro/scene/station-sound.ts
 createStationSound	function	stations/ikebukuro/scene/station-sound.ts
 webSpeechPort	function	stations/ikebukuro/scene/station-sound.ts
+createStreetAmbience	function	stations/ikebukuro/scene/street-ambience.ts
+streetLevel	function	stations/ikebukuro/scene/street-ambience.ts
 TimeBand	type	stations/ikebukuro/scene/time-band.ts
 bandForHour	function	stations/ikebukuro/scene/time-band.ts
 currentTimeBand	function	stations/ikebukuro/scene/time-band.ts

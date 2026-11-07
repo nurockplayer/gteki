@@ -39,6 +39,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 ### Stations (`stations/`)
 - Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · data generation and raw-data runs: [[data-stations]]; vertical kit: [[shinjuku-kit]]; other scene areas: no note yet (station lead)
 - Ikebukuro: data (`stations/ikebukuro/gteki/`), scene (`stations/ikebukuro/scene/`), pipeline (`stations/ikebukuro/pipeline/`), lane docs (`stations/ikebukuro/docs/`), entry point `stations/ikebukuro/README.md` · data generation and receipts: [[data-stations]]; scene: no note yet (station lead)
+- Street ambience (#861): synthesized traffic bed and pedestrian-signal chirp, crossfaded by acoustic zone and wired into both explorer stations · `stations/ikebukuro/scene/street-ambience.ts` · no note yet (station lead)
 - Shinjuku explorer crowd (#938): the graph's verified walk, stairs, ramp and gate edges adapted for Ikebukuro's `buildCrowd`, wired into the explorer scene as instanced commuters; no escalator or lift riders, no gate queues here · `stations/shinjuku/gteki/explorer-crowd.ts` · no note yet (station lead)
 
 ### Tools (`tools/`)
