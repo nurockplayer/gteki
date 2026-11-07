@@ -23,8 +23,10 @@ found by shape:
  5. `kit` names the library piece that can be scaled onto it (a square or round 0.4 to 1.0 m footprint,
     at least 1.96 m tall, rectangles up to 1:1.6), else null with a `reason`. The column stays listed.
 
-Components that are not prisms are not listed (counted in `rejected`). A column that touches a wall at a
-shared vertex is welded into the wall's component and is not found; the count of such cases is unknown.
+Components that are not prisms are not listed (counted in `rejected`). A component refused by the strict rule
+is retried with a 60 mm cap-level tolerance, because PLATEAU caps are folded by up to 46 mm; the retry also
+allows 5 % side-area slack for a non-convex footprint. A column that touches a wall at a shared vertex is
+welded into the wall's component and is still not found; no such case exists in this extract.
 
 Output frame: ENU metres (x east, y north, z TP height), rounded to 1 mm. `rotation_deg` is the angle of
 the footprint's `width` axis counter-clockwise from +X seen from above. `level` is the base-height band
@@ -48,10 +50,12 @@ SOURCE_FUNCTION = "EF_25"
 
 MM = 1000.0
 Z_TOL_MM = 2              # a vertex belongs to the bottom or top level within this
+FOLDED_CAP_TOL_MM = 60    # PLATEAU caps folded by up to 46 mm on 21 L2 columns (#218); retried after a strict refusal
 MIN_H_M = 1.5             # shorter prisms are not columns
 LIST_MAX_DIAM_M = 3.0     # larger footprints (hull diameter) are not columns
 MIN_SIDE_M = 0.15         # thinner rectangles / circles are wall stubs
 SIDE_AREA_TOL = 0.02      # vertical area vs perimeter x height
+FOLDED_SIDE_AREA_TOL = 0.05  # the folded-cap retry also allows a non-convex footprint (reflex sides add ~3 %)
 CAP_AREA_TOL = 0.02       # a cap is "closed" when its triangles cover the footprint within this
 RECT_SIDE_TOL_M = 0.02    # opposite sides of a rectangle agree within this
 RECT_ANGLE_TOL = 0.03     # |cos| of the corner angle
@@ -144,7 +148,7 @@ def tri_area3(t):
     return math.sqrt(cx * cx + cy * cy + cz * cz) / 2
 
 
-def prism(tri_list):
+def prism(tri_list, z_tol=Z_TOL_MM, side_tol=SIDE_AREA_TOL):
     """Return (info, None) for a vertical prism, or (None, reason). `info` has hull (mm), z0, z1 (mm), closed."""
     verts = {v for t in tri_list for v in t}
     z0 = min(v[2] for v in verts)
@@ -153,9 +157,9 @@ def prism(tri_list):
         return None, "short"
     bottom, top = set(), set()
     for x, y, z in verts:
-        if abs(z - z0) <= Z_TOL_MM:
+        if abs(z - z0) <= z_tol:
             bottom.add((x, y))
-        elif abs(z - z1) <= Z_TOL_MM:
+        elif abs(z - z1) <= z_tol:
             top.add((x, y))
         else:
             return None, "not_prism"
@@ -171,14 +175,14 @@ def prism(tri_list):
         flat = cross2(t[0][:2], t[1][:2], t[2][:2]) == 0  # xy-projection is a segment: a vertical triangle
         if flat:
             side += tri_area3(t)
-        elif all(abs(v[2] - z0) <= Z_TOL_MM for v in t):
+        elif all(abs(v[2] - z0) <= z_tol for v in t):
             cap0 += tri_area3(t)
-        elif all(abs(v[2] - z1) <= Z_TOL_MM for v in t):
+        elif all(abs(v[2] - z1) <= z_tol for v in t):
             cap1 += tri_area3(t)
         else:
             return None, "not_prism"
     want = per * height
-    if abs(side - want) > SIDE_AREA_TOL * want + 1e5:  # + 0.1 m2 of rounding slack at 1 mm resolution
+    if abs(side - want) > side_tol * want + 1e5:  # + 0.1 m2 of rounding slack at 1 mm resolution
         return None, "not_prism"
     foot = poly_area(hull)
     closed = abs(cap0 - foot) <= CAP_AREA_TOL * foot and abs(cap1 - foot) <= CAP_AREA_TOL * foot
@@ -232,6 +236,14 @@ def assign_kit(shape, width, depth, height):
 
 # ---- driver -----------------------------------------------------------------------------------------------
 
+def cap_fold_mm(tri_list, z0, z1, z_tol):
+    """How far the cap vertices spread off their level (mm), the larger of the bottom and top caps."""
+    verts = {v for t in tri_list for v in t}
+    lo = [v[2] for v in verts if abs(v[2] - z0) <= z_tol]
+    hi = [v[2] for v in verts if abs(v[2] - z1) <= z_tol]
+    return round(max(max(lo) - min(lo), max(hi) - min(hi)))
+
+
 def find_columns(data):
     tris, skipped = read_triangles(data["installations"])
     comps = components(tris)
@@ -240,6 +252,12 @@ def find_columns(data):
     for comp in comps:
         tl = [tris[i][2] for i in comp]
         info, why = prism(tl)
+        folded = False
+        if info is None and why == "not_prism":  # PLATEAU cap vertices are folded by up to 46 mm on #218's columns
+            pts = list({v[:2] for t in tl for v in t})
+            if max(math.dist(a, b) for a in pts for b in pts) / MM <= LIST_MAX_DIAM_M:  # a column-sized component only
+                info, why = prism(tl, FOLDED_CAP_TOL_MM, FOLDED_SIDE_AREA_TOL)
+                folded = info is not None
         if info is None:
             rejected[why] += 1
             continue
@@ -256,9 +274,11 @@ def find_columns(data):
         piece, reason = assign_kit(fp["shape"], fp["width"], fp["depth"], height)
         found.append({
             "fp": fp, "base": info["z0"] / MM, "top": info["z1"] / MM, "height": height, "closed": info["closed"], "piece": piece, "reason": reason,
+            "folded": folded, "cap_fold": cap_fold_mm(tl, info["z0"], info["z1"], FOLDED_CAP_TOL_MM) if folded else None,
             "installations": sorted({tris[i][0] for i in comp}), "polygons": [tris[i][1] for i in comp],
         })
-    return found, {"triangles": len(tris), "components": len(comps), "skipped_polygons": skipped, "rejected": dict(sorted(rejected.items()))}
+    return found, {"triangles": len(tris), "components": len(comps), "skipped_polygons": skipped,
+                   "rejected": dict(sorted(rejected.items())), "folded_caps": sum(1 for c in found if c["folded"])}
 
 
 def level_bands(bases):
@@ -285,9 +305,13 @@ def build(data, input_sha256):
     def level_of(base):
         return next(i for i, (lo, hi) in enumerate(bands) if lo - 1e-9 <= base <= hi + 1e-9)
 
-    found.sort(key=lambda c: (level_of(c["base"]), r3(c["fp"]["centre"][0]), r3(c["fp"]["centre"][1])))
+    def sort_key(c):
+        return (level_of(c["base"]), r3(c["fp"]["centre"][0]), r3(c["fp"]["centre"][1]))
+
+    # The strict columns keep their ids: number them as before, then append the folded-cap ones (same sort key).
+    ordered = sorted((c for c in found if not c["folded"]), key=sort_key) + sorted((c for c in found if c["folded"]), key=sort_key)
     columns = []
-    for i, c in enumerate(found):
+    for i, c in enumerate(ordered):
         fp = c["fp"]
         col = {
             "id": f"col_{i + 1:03d}",
@@ -311,6 +335,8 @@ def build(data, input_sha256):
             "closed": c["closed"],
             "kit": c["piece"],
         })
+        if c["folded"]:
+            col["cap_fold_mm"] = c["cap_fold"]
         if c["reason"]:
             col["reason"] = c["reason"]
         columns.append(col)
@@ -332,8 +358,10 @@ def build(data, input_sha256):
             "input": f"installations with function {SOURCE_FUNCTION} (barriers), all scopes",
             "rule": "welded connected components that are vertical prisms (every vertex on the lowest or highest level, same xy set at both, "
                     "vertical triangle area = hull perimeter x height), listed when >= %.1f m tall, hull diameter <= %.1f m and, for "
-                    "rectangles and circles, smaller side >= %.2f m. No per-column object or class exists in the data, so this is geometry, "
-                    "not a PLATEAU classification." % (MIN_H_M, LIST_MAX_DIAM_M, MIN_SIDE_M),
+                    "rectangles and circles, smaller side >= %.2f m. A component refused as not_prism is retried with a %.0f mm cap-level "
+                    "tolerance (PLATEAU caps folded by up to 46 mm) and, on that retry only, %.0f %% side-area slack for a non-convex "
+                    "footprint; such a column carries cap_fold_mm. No per-column object or class exists in the data, so this is geometry, "
+                    "not a PLATEAU classification." % (MIN_H_M, LIST_MAX_DIAM_M, MIN_SIDE_M, FOLDED_CAP_TOL_MM, FOLDED_SIDE_AREA_TOL * 100),
             "kit_rule": "square or round, %.2f to %.2f m, rectangles up to 1:%.1f, height >= %.2f m; sleeve scaled from the 0.61 m x %.1f m piece"
                         % (KIT_FOOT_MIN_M, KIT_FOOT_MAX_M, KIT_MAX_ASPECT, KIT_MIN_H_M, PIECE_HEIGHT_M),
             "tolerances": {"z_mm": Z_TOL_MM, "side_area": SIDE_AREA_TOL, "cap_area": CAP_AREA_TOL, "rect_side_m": RECT_SIDE_TOL_M,
@@ -346,7 +374,7 @@ def build(data, input_sha256):
                    for i, (lo, hi) in enumerate(bands)],
         "counts": {
             "triangles_read": stats["triangles"], "components": stats["components"], "skipped_polygons": stats["skipped_polygons"],
-            "rejected": stats["rejected"],
+            "rejected": stats["rejected"], "folded_caps": stats["folded_caps"],
             "columns": len(columns),
             "by_shape": dict(sorted(shapes.items())),
             "kit_square": kit.get(SQUARE_PIECE, 0), "kit_round": kit.get(ROUND_PIECE, 0), "kit_null": kit.get("null", 0),
