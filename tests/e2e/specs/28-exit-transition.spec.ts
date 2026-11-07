@@ -6,7 +6,7 @@ import { hooks, openStation } from "../lib/gteki.ts";
 /**
  * Shot sequence of one walk out of Ikebukuro B1: the passage before the stairs, the stairs, the street after
  * the exit. Evidence for #858 item 4, not a gate, so it runs only with GTEKI_EXIT_TRANSITION=1.
- *   GTEKI_EXIT_TRANSITION=1 GTEKI_EXIT_OUT=<dir> pnpm exec playwright test specs/28-exit-transition.spec.ts
+ *   GTEKI_EXIT_TRANSITION=1 GTEKI_ROOT=<checkout> GTEKI_EXIT_OUT=<dir> pnpm exec playwright test specs/28-exit-transition.spec.ts
  */
 const enabled = process.env.GTEKI_EXIT_TRANSITION === "1";
 const out = process.env.GTEKI_EXIT_OUT ?? "test-results/exit-transition";
