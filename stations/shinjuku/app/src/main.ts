@@ -249,10 +249,10 @@ startup.begin("surface-hooks");
 
 // One-time arrival look: tilt up just enough to show the 新宿 identity board beside the cat (#878).
 if (catAvatar) {
-  const box = new THREE.Box3();
   const center = new THREE.Vector3();
+  // Board groups are empty: their merged meshes are root children, so a bounding box would come back empty.
   const boards = station.identityBoards.map((board) => {
-    box.setFromObject(board).getCenter(center);
+    board.getWorldPosition(center);
     return { x: center.x, y: -center.z, z: center.y };
   });
   const head = { x: spawn.position.x, y: spawn.position.y, z: spawn.position.z + laneCamera.headHeight };
