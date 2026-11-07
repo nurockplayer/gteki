@@ -1066,7 +1066,6 @@ MIN_RAIL_M	const	stations/ikebukuro/scene/kit.ts
 Mark	interface	stations/ikebukuro/scene/kit.ts
 Placement	interface	stations/ikebukuro/scene/kit.ts
 RAIL_FACE_OFFSET	const	stations/ikebukuro/scene/kit.ts
-RAIL_LABEL_H	const	stations/ikebukuro/scene/kit.ts
 gatePlacements	function	stations/ikebukuro/scene/kit.ts
 gateSites	function	stations/ikebukuro/scene/kit.ts
 loadKit	function	stations/ikebukuro/scene/kit.ts
