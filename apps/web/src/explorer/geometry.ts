@@ -8,11 +8,41 @@ export type V3 = { x: number; y: number; z: number };
 /** ENU → renderer (x, z, -y). */
 export const R = (x: number, y: number, z: number): THREE.Vector3 => new THREE.Vector3(x, z, -y);
 
+/** Route ribbon width in metres: 0.40 m at the walking camera so it reads as a guide line, 1.1 m in overview. */
+export const ROUTE_RIBBON_WIDTH_WALK = 0.4;
+export const ROUTE_RIBBON_WIDTH_OVERVIEW = 1.1;
+
+/** Chevron pitch along the ribbon: ~0.9 m while walking (unstretched), 1.8 m in overview (today's look). */
+export const ROUTE_CHEVRON_PITCH_WALK = 0.9;
+export const ROUTE_CHEVRON_PITCH_OVERVIEW = 1.8;
+
+/** Near-camera fade of the walking ribbon: invisible under 2.5 m from the camera, fully drawn by 5 m. */
+export const ROUTE_FADE_NEAR_M = 2.5;
+export const ROUTE_FADE_FAR_M = 5;
+
+/**
+ * Fades a route ribbon's fragments out near the camera, so the band never fills the low walking frame.
+ * The vertex pass carries the fragment's world position (varyings interpolate perspective-correct) and the
+ * fragment pass multiplies the material alpha by a smoothstep on the true distance to the camera; a vertex-only
+ * distance would stay large across a long segment that passes under the camera and never fade there.
+ */
+export function routeNearFade(material: THREE.Material, near = ROUTE_FADE_NEAR_M, far = ROUTE_FADE_FAR_M): void {
+  material.customProgramCacheKey = () => `route-near-fade-${near}-${far}`;
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace("void main() {", "varying vec3 vRouteWorld;\nvoid main() {")
+      .replace("#include <project_vertex>", "#include <project_vertex>\n\tvRouteWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("void main() {", "varying vec3 vRouteWorld;\nvoid main() {")
+      .replace("#include <opaque_fragment>", `#include <opaque_fragment>\n\tgl_FragColor.a *= smoothstep( ${near.toFixed(3)}, ${far.toFixed(3)}, distance( vRouteWorld, cameraPosition ) );`);
+  };
+}
+
 /**
  * Flat ribbon along a renderer-space polyline (constant width in XZ, following Y), with
- * `u` = arc length (metres) for scrolling textures and `v` across the strip.
+ * `u` = arc length (metres) × `uScale` for scrolling textures and `v` across the strip.
  */
-export function ribbonGeometry(points: readonly THREE.Vector3[], width: number, lift = 0): THREE.BufferGeometry {
+export function ribbonGeometry(points: readonly THREE.Vector3[], width: number, lift = 0, uScale = 1): THREE.BufferGeometry {
   const pos: number[] = [];
   const uv: number[] = [];
   const idx: number[] = [];
@@ -38,7 +68,7 @@ export function ribbonGeometry(points: readonly THREE.Vector3[], width: number, 
     const nz = tx * (width / 2) * scale;
     if (i > 0) s += p.distanceTo(prev);
     pos.push(p.x + nx, p.y + lift, p.z + nz, p.x - nx, p.y + lift, p.z - nz);
-    uv.push(s, 0, s, 1);
+    uv.push(s * uScale, 0, s * uScale, 1);
     if (i > 0) {
       const b = (i - 1) * 2;
       idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
