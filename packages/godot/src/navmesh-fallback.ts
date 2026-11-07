@@ -55,7 +55,7 @@ export function measureFallbacks(station:string, fallbackList?:string, includeFa
   if (!/^(ikebukuro|shinjuku)$/.test(station)) throw new Error("unsupported station");
   const dir=fs.mkdtempSync(path.join(qaDirectory(path.join(qaRoot(),"navmesh")),"fallback-")), start=performance.now();
   const run=(script:string,args:string[])=>{
-    const child=spawnSync("pnpm",["tsx",`packages/godot/src/${script}`,...args],{encoding:"utf8",maxBuffer:32*1024*1024,timeout:180_000});
+    const child=spawnSync("pnpm",["tsx",`packages/godot/src/${script}`,...args],{encoding:"utf8",maxBuffer:32*1024*1024,timeout:900_000});
     if (child.status!==0) throw new Error(`${script} failed: ${child.error?.message ?? `exit ${child.status}`}`);
   };
   try {
