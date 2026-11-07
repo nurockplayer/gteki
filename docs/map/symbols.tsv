@@ -1066,7 +1066,6 @@ MIN_RAIL_M	const	stations/ikebukuro/scene/kit.ts
 Mark	interface	stations/ikebukuro/scene/kit.ts
 Placement	interface	stations/ikebukuro/scene/kit.ts
 RAIL_FACE_OFFSET	const	stations/ikebukuro/scene/kit.ts
-RAIL_LABEL_H	const	stations/ikebukuro/scene/kit.ts
 gatePlacements	function	stations/ikebukuro/scene/kit.ts
 gateSites	function	stations/ikebukuro/scene/kit.ts
 loadKit	function	stations/ikebukuro/scene/kit.ts
@@ -1263,8 +1262,10 @@ sweepCamera	function	stations/shinjuku/app/src/player.ts
 SearchOnlyRole	type	stations/shinjuku/app/src/search-card.ts
 searchOnlyText	function	stations/shinjuku/app/src/search-card.ts
 searchRowSub	function	stations/shinjuku/app/src/search-card.ts
+CAT_ARRIVAL	const	stations/shinjuku/app/src/spawn-view.ts
 LANE_CAMERA	const	stations/shinjuku/app/src/spawn-view.ts
 LANE_CAMERA_CAT	const	stations/shinjuku/app/src/spawn-view.ts
+catArrivalRise	function	stations/shinjuku/app/src/spawn-view.ts
 followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts
 spawnView	function	stations/shinjuku/app/src/spawn-view.ts
 loadShinjukuBundle	function	stations/shinjuku/data/bundle.ts

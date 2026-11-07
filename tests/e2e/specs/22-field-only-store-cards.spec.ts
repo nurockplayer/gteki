@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { hooks, openStation } from "../lib/gteki.ts";
 
@@ -22,6 +24,46 @@ for (const store of [
     await expect(page.locator(".card .actions button.primary")).toHaveCount(0);
     expect(await hooks.route(page)).toMatchObject({ ok: false });
   });
+}
+
+/** `shopSearchOnly` from apps/web/src/i18n.ts: a search-only store says why there is no route (#209). */
+const SHOP_SEARCH_ONLY = {
+  ja: "入口未確認のため道案内なし（現地確認待ち）",
+  en: "No directions: entrance not verified (field check pending)",
+} as const;
+
+const escapeRegExp = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// The same honesty in both languages: the row and the card say the entrance is unverified.
+for (const store of [
+  { station: "ikebukuro", id: "shop-ikb-tobudept", query: "東武百貨店", origin: "jr-central-gate-2" },
+  { station: "shinjuku", id: "shop-sjk-newoman", query: "ニュウマン", origin: "poi:exit:1" },
+] as const) {
+  for (const lang of ["ja", "en"] as const) {
+    test(`@phone ${store.station}: ${store.query} explains its missing route (${lang})`, async ({ page }, testInfo) => {
+      await openStation(page, store.station);
+      // By attribute, not name: on a phone the short label joins the text, so the name reads 日本語日本語.
+      if (lang === "ja") await page.locator('button[data-short="日本語"]').click();
+      expect(await hooks.setOrigin(page, store.origin)).toBe(true);
+      await page.locator("#gteki-to").fill(store.query);
+      const note = SHOP_SEARCH_ONLY[lang];
+      const result = page.locator(`.result[data-poi="${store.id}"]`);
+      await expect(result).toContainText(note);
+      await expect(result).toHaveAccessibleName(new RegExp(escapeRegExp(note)));
+      await result.click();
+      const card = page.locator(`.card.merchant[data-poi-id="${store.id}"]`);
+      await expect(card).toBeVisible();
+      await expect(card.locator(".merchant-no-route")).toHaveText(note);
+      await expect(page.locator(".card .actions button.primary")).toHaveCount(0);
+      expect(await hooks.route(page)).toMatchObject({ ok: false });
+      // Optional visual evidence for the lead; nothing is committed.
+      const shots = process.env.GTEKI_SEARCH_SHOTS;
+      if (shots) {
+        fs.mkdirSync(shots, { recursive: true });
+        await page.screenshot({ path: path.join(shots, `${testInfo.project.name}-${store.id}-${lang}.png`) });
+      }
+    });
+  }
 }
 
 
