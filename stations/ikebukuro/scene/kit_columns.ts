@@ -38,6 +38,8 @@ export interface Column {
   height: number;
   level: string;
   closed: boolean;
+  /** Found only by the folded-cap retry: how far the cap vertices spread off their level (mm). */
+  cap_fold_mm?: number;
   /** Library piece id, or null with a `reason`. */
   kit: string | null;
   reason?: string;

@@ -45,6 +45,26 @@ function prism(foot: [number, number][], z0: number, z1: number, cap: "fan" | "c
   }
   return out;
 }
+/** A prism whose bottom cap is folded: every other base vertex sits `foldMm` above z0, so the strict 2 mm level test
+ *  refuses it and only the 60 mm retry (with one level at each end) finds it. */
+function foldedPrism(foot: [number, number][], z0: number, z1: number, foldMm: number) {
+  const out: ReturnType<typeof poly>[] = [];
+  const n = foot.length, zb = foot.map((_, i) => z0 + (i % 2 ? foldMm / 1000 : 0));
+  for (let i = 0; i < n; i++) {
+    const [a, b] = [foot[i]!, foot[(i + 1) % n]!];
+    out.push(
+      poly([[a[0], a[1], zb[i]!], [b[0], b[1], zb[(i + 1) % n]!], [b[0], b[1], z1]]),
+      poly([[a[0], a[1], zb[i]!], [b[0], b[1], z1], [a[0], a[1], z1]]),
+    );
+  }
+  for (let i = 1; i < n - 1; i++) {
+    out.push(poly([[foot[0]![0], foot[0]![1], zb[0]!], [foot[i]![0], foot[i]![1], zb[i]!], [foot[i + 1]![0], foot[i + 1]![1], zb[i + 1]!]]));
+  }
+  for (let i = 1; i < n - 1; i++) {
+    out.push(poly([[foot[0]![0], foot[0]![1], z1], [foot[i]![0], foot[i]![1], z1], [foot[i + 1]![0], foot[i + 1]![1], z1]]));
+  }
+  return out;
+}
 const rotRect = (cx: number, cy: number, w: number, d: number, deg: number): [number, number][] => {
   const t = (deg * Math.PI) / 180, c = Math.cos(t), s = Math.sin(t);
   return ([[-w / 2, -d / 2], [w / 2, -d / 2], [w / 2, d / 2], [-w / 2, d / 2]] as [number, number][]).map(([x, y]) => [cx + x * c - y * s, cy + x * s + y * c]);
@@ -73,6 +93,9 @@ function fixture() {
   room1.push(...prism(rotRect(90, 20, 0.3, 0.3, 0), Z0, Z0 + 3));            // K: 0.3 m square, outside the kit range
   room1.push(...prism(rotRect(100, 20, 0.6, 0.6, 0), Z0, Z0 + 1.8));         // M: 1.8 m high, listed but too low for a sleeve
   room1.push(...prism(rotRect(110, 20, 0.1, 0.1, 0), Z0, Z0 + 3));           // thin stub (0.1 m): not a column
+  room1.push(...foldedPrism(rotRect(12, 20, 0.6, 0.6, 0), Z0, Z0 + 3, 30));  // 30 mm folded cap: found by the 60 mm retry
+  room1.push(...foldedPrism(rotRect(150, 20, 0.6, 0.6, 0), Z0, Z0 + 3, 100)); // 100 mm fold: still too far off the level
+  room1.push(...prism(rotRect(160, 20, 6, 0.2, 0), Z0, Z0 + 3));             // plain wall: still refused as large
   building.push(...prism(rotRect(30, 20, 0.8, 0.8, 0), 3, 6.4));             // L: higher level, in the building-scope installation
   other.push(...prism(rotRect(120, 20, 0.6, 0.6, 0), Z0, Z0 + 3));           // EF_30: not barriers, ignored
   // an A-like square that shares a vertex with a wall: welded into the wall's component, so not found
@@ -115,10 +138,12 @@ describe.skipIf(!python)("extract_columns.py on a synthetic extract", () => {
   });
 
   it("lists the prisms that are columns and refuses the walls, slopes, L-shapes, stubs, other functions and welded cases", () => {
-    // listed: A B C D I K M (level L0, by x) then L (L1)
-    expect(file!.columns.map((c) => Math.round(c.centre[0]))).toEqual([10, 15, 20, 25, 80, 90, 100, 30]);
-    expect(file!.counts.columns).toBe(8);
-    expect(file!.counts.rejected).toEqual({ large: 1, not_prism: 3, short: 1, thin: 1 });
+    // listed: A B C D I K M (level L0, by x) then L (L1), then the folded-cap column (it sorts between A and B but
+    // keeps its id after every strict column)
+    expect(file!.columns.map((c) => Math.round(c.centre[0]))).toEqual([10, 15, 20, 25, 80, 90, 100, 30, 12]);
+    expect(file!.counts.columns).toBe(9);
+    expect(file!.counts.folded_caps).toBe(1);
+    expect(file!.counts.rejected).toEqual({ large: 2, not_prism: 4, short: 1, thin: 1 });
     expect(file!.counts.triangles_read).toBeGreaterThan(100);
   });
 
@@ -164,10 +189,27 @@ describe.skipIf(!python)("extract_columns.py on a synthetic extract", () => {
     expect(low.reason).toContain("height 1.80 m");
   });
 
+  it("finds a 30 mm folded cap on the 60 mm retry and numbers it after every strict column", () => {
+    const folded = at(12);
+    expect(folded).toMatchObject({ shape: "square", cap_fold_mm: 30, kit: "gteki_column_square_600", closed: true });
+    expect(folded.id).toBe("col_009");
+    // Its sort key (L0, 12, 20) precedes the strict column at x=15, yet the strict column keeps col_002.
+    const strict = at(15);
+    expect(strict.id).toBe("col_002");
+    expect(file!.columns.indexOf(folded)).toBeGreaterThan(file!.columns.indexOf(strict));
+    // Strict columns gain no folded-cap field.
+    expect(at(10).cap_fold_mm).toBeUndefined();
+  });
+
+  it("still refuses a fold deeper than the 60 mm retry tolerance and a plain wall", () => {
+    expect(file!.columns.some((c) => Math.abs(c.centre[0] - 150) < 0.01)).toBe(false); // 100 mm fold
+    expect(file!.columns.some((c) => Math.abs(c.centre[0] - 160) < 0.01)).toBe(false); // 6 m wall
+  });
+
   it("assigns levels by base height and records the source installations and polygon ids", () => {
     expect(at(30)).toMatchObject({ level: "L1", base_z: 3, top_z: 6.4 });
     expect(at(10).level).toBe("L0");
-    expect(file!.levels.map((l) => [l.id, l.columns])).toEqual([["L0", 7], ["L1", 1]]);
+    expect(file!.levels.map((l) => [l.id, l.columns])).toEqual([["L0", 8], ["L1", 1]]);
     expect(at(10).source.installations).toEqual([`${ROOM}_IntInstallation_EF_25`]);
     expect(at(30).source.installations).toEqual(["ubld_x_IntInstallation_EF_25"]);
     expect(at(10).source.polygons.length).toBe(12); // 4 sides x 2 triangles + 2 fan caps x 2 triangles
@@ -193,7 +235,7 @@ describe("the committed scene/columns.json", () => {
   const file = JSON.parse(fs.readFileSync(COMMITTED, "utf8")) as ColumnsFile & { source: Record<string, string>; counts: Record<string, number> };
 
   it("cites the extract and its GML, and its counts add up", () => {
-    expect(file.counts).toMatchObject({ triangles_read: 10992, columns: 281, kit_square: 42, kit_round: 103, kit_null: 136, open_prisms: 0, by_shape: { polygon: 7, rect: 89, round: 110, square: 75 } });
+    expect(file.counts).toMatchObject({ triangles_read: 10992, columns: 302, folded_caps: 21, rejected: { not_prism: 19, short: 8 }, kit_square: 48, kit_round: 107, kit_null: 147, open_prisms: 0, by_shape: { polygon: 8, rect: 102, round: 114, square: 78 } });
     expect(file.schema).toBe("gteki.ikebukuro.columns/0");
     expect(file.source.gml).toMatch(/_ubld_.*\.gml$/);
     expect(file.source.gml_sha256).toMatch(/^[0-9a-f]{64}$/);

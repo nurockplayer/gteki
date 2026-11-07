@@ -49,7 +49,12 @@ function segmentToRect(a: P, b: P, rect: P[]): number {
   for (let i = 0; i < rect.length; i++) {
     const c = rect[i]!, d = rect[(i + 1) % rect.length]!;
     if (segmentsCross(a, b, c, d)) return 0;
-    best = Math.min(best, pointSegment(a.x, a.y, c.x, c.y, d.x, d.y), pointSegment(b.x, b.y, c.x, c.y, d.x, d.y));
+    best = Math.min(best,
+      pointSegment(a.x, a.y, c.x, c.y, d.x, d.y),
+      pointSegment(b.x, b.y, c.x, c.y, d.x, d.y),
+      // The corner's distance to the segment: a segment parallel to a side and past both of its ends has
+      // both endpoints far from every edge, and only this measure sees it (#968).
+      pointSegment(c.x, c.y, a.x, a.y, b.x, b.y));
   }
   return best;
 }
@@ -57,6 +62,14 @@ function segmentToRect(a: P, b: P, rect: P[]): number {
 describe("Ikebukuro wall props (#858 item 12)", () => {
   it("has placements", () => {
     expect(wallProps.length).toBeGreaterThan(0);
+  });
+
+  it("measures a segment parallel to a side from the rectangle corner, not only from the segment's ends", () => {
+    const rect: P[] = [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 2, y: 1 }, { x: 0, y: 1 }];
+    // Parallel to the left side, 0.1 m away, running far past both ends of it.
+    const distance = segmentToRect({ x: -0.1, y: -10 }, { x: -0.1, y: 10 }, rect);
+    expect(distance).toBeCloseTo(0.1);
+    expect(distance).toBeLessThanOrEqual(WALKER_BODY.radiusM);
   });
 
   it("keeps every footprint, expanded by the walker's radius, clear of every edge polyline", () => {

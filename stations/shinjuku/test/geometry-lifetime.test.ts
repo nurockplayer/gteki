@@ -57,4 +57,13 @@ describe("station geometry lifetime", () => {
     // #870 (2026-11-06 JST): platform door panels and caps split around the aligned openings (+3,360 B).
     expect(result.geometryHash).toBe("7fd032a462e68a4c359031f275609c2ac24eecf7fc94785efcbac74119c21534");
   }, 60_000);
+
+  // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the
+  // layout copy, the built station, every intermediate array) is collected while the scene is still held.
+  it("collects the build scope while keeping the returned scene", async () => {
+    const { stdout } = await run(process.execPath, [
+      "--expose-gc", "--import", "tsx", fileURLToPath(new URL("./helpers/scene-scope.ts", import.meta.url)),
+    ], { timeout: 180_000 });
+    expect(JSON.parse(stdout).sceneScopeCollected).toBe(true);
+  }, 180_000);
 });
