@@ -2,8 +2,8 @@ import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 import type { Edge } from "@gteki/schema";
-import { cutStairwells, stairwellWells, wellRails } from "./stairwellCut.ts";
-import { canonicalJson, decodeRecipe, encodeRecipe, RECIPE_VERSION, sha256Hex, type CutRecipe, type MeshRecord } from "./cutRecipe.ts";
+import { cutStairwells, stairwellWells, wellsSha256, wellRails, type StairwellWell } from "./stairwellCut.ts";
+import { decodeRecipe, encodeRecipe, RECIPE_VERSION, type CutRecipe, type MeshRecord } from "./cutRecipe.ts";
 import { resolveWalls } from "./walker.ts";
 
 const bundle = (mode: Edge["mode"] = "stairs") => createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode, lengthM: 10.77 })]);
@@ -878,7 +878,7 @@ describe("stairwell cut recipes", () => {
   const recipeFor = (wells: ReturnType<typeof stairwellWells>): CutRecipe => {
     const s = scene(), recorded: MeshRecord[] = [];
     const live = cutStairwells(s.root, wells, { tier: "high", record: recorded });
-    const recipe: CutRecipe = { version: RECIPE_VERSION, tier: "high", wellsSha256: sha256Hex(canonicalJson(wells)),
+    const recipe: CutRecipe = { version: RECIPE_VERSION, tier: "high", wellsSha256: wellsSha256(wells),
       keyCount: wells.flatMap((w) => w.skipped ? [] : w.rects).length, meshKeysHash: live.meshKeysHash, meshes: recorded };
     live.dispose();
     return decodeRecipe(encodeRecipe(recipe));
@@ -914,5 +914,31 @@ describe("stairwell cut recipes", () => {
     // The ceiling was replayed before the mismatch: it must be cut once, exactly as the live run cuts it.
     for (const name of ["ceiling", "upper"] as const) expect(positions(replay[name])).toEqual(positions(live[name]));
     b.dispose();
+  });
+});
+
+describe("stairwell recipe wells hash (#1012)", () => {
+  /** The next double above `x`: the one-ULP disagreement engines' Math.hypot approximations can have. */
+  const nextUp = (x: number): number => {
+    if (!Number.isFinite(x) || x === 0) return x;
+    const view = new DataView(new ArrayBuffer(8));
+    view.setFloat64(0, x);
+    view.setBigUint64(0, view.getBigUint64(0) + (x > 0 ? 1n : -1n));
+    return view.getFloat64(0);
+  };
+  /** Wells computed with Math.hypot shifted by one ULP, as another engine's approximation can leave them. */
+  const wellsOnAnotherEngine = (): StairwellWell[] => {
+    const original = Math.hypot;
+    Math.hypot = (...values: number[]) => nextUp(original(...values));
+    try { return stairwellWells(bundle(), traversable); } finally { Math.hypot = original; }
+  };
+
+  it("does not change when Math.hypot differs by one ULP", () => {
+    expect(wellsSha256(wellsOnAnotherEngine())).toBe(wellsSha256(stairwellWells(bundle(), traversable)));
+  });
+
+  it("hashes -0 and 0 alike", () => {
+    const well = (x: number): StairwellWell => ({ edgeId: "e", mode: "stairs", lowerY: 0, upperY: 4, rects: [], arrival: new THREE.Vector3(x, 0, 0) });
+    expect(wellsSha256([well(-0)])).toBe(wellsSha256([well(0)]));
   });
 });

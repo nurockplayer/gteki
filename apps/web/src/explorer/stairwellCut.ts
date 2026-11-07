@@ -468,9 +468,35 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   };
 }
 
+/**
+ * Wells coordinates are hashed at 1e-6 m: far below every cut tolerance, and coarse enough that a last-bit
+ * difference between engines cannot change the hash (Math.hypot is implementation-approximated, #1012).
+ */
+const WELLS_HASH_PRECISION_M = 1e-6;
+
+/** A copy of `value` with every number rounded to WELLS_HASH_PRECISION_M and -0 made +0, so the hash is canonical. */
+function roundedForHash(value: unknown): unknown {
+  if (typeof value === "number") {
+    const rounded = Math.round(value / WELLS_HASH_PRECISION_M) * WELLS_HASH_PRECISION_M;
+    return Object.is(rounded, -0) ? 0 : rounded;
+  }
+  if (Array.isArray(value)) return value.map(roundedForHash);
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, inner]) => [key, roundedForHash(inner)]));
+  return value;
+}
+
+/**
+ * Hash of a well set for a recipe: the one way it is made, shared by the bake and the replay check (#650).
+ * Rounded first (#1012): stairwellWells derives lengths with Math.hypot, whose last bits engines may differ on,
+ * so hashing raw doubles staled every baked recipe on WebKit.
+ */
+export function wellsSha256(wells: readonly StairwellWell[]): string {
+  return sha256Hex(canonicalJson(roundedForHash(wells)));
+}
+
 /** A baked recipe applies to these wells only when its version, tier, region count and wells hash all match. */
 function recipeMatches(recipe: CutRecipe, wells: readonly StairwellWell[], tier: "high" | "low", keyCount: number): boolean {
-  return recipe.version === RECIPE_VERSION && recipe.tier === tier && recipe.keyCount === keyCount && recipe.wellsSha256 === sha256Hex(canonicalJson(wells));
+  return recipe.version === RECIPE_VERSION && recipe.tier === tier && recipe.keyCount === keyCount && recipe.wellsSha256 === wellsSha256(wells);
 }
 
 /** The plan offset of the midpoint of the side `from`→`to` along the rectangle's own axis. */
