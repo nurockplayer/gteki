@@ -10,7 +10,7 @@ import { createRouter, routeBetween, type RouteEndpoint, type RouteProfile, type
 import { createSearchIndex } from "@gteki/search";
 import { buildStation, installLowTierSteps } from "../../scene/build.ts";
 import { stationSpawn } from "../../scene/spawn.ts";
-import { followCameraEnvironment, spawnView, LANE_CAMERA, LANE_CAMERA_CAT } from "./spawn-view.ts";
+import { followCameraEnvironment, spawnView, catArrivalRise, LANE_CAMERA, LANE_CAMERA_CAT } from "./spawn-view.ts";
 import { pointInRings, type Plan } from "../../scene/layout.ts";
 import { Player, PLAYER_RADIUS, sweepCamera, chooseFollowCamera, type GuidePoint, type MoveInput } from "./player.ts";
 import { floorLabel, narrate, summarizeRoute, routeMapFrame, nearbyExits, explainStepFreeFailure, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
@@ -222,6 +222,18 @@ $("loading").classList.add("has-frame");
 loadingStep(2, "通行人を準備中", "Preparing ambient commuters");
 await paintStartupFrame();
 
+// ------------------------------------------------------------ camera rig
+const cam = { yaw: player.heading, pitch: laneCamera.pitch as number, dist: laneCamera.distance as number, firstPerson: false, userTurnedAt: -10 };
+let arrivalRise = 0;
+/** A failed cat GLB leaves the human on screen, so the camera returns to the human lane pose (#945). */
+function onFallback() {
+  catAvatar = false;
+  laneCamera = LANE_CAMERA;
+  cam.pitch = LANE_CAMERA.pitch;
+  cam.dist = LANE_CAMERA.distance;
+  arrivalRise = 0;
+}
+
 const avatar = catAvatar ? createCatAvatar(THREE, { onFallback }) : createAvatar(THREE, 0);
 // Decorative ambient commuters (invented, not crowd data). ?crowd=0 disables.
 const crowdDefault = quality === "high" ? 36 : 16;
@@ -235,14 +247,18 @@ loadingStep(3, "操作と表示を準備中", "Preparing controls and views");
 await paintStartupFrame();
 startup.begin("surface-hooks");
 
-// ------------------------------------------------------------ camera rig
-const cam = { yaw: player.heading, pitch: laneCamera.pitch as number, dist: laneCamera.distance as number, firstPerson: false, userTurnedAt: -10 };
-/** A failed cat GLB leaves the human on screen, so the camera returns to the human lane pose (#945). */
-function onFallback() {
-  catAvatar = false;
-  laneCamera = LANE_CAMERA;
-  cam.pitch = LANE_CAMERA.pitch;
-  cam.dist = LANE_CAMERA.distance;
+// One-time arrival look: tilt up just enough to show the 新宿 identity board beside the cat (#878).
+if (catAvatar) {
+  const center = new THREE.Vector3();
+  // Board groups are empty: their merged meshes are root children, so a bounding box would come back empty.
+  const boards = station.identityBoards.map((board) => {
+    board.getWorldPosition(center);
+    return { x: center.x, y: -center.z, z: center.y };
+  });
+  const head = { x: spawn.position.x, y: spawn.position.y, z: spawn.position.z + laneCamera.headHeight };
+  const eye = chooseFollowCamera(head, cam.yaw, laneCamera.pitch + laneCamera.pitchBias, cam.dist, cameraWorld, cameraSurfaces);
+  const look = { x: head.x + Math.sin(cam.yaw) * laneCamera.lookAhead, y: head.y + Math.cos(cam.yaw) * laneCamera.lookAhead, z: head.z + laneCamera.lookRise };
+  arrivalRise = catArrivalRise({ eye, look, feet: spawn.position, heading: player.heading, boards, fovDeg: camera.fov, aspect: camera.aspect });
 }
 const camPos = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
@@ -260,6 +276,7 @@ function updateCamera(dt: number, t: number) {
     avatar.object.visible = true;
     return;
   }
+  if (arrivalRise && (player.speed > 0.05 || cam.userTurnedAt > -10 || cam.firstPerson)) arrivalRise = 0;
   const onRun = Math.abs(player.climbing) > 0.15;
   const target = player.guide?.[player.guideIndex];
   const pathHeading = target && onRun ? Math.atan2(target.x - player.x, target.y - player.y) : player.heading;
@@ -277,7 +294,7 @@ function updateCamera(dt: number, t: number) {
   const safe = cam.firstPerson ? head : chooseFollowCamera(head, cam.yaw, pitch, cam.dist, cameraWorld, cameraSurfaces);
   const want = new THREE.Vector3(safe.x, safe.z, -safe.y);
   const lookAhead = cam.firstPerson ? 4 : laneCamera.lookAhead;
-  const look = new THREE.Vector3(head.x + Math.sin(cam.yaw) * lookAhead, head.z + (cam.firstPerson ? Math.sin(cam.pitch) * 4 : laneCamera.lookRise), -(head.y + Math.cos(cam.yaw) * lookAhead));
+  const look = new THREE.Vector3(head.x + Math.sin(cam.yaw) * lookAhead, head.z + (cam.firstPerson ? Math.sin(cam.pitch) * 4 : laneCamera.lookRise + arrivalRise), -(head.y + Math.cos(cam.yaw) * lookAhead));
   if (!camInit || reducedMotion || cam.firstPerson) {
     camPos.copy(want);
     camTarget.copy(look);
