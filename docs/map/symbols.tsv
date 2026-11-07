@@ -1066,7 +1066,6 @@ MIN_RAIL_M	const	stations/ikebukuro/scene/kit.ts
 Mark	interface	stations/ikebukuro/scene/kit.ts
 Placement	interface	stations/ikebukuro/scene/kit.ts
 RAIL_FACE_OFFSET	const	stations/ikebukuro/scene/kit.ts
-RAIL_LABEL_H	const	stations/ikebukuro/scene/kit.ts
 gatePlacements	function	stations/ikebukuro/scene/kit.ts
 gateSites	function	stations/ikebukuro/scene/kit.ts
 loadKit	function	stations/ikebukuro/scene/kit.ts
@@ -1263,8 +1262,10 @@ sweepCamera	function	stations/shinjuku/app/src/player.ts
 SearchOnlyRole	type	stations/shinjuku/app/src/search-card.ts
 searchOnlyText	function	stations/shinjuku/app/src/search-card.ts
 searchRowSub	function	stations/shinjuku/app/src/search-card.ts
+CAT_ARRIVAL	const	stations/shinjuku/app/src/spawn-view.ts
 LANE_CAMERA	const	stations/shinjuku/app/src/spawn-view.ts
 LANE_CAMERA_CAT	const	stations/shinjuku/app/src/spawn-view.ts
+catArrivalRise	function	stations/shinjuku/app/src/spawn-view.ts
 followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts
 spawnView	function	stations/shinjuku/app/src/spawn-view.ts
 loadShinjukuBundle	function	stations/shinjuku/data/bundle.ts
@@ -1629,9 +1630,15 @@ probeSegment	function	stations/shinjuku/test/fence-slide-probe.ts
 sample	function	stations/shinjuku/test/fence-slide-probe.ts
 segments	function	stations/shinjuku/test/fence-slide-probe.ts
 tally	const	stations/shinjuku/test/fence-slide-probe.ts
+EscapeClass	type	stations/shinjuku/test/helpers/escape-classify.ts
+OpeningFootprint	type	stations/shinjuku/test/helpers/escape-classify.ts
+PlanPoint	interface	stations/shinjuku/test/helpers/escape-classify.ts
 RayHit	type	stations/shinjuku/test/helpers/escape-classify.ts
 RayOutcome	type	stations/shinjuku/test/helpers/escape-classify.ts
+StreetCrossing	type	stations/shinjuku/test/helpers/escape-classify.ts
+classifyEscape	function	stations/shinjuku/test/helpers/escape-classify.ts
 classifyRay	function	stations/shinjuku/test/helpers/escape-classify.ts
+footprintContains	function	stations/shinjuku/test/helpers/escape-classify.ts
 identityHardwareBoxes	function	stations/shinjuku/test/helpers/identity-placement.ts
 identityObstacles	function	stations/shinjuku/test/helpers/identity-placement.ts
 identitySightline	function	stations/shinjuku/test/helpers/identity-placement.ts

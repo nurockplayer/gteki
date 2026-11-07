@@ -299,7 +299,7 @@ describe("the access fences: labels move onto the rails, the collider does not c
     b.dispose();
   });
 
-  it("with no rails builds today's boards; with rails, only railed stretches move, by 7.5 cm along their face normal, and get shorter", () => {
+  it("with no rails builds today's boards; with rails, only railed stretches move, by 7.5 cm along their face normal, at the same height", () => {
     const a = buildAccessFences(THREE, fences, toRenderer);
     const b = buildAccessFences(THREE, fences, toRenderer, railed);
     const pa = positions(a.visual), pb = positions(b.visual);
@@ -320,8 +320,8 @@ describe("the access fences: labels move onto the rails, the collider does not c
       const d = Math.hypot(pb[lo]! - pa[lo]!, pb[lo + 2]! - pa[lo + 2]!);
       expect(d).toBeCloseTo(RAIL_FACE_OFFSET, 4);
       expect(pb[lo + 1]).toBeCloseTo(pa[lo + 1]!, 6);
-      // vertex 2 is the top end: the panel is 1.0 m tall instead of the free-standing 1.2 m board
-      expect(pa[lo + 7]! - pb[lo + 7]!).toBeCloseTo(0.2, 4);
+      // vertex 2 is the top end: the same 0.6 m panel as a free-standing board, low on the rail
+      expect(pa[lo + 7]! - pb[lo + 7]!).toBeCloseTo(0, 4);
     });
     expect(moved).toBe(62);
     expect(kept).toBe(18);
