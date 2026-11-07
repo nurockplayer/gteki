@@ -393,7 +393,8 @@ describe("ikebukuro place boards between the repeaters (#108)", () => {
   it("negative control: without the boards the passage has no second kind of sign", () => {
     expect(new Set(boards.map((b) => b.kind))).toEqual(new Set(["place"]));
     const without = signs.filter((s) => s.kind !== "place");
-    expect(without.some((s) => (s.places ?? []).length > 0)).toBe(false);
+    // The one exit sign that names a place: Metro prints 4番出入口（エソラ）.
+    expect(without.filter((s) => (s.places ?? []).length > 0).map((s) => s.id)).toEqual(["sign-sw_h-sw_h__x4f"]);
     expect(maxGap(signAnchors(west, without).map((a) => a.c), lo, hi)).toBeGreaterThan(14);
   });
 });
