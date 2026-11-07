@@ -247,7 +247,7 @@ function escalatorWalk(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] 
   return from.y <= to.y ? path : path.reverse();
 }
 
-export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean }
+export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean; envMap?: THREE.Texture | null }
 
 function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THREE.Material[]): THREE.Mesh {
   const materialIndex = (p: ConnectorPart) => p.material === "lampOk" ? 1 : p.material === "lampNo" ? 2 : 0;
@@ -741,7 +741,8 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     connectorsSkipped++; connectorsSkippedByReason[reason]++;
     if (reason === "unsupported_shape") legacyEdgeIds.add(edgeId); else skippedEdgeIds.push(edgeId);
   };
-  const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide });
+  // At a station lit through baked maps and env maps only there is no other light for the shell: take its env map (#1008).
+  const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide, ...(scope.envMap ? { envMap: scope.envMap } : {}) });
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
   const lampMaterials = [lightMaterial, new THREE.MeshStandardMaterial({ color: "#00ff00", emissive: "#00ff00", emissiveIntensity: 3.2 }), new THREE.MeshStandardMaterial({ color: "#ff0000", emissive: "#ff0000", emissiveIntensity: 3.2 })];
   const glassMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: 0.28, depthWrite: false, roughness: 0.32, metalness: 0.08, side: THREE.DoubleSide });
