@@ -219,6 +219,11 @@ export interface StairwellOptions {
   recipe?: CutRecipe | null;
   /** Bake only: the live cut records every mesh it reaches here. */
   record?: MeshRecord[];
+  /**
+   * The station's env map, at a station lit through baked maps and env maps only: the rail becomes a Standard
+   * material that takes it, since Lambert takes no diffuse IBL (#1008). Absent: Lambert as before.
+   */
+  envMap?: THREE.Texture | null;
 }
 
 /** One well per traversable stairs / escalator edge that has a vertical run worth cutting. */
@@ -434,7 +439,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
     }
   }
   if (railPositions.length) {
-    const rail = colorMesh("greybox-stairwell-rail", railPositions, railColors);
+    const rail = colorMesh("greybox-stairwell-rail", railPositions, railColors, options.envMap ?? null);
     finish.add(rail); colliders.push(rail);
   }
   if (glassPositions.length) {
@@ -657,12 +662,15 @@ function tube(out: number[], colors: number[], a: THREE.Vector3, b: THREE.Vector
   }
 }
 
-function colorMesh(name: string, positions: number[], colors: number[]): THREE.Mesh {
+function colorMesh(name: string, positions: number[], colors: number[], envMap: THREE.Texture | null): THREE.Mesh {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
-  const material = new THREE.MeshLambertMaterial({ color: 0xffffff, vertexColors: true, side: THREE.DoubleSide });
+  // Lambert ignores an env map's diffuse light, so an env-lit station needs Standard; elsewhere Lambert as before (#1008).
+  const material = envMap
+    ? new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, side: THREE.DoubleSide, envMap })
+    : new THREE.MeshLambertMaterial({ color: 0xffffff, vertexColors: true, side: THREE.DoubleSide });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.name = name;
   mesh.userData = { greybox: true, approximate: true };
