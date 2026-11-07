@@ -22,18 +22,19 @@ export const ROUTE_FADE_FAR_M = 5;
 
 /**
  * Fades a route ribbon's fragments out near the camera, so the band never fills the low walking frame.
- * The vertex pass records view-space distance to the camera (rotation preserves length, so it is the
- * fragment's world distance) and the fragment pass multiplies the material alpha by a smoothstep.
+ * The vertex pass carries the fragment's world position (varyings interpolate perspective-correct) and the
+ * fragment pass multiplies the material alpha by a smoothstep on the true distance to the camera; a vertex-only
+ * distance would stay large across a long segment that passes under the camera and never fade there.
  */
 export function routeNearFade(material: THREE.Material, near = ROUTE_FADE_NEAR_M, far = ROUTE_FADE_FAR_M): void {
   material.customProgramCacheKey = () => `route-near-fade-${near}-${far}`;
   material.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
-      .replace("void main() {", "varying float vRouteCamDist;\nvoid main() {")
-      .replace("#include <project_vertex>", "#include <project_vertex>\n\tvRouteCamDist = length( mvPosition.xyz );");
+      .replace("void main() {", "varying vec3 vRouteWorld;\nvoid main() {")
+      .replace("#include <project_vertex>", "#include <project_vertex>\n\tvRouteWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;");
     shader.fragmentShader = shader.fragmentShader
-      .replace("void main() {", "varying float vRouteCamDist;\nvoid main() {")
-      .replace("#include <opaque_fragment>", `#include <opaque_fragment>\n\tgl_FragColor.a *= smoothstep( ${near.toFixed(3)}, ${far.toFixed(3)}, vRouteCamDist );`);
+      .replace("void main() {", "varying vec3 vRouteWorld;\nvoid main() {")
+      .replace("#include <opaque_fragment>", `#include <opaque_fragment>\n\tgl_FragColor.a *= smoothstep( ${near.toFixed(3)}, ${far.toFixed(3)}, distance( vRouteWorld, cameraPosition ) );`);
   };
 }
 
