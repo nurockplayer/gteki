@@ -49,6 +49,8 @@ export interface BuiltStation {
   setViewer?(pos: XYZ): void;
   /** QA readout of the decorative train cycle per platform track. */
   trainStatus(): { tt: number; present: boolean; doorsOpen: boolean }[];
+  /** Train cycle and world positions for the sound layer (#870); see stations/shinjuku/gteki/train-sound.ts. */
+  trainAudio(): { tt: number; headway: number; stop: { x: number; y: number; z: number }; stopEnds: [{ x: number; y: number; z: number }, { x: number; y: number; z: number }]; pos: { x: number; y: number; z: number } | null }[];
   /** Present only when the optional Lane E kit swap ran (Issue #94). */
   kitSwap?: KitSwapReport;
   dispose(): void;
@@ -85,6 +87,23 @@ export const DOOR_PITCH = CAR_PITCH / 3;
 export const PLATFORM_DOOR_WIDTH = 2.4;
 /** Cars per decorative train. */
 export const TRAIN_CARS = 8;
+
+function makeTrainAudio(tracks: { at: (s: number, off: number) => { x: number; y: number }; trackOff: number; stopS: number; z: number; phase: number; cars: THREE.Group[] }[], headway: number, clock: { value: number }): BuiltStation["trainAudio"] {
+  return () => tracks.map((tr) => {
+    const tt = (clock.value + tr.phase) % headway;
+    const car = tr.cars[Math.floor(tr.cars.length / 2)]!;
+    const p = tr.at(tr.stopS, tr.trackOff);
+    const stop = new THREE.Vector3(p.x, tr.z - 1.1, -p.y);
+    car.parent?.localToWorld(stop);
+    const stopEnds = [-1, 1].map((direction) => {
+      const end = tr.at(tr.stopS + direction * (tr.cars.length - 1) * CAR_PITCH / 2, tr.trackOff);
+      const point = new THREE.Vector3(end.x, tr.z - 1.1, -end.y);
+      return car.parent ? car.parent.localToWorld(point) : point;
+    }) as [THREE.Vector3, THREE.Vector3];
+    const pos = tt >= 14 && tt < 40 ? stop.clone() : tt < 54 ? car.getWorldPosition(new THREE.Vector3()).add(tr.cars[tr.cars.length / 2 - 1]!.getWorldPosition(new THREE.Vector3())).multiplyScalar(0.5) : null;
+    return { tt, headway, stop, stopEnds, pos };
+  });
+}
 
 /** Door centre positions (platform arc length) of a stationary train. */
 export function carDoorCenters(stopS: number, cars: number): number[] {
@@ -702,6 +721,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     far: number;
   }[] = [];
 
+  const platformTactile: THREE.BufferGeometry[] = [];
   const fasciaGeos: THREE.BufferGeometry[] = [];
   const roomFill = roomFloorFill(layout, plan);
   // ---- per level: slabs, ceilings, walls, railings, lights
@@ -823,7 +843,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- tactile paving
   {
-    const tg: THREE.BufferGeometry[] = [];
+    const tg: THREE.BufferGeometry[] = platformTactile.splice(0);
     for (const t of layout.tactile) {
       for (let i = 1; i < t.pts.length; i++) {
         const a = t.pts[i - 1]!;
@@ -1341,6 +1361,27 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const visStart = platA + 0.3;
         const visEnd = visStart + module * Math.floor((platB + 0.01 - visStart) / module);
         const openings = psdOpeningCenters(stopS, platA, platB).filter((c) => c - doorW / 2 >= visStart && c + doorW / 2 <= visEnd);
+        // Generic floor decoration on the walkable (negative-offset) side of the doors.
+        const floorQuad = (points: XY[], uv: number[]) => {
+          const geo = new THREE.BufferGeometry();
+          geo.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap(p => [p.x, z + 0.006, -p.y]), 3));
+          geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+          geo.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));
+          const [a, b, c] = points;
+          const cross = (b!.x - a!.x) * (c!.y - a!.y) - (b!.y - a!.y) * (c!.x - a!.x);
+          geo.setIndex(cross > 0 ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2]);
+          platformTactile.push(geo);
+        };
+        const breaks = [visStart, ...cum.filter(s => s > visStart && s < visEnd), visEnd];
+        for (let i = 1; i < breaks.length; i++) {
+          const a = breaks[i - 1]!, b = breaks[i]!;
+          const length = b - a;
+          floorQuad([at(a, -0.49), at(b, -0.49), at(b, -0.79), at(a, -0.79)], [0, 0, length / 0.3, 0, length / 0.3, 1, 0, 1]);
+        }
+        for (const c of openings) {
+          // Rotation maps v to texture x; v=0.03 is inside the plain yellow margin.
+          floorQuad([at(c - doorW / 2, -0.2), at(c + doorW / 2, -0.2), at(c + doorW / 2, -0.49), at(c - doorW / 2, -0.49)], [0.5, 0.03, 0.5, 0.03, 0.5, 0.03, 0.5, 0.03]);
+        }
         const spans: [number, number][] = [];
         const leaves: { s: number; dir: number }[] = [];
         let fillFrom = visStart;
@@ -1434,11 +1475,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const tmpE = new THREE.Euler();
   /** Train cycle (s): 0–14 arrive (decelerate), 14–40 dwell (doors 16–37), 40–54 depart, then empty until
    * the band's headway. Decorative only (#870). */
-  let trainClock = 0;
+  const trainClock = { value: 0 };
+  const trainAudio = makeTrainAudio(platformTracks, headway, trainClock);
   let stepTime = 0;
   /** QA: phase of each platform's train cycle (s) and whether a train is in. */
   const trainStatus = () => platformTracks.map((tr) => {
-    const tt = (trainClock + tr.phase) % headway;
+    const tt = (trainClock.value + tr.phase) % headway;
     return { tt: Math.round(tt), present: trainS(tt, tr) !== null, doorsOpen: tt > 16 && tt < 37 };
   });
   function trainS(tt: number, tr: (typeof platformTracks)[number]) {
@@ -1448,7 +1490,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     return null;
   }
   function update(_dt: number, t: number) {
-    trainClock = t;
+    trainClock.value = t;
     for (const tr of platformTracks) {
       const tt = (t + tr.phase) % headway;
       const s = trainS(tt, tr);
@@ -1568,6 +1610,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     ...(prepareSteps ? { beforeRender: prepareSteps } : {}),
     setViewer(position) { surface.setViewer(position); kitSwap?.lod?.update(position); },
     trainStatus,
+    trainAudio,
     ...(kitSwap ? { kitSwap } : {}),
     dispose() {
       for (const d of disposables) d.dispose();

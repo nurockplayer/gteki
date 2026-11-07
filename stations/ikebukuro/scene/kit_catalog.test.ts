@@ -262,7 +262,7 @@ describe("per-tier dressing subsets", () => {
   const graph = JSON.parse(readFileSync(join(STATION, "gteki", "graph.json"), "utf8")) as { edges: { id: string; mode: string }[] };
   const mode = new Map(graph.edges.map((e) => [e.id, e.mode]));
 
-  it("marks main-route flights among the covered ones, with nosings on both tiers and rails on high only", () => {
+  it("marks main-route flights among the covered ones, with nosings and escalators on both tiers and rails on high only", () => {
     const covered = new Set(stairs.map((p) => p.anchor));
     expect(mainFlights.length).toBe(placed.summary.main_route.flight_count);
     for (const id of mainFlights) expect(covered.has(id)).toBe(true);
@@ -273,10 +273,10 @@ describe("per-tier dressing subsets", () => {
       expect(p.tiers.rails).toEqual(p.main_route ? ["high"] : []);
     }
     for (const p of placed.placements) for (const tiers of Object.values(p.tiers)) for (const tier of tiers) expect(["low", "high"]).toContain(tier);
-    // no rails and no escalators on the low tier
+    // no rails on the low tier; escalators draw on both since #703
     for (const p of placed.placements) {
       if (p.kind === "stair") expect(p.tiers.rails).not.toContain("low");
-      else expect(p.tiers).toEqual({ dressing: ["high"] });
+      else expect(p.tiers).toEqual({ dressing: ["low", "high"] });
     }
     expect(new Set(stairs.filter((p) => p.main_route).map((p) => p.ids.rails)).size).toBe(placed.summary.main_route.rails_ids);
   });

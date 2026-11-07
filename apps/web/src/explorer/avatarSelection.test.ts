@@ -184,6 +184,40 @@ describe("cat avatar selection", () => {
     rig.dispose();
   });
 
+  it("forwards the meow to the loaded cat and refuses before the load", async () => {
+    const load = deferred<ReturnType<typeof catAvatarFixture>>();
+    const rig = createAvatarRig({ quality: "low", kind: "cat", loader: { loadAsync: () => load.promise } });
+    expect(rig.meow!()).toBe(false);
+    load.resolve(catAvatarFixture());
+    await rig.loadGlb();
+    expect(rig.meow!()).toBe(true);
+    expect(rig.meow!()).toBe(false);
+    rig.dispose();
+  });
+
+  it("stores the turn lead and re-applies it to the cat that loads after it", async () => {
+    const load = deferred<ReturnType<typeof catAvatarFixture>>();
+    const asset = catAvatarFixture();
+    const point = new THREE.Object3D();
+    point.position.z = -40;
+    asset.scene.getObjectByName("head")!.add(point);
+    const rig = createAvatarRig({ quality: "low", kind: "cat", loader: { loadAsync: () => load.promise } });
+    rig.setTurnLead!(0.5); // stored while the empty rig cannot take it
+    load.resolve(asset);
+    await rig.loadGlb();
+    const x = () => point.getWorldPosition(new THREE.Vector3()).x;
+    for (let i = 0; i < 60; i++) rig.update(0.016, 1.2);
+    const turned = x();
+    rig.setTurnLead!(0);
+    for (let i = 0; i < 300; i++) rig.update(0.016, 1.2);
+    const level = x();
+    expect(turned).toBeLessThan(level - 0.01); // the lead set before the swap still turned the head
+    rig.setTurnLead!(0.5); // and a later lead reaches the loaded cat
+    for (let i = 0; i < 60; i++) rig.update(0.016, 1.2);
+    expect(x()).toBeLessThan(level - 0.01);
+    rig.dispose();
+  });
+
   it("falls back to the human once when the cat GLB fails, warning once", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const loader = { loadAsync: vi.fn().mockRejectedValue(new Error("404")) };
@@ -224,10 +258,10 @@ describe("cat avatar selection", () => {
 
 describe("avatarKind", () => {
   const parse = (query: string) => avatarKind(new URLSearchParams(query));
-  it("selects the cat only with ?avatar=cat", () => {
-    expect(parse("avatar=cat")).toBe("cat");
+  it.each(["", "avatar=cat", "avatar=cat2"])("selects the cat by default for %s", (query) => {
+    expect(parse(query)).toBe("cat");
   });
-  it.each(["", "avatar=procedural", "avatar=soft", "avatar=glb", "avatar=cat2"])("keeps the human avatar for %s", (query) => {
+  it.each(["avatar=procedural", "avatar=soft", "avatar=glb"])("keeps the human avatar for %s", (query) => {
     expect(parse(query)).toBe("human");
   });
 });

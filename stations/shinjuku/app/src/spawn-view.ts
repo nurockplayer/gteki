@@ -4,6 +4,9 @@ import { chooseFollowCamera } from "./player.ts";
 
 export const LANE_CAMERA = { fov: 62, near: 0.05, headHeight: 1.1, pitch: -0.18, pitchBias: -0.1, distance: 3.6, lookAhead: 1.15, lookRise: 0.15 } as const;
 
+/** Low follow camera for the default cat protagonist, the same pose as the explorer's cat camera (#854). */
+export const LANE_CAMERA_CAT = { ...LANE_CAMERA, headHeight: 0.54, pitch: 0, pitchBias: 0, distance: 2.4, lookRise: 0.1 } as const;
+
 /** Same architecture-only collision environment used by the running follow camera. */
 export function followCameraEnvironment(layout: Layout, propWalls: WallSeg[]) {
   const world = new WalkWorld({ ...layout, runWalls: [], levels: layout.levels.map((level) => ({

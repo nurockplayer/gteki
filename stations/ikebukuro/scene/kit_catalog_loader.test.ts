@@ -1,7 +1,7 @@
-// Lane E station catalog (#94): batch A (the 5 escalators) and batch B (the 21 stair handrails) placed on the surveyed
-// anchors of scene/kit_placements.json, and batch C (the 61 stair nosing strips, merged into a few cluster meshes that
-// sample one packed AO atlas per tier). Pins the batches (batch C on both tiers, one atlas each), the placement maths,
-// the tier and batch filters, the merge, disposal, and that the copies,
+// Lane E station catalog (#94): batch A (the 5 escalators, on both tiers since #703) and batch B (the 21 stair
+// handrails) placed on the surveyed anchors of scene/kit_placements.json, and batch C (the 61 stair nosing strips,
+// merged into a few cluster meshes that sample one packed AO atlas per tier). Pins the batches (A and C on both
+// tiers, one atlas each), the placement maths, the tier and batch filters, the merge, disposal, and that the copies,
 // declarations and credits agree with each other and with Lane E's manifest.
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -19,7 +19,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STATION = path.resolve(HERE, "..");
 const GTEKI = path.join(STATION, "gteki");
 const placements = (kitPlacements as unknown as { placements: CatalogPlacement[] }).placements;
-/** What the loader sees on the desktop tier: the escalator anchors (the batch is filtered by which GLBs are served). */
+/** The escalator anchors; each tier's batch is filtered by which GLBs the host serves. */
 const escalators = placements.filter((p) => p.kind === "escalator");
 const stairs = placements.filter((p) => p.kind === "stair");
 const catalog = kitCatalog as { assets: { id: string; generator: string }[] };
@@ -30,7 +30,7 @@ const RAILS_IDS = [...new Set(tierParts(stairs, false).map((w) => w.id).filter((
 const NOSING_IDS = [...new Set(tierParts(stairs, false).map((w) => w.id).filter((id) => id.endsWith("_nosing")))].sort();
 /** Ids the station ships (batch A + B + C); every other catalog id is "not in this batch". */
 const SHIPPED = new Set([...ESCALATOR_IDS, ...RAILS_IDS, ...NOSING_IDS]);
-/** Batch C ships on both tiers; batches A and B draw on the desktop tier alone. */
+/** Batches A and C ship on both tiers; batch B draws on the desktop tier alone. */
 const SHIPPED_TIERS: string[] = ["high", "low"];
 /** The catalog copies the placements need, per tier: the batch plan sync_kit_catalog.py copies. */
 function plannedUris(low: boolean): string[] {
@@ -57,17 +57,18 @@ const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, 
 const readManifest = (name: string) => JSON.parse(fs.readFileSync(path.join(GTEKI, name), "utf8"));
 
 describe("the shipped batches on the surveyed anchors", () => {
-  it("draws every escalator part on the desktop tier and none on phones", () => {
+  it("draws every escalator part on both tiers", () => {
     const high = tierParts(escalators, false);
     const low = tierParts(escalators, true);
     expect(ESCALATOR_IDS.length).toBe(5);
     expect(high.length).toBe(5); // one `dressing` part per anchor
     expect(high.map((w) => w.placement.anchor).sort()).toEqual(["esc01_l1", "esc01_l2", "esc02_l1", "esc03_l1", "esc03_l2"]);
     expect(new Set(high.map((w) => w.id))).toEqual(new Set(ESCALATOR_IDS));
-    expect(low).toEqual([]); // every escalator placement lists `high` alone
+    expect(low.map((w) => w.placement.anchor).sort()).toEqual(high.map((w) => w.placement.anchor).sort()); // #703
     expect(tierName(true)).toBe("low");
     expect(tierName(false)).toBe("high");
     expect(catalogUri(ESCALATOR_IDS[0]!, false)).toBe(`kit/catalog/high/${ESCALATOR_IDS[0]}.glb`);
+    expect(catalogUri(ESCALATOR_IDS[0]!, true)).toBe(`kit/catalog/low/${ESCALATOR_IDS[0]}.glb`);
   });
 
   it("draws the handrails on the desktop tier only, one part per main_route flight", () => {
@@ -80,15 +81,18 @@ describe("the shipped batches on the surveyed anchors", () => {
 
   it("ships each id on the tier it draws, with each tier's atlases", () => {
     for (const id of SHIPPED) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, false))), id).toBe(true);
-    for (const id of NOSING_IDS) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, true))), id).toBe(true);
-    // Batches A and B stay off phones, so the low tier holds nothing but batch C and its atlas.
-    for (const id of [...ESCALATOR_IDS, ...RAILS_IDS]) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, true))), id).toBe(false);
+    for (const id of [...ESCALATOR_IDS, ...NOSING_IDS]) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, true))), id).toBe(true);
+    // Batch B stays off phones, so the low tier holds batches A and C and their two atlases.
+    for (const id of RAILS_IDS) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, true))), id).toBe(false);
     expect(fs.existsSync(path.join(GTEKI, nosingAtlasUri(false)))).toBe(true);
     expect(fs.existsSync(path.join(GTEKI, nosingAtlasUri(true)))).toBe(true);
-    // Batch A's escalators draw on the desktop tier alone, so only that tier ships their atlas.
-    expect(atlasUri("escalator", false)).toBe(`kit/catalog/high/${NOSING_ATLAS.replace("nosing", "escalator")}`);
-    expect(fs.existsSync(path.join(GTEKI, atlasUri("escalator", false)!))).toBe(true);
-    expect(atlasUri("escalator", true)).toBeNull();
+    // Batch A's escalators draw on both tiers since #703, so both ship their atlas.
+    for (const low of [false, true]) {
+      expect(atlasUri("escalator", low)).toBe(`kit/catalog/${tierName(low)}/${NOSING_ATLAS.replace("nosing", "escalator")}`);
+      expect(fs.existsSync(path.join(GTEKI, atlasUri("escalator", low)!))).toBe(true);
+    }
+    expect(atlasLimit("escalator", false)).toBe(2); // the desktop atlas's lane count allows two mips
+    expect(atlasLimit("escalator", true)).toBe(1); // the phone atlas packs into one
   });
 
   it("copies each file byte for byte, pinned by the source record in both manifests", () => {
@@ -197,7 +201,7 @@ describe("loadKitCatalog", () => {
   const allUris = ESCALATOR_IDS.map((id) => `kit/catalog/high/${id}.glb`);
   const env = new THREE.Texture();
 
-  it("loads each GLB once, only on the tier that draws it, and instancing keeps the part count", async () => {
+  it("loads each GLB once from the tier's own folder, and instancing keeps the part count", async () => {
     const h = host(allUris);
     const loaded = await loadKitCatalog(THREE, h, escalators, false);
     expect(h.loadGlb.mock.calls.map((c) => c[0])).toEqual(allUris);
@@ -210,33 +214,43 @@ describe("loadKitCatalog", () => {
     expect(meshes.reduce((n, m) => n + m.count, 0)).toBe(5 * 2);
     expect(stats).toMatchObject({ parts: 5, uniqueGlbs: 5, drawCalls: 10, triangles: 5 * 2 * 12, byKind: { escalator: 5 } });
 
-    const phone = host(allUris);
-    const none = await loadKitCatalog(THREE, phone, escalators, true);
-    expect(phone.loadGlb.mock.calls).toEqual([]);
+    // Phones draw the same 5 anchors from the station's own mobile build (#703).
+    const lowUris = ESCALATOR_IDS.map((id) => catalogUri(id, true));
+    const phone = host(lowUris);
+    const low = await loadKitCatalog(THREE, phone, escalators, true);
+    expect(phone.loadGlb.mock.calls.map((c) => c[0])).toEqual(lowUris);
+    expect(low.placements.length).toBe(5);
+    expect(low.build(THREE, env, toRenderer).stats.drawCalls).toBe(10);
+
+    // A tier whose folder serves nothing draws nothing.
+    const none = await loadKitCatalog(THREE, host([]), escalators, true);
     expect(none.placements).toEqual([]);
     expect(none.build(THREE, env, toRenderer).group.children).toEqual([]);
   });
 
-  it("samples the tier's packed escalator atlas through TEXCOORD_1, one texture for every clone", async () => {
-    const texture = new THREE.Texture();
-    const atlas = atlasUri("escalator", false)!;
-    const h = host([...allUris, atlas]);
-    h.loadTexture.mockResolvedValue(texture);
-    const loaded = await loadKitCatalog(THREE, h, escalators, false);
-    expect(h.loadTexture).toHaveBeenCalledTimes(1);
-    expect(h.loadTexture.mock.calls[0]).toEqual([atlas, { colorSpace: "linear", flipY: false }]);
-    const { group } = loaded.build(THREE, env, toRenderer);
-    const mats = (group.children as THREE.InstancedMesh[]).map((m) => m.material as THREE.MeshStandardMaterial);
-    expect(mats.length).toBe(10);
-    for (const m of mats) {
-      expect(m.aoMap).toBe(texture);
-      expect(m.aoMapIntensity).toBe(1);
+  it("samples each tier's packed escalator atlas through TEXCOORD_1, one texture for every clone", async () => {
+    for (const low of [false, true]) {
+      const uris = ESCALATOR_IDS.map((id) => catalogUri(id, low));
+      const texture = new THREE.Texture();
+      const atlas = atlasUri("escalator", low)!;
+      const h = host([...uris, atlas]);
+      h.loadTexture.mockResolvedValue(texture);
+      const loaded = await loadKitCatalog(THREE, h, escalators, low);
+      expect(h.loadTexture).toHaveBeenCalledTimes(1);
+      expect(h.loadTexture.mock.calls[0]).toEqual([atlas, { colorSpace: "linear", flipY: false }]);
+      const { group } = loaded.build(THREE, env, toRenderer);
+      const mats = (group.children as THREE.InstancedMesh[]).map((m) => m.material as THREE.MeshStandardMaterial);
+      expect(mats.length).toBe(10);
+      for (const m of mats) {
+        expect(m.aoMap).toBe(texture);
+        expect(m.aoMapIntensity).toBe(1);
+      }
+      expect(texture).toMatchObject({ channel: 1, flipY: false, colorSpace: THREE.NoColorSpace });
+      // The mip limit is recorded, not clamped: three 0.186 has no Texture.maxLevel.
+      expect(texture.userData).toMatchObject({ gteki_uri: atlas, gteki_atlas_kind: "escalator", gteki_max_isolated_mip: atlasLimit("escalator", low) });
+      expect(atlasLimit("escalator", low)).toBe(low ? 1 : 2);
+      loaded.dispose();
     }
-    expect(texture).toMatchObject({ channel: 1, flipY: false, colorSpace: THREE.NoColorSpace });
-    // The mip limit is recorded, not clamped: three 0.186 has no Texture.maxLevel.
-    expect(texture.userData).toMatchObject({ gteki_uri: atlas, gteki_atlas_kind: "escalator", gteki_max_isolated_mip: atlasLimit("escalator", false) });
-    expect(atlasLimit("escalator", false)).toBe(2);
-    loaded.dispose();
   });
 
   it("keeps the plain clone of a source material an atlas kind also uses", async () => {
@@ -296,6 +310,77 @@ describe("loadKitCatalog", () => {
     const dispose = vi.spyOn(texture, "dispose");
     loaded.dispose();
     expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it("shares one atlas across the lazy kit's escalator ids, fetched once per tier", async () => {
+    for (const low of [false, true]) {
+      const uris = ESCALATOR_IDS.map((id) => catalogUri(id, low));
+      const atlas = atlasUri("escalator", low)!;
+      const texture = new THREE.Texture();
+      const h = host([...uris, atlas]);
+      h.loadTexture.mockResolvedValue(texture);
+      const root = new THREE.Group();
+      const lazy = lazyKitCatalog(THREE, h, escalators, low, root, env, toRenderer);
+      await lazy.settled();
+      // Five ids, one fetch and one GPU texture (each id used to load and keep its own copy).
+      expect(h.loadTexture).toHaveBeenCalledTimes(1);
+      expect(h.loadTexture.mock.calls[0]).toEqual([atlas, { colorSpace: "linear", flipY: false }]);
+      expect(root.children).toHaveLength(ESCALATOR_IDS.length);
+      const mats = root.children.flatMap((g) => (g.children as THREE.InstancedMesh[]).map((m) => m.material as THREE.MeshStandardMaterial));
+      expect(mats).toHaveLength(10);
+      for (const m of mats) expect(m.aoMap).toBe(texture);
+      // Freed once, by the lazy kit: no per-id kit touches the shared texture.
+      const dispose = vi.spyOn(texture, "dispose");
+      expect(dispose).not.toHaveBeenCalled();
+      lazy.dispose();
+      await Promise.resolve(); // the cache settles its entry on a microtask, so an in-flight load is freed too
+      expect(dispose).toHaveBeenCalledTimes(1);
+      expect(root.children).toHaveLength(0);
+    }
+  });
+
+  it("warns once for a failed shared atlas and still attaches every lazy id", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const h = host([...allUris, atlasUri("escalator", false)!]);
+      h.loadTexture.mockRejectedValue(new Error("404 atlas"));
+      const root = new THREE.Group();
+      const lazy = lazyKitCatalog(THREE, h, escalators, false, root, env, toRenderer);
+      await lazy.settled();
+      expect(h.loadTexture).toHaveBeenCalledTimes(1); // the failed load is cached too: one warning, not five
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0]![0]).toContain("escalator atlas");
+      expect(root.children).toHaveLength(ESCALATOR_IDS.length);
+      for (const g of root.children) for (const im of g.children as THREE.InstancedMesh[])
+        expect((im.material as THREE.MeshStandardMaterial).aoMap).toBeNull();
+      lazy.dispose();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("frees a shared atlas whose load is still in flight when the lazy kit is disposed", async () => {
+    vi.useFakeTimers();
+    const texture = new THREE.Texture();
+    let finish!: (texture: THREE.Texture) => void;
+    const h = host([...allUris, atlasUri("escalator", false)!]);
+    h.loadTexture.mockImplementation(() => new Promise<THREE.Texture>((resolve) => { finish = resolve; }));
+    const lazy = lazyKitCatalog(THREE, h, escalators, false, new THREE.Group(), env, toRenderer);
+    try {
+      lazy.start();
+      await vi.runOnlyPendingTimersAsync();
+      expect(h.loadTexture).toHaveBeenCalledTimes(1);
+      const dispose = vi.spyOn(texture, "dispose");
+      lazy.dispose(); // the atlas is not back yet
+      expect(dispose).not.toHaveBeenCalled();
+      finish(texture);
+      await vi.runOnlyPendingTimersAsync();
+      expect(dispose).toHaveBeenCalledTimes(1);
+      expect(h.loadGlb).toHaveBeenCalledTimes(1); // no further ids after teardown
+    } finally {
+      lazy.dispose();
+      vi.useRealTimers();
+    }
   });
 
   it("skips ids outside the batch silently, with one summary line", async () => {

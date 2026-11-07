@@ -24,7 +24,9 @@ import {
  *     of samples at the clamp is recorded);
  *   - frames with camera-to-head distance < 1.0 m are "crowded": recorded and listed as an annotation, never
  *     a failure (#70 is open).
- * Hooks used: `sceneInfo().camera`, `avatar()`, `mode()`, `route()`, `instructions()`, `guideControls()`.
+ * Hooks used: `sceneInfo().camera`, `avatar()`, `mode()`, `route()`, `instructions()`, `guideControls()`,
+ * `projectEnu()` (avatar feet and head to canvas CSS pixels; #919, so the share is measured in walking
+ * programs that never upload a viewMatrix).
  * Not exposed (recorded null, hook request for Lane C): whether a camera-only blocker is over the camera, the
  * follow state (clamped / boom elevation) and the lens (FOV/aspect). The lens and exact camera position are
  * measured from the WebGL matrices the renderer uploads (LENS_PROBE in lib/camera.ts), which needs no hook.
@@ -186,6 +188,9 @@ for (const key of STATIONS) {
       const distToGoal = Math.hypot(end.x - goal.x, end.y - goal.y);
 
       const summary = summarise(samples, SAMPLE_MS);
+      // #919: the out-of-frame fractions only count samples where the avatar could be projected. Without any,
+      // they are null rather than 0, so a walk that lost the avatar would otherwise read as "fine".
+      expect(summary.guideOnly.avatarHeightShare.n, "guide samples with a measured avatar height share (#919)").toBeGreaterThan(0);
       const guideSamples = samples.filter((s) => s.mode === "guide");
       const crowdedSamples = guideSamples.filter((s) => s.crowded).map((s) => ({ t: s.t, headDistance: s.headDistance, stepMode: s.stepMode, avatar: s.avatar }));
       const clampRun = longestRunMs(guideSamples, (s) => s.atClamp, SAMPLE_MS);
@@ -194,8 +199,8 @@ for (const key of STATIONS) {
         candidate, station: key, walk: w.label, why: w.why, project: testInfo.project.name, view: await viewInfo(page),
         constants: k, thresholds: { crowdedM: CROWDED_M, nearBlackMax: NEAR_BLACK_MAX, clampRunMaxMs: CLAMP_RUN_MAX_MS, sampleMs: SAMPLE_MS },
         hooks: {
-          used: ["sceneInfo().camera", "avatar()", "mode()", "route()", "instructions()", "guideControls()"],
-          measuredWithoutHook: ["vertical FOV, aspect, exact camera position, avatar height share (projectionMatrix/viewMatrix uploads, LENS_PROBE)"],
+          used: ["sceneInfo().camera", "avatar()", "mode()", "route()", "instructions()", "guideControls()", "projectEnu() (avatar feet and head to canvas CSS pixels)"],
+          measuredWithoutHook: ["vertical FOV, aspect, exact camera position (projectionMatrix/viewMatrix uploads, LENS_PROBE)"],
           missing: ["overhead camera-only blocker present (always null)", "follow state: clamped / boom elevation / wanted distance", "yaw/pitch (pivot distance is estimated from head distance)", "a lightweight cameraInfo() (sceneInfo() re-measures two bounding boxes per call)"],
         },
         route: { lengthM: route.totalLengthM, floorChanges: route.floorChanges, stepModes: [...new Set(wps.map((p) => p.mode))] },
@@ -260,7 +265,7 @@ for (const key of STATIONS) {
       // Why #136 may legitimately hold the wide follow lens at the end of the window: the avatar is on a stair or
       // escalator step of the route, or the boom is squeezed (pivot within comfortDistance + release, the app's own
       // hysteresis). Without one of these a wide follow lens is not excused.
-      const cs = toSample({ t: 0, camera: end.camera as number[] | null, avatar: end.avatar as Vec3 | null, mode: end.mode as string | null, lens: null }, 0, k, wps);
+      const cs = toSample({ t: 0, camera: end.camera as number[] | null, avatar: end.avatar as Vec3 | null, mode: end.mode as string | null, lens: null, share: null, headIn: null, feetIn: null, inFrame: null }, 0, k, wps);
       const sq = k.lensSqueeze;
       // The app widens on slopes from the smoothed vertical speed, not from the edge the avatar stands on (#318), and
       // keeps the wide lens for SLOPE.hold after that speed falls below SLOPE.exit (#322). So a stair or escalator

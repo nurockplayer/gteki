@@ -198,6 +198,9 @@ describe("English facility search", () => {
       poi("partial", "改札", { aliases: [{ lang: "en", text: "Marunouchi Line" }] }),
     ]));
     expect(index.search("Marunouchi Line West Gate")).toMatchObject([{ poi: { id: "gate" }, score: 24, matched: "丸ノ内線西改札" }]);
+    for (const query of ["Marunouchi Line / West Gate", "Marunouchi Line West-Gate", "Marunouchi-Line, West Gate.", "/ Marunouchi Line West Gate"]) {
+      expect(index.search(query)).toMatchObject([{ poi: { id: "gate" }, score: 24 }]);
+    }
   });
 
   it("finds categories weakly without changing POI texts", () => {

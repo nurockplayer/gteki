@@ -28,13 +28,13 @@ import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollisio
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, guideOnEscalator, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -44,7 +44,8 @@ import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
-import { avatarMotion, stepCatBodyPitch } from "./avatarMotion.ts";
+import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
+import { catTapHit } from "./catMeow.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
@@ -247,7 +248,9 @@ export class Explorer {
   private stationScene: StationScene | null = null;
   private interactionController = new InteractionController([]);
   private interactionSnapshot = "";
-  private interactionVisual: THREE.Object3D | undefined;
+  /** Reaction objects by interactable id, and the station's decorative wall-prop mesh (#858 item 12). */
+  private interactionVisuals: Map<string, THREE.Object3D> | undefined;
+  private wallProps: THREE.Object3D | undefined;
   private navmeshPaths: NavmeshPaths | null = null;
   /** What the last station switch freed from the previous scene (for the e2e log). */
   private releasedTextures: { textures: number; canvases: number } | null = null;
@@ -359,6 +362,9 @@ export class Explorer {
    */
   private stationAudio: GainNode | null = null;
   private audioUnlock: (() => void) | null = null;
+  private catMeowSound: ((context: AudioContext, destination: AudioNode) => void) | null = null;
+  /** The synth for the cat's meow; plays through the master bus, so mute applies. */
+  setCatMeowSound(play: ((context: AudioContext, destination: AudioNode) => void) | null): void { this.catMeowSound = play; }
   private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
@@ -976,6 +982,9 @@ export class Explorer {
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
     this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
+    // The composer is built after the station scene is attached, so the cat's depth twins are registered here
+    // on the first load; later loads register them in the scene step.
+    if (this.catAvatar) this.composer.setDepthTwins(this.stationScene?.root ?? null);
     this.composer.setBloomThreshold(this.bloomThreshold);
     this.applyOverlayTone();
   }
@@ -1014,6 +1023,7 @@ export class Explorer {
     this.camDistance = FOLLOW.defaultDistance;
     this.pitch = -0.12;
     this.stationScene?.setCameraNearFade?.(0, 0);
+    this.composer?.setDepthTwins(null);
     this.buildAvatarMarker();
   }
 
@@ -1119,11 +1129,20 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
-    if (this.catAvatar) built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
+    if (this.catAvatar) {
+      built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
+      // The crowd's distance fade must reach GTAO's depth/normal buffers too (high tier only).
+      this.composer?.setDepthTwins(built?.root ?? null);
+    }
     this.interactionController = new InteractionController(built?.interactables ?? []);
     this.interactionSnapshot = "";
-    this.interactionVisual = undefined;
-    built?.root.traverse((object) => { if (object.userData.gtekiInteractionId) this.interactionVisual = object; });
+    this.interactionVisuals = new Map();
+    this.wallProps = undefined;
+    built?.root.traverse((object) => {
+      const id = object.userData.gtekiInteractionId;
+      if (typeof id === "string" && id) this.interactionVisuals!.set(id, object);
+      if (object.userData.gtekiWallProps === true) this.wallProps = object;
+    });
     this.sceneError = sceneError;
     // Connector coverage reads every run after an async recipe load; keep the full step pose until it finishes.
     this.stepsPaused = this.stationScene?.beforeRender !== undefined;
@@ -1296,7 +1315,8 @@ export class Explorer {
   private clearStation(leaving = false): void {
     this.interactionController = new InteractionController([]);
     this.interactionSnapshot = "";
-    this.interactionVisual = undefined;
+    this.interactionVisuals = undefined;
+    this.wallProps = undefined;
     this.avatarRig?.setHold?.(null);
     this.publishInteraction(this.interactionController.state);
     this.avatarRig?.cancelPendingLoad();
@@ -1633,7 +1653,7 @@ export class Explorer {
     const { w, h } = this.viewSize;
     const free = this.freeRect();
     const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
-    // The cat's low boom can't reach most look-up poses (the floor squeezes it), so only its framing checks the walker.
+    // The cat's low boom meets the floor on a look-up, so only its framing checks the walker and the settled boom.
     let rig: FramingRig | undefined;
     if (this.catAvatar) {
       const feet = this.pos.clone(), top = feet.clone().add(new THREE.Vector3(0, CAT_AVATAR_HEIGHT_M, 0));
@@ -1642,13 +1662,18 @@ export class Explorer {
         shoulder: catShoulder(this.camera.aspect), lift: FOLLOW_CAT.lift, drop: FOLLOW_CAT.drop, distance: FOLLOW_CAT.distance,
         body: [feet, top],
         clear: (cameraPos, pivot) => {
-          const boom = cameraPos.clone().sub(pivot);
-          this.ray.set(pivot, boom.clone().normalize());
-          this.ray.near = 0;
-          this.ray.far = boom.length() + FOLLOW.clearance;
-          if (castCamera(this.ray, this.cameraTargets, this.cameraSides).length) return false;
-          const direction = feet.clone().lerp(top, 0.5).sub(cameraPos);
-          this.ray.set(cameraPos, direction.clone().normalize());
+          // The live rig raises its boom over the floor, so judge the pose it would really settle on.
+          const cast = (back: THREE.Vector3) => {
+            this.ray.set(pivot, back);
+            this.ray.near = 0;
+            this.ray.far = FOLLOW_CAT.distance + FOLLOW.clearance;
+            return castCamera(this.ray, this.cameraTargets, this.cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+          };
+          const solved = solveRaisedBoom(FOLLOW_CAT.distance, cameraPos.clone().sub(pivot).normalize(), cast, 0, 0, true);
+          if (solved.distance < FOLLOW.comfortDistance) return false;
+          const settled = pivot.clone().addScaledVector(solved.back, solved.distance);
+          const direction = feet.clone().lerp(top, 0.5).sub(settled);
+          this.ray.set(settled, direction.clone().normalize());
           this.ray.near = 0;
           this.ray.far = Math.max(0, direction.length() - 0.05);
           return castAll(this.ray, walkerTargets).length === 0;
@@ -2573,30 +2598,63 @@ export class Explorer {
     this.camera.updateMatrixWorld();
     const cutY = this.catAvatar && !this.firstPerson ? FOLLOW_CAT.pivotY : EYE;
     this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, cutY, 0)), this.mode !== "overview");
-    const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
+    const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw, this.catAvatar ? CAT_TURN_RATE : undefined);
+    const previousYaw = this.bodyYaw;
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
+    this.stepCatTap();
+    if (this.catAvatar) this.avatarRig?.setTurnLead?.(this.mode !== "overview" && motion.speed > 0 && dt > 0 ? angleDelta(previousYaw, motion.yaw) / (dt * CAT_TURN_RATE) : 0);
     if (this.catAvatar) this.avatarRig?.setLookPitch?.(this.mode === "overview" ? 0 : this.pitch);
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
     if (this.catAvatar && this.avatarRig) {
-      this.catBodyPitch = stepCatBodyPitch(this.catBodyPitch, this.slope.velocity, this.mode === "overview" ? 0 : motion.speed, dt);
+      // Escalator steps are level, so a rider stays level however fast it climbs.
+      this.catBodyPitch = stepCatBodyPitch(this.catBodyPitch, this.slope.velocity, this.mode === "overview" || this.catRidingEscalator() ? 0 : motion.speed, dt);
       this.avatarRig.root.rotation.x = this.catBodyPitch;
     }
     const state = this.interactionController.state;
-    if (state.phase === "active") {
-      const target = this.interactionVisual;
+    if (state.phase === "active" && state.nearId) {
+      const target = this.interactionVisuals?.get(state.nearId);
       if (target) this.avatar.rotation.y = Math.atan2(this.pos.x - target.position.x, this.pos.z - target.position.z);
     }
     this.updateShadows();
   }
 
-  interactableInfo() { return { specs: this.stationScene?.interactables ?? [], visual: this.interactionVisual }; }
+  interactableInfo() {
+    const specs = this.stationScene?.interactables ?? [];
+    // `visual` stays the first spec's object for the shop spec; `visuals` is every reaction by id.
+    return { specs, visual: specs[0] ? this.interactionVisuals?.get(specs[0].id) : undefined, visuals: this.interactionVisuals, props: this.wallProps };
+  }
 
   get interaction(): InteractionState { return this.interactionController.state; }
 
-  interact(): void { this.publishInteraction(this.interactionController.start()); }
+  interact(): void {
+    const state = this.interactionController.start();
+    this.publishInteraction(state);
+    // Near a usable interactable the interaction wins; anywhere else E meows.
+    if (this.catAvatar && state.phase !== "active") this.meow();
+  }
+
+  private catRidingEscalator(): boolean {
+    return this.catAvatar && this.mode === "guide" && this.guide !== null && guideOnEscalator(this.guide.s, this.guide.spans);
+  }
+
+  /** Start the cat's meow overlay, with its synth when the station audio work has supplied one. */
+  private meow(): void {
+    if (!this.avatarRig?.meow?.()) return;
+    if (this.catMeowSound && this.ensureAudio()) this.catMeowSound(this.audio!.context, this.audio!.master);
+  }
+
+  /** A still tap on the projected cat starts the meow; drags, stick pushes and other modes never do. */
+  private stepCatTap(): void {
+    const tap = this.input.consumeTap();
+    if (!tap || !this.catAvatar || this.mode !== "walk") return;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const at = this.pos.clone().add(new THREE.Vector3(0, 0.15, 0)).project(this.camera);
+    const cat = { x: rect.left + ((at.x + 1) * rect.width) / 2, y: rect.top + ((1 - at.y) * rect.height) / 2, behind: at.z > 1 };
+    if (catTapHit(tap, cat)) this.meow();
+  }
 
   private publishInteraction(state: InteractionState): void {
     const snapshot = JSON.stringify(state);
@@ -2604,9 +2662,10 @@ export class Explorer {
       this.interactionSnapshot = snapshot;
       this.events.onInteraction?.(state);
     }
-    this.avatarRig?.setHold?.(state.phase === "active" && state.step !== "look" ? "sit" : null);
-    if (this.interactionVisual) this.interactionVisual.visible = state.phase === "active" &&
-      this.interactionVisual.userData.gtekiInteractionId === state.nearId && (state.step === "react" || state.step === "give");
+    this.avatarRig?.setHold?.(this.catRidingEscalator() || (state.phase === "active" && state.step !== "look") ? "sit" : null);
+    for (const [id, visual] of this.interactionVisuals ?? []) {
+      visual.visible = state.phase === "active" && id === state.nearId && (state.step === "react" || state.step === "give");
+    }
   }
 
   private stepWalk(dt: number): void {
@@ -2821,6 +2880,7 @@ export class Explorer {
       const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
+    if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);

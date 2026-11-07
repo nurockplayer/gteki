@@ -326,3 +326,4 @@ export function seeThroughMeshes(root: THREE.Object3D): THREE.Object3D[] {
   return found;
 }
 export * from "./liftShaft.ts";
+export * from "./wallProps.ts";

@@ -48,13 +48,22 @@ describe("station geometry lifetime", () => {
     expect(result.live).toBe(146); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss)
     // #645 step 2c: lift-door clearances split two restricted boundaries (+5,184 B); the shaft-geometry
     // cut of the join:/return: pieces inside a stop square then removes 44,592 B.
-    expect(result.bytes).toBe(16251116); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
+    expect(result.bytes).toBe(16493354); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
     // #49 retains two clipped render-only shell batches: +217,498 B and +5,055 triangles
     // after #316 stopped letting surfaces below the runs suppress the shell.
     // #789 updates the expected buffers for the repaired display heights; the
     // scene-digest fixture records those changes. Retired arrays stay collectible.
     // #342 (2026-11-06 JST): only the identity faces and hardware moved.
     // #870 (2026-11-06 JST): platform door panels and caps split around the aligned openings (+3,360 B).
-    expect(result.geometryHash).toBe("1299e8f961984dfd99eecb0c6a2a53759b905e4b5cec28bae31b86d544940ba3");
+    expect(result.geometryHash).toBe("7fd032a462e68a4c359031f275609c2ac24eecf7fc94785efcbac74119c21534");
   }, 60_000);
+
+  // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the
+  // layout copy, the built station, every intermediate array) is collected while the scene is still held.
+  it("collects the build scope while keeping the returned scene", async () => {
+    const { stdout } = await run(process.execPath, [
+      "--expose-gc", "--import", "tsx", fileURLToPath(new URL("./helpers/scene-scope.ts", import.meta.url)),
+    ], { timeout: 180_000 });
+    expect(JSON.parse(stdout).sceneScopeCollected).toBe(true);
+  }, 180_000);
 });

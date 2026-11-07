@@ -16,9 +16,10 @@ import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { currentTimeBand } from "./time-band.ts";
 import { createAmbience } from "./ambience.ts";
+import { createStreetAmbience } from "./street-ambience.ts";
 import { createZoneAcoustics, ZONE_ACOUSTICS } from "./zone-acoustics.ts";
 import { createStationSound } from "./station-sound.ts";
-import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
+import { CONTEXT_GLB, CONTEXT_ROAD_COLOR, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import { loadN02Overlay } from "./n02_overlay.ts";
 import crowdLanes from "./crowd_lanes.json";
 import finishManifest from "./finishes.json";
@@ -37,6 +38,8 @@ import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
 import type { AcousticZone, SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
+import { buildWallProps, wallPropDrawRanges } from "@gteki/scene-api";
+import wallPropPlacements from "./wall-props.ts";
 
 type ThreeNS = typeof THREE_NS;
 
@@ -437,6 +440,26 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // concourse) has no verified access: it stays visible, but their outline is fenced and labelled.
   root.add(fences.visual, fences.collider);
 
+  // Neutral decorative wall props (#858 item 12): one merged mesh (one draw; the interactive machine's reaction
+  // shares that draw) and one invisible box collider per prop for the walker.
+  const wallProps = buildWallProps(THREE, mergeGeometries, toRenderer, wallPropPlacements, "ikebukuro");
+  root.add(wallProps);
+  const propColliderMaterial = new THREE.MeshBasicMaterial({ visible: false });
+  const propColliders: THREE_NS.Mesh[] = [];
+  for (const p of wallPropPlacements) {
+    const height = p.kind === "kiosk" ? 2 : 1.85;
+    const geometry = new THREE.BoxGeometry(p.w, height, p.d);
+    const centre = toRenderer(p.wall[0] + p.n[0] * (p.d / 2 - 0.02), p.wall[1] + p.n[1] * (p.d / 2 - 0.02), p.z + height / 2);
+    geometry.rotateY(Math.atan2(p.n[0], -p.n[1]));
+    geometry.translate(centre.x, centre.y, centre.z);
+    const collider = new THREE.Mesh(geometry, propColliderMaterial);
+    collider.name = `wall-prop-collider:${p.id}`;
+    collider.userData.gteki_role = "collider";
+    collider.userData.gteki_source = "procedural";
+    propColliders.push(collider);
+    colliders.push(collider);
+  }
+
   // Street-level context buildings (#39): visual only, so they never join walkable or colliders (and
   // assembleCollision never sees them). They do stop the follow camera, through separate low-poly blockers
   // (context.ts) that the explorer reads once at resolve, so they exist now and fill when the context arrives.
@@ -453,15 +476,18 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   );
   let context: THREE_NS.Object3D | null = null;
   let contextMaterial: THREE_NS.Material | null = null;
+  let contextRoadMaterial: THREE_NS.Material | null = null;
   let disposed = false;
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
   ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     (loaded) => {
-      const material = createContextMaterial(THREE);
-      dressContext(loaded.scene, material);
+      const material = createContextMaterial(THREE, { streetY });
+      const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
+      dressContext(loaded.scene, material, roadMaterial);
       if (disposed) {
         loaded.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
         material.dispose();
+        roadMaterial.dispose();
         return;
       }
       loaded.scene.name = "street-context";
@@ -471,6 +497,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       contextBlockers.fill(loaded.scene);
       context = loaded.scene;
       contextMaterial = material;
+      contextRoadMaterial = roadMaterial;
     },
     () => undefined,
   );
@@ -534,12 +561,15 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   root.add(signs.group);
   root.add(signKit.build(THREE, env, toRenderer, signs.layouts).group);
 
-  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes, currentTimeBand(globalThis.location?.search, new Date()));
+  // Ticket gates are the graph's `ticket_gate` nodes: commuters queue briefly at them (#627).
+  const gateIds = (graph as { nodes: { id: string; kind?: string }[] }).nodes.filter((n) => n.kind === "ticket_gate").map((n) => n.id);
+  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes, currentTimeBand(globalThis.location?.search, new Date()), gateIds);
   root.add(crowd.group);
 
   let zone: AcousticZone = "passage";
   const acoustics = ctx.audio ? createZoneAcoustics(ctx.audio.context, ctx.audio.destination) : null;
   const ambience = ctx.audio && acoustics ? createAmbience(ctx.audio.context, acoustics.input) : null;
+  const streetAmbience = ctx.audio && acoustics ? createStreetAmbience(ctx.audio.context, acoustics.input) : null;
   // Station sound (#859): gates are ticket_gate nodes; with no escalator or platform nodes here,
   // announcements also come from the stairs and the approach chime is heard from behind the gates.
   const stationNodes = (graph as { nodes: { id: string; kind?: string; position: { x: number; y: number; z: number | null }; renderZ?: number }[] }).nodes;
@@ -617,9 +647,21 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   reaction.visible = false;
   reaction.userData.gtekiInteractionId = shop.id;
   root.add(reaction);
-  const interactables = [{ id: shop.id, kind: "shop", layer: "fictional" as const, simulated: true as const,
-    anchor: { x: anchor.x, y: anchor.y, z: anchor.z }, radiusM: 0.9,
-    steps: interactionData.steps, reward: interactionData.reward, once: interactionData.once }];
+  // The interactive wall prop (#858 item 12): decorative, never a POI. Its reaction is part of the same mesh's
+  // index, so the station extends the draw range while the explorer shows the marker.
+  const vending = wallPropPlacements.find((p) => p.interaction)!;
+  const [vx, vy, vz] = ctx.enuToRenderer({ x: vending.wall[0] + vending.n[0] * (vending.d + 0.6), y: vending.wall[1] + vending.n[1] * (vending.d + 0.6), z: vending.z });
+  const propMarkers = wallProps.children.filter((o) => typeof o.userData.gtekiInteractionId === "string");
+  const propDraws = wallPropDrawRanges(wallProps);
+  let propFull = false;
+  const interactables = [
+    { id: shop.id, kind: "shop", layer: "fictional" as const, simulated: true as const,
+      anchor: { x: anchor.x, y: anchor.y, z: anchor.z }, radiusM: 0.9,
+      steps: interactionData.steps, reward: interactionData.reward, once: interactionData.once },
+    { id: vending.interaction!, kind: "vending", layer: "fictional" as const, simulated: true as const,
+      anchor: { x: vx, y: vy, z: vz }, radiusM: 0.9,
+      steps: [{ id: "look", seconds: 1.2 }, { id: "sit", seconds: 1.5 }, { id: "react", seconds: 2.0 }], once: false },
+  ];
   return {
     root,
     interactables,
@@ -628,7 +670,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     cameraBlockers: contextBlockers.meshes,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
-    ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); } } : {}),
+    ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); streetAmbience?.setZone(next); } } : {}),
     settled: () => catalogKit.settled(),
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
     update: (dt, elapsed, camera) => {
@@ -636,17 +678,28 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       if (camera) catalogKit.update(camera);
       crowd.update(dt, elapsed);
       ambience?.update({ nearby: crowd.nearby(), openness: ZONE_ACOUSTICS[zone].openness });
+      streetAmbience?.update();
       stationSound?.update(dt, camera);
       if (context && cameraTrack) {
         const seen = cameraTrack.read();
         setContext(seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
       }
+      const full = propMarkers.some((o) => o.visible);
+      if (full !== propFull) {
+        propFull = full;
+        wallProps.geometry.setDrawRange(0, full ? propDraws.full : propDraws.idle);
+      }
     },
     dispose() {
       geometry.dispose();
       material.dispose();
+      wallProps.geometry.dispose();
+      (wallProps.material as THREE_NS.Material).dispose();
+      for (const collider of propColliders) collider.geometry.dispose();
+      propColliderMaterial.dispose();
       stationSound?.dispose();
       ambience?.dispose();
+      streetAmbience?.dispose();
       acoustics?.dispose();
       cameraTrack?.dispose();
       disposed = true;
@@ -656,6 +709,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
         setContext(false);
         context.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
         contextMaterial?.dispose();
+        contextRoadMaterial?.dispose();
       }
       crowd.dispose();
       mats.dispose();

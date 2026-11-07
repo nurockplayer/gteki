@@ -10,6 +10,47 @@ import { withCanvasStub } from "./helpers/scene-digest.ts";
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
 
+it("keeps B3 shot 28 shaft fascias clear of kept wall planes within 2 mm", () => {
+  const layout = buildLayout(bundle, plan);
+  const walls = layout.levels.flatMap(l => l.walls.filter(w => w.kind !== "trackside" && w.finish !== "fascia"));
+  for (const fascia of layout.shaftFascias) {
+    const panel = fascia.polygon!;
+    for (const wall of walls) {
+      const distance = (p: { x: number; y: number }) => Math.abs(-p.x * panel.axis.y + p.y * panel.axis.x - panel.offset);
+      if (distance(wall.a) >= 0.002 || distance(wall.b) >= 0.002) continue;
+      const project = (p: { x: number; y: number }) => p.x * panel.axis.x + p.y * panel.axis.y;
+      const a = project(wall.a), b = project(wall.b);
+      if (Math.abs(a - b) < 1e-6) continue;
+      const p = wall.profile ?? { bottomA: wall.zMin, bottomB: wall.zMin, topA: wall.zMax, topB: wall.zMax };
+      const snap = (v: number) => Math.round(v * 1e4) / 1e4;
+      const cover = [new THREE.Vector2(snap(a), snap(p.bottomA)), new THREE.Vector2(snap(b), snap(p.bottomB)),
+        new THREE.Vector2(snap(b), snap(p.topB)), new THREE.Vector2(snap(a), snap(p.topA))];
+      if (Math.abs(snap(a) - snap(b)) < 1e-6) continue;
+      const rings = panel.rings.map(r => r.slice(0, -1).map(p => new THREE.Vector2(p.x, p.y)));
+      const vertices = rings.flat();
+      const triangles = THREE.ShapeUtils.triangulateShape(rings[0]!, rings.slice(1));
+      const cross = (a: THREE.Vector2, b: THREE.Vector2, p: THREE.Vector2) => (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
+      const orientation = Math.sign(cover.reduce((sum, v, i) => sum + v.cross(cover[(i+1)%cover.length]!), 0));
+      if (orientation === 0) continue;
+      let area = 0;
+      for (const triangle of triangles) {
+        let clipped = triangle.map(i => vertices[i]!);
+        for (let i = 0; i < cover.length && clipped.length; i++) {
+          const a = cover[i]!, b = cover[(i+1)%cover.length]!, input = clipped;
+          clipped = [];
+          for (let j = 0; j < input.length; j++) {
+            const p = input[j]!, q = input[(j+1)%input.length]!, dp = orientation * cross(a,b,p), dq = orientation * cross(a,b,q);
+            if (dp >= 0) clipped.push(p);
+            if ((dp < 0 && dq > 0) || (dp > 0 && dq < 0)) clipped.push(p.clone().lerp(q, dp / (dp-dq)));
+          }
+        }
+        area += Math.abs(clipped.reduce((sum, v, i) => sum + v.cross(clipped[(i+1)%clipped.length]!), 0)) / 2;
+      }
+      expect(area, `fascia ${fascia.floorId} wall ${wall.a.x},${wall.a.y}`).toBeLessThan(1e-8);
+    }
+  }
+}, 120_000);
+
 it("finishes grouped flights on their own planes with flat landings and shoulders", () => {
   const coordinates = [{ x: 0, y: 0, z: -12 }, { x: 4, y: 0, z: -10 }, { x: 5, y: 0, z: -10 }, { x: 9, y: 0, z: -7.96 }];
   const nodes = coordinates.map((p, i) => ({ ...bundle.nodes[0]!, id: `flight-${i}`, floorId: "test", position: { ...p, z: null }, renderZ: p.z }));
