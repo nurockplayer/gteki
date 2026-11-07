@@ -445,6 +445,23 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("gives the rail the station env map when one is supplied and stays Lambert without one (#1008)", () => {
+    const split = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }]);
+    const env = new THREE.Texture();
+    const litScene = scene();
+    const lit = cutStairwells(litScene.root, stairwellWells(split, traversable), { tier: "low", envMap: env });
+    const litRail = lit.finish!.getObjectByName("greybox-stairwell-rail") as THREE.Mesh;
+    expect(litRail.material).toBeInstanceOf(THREE.MeshStandardMaterial);
+    expect((litRail.material as THREE.MeshStandardMaterial).envMap).toBe(env);
+    lit.dispose();
+    const plainScene = scene();
+    const plain = cutStairwells(plainScene.root, stairwellWells(split, traversable), { tier: "low" });
+    const plainRail = plain.finish!.getObjectByName("greybox-stairwell-rail") as THREE.Mesh;
+    expect(plainRail.material).toBeInstanceOf(THREE.MeshLambertMaterial);
+    expect((plainRail.material as THREE.MeshLambertMaterial).envMap).toBeNull();
+    plain.dispose();
+  });
+
   it("leaves no edge band on the seam between two pieces of one flight", () => {
     const split = flight([{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }]);
     const wells = stairwellWells(split, traversable);
