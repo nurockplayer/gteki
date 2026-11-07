@@ -1629,9 +1629,15 @@ probeSegment	function	stations/shinjuku/test/fence-slide-probe.ts
 sample	function	stations/shinjuku/test/fence-slide-probe.ts
 segments	function	stations/shinjuku/test/fence-slide-probe.ts
 tally	const	stations/shinjuku/test/fence-slide-probe.ts
+EscapeClass	type	stations/shinjuku/test/helpers/escape-classify.ts
+OpeningFootprint	type	stations/shinjuku/test/helpers/escape-classify.ts
+PlanPoint	interface	stations/shinjuku/test/helpers/escape-classify.ts
 RayHit	type	stations/shinjuku/test/helpers/escape-classify.ts
 RayOutcome	type	stations/shinjuku/test/helpers/escape-classify.ts
+StreetCrossing	type	stations/shinjuku/test/helpers/escape-classify.ts
+classifyEscape	function	stations/shinjuku/test/helpers/escape-classify.ts
 classifyRay	function	stations/shinjuku/test/helpers/escape-classify.ts
+footprintContains	function	stations/shinjuku/test/helpers/escape-classify.ts
 identityHardwareBoxes	function	stations/shinjuku/test/helpers/identity-placement.ts
 identityObstacles	function	stations/shinjuku/test/helpers/identity-placement.ts
 identitySightline	function	stations/shinjuku/test/helpers/identity-placement.ts
