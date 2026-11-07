@@ -1,0 +1,13 @@
+orb-test: waiting for a gteki slot (2 light run(s) at a time inside the work window)
+orb-test: container orb-test-gteki-54868 (orb-test-node:24, memory=3g, cpus=2) for gteki/ds-sjk-2: pnpm exec tsx .qa/221/player-view/defect-probe.ts
+orb-test: start 2026-11-05 13:22 JST — timestamps printed inside the container are UTC
+kit swap: dropped escalator e:4bee1c5e3544452db681f9aeccfe2346 (gteki_escalator_dress_s600_r3500_panel): no piece fits this anchor
+kit swap: dropped escalator e:c7fa5f74d72f43498ef2cb3b1dbea7e4 (gteki_escalator_dress_s600_r3500_panel): no piece fits this anchor
+kit swap: dropped escalator e:27d3ed498cc9423683ee7f502c5d2460 (gteki_escalator_dress_s600_r3500_panel): no piece fits this anchor
+kit swap (mobile): placed gate 0, lift 0, stairs 0, escalator 19, exit 0, toilet 0; 14 draws, 58008 triangles; 3 dropped, 1 gaps
+kit swap gap: toilet x3: toilet facility points are room representatives, not doors; no placement until a door source exists
+2026-11-05 13:25:09 JST scene loaded, rays 786 source meshes 605
+2026-11-05 13:25:35 JST noHit 647 single 139 coplanar-pair rays 0 pairs 0
+2026-11-05 13:25:35 JST PASS
+orb-test: end 2026-11-05 13:25 JST
+exit=0
