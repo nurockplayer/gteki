@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import * as THREE from "three";
-import { clipFlatGeometry, ribbonGeometry } from "./geometry.ts";
+import { ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, clipFlatGeometry, ribbonGeometry } from "./geometry.ts";
 
 it("clips the flat segment of a cross-level ribbon and keeps the rise", () => {
   const points = [new THREE.Vector3(1, 0, 5), new THREE.Vector3(9, 0, 5), new THREE.Vector3(9, 4, 6)];
@@ -11,4 +11,15 @@ it("clips the flat segment of a cross-level ribbon and keeps the rise", () => {
   expect(hits(5, 5)).toBe(0);
   expect(hits(2, 5)).toBeGreaterThan(0);
   expect(hits(9, 5.7)).toBeGreaterThan(0);
+});
+
+it("draws the walking ribbon 0.40 m wide and the overview ribbon 1.1 m wide", () => {
+  const points = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(10, 0, 0)];
+  const width = (w: number) => {
+    const g = ribbonGeometry(points, w);
+    g.computeBoundingBox();
+    return g.boundingBox!.max.z - g.boundingBox!.min.z;
+  };
+  expect(width(ROUTE_RIBBON_WIDTH_WALK)).toBeCloseTo(0.4, 6);
+  expect(width(ROUTE_RIBBON_WIDTH_OVERVIEW)).toBeCloseTo(1.1, 6);
 });
