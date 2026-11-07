@@ -111,8 +111,6 @@ export const KIT_TILE_M = { high: 16, low: 32 } as const;
 export const tileSize = (low: boolean) => (low ? KIT_TILE_M.low : KIT_TILE_M.high);
 /** Half the rail's thickness (m, bounds z = +-0.07): the label board sits just off each rail face. */
 export const RAIL_FACE_OFFSET = 0.075;
-/** Visible label height (m) on a rail: the 1.1 m rail minus a 5 cm toe gap and a 5 cm cap. */
-export const RAIL_LABEL_H = 1.0;
 /** Environment light on kit materials. The scene has no dynamic lights, so a kit material lights from its envMap only. */
 export const KIT_ENV_INTENSITY = 1.0;
 
