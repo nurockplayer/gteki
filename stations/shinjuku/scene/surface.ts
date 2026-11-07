@@ -13,6 +13,7 @@ import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfacePad
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
 import { inside, strip, surfaceKerbs, surfaceLampRails, surfacePaving, surfaceStreets } from "./surface-street.ts";
 import { OEDO_MAGENTA } from "./palette.ts";
+import { stableHypot } from "./stable-hypot.ts";
 export { surfaceWalls } from "./surface-layout.ts";
 export type { SurfaceData } from "./surface-data.ts";
 
@@ -45,7 +46,7 @@ function flat(rings: number[][][], z: number) {
 }
 function quad(a: XY, b: XY, bottom: number, top: number, inset = 0) {
   const g = new THREE.BufferGeometry();
-  const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy) || 1;
+  const dx = b.x - a.x, dy = b.y - a.y, L = stableHypot(dx, dy) || 1;
   const nx = dy / L * inset, ny = -dx / L * inset;
   g.setAttribute("position", new THREE.Float32BufferAttribute([a.x + nx, bottom, -a.y - ny, b.x + nx, bottom, -b.y - ny, b.x + nx, top, -b.y - ny, a.x + nx, top, -a.y - ny], 3));
   g.setAttribute("uv", new THREE.Float32BufferAttribute([0, 0, L, 0, L, top - bottom, 0, top - bottom], 2));
@@ -124,7 +125,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   for(const w of surfacePadWalls(layout,opts.bundle)){
     add("steel",beam(pos(w.a,1.04),pos(w.b,1.04),.042,.042),mats.steel);
     add("steel",beam(pos(w.a,.48),pos(w.b,.48),.028,.028),mats.steel);
-    const count=Math.max(1,Math.ceil(Math.hypot(w.b.x-w.a.x,w.b.y-w.a.y)/1.5));
+    const count=Math.max(1,Math.ceil(stableHypot(w.b.x-w.a.x,w.b.y-w.a.y)/1.5));
     for(let i=0;i<=count;i++){
       const p={x:w.a.x+(w.b.x-w.a.x)*i/count,y:w.a.y+(w.b.y-w.a.y)*i/count};
       add("steel",beam(pos(p,0),pos(p,1.08),.045,.045),mats.steel);

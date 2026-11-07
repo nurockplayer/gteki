@@ -10,12 +10,13 @@ import type { FareProtection } from "../fare-fence.ts";
 import type { Layout, LevelLayout, Plan, XY } from "../layout.ts";
 import { surfaceEntrances } from "../surface-layout.ts";
 import type { ExitTopAnchor, GateRowAnchor, KitAnchors, LiftAnchor, RunAnchor, ToiletAnchor } from "./types.ts";
+import { stableHypot } from "../stable-hypot.ts";
 
 /** GSI indoor spatial data spec (H30.3): toilet facility codes. The only facility codes the swap adds anchors for. */
 export const TOILET_FACILITY_CODES = ["F001", "F002", "F003"] as const;
 
 const unit = (a: XY, b: XY): XY | null => {
-  const l = Math.hypot(b.x - a.x, b.y - a.y);
+  const l = stableHypot(b.x - a.x, b.y - a.y);
   return l < 1e-9 ? null : { x: (b.x - a.x) / l, y: (b.y - a.y) / l };
 };
 

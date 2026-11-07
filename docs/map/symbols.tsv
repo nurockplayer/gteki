@@ -1517,6 +1517,7 @@ spaceRole	function	stations/shinjuku/scene/layout.ts
 widthFromClass	function	stations/shinjuku/scene/layout.ts
 OEDO_MAGENTA	const	stations/shinjuku/scene/palette.ts
 stationSpawn	function	stations/shinjuku/scene/spawn.ts
+stableHypot	function	stations/shinjuku/scene/stable-hypot.ts
 BakedSurface	interface	stations/shinjuku/scene/surface-bake.ts
 BakedSurfaceModule	interface	stations/shinjuku/scene/surface-bake.ts
 BakedSurfaceValues	type	stations/shinjuku/scene/surface-bake.ts

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import polygonClipping from "polygon-clipping";
 import type { StationBundle } from "@gteki/schema";
 import { pointInRings, soffitHeight, type Layout, type LevelLayout, type WalkWorld, type XYZ } from "./layout.ts";
+import { stableHypot } from "./stable-hypot.ts";
 
 type Size = { width: number; height: number; depth: number };
 type Box = { min: [number, number, number]; max: [number, number, number] };
@@ -50,7 +51,7 @@ export function platformIdentityCandidate(bundle: StationBundle, layout: Layout,
   if (!ring || ring.length < 2 || ring.length > 256) return null;
   let a = ring[0]!, b = ring[1]!, length = 0;
   for (const p of ring) for (const q of ring) {
-    const distance = Math.hypot(q.x - p.x, q.y - p.y);
+    const distance = stableHypot(q.x - p.x, q.y - p.y);
     if (distance > length) { a = p; b = q; length = distance; }
   }
   if (!Number.isFinite(length) || length <= 0) return null;

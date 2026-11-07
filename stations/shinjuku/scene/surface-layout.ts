@@ -3,6 +3,7 @@ import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clippi
 import type { StationBundle } from "@gteki/schema";
 import { pointInRings, widthFromClass, type Layout, type XY, type WallSeg } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
+import { stableHypot } from "./stable-hypot.ts";
 
 /** Within `withSurfaceMemo`, the pure derivations below are computed once per (layout, bundle[, surface]).
  * buildStation asks for the same street footprint, openings, graph segments, entrances, pad walls and
@@ -66,7 +67,7 @@ export function surfaceOpenings(layout: Layout, bundle: StationBundle): MultiPol
       const ts = [-2.6, 0.02].map((z) => (z - r.a.z) / dz).sort((a, b) => a - b);
       const lo = Math.max(0, ts[0]!), hi = Math.min(1, ts[1]!);
       if (hi <= lo) continue;
-      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, L = Math.hypot(dx, dy);
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, L = stableHypot(dx, dy);
       const nx = -dy / L * (r.width / 2 + 0.08), ny = dx / L * (r.width / 2 + 0.08);
       const a = { x: r.a.x + dx * lo, y: r.a.y + dy * lo }, b = { x: r.a.x + dx * hi, y: r.a.y + dy * hi };
       holes.push([[[a.x + nx, a.y + ny], [b.x + nx, b.y + ny], [b.x - nx, b.y - ny], [a.x - nx, a.y - ny], [a.x + nx, a.y + ny]]]);
@@ -87,7 +88,7 @@ export function surfaceOpenings(layout: Layout, bundle: StationBundle): MultiPol
       const points = e.geometry?.length ? e.geometry : [nodes.get(e.from)!.position, nodes.get(e.to)!.position];
       const halfWidth = widthFromClass(e.attributes?.width, e.mode) / 2 + 0.08;
       for (let i = 1; i < points.length; i++) {
-        const a = points[i - 1]!, b = points[i]!, dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
+        const a = points[i - 1]!, b = points[i]!, dx = b.x - a.x, dy = b.y - a.y, length = stableHypot(dx, dy);
         if (!length) continue;
         const nx = -dy / length * halfWidth, ny = dx / length * halfWidth;
         holes.push([[[a.x + nx, a.y + ny], [b.x + nx, b.y + ny], [b.x - nx, b.y - ny], [a.x - nx, a.y - ny], [a.x + nx, a.y + ny]]]);
@@ -115,7 +116,7 @@ export function graphSegments(layout: Layout, bundle: StationBundle) {
     return bundle.edges.flatMap((e) => {
       const a = bundle.nodes.find((n) => n.id === e.from)!, b = bundle.nodes.find((n) => n.id === e.to)!;
       const pts = e.geometry?.length ? e.geometry : [a.position, b.position];
-      const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
+      const lens = pts.slice(1).map((p, i) => stableHypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
       const total = lens.reduce((a, b) => a + b, 0) || 1;
       const za = layout.nodeZ.get(a.id)!, zb = layout.nodeZ.get(b.id)!;
       let d = 0;
@@ -126,7 +127,7 @@ export function graphSegments(layout: Layout, bundle: StationBundle) {
 const dist = (p: XY, a: XY, b: XY) => {
   const dx = b.x - a.x, dy = b.y - a.y;
   const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
-  return { d: Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy), t };
+  return { d: stableHypot(p.x - a.x - t * dx, p.y - a.y - t * dy), t };
 };
 
 /** Continuous waist-high guard rails on the actual walkable perimeter. The same
@@ -139,14 +140,14 @@ export function surfacePadWalls(layout: Layout, bundle: StationBundle): WallSeg[
     const walls: WallSeg[] = [];
     for (const poly of footprint) for (const ring of poly) for (let i = 1; i < ring.length; i++) {
       const [ax, ay] = ring[i - 1]!, [bx, by] = ring[i]!;
-      const L = Math.hypot(bx - ax, by - ay), pieces = Math.ceil(L / 0.1);
+      const L = stableHypot(bx - ax, by - ay), pieces = Math.ceil(L / 0.1);
       let start: XY | null = null;
       for (let k = 0; k <= pieces; k++) {
         const p = { x: ax + (bx - ax) * k / pieces, y: ay + (by - ay) * k / pieces };
         const end = { x: ax + (bx - ax) * (k + 1) / pieces, y: ay + (by - ay) * (k + 1) / pieces };
         const keep = k < pieces && ![p, end, { x: (p.x + end.x) / 2, y: (p.y + end.y) / 2 }].some(clear);
         if (keep && !start) start = p;
-        if (!keep && start) { if (Math.hypot(p.x - start.x, p.y - start.y) > 0.15) walls.push({ a: start, b: p, zMin: -0.05, zMax: 1.08, side: 1, kind: "wall" }); start = null; }
+        if (!keep && start) { if (stableHypot(p.x - start.x, p.y - start.y) > 0.15) walls.push({ a: start, b: p, zMin: -0.05, zMax: 1.08, side: 1, kind: "wall" }); start = null; }
       }
     }
     return walls;
@@ -163,14 +164,14 @@ export function surfaceBuildingFootprints(surface: SurfaceData, layout: Layout, 
       keep.push(poly);
       for (const ring of poly) for (let i = 1; i < ring.length; i++) {
         const [ax, ay] = ring[i - 1]!, [bx, by] = ring[i]!;
-        const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy) || 1, nx = -dy / L * 0.75, ny = dx / L * 0.75;
+        const dx = bx - ax, dy = by - ay, L = stableHypot(dx, dy) || 1, nx = -dy / L * 0.75, ny = dx / L * 0.75;
         keep.push([[[ax + nx, ay + ny], [bx + nx, by + ny], [bx - nx, by - ny], [ax - nx, ay - ny], [ax + nx, ay + ny]]]);
         keep.push(rect(ax, ay, 0.75, 0.75));
       }
     }
     for (const poly of surfaceOpenings(layout, bundle)) keep.push(poly);
     for (const { a, b } of graphSegments(layout, bundle).filter((s) => Math.max(s.a.z, s.b.z) > -2.0)) {
-      const L = Math.hypot(b.x - a.x, b.y - a.y) || 1, nx = -(b.y - a.y) / L * 0.8, ny = (b.x - a.x) / L * 0.8;
+      const L = stableHypot(b.x - a.x, b.y - a.y) || 1, nx = -(b.y - a.y) / L * 0.8, ny = (b.x - a.x) / L * 0.8;
       if (L > 0.01) keep.push([[[a.x + nx, a.y + ny], [b.x + nx, b.y + ny], [b.x - nx, b.y - ny], [a.x - nx, a.y - ny], [a.x + nx, a.y + ny]]]);
       keep.push(rect(a.x, a.y, 0.8, 0.8), rect(b.x, b.y, 0.8, 0.8));
     }
@@ -210,7 +211,7 @@ export function surfaceCanopyWalls(layout: Layout, bundle: StationBundle): Canop
     });
 
     const appendClipped = (a: XY, b: XY, canopyPart: CanopyWallSeg["canopyPart"]) => {
-      const length = Math.hypot(b.x - a.x, b.y - a.y);
+      const length = stableHypot(b.x - a.x, b.y - a.y);
       const pieces = Math.max(1, Math.ceil(length / 0.1));
       let start: XY | null = null;
       for (let i = 0; i <= pieces; i++) {
@@ -220,7 +221,7 @@ export function surfaceCanopyWalls(layout: Layout, bundle: StationBundle): Canop
         const keep = i < pieces && ![p, midpoint, next].some(clear);
         if (keep && !start) start = p;
         if (!keep && start) {
-          if (Math.hypot(p.x - start.x, p.y - start.y) > 0.15) walls.push({
+          if (stableHypot(p.x - start.x, p.y - start.y) > 0.15) walls.push({
             a: start, b: p, zMin: 0, zMax: canopyPart === "back" ? 2.95 : 2.35,
             side: 1, kind: "wall", canopyPart,
           });
@@ -257,11 +258,11 @@ export function surfaceEntrances(layout: Layout, bundle: StationBundle): Surface
   return surfaceMemoized("surfaceEntrances", [layout, bundle], () => {
     return bundle.pois.filter((p) => p.category === "exit" && p.connectorNodeIds.some((id) => Math.abs(layout.nodeZ.get(id) ?? -100) < 0.1)).map((p) => {
       const node = bundle.nodes.find((n) => n.id === p.connectorNodeIds[0])!;
-      const nearby = layout.runs.filter((r) => Math.max(r.a.z, r.b.z) > -0.1 && Math.min(Math.hypot(r.a.x - node.position.x, r.a.y - node.position.y), Math.hypot(r.b.x - node.position.x, r.b.y - node.position.y)) < 9);
-      const run = nearby.sort((a, b) => Math.min(Math.hypot(a.a.x - node.position.x, a.a.y - node.position.y), Math.hypot(a.b.x - node.position.x, a.b.y - node.position.y)) - Math.min(Math.hypot(b.a.x - node.position.x, b.a.y - node.position.y), Math.hypot(b.b.x - node.position.x, b.b.y - node.position.y)))[0];
+      const nearby = layout.runs.filter((r) => Math.max(r.a.z, r.b.z) > -0.1 && Math.min(stableHypot(r.a.x - node.position.x, r.a.y - node.position.y), stableHypot(r.b.x - node.position.x, r.b.y - node.position.y)) < 9);
+      const run = nearby.sort((a, b) => Math.min(stableHypot(a.a.x - node.position.x, a.a.y - node.position.y), stableHypot(a.b.x - node.position.x, a.b.y - node.position.y)) - Math.min(stableHypot(b.a.x - node.position.x, b.a.y - node.position.y), stableHypot(b.b.x - node.position.x, b.b.y - node.position.y)))[0];
       const top = run ? (run.a.z > run.b.z ? run.a : run.b) : node.position;
       const low = run ? (run.a.z > run.b.z ? run.b : run.a) : { x: top.x, y: top.y - 1 };
-      const L = Math.hypot(top.x - low.x, top.y - low.y) || 1;
+      const L = stableHypot(top.x - low.x, top.y - low.y) || 1;
       const u = { x: (top.x - low.x) / L, y: (top.y - low.y) / L };
       const reach = run ? Math.min(L, 2.6 / Math.abs(run.a.z - run.b.z) * L) : 2;
       const labelJa = p.names.find((n) => n.lang === "ja")?.text ?? p.names[0]!.text;
@@ -304,7 +305,7 @@ export function surfaceRoofs(layout: Layout, bundle: StationBundle, entrances = 
     if (hi <= lo) continue;
     const at = (t: number) => ({ x: r.a.x + (r.b.x - r.a.x) * t, y: r.a.y + (r.b.y - r.a.y) * t });
     if (Array.from({ length: 11 }, (_, k) => at(lo + ((hi - lo) * k) / 10)).every(underCanopy)) continue;
-    const a = at(lo), b = at(hi), L = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    const a = at(lo), b = at(hi), L = stableHypot(b.x - a.x, b.y - a.y) || 1;
     // Same 0.08 m construction clearance as the opening, plus a 0.3 m overhang on every side.
     roofs.push({ edgeId: r.edgeId, center: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, u: { x: (b.x - a.x) / L, y: (b.y - a.y) / L }, halfWidth: r.width / 2 + 0.38, halfLength: L / 2 + 0.3 });
   }
@@ -321,7 +322,7 @@ export function surfaceVisibleAt(layout: Layout, bundle: StationBundle, viewer: 
 export function surfaceVisibleIn(context: { entrances: ReturnType<typeof surfaceEntrances>; openings: ReturnType<typeof surfaceOpenings> }, viewer: { x: number; y: number; z: number }): boolean {
   if (viewer.z >= 0) return true;
   const nearTop = viewer.z > -2 || context.entrances.some((e) =>
-    Math.hypot(viewer.x - e.top.x, viewer.y - e.top.y) <= 30 && viewer.z > e.firstLandingZ + 1.2);
+    stableHypot(viewer.x - e.top.x, viewer.y - e.top.y) <= 30 && viewer.z > e.firstLandingZ + 1.2);
   if (!nearTop) return false;
   // A stair shaft is wider than its street opening to accommodate the following
   // camera. Its shoulder can still see sky through the adjacent open canopy even

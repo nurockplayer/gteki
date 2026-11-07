@@ -1,5 +1,6 @@
 import type { StationBundle } from "@gteki/schema";
 import type { WalkWorld } from "./layout.ts";
+import { stableHypot } from "./stable-hypot.ts";
 
 /** Lane app's normal spawn, shared with identity placement and its CPU recognition proxy. */
 export function stationSpawn(bundle: StationBundle, nodeZ: ReadonlyMap<string, number>, world: Pick<WalkWorld, "groundAt">, requestedNodeId?: string) {
@@ -9,7 +10,7 @@ export function stationSpawn(bundle: StationBundle, nodeZ: ReadonlyMap<string, n
   let position = { x: node.position.x, y: node.position.y, z: nodeZ.get(node.id) ?? 0 };
   if (gate?.displayPosition) {
     const gp = gate.displayPosition;
-    const dx = position.x - gp.x, dy = position.y - gp.y, length = Math.hypot(dx, dy) || 1;
+    const dx = position.x - gp.x, dy = position.y - gp.y, length = stableHypot(dx, dy) || 1;
     const back = { x: position.x + dx / length * 4, y: position.y + dy / length * 4 };
     const ground = world.groundAt(back, position.z);
     if (ground !== null) position = { ...back, z: ground };

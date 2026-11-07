@@ -22,7 +22,7 @@ export const BAKED_PATH = join(here, "../data/surface-baked.json");
 /** Hash of everything the baked values are computed by: the derivation sources (including the layout and the
  * fare/access pad trim the layout passes through) and the polygon-clipping version. Not checkable at load, so
  * the test and `--check` compare it with the one stored in the baked file. */
-export const DERIVATION_SOURCES = ["layout.ts", "fare-fence.ts", "surface-layout.ts", "surface-street.ts", "surface-bake.ts", "content-key.ts"];
+export const DERIVATION_SOURCES = ["layout.ts", "stable-hypot.ts", "fare-fence.ts", "surface-layout.ts", "surface-street.ts", "surface-bake.ts", "content-key.ts"];
 export function derivationSourceKey(): string {
   const sources = DERIVATION_SOURCES.map((f) => [f, readFileSync(join(here, "../scene", f), "utf8")]);
   const clipping = JSON.parse(readFileSync(join(here, "../node_modules/polygon-clipping/package.json"), "utf8")).version;
