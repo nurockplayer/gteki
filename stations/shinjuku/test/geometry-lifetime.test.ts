@@ -45,7 +45,7 @@ describe("station geometry lifetime", () => {
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
     // #789 (2026-11-04 JST): geometry remeasured after repairing the node display heights.
-    expect(result.live).toBe(146); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss)
+    expect(result.live).toBe(116); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss); #744: -24 coverage-portal quads, -6 level-B6 batches
     // #645 step 2c: lift-door clearances split two restricted boundaries (+5,184 B); the shaft-geometry
     // cut of the join:/return: pieces inside a stop square then removes 44,592 B.
     expect(result.bytes).toBe(16493354); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
@@ -55,7 +55,7 @@ describe("station geometry lifetime", () => {
     // scene-digest fixture records those changes. Retired arrays stay collectible.
     // #342 (2026-11-06 JST): only the identity faces and hardware moved.
     // #870 (2026-11-06 JST): platform door panels and caps split around the aligned openings (+3,360 B).
-    expect(result.geometryHash).toBe("7fd032a462e68a4c359031f275609c2ac24eecf7fc94785efcbac74119c21534");
+    expect(result.geometryHash).toBe("8a2b1abed90954b74ec65a4c9024d0cbe64fb1a818c6bfd6b5e8c81c5d650313");
   }, 60_000);
 
   // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the

@@ -1186,6 +1186,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const portalTex = signTexture([{ icon: "nomap", ja: "この先 データ未収録", en: "Not mapped beyond this point", tone: "warn" }], 1024);
     track(portalTex.texture);
     const signMat = track(new THREE.MeshBasicMaterial({ map: portalTex.texture, side: THREE.DoubleSide, transparent: true, forceSinglePass: opts.quality === "low" }));
+    // One draw per material instead of one per quad: bake each quad's placement into its geometry (#744).
+    const planeGeos: THREE.BufferGeometry[] = [];
+    const signGeos: THREE.BufferGeometry[] = [];
     for (const node of bundle.nodes) {
       if (degree.get(node.id) !== 1 || node.inOut !== "inside") continue;
       if (node.kind !== "junction" && node.kind !== "exit") continue;
@@ -1196,16 +1199,26 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const u = { x: d.x / L, y: d.y / L };
       const z = layout.nodeZ.get(node.id) ?? 0;
       const c = { x: node.position.x + u.x * 1.2, y: node.position.y + u.y * 1.2 };
-      const plane = new THREE.Mesh(track(new THREE.PlaneGeometry(3.2, 2.6)), mat.portal);
-      plane.position.copy(v3({ ...c, z: z + 1.3 }));
-      plane.lookAt(v3({ x: c.x - u.x, y: c.y - u.y, z: z + 1.3 }));
-      root.add(plane);
-      const sign = new THREE.Mesh(track(new THREE.PlaneGeometry(1.6, 1.6 / portalTex.aspect)), signMat);
-      sign.position.copy(v3({ ...c, z: z + 2.0 }));
-      sign.lookAt(v3({ x: c.x - u.x, y: c.y - u.y, z: z + 2.0 }));
-      root.add(sign);
+      const plane = new THREE.PlaneGeometry(3.2, 2.6);
+      const planeAt = new THREE.Object3D();
+      planeAt.position.copy(v3({ ...c, z: z + 1.3 }));
+      planeAt.lookAt(v3({ x: c.x - u.x, y: c.y - u.y, z: z + 1.3 }));
+      planeAt.updateMatrix();
+      plane.applyMatrix4(planeAt.matrix);
+      planeGeos.push(plane);
+      const sign = new THREE.PlaneGeometry(1.6, 1.6 / portalTex.aspect);
+      const signAt = new THREE.Object3D();
+      signAt.position.copy(v3({ ...c, z: z + 2.0 }));
+      signAt.lookAt(v3({ x: c.x - u.x, y: c.y - u.y, z: z + 2.0 }));
+      signAt.updateMatrix();
+      sign.applyMatrix4(signAt.matrix);
+      signGeos.push(sign);
       propWalls.push({ a: { x: c.x + -u.y * 1.6, y: c.y + u.x * 1.6 }, b: { x: c.x - -u.y * 1.6, y: c.y - u.x * 1.6 }, zMin: z - 0.2, zMax: z + 2.6, side: 1, kind: "wall", bodyMin: z - 0.5 });
     }
+    const planeGeo = merged(planeGeos);
+    if (planeGeo) root.add(new THREE.Mesh(track(planeGeo), mat.portal));
+    const signGeo = merged(signGeos);
+    if (signGeo) root.add(new THREE.Mesh(track(signGeo), signMat));
   }
 
   // ---- street level around surface exits (minimal, non-authoritative)
@@ -1238,6 +1251,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // Runs whose balustrade the kit replaced; only these get the kit comb plates.
   const combed = new Set(kitSwap?.placed.filter((p) => p.replaces === "escalator-balustrade").map((p) => p.anchorKey));
   addWallBackFaces(root, mat.wall, track);
+  // #744: level-B6 draws its repeat batches once per material. Merge before the floor light pools
+  // bake `uv1` into every floor mesh, so the merged floor keeps its AO coordinates.
+  mergeStaticLevelMeshes(root, "level-B6", track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
   // skirts, fare/access fence rails and posts, lift-portal door finishes and level trim: ~50k triangles in all,
@@ -1640,6 +1656,40 @@ export function installLowTierSteps(scene: THREE.Scene, built: BuiltStation): bo
   if (!prepare) return false;
   scene.onBeforeRender = (renderer, _scene, camera) => prepare(renderer, camera);
   return true;
+}
+
+/** #744: one draw per material for a level's static plain meshes. Meshes merge only with meshes
+ * that share their name and material object, so `walkable` floors never join a render-only or
+ * platform batch. Instanced meshes, animated hooks (`onBeforeRender`), portal instance copies and
+ * nested or transformed children stay alone. */
+function mergeStaticLevelMeshes(root: THREE.Group, levelName: string, track: <T extends { dispose(): void }>(x: T) => T) {
+  const group = root.children.find((g) => g.name === levelName);
+  if (!group) return;
+  const batches = new Map<string, THREE.Mesh[]>();
+  for (const child of group.children) {
+    if (!(child instanceof THREE.Mesh) || child instanceof THREE.InstancedMesh) continue;
+    if (child.children.length || child.userData.portalInstanceCopy || child.userData.kitLod) continue;
+    if (child.onBeforeRender !== THREE.Object3D.prototype.onBeforeRender) continue;
+    const material = Array.isArray(child.material) ? child.material[0]! : child.material;
+    const key = `${child.name}|${material.uuid}`;
+    const list = batches.get(key) ?? [];
+    list.push(child);
+    batches.set(key, list);
+  }
+  for (const meshes of batches.values()) {
+    if (meshes.length < 2) continue;
+    const first = meshes[0]!;
+    const geo = merged(meshes.map((m) => m.geometry));
+    if (!geo) continue;
+    const mesh = new THREE.Mesh(track(geo), first.material);
+    mesh.name = first.name;
+    mesh.castShadow = first.castShadow;
+    mesh.receiveShadow = first.receiveShadow;
+    mesh.renderOrder = first.renderOrder;
+    mesh.userData = first.userData;
+    for (const m of meshes) m.removeFromParent();
+    group.add(mesh);
+  }
 }
 
 /** Merge static trim; instanced train finishes, gate leaves and fixtures stay independent. */
