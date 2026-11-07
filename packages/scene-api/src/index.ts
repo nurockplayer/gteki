@@ -107,6 +107,12 @@ export interface StationScene {
      */
     envIntensity?: number;
   };
+  /**
+   * Per-material environment map for the explorer's generated meshes (connector shells, stairwell rails), for a
+   * station that lights through baked maps and env maps only: such a station has no light the generated meshes can
+   * take, so they would render near-black. Absent: they are lit by the scene's own lights (#1008).
+   */
+  generatedMeshEnvMap?: THREE.Texture;
   /** Host calls this when the walker's zone changes. */
   setAcousticZone?(zone: AcousticZone): void;
   /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */

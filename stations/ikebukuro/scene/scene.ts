@@ -670,6 +670,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     cameraBlockers: contextBlockers.meshes,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
+    // With a lightmap the hemisphere is only 0.06 and scene.environment is null, so the explorer's generated
+    // meshes take this map to pick up any light at all (#1008).
+    ...(lightmap ? { generatedMeshEnvMap: env } : {}),
     ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); streetAmbience?.setZone(next); } } : {}),
     settled: () => catalogKit.settled(),
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),

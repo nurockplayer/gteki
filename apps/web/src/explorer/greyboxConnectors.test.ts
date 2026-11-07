@@ -57,6 +57,26 @@ describe("connector geometry", () => {
     expect(result.root.children.length).toBeLessThanOrEqual(3);
     result.root.traverse((o) => { if ((o as THREE.Mesh).isMesh) expect(o.userData).toMatchObject({ greybox: true, connector: true, approximate: true }); });
   });
+  it("gives the connector shell the station env map when one is supplied (#1008)", () => {
+    const shellMaterials = (result: ReturnType<typeof buildConnectors>) => {
+      const found: THREE.MeshStandardMaterial[] = [];
+      result.root.traverse((o) => {
+        const mesh = o as THREE.Mesh;
+        if (!mesh.isMesh) return;
+        for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+          if (m instanceof THREE.MeshStandardMaterial && m.vertexColors && !m.transparent && m.emissive.getHex() === 0) found.push(m);
+        }
+      });
+      return found;
+    };
+    const env = new THREE.Texture();
+    const lit = buildConnectors(bundle, () => true, { hasFloor: () => false, nearMesh: () => false, envMap: env }, "low");
+    expect(shellMaterials(lit).length).toBeGreaterThan(0);
+    expect(shellMaterials(lit).every((m) => m.envMap === env)).toBe(true);
+    const plain = buildConnectors(bundle, () => true, { hasFloor: () => false, nearMesh: () => false }, "low");
+    expect(shellMaterials(plain).length).toBeGreaterThan(0);
+    expect(shellMaterials(plain).every((m) => m.envMap === null)).toBe(true);
+  });
 });
 
 

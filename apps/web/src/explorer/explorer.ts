@@ -1209,6 +1209,7 @@ export class Explorer {
         root: this.stationScene.root, bundle, traversable, hasFloor, greybox: this.greybox, openings: this.greyboxOpenings,
         originalTargets, walkable: this.walkable, colliders: this.colliders, cameraBlockers: this.cameraBlockers, walls: this.walls,
         tier: this.quality, recipe, portalInstances: this.portalCutResources.instances,
+        envMap: this.stationScene.generatedMeshEnvMap ?? null,
       });
       // Reset the outer lap after the synchronous build; its internal boundaries separate cut and connectors.
       lap("liveScene");
