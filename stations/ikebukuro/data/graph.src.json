@@ -27182,6 +27182,7 @@
    "id": "stairwell-cut-high",
    "path": "scene/stairwell-cut.high.b64.txt",
    "sourceIds": [
+    "esola-ikebukuro-floorguide-2026-10",
     "gteki-ikb-catalog-0-1-0",
     "gteki-kit-0-1-0",
     "ikefukuro-location-references-2026-10",
@@ -27203,6 +27204,7 @@
    "id": "stairwell-cut-low",
    "path": "scene/stairwell-cut.low.b64.txt",
    "sourceIds": [
+    "esola-ikebukuro-floorguide-2026-10",
     "gteki-ikb-catalog-0-1-0",
     "gteki-kit-0-1-0",
     "ikefukuro-location-references-2026-10",
@@ -27233,13 +27235,14 @@
    "id": "signage",
    "path": "scene/signage.json",
    "sourceIds": [
+    "esola-ikebukuro-floorguide-2026-10",
     "plateau-ubld-13116",
     "tokyometro-ikebukuro-yardmap-2026-03",
     "toshima-terminal-sign-guideline-draft-v1.3",
     "toshima-underground-guide-2022"
    ],
    "modified": true,
-   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json), with continuous 6-10 m full-face sight-line envelopes from the 1.62 m walker eye and default follow camera against the shipped lit GLB walls/ceiling/barriers/light_fixtures and scene/columns.json kit sleeves (nearest clear candidate, otherwise retained and reported blocked); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
+   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json), with continuous 6-10 m full-face sight-line envelopes from the 1.62 m walker eye and default follow camera against the shipped lit GLB walls/ceiling/barriers/light_fixtures and scene/columns.json kit sleeves (nearest clear candidate, otherwise retained and reported blocked); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set); the sign at the foot of Exit 4 names エソラ, the name from the floor guide, the tie from Metro's accessibility print 南通路西改札～4番出入口（エソラ）"
   },
   {
    "id": "crowd-lanes",
