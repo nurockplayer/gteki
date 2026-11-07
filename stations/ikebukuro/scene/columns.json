@@ -12,7 +12,7 @@
  "provenance": {
   "script": "stations/ikebukuro/pipeline/extract_columns.py",
   "input": "installations with function EF_25 (barriers), all scopes",
-  "rule": "welded connected components that are vertical prisms (every vertex on the lowest or highest level, same xy set at both, vertical triangle area = hull perimeter x height), listed when >= 1.5 m tall, hull diameter <= 3.0 m and, for rectangles and circles, smaller side >= 0.15 m. No per-column object or class exists in the data, so this is geometry, not a PLATEAU classification.",
+  "rule": "welded connected components that are vertical prisms (every vertex on the lowest or highest level, same xy set at both, vertical triangle area = hull perimeter x height), listed when >= 1.5 m tall, hull diameter <= 3.0 m and, for rectangles and circles, smaller side >= 0.15 m. A component refused as not_prism is retried with a 60 mm cap-level tolerance (PLATEAU caps folded by up to 46 mm) and, on that retry only, 5 % side-area slack for a non-convex footprint; such a column carries cap_fold_mm. No per-column object or class exists in the data, so this is geometry, not a PLATEAU classification.",
   "kit_rule": "square or round, 0.40 to 1.00 m, rectangles up to 1:1.6, height >= 1.96 m; sleeve scaled from the 0.61 m x 2.8 m piece",
   "tolerances": {
    "z_mm": 2,
@@ -52,7 +52,7 @@
    "id": "L2",
    "base_z_min": 27.48,
    "base_z_max": 28.49,
-   "columns": 267
+   "columns": 288
   },
   {
    "id": "L3",
@@ -66,19 +66,20 @@
   "components": 329,
   "skipped_polygons": 0,
   "rejected": {
-   "not_prism": 40,
+   "not_prism": 19,
    "short": 8
   },
-  "columns": 281,
+  "folded_caps": 21,
+  "columns": 302,
   "by_shape": {
-   "polygon": 7,
-   "rect": 89,
-   "round": 110,
-   "square": 75
+   "polygon": 8,
+   "rect": 102,
+   "round": 114,
+   "square": 78
   },
-  "kit_square": 42,
-  "kit_round": 103,
-  "kit_null": 136,
+  "kit_square": 48,
+  "kit_round": 107,
+  "kit_null": 147,
   "open_prisms": 0
  },
  "columns": [
@@ -5392,6 +5393,421 @@
    "closed": true,
    "kit": null,
    "reason": "footprint 1.87 x 1.87 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_282",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-19ee5105-fae0-4dcf-83b6-60bca1fe22fe", "poly-ae8ef223-efb5-448a-b4d2-19c4529e28d1", "poly-6c9ec232-9dcb-441b-8bdf-f97222f916bf", "poly-ca047b5c-7046-4ee8-acef-ff6d872772c9", "poly-99765cff-a375-49d7-baef-dacbee4bfd94", "poly-99883f0b-4a62-45cf-a41c-94a5475cb54f", "poly-94e715f1-ed0b-4421-96e8-c0e7fb179aa6", "poly-1f955348-06dd-45b8-b2b2-9b99d021a32e", "poly-fc98aa3c-91a0-4b9d-b8ff-4a55338b6e6f", "poly-9e49c493-6104-493d-9d31-7cb2329bcffa", "poly-206aae79-64b9-4928-83ed-5eeadc827e0f", "poly-2e33de40-7332-420c-b24b-8ab38d218630", "poly-63820edb-9ef5-4d24-a1d5-a51cb4252876", "poly-0c56f4e3-e9d8-46ec-8319-1ae4a25747af", "poly-fb043bed-c4f1-4f86-b0c7-4fd08a4806a5", "poly-7723248e-aaf2-4df1-b9bd-52afd13c9f11", "poly-5ba142a8-33cc-4695-8d40-d92ac3caefa6", "poly-2fa93671-4808-455a-8869-ba0578e89703", "poly-c886beab-5b39-4ee7-8584-fec191b584ca", "poly-25953dca-8b3e-4c3f-ad9e-72683e0436d8", "poly-59204f1d-1a8d-459e-be02-fec24bc5f864", "poly-bf316650-36e9-4772-9c99-49580b6133c6", "poly-03479065-9ec2-4635-81e7-db1d6b8b2d18", "poly-87ea907c-674a-4517-94f5-0da3b50a56fa", "poly-35ba0fdc-e5f6-4949-b3ff-1ab50d1d9799", "poly-84b7dede-5c37-40c0-be69-5fd8ecf069e3", "poly-8d16aa57-61cd-4a2a-be15-1e91346733ba", "poly-b11c4c66-6d80-46e1-a427-b5c4c3164706"]
+   },
+   "centre": [-127.72, -34.046],
+   "shape": "polygon",
+   "width": 2.087,
+   "depth": 2.187,
+   "sides": 6,
+   "rotation_deg": 0.0,
+   "base_z": 27.58,
+   "top_z": 30.808,
+   "height": 3.228,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 0,
+   "reason": "irregular footprint, not a square, rectangle or circle"
+  },
+  {
+   "id": "col_283",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-8934f2ea-d234-42a0-a066-ee8c4e105b89", "poly-1a221628-2d11-4a06-b461-2552f2cf08ce", "poly-b8ef7ca4-39ed-4305-8e50-59afabed0780", "poly-641fe744-8437-44a8-9242-cc83532ee2be", "poly-5a3fe902-3888-4207-a0c8-b0e2ad36a31e", "poly-a43e86db-0a03-4819-9595-aaf78f9bbfff", "poly-38ee2ebc-9e66-4220-96cf-aa32e63f3eef", "poly-619cf5c4-b2af-492d-90c4-0b09b7a1da80", "poly-6c93443f-3828-4f22-82ce-e421617e60f0", "poly-76e7335f-7a21-49af-aa80-c8bbd239cbe9", "poly-05aae8f7-e25c-4da3-9fc6-9536132c31d3", "poly-314b990c-e530-4166-9156-3048555085d2", "poly-c1792296-3a91-4eaf-b6cb-c00612758d6d", "poly-a5211222-420c-4077-87fe-fcd449c23a19", "poly-483763fa-d469-4196-a33a-806c9ed9f1d8", "poly-a2e39ba2-4b77-4b0e-8c32-4b9e0820058e", "poly-62245761-9204-4366-8f10-5932ff6f2dbf", "poly-3e13bd37-4a30-43f0-a02c-711fc0aba423", "poly-c9aaad66-470e-422e-9781-0f7b65f3b89e", "poly-e1b6094e-8b13-474a-b043-39caed211263", "poly-1a00f44b-008e-44c7-a166-a09bb033a914", "poly-0b6cd134-ac58-44d6-9873-4fd9b50c7573", "poly-05477e8c-57af-40f7-b7de-6762b5742862", "poly-c8c3b52e-6a6b-406e-9fa0-2702ce3af15a", "poly-88a1a2c9-b63b-47e0-a7f7-307d57d776d6", "poly-dace03ca-e94a-407b-aaf0-9b471793a5ed", "poly-c8d23379-16ce-4d58-96c4-78000f767bac", "poly-de190b86-30aa-42a1-b5b6-ebdb8f0cad30", "poly-ae051969-fa1f-405f-80e2-63afa397626b", "poly-02099777-5139-49b4-93fd-2ef69a6645bd", "poly-11073b10-c8ab-4f6a-b683-5f56adf6b3b0", "poly-ca66f923-ce27-41fb-bb9b-a37b6e44eca1", "poly-403c8ea5-1172-497f-8fe5-2fdc09aa7a57", "poly-e94605a3-cc7c-433a-8e47-d5048cd678bd", "poly-31eaf475-bc1c-4c6e-9673-5afe31dac2c2", "poly-bfb89ec5-c924-4edb-bbdb-60dfb90742c7", "poly-0dcd5752-e485-4ad6-ba16-30821cf697cb", "poly-3975e535-4cc3-4351-8720-c46ea97410a5", "poly-5d8c2f11-e26e-4e32-959c-eb3183f7be83", "poly-32d98222-be1c-474d-8919-f40ee1e0877f", "poly-da21de3a-d83f-4690-a9f9-db0322583210", "poly-2bd2c468-62a3-43b2-9fa9-dba08756f650", "poly-576054b1-2b1d-4f06-b023-7068409eb949", "poly-1c480384-060e-4efd-b75a-eb25b45b51f1", "poly-d869c85b-be0f-4f67-a9ec-30669b82b083", "poly-47a219eb-e8d1-4858-849a-6e804c665740", "poly-a0e9fdf0-de6d-45b1-9b01-36b29181d575", "poly-473c2b4e-2c1a-4a90-9e59-ad2cbf896059", "poly-43c7539b-8079-442b-a703-dddf8154d7b3", "poly-32817b3d-b1fd-4a2b-b8a6-2b89bc6dffe2", "poly-9f5cdea7-478f-45ca-b601-1519ca1f7e8a", "poly-994e6906-ae8a-4b23-a050-da45293876be", "poly-b37074f5-8dd2-4d8a-ba4c-f488e52be1c8", "poly-567bea47-5268-4e39-bacb-e8039305bf65", "poly-21073f0b-8d57-4738-8e00-dc5bc2e724d4", "poly-2aa66e0b-80ad-4b35-8733-1ed960b54e99", "poly-77a35db9-1c64-4430-9a84-20d173671364", "poly-3b626d1a-b469-4cd6-8e6e-c2f960561424", "poly-efd15a82-1309-49a6-a9dc-11d6b36ec8a7", "poly-d359df15-e2e9-4972-b1b6-1a43d4d0fa96"]
+   },
+   "centre": [17.963, 30.395],
+   "shape": "round",
+   "width": 0.613,
+   "depth": 0.613,
+   "diameter": 0.613,
+   "rotation_deg": 0.0,
+   "base_z": 27.941,
+   "top_z": 30.5,
+   "height": 2.559,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_round_d600",
+   "cap_fold_mm": 17
+  },
+  {
+   "id": "col_284",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-49156d13-96ef-4e51-9b85-5908e826db7c", "poly-0336adef-d419-43a8-a2e8-321a9b605d2a", "poly-fe6735dc-2abb-4638-8295-a51a37175fd4", "poly-24d52618-c631-46ac-9876-df0f1eef5832", "poly-f2442015-813a-4432-aff5-1a80df08b76e", "poly-64d99eaf-c7e1-4d4b-a04a-c9a6d9c0e4d2", "poly-a9a7ef4f-49cc-44bf-b404-ee2a9df42442", "poly-f7cd6b35-f1e5-48e2-92be-d014053bffc4", "poly-b34748ec-3b02-4147-806e-04b85cef2405", "poly-1b7c224c-a24b-4438-9881-9adef1aa83fe", "poly-151cbb7b-d8d6-40f0-ad23-dcef4e1436c3", "poly-18f08c2c-3423-41e0-8a47-7ad1e76991d8"]
+   },
+   "centre": [21.171, 29.041],
+   "shape": "rect",
+   "width": 1.008,
+   "depth": 0.957,
+   "rotation_deg": 66.74,
+   "base_z": 28.034,
+   "top_z": 30.458,
+   "height": 2.424,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_285",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-1b079e59-7233-4ba5-be0a-40bf59711f57", "poly-85ecbc42-cd04-4c75-8c1c-5931a5e0d256", "poly-b32654fa-e8ba-4aa9-a714-86b1a0fb4f66", "poly-ad0266b9-70aa-4e1b-a408-56e3bfaf51b5", "poly-f5cb1c1a-397e-4417-81b9-6c9802d36517", "poly-3088a3e3-5c2a-4189-b411-ad582f53fb79", "poly-499e1907-c1c3-4281-8731-9492700d8d87", "poly-b7ba838a-0794-4efd-b6a0-58b1fd891917", "poly-77fb4be6-820d-4fe1-bd75-e020ae6487e5", "poly-a4ca6680-fa31-4dcc-b843-c1391c87fc15", "poly-02531151-1cdc-43d0-8c9b-be5a5b65e0a9", "poly-195cc573-6f90-48a6-985c-2755b0498b37"]
+   },
+   "centre": [23.537, 34.579],
+   "shape": "rect",
+   "width": 1.008,
+   "depth": 0.956,
+   "rotation_deg": 66.74,
+   "base_z": 28.034,
+   "top_z": 30.384,
+   "height": 2.35,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_286",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-a1237d0e-7602-4c33-9162-950c318e5024", "poly-7aa94e50-dea8-4cef-8195-1d4c15381179", "poly-feac01fb-c74a-4e8b-bdcd-d70083bc378c", "poly-38cb09c4-565c-420c-9a69-431b50b22695", "poly-9f28752d-ed3f-40bb-8566-314d14dfb6cf", "poly-3939f726-8380-4e9a-a237-06c2f2c2fa37", "poly-6a9eb2a1-4cda-4794-8cd3-be6bd1c68f09", "poly-93e28f81-f61e-4ba3-ad9a-c897ebef4308", "poly-6414ae58-6f0b-4c7d-b61d-b48d5e78c79d", "poly-d950825c-1021-4d34-abd7-beb84b8f7d66", "poly-ab0ff5c3-53ef-4f29-95b4-ef394f58de91", "poly-341555fc-a051-4b4b-bf53-fad0e1bab143", "poly-9cdcb6d4-eb94-4fe5-a7e2-9af8a8941166", "poly-7092fc55-2d0a-450c-8cad-7765e9c0f069", "poly-e398f556-8a40-4f48-ba82-eed9ade3cf27", "poly-462560a2-f407-44a5-b9f6-ac4fda0e4cb4", "poly-df8e831a-6107-424a-bcb1-1357608b76ea", "poly-277251d1-975b-4656-8b95-86c82deb28e9", "poly-1b9422ba-aa92-45b7-b3dc-175ebb3e3586", "poly-c0ebbd6e-d062-4ef8-af71-ff9b8819a501", "poly-9aa8ccd8-c21f-4af5-afdf-b7ab7e39f1e0", "poly-d1630d2b-f50b-476a-8b3d-a617b6a82715", "poly-b4f6f62e-e912-4058-9d6f-18d72f8d0405", "poly-d64796a1-92b5-4019-9374-1b851e85937e", "poly-36f084d6-c30c-4db7-98a4-20e3f1b3fee7", "poly-30bc651e-a3fc-4a3f-b935-6817e16b6144", "poly-ac10f128-adc7-4df8-aefa-bd80a1d300d5", "poly-ecc09c47-b7ae-4ab4-a518-f29f797db3da", "poly-47845e4d-ac2a-43de-b4e6-776c19efc5ee", "poly-c3ae1471-6a36-4356-bf73-e0974b5b2233", "poly-c3f08f6a-3599-4525-aa0d-c0c37aa38e4e", "poly-d34950af-cc62-447c-ace1-964a5d21dcbc", "poly-48ee00be-c7cd-49c9-80e5-adf2fb5ff4e7", "poly-123fd6bd-8137-4dc1-a138-e06c2cf4c12d", "poly-d2b5368a-08d8-4d06-8179-b8dc5be45573", "poly-431c1419-cc48-4d86-8aba-e7199eab6d9d", "poly-0d02668e-b272-4f1d-8d9a-267b8d5c4b9f", "poly-46af6938-ce3b-4a15-8d36-79c2d7e0fd0c", "poly-3d7334f8-ab75-42a4-8e2f-5cec3eb1f9ac", "poly-b05c6e6a-578e-4852-8cc4-432caf3620ef", "poly-14a58153-b9ab-445e-9371-1a4a34681ae4", "poly-67e3189a-9aaa-41cb-95a2-ea72afff2b85", "poly-a0f54a81-21f8-4bf1-a9fb-1e09731977cc", "poly-e0453fe2-d9c9-4866-9701-cbc3c4796089", "poly-0ea7d51a-fd5a-42b4-9353-4d7cf6267443", "poly-aac5410c-931f-424e-954b-73b9d2f12ef8", "poly-cad8a1e5-f02a-44ae-9276-9ab25879d8f1", "poly-17797ed4-cd27-4e2e-8dfd-5229965a49cf", "poly-876df9cf-b90c-4273-a1df-f5026b76bc4e", "poly-65d87acb-aa50-499c-af67-43829f292e2d", "poly-7efd032f-e335-4373-b57e-cf42a3646a16", "poly-1f350b34-f85c-4b6d-aeeb-7292bc855146", "poly-e5178c66-86ad-47d0-a5b2-08a5276fdf00", "poly-adc85e6a-7492-4614-8fc6-5f06e78a8ae8", "poly-5aa72128-b519-4529-9586-bbf2ea8b21f2", "poly-6e6f81de-3576-4581-a5e7-ef058606ba02", "poly-35c0d0d5-286c-402d-9cf1-37475ec6557f", "poly-91c680c3-18b1-4027-9d82-6fd19ac8a1f5", "poly-80747b3d-26fe-4cbe-b542-de8c08c94b9a", "poly-a267d4c5-7a03-47ad-a374-dd0eef88cc8f"]
+   },
+   "centre": [25.426, 47.672],
+   "shape": "round",
+   "width": 0.613,
+   "depth": 0.613,
+   "diameter": 0.613,
+   "rotation_deg": 0.0,
+   "base_z": 27.942,
+   "top_z": 30.5,
+   "height": 2.558,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_round_d600",
+   "cap_fold_mm": 17
+  },
+  {
+   "id": "col_287",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-e60e75f8-fbff-4f6c-b8a5-06713f105862", "poly-583282ca-75c0-4d04-8d0b-01aa98c89a4c", "poly-475a1643-6747-4490-b8b3-d2e95ccd2721", "poly-14a52049-4560-46a8-9d04-20b9a923a2e4", "poly-f60393b2-8860-4421-a027-1662e5cb7b4d", "poly-8650488b-1085-4688-b109-1a4db59409e3", "poly-665ae5b7-0857-40fe-a8c4-b7a6a5e92f86", "poly-c2d1b636-4fa9-4a8a-9b3d-1a44e96a0e76", "poly-f53bfc6a-c02b-485e-898f-57a53c715dd5", "poly-05e3a92e-735b-4b6b-9f2e-be55d5383a79", "poly-ebf6b010-b4f7-4a89-8aae-007c9b1338bb", "poly-c01f87e6-1b7d-4617-aafa-dde680dcdea9"]
+   },
+   "centre": [26.497, 26.75],
+   "shape": "rect",
+   "width": 1.008,
+   "depth": 0.957,
+   "rotation_deg": 66.69,
+   "base_z": 28.198,
+   "top_z": 30.892,
+   "height": 2.694,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_288",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-e46fc5fb-7d10-4913-ae4f-4b09e49df88b", "poly-226c6888-c6a9-4a3b-92ad-7fbd0f86af04", "poly-c5e58e32-0348-4f6c-a664-55e711d05592", "poly-4fe0d1f2-6a9a-4c2d-adb5-446c0ce41ae3", "poly-0382c1fb-ef79-4c04-af86-40c71a7a93d2", "poly-52318339-4271-497d-a36c-a9a5f3299ae6", "poly-bd337689-49bf-4e92-b245-54439ea0b1d6", "poly-ba8f9169-1264-46bb-a88f-120a8d8040f6", "poly-d73aff6e-b314-4669-8296-47299c498ae0", "poly-0b588247-2d11-48c3-a5cb-7fcaf9f2b443", "poly-e33f9c6c-ad44-48dd-b61c-2c8cc21412f9", "poly-1b133b01-0346-483a-b835-a66e693e3ffb", "poly-65773172-215d-4f9c-8d8a-357c7f556661", "poly-54d416b9-2698-4054-8a24-221c44bef0dc", "poly-da15f34c-2e58-4bba-a24b-1a1f8a02e9a6", "poly-95f45d7f-d8a3-4c94-9378-7edc92703c4e", "poly-a1dcb8ad-baee-49e5-a2bb-3aef34fe3f4a", "poly-df0756b8-f699-4f88-8142-c318006fbf91", "poly-ccfec1fa-4f0a-4011-a7a5-b85709f43001", "poly-1f1d63e3-4217-400e-ab6a-e4794b40adec", "poly-afa829c6-d936-4db8-9472-748a133f181a", "poly-58bbd85f-41d7-41d6-9c3d-d758edfb4e3b", "poly-6c697b0e-eed8-4e0a-8c03-98fc35cbf8c6", "poly-bfc8888a-d817-49e4-800d-dc9d060f419d", "poly-b5b2008f-1e0a-4aed-b553-e40882c5474f", "poly-6ed11e67-8a38-4a4e-bbf1-438ac18877a3", "poly-1824b7df-4c1f-4efb-9c9d-5fc56e29ad13", "poly-983db5e1-3048-477e-abd8-2e8acec262d8", "poly-1d6d2c30-528f-4542-b4e6-0bb490535f53", "poly-3257e90d-c095-4a79-83a7-a7e233cc52b2", "poly-c40b9107-09af-4cdc-93fb-7bf6f0879c3a", "poly-991c9008-8626-4872-8928-122f60928cc6", "poly-1023bd45-56f4-4a64-a79d-e3449d4a5d7e", "poly-9264df96-de1b-41ff-8650-2e5e1d0bfe98", "poly-e8e2318c-e1eb-49bc-92c0-66182bce2e11", "poly-5e0a1ded-d01d-40bc-8a5c-3ed78ec7629d", "poly-df71e919-8beb-474d-b121-484ba0a075f4", "poly-62fb097e-9b43-4ce6-b30c-066f8440f37e", "poly-ab274587-64de-4a79-bf64-65e0df1d71be", "poly-004ac1d0-4b04-4bbb-824e-4d1ebef7c1a0", "poly-df9ba0af-c682-4b1c-83f9-fa9beb0feb4a", "poly-46058c2e-1093-413a-99e2-7ccb7ba086c0", "poly-fb471c0b-f9d4-44b3-ba19-75332cc1877b", "poly-30e3f5af-deb0-45d1-9acf-6067fd7f9ac0", "poly-8a8e33f3-56f0-439a-9873-f9b55c1d38d6", "poly-d26f0711-b5d6-41e1-bb78-4e3e037b59b5", "poly-ccc7ca1e-be80-4718-8384-8670b7e7bfef", "poly-04bee90a-8390-46ab-92d3-55324086bd19", "poly-38fdde8d-39cd-4c6c-8afe-8fb366853710", "poly-854af31f-85e6-431d-82aa-415e50744588", "poly-d17370be-4a15-4fc4-9c33-b97b3728d1b9", "poly-d7cdbe87-bb4d-425a-8938-7bb4782ea2c7", "poly-1ab88268-6116-4500-8508-0323d7d5378f", "poly-4f12931d-72fc-4114-9eea-9f5aa8dcde9e", "poly-80804b2d-17a9-4979-817b-8b7cc1d9f2cb", "poly-e394f4fa-f0bc-4019-8e7b-a62bfbb70152", "poly-dbe61133-8bcd-4727-a4eb-62443ece1fbd", "poly-b8c33728-e957-4e92-8ec4-0c24d934da4d", "poly-7ac1c2a1-3a7d-422d-95ac-848132133058", "poly-afb79402-f53b-4aa9-9894-bbea1038c1ca"]
+   },
+   "centre": [27.885, 53.402],
+   "shape": "round",
+   "width": 0.613,
+   "depth": 0.613,
+   "diameter": 0.613,
+   "rotation_deg": 0.0,
+   "base_z": 27.942,
+   "top_z": 30.5,
+   "height": 2.558,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_round_d600",
+   "cap_fold_mm": 17
+  },
+  {
+   "id": "col_289",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-267e470c-800e-4885-a851-44d12e1d5a9d", "poly-6558d25c-38e6-49ec-b511-576dd02183b2", "poly-5261c0b4-3d4b-4d3a-8ed5-bf7e036f76b0", "poly-2432d6c1-fe3c-4755-8e9b-181591def042", "poly-5124c9ce-9d7c-4935-a423-3dd7ae445ca9", "poly-049bfec4-1ff5-4c7b-a05f-55693b1d2e0e", "poly-c4e494c2-8392-424d-b344-d05e29206efa", "poly-becb253d-2a1f-469d-8e83-cab63075cc31", "poly-c6924575-e536-48df-9fef-092239ae4532", "poly-59909e4c-8401-4281-a535-7317bd95dde5", "poly-e45f7d9d-b9ec-47e0-bce0-6dbf8cb986d3", "poly-222fd430-bedf-4f53-9216-9cb9a9e4490b"]
+   },
+   "centre": [28.509, 39.458],
+   "shape": "rect",
+   "width": 1.007,
+   "depth": 0.957,
+   "rotation_deg": 66.67,
+   "base_z": 28.108,
+   "top_z": 30.493,
+   "height": 2.385,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 28,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_290",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-4c1e1560-5867-4589-b96b-38fc517d146b", "poly-99a3eb52-ef83-409b-a935-8e8b3012e62c", "poly-87fe35c4-20aa-4a89-b026-09090dccf391", "poly-4270a0e4-3a70-4f93-96a6-be93c352de79", "poly-1cad0f6b-2340-412f-9733-ad479eb4cac1", "poly-d6f137a3-5fd8-48ef-9094-bbf8d80f9976", "poly-0821c223-233c-4ea6-ad82-c2817a52460d", "poly-cf05a371-df94-4026-8ee5-fdc763ec543c", "poly-c4926ed1-a0cd-4e2d-94df-8dd35c4969cf", "poly-6c464d13-791a-4fb3-b175-b87748784035", "poly-ce46d97f-1dfd-4c42-8043-f9f501410c7b", "poly-7bea39af-a8f7-4acb-a772-707af598f566"]
+   },
+   "centre": [28.866, 32.337],
+   "shape": "rect",
+   "width": 1.007,
+   "depth": 0.957,
+   "rotation_deg": 66.72,
+   "base_z": 28.197,
+   "top_z": 30.556,
+   "height": 2.359,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_291",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-68ce623d-879e-4aa7-b00e-dec26269a5c3", "poly-563cf148-f50a-4322-ae4a-1447de76e24b", "poly-5446a2e9-2137-4856-bf74-be7de0a6026d", "poly-08ba50f8-26b2-49a1-9ef8-a0177850e632", "poly-0e1a3a86-1d5a-4bf2-9840-9eb30a9161e1", "poly-c877f2a5-150d-4435-affc-69cee25a9020", "poly-cc2e2bd6-816b-46dc-9911-6edeca2ae631", "poly-000246bb-87b4-460c-91db-a855f5c19182", "poly-e7ba7a45-c460-4d4b-b7ca-824963ac056e", "poly-66817cd9-6f24-423a-be53-93c62949c9ed", "poly-2c3b2c0c-301f-4529-aea5-b5761f8a4912", "poly-531d30b6-7e41-4483-90c2-cebf99ccaad8", "poly-90767cc5-89c2-4889-95ef-d585f985a841", "poly-59261ecf-74b5-4411-b34d-f363563e2c56", "poly-9627474e-5732-4577-b9bc-533796ebce5e", "poly-d7a4b701-5b22-46c6-8666-d87e4aa3beed", "poly-56dd64ac-df5f-4dfe-ab76-56bbbb7d43af", "poly-a7680885-74fa-42fc-93b6-3f3daca91839", "poly-b75289f3-9da3-4356-91cc-cf9dbc87b467", "poly-3de4aff0-7f89-424d-9826-c6471b16d6f4", "poly-2f2a219a-a9c6-46d8-9729-3b6fd3219d74", "poly-6e2f6686-c617-44bb-baa6-9fa1e250a916", "poly-ac180ddb-d5b9-49c9-8cd3-3f4c53521614", "poly-d142ae8b-e837-4392-8f54-f11285099f24", "poly-dcdcdab5-d299-478f-9fa2-983f2843f94c", "poly-98fcbff1-5948-445c-bf49-de17f0660dce", "poly-19c4caa9-5bf7-4c7e-b3cc-d6230a8e6167", "poly-10760ab7-d36a-4cd8-b475-521c830e09b2", "poly-f1d90cdb-e180-4439-b343-85322f27bb95", "poly-b0add152-9633-4624-bf70-00981a24997e", "poly-413e667b-c69a-4e8e-877a-7c4e5b553f12", "poly-c2403238-97e2-4412-8a01-f817995c6999", "poly-d2380d72-88b8-4eaf-8e91-650d6d1e9d2d", "poly-a2231b0e-d24a-4d60-9293-2ab17aa2e901", "poly-c545709e-10ba-498f-a11f-8d5c4f5d7515", "poly-6e05ff6e-44eb-475d-afc4-af1d00539acd", "poly-64fe2008-4f9c-41b9-9982-79b650e051c2", "poly-6a4cdbcf-f5a6-471c-afdc-1e7303a36e6c", "poly-9af9a529-275c-4985-8c91-df712ad9624c", "poly-54137802-580c-490c-9d80-70966eeafb11", "poly-a77b3dfb-3aee-417d-a3ee-3ac29a8d5993", "poly-90aa6477-d9b2-4c43-a83e-047ddbc7514e", "poly-dfda86ab-544a-4839-80a9-f546ae5abcb2", "poly-4e16ee37-52de-44c5-b4e2-365f77d2056c", "poly-102a0993-3def-4982-9527-4f2fbca1ac95", "poly-68a34466-f291-4801-83a0-464138ec1319", "poly-386e24ac-81a1-4711-924d-b635a64b4586", "poly-85246e2f-3e91-4f0b-ae91-10d75304620b", "poly-0608eeef-5998-4331-a2aa-d10dcf247491", "poly-226d817c-6e8b-4a1d-9d10-c4dd8dd198ce", "poly-98518944-3670-42e2-9296-dd3d4acc95b5", "poly-896ab3a4-6842-4d76-a0fe-2a7556b4e5af", "poly-71b65ce4-cfd3-4b6d-aa22-eb58bc228c08", "poly-33048e07-b141-4112-b43c-4e533f37f621", "poly-2760129f-eb4f-49fd-aad4-e13199c00c7b", "poly-41ed015b-3c73-4d30-9424-302de3311001", "poly-5bb0089d-3300-4bcd-b188-5a254475be44", "poly-460886b6-c969-4cf4-9d36-bbc4dbf19857", "poly-653a5816-0e23-4a3a-b161-e243fa362104", "poly-35d8f500-6cce-40c0-93bc-ced95e3f2917"]
+   },
+   "centre": [30.322, 59.059],
+   "shape": "round",
+   "width": 0.613,
+   "depth": 0.613,
+   "diameter": 0.613,
+   "rotation_deg": 0.0,
+   "base_z": 27.942,
+   "top_z": 30.5,
+   "height": 2.558,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_round_d600",
+   "cap_fold_mm": 17
+  },
+  {
+   "id": "col_292",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-0424057e-2043-4408-b86b-4aa1d0cc83bd", "poly-102c729d-777c-48ab-9aca-7033d64d12c2", "poly-a19e21e6-c13e-4b1b-858b-62bcecce095d", "poly-97995c55-4315-4803-9e74-088c83fe156b", "poly-72d62923-bf49-449b-8085-ebae2a086e19", "poly-086482bf-c6f6-461b-9c7e-375ff45bef22", "poly-e2fd2331-bd5e-4a7c-91f3-4a39dfa983fb", "poly-41d514a6-4994-41e1-b5d1-7b25973bfe42", "poly-2b462dce-7960-405d-94a8-351da8dcf488", "poly-229242ae-f2cf-4505-98d6-93acbc1332c4", "poly-f6d17c51-f77c-4461-afe8-3a83f7a9d82b", "poly-bd3320c7-cec7-4b0a-8f96-afa47de449a3"]
+   },
+   "centre": [32.766, 37.626],
+   "shape": "rect",
+   "width": 1.007,
+   "depth": 0.957,
+   "rotation_deg": 66.72,
+   "base_z": 28.239,
+   "top_z": 30.639,
+   "height": 2.4,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_293",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-f8aee2fb-e866-4110-88e3-d0ee851bcf67", "poly-f5a98657-7ca6-4023-a19c-c67aaf629684", "poly-0b0dcfc5-07c6-488b-b835-04b5bc01f3a8", "poly-8abf93e2-f85d-4dc4-b90a-f26d155e5269", "poly-f12dbdc6-226a-4f96-a654-529c06d9cc42", "poly-42943d21-7f33-4359-adab-928a92f5bdeb", "poly-c3b9016d-399a-4a0a-995e-258f6a9c57eb", "poly-704f737c-5534-4fb4-ad1d-64a34eb0de54", "poly-9946099a-967a-4734-8ef9-20c9b61c540e", "poly-3fec5577-5bbf-4477-a3ea-1ebb0d7541a8", "poly-02395df1-d14a-4aac-8a4b-2f9c81e15983", "poly-f5a74552-5637-41e5-890f-763925f23008"]
+   },
+   "centre": [35.239, 43.382],
+   "shape": "rect",
+   "width": 1.008,
+   "depth": 0.957,
+   "rotation_deg": 66.74,
+   "base_z": 28.239,
+   "top_z": 30.895,
+   "height": 2.656,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_294",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-23e0366d-221f-4a87-82c2-d8c4f4e13ce5", "poly-128276c9-1e37-42bc-b297-f53d2aed86d4", "poly-e94df674-3512-45fb-b03f-aa8c1db6e096", "poly-79f1538b-1c5c-4919-bb8d-e4608c716ab7", "poly-f1faf095-325b-4d4e-bd91-b80663e88049", "poly-0c8d8b3b-2c40-4e8a-8e55-181b5d249fdc", "poly-8ab3337f-e0aa-4a91-90cd-70eeb5372cf3", "poly-e7caddea-89a8-47ca-8d83-cd22534f7a01", "poly-9711d290-8323-4f34-99ab-1a61e20ae9a2", "poly-94a9fcf4-506f-4d0a-b777-7be2e8fd63ab", "poly-be533d2d-96c3-448a-ae4d-eeb5d6f376bf", "poly-464fa632-0792-468d-b5f7-885babca9252"]
+   },
+   "centre": [35.928, 56.781],
+   "shape": "rect",
+   "width": 1.007,
+   "depth": 0.957,
+   "rotation_deg": 66.72,
+   "base_z": 28.108,
+   "top_z": 30.425,
+   "height": 2.317,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_295",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-bc213955-a6f1-4d30-87af-15aa4885736a", "poly-4306bcb4-8c82-4cb2-b8ec-99f15db12162", "poly-3cd6866c-c8e5-46f0-8fd6-fa57cdcce3bd", "poly-d742bf49-a231-40c6-a734-928e440a74ef", "poly-056450c0-0222-4fb0-a61e-a3eef700de80", "poly-85de11d9-31e7-45b3-98fd-0cd9e040c589", "poly-775ca901-2af6-410f-b4ff-16b94175837f", "poly-d1a0d1e7-c021-419e-a799-2eb92a017fa7", "poly-0a668e7f-da7f-40b1-a426-f35ed36c8a15", "poly-dad7ab7f-2ca8-4000-824d-262c54d71cd0", "poly-c28863ba-f799-438d-9797-94178ce03eea", "poly-6bc3133c-bcc5-4941-b0b9-3ab26b4ea697"]
+   },
+   "centre": [37.678, 49.053],
+   "shape": "rect",
+   "width": 1.007,
+   "depth": 0.957,
+   "rotation_deg": 66.72,
+   "base_z": 28.239,
+   "top_z": 30.896,
+   "height": 2.657,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_296",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-2273ab7e-087f-42eb-b50e-cde3b0cb6689", "poly-caaaa399-942b-4899-a232-710abcce7013", "poly-63a46ddf-4c2b-4d70-9922-548e276b98df", "poly-db5c7fcf-2912-45d8-ba31-820413aa2bbb", "poly-8beea267-05d4-4426-9af5-5141aa935788", "poly-5673ea27-109e-49e8-99d5-882b53c26c0d", "poly-47eaa372-6aa6-403e-a0e9-7692dfb9bb4a", "poly-aedb5637-004a-44eb-adf9-544097844d73", "poly-cf2a82da-e898-49dd-9fb2-a21a2eae4eb8", "poly-b91e3082-4f47-4da0-941e-28f570180b87", "poly-f060b471-7993-46c9-89b9-eb5a8f1cbf07", "poly-8ec26120-baa3-4170-8280-e99770de7e65"]
+   },
+   "centre": [40.214, 54.95],
+   "shape": "rect",
+   "width": 1.008,
+   "depth": 0.957,
+   "rotation_deg": 66.69,
+   "base_z": 28.239,
+   "top_z": 30.602,
+   "height": 2.363,
+   "level": "L2",
+   "closed": true,
+   "kit": null,
+   "cap_fold_mm": 27,
+   "reason": "footprint 0.96 x 1.01 m is outside the scalable 0.40 to 1.00 m range"
+  },
+  {
+   "id": "col_297",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-92b05bb3-ef17-4c76-9ef0-e95e9ad997ac", "poly-52387678-3a31-4568-99b5-38240d9f8ad4", "poly-8122b726-edff-45d5-8a53-92dd866bf594", "poly-b5338a6b-67b9-4112-90e9-971d977424f0", "poly-356f7d9b-9405-4d96-a613-beed36c0a8ad", "poly-43a6e087-b0e4-48cb-9c1b-99ccee68557e", "poly-02fa9cc8-096e-4d4c-8e54-19683c9975e1", "poly-8d0cc944-ff4e-441b-9b8f-0d40d34bef4a", "poly-1e604af1-a591-40f6-ba02-2f7ed04e5bf4", "poly-b72f418c-f166-41bd-84ce-df8e218f10ed", "poly-c6f1dcd6-7486-405c-a85e-08283105ca58", "poly-02b799c0-14c9-4bf6-b8eb-8d47d756dad5"]
+   },
+   "centre": [73.869, 28.288],
+   "shape": "rect",
+   "width": 0.861,
+   "depth": 0.594,
+   "rotation_deg": 156.74,
+   "base_z": 28.205,
+   "top_z": 30.544,
+   "height": 2.339,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_square_600",
+   "cap_fold_mm": 38
+  },
+  {
+   "id": "col_298",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-462bfdf9-7cca-45ac-9368-5368ac69fe21", "poly-0b94d8f6-e3ba-475b-aecd-6bc751c5302e", "poly-f8d5de9e-8cf7-4e22-ba80-b46f042322ae", "poly-3b2a9759-1bd8-4b8f-8477-ef225de01017", "poly-4f57d907-2186-43ea-8b19-f1ec878bfb78", "poly-750d8f2a-5e1e-4cfb-8cea-8287562a66a2", "poly-4b88d262-7217-4c01-a9a2-238eecfb5c78", "poly-6c2b7bae-3a79-43cf-a253-55427e2a9654", "poly-6ee92e31-24e5-404b-981c-ddc4c97f270a", "poly-e969cd66-f29a-46fd-a222-0378122be63b", "poly-a1a1b0d3-e5f5-401b-bc1f-b1ce4baff6d9", "poly-5084fb2e-4976-4ecb-b593-10027d23dd06"]
+   },
+   "centre": [75.504, 32.26],
+   "shape": "rect",
+   "width": 0.86,
+   "depth": 0.595,
+   "rotation_deg": 156.71,
+   "base_z": 28.208,
+   "top_z": 30.547,
+   "height": 2.339,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_square_600",
+   "cap_fold_mm": 38
+  },
+  {
+   "id": "col_299",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-877ac249-2cde-44f5-b07d-a9798bcf487a", "poly-3626bcd9-a023-4761-a21d-12f06e4234e3", "poly-2da3f47f-cdc4-49d5-a71a-47f369204107", "poly-b3aa3d39-2078-4fbb-925b-69d7554f973d", "poly-32227e6e-b2be-48fa-9239-f20cbff97dd1", "poly-aec78eb7-0944-4bc4-852d-7beb6eff52da", "poly-5d93cdbf-1a53-4b1c-af5e-4abd0fb44360", "poly-fc6fdeff-2f40-48ac-8aef-c42a584d06e3", "poly-a12a5989-4c01-4199-af89-8c3c229e7e60", "poly-a42ee252-31b6-449b-9fb4-cdf049feee74", "poly-0a58a38f-7dc6-4eb7-afec-b6cb79b2196a", "poly-7778eff4-7e7e-4eee-b079-c1af386b5915"]
+   },
+   "centre": [80.244, 30.222],
+   "shape": "rect",
+   "width": 0.951,
+   "depth": 0.618,
+   "rotation_deg": 156.72,
+   "base_z": 28.001,
+   "top_z": 30.319,
+   "height": 2.318,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_square_600",
+   "cap_fold_mm": 42
+  },
+  {
+   "id": "col_300",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-9841c423-857f-4719-9082-c2ed6cb9bf79", "poly-7b2aeb56-6e2a-46d7-8e67-c5517e966e9e", "poly-5c591991-5ba7-416e-9c24-abb4c38e14e3", "poly-a85bef89-4057-4a9e-87d1-631b9b94db61", "poly-5fe5bfbd-b73c-4119-b2ca-bc37796d57e8", "poly-eabcc756-d7b2-465d-9c36-31f4983161f0", "poly-ecac2e16-fd1d-44d6-86d6-67d318a18903", "poly-89166a59-ed95-46bd-a116-a84a296be8f5", "poly-e33acb0d-b4da-4205-9f2a-57905666045a", "poly-79eb1628-ec44-494a-a027-6ca45aac4983", "poly-7a29839f-a0d0-4da2-b89a-1c9abb4a05f7", "poly-cb402ba8-317a-4404-bead-65615d7c5d61"]
+   },
+   "centre": [80.96, 18.703],
+   "shape": "square",
+   "width": 0.82,
+   "depth": 0.82,
+   "rotation_deg": 71.06,
+   "base_z": 27.79,
+   "top_z": 30.085,
+   "height": 2.295,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_square_600",
+   "cap_fold_mm": 39
+  },
+  {
+   "id": "col_301",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-905a60d8-5d91-4c85-9dee-e8c978b3e602", "poly-4f2744ae-ad9f-413c-84d6-5018ac63241d", "poly-f3c773de-ccdb-457e-9d52-eada7b2d316e", "poly-c68b48a4-4a05-415c-884f-ad074ea8851d", "poly-1614f581-974c-47d5-bbad-6cb82cf97637", "poly-60b7df4a-e5e1-44ed-8181-b8e5b36a7ac3", "poly-c9dad473-ad5d-45ad-afb0-1982e57af3c5", "poly-e98c4984-fc66-4b54-a1e4-379efec0ef3d", "poly-6fa09345-bec6-4ad4-a4de-b45618a31059", "poly-5728f4b8-1802-4a20-80f6-a4360d77e8d3", "poly-c40e6062-2048-4659-9433-04726e5233e3", "poly-b7b0db15-17b4-4f62-a6b9-684230564017"]
+   },
+   "centre": [82.768, 35.983],
+   "shape": "square",
+   "width": 0.807,
+   "depth": 0.807,
+   "rotation_deg": 64.4,
+   "base_z": 28.002,
+   "top_z": 30.314,
+   "height": 2.312,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_square_600",
+   "cap_fold_mm": 36
+  },
+  {
+   "id": "col_302",
+   "source": {
+    "installations": ["ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25"],
+    "polygons": ["poly-a6ffb200-7965-431d-a05b-fe553bea26c2", "poly-7027abff-abfd-4341-acc0-e84f218c146a", "poly-c2d42baa-b9d7-4762-8c50-3cedad7ca953", "poly-12686f8d-0bc9-438c-9abe-a12e768bb6f4", "poly-1013eb28-66ac-4e84-b392-1bfcc4135a9a", "poly-78241568-b0c3-4e53-9547-95bf9faefcea", "poly-63d6a4bb-e218-4e10-9e98-17a9696f4d03", "poly-d5285a16-9191-4051-a7a1-2389f6d60451", "poly-730288ca-dfce-4242-a574-79589f5d9ee7", "poly-7e39ecea-0ec4-4759-8723-6c65bd259611", "poly-4139dfc5-290f-4818-af5c-210e1536b56f", "poly-ee235868-c9d4-4fc9-8b8e-d9db255e8dc1"]
+   },
+   "centre": [87.446, 33.635],
+   "shape": "square",
+   "width": 0.963,
+   "depth": 0.963,
+   "rotation_deg": 63.57,
+   "base_z": 27.79,
+   "top_z": 30.086,
+   "height": 2.296,
+   "level": "L2",
+   "closed": true,
+   "kit": "gteki_column_square_600",
+   "cap_fold_mm": 46
   }
  ]
 }

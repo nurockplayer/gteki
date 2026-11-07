@@ -11,14 +11,16 @@ import { FOLLOW, FOV, followPose } from "../../../apps/web/src/explorer/followCa
 import { CAMERA_FAR_M } from "../../../apps/web/src/explorer/overviewFraming.ts";
 import { CULL_M, NOSING_CLUSTERS, catalogVisibility, loadKitCatalog, loadNosingKit, type CatalogPlacement } from "./kit_catalog_loader.ts";
 import placementsFile from "./kit_placements.json";
+import atlasFile from "./kit_catalog_atlas.json";
 import graph from "../gteki/graph.json";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const STATION = path.resolve(HERE, "..");
 const ROOT = path.resolve(STATION, "../..");
 const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
-/** #703 dressed the 5 escalators on the phone tier; #751 caps the phone kit's triangles and draws against regressions. */
-const IKB_LOW_KIT_BUDGET = { maxTriangles: 60_000, maxDraws: 30 };
+/** #703 dressed the 5 escalators on the phone tier; #751 caps the phone kit's triangles and draws against regressions.
+ *  The GPU texture cap is #751's kit guard: one copy of each low atlas, mips included, as the loader now shares them. */
+const IKB_LOW_KIT_BUDGET = { maxTriangles: 60_000, maxDraws: 30, maxGpuTextureBytes: 8 * 1024 * 1024 };
 
 interface GlbJson {
   scene?: number;
@@ -114,6 +116,28 @@ it("holds the phone tier's 5 escalators and merged nosings under the #751 triang
   draws += NOSING_CLUSTERS;
   expect(triangles).toBeLessThanOrEqual(IKB_LOW_KIT_BUDGET.maxTriangles);
   expect(draws).toBeLessThanOrEqual(IKB_LOW_KIT_BUDGET.maxDraws);
+});
+
+/** The pixel size recorded in a PNG's IHDR chunk (big-endian width and height). */
+const pngSize = (p: string) => { const b = fs.readFileSync(p); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+
+it("holds one copy of each phone-tier AO atlas under the #751 GPU texture cap", () => {
+  // The loader shares one packed atlas per kind across every id that samples it, so the resident cost of the
+  // phone kit's AO is one copy of each low atlas, not one per escalator id (five before the sharing).
+  const doc = atlasFile as Record<string, { path?: string; tiers?: Record<string, { size_px?: [number, number] }> }>;
+  let bytes = 0, textures = 0;
+  for (const [kind, entry] of Object.entries(doc)) {
+    const low = entry.tiers?.low;
+    if (!low) continue; // shipped on the desktop tier only
+    const file = path.join(STATION, "gteki", "kit/catalog/low", entry.path ?? `atlas/${kind}_ao.png`);
+    expect(fs.existsSync(file), file).toBe(true);
+    const [w, h] = pngSize(file); // the PNG on disk, not only the manifest's record
+    expect([w, h]).toEqual(low.size_px);
+    bytes += (w * h * 4 * 4) / 3; // RGBA, mip chain
+    textures++;
+  }
+  expect(textures).toBe(2); // the escalator and nosing atlases
+  expect(bytes).toBeLessThanOrEqual(IKB_LOW_KIT_BUDGET.maxGpuTextureBytes);
 });
 
 it("estimates spec-13 catalog draws before/after distance culling at every default and spawn viewpoint", async () => {

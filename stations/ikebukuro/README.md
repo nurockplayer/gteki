@@ -213,15 +213,20 @@ palette material, always drawn) and one draw per material per 16 m tile on deskt
 
 **Column sleeves (batch 2).** PLATEAU has no per-column object or class: the columns are part of the one `barriers` triangle
 soup. `python3 -I pipeline/extract_columns.py` (from `build/ubld_enu.json`; same GML-hash check as the anchors) finds them
-by shape (welded components that are vertical prisms, 1.5 m or taller, up to 3 m across) and writes `scene/columns.json`
+by shape (welded components that are vertical prisms, 1.5 m or taller, up to 3 m across; a component refused as
+`not_prism` is retried with a 60 mm cap-level tolerance, because PLATEAU folds the caps of 21 columns here by 17–46 mm,
+and such a column carries its measured `cap_fold_mm`) and writes `scene/columns.json`
 with centre, footprint (square, rect, round or polygon), rotation, base and top height, level band and the source
 installation and polygon ids, plus a `kit` piece id or `null` with a reason. `scene/kit_columns.ts` scales
 `gteki_column_square_600` / `gteki_column_round_d600` onto the measured footprint plus 2 cm on every side (scaled from the piece's visible 0.60 m body, allowing for the square piece's rounded corners so a column corner never pokes through) (so it stands
 clear of the PLATEAU faces and does not z-fight), never stretches it taller than the 2.8 m piece and stops 1 cm under the
 column top (so on the 2 square columns over 3.05 m and 24 between 2.8 and 3.05 m the PLATEAU column shows above the sleeve; the
-library's `_h3200` variant is round only and no kit-matched round column is taller than 2.9 m). 281 columns are found; 145 get a
-sleeve (42 square, 103 round), 136 are listed with a reason and keep the flat column. The PLATEAU column stays in `barriers` and stays the collider; the sleeve is visual only. The finish is the
-kit's generic tile or enamel, not a survey of the real columns.
+library's `_h3200` variant is round only and no kit-matched round column is taller than 2.9 m). 302 columns are found; 155 get a
+sleeve (48 square, 107 round), 147 are listed with a reason and keep the flat column. The existing 281 keep their ids
+and geometry; the 21 folded-cap columns are appended as `col_282`–`col_302` (10 of them get a sleeve, 11 do not — 10 are
+1.008 m wide, just past the kit's 1.00 m footprint limit, and one is an irregular 8-sided footprint). The PLATEAU column
+stays in `barriers` and stays the collider; the sleeve is visual only. The finish is the kit's generic tile or enamel,
+not a survey of the real columns.
 
 `python3 -I pipeline/extract_shop_openings.py` (from `build/ubld_enu.json` and `gteki/graph.json`; same GML-hash check as
 the columns) welds the room opening panels per type and winding heading (1 mm grid) and writes `scene/shop_openings.json` — one row per
@@ -291,9 +296,12 @@ is skipped by it. An id the station does not ship is skipped without a fetch; a 
 drops only its own anchors, never the scene. Batch A's escalators carry no per-id AO image either: their TEXCOORD_1
 addresses one packed escalator atlas per tier (`gteki/kit/catalog/<tier>/atlas/escalator_ao.png`, 1024x1536 on the
 desktop tier and 512x768 on the phone tier),
-and `loadKitCatalog` loads it once per tier and kind, sets `aoMap` (`channel = 1`, `flipY = false`,
-`colorSpace = THREE.NoColorSpace`, `aoMapIntensity = 1`) on each cloned material, and disposes it with the kit. If the
-atlas fails to load the loader warns and draws the escalators without AO. The pieces are visual only: no colliders,
+and `loadKitCatalog` sets `aoMap` (`channel = 1`, `flipY = false`,
+`colorSpace = THREE.NoColorSpace`, `aoMapIntensity = 1`) on each cloned material. `lazyKitCatalog` fetches and keeps
+one atlas per tier and kind for all its ids (one `Promise` per kind in a `Map`, so the 5 escalator ids hold one GPU
+copy, not five) and disposes it once, when the lazy kit is disposed, even if a load was still in flight; a direct
+`loadKitCatalog` call without that cache owns and disposes its own atlas. If the atlas fails to load the loader warns
+once and draws the escalators without AO. The pieces are visual only: no colliders,
 not in `walkable` or the walk graph.
 
 Batch C does not instance one mesh per flight: 61 strips would be 61 draws per tier. Lane E's C3 build carries no
@@ -319,7 +327,10 @@ Cost on the desktop tier: 26 part instances of 26 GLBs, 77 draws before frustum 
 triangles (escalators 5 / 35 draws / 66 480; handrails 21 / 42 draws / 89 232), plus the 69 nosings merged into at
 most 8 draws and 25 830 triangles. The phone tier draws the 5 mobile escalators (10 draws, 20 328 triangles) and the
 69 nosings merged into at most 8 draws and 8 610 triangles, so at most 18 draws and 28 938 triangles; batch B is not
-drawn there. `scene/kit_catalog_budget.test.ts` caps that phone kit at 60 000 triangles and 30 draws (#751).
+drawn there. `scene/kit_catalog_budget.test.ts` caps that phone kit at 60 000 triangles, 30 draws and 8 MiB of GPU
+atlas texture (#751), the last counted over one copy of each phone atlas with mips (the escalator 512x768 cost
+2,097,152 B; before the sharing the 5 ids held 5 copies, +10,485,760 B on the phone tier and +32 MiB on the desktop
+tier).
 `scene/kit_catalog_loader.test.ts` pins the batches, the placement maths, the merge
 and the credit, and `pipeline/sync_kit_catalog.test.ts` the copies.
 
