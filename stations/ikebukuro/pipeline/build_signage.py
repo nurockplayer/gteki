@@ -58,17 +58,16 @@ def name(p, lang):
     return next((t["text"] for t in p["names"] if t["lang"] == lang), None)
 
 
-# Exit sign wording where the operator's own print adds a store: Tokyo Metro's accessibility page
-# prints 「南通路西改札～4番出入口（エソラ）」 (Wayback 2024-02-06 00:44:04 UTC).
-EXIT_NAMES = {"exit-4": ("4番出口（エソラ）", "Exit 4 (Esola)")}
+# A store an operator prints with an exit, named on that exit's last sign: Tokyo Metro's accessibility page
+# prints 「南通路西改札～4番出入口（エソラ）」 (Wayback 2024-02-06 00:44:04 UTC). Not a position for the store.
+SIGN_PLACES = {"sign-sw_h-sw_h__x4f": [{"id": "shop-ikb-esola", "ja": "エソラ", "en": "Esola"}]}
 
 
 def exit_item(p):
     # Signs name the exit itself, as the real ones do, even where the route stops at the stair foot
     # (Exits 4 and 13, whose POI names say so).
     n = p["id"].split("-")[1]
-    ja, en = EXIT_NAMES.get(p["id"], (f"{n}番出口", f"Exit {n}"))
-    return {"id": p["id"], "label": n, "ja": ja, "en": en}
+    return {"id": p["id"], "label": n, "ja": f"{n}番出口", "en": f"Exit {n}"}
 
 
 def gate_item(p):
@@ -544,6 +543,9 @@ def main():
                 "back": sorted(blocks.values(), key=lambda b: ARROW_ORDER[b["arrow"]]),
             })
     signs += repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest, sight)
+    for sign in signs:
+        if sign["id"] in SIGN_PLACES:
+            sign["places"] = SIGN_PLACES[sign["id"]]
     for sign in signs:
         # End signs carry no basis; their id still records their verified edge.
         eid = next((b[6:] for b in sign.get("basis", []) if b.startswith("graph:")), None)

@@ -13,7 +13,7 @@ interface SignContent {
   /** `distanceM`: walking distance still to go from this sign (graph lengths, rounded; repeater signs only). */
   exits: { id: string; label: string; ja: string | null; en: string | null; distanceM?: number }[];
   gates: { id: string; ja: string | null; en: string | null; distanceM?: number }[];
-  /** Named areas ahead (POIs of category "other": the area names as printed on the reference map), place boards only. */
+  /** Named areas ahead (POIs of category "other": the area names as printed on the reference map), on place boards; one exit sign names a store its operator prints with the exit. */
   places?: { id: string; ja: string | null; en: string | null; distanceM?: number }[];
 }
 

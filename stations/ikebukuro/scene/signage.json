@@ -407,8 +407,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": []
@@ -440,8 +440,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     }
    ],
    "gates": [
@@ -532,8 +532,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-37",
@@ -686,8 +686,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -1003,8 +1003,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     }
    ],
    "gates": [
@@ -1103,8 +1103,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -1159,8 +1159,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-37",
@@ -1283,8 +1283,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -1408,8 +1408,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-38",
@@ -1573,8 +1573,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       },
       {
        "id": "exit-38",
@@ -1834,8 +1834,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       },
       {
        "id": "exit-38",
@@ -1963,8 +1963,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": []
@@ -1990,8 +1990,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-38",
@@ -2149,8 +2149,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": []
@@ -2212,8 +2212,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     }
    ],
    "gates": [],
@@ -2271,6 +2271,13 @@
        "en": "JR Central Gate 2"
       }
      ]
+    }
+   ],
+   "places": [
+    {
+     "id": "shop-ikb-esola",
+     "ja": "エソラ",
+     "en": "Esola"
     }
    ]
   },
@@ -2377,8 +2384,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": []
@@ -2452,8 +2459,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       },
       {
        "id": "exit-13",
@@ -2567,8 +2574,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": []
@@ -2594,8 +2601,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-13",
@@ -3735,8 +3742,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-41",
@@ -3899,8 +3906,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       },
       {
        "id": "exit-41",
@@ -4025,8 +4032,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-41",
@@ -7946,8 +7953,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -8010,8 +8017,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -8079,8 +8086,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-13",
@@ -8190,8 +8197,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-36",
@@ -8314,8 +8321,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       },
       {
        "id": "exit-36",
@@ -8376,8 +8383,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-36",
@@ -8500,8 +8507,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       },
       {
        "id": "exit-36",
@@ -8562,8 +8569,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-36",
@@ -8698,8 +8705,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -8767,8 +8774,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       },
       {
        "id": "exit-36",
@@ -8841,8 +8848,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-36",
@@ -8965,8 +8972,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -9034,8 +9041,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       },
       {
        "id": "exit-36",
@@ -9114,8 +9121,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     }
    ],
    "gates": [
@@ -9202,8 +9209,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -9264,8 +9271,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     }
    ],
    "gates": [
@@ -9352,8 +9359,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -9414,8 +9421,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     }
    ],
    "gates": [
@@ -9502,8 +9509,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -9558,8 +9565,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     },
     {
      "id": "exit-36",
@@ -9670,8 +9677,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -9739,8 +9746,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -9813,8 +9820,8 @@
     {
      "id": "exit-4",
      "label": "4",
-     "ja": "4番出口（エソラ）",
-     "en": "Exit 4 (Esola)"
+     "ja": "4番出口",
+     "en": "Exit 4"
     }
    ],
    "gates": [
@@ -9901,8 +9908,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)"
+       "ja": "4番出口",
+       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -9975,8 +9982,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)",
+       "ja": "4番出口",
+       "en": "Exit 4",
        "distanceM": 45
       },
       {
@@ -10072,8 +10079,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)",
+       "ja": "4番出口",
+       "en": "Exit 4",
        "distanceM": 65
       },
       {
@@ -10169,8 +10176,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)",
+       "ja": "4番出口",
+       "en": "Exit 4",
        "distanceM": 90
       },
       {
@@ -10266,8 +10273,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)",
+       "ja": "4番出口",
+       "en": "Exit 4",
        "distanceM": 115
       },
       {
@@ -10363,8 +10370,8 @@
       {
        "id": "exit-4",
        "label": "4",
-       "ja": "4番出口（エソラ）",
-       "en": "Exit 4 (Esola)",
+       "ja": "4番出口",
+       "en": "Exit 4",
        "distanceM": 140
       },
       {
