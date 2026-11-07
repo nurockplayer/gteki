@@ -5,14 +5,16 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { buildScene } from "../gteki/scene.ts";
-import { pointInRings, type Plan } from "../scene/layout.ts";
+import { pointInRings, type Plan, type XYZ } from "../scene/layout.ts";
 import type { StationScene } from "@gteki/scene-api";
 import { derivedRestrictedAccess, liftClearances, restrictionAt } from "../scene/fare-fence.ts";
 import { Player } from "../app/src/player.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
 import { castAll, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
-import { endpointClosure, barrierEnds, replayEnds, closest, replayEnvironment, APPROACHES, laneReplayWorld, fencesOf, mutateFence, distance } from "./fare-replay-audit.ts";
+import { endpointClosure, barrierEnds, replayEnds, closest, replayEnvironment, APPROACHES, laneReplayWorld, fencesOf, mutateFence, removeFences, distance } from "./fare-replay-audit.ts";
 const { bundle } = loadShinjukuBundle(), plan = planJson as Plan;
+/** Open lift ends the replay test proves cannot be walked around; any other open end stays red. */
+const LIFT_CLEARANCE_ENDS = ["return:B6:690:b", "join:1:708:b"];
 describe("actual walker fence replay", () => {
   let built: BuiltStation, scene: StationScene, restore: () => void;
   let rayProof: { before: number[][]; after: number[][] };
@@ -33,12 +35,12 @@ describe("actual walker fence replay", () => {
     restore = accelerateRaycasts(targets);
     const nearby = nearbyTargets(targets);
     rayProof = { before, after: rays.map(r => hits(r, nearby(r))) };
-  }, 60_000);
+  }, 300_000);
   afterAll(() => { restore?.(); built?.dispose(); scene?.dispose(); vi.unstubAllGlobals(); });
   it("endpoints overlap blocking neighbours in both walkers", () => {
     const ends = endpointClosure(built, scene, liftClearances(bundle, plan, built.layout));
     if (process.env.FARE_END_REPORT) writeFileSync(process.env.FARE_END_REPORT, JSON.stringify(ends, null, 2));
-    expect(ends.map(e => ({ id: e.id, x: e.p.x, y: e.p.y, z: e.p.z, gap: e.nearestLane?.distance }))).toEqual([]);
+    expect(ends.filter(e => !LIFT_CLEARANCE_ENDS.includes(e.id)).map(e => ({ id: e.id, x: e.p.x, y: e.p.y, z: e.p.z, gap: e.nearestLane?.distance }))).toEqual([]);
   }, 30_000);
   it("accelerated native hook raycasts match the unmodified hook raycasts", () => {
     expect(rayProof.after).toEqual(rayProof.before);
@@ -83,6 +85,45 @@ describe("actual walker fence replay", () => {
     expect(env.fringes().contacts).toBeGreaterThan(0);
     expect(env.fringes().maxM).toBeLessThan(.00002);
   }, 30_000);
+  it("proves the two open door-clearance lift ends cannot be walked around", () => {
+    const ids = ["return:B6:690:b", "join:1:708:b"] as const, lifts = liftClearances(bundle, plan, built.layout);
+    const ends = replayEnds(built), env = replayEnvironment(built, scene, plan), failures: unknown[] = [], controls: { id: string; length: number; pieces: number; totalLength: number; witnesses: number }[] = [];
+    const combos = (end: (typeof ends)[number], environment: ReturnType<typeof replayEnvironment>, starts: XYZ[], out: unknown[]) => {
+      for (const start of starts) for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true])
+        for (const approach of APPROACHES) { const leak = environment.replay(end, start, approach, walker, fps, run); if (leak) out.push({ start, leak }); }
+    };
+    for (const id of ids) {
+      const end = ends.find(e => e.id === id)!;
+      const len = distance(end.fence!.a, end.fence!.b), normal = { x: -(end.fence!.b.y - end.fence!.a.y) / len, y: (end.fence!.b.x - end.fence!.a.x) / len };
+      const lift = lifts.filter(l => Math.abs(l.z - end.p.z) < .5).map(l => {
+        const ring = l.rings[1]!, centre = { x: ring.reduce((s, p) => s + p.x, 0) / ring.length, y: ring.reduce((s, p) => s + p.y, 0) / ring.length };
+        return { centre, d: distance(centre, end.p) };
+      }).sort((a, b) => a.d - b.d)[0];
+      if (!lift) { failures.push({ id, missing: "lift" }); continue; }
+      const starts = [
+        { x: end.p.x + normal.x * .6, y: end.p.y + normal.y * .6, z: end.p.z },
+        { x: end.p.x - normal.x * .6, y: end.p.y - normal.y * .6, z: end.p.z },
+        { ...lift.centre, z: end.p.z },
+      ].filter(s => env.labels(s, true).mapped);
+      if (!starts.length) { failures.push({ id, missing: "start" }); continue; }
+      combos(end, env, starts, failures);
+      // A single sub-body-width piece leaves no walkable hole; widen it with every fence piece at this
+      // level within 1.0 m of the end. A witness shows the probe can see a leak here, not which piece stops it.
+      const pieces = fencesOf(built).filter(f => Math.abs(f.zMin - end.fence!.zMin) < .01 && distance(end.p, closest(end.p, f.a, f.b)) <= 1);
+      try {
+        const mutated = removeFences(built, scene, pieces);
+        try {
+          const menv = replayEnvironment(mutated.built, mutated.scene, plan), witnesses: unknown[] = [];
+          combos(end, menv, starts, witnesses);
+          controls.push({ id, length: len, pieces: pieces.length, totalLength: pieces.reduce((s, f) => s + distance(f.a, f.b), 0), witnesses: witnesses.length });
+          if (!witnesses.length) failures.push({ id, length: len, control: "null" });
+        } finally { mutated.dispose(); }
+      } catch (error) { failures.push({ id, length: len, control: String(error) }); }
+    }
+    if (process.env.FARE_LIFT_REPLAY_REPORT) writeFileSync(process.env.FARE_LIFT_REPLAY_REPORT, JSON.stringify({ failures, controls }, null, 2));
+    expect(failures, JSON.stringify({ failures, controls })).toEqual([]);
+    expect(controls).toHaveLength(ids.length);
+  }, 300_000);
   it("negative controls expose removed fare/access pieces and a shortened end", () => {
     const controls: unknown[] = [], baseline = replayEnvironment(built, scene, plan);
     for (const kind of ["fare", "access", "shorten"] as const) for (const walker of ["explorer", "lane"] as const) {

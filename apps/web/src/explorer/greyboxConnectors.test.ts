@@ -608,6 +608,33 @@ describe("turning landing guards", () => {
     }
   });
 
+  it("meets the turning landing within one step along the walking path", () => {
+    const station = stairThrough([[0, 0, 0], [4, 2, 0], [4, 4, 4]]);
+    (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
+    const path = buildConnectors(station, () => true, flat, "high").pathByEdge.get("turn")!;
+    const cumulative = cumulativeLengths(path), total = cumulative.at(-1)!;
+    for (let s = 0; s <= total; s += 0.05) {
+      const p = samplePolyline(path, cumulative, s);
+      if (p.x >= 2 && p.x <= 6 && p.z >= -2 && p.z <= 2) expect(Math.abs(p.y - 2)).toBeLessThanOrEqual(0.2);
+    }
+  });
+
+  it("leaves a flight untrimmed when trimming would exceed 45 degrees", () => {
+    const station = stairThrough([[0, 0, 0], [4, 3, 0], [4, 6, 4]]);
+    (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
+    const path = buildConnectors(station, () => true, flat, "high").pathByEdge.get("turn")!;
+    expect(path.some((p) => Math.abs(p.x - 4) < 1e-6 && Math.abs(p.y - 3) < 1e-6 && Math.abs(p.z) < 1e-6)).toBe(true);
+    expect(path.some((p) => Math.abs(p.x - 2) < 1e-6 && Math.abs(p.y - 3) < 1e-6)).toBe(false);
+  });
+
+  it("contains a walker at the raised end of a trimmed flight", () => {
+    const station = stairThrough([[0, 0, 0], [4, 2, 0], [4, 4, 4]]);
+    (station.edges[0]!.attributes as Record<string, unknown>).width = { m: 4 };
+    const result = buildConnectors(station, () => true, flat, "high");
+    const resolved = resolveWalls(1.97, 1.9, 0.3, 1.97, 1.7, result.wallSegments);
+    expect(resolved.z).toBeLessThan(1.9);
+  });
+
   // #673 r12: an earlier flight's side wall stops at its own landing's square, whatever its height there, so it never stands
   // in the outgoing flight's lane.
   it("keeps the outgoing lane clear on a 3 m wide stair with a shallow bend before its landing", () => {

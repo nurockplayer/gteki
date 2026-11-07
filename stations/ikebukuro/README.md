@@ -213,15 +213,20 @@ palette material, always drawn) and one draw per material per 16 m tile on deskt
 
 **Column sleeves (batch 2).** PLATEAU has no per-column object or class: the columns are part of the one `barriers` triangle
 soup. `python3 -I pipeline/extract_columns.py` (from `build/ubld_enu.json`; same GML-hash check as the anchors) finds them
-by shape (welded components that are vertical prisms, 1.5 m or taller, up to 3 m across) and writes `scene/columns.json`
+by shape (welded components that are vertical prisms, 1.5 m or taller, up to 3 m across; a component refused as
+`not_prism` is retried with a 60 mm cap-level tolerance, because PLATEAU folds the caps of 21 columns here by 17–46 mm,
+and such a column carries its measured `cap_fold_mm`) and writes `scene/columns.json`
 with centre, footprint (square, rect, round or polygon), rotation, base and top height, level band and the source
 installation and polygon ids, plus a `kit` piece id or `null` with a reason. `scene/kit_columns.ts` scales
 `gteki_column_square_600` / `gteki_column_round_d600` onto the measured footprint plus 2 cm on every side (scaled from the piece's visible 0.60 m body, allowing for the square piece's rounded corners so a column corner never pokes through) (so it stands
 clear of the PLATEAU faces and does not z-fight), never stretches it taller than the 2.8 m piece and stops 1 cm under the
 column top (so on the 2 square columns over 3.05 m and 24 between 2.8 and 3.05 m the PLATEAU column shows above the sleeve; the
-library's `_h3200` variant is round only and no kit-matched round column is taller than 2.9 m). 281 columns are found; 145 get a
-sleeve (42 square, 103 round), 136 are listed with a reason and keep the flat column. The PLATEAU column stays in `barriers` and stays the collider; the sleeve is visual only. The finish is the
-kit's generic tile or enamel, not a survey of the real columns.
+library's `_h3200` variant is round only and no kit-matched round column is taller than 2.9 m). 302 columns are found; 155 get a
+sleeve (48 square, 107 round), 147 are listed with a reason and keep the flat column. The existing 281 keep their ids
+and geometry; the 21 folded-cap columns are appended as `col_282`–`col_302` (10 of them get a sleeve, 11 do not — 10 are
+1.008 m wide, just past the kit's 1.00 m footprint limit, and one is an irregular 8-sided footprint). The PLATEAU column
+stays in `barriers` and stays the collider; the sleeve is visual only. The finish is the kit's generic tile or enamel,
+not a survey of the real columns.
 
 `python3 -I pipeline/extract_shop_openings.py` (from `build/ubld_enu.json` and `gteki/graph.json`; same GML-hash check as
 the columns) welds the room opening panels per type and winding heading (1 mm grid) and writes `scene/shop_openings.json` — one row per
