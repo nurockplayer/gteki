@@ -59,13 +59,16 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #342 (2026-11-06 JST): identity board geometry and metadata positions moved.
 // #870 (2026-11-06 JST): platform door panels and caps split around the openings aligned to the train doors.
 // #858 item 12 (2026-11-06 JST): one merged wall-props mesh (126 meshes, +48,504 bytes); every list below unchanged.
+// #744 (2026-11-07 JST): one merged coverage-portal mesh per material (13 planes + 13 signs -> 2) and level-B6's
+// six platform batches merged by material (18 -> 12 level meshes): 96 meshes, same bytes; geometry, nodes and
+// textures re-measured, every explorer list unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "22ecc823a00e02a080233f32ef31414088c36ba6b60150f95ec30ec72e67aad2",
-    "appearanceDigest": "e3cc57f3f852198e957b52a1b1b6e5f6aa505e61abd8b48eed85598d3f7d732f",
-    "nodesDigest": "ca99002e8c4f558e3da8f1e13b02e4426437b2446ea1c53142f4cb879799e1a8",
-    "texturesDigest": "502867f0f235268c1c47ed632f4fe1b0397f8fd2424c45ec9cb3fc4a6a74b5fb",
-    "meshes": 126,
+    "geometryDigest": "aeeab7ef41e91cbe3f1b1744627387d5fcdf208c9aea0fbd64a9171ff7fb5383",
+    "appearanceDigest": "12e7dd26596d92ce5fb79e9f4431c2c6d70685ea8bc67de17f4bcdc6c23a1512",
+    "nodesDigest": "f7cef8929f7d000576a0f0844f4d6a6fd676ca4bc41de6c9e348728ae10d47d7",
+    "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
+    "meshes": 96,
     "bytes": 16494482
   },
   "lists": {
