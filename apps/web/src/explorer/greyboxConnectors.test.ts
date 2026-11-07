@@ -1538,6 +1538,9 @@ describe("turning landing guards", () => {
  */
 const shortLegStair: [number, number, number][] = [[172, 30.363, 181], [171, 31.07, 180.5], [170.5, 31.22, 180], [171, 31.41, 179.5], [172.5, 32.646, 179]];
 
+/** A walk path point in the renderer frame, as `pathByEdge` returns them. */
+type PathPoint = { x: number; y: number; z: number };
+
 /** Build the stair with its start node on its first waypoint, so the edge keeps the graph's heights and plan. */
 function stairAt(waypoints: [number, number, number][]) {
   const station = stairThrough(waypoints);
@@ -1546,7 +1549,7 @@ function stairAt(waypoints: [number, number, number][]) {
 }
 
 /** The height of the walk path `distance` metres in plan along the path from vertex `start`, in `direction`. */
-function heightAlongPath(path: readonly THREE.Vector3[], start: number, direction: 1 | -1, distance: number): number | null {
+function heightAlongPath(path: readonly PathPoint[], start: number, direction: 1 | -1, distance: number): number | null {
   let travelled = 0, height = path[start]!.y;
   for (let i = start + direction; i >= 0 && i < path.length; i += direction) {
     const run = Math.hypot(path[i]!.x - path[i - direction]!.x, path[i]!.z - path[i - direction]!.z);
@@ -1560,7 +1563,7 @@ function heightAlongPath(path: readonly THREE.Vector3[], start: number, directio
  * The vertical step at each turning landing of `waypoints`: the height of the walk path half a stair width from the
  * landing against the landing's own height. A landing the merge removed is not a landing any more and is skipped.
  */
-function landingEdgeSteps(waypoints: readonly [number, number, number][], path: readonly THREE.Vector3[], halfWidth: number) {
+function landingEdgeSteps(waypoints: readonly [number, number, number][], path: readonly PathPoint[], halfWidth: number) {
   const steps: { landing: number; step: number }[] = [];
   for (let i = 1; i + 1 < waypoints.length; i++) {
     const [ax, , az] = waypoints[i - 1]!, [bx, , bz] = waypoints[i]!, [cx, , cz] = waypoints[i + 1]!;
@@ -1610,8 +1613,9 @@ it("#922 keeps flightEnds' untrimmed behaviour when the rise cannot fit under th
   const path = result.pathByEdge.get("turn")!;
   const centre = path.findIndex((p) => Math.hypot(p.x - 2, p.z) < 1e-3);
   expect(centre).toBeGreaterThanOrEqual(0);
-  // The flight after the landing is not pulled back to the landing's height: it still climbs across the landing edge.
-  expect(path[centre]!.y - heightAlongPath(path, centre, 1, 0.75)!).toBeGreaterThan(0.3);
+  // The flight after the landing is not pulled back to the landing's height: it still climbs from the landing edge, so the
+  // path half a width out is already above the landing instead of level with it.
+  expect(heightAlongPath(path, centre, 1, 0.75)! - path[centre]!.y).toBeGreaterThan(0.3);
 });
 
 it.each([
