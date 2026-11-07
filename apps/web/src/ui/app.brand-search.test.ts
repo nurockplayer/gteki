@@ -147,7 +147,7 @@ describe("#419 department-store brand search end to end", () => {
     expectBrandFlow(bundleOf(ikbStation, ikbGraph, ikbPois, ikbTenants), {
       stationDir: "ikebukuro", query: "紀伊國屋書店", brand: "紀伊國屋書店", storeId: "shop-ikb-tobudept", storeName: "東武百貨店　池袋店",
       floor: "7F", tenantId: "tenant-ikb-tobudept-109225501", checkedDate: "2026-10-24",
-      resultMeta: "7F · “紀伊國屋書店” · 位置未確認・道案内なし",
+      resultMeta: "7F · “紀伊國屋書店” · 入口未確認のため道案内なし（現地確認待ち）",
       sourceNote: "池袋駅西口 直結", originId: "exit-22",
     });
   });
@@ -156,7 +156,7 @@ describe("#419 department-store brand search end to end", () => {
     expectBrandFlow(bundleOf(sjkStation, sjkGraph, sjkPois, sjkTenants), {
       stationDir: "shinjuku", query: "アナ スイ", brand: "アナ スイ", storeId: "shop-sjk-odakyudept", storeName: "小田急百貨店 新宿店",
       floor: "１階", tenantId: "tenant-sjk-odakyudept-013", checkedDate: "2026-10-24",
-      resultMeta: "１階 · “アナ スイ” · 位置未確認・道案内なし",
+      resultMeta: "１階 · “アナ スイ” · 入口未確認のため道案内なし（現地確認待ち）",
       sourceNote: "新宿西口ハルクで営業", originId: "poi:exit:1",
     });
   });

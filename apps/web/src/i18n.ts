@@ -46,7 +46,7 @@ const STRINGS = {
     avatarHere: "現在のアバター位置（仮想）",
     searchOnly: "検索のみ（入口未確認）",
     shopNoRoute: "この店舗への道案内はまだありません（位置未確認）",
-    shopSearchOnly: "位置未確認・道案内なし",
+    shopSearchOnly: "入口未確認のため道案内なし（現地確認待ち）",
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "種類",
     categoryAll: "すべて",
@@ -303,7 +303,7 @@ const STRINGS = {
     avatarHere: "Current avatar position (virtual)",
     searchOnly: "Search only (entrance not verified)",
     shopNoRoute: "No directions to this shop yet (location not verified).",
-    shopSearchOnly: "Location not verified · no directions",
+    shopSearchOnly: "No directions: entrance not verified (field check pending)",
     /** Search category filter (#213): the label, the unfiltered choice and the category names. */
     categoryFilter: "Category",
     categoryAll: "All",
