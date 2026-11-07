@@ -14,7 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { R, chevronTexture, dashTexture, ribbonGeometry } from "./geometry.ts";
+import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
@@ -1610,6 +1610,10 @@ export class Explorer {
     if (mode === "overview") this.orbit.target.copy(this.pos);
     const xray = this.routeGroup.getObjectByName("route-xray");
     if (xray) xray.visible = mode === "overview";
+    const walkRibbon = this.routeGroup.getObjectByName("route-ribbon");
+    if (walkRibbon) walkRibbon.visible = mode !== "overview";
+    const overviewRibbon = this.routeGroup.getObjectByName("route-ribbon-overview");
+    if (overviewRibbon) overviewRibbon.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -1888,10 +1892,19 @@ export class Explorer {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
     this.routeTexture = chevronTexture();
-    this.routeTexture.repeat.set(1 / 1.8, 1);
-    const mat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
-    const ribbon = new THREE.Mesh(ribbonGeometry(pts, 1.1, 0.07), mat);
+    this.routeTexture.repeat.set(1 / ROUTE_CHEVRON_PITCH_OVERVIEW, 1);
+    // Walk and guide draw a narrow, faint band that fades out under the camera; the overview keeps today's wide, opaque ribbon.
+    const walkMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, opacity: 0.45, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
+    routeNearFade(walkMat);
+    const ribbon = new THREE.Mesh(ribbonGeometry(pts, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
     ribbon.renderOrder = 5;
+    ribbon.name = "route-ribbon";
+    ribbon.visible = this.mode !== "overview";
+    const overviewMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
+    const overviewRibbon = new THREE.Mesh(ribbonGeometry(pts, ROUTE_RIBBON_WIDTH_OVERVIEW, 0.07), overviewMat);
+    overviewRibbon.renderOrder = 5;
+    overviewRibbon.name = "route-ribbon-overview";
+    overviewRibbon.visible = this.mode === "overview";
     // Depth-tested glow plus a faint dashed pass where a wall hides it; overview keeps the always-on-top look.
     this.routeLines = occludedLineStyle(0x5ef0ff, 0.9);
     this.trackOverlay(this.routeLines.visible);
@@ -1902,11 +1915,11 @@ export class Explorer {
     const symbolic = polyline.some((p) => !p.zKnown);
     // X-ray copy so the route stays readable through ceilings/slabs in overview.
     const xrayMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, color: 0xb8f8ff, transparent: true, opacity: 0.6, depthTest: false, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
-    const xray = new THREE.Mesh(ribbon.geometry, xrayMat);
+    const xray = new THREE.Mesh(overviewRibbon.geometry, xrayMat);
     xray.renderOrder = 20;
     xray.name = "route-xray";
     xray.visible = this.mode === "overview";
-    this.routeGroup.add(ribbon, ...glow, xray);
+    this.routeGroup.add(ribbon, overviewRibbon, ...glow, xray);
     // Stretches with no scene floor under them (the graph runs through space the scene doesn't model):
     // an always-on-top dashed amber band, so they read as "not modelled" rather than as a route in the void.
     const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
