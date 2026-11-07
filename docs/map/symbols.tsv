@@ -78,6 +78,14 @@ MEOW_SECONDS	const	apps/web/src/explorer/catMeow.ts
 MeowPose	interface	apps/web/src/explorer/catMeow.ts
 catTapHit	function	apps/web/src/explorer/catMeow.ts
 meowPose	function	apps/web/src/explorer/catMeow.ts
+MEOW_GLIDE_S	const	apps/web/src/explorer/catSound.ts
+MEOW_HZ	const	apps/web/src/explorer/catSound.ts
+PAW_STEP_M	const	apps/web/src/explorer/catSound.ts
+PawSurface	type	apps/web/src/explorer/catSound.ts
+advancePaws	function	apps/web/src/explorer/catSound.ts
+pawSurface	function	apps/web/src/explorer/catSound.ts
+playCatMeow	function	apps/web/src/explorer/catSound.ts
+playPawStep	function	apps/web/src/explorer/catSound.ts
 contactShadow	function	apps/web/src/explorer/contactShadow.ts
 CutRecipe	interface	apps/web/src/explorer/cutRecipe.ts
 MeshRecord	interface	apps/web/src/explorer/cutRecipe.ts
@@ -994,6 +1002,7 @@ thin	function	stations/ikebukuro/pipeline/walker_replay.ts
 yawToward	const	stations/ikebukuro/pipeline/walker_replay.ts
 AmbienceInput	interface	stations/ikebukuro/scene/ambience.ts
 createAmbience	function	stations/ikebukuro/scene/ambience.ts
+noiseBuffer	function	stations/ikebukuro/scene/ambience.ts
 BLOCKER_REACH_M	const	stations/ikebukuro/scene/context.ts
 CONTEXT_GATE	const	stations/ikebukuro/scene/context.ts
 CONTEXT_GLB	const	stations/ikebukuro/scene/context.ts
@@ -1182,6 +1191,8 @@ V3	type	stations/ikebukuro/scene/station-sound.ts
 announcementLines	function	stations/ikebukuro/scene/station-sound.ts
 createStationSound	function	stations/ikebukuro/scene/station-sound.ts
 webSpeechPort	function	stations/ikebukuro/scene/station-sound.ts
+createStreetAmbience	function	stations/ikebukuro/scene/street-ambience.ts
+streetLevel	function	stations/ikebukuro/scene/street-ambience.ts
 TimeBand	type	stations/ikebukuro/scene/time-band.ts
 bandForHour	function	stations/ikebukuro/scene/time-band.ts
 currentTimeBand	function	stations/ikebukuro/scene/time-band.ts
@@ -1617,9 +1628,15 @@ probeSegment	function	stations/shinjuku/test/fence-slide-probe.ts
 sample	function	stations/shinjuku/test/fence-slide-probe.ts
 segments	function	stations/shinjuku/test/fence-slide-probe.ts
 tally	const	stations/shinjuku/test/fence-slide-probe.ts
+EscapeClass	type	stations/shinjuku/test/helpers/escape-classify.ts
+OpeningFootprint	type	stations/shinjuku/test/helpers/escape-classify.ts
+PlanPoint	interface	stations/shinjuku/test/helpers/escape-classify.ts
 RayHit	type	stations/shinjuku/test/helpers/escape-classify.ts
 RayOutcome	type	stations/shinjuku/test/helpers/escape-classify.ts
+StreetCrossing	type	stations/shinjuku/test/helpers/escape-classify.ts
+classifyEscape	function	stations/shinjuku/test/helpers/escape-classify.ts
 classifyRay	function	stations/shinjuku/test/helpers/escape-classify.ts
+footprintContains	function	stations/shinjuku/test/helpers/escape-classify.ts
 identityHardwareBoxes	function	stations/shinjuku/test/helpers/identity-placement.ts
 identityObstacles	function	stations/shinjuku/test/helpers/identity-placement.ts
 identitySightline	function	stations/shinjuku/test/helpers/identity-placement.ts
