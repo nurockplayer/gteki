@@ -1531,6 +1531,89 @@ describe("turning landing guards", () => {
 });
 
 
+/**
+ * #922: `s39_f__x39` in Ikebukuro, points 12 to 16 of its sampled path (renderer x, height, z). Point 14 is a turning
+ * landing with a 0.707 m leg into it and a 1.581 m flight out of it; the shorter slice points 13-16 keeps that landing's
+ * step and is the part of the edge #922 stays open for, so the sample carries the leg that climbs into the landing.
+ */
+const shortLegStair: [number, number, number][] = [[172, 30.363, 181], [171, 31.07, 180.5], [170.5, 31.22, 180], [171, 31.41, 179.5], [172.5, 32.646, 179]];
+
+/** Build the stair with its start node on its first waypoint, so the edge keeps the graph's heights and plan. */
+function stairAt(waypoints: [number, number, number][]) {
+  const station = stairThrough(waypoints);
+  station.nodes.find((n) => n.id === "start")!.position = { ...station.edges[0]!.geometry![0]! };
+  return buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
+}
+
+/** The height of the walk path `distance` metres in plan along the path from vertex `start`, in `direction`. */
+function heightAlongPath(path: readonly THREE.Vector3[], start: number, direction: 1 | -1, distance: number): number | null {
+  let travelled = 0, height = path[start]!.y;
+  for (let i = start + direction; i >= 0 && i < path.length; i += direction) {
+    const run = Math.hypot(path[i]!.x - path[i - direction]!.x, path[i]!.z - path[i - direction]!.z);
+    if (travelled + run >= distance) return height + ((path[i]!.y - height) * (distance - travelled)) / Math.max(run, 1e-9);
+    travelled += run; height = path[i]!.y;
+  }
+  return null;
+}
+
+/**
+ * The vertical step at each turning landing of `waypoints`: the height of the walk path half a stair width from the
+ * landing against the landing's own height. A landing the merge removed is not a landing any more and is skipped.
+ */
+function landingEdgeSteps(waypoints: readonly [number, number, number][], path: readonly THREE.Vector3[], halfWidth: number) {
+  const steps: { landing: number; step: number }[] = [];
+  for (let i = 1; i + 1 < waypoints.length; i++) {
+    const [ax, , az] = waypoints[i - 1]!, [bx, , bz] = waypoints[i]!, [cx, , cz] = waypoints[i + 1]!;
+    const bend = Math.acos(Math.max(-1, Math.min(1, ((bx - ax) * (cx - bx) + (bz - az) * (cz - bz)) / (Math.hypot(bx - ax, bz - az) * Math.hypot(cx - bx, cz - bz)))));
+    if (bend < (20 * Math.PI) / 180) continue;
+    const centre = path.findIndex((p) => Math.hypot(p.x - bx, p.z - bz) < 1e-3);
+    if (centre < 0) continue;
+    for (const direction of [-1, 1] as const) {
+      const height = heightAlongPath(path, centre, direction, halfWidth);
+      if (height !== null) steps.push({ landing: i, step: Math.abs(height - path[centre]!.y) });
+    }
+  }
+  return steps;
+}
+
+it("#922 merges the short legs into the flight above them, leaving no landing step", () => {
+  const result = stairAt(shortLegStair);
+  const steps = landingEdgeSteps(shortLegStair, result.pathByEdge.get("turn")!, 0.75);
+  expect(steps.map((s) => s.landing)).toContain(2);
+  expect(Math.max(...steps.map((s) => s.step))).toBeLessThanOrEqual(0.2);
+});
+
+it("#922 keeps a near-level leg at or over the stair width as a landing, not as run to share", () => {
+  // Leg 1's shape from the same stair (5.523 m, rise 0.011 m) into a short climb, then a level leg of 2.402 m and a flight.
+  const waypoints: [number, number, number][] = [[168, 26.039, 168], [173.5, 26.05, 168.5], [174.7, 26.55, 168.6], [174.8, 26.55, 171], [176.8, 27.45, 171]];
+  const path = stairAt(waypoints).pathByEdge.get("turn")!;
+  const at = (x: number, z: number) => path.find((p) => Math.hypot(p.x - x, p.z - z) < 1e-3);
+  // The near-level leg's far end keeps the graph's height, so it is not absorbed into the run that climbs after it.
+  expect(at(173.5, 168.5)?.y).toBeCloseTo(26.05, 9);
+  // The exactly level leg keeps both ends level.
+  expect(at(174.7, 168.6)?.y).toBeCloseTo(26.55, 9);
+  expect(at(174.8, 171)?.y).toBeCloseTo(26.55, 9);
+});
+
+it("#922 leaves a two-point stair alone", () => {
+  const path = stairAt([[0, 0, 0], [5.2, 3, 0]]).pathByEdge.get("turn")!;
+  expect(path[0]!.y).toBeCloseTo(0, 9); expect(path.at(-1)!.y).toBeCloseTo(3, 9);
+  for (const p of path) expect(p.y).toBeCloseTo((3 * Math.hypot(p.x, p.z)) / 5.2, 9);
+});
+
+it("#922 keeps flightEnds' untrimmed behaviour when the rise cannot fit under the 45 degree cap", () => {
+  // Leg 1 (2 m, 0.8 m) and leg 2 (2 m, 3.2 m) share a run: after the regrade the trimmed pitch is 58 degrees, so neither
+  // flight is pulled back.
+  const waypoints: [number, number, number][] = [[0, 0, 0], [2, 0.8, 0], [2, 4, 2]];
+  let result!: ReturnType<typeof buildConnectors>;
+  expect(() => { result = stairAt(waypoints); }).not.toThrow();
+  const path = result.pathByEdge.get("turn")!;
+  const centre = path.findIndex((p) => Math.hypot(p.x - 2, p.z) < 1e-3);
+  expect(centre).toBeGreaterThanOrEqual(0);
+  // The flight after the landing is not pulled back to the landing's height: it still climbs across the landing edge.
+  expect(path[centre]!.y - heightAlongPath(path, centre, 1, 0.75)!).toBeGreaterThan(0.3);
+});
+
 it.each([
   ["escalator", 2, 3.6],
   ["stairs", 3, 3.6],

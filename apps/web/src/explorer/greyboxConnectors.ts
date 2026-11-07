@@ -601,15 +601,26 @@ function liftShafts(edges: readonly Edge[], ends: (edge: Edge) => [{ id: string;
  * bends), a rect level per turning landing, and the connector footprints that join them (see buildConnectors).
  */
 const MAX_TRIMMED_PITCH_DEG = 45;
+/** A flight the trim would leave shorter than this in plan carries no usable run, so its landing edge keeps a step. */
+const MIN_TRIMMED_RUN_M = 0.5;
+/** A stair leg shorter than this in plan is a sample of the path, not a landing: merge it into its flight. */
+const SHORT_STAIR_LEG_TOLERANCE_M = 0.4;
+/** A leg at least a stair width long and this near level is a landing, not a slope: it anchors the regrade. */
+const NEAR_LEVEL_PITCH_DEG = 5;
+
+/** The plan distance flightEnds pulls a flight back from a turning landing. */
+function flightTrim(width: number): number {
+  return width / 2;
+}
 
 function flightEnds(points: readonly THREE.Vector3[], i: number, width: number, isTurn: (index: number) => boolean): [THREE.Vector3, THREE.Vector3] {
   const from = points[i - 1]!, to = points[i]!, a = from.clone(), b = to.clone();
   const dx = to.x - from.x, dz = to.z - from.z, length = Math.hypot(dx, dz);
-  const start = i > 1 && isTurn(i - 1) ? width / 2 : 0;
-  const end = i < points.length - 1 && isTurn(i) ? width / 2 : 0;
+  const start = i > 1 && isTurn(i - 1) ? flightTrim(width) : 0;
+  const end = i < points.length - 1 && isTurn(i) ? flightTrim(width) : 0;
   const remaining = length - start - end;
   const pitchDeg = Math.atan2(Math.abs(to.y - from.y), remaining) * 180 / Math.PI;
-  if (remaining >= 0.5 && pitchDeg <= MAX_TRIMMED_PITCH_DEG + 1e-9) {
+  if (remaining >= MIN_TRIMMED_RUN_M && pitchDeg <= MAX_TRIMMED_PITCH_DEG + 1e-9) {
     a.x += dx / length * start; a.z += dz / length * start;
     b.x -= dx / length * end; b.z -= dz / length * end;
   }
@@ -718,6 +729,105 @@ function edgeRegions(edge: Edge, points: readonly THREE.Vector3[], half: number,
 /** A connector footprint reaches this far past its tread, so its guard stands just outside the walking surface. */
 const FOOTPRINT_PAD_M = 0.03;
 
+/** Plan length of the straight leg between two path points. */
+function planLength(a: THREE.Vector3, b: THREE.Vector3): number {
+  return Math.hypot(b.x - a.x, b.z - a.z);
+}
+
+/** Untrimmed pitch of a stair leg, in degrees. */
+function legPitchDeg(a: THREE.Vector3, b: THREE.Vector3): number {
+  const length = planLength(a, b);
+  return length > 1e-9 ? Math.atan2(Math.abs(b.y - a.y), length) * 180 / Math.PI : 0;
+}
+
+/** A stair leg that is a landing rather than a sampled step: at least a stair width long and near level. */
+function landingLeg(a: THREE.Vector3, b: THREE.Vector3, width: number): boolean {
+  return planLength(a, b) >= width && legPitchDeg(a, b) <= NEAR_LEVEL_PITCH_DEG;
+}
+
+/** Plan distance from `p` to the segment a–b. */
+function planDistanceToSegment(p: THREE.Vector3, a: THREE.Vector3, b: THREE.Vector3): number {
+  const dx = b.x - a.x, dz = b.z - a.z, lengthSq = dx * dx + dz * dz;
+  const t = lengthSq > 1e-12 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / lengthSq)) : 0;
+  return Math.hypot(p.x - (a.x + t * dx), p.z - (a.z + t * dz));
+}
+
+/**
+ * Join sampled stair legs shorter than the stair width into one flight (#922). A sampled stair path often carries a short
+ * leg at each turning landing, which flightEnds then treats as a landing edge and leaves a step on. Merging the short legs
+ * into the flight above the landing removes both the step and the steep trimmed pitch, as long as every merged chord stays
+ * within SHORT_STAIR_LEG_TOLERANCE_M of the sampled points it replaces in plan. Edge ends stay, and a landing leg is never
+ * absorbed: its two ends keep their heights for regradeStairRise to anchor on.
+ */
+function mergeShortStairLegs(points: readonly THREE.Vector3[], width: number): THREE.Vector3[] {
+  if (points.length <= 2) return [...points];
+  const kept = points.map(() => false);
+  for (let i = 0; i + 1 < points.length; i++) {
+    if (landingLeg(points[i]!, points[i + 1]!, width)) kept[i] = kept[i + 1] = true;
+  }
+  const merged = [...points];
+  const index = points.map((_p, i) => i);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = 1; i < merged.length - 1; i++) {
+      if (kept[index[i]!]!) continue;
+      const a = merged[i - 1]!, b = merged[i]!, c = merged[i + 1]!;
+      if (planLength(a, b) >= width && planLength(b, c) >= width) continue;
+      let deviation = 0;
+      for (let k = index[i - 1]! + 1; k < index[i + 1]!; k++) deviation = Math.max(deviation, planDistanceToSegment(points[k]!, a, c));
+      if (deviation > SHORT_STAIR_LEG_TOLERANCE_M) continue;
+      merged.splice(i, 1);
+      index.splice(i, 1);
+      changed = true;
+      i--;
+    }
+  }
+  return merged;
+}
+
+/**
+ * Share a run's rise over the legs that climb it, so a flight ends at the height its landing starts at. A run is bounded
+ * by anchors: the two ends, a level leg on station floor, and a landing leg. A leg whose trimmed run is shorter than
+ * MIN_TRIMMED_RUN_M carries no flight (flightEnds leaves it untrimmed), so the run's rise goes to the climbing legs in
+ * proportion to their trimmed plan length. A run with rise but no climbing leg keeps its sampled heights.
+ */
+function regradeStairRise(points: readonly THREE.Vector3[], width: number, isTurn: (index: number) => boolean, floored: (index: number) => boolean): THREE.Vector3[] {
+  const n = points.length;
+  if (n <= 2) return [...points];
+  const trim = flightTrim(width);
+  const anchors = new Set<number>([0, n - 1]);
+  for (let i = 0; i + 1 < n; i++) {
+    const a = points[i]!, b = points[i + 1]!;
+    if (Math.abs(b.y - a.y) < 1e-6 && (planLength(a, b) >= width || floored(i))) { anchors.add(i); anchors.add(i + 1); }
+    else if (landingLeg(a, b, width)) { anchors.add(i); anchors.add(i + 1); }
+  }
+  const bounds = [...anchors].sort((a, b) => a - b);
+  const out = points.map((p) => p.clone());
+  for (let s = 0; s + 1 < bounds.length; s++) {
+    const start = bounds[s]!, end = bounds[s + 1]!;
+    const rise = points[end]!.y - points[start]!.y;
+    const climbs: { index: number; run: number }[] = [];
+    for (let i = start + 1; i <= end; i++) {
+      const startTrim = i > 1 && isTurn(i - 1) ? trim : 0;
+      const endTrim = i < n - 1 && isTurn(i) ? trim : 0;
+      const run = planLength(points[i - 1]!, points[i]!) - startTrim - endTrim;
+      if (run >= MIN_TRIMMED_RUN_M) climbs.push({ index: i, run });
+    }
+    if (Math.abs(rise) <= 1e-6 || climbs.length === 0) continue;
+    const total = climbs.reduce((sum, climb) => sum + climb.run, 0);
+    let y = points[start]!.y;
+    for (let i = start + 1; i <= end; i++) {
+      const climb = climbs.find((c) => c.index === i);
+      if (climb) y += (rise * climb.run) / total;
+      out[i]!.y = y;
+    }
+    out[start]!.y = points[start]!.y;
+    out[end]!.y = points[end]!.y;
+  }
+  return out;
+}
+
 /**
  * Build runtime-only batches for missing vertical transport. Side walls and landing guards are the boundary of the
  * connector's walkable model, so any plan shape builds, stacked returns included; a run shorter than 0.3 m is skipped
@@ -779,10 +889,11 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   }
   const junctions: { edgeId: string; node: string; level: string; at: THREE.Vector3; dir: THREE.Vector3; half: number; grade: number }[] = [];
   for (const edge of unmodelled) {
-    const points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
-    if (shortRun(points)) { skip("short_run", edge.id); continue; }
     const rawWidth = (edge.attributes as unknown as { width?: { m?: number } } | undefined)?.width?.m;
     const width = rawWidth && rawWidth > 0 ? rawWidth : 1.5;
+    let points = simplifyPlan(edgePoints(bundle, edge, nodes, floors));
+    if (edge.mode === "stairs") points = mergeShortStairLegs(points, width);
+    if (shortRun(points)) { skip("short_run", edge.id); continue; }
     const halfWidth = (edge.mode === "stairs" ? width : 1.2) / 2;
     const half = halfWidth + FOOTPRINT_PAD_M;
     const bendAt = (index: number) => (edge.mode === "stairs" ? bendAngle(points, index) : 0);
@@ -803,6 +914,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       for (let k = 0; k <= count; k++) if (!onFloor(a.clone().lerp(b, k / count))) return false;
       return true;
     };
+    if (edge.mode === "stairs") points = regradeStairRise(points, width, isTurn, floored);
     // An end at a node another generated connector also meets is a junction (on station floor, or on the endpoint pad built
     // where floor is missing); it is opened once every connector's regions exist.
     // An end is its node's even where a floor-backed level leg before it was trimmed off.
