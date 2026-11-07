@@ -23,8 +23,8 @@ import { floorProbe } from "../../../apps/web/src/explorer/routeGaps.ts";
 import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
-import { cutStairwells, stairwellWells, type StairwellCut } from "../../../apps/web/src/explorer/stairwellCut.ts";
-import { RECIPE_VERSION, canonicalJson, decodeRecipe, encodeRecipe, sha256Hex, type CutRecipe, type MeshRecord } from "../../../apps/web/src/explorer/cutRecipe.ts";
+import { cutStairwells, stairwellWells, wellsSha256, type StairwellCut } from "../../../apps/web/src/explorer/stairwellCut.ts";
+import { RECIPE_VERSION, decodeRecipe, encodeRecipe, type CutRecipe, type MeshRecord } from "../../../apps/web/src/explorer/cutRecipe.ts";
 import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { loadScene } from "./route-clip-audit.ts";
 
@@ -166,7 +166,7 @@ async function bakeTier(station: string, bundle: StationBundle, tier: Tier): Pro
     const liveOutcome = outcomeOf(live, shell);
     if (shell && shellBefore) for (const n of SHELL_ATTRIBUTES) shell.geometry.setAttribute(n, shellBefore[n]!);
     const recipe: CutRecipe = {
-      version: RECIPE_VERSION, tier, wellsSha256: sha256Hex(canonicalJson(wells)), keyCount: wells.flatMap((w) => w.skipped ? [] : w.rects).length,
+      version: RECIPE_VERSION, tier, wellsSha256: wellsSha256(wells), keyCount: wells.flatMap((w) => w.skipped ? [] : w.rects).length,
       meshKeysHash: live.meshKeysHash, meshes: recorded,
     };
     const bytes = encodeRecipe(recipe);
