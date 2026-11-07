@@ -42,7 +42,8 @@ for (const store of [
   for (const lang of ["ja", "en"] as const) {
     test(`@phone ${store.station}: ${store.query} explains its missing route (${lang})`, async ({ page }, testInfo) => {
       await openStation(page, store.station);
-      if (lang === "ja") await page.getByRole("button", { name: "日本語", exact: true }).click();
+      // By attribute, not name: on a phone the short label joins the text, so the name reads 日本語日本語.
+      if (lang === "ja") await page.locator('button[data-short="日本語"]').click();
       expect(await hooks.setOrigin(page, store.origin)).toBe(true);
       await page.locator("#gteki-to").fill(store.query);
       const note = SHOP_SEARCH_ONLY[lang];
