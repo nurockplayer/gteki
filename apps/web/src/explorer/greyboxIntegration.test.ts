@@ -136,6 +136,8 @@ describe("greybox station integration", () => {
   });
 
   it("shows both route glow lines only in overview and follows mode switches", () => {
+    const context = { clearRect: vi.fn(), fillRect: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn() };
+    vi.stubGlobal("document", { createElement: () => ({ width: 0, height: 0, getContext: () => context }) });
     const point = (x: number, z: number) => ({ x, y: 0, z, zKnown: true, stepIndex: 0, floorId: "concourse" });
     const state = Object.assign(Object.create(Explorer.prototype), {
       mode: "walk", routeGroup: new THREE.Group(), routeTexture: null, routeLines: null,
@@ -158,6 +160,7 @@ describe("greybox station integration", () => {
     expect(lines.every((line: THREE.Object3D | undefined) => line?.visible === true)).toBe(true);
     state.setMode("guide");
     expect(lines.every((line: THREE.Object3D | undefined) => line?.visible === false)).toBe(true);
+    vi.unstubAllGlobals();
   });
 
   it("builds floor and targets and walks through a portal in the original collider", async () => {
