@@ -110,6 +110,10 @@ if (!enabled) test.skip("recognition proxy captures (set GTEKI_RECOGNITION=1; ne
 
 for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captures (#342 Q5) @phone`, async ({ page }, testInfo) => {
   test.setTimeout(600_000);
+  const avatarFallback: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "warning" && message.text().includes("GLB avatar unavailable")) avatarFallback.push(message.text());
+  });
   await openStation(page, key);
   // Signs are drawn into canvas atlases at load, so font readiness is recorded as the app saw it.
   const fonts = await page.evaluate(async () => {
@@ -144,7 +148,7 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
 
   type View = { id: string; node: string; facing?: { from: Vec3; to: Vec3 }; keys: string[]; note: string };
   const views: View[] = [
-    { id: "spawn", node: spawnNode, keys: [], note: "spawn node 0, camera as spawned, idle" },
+    { id: "spawn", node: spawnNode, keys: [], note: "arrival frame after openStation (frameInitialIdentity), no re-placement" },
     junction
       ? { id: "junction", node: nearestNode(key, junction.from), facing: { from: junction.from, to: junction.at }, keys: ["KeyW"], note: "walking toward the route's first turn" }
       : { id: "junction", node: route.steps[0].toNodeId, keys: [], note: "no turn found on the route: first step's end, idle" },
@@ -157,9 +161,10 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
   const frames: Record<string, unknown>[] = [];
   const key4anon = createHash("sha256").update(`${sha}:${testInfo.project.name}:${key}`).digest("hex").slice(0, 8);
   for (const v of views) {
-    expect(await hooks.walkFromNode(page, v.node), `walkFromNode ${v.node}`).toBe(true);
+    // #1040: a second walkFromNode skips the initial identity framing.
+    if (v.id !== "spawn") expect(await hooks.walkFromNode(page, v.node), `walkFromNode ${v.node}`).toBe(true);
     await hooks.simulate(page, 0.5, []);
-    if (v.facing) await face(page, v.facing.from, v.facing.to);
+    if (v.id !== "spawn" && v.facing) await face(page, v.facing.from, v.facing.to);
     await hooks.simulate(page, 1.0, []);
     for (let i = 0; i < FRAMES; i++) {
       if (i) await hooks.simulate(page, FRAME_S, v.keys);
@@ -180,7 +185,7 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
   }
   save(testInfo, `${key}-recognition.json`, {
     label: "recognition proxy", station: key, project: testInfo.project.name, sha, tier, viewport: page.viewportSize(), fonts, hasIdentityHook: hasIdentity, stationIdentityAtReady: atReady.stationIdentity,
-    route: ROUTES[key], views: views.map(({ id, node, note, facing }) => ({ id, node, note, facing })), frameS: FRAME_S, frames,
+    avatarFallback, route: ROUTES[key], views: views.map(({ id, node, note, facing }) => ({ id, node, note, facing })), frameS: FRAME_S, frames,
   });
   save(testInfo, `${key}-recognition-key.json`, frames.map((f) => ({ anon: f.anon, station: key, view: f.view, i: f.i, project: testInfo.project.name })));
 });
