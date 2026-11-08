@@ -539,6 +539,36 @@ export class Explorer {
     return this.quality;
   }
 
+  /** QA-only: count actual station and surface mesh draws over three animation frames. */
+  async overviewDraws(): Promise<{ surfaceMeshes: number; surface: number; station: number }> {
+    const root = this.stationScene?.root;
+    const surface = root?.getObjectByName("surface-render-only");
+    if (!root || !surface) return { surfaceMeshes: 0, surface: 0, station: 0 };
+    const counts = { surfaceMeshes: 0, surface: 0, station: 0 };
+    const restore: (() => void)[] = [];
+    root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      let parent: THREE.Object3D | null = mesh;
+      while (parent && parent !== surface) parent = parent.parent;
+      const isSurface = parent === surface;
+      if (isSurface) counts.surfaceMeshes++;
+      const previous = mesh.onAfterRender;
+      mesh.onAfterRender = function (...args) {
+        previous.apply(this, args);
+        if (args[2] === camera) counts[isSurface ? "surface" : "station"]++;
+      };
+      restore.push(() => { mesh.onAfterRender = previous; });
+    });
+    const camera = this.camera;
+    try {
+      for (let i = 0; i < 4; i++) await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      return counts;
+    } finally {
+      for (const undo of restore) undo();
+    }
+  }
+
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
   sceneInfo(): { loadTimings: Record<string, number>; greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; cameraDirection: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; zone: StationZone; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number }; releasedTextures?: { textures: number; canvases: number } | null } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
