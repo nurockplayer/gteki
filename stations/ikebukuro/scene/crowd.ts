@@ -886,16 +886,22 @@ export function buildCrowd(
   // Camera position as last rendered (onBeforeRender gives the camera without any API change);
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
+  const camForward = new THREE.Vector3(0, 0, -1), camHeading = new THREE.Vector3();
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
   let renders = 0;
   (lowMesh ?? P.torso.mesh).onBeforeRender = (_r, _s, camera) => {
     renders++;
     cam.setFromMatrixPosition(camera.matrixWorld);
+    camHeading.setFromMatrixColumn(camera.matrixWorld, 2).negate(); // the camera looks down its local -Z
+    camHeading.y = 0;
+    if (camHeading.lengthSq() > 1e-8) camForward.copy(camHeading).normalize(); // straight down/up: keep the last heading
     frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   };
   // A fixed head-count spread over every verified passage is ~1 person per 30 m on phones. Instead,
   // people far from the camera and out of its view step back in on a passage 12-40 m away, still
-  // out of view, so the crowd stays around the player without drawing more of them.
+  // out of view, so the crowd stays around the player without drawing more of them. Most attempts
+  // now land ahead of the camera (16 of 24 reject a bearing behind it), and the walker leaves along
+  // the path direction nearer the view axis, so someone who steps in walks through the shot.
   const FAR_M = 50, SPAWN_MIN_M = 12, SPAWN_MAX_M = 40, MAX_MOVES_PER_FRAME = 2;
   // The camera's actual view volume, padded by a body-sized sphere (any aspect ratio or FOV).
   const body = new THREE.Sphere(new THREE.Vector3(), 1.2);
@@ -903,16 +909,24 @@ export function buildCrowd(
   const inView = (p: THREE_NS.Vector3) =>
     frustum.intersectsSphere(body.set(body.center.set(p.x, p.y + 0.9, p.z), 1.2 + 0.12 * p.distanceTo(cam)));
   function relocate(a: Agent): boolean {
-    for (let attempt = 0; attempt < 8; attempt++) {
+    for (let attempt = 0; attempt < 24; attempt++) {
       let r = rand() * total, k = 0;
       while (k < paths.length - 1 && r > paths[k]!.length) r -= paths[k++]!.length;
       sample(paths[k]!, r);
       const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
       const d = Math.hypot(dx, dy, dz);
       if (d < SPAWN_MIN_M || d > SPAWN_MAX_M || Math.abs(dy) > 6 || inView(pos)) continue;
+      // Someone who steps in behind the camera is never seen, so the first 16 attempts only take a
+      // spot ahead of it; the last 8 keep the old rule so a passage that only runs backwards still
+      // accepts a landing.
+      if (attempt < 16 && dx * camForward.x + dz * camForward.z < 0) continue;
+      const p = paths[k]!;
+      // Leave along the direction whose next point sits nearer the camera's view axis.
+      const offAxis = (q: THREE_NS.Vector3) => Math.abs(camForward.x * (q.z - cam.z) - camForward.z * (q.x - cam.x));
+      const toStart = offAxis(p.pts[0]!), toEnd = offAxis(p.pts[p.pts.length - 1]!);
+      a.forward = Math.abs(toStart - toEnd) < 1e-6 ? rand() < 0.5 : toEnd < toStart;
       a.path = k;
       a.s = Math.min(paths[k]!.length, r);
-      a.forward = rand() < 0.5;
       a.hiddenUntil = renders;
       setDest(a);
       return true;
