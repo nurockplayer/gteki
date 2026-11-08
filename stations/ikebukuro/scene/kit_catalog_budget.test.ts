@@ -119,7 +119,7 @@ it("holds the phone tier's 5 escalators and merged nosings under the #751 triang
 });
 
 /** The pixel size recorded in a PNG's IHDR chunk (big-endian width and height). */
-const pngSize = (p: string) => { const b = fs.readFileSync(p); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+const pngSize = (p: string): [number, number] => { const b = fs.readFileSync(p); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
 
 it("holds one copy of each phone-tier AO atlas under the #751 GPU texture cap", () => {
   // The loader shares one packed atlas per kind across every id that samples it, so the resident cost of the
