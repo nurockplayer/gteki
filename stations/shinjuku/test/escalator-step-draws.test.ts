@@ -60,7 +60,7 @@ it.each(["low", "high"] as const)("animates every escalator slice with one low-t
       camera.lookAt(0, 0, 0);
       camera.updateMatrixWorld(true);
       const scene = sceneWithSteps(station);
-      scene.onBeforeRender(rendererAt(1), scene, camera);
+      scene.onBeforeRender(rendererAt(1), scene, camera, null as never, null as never, null as never);
       expect(meshes[0]!.count).toBe(counts.reduce((sum, count) => sum + count, 0));
     }
     for (const [i, esc] of station.escalators.entries()) {
@@ -98,7 +98,7 @@ it("packs only camera-visible low-tier runs, animates the packed slice and keeps
     let frame = 0;
     const render = () => {
       camera.updateMatrixWorld(true);
-      scene.onBeforeRender(rendererAt(++frame), scene, camera);
+      scene.onBeforeRender(rendererAt(++frame), scene, camera, null as never, null as never, null as never);
     };
     render();
     expect(mesh.count).toBeGreaterThan(0);
@@ -109,11 +109,11 @@ it("packs only camera-visible low-tier runs, animates the packed slice and keeps
     // #822: one pack per renderer frame. A second scene-hook call in the same frame writes nothing.
     const writes = vi.spyOn(mesh, "setMatrixAt");
     const sameFrame = rendererAt(frame + 1);
-    scene.onBeforeRender(sameFrame, scene, camera);
+    scene.onBeforeRender(sameFrame, scene, camera, null as never, null as never, null as never);
     const written = writes.mock.calls.length;
     expect(written).toBeGreaterThan(0);
     expect(mesh.count).toBe(visible.reduce((sum, esc) => sum + mesh.userData.ranges[esc.run.edgeId].count, 0));
-    scene.onBeforeRender(sameFrame, scene, camera);
+    scene.onBeforeRender(sameFrame, scene, camera, null as never, null as never, null as never);
     expect(writes.mock.calls.length).toBe(written);
     writes.mockRestore();
     frame++;
@@ -171,7 +171,7 @@ it("the standalone app installs the same low-tier scene hook (#822)", () => {
     camera.position.copy(center).add(new THREE.Vector3(0, 8, 12));
     camera.lookAt(center);
     camera.updateMatrixWorld(true);
-    scene.onBeforeRender(rendererAt(1), scene, camera);
+    scene.onBeforeRender(rendererAt(1), scene, camera, null as never, null as never, null as never);
     expect(mesh.count).toBeGreaterThan(0);
     expect(mesh.count).toBeLessThan(mesh.instanceMatrix.count);
   } finally { station.dispose(); }

@@ -52,6 +52,10 @@ jobs:
 
       - run: pnpm typecheck
 
+      # The station packages carry their own tsconfigs; the root typecheck does not reach them.
+      - name: Station typecheck (shinjuku and ikebukuro)
+        run: pnpm -C stations/shinjuku typecheck && pnpm -C stations/ikebukuro typecheck
+
       # Default suites only; two workers fit the runner. Station importers' `--check` modes need raw
       # inputs that are not in the repo, so they stay local.
       - run: pnpm vitest run --maxWorkers=2
