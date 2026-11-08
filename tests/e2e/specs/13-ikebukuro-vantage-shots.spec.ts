@@ -261,6 +261,7 @@ interface Row {
   /** The off-graph waypoints walked from the node (">x/y" text, null when none) and the walkPath result. */
   walkTo: string | null; walk: { done: boolean; stuck: boolean; timedOut: boolean } | null;
   renderInfo: unknown; sceneInfo: unknown;
+  turnLog?: { heading: number; facing: number; cameraDirection: number; dx: number }[];
   layer?: {
     name: string; found: number; meshes: number; triangles: number; textures: number; textureBytesEst: number;
     drawsOff: number | null; trisOff: number | null; dDraws: number | null; dTris: number | null;
@@ -390,12 +391,18 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       if (Math.abs(dx) >= 1) yaw = wrapRad(yaw - (await drag(page, at, dx)) * LOOK_RAD_PER_PX);
       await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
       await page.waitForTimeout(SETTLE_MS);
+      const turnLog: NonNullable<Row["turnLog"]> = [];
       // Close the loop on the measured facing: the open-loop drag landed 50-77 degrees off on every view of the
       // 2026-10-29 shop hero run (#209). Up to three corrections, then carry the real yaw to the next heading.
       for (let i = 0; i < 3; i++) {
-        const err = ((heading - (await facingOf(page)) + 540) % 360) - 180;
+        const facing = await facingOf(page);
+        const direction = (await hooks.sceneInfo(page)).cameraDirection as number[];
+        const cameraDirection = round((Math.atan2(direction[0]!, -direction[2]!) * 180 / Math.PI + 360) % 360);
+        const err = ((heading - facing + 540) % 360) - 180;
+        const correction = Math.abs(err) < HEADING_TOL_DEG ? 0 : Math.round((err * Math.PI) / 180 / LOOK_RAD_PER_PX);
+        turnLog.push({ heading, facing, cameraDirection, dx: correction });
         if (Math.abs(err) < HEADING_TOL_DEG) break;
-        await drag(page, at, Math.round((err * Math.PI) / 180 / LOOK_RAD_PER_PX));
+        await drag(page, at, correction);
         await page.waitForTimeout(SETTLE_MS);
       }
       yaw = wrapRad((-(await facingOf(page)) * Math.PI) / 180);
@@ -439,7 +446,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       const any = info as Record<string, unknown>;
       const renderInfo = any.renderer ?? any.info ?? any.render ?? null;
       rows.push({
-        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= HEADING_TOL_DEG,
+        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= HEADING_TOL_DEG, turnLog,
         draws: drawsP50, drawsMax, tris: pct(m.tris, 0.5), trisMax: Math.max(...m.tris), frames: m.draws.length, zeroFrames: m.zeroFrames,
         ...ft, visibility: vis.visibility, focused: vis.focused,
         ...(layer ? { layer } : {}),
