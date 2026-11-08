@@ -1524,7 +1524,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const sc = s + (i - (n - 1) / 2) * CAR_PITCH;
         const p = tr.at(sc, tr.trackOff);
         const tg = tr.tangentAt(sc);
-        car.position.set(p.x, tr.z - 1.1, -p.y);
+        car.position.set(p.x, tr.z - 0.255, -p.y);
         car.rotation.y = Math.atan2(tg.x, -tg.y);
       });
       const open = tt > 16 && tt < 37 ? Math.min(1, (tt - 16) / 2, (37 - tt) / 2) : 0;
