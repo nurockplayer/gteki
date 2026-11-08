@@ -124,7 +124,8 @@ const pngSize = (p: string) => { const b = fs.readFileSync(p); return [b.readUIn
 it("holds one copy of each phone-tier AO atlas under the #751 GPU texture cap", () => {
   // The loader shares one packed atlas per kind across every id that samples it, so the resident cost of the
   // phone kit's AO is one copy of each low atlas, not one per escalator id (five before the sharing).
-  const doc = atlasFile as Record<string, { path?: string; tiers?: Record<string, { size_px?: [number, number] }> }>;
+  // The JSON import widens size_px to number[]; the manifest records a width/height pair.
+  const doc = atlasFile as unknown as Record<string, { path?: string; tiers?: Record<string, { size_px?: [number, number] }> }>;
   let bytes = 0, textures = 0;
   for (const [kind, entry] of Object.entries(doc)) {
     const low = entry.tiers?.low;
