@@ -12,7 +12,7 @@ import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
 import { FOLLOW, FOLLOW_CAT, FOV, catShoulder, followPose, solveRaisedBoom } from "../../../apps/web/src/explorer/followCamera.ts";
 import { CAT_AVATAR_HEIGHT_M } from "../../../apps/web/src/explorer/avatarSelection.ts";
 import { freeArea } from "../../../apps/web/src/explorer/overviewFraming.ts";
-import { buildSigns, identityTypography, IDENTITY_TYPE, LOW_TEXEL_SCALE, type IdentityBoard, type SignSpec } from "./signs.ts";
+import { buildSigns, identityArt, identityTypography, IDENTITY_TYPE, LOW_TEXEL_SCALE, type IdentityBoard, type SignSpec } from "./signs.ts";
 import identity from "./identity.json";
 import signage from "./signage.json";
 
@@ -127,8 +127,12 @@ it("provides a tight name region on metadata-only objects with zero draw calls a
     expect(r.max[0]-r.min[0]).toBeLessThan(b.widthM);
     expect(r.max[1]-r.min[1]).toBeLessThan(b.heightM*0.8);
     expect(r.min[2]).toBeGreaterThan(0);
-    // The name box ends above the first transfer row's conservative em box.
-    if (b.kind === "station-name") expect(r.min[1]).toBeGreaterThan((0.5-0.78+0.13/2)*0.54*identityTypography(b).artScale);
+    // The name box ends above the first transfer row, which is anchored to the canvas bottom: a 0.0027 m
+    // bottom margin plus a 0.13 em (0.54 m base) cap. Compact names use the taller 0.82 m canvas.
+    if (b.kind === "station-name") {
+      const artH = identityArt(b).heightM;
+      expect(r.min[1]).toBeGreaterThan((0.0027 + 0.13*0.54 - 0.5*artH)*identityTypography(b).artScale);
+    }
   }
   const meshes: THREE.Object3D[] = [];
   built.group.traverse((o) => { if ((o as THREE.Mesh).isMesh) meshes.push(o); });
@@ -268,7 +272,6 @@ it("reports the cat camera's identity baseline at rest, spawn × view × project
   expect(rows).toHaveLength(station.spawnNodeIds.length*4);
   expect(rows.filter((r) => r.best?.pass).map((r) => `${r.spawn} ${r.view} ${r.project} ${r.best?.board}`)).toEqual([
     "w_c opening desktop identity-w_c",
-    "sw_h spec13+0 phone identity-sw_h",
     "sw_h spec13+0 desktop identity-sw_h",
   ]);
   // Rotating the cat camera up 0-30 degrees alone fixes no anchored board on the phone: the misses are lateral.
@@ -276,7 +279,7 @@ it("reports the cat camera's identity baseline at rest, spawn × view × project
     ["c_mid", "opening", null], ["c_e2", "opening", null], ["n_h", "opening", null],
     ["sp_e", "opening", null], ["w_c", "opening", null], ["sw_h", "opening", null],
     ["c_mid", "spec13+0", null], ["c_e2", "spec13+0", null], ["n_h", "spec13+0", null],
-    ["sp_e", "spec13+0", null], ["w_c", "spec13+0", null], ["sw_h", "spec13+0", 0],
+    ["sp_e", "spec13+0", null], ["w_c", "spec13+0", null], ["sw_h", "spec13+0", null],
   ]);
   built.dispose();
 }, 30_000);
@@ -418,9 +421,18 @@ it("replays Explorer's initial identity framing for the cat and reports why it f
   ]);
   // Every look that is found chooses the board anchored at that spawn.
   expect(rows.filter((r) => r.found && r.chosen !== `identity-${r.spawn}`)).toEqual([]);
-  // Applying the look: the board is fully in frame everywhere, but the cat camera only clears the
-  // text-size proxy for w_c (both views) and sw_h (phone) — see the "applied" reasons in the log.
+  // Applying the look: every phone rect clears the 0.7 em text-size proxy for c_mid, c_e2, sp_e, w_c and
+  // sw_h; desktop only for w_c and sw_h (c_mid desktop is 17.6 px, a 0.4 px gap the GPU OCR run decides).
   expect(rows.filter((r) => r.applied?.pass).map((r) => `${r.spawn} ${r.view} ${r.project} ${r.ndcFree}`)).toEqual([
+    "c_mid opening phone full",
+    "c_mid opening phone phone-walk",
+    "c_mid opening phone phone-walk+minimap",
+    "c_e2 opening phone full",
+    "c_e2 opening phone phone-walk",
+    "c_e2 opening phone phone-walk+minimap",
+    "sp_e opening phone full",
+    "sp_e opening phone phone-walk",
+    "sp_e opening phone phone-walk+minimap",
     "w_c opening phone full",
     "w_c opening phone phone-walk",
     "w_c opening phone phone-walk+minimap",
@@ -428,6 +440,16 @@ it("replays Explorer's initial identity framing for the cat and reports why it f
     "sw_h opening phone full",
     "sw_h opening phone phone-walk",
     "sw_h opening phone phone-walk+minimap",
+    "sw_h opening desktop full",
+    "c_mid spec13+0 phone full",
+    "c_mid spec13+0 phone phone-walk",
+    "c_mid spec13+0 phone phone-walk+minimap",
+    "c_e2 spec13+0 phone full",
+    "c_e2 spec13+0 phone phone-walk",
+    "c_e2 spec13+0 phone phone-walk+minimap",
+    "sp_e spec13+0 phone full",
+    "sp_e spec13+0 phone phone-walk",
+    "sp_e spec13+0 phone phone-walk+minimap",
     "w_c spec13+0 phone full",
     "w_c spec13+0 phone phone-walk",
     "w_c spec13+0 phone phone-walk+minimap",
@@ -435,6 +457,7 @@ it("replays Explorer's initial identity framing for the cat and reports why it f
     "sw_h spec13+0 phone full",
     "sw_h spec13+0 phone phone-walk",
     "sw_h spec13+0 phone phone-walk+minimap",
+    "sw_h spec13+0 desktop full",
   ]);
   built.dispose();
 }, 30_000);

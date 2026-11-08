@@ -25,13 +25,6 @@ TRANSFER = 'JR 山手線 Yamanote JY13 · 埼京線 Saikyo JA12 · 湘南新宿�
 SPAWNS = {'c_mid': 100, 'c_e2': 100, 'n_h': 95, 'sp_e': 92, 'w_c': 340, 'sw_h': 110}
 # Three further main-passage junctions (degree >= 3); ten boards including the meeting marker.
 JUNCTIONS = {'c_e1': 100, 'c_n': 95, 'sp_m': 92}
-# Largest compact name scale, mirroring signs.ts COMPACT_NAME_SCALE: the name block fills 0.92 of the
-# artwork width, and the kana em box keeps the top margin the 1.12 layout leaves on the 0.54 m artwork.
-COMPACT_CANVAS_M = 0.82
-_ART_H = 0.54
-_MARGIN = _ART_H/2 - (0.03 + (0.32 + 0.15/2)*1.12)*_ART_H
-COMPACT_NAME_SCALE = max(1.12, min(0.92*3.4/(2*_ART_H*0.56 + 9*0.56*_ART_H*0.40 + 0.08),
-                          (COMPACT_CANVAS_M/2 - _MARGIN - 0.03*_ART_H)/((0.32 + 0.15/2)*_ART_H)))
 
 
 def read(path):
@@ -148,13 +141,12 @@ def in_phone_view(board, node, heading):
     Actual glyph widths remain a renderer acceptance item; the test uses the
     existing atlas CJK/Latin width estimator and checks the projected ink box.
     """
-    # One 3.4 m artwork, uniformly fitted inside each board (same as signs.ts). Compact boards paint it
-    # on a taller 0.82 m canvas so the enlarged name keeps the 1.12 layout's top margin; the name layout
-    # itself stays on the 0.54 m base. The extra panel height is a solid margin, never a glyph stretch.
-    art_h = 0.54 if board['widthM'] > 2 else COMPACT_CANVAS_M
-    scale = min(board['widthM']/3.4, board['heightM']/art_h)
+    # Placement uses the 1.12 reference name layout on the 3.4 x 0.54 m artwork, so a regenerate
+    # reproduces today's scene/identity.json exactly. Renderer typography (compact names at the 0.92
+    # block cap on the taller canvas) is covered by the cat framing replay in identity.test.ts.
+    scale = min(board['widthM']/3.4, board['heightM']/0.54)
     h = 0.54*scale
-    name_scale = 0.8 if board['widthM'] > 2 else COMPACT_NAME_SCALE
+    name_scale = 0.8 if board['widthM'] > 2 else 1.12
     shift = 0.03*h if name_scale > 1 else 0
     jp, en, kana = h*0.56*name_scale, h*0.40*name_scale, h*0.15*name_scale
     lo = -(2*jp+9*0.56*en+0.08*scale*name_scale)/2
