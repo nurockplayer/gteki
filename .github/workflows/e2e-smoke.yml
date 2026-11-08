@@ -80,3 +80,43 @@ jobs:
             tests/e2e/artifacts/test-results
           retention-days: 7
           if-no-files-found: ignore
+
+  # WebKit replay guard for the stale stairwell recipes in #1012 / #1028.
+  e2e-smoke-webkit:
+    name: e2e-smoke-webkit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            tests/e2e/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install Playwright harness
+        working-directory: tests/e2e
+        run: |
+          pnpm install --ignore-workspace --frozen-lockfile
+          pnpm exec playwright install --with-deps webkit
+      - name: Run WebKit smoke specs
+        timeout-minutes: 10
+        working-directory: tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/01-smoke.spec.ts --project=phone-webkit --trace=off
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-smoke-webkit-results
+          path: |
+            tests/e2e/artifacts/results.json
+            tests/e2e/artifacts/evidence/**/*.json
+            tests/e2e/artifacts/test-results
+          retention-days: 7
+          if-no-files-found: ignore
