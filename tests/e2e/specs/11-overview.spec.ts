@@ -131,7 +131,11 @@ for (const key of STATIONS) {
       await checkDraws(`default-${await hooks.quality(page)}`);
       await page.addInitScript(() => {
         const original = window.matchMedia.bind(window);
-        window.matchMedia = (query) => query === "(pointer: coarse)" ? original("(pointer: fine)") : original(query);
+        window.matchMedia = (query) => {
+          const result = original(query);
+          if (query === "(pointer: coarse)") Object.defineProperty(result, "matches", { value: false });
+          return result;
+        };
         Object.defineProperty(screen, "width", { get: () => 1440 });
         Object.defineProperty(screen, "height", { get: () => 900 });
       });
