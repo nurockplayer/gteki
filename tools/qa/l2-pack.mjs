@@ -201,7 +201,7 @@ row({
 
 row({
   id: "C2", criterion: "Useful landmarks",
-  rule: "11: opens in overview mode, routable label spread 50-80 % of the shorter side (a proxy), at least one exit label on screen, a hidden exit reachable through search. 09: at least half the poses show a visible label. Whether the landmarks are the right ones is human.",
+  rule: "11: opens in overview mode, routable label spread 50-80 % of the shorter side (a proxy), at least one exit label on screen, a hidden exit reachable through search. 09: every route has at least one pose with a visible label (a blank-page check, #1015). Whether the landmarks are the right ones is human.",
   checks: [
     check("11 exits", PROJECTS, (p) => {
       const j = ev(p, `${station}-overview.json`); if (!j) return;
@@ -227,8 +227,12 @@ row({
     }),
     check("09 labels", PROJECTS, (p) => {
       const j = ev(p, `${station}-label-fade.json`); if (!j) return;
-      const ok = j.totalPoses > 0 && j.posesWithVisibleLabels >= Math.ceil(j.totalPoses / 2);
-      return { ok, text: `${j.posesWithVisibleLabels}/${j.totalPoses} poses with labels, shown ${j.totalShown}, faded ${j.totalFaded}${j.totalOffFloor !== undefined ? `, off-floor ${j.totalOffFloor}` : ""}` };
+      // Blank-page rule (#1015): every route has at least one pose with a visible label.
+      const perRoute = new Map((j.routes ?? []).map((r) => [r, 0]));
+      for (const pose of j.poses ?? []) perRoute.set(pose.route, (perRoute.get(pose.route) ?? 0) + ((pose.labels ?? []).length > 0 ? 1 : 0));
+      const blank = [...perRoute].filter(([, n]) => n === 0).map(([r]) => r);
+      const ok = j.totalPoses > 0 && perRoute.size > 0 && !blank.length;
+      return { ok, text: `${blank.length ? `no label on route ${blank.join(", ")}; ` : ""}${j.posesWithVisibleLabels}/${j.totalPoses} poses with labels, shown ${j.totalShown}, faded ${j.totalFaded}${j.totalOffFloor !== undefined ? `, off-floor ${j.totalOffFloor}` : ""}` };
     }),
   ],
   humanText: `Reviewer judgement: tick each landmark of the station's landmark list (${st.pois}${st.signage ? `, ${st.signage}` : ""}) as seen, recognisable and distinct in the overview or on a walk. A red label in the fade frames with no geometry in its sight line is a defect.`,
