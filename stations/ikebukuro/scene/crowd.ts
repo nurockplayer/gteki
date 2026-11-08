@@ -898,18 +898,17 @@ export function buildCrowd(
     frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   };
   // A fixed head-count spread over every verified passage is ~1 person per 30 m on phones. Instead,
-  // people far from the camera and out of its view step back in on a passage 12-40 m away, still
-  // out of view, so the crowd stays around the player without drawing more of them. Most attempts
-  // now land ahead of the camera (16 of 24 reject a bearing behind it), and the walker leaves along
-  // the path direction nearer the view axis, so someone who steps in walks through the shot.
-  const FAR_M = 50, SPAWN_MIN_M = 12, SPAWN_MAX_M = 40, MAX_MOVES_PER_FRAME = 2;
+  // people far from the camera and out of view step back in 6-40 m away on low tier, or 12-40 m
+  // on high tier. Low tier prefers landings ahead of the camera and walks toward the nearer path
+  // endpoint, so a person beyond the top of the frame can walk into it.
+  const FAR_M = 50, SPAWN_MIN_M = low ? 6 : 12, SPAWN_MAX_M = 40, MAX_MOVES_PER_FRAME = 2;
   // The camera's actual view volume, padded by a body-sized sphere (any aspect ratio or FOV).
   const body = new THREE.Sphere(new THREE.Vector3(), 1.2);
   // The pad grows ~7° with distance: the view used is the last rendered one, a frame behind a fast turn.
   const inView = (p: THREE_NS.Vector3) =>
     frustum.intersectsSphere(body.set(body.center.set(p.x, p.y + 0.9, p.z), 1.2 + 0.12 * p.distanceTo(cam)));
   function relocate(a: Agent): boolean {
-    for (let attempt = 0; attempt < 24; attempt++) {
+    for (let attempt = 0; attempt < (low ? 24 : 8); attempt++) {
       let r = rand() * total, k = 0;
       while (k < paths.length - 1 && r > paths[k]!.length) r -= paths[k++]!.length;
       sample(paths[k]!, r);
@@ -919,12 +918,12 @@ export function buildCrowd(
       // Someone who steps in behind the camera is never seen, so the first 16 attempts only take a
       // spot ahead of it; the last 8 keep the old rule so a passage that only runs backwards still
       // accepts a landing.
-      if (attempt < 16 && dx * camForward.x + dz * camForward.z < 0) continue;
+      if (low && attempt < 16 && dx * camForward.x + dz * camForward.z < 0) continue;
       const p = paths[k]!;
-      // Leave along the direction whose next point sits nearer the camera's view axis.
-      const offAxis = (q: THREE_NS.Vector3) => Math.abs(camForward.x * (q.z - cam.z) - camForward.z * (q.x - cam.x));
-      const toStart = offAxis(p.pts[0]!), toEnd = offAxis(p.pts[p.pts.length - 1]!);
-      a.forward = Math.abs(toStart - toEnd) < 1e-6 ? rand() < 0.5 : toEnd < toStart;
+      // Low-tier walkers head toward the endpoint nearer the camera; high tier keeps its random direction.
+      const toStart = Math.hypot(p.pts[0]!.x - cam.x, p.pts[0]!.z - cam.z);
+      const toEnd = Math.hypot(p.pts[p.pts.length - 1]!.x - cam.x, p.pts[p.pts.length - 1]!.z - cam.z);
+      a.forward = !low || Math.abs(toStart - toEnd) < 1e-6 ? rand() < 0.5 : toEnd < toStart;
       a.path = k;
       a.s = Math.min(paths[k]!.length, r);
       a.hiddenUntil = renders;
