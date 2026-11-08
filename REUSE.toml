@@ -64,6 +64,15 @@ precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+# #854 cat protagonist (grey placeholder): generated entirely by tools/blender/character/build_cat.py
+# (swept ellipsoids, vertex colours, no textures, no downloaded mesh); original work dedicated to the
+# public domain (assets/library/PROVENANCE.md, Cat protagonist paragraph). The sidecar records hash and inputs.
+[[annotations]]
+path = ["apps/web/public/avatars/cat.glb", "apps/web/public/avatars/cat.provenance.json"]
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "CC0-1.0"
+
 # --- 3. AI-generated 2D images: CC0-1.0 ----------------------------------------------------
 # Generated 2026-10-20 with OpenAI image generation through Codex; prompts, hashes and the
 # "AI-generated" label are in assets/library/source/posters/provenance.json. Fictional only:
