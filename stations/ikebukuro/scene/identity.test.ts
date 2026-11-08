@@ -6,7 +6,12 @@ import * as THREE from "three";
 import { afterAll, afterEach, beforeEach, expect, it, vi } from "vitest";
 import { buildWorld } from "../pipeline/walker_replay.ts";
 import { edgeBearing, nameVisibility, spawnCamera } from "../pipeline/identity_camera.ts";
-import { IDENTITY_RANGE_M } from "../../../apps/web/src/explorer/identityFraming.ts";
+import { IDENTITY_RANGE_M, MAX_NAME_HEIGHT_NDC, identityFraming, type FramingBoard, type FramingRig, type NdcRect } from "../../../apps/web/src/explorer/identityFraming.ts";
+import { identityFront, identityNameCentre, identityNameCorners, parseIdentityBoard, withinObject } from "../../../apps/web/src/explorer/identityBoards.ts";
+import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
+import { FOLLOW, FOLLOW_CAT, FOV, catShoulder, followPose, solveRaisedBoom } from "../../../apps/web/src/explorer/followCamera.ts";
+import { CAT_AVATAR_HEIGHT_M } from "../../../apps/web/src/explorer/avatarSelection.ts";
+import { freeArea } from "../../../apps/web/src/explorer/overviewFraming.ts";
 import { buildSigns, identityTypography, IDENTITY_TYPE, LOW_TEXEL_SCALE, type IdentityBoard, type SignSpec } from "./signs.ts";
 import identity from "./identity.json";
 import signage from "./signage.json";
@@ -272,6 +277,164 @@ it("reports the cat camera's identity baseline at rest, spawn × view × project
     ["sp_e", "opening", null], ["w_c", "opening", null], ["sw_h", "opening", null],
     ["c_mid", "spec13+0", null], ["c_e2", "spec13+0", null], ["n_h", "spec13+0", null],
     ["sp_e", "spec13+0", null], ["w_c", "spec13+0", null], ["sw_h", "spec13+0", 0],
+  ]);
+  built.dispose();
+}, 30_000);
+
+it("replays Explorer's initial identity framing for the cat and reports why it finds no look (#342)", async () => {
+  const world = await buildWorld();
+  const built = build();
+  built.group.updateMatrixWorld(true);
+  const targets = [...world.ground, ...world.collider];
+  const sceneBoards = boards.map((b) => ({ id: b.id, spec: b, board: parseIdentityBoard(built.group.getObjectByName(b.id)!)! }));
+  // Explorer's ndcFree comes from freeRect() (explorer.ts). On a phone in walk the search panel is folded
+  // (app.ts PanelFold.fold for max-width 720), the route sheet only counts in overview (sheetInset), and the
+  // credit line is 38 px tall at that width (.app.has-credit inside @media max-width 720, styles.css:300);
+  // safe-area inset is 0 in a browser. The top-right walk minimap is also visible then, but its rect needs a
+  // layout pass this node test does not have, so it is not subtracted here.
+  const phoneFree = freeArea({ w: 390, h: 844 }, null, 38, null);
+  const phoneNdc = { x0: 2*phoneFree.x/390-1, x1: 2*(phoneFree.x+phoneFree.w)/390-1,
+    y0: 1-2*(phoneFree.y+phoneFree.h)/844, y1: 1-2*phoneFree.y/844 };
+  // The walk minimap IS visible on a phone (Minimap.refresh shows it in every non-overview mode): 190 px wide,
+  // 16 px from the right, top 60 px (styles.css .minimap). Its height needs layout (map 190x190 + two 28 px
+  // control rows + 4 px gaps + 6 px padding + border); 260 px is the estimate used here, so this rect is
+  // approximate while the credit-only one above is read off the CSS.
+  const minimapFree = freeArea({ w: 390, h: 844 }, null, 38, { x: 390-16-190, y: 60, w: 190, h: 260 });
+  const minimapNdc = { x0: 2*minimapFree.x/390-1, x1: 2*(minimapFree.x+minimapFree.w)/390-1,
+    y0: 1-2*(minimapFree.y+minimapFree.h)/844, y1: 1-2*minimapFree.y/844 };
+  const rows = [];
+  for (const view of ["opening", "spec13+0"] as const) for (const nid of station.spawnNodeIds as string[]) {
+    const edge = edgeBearing(nid, nodes, graph.edges);
+    const heading = view === "opening" ? 0 : edge.heading;
+    for (const [project, w, h] of [["phone", 390, 844], ["desktop", 1280, 720]] as const) {
+      const rest = spawnCamera(world, nodes.get(nid)!.position, w, h, heading, "cat");
+      const spawnRenderer = toRenderer(nodes.get(nid)!.position.x, nodes.get(nid)!.position.y, nodes.get(nid)!.position.z);
+      const feet = new THREE.Vector3(spawnRenderer.x, rest.ground, spawnRenderer.z);
+      const head = feet.clone().add(new THREE.Vector3(0, FOLLOW_CAT.pivotY, 0));
+      const ray = new THREE.Raycaster();
+      // Explorer.frameInitialIdentity's board list: cameraTargets minus signs (this world carries none) and
+      // minus anything inside the board's own object.
+      const framing: (FramingBoard & { id: string })[] = sceneBoards.map(({ spec, board }) => {
+        const centre = identityNameCentre(board);
+        const boardTargets = targets.filter((o) => !withinObject(o, board.object));
+        const visible = (from: THREE.Vector3, to: THREE.Vector3) => {
+          const direction = to.clone().sub(from);
+          ray.set(from, direction.clone().normalize());
+          ray.near = 0;
+          ray.far = Math.max(0, direction.length()-0.05);
+          return castAll(ray, boardTargets).length === 0;
+        };
+        return { id: spec.id, centre, front: identityFront(board), nameCorners: identityNameCorners(board),
+          blocked: head.distanceTo(centre) > IDENTITY_RANGE_M || !visible(head, centre), visible };
+      });
+      // The same cat rig frameInitialIdentity builds; cameraSides is empty (the CPU world has no blockers).
+      const top = feet.clone().add(new THREE.Vector3(0, CAT_AVATAR_HEIGHT_M, 0));
+      const rig: FramingRig = {
+        shoulder: catShoulder(w/h), lift: FOLLOW_CAT.lift, drop: FOLLOW_CAT.drop, distance: FOLLOW_CAT.distance,
+        body: [feet, top],
+        clear: (cameraPos, pivot) => {
+          const cast = (back: THREE.Vector3) => {
+            ray.set(pivot, back);
+            ray.near = 0;
+            ray.far = FOLLOW_CAT.distance+FOLLOW.clearance;
+            return castAll(ray, targets).map((hit) => ({ distance: hit.distance, cameraOnly: false }));
+          };
+          const solved = solveRaisedBoom(FOLLOW_CAT.distance, cameraPos.clone().sub(pivot).normalize(), cast, 0, 0, true);
+          if (solved.distance < FOLLOW.comfortDistance) return false;
+          const settled = pivot.clone().addScaledVector(solved.back, solved.distance);
+          const direction = feet.clone().lerp(top, 0.5).sub(settled);
+          ray.set(settled, direction.clone().normalize());
+          ray.near = 0;
+          ray.far = Math.max(0, direction.length()-0.05);
+          return castAll(ray, targets).length === 0;
+        },
+      };
+      for (const [freeLabel, free] of [["full", { x0: -1, y0: -1, x1: 1, y1: 1 }], ...(project === "phone" ? [["phone-walk", phoneNdc], ["phone-walk+minimap", minimapNdc]] as const : [])] as [string, NdcRect][]) {
+        const look = identityFraming(head, rest.yaw, rest.pitch, framing, w/h, FOV.follow, undefined, free, rig);
+        // Copy of identityFraming's per-board gates, in its order (diagnosis only; the call above decides).
+        const tanV = Math.tan(THREE.MathUtils.degToRad(FOV.follow/2)), tanH = tanV*(w/h);
+        const left = Math.max(-1, free.x0), right = Math.min(1, free.x1);
+        const freeBottom = Math.max(-1, free.y0), freeTop = Math.min(1, free.y1);
+        const bottom = Math.max(-0.4, freeBottom), topBand = Math.min(0.7, freeTop);
+        const minX = left+(right-left)*0.2, maxX = right-(right-left)*0.2;
+        const targetX = (minX+maxX)/2, targetY = THREE.MathUtils.clamp(0.25, bottom+(topBand-bottom)*0.2, topBand-(topBand-bottom)*0.2);
+        const rejections = framing.slice().sort((a, b) => head.distanceToSquared(a.centre)-head.distanceToSquared(b.centre)).map((board) => {
+          const toward = board.centre.clone().sub(head), distance = toward.length();
+          if (board.blocked) return { board: board.id, reason: distance > IDENTITY_RANGE_M ? "blocked: out of range" : "blocked: occluded from head" };
+          if (distance < 0.1) return { board: board.id, reason: "too close" };
+          if (board.front.dot(toward.clone().negate().normalize()) <= 0.2) return { board: board.id, reason: "back face at spawn" };
+          const camera = new THREE.PerspectiveCamera(FOV.follow, w/h, 0.05, 100);
+          let y = Math.atan2(-toward.x, -toward.z);
+          let p = THREE.MathUtils.clamp(Math.atan2(toward.y, Math.hypot(toward.x, toward.z)), -1.1, 0.5);
+          const project = () => {
+            const pose = followPose(head, y, p, rig.shoulder, rig.lift, rig.drop);
+            camera.position.copy(pose.pivot).addScaledVector(pose.back, rig.distance);
+            camera.lookAt(pose.target);
+            camera.updateMatrixWorld(true);
+            return board.centre.clone().project(camera);
+          };
+          for (let i = 0; i < 8; i++) {
+            const ndc = project();
+            y -= Math.atan((ndc.x-targetX)*tanH);
+            p = THREE.MathUtils.clamp(p+Math.atan((ndc.y-targetY)*tanV), -1.1, 0.5);
+          }
+          const ndc = project();
+          if (ndc.x < minX || ndc.x > maxX || ndc.y < bottom || ndc.y > topBand || Math.abs(ndc.z) > 1) return { board: board.id, reason: "centre outside free band" };
+          const name = board.nameCorners.map((c) => c.clone().project(camera));
+          if (!name.length || name.some((c) => Math.abs(c.z) > 1)) return { board: board.id, reason: "name behind camera" };
+          const box = new THREE.Box3().setFromPoints(name);
+          if (box.max.y-box.min.y > MAX_NAME_HEIGHT_NDC || box.min.x < left || box.max.x > right || box.min.y < freeBottom || box.max.y > freeTop) return { board: board.id, reason: "name box outside free area" };
+          if (rig.body!.some((point) => {
+            const c = point.clone().project(camera);
+            return Math.abs(c.z) > 1 || c.x < left || c.x > right || c.y < freeBottom || c.y > freeTop;
+          })) return { board: board.id, reason: "cat body outside free area" };
+          if (rig.clear && !rig.clear(camera.position.clone(), followPose(head, y, p, rig.shoulder, rig.lift, rig.drop).pivot)) return { board: board.id, reason: "boom cannot clear" };
+          if (board.front.dot(camera.position.clone().sub(board.centre).normalize()) <= 0.2) return { board: board.id, reason: "back face at look" };
+          if (board.visible && !board.visible(camera.position.clone(), board.centre.clone())) return { board: board.id, reason: "not visible from camera" };
+          return { board: board.id, reason: "accepted" };
+        });
+        const chosenBoard = look ? framing.find((b) => b.centre.distanceTo(look.centre) < 1e-9)! : null;
+        const applied = look && chosenBoard ? (() => {
+          const spec = sceneBoards.find((s) => s.id === chosenBoard.id)!.spec;
+          const moved = spawnCamera(world, nodes.get(nid)!.position, w, h, 0, "cat", { yaw: look.yaw, pitch: look.pitch });
+          const { jp, en, result } = projectBoard(built, spec, moved.camera, h);
+          return { pass: result.pass, reasons: result.reasons, jp, en,
+            distanceM: moved.camera.position.distanceTo(toRenderer(spec.position.x, spec.position.y, spec.position.z)),
+            cameraHeightM: moved.height, lookPitchDeg: THREE.MathUtils.radToDeg(moved.lookPitch), boomRaiseDeg: THREE.MathUtils.radToDeg(moved.raise), boomM: moved.distance };
+        })() : null;
+        rows.push({ spawn: nid, view, project, ndcFree: freeLabel, found: Boolean(look), chosen: chosenBoard?.id ?? null,
+          lookYawDeg: look ? THREE.MathUtils.radToDeg(look.yaw) : null, lookPitchDeg: look ? THREE.MathUtils.radToDeg(look.pitch) : null,
+          applied, rejections });
+      }
+    }
+  }
+  console.log("cat identity framing", JSON.stringify(rows));
+  evidence.catIdentityFraming = rows;
+  // Observed baseline (2026-11-08 JST), pinned so any framing or camera change shows as a diff.
+  expect(rows).toHaveLength(station.spawnNodeIds.length*2*4);
+  expect(rows.filter((r) => !r.found).map((r) => `${r.spawn} ${r.view} ${r.project} ${r.ndcFree}`)).toEqual([
+    "n_h opening phone phone-walk+minimap",
+    "n_h spec13+0 phone phone-walk+minimap",
+  ]);
+  // Every look that is found chooses the board anchored at that spawn.
+  expect(rows.filter((r) => r.found && r.chosen !== `identity-${r.spawn}`)).toEqual([]);
+  // Applying the look: the board is fully in frame everywhere, but the cat camera only clears the
+  // text-size proxy for w_c (both views) and sw_h (phone) — see the "applied" reasons in the log.
+  expect(rows.filter((r) => r.applied?.pass).map((r) => `${r.spawn} ${r.view} ${r.project} ${r.ndcFree}`)).toEqual([
+    "w_c opening phone full",
+    "w_c opening phone phone-walk",
+    "w_c opening phone phone-walk+minimap",
+    "w_c opening desktop full",
+    "sw_h opening phone full",
+    "sw_h opening phone phone-walk",
+    "sw_h opening phone phone-walk+minimap",
+    "w_c spec13+0 phone full",
+    "w_c spec13+0 phone phone-walk",
+    "w_c spec13+0 phone phone-walk+minimap",
+    "w_c spec13+0 desktop full",
+    "sw_h spec13+0 phone full",
+    "sw_h spec13+0 phone phone-walk",
+    "sw_h spec13+0 phone phone-walk+minimap",
   ]);
   built.dispose();
 }, 30_000);

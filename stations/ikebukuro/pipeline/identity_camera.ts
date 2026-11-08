@@ -23,10 +23,11 @@ export function edgeBearing(id: string, nodes: Map<string, { position: Point }>,
   return { heading: Math.round((Math.atan2(target.x-here.x, target.y-here.y)*180/Math.PI+360)%360), edge: edge.id };
 }
 
-export function spawnCamera(world: World, position: Point, w: number, h: number, heading = 0, avatar: "human" | "cat" = "human") {
+export function spawnCamera(world: World, position: Point, w: number, h: number, heading = 0, avatar: "human" | "cat" = "human", look?: { yaw: number; pitch: number }) {
   const walker = new ReplayWalker(world);
   if (!walker.spawn(position)) throw new Error("No spawn ground");
-  const yaw = -heading*Math.PI/180, pitch = avatar === "cat" ? FOLLOW_CAT.pitch : -0.12;
+  // `look` applies an exact yaw/pitch (radians), as frameInitialIdentity hands back to placeCamera.
+  const yaw = look?.yaw ?? -heading*Math.PI/180, pitch = look?.pitch ?? (avatar === "cat" ? FOLLOW_CAT.pitch : -0.12);
   const head = walker.pos.clone().add(new THREE.Vector3(0, avatar === "cat" ? FOLLOW_CAT.pivotY : WALKER_BODY.eyeM, 0));
   // B1 context blockers are on OFF_LAYER. The scene files ceilings as ordinary colliders;
   // signs and column dressing never join Explorer's camera target set.
