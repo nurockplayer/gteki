@@ -207,6 +207,8 @@ const STRINGS = {
     factsOnly: "ライセンスなし・事実のみ参照（複製なし）",
     rightsDecision: "権利判断",
     assetDerivations: "3D素材の加工内容",
+    /** #854: third-party 3D model credits (the cat's upstream credit line). */
+    models3d: "3D モデル",
     dataFileDerivations: "データファイルの出典と加工",
     derivationDetails: "加工の詳細",
     symbolicHeight: "高さは表示用の推定です",
@@ -454,6 +456,8 @@ const STRINGS = {
     factsOnly: "No licence; cited for facts only (not reproduced)",
     rightsDecision: "Rights decision",
     assetDerivations: "3D asset derivations",
+    /** #854: third-party 3D model credits (the cat's upstream credit line). */
+    models3d: "3D models",
     dataFileDerivations: "Data files: sources and derivations",
     derivationDetails: "Derivation details",
     symbolicHeight: "Heights are display estimates",

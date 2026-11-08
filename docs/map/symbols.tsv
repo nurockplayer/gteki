@@ -11,8 +11,11 @@ drawnSources	function	apps/web/src/creditLine.ts
 entryRightsLabels	function	apps/web/src/creditLine.ts
 groupByAttribution	function	apps/web/src/creditLine.ts
 groupLicenses	function	apps/web/src/creditLine.ts
+CAT_MODEL_CREDIT	const	apps/web/src/credits.ts
 DataFileCredit	interface	apps/web/src/credits.ts
 FactsOnlyCredit	interface	apps/web/src/credits.ts
+MODEL_CREDITS	const	apps/web/src/credits.ts
+ModelCredit	interface	apps/web/src/credits.ts
 OverrideCredit	interface	apps/web/src/credits.ts
 SourceCredit	interface	apps/web/src/credits.ts
 assetDerivationPresentation	function	apps/web/src/credits.ts
