@@ -166,11 +166,17 @@ async function drag(page: Page, at: Pt, dx: number): Promise<number> {
   return sent;
 }
 
-/** Where the camera looks, compass degrees (0 = north, 90 = east): avatar minus camera, renderer frame (x, up, -north). */
+/** Camera-to-avatar bearing, compass degrees in the renderer frame (x, up, -north). */
 async function facingOf(page: Page): Promise<number> {
   const cam = (await hooks.sceneInfo(page)).camera as number[];
   const av = await hooks.avatar(page);
   return Math.round(((Math.atan2(av.x - cam[0]!, -(-av.y - cam[2]!)) * 180) / Math.PI + 360) % 360);
+}
+
+/** Horizontal view direction, compass degrees. */
+async function viewFacingOf(page: Page): Promise<number> {
+  const direction = (await hooks.sceneInfo(page)).cameraDirection as number[];
+  return (Math.atan2(direction[0]!, -direction[2]!) * 180 / Math.PI + 360) % 360;
 }
 
 /** A point on the canvas that is not covered by UI, to start drags from. */
@@ -261,6 +267,7 @@ interface Row {
   /** The off-graph waypoints walked from the node (">x/y" text, null when none) and the walkPath result. */
   walkTo: string | null; walk: { done: boolean; stuck: boolean; timedOut: boolean } | null;
   renderInfo: unknown; sceneInfo: unknown;
+  avatarFacing?: number;
   turnLog?: { heading: number; facing: number; cameraDirection: number; dx: number }[];
   layer?: {
     name: string; found: number; meshes: number; triangles: number; textures: number; textureBytesEst: number;
@@ -396,16 +403,15 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       // 2026-10-29 shop hero run (#209). Up to three corrections, then carry the real yaw to the next heading.
       for (let i = 0; i < 3; i++) {
         const facing = await facingOf(page);
-        const direction = (await hooks.sceneInfo(page)).cameraDirection as number[];
-        const cameraDirection = round((Math.atan2(direction[0]!, -direction[2]!) * 180 / Math.PI + 360) % 360);
-        const err = ((heading - facing + 540) % 360) - 180;
+        const cameraDirection = await viewFacingOf(page);
+        const err = ((heading - cameraDirection + 540) % 360) - 180;
         const correction = Math.abs(err) < HEADING_TOL_DEG ? 0 : Math.round((err * Math.PI) / 180 / LOOK_RAD_PER_PX);
-        turnLog.push({ heading, facing, cameraDirection, dx: correction });
+        turnLog.push({ heading, facing, cameraDirection: round(cameraDirection), dx: correction });
         if (Math.abs(err) < HEADING_TOL_DEG) break;
         await drag(page, at, correction);
         await page.waitForTimeout(SETTLE_MS);
       }
-      yaw = wrapRad((-(await facingOf(page)) * Math.PI) / 180);
+      yaw = wrapRad((-(await viewFacingOf(page)) * Math.PI) / 180);
 
       const m = await measure(page, FRAMES);
       let layer: Row["layer"];
@@ -434,7 +440,8 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       const vis = await visibilityOf(page);
       const info = await hooks.sceneInfo(page);
       const av = await hooks.avatar(page);
-      const facing = await facingOf(page);
+      const facing = await viewFacingOf(page);
+      const avatarFacing = await facingOf(page);
       const diff = Math.abs(((facing - heading + 540) % 360) - 180);
 
       // Spots that walk off the graph carry their list index, so two targets from one node never share a file.
@@ -446,7 +453,7 @@ test("ikebukuro vantage shots: gates, rails and street exits @phone", async ({ p
       const any = info as Record<string, unknown>;
       const renderInfo = any.renderer ?? any.info ?? any.render ?? null;
       rows.push({
-        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing, headingOk: diff <= HEADING_TOL_DEG, turnLog,
+        ...base, offsetDeg: h.deg, absolute: h.absolute, heading, facing: round(facing), avatarFacing, headingOk: diff <= HEADING_TOL_DEG, turnLog,
         draws: drawsP50, drawsMax, tris: pct(m.tris, 0.5), trisMax: Math.max(...m.tris), frames: m.draws.length, zeroFrames: m.zeroFrames,
         ...ft, visibility: vis.visibility, focused: vis.focused,
         ...(layer ? { layer } : {}),
