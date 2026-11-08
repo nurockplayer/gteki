@@ -69,7 +69,7 @@ const MAIN_BASELINE = {
     "nodesDigest": "b9e5fefe3b0b351d2b595363d05364c33424c9b629421cc4c755b9dfb389b779",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
     "meshes": 96,
-    "bytes": 16493354
+    "bytes": 16494482
   },
   "lists": {
     "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",
