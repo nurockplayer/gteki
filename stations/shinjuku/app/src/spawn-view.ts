@@ -44,10 +44,10 @@ export function catArrivalRise(opts: { eye: XYZ; look: XYZ; feet: XYZ; heading: 
   if (!nearest) return 0;
   const L = Math.hypot(look.x - eye.x, look.y - eye.y);
   const base = Math.atan2(look.z - eye.z, L);
-  const boardD = Math.hypot(nearest.x - eye.x, nearest.y - eye.y);
-  const wanted = Math.atan2(nearest.z - eye.z, boardD) - Math.atan(CAT_ARRIVAL.boardNdc * tanV);
-  const feetD = Math.hypot(feet.x - eye.x, feet.y - eye.y);
-  const allowed = Math.atan2(feet.z - eye.z, feetD) + Math.atan(CAT_ARRIVAL.feetNdc * tanV);
+  // Screen height depends on depth along the view direction, not the straight-line distance (#1019).
+  const depth = (p: XYZ) => ((p.x - eye.x) * (look.x - eye.x) + (p.y - eye.y) * (look.y - eye.y)) / L;
+  const wanted = Math.atan2(nearest.z - eye.z, depth(nearest)) - Math.atan(CAT_ARRIVAL.boardNdc * tanV);
+  const allowed = Math.atan2(feet.z - eye.z, depth(feet)) + Math.atan(CAT_ARRIVAL.feetNdc * tanV);
   const elevation = Math.min(wanted, allowed);
   if (!(elevation > base)) return 0;
   return eye.z + Math.tan(elevation) * L - look.z;

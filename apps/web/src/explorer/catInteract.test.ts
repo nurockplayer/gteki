@@ -28,6 +28,7 @@ function explorer(overrides: Record<string, unknown>): any {
     catMeowSound: null,
     audio: null,
     ensureAudio: () => true,
+    pawCarriedM: 0,
     ...overrides,
   });
   return e;
@@ -117,5 +118,13 @@ describe("Explorer.stepPaws", () => {
     e.stepPaws(0.1, 5); // 0.5 m of travel: two steps due, one tap per frame
     expect(playPawStep).toHaveBeenCalledTimes(1);
     expect(vi.mocked(playPawStep).mock.calls[0]![2]).toBe("tile");
+    expect(e.pawCarriedM).toBeCloseTo(0);
+  });
+
+  it("does not tap before a step is due and carries the distance", () => {
+    const e = explorer({ mode: "walk", audio: { context: { state: "running" }, master: {} } });
+    e.stepPaws(0.1, 1); // 0.1 m of travel, under one paw step
+    expect(playPawStep).not.toHaveBeenCalled();
+    expect(e.pawCarriedM).toBeCloseTo(0.1);
   });
 });
