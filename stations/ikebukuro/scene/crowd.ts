@@ -899,8 +899,8 @@ export function buildCrowd(
   };
   // A fixed head-count spread over every verified passage is ~1 person per 30 m on phones. Instead,
   // people far from the camera and out of view step back in 6-40 m away on low tier, or 12-40 m
-  // on high tier. Low tier prefers landings ahead of the camera and walks toward the nearer path
-  // endpoint, so a person beyond the top of the frame can walk into it.
+  // on high tier. Low tier prefers landings ahead of the camera and walks toward the camera
+  // along the local path tangent, so a person beyond the top of the frame can walk into it.
   const FAR_M = 50, SPAWN_MIN_M = low ? 6 : 12, SPAWN_MAX_M = 40, MAX_MOVES_PER_FRAME = 2;
   // The camera's actual view volume, padded by a body-sized sphere (any aspect ratio or FOV).
   const body = new THREE.Sphere(new THREE.Vector3(), 1.2);
@@ -919,11 +919,8 @@ export function buildCrowd(
       // spot ahead of it; the last 8 keep the old rule so a passage that only runs backwards still
       // accepts a landing.
       if (low && attempt < 16 && dx * camForward.x + dz * camForward.z < 0) continue;
-      const p = paths[k]!;
-      // Low-tier walkers head toward the endpoint nearer the camera; high tier keeps its random direction.
-      const toStart = Math.hypot(p.pts[0]!.x - cam.x, p.pts[0]!.z - cam.z);
-      const toEnd = Math.hypot(p.pts[p.pts.length - 1]!.x - cam.x, p.pts[p.pts.length - 1]!.z - cam.z);
-      a.forward = !low || Math.abs(toStart - toEnd) < 1e-6 ? rand() < 0.5 : toEnd < toStart;
+      const towardCamera = -dir.x * dx - dir.z * dz;
+      a.forward = !low || Math.abs(towardCamera) < 1e-6 ? rand() < 0.5 : towardCamera > 0;
       a.path = k;
       a.s = Math.min(paths[k]!.length, r);
       a.hiddenUntil = renders;

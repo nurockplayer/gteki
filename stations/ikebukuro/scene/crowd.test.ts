@@ -816,7 +816,10 @@ describe("ikebukuro crowd relocation", () => {
     const next = read(c);
     const crossMoves = moved.filter((m) => Math.abs(m.z + 8) < 1 && next[m.index]!.scale > 1e-6);
     expect(crossMoves.length).toBeGreaterThan(2);
-    if (count === 80) expect(crossMoves.every((m) => next[m.index]!.x > m.x)).toBe(true);
+    if (count === 80) {
+      expect(crossMoves.some((m) => m.x > 1)).toBe(true);
+      expect(crossMoves.every((m) => Math.hypot(next[m.index]!.x, next[m.index]!.z) < Math.hypot(m.x, m.z))).toBe(true);
+    }
     else {
       expect(crossMoves.some((m) => next[m.index]!.x > m.x)).toBe(true);
       expect(crossMoves.some((m) => next[m.index]!.x < m.x)).toBe(true);
