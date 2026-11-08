@@ -7,19 +7,25 @@ export type StationZone = "outdoor" | "platform" | "concourse" | "passage";
 
 /** A zone anchor in renderer coordinates (the explorer's frame: x east, y up, z south). */
 export interface ZoneAnchor {
-  kind: "platform" | "ticket_gate";
+  kind: "platform" | "ticket_gate" | "exit";
   x: number;
   y: number;
   z: number;
 }
 
-/** Platform and ticket-gate graph nodes in renderer coordinates, the anchors classifyZone measures against. */
+/**
+ * Platform and ticket-gate graph nodes, plus exits on street-level floors and above (ordinal >= 0), in
+ * renderer coordinates: the anchors classifyZone measures against. Exits on lower floors are underground
+ * passages, and an exit whose floor is missing or has no ordinal is skipped.
+ */
 export function zoneAnchors(nodes: readonly Node[], floors: readonly Floor[]): ZoneAnchor[] {
   const byId = new Map(floors.map((f): [string, Floor] => [f.id, f]));
   const anchors: ZoneAnchor[] = [];
   for (const node of nodes) {
-    if (node.kind !== "platform" && node.kind !== "ticket_gate") continue;
-    const at = R(node.position.x, node.position.y, nodeDisplayZ(node, byId.get(node.floorId)).z);
+    if (node.kind !== "platform" && node.kind !== "ticket_gate" && node.kind !== "exit") continue;
+    const floor = byId.get(node.floorId);
+    if (node.kind === "exit" && !(floor && floor.ordinal !== null && floor.ordinal >= 0)) continue;
+    const at = R(node.position.x, node.position.y, nodeDisplayZ(node, floor).z);
     anchors.push({ kind: node.kind, x: at.x, y: at.y, z: at.z });
   }
   return anchors;
@@ -28,10 +34,20 @@ export function zoneAnchors(nodes: readonly Node[], floors: readonly Floor[]): Z
 const PLATFORM_RADIUS_M = 40;
 const TICKET_GATE_RADIUS_M = 25;
 const VERTICAL_LIMIT_M = 3;
+const EXIT_RADIUS_M = 4;
+const EXIT_VERTICAL_M = 1.5;
 
-/** First match wins: outdoors, then a platform anchor, then a ticket-gate anchor, else passage. */
+/**
+ * First match wins: outdoors, then a street-level exit, then a platform anchor, then a ticket-gate anchor,
+ * else passage.
+ */
 export function classifyZone(pos: { x: number; y: number; z: number }, outdoors: boolean, anchors: readonly ZoneAnchor[]): StationZone {
   if (outdoors) return "outdoor";
+  // A walker standing at a street-level exit is outdoors, whether or not a canopy caps the sky probe.
+  for (const anchor of anchors) {
+    if (anchor.kind !== "exit") continue;
+    if (Math.abs(pos.y - anchor.y) <= EXIT_VERTICAL_M && Math.hypot(pos.x - anchor.x, pos.z - anchor.z) <= EXIT_RADIUS_M) return "outdoor";
+  }
   let concourse = false;
   for (const anchor of anchors) {
     if (Math.abs(pos.y - anchor.y) > VERTICAL_LIMIT_M) continue;
