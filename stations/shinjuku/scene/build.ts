@@ -100,11 +100,11 @@ function makeTrainAudio(tracks: { at: (s: number, off: number) => { x: number; y
     const tt = (clock.value + tr.phase) % headway;
     const car = tr.cars[Math.floor(tr.cars.length / 2)]!;
     const p = tr.at(tr.stopS, tr.trackOff);
-    const stop = new THREE.Vector3(p.x, tr.z - 1.1, -p.y);
+    const stop = new THREE.Vector3(p.x, tr.z - 0.255, -p.y);
     car.parent?.localToWorld(stop);
     const stopEnds = [-1, 1].map((direction) => {
       const end = tr.at(tr.stopS + direction * (tr.cars.length - 1) * CAR_PITCH / 2, tr.trackOff);
-      const point = new THREE.Vector3(end.x, tr.z - 1.1, -end.y);
+      const point = new THREE.Vector3(end.x, tr.z - 0.255, -end.y);
       return car.parent ? car.parent.localToWorld(point) : point;
     }) as [THREE.Vector3, THREE.Vector3];
     const pos = tt >= 14 && tt < 40 ? stop.clone() : tt < 54 ? car.getWorldPosition(new THREE.Vector3()).add(tr.cars[tr.cars.length / 2 - 1]!.getWorldPosition(new THREE.Vector3())).multiplyScalar(0.5) : null;
