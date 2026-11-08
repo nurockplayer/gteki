@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: GTEki contributors
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -43,6 +43,18 @@ describe("clear-artifacts.sh (#1017)", () => {
     for (const gone of ["evidence", "manifest.json", "results.json", "test-results"]) {
       expect(existsSync(join(artifacts, gone)), gone).toBe(false);
     }
+  });
+
+  it("removes a symlinked artifacts directory as a link, never emptying its target", () => {
+    rmSync(artifacts, { recursive: true, force: true });
+    const target = join(root, "elsewhere");
+    mkdirSync(target);
+    writeFileSync(join(target, "keep.txt"), "x");
+    symlinkSync(target, artifacts);
+    execFileSync("sh", [script, artifacts]);
+    expect(existsSync(join(target, "keep.txt"))).toBe(true);
+    expect(lstatSync(artifacts).isSymbolicLink()).toBe(false);
+    expect(readdirSync(artifacts)).toEqual([]);
   });
 
   it("creates a missing artifacts directory", () => {

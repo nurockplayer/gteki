@@ -9,6 +9,8 @@
 set -eu
 
 dir=${1:?usage: tools/qa/clear-artifacts.sh <artifacts-dir>}
+# A symlinked artifacts dir is removed as a link, as the old rm -rf did; its target is never emptied.
+if [ -L "$dir" ]; then rm -f "$dir"; fi
 mkdir -p "$dir"
 for entry in "$dir"/* "$dir"/.[!.]* "$dir"/..?*; do
   [ -e "$entry" ] || [ -L "$entry" ] || continue
