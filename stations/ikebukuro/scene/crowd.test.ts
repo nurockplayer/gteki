@@ -765,7 +765,8 @@ describe("ikebukuro crowd relocation", () => {
     cross,
   ] as unknown as typeof edges;
   const EYE = 1.6;
-  const camera = new THREE.PerspectiveCamera(70, 1, 0.05, 400);
+  // A narrow view leaves a substantial 6–12 m landing region outside the padded frustum.
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 400);
   camera.position.set(0, EYE, 0);
   camera.lookAt(0, 1.0, -10);
   camera.updateMatrixWorld(true);
