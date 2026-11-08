@@ -46,6 +46,12 @@ export interface BuiltStation {
    * uploads instance matrices before a mesh's own callback runs, so packing there is a frame late.
    */
   beforeRender?(renderer: THREE.WebGLRenderer | null, camera: THREE.Camera): void;
+  /**
+   * Companion to `beforeRender`: the host calls it from its scene's onAfterRender, which Three.js runs at
+   * the end of a render, to put back the level groups that frame hid. Low tier only; safe to call twice or
+   * without a `beforeRender` before it.
+   */
+  afterRender?(): void;
   /** W2: ENU camera position controls render-only street visibility. */
   setViewer?(pos: XYZ): void;
   /** QA readout of the decorative train cycle per platform track. */
@@ -1571,6 +1577,50 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     return count;
   }
+  // #1023: the low tier draws only the levels the camera can be looking into: its own level, the levels
+  // directly above and below by z, and every level a stair/escalator run joins to its own. Hiding happens
+  // in beforeRender and is undone in afterRender, so raycasts, the walker and overview hooks keep seeing
+  // every group. The arrays are copied here because buildStation drops `layout` before the hooks run (#72).
+  const levelPlan = layout.levels.map((lv) => ({ floorId: lv.floorId, z: lv.z })).sort((a, b) => a.z - b.z);
+  const runEnds = layout.runs.map((r) => ({ a: r.a.z, b: r.b.z }));
+  const levelCamera = new THREE.Vector3();
+  let hiddenLevels: { group: THREE.Group; visible: boolean }[] = [];
+  const restoreLevels = () => {
+    for (const h of hiddenLevels) h.group.visible = h.visible;
+    hiddenLevels = [];
+  };
+  /** Floor ids to draw for a camera at this root-local height, or null to draw them all (overview/street). */
+  const visibleLevelIds = (cameraY: number): Set<string> | null => {
+    const top = levelPlan[levelPlan.length - 1]!;
+    if (cameraY > top.z + 3) return null;
+    // The camera's level is the highest one at or below the camera (0.5 m of eye-height slack); below the
+    // lowest level it is the lowest itself.
+    let ownIndex = 0;
+    for (const [i, lv] of levelPlan.entries()) if (lv.z <= cameraY + 0.5) ownIndex = i;
+    const own = levelPlan[ownIndex]!;
+    const ids = new Set<string>();
+    for (let i = Math.max(0, ownIndex - 1); i <= Math.min(levelPlan.length - 1, ownIndex + 1); i++) ids.add(levelPlan[i]!.floorId);
+    // A run (stairs or escalator) joined to the camera's level keeps its other end visible through the opening.
+    const join = (z: number) => {
+      for (const lv of levelPlan) if (Math.abs(lv.z - z) <= 0.3) ids.add(lv.floorId);
+    };
+    for (const run of runEnds) {
+      if (Math.abs(run.a - own.z) <= 0.3) join(run.b);
+      if (Math.abs(run.b - own.z) <= 0.3) join(run.a);
+    }
+    return ids;
+  };
+  const hideUnseenLevels = (camera: THREE.Camera) => {
+    restoreLevels(); // a frame whose afterRender never ran must not leak into this one
+    const ids = visibleLevelIds(root.worldToLocal(camera.getWorldPosition(levelCamera)).y);
+    if (!ids) return;
+    for (const [floorId, group] of levelGroups) {
+      if (ids.has(floorId)) continue;
+      hiddenLevels.push({ group, visible: group.visible });
+      group.visible = false;
+    }
+  };
+
   let prepareSteps: BuiltStation["beforeRender"];
   if (sharedSteps) {
     const frustum = new THREE.Frustum(), projection = new THREE.Matrix4(), worldBox = new THREE.Box3();
@@ -1593,6 +1643,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       }
       sharedSteps.count = packed;
       sharedSteps.instanceMatrix.needsUpdate = true;
+      hideUnseenLevels(camera);
     };
   }
   update(0, 0);
@@ -1624,7 +1675,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     identityBoards,
     levelGroups,
     update(dt, t) { update(dt, t); surface.update(dt, t); },
-    ...(prepareSteps ? { beforeRender: prepareSteps } : {}),
+    ...(prepareSteps ? { beforeRender: prepareSteps, afterRender: restoreLevels } : {}),
     setViewer(position) { surface.setViewer(position); kitSwap?.lod?.update(position); },
     trainStatus,
     trainAudio,
@@ -1648,14 +1699,18 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
 /**
  * Install the station's low-tier step packing as `scene`'s onBeforeRender hook, so the shared
- * `escalator-steps:all` batch is packed before Three.js uploads its instance matrices. The explorer reaches
- * the same hook through `StationScene.beforeRender` (stations/shinjuku/gteki/scene.ts); the standalone
- * Shinjuku app calls this one. Returns false on the high tier, whose meshes have nothing to pack per view.
+ * `escalator-steps:all` batch is packed before Three.js uploads its instance matrices, and its
+ * companion `afterRender` as onAfterRender, which restores the level groups that frame hid (#1023).
+ * The explorer reaches the same hooks through `StationScene.beforeRender` / `.afterRender`
+ * (stations/shinjuku/gteki/scene.ts); the standalone Shinjuku app calls this one. Returns false on the
+ * high tier, whose meshes have nothing to pack per view.
  */
 export function installLowTierSteps(scene: THREE.Scene, built: BuiltStation): boolean {
   const prepare = built.beforeRender;
   if (!prepare) return false;
   scene.onBeforeRender = (renderer, _scene, camera) => prepare(renderer, camera);
+  const restore = built.afterRender;
+  if (restore) scene.onAfterRender = () => restore();
   return true;
 }
 

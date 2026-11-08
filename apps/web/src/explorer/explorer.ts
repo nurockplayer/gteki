@@ -457,9 +457,16 @@ export class Explorer {
     if (this.catAvatar) { this.camDistance = FOLLOW_CAT.distance; this.pitch = FOLLOW_CAT.pitch; }
     // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
     // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
-    if (this.quality === "low") this.scene.onBeforeRender = (renderer, _scene, camera) => {
-      if (!this.stepsPaused) this.stationScene?.beforeRender?.(renderer, camera);
-    };
+    if (this.quality === "low") {
+      this.scene.onBeforeRender = (renderer, _scene, camera) => {
+        if (!this.stepsPaused) this.stationScene?.beforeRender?.(renderer, camera);
+      };
+      // Three.js runs this at the end of render, after the frame that hid level groups; restore them so
+      // every other path (raycasts, walker, overview probes) keeps seeing the whole station (#1023).
+      this.scene.onAfterRender = () => {
+        if (!this.stepsPaused) this.stationScene?.afterRender?.();
+      };
+    }
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
