@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { afterAll, afterEach, beforeEach, expect, it, vi } from "vitest";
 import { buildWorld } from "../pipeline/walker_replay.ts";
 import { edgeBearing, nameVisibility, spawnCamera } from "../pipeline/identity_camera.ts";
+import { IDENTITY_RANGE_M } from "../../../apps/web/src/explorer/identityFraming.ts";
 import { buildSigns, identityTypography, IDENTITY_TYPE, LOW_TEXEL_SCALE, type IdentityBoard, type SignSpec } from "./signs.ts";
 import identity from "./identity.json";
 import signage from "./signage.json";
@@ -40,6 +41,35 @@ function stubDocument() {
 beforeEach(() => { paintedText.length = 0; vi.stubGlobal("document", stubDocument()); });
 afterEach(() => vi.unstubAllGlobals());
 const build = (extra = boards, tier = LOW_TEXEL_SCALE) => buildSigns(THREE, signs, toRenderer, 1, tier, 4096, undefined, extra);
+
+/** One board's name-region and text projection from a camera: the recognition proxy used by both spawn tests. */
+function projectBoard(built: ReturnType<typeof build>, b: IdentityBoard, camera: THREE.PerspectiveCamera, h: number) {
+  const proxy = built.group.getObjectByName(b.id)!;
+  proxy.updateMatrixWorld(true);
+  const type = identityTypography(b);
+  const region = proxy.userData.gteki_identity.regions[0];
+  const corners: THREE.Vector3[] = [];
+  for (const x of [region.min[0], region.max[0]]) for (const y of [region.min[1], region.max[1]]) for (const z of [region.min[2], region.max[2]]) {
+    corners.push(new THREE.Vector3(x, y, z).applyMatrix4(proxy.matrixWorld).project(camera));
+  }
+  const projected = (emM: number, centerY: number, x: number) => {
+    if (corners.some((p) => p.z < -1 || p.z > 1)) return null;
+    const cap = emM*IDENTITY_TYPE.cap;
+    const points = [-1, 1].map((side) => new THREE.Vector3((x-0.5)*b.widthM, (0.5-centerY)*b.heightM+side*cap/2, 0.042).applyMatrix4(proxy.matrixWorld));
+    if (points.some((p) => p.clone().applyMatrix4(camera.matrixWorldInverse).z >= -camera.near)) return null;
+    points.forEach((p) => p.project(camera));
+    return Math.abs(points[0]!.y-points[1]!.y)*h/2;
+  };
+  const jp = projected(type.jaM, type.jaY, type.jaX), en = projected(type.enM, type.enY, type.enX);
+  const result = nameVisibility(corners, jp, en);
+  const normal = new THREE.Vector3(0, 0, 1).transformDirection(proxy.matrixWorld);
+  const frontFacing = normal.dot(camera.position.clone().sub(proxy.getWorldPosition(new THREE.Vector3()))) > 0;
+  if (!frontFacing) { result.reasons.push("back face"); result.pass = false; }
+  const minX = Math.min(...corners.map((p) => p.x)), maxX = Math.max(...corners.map((p) => p.x));
+  const minY = Math.min(...corners.map((p) => p.y)), maxY = Math.max(...corners.map((p) => p.y));
+  const edgeOut = Math.max(0, maxX-1, -1-minX, maxY-1, -1-minY);
+  return { proxy, type, region, corners, jp, en, result, frontFacing, edgeOut };
+}
 
 it("declares identity provenance equally, without changing routes or station-code schema", () => {
   const src = json("../data/graph.src.json");
@@ -146,9 +176,6 @@ it("reports real third-person opening failures and spec-13 +0 without recenterin
   for (const view of ["opening", "spec13+0"] as const) for (const nid of station.spawnNodeIds as string[]) {
     const b = boards.find((b) => b.anchor.nodeId === nid)!;
     expect(b, nid).toBeDefined();
-    const proxy = built.group.getObjectByName(b.id)!;
-    proxy.updateMatrixWorld(true);
-    const type = identityTypography(b);
     const edge = edgeBearing(nid, nodes, graph.edges);
     const heading = view === "opening" ? 0 : edge.heading;
     const row: Record<string, unknown> = { spawn: nid, view, heading, board: b.id, edge: edge.edge };
@@ -159,24 +186,7 @@ it("reports real third-person opening failures and spec-13 +0 without recenterin
         poses.push({ spawn: nid, view, ...metrics, position: camera.position.toArray(), fov: camera.fov });
         row.distanceM = camera.position.distanceTo(toRenderer(b.position.x, b.position.y, b.position.z));
       }
-      const region = proxy.userData.gteki_identity.regions[0];
-      const corners: THREE.Vector3[] = [];
-      for (const x of [region.min[0], region.max[0]]) for (const y of [region.min[1], region.max[1]]) for (const z of [region.min[2], region.max[2]]) {
-        corners.push(new THREE.Vector3(x, y, z).applyMatrix4(proxy.matrixWorld).project(camera));
-      }
-      const projected = (emM: number, centerY: number, x: number) => {
-        if (corners.some((p) => p.z < -1 || p.z > 1)) return null;
-        const cap = emM*IDENTITY_TYPE.cap;
-        const points = [-1, 1].map((side) => new THREE.Vector3((x-0.5)*b.widthM, (0.5-centerY)*b.heightM+side*cap/2, 0.042).applyMatrix4(proxy.matrixWorld));
-        if (points.some((p) => p.clone().applyMatrix4(camera.matrixWorldInverse).z >= -camera.near)) return null;
-        points.forEach((p) => p.project(camera));
-        return Math.abs(points[0]!.y-points[1]!.y)*h/2;
-      };
-      const jp = projected(type.jaM, type.jaY, type.jaX), en = projected(type.enM, type.enY, type.enX);
-      const result = nameVisibility(corners, jp, en);
-      const normal = new THREE.Vector3(0, 0, 1).transformDirection(proxy.matrixWorld);
-      const frontFacing = normal.dot(camera.position.clone().sub(proxy.getWorldPosition(new THREE.Vector3()))) > 0;
-      if (!frontFacing) { result.reasons.push("back face"); result.pass = false; }
+      const { jp, en, result, frontFacing, type } = projectBoard(built, b, camera, h);
       row[label] = { jp, en, ...result, frontFacing };
       expect(result.pass).toBe(result.fullyInFrame && !result.avatarOverlap && frontFacing && jp !== null && jp >= 18 && en !== null && en >= 12);
       if (label === "phone") {
@@ -193,6 +203,76 @@ it("reports real third-person opening failures and spec-13 +0 without recenterin
   evidence.recognitionProxy = rows;
   evidence.cameraPoses = poses;
   expect(openingFailures).toEqual(station.spawnNodeIds);
+  built.dispose();
+}, 30_000);
+
+it("reports the cat camera's identity baseline at rest, spawn × view × project (#342)", async () => {
+  const world = await buildWorld();
+  const built = build();
+  const rows = [];
+  const pitchSearch = [];
+  for (const view of ["opening", "spec13+0"] as const) for (const nid of station.spawnNodeIds as string[]) {
+    const anchored = boards.find((b) => b.anchor.nodeId === nid)!;
+    const edge = edgeBearing(nid, nodes, graph.edges);
+    const heading = view === "opening" ? 0 : edge.heading;
+    for (const [project, w, h] of [["phone", 390, 844], ["desktop", 1280, 720]] as const) {
+      const { camera, ...metrics } = spawnCamera(world, nodes.get(nid)!.position, w, h, heading, "cat");
+      const forward = camera.getWorldDirection(new THREE.Vector3());
+      const right = new THREE.Vector3().crossVectors(forward, camera.up).normalize();
+      const candidates = [];
+      for (const b of boards) {
+        const centre = toRenderer(b.position.x, b.position.y, b.position.z);
+        const distance = camera.position.distanceTo(centre);
+        if (distance > IDENTITY_RANGE_M) continue;
+        const { jp, en, result, frontFacing, edgeOut } = projectBoard(built, b, camera, h);
+        const dir = centre.clone().sub(camera.position).normalize();
+        candidates.push({ board: b.id, distance, edgeOut,
+          bearingDeg: THREE.MathUtils.radToDeg(Math.atan2(dir.dot(right), dir.dot(forward))),
+          elevationDeg: THREE.MathUtils.radToDeg(Math.atan2(dir.y, Math.hypot(dir.x, dir.z))),
+          jp, en, ...result, frontFacing });
+      }
+      const ranked = candidates.slice().sort((a, b) => (a.pass === b.pass ? (a.edgeOut === b.edgeOut ? a.distance-b.distance : a.edgeOut-b.edgeOut) : a.pass ? -1 : 1));
+      const best = ranked[0] ?? null;
+      rows.push({ spawn: nid, view, project, heightM: metrics.height, lookPitchDeg: THREE.MathUtils.radToDeg(metrics.lookPitch),
+        boomRaiseDeg: THREE.MathUtils.radToDeg(metrics.raise), boardsInRange: candidates.length, boards: candidates, best });
+      if (project === "phone") {
+        // Smallest upward rotation (deg about the camera's right axis, 0-30 in 0.5 steps) that brings the
+        // spawn's anchored board fully in frame. Position, FOV and boom stay at rest: only the look rotates.
+        let found: { pitchUpDeg: number; lookPitchDeg: number; angleFromForwardDeg: number } | null = null;
+        for (let pitchUpDeg = 0; pitchUpDeg <= 30; pitchUpDeg += 0.5) {
+          const rotated = camera.clone();
+          rotated.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(right, THREE.MathUtils.degToRad(pitchUpDeg)));
+          rotated.updateMatrixWorld(true);
+          const { result } = projectBoard(built, anchored, rotated, h);
+          if (!result.pass) continue;
+          const dir = toRenderer(anchored.position.x, anchored.position.y, anchored.position.z).sub(rotated.position).normalize();
+          const view2 = rotated.getWorldDirection(new THREE.Vector3());
+          found = { pitchUpDeg, lookPitchDeg: THREE.MathUtils.radToDeg(metrics.lookPitch)+pitchUpDeg,
+            angleFromForwardDeg: THREE.MathUtils.radToDeg(Math.acos(dir.dot(view2))) };
+          break;
+        }
+        pitchSearch.push({ spawn: nid, view, board: anchored.id, ...found });
+      }
+    }
+  }
+  console.log("cat identity proxy", JSON.stringify(rows));
+  console.log("cat identity pitch search", JSON.stringify(pitchSearch));
+  evidence.catRecognitionProxy = rows;
+  evidence.catPitchSearch = pitchSearch;
+  // Today's baseline: recorded as observed, so any camera/board change shows up as a diff here.
+  expect(rows).toHaveLength(station.spawnNodeIds.length*4);
+  expect(rows.filter((r) => r.best?.pass).map((r) => `${r.spawn} ${r.view} ${r.project} ${r.best?.board}`)).toEqual([
+    "w_c opening desktop identity-w_c",
+    "sw_h spec13+0 phone identity-sw_h",
+    "sw_h spec13+0 desktop identity-sw_h",
+  ]);
+  // Rotating the cat camera up 0-30 degrees alone fixes no anchored board on the phone: the misses are lateral.
+  expect(pitchSearch.map((r) => [r.spawn, r.view, r.pitchUpDeg ?? null])).toEqual([
+    ["c_mid", "opening", null], ["c_e2", "opening", null], ["n_h", "opening", null],
+    ["sp_e", "opening", null], ["w_c", "opening", null], ["sw_h", "opening", null],
+    ["c_mid", "spec13+0", null], ["c_e2", "spec13+0", null], ["n_h", "spec13+0", null],
+    ["sp_e", "spec13+0", null], ["w_c", "spec13+0", null], ["sw_h", "spec13+0", 0],
+  ]);
   built.dispose();
 }, 30_000);
 
