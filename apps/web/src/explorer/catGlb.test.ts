@@ -10,6 +10,7 @@ interface GlbJson {
   accessors?: { count: number }[];
   images?: unknown[];
   nodes?: { name?: string; extras?: { gteki_cat?: { calib?: Record<string, number> } } }[];
+  skins?: { joints: number[] }[];
   animations?: { name?: string }[];
 }
 
@@ -41,6 +42,15 @@ describe("cat.glb (#854)", () => {
     for (const name of ["root", "neck", "head", "ear_L", "ear_R", "tail_01", "tail_02", "tail_03", "tail_04"]) {
       expect(names.has(name), name).toBe(true);
     }
+  });
+
+  it("skins every vertex to a named bone, with no exporter neutral_bone", () => {
+    expect(names.has("neutral_bone")).toBe(false);
+    const skins = json.skins ?? [];
+    expect(skins).toHaveLength(1);
+    const joints = skins[0]!.joints.map((index) => nodes[index]?.name);
+    expect(joints).not.toContain("neutral_bone");
+    expect(joints).toContain("head");
   });
 
   it("ships the locomotion clips and a finite positive walk/trot/run calibration", () => {

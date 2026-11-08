@@ -49,6 +49,14 @@ GLB_BUDGET = 1_200_000
 SRC_UNIT = 0.01                 # the body POSITION accessor is in centimetres
 STANCE_RATIO = 0.98             # an IK target beyond this share of the reach is clamped
 TURN_YAW = math.radians(45.0)   # yaw per turn cycle (calib.turn is derived from it)
+REACH_LIMIT = 0.98              # a paw may sit at most this share of its chain's rest length
+FORWARD_LIMIT = 0.90            # a forepaw's forward offset from its shoulder, same share
+HIND_STANCE_SHIFT = 0.030       # this rig's hind paw rests behind the hip; centre the stride on it
+SIT_PITCH = math.radians(32.0)  # sitting spine pitch before the rump search lowers it
+SIT_PITCH_STEP = math.radians(1.0)
+SIT_PITCH_FLOOR = math.radians(12.0)
+PELVIS_LIMIT = 0.010            # the sitting haunches sit within this of the floor
+TAIL_CLEARANCE = 0.015          # tail bones keep this far from the hind leg bones
 
 # sRGB as authored in the brief, converted to linear for COLOR_0.
 COAT, NOSE = "#5B626B", "#6E6468"
@@ -530,13 +538,26 @@ def nose_selection(body, radius=0.012):
     return [v.index for v in near] if 12 <= len(near) <= 90 else []
 
 
+def use_colour_attribute(obj):
+    """Make Col both the active and the render colour attribute, so Workbench shows it."""
+    attribute = obj.data.color_attributes.get("Col")
+    if attribute is None:
+        fail(f"{obj.name} has no Col colour attribute")
+    obj.data.color_attributes.active_color = attribute
+    try:
+        obj.data.color_attributes.render_color_index = list(obj.data.color_attributes).index(attribute)
+    except (AttributeError, ValueError):
+        pass
+    return attribute
+
+
 def make_colour_attribute(obj, colours, fallback):
     for attribute in list(obj.data.color_attributes):
         obj.data.color_attributes.remove(attribute)
     attribute = obj.data.color_attributes.new(name="Col", type="FLOAT_COLOR", domain="POINT")
     for i in range(len(obj.data.vertices)):
         attribute.data[i].color = colours.get(i, (*fallback, 1.0))
-    obj.data.color_attributes.active_color = attribute
+    use_colour_attribute(obj)
     return attribute
 
 
@@ -782,11 +803,10 @@ def turn_pose(sign, t):
                 paw_yaw=paw_yaw, yaw=sign * TURN_YAW * t / cycle)
 
 
-def sit_setup(arm, offsets):
-    """Static sitting body: spine 32 degrees up, forelegs vertical, hind hocks on the floor."""
+def sit_setup(arm, offsets, pitch=SIT_PITCH):
+    """Static sitting body: spine `pitch` up, forelegs vertical, hind hocks on the floor."""
     import bpy
     from mathutils import Vector
-    pitch = math.radians(32.0)
     fk = {
         "spine_01": (pitch, 0.0, 0.0),
         "spine_02": (0.0, 0.0, 0.0),
@@ -924,6 +944,39 @@ def bind_checks(checker, body, arm):
     checker.check(len(names) <= 40, f"rig has {len(names)} joints (<= 40)")
 
 
+def pelvis_indices(body):
+    """Vertices the pelvis and the haunches are skinned to, by more than half."""
+    index = {g.name: g.index for g in body.vertex_groups}
+    wanted = {index[n] for n in ("hindleg_hip_L", "hindleg_hip_R", "spine_01") if n in index}
+    return [v.index for v in body.data.vertices
+            if any(g.group in wanted and g.weight >= 0.5 for g in v.groups)]
+
+
+def evaluated_lowest(body, indices):
+    """Lowest z of the given vertices on the skinned mesh at the current frame."""
+    import bpy
+    evaluated = body.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    mesh = evaluated.to_mesh()
+    low = min(mesh.vertices[i].co.z for i in indices)
+    evaluated.to_mesh_clear()
+    return low
+
+
+def segment_distance(a0, a1, b0, b1):
+    """Shortest distance between two segments (closest points, clamped to both ends)."""
+    d1, d2, r = a1 - a0, b1 - b0, a0 - b0
+    a, e, f = d1.length_squared, d2.length_squared, d2.dot(r)
+    c, b = d1.dot(r), d1.dot(d2)
+    denominator = a * e - b * b
+    s = clamp01((b * f - c * e) / denominator) if denominator > 1e-12 else 0.0
+    t = (b * s + f) / e if e > 1e-12 else 0.0
+    if t < 0.0:
+        t, s = 0.0, clamp01(-c / a) if a > 1e-12 else 0.0
+    elif t > 1.0:
+        t, s = 1.0, clamp01((b - c) / a) if a > 1e-12 else 0.0
+    return ((a0 + d1 * s) - (b0 + d2 * t)).length
+
+
 def pose_matrices(arm):
     return {bone.name: bone.matrix.copy() for bone in arm.pose.bones}
 
@@ -1034,6 +1087,127 @@ def clip_checks(checker, arm, body, groups, actions):
                       f"{clip} ends on {target} frame 0 ({gap * 1000:.2f} mm, {math.degrees(angle):.2f} deg)")
 
 
+def leg_chain(leg):
+    """The pose bone names from the leg's root joint to its paw, and their rest length."""
+    suffix = "L" if leg["side"] < 0 else "R"
+    root = f"foreleg_shoulder_{suffix}" if leg["front"] else f"hindleg_hip_{suffix}"
+    upper, lower, paw = leg_names(leg["front"], leg["side"])
+    return root, paw, (root, upper, lower)
+
+
+def reach_checks(checker, arm, actions):
+    """No leg reaches beyond its rest chain in any locomotion or turn frame."""
+    import bpy
+    scene = bpy.context.scene
+    chains = {leg["key"]: leg_chain(leg) for leg in LEGS}
+    for clip in ("walk", "trot", "run", "turn_l", "turn_r"):
+        arm.animation_data.action = actions[clip]
+        frames = range(0, CLIPS[clip]["frames"] + 1, CLIPS[clip]["sample"])
+        length = {key: sum(arm.data.bones[name].length for name in bones)
+                  for key, (_root, _paw, bones) in chains.items()}
+        worst = {key: 0.0 for key in chains}
+        forward = {key: 0.0 for key in chains}
+        for frame in frames:
+            scene.frame_set(frame)
+            for leg in LEGS:
+                key = leg["key"]
+                root_name, paw_name, _bones = chains[key]
+                root, paw = arm.pose.bones[root_name].head, arm.pose.bones[paw_name].head
+                worst[key] = max(worst[key], (paw - root).length / length[key])
+                if leg["front"]:
+                    forward[key] = max(forward[key], abs(paw.y - root.y) / length[key])
+        for leg in LEGS:
+            key = leg["key"]
+            checker.check(worst[key] <= REACH_LIMIT,
+                          f"{clip} {key} paw reach {worst[key]:.3f} of the chain (<= {REACH_LIMIT})")
+            if leg["front"]:
+                checker.check(forward[key] <= FORWARD_LIMIT,
+                              f"{clip} {key} forward offset {forward[key]:.3f} of the chain "
+                              f"(<= {FORWARD_LIMIT})")
+
+
+def sit_checks(checker, arm, body, groups, actions):
+    """The sitting haunches on the floor, the four paws planted, the tail clear of the hind legs."""
+    import bpy
+    scene = bpy.context.scene
+    arm.animation_data.action = actions["sit"]
+    frames = list(range(0, CLIPS["sit"]["frames"] + 1, CLIPS["sit"]["sample"]))
+    pelvis = pelvis_indices(body)
+    checker.check(bool(pelvis), f"sit pelvis region found ({len(pelvis)} vertices)")
+    lowest = 1.0
+    first, drift, penetration = {}, {leg["key"]: 0.0 for leg in LEGS}, {leg["key"]: 1.0 for leg in LEGS}
+    tail = [f"tail_0{i}" for i in range(1, 7)]
+    hind = [f"hindleg_{part}_{side}" for side in ("L", "R")
+            for part in ("hip", "upper", "lower", "paw")]
+    clearance = 1.0
+    for frame in frames:
+        scene.frame_set(frame)
+        lowest = min(lowest, evaluated_lowest(body, pelvis))
+        data = kit.evaluated_paw_points(body, groups)
+        for leg in LEGS:
+            key = leg["key"]
+            point, low = data[paw_group(leg)]
+            penetration[key] = min(penetration[key], low if low is not None else 1.0)
+            if point is None:
+                drift[key] = 1.0
+            elif key not in first:
+                first[key] = point
+            else:
+                drift[key] = max(drift[key], math.hypot(point[0] - first[key][0],
+                                                        point[1] - first[key][1]))
+        for t_name in tail:
+            t_bone = arm.pose.bones[t_name]
+            for l_name in hind:
+                l_bone = arm.pose.bones[l_name]
+                clearance = min(clearance, segment_distance(t_bone.head, t_bone.tail,
+                                                            l_bone.head, l_bone.tail))
+    checker.check(abs(lowest) <= PELVIS_LIMIT,
+                  f"sit lowest pelvis vertex {lowest * 1000:+.1f} mm from the floor "
+                  f"(within {PELVIS_LIMIT * 1000:.0f})")
+    for leg in LEGS:
+        key = leg["key"]
+        checker.check(penetration[key] >= -0.005,
+                      f"sit {key} paw penetration {min(0.0, penetration[key]) * 1000:.1f} mm (>= -5)")
+        checker.check(drift[key] <= 0.002,
+                      f"sit {key} planted paw drift {drift[key] * 1000:.1f} mm (<= 2)")
+    checker.check(clearance >= TAIL_CLEARANCE,
+                  f"sit tail clearance {clearance * 1000:.1f} mm from the hind legs "
+                  f"(>= {TAIL_CLEARANCE * 1000:.0f})")
+
+
+COMPONENTS = {5120: ("b", 1), 5121: ("B", 1), 5122: ("h", 2), 5123: ("H", 2),
+              5125: ("I", 4), 5126: ("f", 4)}
+
+
+def glb_binary(path):
+    import struct
+    data = path.read_bytes()
+    json_length = struct.unpack_from("<I", data, 12)[0]
+    offset = 20 + json_length
+    chunk_length, chunk_type = struct.unpack_from("<II", data, offset)
+    if chunk_type != 0x004E4942:
+        fail("GLB has no BIN chunk")
+    return data[offset + 8: offset + 8 + chunk_length]
+
+
+def glb_accessor(doc, binary, index, widths):
+    """Values and accessor of one glTF accessor, unpacked straight from the BIN chunk."""
+    import struct
+    accessor = doc["accessors"][index]
+    fmt, size = COMPONENTS[accessor["componentType"]]
+    width = widths[accessor["type"]]
+    view = doc["bufferViews"][accessor["bufferView"]]
+    start = view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+    stride = view.get("byteStride") or size * width
+    values = [struct.unpack_from("<" + fmt * width, binary, start + k * stride)
+              for k in range(accessor["count"])]
+    return values, accessor
+
+
+def linear_to_srgb(value):
+    return 12.92 * value if value <= 0.0031308 else 1.055 * value ** (1.0 / 2.4) - 0.055
+
+
 def glb_checks(checker, path):
     doc = kit.glb_json(path)
     meshes = doc.get("meshes", [])
@@ -1056,8 +1230,48 @@ def glb_checks(checker, path):
     node_names = {node.get("name") for node in doc.get("nodes", [])}
     for required in ("root", "neck", "head", "ear_L", "ear_R", "tail_01", "tail_02", "tail_03", "tail_04"):
         checker.check(required in node_names, f"GLB node {required}")
-    joints = len(doc["skins"][0].get("joints", [])) if doc.get("skins") else 0
+    skin = (doc.get("skins") or [{}])[0]
+    joint_nodes = skin.get("joints", [])
+    joint_names = [doc["nodes"][i].get("name") for i in joint_nodes]
+    joints = len(joint_nodes)
     checker.check(joints <= 40, f"GLB joints {joints} <= 40")
+    checker.check("neutral_bone" not in node_names and "neutral_bone" not in joint_names,
+                  "GLB has no neutral_bone node or joint")
+    binary = glb_binary(path)
+    joint_values, _ = glb_accessor(doc, binary, mesh["primitives"][0]["attributes"]["JOINTS_0"],
+                                   {"VEC4": 4})
+    weight_values, _ = glb_accessor(doc, binary, mesh["primitives"][0]["attributes"]["WEIGHTS_0"],
+                                    {"VEC4": 4})
+    outside = sum(1 for joint, weight in zip(joint_values, weight_values)
+                  for index, value in zip(joint, weight) if value > 0.0 and index >= joints)
+    checker.check(outside == 0,
+                  f"GLB weights stay inside the {joints} skin joints ({outside} outside)")
+    colours, accessor = glb_accessor(doc, binary, mesh["primitives"][0]["attributes"]["COLOR_0"],
+                                     {"VEC4": 4, "VEC3": 3})
+    scale = 1.0
+    if accessor.get("normalized") and accessor["componentType"] in (5121, 5123):
+        scale = 1.0 / (255.0 if accessor["componentType"] == 5121 else 65535.0)
+
+    def srgb(colour):
+        return tuple(int(round(linear_to_srgb(channel * scale) * 255)) for channel in colour[:3])
+
+    counts = {}
+    for colour in colours:
+        key = srgb(colour)
+        counts[key] = counts.get(key, 0) + 1
+    coat = max(counts, key=counts.get)
+    target = (0x5B, 0x62, 0x6B)
+    checker.check(all(abs(a - b) <= 2 for a, b in zip(coat, target)),
+                  f"COLOR_0 coat {coat} within 2/255 of sRGB #5B626B after linear->sRGB")
+    eyes = {index for index, colour in enumerate(colours)
+            if all(abs(a - b) <= 2 for a, b in zip(srgb(colour), (58, 154, 82)))
+            or all(abs(a - b) <= 2 for a, b in zip(srgb(colour), (20, 18, 16)))}
+    head_slot = joint_names.index("head") if "head" in joint_names else -1
+    on_head = sum(1 for index in eyes
+                  if joint_values[index][max(range(4), key=lambda k: weight_values[index][k])]
+                  == head_slot)
+    checker.check(len(eyes) > 0 and on_head == len(eyes),
+                  f"GLB eye vertices ride head ({on_head}/{len(eyes)})")
     holder = next((n for n in doc.get("nodes", []) if n.get("extras", {}).get("gteki_cat")), None)
     calib = (holder or {}).get("extras", {}).get("gteki_cat", {}).get("calib", {})
     expected = {name: CALIB[name] for name in ("walk", "trot", "run")}
@@ -1168,6 +1382,9 @@ def main():
         values = [REST_TARGET[leg["key"]] for leg in LEGS if leg["front"] == front]
         STANCE_CENTRE[front] = sum(v[1] for v in values) / len(values)
         REST_DISTAL[front] = (STANCE_CENTRE[front], sum(v[2] for v in values) / len(values))
+    # The hind paw head sits HIND_STANCE_SHIFT behind the hip on this rig, so a stride centred on
+    # the rest paw stretches the leg backward; centring it on the hip keeps every frame inside reach.
+    STANCE_CENTRE[False] += HIND_STANCE_SHIFT
 
     for leg in LEGS:
         upper_name, _lower, paw_name = leg_names(leg["front"], leg["side"])
@@ -1184,6 +1401,9 @@ def main():
     hind = sum(arm.data.bones[name].length for name in ("hindleg_upper_L", "hindleg_lower_L"))
     ratio = hind / reference_hind
     GAITS = {name: dict(gait) for name, gait in kit.GAITS.items()}
+    # This rig's fore chain is short, so the stock run stride swings the leading forepaw too far
+    # forward; a shorter, lower stride keeps it under the shoulder.
+    GAITS["run"].update(travel=0.14, lift=0.052)
     for gait in GAITS.values():
         gait["travel"] *= ratio
         gait["lift"] *= ratio
@@ -1215,6 +1435,18 @@ def main():
         while obj.data.uv_layers:
             obj.data.uv_layers.remove(obj.data.uv_layers[0])
 
+    head_group = body.vertex_groups.get("head")
+    if head_group is None:
+        fail("the body has no head vertex group to skin the eyes to")
+    # The eyes were imported without weights; the exporter would otherwise skin them to its own
+    # neutral_bone, which no clip animates, so the eyes would stay behind when the head turns.
+    for group in list(eyes.vertex_groups):
+        if group.name != head_group.name:
+            eyes.vertex_groups.remove(group)
+    eyes_group = (eyes.vertex_groups.get(head_group.name)
+                  or eyes.vertex_groups.new(name=head_group.name))
+    eyes_group.add(list(range(len(eyes.data.vertices))), 1.0, "REPLACE")
+
     bpy.ops.object.select_all(action="DESELECT")
     body.select_set(True)
     eyes.select_set(True)
@@ -1222,6 +1454,7 @@ def main():
     bpy.ops.object.join()
     body = bpy.context.object
     body.name = "VIS_cat"
+    use_colour_attribute(body)
     one_material(body)
 
     modifier = body.modifiers.new("Armature", "ARMATURE")
@@ -1240,7 +1473,17 @@ def main():
     groups = [paw_group(leg) for leg in LEGS]
     OFF_EPS = kit.stance_offset(arm, body, groups)
     print("INFO stance offsets: " + ", ".join(f"{k} {v * 1000:+.1f} mm" for k, v in OFF_EPS.items()))
-    sit = sit_setup(arm, OFF_EPS)
+    pelvis = pelvis_indices(body)
+    sit_pitch = SIT_PITCH
+    while True:
+        sit = sit_setup(arm, OFF_EPS, sit_pitch)
+        apply_pose(arm, sit)
+        low = evaluated_lowest(body, pelvis)
+        if abs(low) <= PELVIS_LIMIT or sit_pitch <= SIT_PITCH_FLOOR:
+            break
+        sit_pitch -= SIT_PITCH_STEP
+    print(f"INFO sit: spine pitch {math.degrees(sit_pitch):.1f} deg, "
+          f"lowest pelvis vertex {low * 1000:+.1f} mm")
     apply_pose(arm, sit)
     data = kit.evaluated_paw_points(body, groups)
     drop = -(data["hindpaw_L"][1] or 0.0)
@@ -1259,6 +1502,8 @@ def main():
     kit.reset_pose(arm)
     bpy.context.view_layer.update()
     clip_checks(checker, arm, body, groups, actions)
+    reach_checks(checker, arm, actions)
+    sit_checks(checker, arm, body, groups, actions)
 
     arm["gteki_cat"] = {"calib": dict(CALIB)}
     arm.animation_data.action = bpy.data.actions["idle"]
