@@ -247,7 +247,7 @@ export class Explorer {
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
-  /** Shinjuku's street surface layer, looked up once per station scene; overview hides it (see tick). */
+  /** Shinjuku's street surface layer, looked up once per station scene; overview suppresses it (see tick). */
   private surfaceLayer: { scene: StationScene; obj: THREE.Object3D | undefined } | null = null;
   private interactionController = new InteractionController([]);
   private interactionSnapshot = "";
@@ -2602,12 +2602,17 @@ export class Explorer {
     // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
     this.stationScene?.update?.(dt, t, this.camera);
     // Overview looks down on the underground model: Shinjuku's street surface layer (shown from any camera at
-    // or above street level) would cover it with buildings and haze, so hide it after the scene's own update.
-    if (this.mode === "overview" && this.stationScene) {
+    // or above street level) would cover it with buildings and haze. The layer re-checks its own visibility on
+    // every render pass, so veto it through its suppressed flag rather than setting visible once.
+    if (this.stationScene) {
       if (this.surfaceLayer?.scene !== this.stationScene) {
         this.surfaceLayer = { scene: this.stationScene, obj: this.stationScene.root.getObjectByName("surface-render-only") };
       }
-      if (this.surfaceLayer.obj) this.surfaceLayer.obj.visible = false;
+      const surface = this.surfaceLayer.obj;
+      if (surface) {
+        surface.userData.suppressed = this.mode === "overview";
+        if (surface.userData.suppressed) surface.visible = false;
+      }
     }
 
     if (this.mode === "walk") this.stepWalk(dt);
