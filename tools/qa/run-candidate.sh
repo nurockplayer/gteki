@@ -75,7 +75,8 @@ if [ -f "$cand/stations/ikebukuro/vite.config.ts" ]; then serve ikebukuro-previe
 
 e2e="$here/tests/e2e"
 [ -d "$e2e/node_modules" ] || ( cd "$e2e" && pnpm install --ignore-workspace --frozen-lockfile )
-rm -rf "$e2e/artifacts"; mkdir -p "$e2e/artifacts"
+# Clear this run's output, but keep other stations' finished L2 packs (#1017); the script also creates the dir.
+"$here/tools/qa/clear-artifacts.sh" "$e2e/artifacts"
 pw=$(cd "$e2e" && pnpm exec playwright --version)
 brave="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
 browser=${GTEKI_BROWSER:-}; [ -n "$browser" ] || { [ -x "$brave" ] && browser=$brave || browser="playwright bundled chromium"; }
