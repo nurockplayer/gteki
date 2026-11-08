@@ -1,7 +1,7 @@
 // CPU replay of Explorer.walkFromNode/placeCamera at rest, with the scene's real collision world.
 import * as THREE from "three";
 import { WALKER_BODY } from "@gteki/scene-api";
-import { FOLLOW, constrainedPitch, followDistance, followPose, raisedBack, targetFov } from "../../../apps/web/src/explorer/followCamera.ts";
+import { FOLLOW, FOLLOW_CAT, aimAtRaisedCat, catShoulder, constrainedPitch, followDistance, followPose, raisedBack, solveRaisedBoom, targetFov } from "../../../apps/web/src/explorer/followCamera.ts";
 import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
 import { CAMERA_FAR_M } from "../../../apps/web/src/explorer/overviewFraming.ts";
 import { ReplayWalker, type World } from "./walker_replay.ts";
@@ -23,32 +23,48 @@ export function edgeBearing(id: string, nodes: Map<string, { position: Point }>,
   return { heading: Math.round((Math.atan2(target.x-here.x, target.y-here.y)*180/Math.PI+360)%360), edge: edge.id };
 }
 
-export function spawnCamera(world: World, position: Point, w: number, h: number, heading = 0) {
+export function spawnCamera(world: World, position: Point, w: number, h: number, heading = 0, avatar: "human" | "cat" = "human", look?: { yaw: number; pitch: number }) {
   const walker = new ReplayWalker(world);
   if (!walker.spawn(position)) throw new Error("No spawn ground");
-  const yaw = -heading*Math.PI/180, pitch = -0.12;
-  const head = walker.pos.clone().add(new THREE.Vector3(0, WALKER_BODY.eyeM, 0));
+  // `look` applies an exact yaw/pitch (radians), as frameInitialIdentity hands back to placeCamera.
+  const yaw = look?.yaw ?? -heading*Math.PI/180, pitch = look?.pitch ?? (avatar === "cat" ? FOLLOW_CAT.pitch : -0.12);
+  const head = walker.pos.clone().add(new THREE.Vector3(0, avatar === "cat" ? FOLLOW_CAT.pivotY : WALKER_BODY.eyeM, 0));
   // B1 context blockers are on OFF_LAYER. The scene files ceilings as ordinary colliders;
   // signs and column dressing never join Explorer's camera target set.
   const targets = [...world.ground, ...world.collider];
-  const ray = new THREE.Raycaster(head, new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)), 0, FOLLOW.shoulder+0.25);
+  const shoulderMax = avatar === "cat" ? catShoulder(w/h) : FOLLOW.shoulder;
+  const ray = new THREE.Raycaster(head, new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)), 0, shoulderMax+0.25);
   const side = castAll(ray, targets)[0];
-  const shoulder = side ? Math.max(0, side.distance-0.25) : FOLLOW.shoulder;
-  const pose = followPose(head, yaw, pitch, shoulder);
+  const shoulder = side ? Math.max(0, side.distance-0.25) : shoulderMax;
+  const wanted = avatar === "cat" ? FOLLOW_CAT.distance : FOLLOW.defaultDistance;
+  const pose = avatar === "cat"
+    ? followPose(head, yaw, pitch, shoulder, FOLLOW_CAT.lift, FOLLOW_CAT.drop)
+    : followPose(head, yaw, pitch, shoulder);
   const cast = (back: THREE.Vector3) => {
     ray.set(pose.pivot, back);
-    ray.far = FOLLOW.defaultDistance+FOLLOW.clearance;
+    ray.far = wanted+FOLLOW.clearance;
     return castAll(ray, targets).map((hit) => ({ distance: hit.distance, cameraOnly: false }));
   };
   let back = pose.back;
-  let distance = followDistance(FOLLOW.defaultDistance, cast(back));
-  const raise = constrainedPitch(FOLLOW.defaultDistance, back, distance, cast, new THREE.Vector3());
-  if (raise > 0) {
-    back = raisedBack(back, raise, new THREE.Vector3());
-    distance = followDistance(FOLLOW.defaultDistance, cast(back));
+  let distance: number, raise: number;
+  if (avatar === "cat") {
+    // Explorer places the cat boom with a snap solve of the same raised-boom helper (explorer.ts placeCamera).
+    const solved = solveRaisedBoom(wanted, back, cast, 0, 0, true);
+    back = solved.back;
+    distance = solved.distance;
+    raise = solved.raise;
+  } else {
+    distance = followDistance(wanted, cast(back));
+    raise = constrainedPitch(wanted, back, distance, cast, new THREE.Vector3());
+    if (raise > 0) {
+      back = raisedBack(back, raise, new THREE.Vector3());
+      distance = followDistance(wanted, cast(back));
+    }
   }
   const camera = new THREE.PerspectiveCamera(targetFov("walk", false, distance < FOLLOW.comfortDistance), w/h, 0.05, CAMERA_FAR_M);
   camera.position.copy(pose.pivot).addScaledVector(back, distance);
+  camera.lookAt(pose.target);
+  if (avatar === "cat") aimAtRaisedCat(pose.target, camera.position, walker.pos, raise, camera.fov, camera.aspect);
   camera.lookAt(pose.target);
   camera.updateMatrixWorld(true);
   const aim = pose.target.clone().sub(camera.position);

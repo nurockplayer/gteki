@@ -86,15 +86,16 @@ describe("ikebukuro texture memory", () => {
       expect(budget.totalBytes).toBeGreaterThan(0);
       if (quality === "low") {
         // LOW_TEXEL_SCALE 0.56 is the readability floor (0.50 failed); #180 real-phone shots decide further cuts.
-        expect(Number(budget.byCategory.find((c) => c.category === "signage")!.mib.toFixed(3))).toBeLessThanOrEqual(54.707);
+        // +#1035 compact identity boards: 0.82 m canvas (signage +0.167 MiB low, +0.870 MiB high)
+        expect(Number(budget.byCategory.find((c) => c.category === "signage")!.mib.toFixed(3))).toBeLessThanOrEqual(54.874);
         expect(budget.byCategory.find((c) => c.category === "finish")!.mib).toBeLessThanOrEqual(40);
         expect(budget.totalMib).toBeLessThanOrEqual(112);
       } else {
         // Shipped scene measured before #276 on c2f6f0ee, including the settled catalog.
         // +#833 Seibu facade + floor board
         // +sharing the escalator atlas between the 5 ids: lighting drops by 4 copies of the 1024x1536 atlas (4 x 8 MiB)
-        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([177.092, 0, 0, 0, 156.333, 0, 13.667, 53.257]);
-        expect(Number(budget.totalMib.toFixed(3))).toBe(400.35);
+        expect(budget.byCategory.map((c) => Number(c.mib.toFixed(3)))).toEqual([177.962, 0, 0, 0, 156.333, 0, 13.667, 53.257]);
+        expect(Number(budget.totalMib.toFixed(3))).toBe(401.219);
       }
     }, 120_000);
   }

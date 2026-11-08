@@ -36,9 +36,33 @@ export interface IdentityBoard {
 /** Conservative cap-height proxy (0.7 em), not measured glyph ink or a recognition study. */
 export const IDENTITY_TYPE = { jaEm: 0.56, enEm: 0.40, cap: 0.7 } as const;
 const IDENTITY_ART = { widthM: 3.4, heightM: 0.54 } as const;
+/** Compact boards fit the same 3.4 m artwork by width, so a fixed 1.12 name filled only ~58% of the
+ *  board width. The compact canvas is taller (0.82 m) so the enlarged name keeps the 1.12 layout's top
+ *  margin; the extra height is empty panel, never a vertical stretch. */
+const IDENTITY_ART_COMPACT = { widthM: 3.4, heightM: 0.82 } as const;
 
-export function identityTypography(board: IdentityBoard, nameScale = board.widthM > 2 ? 0.8 : 1.12) {
-  const artScale = Math.min(board.widthM / IDENTITY_ART.widthM, board.heightM / IDENTITY_ART.heightM);
+/** The artwork frame a board paints into: one 3.4 x 0.54 m face for wide/meeting boards, the same width
+ *  with the taller name canvas for compact ones. */
+export function identityArt(board: Pick<IdentityBoard, "kind" | "widthM">) {
+  return board.kind === "meeting-point" || board.widthM > 2 ? IDENTITY_ART : IDENTITY_ART_COMPACT;
+}
+
+/** Largest name scale on a compact board: the name block fills 0.92 of the artwork width, and the kana
+ *  em box keeps the top margin the 1.12 layout leaves on the 0.54 m artwork (0.0149 m). 1.7638 today,
+ *  never below 1.12. One compact artwork is shared, so this is its scale on every compact board. */
+export const COMPACT_NAME_SCALE = (() => {
+  const h = IDENTITY_ART.heightM;
+  const block = 2*h*IDENTITY_TYPE.jaEm + 9*0.56*h*IDENTITY_TYPE.enEm + 0.08; // jp + en + gap at scale 1
+  const widthCap = 0.92*IDENTITY_ART.widthM/block;
+  // Stack top above the artwork middle: shift (0.03) + kana centre (0.32 s) + half its em (0.15/2 s).
+  const stackTop = (s: number) => (0.03 + (0.32 + 0.15/2)*s)*h;
+  const margin = h/2 - stackTop(1.12);
+  const heightCap = (IDENTITY_ART_COMPACT.heightM/2 - margin - 0.03*h) / ((0.32 + 0.15/2)*h);
+  return Math.max(1.12, Math.min(widthCap, heightCap));
+})();
+
+export function identityTypography(board: IdentityBoard, nameScale = board.widthM > 2 ? 0.8 : COMPACT_NAME_SCALE, artHeightM = identityArt(board).heightM) {
+  const artScale = Math.min(board.widthM / IDENTITY_ART.widthM, board.heightM / artHeightM);
   const jaM = IDENTITY_ART.heightM * IDENTITY_TYPE.jaEm * artScale * nameScale;
   const enM = IDENTITY_ART.heightM * IDENTITY_TYPE.enEm * artScale * nameScale;
   const kanaM = IDENTITY_ART.heightM * 0.15 * artScale * nameScale;
@@ -183,9 +207,13 @@ function paintIdentity(board: IdentityBoard, pxPerM: number, nameScale: number, 
     line(board.text.en, type.enX, type.enY, type.enM/board.heightM, 600, true);
     if (transfers) {
       const rows = board.text.transfer!.split(" · ");
-      // The name em box ends at 0.71 h. Two rows use all remaining height with a small interline gap.
-      transferCapM.push(line(rows.slice(0, 3).join(" · "), 0.04, 0.78, 0.13));
-      transferCapM.push(line(rows.slice(3).join(" · "), 0.04, 0.93, 0.13));
+      // Keep the 1.12 layout's transfer rows in their 0.54 m frame: 0.13 em, 0.0027 m bottom margin,
+      // 0.081 m interline. On the taller compact canvas they sit below the enlarged name instead.
+      const em = 0.13*IDENTITY_ART.heightM/h;
+      const lower = (h - 0.0027 - 0.13*IDENTITY_ART.heightM/2)/h;
+      const upper = lower - 0.081/h;
+      transferCapM.push(line(rows.slice(0, 3).join(" · "), 0.04, upper, em));
+      transferCapM.push(line(rows.slice(3).join(" · "), 0.04, lower, em));
     }
   } else {
     line(board.text.ja, 0.04, 0.22, 0.25, 700, true);
@@ -501,14 +529,15 @@ export function buildSigns(
   // Repeated text is painted once. Artwork is scaled uniformly inside each board's own aspect;
   // the remaining face area uses a solid-colour quad in the same batch, so no glyph is stretched.
   const artKey = (b: IdentityBoard) => b.kind === "meeting-point" ? "meeting-point" : b.widthM > 2 ? "wide" : "compact";
-  const identityArt = new Map<string, ReturnType<typeof paintIdentity>>();
+  const artByKey = new Map<string, ReturnType<typeof paintIdentity>>();
   for (const b of identityBoards) {
     const key = artKey(b);
-    if (identityArt.has(key)) continue;
+    if (artByKey.has(key)) continue;
     // Compact boards magnify the same artwork less on screen; reserve density for the nearby wide panel.
     const lowDensity = key === "wide" ? 280 : key === "compact" ? 160 : 140;
     const density = Math.min(lowDensity*(texelScale < 1 ? 1 : 2), (maxTextureSize-2*GUTTER)/IDENTITY_ART.widthM);
-    identityArt.set(key, paintIdentity({ ...b, widthM: IDENTITY_ART.widthM, heightM: IDENTITY_ART.heightM }, density, key === "compact" ? 1.12 : key === "wide" ? 0.8 : 1, texelScale >= 1));
+    const art = identityArt(b);
+    artByKey.set(key, paintIdentity({ ...b, widthM: art.widthM, heightM: art.heightM }, density, key === "compact" ? COMPACT_NAME_SCALE : key === "wide" ? 0.8 : 1, texelScale >= 1));
   }
   const layouts: SignLayout[] = [];
   const boxes: { geo: THREE_NS.BufferGeometry; matrix: THREE_NS.Matrix4 }[] = [];
@@ -524,8 +553,8 @@ export function buildSigns(
     const scale = s.scale ?? 1;
     const maxW = (s.maxWidthM ?? Infinity) / scale;
     const theme = s.kind === "place" ? THEME_PLACE : THEME_DIRECTION;
-    const art = s.identity ? identityArt.get(artKey(s.identity))! : null;
-    const artScale = s.identity ? Math.min(s.identity.widthM / IDENTITY_ART.widthM, s.identity.heightM / IDENTITY_ART.heightM) : 1;
+    const art = s.identity ? artByKey.get(artKey(s.identity))! : null;
+    const artScale = s.identity ? Math.min(s.identity.widthM / IDENTITY_ART.widthM, s.identity.heightM / identityArt(s.identity).heightM) : 1;
     const identityFront = s.identity && art ? { ...art, widthM: s.identity.widthM, h: s.identity.heightM,
       nameRegion: { min: art.nameRegion.min.map((v) => v*artScale), max: art.nameRegion.max.map((v) => v*artScale) } } : null;
     const front = identityFront ?? face([s], maxW, theme);
@@ -583,7 +612,7 @@ export function buildSigns(
   // Below full resolution (the phone tier) pages are capped at LOW_PAGE_HEIGHTS; full resolution is unchanged.
   const { pages, slots, rowsPerPage, rowsUsed, rowH } = packAtlas(faces.map((x) => x.canvas), faces.map((x) => x.bg), texelScale,
     Math.min(ATLAS_W, maxTextureSize), texelScale < 1 ? LOW_PAGE_HEIGHTS : undefined);
-  const packedIdentity = packIdentity([...identityArt.values()]);
+  const packedIdentity = packIdentity([...artByKey.values()]);
   const textures: THREE_NS.Texture[] = [];
   const addPage = (page: HTMLCanvasElement, pageFaces: Face[], pageSlots: typeof slots, pi: number, name: string) => {
     const tex = new THREE.CanvasTexture(page);
@@ -609,7 +638,7 @@ export function buildSigns(
     group.add(mesh);
   };
   pages.forEach((page, pi) => addPage(page, faces, slots, pi, `sign-faces-${pi}`));
-  const artList = [...identityArt.values()];
+  const artList = [...artByKey.values()];
   const identitySlots = identityFaces.map((f) => packedIdentity.slots[artList.findIndex((a) => a.canvas === f.canvas)]!);
   packedIdentity.pages.forEach((page, pi) => addPage(page, identityFaces, identitySlots, pi, "identity-faces"));
   // Face sizes (m, before the sign's own scale) for the QA probe's on-screen measurements; not read by the app.

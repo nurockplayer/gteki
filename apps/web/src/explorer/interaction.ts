@@ -11,7 +11,7 @@ export interface InteractionState {
   interrupted: boolean;
 }
 
-/** Session-only state, independent of the particular kind of interactable. */
+/** Session-only state, independent of the particular kind of interactable. Held items and once-only records outlive a station switch (#893). */
 export class InteractionController {
   private readonly completed = new Set<string>();
   private readonly items: string[] = [];
@@ -22,7 +22,18 @@ export class InteractionController {
   private phase: InteractionState["phase"] = "idle";
   private interrupted = false;
 
-  constructor(private readonly specs: InteractableSpec[]) {}
+  constructor(private specs: InteractableSpec[]) {}
+
+  /** A station (re)load: new interactables, nothing in reach or in progress; items and completed ids stay for the session. */
+  setSpecs(specs: InteractableSpec[]): void {
+    this.specs = specs;
+    this.near = undefined;
+    this.active = undefined;
+    this.index = 0;
+    this.elapsed = 0;
+    this.phase = "idle";
+    this.interrupted = false;
+  }
 
   get state(): InteractionState {
     return {
