@@ -141,8 +141,9 @@ def in_phone_view(board, node, heading):
     Actual glyph widths remain a renderer acceptance item; the test uses the
     existing atlas CJK/Latin width estimator and checks the projected ink box.
     """
-    # One 3.4 x 0.54 m artwork, uniformly fitted inside each board (same as signs.ts).
-    # The extra panel height is a solid margin, never a vertical glyph stretch.
+    # Placement uses the 1.12 reference name layout on the 3.4 x 0.54 m artwork, so a regenerate
+    # reproduces today's scene/identity.json exactly. Renderer typography (compact names at the 0.92
+    # block cap on the taller canvas) is covered by the cat framing replay in identity.test.ts.
     scale = min(board['widthM']/3.4, board['heightM']/0.54)
     h = 0.54*scale
     name_scale = 0.8 if board['widthM'] > 2 else 1.12
