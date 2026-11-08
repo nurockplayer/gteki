@@ -1441,10 +1441,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const carLen = 16.3;
     const shape = new THREE.Shape();
     const w = 2.48;
-    const h = 3.05;
-    const r = 0.45;
-    shape.moveTo(-w / 2, 0.25);
-    shape.lineTo(w / 2, 0.25);
+    const h = 2.39;
+    const r = 0.3;
+    shape.moveTo(-w / 2, -0.25);
+    shape.lineTo(w / 2, -0.25);
     shape.lineTo(w / 2, h - r);
     shape.quadraticCurveTo(w / 2, h, w / 2 - r, h);
     shape.lineTo(-w / 2 + r, h);
@@ -1452,13 +1452,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     shape.closePath();
     const body = track(new THREE.ExtrudeGeometry(shape, { depth: carLen, bevelEnabled: false, curveSegments: 6 }));
     body.translate(0, 0, -carLen / 2);
-    const windowBand = track(new THREE.BoxGeometry(w + 0.02, 0.85, carLen - 1.2));
-    windowBand.translate(0, 1.75, 0);
+    const windowBand = track(new THREE.BoxGeometry(w + 0.02, 0.65, carLen - 1.2));
+    windowBand.translate(0, 1.745, 0);
     const stripe = track(new THREE.BoxGeometry(w + 0.03, 0.12, carLen - 0.4));
     stripe.translate(0, 1.18, 0);
-    const doorGeo = track(merged([-DOOR_PITCH, 0, DOOR_PITCH].map((z) => new THREE.BoxGeometry(w + 0.025, 1.85, 1.3).translate(0, 1.18, z)))!);
-    const skirt = track(new THREE.BoxGeometry(w - 0.1, 0.45, carLen - 0.6));
-    skirt.translate(0, 0.2, 0);
+    const doorGeo = track(merged([-DOOR_PITCH, 0, DOOR_PITCH].map((z) => new THREE.BoxGeometry(w + 0.025, 1.8, 1.3).translate(0, 1.155, z)))!);
+    const skirt = track(new THREE.BoxGeometry(w - 0.1, 0.205, carLen - 0.6));
+    skirt.translate(0, -0.3525, 0);
     for (let i = 0; i < n; i++) {
       const car = new THREE.Group();
       car.visible = false;
