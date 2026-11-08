@@ -125,8 +125,8 @@ for (const key of STATIONS) {
         const draws = await page.evaluate(() => (window as any).__gteki.overviewDraws());
         console.log(`[overview-draws] ${new Date().toISOString()} ${testInfo.project.name} ${tier} ${JSON.stringify(draws)}`);
         expect(draws.surfaceMeshes, `${tier}: surface layer exists`).toBeGreaterThan(0);
-        expect(draws.surface, `${tier}: street surface did not draw`).toBe(0);
-        expect(draws.station, `${tier}: station meshes drew`).toBeGreaterThan(0);
+        expect.soft(draws.surface, `${tier}: street surface did not draw`).toBe(0);
+        expect.soft(draws.station, `${tier}: station meshes drew`).toBeGreaterThan(0);
       };
       await checkDraws(`default-${await hooks.quality(page)}`);
       await page.addInitScript(() => {
