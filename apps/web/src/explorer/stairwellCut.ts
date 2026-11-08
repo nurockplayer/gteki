@@ -213,7 +213,7 @@ export interface StairwellOptions {
   /** The greybox shell that receives the edge band; null puts it in the finish group. */
   greyboxRoot?: THREE.Object3D | null;
   vertexLimit?: number;
-  /** Collision meshes that may sit outside `root` (walkable, collider and camera-blocker proxies); cut with the same regions. */
+  /** Collision meshes that may sit outside `root` (walkable, collider and camera-blocker proxies); cut with the same regions, camera blockers excepted — they are never cut (#1031). */
   collision?: readonly THREE.Object3D[];
   /** A baked recipe for this tier: replayed when it matches the live wells and scene, otherwise the live cut runs. */
   recipe?: CutRecipe | null;
@@ -367,7 +367,9 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   const regions = stairwellRegions(live);
   // Events name their region by its rectangle's index in this order.
   const keys = live.flatMap((well) => well.rects);
-  const cutLive = (hooks?: RecipeHooks): CutResult => cutRegions([root, ...(options.collision ?? [])], regions, resources, options.walkable ?? new Set(), false, options.vertexLimit ?? STAIRWELL_VERTEX_LIMIT, hooks);
+  // A camera blocker is filled in the background, so cutting one made the recipe depend on load order (#1031).
+  const collision = (options.collision ?? []).filter((mesh) => mesh.userData.gteki_role !== "camera_blocker");
+  const cutLive = (hooks?: RecipeHooks): CutResult => cutRegions([root, ...collision], regions, resources, options.walkable ?? new Set(), false, options.vertexLimit ?? STAIRWELL_VERTEX_LIMIT, hooks);
   let recipe: StairwellStats["recipe"] = "live";
   let cut: CutResult;
   const baked = options.recipe;
