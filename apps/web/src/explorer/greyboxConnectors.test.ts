@@ -99,6 +99,23 @@ describe("measured connector dimensions", () => {
     const values = p.position.filter((_, i) => i % 3 === axis);
     return Math.max(...values) - Math.min(...values);
   };
+  it("ends stair side strips vertically at the floor and landing", () => {
+    for (const tier of ["low", "high"] as const) {
+      const strips = buildStairs(new THREE.Vector3(), new THREE.Vector3(4, 2, 0), 1.5, tier)
+        .filter((p) => p.material === "nosing" && extent(p, 2) < 0.061);
+      expect(strips).toHaveLength(2);
+      for (const strip of strips) {
+        const vertices = Array.from({ length: strip.position.length / 3 }, (_, i) => strip.position.slice(i * 3, i * 3 + 3));
+        expect(Math.min(...vertices.map((v) => v[1]!))).toBeGreaterThanOrEqual(-0.001);
+        expect(Math.max(...vertices.map((v) => v[1]!))).toBeLessThanOrEqual(2.271);
+        for (const v of vertices) expect(Math.min(Math.abs(v[0]!), Math.abs(v[0]! - 4))).toBeLessThan(0.001);
+        for (const x of [0, 4]) {
+          const end = vertices.filter((v) => Math.abs(v[0]! - x) < 0.001);
+          expect(Math.max(...end.map((v) => v[1]!)) - Math.min(...end.map((v) => v[1]!))).toBeGreaterThan(0.1);
+        }
+      }
+    }
+  });
   it("builds 0.18 m risers, 0.30 m treads and a 1.2 m landing before 3 m", () => {
     const p = buildStairs(new THREE.Vector3(), new THREE.Vector3(7.2, 3.6, 0), 1.5, "high");
     const risers = p.filter((v) => v.material === "riser"), treads = p.filter((v) => v.material === "tread");
