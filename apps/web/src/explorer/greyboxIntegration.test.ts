@@ -7,6 +7,7 @@ import { greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox
 import { strings } from "../i18n.ts";
 import { darkSampleDistances } from "./routeGroundQa.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { InteractionController } from "./interaction.ts";
 import { prepareRayTrees } from "./meshBvh.ts";
 import { castCamera } from "./raycast.ts";
 import { floorProbe } from "./routeGaps.ts";
@@ -23,6 +24,7 @@ function fixture() {
   const scene = { root, walkable: [floor], colliders: [wall, secondWall], walls: [{ a: { x: 2.05, y: -3 }, b: { x: 2.05, y: 3 }, zMin: 0, zMax: 3 }], dispose: vi.fn() };
   const keys = new Set<string>();
   const state = Object.assign(Object.create(Explorer.prototype), {
+    interactionController: new InteractionController([]),
     loadGeneration: 0, disposed: false, mode: "walk", quality: "high", stationCaches: { remember: vi.fn() },
     releaseStationCaches: vi.fn(), clearStation: vi.fn(), ensureAudio: () => false,
     buildStationScene: async () => scene, overviewLook: { set: vi.fn() }, street: { restore: vi.fn(), attach: vi.fn() },
@@ -246,6 +248,7 @@ describe("greybox station integration", () => {
     const hit = greyboxSceneProbes([wall], []).wallHit({ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 });
     expect(hit?.wallNormal?.x).toBeCloseTo(Math.SQRT1_2); expect(hit?.wallNormal?.z).toBeCloseTo(Math.SQRT1_2);
     const state = Object.assign(Object.create(Explorer.prototype), {
+      interactionController: new InteractionController([]),
       colliders: [wall], colliderTargets: [wall], sceneColliderTargets: new Set([wall]), ray: new THREE.Raycaster(), portalExemptions: 0,
       greyboxOpenings: [{ center: new THREE.Vector3(), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), wallNormal: hit!.wallNormal!, width: 2, depth: 0.6, height: 2.3 }],
     });
@@ -322,6 +325,7 @@ describe("greybox station integration", () => {
   it("updates the localized legend when a route or nearby walk needs it", () => {
     const notify = vi.fn();
     const state = Object.assign(Object.create(Explorer.prototype), {
+      interactionController: new InteractionController([]),
       routeGroup: new THREE.Group(), mode: "overview", pos: new THREE.Vector3(5, 0, 0),
       greyboxSegments: [{ line: new THREE.Line3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(10, 0, 0)), halfWidth: 1 }],
       greyboxLegendVisible: false, events: { onGreyboxLegend: notify },
