@@ -1,7 +1,7 @@
 ---
 area: web-explorer
 owner: gteki-fa
-updated: 2026-11-03 JST
+updated: 2026-11-08 JST
 ---
 # Web explorer (3D station view)
 
@@ -59,6 +59,8 @@ Most helpers in the folder are small pure modules with their own tests (camera m
 - `apps/web/src/explorer/identityBoards.ts:48-52` — collectIdentityBoards(): finds identity boards in a station scene.
 - `apps/web/src/explorer/walker.ts:22-53` — resolveWalls(); `72-86` samplePolyline().
 - `apps/web/src/explorer/zones.ts` — zone lighting (#861 slice A): `zoneAnchors()` turns platform and ticket-gate nodes into renderer-space anchors, `classifyZone()` returns outdoor / platform / concourse / passage, the explorer notifies station audio when the classification changes, and `ZONE_LOOK` holds the exposure, fog and hemisphere-tint multipliers the explorer eases to. Art direction, not measured (DR-LT-02).
+- `tools/blender/character/build_cat_fripouille.py` — builds the shipped avatar `apps/web/public/avatars/cat.glb` from the checked-in Fripouille base mesh under `assets/library/source/cat-fripouille/` (CC BY 4.0). It repairs the source's centimetre-vs-metre units, axis/yaw, posed-skeleton mismatch and eye placement, keeps the 30-joint topology under the agreed names, and authors the clips and the `extras.gteki_cat.calib` walk/trot/run stride values on node `ARM_cat` (#854). `build_cat.py` stays only as shared helper code and for reference.
+- `apps/web/src/explorer/catGlb.test.ts` — parses the shipped cat GLB's JSON chunk with `node:fs` (no Three) and holds its contract: one mesh and primitive, <= 5000 triangles, no images, <= 1.2 MB, the rig node names (`root`, `neck`, `head`, `ear_L`, `ear_R`, `tail_01`-`tail_04`), the locomotion clips and finite positive walk/trot/run calibration (#854).
 
 ## Data flow
 - Runtime greybox: `Explorer.loadStation()` probes the original station ground and colliders, builds passages and piecewise stairs and escalators from traversable graph edges, then adds their ground and walls to walker and camera targets. Missing connector endpoint floors receive landing pads. Public navmesh guides, route ribbons and minimaps use baked snapped edge and junction paths; missing paths report a route failure. Explicit station-suspect paths retain flagged graph geometry under ruling C and are not a navmesh pass. Stations without baked navmesh data keep connector walk paths. Portal openings split scene wall segments and cut intersecting scene meshes before final ray trees are built; collider filtering is a fallback. `portalView()` samples the opening with an ID mask. Elevators are deferred to a follow-up PR.

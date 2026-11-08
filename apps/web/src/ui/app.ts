@@ -19,7 +19,7 @@ import { categoriesIn } from "./categoryFilter.ts";
 import { barrierFreeResults } from "./barrierFree.ts";
 import { arrivalPrecision, merchantCardEl, merchantCardModel } from "./merchantCard.ts";
 import { stationClock } from "../stationClock.ts";
-import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, MODEL_CREDITS, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -1708,6 +1708,25 @@ export class App {
         src.append(li);
       }
       d.append(src);
+      // Third-party 3D model credits (#854): the upstream credit line verbatim with source, author and licence links.
+      d.append(el("h3", undefined, this.t.models3d));
+      const models = el("ul");
+      const modelLink = (label: string, href: string | null): HTMLElement => {
+        if (!href) return el("span", undefined, label);
+        const a = el("a", undefined, label);
+        a.href = href;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        return a;
+      };
+      for (const m of MODEL_CREDITS) {
+        const li = el("li", undefined, m.attribution);
+        li.append(el("span", "muted", " · "), modelLink(m.source.label, m.source.href), el("span", "muted", " / "));
+        li.append(modelLink(m.author.label, m.author.href), el("span", "muted", " / "), modelLink(m.license.label, m.license.href));
+        li.append(el("span", "muted", ` · ${m.modification}`));
+        models.append(li);
+      }
+      d.append(models);
       // Asset modification notices (e.g. "Blender build from PLATEAU …") disclose how sources were processed.
       const derived = (b.assets ?? []).filter((a) => a.derivation);
       if (derived.length) {
