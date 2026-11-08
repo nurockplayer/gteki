@@ -120,6 +120,28 @@ for (const key of STATIONS) {
     const mode = await hooks.mode(page);
     expect.soft(mode, "the opening view is the overview").toBe("overview");
 
+    if (key === "shinjuku") {
+      const checkDraws = async (tier: string) => {
+        const draws = await page.evaluate(() => (window as any).__gteki.overviewDraws());
+        console.log(`[overview-draws] ${new Date().toISOString()} ${testInfo.project.name} ${tier} ${JSON.stringify(draws)}`);
+        expect(draws.surfaceMeshes, `${tier}: surface layer exists`).toBeGreaterThan(0);
+        expect(draws.surface, `${tier}: street surface did not draw`).toBe(0);
+        expect(draws.station, `${tier}: station meshes drew`).toBeGreaterThan(0);
+      };
+      await checkDraws(`default-${await hooks.quality(page)}`);
+      await page.addInitScript(() => {
+        const original = window.matchMedia.bind(window);
+        window.matchMedia = (query) => query === "(pointer: coarse)" ? original("(pointer: fine)") : original(query);
+        Object.defineProperty(screen, "width", { get: () => 1440 });
+        Object.defineProperty(screen, "height", { get: () => 900 });
+      });
+      await openStation(page, key);
+      expect(await hooks.quality(page), "high tier uses the composer").toBe("high");
+      await checkDraws("high");
+    } else {
+      console.log(`[overview-draws] ${new Date().toISOString()} ${key}: skipped; no surface-render-only layer`);
+    }
+
     const png = await page.screenshot({ path: shotPath(testInfo, `${key}-11-overview.png`) });
     const stats = await imageStats(page, png);
     const smoke = await labelUiOverlaps(page);
