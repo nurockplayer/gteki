@@ -161,13 +161,14 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
     await hooks.simulate(page, 0.5, []);
     if (v.facing) await face(page, v.facing.from, v.facing.to);
     await hooks.simulate(page, 1.0, []);
-    const camera = await hooks.sceneInfo(page).then((s: any) => ({ position: s.camera, direction: s.cameraDirection, fov: s.fov, aspect: s.aspect, mode: s.mode }));
-    Object.assign(camera, await page.evaluate(() => {
-      const { yaw, pitch, boomActual, boomWanted, raise, avatarFade } = (window as any).__gteki.camera();
-      return { yaw, pitch, boomActual, boomWanted, raise, avatarFade };
-    }));
     for (let i = 0; i < FRAMES; i++) {
       if (i) await hooks.simulate(page, FRAME_S, v.keys);
+      // Read per frame (#899): a walking view moves the boom, raise and fade between frames.
+      const camera = await hooks.sceneInfo(page).then((s: any) => ({ position: s.camera, direction: s.cameraDirection, fov: s.fov, aspect: s.aspect, mode: s.mode }));
+      Object.assign(camera, await page.evaluate(() => {
+        const { yaw, pitch, boomActual, boomWanted, raise, avatarFade } = (window as any).__gteki.camera();
+        return { yaw, pitch, boomActual, boomWanted, raise, avatarFade };
+      }));
       const file = shotPath(testInfo, `rec-${key}-${v.id}-${String(i).padStart(2, "0")}.png`);
       const png = await page.screenshot({ path: file });
       const anon = createHash("sha256").update(`${key4anon}:${v.id}:${i}`).digest("hex").slice(0, 12);
