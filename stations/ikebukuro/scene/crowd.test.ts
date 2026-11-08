@@ -757,8 +757,8 @@ describe("ikebukuro crowd relocation", () => {
   // A camera at the origin looking along -Z, and three verified passages: 200 m straight ahead on the
   // view axis (landings there are inside the frustum), 200 m
   // straight behind (out of view), and a passage
-  // across the view 12 m ahead of the camera, with its nearer endpoint at positive x.
-  const cross = { id: "cross", from: "c1", to: "c2", verification: "verified", geometry: [{ x: -100, y: 12, z: 0 }, { x: 80, y: 12, z: 0 }] };
+  // across the view 8 m ahead of the camera, with its nearer endpoint at positive x.
+  const cross = { id: "cross", from: "c1", to: "c2", verification: "verified", geometry: [{ x: -100, y: 8, z: 0 }, { x: 80, y: 8, z: 0 }] };
   const RELOCATION_EDGES = [
     { id: "axis", from: "a1", to: "a2", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 200, z: 0 }] },
     { id: "behind", from: "b1", to: "b2", verification: "verified", geometry: [{ x: 0, y: -200, z: 0 }, { x: 0, y: 0, z: 0 }] },
@@ -813,7 +813,7 @@ describe("ikebukuro crowd relocation", () => {
     }
     c.update(0.25, 0.25);
     const next = read(c);
-    const crossMoves = moved.filter((m) => Math.abs(m.z + 12) < 1 && next[m.index]!.scale > 1e-6);
+    const crossMoves = moved.filter((m) => Math.abs(m.z + 8) < 1 && next[m.index]!.scale > 1e-6);
     expect(crossMoves.length).toBeGreaterThan(2);
     if (count === 80) expect(crossMoves.every((m) => next[m.index]!.x > m.x)).toBe(true);
     else {
