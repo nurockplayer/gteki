@@ -14,7 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade } from "./geometry.ts";
+import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, steppedProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
@@ -1931,17 +1931,39 @@ export class Explorer {
     this.clearRoute();
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
+    const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
+    const ribbonPoints = [pts[0]!];
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1]!, b = pts[i]!;
+      const horizontal = Math.hypot(b.x - a.x, b.z - a.z);
+      if (Math.abs(b.y - a.y) <= horizontal * Math.tan(Math.PI / 12)) { ribbonPoints.push(b); continue; }
+      const count = Math.ceil(horizontal / 0.05);
+      const samples: THREE.Vector3[] = [];
+      for (let j = 0; j <= count; j++) {
+        const p = a.clone().lerp(b, count ? j / count : 0);
+        this.ray.set(p.clone().add(new THREE.Vector3(0, 0.6, 0)), new THREE.Vector3(0, -1, 0));
+        this.ray.far = Infinity;
+        const hit = castAll(this.ray, routeGround).find((h) => {
+          const material = (h.object as THREE.Mesh).material;
+          return (Array.isArray(material) ? material[h.face?.materialIndex ?? 0] : material)?.visible !== false;
+        });
+        if (hit) p.y = hit.point.y;
+        samples.push(p);
+      }
+      ribbonPoints.pop();
+      ribbonPoints.push(...steppedProfile(samples));
+    }
     this.routeTexture = chevronTexture();
     this.routeTexture.repeat.set(1 / ROUTE_CHEVRON_PITCH_OVERVIEW, 1);
     // Walk and guide draw a narrow, faint band that fades out under the camera; the overview keeps today's wide, opaque ribbon.
     const walkMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, opacity: 0.45, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     routeNearFade(walkMat);
-    const ribbon = new THREE.Mesh(ribbonGeometry(pts, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
+    const ribbon = new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
     ribbon.renderOrder = 5;
     ribbon.name = "route-ribbon";
     ribbon.visible = this.mode !== "overview";
     const overviewMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
-    const overviewRibbon = new THREE.Mesh(ribbonGeometry(pts, ROUTE_RIBBON_WIDTH_OVERVIEW, 0.07), overviewMat);
+    const overviewRibbon = new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_OVERVIEW, 0.07), overviewMat);
     overviewRibbon.renderOrder = 5;
     overviewRibbon.name = "route-ribbon-overview";
     overviewRibbon.visible = this.mode === "overview";
@@ -1962,7 +1984,6 @@ export class Explorer {
     this.routeGroup.add(ribbon, overviewRibbon, ...glow, xray);
     // Stretches with no scene floor under them (the graph runs through space the scene doesn't model):
     // an always-on-top dashed amber band, so they read as "not modelled" rather than as a route in the void.
-    const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
     const gaps = routeGround.length === 0 ? [] : unmodelledRuns(polyline, floorProbe(this.ray, routeGround));
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
