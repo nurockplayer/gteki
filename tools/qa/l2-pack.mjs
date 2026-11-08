@@ -65,6 +65,7 @@ const NEAR_BLACK_WALK = 0.10;  // 13 (#49) and B2 (protocol.md): worst near-blac
 const NEAR_BLACK_OVERVIEW = 0.30; // 11 (#109)
 const LUMA = { min: 40, max: 200 }; // 11
 const FRAMING = { min: 0.5, max: 0.8 }; // 11
+const FRAMING_EPS = 1e-9; // float rounding at the designed 0.5 boundary (#1015)
 const CUE_GAP_M = 30;          // 12 (#108)
 const CLAMP_RUN_MS = 1250;     // 13
 const FOV_JUMP_DEG = 5, FOV_TOL_DEG = 0.5; // 13 lens ease
@@ -200,7 +201,7 @@ row({
 
 row({
   id: "C2", criterion: "Useful landmarks",
-  rule: "11: opens in overview mode, routable label spread 50-80 % of the shorter side (a proxy), at least one exit label on screen, a hidden exit reachable through search. 09: at least half the poses show a visible label. Whether the landmarks are the right ones is human.",
+  rule: "11: opens in overview mode, routable label spread 50-80 % of the shorter side (a proxy), at least one exit label on screen, a hidden exit reachable through search. 09: every route has at least one pose with a visible label (a blank-page check, #1015). Whether the landmarks are the right ones is human.",
   checks: [
     check("11 exits", PROJECTS, (p) => {
       const j = ev(p, `${station}-overview.json`); if (!j) return;
@@ -221,13 +222,17 @@ row({
       const bad = [];
       if (j.mode !== "overview") bad.push(`opens in ${j.mode}`);
       if (typeof sp !== "number" && !bad.length) return { ok: "gap", text: "no framing measure (no overviewFrame and fewer than two routable labels)" };
-      if (typeof sp === "number" && (sp < FRAMING.min || sp > FRAMING.max)) bad.push(`${what} ${num(sp, 2)} outside ${FRAMING.min}-${FRAMING.max}`);
+      if (typeof sp === "number" && (sp < FRAMING.min - FRAMING_EPS || sp > FRAMING.max + FRAMING_EPS)) bad.push(`${what} ${num(sp, 2)} outside ${FRAMING.min}-${FRAMING.max}`);
       return { ok: !bad.length, text: bad.length ? bad.join(", ") : `overview mode, ${what} ${num(sp, 2)} of the shorter side` };
     }),
     check("09 labels", PROJECTS, (p) => {
       const j = ev(p, `${station}-label-fade.json`); if (!j) return;
-      const ok = j.totalPoses > 0 && j.posesWithVisibleLabels >= Math.ceil(j.totalPoses / 2);
-      return { ok, text: `${j.posesWithVisibleLabels}/${j.totalPoses} poses with labels, shown ${j.totalShown}, faded ${j.totalFaded}${j.totalOffFloor !== undefined ? `, off-floor ${j.totalOffFloor}` : ""}` };
+      // Blank-page rule (#1015): every route has at least one pose with a visible label.
+      const perRoute = new Map((j.routes ?? []).map((r) => [r, 0]));
+      for (const pose of j.poses ?? []) perRoute.set(pose.route, (perRoute.get(pose.route) ?? 0) + ((pose.labels ?? []).length > 0 ? 1 : 0));
+      const blank = [...perRoute].filter(([, n]) => n === 0).map(([r]) => r);
+      const ok = j.totalPoses > 0 && perRoute.size > 0 && !blank.length;
+      return { ok, text: `${blank.length ? `no label on route ${blank.join(", ")}; ` : ""}${j.posesWithVisibleLabels}/${j.totalPoses} poses with labels, shown ${j.totalShown}, faded ${j.totalFaded}${j.totalOffFloor !== undefined ? `, off-floor ${j.totalOffFloor}` : ""}` };
     }),
   ],
   humanText: `Reviewer judgement: tick each landmark of the station's landmark list (${st.pois}${st.signage ? `, ${st.signage}` : ""}) as seen, recognisable and distinct in the overview or on a walk. A red label in the fade frames with no geometry in its sight line is a defect.`,
