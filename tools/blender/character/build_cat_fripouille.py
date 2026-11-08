@@ -497,6 +497,22 @@ def decimate(obj, budget):
     return kit.mesh_triangles(obj.data)
 
 
+def orient_outward(obj):
+    """Wind every face to point outward. The source winds its faces against its own normals, so the
+    lit side rendered as back faces and the cat came out black in the app and in the previews."""
+    import bmesh
+    import bpy
+    mesh = bmesh.new()
+    mesh.from_mesh(obj.data)
+    bmesh.ops.recalc_face_normals(mesh, faces=mesh.faces)
+    mesh.to_mesh(obj.data)
+    mesh.free()
+    if obj.data.has_custom_normals:
+        with bpy.context.temp_override(object=obj, active_object=obj, selected_objects=[obj]):
+            bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    obj.data.shade_smooth()
+
+
 def eye_colours(eyes, texture, checker):
     """Per-vertex eye colour sampled from the source UVs and the eye base colour map."""
     import bpy
@@ -1247,7 +1263,22 @@ def glb_checks(checker, path):
                   for index, value in zip(joint, weight) if value > 0.0 and index >= joints)
     checker.check(outside == 0,
                   f"GLB weights stay inside the {joints} skin joints ({outside} outside)")
-    colours, accessor = glb_accessor(doc, binary, mesh["primitives"][0]["attributes"]["COLOR_0"],
+    primitive = mesh["primitives"][0]
+    positions, _ = glb_accessor(doc, binary, primitive["attributes"]["POSITION"], {"VEC3": 3})
+    normals, _ = glb_accessor(doc, binary, primitive["attributes"]["NORMAL"], {"VEC3": 3})
+    indices, _ = glb_accessor(doc, binary, primitive["indices"], {"SCALAR": 1})
+    corners = [i[0] for i in indices]
+    agree = 0
+    for t in range(0, len(corners) - 2, 3):
+        a, b, c = (positions[i] for i in corners[t:t + 3])
+        u = [b[k] - a[k] for k in range(3)]
+        w = [c[k] - a[k] for k in range(3)]
+        face = (u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0])
+        vertex = [sum(normals[i][k] for i in corners[t:t + 3]) for k in range(3)]
+        agree += sum(face[k] * vertex[k] for k in range(3)) > 0.0
+    share = agree / max(1, len(corners) // 3)
+    checker.check(share >= 0.98, f"GLB face winding agrees with NORMAL on {share:.3f} of triangles (>= 0.98)")
+    colours, accessor = glb_accessor(doc, binary, primitive["attributes"]["COLOR_0"],
                                      {"VEC4": 4, "VEC3": 3})
     scale = 1.0
     if accessor.get("normalized") and accessor["componentType"] in (5121, 5123):
@@ -1265,7 +1296,7 @@ def glb_checks(checker, path):
     checker.check(all(abs(a - b) <= 2 for a, b in zip(coat, target)),
                   f"COLOR_0 coat {coat} within 2/255 of sRGB #5B626B after linear->sRGB")
     eyes = {index for index, colour in enumerate(colours)
-            if all(abs(a - b) <= 2 for a, b in zip(srgb(colour), (58, 154, 82)))
+            if all(abs(a - b) <= 2 for a, b in zip(srgb(colour), (0xA3, 0x9A, 0x52)))
             or all(abs(a - b) <= 2 for a, b in zip(srgb(colour), (20, 18, 16)))}
     head_slot = joint_names.index("head") if "head" in joint_names else -1
     on_head = sum(1 for index in eyes
@@ -1423,6 +1454,8 @@ def main():
     print(f"INFO body triangles before decimation {kit.mesh_triangles(body.data)}")
     decimate(body, BODY_TRI_BUDGET)
     decimate(eyes, EYE_TRI_BUDGET)
+    for obj in (body, eyes):
+        orient_outward(obj)
     print(f"INFO decimated: body {kit.mesh_triangles(body.data)} tris, "
           f"eyes {kit.mesh_triangles(eyes.data)} tris")
 

@@ -1,7 +1,7 @@
 {
   "file": "apps/web/public/avatars/cat.glb",
   "issue": "#854",
-  "sha256": "c0b1cde60de8b677e346a2118cb73bfd2b97a418961baeee461d918c48a0ee9d",
+  "sha256": "9aa638ae977e25503ed9afb74d88a4903f9bc4f730fa14877d10d0158326f433",
   "bytes": 511424,
   "license_spdx": "CC-BY-4.0",
   "attribution": "This work is based on \"3d modelling my cat: Fripouille\" (https://sketchfab.com/3d-models/3d-modelling-my-cat-fripouille-0ab14bf98e754f8d90fe1bf1c84ca66c) by guillaume bolis (https://sketchfab.com/guillaume.bolis.neko) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
