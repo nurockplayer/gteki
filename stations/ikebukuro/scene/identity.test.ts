@@ -215,7 +215,7 @@ it("reports real third-person opening failures and spec-13 +0 without recenterin
   built.dispose();
 }, 30_000);
 
-it("reports the cat camera's identity baseline at rest, spawn × view × project (#342)", async () => {
+it("reports the cat camera's identity baseline at rest, spawn x view x project (#342)", async () => {
   const world = await buildWorld();
   const built = build();
   const rows = [];
