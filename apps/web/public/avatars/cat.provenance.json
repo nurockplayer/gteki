@@ -1,15 +1,15 @@
 {
   "file": "apps/web/public/avatars/cat.glb",
   "issue": "#854",
-  "sha256": "316fe7a8fc96642b2c379058bbeab4d71411b1aa8bdce82c5dbf0139866f0aa2",
-  "bytes": 511572,
+  "sha256": "c0b1cde60de8b677e346a2118cb73bfd2b97a418961baeee461d918c48a0ee9d",
+  "bytes": 511424,
   "license_spdx": "CC-BY-4.0",
   "attribution": "This work is based on \"3d modelling my cat: Fripouille\" (https://sketchfab.com/3d-models/3d-modelling-my-cat-fripouille-0ab14bf98e754f8d90fe1bf1c84ca66c) by guillaume bolis (https://sketchfab.com/guillaume.bolis.neko) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
   "base_mesh": "assets/library/source/cat-fripouille/ (Sketchfab download of \"3d modelling my cat: Fripouille\", CC-BY-4.0)",
   "edits": [
     "Modified by GTEki contributors: whiskers removed, mesh decimated, recoloured solid blue-grey with vertex colours (textures removed), bones renamed, ear bones added and reweighted, animation clips authored.",
     "Source repair: 0.01 unit fix and canonical axis map, yawed nose onto +Y, centred on the spine, scaled to 0.345 m bind height, feet on z = 0; the source joints are a posed skeleton inconsistent with the bind mesh, so joint positions were re-derived from the weighted mesh regions, and the eyes were re-placed by similarity onto the head",
-    "Eyes recoloured from SHD_eye_baseColor.png (luma < 0.15 -> pupil #141210, else iris #3A9A52); coat #5B626B, nose leather #6E6468; one material, roughness 1, metallic 0"
+    "Eyes recoloured from SHD_eye_baseColor.png (luma < 0.15 -> pupil #141210, else iris #A39A52); coat #5B626B, nose leather #6E6468; one material, roughness 1, metallic 0"
   ],
   "clip_authorship": "Authored by GTEki contributors in Blender from code (no motion capture, no third-party clips): idle, sit, walk, trot, run, start, stop, turn_l, turn_r at 30 fps",
   "generator": "tools/blender/character/build_cat_fripouille.py, Blender 5.2.3 LTS (headless, -b) with the bundled glTF 2.0 exporter",

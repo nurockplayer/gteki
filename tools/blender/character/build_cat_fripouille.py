@@ -60,7 +60,7 @@ TAIL_CLEARANCE = 0.015          # tail bones keep this far from the hind leg bon
 
 # sRGB as authored in the brief, converted to linear for COLOR_0.
 COAT, NOSE = "#5B626B", "#6E6468"
-PUPIL, IRIS = "#141210", "#3A9A52"
+PUPIL, IRIS = "#141210", "#A39A52"
 PUPIL_LUMA = 0.15
 COAT_L, NOSE_L, PUPIL_L, IRIS_L = (kit.srgb_to_linear(c) for c in (COAT, NOSE, PUPIL, IRIS))
 
@@ -1137,8 +1137,9 @@ def sit_checks(checker, arm, body, groups, actions):
     lowest = 1.0
     first, drift, penetration = {}, {leg["key"]: 0.0 for leg in LEGS}, {leg["key"]: 1.0 for leg in LEGS}
     tail = [f"tail_0{i}" for i in range(1, 7)]
-    hind = [f"hindleg_{part}_{side}" for side in ("L", "R")
-            for part in ("hip", "upper", "lower", "paw")]
+    hind = [name for side in ("L", "R")
+            for name in (f"hindleg_hip_{side}", f"hindleg_upper_{side}", f"hindleg_lower_{side}",
+                         f"hindpaw_{side}")]
     clearance = 1.0
     for frame in frames:
         scene.frame_set(frame)
