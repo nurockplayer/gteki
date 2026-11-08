@@ -496,6 +496,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
     ...(audio.setAcousticZone ? { setAcousticZone: audio.setAcousticZone } : {}),
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
+    ...(built.afterRender ? { afterRender: built.afterRender } : {}),
     ...(crowd ? { setCameraNearFade: crowd.setCameraNearFade.bind(crowd) } : {}),
     ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
