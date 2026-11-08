@@ -1146,7 +1146,7 @@ export class Explorer {
       // The crowd's distance fade must reach GTAO's depth/normal buffers too (high tier only).
       this.composer?.setDepthTwins(built?.root ?? null);
     }
-    this.interactionController = new InteractionController(built?.interactables ?? []);
+    this.interactionController.setSpecs(built?.interactables ?? []);
     this.interactionSnapshot = "";
     this.interactionVisuals = new Map();
     this.wallProps = undefined;
@@ -1326,7 +1326,7 @@ export class Explorer {
 
   /** `leaving`: the explorer is switching to a different station (or disposing), so the previous station's GPU textures are freed. */
   private clearStation(leaving = false): void {
-    this.interactionController = new InteractionController([]);
+    this.interactionController.setSpecs([]);
     this.interactionSnapshot = "";
     this.interactionVisuals = undefined;
     this.wallProps = undefined;
