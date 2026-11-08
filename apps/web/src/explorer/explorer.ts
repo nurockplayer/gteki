@@ -2845,6 +2845,8 @@ export class Explorer {
     if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
     if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
     if (this.qaCamera.distance !== undefined) this.camDistance = this.qaCamera.distance;
+    // #1014: a teleport snaps the pose but no longer the lens; only a pinned QA camera still snaps it.
+    const lensSnap = this.qaCameraSnap;
     snap ||= this.qaCameraSnap;
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
@@ -2862,7 +2864,7 @@ export class Explorer {
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
-      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
@@ -2901,7 +2903,7 @@ export class Explorer {
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
-    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
     // Use the last frame's actual boom, measured against its own pivot. Measuring the old
     // camera against the new pivot would rate-limit the walker's movement as contraction.
     const previousDistance = this.boomActual;
