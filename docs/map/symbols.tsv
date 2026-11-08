@@ -11,8 +11,11 @@ drawnSources	function	apps/web/src/creditLine.ts
 entryRightsLabels	function	apps/web/src/creditLine.ts
 groupByAttribution	function	apps/web/src/creditLine.ts
 groupLicenses	function	apps/web/src/creditLine.ts
+CAT_MODEL_CREDIT	const	apps/web/src/credits.ts
 DataFileCredit	interface	apps/web/src/credits.ts
 FactsOnlyCredit	interface	apps/web/src/credits.ts
+MODEL_CREDITS	const	apps/web/src/credits.ts
+ModelCredit	interface	apps/web/src/credits.ts
 OverrideCredit	interface	apps/web/src/credits.ts
 SourceCredit	interface	apps/web/src/credits.ts
 assetDerivationPresentation	function	apps/web/src/credits.ts
@@ -1179,6 +1182,7 @@ assembleCollision	function	stations/ikebukuro/scene/scene.ts
 buildScene	function	stations/ikebukuro/scene/scene.ts
 generatedSignageFromGraph	const	stations/ikebukuro/scene/scene.ts
 tileCollision	function	stations/ikebukuro/scene/scene.ts
+COMPACT_NAME_SCALE	const	stations/ikebukuro/scene/signs.ts
 EXIT_EN_EM	const	stations/ikebukuro/scene/signs.ts
 EXIT_JA_EM	const	stations/ikebukuro/scene/signs.ts
 FONT	const	stations/ikebukuro/scene/signs.ts
@@ -1189,6 +1193,7 @@ SMALL_EM	const	stations/ikebukuro/scene/signs.ts
 SignLayout	interface	stations/ikebukuro/scene/signs.ts
 SignSpec	interface	stations/ikebukuro/scene/signs.ts
 buildSigns	function	stations/ikebukuro/scene/signs.ts
+identityArt	function	stations/ikebukuro/scene/signs.ts
 identityTypography	function	stations/ikebukuro/scene/signs.ts
 APPROACH_CHIME	const	stations/ikebukuro/scene/station-sound.ts
 GATE_PATTERNS	const	stations/ikebukuro/scene/station-sound.ts

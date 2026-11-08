@@ -247,6 +247,8 @@ export class Explorer {
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
+  /** Shinjuku's street surface layer, looked up once per station scene; overview suppresses it (see tick). */
+  private surfaceLayer: { scene: StationScene; obj: THREE.Object3D | undefined } | null = null;
   private interactionController = new InteractionController([]);
   private interactionSnapshot = "";
   /** Reaction objects by interactable id, and the station's decorative wall-prop mesh (#858 item 12). */
@@ -457,9 +459,16 @@ export class Explorer {
     if (this.catAvatar) { this.camDistance = FOLLOW_CAT.distance; this.pitch = FOLLOW_CAT.pitch; }
     // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
     // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
-    if (this.quality === "low") this.scene.onBeforeRender = (renderer, _scene, camera) => {
-      if (!this.stepsPaused) this.stationScene?.beforeRender?.(renderer, camera);
-    };
+    if (this.quality === "low") {
+      this.scene.onBeforeRender = (renderer, _scene, camera) => {
+        if (!this.stepsPaused) this.stationScene?.beforeRender?.(renderer, camera);
+      };
+      // Three.js runs this at the end of render, after the frame that hid level groups; restore them so
+      // every other path (raycasts, walker, overview probes) keeps seeing the whole station (#1023).
+      this.scene.onAfterRender = () => {
+        if (!this.stepsPaused) this.stationScene?.afterRender?.();
+      };
+    }
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
@@ -1137,7 +1146,7 @@ export class Explorer {
       // The crowd's distance fade must reach GTAO's depth/normal buffers too (high tier only).
       this.composer?.setDepthTwins(built?.root ?? null);
     }
-    this.interactionController = new InteractionController(built?.interactables ?? []);
+    this.interactionController.setSpecs(built?.interactables ?? []);
     this.interactionSnapshot = "";
     this.interactionVisuals = new Map();
     this.wallProps = undefined;
@@ -1317,7 +1326,7 @@ export class Explorer {
 
   /** `leaving`: the explorer is switching to a different station (or disposing), so the previous station's GPU textures are freed. */
   private clearStation(leaving = false): void {
-    this.interactionController = new InteractionController([]);
+    this.interactionController.setSpecs([]);
     this.interactionSnapshot = "";
     this.interactionVisuals = undefined;
     this.wallProps = undefined;
@@ -2592,6 +2601,19 @@ export class Explorer {
     }
     // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
     this.stationScene?.update?.(dt, t, this.camera);
+    // Overview looks down on the underground model: Shinjuku's street surface layer (shown from any camera at
+    // or above street level) would cover it with buildings and haze. The layer re-checks its own visibility on
+    // every render pass, so veto it through its suppressed flag rather than setting visible once.
+    if (this.stationScene) {
+      if (this.surfaceLayer?.scene !== this.stationScene) {
+        this.surfaceLayer = { scene: this.stationScene, obj: this.stationScene.root.getObjectByName("surface-render-only") };
+      }
+      const surface = this.surfaceLayer.obj;
+      if (surface) {
+        surface.userData.suppressed = this.mode === "overview";
+        if (surface.userData.suppressed) surface.visible = false;
+      }
+    }
 
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
@@ -2838,6 +2860,8 @@ export class Explorer {
     if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
     if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
     if (this.qaCamera.distance !== undefined) this.camDistance = this.qaCamera.distance;
+    // #1014: a teleport snaps the pose but no longer the lens; only a pinned QA camera still snaps it.
+    const lensSnap = this.qaCameraSnap;
     snap ||= this.qaCameraSnap;
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
@@ -2855,7 +2879,7 @@ export class Explorer {
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
-      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
@@ -2894,7 +2918,7 @@ export class Explorer {
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
-    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
     // Use the last frame's actual boom, measured against its own pivot. Measuring the old
     // camera against the new pivot would rate-limit the walker's movement as contraction.
     const previousDistance = this.boomActual;

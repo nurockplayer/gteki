@@ -22,6 +22,31 @@ export function safeHref(url: string | undefined | null): string | null {
   }
 }
 
+/** A shipped 3D model's credit (#854): the upstream line verbatim plus its source, author and licence links. */
+export interface ModelCredit {
+  id: string;
+  attribution: string;
+  source: { label: string; href: string | null };
+  author: { label: string; href: string | null };
+  license: { label: string; href: string | null };
+  modification: string;
+}
+
+const CAT_SOURCE_URL = "https://sketchfab.com/3d-models/3d-modelling-my-cat-fripouille-0ab14bf98e754f8d90fe1bf1c84ca66c";
+
+/** The Fripouille base-mesh cat (#854), credit line copied verbatim from the source licence.txt. */
+export const CAT_MODEL_CREDIT: ModelCredit = {
+  id: "cat.glb",
+  attribution: `This work is based on "3d modelling my cat: Fripouille" (${CAT_SOURCE_URL}) by guillaume bolis (https://sketchfab.com/guillaume.bolis.neko) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)`,
+  source: { label: "3d modelling my cat: Fripouille", href: safeHref(CAT_SOURCE_URL) },
+  author: { label: "guillaume bolis", href: safeHref("https://sketchfab.com/guillaume.bolis.neko") },
+  license: { label: "CC BY 4.0", href: safeHref("http://creativecommons.org/licenses/by/4.0/") },
+  modification: "Modified by GTEki contributors: whiskers removed, mesh decimated, recoloured solid blue-grey with vertex colours (textures removed), skeleton re-derived and bones renamed, ear bones added and reweighted, animation clips authored.",
+};
+
+/** 3D model credits shown in the Coverage dialog's "3D models" section. */
+export const MODEL_CREDITS: readonly ModelCredit[] = [CAT_MODEL_CREDIT];
+
 /** CC BY and PDL 1.0 attribution must name the licence and say when the data was modified. */
 export function sourceCredit(s: Source, lang: Lang = "ja"): SourceCredit {
   return {
