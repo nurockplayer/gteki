@@ -1654,6 +1654,10 @@ export class Explorer {
     if (walkRibbon) walkRibbon.visible = mode !== "overview";
     const overviewRibbon = this.routeGroup.getObjectByName("route-ribbon-overview");
     if (overviewRibbon) overviewRibbon.visible = mode === "overview";
+    const routeGlow = this.routeGroup.getObjectByName("route-glow");
+    if (routeGlow) routeGlow.visible = mode === "overview";
+    const routeGlowOccluded = this.routeGroup.getObjectByName("route-glow-occluded");
+    if (routeGlowOccluded) routeGlowOccluded.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -1951,6 +1955,9 @@ export class Explorer {
     this.trackOverlay(this.routeLines.occluded);
     this.routeLines.setXray(this.mode === "overview");
     const glow = this.routeLines.lines(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0.12, 0)))), 6);
+    glow[0]!.name = "route-glow-occluded";
+    glow[1]!.name = "route-glow";
+    for (const line of glow) line.visible = this.mode === "overview";
     // Symbolic (unknown) heights are drawn dashed above the ribbon so they read as approximate.
     const symbolic = polyline.some((p) => !p.zKnown);
     // X-ray copy so the route stays readable through ceilings/slabs in overview.
