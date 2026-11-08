@@ -14,7 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, steppedProfile } from "./geometry.ts";
+import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
@@ -1935,23 +1935,17 @@ export class Explorer {
     const ribbonPoints = [pts[0]!];
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1]!, b = pts[i]!;
-      const horizontal = Math.hypot(b.x - a.x, b.z - a.z);
-      if (Math.abs(b.y - a.y) <= horizontal * Math.tan(Math.PI / 12)) { ribbonPoints.push(b); continue; }
-      const count = Math.ceil(horizontal / 0.05);
-      const samples: THREE.Vector3[] = [];
-      for (let j = 0; j <= count; j++) {
-        const p = a.clone().lerp(b, count ? j / count : 0);
+      const segment = routeSegmentProfile(a, b, (p) => {
         this.ray.set(p.clone().add(new THREE.Vector3(0, 0.6, 0)), new THREE.Vector3(0, -1, 0));
-        this.ray.far = Infinity;
+        this.ray.far = 1.2;
         const hit = castAll(this.ray, routeGround).find((h) => {
           const material = (h.object as THREE.Mesh).material;
           return (Array.isArray(material) ? material[h.face?.materialIndex ?? 0] : material)?.visible !== false;
         });
-        if (hit) p.y = hit.point.y;
-        samples.push(p);
-      }
+        return hit?.point.y;
+      });
       ribbonPoints.pop();
-      ribbonPoints.push(...steppedProfile(samples));
+      ribbonPoints.push(...segment);
     }
     this.routeTexture = chevronTexture();
     this.routeTexture.repeat.set(1 / ROUTE_CHEVRON_PITCH_OVERVIEW, 1);

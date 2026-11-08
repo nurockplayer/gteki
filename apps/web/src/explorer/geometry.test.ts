@@ -1,6 +1,14 @@
 import { expect, it } from "vitest";
 import * as THREE from "three";
-import { ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, clipFlatGeometry, ribbonGeometry, steppedProfile } from "./geometry.ts";
+import { ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, clipFlatGeometry, ribbonGeometry, routeSegmentProfile, steppedProfile } from "./geometry.ts";
+
+it("preserves vertical endpoints and ignores ground far below a connector", () => {
+  const start = new THREE.Vector3(0, 0, 0), end = new THREE.Vector3(0, 4, 0);
+  expect(routeSegmentProfile(start, end, () => 0)).toEqual([start, end]);
+  const slope = routeSegmentProfile(new THREE.Vector3(0, 3, 0), new THREE.Vector3(1, 4, 0), () => 0);
+  expect(slope[0]!.y).toBe(3);
+  expect(slope[slope.length - 1]!.y).toBe(4);
+});
 
 it("steps the ribbon over stair treads and leaves flat input unchanged", () => {
   const samples = Array.from({ length: 19 }, (_, i) => new THREE.Vector3(i * 0.05, Math.min(2, Math.floor((i * 0.05 + 1e-6) / 0.3)) * 0.18, 0));
