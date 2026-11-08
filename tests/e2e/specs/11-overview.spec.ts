@@ -129,19 +129,23 @@ for (const key of STATIONS) {
         expect.soft(draws.station, `${tier}: station meshes drew`).toBeGreaterThan(0);
       };
       await checkDraws(`default-${await hooks.quality(page)}`);
-      await page.addInitScript(() => {
-        const original = window.matchMedia.bind(window);
-        window.matchMedia = (query) => {
-          const result = original(query);
-          if (query === "(pointer: coarse)") Object.defineProperty(result, "matches", { value: false });
-          return result;
-        };
-        Object.defineProperty(screen, "width", { get: () => 1440 });
-        Object.defineProperty(screen, "height", { get: () => 900 });
-      });
-      await openStation(page, key);
-      expect(await hooks.quality(page), "high tier uses the composer").toBe("high");
-      await checkDraws("high");
+      if (!process.env.CI) {
+        await page.addInitScript(() => {
+          const original = window.matchMedia.bind(window);
+          window.matchMedia = (query) => {
+            const result = original(query);
+            if (query === "(pointer: coarse)") Object.defineProperty(result, "matches", { value: false });
+            return result;
+          };
+          Object.defineProperty(screen, "width", { get: () => 1440 });
+          Object.defineProperty(screen, "height", { get: () => 900 });
+        });
+        await openStation(page, key);
+        expect(await hooks.quality(page), "high tier uses the composer").toBe("high");
+        await checkDraws("high");
+      } else {
+        console.log(`[overview-draws] ${new Date().toISOString()} high tier skipped: CI uses the low-tier software renderer`);
+      }
     } else {
       console.log(`[overview-draws] ${new Date().toISOString()} ${key}: skipped; no surface-render-only layer`);
     }
