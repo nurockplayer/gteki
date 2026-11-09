@@ -45,6 +45,8 @@ export interface DeclutterOptions {
   pad?: number;
   /** Extra clearance (px) a label that was hidden needs before it comes back. */
   hold?: number;
+  /** Screen rectangles reserved for UI controls. */
+  blocked?: readonly { x0: number; y0: number; x1: number; y1: number }[];
 }
 
 export const DECLUTTER_PAD_PX = 3;
@@ -70,6 +72,7 @@ export function declutter(items: readonly DeclutterItem[], options: DeclutterOpt
   for (const it of order) {
     const hw = it.w / 2, hh = it.h / 2;
     const l = it.x - hw, t = it.y - hh, r = it.x + hw, b = it.y + hh;
+    if (options.blocked?.some((q) => l < q.x1 && r > q.x0 && t < q.y1 && b > q.y0)) continue;
     // `gap` is the clearance kept to every placed label; one that was hidden needs the extra `hold` to come back.
     const gap = it.klass === LABEL_CLASS.endpoint ? 0 : it.wasVisible ? pad : pad + hold;
     let clear = true;
