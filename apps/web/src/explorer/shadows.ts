@@ -73,8 +73,7 @@ export interface StationShadows {
 
 /**
  * Sets castShadow / receiveShadow on every drawn mesh under `root`, once at attach (never per frame), and reports
- * what it set. Does nothing (and touches nothing) unless `shadowsActive(quality, lighting)`. Subtrees with
- * `visible === false` (hidden colliders, camera blockers) are skipped whole; nothing outside `root` is visited, so
+ * what it set. Does nothing (and touches nothing) unless `shadowsActive(quality, lighting)`. Hidden subtrees are skipped unless tagged `gteki_shadow: "dynamic"`; nothing outside `root` is visited.
  * the route, the overlays and the avatar are never touched. A mesh that fails the policy has castShadow cleared;
  * a `receiveShadow = true` the station set is always kept. A node with `userData.gteki_shadow === "none"` (a glTF
  * extra lands there too) never casts, nor does anything under it; receiving follows the usual rule.
@@ -87,12 +86,13 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
   if (!shadowsActive(quality, lighting)) return out;
   root.updateMatrixWorld(true);
   const box = new THREE.Box3();
-  const visit = (o: THREE.Object3D, optOut: boolean): void => {
-    if (!o.visible) return;
+  const visit = (o: THREE.Object3D, optOut: boolean, dynamicAncestor = false): void => {
     const flag = o.userData?.gteki_shadow;
-    if (flag !== undefined && flag !== "none" && !warnedShadowFlag.has(o)) {
+    const dynamic = dynamicAncestor || flag === "dynamic";
+    if (!o.visible && !dynamic) return;
+    if (flag !== undefined && flag !== "none" && flag !== "dynamic" && !warnedShadowFlag.has(o)) {
       warnedShadowFlag.add(o);
-      console.warn(`[gteki] ${o.name || o.type}: unknown gteki_shadow ${JSON.stringify(flag)} ignored (only "none" opts out)`);
+      console.warn(`[gteki] ${o.name || o.type}: unknown gteki_shadow ${JSON.stringify(flag)} ignored (only "none" opts out; "dynamic" includes hidden geometry)`);
     }
     const optedOut = optOut || flag === "none";
     const m = o as THREE.Mesh;
@@ -110,7 +110,7 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
         if (hasBox && box.max.y - box.min.y > TALL_CANDIDATE_SPAN_M) out.tallCandidates++;
       }
     }
-    for (const c of o.children) visit(c, optedOut);
+    for (const c of o.children) visit(c, optedOut, dynamic);
   };
   visit(root, false);
   out.casters = setCasters(out.candidates, floorY);

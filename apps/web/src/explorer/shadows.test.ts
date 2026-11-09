@@ -80,6 +80,15 @@ describe("applyStationShadows", () => {
     expect(r.bounds.isEmpty()).toBe(true);
   });
 
+  it("includes hidden dynamic meshes as caster candidates and receivers", () => {
+    const hidden = box();
+    hidden.visible = false;
+    hidden.userData.gteki_shadow = "dynamic";
+    const r = apply(rootOf(hidden));
+    expect([hidden.castShadow, hidden.receiveShadow]).toEqual([true, true]);
+    expect(r).toMatchObject({ casters: 1, receivers: 1, candidates: [{ mesh: hidden }] });
+  });
+
   it("leaves transparent meshes and unlit receivers alone", () => {
     const glass = box(new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.4 }));
     const basic = box(new THREE.MeshBasicMaterial());
