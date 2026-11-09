@@ -135,6 +135,34 @@ describe("greybox station integration", () => {
     } finally { vi.unstubAllGlobals(); }
   });
 
+  it("shows both route glow lines only in overview and follows mode switches", () => {
+    const context = { clearRect: vi.fn(), fillRect: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn() };
+    vi.stubGlobal("document", { createElement: () => ({ width: 0, height: 0, getContext: () => context }) });
+    const point = (x: number, z: number) => ({ x, y: 0, z, zKnown: true, stepIndex: 0, floorId: "concourse" });
+    const state = Object.assign(Object.create(Explorer.prototype), {
+      mode: "walk", routeGroup: new THREE.Group(), routeTexture: null, routeLines: null,
+      groundTargets: [], sceneGroundTargets: [], stationScene: null, ray: new THREE.Raycaster(),
+      greyboxSegments: [], trackOverlay: (material: THREE.Material) => material,
+      updateGreyboxLegend: vi.fn(), clearRoute: vi.fn(),
+    });
+    state.showRoute([point(0, 0), point(10, 4)]);
+    const lines = [state.routeGroup.getObjectByName("route-glow"), state.routeGroup.getObjectByName("route-glow-occluded")];
+    expect(lines.every((line: THREE.Object3D | undefined) => line?.visible === false)).toBe(true);
+
+    Object.assign(state, {
+      guideIdentityHoldS: 0, fadeStale: false, camera: { far: 500, updateProjectionMatrix: vi.fn() },
+      orbit: { enabled: true, target: new THREE.Vector3() }, avatar: { visible: true }, input: { enabled: false },
+      pos: new THREE.Vector3(), firstPerson: false, restoreZone: vi.fn(), zoneSnap: false,
+      events: {}, street: { restore: vi.fn() }, setFov: vi.fn(), overviewLook: { set: vi.fn() },
+      graph: { setXray: vi.fn() }, updateGreyboxLegend: vi.fn(),
+    });
+    state.setMode("overview");
+    expect(lines.every((line: THREE.Object3D | undefined) => line?.visible === true)).toBe(true);
+    state.setMode("guide");
+    expect(lines.every((line: THREE.Object3D | undefined) => line?.visible === false)).toBe(true);
+    vi.unstubAllGlobals();
+  });
+
   it("builds floor and targets and walks through a portal in the original collider", async () => {
     const { state, loaded } = fixture();
     expect(await state.loadStation(loaded, createRouter(loaded.bundle))).toBe(true);

@@ -14,7 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade } from "./geometry.ts";
+import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
@@ -33,7 +33,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
+import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
 import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
@@ -539,6 +539,36 @@ export class Explorer {
     return this.quality;
   }
 
+  /** QA-only: count actual station and surface mesh draws over three animation frames. */
+  async overviewDraws(): Promise<{ surfaceMeshes: number; surface: number; station: number }> {
+    const root = this.stationScene?.root;
+    const surface = root?.getObjectByName("surface-render-only");
+    if (!root || !surface) return { surfaceMeshes: 0, surface: 0, station: 0 };
+    const counts = { surfaceMeshes: 0, surface: 0, station: 0 };
+    const restore: (() => void)[] = [];
+    root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      let parent: THREE.Object3D | null = mesh;
+      while (parent && parent !== surface) parent = parent.parent;
+      const isSurface = parent === surface;
+      if (isSurface) counts.surfaceMeshes++;
+      const previous = mesh.onAfterRender;
+      mesh.onAfterRender = function (...args) {
+        previous.apply(this, args);
+        if (args[2] === camera) counts[isSurface ? "surface" : "station"]++;
+      };
+      restore.push(() => { mesh.onAfterRender = previous; });
+    });
+    const camera = this.camera;
+    try {
+      for (let i = 0; i < 4; i++) await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      return counts;
+    } finally {
+      for (const undo of restore) undo();
+    }
+  }
+
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
   sceneInfo(): { loadTimings: Record<string, number>; greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; cameraDirection: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; zone: StationZone; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number }; releasedTextures?: { textures: number; canvases: number } | null } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
@@ -864,13 +894,10 @@ export class Explorer {
   }
 
   /**
-   * Per walking frame, after the street backdrop: re-classify when the walker moved half a metre (or
-   * snapped), then ease exposure, fog and hemisphere tint toward the zone's preset. Once settled, writes
-   * nothing until the zone changes. Outdoors the street backdrop owns fog, so only exposure eases.
+   * Re-classify when the walker moved half a metre or snapped, before updating the street backdrop.
    */
-  private updateZone(dt: number, snap: boolean): void {
-    const fog = this.zoneFog;
-    if (!fog) return;
+  private classify(snap: boolean): void {
+    if (!this.zoneFog) return;
     if (snap || this.zoneAt.distanceToSquared(this.pos) >= ZONE_RECHECK_M2) {
       this.zoneAt.copy(this.pos);
       this.zone = classifyZone(this.pos, this.streetProbe.outdoors, this.zoneAnchors);
@@ -879,6 +906,12 @@ export class Explorer {
         this.stationScene?.setAcousticZone?.(this.zone);
       }
     }
+  }
+
+  /** Ease the zone look after the backdrop; outdoors the backdrop owns fog. */
+  private updateZone(dt: number, snap: boolean): void {
+    const fog = this.zoneFog;
+    if (!fog) return;
     const look = ZONE_LOOK[this.zone];
     const tinted = this.zone !== "outdoor";
     const near = (a: number, b: number) => Math.abs(a - b) <= ZONE_EPS;
@@ -1624,6 +1657,10 @@ export class Explorer {
     if (walkRibbon) walkRibbon.visible = mode !== "overview";
     const overviewRibbon = this.routeGroup.getObjectByName("route-ribbon-overview");
     if (overviewRibbon) overviewRibbon.visible = mode === "overview";
+    const routeGlow = this.routeGroup.getObjectByName("route-glow");
+    if (routeGlow) routeGlow.visible = mode === "overview";
+    const routeGlowOccluded = this.routeGroup.getObjectByName("route-glow-occluded");
+    if (routeGlowOccluded) routeGlowOccluded.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -1901,17 +1938,33 @@ export class Explorer {
     this.clearRoute();
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
+    const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
+    const ribbonPoints = [pts[0]!];
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1]!, b = pts[i]!;
+      const segment = routeSegmentProfile(a, b, (p) => {
+        this.ray.set(p.clone().add(new THREE.Vector3(0, 0.6, 0)), new THREE.Vector3(0, -1, 0));
+        this.ray.far = 1.2;
+        const hit = castAll(this.ray, routeGround).find((h) => {
+          const material = (h.object as THREE.Mesh).material;
+          return (Array.isArray(material) ? material[h.face?.materialIndex ?? 0] : material)?.visible !== false;
+        });
+        return hit?.point.y;
+      });
+      ribbonPoints.pop();
+      ribbonPoints.push(...segment);
+    }
     this.routeTexture = chevronTexture();
     this.routeTexture.repeat.set(1 / ROUTE_CHEVRON_PITCH_OVERVIEW, 1);
     // Walk and guide draw a narrow, faint band that fades out under the camera; the overview keeps today's wide, opaque ribbon.
     const walkMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, opacity: 0.45, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     routeNearFade(walkMat);
-    const ribbon = new THREE.Mesh(ribbonGeometry(pts, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
+    const ribbon = new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
     ribbon.renderOrder = 5;
     ribbon.name = "route-ribbon";
     ribbon.visible = this.mode !== "overview";
     const overviewMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
-    const overviewRibbon = new THREE.Mesh(ribbonGeometry(pts, ROUTE_RIBBON_WIDTH_OVERVIEW, 0.07), overviewMat);
+    const overviewRibbon = new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_OVERVIEW, 0.07), overviewMat);
     overviewRibbon.renderOrder = 5;
     overviewRibbon.name = "route-ribbon-overview";
     overviewRibbon.visible = this.mode === "overview";
@@ -1921,6 +1974,9 @@ export class Explorer {
     this.trackOverlay(this.routeLines.occluded);
     this.routeLines.setXray(this.mode === "overview");
     const glow = this.routeLines.lines(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0.12, 0)))), 6);
+    glow[0]!.name = "route-glow-occluded";
+    glow[1]!.name = "route-glow";
+    for (const line of glow) line.visible = this.mode === "overview";
     // Symbolic (unknown) heights are drawn dashed above the ribbon so they read as approximate.
     const symbolic = polyline.some((p) => !p.zKnown);
     // X-ray copy so the route stays readable through ceilings/slabs in overview.
@@ -1932,7 +1988,6 @@ export class Explorer {
     this.routeGroup.add(ribbon, overviewRibbon, ...glow, xray);
     // Stretches with no scene floor under them (the graph runs through space the scene doesn't model):
     // an always-on-top dashed amber band, so they read as "not modelled" rather than as a route in the void.
-    const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
     const gaps = routeGround.length === 0 ? [] : unmodelledRuns(polyline, floorProbe(this.ray, routeGround));
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
@@ -2630,7 +2685,8 @@ export class Explorer {
       this.zoneSnap = false;
       if (snap) this.streetProbe.at.set(Infinity, 0, 0);
       this.updateStreetProbe(dt);
-      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level, snap);
+      this.classify(snap || zoneSnap);
+      this.street.update(this.scene, this.camera, this.pos, backdropOutdoors(this.streetProbe.outdoors, this.zone), dt, this.streetProbe.level, snap);
       this.updateZone(dt, snap || zoneSnap);
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.

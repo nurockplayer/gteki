@@ -131,7 +131,10 @@ export function buildStairs(from: THREE.Vector3, to: THREE.Vector3, widthM: numb
       const n = Math.min(flightSteps, count - start), x = xAt(start), length = n * tread;
       const angle = Math.atan2(n * rise, length), incline = Math.hypot(length, n * rise);
       const flight = f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x + length / 2, start * rise + n * rise / 2, side * (widthM / 2 + 0.03))).multiply(new THREE.Matrix4().makeRotationZ(angle));
-      box(parts, "nosing", flight, 0, 0.015 * Math.cos(angle), 0, incline, 0.27 * Math.cos(angle), 0.06);
+      const stripHeight = 0.27 * Math.cos(angle) ** 2;
+      const stripTransform = f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x + length / 2, start * rise + n * rise / 2 + stripHeight / 2, side * (widthM / 2 + 0.03)));
+      stripTransform.multiply(new THREE.Matrix4().set(1, 0, 0, 0, n * rise / length, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
+      parts.push(part(new THREE.BoxGeometry(length, stripHeight, 0.06), "nosing", stripTransform));
       const railGeo = new THREE.CylinderGeometry(0.026, 0.026, incline, 8);
       const railTransform = flight.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.96 * Math.cos(angle), 0)).multiply(new THREE.Matrix4().makeRotationZ(-Math.PI / 2));
       parts.push(part(railGeo, "steel", railTransform));

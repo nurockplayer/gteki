@@ -11,8 +11,11 @@ drawnSources	function	apps/web/src/creditLine.ts
 entryRightsLabels	function	apps/web/src/creditLine.ts
 groupByAttribution	function	apps/web/src/creditLine.ts
 groupLicenses	function	apps/web/src/creditLine.ts
+CAT_MODEL_CREDIT	const	apps/web/src/credits.ts
 DataFileCredit	interface	apps/web/src/credits.ts
 FactsOnlyCredit	interface	apps/web/src/credits.ts
+MODEL_CREDITS	const	apps/web/src/credits.ts
+ModelCredit	interface	apps/web/src/credits.ts
 OverrideCredit	interface	apps/web/src/credits.ts
 SourceCredit	interface	apps/web/src/credits.ts
 assetDerivationPresentation	function	apps/web/src/credits.ts
@@ -155,6 +158,8 @@ dashTexture	function	apps/web/src/explorer/geometry.ts
 edgePoints	function	apps/web/src/explorer/geometry.ts
 ribbonGeometry	function	apps/web/src/explorer/geometry.ts
 routeNearFade	function	apps/web/src/explorer/geometry.ts
+routeSegmentProfile	function	apps/web/src/explorer/geometry.ts
+steppedProfile	function	apps/web/src/explorer/geometry.ts
 GraphView	interface	apps/web/src/explorer/graphView.ts
 MODE_WIDTH	const	apps/web/src/explorer/graphView.ts
 buildGraphView	function	apps/web/src/explorer/graphView.ts
@@ -450,6 +455,7 @@ wallToRenderer	function	apps/web/src/explorer/walker.ts
 StationZone	type	apps/web/src/explorer/zones.ts
 ZONE_LOOK	const	apps/web/src/explorer/zones.ts
 ZoneAnchor	interface	apps/web/src/explorer/zones.ts
+backdropOutdoors	function	apps/web/src/explorer/zones.ts
 classifyZone	function	apps/web/src/explorer/zones.ts
 zoneAnchors	function	apps/web/src/explorer/zones.ts
 FieldStation	interface	apps/web/src/field/data.ts
