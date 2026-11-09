@@ -761,6 +761,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
           bands = [];
           break;
         }
+        const piece = sub(q, p);
+        if (Math.abs(piece.x * d.x + piece.y * d.y) < Math.cos(20 * Math.PI / 180) * len(piece) * len(d)) continue;
         bands = bands.flatMap(([lo, hi]): [number, number][] => hi <= w.zMin || lo >= w.zMax
           ? [[lo, hi]]
           : [[lo, Math.min(hi, w.zMin)], [Math.max(lo, w.zMax), hi]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
