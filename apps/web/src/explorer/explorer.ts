@@ -36,7 +36,7 @@ import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
 import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
+import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { containmentShift, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
@@ -1589,6 +1589,10 @@ export class Explorer {
   }
 
   private freeRect(): ViewRect {
+    return this.freeRects()[0]!;
+  }
+
+  private freeRects(): ViewRect[] {
     const { w, h } = this.viewSize;
     const el = this.panelEl;
     // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
@@ -1599,7 +1603,7 @@ export class Explorer {
     const corner = cornerRect && host ? { x: cornerRect.left - host.left, y: cornerRect.top - host.top, w: cornerRect.width, h: cornerRect.height } : null;
     // Both are full-width bands along the same canvas bottom: the taller one sets where the free area ends.
     const bottom = Math.max(this.creditInset(host), this.sheetInset(host));
-    return freeArea({ w, h }, panel, bottom, corner);
+    return freeAreas({ w, h }, panel, bottom, corner);
   }
 
   /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
@@ -1728,8 +1732,9 @@ export class Explorer {
       return { id, centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: blocked !== null, visible };
     });
     const { w, h } = this.viewSize;
-    const free = this.freeRect();
-    const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
+    const rects = this.freeRects(), free = rects[0]!;
+    const toNdc = (r: ViewRect) => ({ x0: 2 * r.x / w - 1, x1: 2 * (r.x + r.w) / w - 1, y0: 1 - 2 * (r.y + r.h) / h, y1: 1 - 2 * r.y / h });
+    let ndcFree = toNdc(free), tried = 0;
     // The cat's low boom meets the floor on a look-up, so only its framing checks the walker and the settled boom.
     let rig: FramingRig | undefined;
     if (this.catAvatar) {
@@ -1757,11 +1762,18 @@ export class Explorer {
         },
       };
     }
-    const look = boards.length ? identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree, rig, (board, reason) => {
-      boardRecords[boards.indexOf(board as typeof boards[number])]!.reason = reason;
-    }) : null;
+    let look: ReturnType<typeof identityFraming> = null;
+    if (boards.length) for (const rect of rects) {
+      const ndc = toNdc(rect);
+      tried++;
+      for (const record of boardRecords) record.reason = null;
+      look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndc, rig, (board, reason) => {
+        boardRecords[boards.indexOf(board as typeof boards[number])]!.reason = reason;
+      });
+      if (look) { ndcFree = ndc; break; }
+    }
     const round = (n: number) => Math.round(n * 100) / 100;
-    console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: boardRecords, aspect: round(this.camera.aspect), ndcFree: { x0: round(ndcFree.x0), x1: round(ndcFree.x1), y0: round(ndcFree.y0), y1: round(ndcFree.y1) }, catRig: !!this.catAvatar, framed: !!look, view: { w, h }, free, occluders: this.occluderRects() }));
+    console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: boardRecords, aspect: round(this.camera.aspect), ndcFree: { x0: round(ndcFree.x0), x1: round(ndcFree.x1), y0: round(ndcFree.y0), y1: round(ndcFree.y1) }, tried, catRig: !!this.catAvatar, framed: !!look, view: { w, h }, free, occluders: this.occluderRects() }));
     if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import { parseStationFiles, type Edge, type StationBundle } from "@gteki/schema";
 import { DEFAULT_PROFILE, createRouter } from "@gteki/navigation";
-import { CAMERA_FAR_M, MIN_SLICE_M, OVERVIEW_FILL, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routableBounds, routablePoints, screenBox, type Aabb } from "./overviewFraming.ts";
+import { CAMERA_FAR_M, MIN_SLICE_M, OVERVIEW_FILL, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, freeAreas, overviewFar, pointsBounds, routableBounds, routablePoints, screenBox, type Aabb } from "./overviewFraming.ts";
 
 const VIEWPORTS = [
   { name: "desktop 1440x900", w: 1440, h: 900 },
@@ -108,6 +108,24 @@ describe("frameBounds", () => {
 describe("freeArea: what the search panel leaves unobstructed", () => {
   const PHONE = { w: 393, h: 852 };
   const DESKTOP = { w: 1440, h: 900 };
+
+  it("offers the area left of the phone minimap after the preferred lower band", () => {
+    expect(freeAreas({ w: 412, h: 839 }, null, 38, { x: 268, y: 60, w: 128, h: 361 })).toEqual([
+      { x: 0, y: 421, w: 412, h: 380 }, { x: 0, y: 0, w: 268, h: 801 },
+    ]);
+  });
+
+  it("returns one area without a corner and keeps freeArea first for existing layouts", () => {
+    const cases = [
+      [DESKTOP, { x: 16, y: 58, w: 400, h: 260 }, 30, { x: 1234, y: 60, w: 190, h: 270 }],
+      [PHONE, { x: 16, y: 58, w: 361, h: 96 }, 38, { x: 249, y: 60, w: 128, h: 220 }],
+      [PHONE, { x: 16, y: 58, w: 361, h: 552 }, 38, { x: 249, y: 60, w: 128, h: 220 }],
+      [{ w: 200, h: 100 }, null, 0, { x: 80, y: -20, w: 140, h: 40 }],
+      [PHONE, null, 38, null],
+    ] as const;
+    for (const [viewport, panel, inset, corner] of cases) expect(freeAreas(viewport, panel, inset, corner)[0]).toEqual(freeArea(viewport, panel, inset, corner));
+    expect(freeAreas(PHONE, null, 38)).toEqual([freeArea(PHONE, null, 38)]);
+  });
 
   it("shrinks desktop width around a top-right minimap beside a left panel", () => {
     expect(freeArea(DESKTOP, { x: 16, y: 58, w: 400, h: 260 }, 30, { x: 1234, y: 60, w: 190, h: 270 }))
