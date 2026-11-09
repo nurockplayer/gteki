@@ -1,12 +1,12 @@
 {
  "protect": {
   "layoutAfterProtect": "cafa9b5644c396fea2e36b8f8750e452b30321a9b126b4216182c3d2d55d24df",
-  "protection": "dcbfb135ce52ccb043cfc8ff8e36eff3f05e1a83c5e7092ba012d33906e1bbfb",
+  "protection": "1cef6b3f949890f6b36fd2323f297b3ad03530b74da48240fc9c37af396e4d7f",
   "fences": "1527d1aca21ba2311d781262f6d7f1af576ebf0ad4253784bd9ebd9500b866a7",
   "gates": "b12d68f308c2d3bf796c28f3a5d0ee120d78795bbbc799a1e077757d6f3e92c5",
   "removedAccess": "a8bea4ec00c75027b962716885b78396b0d008e6298561de838d4bb6b6e747ba",
   "restrictedConflicts": "58e9b61e14dac3ac18d7df2430f0ef1f368ffce1f35e73009f92c2f781264c12",
-  "cacheHit": false
+  "cacheHit": true
  },
  "station": {
   "layoutAfterBuild": "4950ed4375e571306614968f0aadffc262e4966ade66d50bc89c47a1621dad77",
