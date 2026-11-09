@@ -1577,6 +1577,17 @@ export class Explorer {
    * phone's open route sheet) and minimap. Their page rects are measured here, on a resize or an occluder
    * change — never per frame.
    */
+  /** Canvas-relative rects of the occluders freeRect measures (#1074 trace); null when not rendered. */
+  private occluderRects(): Record<string, { x: number; y: number; w: number; h: number } | null> {
+    const host = this.host.getBoundingClientRect();
+    const rect = (el: HTMLElement | null) => {
+      if (!el || el.getClientRects().length === 0) return null;
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.left - host.left), y: Math.round(r.top - host.top), w: Math.round(r.width), h: Math.round(r.height) };
+    };
+    return { panel: rect(this.panelEl), minimap: rect(this.minimapEl), sheet: rect(this.sheetEl), credit: rect(this.creditEl) };
+  }
+
   private freeRect(): ViewRect {
     const { w, h } = this.viewSize;
     const el = this.panelEl;
@@ -1750,7 +1761,7 @@ export class Explorer {
       boardRecords[boards.indexOf(board as typeof boards[number])]!.reason = reason;
     }) : null;
     const round = (n: number) => Math.round(n * 100) / 100;
-    console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: boardRecords, aspect: round(this.camera.aspect), ndcFree: { x0: round(ndcFree.x0), x1: round(ndcFree.x1), y0: round(ndcFree.y0), y1: round(ndcFree.y1) }, catRig: !!this.catAvatar, framed: !!look }));
+    console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: boardRecords, aspect: round(this.camera.aspect), ndcFree: { x0: round(ndcFree.x0), x1: round(ndcFree.x1), y0: round(ndcFree.y0), y1: round(ndcFree.y1) }, catRig: !!this.catAvatar, framed: !!look, view: { w, h }, free, occluders: this.occluderRects() }));
     if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;
