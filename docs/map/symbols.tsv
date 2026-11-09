@@ -453,6 +453,7 @@ wallToRenderer	function	apps/web/src/explorer/walker.ts
 StationZone	type	apps/web/src/explorer/zones.ts
 ZONE_LOOK	const	apps/web/src/explorer/zones.ts
 ZoneAnchor	interface	apps/web/src/explorer/zones.ts
+backdropOutdoors	function	apps/web/src/explorer/zones.ts
 classifyZone	function	apps/web/src/explorer/zones.ts
 zoneAnchors	function	apps/web/src/explorer/zones.ts
 FieldStation	interface	apps/web/src/field/data.ts
