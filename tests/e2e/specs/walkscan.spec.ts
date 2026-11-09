@@ -157,6 +157,7 @@ function sheet(route: string, dir: string): string | null {
   if (shots.length === 0) return null;
   const rows = Math.ceil(shots.length / 4);
   const out = path.join(OUT, "sheets", `${route}.png`);
+  fs.mkdirSync(path.dirname(out), { recursive: true });
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-pattern_type", "glob", "-i", path.join(dir, "*.png"),
     "-vf", `scale=480:-1,tile=4x${rows}:margin=4:padding=2`, "-frames:v", "1", out], { stdio: "inherit" });
   return out;
