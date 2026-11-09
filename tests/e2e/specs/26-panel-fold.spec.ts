@@ -53,22 +53,23 @@ test("greybox badge clears the guide HUD @phone", async ({ page }, info) => {
     await expect(badge).toBeVisible();
     await expect(page.locator(".hud-instruction")).toBeVisible();
     const legend = await badge.boundingBox();
+    const instruction = await page.locator(".hud-instruction").boundingBox();
     const hud = await page.locator(".hud > *:visible, .hud button:visible").evaluateAll((els) => els.map((e) => {
       const r = e.getBoundingClientRect();
       return { element: e.className || e.tagName, x: r.x, y: r.y, width: r.width, height: r.height };
     }));
     const viewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }));
-    console.log(`[panel-fold] ${new Date().toISOString()} ${info.project.name} ${phase} ${JSON.stringify({ legend, hud, viewport })}`);
+    console.log(`[panel-fold] ${new Date().toISOString()} ${info.project.name} ${phase} ${JSON.stringify({ legend, instruction, hud, viewport })}`);
     expect(legend).not.toBeNull();
     expect(hud.length).toBeGreaterThan(0);
     expect(legend!.x).toBeGreaterThanOrEqual(0);
     expect(legend!.y).toBeGreaterThanOrEqual(0);
     expect(legend!.x + legend!.width).toBeLessThanOrEqual(viewport.width);
     expect(legend!.y + legend!.height).toBeLessThanOrEqual(viewport.height);
-    for (const rect of hud) {
-      const overlap = legend!.x < rect.x + rect.width && legend!.x + legend!.width > rect.x && legend!.y < rect.y + rect.height && legend!.y + legend!.height > rect.y;
-      expect(overlap, `badge overlaps HUD ${rect.element}`).toBe(false);
-    }
+    const overlaps = (rect: NonNullable<typeof legend>) => legend!.x < rect.x + rect.width && legend!.x + legend!.width > rect.x && legend!.y < rect.y + rect.height && legend!.y + legend!.height > rect.y;
+    expect(instruction).not.toBeNull();
+    expect(overlaps(instruction!), "badge overlaps HUD instruction").toBe(false);
+    for (const rect of hud) expect(overlaps(rect), `badge overlaps HUD ${rect.element}`).toBe(false);
   };
 
   await check("initial");
