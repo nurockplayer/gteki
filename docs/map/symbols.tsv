@@ -158,6 +158,8 @@ dashTexture	function	apps/web/src/explorer/geometry.ts
 edgePoints	function	apps/web/src/explorer/geometry.ts
 ribbonGeometry	function	apps/web/src/explorer/geometry.ts
 routeNearFade	function	apps/web/src/explorer/geometry.ts
+routeSegmentProfile	function	apps/web/src/explorer/geometry.ts
+steppedProfile	function	apps/web/src/explorer/geometry.ts
 GraphView	interface	apps/web/src/explorer/graphView.ts
 MODE_WIDTH	const	apps/web/src/explorer/graphView.ts
 buildGraphView	function	apps/web/src/explorer/graphView.ts
