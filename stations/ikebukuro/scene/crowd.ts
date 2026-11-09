@@ -887,6 +887,7 @@ export function buildCrowd(
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
   let cameraFocus: THREE_NS.Vector3 | null = null;
+  let cameraSignFocus: THREE_NS.Vector3 | null = null;
   const focusSegment = new THREE.Vector3(), focusBody = new THREE.Vector3();
   const camForward = new THREE.Vector3(0, 0, -1), camHeading = new THREE.Vector3();
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
@@ -1263,12 +1264,14 @@ export function buildCrowd(
       }
       pos.y = floorY;
       let blocksFocus = false;
-      if (cameraFocus) {
-        focusSegment.copy(cameraFocus).sub(cam);
+      for (let focusIndex = 0; focusIndex < 2; focusIndex++) {
+        const focus = focusIndex === 0 ? cameraFocus : cameraSignFocus;
+        if (!focus) continue;
+        focusSegment.copy(focus).sub(cam);
         focusBody.set(pos.x, floorY + 0.9, pos.z).sub(cam);
         const lengthSq = focusSegment.lengthSq();
         const t = lengthSq > 0 ? focusBody.dot(focusSegment) / lengthSq : -1;
-        blocksFocus = t >= 0 && t <= 1 && focusBody.addScaledVector(focusSegment, -t).lengthSq() <= 0.45 * 0.45;
+        if (t >= 0 && t <= 1 && focusBody.addScaledVector(focusSegment, -t).lengthSq() <= 0.45 * 0.45) { blocksFocus = true; break; }
       }
       if (!shown || blocksFocus || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
         hide(i);
@@ -1290,9 +1293,11 @@ export function buildCrowd(
   return {
     group,
     update,
-    setCameraFocus(x: number | null, y = 0, z = 0) {
+    setCameraFocus(x: number | null, y = 0, z = 0, sign: { x: number; y: number; z: number } | null = null) {
       if (x === null) cameraFocus = null;
       else (cameraFocus ??= new THREE.Vector3()).set(x, y, z);
+      if (sign) (cameraSignFocus ??= new THREE.Vector3()).set(sign.x, sign.y, sign.z);
+      else cameraSignFocus = null;
     },
     setCameraNearFade(startM: number, endM: number) { nearFade.value.set(startM, endM); },
     /** Pedestrians within 8 m of the last rendered camera (for ambience). */

@@ -2177,6 +2177,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     const group = new THREE.Group();
     group.name = `sign:${n.id}`;
     const center = { x: n.position.x, y: n.position.y, z: lv.ceilingZ - 0.55 };
+    group.position.set(center.x, center.z, -center.y);
     for (const facing of [axis, { x: -axis.x, y: -axis.y }]) {
       faceDrafts.push({ floorId: lv.floorId, center: { x: center.x + facing.x * 0.04, y: center.y + facing.y * 0.04, z: center.z }, facing, lines: makeFace({ x: -facing.x, y: -facing.y }) });
     }

@@ -1485,7 +1485,7 @@ export class App {
     this.jumpPin = null;
     this.arrived = false;
     this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
-    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : []);
   }
 
   /** Per guide run: where each instruction starts (m), the first one the guide shows, and how far the guide has got. */

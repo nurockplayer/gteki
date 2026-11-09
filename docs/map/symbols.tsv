@@ -135,6 +135,7 @@ fadeHold	function	apps/web/src/explorer/followCamera.ts
 followBoom	function	apps/web/src/explorer/followCamera.ts
 followDistance	function	apps/web/src/explorer/followCamera.ts
 followPose	function	apps/web/src/explorer/followCamera.ts
+guideSignInView	function	apps/web/src/explorer/followCamera.ts
 patchCameraHold	function	apps/web/src/explorer/followCamera.ts
 raisedBack	function	apps/web/src/explorer/followCamera.ts
 solveRaisedBoom	function	apps/web/src/explorer/followCamera.ts
