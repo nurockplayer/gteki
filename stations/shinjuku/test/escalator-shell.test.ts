@@ -44,6 +44,31 @@ describe("#49 render-only escalator enclosure", () => {
     scene?.dispose();
   });
 
+  it("shares a roof and keeps only outer sides for antiparallel runs (#1086)", () => {
+    const first = { ...runs[0]!, edgeId: "first", width: 1.25, a: { x: 0, y: 0, z: -10 }, b: { x: 10, y: 0, z: -10 } };
+    const second = { ...first, edgeId: "second", a: { x: 10, y: 1.5, z: -10 }, b: { x: 0, y: 1.5, z: -10 } };
+    const empty = { ...layout, levels: [], pads: [], linkStrips: [], streetPads: [], runs: [first], soffits: [], shaftFinishes: [] };
+    const noLifts = { ...bundle, edges: [] };
+    const single = escalatorShellGeometry(empty, noLifts);
+    const paired = escalatorShellGeometry({ ...empty, runs: [first, second] }, noLifts);
+    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+    const ray = new THREE.Raycaster(), mesh = new THREE.Mesh(paired.sides!, material);
+    try {
+      ray.set(new THREE.Vector3(5, -7.2, -0.75), new THREE.Vector3(0, 0, 1)); ray.far = 3;
+      expect(ray.intersectObject(mesh).map((hit) => hit.point.z)).toEqual([expect.closeTo(1.075)]);
+      ray.set(new THREE.Vector3(5, -7.2, -0.75), new THREE.Vector3(0, 0, -1));
+      expect(ray.intersectObject(mesh).map((hit) => hit.point.z)).toEqual([expect.closeTo(-2.575)]);
+      const area = (rings: XY[][]) => rings.reduce((sum, ring, i) => sum + (i ? -1 : 1) * Math.abs(ring.reduce((a, p, k) => {
+        const q = ring[(k + 1) % ring.length]!; return a + p.x * q.y - q.x * p.y;
+      }, 0)) / 2, 0);
+      expect(paired.finishes.reduce((sum, finish) => sum + area(finish.rings), 0)).toBeCloseTo(11.2 * 3.65, 3);
+      expect(single.finishes.reduce((sum, finish) => sum + area(finish.rings), 0)).toBeCloseTo(11.2 * 2.15, 3);
+      expect(single.sides!.index!.count).toBeGreaterThan(0);
+    } finally {
+      single.sides?.dispose(); single.soffits?.dispose(); paired.sides?.dispose(); paired.soffits?.dispose(); material.dispose();
+    }
+  });
+
   it("encloses the underground voids of 22 runs, including eight reaching B6, and hands off to existing finish", () => {
     expect(runs).toHaveLength(22);
     const b6 = layout.levels.find((lv) => lv.label === "B6")!.z;
