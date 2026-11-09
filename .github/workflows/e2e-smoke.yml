@@ -56,11 +56,10 @@ jobs:
           GTEKI_GUIDE_FLOW_ONLY: "1"
         run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off --grep-invert "station switching"
 
-      # The station switch (Ikebukuro -> Shinjuku) runs on its own and does not block (#647): under SwiftShader the
-      # GPU process is contended after the switch and Shinjuku's ready time swings between ~4 s and ~16 s, a CI-only
-      # stall. It still runs and prints [switch-timings]; real-device switch time is on the field-run checklist.
-      - name: Station switch (non-blocking, #647)
-        continue-on-error: true
+      # The station switch (Ikebukuro -> Shinjuku) runs on its own step so its [switch-timings] line is easy to find
+      # (#647). It blocks again since #1026: the old 15 s ready limit was the cause of the failures, and with the 120 s
+      # limit 20 of 20 runs passed (switchReadyMs 19-24 s under SwiftShader). Real-device switch time stays on the field-run checklist.
+      - name: Station switch (#647, #1026)
         timeout-minutes: 5
         working-directory: tests/e2e
         env:
