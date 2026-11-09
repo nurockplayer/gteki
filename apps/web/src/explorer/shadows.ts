@@ -73,7 +73,9 @@ export interface StationShadows {
 
 /**
  * Sets castShadow / receiveShadow on every drawn mesh under `root`, once at attach (never per frame), and reports
- * what it set. Does nothing (and touches nothing) unless `shadowsActive(quality, lighting)`. Hidden subtrees are skipped unless tagged `gteki_shadow: "dynamic"`; nothing outside `root` is visited.
+ * what it set. Does nothing (and touches nothing) unless `shadowsActive(quality, lighting)`. Subtrees with
+ * `visible === false` (hidden colliders, camera blockers) are skipped whole unless tagged `gteki_shadow: "dynamic"`
+ * (geometry the station shows later, such as train cars); nothing outside `root` is visited, so
  * the route, the overlays and the avatar are never touched. A mesh that fails the policy has castShadow cleared;
  * a `receiveShadow = true` the station set is always kept. A node with `userData.gteki_shadow === "none"` (a glTF
  * extra lands there too) never casts, nor does anything under it; receiving follows the usual rule.
