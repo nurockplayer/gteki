@@ -95,6 +95,13 @@ float ctxWall = 1.0 - step( 0.5, abs( ctxN.y ) );
 float ctxGround = ctxEdge( 0.0, ctxHeight ) * ( 1.0 - ctxEdge( 4.0, ctxHeight ) );
 float ctxUpper = ctxEdge( 4.0, ctxHeight );
 outgoingLight *= mix( vec3( 1.0 ), vec3( 0.87 ), ctxWall * ctxGround );
+float ctxPilaster = 1.0 - ctxEdge( 0.2, abs( mod( ctxAlong + 3.6, 7.2 ) - 3.6 ) );
+float ctxStore = ( ctxEdge( 0.4, ctxHeight ) - ctxEdge( 2.6, ctxHeight ) ) * ctxEdge( 0.06, ctxMullion ) * ( 1.0 - ctxPilaster );
+float ctxFascia = ( ctxEdge( 2.8, ctxHeight ) - ctxEdge( 3.4, ctxHeight ) ) * ( 1.0 - ctxPilaster );
+float ctxPlinth = ctxEdge( 0.0, ctxHeight ) - ctxEdge( 0.25, ctxHeight );
+outgoingLight *= mix( vec3( 1.0 ), vec3( 0.59, 0.62, 0.66 ), ctxWall * ctxStore );
+outgoingLight *= mix( vec3( 1.0 ), vec3( 0.80, 0.78, 0.75 ), ctxWall * ctxFascia );
+outgoingLight *= 1.0 - 0.30 * ctxWall * ctxPlinth;
 outgoingLight *= mix( vec3( 1.0 ), vec3( 0.58, 0.60, 0.64 ), ctxWall * ctxUpper * ctxWindow );
 outgoingLight *= 1.0 - 0.15 * ctxWall * ctxUpper * ctxSlab;`] : []),
           "#include <opaque_fragment>",
