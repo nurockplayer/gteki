@@ -332,6 +332,7 @@ boxCorners	function	apps/web/src/explorer/overviewFraming.ts
 extentShare	function	apps/web/src/explorer/overviewFraming.ts
 frameBounds	function	apps/web/src/explorer/overviewFraming.ts
 freeArea	function	apps/web/src/explorer/overviewFraming.ts
+freeAreas	function	apps/web/src/explorer/overviewFraming.ts
 overviewFar	function	apps/web/src/explorer/overviewFraming.ts
 pointsBounds	function	apps/web/src/explorer/overviewFraming.ts
 routableBounds	function	apps/web/src/explorer/overviewFraming.ts

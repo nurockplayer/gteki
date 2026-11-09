@@ -37,7 +37,7 @@ import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
 import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
+import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { containmentShift, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
@@ -1607,7 +1607,24 @@ export class Explorer {
    * phone's open route sheet) and minimap. Their page rects are measured here, on a resize or an occluder
    * change — never per frame.
    */
+  /** Canvas-relative rects of the occluders freeRect measures (#1074 trace); null when not rendered. */
+  private occluderRects(): Record<string, { x: number; y: number; w: number; h: number } | null> {
+    // Headless fixtures build the Explorer without a host element.
+    const host = this.host?.getBoundingClientRect();
+    if (!host) return {};
+    const rect = (el: HTMLElement | null) => {
+      if (!el || el.getClientRects().length === 0) return null;
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.left - host.left), y: Math.round(r.top - host.top), w: Math.round(r.width), h: Math.round(r.height) };
+    };
+    return { panel: rect(this.panelEl), minimap: rect(this.minimapEl), sheet: rect(this.sheetEl), credit: rect(this.creditEl) };
+  }
+
   private freeRect(): ViewRect {
+    return this.freeRects()[0]!;
+  }
+
+  private freeRects(): ViewRect[] {
     const { w, h } = this.viewSize;
     const el = this.panelEl;
     // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
@@ -1618,7 +1635,7 @@ export class Explorer {
     const corner = cornerRect && host ? { x: cornerRect.left - host.left, y: cornerRect.top - host.top, w: cornerRect.width, h: cornerRect.height } : null;
     // Both are full-width bands along the same canvas bottom: the taller one sets where the free area ends.
     const bottom = Math.max(this.creditInset(host), this.sheetInset(host));
-    return freeArea({ w, h }, panel, bottom, corner);
+    return freeAreas({ w, h }, panel, bottom, corner);
   }
 
   /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
@@ -1723,7 +1740,13 @@ export class Explorer {
     const head = this.followHead();
     // Signs stay transparent to this placement probe, including solid sign materials.
     const signs = new Set(this.stationScene ? seeThroughMeshes(this.stationScene.root) : []);
-    const boards = this.identityBoards.filter((b) => inScene(b.object, this.scene) && objectVisible(b.object)).map((board) => {
+    let notInScene = 0, notVisible = 0;
+    const boardRecords: { id: string; distanceM: number; blocked: "range" | "ray" | null; reason: string | null }[] = [];
+    const boards = this.identityBoards.filter((b) => {
+      if (!inScene(b.object, this.scene)) { notInScene++; return false; }
+      if (!objectVisible(b.object)) { notVisible++; return false; }
+      return true;
+    }).map((board) => {
       board.object.updateWorldMatrix(true, false);
       const centre = identityNameCentre(board);
       const targets = this.cameraTargets.filter((o) => !signs.has(o) && !withinObject(o, board.object));
@@ -1734,12 +1757,20 @@ export class Explorer {
         this.ray.far = Math.max(0, direction.length() - 0.05);
         return castAll(this.ray, targets).length === 0;
       };
-      return { centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: head.distanceTo(centre) > IDENTITY_RANGE_M || !visible(head, centre), visible };
+      const distance = head.distanceTo(centre);
+      const blocked = distance > IDENTITY_RANGE_M ? "range" : !visible(head, centre) ? "ray" : null;
+      const id = board.object.name || `board-${this.identityBoards.indexOf(board)}`;
+      boardRecords.push({ id, distanceM: Math.round(distance * 100) / 100, blocked, reason: null });
+      return { id, centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: blocked !== null, visible };
     });
-    if (boards.length === 0) return false;
+    if (boards.length === 0) {
+      console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: [], framed: false }));
+      return false;
+    }
     const { w, h } = this.viewSize;
-    const free = this.freeRect();
-    const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
+    const rects = this.freeRects(), free = rects[0]!;
+    const toNdc = (r: ViewRect) => ({ x0: 2 * r.x / w - 1, x1: 2 * (r.x + r.w) / w - 1, y0: 1 - 2 * (r.y + r.h) / h, y1: 1 - 2 * r.y / h });
+    let ndcFree = toNdc(free), tried = 0;
     // The cat's low boom meets the floor on a look-up, so only its framing checks the walker and the settled boom.
     let rig: FramingRig | undefined;
     if (this.catAvatar) {
@@ -1767,7 +1798,18 @@ export class Explorer {
         },
       };
     }
-    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree, rig);
+    let look: ReturnType<typeof identityFraming> = null;
+    if (boards.length) for (const rect of rects) {
+      const ndc = toNdc(rect);
+      tried++;
+      for (const record of boardRecords) record.reason = null;
+      look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndc, rig, (board, reason) => {
+        boardRecords[boards.indexOf(board as typeof boards[number])]!.reason = reason;
+      });
+      if (look) { ndcFree = ndc; break; }
+    }
+    const round = (n: number) => Math.round(n * 100) / 100;
+    console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: boardRecords, aspect: round(this.camera.aspect), ndcFree: { x0: round(ndcFree.x0), x1: round(ndcFree.x1), y0: round(ndcFree.y0), y1: round(ndcFree.y1) }, tried, catRig: !!this.catAvatar, framed: !!look, view: { w, h }, free, occluders: this.occluderRects() }));
     if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;
