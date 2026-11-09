@@ -14,7 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { faceEligible, minimapYield, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
+import { faceEligible, insideCameraCut, minimapYield, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
 import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
@@ -2689,8 +2689,18 @@ export class Explorer {
         if (!object.visible) { visible = false; break; }
       }
       if (!visible) continue;
+      const material = (mesh as THREE.Mesh).material;
+      let fullyCut = true;
+      if (Array.isArray(material)) {
+        for (const m of material) if (!this.cameraCut.cuts(m)) { fullyCut = false; break; }
+      } else fullyCut = this.cameraCut.cuts(material);
       const viewZ = face.viewZ as number[];
-      for (let j = 0; j < 4; j++) viewZ[j] = this.minimapSignPoint.copy(corners[j]!).applyMatrix4(this.camera.matrixWorldInverse).z;
+      for (let j = 0; j < 4; j++) {
+        const point = this.minimapSignPoint.copy(corners[j]!).applyMatrix4(this.camera.matrixWorldInverse);
+        viewZ[j] = point.z;
+        if (fullyCut && !insideCameraCut(point, this.cameraCut.uniforms.gtekiCutEnd.value, this.cameraCut.uniforms.gtekiCutRadii.value)) fullyCut = false;
+      }
+      if (fullyCut) continue;
       face.near = this.camera.near;
       if (!faceEligible(face)) continue;
       rect.distance = this.minimapSignDirection.subVectors(face.centre as THREE.Vector3, this.camera.position).length();

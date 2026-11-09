@@ -11,6 +11,16 @@ export function faceEligible(face: FaceEligibility): boolean {
   return true;
 }
 
+/** Whether a view-space point is in the shader's fully discarded core. */
+export function insideCameraCut(point: Point3, end: Point3, radii: { x: number; y: number; z: number; w: number }): boolean {
+  if (radii.y <= 0) return false;
+  const lengthSq = end.x * end.x + end.y * end.y + end.z * end.z;
+  const t = Math.max(0, Math.min(1, (point.x * end.x + point.y * end.y + point.z * end.z) / Math.max(lengthSq, 1e-6)));
+  const x = point.x - end.x * t, y = point.y - end.y * t, z = point.z - end.z * t;
+  const radius = radii.x + (radii.z - radii.x) * t;
+  return x * x + y * y + z * z <= radius * radius;
+}
+
 export type YieldRect = { left: number; right: number; top: number; bottom: number; behind: boolean; distance: number };
 export type YieldState = { lastOverlap: number };
 
