@@ -59,7 +59,8 @@ test("ikebukuro: overview pressed at street level frames the station, not its st
 
   expect(await hooks.walkFromNode(page, "x35"), "walkFromNode x35").toBe(true);
   // The case under test: the street-context subtree is attached when Overview is pressed.
-  await expect.poll(worldWidth, { message: "street context attached", timeout: 15_000 }).toBeGreaterThan(widthWithoutContext + 2);
+  // Slow runners (#1109): attachment took 14,534–15,578 ms in three local CI runs.
+  await expect.poll(worldWidth, { message: "street context attached", timeout: 120_000 }).toBeGreaterThan(widthWithoutContext + 2);
   await page.locator(".hud").getByRole("button", { name: "Overview", exact: true }).click();
   await expect.poll(() => hooks.mode(page)).toBe("overview");
   await page.waitForTimeout(1500); // Camera damping settles.
