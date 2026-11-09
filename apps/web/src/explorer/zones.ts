@@ -69,3 +69,8 @@ export const ZONE_LOOK: Record<StationZone, { exposure: number; fogFar: number; 
   platform: { exposure: 0.88, fogFar: 0.75, tint: [0.88, 0.95, 1] },
   passage: { exposure: 0.7, fogFar: 0.5, tint: [1, 0.9, 0.74] },
 };
+
+/** The street backdrop follows either open sky or an outdoor exit zone. */
+export function backdropOutdoors(probeOutdoors: boolean, zone: StationZone): boolean {
+  return probeOutdoors || zone === "outdoor";
+}

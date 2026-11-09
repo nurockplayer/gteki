@@ -752,3 +752,78 @@ describe("ikebukuro crowd gate queues", () => {
     c.dispose();
   }, 60_000);
 });
+
+describe("ikebukuro crowd relocation", () => {
+  // A camera at the origin looking along -Z, and three verified passages: 200 m straight ahead on the
+  // view axis (landings there are inside the frustum), 200 m
+  // straight behind (out of view), and a passage
+  // across the view 8 m ahead of the camera, with its nearer endpoint at positive x.
+  const cross = { id: "cross", from: "c1", to: "c2", verification: "verified", geometry: [{ x: -100, y: 8, z: 0 }, { x: 80, y: 8, z: 0 }] };
+  const RELOCATION_EDGES = [
+    { id: "axis", from: "a1", to: "a2", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 200, z: 0 }] },
+    { id: "behind", from: "b1", to: "b2", verification: "verified", geometry: [{ x: 0, y: -200, z: 0 }, { x: 0, y: 0, z: 0 }] },
+    cross,
+  ] as unknown as typeof edges;
+  const EYE = 1.6;
+  // A narrow view leaves a substantial 6–12 m landing region outside the padded frustum.
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.05, 400);
+  camera.position.set(0, EYE, 0);
+  camera.lookAt(0, 1.0, -10);
+  camera.updateMatrixWorld(true);
+
+  /** Instance translations and world scale, as last written by update(). */
+  function read(c: ReturnType<typeof make>) {
+    const mesh = named(c, "torso"), m = new THREE.Matrix4(), out: { x: number; y: number; z: number; scale: number }[] = [];
+    for (let i = 0; i < mesh.count; i++) {
+      mesh.getMatrixAt(i, m);
+      const e = m.elements;
+      out.push({ x: e[12]!, y: e[13]!, z: e[14]!, scale: Math.hypot(e[0]!, e[1]!, e[2]!) });
+    }
+    return out;
+  }
+
+  it.each([80, 150])("keeps tier-specific relocation rules for %i people", (count) => {
+    const c = make(count, RELOCATION_EDGES);
+    const before = read(c);
+    // Every call stands for a rendered frame: a relocated person stays hidden until one shows the new spot.
+    for (let i = 0; i < 60; i++) {
+      named(c, "torso").onBeforeRender(null as never, null as never, camera, null as never, null as never, null as never);
+      c.update(0, 0); // dt = 0, so the only movement is a relocation
+    }
+    const frustum = new THREE.Frustum().setFromProjectionMatrix(
+      new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse),
+    );
+    const moved = read(c).flatMap((p, i) => {
+      const b = before[i]!;
+      if (p.scale < 1e-6 || b.scale < 1e-6 || Math.hypot(p.x - b.x, p.z - b.z) < 0.5) return [];
+      const d = Math.hypot(p.x, p.y + 1.1 - EYE, p.z);
+      return [{
+        index: i, x: p.x, z: p.z, d,
+        ahead: -p.z, // the camera's forward vector is (0, 0, -1) horizontally
+        inView: frustum.intersectsSphere(new THREE.Sphere(new THREE.Vector3(p.x, p.y + 0.9, p.z), 1.2 + 0.12 * d)),
+      }];
+    });
+    expect(moved.length).toBeGreaterThan(20);
+    expect(moved.every((m) => m.d >= (count === 80 ? 6 : 12) - 0.5)).toBe(true);
+    expect(moved.filter((m) => m.inView)).toHaveLength(0);
+    if (count === 80) {
+      expect(moved.filter((m) => m.ahead > 0).length / moved.length).toBeGreaterThan(0.75);
+      expect(moved.some((m) => m.d < 12)).toBe(true);
+    } else {
+      expect(moved.some((m) => m.ahead < 0)).toBe(true);
+    }
+    c.update(0.25, 0.25);
+    const next = read(c);
+    const crossMoves = moved.filter((m) => Math.abs(m.z + 8) < 1 && next[m.index]!.scale > 1e-6);
+    expect(crossMoves.length).toBeGreaterThan(2);
+    if (count === 80) {
+      expect(crossMoves.some((m) => m.x > 1)).toBe(true);
+      expect(crossMoves.every((m) => Math.hypot(next[m.index]!.x, next[m.index]!.z) < Math.hypot(m.x, m.z))).toBe(true);
+    }
+    else {
+      expect(crossMoves.some((m) => next[m.index]!.x > m.x)).toBe(true);
+      expect(crossMoves.some((m) => next[m.index]!.x < m.x)).toBe(true);
+    }
+    c.dispose();
+  });
+});
