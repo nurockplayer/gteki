@@ -62,7 +62,7 @@ touch "$stop"; wait "$sampler" || :; rm -f "$stop"
 cp /sys/fs/cgroup/cpu.stat "$out/$id.cpu-after"
 cp /sys/fs/cgroup/memory.events "$out/$id.events-after"
 unset NODE_OPTIONS
-BENCH_BASE=$base BENCH_PEAK_RESET=$peak_reset BENCH_ELAPSED=$elapsed BENCH_EXIT=$code BENCH_TIMED_OUT=$([[ -n ${BENCH_WALL_S:-} && $code == 124 ]] && echo true || echo false) BENCH_ID=$id BENCH_SUITE=$suite BENCH_REP=$rep BENCH_VARIANT=$variant BENCH_OUT=$out node tools/bench/summarize.cjs || code=1
+BENCH_BASE=$base BENCH_PEAK_RESET=$peak_reset BENCH_ELAPSED=$elapsed BENCH_EXIT=$code BENCH_TIMED_OUT=$([[ -n ${BENCH_WALL_S:-} && ( $code == 124 || $code == 137 ) ]] && echo true || echo false) BENCH_ID=$id BENCH_SUITE=$suite BENCH_REP=$rep BENCH_VARIANT=$variant BENCH_OUT=$out node tools/bench/summarize.cjs || code=1
 sort -u "$out/$id.procs.raw" > "$out/$id.procs.txt" 2>/dev/null; rm -f "$out/$id.procs.raw"
 gzip -f "$out/$id.samples.tsv" || code=1
 rm -f "$out/$id.cpu-before" "$out/$id.cpu-after" "$out/$id.events-before" "$out/$id.events-after"
