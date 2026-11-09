@@ -59,9 +59,9 @@ Step-free counts refreshed 2026-11-07 02:31 JST. `step-free k/n` counts successf
 | 新宿マルイ 本館 / アネックス / メン | facts only (no quoted ban) | n | n | 3 POIs, s; 157 tenants (63 / 56 / 38) | search y; route n; step-free 0/0 | field (unscheduled) items 40, 41 (メン: E2 attribution inconsistent) |
 | 新宿 高島屋 (タイムズスクエア) | store site: private use and quotation (data lead 2026-10-28, #591; use-tiers.md) → facts-only: brands as tenants (#591), store hours (#709) | n | n | 1 POI, s; 366 tenants | search y; route n; step-free 0/0 | field (unscheduled) entrance and name |
 | 新宿 京王百貨店 | store shop-search JSON (facts, OD-35, director 2026-11-02; supersedes #516 §5 / #502 corroboration-only) | n | n | 1 POI, s; 593 tenants | search y; route n; step-free 0/0 | field (unscheduled) item 55 |
-| 新宿 小田急百貨店 (西口ハルク) | usable (OD-34 r2) | n | n | 1 POI, s; 269 tenants | search y; route n; step-free 0/0 | field (unscheduled) item 39 |
-| 新宿 ルミネ1・ルミネ2 | usable (OD-34 §2) | n | n | 2 POIs + 230 shop POIs | search y; route n; step-free 0/0 | field (unscheduled) items 43, 44 |
-| 新宿 ルミネエスト | usable (OD-34 §2) | n | n | 1 POI + 245 shop POIs | search y; route n; step-free 0/0 | field (unscheduled) item 45 |
+| 新宿 小田急百貨店 (西口ハルク) | usable (OD-34 r2) | GAP: no station tie; the access text names only an unnamed 地上出口 ([store-entrances](merchants/store-entrances-2026-10-25.md)), and the scene models E27 only | n | 1 POI, s; 269 tenants | search y; route n; step-free 0/0 | field (unscheduled) item 39 |
+| 新宿 ルミネ1・ルミネ2 | usable (OD-34 §2) | GAP: the printed 「ルミネ口」 tie is `poi:keio-gate:4`, an S03 POI with no connector on an unmodelled level (#623), and it is complex-level, not per building | n | 2 POIs + 230 shop POIs | search y; route n; step-free 0/0 | field (unscheduled) items 43, 44 |
+| 新宿 ルミネエスト | usable (OD-34 §2) | GAP: the printed tie (中央東改札 / 東改札, near `poi:jreast-gate:5` / `:9`) is S03 only: no connector, level not modelled (#623); the scene models E27 only | n | 1 POI + 245 shop POIs | search y; route n; step-free 0/0 | field (unscheduled) item 45 |
 | 新宿 NEWoMan | usable (OD-34 §2) | n | n | 1 POI + 101 shop POIs | search y; route n; step-free 0/0 | field (unscheduled) item 46 |
 | 新宿 サブナード | current `floorguide20261022.pdf` facts-only OCR, all names hand-checked (OD-35, `/legal/` §1, director 2026-11-02); shop floor 地下一階 explicitly printed at `/company/safety/` (PDF only labels B2 parking); retrieved 2026-11-03 UTC; 86 current PDF listings, unreadable 0; earlier 85 cards were an unimported 2026-09-17 archive snapshot; live reachable again 2026-11-01T21:32Z after 2026-10-25 refusal | n | n | 1 POI, s; 86 tenants | search y; route n; step-free 0/0 | field (unscheduled) item 55 |
 | 新宿 小田急エース / 京王モール | refuse every use (OD-34 §3; OD-35 class, terms re-read 2026-11-02T16:57Z, unchanged); 15 recovered POIs facts-only (#604) | n | n | 15 shop POIs (`shop-sjk-rec-`); tenants GAP (terms) | search y; route n; step-free 0/0 | field (unscheduled) entrances |
@@ -82,6 +82,7 @@ Step-free counts refreshed 2026-11-07 02:31 JST. `step-free k/n` counts successf
 - **#833 (merged 2026-11-05 18:51 JST):** 西武池袋本店 named facade and B1 floor directory board modelled; the store's 3D cell moves n → partial. Its entrance is still unverified.
 - **#871 (merged 2026-11-06 07:47 JST):** NewDays 池袋 added as a search-only station-shop row (1 shop POI, no position asserted).
 - **#989 (2026-11-07 JST):** the sign at the foot of Exit 4 (`sign-sw_h-sw_h__x4f`) names エソラ / Esola from Metro's accessibility print, but a station sign is not エソラ's public area, so the エソラ池袋 3D cell stays n; no facade or store entrance. 東武百貨店 and M25 stay n, as GAPs.
+- **2026-11-09 JST (gteki-lead queue, #598/#833 pattern):** ルミネエスト, ルミネ1・ルミネ2 and 小田急百貨店 checked for an existing station tie to hang a named facade and directory board on. None has one: the Shinjuku scene and graph cover E27 only, every printed tie lands on an S03 POI with no connector (`connectorNodeIds: []`, `NOT_FOR_ROUTING`), and 小田急百貨店 prints only an unnamed 地上出口. 3D cells n → GAP; they open when the S03 levels are modelled (#623) or an entrance is surveyed.
 
 ## What the matrix says
 
