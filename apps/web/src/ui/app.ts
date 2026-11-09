@@ -4,6 +4,8 @@ import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
+import { castAll } from "../explorer/raycast.ts";
+import { prepareRayTrees } from "../explorer/meshBvh.ts";
 import { avatarGlbUrl, avatarKind } from "../explorer/avatarSelection.ts";
 import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
@@ -1799,6 +1801,7 @@ export class App {
   private exposeTestHooks(): void {
     (window as unknown as { __gteki: unknown }).__gteki = {
       version: "gteki.web/0.1",
+      scanProbe: () => ({ explorer: this.explorer, castAll, prepareRayTrees }),
       stations: () => this.s.entries.map((e) => ({ key: e.key, label: e.label, synthetic: e.synthetic })),
       openStation: (key: string) => { const e = this.s.entries.find((x) => x.key === key); return e ? this.openStation(e) : Promise.reject(new Error(`no station ${key}`)); },
       setOrigin: (poiId: string) => { const p = this.s.loaded?.bundle.pois.find((x) => x.id === poiId); if (p) this.setOrigin({ kind: "poi", poi: p }); return Boolean(p); },
