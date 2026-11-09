@@ -354,6 +354,30 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
     material.dispose();
   });
 
+  it("keeps the train roof and skirt near the rail and its doors at platform height", () => {
+    station.update(0, 20);
+    const finishes: THREE.InstancedMesh[] = [];
+    station.root.traverse((o) => { if (o instanceof THREE.InstancedMesh && o.name === "train-cars:instanced-finish" && o.visible) finishes.push(o); });
+    expect(finishes.length).toBeGreaterThanOrEqual(5);
+    const platform = layout.levels.find((lv) => lv.label === "B6")!.z;
+    const bounds = (mesh: THREE.InstancedMesh) => {
+      mesh.geometry.computeBoundingBox();
+      const matrix = new THREE.Matrix4();
+      mesh.getMatrixAt(0, matrix);
+      return mesh.geometry.boundingBox!.clone().applyMatrix4(matrix);
+    };
+    const rail = platform - 1.01;
+    const roof = bounds(finishes[0]!).max.y - rail;
+    const skirt = bounds(finishes[3]!).min.y - rail;
+    const sill = bounds(finishes[4]!).min.y - platform;
+    expect(roof).toBeGreaterThanOrEqual(3.1);
+    expect(roof).toBeLessThanOrEqual(3.2);
+    expect(skirt).toBeGreaterThanOrEqual(0.25);
+    expect(skirt).toBeLessThanOrEqual(0.35);
+    expect(Math.abs(sill)).toBeLessThanOrEqual(0.01);
+    station.update(0, 0);
+  });
+
   it("keeps every batched train finish in the same position and visibility across its cycle", () => {
     const trains: THREE.InstancedMesh[] = [];
     station.root.traverse((o) => { if (o instanceof THREE.InstancedMesh && o.name === "train-cars:instanced-finish") trains.push(o); });
