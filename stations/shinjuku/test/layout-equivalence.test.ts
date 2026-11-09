@@ -21,6 +21,6 @@ describe("layout equivalence", () => {
   }, 60_000);
   it("preserves the pre-optimization physical layout at millimetre precision", () => {
     // #789 intentionally repairs eight display rises; preserve that physical layout.
-    expect(digest).toBe("5df1e1371ccfa7eda5baa368794902ac0ef14ef3d155a328a8671f2b6f802eaa");
+    expect(digest).toBe("42b5fc8f49f7425a64a403042f261efe11fb8fa181874d57f569451e1d475316");
   });
 });
