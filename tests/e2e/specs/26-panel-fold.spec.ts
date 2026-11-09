@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { hooks, openStation, shotPath } from "../lib/gteki.ts";
+import { chooseBySearch, hooks, openStation, shotPath } from "../lib/gteki.ts";
 
 test("search panel folds while walking @phone", async ({ page }, info) => {
   const phone = info.project.name.startsWith("phone");
@@ -39,4 +39,44 @@ test("search panel folds while walking @phone", async ({ page }, info) => {
     await expect(panel).toBeVisible();
     await expect(page.locator('#gteki-to')).toBeFocused();
   }
+});
+
+test("greybox badge clears the guide HUD @phone", async ({ page }, info) => {
+  await openStation(page, "ikebukuro");
+  await chooseBySearch(page, "from", "中央2", /JR 中央2改札/);
+  await chooseBySearch(page, "to", "35", /^35番出口$/);
+  await page.locator(".sheet .card.route button.primary").click();
+  await expect.poll(() => hooks.mode(page)).toBe("guide");
+
+  const check = async (phase: string) => {
+    const badge = page.locator(".greybox-legend");
+    await expect(badge).toBeVisible();
+    await expect(page.locator(".hud-instruction")).toBeVisible();
+    const legend = await badge.boundingBox();
+    const hud = await page.locator(".hud > *:visible, .hud button:visible").evaluateAll((els) => els.map((e) => {
+      const r = e.getBoundingClientRect();
+      return { element: e.className || e.tagName, x: r.x, y: r.y, width: r.width, height: r.height };
+    }));
+    const viewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }));
+    console.log(`[panel-fold] ${new Date().toISOString()} ${info.project.name} ${phase} ${JSON.stringify({ legend, hud, viewport })}`);
+    expect(legend).not.toBeNull();
+    expect(hud.length).toBeGreaterThan(0);
+    expect(legend!.x).toBeGreaterThanOrEqual(0);
+    expect(legend!.y).toBeGreaterThanOrEqual(0);
+    expect(legend!.x + legend!.width).toBeLessThanOrEqual(viewport.width);
+    expect(legend!.y + legend!.height).toBeLessThanOrEqual(viewport.height);
+    for (const rect of hud) {
+      const overlap = legend!.x < rect.x + rect.width && legend!.x + legend!.width > rect.x && legend!.y < rect.y + rect.height && legend!.y + legend!.height > rect.y;
+      expect(overlap, `badge overlaps HUD ${rect.element}`).toBe(false);
+    }
+  };
+
+  await check("initial");
+  const instruction = await page.locator(".hud-instruction").textContent();
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline && await page.locator(".hud-instruction").textContent() === instruction) {
+    await hooks.simulate(page, 1);
+  }
+  await expect(page.locator(".hud-instruction")).not.toHaveText(instruction!);
+  await check("advanced");
 });
