@@ -1693,7 +1693,13 @@ export class Explorer {
     const head = this.followHead();
     // Signs stay transparent to this placement probe, including solid sign materials.
     const signs = new Set(this.stationScene ? seeThroughMeshes(this.stationScene.root) : []);
-    const boards = this.identityBoards.filter((b) => inScene(b.object, this.scene) && objectVisible(b.object)).map((board) => {
+    let notInScene = 0, notVisible = 0;
+    const boardRecords: { id: string; distanceM: number; blocked: "range" | "ray" | null; reason: string | null }[] = [];
+    const boards = this.identityBoards.filter((b) => {
+      if (!inScene(b.object, this.scene)) { notInScene++; return false; }
+      if (!objectVisible(b.object)) { notVisible++; return false; }
+      return true;
+    }).map((board) => {
       board.object.updateWorldMatrix(true, false);
       const centre = identityNameCentre(board);
       const targets = this.cameraTargets.filter((o) => !signs.has(o) && !withinObject(o, board.object));
@@ -1704,9 +1710,12 @@ export class Explorer {
         this.ray.far = Math.max(0, direction.length() - 0.05);
         return castAll(this.ray, targets).length === 0;
       };
-      return { centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: head.distanceTo(centre) > IDENTITY_RANGE_M || !visible(head, centre), visible };
+      const distance = head.distanceTo(centre);
+      const blocked = distance > IDENTITY_RANGE_M ? "range" : !visible(head, centre) ? "ray" : null;
+      const id = board.object.name || `board-${this.identityBoards.indexOf(board)}`;
+      boardRecords.push({ id, distanceM: Math.round(distance * 100) / 100, blocked, reason: null });
+      return { id, centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: blocked !== null, visible };
     });
-    if (boards.length === 0) return false;
     const { w, h } = this.viewSize;
     const free = this.freeRect();
     const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
@@ -1737,7 +1746,11 @@ export class Explorer {
         },
       };
     }
-    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree, rig);
+    const look = boards.length ? identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree, rig, (board, reason) => {
+      boardRecords[boards.indexOf(board as typeof boards[number])]!.reason = reason;
+    }) : null;
+    const round = (n: number) => Math.round(n * 100) / 100;
+    console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: boardRecords, aspect: round(this.camera.aspect), ndcFree: { x0: round(ndcFree.x0), x1: round(ndcFree.x1), y0: round(ndcFree.y0), y1: round(ndcFree.y1) }, catRig: !!this.catAvatar, framed: !!look }));
     if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;
