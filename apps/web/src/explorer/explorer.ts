@@ -35,7 +35,7 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { containmentShift, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -394,6 +394,9 @@ export class Explorer {
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
+  private cameraFocus: THREE.Vector3 | null = null;
+  private cameraSignFocus: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null;
+  private guideSigns: { s: number; anchor: THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number } }[] = [];
   /** The framed board's name centre, and the framed look's offset from that board's bearing: the hold keeps the board in view. */
   private readonly guideIdentityCentre = new THREE.Vector3();
   private readonly guideIdentityOffset = { yaw: 0, pitch: 0 };
@@ -1464,6 +1467,9 @@ export class Explorer {
     if (this.minimapEl) delete this.minimapEl.dataset.yield;
     this.identityBoards = [];
     this.identityPlaced = false;
+    this.cameraFocus = null;
+    this.cameraSignFocus = null;
+    this.guideSigns = [];
     this.identityLabelsDirty = true;
     this.cameraCut.clear();
     this.occluders = [];
@@ -1677,7 +1683,7 @@ export class Explorer {
     this.orbit.enabled = mode === "overview";
     this.avatar.visible = mode !== "overview" && !this.firstPerson;
     this.input.enabled = mode !== "overview";
-    if (mode === "overview") this.orbit.target.copy(this.pos);
+    if (mode === "overview") { this.orbit.target.copy(this.pos); this.setCameraFocus(null); }
     const xray = this.routeGroup.getObjectByName("route-xray");
     if (xray) xray.visible = mode === "overview";
     const walkRibbon = this.routeGroup.getObjectByName("route-ribbon");
@@ -2459,13 +2465,18 @@ export class Explorer {
    * for opening hours): it never moves past one before being resumed, including several at one spot.
    * `paceSpans` cap speed and carry connector modes for the stair lens (see guidePace.ts).
    */
-  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = []): void {
+  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = []): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
     this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
     this.guideAllStops = stops.slice();
+    this.guideSigns = routeNodes.flatMap((id, index) => {
+      const sign = this.stationScene?.root.getObjectByName(`sign:${id}`);
+      const pointIndex = index === 0 ? 0 : polyline.findLastIndex((point) => point.stepIndex === index - 1);
+      return sign && pointIndex >= 0 ? [{ s: cum[pointIndex]!, anchor: Object.assign(sign.getWorldPosition(new THREE.Vector3()), { halfWidthX: sign.userData.signHalfWidthX as number, halfWidthZ: sign.userData.signHalfWidthZ as number, halfHeight: sign.userData.signHalfHeight as number }) }] : [];
+    });
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
@@ -3005,6 +3016,15 @@ export class Explorer {
     this.camera.updateProjectionMatrix();
   }
 
+  private setCameraFocus(p: THREE.Vector3 | null, sign: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null): void {
+    const changed = (a: THREE.Vector3 | null | undefined, b: THREE.Vector3 | null) =>
+      a == null || b == null ? (a ?? null) !== b : a.distanceToSquared(b) > 0.05 * 0.05;
+    if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign) return;
+    this.cameraFocus = p ? (this.cameraFocus ?? new THREE.Vector3()).copy(p) : null;
+    this.cameraSignFocus = sign;
+    this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus);
+  }
+
   private placeCamera(dt: number, snap = false): void {
     if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
     if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
@@ -3028,6 +3048,7 @@ export class Explorer {
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
+      this.setCameraFocus(null);
       this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
       return;
     }
@@ -3086,6 +3107,10 @@ export class Explorer {
     }
     if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
     this.camera.lookAt(pose.target);
+    const nextSign = this.mode === "guide" && this.guide ? this.guideSigns?.find((sign) => sign.s >= this.guide!.s) : undefined;
+    const forward = this.camera.getWorldDirection(new THREE.Vector3());
+    const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
+    this.setCameraFocus(pose.target, sign);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
     this.applyAvatarFade(dt, snap);
