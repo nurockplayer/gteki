@@ -755,14 +755,15 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       if (skipExisting) for (const w of existing) {
         if (w.finish === "fascia") continue;
         const d = sub(w.b, w.a), l2 = d.x * d.x + d.y * d.y || 1;
-        const t = Math.max(0, Math.min(1, ((mid.x - w.a.x) * d.x + (mid.y - w.a.y) * d.y) / l2));
+        const raw = ((mid.x - w.a.x) * d.x + (mid.y - w.a.y) * d.y) / l2;
+        const t = Math.max(0, Math.min(1, raw));
         if (len(sub(mid, lerp(w.a, w.b, t))) >= 0.12) continue;
         if (w.kind === "trackside") {
           bands = [];
           break;
         }
         const piece = sub(q, p);
-        if (Math.abs(piece.x * d.x + piece.y * d.y) < Math.cos(20 * Math.PI / 180) * len(piece) * len(d)) continue;
+        if ((raw <= 0 || raw >= 1) && Math.abs(piece.x * d.x + piece.y * d.y) < Math.cos(20 * Math.PI / 180) * len(piece) * len(d)) continue;
         bands = bands.flatMap(([lo, hi]): [number, number][] => hi <= w.zMin || lo >= w.zMax
           ? [[lo, hi]]
           : [[lo, Math.min(hi, w.zMin)], [Math.max(lo, w.zMax), hi]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
