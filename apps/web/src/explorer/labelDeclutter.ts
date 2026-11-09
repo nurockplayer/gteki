@@ -35,6 +35,11 @@ export interface DeclutterItem {
   measured?: boolean;
 }
 
+/** Offset a box into the viewport margin; oversized boxes are pinned to the near edge. */
+export function containmentShift(start: number, size: number, viewport: number, margin = 8): number {
+  return Math.max(margin, Math.min(start, viewport - margin - size)) - start;
+}
+
 export interface DeclutterOptions {
   /** Clearance (px) kept around every placed label. */
   pad?: number;
