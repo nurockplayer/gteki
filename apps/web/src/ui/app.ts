@@ -223,6 +223,7 @@ export class App {
     });
     this.ui.langBtn.addEventListener("click", () => {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
+      this.renderStationSelect();
       this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
       this.interactionPrompt.refresh();
@@ -363,7 +364,8 @@ export class App {
     this.ui.stationSelect.innerHTML = "";
     for (const e of this.s.entries) {
       const fullLabel = e.synthetic ? `⚠ ${e.label}` : e.label;
-      const o = el("option", undefined, e.synthetic ? `⚠ ${isPhone ? shortStationLabel(e.label) : e.label}` : isPhone ? shortStationLabel(e.label) : e.label);
+      const shortLabel = shortStationLabel(e.label, this.s.lang);
+      const o = el("option", undefined, e.synthetic ? `⚠ ${isPhone ? shortLabel : e.label}` : isPhone ? shortLabel : e.label);
       o.value = e.key;
       o.title = fullLabel;
       this.ui.stationSelect.append(o);
