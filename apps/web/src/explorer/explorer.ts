@@ -37,7 +37,7 @@ import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZon
 import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
-import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { containmentShift, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
@@ -2246,7 +2246,7 @@ export class Explorer {
       const el = l.obj.element;
       if (!regions.length) {
         if (l.identityHidden) l.identityHidden = false;
-        if (l.identityOffsetY) { l.identityOffsetY = 0; el.style.translate = ""; }
+        if (l.identityOffsetY) { l.identityOffsetY = 0; el.style.translate = ""; this.declutterDirty = true; }
         continue;
       }
       if (!l.size && l.measureTries++ < MEASURE_TRIES) this.identityLabelsDirty = true;
@@ -2258,6 +2258,7 @@ export class Explorer {
       if (l.identityHidden !== result.hidden) l.identityHidden = result.hidden;
       if (l.identityOffsetY !== result.offsetY) {
         l.identityOffsetY = result.offsetY;
+        this.declutterDirty = true;
         el.style.translate = result.offsetY ? `0 ${result.offsetY}px` : "";
       }
     }
@@ -2273,7 +2274,10 @@ export class Explorer {
     const labels = this.poiLabels;
     if (this.mode !== "overview") {
       // Walk and guide never declutter; undo an earlier overview pass once.
-      if (this.declutterActive) for (const l of labels) l.decluttered = false;
+      if (this.declutterActive) for (const l of labels) {
+        l.decluttered = false;
+        l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
+      }
       this.declutterActive = false;
       this.declutterDirty = true;
       return;
@@ -2308,8 +2312,13 @@ export class Explorer {
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
       const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
-      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
-      if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
+      let x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
+      l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
+      if (x < 0 || x > vw || y - l.identityOffsetY < 0 || y - l.identityOffsetY > vh) { l.decluttered = true; continue; }
+      const dx = containmentShift(x - size.w / 2, size.w, vw);
+      const dy = containmentShift(y - size.h / 2, size.h, vh);
+      x += dx; y += dy;
+      l.obj.element.style.translate = `${dx}px ${l.identityOffsetY + dy}px`;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
     }
