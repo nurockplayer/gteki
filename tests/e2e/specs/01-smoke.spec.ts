@@ -83,13 +83,17 @@ for (const key of STATIONS) {
 test("station switching drops the previous station's state", async ({ page }) => {
   await openStation(page, "ikebukuro", "&from=jr-central-gate-2&to=exit-35");
   expect((await hooks.route(page))?.ok).toBe(true);
+  const switchT0 = Date.now();
   await page.locator(".station-select").selectOption("shinjuku");
   // Poll on a timer, not on animation frames (#647): this waits for the station to be ready, and the first frames
-  // after it can each take seconds under SwiftShader while shaders compile. The 15 s timeout is unchanged.
-  await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null, null, { polling: 250 });
+  // after it can each take seconds under SwiftShader while shaders compile. The 120 s limit matches the first open
+  // (lib/gteki.ts) and the back-and-forth below: this test is about the state reset, not switch speed (#1026).
+  // Switch time is logged, not asserted; real-device switch time is on the field-run checklist (#647).
+  await page.waitForFunction(() => (window as any).__gteki.phase() === "ready" && (window as any).__gteki.route() === null, null, { timeout: 120_000, polling: 250 });
+  const switchReadyMs = Date.now() - switchT0;
   // Log only: how long the first frame after ready takes, so the shader-compile stall stays visible (#647).
   const firstFrameMs = await page.evaluate(() => new Promise<number>((resolve) => { const t = performance.now(); requestAnimationFrame(() => resolve(Math.round(performance.now() - t))); }));
-  console.log(`[switch-timings] ${JSON.stringify({ readyToFirstFrameMs: firstFrameMs })}`);
+  console.log(`[switch-timings] ${JSON.stringify({ switchReadyMs, readyToFirstFrameMs: firstFrameMs })}`);
   await expect(page.locator("#gteki-from")).toHaveValue("");
   await expect(page.locator("#gteki-to")).toHaveValue("");
   expect(page.url()).toContain("station=shinjuku");
