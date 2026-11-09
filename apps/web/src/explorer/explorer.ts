@@ -33,7 +33,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
+import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
 import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
@@ -539,6 +539,36 @@ export class Explorer {
     return this.quality;
   }
 
+  /** QA-only: count actual station and surface mesh draws over three animation frames. */
+  async overviewDraws(): Promise<{ surfaceMeshes: number; surface: number; station: number }> {
+    const root = this.stationScene?.root;
+    const surface = root?.getObjectByName("surface-render-only");
+    if (!root || !surface) return { surfaceMeshes: 0, surface: 0, station: 0 };
+    const counts = { surfaceMeshes: 0, surface: 0, station: 0 };
+    const restore: (() => void)[] = [];
+    root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      let parent: THREE.Object3D | null = mesh;
+      while (parent && parent !== surface) parent = parent.parent;
+      const isSurface = parent === surface;
+      if (isSurface) counts.surfaceMeshes++;
+      const previous = mesh.onAfterRender;
+      mesh.onAfterRender = function (...args) {
+        previous.apply(this, args);
+        if (args[2] === camera) counts[isSurface ? "surface" : "station"]++;
+      };
+      restore.push(() => { mesh.onAfterRender = previous; });
+    });
+    const camera = this.camera;
+    try {
+      for (let i = 0; i < 4; i++) await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      return counts;
+    } finally {
+      for (const undo of restore) undo();
+    }
+  }
+
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
   sceneInfo(): { loadTimings: Record<string, number>; greybox: (GreyboxStats & { connectors: { escalator: number; stairs: number }; colliderExemptions: number; portalCut: ReturnType<typeof cutPortals> | null; stairwells: StairwellStats | null }) | null; world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; cameraDirection: number[]; fov: number; far: number; aspect: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; zone: StationZone; overlayToneResidual: number | null; bakedAo: BakedAoCounts; assets: LoadedAsset[]; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number }; releasedTextures?: { textures: number; canvases: number } | null } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
@@ -864,13 +894,10 @@ export class Explorer {
   }
 
   /**
-   * Per walking frame, after the street backdrop: re-classify when the walker moved half a metre (or
-   * snapped), then ease exposure, fog and hemisphere tint toward the zone's preset. Once settled, writes
-   * nothing until the zone changes. Outdoors the street backdrop owns fog, so only exposure eases.
+   * Re-classify when the walker moved half a metre or snapped, before updating the street backdrop.
    */
-  private updateZone(dt: number, snap: boolean): void {
-    const fog = this.zoneFog;
-    if (!fog) return;
+  private classify(snap: boolean): void {
+    if (!this.zoneFog) return;
     if (snap || this.zoneAt.distanceToSquared(this.pos) >= ZONE_RECHECK_M2) {
       this.zoneAt.copy(this.pos);
       this.zone = classifyZone(this.pos, this.streetProbe.outdoors, this.zoneAnchors);
@@ -879,6 +906,12 @@ export class Explorer {
         this.stationScene?.setAcousticZone?.(this.zone);
       }
     }
+  }
+
+  /** Ease the zone look after the backdrop; outdoors the backdrop owns fog. */
+  private updateZone(dt: number, snap: boolean): void {
+    const fog = this.zoneFog;
+    if (!fog) return;
     const look = ZONE_LOOK[this.zone];
     const tinted = this.zone !== "outdoor";
     const near = (a: number, b: number) => Math.abs(a - b) <= ZONE_EPS;
@@ -2630,7 +2663,8 @@ export class Explorer {
       this.zoneSnap = false;
       if (snap) this.streetProbe.at.set(Infinity, 0, 0);
       this.updateStreetProbe(dt);
-      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level, snap);
+      this.classify(snap || zoneSnap);
+      this.street.update(this.scene, this.camera, this.pos, backdropOutdoors(this.streetProbe.outdoors, this.zone), dt, this.streetProbe.level, snap);
       this.updateZone(dt, snap || zoneSnap);
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
