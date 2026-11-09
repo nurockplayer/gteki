@@ -63,23 +63,23 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // six platform batches merged by material (18 -> 12 level meshes): 96 meshes, same bytes; geometry, nodes and
 // textures re-measured, every explorer list unchanged.
 // 2026-11-09 JST: route sign groups carry their position and sightline dimensions; nodes re-measured.
-// #1032 (2026-11-09 JST): corner pieces are kept (+48 scene walls); geometry, nodes, bytes and lists re-measured.
+// #1032 (2026-11-10 JST): render-only corner fills; scene wall delta 0, geometry and bytes re-measured.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "2ccfcc72a50bc54dda183e519f2fc4e734dc70ed5f81c8aa0711f8d439085180",
+    "geometryDigest": "f9b0d7ad80f990a19376f9fa719cabd529eab591f101f4a29651c6319529e961",
     "appearanceDigest": "12e7dd26596d92ce5fb79e9f4431c2c6d70685ea8bc67de17f4bcdc6c23a1512",
     "nodesDigest": "af2e6415a755a87b145aac59257b837f650a3f4fbae342a39de188eb482908e3",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
     "meshes": 96,
-    "bytes": 16504138
+    "bytes": 16511842
   },
   "lists": {
-    "listsDigest": "720ea969f9de7c3dca451082f92854434426ee1e300f09d98ae261a92fd05c5a",
+    "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",
     "counts": {
       "walkable": 442,
       "colliders": 2,
       "cameraBlockers": 3,
-      "walls": 14932
+      "walls": 14884
     }
   }
 };
