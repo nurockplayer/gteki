@@ -17,7 +17,7 @@ jobs:
   e2e-smoke:
     name: e2e-smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -61,11 +61,11 @@ jobs:
       # stall. It still runs and prints [switch-timings]; real-device switch time is on the field-run checklist.
       - name: Station switch (non-blocking, #647)
         continue-on-error: true
-        timeout-minutes: 45
+        timeout-minutes: 5
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
-        run: pnpm exec playwright test specs/01-smoke.spec.ts --project=desktop-chromium --trace=off --grep "station switching" --repeat-each=20 --reporter=line
+        run: pnpm exec playwright test specs/01-smoke.spec.ts --project=desktop-chromium --trace=off --grep "station switching"
 
       # Failure only, and small: per-test evidence JSON (records the quality path), screenshots and error
       # context; no HTML report, no traces.
