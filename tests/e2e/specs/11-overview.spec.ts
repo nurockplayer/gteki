@@ -40,6 +40,7 @@ test.use({ trace: "off" });
  */
 
 const FRAMING = { min: 0.5, max: 0.8 }; // share of the shorter viewport side (#109 acceptance 1)
+const FRAMING_EPS = 1e-9; // float rounding at the designed 0.5 boundary (#1015)
 const NEAR_BLACK_MAX = 0.3; // #109 acceptance 2
 const MEAN_LUMA = { min: 40, max: 200 }; // of 255
 
@@ -68,8 +69,8 @@ test("ikebukuro: overview pressed at street level frames the station, not its st
   const measuredAt = new Date().toISOString(); // UTC
   console.log(`[street-overview] ${measuredAt} ${JSON.stringify({ opening, street })}`);
   save(testInfo, "ikebukuro-overview-from-street.json", { measuredAt, widthWithoutContext, opening, street });
-  expect.soft(street.viewportShare, "framing band").toBeGreaterThanOrEqual(FRAMING.min);
-  expect.soft(street.viewportShare, "framing band").toBeLessThanOrEqual(FRAMING.max);
+  expect.soft(street.viewportShare, "framing band").toBeGreaterThanOrEqual(FRAMING.min - FRAMING_EPS);
+  expect.soft(street.viewportShare, "framing band").toBeLessThanOrEqual(FRAMING.max + FRAMING_EPS);
   expect.soft(Math.abs(street.viewportShare - opening.viewportShare), "same framing as the opening overview").toBeLessThan(0.02);
 });
 
@@ -233,11 +234,11 @@ for (const key of STATIONS) {
     // reaches past a short phone band, so the band is checked against the viewport's shorter side.
     const viewportShare = framingDirect?.source === "overviewFrame" ? framingDirect.value?.viewportShare : undefined;
     if (typeof viewportShare === "number") {
-      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeGreaterThanOrEqual(FRAMING.min);
-      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeLessThanOrEqual(FRAMING.max);
+      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeGreaterThanOrEqual(FRAMING.min - FRAMING_EPS);
+      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeLessThanOrEqual(FRAMING.max + FRAMING_EPS);
     } else if (spreadRoutable.spread !== null) {
-      expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeGreaterThanOrEqual(FRAMING.min);
-      expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeLessThanOrEqual(FRAMING.max);
+      expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeGreaterThanOrEqual(FRAMING.min - FRAMING_EPS);
+      expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeLessThanOrEqual(FRAMING.max + FRAMING_EPS);
     } else {
       expect.soft(spreadRoutable.count, "at least two routable labels on screen to measure framing").toBeGreaterThanOrEqual(2);
     }

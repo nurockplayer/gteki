@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Source } from "@gteki/schema";
 import type { DataFile } from "@gteki/schema";
-import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
+import { assetDerivationPresentation, CAT_MODEL_CREDIT, dataFileCredits, dataFileRowText, factsOnlyCredit, MODEL_CREDITS, overrideCredits, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
 import { entryRightsLabels } from "./creditLine.ts";
 import { strings } from "./i18n.ts";
 
@@ -232,5 +232,25 @@ describe("data file credits (#121)", () => {
 
   it("returns an empty list when dataFiles is undefined", () => {
     expect(dataFileCredits(undefined, [plateau])).toEqual([]);
+  });
+});
+
+describe("3D model credit (#854)", () => {
+  it("shows the Fripouille credit line verbatim with source, author and licence links", () => {
+    expect(CAT_MODEL_CREDIT.attribution).toBe(
+      'This work is based on "3d modelling my cat: Fripouille" '
+      + "(https://sketchfab.com/3d-models/3d-modelling-my-cat-fripouille-0ab14bf98e754f8d90fe1bf1c84ca66c) "
+      + "by guillaume bolis (https://sketchfab.com/guillaume.bolis.neko) "
+      + "licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    );
+    expect(CAT_MODEL_CREDIT.source.href).toBe("https://sketchfab.com/3d-models/3d-modelling-my-cat-fripouille-0ab14bf98e754f8d90fe1bf1c84ca66c");
+    expect(CAT_MODEL_CREDIT.author).toEqual({ label: "guillaume bolis", href: "https://sketchfab.com/guillaume.bolis.neko" });
+    expect(CAT_MODEL_CREDIT.license).toEqual({ label: "CC BY 4.0", href: "http://creativecommons.org/licenses/by/4.0/" });
+    expect(CAT_MODEL_CREDIT.modification).toBe(
+      "Modified by GTEki contributors: whiskers removed, mesh decimated, recoloured solid blue-grey "
+      + "with vertex colours (textures removed), skeleton re-derived and bones renamed, ear bones added "
+      + "and reweighted, animation clips authored.",
+    );
+    expect(MODEL_CREDITS).toEqual([CAT_MODEL_CREDIT]);
   });
 });
