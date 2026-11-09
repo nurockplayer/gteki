@@ -425,7 +425,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // headless build (no renderer, no env map) gets none; nothing renders there anyway.
   const adapted = crowdEdges(sceneBundle, (id) => layout.nodeZ.get(id) ?? nodes.get(id)?.renderZ ?? 0);
   const crowd = envTarget
-    ? buildCrowd(T, adapted.edges, crowdVector(T, ctx.enuToRenderer), low ? 56 : 150, envTarget.texture, adapted.lanes, timeBand)
+    ? buildCrowd(T, adapted.edges, crowdVector(T, ctx.enuToRenderer), low ? 80 : 150, envTarget.texture, adapted.lanes, timeBand)
     : null;
   if (crowd) built.root.add(crowd.group);
   if (shopKit && !shopKit.placements.length) {

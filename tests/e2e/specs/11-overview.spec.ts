@@ -120,6 +120,19 @@ for (const key of STATIONS) {
     const mode = await hooks.mode(page);
     expect.soft(mode, "the opening view is the overview").toBe("overview");
 
+    const checkDraws = async (tier: string) => {
+        const draws = await page.evaluate(() => (window as any).__gteki.overviewDraws());
+        console.log(`[overview-draws] ${new Date().toISOString()} ${testInfo.project.name} ${tier} ${JSON.stringify(draws)}`);
+        expect(draws.surfaceMeshes, `${tier}: surface layer exists`).toBeGreaterThan(0);
+        expect.soft(draws.surface, `${tier}: street surface did not draw`).toBe(0);
+        expect.soft(draws.station, `${tier}: station meshes drew`).toBeGreaterThan(0);
+    };
+    if (key === "shinjuku") {
+      await checkDraws(`default-${await hooks.quality(page)}`);
+    } else {
+      console.log(`[overview-draws] ${new Date().toISOString()} ${key}: skipped; no surface-render-only layer`);
+    }
+
     const png = await page.screenshot({ path: shotPath(testInfo, `${key}-11-overview.png`) });
     const stats = await imageStats(page, png);
     const smoke = await labelUiOverlaps(page);
@@ -253,6 +266,23 @@ for (const key of STATIONS) {
     if (reach) {
       expect.soft(reach.error ?? null, "choosing a hidden exit through search").toBeNull();
       expect.soft(reach.shownAfterSelect, `hidden exit "${reach.label}" shows once chosen as destination`).toBe(true);
+    }
+    if (key === "shinjuku" && !process.env.CI) {
+      await page.addInitScript(() => {
+        const original = window.matchMedia.bind(window);
+        window.matchMedia = (query) => {
+          const result = original(query);
+          if (query === "(pointer: coarse)") Object.defineProperty(result, "matches", { value: false });
+          return result;
+        };
+        Object.defineProperty(screen, "width", { get: () => 1440 });
+        Object.defineProperty(screen, "height", { get: () => 900 });
+      });
+      await openStation(page, key);
+      expect(await hooks.quality(page), "high tier uses the composer").toBe("high");
+      await checkDraws("high");
+    } else if (key === "shinjuku") {
+      console.log(`[overview-draws] ${new Date().toISOString()} high tier skipped: CI uses the low-tier software renderer`);
     }
   });
 }

@@ -56,6 +56,9 @@ jobs:
       - name: Station typecheck (shinjuku and ikebukuro)
         run: pnpm -C stations/shinjuku typecheck && pnpm -C stations/ikebukuro typecheck
 
+      - name: Stairwell bake check (shinjuku and ikebukuro)
+        run: pnpm tsx packages/godot/src/stairwell-bake.ts --station shinjuku --station ikebukuro --check
+
       # Default suites only; two workers fit the runner. Station importers' `--check` modes need raw
       # inputs that are not in the repo, so they stay local.
       - run: pnpm vitest run --maxWorkers=2
