@@ -1637,12 +1637,12 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/862", "date": "2026-11-06" },
-   "attribution": "外貨両替機 SMART EXCHANGE NewDays 池袋 (facts only, UNVERIFIED; not reproduced)",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "attribution": "外貨両替機 SMART EXCHANGE NewDays 池袋 (no licence — facts cited, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-06T07:18:24+09:00",
    "datasetDate": null,
-   "notes": "Printed machine listing only: the name, the address 「東京都豊島区南池袋1-28-2 池袋駅 1F JR改札外東口」 and the 1F East Exit side. The site has no explicit reuse clause (checked by the lead 2026-11-06 JST), so facts only: nothing copied, no description, image, logo or map. Lead ruling 2026-11-06 05:3x JST for #862: Ikebukuro only, search-only, no position. Corroboration only (OD-34, never the sole source in S): https://shop.jr-cross.co.jp/eki/spot/detail?code=1040188 prints 「1F 東口」; that operator's site is excluded, so no name or text from it is used."
+   "notes": "Printed machine listing only: the name, the address 「東京都豊島区南池袋1-28-2 池袋駅 1F JR改札外東口」 and the 1F East Exit side. The site has no explicit reuse clause (checked by the lead 2026-11-06 JST), so facts only: nothing copied, no description, image, logo or map. Lead ruling 2026-11-06 05:3x JST for #862: Ikebukuro only, search-only, no position. Corroboration only (OD-34, never the sole source in S): https://shop.jr-cross.co.jp/eki/spot/detail?code=1040188 prints 「1F 東口」; that operator's site is excluded, so no name or text from it is used. gteki-lead 2026-11-09 10:4x JST (#1044 Q2): no use terms (copyright notice and site policy only), covered by the Owner's #26 decision like JCSC; only name, address and the 1F East Exit side are taken."
   }
  ],
  "floors": [
