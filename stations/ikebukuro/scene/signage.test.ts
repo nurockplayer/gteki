@@ -27,6 +27,7 @@ type Sign = SignSpec & { basis?: string[]; atNode: string };
 const graph = json("../gteki/graph.json") as { nodes: { id: string; kind: string }[]; edges: Edge[] };
 const pois = json("../gteki/pois.json").pois as Poi[];
 const signs = json("./signage.json").signs as Sign[];
+const signNamesEn = json("./sign-names-en.json").names as Record<string, { en: string }>;
 
 for (const script of ["test_sign_sightlines.py", "test_fitting_exclusion.py"]) it(`checks ${script} against station geometry (#308)`, () => {
   // The outer vitest command owns gteki-local-test.lock. The stdlib Python child
@@ -308,7 +309,7 @@ describe("ikebukuro place boards between the repeaters (#108)", () => {
           expect(p.category).toBe("other");
           expect(p.connectorNodeIds.length).toBeGreaterThan(0);
           expect(it.ja, it.id).toBeTruthy();
-          expect(it.en, it.id).toBe(p.names.find((n) => n.lang === "en")?.text ?? null);
+          expect(it.en, it.id).toBe(p.names.find((n) => n.lang === "en")?.text ?? signNamesEn[it.id]?.en ?? null);
           expect(b.basis).toContain(`poi:${it.id}`);
         }
       }

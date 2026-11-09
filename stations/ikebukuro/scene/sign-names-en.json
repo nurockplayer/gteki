@@ -1,0 +1,38 @@
+{
+  "source": {
+    "title": "豊島区 池袋ターミナル サイン ガイドライン 本編 改訂1.2 (2020-03)",
+    "url": "https://www.city.toshima.lg.jp/documents/17300/saingaidorain-honpen_kaitei1-2.pdf",
+    "retrieved": "2026-11-09 JST",
+    "note": "Sign texts only (#1093); not POI names, aliases or search terms (#601, #887)."
+  },
+  "names": {
+    "jr-central-gate-1": {
+      "en": "Central 1 Gate",
+      "cite": "表記用語集 p.40 (PDF p.43), JR線: 中央1改札 / Central 1 Gate"
+    },
+    "jr-central-gate-2": {
+      "en": "Central 2 Gate",
+      "cite": "表記用語集 p.40 (PDF p.43), JR線: 中央2改札 / Central 2 Gate"
+    },
+    "jr-south-gate": {
+      "en": "South Gate",
+      "cite": "表記用語集 p.40 (PDF p.43), JR線: 南改札 / South Gate"
+    },
+    "tobu-central-gate-2": {
+      "en": "Central Gate 2",
+      "cite": "表記用語集 p.40 (PDF p.43), 東武東上線: 中央改札2 / Central Gate 2"
+    },
+    "west-exit-south-b1": {
+      "en": "West Exit (S)",
+      "cite": "表記用語集 p.40 (PDF p.43), 主要出入口: 西口（南） / West Exit (S)"
+    },
+    "west-exit-b1": {
+      "en": "West Exit",
+      "cite": "バス乗り場サイン例 PDF p.19: 西口 / West Exit"
+    },
+    "east-exit-b1": {
+      "en": "East Exit",
+      "cite": "バス乗り場サイン例 PDF p.19: 東口 / East Exit"
+    }
+  }
+}
