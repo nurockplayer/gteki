@@ -14,6 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
+import { minimapYield, type YieldRect } from "./minimapYield.ts";
 import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
@@ -445,6 +446,11 @@ export class Explorer {
   /** The route sheet: a full-width bottom sheet on a phone, so the overview keeps clear of it there (#385). */
   private sheetEl: HTMLElement | null = null;
   private minimapEl: HTMLElement | null = null;
+  private minimapSignCorners: THREE.Vector3[][] = [];
+  private minimapSignRects: YieldRect[] = [];
+  private readonly minimapYieldState = { lastOverlap: -Infinity };
+  private readonly minimapSignPoint = new THREE.Vector3();
+  private readonly minimapSignCentre = new THREE.Vector3();
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
@@ -1311,6 +1317,16 @@ export class Explorer {
       this.seeThrough = this.cameraCut.apply(this.stationScene.root, signs);
       this.signMeshes = new Set(signs);
       this.identityBoards = collectIdentityBoards(this.stationScene.root);
+      this.stationScene.root.traverse((object) => {
+        if (!object.name.startsWith("sign-faces:") && !object.name.startsWith("sign-faces-")) return;
+        const position = (object as THREE.Mesh).geometry.getAttribute("position");
+        for (let i = 0; i + 3 < position.count; i += 4) {
+          const corners: THREE.Vector3[] = [];
+          for (let j = 0; j < 4; j++) corners.push(new THREE.Vector3().fromBufferAttribute(position, i + j).applyMatrix4(object.matrixWorld));
+          this.minimapSignCorners.push(corners);
+          this.minimapSignRects.push({ left: 0, right: 0, top: 0, bottom: 0, behind: false, distance: 0 });
+        }
+      });
       // After the cut: shadows read the materials as they will be drawn. Frustum fit runs in the next step().
       this.attachShadows(this.stationScene.root);
     }
@@ -1438,6 +1454,10 @@ export class Explorer {
     this.walls = [];
     this.seeThrough = [];
     this.signMeshes = new Set();
+    this.minimapSignCorners = [];
+    this.minimapSignRects = [];
+    this.minimapYieldState.lastOverlap = -Infinity;
+    if (this.minimapEl) delete this.minimapEl.dataset.yield;
     this.identityBoards = [];
     this.identityPlaced = false;
     this.identityLabelsDirty = true;
@@ -2651,6 +2671,34 @@ export class Explorer {
     this.labels.render(this.scene, this.camera);
   }
 
+  private updateMinimapYield(t: number): void {
+    const map = this.minimapEl;
+    if (!map || this.mode === "overview" || map.hidden || map.getClientRects().length === 0) return;
+    const mapRect = map.getBoundingClientRect();
+    const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    for (let i = 0; i < this.minimapSignCorners.length; i++) {
+      const corners = this.minimapSignCorners[i]!;
+      const rect = this.minimapSignRects[i]!;
+      const centre = this.minimapSignCentre.set(0, 0, 0);
+      for (const corner of corners) centre.add(corner);
+      centre.multiplyScalar(0.25);
+      rect.distance = centre.distanceTo(this.camera.position);
+      rect.behind = this.minimapSignPoint.copy(centre).applyMatrix4(this.camera.matrixWorldInverse).z >= 0;
+      rect.left = rect.top = Infinity;
+      rect.right = rect.bottom = -Infinity;
+      if (rect.behind || rect.distance > 15) continue;
+      for (const corner of corners) {
+        const point = this.minimapSignPoint.copy(corner).project(this.camera);
+        const x = canvasRect.left + (point.x + 1) * canvasRect.width / 2;
+        const y = canvasRect.top + (1 - point.y) * canvasRect.height / 2;
+        rect.left = Math.min(rect.left, x); rect.right = Math.max(rect.right, x);
+        rect.top = Math.min(rect.top, y); rect.bottom = Math.max(rect.bottom, y);
+      }
+    }
+    if (minimapYield(this.minimapSignRects, mapRect, t, this.minimapYieldState)) map.dataset.yield = "sign";
+    else delete map.dataset.yield;
+  }
+
   private step(dt: number, t: number): void {
     if (this.routeTexture && !this.reducedMotion) this.routeTexture.offset.x -= dt * 0.9;
     for (const g of this.routeGroup.children) {
@@ -2694,6 +2742,7 @@ export class Explorer {
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
     this.camera.updateMatrixWorld();
+    this.updateMinimapYield(t);
     const cutY = this.catAvatar && !this.firstPerson ? FOLLOW_CAT.pivotY : EYE;
     this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, cutY, 0)), this.mode !== "overview");
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw, this.catAvatar ? CAT_TURN_RATE : undefined);

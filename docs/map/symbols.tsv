@@ -308,6 +308,9 @@ cacheBvh	function	apps/web/src/explorer/meshBvh.ts
 currentBvh	function	apps/web/src/explorer/meshBvh.ts
 prepareRayTrees	function	apps/web/src/explorer/meshBvh.ts
 raycastObject	function	apps/web/src/explorer/meshBvh.ts
+YieldRect	type	apps/web/src/explorer/minimapYield.ts
+YieldState	type	apps/web/src/explorer/minimapYield.ts
+minimapYield	function	apps/web/src/explorer/minimapYield.ts
 OccludedLineStyle	interface	apps/web/src/explorer/occludedLine.ts
 occludedLineStyle	function	apps/web/src/explorer/occludedLine.ts
 Aabb	interface	apps/web/src/explorer/overviewFraming.ts
