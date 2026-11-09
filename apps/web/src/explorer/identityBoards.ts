@@ -71,7 +71,11 @@ export function identityBoardObjects(board: IdentityBoard, boards: readonly Iden
   board.object.parent?.children.forEach((o) => {
     if (o.userData.gteki_role !== "sign" || o.userData.gteki_identity !== undefined) return;
     const faceBounds = new THREE.Box3().setFromObject(o);
-    if (!faceBounds.isEmpty() && nameBounds.containsBox(faceBounds)) untaggedFaces.push(o);
+    if (faceBounds.isEmpty()) return;
+    const nameSize = nameBounds.getSize(new THREE.Vector3());
+    const faceSize = faceBounds.getSize(new THREE.Vector3());
+    if (nameBounds.containsPoint(faceBounds.getCenter(new THREE.Vector3())) &&
+      faceSize.x <= nameSize.x && faceSize.y <= nameSize.y && faceSize.z <= nameSize.z) untaggedFaces.push(o);
   });
   return [...new Set([...tagged, ...untaggedFaces])];
 }
