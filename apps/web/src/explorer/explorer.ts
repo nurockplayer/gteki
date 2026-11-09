@@ -1579,7 +1579,9 @@ export class Explorer {
    */
   /** Canvas-relative rects of the occluders freeRect measures (#1074 trace); null when not rendered. */
   private occluderRects(): Record<string, { x: number; y: number; w: number; h: number } | null> {
-    const host = this.host.getBoundingClientRect();
+    // Headless fixtures build the Explorer without a host element.
+    const host = this.host?.getBoundingClientRect();
+    if (!host) return {};
     const rect = (el: HTMLElement | null) => {
       if (!el || el.getClientRects().length === 0) return null;
       const r = el.getBoundingClientRect();
@@ -1731,6 +1733,10 @@ export class Explorer {
       boardRecords.push({ id, distanceM: Math.round(distance * 100) / 100, blocked, reason: null });
       return { id, centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: blocked !== null, visible };
     });
+    if (boards.length === 0) {
+      console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: [], framed: false }));
+      return false;
+    }
     const { w, h } = this.viewSize;
     const rects = this.freeRects(), free = rects[0]!;
     const toNdc = (r: ViewRect) => ({ x0: 2 * r.x / w - 1, x1: 2 * (r.x + r.w) / w - 1, y0: 1 - 2 * (r.y + r.h) / h, y1: 1 - 2 * r.y / h });
