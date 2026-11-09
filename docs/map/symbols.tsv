@@ -278,6 +278,7 @@ DeclutterOptions	interface	apps/web/src/explorer/labelDeclutter.ts
 LABEL_CLASS	const	apps/web/src/explorer/labelDeclutter.ts
 LABEL_FONT_PX	const	apps/web/src/explorer/labelDeclutter.ts
 LabelClass	type	apps/web/src/explorer/labelDeclutter.ts
+containmentShift	function	apps/web/src/explorer/labelDeclutter.ts
 declutter	function	apps/web/src/explorer/labelDeclutter.ts
 estimateLabelBox	function	apps/web/src/explorer/labelDeclutter.ts
 labelClass	function	apps/web/src/explorer/labelDeclutter.ts
