@@ -14,7 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { minimapYield, type YieldRect } from "./minimapYield.ts";
+import { faceEligible, minimapYield, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
 import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
@@ -446,11 +446,11 @@ export class Explorer {
   /** The route sheet: a full-width bottom sheet on a phone, so the overview keeps clear of it there (#385). */
   private sheetEl: HTMLElement | null = null;
   private minimapEl: HTMLElement | null = null;
-  private minimapSignCorners: THREE.Vector3[][] = [];
+  private minimapSigns: { mesh: THREE.Object3D; corners: THREE.Vector3[]; face: FaceEligibility }[] = [];
   private minimapSignRects: YieldRect[] = [];
   private readonly minimapYieldState = { lastOverlap: -Infinity };
   private readonly minimapSignPoint = new THREE.Vector3();
-  private readonly minimapSignCentre = new THREE.Vector3();
+  private readonly minimapSignDirection = new THREE.Vector3();
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
@@ -1323,7 +1323,11 @@ export class Explorer {
         for (let i = 0; i + 3 < position.count; i += 4) {
           const corners: THREE.Vector3[] = [];
           for (let j = 0; j < 4; j++) corners.push(new THREE.Vector3().fromBufferAttribute(position, i + j).applyMatrix4(object.matrixWorld));
-          this.minimapSignCorners.push(corners);
+          const centre = new THREE.Vector3();
+          for (const corner of corners) centre.add(corner);
+          centre.multiplyScalar(0.25);
+          const normal = new THREE.Vector3().subVectors(corners[2]!, corners[0]!).cross(new THREE.Vector3().subVectors(corners[1]!, corners[0]!)).normalize();
+          this.minimapSigns.push({ mesh: object, corners, face: { centre, normal, cameraPos: this.camera.position, viewZ: [0, 0, 0, 0], near: this.camera.near, maxDistance: 15 } });
           this.minimapSignRects.push({ left: 0, right: 0, top: 0, bottom: 0, behind: false, distance: 0 });
         }
       });
@@ -1454,7 +1458,7 @@ export class Explorer {
     this.walls = [];
     this.seeThrough = [];
     this.signMeshes = new Set();
-    this.minimapSignCorners = [];
+    this.minimapSigns = [];
     this.minimapSignRects = [];
     this.minimapYieldState.lastOverlap = -Infinity;
     if (this.minimapEl) delete this.minimapEl.dataset.yield;
@@ -2676,17 +2680,22 @@ export class Explorer {
     if (!map || this.mode === "overview" || map.hidden || map.getClientRects().length === 0) return;
     const mapRect = map.getBoundingClientRect();
     const canvasRect = this.renderer.domElement.getBoundingClientRect();
-    for (let i = 0; i < this.minimapSignCorners.length; i++) {
-      const corners = this.minimapSignCorners[i]!;
+    for (let i = 0; i < this.minimapSigns.length; i++) {
+      const { mesh, corners, face } = this.minimapSigns[i]!;
       const rect = this.minimapSignRects[i]!;
-      const centre = this.minimapSignCentre.set(0, 0, 0);
-      for (const corner of corners) centre.add(corner);
-      centre.multiplyScalar(0.25);
-      rect.distance = centre.distanceTo(this.camera.position);
-      rect.behind = this.minimapSignPoint.copy(centre).applyMatrix4(this.camera.matrixWorldInverse).z >= 0;
+      rect.behind = true;
+      let visible = true;
+      for (let object: THREE.Object3D | null = mesh; object; object = object.parent) {
+        if (!object.visible) { visible = false; break; }
+      }
+      if (!visible) continue;
+      const viewZ = face.viewZ as number[];
+      for (let j = 0; j < 4; j++) viewZ[j] = this.minimapSignPoint.copy(corners[j]!).applyMatrix4(this.camera.matrixWorldInverse).z;
+      face.near = this.camera.near;
+      if (!faceEligible(face)) continue;
+      rect.distance = this.minimapSignDirection.subVectors(face.centre as THREE.Vector3, this.camera.position).length();
       rect.left = rect.top = Infinity;
       rect.right = rect.bottom = -Infinity;
-      if (rect.behind || rect.distance > 15) continue;
       for (const corner of corners) {
         const point = this.minimapSignPoint.copy(corner).project(this.camera);
         const x = canvasRect.left + (point.x + 1) * canvasRect.width / 2;
@@ -2694,6 +2703,15 @@ export class Explorer {
         rect.left = Math.min(rect.left, x); rect.right = Math.max(rect.right, x);
         rect.top = Math.min(rect.top, y); rect.bottom = Math.max(rect.bottom, y);
       }
+      if (rect.left >= mapRect.right || rect.right <= mapRect.left || rect.top >= mapRect.bottom || rect.bottom <= mapRect.top) continue;
+      const oldNear = this.ray.near, oldFar = this.ray.far;
+      this.ray.set(this.camera.position, this.minimapSignDirection.divideScalar(rect.distance));
+      this.ray.near = 0;
+      this.ray.far = rect.distance;
+      const hit = castCamera(this.ray, this.cameraTargets, this.cameraSides)[0];
+      this.ray.near = oldNear; this.ray.far = oldFar;
+      if (hit && hit.distance < rect.distance - 0.05 && hit.object !== mesh) continue;
+      rect.behind = false;
     }
     if (minimapYield(this.minimapSignRects, mapRect, t, this.minimapYieldState)) map.dataset.yield = "sign";
     else delete map.dataset.yield;
@@ -2742,9 +2760,9 @@ export class Explorer {
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
     this.camera.updateMatrixWorld();
-    this.updateMinimapYield(t);
     const cutY = this.catAvatar && !this.firstPerson ? FOLLOW_CAT.pivotY : EYE;
     this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, cutY, 0)), this.mode !== "overview");
+    this.updateMinimapYield(t);
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw, this.catAvatar ? CAT_TURN_RATE : undefined);
     const previousYaw = this.bodyYaw;
     this.bodyYaw = motion.yaw;
