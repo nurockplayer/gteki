@@ -110,6 +110,10 @@ if (!enabled) test.skip("recognition proxy captures (set GTEKI_RECOGNITION=1; ne
 
 for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captures (#342 Q5) @phone`, async ({ page }, testInfo) => {
   test.setTimeout(600_000);
+  const avatarFallback: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "warning" && message.text().includes("GLB avatar unavailable")) avatarFallback.push(message.text());
+  });
   await openStation(page, key);
   // Signs are drawn into canvas atlases at load, so font readiness is recorded as the app saw it.
   const fonts = await page.evaluate(async () => {
@@ -157,6 +161,8 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
   const frames: Record<string, unknown>[] = [];
   const key4anon = createHash("sha256").update(`${sha}:${testInfo.project.name}:${key}`).digest("hex").slice(0, 8);
   for (const v of views) {
+    // The page opens in overview; like "Walk freely", the first walkFromNode runs frameInitialIdentity (#1040),
+    // so the spawn row is the arrival framing (a later walkFrom would skip it).
     expect(await hooks.walkFromNode(page, v.node), `walkFromNode ${v.node}`).toBe(true);
     await hooks.simulate(page, 0.5, []);
     if (v.facing) await face(page, v.facing.from, v.facing.to);
@@ -180,7 +186,7 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
   }
   save(testInfo, `${key}-recognition.json`, {
     label: "recognition proxy", station: key, project: testInfo.project.name, sha, tier, viewport: page.viewportSize(), fonts, hasIdentityHook: hasIdentity, stationIdentityAtReady: atReady.stationIdentity,
-    route: ROUTES[key], views: views.map(({ id, node, note, facing }) => ({ id, node, note, facing })), frameS: FRAME_S, frames,
+    avatarFallback, route: ROUTES[key], views: views.map(({ id, node, note, facing }) => ({ id, node, note, facing })), frameS: FRAME_S, frames,
   });
   save(testInfo, `${key}-recognition-key.json`, frames.map((f) => ({ anon: f.anon, station: key, view: f.view, i: f.i, project: testInfo.project.name })));
 });
