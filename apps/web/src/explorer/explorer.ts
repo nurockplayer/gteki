@@ -37,7 +37,7 @@ import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZon
 import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
-import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { containmentShift, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
@@ -47,7 +47,7 @@ import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelec
 import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 import { catTapHit } from "./catMeow.ts";
 import { advancePaws, pawSurface, playCatMeow, playPawStep } from "./catSound.ts";
-import { contactShadow } from "./contactShadow.ts";
+import { contactShadow, placePawShadows } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
@@ -315,7 +315,8 @@ export class Explorer {
   private avatarRig: AvatarSelection | null = null;
   /** Cat protagonist: lower follow pivot, shorter boom and a smaller marker ring. */
   private catAvatar: boolean;
-  private avatarMarker: [THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>, THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>] | null = null;
+  private avatarMarker: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] | null = null;
+  private pawShadows: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[] = [];
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private catBodyPitch = 0;
@@ -1053,6 +1054,7 @@ export class Explorer {
         mesh.material.dispose();
       }
       this.avatarMarker = null;
+      this.pawShadows = [];
     }
     if (this.quality === "high") {
       // A slim marker ring keeps "this is you" readable without outshining the character.
@@ -1060,7 +1062,8 @@ export class Explorer {
       const outer = this.catAvatar ? 0.33 : 0.5;
       const ring = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
       ring.position.y = 0.02;
-      this.avatarMarker = [contactShadow(this.catAvatar ? 0.28 : 0.42), ring];
+      this.pawShadows = this.catAvatar ? Array.from({ length: 4 }, () => contactShadow(0.055, 0)) : [];
+      this.avatarMarker = [this.catAvatar ? contactShadow(0.3, 0.28) : contactShadow(0.42), ring, ...this.pawShadows];
       this.avatar.add(...this.avatarMarker);
     }
   }
@@ -2249,7 +2252,7 @@ export class Explorer {
       const el = l.obj.element;
       if (!regions.length) {
         if (l.identityHidden) l.identityHidden = false;
-        if (l.identityOffsetY) { l.identityOffsetY = 0; el.style.translate = ""; }
+        if (l.identityOffsetY) { l.identityOffsetY = 0; el.style.translate = ""; this.declutterDirty = true; }
         continue;
       }
       if (!l.size && l.measureTries++ < MEASURE_TRIES) this.identityLabelsDirty = true;
@@ -2261,6 +2264,7 @@ export class Explorer {
       if (l.identityHidden !== result.hidden) l.identityHidden = result.hidden;
       if (l.identityOffsetY !== result.offsetY) {
         l.identityOffsetY = result.offsetY;
+        this.declutterDirty = true;
         el.style.translate = result.offsetY ? `0 ${result.offsetY}px` : "";
       }
     }
@@ -2276,7 +2280,10 @@ export class Explorer {
     const labels = this.poiLabels;
     if (this.mode !== "overview") {
       // Walk and guide never declutter; undo an earlier overview pass once.
-      if (this.declutterActive) for (const l of labels) l.decluttered = false;
+      if (this.declutterActive) for (const l of labels) {
+        l.decluttered = false;
+        l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
+      }
       this.declutterActive = false;
       this.declutterDirty = true;
       return;
@@ -2295,12 +2302,14 @@ export class Explorer {
     const { w: vw, h: vh } = this.viewSize;
     const items: DeclutterItem[] = [];
     const byId = new Map<string, PoiLabel>();
-    // The credit footer and the disclaimer badge are never text under a label (#838). Blocked chips stay out of
-    // the declutter itself, so the chip they would have beaten still gets its place.
-    const footers = [this.creditEl, this.legendEl]
+    // Keep chips off the top bar (#1072), credit footer and disclaimer badge (#838).
+    const host = this.host.getBoundingClientRect();
+    const blocked = [this.host.parentElement?.querySelector<HTMLElement>(".topbar"), this.creditEl, this.legendEl]
       .filter((el): el is HTMLElement => el != null && el.getClientRects().length > 0)
-      .map((el) => el.getBoundingClientRect());
-    const blocked = new Set<string>();
+      .map((el) => {
+        const q = el.getBoundingClientRect();
+        return { x0: q.left - host.left, y0: q.top - host.top, x1: q.right - host.left, y1: q.bottom - host.top };
+      });
     const p = new THREE.Vector3();
     for (const l of labels) {
       l.decluttered = false;
@@ -2309,13 +2318,17 @@ export class Explorer {
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
       const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
-      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
-      if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
+      let x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
+      l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
+      if (x < 0 || x > vw || y - l.identityOffsetY < 0 || y - l.identityOffsetY > vh) { l.decluttered = true; continue; }
+      const dx = containmentShift(x - size.w / 2, size.w, vw);
+      const dy = containmentShift(y - size.h / 2, size.h, vh);
+      x += dx; y += dy;
+      l.obj.element.style.translate = `${dx}px ${l.identityOffsetY + dy}px`;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
-      if (footers.some((q) => x - size.w / 2 < q.right && x + size.w / 2 > q.left && y - size.h / 2 < q.bottom && y + size.h / 2 > q.top)) blocked.add(l.poiId);
     }
-    const keep = declutter(items.filter((it) => !blocked.has(it.id)));
+    const keep = declutter(items, { blocked });
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
     // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
@@ -2724,6 +2737,9 @@ export class Explorer {
     if (state.phase === "active" && state.nearId) {
       const target = this.interactionVisuals?.get(state.nearId);
       if (target) this.avatar.rotation.y = Math.atan2(this.pos.x - target.position.x, this.pos.z - target.position.z);
+    }
+    if (this.pawShadows.length && this.avatarRig) {
+      placePawShadows(this.pawShadows, this.avatarRig.root, this.avatar, this.pos.y);
     }
     this.updateShadows();
   }

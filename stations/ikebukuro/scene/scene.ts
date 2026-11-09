@@ -481,7 +481,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
   ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     (loaded) => {
-      const material = createContextMaterial(THREE, { streetY });
+      const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
       dressContext(loaded.scene, material, roadMaterial);
       if (disposed) {

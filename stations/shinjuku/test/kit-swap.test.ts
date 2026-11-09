@@ -65,7 +65,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // 2026-11-09 JST: route sign groups carry their position and sightline dimensions; nodes re-measured.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "3167644aec59464fdeb6a569e5553f7cc5f1a1fb8e38d36f6f8990da3e2c2028",
+    "geometryDigest": "28f2f211e838a785ba983c8be4dbf27d4e9b9748fe9837f8ef0ce198f2ec0eb8",
     "appearanceDigest": "12e7dd26596d92ce5fb79e9f4431c2c6d70685ea8bc67de17f4bcdc6c23a1512",
     "nodesDigest": "af2e6415a755a87b145aac59257b837f650a3f4fbae342a39de188eb482908e3",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
