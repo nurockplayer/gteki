@@ -315,8 +315,8 @@ export function catClips(
     if (hold() !== "sit") {
       if (!wasMoving && moving && speed < 0.7 && start) next = start;
       else if (wasMoving && !moving && stop) next = stop;
-      else if (active === start && moving && speed < 0.7 && !start.paused) next = start;
-      else if (active === stop && !moving && !stop.paused) next = stop;
+      else if (start && active === start && moving && speed < 0.7 && !start.paused) next = start;
+      else if (stop && active === stop && !moving && !stop.paused) next = stop;
       else if (turning) next = (lead > 0 ? turnL : turnR) ?? next;
     }
     next ??= active;

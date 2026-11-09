@@ -413,7 +413,7 @@ it("uses turn lead with hysteresis and returns to the normal clip", async () => 
   asset.animations.push(...["turn_l", "turn_r"].map((name) => new THREE.AnimationClip(name, 1, [])));
   const play = vi.spyOn(THREE.AnimationAction.prototype, "play");
   const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => asset }, cat: true });
-  const lastClip = () => play.mock.contexts.at(-1)!.getClip().name;
+  const lastClip = () => (play.mock.contexts.at(-1) as THREE.AnimationAction).getClip().name;
   rig.setTurnLead!(0.8);
   rig.update(0.1, 0.2);
   expect(lastClip()).toBe("turn_l");
