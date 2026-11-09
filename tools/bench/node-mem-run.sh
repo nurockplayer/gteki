@@ -51,17 +51,18 @@ args=(--reporter=default --reporter=json "--outputFile=$out/$id.vitest.json")
 # A reduced heavy run (#613 ruling 2026-10-29 23:1x JST) names its test files; space-separated, no globs.
 if [[ -n ${BENCH_FILES:-} ]]; then read -ra files <<< "$BENCH_FILES"; args=("${files[@]}" "${args[@]}"); fi
 if [[ ${BENCH_SMOKE:-0} == 1 ]]; then args=(tools/box-idle.test.mjs "${args[@]}"); fi
+limit=(); [[ -n ${BENCH_WALL_S:-} ]] && limit=(timeout --kill-after=10s "${BENCH_WALL_S}s")
 case $suite in
- test) pnpm run test "${args[@]}" ; code=$? ;;
- heavy) pnpm run test:heavy "${args[@]}" ; code=$? ;;
- box) GTEKI_TEST_HEAP_MB=1536 pnpm exec vitest run --mode heavy --maxWorkers=1 --passWithNoTests "${args[@]}"; code=$? ;;
+ test) "${limit[@]}" pnpm run test "${args[@]}" ; code=$? ;;
+ heavy) "${limit[@]}" pnpm run test:heavy "${args[@]}" ; code=$? ;;
+ box) GTEKI_TEST_HEAP_MB=1536 "${limit[@]}" pnpm exec vitest run --mode heavy --maxWorkers=1 --passWithNoTests "${args[@]}"; code=$? ;;
 esac
 elapsed=$(( $(date +%s) - start ))
 touch "$stop"; wait "$sampler" || :; rm -f "$stop"
 cp /sys/fs/cgroup/cpu.stat "$out/$id.cpu-after"
 cp /sys/fs/cgroup/memory.events "$out/$id.events-after"
 unset NODE_OPTIONS
-BENCH_BASE=$base BENCH_PEAK_RESET=$peak_reset BENCH_ELAPSED=$elapsed BENCH_EXIT=$code BENCH_ID=$id BENCH_SUITE=$suite BENCH_REP=$rep BENCH_VARIANT=$variant BENCH_OUT=$out node tools/bench/summarize.cjs || code=1
+BENCH_BASE=$base BENCH_PEAK_RESET=$peak_reset BENCH_ELAPSED=$elapsed BENCH_EXIT=$code BENCH_TIMED_OUT=$([[ -n ${BENCH_WALL_S:-} && $code == 124 ]] && echo true || echo false) BENCH_ID=$id BENCH_SUITE=$suite BENCH_REP=$rep BENCH_VARIANT=$variant BENCH_OUT=$out node tools/bench/summarize.cjs || code=1
 sort -u "$out/$id.procs.raw" > "$out/$id.procs.txt" 2>/dev/null; rm -f "$out/$id.procs.raw"
 gzip -f "$out/$id.samples.tsv" || code=1
 rm -f "$out/$id.cpu-before" "$out/$id.cpu-after" "$out/$id.events-before" "$out/$id.events-after"

@@ -23,9 +23,9 @@ for ((rep=1; rep<=reps; rep++)); do
   # Capture first: grep -q closing the pipe early would fail it under pipefail.
   status=$(orb-test --status --porcelain 2>/dev/null || true)
   if [[ ${BENCH_CONCURRENT_HEAVY:-} =~ ^[01]$ ]]; then concurrent=$BENCH_CONCURRENT_HEAVY; elif grep -q $'^running\t' <<< "$status"; then concurrent=1; fi
-  memory=3g; cpus=4; [[ $suite == box ]] && { memory=2g; cpus=2; }
+  memory=3g; cpus=4; [[ $suite == box ]] && { memory=${BENCH_BOX_MEMORY:-2g}; cpus=2; }
   opts=(); ((heavy)) && opts+=(--heavy)
-  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" --env "BENCH_FILES=${BENCH_FILES:-}" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" \
+  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" --env "BENCH_FILES=${BENCH_FILES:-}" --env "BENCH_WALL_S=${BENCH_WALL_S:-}" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" \
     || { code=$?; echo "rep $rep of $variant/$suite failed (exit $code); continuing" >&2; failed=$code; }
 done
 exit "${failed:-0}"
