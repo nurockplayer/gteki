@@ -497,7 +497,10 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     ...(audio.setAcousticZone ? { setAcousticZone: audio.setAcousticZone } : {}),
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
     ...(built.afterRender ? { afterRender: built.afterRender } : {}),
-    ...(crowd ? { setCameraNearFade: crowd.setCameraNearFade.bind(crowd) } : {}),
+    ...(crowd ? {
+      setCameraNearFade: crowd.setCameraNearFade.bind(crowd),
+      setCameraFocus: (p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign),
+    } : {}),
     ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
   return scene;

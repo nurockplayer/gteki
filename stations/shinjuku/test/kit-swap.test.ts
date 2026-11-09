@@ -62,11 +62,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #744 (2026-11-07 JST): one merged coverage-portal mesh per material (13 planes + 13 signs -> 2) and level-B6's
 // six platform batches merged by material (18 -> 12 level meshes): 96 meshes, same bytes; geometry, nodes and
 // textures re-measured, every explorer list unchanged.
+// 2026-11-09 JST: route sign groups carry their position and sightline dimensions; nodes re-measured.
 const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "28f2f211e838a785ba983c8be4dbf27d4e9b9748fe9837f8ef0ce198f2ec0eb8",
     "appearanceDigest": "12e7dd26596d92ce5fb79e9f4431c2c6d70685ea8bc67de17f4bcdc6c23a1512",
-    "nodesDigest": "b9e5fefe3b0b351d2b595363d05364c33424c9b629421cc4c755b9dfb389b779",
+    "nodesDigest": "af2e6415a755a87b145aac59257b837f650a3f4fbae342a39de188eb482908e3",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
     "meshes": 96,
     "bytes": 16494482
