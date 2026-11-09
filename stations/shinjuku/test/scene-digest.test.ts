@@ -36,6 +36,7 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * entry. protect, station, walkable, colliders, camera blockers, walls, semantic and spawn are unchanged.
  * #1032 (2026-11-09 JST): corner wall piece kept
  * #860 (2026-11-09 JST): raised train changes the five visible train material triangle hashes.
+ * #1059 (2026-11-09 JST): small-profile car changes the five visible train material triangle hashes.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;

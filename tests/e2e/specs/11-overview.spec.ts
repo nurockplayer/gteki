@@ -138,9 +138,9 @@ for (const key of STATIONS) {
     const smoke = await labelUiOverlaps(page);
     const { view, boxes } = await labelBoxes(page);
 
-    // Overlaps among labels the user can read: painted, on screen, not faded.
+    // Overlaps among all painted, readable labels, including faded chips.
     const visible = boxes.filter((b) => b.visible);
-    const readable = visible.filter((b) => !b.faded);
+    const readable = visible;
     const overlapsReadable = overlapPairs(readable);
     const overlapsAll = overlapPairs(visible);
 
@@ -237,7 +237,8 @@ for (const key of STATIONS) {
     expect.soft(stats.mean, "mean luminance of the overview frame (/255)").toBeGreaterThanOrEqual(MEAN_LUMA.min);
     expect.soft(stats.mean, "mean luminance of the overview frame (/255)").toBeLessThanOrEqual(MEAN_LUMA.max);
     // 3. No overlapping labels among those the user can read.
-    expect.soft(overlapsReadable, "visible, non-faded POI labels overlapping each other").toEqual([]);
+    expect.soft(overlapsReadable, "visible POI labels overlapping each other").toEqual([]);
+    expect.soft(visible.filter((b) => b.x < -0.5 || b.y < -0.5 || b.x + b.w > view.w + 0.5 || b.y + b.h > view.h + 0.5), "visible POI labels fit inside the viewport").toEqual([]);
     // 4. C1: labels never above the UI.
     expect.soft(smoke.uiOverlaps.filter((o) => o.labelOnTop), "POI labels painted over UI controls").toEqual([]);
     // #838: the credit footer and the disclaimer badge stay legible under no label.

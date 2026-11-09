@@ -23,7 +23,8 @@ export async function labelBoxes(page: Page): Promise<{ view: ViewInfo; boxes: L
     const els = [...document.querySelectorAll<HTMLElement>(".gteki-labels > *")];
     const boxes = els.map((e) => {
       const r = e.getBoundingClientRect();
-      const hiddenByStyle = e.style.display === "none";
+      const style = getComputedStyle(e);
+      const hiddenByStyle = style.display === "none" || style.visibility !== "visible" || Number(style.opacity) < 0.3;
       const onScreen = r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
       return {
         text: (e.textContent ?? "").trim(),
@@ -41,7 +42,7 @@ export async function labelBoxes(page: Page): Promise<{ view: ViewInfo; boxes: L
 }
 
 /** Label pairs whose rects overlap by more than `minPx` on both axes (same threshold as `labelUiOverlaps`). */
-export function overlapPairs(boxes: LabelBox[], minPx = 4): { a: string; b: string; dx: number; dy: number }[] {
+export function overlapPairs(boxes: LabelBox[], minPx = 0.5): { a: string; b: string; dx: number; dy: number }[] {
   const out: { a: string; b: string; dx: number; dy: number }[] = [];
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
     const a = boxes[i]!, b = boxes[j]!;
@@ -66,15 +67,17 @@ export function anchorSpread(boxes: LabelBox[], view: ViewInfo): { count: number
   return { count: boxes.length, spread: Math.round(spread * 100) / 100, bbox: { x0: r(bbox.x0), y0: r(bbox.y0), x1: r(bbox.x1), y1: r(bbox.y1) } };
 }
 
-/** Wait until the visible-label count is unchanged for `stableMs` (declutter and fades settle), up to `maxMs`. */
-export async function settleLabels(page: Page, stableMs = 600, maxMs = 6000): Promise<number> {
+/** Wait for identical visible geometry in consecutive samples. */
+export async function settleLabels(page: Page, stableMs = 250, maxMs = 6000): Promise<number> {
   const t0 = Date.now();
-  let last = -1, since = Date.now();
+  let last = "", count = 0;
   while (Date.now() - t0 < maxMs) {
-    const n = (await labelBoxes(page)).boxes.filter((b) => b.visible).length;
-    if (n !== last) { last = n; since = Date.now(); }
-    else if (Date.now() - since >= stableMs) break;
-    await page.waitForTimeout(150);
+    const visible = (await labelBoxes(page)).boxes.filter((b) => b.visible);
+    count = visible.length;
+    const geometry = JSON.stringify(visible);
+    if (geometry === last) return count;
+    last = geometry;
+    await page.waitForTimeout(stableMs);
   }
-  return last;
+  throw new Error(`Label geometry did not settle within ${maxMs} ms`);
 }

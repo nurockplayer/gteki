@@ -233,7 +233,7 @@ describe("#49 render-only escalator enclosure", () => {
     expect(scene.cameraBlockers).toHaveLength(3);
     // #645 step 2c: lift-door clearances split two restricted boundaries (+2 walls), then the
     // shaft-geometry cut removes 24 join:/return: pieces that lay inside a stop square.
-    expect(scene.walls).toHaveLength(14884);
+    expect(scene.walls).toHaveLength(14957);
     for (const name of ["walkable", "colliders", "cameraBlockers"] as const) {
       const meshes = scene[name] ?? [];
       expect(meshes.map(geometryBytesHash), name).toEqual(baseline.scene.low[name]);

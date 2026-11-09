@@ -4,6 +4,8 @@ import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
+import { castAll } from "../explorer/raycast.ts";
+import { prepareRayTrees } from "../explorer/meshBvh.ts";
 import { avatarGlbUrl, avatarKind } from "../explorer/avatarSelection.ts";
 import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
@@ -37,6 +39,7 @@ import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
+import { shortStationLabel } from "./shortStationLabel.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -191,6 +194,9 @@ export class App {
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
+    if (typeof matchMedia === "function") {
+      matchMedia("(max-width: 600px)").addEventListener("change", () => this.renderStationSelect());
+    }
     const wanted = params.get("station");
     const entry = this.s.entries.find((e) => e.key === wanted) ?? this.s.entries.find((e) => !e.synthetic) ?? this.s.entries[0]!;
     await this.openStation(entry, params.get("from"), params.get("to"));
@@ -217,6 +223,7 @@ export class App {
     });
     this.ui.langBtn.addEventListener("click", () => {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
+      this.renderStationSelect();
       this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
       this.interactionPrompt.refresh();
@@ -352,12 +359,18 @@ export class App {
   // ---- Station ---------------------------------------------------------------------
 
   private renderStationSelect(): void {
+    const selected = this.ui.stationSelect.value;
+    const isPhone = typeof matchMedia === "function" && matchMedia("(max-width: 600px)").matches;
     this.ui.stationSelect.innerHTML = "";
     for (const e of this.s.entries) {
-      const o = el("option", undefined, e.synthetic ? `⚠ ${e.label}` : e.label);
+      const fullLabel = e.synthetic ? `⚠ ${e.label}` : e.label;
+      const shortLabel = shortStationLabel(e.label, this.s.lang);
+      const o = el("option", undefined, e.synthetic ? `⚠ ${isPhone ? shortLabel : e.label}` : isPhone ? shortLabel : e.label);
       o.value = e.key;
+      o.title = fullLabel;
       this.ui.stationSelect.append(o);
     }
+    this.ui.stationSelect.value = selected;
   }
 
   private openGeneration = 0;
@@ -1485,7 +1498,7 @@ export class App {
     this.jumpPin = null;
     this.arrived = false;
     this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
-    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : []);
   }
 
   /** Per guide run: where each instruction starts (m), the first one the guide shows, and how far the guide has got. */
@@ -1799,6 +1812,7 @@ export class App {
   private exposeTestHooks(): void {
     (window as unknown as { __gteki: unknown }).__gteki = {
       version: "gteki.web/0.1",
+      scanProbe: () => ({ explorer: this.explorer, castAll, prepareRayTrees }),
       stations: () => this.s.entries.map((e) => ({ key: e.key, label: e.label, synthetic: e.synthetic })),
       openStation: (key: string) => { const e = this.s.entries.find((x) => x.key === key); return e ? this.openStation(e) : Promise.reject(new Error(`no station ${key}`)); },
       setOrigin: (poiId: string) => { const p = this.s.loaded?.bundle.pois.find((x) => x.id === poiId); if (p) this.setOrigin({ kind: "poi", poi: p }); return Boolean(p); },

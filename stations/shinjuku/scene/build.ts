@@ -1441,10 +1441,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const carLen = 16.3;
     const shape = new THREE.Shape();
     const w = 2.48;
-    const h = 3.05;
-    const r = 0.45;
-    shape.moveTo(-w / 2, 0.25);
-    shape.lineTo(w / 2, 0.25);
+    const h = 2.39;
+    const r = 0.3;
+    shape.moveTo(-w / 2, -0.25);
+    shape.lineTo(w / 2, -0.25);
     shape.lineTo(w / 2, h - r);
     shape.quadraticCurveTo(w / 2, h, w / 2 - r, h);
     shape.lineTo(-w / 2 + r, h);
@@ -1452,13 +1452,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     shape.closePath();
     const body = track(new THREE.ExtrudeGeometry(shape, { depth: carLen, bevelEnabled: false, curveSegments: 6 }));
     body.translate(0, 0, -carLen / 2);
-    const windowBand = track(new THREE.BoxGeometry(w + 0.02, 0.85, carLen - 1.2));
-    windowBand.translate(0, 1.75, 0);
+    const windowBand = track(new THREE.BoxGeometry(w + 0.02, 0.65, carLen - 1.2));
+    windowBand.translate(0, 1.745, 0);
     const stripe = track(new THREE.BoxGeometry(w + 0.03, 0.12, carLen - 0.4));
     stripe.translate(0, 1.18, 0);
-    const doorGeo = track(merged([-DOOR_PITCH, 0, DOOR_PITCH].map((z) => new THREE.BoxGeometry(w + 0.025, 1.85, 1.3).translate(0, 1.18, z)))!);
-    const skirt = track(new THREE.BoxGeometry(w - 0.1, 0.45, carLen - 0.6));
-    skirt.translate(0, 0.2, 0);
+    const doorGeo = track(merged([-DOOR_PITCH, 0, DOOR_PITCH].map((z) => new THREE.BoxGeometry(w + 0.025, 1.8, 1.3).translate(0, 1.155, z)))!);
+    const skirt = track(new THREE.BoxGeometry(w - 0.1, 0.205, carLen - 0.6));
+    skirt.translate(0, -0.3525, 0);
     for (let i = 0; i < n; i++) {
       const car = new THREE.Group();
       car.visible = false;
@@ -2177,6 +2177,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     const group = new THREE.Group();
     group.name = `sign:${n.id}`;
     const center = { x: n.position.x, y: n.position.y, z: lv.ceilingZ - 0.55 };
+    group.position.set(center.x, center.z, -center.y);
     for (const facing of [axis, { x: -axis.x, y: -axis.y }]) {
       faceDrafts.push({ floorId: lv.floorId, center: { x: center.x + facing.x * 0.04, y: center.y + facing.y * 0.04, z: center.z }, facing, lines: makeFace({ x: -facing.x, y: -facing.y }) });
     }
@@ -2189,7 +2190,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
       rod.translate(center.x + off.x, center.z + 0.45, -(center.y + off.y));
       rodGeos.push(rod);
     }
-    group.userData = { nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
+    group.userData = { signHalfWidthX: -axis.y * 0.95, signHalfWidthZ: -axis.x * 0.95, signHalfHeight: (1.9 / 8) * valid.length / 2, nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
     root.add(group);
     out.push(group);
     placed.push({ x: n.position.x, y: n.position.y, z });

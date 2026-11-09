@@ -91,6 +91,7 @@ playCatMeow	function	apps/web/src/explorer/catSound.ts
 playPawStep	function	apps/web/src/explorer/catSound.ts
 contactShadow	function	apps/web/src/explorer/contactShadow.ts
 pawShadowState	function	apps/web/src/explorer/contactShadow.ts
+placePawShadows	function	apps/web/src/explorer/contactShadow.ts
 CutRecipe	interface	apps/web/src/explorer/cutRecipe.ts
 MeshRecord	interface	apps/web/src/explorer/cutRecipe.ts
 RECIPE_VERSION	const	apps/web/src/explorer/cutRecipe.ts
@@ -136,6 +137,7 @@ fadeHold	function	apps/web/src/explorer/followCamera.ts
 followBoom	function	apps/web/src/explorer/followCamera.ts
 followDistance	function	apps/web/src/explorer/followCamera.ts
 followPose	function	apps/web/src/explorer/followCamera.ts
+guideSignInView	function	apps/web/src/explorer/followCamera.ts
 patchCameraHold	function	apps/web/src/explorer/followCamera.ts
 raisedBack	function	apps/web/src/explorer/followCamera.ts
 solveRaisedBoom	function	apps/web/src/explorer/followCamera.ts
@@ -277,6 +279,7 @@ DeclutterOptions	interface	apps/web/src/explorer/labelDeclutter.ts
 LABEL_CLASS	const	apps/web/src/explorer/labelDeclutter.ts
 LABEL_FONT_PX	const	apps/web/src/explorer/labelDeclutter.ts
 LabelClass	type	apps/web/src/explorer/labelDeclutter.ts
+containmentShift	function	apps/web/src/explorer/labelDeclutter.ts
 declutter	function	apps/web/src/explorer/labelDeclutter.ts
 estimateLabelBox	function	apps/web/src/explorer/labelDeclutter.ts
 labelClass	function	apps/web/src/explorer/labelDeclutter.ts
@@ -307,6 +310,12 @@ cacheBvh	function	apps/web/src/explorer/meshBvh.ts
 currentBvh	function	apps/web/src/explorer/meshBvh.ts
 prepareRayTrees	function	apps/web/src/explorer/meshBvh.ts
 raycastObject	function	apps/web/src/explorer/meshBvh.ts
+FaceEligibility	type	apps/web/src/explorer/minimapYield.ts
+YieldRect	type	apps/web/src/explorer/minimapYield.ts
+YieldState	type	apps/web/src/explorer/minimapYield.ts
+faceEligible	function	apps/web/src/explorer/minimapYield.ts
+insideCameraCut	function	apps/web/src/explorer/minimapYield.ts
+minimapYield	function	apps/web/src/explorer/minimapYield.ts
 OccludedLineStyle	interface	apps/web/src/explorer/occludedLine.ts
 occludedLineStyle	function	apps/web/src/explorer/occludedLine.ts
 Aabb	interface	apps/web/src/explorer/overviewFraming.ts
@@ -622,6 +631,7 @@ RailDemoLink	interface	apps/web/src/ui/railTravel.ts
 RailStationKey	type	apps/web/src/ui/railTravel.ts
 railDemoLink	function	apps/web/src/ui/railTravel.ts
 railStationName	function	apps/web/src/ui/railTravel.ts
+shortStationLabel	function	apps/web/src/ui/shortStationLabel.ts
 SpawnOrigin	type	apps/web/src/ui/spawnHeading.ts
 spawnHeading	function	apps/web/src/ui/spawnHeading.ts
 printedFloor	function	apps/web/src/ui/tenantDisplay.ts

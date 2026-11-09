@@ -1,6 +1,7 @@
 """Derive overhead wayfinding signs from the verified graph.
 
     python3 -I stations/ikebukuro/pipeline/build_signage.py
+    python3 -I stations/ikebukuro/pipeline/build_signage.py --check
 
 For each junction (degree >= 2 that is not an exit) and each incident verified
 edge, list the routable POIs whose shortest path from that junction leaves
@@ -29,7 +30,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from floorquery import CELL, Surfaces, _inside  # noqa: E402
-from build_station import wall_segments, write_json  # noqa: E402
+from build_station import json_text, wall_segments, write_json  # noqa: E402
 from sign_sightlines import Sightlines, placement_sign  # noqa: E402
 
 CLEAR_BELOW_SIGN = 2.25  # m above walking surface
@@ -419,6 +420,10 @@ def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest, sight):
 
 
 def main():
+    check = "--check" in sys.argv[1:]
+    if check and not os.path.exists(os.path.join(ROOT, "build", "ubld_enu.json")):
+        print("missing build/ubld_enu.json: run fetch_sources.sh and extract_plateau_ubld.py", file=sys.stderr)
+        return 2
     graph = json.load(open(os.path.join(ROOT, "gteki", "graph.json")))
     pois = json.load(open(os.path.join(ROOT, "gteki", "pois.json")))["pois"]
     enu = json.load(open(os.path.join(ROOT, "build", "ubld_enu.json")))
@@ -558,9 +563,16 @@ def main():
             if blocked:
                 print(f"blocked: {sign['id']} {face}: {json.dumps(blocked[:3])}")
     out = os.path.join(ROOT, "scene", "signage.json")
-    write_json(out, {"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs}, indent=1)
+    data = {"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs}
+    if check:
+        if not os.path.exists(out) or open(out).read() != json_text(data, indent=1):
+            print("signage.json drift: run python3 -I stations/ikebukuro/pipeline/build_signage.py", file=sys.stderr)
+            return 1
+    else:
+        write_json(out, data, indent=1)
     print(f"{len(signs)} signs -> {out}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
