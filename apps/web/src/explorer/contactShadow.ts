@@ -23,3 +23,8 @@ export function contactShadow(radiusM = 0.5, opacity = 0.42): THREE.Mesh<THREE.P
   mesh.name = "contact-shadow";
   return mesh;
 }
+
+/** Opacity of a paw contact shadow at its height above the avatar floor. */
+export function pawShadowState(pawWorldY: number, floorY: number): number {
+  return 0.5 * Math.max(0, Math.min(1, (0.06 - (pawWorldY - floorY)) / 0.05));
+}
