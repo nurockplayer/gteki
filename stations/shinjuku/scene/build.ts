@@ -1225,7 +1225,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const planeGeo = merged(planeGeos);
     if (planeGeo) root.add(new THREE.Mesh(track(planeGeo), mat.portal));
     const signGeo = merged(signGeos);
-    if (signGeo) root.add(new THREE.Mesh(track(signGeo), signMat));
+    if (signGeo) {
+      const signMesh = new THREE.Mesh(track(signGeo), signMat);
+      // Coplanar with the veil, so it must draw after it.
+      signMesh.renderOrder = 1;
+      root.add(signMesh);
+    }
   }
 
   // ---- street level around surface exits (minimal, non-authoritative)
