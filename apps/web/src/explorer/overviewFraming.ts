@@ -95,6 +95,10 @@ export interface ViewRect { x: number; y: number; w: number; h: number }
  * the better of the area left of it or below it (short side first, then area).
  */
 export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | null, bottomInsetPx = 0, corner: ViewRect | null = null): ViewRect {
+  return freeAreas(viewport, panel, bottomInsetPx, corner)[0]!;
+}
+
+export function freeAreas(viewport: { w: number; h: number }, panel: ViewRect | null, bottomInsetPx = 0, corner: ViewRect | null = null): ViewRect[] {
   // The strip blocks the whole width, so the usable canvas simply ends above it.
   const h = Math.max(1, viewport.h - Math.max(0, bottomInsetPx));
   const full: ViewRect = { x: 0, y: 0, w: viewport.w, h };
@@ -124,13 +128,15 @@ export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | n
     const x0 = Math.max(0, corner.x), y0 = Math.max(0, corner.y);
     const x1 = Math.min(viewport.w, corner.x + corner.w), y1 = Math.min(h, corner.y + corner.h);
     if (x1 > x0 && y1 > y0 && x0 < best.x + best.w && x1 > best.x && y0 < best.y + best.h && y1 > best.y) {
-      best = pick([
+      const candidates = [
         { ...best, w: Math.max(0, x0 - best.x) },
         { ...best, y: y1, h: Math.max(0, best.y + best.h - y1) },
-      ], best);
+      ];
+      const chosen = pick(candidates, best);
+      return [chosen, ...candidates.filter((c) => c !== chosen && c.w > 0 && c.h > 0)];
     }
   }
-  return best;
+  return [best];
 }
 
 

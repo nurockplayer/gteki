@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { FOLLOW, followPose } from "./followCamera.ts";
 
 export interface FramingBoard {
+  id?: string;
   centre: THREE.Vector3;
   front: THREE.Vector3;
   blocked: boolean;
@@ -23,7 +24,7 @@ export const IDENTITY_RANGE_M = 30;
 export const LOOK_PITCH = { min: -1.1, max: 0.5 } as const;
 
 /** Pure placement: choose a nearby readable board and frame its name at the follow lens. */
-export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number, boards: readonly FramingBoard[], aspect: number, fovDeg: number, guideHeading?: number, free: NdcRect = { x0: -1, y0: -1, x1: 1, y1: 1 }, rig: FramingRig = { shoulder: FOLLOW.shoulder, lift: FOLLOW.lift, drop: FOLLOW.drop, distance: FOLLOW.defaultDistance }): { yaw: number; pitch: number; centre: THREE.Vector3 } | null {
+export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number, boards: readonly FramingBoard[], aspect: number, fovDeg: number, guideHeading?: number, free: NdcRect = { x0: -1, y0: -1, x1: 1, y1: 1 }, rig: FramingRig = { shoulder: FOLLOW.shoulder, lift: FOLLOW.lift, drop: FOLLOW.drop, distance: FOLLOW.defaultDistance }, trace?: (board: FramingBoard, reason: string) => void): { yaw: number; pitch: number; centre: THREE.Vector3 } | null {
   const camera = new THREE.PerspectiveCamera(fovDeg, aspect, 0.05, 100);
   const tanV = Math.tan(THREE.MathUtils.degToRad(fovDeg / 2)), tanH = tanV * camera.aspect;
   const left = Math.max(-1, free.x0), right = Math.min(1, free.x1);
@@ -37,9 +38,11 @@ export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number
   const candidates = boards.slice().sort((a, b) => head.distanceToSquared(a.centre) - head.distanceToSquared(b.centre));
   for (const board of candidates) {
     const toward = board.centre.clone().sub(head), distance = toward.length();
-    if (board.blocked || distance > IDENTITY_RANGE_M || distance < 0.1 || board.front.dot(toward.clone().negate().normalize()) <= 0.2) continue;
+    if (board.blocked) { trace?.(board, "blocked"); continue; }
+    if (distance > IDENTITY_RANGE_M || distance < 0.1) { trace?.(board, "range"); continue; }
+    if (board.front.dot(toward.clone().negate().normalize()) <= 0.2) { trace?.(board, "facing"); continue; }
     let y = Math.atan2(-toward.x, -toward.z);
-    if (guideHeading !== undefined && Math.cos(y - guideHeading) < -1e-9) continue;
+    if (guideHeading !== undefined && Math.cos(y - guideHeading) < -1e-9) { trace?.(board, "guide-heading"); continue; }
     let p = THREE.MathUtils.clamp(Math.atan2(toward.y, Math.hypot(toward.x, toward.z)), LOOK_PITCH.min, LOOK_PITCH.max);
     const project = () => {
       const pose = followPose(head, y, p, rig.shoulder, rig.lift, rig.drop);
@@ -55,19 +58,19 @@ export function identityFraming(head: THREE.Vector3, yaw: number, _pitch: number
       p = THREE.MathUtils.clamp(p + Math.atan((ndc.y - targetY) * tanV), LOOK_PITCH.min, LOOK_PITCH.max);
     }
     const ndc = project();
-    if (ndc.x < minX || ndc.x > maxX || ndc.y < bottom || ndc.y > top || Math.abs(ndc.z) > 1) continue;
+    if (ndc.x < minX || ndc.x > maxX || ndc.y < bottom || ndc.y > top || Math.abs(ndc.z) > 1) { trace?.(board, "centre-outside-free"); continue; }
     const name = board.nameCorners.map((p) => p.clone().project(camera));
-    if (!name.length || name.some((p) => Math.abs(p.z) > 1)) continue;
+    if (!name.length || name.some((p) => Math.abs(p.z) > 1)) { trace?.(board, "name-behind-camera"); continue; }
     const nameBox = new THREE.Box3().setFromPoints(name);
     if (nameBox.max.y - nameBox.min.y > MAX_NAME_HEIGHT_NDC ||
-      nameBox.min.x < left || nameBox.max.x > right || nameBox.min.y < freeBottom || nameBox.max.y > freeTop) continue;
+      nameBox.min.x < left || nameBox.max.x > right || nameBox.min.y < freeBottom || nameBox.max.y > freeTop) { trace?.(board, "name-box"); continue; }
     if (rig.body?.some((point) => {
       const p = point.clone().project(camera);
       return Math.abs(p.z) > 1 || p.x < left || p.x > right || p.y < freeBottom || p.y > freeTop;
-    })) continue;
-    if (rig.clear && !rig.clear(camera.position.clone(), followPose(head, y, p, rig.shoulder, rig.lift, rig.drop).pivot)) continue;
-    if (board.front.dot(camera.position.clone().sub(board.centre).normalize()) <= 0.2) continue;
-    if (board.visible && !board.visible(camera.position.clone(), board.centre.clone())) continue;
+    })) { trace?.(board, "body-outside-free"); continue; }
+    if (rig.clear && !rig.clear(camera.position.clone(), followPose(head, y, p, rig.shoulder, rig.lift, rig.drop).pivot)) { trace?.(board, "rig-not-clear"); continue; }
+    if (board.front.dot(camera.position.clone().sub(board.centre).normalize()) <= 0.2) { trace?.(board, "camera-behind-board"); continue; }
+    if (board.visible && !board.visible(camera.position.clone(), board.centre.clone())) { trace?.(board, "occluded"); continue; }
     // Keep yaw continuous around the current camera heading.
     return { yaw: yaw + Math.atan2(Math.sin(y - yaw), Math.cos(y - yaw)), pitch: p, centre: board.centre };
   }
