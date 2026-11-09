@@ -12,10 +12,13 @@ describe("identity tags", () => {
     face.position.z = 0.01; face.userData.gteki_role = "sign";
     const elsewhere = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.01), new THREE.MeshBasicMaterial());
     elsewhere.position.x = 5; elsewhere.userData.gteki_role = "sign";
-    parent.add(board, face, elsewhere); parent.updateMatrixWorld(true);
+    const mergedBatch = new THREE.Mesh(new THREE.BoxGeometry(14, 1, 0.01), new THREE.MeshBasicMaterial());
+    mergedBatch.position.set(0, 0, -1); mergedBatch.userData.gteki_role = "sign";
+    parent.add(board, face, elsewhere, mergedBatch); parent.updateMatrixWorld(true);
     const taggedBoard = parseIdentityBoard(board)!;
     expect(identityBoardObjects(taggedBoard, [taggedBoard])).toContain(face);
     expect(identityBoardObjects(taggedBoard, [taggedBoard])).not.toContain(elsewhere);
+    expect(identityBoardObjects(taggedBoard, [taggedBoard])).not.toContain(mergedBatch);
 
     const proxyParent = new THREE.Group();
     const proxy = new THREE.Object3D();

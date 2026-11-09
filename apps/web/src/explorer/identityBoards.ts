@@ -70,7 +70,8 @@ export function identityBoardObjects(board: IdentityBoard, boards: readonly Iden
   const untaggedFaces: THREE.Object3D[] = [];
   board.object.parent?.children.forEach((o) => {
     if (o.userData.gteki_role !== "sign" || o.userData.gteki_identity !== undefined) return;
-    if (nameBounds.intersectsBox(new THREE.Box3().setFromObject(o))) untaggedFaces.push(o);
+    const faceBounds = new THREE.Box3().setFromObject(o);
+    if (!faceBounds.isEmpty() && nameBounds.containsBox(faceBounds)) untaggedFaces.push(o);
   });
   return [...new Set([...tagged, ...untaggedFaces])];
 }
