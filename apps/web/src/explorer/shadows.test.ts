@@ -89,6 +89,16 @@ describe("applyStationShadows", () => {
     expect(r).toMatchObject({ casters: 1, receivers: 1, candidates: [{ mesh: hidden }] });
   });
 
+  it("never masks a dynamic mesh by its attach-time box (train instances move after attach)", () => {
+    const train = box(undefined, [0, 50, 0]);
+    train.visible = false;
+    train.userData.gteki_shadow = "dynamic";
+    const r = applyStationShadows(rootOf(train), "high", "default", 0);
+    expect(train.castShadow).toBe(true);
+    expect(r.candidates[0]!.minY).toBe(-Infinity);
+    expect(r.bounds.isEmpty()).toBe(true);
+  });
+
   it("leaves transparent meshes and unlit receivers alone", () => {
     const glass = box(new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.4 }));
     const basic = box(new THREE.MeshBasicMaterial());

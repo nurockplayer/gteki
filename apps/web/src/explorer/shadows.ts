@@ -105,7 +105,9 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
       m.castShadow = false;
       if (f.receive) m.receiveShadow = true;
       if (m.receiveShadow) out.receivers++;
-      const hasBox = (casts || m.receiveShadow) && meshWorldBox(m, box);
+      // A dynamic mesh moves after attach (its attach-time box is wrong), so it neither widens the fit nor is masked
+      // by level: minY -Infinity always casts, and one on a level below only shades that level, out of view.
+      const hasBox = !dynamic && (casts || m.receiveShadow) && meshWorldBox(m, box);
       if (hasBox) out.bounds.union(box);
       if (casts) {
         out.candidates.push({ mesh: m, minY: hasBox ? box.min.y : -Infinity, maxY: hasBox ? box.max.y : -Infinity });
