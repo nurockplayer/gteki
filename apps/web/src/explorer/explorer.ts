@@ -47,7 +47,7 @@ import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelec
 import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 import { catTapHit } from "./catMeow.ts";
 import { advancePaws, pawSurface, playCatMeow, playPawStep } from "./catSound.ts";
-import { contactShadow } from "./contactShadow.ts";
+import { contactShadow, pawShadowState } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
@@ -315,7 +315,8 @@ export class Explorer {
   private avatarRig: AvatarSelection | null = null;
   /** Cat protagonist: lower follow pivot, shorter boom and a smaller marker ring. */
   private catAvatar: boolean;
-  private avatarMarker: [THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>, THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>] | null = null;
+  private avatarMarker: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] | null = null;
+  private pawShadows: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[] = [];
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private catBodyPitch = 0;
@@ -1050,6 +1051,7 @@ export class Explorer {
         mesh.material.dispose();
       }
       this.avatarMarker = null;
+      this.pawShadows = [];
     }
     if (this.quality === "high") {
       // A slim marker ring keeps "this is you" readable without outshining the character.
@@ -1057,7 +1059,8 @@ export class Explorer {
       const outer = this.catAvatar ? 0.33 : 0.5;
       const ring = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
       ring.position.y = 0.02;
-      this.avatarMarker = [contactShadow(this.catAvatar ? 0.28 : 0.42), ring];
+      this.pawShadows = this.catAvatar ? Array.from({ length: 4 }, () => contactShadow(0.055, 0)) : [];
+      this.avatarMarker = [this.catAvatar ? contactShadow(0.3, 0.28) : contactShadow(0.42), ring, ...this.pawShadows];
       this.avatar.add(...this.avatarMarker);
     }
   }
@@ -1657,6 +1660,10 @@ export class Explorer {
     if (walkRibbon) walkRibbon.visible = mode !== "overview";
     const overviewRibbon = this.routeGroup.getObjectByName("route-ribbon-overview");
     if (overviewRibbon) overviewRibbon.visible = mode === "overview";
+    const routeGlow = this.routeGroup.getObjectByName("route-glow");
+    if (routeGlow) routeGlow.visible = mode === "overview";
+    const routeGlowOccluded = this.routeGroup.getObjectByName("route-glow-occluded");
+    if (routeGlowOccluded) routeGlowOccluded.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -1970,6 +1977,9 @@ export class Explorer {
     this.trackOverlay(this.routeLines.occluded);
     this.routeLines.setXray(this.mode === "overview");
     const glow = this.routeLines.lines(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0.12, 0)))), 6);
+    glow[0]!.name = "route-glow-occluded";
+    glow[1]!.name = "route-glow";
+    for (const line of glow) line.visible = this.mode === "overview";
     // Symbolic (unknown) heights are drawn dashed above the ribbon so they read as approximate.
     const symbolic = polyline.some((p) => !p.zKnown);
     // X-ray copy so the route stays readable through ceilings/slabs in overview.
@@ -2706,6 +2716,19 @@ export class Explorer {
     if (state.phase === "active" && state.nearId) {
       const target = this.interactionVisuals?.get(state.nearId);
       if (target) this.avatar.rotation.y = Math.atan2(this.pos.x - target.position.x, this.pos.z - target.position.z);
+    }
+    if (this.pawShadows.length && this.avatarRig) {
+      const position = new THREE.Vector3();
+      const names = ["forepaw_L", "forepaw_R", "hindpaw_L", "hindpaw_R"];
+      for (let i = 0; i < this.pawShadows.length; i++) {
+        const shadow = this.pawShadows[i]!;
+        const paw = this.avatarRig.root.getObjectByName(names[i]!);
+        if (!paw) continue;
+        paw.getWorldPosition(position);
+        shadow.material.opacity = pawShadowState(position.y, this.pos.y);
+        this.avatar.worldToLocal(position);
+        shadow.position.set(position.x, 0.012, position.z);
+      }
     }
     this.updateShadows();
   }

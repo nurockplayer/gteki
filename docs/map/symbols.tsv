@@ -90,6 +90,7 @@ pawSurface	function	apps/web/src/explorer/catSound.ts
 playCatMeow	function	apps/web/src/explorer/catSound.ts
 playPawStep	function	apps/web/src/explorer/catSound.ts
 contactShadow	function	apps/web/src/explorer/contactShadow.ts
+pawShadowState	function	apps/web/src/explorer/contactShadow.ts
 CutRecipe	interface	apps/web/src/explorer/cutRecipe.ts
 MeshRecord	interface	apps/web/src/explorer/cutRecipe.ts
 RECIPE_VERSION	const	apps/web/src/explorer/cutRecipe.ts
