@@ -10,6 +10,8 @@ esac; done
 [[ $smoke == 0 || $suite == test ]] || exit 2
 out=.qa/bench-613; ((smoke)) && out=.qa/bench-613-smoke
 mkdir -p "$out"
+# orb-test stops the VM after each run, so the next variant must start it before asking Docker about the image.
+for _ in 1 2 3 4 5 6; do docker info >/dev/null 2>&1 && break; orbctl start >/dev/null 2>&1; sleep 10; done
 digest=$(docker image inspect "gteki-bench:$variant" --format '{{.Id}}')
 for ((rep=1; rep<=reps; rep++)); do
   if [[ -f $out/runs.jsonl ]] && jq -e --arg s "$suite" --arg v "$variant" --argjson r "$rep" 'select(.suite==$s and .variant==$v and .rep==$r)' "$out/runs.jsonl" >/dev/null; then echo "skip $variant $suite $rep"; continue; fi
@@ -23,7 +25,7 @@ for ((rep=1; rep<=reps; rep++)); do
   if [[ ${BENCH_CONCURRENT_HEAVY:-} =~ ^[01]$ ]]; then concurrent=$BENCH_CONCURRENT_HEAVY; elif grep -q $'^running\t' <<< "$status"; then concurrent=1; fi
   memory=3g; cpus=4; [[ $suite == box ]] && { memory=2g; cpus=2; }
   opts=(); ((heavy)) && opts+=(--heavy)
-  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" \
+  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" --env "BENCH_FILES=${BENCH_FILES:-}" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" \
     || { code=$?; echo "rep $rep of $variant/$suite failed (exit $code); continuing" >&2; failed=$code; }
 done
 exit "${failed:-0}"

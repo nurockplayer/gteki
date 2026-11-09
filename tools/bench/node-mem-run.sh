@@ -5,7 +5,7 @@ while (($#)); do case $1 in --suite) suite=$2 ;; --rep) rep=$2 ;; --variant) var
 [[ $suite =~ ^(test|heavy|box)$ && $rep =~ ^[1-9][0-9]*$ && $variant =~ ^(node24|node26|caged26)$ && $out == /w/* ]] || exit 2
 mkdir -p "$out"
 id="$variant-$suite-$rep"; export BENCH_HEAP_FILE="$out/$id.heap.jsonl"
-: > "$BENCH_HEAP_FILE"
+: > "$BENCH_HEAP_FILE"; rm -f "$out/$id.vitest.json"
 : > "$out/$id.procs.raw"
 for checkpoint in "$out/$id".heap.[0-9]*.json; do [[ -f $checkpoint ]] && rm -- "$checkpoint"; done
 export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--require /w/tools/bench/heap-probe.cjs"
@@ -48,6 +48,8 @@ rm -f "$stop"
 sampler=$!
 start=$(date +%s)
 args=(--reporter=default --reporter=json "--outputFile=$out/$id.vitest.json")
+# A reduced heavy run (#613 ruling 2026-10-29 23:1x JST) names its test files; space-separated, no globs.
+if [[ -n ${BENCH_FILES:-} ]]; then read -ra files <<< "$BENCH_FILES"; args=("${files[@]}" "${args[@]}"); fi
 if [[ ${BENCH_SMOKE:-0} == 1 ]]; then args=(tools/box-idle.test.mjs "${args[@]}"); fi
 case $suite in
  test) pnpm run test "${args[@]}" ; code=$? ;;
