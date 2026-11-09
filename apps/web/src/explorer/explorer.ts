@@ -2292,12 +2292,14 @@ export class Explorer {
     const { w: vw, h: vh } = this.viewSize;
     const items: DeclutterItem[] = [];
     const byId = new Map<string, PoiLabel>();
-    // The credit footer and the disclaimer badge are never text under a label (#838). Blocked chips stay out of
-    // the declutter itself, so the chip they would have beaten still gets its place.
-    const footers = [this.creditEl, this.legendEl]
+    // Keep chips off the top bar (#1072), credit footer and disclaimer badge (#838).
+    const host = this.host.getBoundingClientRect();
+    const blocked = [this.host.parentElement?.querySelector<HTMLElement>(".topbar"), this.creditEl, this.legendEl]
       .filter((el): el is HTMLElement => el != null && el.getClientRects().length > 0)
-      .map((el) => el.getBoundingClientRect());
-    const blocked = new Set<string>();
+      .map((el) => {
+        const q = el.getBoundingClientRect();
+        return { x0: q.left - host.left, y0: q.top - host.top, x1: q.right - host.left, y1: q.bottom - host.top };
+      });
     const p = new THREE.Vector3();
     for (const l of labels) {
       l.decluttered = false;
@@ -2310,9 +2312,8 @@ export class Explorer {
       if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
-      if (footers.some((q) => x - size.w / 2 < q.right && x + size.w / 2 > q.left && y - size.h / 2 < q.bottom && y + size.h / 2 > q.top)) blocked.add(l.poiId);
     }
-    const keep = declutter(items.filter((it) => !blocked.has(it.id)));
+    const keep = declutter(items, { blocked });
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
     // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.

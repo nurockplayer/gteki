@@ -26,6 +26,13 @@ describe("declutter", () => {
     expect([...declutter(items)].sort()).toEqual(["a", "b", "c"]);
   });
 
+  it("keeps every label class clear of UI rectangles without blocking other labels", () => {
+    const blocked = [{ x0: 0, y0: 0, x1: 200, y1: 40 }];
+    const items = [item("endpoint", 50, 30, { klass: LABEL_CLASS.endpoint }), item("exit", 50, 60, { klass: LABEL_CLASS.exit }), item("outside", 250, 30)];
+    expect([...declutter(items, { blocked })]).toEqual(["exit", "outside"]);
+    expect(declutter([item("touching", 50, 52)], { blocked }).has("touching")).toBe(true);
+  });
+
   it("drops the lower-priority label of an overlapping pair, whatever the input order", () => {
     const exit = item("z-exit", 10, 0, { klass: LABEL_CLASS.exit });
     const shop = item("a-shop", 0, 0);
