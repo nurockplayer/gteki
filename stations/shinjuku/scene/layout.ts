@@ -141,6 +141,8 @@ export interface LevelLayout {
 
 export interface Layout {
   levels: LevelLayout[];
+  /** Render-only wall pieces that close a corner the near-duplicate check left open; never collision, fences or navigation. */
+  cornerFills: (WallSeg & { level: string })[];
   runs: Run[];
   tactile: TactileLine[];
   gates: GateLine[];
@@ -633,7 +635,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
   for (const lv of levels) lv.slabs = cutWalkingSlabs(lv.slabs);
   const cutPads = cutWalkingSlabs(pads);
   const cutStreet = cutWalkingSlabs(streetPads);
-  const layout: Layout = { levels, runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips: cutWalkingSlabs(linkStrips), runWalls, soffits: [], shaftFinishes: [], shaftFascias: [], nodeZ, bounds: { min, max } };
+  const layout: Layout = { levels, cornerFills: [], runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips: cutWalkingSlabs(linkStrips), runWalls, soffits: [], shaftFinishes: [], shaftFascias: [], nodeZ, bounds: { min, max } };
   const elevatorLandings = bundle.nodes.filter((n) => n.kind === "elevator" && zOf(n.id) < -0.5).map((n) => ({ ...n.position, z: zOf(n.id) }));
   finishUnderground(layout, plan, [...segs, ...elevatorPassages], elevatorLandings, elevatorPassages);
   return layout;
@@ -751,38 +753,51 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       const p = lerp(a, b, i / count), q = lerp(a, b, (i + 1) / count), mid = lerp(p, q, 0.5);
       const minZ = Math.min(bottom(p), bottom(q)), maxZ = Math.min(streetUnderside, Math.max(top(p), top(q)));
       if (maxZ <= minZ + 0.015) continue;
-      let bands: [number, number][] = [[minZ, maxZ]];
-      if (skipExisting) for (const w of existing) {
-        if (w.finish === "fascia") continue;
-        const d = sub(w.b, w.a), l2 = d.x * d.x + d.y * d.y || 1;
-        const raw = ((mid.x - w.a.x) * d.x + (mid.y - w.a.y) * d.y) / l2;
-        const t = Math.max(0, Math.min(1, raw));
-        if (len(sub(mid, lerp(w.a, w.b, t))) >= 0.12) continue;
-        if (w.kind === "trackside") {
-          bands = [];
-          break;
+      const carveBands = (corners: boolean): [number, number][] => {
+        let bands: [number, number][] = [[minZ, maxZ]];
+        if (skipExisting) for (const w of existing) {
+          if (w.finish === "fascia") continue;
+          const d = sub(w.b, w.a), l2 = d.x * d.x + d.y * d.y || 1;
+          const raw = ((mid.x - w.a.x) * d.x + (mid.y - w.a.y) * d.y) / l2;
+          const t = Math.max(0, Math.min(1, raw));
+          if (len(sub(mid, lerp(w.a, w.b, t))) >= 0.12) continue;
+          if (w.kind === "trackside") {
+            bands = [];
+            break;
+          }
+          const piece = sub(q, p);
+          if (corners && (raw <= 0 || raw >= 1) && Math.abs(piece.x * d.x + piece.y * d.y) < Math.cos(20 * Math.PI / 180) * len(piece) * len(d)) continue;
+          bands = bands.flatMap(([lo, hi]): [number, number][] => hi <= w.zMin || lo >= w.zMax
+            ? [[lo, hi]]
+            : [[lo, Math.min(hi, w.zMin)], [Math.max(lo, w.zMax), hi]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
+          if (!bands.length) break;
         }
-        const piece = sub(q, p);
-        if (w.finish === "shaft" && (raw <= 0 || raw >= 1) && Math.abs(piece.x * d.x + piece.y * d.y) < Math.cos(20 * Math.PI / 180) * len(piece) * len(d)) continue;
-        bands = bands.flatMap(([lo, hi]): [number, number][] => hi <= w.zMin || lo >= w.zMax
-          ? [[lo, hi]]
-          : [[lo, Math.min(hi, w.zMin)], [Math.max(lo, w.zMax), hi]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
-        if (!bands.length) break;
+        if (!bands.length) return bands;
+        for (const s of nearbyPassages) {
+          if (s.maxX < Math.min(p.x, q.x) || s.minX > Math.max(p.x, q.x) || s.maxY < Math.min(p.y, q.y) || s.minY > Math.max(p.y, q.y) || s.maxZ <= minZ || s.minZ >= maxZ) continue;
+          const d = sub(s.b, s.a), l2 = d.x * d.x + d.y * d.y || 1;
+          const zs: number[] = [];
+          for (const f of [0, 0.5, 1]) {
+            const v = lerp(p, q, f);
+            const t = Math.max(0, Math.min(1, ((v.x - s.a.x) * d.x + (v.y - s.a.y) * d.y) / l2));
+            if (len(sub(v, lerp(s.a, s.b, t))) < 0.65) zs.push(s.a.z + (s.b.z - s.a.z) * t);
+          }
+          if (!zs.length) continue;
+          if (len(d) < 1e-8) zs.push(s.b.z); // elevator travel is a vertical opening
+          const lo = Math.min(...zs) - 0.6, hi = Math.max(...zs) + s.clearance;
+          bands = bands.flatMap(([a, b]): [number, number][] => b <= lo || a >= hi ? [[a, b]] : [[a, Math.min(b, lo)], [Math.max(a, hi), b]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
+        }
+        return bands;
+      };
+      const bands = carveBands(false);
+      let extra = carveBands(true);
+      for (const [lo, hi] of bands) {
+        extra = extra.flatMap(([a, b]): [number, number][] => b <= lo || a >= hi ? [[a, b]] : [[a, Math.min(b, lo)], [Math.max(a, hi), b]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
       }
-      if (!bands.length) continue;
-      for (const s of nearbyPassages) {
-        if (s.maxX < Math.min(p.x, q.x) || s.minX > Math.max(p.x, q.x) || s.maxY < Math.min(p.y, q.y) || s.minY > Math.max(p.y, q.y) || s.maxZ <= minZ || s.minZ >= maxZ) continue;
-        const d = sub(s.b, s.a), l2 = d.x * d.x + d.y * d.y || 1;
-        const zs: number[] = [];
-        for (const f of [0, 0.5, 1]) {
-          const v = lerp(p, q, f);
-          const t = Math.max(0, Math.min(1, ((v.x - s.a.x) * d.x + (v.y - s.a.y) * d.y) / l2));
-          if (len(sub(v, lerp(s.a, s.b, t))) < 0.65) zs.push(s.a.z + (s.b.z - s.a.z) * t);
-        }
-        if (!zs.length) continue;
-        if (len(d) < 1e-8) zs.push(s.b.z); // elevator travel is a vertical opening
-        const lo = Math.min(...zs) - 0.6, hi = Math.max(...zs) + s.clearance;
-        bands = bands.flatMap(([a, b]): [number, number][] => b <= lo || a >= hi ? [[a, b]] : [[a, Math.min(b, lo)], [Math.max(a, hi), b]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
+      for (const [lo, hi] of extra) {
+        const profile = { bottomA: Math.max(lo, bottom(p)), bottomB: Math.max(lo, bottom(q)), topA: Math.min(hi, top(p)), topB: Math.min(hi, top(q)) };
+        if (profile.topA <= profile.bottomA || profile.topB <= profile.bottomB) continue;
+        layout.cornerFills.push({ a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: bottom(p), b: bottom(q) }, level: lv.label });
       }
       for (const [lo, hi] of bands) {
         const profile = { bottomA: Math.max(lo, bottom(p)), bottomB: Math.max(lo, bottom(q)), topA: Math.min(hi, top(p)), topB: Math.min(hi, top(q)) };
