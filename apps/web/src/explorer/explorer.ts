@@ -448,7 +448,7 @@ export class Explorer {
   private minimapEl: HTMLElement | null = null;
   private minimapSigns: { mesh: THREE.Object3D; corners: THREE.Vector3[]; face: FaceEligibility }[] = [];
   private minimapSignRects: YieldRect[] = [];
-  private readonly minimapYieldState = { lastOverlap: -Infinity };
+  private minimapYieldState = { lastOverlap: -Infinity };
   private readonly minimapSignPoint = new THREE.Vector3();
   private readonly minimapSignDirection = new THREE.Vector3();
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
@@ -1460,7 +1460,7 @@ export class Explorer {
     this.signMeshes = new Set();
     this.minimapSigns = [];
     this.minimapSignRects = [];
-    this.minimapYieldState.lastOverlap = -Infinity;
+    this.minimapYieldState = { lastOverlap: -Infinity };
     if (this.minimapEl) delete this.minimapEl.dataset.yield;
     this.identityBoards = [];
     this.identityPlaced = false;
