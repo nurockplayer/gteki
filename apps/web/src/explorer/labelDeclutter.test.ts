@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DECLUTTER_HOLD_PX, DECLUTTER_PAD_PX, LABEL_CLASS, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem } from "./labelDeclutter.ts";
+import { DECLUTTER_HOLD_PX, DECLUTTER_PAD_PX, LABEL_CLASS, containmentShift, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem } from "./labelDeclutter.ts";
 
 const item = (id: string, x: number, y: number, over: Partial<DeclutterItem> = {}): DeclutterItem => ({
   id, x, y, w: 80, h: 24, klass: LABEL_CLASS.other, routable: true, ...over,
@@ -187,5 +187,13 @@ describe("revealedUnmeasured", () => {
     expect(revealedUnmeasured([hidden, front], declutter([hidden, front]))).toEqual([]);
     const measured = [a, b, c].map((i) => ({ ...i, measured: true }));
     expect(revealedUnmeasured(measured, declutter(measured))).toEqual([]);
+  });
+});
+
+describe("containmentShift", () => {
+  it("moves clipped chips to the margin and leaves fitting chips alone", () => {
+    expect(containmentShift(-17, 309, 412)).toBe(25);
+    expect(containmentShift(20, 100, 412)).toBe(0);
+    expect(containmentShift(-17, 500, 412)).toBe(25);
   });
 });
