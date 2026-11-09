@@ -623,6 +623,7 @@ RailDemoLink	interface	apps/web/src/ui/railTravel.ts
 RailStationKey	type	apps/web/src/ui/railTravel.ts
 railDemoLink	function	apps/web/src/ui/railTravel.ts
 railStationName	function	apps/web/src/ui/railTravel.ts
+shortStationLabel	function	apps/web/src/ui/shortStationLabel.ts
 SpawnOrigin	type	apps/web/src/ui/spawnHeading.ts
 spawnHeading	function	apps/web/src/ui/spawnHeading.ts
 printedFloor	function	apps/web/src/ui/tenantDisplay.ts
