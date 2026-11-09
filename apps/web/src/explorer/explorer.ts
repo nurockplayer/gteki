@@ -2924,8 +2924,8 @@ export class Explorer {
   }
 
   private setCameraFocus(p: THREE.Vector3 | null, sign: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null): void {
-    const changed = (a: THREE.Vector3 | null, b: THREE.Vector3 | null) =>
-      a === null || b === null ? a !== b : a.distanceToSquared(b) > 0.05 * 0.05;
+    const changed = (a: THREE.Vector3 | null | undefined, b: THREE.Vector3 | null) =>
+      a == null || b == null ? (a ?? null) !== b : a.distanceToSquared(b) > 0.05 * 0.05;
     if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign) return;
     this.cameraFocus = p ? (this.cameraFocus ?? new THREE.Vector3()).copy(p) : null;
     this.cameraSignFocus = sign;
@@ -3014,9 +3014,9 @@ export class Explorer {
     }
     if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
     this.camera.lookAt(pose.target);
-    const nextSign = this.mode === "guide" && this.guide ? this.guideSigns.find((sign) => sign.s >= this.guide!.s) : undefined;
+    const nextSign = this.mode === "guide" && this.guide ? this.guideSigns?.find((sign) => sign.s >= this.guide!.s) : undefined;
     const forward = this.camera.getWorldDirection(new THREE.Vector3());
-    const sign = nextSign && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
+    const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
     this.setCameraFocus(pose.target, sign);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
