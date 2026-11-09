@@ -58,13 +58,21 @@ export function withinObject(object: THREE.Object3D, root: THREE.Object3D): bool
 
 /** Same physical board: sibling faces with overlapping world bounds or names <id> and <id>:back. */
 export function identityBoardObjects(board: IdentityBoard, boards: readonly IdentityBoard[]): THREE.Object3D[] {
+  board.object.updateWorldMatrix(true, true);
   const bounds = new THREE.Box3().setFromObject(board.object);
   const faceId = (o: THREE.Object3D) => o.name.replace(/:back$/, "");
-  return boards.filter((b) => b === board ||
+  const tagged = boards.filter((b) => b === board ||
     (board.object.parent !== null && b.object.parent === board.object.parent &&
       (bounds.intersectsBox(new THREE.Box3().setFromObject(b.object)) ||
         (b.object.name !== board.object.name && !!faceId(board.object) && faceId(b.object) === faceId(board.object)))))
     .map((b) => b.object);
+  const nameBounds = new THREE.Box3().setFromPoints(identityNameCorners(board)).expandByScalar(0.01);
+  const untaggedFaces: THREE.Object3D[] = [];
+  board.object.parent?.children.forEach((o) => {
+    if (o.userData.gteki_role !== "sign" || o.userData.gteki_identity !== undefined) return;
+    if (nameBounds.intersectsBox(new THREE.Box3().setFromObject(o))) untaggedFaces.push(o);
+  });
+  return [...new Set([...tagged, ...untaggedFaces])];
 }
 
 /** World-space corners of every name region; arrows do not affect framing size. */
