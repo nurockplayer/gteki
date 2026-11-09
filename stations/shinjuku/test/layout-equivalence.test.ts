@@ -21,6 +21,9 @@ describe("layout equivalence", () => {
   }, 60_000);
   it("preserves the pre-optimization physical layout at millimetre precision", () => {
     // #789 intentionally repairs eight display rises; preserve that physical layout.
-    expect(digest).toBe("ce580bc8e83292a7c49faf07a52fec11fc03065a5771e2b79eb7d97c4c0a00f0");
+    // #1000 carries the shell of the three shafts with a near-street landing (c3fe6342
+    // at -1.6, 636c6fc9 and 0564105d at -1.68) up to their own roofs, and (fix 1) cuts
+    // that shell only where a passage crosses it; only those walls move.
+    expect(digest).toBe("5a259b259ac3d9acf1c28889e2a5d2488f4183031c3756b810b42d23787cde63");
   });
 });

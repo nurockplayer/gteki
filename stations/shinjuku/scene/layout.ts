@@ -739,17 +739,19 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
 
   // Split only new walls; preserve all existing source wall/railing openings. Each kept piece
   // has the same conservative z band in collision and the rendered trapezoid fits inside it.
-  const addWall = (lv: LevelLayout, a: XY, b: XY, bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false) => {
+  // A passage inside the same shaft, parallel to a face, is part of the enclosed
+  // volume and must not open a doorway through its own wall.
+  const addWall = (lv: LevelLayout, a: XY, b: XY, bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false, cap: (p: XY) => number = () => streetUnderside, inside?: (p: XY) => boolean) => {
     const count = Math.max(1, Math.ceil(len(sub(b, a)) / 0.4));
     const minX = Math.min(a.x, b.x), maxX = Math.max(a.x, b.x), minY = Math.min(a.y, b.y), maxY = Math.max(a.y, b.y);
-    const wallMinZ = Math.min(bottom(a), bottom(b)), wallMaxZ = Math.min(streetUnderside, Math.max(top(a), top(b)));
+    const wallMinZ = Math.min(bottom(a), bottom(b)), wallMaxZ = Math.min(Math.max(cap(a), cap(b)), Math.max(top(a), top(b)));
     const nearbyPassages = boundedPassages.filter((s) => s.maxX >= minX && s.minX <= maxX && s.maxY >= minY && s.minY <= maxY && s.maxZ > wallMinZ && s.minZ < wallMaxZ);
     const existing = skipExisting ? lv.walls.filter((w) => w.finish !== "fascia" &&
       Math.max(w.a.x, w.b.x) + 0.12 >= minX && Math.min(w.a.x, w.b.x) - 0.12 <= maxX &&
       Math.max(w.a.y, w.b.y) + 0.12 >= minY && Math.min(w.a.y, w.b.y) - 0.12 <= maxY) : [];
     for (let i = 0; i < count; i++) {
       const p = lerp(a, b, i / count), q = lerp(a, b, (i + 1) / count), mid = lerp(p, q, 0.5);
-      const minZ = Math.min(bottom(p), bottom(q)), maxZ = Math.min(streetUnderside, Math.max(top(p), top(q)));
+      const minZ = Math.min(bottom(p), bottom(q)), maxZ = Math.min(Math.max(cap(p), cap(q)), Math.max(top(p), top(q)));
       if (maxZ <= minZ + 0.015) continue;
       let bands: [number, number][] = [[minZ, maxZ]];
       if (skipExisting) for (const w of existing) {
@@ -769,6 +771,15 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       if (!bands.length) continue;
       for (const s of nearbyPassages) {
         if (s.maxX < Math.min(p.x, q.x) || s.minX > Math.max(p.x, q.x) || s.maxY < Math.min(p.y, q.y) || s.minY > Math.max(p.y, q.y) || s.maxZ <= minZ || s.minZ >= maxZ) continue;
+        if (inside && inside(s.a) && inside(s.b)) {
+          const w = sub(q, p);
+          const sa = w.x * (s.a.y - p.y) - w.y * (s.a.x - p.x);
+          const sb = w.x * (s.b.y - p.y) - w.y * (s.b.x - p.x);
+          // A passage endpoint on the wall line still opens a doorway at that end; a
+          // vertical opening has no side at all.
+          const vertical = Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) < 1e-6;
+          if (!(vertical || Math.abs(sa) < 1e-6 || Math.abs(sb) < 1e-6 || (sa < 0) !== (sb < 0))) continue;
+        }
         const d = sub(s.b, s.a), l2 = d.x * d.x + d.y * d.y || 1;
         const zs: number[] = [];
         for (const f of [0, 0.5, 1]) {
@@ -803,10 +814,10 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       }
     }
   };
-  const enclose = (lv: LevelLayout, rings: XY[][], bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false) => {
+  const enclose = (lv: LevelLayout, rings: XY[][], bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false, cap?: (p: XY) => number, inside?: (p: XY) => boolean) => {
     for (const ring of rings) for (let i = 0; i < ring.length; i++) {
       const a = ring[i]!, b = ring[(i + 1) % ring.length]!;
-      if (len(sub(b, a)) > 0.01) addWall(lv, a, b, bottom, top, finish, skipExisting);
+      if (len(sub(b, a)) > 0.01) addWall(lv, a, b, bottom, top, finish, skipExisting, cap, inside);
     }
   };
 
@@ -885,6 +896,11 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     // Flat intermediate landings lower a later flight relative to the continued pitch.
     // Carry the common side plane below every flight instead of exposing a diagonal slit.
     const bottom = (p: XY) => base(p) + Math.min(...offsets) - 0.3;
+    // A landing closer to the street than a head band cannot carry a wall cap at the
+    // street underside: a person standing there already reaches above it, so every
+    // closure at -0.18 is cut away as a walk void. Such a shaft (and only such a
+    // shaft) carries its shell up to the roof it already builds.
+    const capToRoof = group.some((r) => [r.a, r.b].some((p) => Math.abs(p.z) > 0.1 && streetUnderside - p.z < 2.1));
     const lv = levelAt(lo.z);
     const u = { x: d.x / Math.sqrt(l2), y: d.y / Math.sqrt(l2) }, n = { x: -u.y, y: u.x };
     const along = (p: XY) => (p.x - lo.x) * u.x + (p.y - lo.y) * u.y;
@@ -973,7 +989,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         z: lo.z + Math.min(...offsets) - 0.3 };
       shaftHulls.push(invert);
       for (const panel of cropUndergroundRoof(invert, streetUnderside)) layout.soffits.push(...clearSoffit(panel, passages, 0.025, 2.1));
-      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft");
+      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => base(p) + rise : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined);
     }
     // Raised short collars bridge the clearance cut at the tangent change between an
     // inclined shaft and a flat hall. Without this step, two individually safe cut roofs
@@ -1036,7 +1052,13 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     // rather than continuing a high sheet out above the adjoining low hall.
     const ceilingHeights = mouths.map((p) => Math.min(layout.levels.find((level) => Math.abs(level.z - p.z) < 0.1)?.ceilingZ ?? p.z + 3.2, streetUnderside));
     for (const s of [Math.min(...stations), Math.max(...stations)]) {
-      for (const [bottom, top] of [[Math.min(...ceilingHeights), Math.max(...ceilingHeights)],
+      // A near-street shaft end carries its finish band up to the same roof the hull
+      // walls now reach, instead of stopping at the street underside.
+      const endTop = capToRoof ? base(at(s, 0)) + rise : Math.max(...ceilingHeights);
+      // The near-street end has no street underside to stop at: run its finish from the
+      // landing mouth up to the same roof the hull walls reach.
+      const endBottom = capToRoof ? Math.min(...mouths.map((p) => p.z)) - 0.18 : Math.min(...ceilingHeights);
+      for (const [bottom, top] of [[endBottom, endTop],
         [Math.min(...mouths.map((p) => p.z)) - 0.18, Math.max(...mouths.map((p) => p.z)) - 0.18]]) {
         if (top! - bottom! < 0.005) continue;
         shaftEndFaces.push({ floorId: lv.floorId, wall: { a: at(s, minN), b: at(s, maxN), side: 1, kind: "wall",
