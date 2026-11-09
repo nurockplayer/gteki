@@ -46,12 +46,17 @@ FLOOR_EDGE_REACH = 0.5  # m
 CLEARANCE_EXCEPTIONS = {"ne_j__x26": 0.33}
 
 
-def write_json(path, obj, indent=None):
-    """Write via a temp file and rename, so a watching dev server never reads a half-written file."""
-    tmp = path + ".tmp"
+def json_text(obj, indent=None):
     text = json.dumps(obj, ensure_ascii=False, indent=indent)
     if indent is not None:  # source decisions stay one line, as in the hand-authored graph.src.json
         text = re.sub(r'"decision": \{\n\s+"url": ("[^"]*"),\n\s+"date": ("[^"]*")\n\s+\}', r'"decision": { "url": \1, "date": \2 }', text)
+    return text
+
+
+def write_json(path, obj, indent=None):
+    """Write via a temp file and rename, so a watching dev server never reads a half-written file."""
+    tmp = path + ".tmp"
+    text = json_text(obj, indent)
     try:
         with open(tmp, "w") as f:
             f.write(text)
