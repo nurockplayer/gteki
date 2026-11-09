@@ -85,7 +85,7 @@ jobs:
   e2e-smoke-webkit:
     name: e2e-smoke-webkit
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -104,7 +104,7 @@ jobs:
           pnpm install --ignore-workspace --frozen-lockfile
           pnpm exec playwright install --with-deps webkit
       - name: Run WebKit smoke specs
-        timeout-minutes: 10
+        timeout-minutes: 2
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
