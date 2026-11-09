@@ -21,7 +21,7 @@ type Edge = {
   verification: string;
   geometry: { x: number; y: number; z: number }[];
 };
-type Poi = { id: string; category: string; connectorNodeIds: string[] };
+type Poi = { id: string; category: string; connectorNodeIds: string[]; names: { lang: string; text: string }[] };
 type Sign = SignSpec & { basis?: string[]; atNode: string };
 
 const graph = json("../gteki/graph.json") as { nodes: { id: string; kind: string }[]; edges: Edge[] };
@@ -308,7 +308,7 @@ describe("ikebukuro place boards between the repeaters (#108)", () => {
           expect(p.category).toBe("other");
           expect(p.connectorNodeIds.length).toBeGreaterThan(0);
           expect(it.ja, it.id).toBeTruthy();
-          expect(it.en, it.id).toBeTruthy();
+          expect(it.en, it.id).toBe(p.names.find((n) => n.lang === "en")?.text ?? null);
           expect(b.basis).toContain(`poi:${it.id}`);
         }
       }

@@ -1,6 +1,27 @@
 import { expect, it } from "vitest";
 import * as THREE from "three";
-import { ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, clipFlatGeometry, ribbonGeometry } from "./geometry.ts";
+import { ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, clipFlatGeometry, ribbonGeometry, routeSegmentProfile, steppedProfile } from "./geometry.ts";
+
+it("preserves vertical endpoints and ignores ground far below a connector", () => {
+  const start = new THREE.Vector3(0, 0, 0), end = new THREE.Vector3(0, 4, 0);
+  expect(routeSegmentProfile(start, end, () => 0)).toEqual([start, end]);
+  const slope = routeSegmentProfile(new THREE.Vector3(0, 3, 0), new THREE.Vector3(1, 4, 0), () => 0);
+  expect(slope[0]!.y).toBe(3);
+  expect(slope[slope.length - 1]!.y).toBe(4);
+});
+
+it("steps the ribbon over stair treads and leaves flat input unchanged", () => {
+  const samples = Array.from({ length: 19 }, (_, i) => new THREE.Vector3(i * 0.05, Math.min(2, Math.floor((i * 0.05 + 1e-6) / 0.3)) * 0.18, 0));
+  const profile = steppedProfile(samples);
+  for (const p of profile) expect(Math.abs(p.y / 0.18 - Math.round(p.y / 0.18)) * 0.18).toBeLessThan(0.001);
+  const positions = ribbonGeometry(profile, 0.4, 0.07).getAttribute("position");
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i), tread = Math.min(2, Math.floor((x + 1e-6) / 0.3)) * 0.18;
+    expect(positions.getY(i)).toBeGreaterThanOrEqual(tread - 0.001);
+  }
+  const flat = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0)];
+  expect(steppedProfile(flat)).toEqual(flat);
+});
 
 it("clips the flat segment of a cross-level ribbon and keeps the rise", () => {
   const points = [new THREE.Vector3(1, 0, 5), new THREE.Vector3(9, 0, 5), new THREE.Vector3(9, 4, 6)];

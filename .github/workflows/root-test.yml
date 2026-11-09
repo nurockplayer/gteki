@@ -56,6 +56,17 @@ jobs:
       - name: Station typecheck (shinjuku and ikebukuro)
         run: pnpm -C stations/shinjuku typecheck && pnpm -C stations/ikebukuro typecheck
 
-      # Default suites only; two workers fit the runner. Station importers' `--check` modes need raw
-      # inputs that are not in the repo, so they stay local.
+      - name: Stairwell bake check (shinjuku and ikebukuro)
+        run: pnpm tsx packages/godot/src/stairwell-bake.ts --station shinjuku --station ikebukuro --check
+
+      # Public PLATEAU data is hash-checked and cached.
+      - uses: actions/cache@v4
+        with:
+          path: data-cache/ikebukuro
+          key: plateau-ikebukuro-${{ hashFiles('stations/ikebukuro/pipeline/fetch_sources.sh') }}
+
+      - name: Ikebukuro signage drift (#1009)
+        run: bash stations/ikebukuro/pipeline/fetch_sources.sh && python3 -I stations/ikebukuro/pipeline/extract_plateau_ubld.py data-cache/ikebukuro/53394576_ubld_6697_op.gml stations/ikebukuro/build/ubld_enu.json && python3 -I stations/ikebukuro/pipeline/build_signage.py --check
+
+      # Default suites only; two workers fit the runner.
       - run: pnpm vitest run --maxWorkers=2
