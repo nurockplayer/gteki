@@ -47,7 +47,7 @@ import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelec
 import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 import { catTapHit } from "./catMeow.ts";
 import { advancePaws, pawSurface, playCatMeow, playPawStep } from "./catSound.ts";
-import { contactShadow, pawShadowState } from "./contactShadow.ts";
+import { contactShadow, placePawShadows } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
@@ -2718,17 +2718,7 @@ export class Explorer {
       if (target) this.avatar.rotation.y = Math.atan2(this.pos.x - target.position.x, this.pos.z - target.position.z);
     }
     if (this.pawShadows.length && this.avatarRig) {
-      const position = new THREE.Vector3();
-      const names = ["forepaw_L", "forepaw_R", "hindpaw_L", "hindpaw_R"];
-      for (let i = 0; i < this.pawShadows.length; i++) {
-        const shadow = this.pawShadows[i]!;
-        const paw = this.avatarRig.root.getObjectByName(names[i]!);
-        if (!paw) continue;
-        paw.getWorldPosition(position);
-        shadow.material.opacity = pawShadowState(position.y, this.pos.y);
-        this.avatar.worldToLocal(position);
-        shadow.position.set(position.x, 0.012, position.z);
-      }
+      placePawShadows(this.pawShadows, this.avatarRig.root, this.avatar, this.pos.y);
     }
     this.updateShadows();
   }
