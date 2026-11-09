@@ -377,7 +377,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
   --minimap-size: 190px;
   position: absolute; right: 16px; top: calc(60px + env(safe-area-inset-top)); z-index: 4;
   width: var(--minimap-size); color: var(--text); font-size: 12px;
+  transition: opacity .2s;
 }
+.minimap[data-yield="sign"] { opacity: .18; pointer-events: none; }
 .minimap[hidden], .minimap [hidden], .app[data-mode="overview"] .minimap { display: none; }
 .minimap-body { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding-bottom: 6px; border-radius: 95px 95px 12px 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, .35); box-shadow: var(--shadow); }
 /* Floor picker (#220): a pill over the map's lower rim, so it adds no height to the HUD. */
