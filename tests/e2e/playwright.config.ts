@@ -70,6 +70,8 @@ export default defineConfig({
       // same way. GTEKI_WEBKIT_VIDEO=1 records it for one short, targeted spec.
       use: {
         ...devices["iPhone 15"],
+        // --use-angle is a Chromium flag; WebKit rejects it (#1028).
+        launchOptions: {},
         video: process.env.GTEKI_WEBKIT_VIDEO === "1" ? { mode: "on", size: { width: 393, height: 852 } } : "off",
       },
     },
