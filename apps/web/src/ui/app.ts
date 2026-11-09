@@ -39,6 +39,7 @@ import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
+import { shortStationLabel } from "./shortStationLabel.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -193,6 +194,9 @@ export class App {
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
+    if (typeof matchMedia === "function") {
+      matchMedia("(max-width: 600px)").addEventListener("change", () => this.renderStationSelect());
+    }
     const wanted = params.get("station");
     const entry = this.s.entries.find((e) => e.key === wanted) ?? this.s.entries.find((e) => !e.synthetic) ?? this.s.entries[0]!;
     await this.openStation(entry, params.get("from"), params.get("to"));
@@ -219,6 +223,7 @@ export class App {
     });
     this.ui.langBtn.addEventListener("click", () => {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
+      this.renderStationSelect();
       this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
       this.interactionPrompt.refresh();
@@ -354,12 +359,18 @@ export class App {
   // ---- Station ---------------------------------------------------------------------
 
   private renderStationSelect(): void {
+    const selected = this.ui.stationSelect.value;
+    const isPhone = typeof matchMedia === "function" && matchMedia("(max-width: 600px)").matches;
     this.ui.stationSelect.innerHTML = "";
     for (const e of this.s.entries) {
-      const o = el("option", undefined, e.synthetic ? `⚠ ${e.label}` : e.label);
+      const fullLabel = e.synthetic ? `⚠ ${e.label}` : e.label;
+      const shortLabel = shortStationLabel(e.label, this.s.lang);
+      const o = el("option", undefined, e.synthetic ? `⚠ ${isPhone ? shortLabel : e.label}` : isPhone ? shortLabel : e.label);
       o.value = e.key;
+      o.title = fullLabel;
       this.ui.stationSelect.append(o);
     }
+    this.ui.stationSelect.value = selected;
   }
 
   private openGeneration = 0;
