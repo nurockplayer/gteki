@@ -2190,7 +2190,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
       rod.translate(center.x + off.x, center.z + 0.45, -(center.y + off.y));
       rodGeos.push(rod);
     }
-    group.userData = { nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
+    group.userData = { signHalfWidthX: -axis.y * 0.95, signHalfWidthZ: -axis.x * 0.95, signHalfHeight: (1.9 / 8) * valid.length / 2, nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
     root.add(group);
     out.push(group);
     placed.push({ x: n.position.x, y: n.position.y, z });

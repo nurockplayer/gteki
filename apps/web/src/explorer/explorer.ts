@@ -393,8 +393,8 @@ export class Explorer {
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
   private cameraFocus: THREE.Vector3 | null = null;
-  private cameraSignFocus: THREE.Vector3 | null = null;
-  private guideSigns: { s: number; anchor: THREE.Vector3 }[] = [];
+  private cameraSignFocus: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null;
+  private guideSigns: { s: number; anchor: THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number } }[] = [];
   /** The framed board's name centre, and the framed look's offset from that board's bearing: the hold keeps the board in view. */
   private readonly guideIdentityCentre = new THREE.Vector3();
   private readonly guideIdentityOffset = { yaw: 0, pitch: 0 };
@@ -2438,7 +2438,7 @@ export class Explorer {
     this.guideSigns = routeNodes.flatMap((id, index) => {
       const sign = this.stationScene?.root.getObjectByName(`sign:${id}`);
       const pointIndex = index === 0 ? 0 : polyline.findLastIndex((point) => point.stepIndex === index - 1);
-      return sign && pointIndex >= 0 ? [{ s: cum[pointIndex]!, anchor: sign.getWorldPosition(new THREE.Vector3()) }] : [];
+      return sign && pointIndex >= 0 ? [{ s: cum[pointIndex]!, anchor: Object.assign(sign.getWorldPosition(new THREE.Vector3()), { halfWidthX: sign.userData.signHalfWidthX as number, halfWidthZ: sign.userData.signHalfWidthZ as number, halfHeight: sign.userData.signHalfHeight as number }) }] : [];
     });
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
@@ -2923,12 +2923,12 @@ export class Explorer {
     this.camera.updateProjectionMatrix();
   }
 
-  private setCameraFocus(p: THREE.Vector3 | null, sign: THREE.Vector3 | null = null): void {
+  private setCameraFocus(p: THREE.Vector3 | null, sign: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null): void {
     const changed = (a: THREE.Vector3 | null, b: THREE.Vector3 | null) =>
       a === null || b === null ? a !== b : a.distanceToSquared(b) > 0.05 * 0.05;
-    if (!changed(this.cameraFocus, p) && !changed(this.cameraSignFocus, sign)) return;
+    if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign) return;
     this.cameraFocus = p ? (this.cameraFocus ?? new THREE.Vector3()).copy(p) : null;
-    this.cameraSignFocus = sign ? (this.cameraSignFocus ?? new THREE.Vector3()).copy(sign) : null;
+    this.cameraSignFocus = sign;
     this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus);
   }
 
