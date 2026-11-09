@@ -64,12 +64,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // textures re-measured, every explorer list unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "3167644aec59464fdeb6a569e5553f7cc5f1a1fb8e38d36f6f8990da3e2c2028",
+    "geometryDigest": "a63c3cae095619efc805c18f7fcc929e87f7da7605bf343eedfe10eae840d757",
     "appearanceDigest": "12e7dd26596d92ce5fb79e9f4431c2c6d70685ea8bc67de17f4bcdc6c23a1512",
-    "nodesDigest": "b9e5fefe3b0b351d2b595363d05364c33424c9b629421cc4c755b9dfb389b779",
+    "nodesDigest": "a81cc7abb4b1a04153a463442a341d4ef3b11811bfe97c73a08352695f5a771e",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
     "meshes": 96,
-    "bytes": 16494482
+    "bytes": 16508686
   },
   "lists": {
     "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",

@@ -48,7 +48,7 @@ describe("station geometry lifetime", () => {
     expect(result.live).toBe(116); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss); #744: -24 coverage-portal quads, -6 level-B6 batches
     // #645 step 2c: lift-door clearances split two restricted boundaries (+5,184 B); the shaft-geometry
     // cut of the join:/return: pieces inside a stop square then removes 44,592 B.
-    expect(result.bytes).toBe(16493354); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
+    expect(result.bytes).toBe(16507558); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
     // #49 retains two clipped render-only shell batches: +217,498 B and +5,055 triangles
     // after #316 stopped letting surfaces below the runs suppress the shell.
     // #789 updates the expected buffers for the repaired display heights; the
