@@ -278,6 +278,7 @@ DeclutterOptions	interface	apps/web/src/explorer/labelDeclutter.ts
 LABEL_CLASS	const	apps/web/src/explorer/labelDeclutter.ts
 LABEL_FONT_PX	const	apps/web/src/explorer/labelDeclutter.ts
 LabelClass	type	apps/web/src/explorer/labelDeclutter.ts
+containmentShift	function	apps/web/src/explorer/labelDeclutter.ts
 declutter	function	apps/web/src/explorer/labelDeclutter.ts
 estimateLabelBox	function	apps/web/src/explorer/labelDeclutter.ts
 labelClass	function	apps/web/src/explorer/labelDeclutter.ts
@@ -629,6 +630,7 @@ RailDemoLink	interface	apps/web/src/ui/railTravel.ts
 RailStationKey	type	apps/web/src/ui/railTravel.ts
 railDemoLink	function	apps/web/src/ui/railTravel.ts
 railStationName	function	apps/web/src/ui/railTravel.ts
+shortStationLabel	function	apps/web/src/ui/shortStationLabel.ts
 SpawnOrigin	type	apps/web/src/ui/spawnHeading.ts
 spawnHeading	function	apps/web/src/ui/spawnHeading.ts
 printedFloor	function	apps/web/src/ui/tenantDisplay.ts
