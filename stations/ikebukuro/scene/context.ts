@@ -52,20 +52,30 @@ export const CONTEXT_ROAD_COLOR = 0x62635f;
  * explorer's street fog and haze (this material takes fog). Falls back to a flat colour if a shader chunk the
  * patch anchors on is missing in a future three.
  */
-export function createContextMaterial(THREE: ThreeNS, options: { color?: number; streetY?: number | null } = {}): THREE_NS.MeshBasicMaterial {
+export function createContextMaterial(THREE: ThreeNS, options: { color?: number; streetY?: number | null; facade?: boolean } = {}): THREE_NS.MeshBasicMaterial {
   const mat = new THREE.MeshBasicMaterial({ color: options.color ?? 0xb9b5ad, side: THREE.DoubleSide });
   // Facades darken toward the pavement, so the walls around an exit are not one flat pale surface (#858 item 4).
   const streetY = options.streetY ?? null;
+  const facade = options.facade === true && streetY !== null;
   const groundShade = streetY === null ? "" : `outgoingLight *= mix( ${CONTEXT_GROUND_SHADE.toFixed(2)}, 1.0, smoothstep( ${streetY.toFixed(2)}, ${(streetY + CONTEXT_GROUND_SHADE_M).toFixed(2)}, vCtxY ) );`;
   mat.name = "ctx_concrete";
   mat.onBeforeCompile = (shader) => {
     const v = shader.vertexShader, f = shader.fragmentShader;
     if (!(v.includes("#include <common>") && v.includes("#include <begin_vertex>") && f.includes("#include <common>") && f.includes("#include <opaque_fragment>"))) return;
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", "#include <common>\nvarying vec3 vCtxN;\nvarying float vCtxY;")
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvCtxY = ( modelMatrix * vec4( transformed, 1.0 ) ).y;\nvCtxN = normalize( mat3( modelMatrix ) * normal );");
+      .replace("#include <common>", `#include <common>\nvarying vec3 vCtxN;\nvarying float vCtxY;${facade ? "\nvarying vec3 vCtxPos;" : ""}`)
+      .replace("#include <begin_vertex>", `#include <begin_vertex>\nvCtxY = ( modelMatrix * vec4( transformed, 1.0 ) ).y;\nvCtxN = normalize( mat3( modelMatrix ) * normal );${facade ? "\nvCtxPos = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;" : ""}`);
     shader.fragmentShader = shader.fragmentShader
-      .replace("#include <common>", "#include <common>\nvarying vec3 vCtxN;\nvarying float vCtxY;")
+      .replace("#include <common>", `#include <common>\nvarying vec3 vCtxN;\nvarying float vCtxY;${facade ? `
+varying vec3 vCtxPos;
+float ctxEdge( float edge, float value ) {
+  #if __VERSION__ >= 300 || defined( GL_OES_standard_derivatives )
+    float w = max( fwidth( value ), 0.0001 );
+    return smoothstep( edge - w, edge + w, value );
+  #else
+    return step( edge, value );
+  #endif
+}` : ""}`)
       .replace(
         "#include <opaque_fragment>",
         [
@@ -74,11 +84,24 @@ export function createContextMaterial(THREE: ThreeNS, options: { color?: number;
           "vec3 ctxSun = normalize( vec3( 0.45, 0.75, 0.4 ) );",
           "outgoingLight *= 0.55 + 0.28 * max( dot( ctxN, ctxSun ), 0.0 ) + 0.17 * ( 0.5 + 0.5 * ctxN.y );",
           ...(groundShade ? [groundShade] : []),
+          ...(facade ? [`
+float ctxHeight = vCtxPos.y - ${streetY!.toFixed(2)};
+float ctxFloor = mod( ctxHeight - 4.0, 3.6 );
+float ctxAlong = abs( ctxN.x ) > abs( ctxN.z ) ? vCtxPos.z : vCtxPos.x;
+float ctxMullion = abs( mod( ctxAlong + 0.9, 1.8 ) - 0.9 );
+float ctxWindow = ( ctxEdge( 1.1, ctxFloor ) - ctxEdge( 2.5, ctxFloor ) ) * ctxEdge( 0.075, ctxMullion );
+float ctxSlab = 1.0 - ctxEdge( 0.06, min( ctxFloor, 3.6 - ctxFloor ) );
+float ctxWall = 1.0 - step( 0.5, abs( ctxN.y ) );
+float ctxGround = ctxEdge( 0.0, ctxHeight ) * ( 1.0 - ctxEdge( 4.0, ctxHeight ) );
+float ctxUpper = ctxEdge( 4.0, ctxHeight );
+outgoingLight *= mix( vec3( 1.0 ), vec3( 0.87 ), ctxWall * ctxGround );
+outgoingLight *= mix( vec3( 1.0 ), vec3( 0.58, 0.60, 0.64 ), ctxWall * ctxUpper * ctxWindow );
+outgoingLight *= 1.0 - 0.15 * ctxWall * ctxUpper * ctxSlab;`] : []),
           "#include <opaque_fragment>",
         ].join("\n"),
       );
   };
-  mat.customProgramCacheKey = () => `gteki-ctx-concrete:${streetY}`;
+  mat.customProgramCacheKey = () => `gteki-ctx-concrete:${streetY}:${options.facade === true}`;
   return mat;
 }
 
