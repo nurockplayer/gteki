@@ -125,8 +125,9 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
     });
     mixer = new THREE.AnimationMixer(gltf.scene);
     let hold: "sit" | null = null;
+    let turnLead = 0;
     const animate = opts.cat
-      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold)
+      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold, () => turnLead)
       : clipCrossfade(mixer, gltf.animations);
     // One overlay bone list for both the camera-pitch lift and the meow; any bone may be missing.
     const bones = opts.cat ? ["neck", "head", "ear_L", "ear_R", "tail_01", "tail_02", "tail_03", "tail_04"].map((name) => ({
@@ -162,7 +163,10 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
           meowClock = 0;
           return true;
         },
-        setTurnLead(radians: number) { targetTurn = Number.isFinite(radians) ? Math.max(-0.7, Math.min(0.7, radians)) : 0; },
+        setTurnLead(radians: number) {
+          turnLead = Number.isFinite(radians) ? radians : 0;
+          targetTurn = Math.max(-0.7, Math.min(0.7, turnLead));
+        },
       } : {}),
       update(dt, speedMps) {
         if (disposed) return;
@@ -274,16 +278,28 @@ export function catClips(
   clips: THREE.AnimationClip[],
   calib: CatCalibration | undefined,
   hold: () => "sit" | null = () => null,
+  turnLead: () => number = () => 0,
 ): (speed: number, dt: number) => void {
   const action = (name: string): THREE.AnimationAction | undefined => {
     const clip = clips.find((candidate) => candidate.name.toLowerCase() === name);
     return clip ? mixer.clipAction(clip) : undefined;
   };
   const idle = action("idle"), sit = action("sit"), walk = action("walk"), trot = action("trot"), run = action("run");
+  const start = action("start"), stop = action("stop"), turnL = action("turn_l"), turnR = action("turn_r");
+  for (const once of [start, stop]) if (once) {
+    once.setLoop(THREE.LoopOnce, 1);
+    once.clampWhenFinished = true;
+  }
   let active = idle ?? sit ?? walk ?? trot ?? run;
   active?.play();
   let restSeconds = 0;
+  let moving = false;
+  let turning = false;
   return (speed, dt) => {
+    const wasMoving = moving;
+    moving = speed > 0.05;
+    const lead = turnLead();
+    turning = speed < 0.7 && (Math.abs(lead) > 0.5 || (turning && Math.abs(lead) >= 0.2));
     let next: THREE.AnimationAction | undefined;
     if (hold() === "sit") {
       next = sit ?? idle;
@@ -295,6 +311,13 @@ export function catClips(
       next = speed < 0.7 ? walk ?? trot ?? run ?? idle
         : speed < 1.9 ? trot ?? walk ?? run ?? idle
         : run ?? trot ?? walk ?? idle;
+    }
+    if (hold() !== "sit") {
+      if (!wasMoving && moving && speed < 0.7 && start) next = start;
+      else if (wasMoving && !moving && stop) next = stop;
+      else if (active === start && moving && speed < 0.7 && !start.paused) next = start;
+      else if (active === stop && !moving && !stop.paused) next = stop;
+      else if (turning) next = (lead > 0 ? turnL : turnR) ?? next;
     }
     next ??= active;
     if (!next) return;

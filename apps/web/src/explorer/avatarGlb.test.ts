@@ -390,3 +390,43 @@ it("holds the cat sit clip immediately when requested", () => {
   update(0, 0.01);
   expect(mixer.clipAction(idle).isRunning()).toBe(true);
 });
+
+it("plays start and stop once, then returns to the gait and idle", () => {
+  const mixer = new THREE.AnimationMixer(new THREE.Group());
+  const clips = ["idle", "sit", "walk", "start", "stop"].map((name) => new THREE.AnimationClip(name, 0.5, []));
+  const action = (name: string) => mixer.clipAction(clips.find((clip) => clip.name === name)!);
+  const update = catClips(mixer, clips, undefined);
+  update(0.2, 0.1);
+  expect(action("start").isRunning()).toBe(true);
+  mixer.update(0.6);
+  update(0.2, 0.1);
+  expect(action("walk").isRunning()).toBe(true);
+  update(0, 0.1);
+  expect(action("stop").isRunning()).toBe(true);
+  mixer.update(0.6);
+  update(0, 0.1);
+  expect(action("idle").isRunning()).toBe(true);
+});
+
+it("uses turn lead with hysteresis and returns to the normal clip", async () => {
+  const asset = catAvatarFixture();
+  asset.animations.push(...["turn_l", "turn_r"].map((name) => new THREE.AnimationClip(name, 1, [])));
+  const play = vi.spyOn(THREE.AnimationAction.prototype, "play");
+  const rig = await loadGlbAvatar("/cat.glb", { quality: "low", loader: { loadAsync: async () => asset }, cat: true });
+  const lastClip = () => play.mock.contexts.at(-1)!.getClip().name;
+  rig.setTurnLead!(0.8);
+  rig.update(0.1, 0.2);
+  expect(lastClip()).toBe("turn_l");
+  rig.setTurnLead!(0.3);
+  rig.update(0.1, 0.2);
+  expect(lastClip()).toBe("turn_l");
+  rig.setTurnLead!(-0.8);
+  rig.update(0.1, 0.2);
+  expect(lastClip()).toBe("turn_r");
+  rig.setTurnLead!(0.1);
+  rig.update(0.1, 0.2);
+  expect(lastClip()).toBe("walk");
+  rig.update(0.1, 0);
+  expect(lastClip()).toBe("idle");
+  rig.dispose();
+});
