@@ -392,6 +392,7 @@ export class Explorer {
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
+  private cameraFocus: THREE.Vector3 | null = null;
   /** The framed board's name centre, and the framed look's offset from that board's bearing: the hold keeps the board in view. */
   private readonly guideIdentityCentre = new THREE.Vector3();
   private readonly guideIdentityOffset = { yaw: 0, pitch: 0 };
@@ -1437,6 +1438,7 @@ export class Explorer {
     this.signMeshes = new Set();
     this.identityBoards = [];
     this.identityPlaced = false;
+    this.cameraFocus = null;
     this.identityLabelsDirty = true;
     this.cameraCut.clear();
     this.occluders = [];
@@ -1650,7 +1652,7 @@ export class Explorer {
     this.orbit.enabled = mode === "overview";
     this.avatar.visible = mode !== "overview" && !this.firstPerson;
     this.input.enabled = mode !== "overview";
-    if (mode === "overview") this.orbit.target.copy(this.pos);
+    if (mode === "overview") { this.orbit.target.copy(this.pos); this.setCameraFocus(null); }
     const xray = this.routeGroup.getObjectByName("route-xray");
     if (xray) xray.visible = mode === "overview";
     const walkRibbon = this.routeGroup.getObjectByName("route-ribbon");
@@ -2912,6 +2914,17 @@ export class Explorer {
     this.camera.updateProjectionMatrix();
   }
 
+  private setCameraFocus(p: THREE.Vector3 | null): void {
+    if (p === null) {
+      if (this.cameraFocus === null) return;
+      this.cameraFocus = null;
+    } else {
+      if (this.cameraFocus && this.cameraFocus.distanceToSquared(p) <= 0.05 * 0.05) return;
+      (this.cameraFocus ??= new THREE.Vector3()).copy(p);
+    }
+    this.stationScene?.setCameraFocus?.(this.cameraFocus);
+  }
+
   private placeCamera(dt: number, snap = false): void {
     if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
     if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
@@ -2935,6 +2948,7 @@ export class Explorer {
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
+      this.setCameraFocus(null);
       this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
       return;
     }
@@ -2993,6 +3007,7 @@ export class Explorer {
     }
     if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
     this.camera.lookAt(pose.target);
+    this.setCameraFocus(this.guideIdentityHoldS > 0 ? this.guideIdentityCentre : pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
     this.applyAvatarFade(dt, snap);

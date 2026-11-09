@@ -886,6 +886,8 @@ export function buildCrowd(
   // Camera position as last rendered (onBeforeRender gives the camera without any API change);
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
+  let cameraFocus: THREE_NS.Vector3 | null = null;
+  const focusSegment = new THREE.Vector3(), focusBody = new THREE.Vector3();
   const camForward = new THREE.Vector3(0, 0, -1), camHeading = new THREE.Vector3();
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
   let renders = 0;
@@ -1260,7 +1262,15 @@ export function buildCrowd(
         else shown = false;
       }
       pos.y = floorY;
-      if (!shown || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
+      let blocksFocus = false;
+      if (cameraFocus) {
+        focusSegment.copy(cameraFocus).sub(cam);
+        focusBody.set(pos.x, floorY + 0.9, pos.z).sub(cam);
+        const lengthSq = focusSegment.lengthSq();
+        const t = lengthSq > 0 ? focusBody.dot(focusSegment) / lengthSq : -1;
+        blocksFocus = t >= 0 && t <= 1 && focusBody.addScaledVector(focusSegment, -t).lengthSq() <= 0.45 * 0.45;
+      }
+      if (!shown || blocksFocus || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
         hide(i);
         continue;
       }
@@ -1280,6 +1290,10 @@ export function buildCrowd(
   return {
     group,
     update,
+    setCameraFocus(x: number | null, y = 0, z = 0) {
+      if (x === null) cameraFocus = null;
+      else (cameraFocus ??= new THREE.Vector3()).set(x, y, z);
+    },
     setCameraNearFade(startM: number, endM: number) { nearFade.value.set(startM, endM); },
     /** Pedestrians within 8 m of the last rendered camera (for ambience). */
     nearby: () => nearby,
