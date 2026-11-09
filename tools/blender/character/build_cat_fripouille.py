@@ -1221,6 +1221,53 @@ def glb_accessor(doc, binary, index, widths):
     return values, accessor
 
 
+def planted_speeds(arm, actions):
+    """Mean horizontal paw displacement per second over low, contiguous stretches."""
+    import bpy
+    scene = bpy.context.scene
+    paws = [paw_group(leg) for leg in LEGS]
+    rest = {name: (arm.matrix_world @ arm.data.bones[name].head_local).z for name in paws}
+    result = {}
+    for clip in ("walk", "trot", "run"):
+        arm.animation_data.action = actions[clip]
+        speeds = {name: [] for name in paws}
+        starts = {name: None for name in paws}
+        # Two cycles capture stretches crossing the loop boundary, at the test's 60 Hz.
+        for sample in range(CLIPS[clip]["frames"] * 4 + 1):
+            frame = (sample / 2) % CLIPS[clip]["frames"]
+            scene.frame_set(int(frame), subframe=frame % 1)
+            for name in paws:
+                point = arm.matrix_world @ arm.pose.bones[name].head
+                start = starts[name]
+                if point.z < rest[name] + 0.01:
+                    if start is None:
+                        starts[name] = (sample, point.copy())
+                elif start is not None:
+                    if sample - start[0] >= 3:
+                        end = previous[name]
+                        speeds[name].append(math.hypot(end.x - start[1].x, end.y - start[1].y)
+                                            / ((sample - 1 - start[0]) / (FPS * 2)))
+                    starts[name] = None
+                if sample == 0 and name == paws[0]:
+                    previous = {}
+                previous[name] = point.copy()
+        result[clip] = sum(sum(values) / len(values) for values in speeds.values()) / len(paws)
+    return result
+
+
+def exported_planted_speeds(path):
+    import bpy
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=str(path))
+    imported = set(bpy.data.objects) - before
+    arm = next(obj for obj in imported if obj.type == "ARMATURE")
+    actions = {track.name: track.strips[0].action for track in arm.animation_data.nla_tracks
+               if len(track.strips)}
+    for track in arm.animation_data.nla_tracks:
+        track.mute = True
+    return planted_speeds(arm, actions)
+
+
 def linear_to_srgb(value):
     return 12.92 * value if value <= 0.0031308 else 1.055 * value ** (1.0 / 2.4) - 0.055
 
@@ -1312,6 +1359,9 @@ def glb_checks(checker, path):
                   f"GLB extras gteki_cat.calib {calib}")
     for name, value in expected.items():
         checker.check(abs(calib.get(name, -1.0) - value) <= 1e-6, f"calib.{name} = {value:.4f}")
+    for name, value in exported_planted_speeds(path).items():
+        checker.check(abs(calib.get(name, 0.0) - value) <= value * 0.02,
+                      f"calib.{name} {calib.get(name, 0.0):.4f} vs GLB measured {value:.4f} (within 2%)")
     where = doc["accessors"][mesh["primitives"][0]["attributes"]["POSITION"]]
     checker.check(abs(where["min"][1]) <= 0.002, f"GLB feet at y = {where['min'][1]:.4f}")
     checker.check(abs(where["max"][1] - HEIGHT_M) <= 0.005, f"GLB height {where['max'][1]:.3f} m")
@@ -1538,6 +1588,11 @@ def main():
     clip_checks(checker, arm, body, groups, actions)
     reach_checks(checker, arm, actions)
     sit_checks(checker, arm, body, groups, actions)
+
+    designed = dict(CALIB)
+    CALIB.update(planted_speeds(arm, actions))
+    print("INFO calib designed vs measured: " + ", ".join(
+        f"{name} {designed[name]:.3f} vs {CALIB[name]:.3f}" for name in ("walk", "trot", "run")))
 
     arm["gteki_cat"] = {"calib": dict(CALIB)}
     arm.animation_data.action = bpy.data.actions["idle"]
