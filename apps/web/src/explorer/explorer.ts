@@ -33,7 +33,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
+import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
 import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
@@ -894,13 +894,10 @@ export class Explorer {
   }
 
   /**
-   * Per walking frame, after the street backdrop: re-classify when the walker moved half a metre (or
-   * snapped), then ease exposure, fog and hemisphere tint toward the zone's preset. Once settled, writes
-   * nothing until the zone changes. Outdoors the street backdrop owns fog, so only exposure eases.
+   * Re-classify when the walker moved half a metre or snapped, before updating the street backdrop.
    */
-  private updateZone(dt: number, snap: boolean): void {
-    const fog = this.zoneFog;
-    if (!fog) return;
+  private classify(snap: boolean): void {
+    if (!this.zoneFog) return;
     if (snap || this.zoneAt.distanceToSquared(this.pos) >= ZONE_RECHECK_M2) {
       this.zoneAt.copy(this.pos);
       this.zone = classifyZone(this.pos, this.streetProbe.outdoors, this.zoneAnchors);
@@ -909,6 +906,12 @@ export class Explorer {
         this.stationScene?.setAcousticZone?.(this.zone);
       }
     }
+  }
+
+  /** Ease the zone look after the backdrop; outdoors the backdrop owns fog. */
+  private updateZone(dt: number, snap: boolean): void {
+    const fog = this.zoneFog;
+    if (!fog) return;
     const look = ZONE_LOOK[this.zone];
     const tinted = this.zone !== "outdoor";
     const near = (a: number, b: number) => Math.abs(a - b) <= ZONE_EPS;
@@ -2675,7 +2678,8 @@ export class Explorer {
       this.zoneSnap = false;
       if (snap) this.streetProbe.at.set(Infinity, 0, 0);
       this.updateStreetProbe(dt);
-      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level, snap);
+      this.classify(snap || zoneSnap);
+      this.street.update(this.scene, this.camera, this.pos, backdropOutdoors(this.streetProbe.outdoors, this.zone), dt, this.streetProbe.level, snap);
       this.updateZone(dt, snap || zoneSnap);
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
