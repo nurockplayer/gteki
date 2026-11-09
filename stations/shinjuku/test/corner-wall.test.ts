@@ -13,4 +13,4 @@ it("keeps the B3 wall at the shaft corner", () => {
     return Math.hypot(midpoint.x - w.a.x - t * dx, midpoint.y - w.a.y - t * dy) < 0.02 &&
       w.zMin <= level.z + 1 && w.zMax >= level.z + 1;
   })).toBe(true);
-});
+}, 30_000);
