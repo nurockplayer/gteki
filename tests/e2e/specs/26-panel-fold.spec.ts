@@ -52,28 +52,31 @@ test("greybox badge clears the guide HUD @phone", async ({ page }, info) => {
     const badge = page.locator(".greybox-legend");
     await expect(badge).toBeVisible();
     await expect(page.locator(".hud-instruction")).toBeVisible();
-    let legend: Awaited<ReturnType<typeof badge.boundingBox>> = null;
-    let instruction: Awaited<ReturnType<typeof badge.boundingBox>> = null;
-    let hud: { element: string; x: number; y: number; width: number; height: number }[] = [];
-    let viewport = { width: 0, height: 0 };
+    let sample: { legend: { x: number; y: number; width: number; height: number } | null; instruction: { x: number; y: number; width: number; height: number } | null; hud: { element: string; x: number; y: number; width: number; height: number }[]; viewport: { width: number; height: number } } | null = null;
     try {
       await expect.poll(async () => {
-    legend = await badge.boundingBox();
-    instruction = await page.locator(".hud-instruction").boundingBox();
-    hud = await page.locator(".hud > *:visible, .hud button:visible").evaluateAll((els) => els.map((e) => {
-      const r = e.getBoundingClientRect();
-      return { element: e.className || e.tagName, x: r.x, y: r.y, width: r.width, height: r.height };
-    }));
-    viewport = await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }));
-    if (!legend || !instruction || !hud.length) return "missing geometry";
-    if (legend.x < 0 || legend.y < 0 || legend.x + legend.width > viewport.width || legend.y + legend.height > viewport.height) return "badge outside viewport";
-    const overlaps = (rect: NonNullable<typeof legend>) => legend!.x < rect.x + rect.width && legend!.x + legend!.width > rect.x && legend!.y < rect.y + rect.height && legend!.y + legend!.height > rect.y;
-    if (overlaps(instruction)) return "badge overlaps HUD instruction";
-    const overlapping = hud.find(overlaps);
-    return overlapping ? `badge overlaps HUD ${overlapping.element}` : "clear";
+        sample = await page.evaluate(() => {
+          const rect = (e: Element | null) => {
+            if (!e || !e.getClientRects().length || getComputedStyle(e).visibility === "hidden") return null;
+            const r = e.getBoundingClientRect();
+            return { x: r.x, y: r.y, width: r.width, height: r.height };
+          };
+          const hud = Array.from(document.querySelectorAll(".hud > *, .hud button")).flatMap((e) => {
+            const box = rect(e);
+            return box ? [{ element: e.className || e.tagName, ...box }] : [];
+          });
+          return { legend: rect(document.querySelector(".greybox-legend")), instruction: rect(document.querySelector(".hud-instruction")), hud, viewport: { width: innerWidth, height: innerHeight } };
+        });
+        const { legend, instruction, hud, viewport } = sample;
+        if (!legend || !instruction || !hud.length) return "missing geometry";
+        if (legend.x < 0 || legend.y < 0 || legend.x + legend.width > viewport.width || legend.y + legend.height > viewport.height) return "badge outside viewport";
+        const overlaps = (rect: NonNullable<typeof legend>) => legend.x < rect.x + rect.width && legend.x + legend.width > rect.x && legend.y < rect.y + rect.height && legend.y + legend.height > rect.y;
+        if (overlaps(instruction)) return "badge overlaps HUD instruction";
+        const overlapping = hud.find(overlaps);
+        return overlapping ? `badge overlaps HUD ${overlapping.element}` : "clear";
       }, { timeout: 3_000 }).toBe("clear");
     } finally {
-      console.log(`[panel-fold] ${new Date().toISOString()} ${info.project.name} ${phase} ${JSON.stringify({ legend, instruction, hud, viewport })}`);
+      console.log(`[panel-fold] ${new Date().toISOString()} ${info.project.name} ${phase} ${JSON.stringify(sample)}`);
     }
   };
 
