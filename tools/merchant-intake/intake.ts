@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: GTEki contributors
 import { createHmac } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, realpathSync, unlinkSync, writeFileSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -107,7 +108,8 @@ export function checkSubmission(s: MerchantSubmission, key: string, queue: Queue
       { lang: "ja", text: `店舗提供の情報（${submittedDate}）・GTEki 未確認` },
       { lang: "en", text: `Merchant-submitted (${submittedDate}), not verified by GTEki` },
     ];
-    if (s.hours && Date.parse(s.hours.asOf) >= now.getTime() - 180 * day) {
+    const freshHours = !!s.hours && Date.parse(s.hours.asOf) >= now.getTime() - 180 * day;
+    if (s.hours && freshHours) {
       notes.push({ lang: "ja", text: `${s.hours.text}（${s.hours.asOf}）出典日時点の情報です。変更されている場合があります` },
         { lang: "en", text: `${s.hours.text} (${s.hours.asOf}). As of the source date; may have changed` });
     }
@@ -116,17 +118,24 @@ export function checkSubmission(s: MerchantSubmission, key: string, queue: Queue
     notes.push({ lang: "ja", text: `${{ inside: "改札内", outside: "改札外", not_sure: "改札内外不明" }[s.location.insideGates]}（店舗申告）` });
     const changes = {
       category: s.shop.category, names: s.shop.names, aliases: s.shop.aliases, floorId: s.location.floorId,
-      displayPosition: null, connectorNodeIds: existing?.connectorNodeIds ?? [], paid: null,
-      evidence: { sourceIds: [sourceId], method: `merchant-submitted (${s.clientRequestId}, ${submittedDate}), UNVERIFIED`, checkedDate }, notes,
+      evidence: { ...existing?.evidence, sourceIds: [sourceId, ...(existing?.evidence.sourceIds ?? [])], method: `merchant-submitted (${s.clientRequestId}, ${submittedDate}), UNVERIFIED`, checkedDate },
+      notes: [...notes, ...(existing?.notes ?? [])],
     };
-    const previous = existing ? Object.fromEntries([...Object.keys(changes), "hours"].map(k => [k, (existing as unknown as Record<string, unknown>)[k] ?? null])) : null;
+    const poi: Record<string, unknown> = existing
+      ? { ...existing, ...changes }
+      : { displayPosition: null, connectorNodeIds: [], paid: null, ...changes, id: `shop-${code}-msub-${suffix}` };
+    if (freshHours) delete poi.hours;
+    const previous = existing ? Object.fromEntries(
+      [...new Set([...Object.keys(existing), ...Object.keys(poi)])]
+        .filter(k => JSON.stringify((existing as unknown as Record<string, unknown>)[k]) !== JSON.stringify(poi[k]))
+        .map(k => [k, (existing as unknown as Record<string, unknown>)[k] ?? null])
+    ) : null;
     const source = { id: sourceId, title: `Merchant submission ${s.clientRequestId}`, publisher: s.shop.names[0]!.text,
       url: s.url, license: { name: MERCHANT_LICENSE_ID, url: MERCHANT_TERMS_URL }, rights: "REUSABLE_WITH_CONDITIONS", usage: "data",
       decision: { url: "<acceptance record URL, added by the Owner>", date: checkedDate },
       attribution: `${s.shop.names[0]!.text} 店舗提供 / merchant-submitted, ${s.consent.termsVersion}`, modified: false,
       retrievedAt: submittedDate, datasetDate: submittedDate };
-    const { hours: _oldHours, ...oldPoi } = existing ?? {};
-    proposal = { source, poi: { ...oldPoi, ...changes, id: existing?.id ?? `shop-${code}-msub-${suffix}` }, previous };
+    proposal = { source, poi, previous };
   }
   return { clientRequestId: s.clientRequestId, station: s.station, identity, state: proposal ? "ACCEPTED" : "EXCEPTION", checks, proposal };
 }
@@ -156,7 +165,12 @@ function options(args: string[]) {
 }
 function privateQueue(dir: string) {
   const queue = realpathSync(dir);
-  const repo = realpathSync(resolve(import.meta.dirname, "../.."));
+  const root = resolve(import.meta.dirname, "../..");
+  let repo = root;
+  try {
+    repo = resolve(execFileSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], { cwd: import.meta.dirname, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(), "..");
+  } catch { /* Git is unavailable; use the current repository root. */ }
+  repo = realpathSync(repo);
   if (queue === repo || queue.startsWith(repo + sep)) throw new Error("queue must be outside the public repository");
   return queue;
 }
@@ -191,8 +205,10 @@ export function main(args: string[], env = process.env): number {
     const report = checkSubmission(submission, key, entries.map(e => e.record), loadBundle(submission.station.folder, resolve(import.meta.dirname, "../..")), now);
     const output = JSON.stringify(report);
     const contact = submission.contact.value.trim().toLowerCase();
-    const local = submission.contact.kind === "email" ? contact.split("@")[0]! : contact;
-    if (output.toLowerCase().includes(contact) || (local && output.toLowerCase().includes(local))) throw new Error("submission contains contact information in a report field");
+    const digits = contact.replace(/\D/g, "");
+    const exposed = submission.contact.kind === "email" ? output.toLowerCase().includes(contact)
+      : output.includes(submission.contact.value.trim()) || (digits.length >= 8 && output.includes(digits));
+    if (exposed) throw new Error("submission contains contact information in a report field");
     if (opts["--write"]) {
       const sourceId = report.proposal ? (report.proposal.source as { id: string }).id : undefined;
       const record: QueueRecord = { submission, identity: report.identity, state: report.state, checkedAt: now.toISOString(), ...(sourceId ? { sourceId } : {}) };

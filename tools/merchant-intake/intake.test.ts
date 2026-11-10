@@ -40,7 +40,7 @@ describe("merchant intake checks", () => {
 });
 
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { checkSubmission, recordsToPrune } from "./intake.ts";
@@ -58,12 +58,27 @@ it("proposes new IDs without contact data", () => {
   expect(JSON.stringify(report)).not.toContain("intake-fixture-739");
 });
 
-it("updates a matching station POI and retains previous fields", () => {
-  const poi = bundle.pois.find(p => p.floorId === "b1")!;
-  const report = run({ ...fixture, shop: { ...fixture.shop, names: [poi.names[0]!] } });
+it("updates only submitted POI facts and records changed values", () => {
+  const original = bundle.pois.find(p => p.floorId === "b1")!;
+  const poi = { ...original, displayPosition: { x: 1, y: 2, z: 3 }, paid: true,
+    connectorNodeIds: ["existing-node"], evidence: { sourceIds: ["old-source"], method: "survey", checkedDate: "2025-01-01" },
+    notes: [{ lang: "en", text: "Existing note" }], hours: { text: "old hours" } };
+  const station = { ...bundle, pois: [poi] } as unknown as typeof bundle;
+  const s = { ...fixture, shop: { ...fixture.shop, names: [poi.names[0]!] } };
+  const report = checkSubmission(s, "test key", [], station, now);
   expect(report.state).toBe("ACCEPTED");
-  expect(report.proposal?.poi).toMatchObject({ id: poi.id, connectorNodeIds: poi.connectorNodeIds });
-  expect(report.proposal?.previous).toMatchObject({ names: poi.names, displayPosition: poi.displayPosition });
+  const proposed = report.proposal!.poi as Record<string, any>;
+  expect(proposed).toMatchObject({ id: poi.id, displayPosition: poi.displayPosition, paid: true, connectorNodeIds: poi.connectorNodeIds,
+    evidence: { sourceIds: ["msub-ikb-001", "old-source"], checkedDate: "2026-11-10" } });
+  expect(proposed.evidence.method).toContain("merchant-submitted");
+  expect(proposed.notes.at(-1)).toEqual(poi.notes[0]);
+  expect(proposed).not.toHaveProperty("hours");
+  const previous = report.proposal!.previous!;
+  expect(previous.hours).toEqual(poi.hours);
+  expect(Object.keys(previous).sort()).toEqual(Object.keys(poi).filter(k => JSON.stringify((poi as Record<string, unknown>)[k]) !== JSON.stringify(proposed[k])).sort());
+  const stale = checkSubmission({ ...s, hours: { text: "stale", asOf: "2026-01-01" } }, "test key", [], station, now);
+  expect((stale.proposal!.poi as Record<string, unknown>).hours).toEqual(poi.hours);
+  expect(stale.proposal!.previous).not.toHaveProperty("hours");
 });
 
 it("drops stale hours and detects an accepted competing claim", () => {
@@ -109,4 +124,35 @@ it("runs the CLI, writes the private record, prunes and rejects a missing key", 
   expect(readdirSync(queue)).toHaveLength(1);
   expect(JSON.parse(execFileSync(node, prune, { encoding: "utf8" }))).toEqual(["fictional-1"]);
   expect(readdirSync(queue)).toHaveLength(0);
+});
+
+it("accepts an email whose domain appears in the report and writes the queue record", () => {
+  const dir = mkdtempSync(join(tmpdir(), "merchant-contact-"));
+  const queue = join(dir, "queue");
+  mkdirSync(queue);
+  const input = join(dir, "input.json");
+  writeFileSync(input, JSON.stringify({ ...fixture, contact: { kind: "email", value: "owner@fictionalshop.jp" }, url: "https://fictionalshop.jp" }));
+  const report = JSON.parse(execFileSync(process.execPath, ["--import", "tsx", resolve("tools/merchant-intake/intake.ts"), "check", input, "--queue", queue, "--now", "2026-11-10T00:00:00Z", "--write"], { env: { ...process.env, MERCHANT_INTAKE_KEY: "test key" }, encoding: "utf8" }));
+  expect(report.state).toBe("ACCEPTED");
+  expect(readdirSync(queue)).toEqual(["fictional-1.json"]);
+});
+
+it("rejects a queue in the main checkout when invoked from a worktree", () => {
+  const dir = mkdtempSync(join(tmpdir(), "merchant-worktree-"));
+  const repo = join(dir, "repo");
+  const worktree = join(dir, "worktree");
+  mkdirSync(repo);
+  const git = (...args: string[]) => execFileSync("git", args, { cwd: repo, stdio: "ignore" });
+  git("init");
+  git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "--allow-empty", "-m", "initial");
+  git("worktree", "add", "-b", "test-worktree", worktree);
+  const toolDir = join(worktree, "tools", "merchant-intake");
+  mkdirSync(toolDir, { recursive: true });
+  copyFileSync(resolve("tools/merchant-intake/intake.ts"), join(toolDir, "intake.ts"));
+  for (const name of ["apps", "packages", "node_modules"]) symlinkSync(resolve(name), join(worktree, name), "dir");
+  const queue = join(repo, "queue");
+  mkdirSync(queue);
+  const result = spawnSync(process.execPath, ["--import", "tsx", join(toolDir, "intake.ts"), "prune", "--queue", queue], { encoding: "utf8", cwd: worktree });
+  expect(result.status, result.stderr).toBe(2);
+  expect(result.stderr).toContain("queue must be outside the public repository");
 });
