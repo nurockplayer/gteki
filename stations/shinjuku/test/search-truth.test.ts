@@ -822,6 +822,15 @@ describe("merchant shops (#214)", () => {
 describe("department store search", () => {
   const search = createSearchIndex(bundle);
   it.each([
+    ["Isetan", "shop-sjk-isetan-honkan"],
+    ["Isetan", "shop-sjk-isetan-mens"],
+    ["Takashimaya", "shop-sjk-takashimaya"],
+  ])("matches %s directly to %s", (query, id) => {
+    const hit = search.search(query, { limit: 3 }).find((result) => result.poi.id === id);
+    expect(hit).toBeDefined();
+    expect(hit?.tenant).toBeUndefined();
+  });
+  it.each([
     ["shop-sjk-isetan-honkan", ["伊勢丹", "Isetan"]],
     ["shop-sjk-isetan-mens", ["伊勢丹", "Isetan"]],
     ["shop-sjk-marui-honkan", ["マルイ", "Marui", "OIOI"]],

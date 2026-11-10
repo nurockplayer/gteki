@@ -453,7 +453,12 @@
           "text": "伊勢丹新宿店 本館"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "en",
+          "text": "ISETAN"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -462,7 +467,7 @@
         "sourceIds": [
           "isetan-shinjuku-floorguide-2026-10"
         ],
-        "method": "facts-only floor guide (OD-34 ruling 2026-10-25 on #522, scope clause), proxy read, UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25 on #522, scope clause), proxy read, UNVERIFIED, SEARCH_ONLY; alias source https://www.imhds.co.jp/en/group/department_store/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-25"
       },
       "notes": [
@@ -559,7 +564,12 @@
           "text": "高島屋タイムズスクエア"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "en",
+          "text": "Takashimaya Times Square"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
