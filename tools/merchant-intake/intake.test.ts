@@ -95,7 +95,7 @@ it("runs the CLI, writes the private record, prunes and rejects a missing key", 
   const args = [cli, "check", input, "--queue", queue, "--now", "2026-11-10T00:00:00Z", "--write"];
   const env = { ...process.env, MERCHANT_INTAKE_KEY: "test key" };
   const missing = spawnSync(tsx, args, { env: { ...env, MERCHANT_INTAKE_KEY: "" }, encoding: "utf8" });
-  expect(missing.status).toBe(2);
+  expect(missing.status, missing.stderr).toBe(2);
   expect(missing.stderr).toContain("MERCHANT_INTAKE_KEY");
   const report = JSON.parse(execFileSync(tsx, args, { env, encoding: "utf8" }));
   expect(report.state).toBe("ACCEPTED");
