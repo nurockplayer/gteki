@@ -1541,6 +1541,9 @@ runWidth	function	stations/shinjuku/scene/layout.ts
 soffitHeight	function	stations/shinjuku/scene/layout.ts
 spaceRole	function	stations/shinjuku/scene/layout.ts
 widthFromClass	function	stations/shinjuku/scene/layout.ts
+installLightPreset	function	stations/shinjuku/scene/lightPreset.ts
+parseLightPreset	function	stations/shinjuku/scene/lightPreset.ts
+shaftGrade	function	stations/shinjuku/scene/lightPreset.ts
 OEDO_MAGENTA	const	stations/shinjuku/scene/palette.ts
 stationSpawn	function	stations/shinjuku/scene/spawn.ts
 stableHypot	function	stations/shinjuku/scene/stable-hypot.ts
