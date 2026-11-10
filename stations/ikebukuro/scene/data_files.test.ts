@@ -61,6 +61,7 @@ const stairwellSources = (): string[] => [
 const EXPECTED: Record<string, { script: string; sources: () => string[]; authored?: boolean }> = {
   "scene/stairwell-cut.high.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/stairwell-cut.low.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
+  "scene/underfloor_backing.json": { script: "Hand-transcribed", sources: () => [PLATEAU] },
   "scene/walk_bridges.json": { script: "pipeline/build_walkfix.py", sources: () => [PLATEAU] },
   "scene/access_fences.json": { script: "pipeline/build_access.py", sources: () => [PLATEAU, ...routableAreas()] },
   "scene/crowd_lanes.json": { script: "pipeline/build_station.py", sources: () => [PLATEAU, ...routableAreas(), ...verifiedEdges()] },
