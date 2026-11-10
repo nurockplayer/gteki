@@ -44,11 +44,33 @@ describe("insideCameraCut", () => {
 });
 
 describe("sign samples", () => {
-  it("samples the part of the sign's screen box over the minimap", () => {
-    const out = Array.from({ length: 5 }, () => ({ x: 0, y: 0 }));
-    // A 400 px sign covering a 100 x 60 px minimap entirely: every sample lands on the minimap.
-    overlapSamples({ left: 0, right: 400, top: 0, bottom: 400 }, { left: 250, right: 350, top: 170, bottom: 230 }, out);
-    expect(out).toEqual([{ x: 300, y: 200 }, { x: 260, y: 176 }, { x: 340, y: 176 }, { x: 340, y: 224 }, { x: 260, y: 224 }]);
+  it("samples the clipped sign covering the minimap", () => {
+    const out = Array.from({ length: 9 }, () => ({ x: 0, y: 0 }));
+    const quad = [{ x: 0, y: 0 }, { x: 400, y: 0 }, { x: 400, y: 400 }, { x: 0, y: 400 }];
+    const n = overlapSamples(quad, { left: 250, right: 350, top: 170, bottom: 230 }, out);
+    expect(n).toBe(5);
+    expect(out[0]).toEqual({ x: 300, y: 200 });
+    expect(out.slice(1, n)).toEqual(expect.arrayContaining([{ x: 260, y: 176 }, { x: 340, y: 176 }, { x: 340, y: 224 }, { x: 260, y: 224 }]));
+  });
+
+  it("keeps samples inside a thin angled sign and the minimap", () => {
+    const dx = -0.6 * 7.5 / Math.sqrt(1.36), dy = 7.5 / Math.sqrt(1.36);
+    const quad = [{ x: -50 + dx, y: -38 + dy }, { x: 150 + dx, y: 82 + dy }, { x: 150 - dx, y: 82 - dy }, { x: -50 - dx, y: -38 - dy }];
+    const map = { left: 0, right: 100, top: 0, bottom: 60 };
+    const out = Array.from({ length: 9 }, () => ({ x: 0, y: 0 }));
+    const n = overlapSamples(quad, map, out);
+    expect(n).toBeGreaterThanOrEqual(3);
+    for (const point of out.slice(0, n)) {
+      expect(point.x).toBeGreaterThanOrEqual(map.left); expect(point.x).toBeLessThanOrEqual(map.right);
+      expect(point.y).toBeGreaterThanOrEqual(map.top); expect(point.y).toBeLessThanOrEqual(map.bottom);
+      const cross = quad.map((a, i) => { const b = quad[(i + 1) % 4]!; return (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x); });
+      expect(cross.every((v) => v >= -1e-9) || cross.every((v) => v <= 1e-9)).toBe(true);
+    }
+  });
+
+  it("returns no samples for a sign outside the minimap", () => {
+    const quad = [{ x: 200, y: 200 }, { x: 300, y: 200 }, { x: 300, y: 300 }, { x: 200, y: 300 }];
+    expect(overlapSamples(quad, { left: 0, right: 100, top: 0, bottom: 60 }, [])).toBe(0);
   });
 
   it("maps a ray onto the sign face and rejects rays beside or behind it", () => {

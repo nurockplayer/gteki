@@ -457,8 +457,9 @@ export class Explorer {
   private readonly minimapSignPoint = new THREE.Vector3();
   private readonly minimapSignDirection = new THREE.Vector3();
   private minimapSampleSign = 0;
-  private readonly minimapScreenSamples = Array.from({ length: 5 }, () => ({ x: 0, y: 0 }));
-  private readonly minimapSamples = Array.from({ length: 5 }, () => new THREE.Vector3());
+  private readonly minimapQuadScreen = Array.from({ length: 4 }, () => ({ x: 0, y: 0 }));
+  private readonly minimapScreenSamples = Array.from({ length: 9 }, () => ({ x: 0, y: 0 }));
+  private readonly minimapSamples = Array.from({ length: 9 }, () => new THREE.Vector3());
   private readonly minimapSampleBlocked = (i: number): boolean => {
     const sign = this.minimapSigns[this.minimapSampleSign]!;
     const direction = this.minimapSignDirection.subVectors(this.minimapSamples[i]!, this.camera.position);
@@ -2793,18 +2794,21 @@ export class Explorer {
       rect.distance = this.minimapSignDirection.subVectors(face.centre as THREE.Vector3, this.camera.position).length();
       rect.left = rect.top = Infinity;
       rect.right = rect.bottom = -Infinity;
-      for (const corner of corners) {
-        const point = this.minimapSignPoint.copy(corner).project(this.camera);
+      for (let j = 0; j < 4; j++) {
+        const point = this.minimapSignPoint.copy(corners[j]!).project(this.camera);
         const x = canvasRect.left + (point.x + 1) * canvasRect.width / 2;
         const y = canvasRect.top + (1 - point.y) * canvasRect.height / 2;
+        const screen = this.minimapQuadScreen[j < 2 ? j : 5 - j]!;
+        screen.x = x; screen.y = y;
         rect.left = Math.min(rect.left, x); rect.right = Math.max(rect.right, x);
         rect.top = Math.min(rect.top, y); rect.bottom = Math.max(rect.bottom, y);
       }
       if (rect.left >= mapRect.right || rect.right <= mapRect.left || rect.top >= mapRect.bottom || rect.bottom <= mapRect.top) continue;
-      // Sample the part of the sign's screen box over the minimap, mapped back onto the sign face.
-      overlapSamples(rect, mapRect, this.minimapScreenSamples);
+      // Sample the clipped sign over the minimap, mapped back onto the sign face.
+      const n = overlapSamples(this.minimapQuadScreen, mapRect, this.minimapScreenSamples);
       let count = 0;
-      for (const s of this.minimapScreenSamples) {
+      for (let j = 0; j < n; j++) {
+        const s = this.minimapScreenSamples[j]!;
         const dir = this.minimapSignDirection.set((s.x - canvasRect.left) / canvasRect.width * 2 - 1, 1 - (s.y - canvasRect.top) / canvasRect.height * 2, 0.5)
           .unproject(this.camera).sub(this.camera.position);
         if (rayOnQuad(this.camera.position, dir, corners[0]!, corners[1]!, corners[2]!, this.minimapSamples[count]!)) count++;
