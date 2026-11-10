@@ -215,6 +215,7 @@ describe("placeOverviewChip", () => {
     expect(plain).toEqual({ hidden: false, dx: -23, dy: 0 });
     const placed = placeOverviewChip(chip, { ...opts, identityRegions: [region] });
     expect(placed.hidden).toBe(false);
+    if (placed.hidden) return;
     expect(placed.dy).not.toBe(0);
     const top = chip.y - chip.h / 2 + placed.dy;
     expect(top >= region.y1 || top + chip.h <= region.y0).toBe(true);
