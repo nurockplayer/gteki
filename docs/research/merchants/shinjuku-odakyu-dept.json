@@ -19,6 +19,24 @@
       "retrievedAt": "2026-10-24T09:36:06Z",
       "datasetDate": null,
       "notes": "Store top page and 営業時間・アクセス page (https://www.odakyu-dept.co.jp/shinjuku/hour_acces/index.html) read as facts; no entrance/connection labels printed. Pages undated."
+    },
+    {
+      "id": "odakyu-dept-shinjuku-2026-11-10",
+      "title": "新宿店TOP | 小田急百貨店",
+      "publisher": "株式会社小田急百貨店",
+      "url": "https://www.odakyu-dept.co.jp/sitesearch/brand/result/?store=%E6%96%B0%E5%AE%BF%E5%BA%97",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+        "date": "2026-10-24"
+      },
+      "attribution": "新宿店TOP | 小田急百貨店 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-10T13:03:00+09:00",
+      "datasetDate": null,
+      "notes": "Brand search pages 1–28 read with plain curl 2026-11-10 13:03 JST; facts only, service and rotating pop-up spaces excluded as in the original transcription."
     }
   ],
   "pois": [

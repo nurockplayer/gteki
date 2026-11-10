@@ -127,6 +127,42 @@
       "retrievedAt": "2026-11-03T09:07:37Z",
       "datasetDate": "2026-10-22",
       "notes": "OD-35 private use and quotation class, director ruling 2026-11-02; /legal/ §1, recorded in docs/research/merchants/dir-terms-subnade-parco.md. Facts only: shop name, printed category and floor. Method: facts-only OCR of image-only floor guide (OD-35), hand-checked. Current PDF linked by https://www.subnade.co.jp/floorguide/, default User-Agent curl HTTP 200, 673885 bytes, SHA-256 793aefd755a0099faa671b4fb6db63dbebe4f8d71aa81a994e0b3db7224f91dd. One image-only page, rendered and hand-checked: 86 shops; unreadable 0; fashion slot 31 blank. Shopping floor is not printed in the PDF: official https://www.subnade.co.jp/company/safety/ explicitly identifies the shops on 地下一階 and parking on 地下２階, retrieved 2026-11-03T09:09:08Z (UTC), default User-Agent HTTP 200, 30795 bytes, SHA-256 441b6a02352c00029961728f1d8dc8d72386b28b83f415497b494fb945ae516d; floorLabel preserves 地下一階. No image, layout, coordinates, descriptions or other source wording is reused. PDF and rendered images are not committed. The historical 85 cards refer to the unimported 2026-09-17 Wayback /search/ snapshot, not this current guide."
+    },
+    {
+      "id": "marui-shinjuku-floorguide-2026-11-10",
+      "title": "新宿マルイ 本館 フロアガイド（アネックス・メン も同一の仕組み） | 0101.co.jp",
+      "publisher": "株式会社丸井",
+      "url": "https://www.0101.co.jp/003/info/",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/pull/502",
+        "date": "2026-10-25"
+      },
+      "attribution": "新宿マルイ 本館 / アネックス / メン フロアガイド (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-10T12:51:00+09:00",
+      "datasetDate": null,
+      "notes": "Floor-guide shop introduction feeds for 003, 005 and 074 and the 005 shop-list reading, read with plain curl 2026-11-10 12:51 JST. Facts only; no images or descriptions reused."
+    },
+    {
+      "id": "keio-shinjuku-shopsearch-2026-11-10",
+      "title": "京王百貨店 新宿店 ショップ検索 | keionet.com",
+      "publisher": "株式会社京王百貨店",
+      "url": "https://www.keionet.com/re2024/json/shop_shinjuku.json",
+      "license": null,
+      "rights": "REFERENCE_ONLY",
+      "usage": "facts-only",
+      "decision": {
+        "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+        "date": "2026-11-02"
+      },
+      "attribution": "京王百貨店 新宿店 ショップ検索 (facts only, UNVERIFIED; not reproduced)",
+      "modified": false,
+      "retrievedAt": "2026-11-10T12:51:00+09:00",
+      "datasetDate": null,
+      "notes": "Shop-search JSON read with plain curl 2026-11-10 12:51 JST. Facts only; no images or descriptions reused."
     }
   ],
   "pois": [

@@ -283,6 +283,7 @@ containmentShift	function	apps/web/src/explorer/labelDeclutter.ts
 declutter	function	apps/web/src/explorer/labelDeclutter.ts
 estimateLabelBox	function	apps/web/src/explorer/labelDeclutter.ts
 labelClass	function	apps/web/src/explorer/labelDeclutter.ts
+placeOverviewChip	function	apps/web/src/explorer/labelDeclutter.ts
 revealedUnmeasured	function	apps/web/src/explorer/labelDeclutter.ts
 FLOOR_BAND_M	const	apps/web/src/explorer/labelVisibility.ts
 LabelOcclusion	type	apps/web/src/explorer/labelVisibility.ts
@@ -313,9 +314,12 @@ raycastObject	function	apps/web/src/explorer/meshBvh.ts
 FaceEligibility	type	apps/web/src/explorer/minimapYield.ts
 YieldRect	type	apps/web/src/explorer/minimapYield.ts
 YieldState	type	apps/web/src/explorer/minimapYield.ts
+anySampleClear	function	apps/web/src/explorer/minimapYield.ts
 faceEligible	function	apps/web/src/explorer/minimapYield.ts
 insideCameraCut	function	apps/web/src/explorer/minimapYield.ts
 minimapYield	function	apps/web/src/explorer/minimapYield.ts
+overlapSamples	function	apps/web/src/explorer/minimapYield.ts
+rayOnQuad	function	apps/web/src/explorer/minimapYield.ts
 OccludedLineStyle	interface	apps/web/src/explorer/occludedLine.ts
 occludedLineStyle	function	apps/web/src/explorer/occludedLine.ts
 Aabb	interface	apps/web/src/explorer/overviewFraming.ts
