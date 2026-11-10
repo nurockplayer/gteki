@@ -2,7 +2,7 @@
   "schema": "gteki.research.tenants/0.1",
   "note": "Facts-only brand list of a department store. Not POIs: a brand search should return the store's POI with the floor. UNVERIFIED.",
   "storePoiId": "shop-ikb-tobudept",
-  "retrievedAt": "2026-10-24T09:18:40Z",
+  "retrievedAt": "2026-11-10T13:20:00+09:00",
   "tenants": [
     {
       "id": "tenant-ikb-tobudept-101113102",
@@ -3384,14 +3384,6 @@
           "text": "CLARINSPrecious"
         }
       ],
-      "floorLabel": "2F",
-      "category": "化粧品・ビューティ＆ヘルスケア",
-      "sourceId": "tobu-dept-ikebukuro-2026-10-2F"
-    },
-    {
-      "id": "tenant-ikb-tobudept-104239104",
-      "name": "グラティエ",
-      "aliases": [],
       "floorLabel": "2F",
       "category": "化粧品・ビューティ＆ヘルスケア",
       "sourceId": "tobu-dept-ikebukuro-2026-10-2F"
@@ -10365,9 +10357,9 @@
           "text": "CHIFURE"
         }
       ],
-      "floorLabel": "8F",
+      "floorLabel": "6F",
       "category": "化粧品・ビューティ＆ヘルスケア",
-      "sourceId": "tobu-dept-ikebukuro-2026-10-8F"
+      "sourceId": "tobu-dept-ikebukuro-2026-11-6F"
     },
     {
       "id": "tenant-ikb-tobudept-110619301",
@@ -11167,6 +11159,14 @@
     {
       "id": "tobu-dept-ikebukuro-2026-10-15F",
       "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/15F"
+    },
+    {
+      "id": "tobu-dept-ikebukuro-2026-11-6F",
+      "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/6F"
+    },
+    {
+      "id": "tobu-dept-ikebukuro-2026-11-2F",
+      "url": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/2F"
     }
   ],
   "aliasSource": {

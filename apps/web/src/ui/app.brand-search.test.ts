@@ -146,7 +146,7 @@ describe("#419 department-store brand search end to end", () => {
   it("Ikebukuro: 紀伊國屋書店 → 東武百貨店 card with 7F → no route", () => {
     expectBrandFlow(bundleOf(ikbStation, ikbGraph, ikbPois, ikbTenants), {
       stationDir: "ikebukuro", query: "紀伊國屋書店", brand: "紀伊國屋書店", storeId: "shop-ikb-tobudept", storeName: "東武百貨店　池袋店",
-      floor: "7F", tenantId: "tenant-ikb-tobudept-109225501", checkedDate: "2026-10-24",
+      floor: "7F", tenantId: "tenant-ikb-tobudept-109225501", checkedDate: "2026-11-10",
       resultMeta: "7F · “紀伊國屋書店” · 入口未確認のため道案内なし（現地確認待ち）",
       sourceNote: "池袋駅西口 直結", originId: "exit-22",
     });
