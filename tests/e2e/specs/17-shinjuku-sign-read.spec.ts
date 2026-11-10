@@ -11,7 +11,8 @@ test.use({ trace: "off" });
  *
  * Distances are horizontal, along the routed polyline, from the walker's projection onto it to the sign node's.
  * Skipped unless GTEKI_SIGN_READ=1; run on phone-chromium (low tier) one invocation at a time. The minimap-yield
- * check at sign 453ea111 (#838 shots 21, 23) is desktop only: run --project=desktop-chromium for it.
+ * check at sign 453ea111 (#838 shots 21, 23) is desktop only and on platform-exit2, where the sign sits under
+ * the minimap; run --project=desktop-chromium for it.
  */
 test.skip(process.env.GTEKI_SIGN_READ !== "1", "set GTEKI_SIGN_READ=1 to run the Shinjuku sign readability probe");
 
@@ -99,7 +100,7 @@ for (const r of routes) {
         const p = pending[i]!;
         if (s >= p.at) {
           const file = shotPath(testInfo, `sign-${r.label}-${p.sign.slice(0, 8)}-${p.d}m.png`);
-          if (!phone && p.sign === "453ea111f1524cef8f3ac139bbf2e26b" && (p.d === 10 || p.d === 6)) {
+          if (!phone && r.label === "platform-exit2" && p.sign === "453ea111f1524cef8f3ac139bbf2e26b" && (p.d === 10 || p.d === 6)) {
             await expect.soft(page.locator(".minimap"), `${r.label} ${p.sign} ${p.d}m: minimap yields`).toHaveAttribute("data-yield", "sign");
           }
           await page.screenshot({ path: file });
