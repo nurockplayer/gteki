@@ -202,7 +202,7 @@ function wholeNumberAt(candidate: string, query: string): number {
   return -1;
 }
 
-function scoreText(q: QueryForm, candidate: string): number {
+function scoreText(q: QueryForm, candidate: string, original: string): number {
   const query = q.normalized;
   if (candidate === query) return 100;
   if (q.numbered) {
@@ -217,7 +217,22 @@ function scoreText(q: QueryForm, candidate: string): number {
   if (candidate.includes(query)) return 60;
   const tokenScore = (q.tokens.length > 1 && q.tokens.every((token) => candidate.includes(token))) ||
     (q.runs.length > 1 && q.runs.every((run) => candidate.includes(run))) ? 40 : 0;
-  return Math.max(tokenScore, q.fuzzy ? fuzzyScore(q.chars, candidate) : 0);
+  let fuzzy = q.fuzzy ? fuzzyScore(q.chars, candidate) : 0;
+  if (fuzzy && /^[a-z]{1,5}$/.test(query)) {
+    const tokens = original.normalize("NFKC").toLowerCase().match(/[a-z]+/g) ?? [];
+    fuzzy = Math.max(0, ...tokens.filter((token) => {
+      if (token[0] !== query[0] || Math.abs(token.length - query.length) > 1) return false;
+      let i = 0, j = 0, edits = 0;
+      while (i < query.length && j < token.length) {
+        if (query[i] === token[j]) { i++; j++; continue; }
+        if (++edits > 1) return false;
+        if (query.length >= token.length) i++;
+        if (token.length >= query.length) j++;
+      }
+      return edits + (query.length - i) + (token.length - j) <= 1;
+    }).map((token) => fuzzyScore(q.chars, token)));
+  }
+  return Math.max(tokenScore, fuzzy);
 }
 
 /** Match quality for ties: exact name > name starts with the query > anything else; then the shorter matched name. */
@@ -301,7 +316,7 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
         const matchedTenants = new Set<string>();
         for (const text of entry.texts) {
           for (const form of forms) {
-            const raw = scoreText(form, text.normalized);
+            const raw = scoreText(form, text.normalized, text.original);
             if (raw <= 0) continue;
             const score = raw - form.penalty;
             if (score <= 0) continue;

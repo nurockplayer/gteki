@@ -289,12 +289,12 @@
             "score": 105
           },
           {
-            "poiId": "tobu-central-gate-1",
+            "poiId": "shop-ikb-tobudept",
             "score": 100
           },
           {
-            "poiId": "tobu-tj-escalator-1",
-            "score": 80
+            "poiId": "tobu-central-gate-1",
+            "score": 100
           }
         ]
       },
