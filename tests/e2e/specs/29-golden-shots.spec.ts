@@ -66,11 +66,12 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       const png = await page.screenshot({ path: path.join(out, `${camera.id}.png`), timeout: 60_000 });
       phases.screenshot = Date.now() - phaseStart;
       phaseStart = Date.now();
-      const probe = await page.evaluate(() => (window as any).__gteki.goldenProbe()) as { voidRatio: number; stationShare: number };
+      const probe = await page.evaluate((overview) => (window as any).__gteki.goldenProbe(overview), camera.kind === "overview") as { voidRatio: number; stationShare: number | null; renderMs: number[] };
+      console.log(`[golden] ${camera.id}: probe render+read ms=${probe.renderMs.map(ms => ms.toFixed(1)).join(",")}`);
       phases.probe = Date.now() - phaseStart;
-      const metrics = { ...probe, flatRatio: await screenshotFlatRatio(page, png), nearBlack: (await imageStats(page, png)).nearBlack };
+      const metrics = { voidRatio: probe.voidRatio, stationShare: probe.stationShare, flatRatio: await screenshotFlatRatio(page, png), nearBlack: (await imageStats(page, png)).nearBlack };
       const thresholds = camera.kind === "overview" ? camera.thresholds! : config.thresholds;
-      const checks = (Object.entries(thresholds) as [Metric, number][]).map(([metric, threshold]) => evaluateCheck(metric, metrics[metric], threshold, camera.known));
+      const checks = (Object.entries(thresholds) as [Metric, number][]).map(([metric, threshold]) => evaluateCheck(metric, metrics[metric]!, threshold, camera.known));
       for (const c of checks) if (c.status === "fail") failures.push(`${camera.id}: ${c.metric}=${c.value} threshold=${c.threshold}`);
       rows.push({ ...camera, metrics, checks, status: checks.some(c => c.status === "fail") ? "fail" : checks.some(c => c.status === "known") ? "known" : "pass" });
     } catch (error) {
