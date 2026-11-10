@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -11,12 +11,18 @@ const row = { suite: "test", variant: "node24", rep: 1, memory_limit: "3g", file
 const params = { suite: "test", variant: "node24", rep: 1, memory: "3g", files: "", wallS: null };
 
 describe("bench skip key", () => {
-  it.each([
-    [[], null],
-    [[{ id: "node24-test-1" }], 2],
-    [[{ id: "node24-test-1" }, { id: "node24-test-1-a2" }], 3],
-  ])("counts existing attempts %#", (rows, expected) => {
-    expect(nextAttempt(rows, "node24-test-1")).toBe(expected);
+  it("chooses attempt numbers from artifacts on disk", () => {
+    const dir = mkdtempSync(join(tmpdir(), "bench-attempts-"));
+    const base = "node24-test-1";
+    try {
+      expect(nextAttempt(dir, base)).toBeNull();
+      writeFileSync(join(dir, `${base}.heap.jsonl`), "");
+      expect(nextAttempt(dir, base)).toBe(2);
+      writeFileSync(join(dir, `${base}-a2.procs.raw`), "");
+      expect(nextAttempt(dir, base)).toBe(3);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("skips a row with the same parameters", () => {

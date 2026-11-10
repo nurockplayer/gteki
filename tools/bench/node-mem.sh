@@ -16,7 +16,7 @@ digest=$(docker image inspect "gteki-bench:$variant" --format '{{.Id}}')
 for ((rep=1; rep<=reps; rep++)); do
   memory=3g; cpus=4; [[ $suite == box ]] && { memory=${BENCH_BOX_MEMORY:-2g}; cpus=2; }
   if node tools/bench/skip-key.cjs "$out/runs.jsonl" "$suite" "$variant" "$rep" "$memory" "${BENCH_FILES:-}" "${BENCH_WALL_S:-}"; then echo "skip $variant $suite $rep"; continue; fi
-  attempt=$(node tools/bench/skip-key.cjs --attempt "$out/runs.jsonl" "$variant-$suite-$rep")
+  attempt=$(node tools/bench/skip-key.cjs --attempt "$out" "$variant-$suite-$rep")
   attempt_arg=(); [[ -n $attempt ]] && attempt_arg=(--attempt "$attempt")
   free=$(memory_pressure | grep 'free percentage' | awk -F': ' '{print $2+0}')
   if [[ -z $free ]] || ((free < 20)); then echo 'memory pressure gate: free below 20% or unavailable' >&2; exit 3; fi
