@@ -6,16 +6,29 @@ function shouldSkip(rows, { suite, variant, rep, memory, files, wallS }) {
     && (row.wall_s ?? null) === wallS && row.timedOut !== true);
 }
 
-module.exports = { shouldSkip };
+function nextAttempt(rows, id) {
+  const count = rows.filter(row => row?.id === id || row?.id?.startsWith(`${id}-a`)).length;
+  return count ? count + 1 : null;
+}
+
+module.exports = { shouldSkip, nextAttempt };
 
 if (require.main === module) {
-  const [path, suite, variant, rep, memory, files, wallS] = process.argv.slice(2);
+  const args = process.argv.slice(2);
+  const attemptMode = args[0] === '--attempt';
+  if (attemptMode) args.shift();
+  const [path, suite, variant, rep, memory, files, wallS] = args;
   let rows = [];
   try {
     rows = fs.readFileSync(path, 'utf8').split('\n').filter(Boolean).flatMap(line => {
       try { return [JSON.parse(line)]; } catch { return []; }
     });
   } catch {}
-  const wall = wallS ? Number(wallS) : null;
-  process.exitCode = shouldSkip(rows, { suite, variant, rep: Number(rep), memory, files, wallS: wall }) ? 0 : 1;
+  if (attemptMode) {
+    const attempt = nextAttempt(rows, suite);
+    if (attempt !== null) console.log(attempt);
+  } else {
+    const wall = wallS ? Number(wallS) : null;
+    process.exitCode = shouldSkip(rows, { suite, variant, rep: Number(rep), memory, files, wallS: wall }) ? 0 : 1;
+  }
 }

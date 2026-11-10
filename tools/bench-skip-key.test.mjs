@@ -6,11 +6,19 @@ import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
-const { shouldSkip } = require("./bench/skip-key.cjs");
+const { shouldSkip, nextAttempt } = require("./bench/skip-key.cjs");
 const row = { suite: "test", variant: "node24", rep: 1, memory_limit: "3g", files: "", wall_s: null };
 const params = { suite: "test", variant: "node24", rep: 1, memory: "3g", files: "", wallS: null };
 
 describe("bench skip key", () => {
+  it.each([
+    [[], null],
+    [[{ id: "node24-test-1" }], 2],
+    [[{ id: "node24-test-1" }, { id: "node24-test-1-a2" }], 3],
+  ])("counts existing attempts %#", (rows, expected) => {
+    expect(nextAttempt(rows, "node24-test-1")).toBe(expected);
+  });
+
   it("skips a row with the same parameters", () => {
     expect(shouldSkip([row], params)).toBe(true);
   });
