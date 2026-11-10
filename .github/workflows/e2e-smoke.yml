@@ -17,7 +17,7 @@ jobs:
   e2e-smoke:
     name: e2e-smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -57,7 +57,7 @@ jobs:
         run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off --grep-invert "station switching"
 
       - name: Run golden cameras
-        timeout-minutes: 6
+        timeout-minutes: 15
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}

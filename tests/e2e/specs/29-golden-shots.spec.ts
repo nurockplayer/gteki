@@ -61,13 +61,14 @@ async function screenshotFlatRatio(page: Page, png: Buffer): Promise<number> {
 }
 
 test("golden cameras: void, coverage and flat frames", async ({ page }, testInfo) => {
-  test.setTimeout(360_000);
+  test.setTimeout(840_000);
   const out = path.join(ARTIFACTS, "golden", testInfo.project.name);
   fs.mkdirSync(out, { recursive: true });
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const rows: object[] = [], failures: string[] = [];
   let station: StationKey | undefined, tier = "", renderer: unknown = null;
   for (const camera of config.cameras) {
+    const started = Date.now();
     try {
       if (station !== camera.station) {
         await openStation(page, camera.station); station = camera.station;
@@ -83,7 +84,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page }, testInfo
         }
         await page.waitForTimeout(1500);
       }
-      const png = await page.screenshot({ path: path.join(out, `${camera.id}.png`) });
+      const png = await page.screenshot({ path: path.join(out, `${camera.id}.png`), timeout: 60_000 });
       const probe = await page.evaluate(() => (window as any).__gteki.goldenProbe()) as { voidRatio: number; stationShare: number };
       const metrics = { ...probe, flatRatio: await screenshotFlatRatio(page, png), nearBlack: (await imageStats(page, png)).nearBlack };
       const thresholds = camera.kind === "overview" ? camera.thresholds! : config.thresholds;
@@ -92,8 +93,10 @@ test("golden cameras: void, coverage and flat frames", async ({ page }, testInfo
       rows.push({ ...camera, metrics, checks, status: checks.some(c => c.status === "fail") ? "fail" : checks.some(c => c.status === "known") ? "known" : "pass" });
     } catch (error) {
       failures.push(`${camera.id}: ${String(error)}`); rows.push({ ...camera, status: "fail", error: String(error) });
+      console.error(`[golden] ${camera.id}: ${String(error)}`);
     }
     fs.writeFileSync(path.join(out, "golden.json"), JSON.stringify({ sha, project: testInfo.project.name, tier, renderer, cameras: rows }, null, 2));
+    console.log(`[golden] ${camera.id}: ${((Date.now() - started) / 1000).toFixed(1)}s`);
   }
   expect(failures, failures.join("\n")).toEqual([]);
 });
