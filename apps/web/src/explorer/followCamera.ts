@@ -381,3 +381,8 @@ export function patchCameraHold(current: CameraHold, patch: CameraHold | null): 
 export function fadeHold(value: number | null): number | null {
   return value === null || !Number.isFinite(value) ? null : Math.max(0, Math.min(1, value));
 }
+
+/** Whether the upcoming route sign is close to the walker and in front of the rendered camera. */
+export function guideSignInView(avatar: THREE.Vector3, camera: THREE.Vector3, forward: THREE.Vector3, sign: THREE.Vector3): boolean {
+  return avatar.distanceToSquared(sign) <= 12 * 12 && sign.clone().sub(camera).dot(forward) > 0;
+}

@@ -267,21 +267,33 @@ function paint(blocks: SignContent[], theme: Theme): { canvas: HTMLCanvasElement
   return { canvas: c, widthM: c.width / PX_PER_M };
 }
 
-/** Paint, trimming the fullest block until the face fits maxW: a second gate goes first
- *  (gates usually share the same way), then the farthest exits. */
-function paintFitted(blocks: SignContent[], maxW: number, theme: Theme = THEME_DIRECTION) {
-  let b = blocks.map((x) => ({ ...x, exits: [...x.exits], gates: [...x.gates], places: [...(x.places ?? [])] }));
+/** Fit a face by dropping English names before destinations from the fullest block. */
+export function fitSignBlocks(blocks: SignContent[], widthOf: (blocks: SignContent[]) => number, maxW: number): SignContent[] {
+  let b = blocks.map((x) => ({ ...x, exits: [...x.exits], gates: [...x.gates], ...(x.places ? { places: [...x.places] } : {}) }));
   const n = (x: SignContent) => x.exits.length + x.gates.length + (x.places?.length ?? 0);
   for (;;) {
-    const r = paint(b, theme);
+    const width = widthOf(b);
     const fullest = [...b].sort((p, q) => n(q) - n(p))[0]!;
-    if (r.widthM <= maxW || n(fullest) <= 1) return r;
-    if (fullest.places!.length > 1) fullest.places!.pop();
+    if (width <= maxW || n(fullest) <= 1) return b;
+    const named = [...fullest.gates].reverse().find((x) => x.en != null)
+      ?? [...(fullest.places ?? [])].reverse().find((x) => x.en != null);
+    if (named) {
+      if (fullest.gates.includes(named)) fullest.gates[fullest.gates.indexOf(named)] = { ...named, en: null };
+      else fullest.places![fullest.places!.indexOf(named)] = { ...named, en: null };
+      continue;
+    }
+    if ((fullest.places?.length ?? 0) > 1) fullest.places!.pop();
     else if (fullest.gates.length > 1 || !fullest.exits.length) fullest.gates.pop();
     else if (fullest.exits.length > 1 || !fullest.gates.length) fullest.exits.pop();
     else fullest.gates.pop();
     b = b.filter((x) => n(x) > 0);
   }
+}
+
+function paintFitted(blocks: SignContent[], maxW: number, theme: Theme = THEME_DIRECTION) {
+  let result: ReturnType<typeof paint>;
+  fitSignBlocks(blocks, (b) => (result = paint(b, theme)).widthM, maxW);
+  return result!;
 }
 
 function blockParts(spec: SignContent, h: number, pad: number): Part[] {

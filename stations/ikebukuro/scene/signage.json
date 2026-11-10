@@ -52,12 +52,12 @@
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -100,7 +100,7 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       }
      ]
     }
@@ -194,12 +194,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -256,12 +256,12 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -280,7 +280,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     },
@@ -392,12 +392,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -454,7 +454,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -502,12 +502,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -564,12 +564,12 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -700,12 +700,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -787,12 +787,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -868,12 +868,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -919,12 +919,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -1017,12 +1017,12 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -1117,12 +1117,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -1179,12 +1179,12 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -1297,12 +1297,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -1360,12 +1360,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -1440,7 +1440,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -1489,12 +1489,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -1551,12 +1551,12 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -1593,7 +1593,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     },
@@ -1681,12 +1681,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -1750,12 +1750,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -1824,12 +1824,12 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -1854,7 +1854,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     },
@@ -1954,12 +1954,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -2028,7 +2028,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -2077,12 +2077,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -2139,12 +2139,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -2193,12 +2193,12 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -2256,7 +2256,7 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       }
      ]
     },
@@ -2280,7 +2280,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     }
@@ -2344,12 +2344,12 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -2386,12 +2386,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     },
@@ -2460,12 +2460,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -2513,7 +2513,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     }
@@ -2539,7 +2539,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -2576,12 +2576,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -2656,7 +2656,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     },
@@ -2698,7 +2698,7 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -2755,7 +2755,7 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     }
    ],
    "arrow": "up",
@@ -2798,7 +2798,7 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     },
@@ -2809,7 +2809,7 @@
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -2866,12 +2866,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -2883,7 +2883,7 @@
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -2925,7 +2925,7 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       }
      ]
     }
@@ -2951,7 +2951,7 @@
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -2976,7 +2976,7 @@
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       }
      ]
     },
@@ -3006,7 +3006,7 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -3032,7 +3032,7 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -3081,12 +3081,12 @@
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       },
       {
        "id": "tobu-central-gate-2",
        "ja": "東武東上線 中央2改札",
-       "en": null
+       "en": "Central Gate 2"
       }
      ]
     }
@@ -3143,12 +3143,12 @@
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     },
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null
+     "en": "Central Gate 2"
     }
    ],
    "arrow": "up",
@@ -3160,7 +3160,7 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     },
@@ -3202,7 +3202,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     }
@@ -3259,7 +3259,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -3302,7 +3302,7 @@
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -3313,7 +3313,7 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -3370,12 +3370,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -3418,7 +3418,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     }
@@ -3475,7 +3475,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -3518,12 +3518,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -3580,12 +3580,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -3634,7 +3634,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     }
@@ -3734,12 +3734,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -3796,7 +3796,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -3808,12 +3808,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -3906,12 +3906,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -3960,7 +3960,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     }
@@ -4030,12 +4030,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -4092,7 +4092,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -4129,12 +4129,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -4203,12 +4203,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -4321,12 +4321,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -4456,12 +4456,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -4518,12 +4518,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -4612,12 +4612,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -4747,12 +4747,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -4809,12 +4809,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -4939,12 +4939,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -5032,12 +5032,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -5094,12 +5094,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -5212,12 +5212,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -5281,12 +5281,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -5361,12 +5361,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -5461,12 +5461,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -5530,12 +5530,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -5604,12 +5604,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -5704,12 +5704,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -5766,12 +5766,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -5866,12 +5866,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -5928,12 +5928,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -6028,12 +6028,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -6090,12 +6090,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -6196,12 +6196,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -6265,12 +6265,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -6339,12 +6339,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -6475,12 +6475,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -6537,12 +6537,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -6667,12 +6667,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -6760,12 +6760,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -6822,12 +6822,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -6946,12 +6946,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -7008,12 +7008,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -7102,12 +7102,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -7219,12 +7219,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -7281,12 +7281,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -7375,12 +7375,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -7480,12 +7480,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -7542,12 +7542,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -7648,12 +7648,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -7717,12 +7717,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -7791,12 +7791,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -7879,12 +7879,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     }
@@ -7941,12 +7941,12 @@
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     },
     {
      "id": "jr-central-gate-1",
      "ja": "JR 中央1改札",
-     "en": null
+     "en": "Central 1 Gate"
     }
    ],
    "arrow": "up",
@@ -7995,7 +7995,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     }
@@ -8059,7 +8059,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       }
      ]
     },
@@ -8095,7 +8095,7 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -8146,7 +8146,7 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     }
    ],
    "arrow": "up",
@@ -8177,12 +8177,12 @@
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       },
       {
        "id": "jr-central-gate-1",
        "ja": "JR 中央1改札",
-       "en": null
+       "en": "Central 1 Gate"
       }
      ]
     },
@@ -8257,12 +8257,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -8381,12 +8381,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -8443,12 +8443,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -8567,12 +8567,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -8629,12 +8629,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -8747,12 +8747,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -8828,12 +8828,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     },
@@ -8902,12 +8902,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -9014,12 +9014,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -9089,12 +9089,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     },
@@ -9163,12 +9163,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -9251,12 +9251,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -9313,12 +9313,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -9401,12 +9401,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -9463,12 +9463,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -9551,12 +9551,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -9613,12 +9613,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -9719,12 +9719,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -9788,12 +9788,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     },
@@ -9862,12 +9862,12 @@
     {
      "id": "jr-south-gate",
      "ja": "JR 南改札",
-     "en": null
+     "en": "South Gate"
     },
     {
      "id": "jr-central-gate-2",
      "ja": "JR 中央2改札",
-     "en": null
+     "en": "Central 2 Gate"
     }
    ],
    "arrow": "up",
@@ -9950,12 +9950,12 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null
+       "en": "South Gate"
       },
       {
        "id": "jr-central-gate-2",
        "ja": "JR 中央2改札",
-       "en": null
+       "en": "Central 2 Gate"
       }
      ]
     }
@@ -10004,7 +10004,7 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null,
+     "en": "Central Gate 2",
      "distanceM": 205
     }
    ],
@@ -10039,7 +10039,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null,
+       "en": "South Gate",
        "distanceM": 85
       }
      ]
@@ -10101,7 +10101,7 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null,
+     "en": "Central Gate 2",
      "distanceM": 185
     }
    ],
@@ -10136,7 +10136,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null,
+       "en": "South Gate",
        "distanceM": 110
       }
      ]
@@ -10198,7 +10198,7 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null,
+     "en": "Central Gate 2",
      "distanceM": 160
     }
    ],
@@ -10233,7 +10233,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null,
+       "en": "South Gate",
        "distanceM": 135
       }
      ]
@@ -10295,7 +10295,7 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null,
+     "en": "Central Gate 2",
      "distanceM": 135
     }
    ],
@@ -10330,7 +10330,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null,
+       "en": "South Gate",
        "distanceM": 160
       }
      ]
@@ -10392,7 +10392,7 @@
     {
      "id": "tobu-central-gate-2",
      "ja": "東武東上線 中央2改札",
-     "en": null,
+     "en": "Central Gate 2",
      "distanceM": 110
     }
    ],
@@ -10427,7 +10427,7 @@
       {
        "id": "jr-south-gate",
        "ja": "JR 南改札",
-       "en": null,
+       "en": "South Gate",
        "distanceM": 185
       }
      ]
@@ -10468,7 +10468,7 @@
     {
      "id": "west-exit-b1",
      "ja": "西口（地下）",
-     "en": null,
+     "en": "West Exit",
      "distanceM": 155
     }
    ],
@@ -10482,7 +10482,7 @@
       {
        "id": "west-exit-south-b1",
        "ja": "西口（南）（地下）",
-       "en": null,
+       "en": "West Exit (S)",
        "distanceM": 15
       }
      ]
@@ -10517,7 +10517,7 @@
     {
      "id": "west-exit-b1",
      "ja": "西口（地下）",
-     "en": null,
+     "en": "West Exit",
      "distanceM": 130
     }
    ],
@@ -10531,7 +10531,7 @@
       {
        "id": "west-exit-south-b1",
        "ja": "西口（南）（地下）",
-       "en": null,
+       "en": "West Exit (S)",
        "distanceM": 40
       }
      ]
@@ -10566,7 +10566,7 @@
     {
      "id": "west-exit-b1",
      "ja": "西口（地下）",
-     "en": null,
+     "en": "West Exit",
      "distanceM": 110
     }
    ],
@@ -10580,7 +10580,7 @@
       {
        "id": "west-exit-south-b1",
        "ja": "西口（南）（地下）",
-       "en": null,
+       "en": "West Exit (S)",
        "distanceM": 65
       }
      ]
@@ -10615,7 +10615,7 @@
     {
      "id": "west-exit-b1",
      "ja": "西口（地下）",
-     "en": null,
+     "en": "West Exit",
      "distanceM": 85
     }
    ],
@@ -10629,7 +10629,7 @@
       {
        "id": "west-exit-south-b1",
        "ja": "西口（南）（地下）",
-       "en": null,
+       "en": "West Exit (S)",
        "distanceM": 90
       }
      ]
@@ -10664,7 +10664,7 @@
     {
      "id": "west-exit-b1",
      "ja": "西口（地下）",
-     "en": null,
+     "en": "West Exit",
      "distanceM": 60
     }
    ],
@@ -10678,7 +10678,7 @@
       {
        "id": "west-exit-south-b1",
        "ja": "西口（南）（地下）",
-       "en": null,
+       "en": "West Exit (S)",
        "distanceM": 110
       }
      ]
@@ -10713,7 +10713,7 @@
     {
      "id": "west-exit-b1",
      "ja": "西口（地下）",
-     "en": null,
+     "en": "West Exit",
      "distanceM": 35
     }
    ],
@@ -10727,7 +10727,7 @@
       {
        "id": "west-exit-south-b1",
        "ja": "西口（南）（地下）",
-       "en": null,
+       "en": "West Exit (S)",
        "distanceM": 135
       }
      ]

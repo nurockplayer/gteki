@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("scales the cat shoulder for portrait aspect", () => {
@@ -645,4 +645,11 @@ describe("cat aim under a raised boom", () => {
   it("holds the feet higher in portrait, clear of the phone's bottom controls", () => {
     expect(shot(0.87, 1.93, 9 / 19.5).feet).toBeCloseTo(-CAT_RAISE_AIM.feetNdcPortrait, 1);
   });
+});
+
+it("gates an upcoming sign by 12 m and the camera's forward direction", () => {
+  const avatar = new THREE.Vector3(), camera = new THREE.Vector3(0, 0, 1), forward = new THREE.Vector3(0, 0, -1);
+  expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, -12))).toBe(true);
+  expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, -12.1))).toBe(false);
+  expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, 2))).toBe(false);
 });

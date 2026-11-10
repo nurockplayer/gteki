@@ -246,7 +246,8 @@ describe("3D model credit (#854)", () => {
     expect(CAT_MODEL_CREDIT.source.href).toBe("https://sketchfab.com/3d-models/3d-modelling-my-cat-fripouille-0ab14bf98e754f8d90fe1bf1c84ca66c");
     expect(CAT_MODEL_CREDIT.author).toEqual({ label: "guillaume bolis", href: "https://sketchfab.com/guillaume.bolis.neko" });
     expect(CAT_MODEL_CREDIT.license).toEqual({ label: "CC BY 4.0", href: "http://creativecommons.org/licenses/by/4.0/" });
-    expect(CAT_MODEL_CREDIT.modification).toBe(
+    expect(CAT_MODEL_CREDIT.modification.ja).toBe("GTEki の協力者による改変：ひげを削除、メッシュを軽量化、頂点カラーで青灰色の単色に変更（テクスチャは削除）、骨格を作り直してボーン名を変更、耳のボーンを追加してウェイトを付け直し、アニメーションを作成。");
+    expect(CAT_MODEL_CREDIT.modification.en).toBe(
       "Modified by GTEki contributors: whiskers removed, mesh decimated, recoloured solid blue-grey "
       + "with vertex colours (textures removed), skeleton re-derived and bones renamed, ear bones added "
       + "and reweighted, animation clips authored.",

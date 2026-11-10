@@ -20,7 +20,8 @@
     "build": "pnpm --filter @gteki/web build",
     "build:private": "sh tools/private-overlay/run.sh build",
     "deploy:private": "bash scripts/deploy-private.sh",
-    "dev:private": "sh tools/private-overlay/run.sh dev"
+    "dev:private": "sh tools/private-overlay/run.sh dev",
+    "intake": "tsx tools/merchant-intake/intake.ts"
   },
   "devDependencies": {
     "@babel/parser": "7.28.5",

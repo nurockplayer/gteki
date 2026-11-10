@@ -779,7 +779,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     // walls (u continuous along each segment)
     for (const w of lv.walls.filter((w) => w.finish === "fascia")) fasciaGeos.push(enclosureWallGeometry(w));
     // public-facing "room" walls use the station cladding as well; plain material only for very short jogs
-    const wg = cladWallGeometry(lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia"));
+    const wg = cladWallGeometry([...lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia"), ...layout.cornerFills.filter((w) => w.level === lv.label)]);
     if (wg) {
       const m = new THREE.Mesh(track(wg), mat.wall);
       m.receiveShadow = true;
@@ -1467,6 +1467,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     for (let i = 0; i < n; i++) {
       const car = new THREE.Group();
       car.visible = false;
+      car.userData.gteki_shadow = "dynamic";
       train.push(car);
     }
     // Cars retain their independent curved-track transforms; repeated finishes share draws.
@@ -1477,6 +1478,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.name = "train-cars:instanced-finish";
       mesh.visible = false;
+      mesh.userData.gteki_shadow = "dynamic";
       // A whole eight-car bounding sphere can intersect an upstairs camera even when
       // all cars lie outside it. Cull that empty batch in both colour and GTAO passes.
       mesh.onBeforeRender = (_renderer, _scene, camera) => {
@@ -2182,6 +2184,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     const group = new THREE.Group();
     group.name = `sign:${n.id}`;
     const center = { x: n.position.x, y: n.position.y, z: lv.ceilingZ - 0.55 };
+    group.position.set(center.x, center.z, -center.y);
     for (const facing of [axis, { x: -axis.x, y: -axis.y }]) {
       faceDrafts.push({ floorId: lv.floorId, center: { x: center.x + facing.x * 0.04, y: center.y + facing.y * 0.04, z: center.z }, facing, lines: makeFace({ x: -facing.x, y: -facing.y }) });
     }
@@ -2194,7 +2197,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
       rod.translate(center.x + off.x, center.z + 0.45, -(center.y + off.y));
       rodGeos.push(rod);
     }
-    group.userData = { nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
+    group.userData = { signHalfWidthX: -axis.y * 0.95, signHalfWidthZ: -axis.x * 0.95, signHalfHeight: (1.9 / 8) * valid.length / 2, nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
     root.add(group);
     out.push(group);
     placed.push({ x: n.position.x, y: n.position.y, z });
