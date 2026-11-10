@@ -1208,6 +1208,7 @@ SMALL_EM	const	stations/ikebukuro/scene/signs.ts
 SignLayout	interface	stations/ikebukuro/scene/signs.ts
 SignSpec	interface	stations/ikebukuro/scene/signs.ts
 buildSigns	function	stations/ikebukuro/scene/signs.ts
+fitSignBlocks	function	stations/ikebukuro/scene/signs.ts
 identityArt	function	stations/ikebukuro/scene/signs.ts
 identityTypography	function	stations/ikebukuro/scene/signs.ts
 APPROACH_CHIME	const	stations/ikebukuro/scene/station-sound.ts
