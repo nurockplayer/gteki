@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: GTEki contributors
 import { createHmac } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, realpathSync, unlinkSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MERCHANT_LICENSE_ID, MERCHANT_TERMS_VERSION, MERCHANT_SUBMISSION_SCHEMA, type MerchantSubmission } from "../../apps/web/src/merchant/submission.ts";
@@ -139,11 +139,23 @@ export function checkSubmission(s: MerchantSubmission, key: string, queue: Queue
   return { clientRequestId: s.clientRequestId, station: s.station, identity, state: proposal ? "ACCEPTED" : "EXCEPTION", checks, proposal };
 }
 
+function checkExposure(submission: MerchantSubmission, report: ReturnType<typeof checkSubmission>) {
+  const output = JSON.stringify(report);
+  const contact = submission.contact.value.trim().toLowerCase();
+  const digits = contact.replace(/\D/g, "");
+  const exposed = submission.contact.kind === "email" ? output.toLowerCase().includes(contact)
+    : output.includes(submission.contact.value.trim()) || (digits.length >= 8 && output.includes(digits));
+  if (exposed) throw new Error("submission contains contact information in a report field");
+}
+
 /** Reserve a source ID and write the corresponding private queue record. */
 export function reserveAndWrite(dir: string, submission: MerchantSubmission, key: string, queue: QueueRecord[], bundle: ReturnType<typeof loadBundle>, now: Date) {
+  const recordPath = join(dir, `${submission.clientRequestId}.json`);
+  if (existsSync(recordPath)) throw new Error("submission already in queue");
   const taken = readdirSync(dir).filter(name => name.endsWith(".reserved")).map(name => name.slice(0, -".reserved".length));
   for (let attempt = 0; attempt < 50; attempt++) {
     const report = checkSubmission(submission, key, queue, bundle, now, taken);
+    checkExposure(submission, report);
     const sourceId = report.proposal ? (report.proposal.source as { id: string }).id : undefined;
     if (sourceId) {
       try {
@@ -155,7 +167,22 @@ export function reserveAndWrite(dir: string, submission: MerchantSubmission, key
       }
     }
     const record: QueueRecord = { submission, identity: report.identity, state: report.state, checkedAt: now.toISOString(), ...(sourceId ? { sourceId } : {}) };
-    writeFileSync(join(dir, `${submission.clientRequestId}.json`), JSON.stringify(record, null, 2) + "\n", { flag: "wx", mode: 0o600 });
+    let fd: number | undefined;
+    let created = false;
+    try {
+      fd = openSync(recordPath, "wx", 0o600);
+      writeFileSync(fd, JSON.stringify(record, null, 2) + "\n");
+      const written = fd;
+      fd = undefined;
+      created = true;
+      closeSync(written);
+    } catch (error) {
+      // A failed close may already have released the descriptor; never let it skip the cleanup.
+      if (fd !== undefined) try { closeSync(fd); } catch { /* already closed */ }
+      if (created || fd !== undefined) unlinkSync(recordPath);
+      if (sourceId) unlinkSync(join(dir, `${sourceId}.reserved`));
+      throw error;
+    }
     return report;
   }
   throw new Error("could not reserve a source ID after 50 attempts");
@@ -208,8 +235,8 @@ export function main(args: string[], env = process.env): number {
     const now = opts["--now"] ? new Date(opts["--now"] as string) : new Date();
     if (!Number.isFinite(now.getTime()) || (opts["--now"] && !/T.*(?:Z|[+-]\d\d:\d\d)$/i.test(opts["--now"] as string))) throw new Error("--now must be an ISO timestamp with zone");
     const dir = privateQueue(opts["--queue"] as string);
-    const entries = queueFiles(dir);
     if (command === "prune") {
+      const entries = queueFiles(dir);
       const selected = new Set(recordsToPrune(entries.map(e => e.record), now));
       const expired = entries.filter(e => selected.has(e.record));
       if (!opts["--dry-run"]) for (const entry of expired) {
@@ -230,19 +257,31 @@ export function main(args: string[], env = process.env): number {
       return 1;
     }
     if (!/^[a-zA-Z0-9_-]+$/.test(submission.clientRequestId)) throw new Error("invalid clientRequestId");
-    const queue = entries.map(e => e.record);
     const bundle = loadBundle(submission.station.folder, resolve(import.meta.dirname, "../.."));
-    let report = checkSubmission(submission, key, queue, bundle, now);
-    let output = JSON.stringify(report);
-    const contact = submission.contact.value.trim().toLowerCase();
-    const digits = contact.replace(/\D/g, "");
-    const exposed = submission.contact.kind === "email" ? output.toLowerCase().includes(contact)
-      : output.includes(submission.contact.value.trim()) || (digits.length >= 8 && output.includes(digits));
-    if (exposed) throw new Error("submission contains contact information in a report field");
+    const lock = join(dir, ".lock");
     if (opts["--write"]) {
-      report = reserveAndWrite(dir, submission, key, queue, bundle, now);
-      output = JSON.stringify(report);
+      const deadline = Date.now() + 10000;
+      while (true) {
+        try { mkdirSync(lock); break; }
+        catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+          if (Date.now() >= deadline) throw new Error(`queue is locked (remove ${lock} if no intake is running)`);
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, Math.min(100, deadline - Date.now()));
+        }
+      }
     }
+    let report: ReturnType<typeof checkSubmission>;
+    try {
+      const queue = queueFiles(dir).map(e => e.record);
+      if (opts["--write"]) report = reserveAndWrite(dir, submission, key, queue, bundle, now);
+      else {
+        report = checkSubmission(submission, key, queue, bundle, now);
+        checkExposure(submission, report);
+      }
+    } finally {
+      if (opts["--write"]) rmSync(lock, { recursive: true });
+    }
+    const output = JSON.stringify(report);
     console.log(output);
     return report.state === "ACCEPTED" ? 0 : 1;
   } catch (error) {
