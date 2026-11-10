@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { faceEligible, insideCameraCut, minimapYield, type YieldRect } from "./minimapYield.ts";
+import { anySampleClear, faceEligible, overlapSamples, rayOnQuad, insideCameraCut, minimapYield, type YieldRect } from "./minimapYield.ts";
 
 describe("minimapYield", () => {
   it("holds an overlap for 0.6 seconds and ignores signs behind or beyond 15 m", () => {
@@ -40,5 +40,28 @@ describe("insideCameraCut", () => {
     expect(insideCameraCut({ x: 0.8, y: 0, z: -1 }, end, radii)).toBe(false);
     radii.y = 0;
     expect(insideCameraCut({ x: 0, y: 0, z: -1 }, end, radii)).toBe(false);
+  });
+});
+
+describe("sign samples", () => {
+  it("samples the part of the sign's screen box over the minimap", () => {
+    const out = Array.from({ length: 5 }, () => ({ x: 0, y: 0 }));
+    // A 400 px sign covering a 100 x 60 px minimap entirely: every sample lands on the minimap.
+    overlapSamples({ left: 0, right: 400, top: 0, bottom: 400 }, { left: 250, right: 350, top: 170, bottom: 230 }, out);
+    expect(out).toEqual([{ x: 300, y: 200 }, { x: 260, y: 176 }, { x: 340, y: 176 }, { x: 340, y: 224 }, { x: 260, y: 224 }]);
+  });
+
+  it("maps a ray onto the sign face and rejects rays beside or behind it", () => {
+    const a = { x: -1, y: 1, z: -5 }, b = { x: 1, y: 1, z: -5 }, c = { x: -1, y: -1, z: -5 }, o = { x: 0, y: 0, z: 0 }, p = { x: 0, y: 0, z: 0 };
+    expect(rayOnQuad(o, { x: 0.1, y: 0.1, z: -1 }, a, b, c, p)).toBe(true);
+    expect(p.x).toBeCloseTo(0.5); expect(p.y).toBeCloseTo(0.5); expect(p.z).toBeCloseTo(-5);
+    expect(rayOnQuad(o, { x: 0.5, y: 0, z: -1 }, a, b, c, p)).toBe(false);
+    expect(rayOnQuad(o, { x: 0, y: 0, z: 1 }, a, b, c, p)).toBe(false);
+  });
+
+  it("yields when any sample is clear", () => {
+    expect(anySampleClear(5, (i) => i !== 3)).toBe(true);
+    expect(anySampleClear(5, () => true)).toBe(false);
+    expect(anySampleClear(0, () => false)).toBe(false);
   });
 });

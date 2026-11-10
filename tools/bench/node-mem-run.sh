@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -uo pipefail
-suite='' rep='' variant='' out=''
-while (($#)); do case $1 in --suite) suite=$2 ;; --rep) rep=$2 ;; --variant) variant=$2 ;; --out) out=$2 ;; *) exit 2 ;; esac; shift 2; done
+suite='' rep='' variant='' out='' attempt=''
+while (($#)); do case $1 in --suite) suite=$2 ;; --rep) rep=$2 ;; --variant) variant=$2 ;; --out) out=$2 ;; --attempt) attempt=$2; [[ $attempt =~ ^([2-9]|[1-9][0-9]+)$ ]] || exit 2 ;; *) exit 2 ;; esac; shift 2; done
 [[ $suite =~ ^(test|heavy|box)$ && $rep =~ ^[1-9][0-9]*$ && $variant =~ ^(node24|node26|caged26)$ && $out == /w/* ]] || exit 2
 mkdir -p "$out"
-id="$variant-$suite-$rep"; export BENCH_HEAP_FILE="$out/$id.heap.jsonl"
+id="$variant-$suite-$rep"; [[ -n $attempt ]] && id="$id-a$attempt"; export BENCH_HEAP_FILE="$out/$id.heap.jsonl"
 : > "$BENCH_HEAP_FILE"; rm -f "$out/$id.vitest.json"
 : > "$out/$id.procs.raw"
 for checkpoint in "$out/$id".heap.[0-9]*.json; do [[ -f $checkpoint ]] && rm -- "$checkpoint"; done

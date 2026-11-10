@@ -14,7 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { faceEligible, insideCameraCut, minimapYield, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
+import { anySampleClear, faceEligible, insideCameraCut, minimapYield, overlapSamples, rayOnQuad, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
 import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
@@ -454,6 +454,19 @@ export class Explorer {
   private minimapYieldState = { lastOverlap: -Infinity };
   private readonly minimapSignPoint = new THREE.Vector3();
   private readonly minimapSignDirection = new THREE.Vector3();
+  private minimapSampleSign = 0;
+  private readonly minimapScreenSamples = Array.from({ length: 5 }, () => ({ x: 0, y: 0 }));
+  private readonly minimapSamples = Array.from({ length: 5 }, () => new THREE.Vector3());
+  private readonly minimapSampleBlocked = (i: number): boolean => {
+    const sign = this.minimapSigns[this.minimapSampleSign]!;
+    const direction = this.minimapSignDirection.subVectors(this.minimapSamples[i]!, this.camera.position);
+    const distance = direction.length();
+    this.ray.set(this.camera.position, direction.divideScalar(distance));
+    this.ray.near = 0;
+    this.ray.far = distance;
+    const hit = castCamera(this.ray, this.cameraTargets, this.cameraSides)[0];
+    return !!hit && hit.distance < distance - 0.05 && hit.object !== sign.mesh;
+  };
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
@@ -2777,14 +2790,19 @@ export class Explorer {
         rect.top = Math.min(rect.top, y); rect.bottom = Math.max(rect.bottom, y);
       }
       if (rect.left >= mapRect.right || rect.right <= mapRect.left || rect.top >= mapRect.bottom || rect.bottom <= mapRect.top) continue;
+      // Sample the part of the sign's screen box over the minimap, mapped back onto the sign face.
+      overlapSamples(rect, mapRect, this.minimapScreenSamples);
+      let count = 0;
+      for (const s of this.minimapScreenSamples) {
+        const dir = this.minimapSignDirection.set((s.x - canvasRect.left) / canvasRect.width * 2 - 1, 1 - (s.y - canvasRect.top) / canvasRect.height * 2, 0.5)
+          .unproject(this.camera).sub(this.camera.position);
+        if (rayOnQuad(this.camera.position, dir, corners[0]!, corners[1]!, corners[2]!, this.minimapSamples[count]!)) count++;
+      }
       const oldNear = this.ray.near, oldFar = this.ray.far;
-      this.ray.set(this.camera.position, this.minimapSignDirection.divideScalar(rect.distance));
-      this.ray.near = 0;
-      this.ray.far = rect.distance;
-      const hit = castCamera(this.ray, this.cameraTargets, this.cameraSides)[0];
+      this.minimapSampleSign = i;
+      const clear = anySampleClear(count, this.minimapSampleBlocked);
       this.ray.near = oldNear; this.ray.far = oldFar;
-      if (hit && hit.distance < rect.distance - 0.05 && hit.object !== mesh) continue;
-      rect.behind = false;
+      if (clear) rect.behind = false;
     }
     if (minimapYield(this.minimapSignRects, mapRect, t, this.minimapYieldState)) map.dataset.yield = "sign";
     else delete map.dataset.yield;
