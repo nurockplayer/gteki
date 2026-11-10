@@ -155,8 +155,9 @@ export async function chooseBySearch(page: Page, which: "from" | "to", query: st
 }
 
 /** Mean/stdev luminance of a screenshot, decoded in the page (no image dependencies in Node). */
-export async function imageStats(page: Page, png: Buffer): Promise<{ mean: number; std: number; clippedWhite: number; nearBlack: number }> {
+export async function imageStats(page: Page, png: Buffer): Promise<{ mean: number; std: number; clippedWhite: number; nearBlack: number; ms: number }> {
   return page.evaluate(async (b64) => {
+    const started = performance.now();
     const img = new Image();
     img.src = `data:image/png;base64,${b64}`;
     await img.decode();
@@ -175,7 +176,7 @@ export async function imageStats(page: Page, png: Buffer): Promise<{ mean: numbe
       if (l <= 12) black++;
     }
     const mean = s / n;
-    return { mean, std: Math.sqrt(Math.max(0, s2 / n - mean * mean)), clippedWhite: white / n, nearBlack: black / n };
+    return { mean, std: Math.sqrt(Math.max(0, s2 / n - mean * mean)), clippedWhite: white / n, nearBlack: black / n, ms: performance.now() - started };
   }, png.toString("base64"));
 }
 

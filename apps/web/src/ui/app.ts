@@ -1842,7 +1842,10 @@ export class App {
       holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
       overviewDraws: () => this.explorer.overviewDraws(),
-      goldenProbe: (overview: boolean) => this.explorer.goldenProbe(overview),
+      goldenRenderState: () => this.explorer.goldenRenderState(),
+      holdFrames: (hold: boolean) => this.explorer.holdFrames(hold),
+      goldenFrame: () => this.explorer.goldenFrame(),
+      goldenProbe: (overview: boolean, compareTarget: boolean) => this.explorer.goldenProbe(overview, compareTarget),
       setView: ({ node, headingDeg }: { node: string; headingDeg: number }) => this.s.loaded
         ? this.explorer.setView(this.s.loaded.bundle, node, headingDeg)
         : { placed: false, placeMs: 0, turnMs: 0 },
