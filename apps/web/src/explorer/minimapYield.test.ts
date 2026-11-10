@@ -50,7 +50,9 @@ describe("sign samples", () => {
     const n = overlapSamples(quad, { left: 250, right: 350, top: 170, bottom: 230 }, out);
     expect(n).toBe(5);
     expect(out[0]).toEqual({ x: 300, y: 200 });
-    expect(out.slice(1, n)).toEqual(expect.arrayContaining([{ x: 260, y: 176 }, { x: 340, y: 176 }, { x: 340, y: 224 }, { x: 260, y: 224 }]));
+    for (const expected of [{ x: 260, y: 176 }, { x: 340, y: 176 }, { x: 340, y: 224 }, { x: 260, y: 224 }]) {
+      expect(out.slice(1, n).some((point) => Math.abs(point.x - expected.x) < 1e-9 && Math.abs(point.y - expected.y) < 1e-9)).toBe(true);
+    }
   });
 
   it("keeps samples inside a thin angled sign and the minimap", () => {
