@@ -2499,6 +2499,7 @@ identityFor	function	tools/merchant-intake/intake.ts
 loadBundle	function	tools/merchant-intake/intake.ts
 main	function	tools/merchant-intake/intake.ts
 recordsToPrune	function	tools/merchant-intake/intake.ts
+reserveAndWrite	function	tools/merchant-intake/intake.ts
 submissionShape	function	tools/merchant-intake/intake.ts
 Additions	interface	tools/private-overlay/build-overlay.ts
 StationFiles	interface	tools/private-overlay/build-overlay.ts

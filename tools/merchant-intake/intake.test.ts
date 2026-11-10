@@ -43,7 +43,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { checkSubmission, recordsToPrune } from "./intake.ts";
+import { checkSubmission, recordsToPrune, reserveAndWrite } from "./intake.ts";
 
 const fixture = JSON.parse(readFileSync(resolve("tools/merchant-intake/fixtures/fictional.json"), "utf8")) as MerchantSubmission;
 const fixtureId = identityFor(fixture.contact, "test key");
@@ -116,12 +116,12 @@ it("runs the CLI, writes the private record, prunes and rejects a missing key", 
   expect(missing.stderr).toContain("MERCHANT_INTAKE_KEY");
   const report = JSON.parse(execFileSync(node, args, { env, encoding: "utf8" }));
   expect(report.state).toBe("ACCEPTED");
-  expect(readdirSync(queue)).toEqual(["fictional-1.json"]);
+  expect(readdirSync(queue)).toEqual(["fictional-1.json", "msub-ikb-001.reserved"]);
   const record = JSON.parse(readFileSync(join(queue, "fictional-1.json"), "utf8"));
   expect(record.submission.consent.termsVersion).toBe("2026-10-24");
   const prune = ["--import", "tsx", cli, "prune", "--queue", queue, "--now", "2027-03-01T00:00:00Z"];
   expect(JSON.parse(execFileSync(node, [...prune, "--dry-run"], { encoding: "utf8" }))).toEqual(["fictional-1"]);
-  expect(readdirSync(queue)).toHaveLength(1);
+  expect(readdirSync(queue)).toHaveLength(2);
   expect(JSON.parse(execFileSync(node, prune, { encoding: "utf8" }))).toEqual(["fictional-1"]);
   expect(readdirSync(queue)).toHaveLength(0);
 });
@@ -134,7 +134,7 @@ it("accepts an email whose domain appears in the report and writes the queue rec
   writeFileSync(input, JSON.stringify({ ...fixture, contact: { kind: "email", value: "owner@fictionalshop.jp" }, url: "https://fictionalshop.jp" }));
   const report = JSON.parse(execFileSync(process.execPath, ["--import", "tsx", resolve("tools/merchant-intake/intake.ts"), "check", input, "--queue", queue, "--now", "2026-11-10T00:00:00Z", "--write"], { env: { ...process.env, MERCHANT_INTAKE_KEY: "test key" }, encoding: "utf8" }));
   expect(report.state).toBe("ACCEPTED");
-  expect(readdirSync(queue)).toEqual(["fictional-1.json"]);
+  expect(readdirSync(queue)).toEqual(["fictional-1.json", "msub-ikb-001.reserved"]);
 });
 
 it("rejects a queue in the main checkout when invoked from a worktree", () => {
@@ -160,4 +160,20 @@ it("rejects a queue in the main checkout when invoked from a worktree", () => {
   const linked = spawnSync(process.execPath, ["--import", "tsx", join(toolDir, "intake.ts"), "prune", "--queue", worktreeQueue], { encoding: "utf8", cwd: worktree });
   expect(linked.status, linked.stderr).toBe(2);
   expect(linked.stderr).toContain("queue must be outside the public repository");
+});
+
+
+it("reserves distinct IDs for writes using the same queue snapshot and preserves orphan reservations", () => {
+  const queue = mkdtempSync(join(tmpdir(), "merchant-reservation-"));
+  const snapshot: QueueRecord[] = [];
+  writeFileSync(join(queue, "msub-ikb-001.reserved"), "orphan");
+  for (const [request, source] of [["fictional-a", "msub-ikb-002"], ["fictional-b", "msub-ikb-003"]]) {
+    const report = reserveAndWrite(queue, { ...fixture, clientRequestId: request! }, "test key", snapshot, bundle, now);
+    expect(report.proposal?.source).toMatchObject({ id: source });
+    expect(JSON.parse(readFileSync(join(queue, `${request}.json`), "utf8")).sourceId).toBe(source);
+    expect(readFileSync(join(queue, `${source}.reserved`), "utf8")).toBe(request);
+  }
+  const cli = resolve("tools/merchant-intake/intake.ts");
+  execFileSync(process.execPath, ["--import", "tsx", cli, "prune", "--queue", queue, "--now", "2027-03-01T00:00:00Z"]);
+  expect(readdirSync(queue)).toEqual(["msub-ikb-001.reserved"]);
 });

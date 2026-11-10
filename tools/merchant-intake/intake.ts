@@ -87,7 +87,7 @@ export function checksFor(submission: MerchantSubmission, identity: string, queu
 }
 
 /** Build a report without copying contact information into it. */
-export function checkSubmission(s: MerchantSubmission, key: string, queue: QueueRecord[], bundle: ReturnType<typeof loadBundle>, now: Date) {
+export function checkSubmission(s: MerchantSubmission, key: string, queue: QueueRecord[], bundle: ReturnType<typeof loadBundle>, now: Date, takenIds: string[] = []) {
   const identity = identityFor(s.contact, key);
   const checks = checksFor(s, identity, queue, bundle, now);
   if (bundle.station.id !== s.station.id) checks.find(c => c.id === "schema")!.pass = false;
@@ -97,7 +97,7 @@ export function checkSubmission(s: MerchantSubmission, key: string, queue: Queue
   if (checks.every(c => c.pass)) {
     // Station POI IDs use shop-<short code>-...; otherwise the folder itself is a usable code.
     const code = bundle.pois.map(p => /^shop-([a-z0-9]+)-/.exec(p.id)?.[1]).find(Boolean) ?? s.station.folder;
-    const ids = [...bundle.sources.map(source => source.id), ...queue.map(record => record.sourceId ?? "")];
+    const ids = [...bundle.sources.map(source => source.id), ...queue.map(record => record.sourceId ?? ""), ...takenIds];
     let n = 1;
     while (ids.includes(`msub-${code}-${String(n).padStart(3, "0")}`) || bundle.pois.some(p => p.id === `shop-${code}-msub-${String(n).padStart(3, "0")}`)) n++;
     const suffix = String(n).padStart(3, "0");
@@ -137,6 +137,28 @@ export function checkSubmission(s: MerchantSubmission, key: string, queue: Queue
     proposal = { source, poi, previous };
   }
   return { clientRequestId: s.clientRequestId, station: s.station, identity, state: proposal ? "ACCEPTED" : "EXCEPTION", checks, proposal };
+}
+
+/** Reserve a source ID and write the corresponding private queue record. */
+export function reserveAndWrite(dir: string, submission: MerchantSubmission, key: string, queue: QueueRecord[], bundle: ReturnType<typeof loadBundle>, now: Date) {
+  const taken = readdirSync(dir).filter(name => name.endsWith(".reserved")).map(name => name.slice(0, -".reserved".length));
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const report = checkSubmission(submission, key, queue, bundle, now, taken);
+    const sourceId = report.proposal ? (report.proposal.source as { id: string }).id : undefined;
+    if (sourceId) {
+      try {
+        writeFileSync(join(dir, `${sourceId}.reserved`), submission.clientRequestId, { flag: "wx", mode: 0o600 });
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+        taken.push(sourceId);
+        continue;
+      }
+    }
+    const record: QueueRecord = { submission, identity: report.identity, state: report.state, checkedAt: now.toISOString(), ...(sourceId ? { sourceId } : {}) };
+    writeFileSync(join(dir, `${submission.clientRequestId}.json`), JSON.stringify(record, null, 2) + "\n", { flag: "wx", mode: 0o600 });
+    return report;
+  }
+  throw new Error("could not reserve a source ID after 50 attempts");
 }
 
 /** Select the records whose retention clock has passed. */
@@ -190,7 +212,13 @@ export function main(args: string[], env = process.env): number {
     if (command === "prune") {
       const selected = new Set(recordsToPrune(entries.map(e => e.record), now));
       const expired = entries.filter(e => selected.has(e.record));
-      if (!opts["--dry-run"]) for (const entry of expired) unlinkSync(join(dir, entry.name));
+      if (!opts["--dry-run"]) for (const entry of expired) {
+        unlinkSync(join(dir, entry.name));
+        if (entry.record.sourceId) {
+          try { unlinkSync(join(dir, `${entry.record.sourceId}.reserved`)); }
+          catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
+        }
+      }
       console.log(JSON.stringify(expired.map(e => e.record.submission.clientRequestId)));
       return 0;
     }
@@ -202,17 +230,18 @@ export function main(args: string[], env = process.env): number {
       return 1;
     }
     if (!/^[a-zA-Z0-9_-]+$/.test(submission.clientRequestId)) throw new Error("invalid clientRequestId");
-    const report = checkSubmission(submission, key, entries.map(e => e.record), loadBundle(submission.station.folder, resolve(import.meta.dirname, "../..")), now);
-    const output = JSON.stringify(report);
+    const queue = entries.map(e => e.record);
+    const bundle = loadBundle(submission.station.folder, resolve(import.meta.dirname, "../.."));
+    let report = checkSubmission(submission, key, queue, bundle, now);
+    let output = JSON.stringify(report);
     const contact = submission.contact.value.trim().toLowerCase();
     const digits = contact.replace(/\D/g, "");
     const exposed = submission.contact.kind === "email" ? output.toLowerCase().includes(contact)
       : output.includes(submission.contact.value.trim()) || (digits.length >= 8 && output.includes(digits));
     if (exposed) throw new Error("submission contains contact information in a report field");
     if (opts["--write"]) {
-      const sourceId = report.proposal ? (report.proposal.source as { id: string }).id : undefined;
-      const record: QueueRecord = { submission, identity: report.identity, state: report.state, checkedAt: now.toISOString(), ...(sourceId ? { sourceId } : {}) };
-      writeFileSync(join(dir, `${submission.clientRequestId}.json`), JSON.stringify(record, null, 2) + "\n", { flag: "wx", mode: 0o600 });
+      report = reserveAndWrite(dir, submission, key, queue, bundle, now);
+      output = JSON.stringify(report);
     }
     console.log(output);
     return report.state === "ACCEPTED" ? 0 : 1;
