@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { faceEligible, insideCameraCut, minimapYield, type YieldRect } from "./minimapYield.ts";
+import { anySampleClear, signSamples, faceEligible, insideCameraCut, minimapYield, type YieldRect } from "./minimapYield.ts";
 
 describe("minimapYield", () => {
   it("holds an overlap for 0.6 seconds and ignores signs behind or beyond 15 m", () => {
@@ -40,5 +40,24 @@ describe("insideCameraCut", () => {
     expect(insideCameraCut({ x: 0.8, y: 0, z: -1 }, end, radii)).toBe(false);
     radii.y = 0;
     expect(insideCameraCut({ x: 0, y: 0, z: -1 }, end, radii)).toBe(false);
+  });
+});
+
+
+describe("sign samples", () => {
+  const centre = { x: 0, y: 0, z: 2 };
+  const corners = [{ x: -5, y: -5, z: 2 }, { x: 5, y: -5, z: 2 }, { x: 5, y: 5, z: 2 }, { x: -5, y: 5, z: 2 }];
+  const samples = signSamples(centre, corners);
+
+  it("includes the centre and four inset corners", () => {
+    expect(samples).toEqual([centre, { x: -4, y: -4, z: 2 }, { x: 4, y: -4, z: 2 }, { x: 4, y: 4, z: 2 }, { x: -4, y: 4, z: 2 }]);
+  });
+
+  it("yields for a clear sample over the map and skips rays outside it", () => {
+    expect(anySampleClear(samples, () => true, (i) => i !== 1)).toBe(true);
+    const checked: number[] = [];
+    expect(anySampleClear(samples, (i) => i !== 1, (i) => { checked.push(i); return i !== 1; })).toBe(false);
+    expect(checked).not.toContain(1);
+    expect(anySampleClear(samples, () => true, () => true)).toBe(false);
   });
 });

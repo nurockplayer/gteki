@@ -14,7 +14,7 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { faceEligible, insideCameraCut, minimapYield, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
+import { anySampleClear, faceEligible, insideCameraCut, minimapYield, signSamples, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
 import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
@@ -449,11 +449,31 @@ export class Explorer {
   /** The route sheet: a full-width bottom sheet on a phone, so the overview keeps clear of it there (#385). */
   private sheetEl: HTMLElement | null = null;
   private minimapEl: HTMLElement | null = null;
-  private minimapSigns: { mesh: THREE.Object3D; corners: THREE.Vector3[]; face: FaceEligibility }[] = [];
+  private minimapSigns: { mesh: THREE.Object3D; corners: THREE.Vector3[]; samples: THREE.Vector3[]; face: FaceEligibility }[] = [];
   private minimapSignRects: YieldRect[] = [];
   private minimapYieldState = { lastOverlap: -Infinity };
   private readonly minimapSignPoint = new THREE.Vector3();
   private readonly minimapSignDirection = new THREE.Vector3();
+  private minimapSampleSign = 0;
+  private minimapMapRect!: DOMRect;
+  private minimapCanvasRect!: DOMRect;
+  private readonly minimapSampleOverMap = (i: number): boolean => {
+    const point = this.minimapSignPoint.copy(this.minimapSigns[this.minimapSampleSign]!.samples[i]!).project(this.camera);
+    const canvas = this.minimapCanvasRect, map = this.minimapMapRect;
+    const x = canvas.left + (point.x + 1) * canvas.width / 2;
+    const y = canvas.top + (1 - point.y) * canvas.height / 2;
+    return x >= map.left && x <= map.right && y >= map.top && y <= map.bottom;
+  };
+  private readonly minimapSampleBlocked = (i: number): boolean => {
+    const sign = this.minimapSigns[this.minimapSampleSign]!;
+    const direction = this.minimapSignDirection.subVectors(sign.samples[i]!, this.camera.position);
+    const distance = direction.length();
+    this.ray.set(this.camera.position, direction.divideScalar(distance));
+    this.ray.near = 0;
+    this.ray.far = distance;
+    const hit = castCamera(this.ray, this.cameraTargets, this.cameraSides)[0];
+    return !!hit && hit.distance < distance - 0.05 && hit.object !== sign.mesh;
+  };
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
@@ -1330,7 +1350,8 @@ export class Explorer {
           for (const corner of corners) centre.add(corner);
           centre.multiplyScalar(0.25);
           const normal = new THREE.Vector3().subVectors(corners[2]!, corners[0]!).cross(new THREE.Vector3().subVectors(corners[1]!, corners[0]!)).normalize();
-          this.minimapSigns.push({ mesh: object, corners, face: { centre, normal, cameraPos: this.camera.position, viewZ: [0, 0, 0, 0], near: this.camera.near, maxDistance: 15 } });
+          const samples = signSamples(centre, corners).map((point) => new THREE.Vector3(point.x, point.y, point.z));
+          this.minimapSigns.push({ mesh: object, corners, samples, face: { centre, normal, cameraPos: this.camera.position, viewZ: [0, 0, 0, 0], near: this.camera.near, maxDistance: 15 } });
           this.minimapSignRects.push({ left: 0, right: 0, top: 0, bottom: 0, behind: false, distance: 0 });
         }
       });
@@ -2743,8 +2764,9 @@ export class Explorer {
     if (!map || this.mode === "overview" || map.hidden || map.getClientRects().length === 0) return;
     const mapRect = map.getBoundingClientRect();
     const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    this.minimapMapRect = mapRect; this.minimapCanvasRect = canvasRect;
     for (let i = 0; i < this.minimapSigns.length; i++) {
-      const { mesh, corners, face } = this.minimapSigns[i]!;
+      const { mesh, corners, samples, face } = this.minimapSigns[i]!;
       const rect = this.minimapSignRects[i]!;
       rect.behind = true;
       let visible = true;
@@ -2778,13 +2800,10 @@ export class Explorer {
       }
       if (rect.left >= mapRect.right || rect.right <= mapRect.left || rect.top >= mapRect.bottom || rect.bottom <= mapRect.top) continue;
       const oldNear = this.ray.near, oldFar = this.ray.far;
-      this.ray.set(this.camera.position, this.minimapSignDirection.divideScalar(rect.distance));
-      this.ray.near = 0;
-      this.ray.far = rect.distance;
-      const hit = castCamera(this.ray, this.cameraTargets, this.cameraSides)[0];
+      this.minimapSampleSign = i;
+      const clear = anySampleClear(samples, this.minimapSampleOverMap, this.minimapSampleBlocked);
       this.ray.near = oldNear; this.ray.far = oldFar;
-      if (hit && hit.distance < rect.distance - 0.05 && hit.object !== mesh) continue;
-      rect.behind = false;
+      if (clear) rect.behind = false;
     }
     if (minimapYield(this.minimapSignRects, mapRect, t, this.minimapYieldState)) map.dataset.yield = "sign";
     else delete map.dataset.yield;

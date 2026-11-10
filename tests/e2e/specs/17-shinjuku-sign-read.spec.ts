@@ -98,6 +98,9 @@ for (const r of routes) {
         const p = pending[i]!;
         if (s >= p.at) {
           const file = shotPath(testInfo, `sign-${r.label}-${p.sign.slice(0, 8)}-${p.d}m.png`);
+          if (!phone && p.sign === "453ea111f1524cef8f3ac139bbf2e26b" && (p.d === 10 || p.d === 6)) {
+            await expect.soft(page.locator(".minimap"), `${r.label} ${p.sign} ${p.d}m: minimap yields`).toHaveAttribute("data-yield", "sign");
+          }
           await page.screenshot({ path: file });
           const sign = onRoute.find((x) => x.id === p.sign)!;
           shots.push({ sign: p.sign, standoffM: p.d, measuredM: Math.round((sign.s! - s) * 10) / 10, file, avatar: av, t: Date.now() - t0 });

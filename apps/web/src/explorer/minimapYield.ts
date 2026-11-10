@@ -1,4 +1,17 @@
 type Point3 = { x: number; y: number; z: number };
+export function signSamples(centre: Point3, corners: readonly Point3[], inset = 0.8): Point3[] {
+  return [centre, ...corners.map((corner) => ({
+    x: centre.x + (corner.x - centre.x) * inset,
+    y: centre.y + (corner.y - centre.y) * inset,
+    z: centre.z + (corner.z - centre.z) * inset,
+  }))];
+}
+
+export function anySampleClear(samples: readonly Point3[], overMap: (i: number) => boolean, blocked: (i: number) => boolean): boolean {
+  for (let i = 0; i < samples.length; i++) if (overMap(i) && !blocked(i)) return true;
+  return false;
+}
+
 export type FaceEligibility = { centre: Point3; normal: Point3; cameraPos: Point3; viewZ: readonly number[]; near: number; maxDistance: number };
 
 export function faceEligible(face: FaceEligibility): boolean {
