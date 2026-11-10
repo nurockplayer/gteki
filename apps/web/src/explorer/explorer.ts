@@ -566,6 +566,39 @@ export class Explorer {
     return this.quality;
   }
 
+  /** QA-only: measure undrawn pixels and visible contribution of the station root. */
+  goldenProbe(): { voidRatio: number; stationShare: number } {
+    const root = this.stationScene?.root;
+    if (!root) throw new Error("Station scene is not loaded");
+    const renderer = this.renderer;
+    const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+    const width = size.x, height = size.y;
+    const target = new THREE.WebGLRenderTarget(width, height);
+    const shown = new Uint8Array(width * height * 4), hidden = new Uint8Array(shown.length);
+    const oldTarget = renderer.getRenderTarget(), background = this.scene.background;
+    const visible = root.visible;
+    try {
+      this.scene.background = new THREE.Color(0xff00ff);
+      renderer.setRenderTarget(target);
+      renderer.render(this.scene, this.camera);
+      renderer.readRenderTargetPixels(target, 0, 0, width, height, shown);
+      root.visible = false;
+      renderer.render(this.scene, this.camera);
+      renderer.readRenderTargetPixels(target, 0, 0, width, height, hidden);
+      let empty = 0, changed = 0;
+      for (let i = 0; i < shown.length; i += 4) {
+        if (shown[i] === 255 && shown[i + 1] === 0 && shown[i + 2] === 255) empty++;
+        if (shown[i] !== hidden[i] || shown[i + 1] !== hidden[i + 1] || shown[i + 2] !== hidden[i + 2]) changed++;
+      }
+      return { voidRatio: empty / (width * height), stationShare: changed / (width * height) };
+    } finally {
+      root.visible = visible;
+      this.scene.background = background;
+      renderer.setRenderTarget(oldTarget);
+      target.dispose();
+    }
+  }
+
   /** QA-only: count actual station and surface mesh draws over three animation frames. */
   async overviewDraws(): Promise<{ surfaceMeshes: number; surface: number; station: number }> {
     const root = this.stationScene?.root;
