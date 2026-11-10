@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { chooseBySearch, hooks, PROBE_SCRIPT, save, shotPath, watch, type StationKey } from "../lib/gteki.ts";
+import { chooseBySearch, hooks, PROBE_SCRIPT, save, shotPath, stationData, watch, type StationKey } from "../lib/gteki.ts";
 test.use({ trace: "off" });
 
 /**
@@ -107,6 +107,24 @@ for (const key of ["ikebukuro", "shinjuku"] as StationKey[]) {
       await ready(page);
       await check("ja-restored");
       const ja = await creditsList(page);
+      await expect.soft(ja.dlg).not.toContainText(/Licence unconfirmed|Modified by GTEki contributors/);
+      await expect.soft(ja.dlg).toContainText("GTEki の協力者による改変");
+      await expect.soft(ja.dlg.locator("details[open]")).toHaveCount(0);
+      const assets = stationData(key).station.assets as { id: string; derivation?: string; derivationSummary?: { lang: string; text: string }[] }[];
+      const rows = ja.dlg.locator("h3", { hasText: "3D素材の加工内容" }).locator("+ ul > li");
+      const derived = assets.filter((asset) => asset.derivation);
+      expect.soft(await rows.count()).toBe(derived.length);
+      for (const asset of derived) {
+        const row = rows.filter({ hasText: `${asset.id}:` });
+        const summary = asset.derivationSummary?.find((item) => item.lang === "ja")?.text;
+        expect.soft(summary, `${asset.id}: Japanese summary exists`).toBeTruthy();
+        await expect.soft(row).toHaveCount(1);
+        if (summary) await expect.soft(row).toContainText(summary);
+        await expect.soft(row.locator("details:not([open])")).toContainText(asset.derivation!);
+      }
+      if (en.items.some((item) => item.includes("No licence; cited for facts only (not reproduced)"))) {
+        await expect.soft(ja.dlg).toContainText("ライセンスなし・事実のみ参照（複製なし）");
+      }
       await page.screenshot({ path: shotPath(testInfo, `credit-${tag}-ja-list.png`) });
       await page.keyboard.press("Escape");
       const start = page.locator(".sheet .card.route button.primary");
