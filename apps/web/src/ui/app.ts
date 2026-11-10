@@ -1736,7 +1736,7 @@ export class App {
         const li = el("li", undefined, m.attribution);
         li.append(el("span", "muted", " · "), modelLink(m.source.label, m.source.href), el("span", "muted", " / "));
         li.append(modelLink(m.author.label, m.author.href), el("span", "muted", " / "), modelLink(m.license.label, m.license.href));
-        li.append(el("span", "muted", ` · ${m.modification}`));
+        li.append(el("span", "muted", ` · ${m.modification[this.s.lang] ?? m.modification.en}`));
         models.append(li);
       }
       d.append(models);
