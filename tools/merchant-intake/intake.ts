@@ -124,7 +124,6 @@ export function checkSubmission(s: MerchantSubmission, key: string, queue: Queue
     const poi: Record<string, unknown> = existing
       ? { ...existing, ...changes }
       : { displayPosition: null, connectorNodeIds: [], paid: null, ...changes, id: `shop-${code}-msub-${suffix}` };
-    if (freshHours) delete poi.hours;
     const previous = existing ? Object.fromEntries(
       [...new Set([...Object.keys(existing), ...Object.keys(poi)])]
         .filter(k => JSON.stringify((existing as unknown as Record<string, unknown>)[k]) !== JSON.stringify(poi[k]))
@@ -171,7 +170,8 @@ function privateQueue(dir: string) {
     repo = resolve(execFileSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], { cwd: import.meta.dirname, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(), "..");
   } catch { /* Git is unavailable; use the current repository root. */ }
   repo = realpathSync(repo);
-  if (queue === repo || queue.startsWith(repo + sep)) throw new Error("queue must be outside the public repository");
+  const worktree = realpathSync(root);
+  if ([repo, worktree].some(boundary => queue === boundary || queue.startsWith(boundary + sep))) throw new Error("queue must be outside the public repository");
   return queue;
 }
 

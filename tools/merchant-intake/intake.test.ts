@@ -72,9 +72,9 @@ it("updates only submitted POI facts and records changed values", () => {
     evidence: { sourceIds: ["msub-ikb-001", "old-source"], checkedDate: "2026-11-10" } });
   expect(proposed.evidence.method).toContain("merchant-submitted");
   expect(proposed.notes.at(-1)).toEqual(poi.notes[0]);
-  expect(proposed).not.toHaveProperty("hours");
+  expect(proposed.hours).toEqual(poi.hours);
   const previous = report.proposal!.previous!;
-  expect(previous.hours).toEqual(poi.hours);
+  expect(previous).not.toHaveProperty("hours");
   expect(Object.keys(previous).sort()).toEqual(Object.keys(poi).filter(k => JSON.stringify((poi as Record<string, unknown>)[k]) !== JSON.stringify(proposed[k])).sort());
   const stale = checkSubmission({ ...s, hours: { text: "stale", asOf: "2026-01-01" } }, "test key", [], station, now);
   expect((stale.proposal!.poi as Record<string, unknown>).hours).toEqual(poi.hours);
@@ -155,4 +155,9 @@ it("rejects a queue in the main checkout when invoked from a worktree", () => {
   const result = spawnSync(process.execPath, ["--import", "tsx", join(toolDir, "intake.ts"), "prune", "--queue", queue], { encoding: "utf8", cwd: worktree });
   expect(result.status, result.stderr).toBe(2);
   expect(result.stderr).toContain("queue must be outside the public repository");
+  const worktreeQueue = join(worktree, "private-queue");
+  mkdirSync(worktreeQueue);
+  const linked = spawnSync(process.execPath, ["--import", "tsx", join(toolDir, "intake.ts"), "prune", "--queue", worktreeQueue], { encoding: "utf8", cwd: worktree });
+  expect(linked.status, linked.stderr).toBe(2);
+  expect(linked.stderr).toContain("queue must be outside the public repository");
 });
