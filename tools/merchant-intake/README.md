@@ -12,3 +12,5 @@ pnpm intake prune --queue /path/to/private/queue
 ```
 
 Keep the queue, key, and submissions containing contacts in gteki-private, never in this public repository. `--write` reserves the source id in the queue. `--write` stores the submission and its keyed identity only in the private queue. Open exceptions are retained; closed exceptions use `closedAt` for the 90-day retention clock.
+
+`check --write` locks the queue for checking and writing; `prune` does not take the lock and may delete records during a check.
