@@ -63,7 +63,7 @@ it("updates only submitted POI facts and records changed values", () => {
   const poi = { ...original, displayPosition: { x: 1, y: 2, z: 3 }, paid: true,
     connectorNodeIds: ["existing-node"], evidence: { sourceIds: ["old-source"], method: "survey", checkedDate: "2025-01-01" },
     notes: [{ lang: "en", text: "Existing note" }], hours: { text: "old hours" } };
-  const station = { ...bundle, pois: [poi] } as unknown as typeof bundle;
+  const station = { ...bundle, pois: bundle.pois.map(p => p.id === original.id ? poi : p) } as unknown as typeof bundle;
   const s = { ...fixture, shop: { ...fixture.shop, names: [poi.names[0]!] } };
   const report = checkSubmission(s, "test key", [], station, now);
   expect(report.state).toBe("ACCEPTED");
