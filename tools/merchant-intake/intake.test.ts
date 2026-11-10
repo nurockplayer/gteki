@@ -91,20 +91,22 @@ it("runs the CLI, writes the private record, prunes and rejects a missing key", 
   execFileSync("mkdir", [queue]);
   writeFileSync(input, JSON.stringify(fixture));
   const cli = resolve("tools/merchant-intake/intake.ts");
-  const tsx = resolve("node_modules/.bin/tsx");
-  const args = [cli, "check", input, "--queue", queue, "--now", "2026-11-10T00:00:00Z", "--write"];
+  // The tsx CLI opens an IPC socket, which the test container forbids. Its Node loader
+  // executes the same entry point in a separate process without requiring that socket.
+  const node = process.execPath;
+  const args = ["--import", "tsx", cli, "check", input, "--queue", queue, "--now", "2026-11-10T00:00:00Z", "--write"];
   const env = { ...process.env, MERCHANT_INTAKE_KEY: "test key" };
-  const missing = spawnSync(tsx, args, { env: { ...env, MERCHANT_INTAKE_KEY: "" }, encoding: "utf8" });
+  const missing = spawnSync(node, args, { env: { ...env, MERCHANT_INTAKE_KEY: "" }, encoding: "utf8" });
   expect(missing.status, missing.stderr).toBe(2);
   expect(missing.stderr).toContain("MERCHANT_INTAKE_KEY");
-  const report = JSON.parse(execFileSync(tsx, args, { env, encoding: "utf8" }));
+  const report = JSON.parse(execFileSync(node, args, { env, encoding: "utf8" }));
   expect(report.state).toBe("ACCEPTED");
   expect(readdirSync(queue)).toEqual(["fictional-1.json"]);
   const record = JSON.parse(readFileSync(join(queue, "fictional-1.json"), "utf8"));
   expect(record.submission.consent.termsVersion).toBe("2026-10-24");
-  const prune = [cli, "prune", "--queue", queue, "--now", "2027-03-01T00:00:00Z"];
-  expect(JSON.parse(execFileSync(tsx, [...prune, "--dry-run"], { encoding: "utf8" }))).toEqual(["fictional-1"]);
+  const prune = ["--import", "tsx", cli, "prune", "--queue", queue, "--now", "2027-03-01T00:00:00Z"];
+  expect(JSON.parse(execFileSync(node, [...prune, "--dry-run"], { encoding: "utf8" }))).toEqual(["fictional-1"]);
   expect(readdirSync(queue)).toHaveLength(1);
-  expect(JSON.parse(execFileSync(tsx, prune, { encoding: "utf8" }))).toEqual(["fictional-1"]);
+  expect(JSON.parse(execFileSync(node, prune, { encoding: "utf8" }))).toEqual(["fictional-1"]);
   expect(readdirSync(queue)).toHaveLength(0);
 });
