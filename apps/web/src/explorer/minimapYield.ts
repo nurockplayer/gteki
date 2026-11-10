@@ -7,17 +7,40 @@ export function anySampleClear(count: number, blocked: (i: number) => boolean): 
 
 type Rect = { left: number; right: number; top: number; bottom: number };
 
-/**
- * The centre and four inset corners of the part of a sign's screen box that lies over the minimap, in pixels.
- * Sampling there (not on the sign itself) catches a sign that covers the whole minimap between its own corners,
- * and ignores a clear part of the sign away from the minimap (#1110).
- */
-export function overlapSamples(sign: Rect, map: Rect, out: { x: number; y: number }[], inset = 0.8): void {
-  const left = Math.max(sign.left, map.left), right = Math.min(sign.right, map.right);
-  const top = Math.max(sign.top, map.top), bottom = Math.min(sign.bottom, map.bottom);
-  const x = (left + right) / 2, y = (top + bottom) / 2, hx = (right - left) / 2 * inset, hy = (bottom - top) / 2 * inset;
-  const offsets = [[0, 0], [-1, -1], [1, -1], [1, 1], [-1, 1]] as const;
-  offsets.forEach(([dx, dy], i) => { out[i]!.x = x + dx * hx; out[i]!.y = y + dy * hy; });
+type Point2 = { x: number; y: number };
+const clipScratch: Point2[][] = [[], []];
+
+/** Sample the clipped sign polygon over the minimap, in pixels. */
+export function overlapSamples(quad: readonly Point2[], map: Rect, out: Point2[], inset = 0.8): number {
+  let input = clipScratch[0]!, output = clipScratch[1]!;
+  input.length = 0;
+  input.push(...quad);
+  for (let edge = 0; edge < 4; edge++) {
+    output.length = 0;
+    const axis = edge < 2 ? "x" : "y";
+    const bound = [map.left, map.right, map.top, map.bottom][edge]!;
+    const inside = (p: Point2) => edge % 2 === 0 ? p[axis] >= bound : p[axis] <= bound;
+    let previous = input[input.length - 1];
+    for (const current of input) {
+      if (previous && inside(previous) !== inside(current)) {
+        const t = (bound - previous[axis]) / (current[axis] - previous[axis]);
+        output.push({ x: previous.x + (current.x - previous.x) * t, y: previous.y + (current.y - previous.y) * t });
+      }
+      if (inside(current)) output.push(current);
+      previous = current;
+    }
+    [input, output] = [output, input];
+  }
+  if (input.length < 3) return 0;
+  let x = 0, y = 0;
+  for (const point of input) { x += point.x; y += point.y; }
+  x /= input.length; y /= input.length;
+  out[0]!.x = x; out[0]!.y = y;
+  for (let i = 0; i < input.length; i++) {
+    out[i + 1]!.x = x + (input[i]!.x - x) * inset;
+    out[i + 1]!.y = y + (input[i]!.y - y) * inset;
+  }
+  return input.length + 1;
 }
 
 /** Where a ray meets a rectangular sign face spanned by `a→b` and `a→c`; false when it misses the face. */

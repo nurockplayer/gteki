@@ -18808,7 +18808,16 @@
      "text": "東武百貨店　池袋店"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武池袋"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -18817,7 +18826,7 @@
     "sourceIds": [
      "tobu-dept-ikebukuro-2026-10"
     ],
-    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.tobu-dept.jp/ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-24"
    },
    "notes": [
@@ -22001,7 +22010,12 @@
      "text": "ルミネ池袋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "LUMINE"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [
@@ -22013,7 +22027,7 @@
      "lumine-ikebukuro-floorguide-2026-10",
      "lumine-ikebukuro-access-2026-10"
     ],
-    "method": "printed store-entrance tie: the store's access page prints 「JR池袋駅南改札、正面右手よりすぐ」; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to (facts only). STATION_TIE: the store's own entrance is not verified (field item FC-MER-01). The floor range is the floor guide's, UNVERIFIED. The store's own entrance and the floors inside are not surveyed",
+    "method": "printed store-entrance tie: the store's access page prints 「JR池袋駅南改札、正面右手よりすぐ」; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to (facts only). STATION_TIE: the store's own entrance is not verified (field item FC-MER-01). The floor range is the floor guide's, UNVERIFIED. The store's own entrance and the floors inside are not surveyed; alias source https://www.lumine.ne.jp/ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-25"
    },
    "notes": [
@@ -22076,7 +22090,12 @@
      "text": "エソラ池袋"
     }
    ],
-   "aliases": [],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Esola"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [],
@@ -22085,7 +22104,7 @@
     "sourceIds": [
      "esola-ikebukuro-floorguide-2026-10"
     ],
-    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY",
+    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.metropro-sc.jp/esola-ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-24"
    },
    "notes": [

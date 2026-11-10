@@ -214,11 +214,11 @@ describe("placeOverviewChip", () => {
     const plain = placeOverviewChip(chip, { ...opts, identityRegions: [] });
     expect(plain).toEqual({ hidden: false, dx: -23, dy: 0 });
     const placed = placeOverviewChip(chip, { ...opts, identityRegions: [region] });
-    if (!placed.hidden) {
-      expect(placed.dy).not.toBe(0);
-      const top = chip.y - chip.h / 2 + placed.dy;
-      expect(top >= region.y1 || top + chip.h <= region.y0).toBe(true);
-    }
+    expect(placed.hidden).toBe(false);
+    if (placed.hidden) return;
+    expect(placed.dy).not.toBe(0);
+    const top = chip.y - chip.h / 2 + placed.dy;
+    expect(top >= region.y1 || top + chip.h <= region.y0).toBe(true);
   });
 
   it("keeps partly visible endpoints but hides offscreen ordinary labels and endpoints", () => {

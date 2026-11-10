@@ -49,7 +49,16 @@
           "text": "小田急百貨店 新宿店"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "小田急"
+        },
+        {
+          "lang": "en",
+          "text": "ODAKYU"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -58,7 +67,7 @@
         "sourceIds": [
           "odakyu-dept-shinjuku-2026-10"
         ],
-        "method": "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only directory listing (OD-34), UNVERIFIED, SEARCH_ONLY; alias source https://www.odakyu-dept.co.jp/shinjuku/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-24"
       },
       "notes": [
