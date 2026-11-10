@@ -4,11 +4,14 @@ import { execFileSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
 import { ARTIFACTS, hooks, imageStats, openStation, type StationKey } from "../lib/gteki.ts";
 import { evaluateCheck, flatRatio, type Metric } from "../lib/golden.ts";
-import config from "../golden-cameras.json";
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
 type Camera = { id: string; station: StationKey; kind: string; node?: string; headingDeg?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
+const config = JSON.parse(fs.readFileSync(new URL("../golden-cameras.json", import.meta.url), "utf8")) as {
+  thresholds: Record<"voidRatio" | "flatRatio" | "nearBlack", number>;
+  cameras: Camera[];
+};
 
 async function turn(page: Page, heading: number) {
   const point = await page.evaluate(() => {
@@ -64,7 +67,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page }, testInfo
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const rows: object[] = [], failures: string[] = [];
   let station: StationKey | undefined, tier = "", renderer: unknown = null;
-  for (const camera of config.cameras as Camera[]) {
+  for (const camera of config.cameras) {
     try {
       if (station !== camera.station) {
         await openStation(page, camera.station); station = camera.station;
