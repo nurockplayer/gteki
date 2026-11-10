@@ -138,7 +138,8 @@ for (const key of STATIONS) {
     const stats = await imageStats(page, png);
     const smoke = await labelUiOverlaps(page);
     const { view, boxes } = await labelBoxes(page);
-
+    const hooksLabels = await page.evaluate(() => (window as any).__gteki.labels());
+    expect.soft(hooksLabels.identityOverlap ?? 0, "labels clear identity boards").toBe(0);
     // Overlaps among all painted, readable labels, including faded chips.
     const visible = boxes.filter((b) => b.visible);
     const readable = visible;
@@ -215,8 +216,6 @@ for (const key of STATIONS) {
       }
     }
 
-    const hooksLabels = await page.evaluate(() => (window as any).__gteki.labels());
-    expect.soft(hooksLabels.identityOverlap ?? 0, "labels clear identity boards").toBe(0);
 
     save(testInfo, `${key}-overview.json`, {
       project: testInfo.project.name,
