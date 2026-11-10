@@ -168,15 +168,18 @@ export function reserveAndWrite(dir: string, submission: MerchantSubmission, key
     }
     const record: QueueRecord = { submission, identity: report.identity, state: report.state, checkedAt: now.toISOString(), ...(sourceId ? { sourceId } : {}) };
     let fd: number | undefined;
+    let created = false;
     try {
       fd = openSync(recordPath, "wx", 0o600);
       writeFileSync(fd, JSON.stringify(record, null, 2) + "\n");
-      closeSync(fd);
+      const written = fd;
+      fd = undefined;
+      created = true;
+      closeSync(written);
     } catch (error) {
-      if (fd !== undefined) {
-        closeSync(fd);
-        unlinkSync(recordPath);
-      }
+      // A failed close may already have released the descriptor; never let it skip the cleanup.
+      if (fd !== undefined) try { closeSync(fd); } catch { /* already closed */ }
+      if (created || fd !== undefined) unlinkSync(recordPath);
       if (sourceId) unlinkSync(join(dir, `${sourceId}.reserved`));
       throw error;
     }
