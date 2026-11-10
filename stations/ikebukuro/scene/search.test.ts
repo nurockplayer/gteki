@@ -15,7 +15,7 @@ import { createRouter, routeBetween } from "../../../packages/navigation/src/ind
 
 const read = (f: string): unknown => JSON.parse(fs.readFileSync(new URL(`../gteki/${f}`, import.meta.url), "utf8"));
 function load(): StationBundle {
-  const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+  const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), read("tenants.json"));
   if (!parsed.ok || !parsed.bundle) throw new Error("Ikebukuro bundle failed to parse");
   return parsed.bundle;
 }
@@ -23,6 +23,24 @@ function load(): StationBundle {
 const bundle = load();
 const index = createSearchIndex(bundle);
 const ids = (query: string): string[] => index.search(query).map((hit) => hit.poi.id);
+
+describe("department store search", () => {
+  it.each([
+    ["shop-ikb-tobudept", ["東武", "Tobu", "東武百貨店"]],
+    ["shop-ikb-seibu-honten", ["西武", "Seibu", "西武池袋本店"]],
+    ["shop-ikb-lumine", ["ルミネ", "Lumine", "ルミネ池袋"]],
+    ["shop-ikb-parco", ["パルコ", "Parco", "池袋PARCO"]],
+    ["shop-ikb-esola", ["エソラ", "Esola", "エソラ池袋"]],
+  ])("finds %s in the top three", (id, queries) => {
+    for (const query of [bundle.pois.find((p) => p.id === id)!.names[0]!.text, ...queries]) expect(ids(query).slice(0, 3), query).toContain(id);
+  });
+  it.each([
+    ["shop-ikb-tobudept", ["麻布あさひ", "AZABU ASAHI", "アントニオズデリ", "ANTONIO'S DELI"]],
+    ["shop-ikb-seibu-honten", ["アクア ディ パルマ", "ACQUA DI PARMA", "三省堂書店", "BOOKS SANSEIDO"]],
+  ])("finds tenant cards for %s", (id, queries) => {
+    for (const query of queries) expect(index.search(query, { limit: 1000 }).find((hit) => hit.poi.id === id)?.tenant, query).toBeDefined();
+  });
+});
 
 type Row = { q: string; top1: string } | { q: string; top: string[] };
 
