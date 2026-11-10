@@ -157,7 +157,8 @@ describe("Department store brand search (#419)", () => {
     ]) {
       expect(bundle.tenants!.some((tenant) => tenant.poiId === poiId
         && tenant.names.some((name) => name.text === brand))).toBe(false);
-      expect(search(brand).some((hit) => hit.poi.id === poiId)).toBe(false);
+      // Partial matches stay (e.g. アイフレグランス at Odakyu); only the removed brand itself must be gone.
+      expect(search(brand).some((hit) => hit.poi.id === poiId && hit.tenant?.name === brand)).toBe(false);
     }
   });
 });
