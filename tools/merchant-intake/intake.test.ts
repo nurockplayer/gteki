@@ -177,3 +177,19 @@ it("reserves distinct IDs for writes using the same queue snapshot and preserves
   execFileSync(process.execPath, ["--import", "tsx", cli, "prune", "--queue", queue, "--now", "2027-03-01T00:00:00Z"]);
   expect(readdirSync(queue)).toEqual(["msub-ikb-001.reserved"]);
 });
+
+
+it("does not prune reservations outside the selected queue", () => {
+  const dir = mkdtempSync(join(tmpdir(), "merchant-prune-boundary-"));
+  const queue = join(dir, "queue");
+  const sibling = join(dir, "other-queue");
+  mkdirSync(queue);
+  mkdirSync(sibling);
+  const reservation = join(sibling, "msub-ikb-001.reserved");
+  writeFileSync(reservation, "other");
+  const record: QueueRecord = { submission: fixture, identity: fixtureId, state: "ACCEPTED", checkedAt: "2026-01-01T00:00:00Z", sourceId: "../other-queue/msub-ikb-001" };
+  writeFileSync(join(queue, "fictional-1.json"), JSON.stringify(record));
+  execFileSync(process.execPath, ["--import", "tsx", resolve("tools/merchant-intake/intake.ts"), "prune", "--queue", queue, "--now", "2026-11-10T00:00:00Z"]);
+  expect(readdirSync(queue)).toEqual([]);
+  expect(readFileSync(reservation, "utf8")).toBe("other");
+});

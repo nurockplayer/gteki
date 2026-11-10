@@ -214,7 +214,7 @@ export function main(args: string[], env = process.env): number {
       const expired = entries.filter(e => selected.has(e.record));
       if (!opts["--dry-run"]) for (const entry of expired) {
         unlinkSync(join(dir, entry.name));
-        if (entry.record.sourceId) {
+        if (entry.record.sourceId && /^msub-[a-z0-9-]+-\d{3,}$/.test(entry.record.sourceId)) {
           try { unlinkSync(join(dir, `${entry.record.sourceId}.reserved`)); }
           catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
         }
