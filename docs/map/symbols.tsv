@@ -283,6 +283,7 @@ containmentShift	function	apps/web/src/explorer/labelDeclutter.ts
 declutter	function	apps/web/src/explorer/labelDeclutter.ts
 estimateLabelBox	function	apps/web/src/explorer/labelDeclutter.ts
 labelClass	function	apps/web/src/explorer/labelDeclutter.ts
+placeOverviewChip	function	apps/web/src/explorer/labelDeclutter.ts
 revealedUnmeasured	function	apps/web/src/explorer/labelDeclutter.ts
 FLOOR_BAND_M	const	apps/web/src/explorer/labelVisibility.ts
 LabelOcclusion	type	apps/web/src/explorer/labelVisibility.ts
