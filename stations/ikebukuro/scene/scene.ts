@@ -676,6 +676,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); streetAmbience?.setZone(next); } } : {}),
     settled: () => catalogKit.settled(),
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
+    setCameraFocus: (p, sign) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign),
     update: (dt, elapsed, camera) => {
       catalogKit.start();
       if (camera) catalogKit.update(camera);

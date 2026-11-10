@@ -137,6 +137,7 @@ fadeHold	function	apps/web/src/explorer/followCamera.ts
 followBoom	function	apps/web/src/explorer/followCamera.ts
 followDistance	function	apps/web/src/explorer/followCamera.ts
 followPose	function	apps/web/src/explorer/followCamera.ts
+guideSignInView	function	apps/web/src/explorer/followCamera.ts
 patchCameraHold	function	apps/web/src/explorer/followCamera.ts
 raisedBack	function	apps/web/src/explorer/followCamera.ts
 solveRaisedBoom	function	apps/web/src/explorer/followCamera.ts
@@ -331,6 +332,7 @@ boxCorners	function	apps/web/src/explorer/overviewFraming.ts
 extentShare	function	apps/web/src/explorer/overviewFraming.ts
 frameBounds	function	apps/web/src/explorer/overviewFraming.ts
 freeArea	function	apps/web/src/explorer/overviewFraming.ts
+freeAreas	function	apps/web/src/explorer/overviewFraming.ts
 overviewFar	function	apps/web/src/explorer/overviewFraming.ts
 pointsBounds	function	apps/web/src/explorer/overviewFraming.ts
 routableBounds	function	apps/web/src/explorer/overviewFraming.ts

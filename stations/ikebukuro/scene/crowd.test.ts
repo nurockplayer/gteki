@@ -43,7 +43,7 @@ describe("ikebukuro crowd", () => {
   });
   it("keeps the return shape and merged phone mesh within the draw budget", () => {
     const c = make(40);
-    expect(Object.keys(c).sort()).toEqual(["dispose", "group", "nearby", "queued", "setCameraNearFade", "update"]);
+    expect(Object.keys(c).sort()).toEqual(["dispose", "group", "nearby", "queued", "setCameraFocus", "setCameraNearFade", "update"]);
     expect(c.group.name).toBe("ikebukuro_crowd");
     expect(c.nearby()).toBe(0);
     const ms = meshes(c);
@@ -367,6 +367,48 @@ describe("ikebukuro crowd near-camera hiding", () => {
     named(c, "torso").getMatrixAt(0, m);
     return m.determinant() === 0;
   };
+
+  it("hides only bodies on the camera-to-focus segment and restores them with null focus", () => {
+    const w = firstWalker();
+    const c = buildCrowd(THREE, LONG, toRenderer, 1, new THREE.Texture(), {});
+    renderFrom(c, w.s, 3);
+    c.update(0, 0);
+    expect(hidden(c)).toBe(false);
+    c.setCameraFocus(w.s, 0.2, -3);
+    c.update(0, 0);
+    expect(hidden(c)).toBe(true);
+    c.setCameraFocus(null);
+    c.update(0, 0);
+    expect(hidden(c)).toBe(false);
+    // A parallel segment 1 m beside the walker's body.
+    renderFrom(c, w.s + 1, 3);
+    c.setCameraFocus(w.s + 1, 0.2, -3);
+    c.update(0, 0);
+    expect(hidden(c)).toBe(false);
+    // Focus stops 1 m in front of the walker, not on the infinite ray.
+    renderFrom(c, w.s, 3);
+    c.setCameraFocus(w.s, 1.13, 1);
+    c.update(0, 0);
+    expect(hidden(c)).toBe(false);
+    c.dispose();
+  });
+
+  it("hides a nearer projected sign overlap but leaves a non-overlap and a body behind the sign", () => {
+    const w = firstWalker();
+    const c = buildCrowd(THREE, LONG, toRenderer, 1, new THREE.Texture(), {});
+    renderFrom(c, w.s, 3);
+    const sign = { x: w.s, y: 1.4, z: -3, halfWidthX: 0.95, halfWidthZ: 0, halfHeight: 0.3 };
+    c.setCameraFocus(w.s + 20, 0, -3, sign);
+    c.update(0, 0);
+    expect(hidden(c)).toBe(true);
+    c.setCameraFocus(w.s + 20, 0, -3, { ...sign, x: w.s + 10 });
+    c.update(0, 0);
+    expect(hidden(c)).toBe(false);
+    c.setCameraFocus(w.s + 20, 0, -3, { ...sign, z: 1 });
+    c.update(0, 0);
+    expect(hidden(c)).toBe(false);
+    c.dispose();
+  });
 
   it("extends hiding for the cat and restores the legacy radius when disabled", () => {
     const w = firstWalker();
