@@ -63,14 +63,15 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // six platform batches merged by material (18 -> 12 level meshes): 96 meshes, same bytes; geometry, nodes and
 // textures re-measured, every explorer list unchanged.
 // 2026-11-09 JST: route sign groups carry their position and sightline dimensions; nodes re-measured.
+// #1032 (2026-11-10 JST): render-only corner fills; scene wall delta 0, geometry and bytes re-measured.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "28f2f211e838a785ba983c8be4dbf27d4e9b9748fe9837f8ef0ce198f2ec0eb8",
+    "geometryDigest": "f9b0d7ad80f990a19376f9fa719cabd529eab591f101f4a29651c6319529e961",
     "appearanceDigest": "12e7dd26596d92ce5fb79e9f4431c2c6d70685ea8bc67de17f4bcdc6c23a1512",
-    "nodesDigest": "af2e6415a755a87b145aac59257b837f650a3f4fbae342a39de188eb482908e3",
+    "nodesDigest": "433891e7199848a5acea9dbefeffbe2a9d886c6aa5e07ee2a5b00ac44111222a",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
     "meshes": 96,
-    "bytes": 16494482
+    "bytes": 16511842
   },
   "lists": {
     "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",

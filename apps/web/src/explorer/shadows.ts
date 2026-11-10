@@ -74,7 +74,8 @@ export interface StationShadows {
 /**
  * Sets castShadow / receiveShadow on every drawn mesh under `root`, once at attach (never per frame), and reports
  * what it set. Does nothing (and touches nothing) unless `shadowsActive(quality, lighting)`. Subtrees with
- * `visible === false` (hidden colliders, camera blockers) are skipped whole; nothing outside `root` is visited, so
+ * `visible === false` (hidden colliders, camera blockers) are skipped whole unless tagged `gteki_shadow: "dynamic"`
+ * (geometry the station shows later, such as train cars); nothing outside `root` is visited, so
  * the route, the overlays and the avatar are never touched. A mesh that fails the policy has castShadow cleared;
  * a `receiveShadow = true` the station set is always kept. A node with `userData.gteki_shadow === "none"` (a glTF
  * extra lands there too) never casts, nor does anything under it; receiving follows the usual rule.
@@ -87,12 +88,13 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
   if (!shadowsActive(quality, lighting)) return out;
   root.updateMatrixWorld(true);
   const box = new THREE.Box3();
-  const visit = (o: THREE.Object3D, optOut: boolean): void => {
-    if (!o.visible) return;
+  const visit = (o: THREE.Object3D, optOut: boolean, dynamicAncestor = false): void => {
     const flag = o.userData?.gteki_shadow;
-    if (flag !== undefined && flag !== "none" && !warnedShadowFlag.has(o)) {
+    const dynamic = dynamicAncestor || flag === "dynamic";
+    if (!o.visible && !dynamic) return;
+    if (flag !== undefined && flag !== "none" && flag !== "dynamic" && !warnedShadowFlag.has(o)) {
       warnedShadowFlag.add(o);
-      console.warn(`[gteki] ${o.name || o.type}: unknown gteki_shadow ${JSON.stringify(flag)} ignored (only "none" opts out)`);
+      console.warn(`[gteki] ${o.name || o.type}: unknown gteki_shadow ${JSON.stringify(flag)} ignored (only "none" opts out; "dynamic" includes hidden geometry)`);
     }
     const optedOut = optOut || flag === "none";
     const m = o as THREE.Mesh;
@@ -103,14 +105,16 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
       m.castShadow = false;
       if (f.receive) m.receiveShadow = true;
       if (m.receiveShadow) out.receivers++;
-      const hasBox = (casts || m.receiveShadow) && meshWorldBox(m, box);
+      // A dynamic mesh moves after attach (its attach-time box is wrong), so it neither widens the fit nor is masked
+      // by level: minY -Infinity always casts, and one on a level below only shades that level, out of view.
+      const hasBox = !dynamic && (casts || m.receiveShadow) && meshWorldBox(m, box);
       if (hasBox) out.bounds.union(box);
       if (casts) {
         out.candidates.push({ mesh: m, minY: hasBox ? box.min.y : -Infinity, maxY: hasBox ? box.max.y : -Infinity });
         if (hasBox && box.max.y - box.min.y > TALL_CANDIDATE_SPAN_M) out.tallCandidates++;
       }
     }
-    for (const c of o.children) visit(c, optedOut);
+    for (const c of o.children) visit(c, optedOut, dynamic);
   };
   visit(root, false);
   out.casters = setCasters(out.candidates, floorY);

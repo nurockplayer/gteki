@@ -779,7 +779,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     // walls (u continuous along each segment)
     for (const w of lv.walls.filter((w) => w.finish === "fascia")) fasciaGeos.push(enclosureWallGeometry(w));
     // public-facing "room" walls use the station cladding as well; plain material only for very short jogs
-    const wg = cladWallGeometry(lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia"));
+    const wg = cladWallGeometry([...lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia"), ...layout.cornerFills.filter((w) => w.level === lv.label)]);
     if (wg) {
       const m = new THREE.Mesh(track(wg), mat.wall);
       m.receiveShadow = true;
@@ -1462,6 +1462,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     for (let i = 0; i < n; i++) {
       const car = new THREE.Group();
       car.visible = false;
+      car.userData.gteki_shadow = "dynamic";
       train.push(car);
     }
     // Cars retain their independent curved-track transforms; repeated finishes share draws.
@@ -1472,6 +1473,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.name = "train-cars:instanced-finish";
       mesh.visible = false;
+      mesh.userData.gteki_shadow = "dynamic";
       // A whole eight-car bounding sphere can intersect an upstairs camera even when
       // all cars lie outside it. Cull that empty batch in both colour and GTAO passes.
       mesh.onBeforeRender = (_renderer, _scene, camera) => {
