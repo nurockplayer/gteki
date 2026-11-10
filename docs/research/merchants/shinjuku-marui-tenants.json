@@ -1,27 +1,14 @@
 {
   "schema": "gteki.research.tenants/0.1",
-  "note": "Facts-only brand list of the three 新宿マルイ buildings (157 rows), as the floor guide prints it. Not POIs: this is the input for the station tenant files (#419), where a brand search returns the store's POI with the floor. Nothing here ships in the bundle yet. UNVERIFIED. Ordered by building (003 本館, 005 アネックス, 074 メン), then printed floor, then the order the source lists them.",
-  "sourceId": "marui-shinjuku-floorguide-2026-10",
+  "note": "Facts-only brand list of the three 新宿マルイ buildings (157 rows), as the floor guide prints it. Not POIs: this is the input for the station tenant files (#419), where a brand search returns the store's POI with the floor. Nothing here ships in the bundle yet. UNVERIFIED. Ordered by building (003 本館, 005 アネックス, 074 メン), then printed floor, then the order the source lists them. Refreshed from the floor-guide introduction feeds 2026-11-10 12:51 JST; 62 / 57 / 37 current rows.",
+  "sourceId": "marui-shinjuku-floorguide-2026-11-10",
   "storePoiIds": [
     "shop-sjk-marui-honkan",
     "shop-sjk-marui-annex",
     "shop-sjk-marui-men"
   ],
-  "retrievedAt": "2026-10-25T08:43:23Z",
+  "retrievedAt": "2026-11-10T12:51:00+09:00",
   "tenants": [
-    {
-      "id": "tenant-sjk-marui-003-20387",
-      "name": "HealthyTOKYO CBD Shop ＆ Cafe",
-      "aliases": [
-        {
-          "lang": "ja-Hrkt",
-          "text": "ヘルシートウキョウ　シービーディー　ショップ　アンド　カフェ"
-        }
-      ],
-      "floorLabel": "B1F",
-      "category": "グルメ・フード",
-      "storePoiId": "shop-sjk-marui-honkan"
-    },
     {
       "id": "tenant-sjk-marui-003-20930",
       "name": "ゴンチャ",
@@ -1381,19 +1368,6 @@
       "storePoiId": "shop-sjk-marui-men"
     },
     {
-      "id": "tenant-sjk-marui-074-4746",
-      "name": "ヴィヴィアン・ウエストウッド マン",
-      "aliases": [
-        {
-          "lang": "ja-Hrkt",
-          "text": "ヴィヴィアン・ウエストウッド　マン"
-        }
-      ],
-      "floorLabel": "1F",
-      "category": "メンズ",
-      "storePoiId": "shop-sjk-marui-men"
-    },
-    {
       "id": "tenant-sjk-marui-074-21820",
       "name": "おたからや",
       "aliases": [
@@ -1739,6 +1713,19 @@
       "floorLabel": "8F",
       "category": "サービス・エンターテイメント",
       "storePoiId": "shop-sjk-marui-men"
+    },
+    {
+      "id": "tenant-sjk-marui-005-21963",
+      "name": "ビック・ママ",
+      "aliases": [
+        {
+          "lang": "ja-Hrkt",
+          "text": "ビックママ"
+        }
+      ],
+      "floorLabel": "7F",
+      "category": "サービス・エンターテイメント",
+      "storePoiId": "shop-sjk-marui-annex"
     }
   ],
   "removed": [],
@@ -1756,7 +1743,7 @@
         "7F",
         "8F"
       ],
-      "introduceRows": 63,
+      "introduceRows": 62,
       "shopListEntries": 172
     },
     "005": {
@@ -1772,7 +1759,7 @@
         "7F",
         "8F"
       ],
-      "introduceRows": 56,
+      "introduceRows": 57,
       "shopListEntries": 69
     },
     "074": {
@@ -1787,7 +1774,7 @@
         "7F",
         "8F"
       ],
-      "introduceRows": 38,
+      "introduceRows": 37,
       "shopListEntries": 60
     }
   },
@@ -1905,6 +1892,7 @@
         "status": 200,
         "note": "empty title, no コムサイズム; index-only row"
       }
-    ]
+    ],
+    "historical": "The following fetch log and index reconciliation describe the original 2026-10-25 JST capture; the 2026-11-10 JST refresh is documented in shinjuku-dept-freshness-2026-11-10.md."
   }
 }

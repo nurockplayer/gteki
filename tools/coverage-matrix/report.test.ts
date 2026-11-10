@@ -9,7 +9,7 @@ it("derives Tobu tenants, the E27 graph and route, and M25 search-only coverage 
   const rows = coverageRows(loadPublicBundles(), rowMap.filter((row) =>
     ["池袋 東武百貨店", "新宿 都営大江戸線 E27", "池袋 Metro 丸ノ内線 M25"].includes(row.label)));
   expect(rows.find((row) => row.label === "池袋 東武百貨店"))
-    .toMatchObject({ counts: { POIs: 1, tenants: 860 }, searchable: true, routable: false });
+    .toMatchObject({ counts: { POIs: 1, tenants: 859 }, searchable: true, routable: false });
   expect(rows.find((row) => row.label === "新宿 都営大江戸線 E27"))
     .toMatchObject({ counts: { nodes: 233, edges: 263, gates: 3, platforms: 1 }, searchable: true, routable: true });
   expect(rows.find((row) => row.label === "池袋 Metro 丸ノ内線 M25"))

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -uo pipefail
-suite='' rep='' variant='' out=''
-while (($#)); do case $1 in --suite) suite=$2 ;; --rep) rep=$2 ;; --variant) variant=$2 ;; --out) out=$2 ;; *) exit 2 ;; esac; shift 2; done
+suite='' rep='' variant='' out='' attempt=''
+while (($#)); do case $1 in --suite) suite=$2 ;; --rep) rep=$2 ;; --variant) variant=$2 ;; --out) out=$2 ;; --attempt) attempt=$2; [[ $attempt =~ ^([2-9]|[1-9][0-9]+)$ ]] || exit 2 ;; *) exit 2 ;; esac; shift 2; done
 [[ $suite =~ ^(test|heavy|box)$ && $rep =~ ^[1-9][0-9]*$ && $variant =~ ^(node24|node26|caged26)$ && $out == /w/* ]] || exit 2
 mkdir -p "$out"
-id="$variant-$suite-$rep"; export BENCH_HEAP_FILE="$out/$id.heap.jsonl"
-: > "$BENCH_HEAP_FILE"
+id="$variant-$suite-$rep"; [[ -n $attempt ]] && id="$id-a$attempt"; export BENCH_HEAP_FILE="$out/$id.heap.jsonl"
+: > "$BENCH_HEAP_FILE"; rm -f "$out/$id.vitest.json"
 : > "$out/$id.procs.raw"
 for checkpoint in "$out/$id".heap.[0-9]*.json; do [[ -f $checkpoint ]] && rm -- "$checkpoint"; done
 export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--require /w/tools/bench/heap-probe.cjs"
@@ -48,11 +48,14 @@ rm -f "$stop"
 sampler=$!
 start=$(date +%s)
 args=(--reporter=default --reporter=json "--outputFile=$out/$id.vitest.json")
+# A reduced heavy run (#613 ruling 2026-10-29 23:1x JST) names its test files; space-separated, no globs.
+if [[ -n ${BENCH_FILES:-} ]]; then read -ra files <<< "$BENCH_FILES"; args=("${files[@]}" "${args[@]}"); fi
 if [[ ${BENCH_SMOKE:-0} == 1 ]]; then args=(tools/box-idle.test.mjs "${args[@]}"); fi
+limit=(); [[ -n ${BENCH_WALL_S:-} ]] && limit=(timeout --kill-after=10s "${BENCH_WALL_S}s")
 case $suite in
- test) pnpm run test "${args[@]}" ; code=$? ;;
- heavy) pnpm run test:heavy "${args[@]}" ; code=$? ;;
- box) GTEKI_TEST_HEAP_MB=1536 pnpm exec vitest run --mode heavy --maxWorkers=1 --passWithNoTests "${args[@]}"; code=$? ;;
+ test) "${limit[@]}" pnpm run test "${args[@]}" ; code=$? ;;
+ heavy) "${limit[@]}" pnpm run test:heavy "${args[@]}" ; code=$? ;;
+ box) GTEKI_TEST_HEAP_MB=1536 "${limit[@]}" pnpm exec vitest run --mode heavy --maxWorkers=1 --passWithNoTests "${args[@]}"; code=$? ;;
 esac
 elapsed=$(( $(date +%s) - start ))
 touch "$stop"; wait "$sampler" || :; rm -f "$stop"
