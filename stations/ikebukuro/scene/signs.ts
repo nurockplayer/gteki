@@ -269,20 +269,20 @@ function paint(blocks: SignContent[], theme: Theme): { canvas: HTMLCanvasElement
 
 /** Fit a face by dropping English names before destinations from the fullest block. */
 export function fitSignBlocks(blocks: SignContent[], widthOf: (blocks: SignContent[]) => number, maxW: number): SignContent[] {
-  let b = blocks.map((x) => ({ ...x, exits: [...x.exits], gates: [...x.gates], places: [...(x.places ?? [])] }));
+  let b = blocks.map((x) => ({ ...x, exits: [...x.exits], gates: [...x.gates], ...(x.places ? { places: [...x.places] } : {}) }));
   const n = (x: SignContent) => x.exits.length + x.gates.length + (x.places?.length ?? 0);
   for (;;) {
     const width = widthOf(b);
     const fullest = [...b].sort((p, q) => n(q) - n(p))[0]!;
     if (width <= maxW || n(fullest) <= 1) return b;
     const named = [...fullest.gates].reverse().find((x) => x.en != null)
-      ?? [...fullest.places!].reverse().find((x) => x.en != null);
+      ?? [...(fullest.places ?? [])].reverse().find((x) => x.en != null);
     if (named) {
       if (fullest.gates.includes(named)) fullest.gates[fullest.gates.indexOf(named)] = { ...named, en: null };
       else fullest.places![fullest.places!.indexOf(named)] = { ...named, en: null };
       continue;
     }
-    if (fullest.places!.length > 1) fullest.places!.pop();
+    if ((fullest.places?.length ?? 0) > 1) fullest.places!.pop();
     else if (fullest.gates.length > 1 || !fullest.exits.length) fullest.gates.pop();
     else if (fullest.exits.length > 1 || !fullest.gates.length) fullest.exits.pop();
     else fullest.gates.pop();
