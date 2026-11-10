@@ -317,7 +317,8 @@ anySampleClear	function	apps/web/src/explorer/minimapYield.ts
 faceEligible	function	apps/web/src/explorer/minimapYield.ts
 insideCameraCut	function	apps/web/src/explorer/minimapYield.ts
 minimapYield	function	apps/web/src/explorer/minimapYield.ts
-signSamples	function	apps/web/src/explorer/minimapYield.ts
+overlapSamples	function	apps/web/src/explorer/minimapYield.ts
+rayOnQuad	function	apps/web/src/explorer/minimapYield.ts
 OccludedLineStyle	interface	apps/web/src/explorer/occludedLine.ts
 occludedLineStyle	function	apps/web/src/explorer/occludedLine.ts
 Aabb	interface	apps/web/src/explorer/overviewFraming.ts
