@@ -39,7 +39,7 @@ async function turn(page: Page, target: number) {
 test("#221 route flight ends @phone", async ({ page }, info) => {
   test.setTimeout(1_800_000);
   const root = process.env.GTEKI_ROOT!;
-  const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+  const sha = execFileSync("git", ["merge-base", "HEAD", "origin/main"], { cwd: root, encoding: "utf8" }).trim();
   const project = info.project.name.startsWith("phone") ? "phone" : "desktop";
   const out = path.join(root, ".qa/221/route-recheck", sha.slice(0, 7), project);
   fs.mkdirSync(out, { recursive: true });
@@ -55,8 +55,8 @@ test("#221 route flight ends @phone", async ({ page }, info) => {
     const origin = pois.find(p => p.id === route.poi)?.connectorNodeIds[0];
     const dest = pois.find(p => p.id === destination)?.connectorNodeIds[0];
     if (!origin || !dest) throw new Error(`DECISION: endpoint missing for ${route.id}`);
-    expect(await hooks.setOrigin(page, origin)).toBe(true);
-    expect(await hooks.setDestination(page, dest)).toBe(true);
+    expect(await hooks.setOrigin(page, route.poi)).toBe(true);
+    expect(await hooks.setDestination(page, destination)).toBe(true);
     const result = await hooks.route(page);
     if (!result?.ok) throw new Error(`DECISION: route ${route.id} failed: ${JSON.stringify(result)}`);
     const ids: string[] = [];
