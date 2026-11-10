@@ -140,7 +140,7 @@ describe("Department store brand search (#419)", () => {
       ["ビック・ママ", "shop-sjk-marui-annex", "7F"],
       ["サボン", "shop-sjk-keio", "1階"],
       ["小樽茶房", "shop-sjk-keio", "4階"],
-    ]) {
+    ] as const) {
       expect(search(brand).find((hit) => hit.poi.id === poiId)).toMatchObject({
         poi: { id: poiId },
         matched: brand,
@@ -154,7 +154,7 @@ describe("Department store brand search (#419)", () => {
       ["ジューススタンド バブルス", "shop-sjk-odakyudept"],
       ["パステル", "shop-sjk-odakyudept"],
       ["フレグランス", "shop-sjk-odakyudept"],
-    ]) {
+    ] as const) {
       expect(bundle.tenants!.some((tenant) => tenant.poiId === poiId
         && tenant.names.some((name) => name.text === brand))).toBe(false);
       // Partial matches stay (e.g. アイフレグランス at Odakyu); only the removed brand itself must be gone.
