@@ -126,6 +126,8 @@ export interface StationScene {
   afterRender?(): void;
   /** Fades scene-owned people out near the camera: fully gone inside startM, untouched beyond endM. 0, 0 turns it off. */
   setCameraNearFade?(startM: number, endM: number): void;
+  /** Hides crowd bodies between the rendered camera and this renderer-space focus; null disables it. */
+  setCameraFocus?(p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null): void;
   /**
    * Resolves once presentation content the scene loads in the background (after the first frame) is in place.
    * Renderers need not wait for it; hosts that export a snapshot instead of rendering await it first. Never rejects.

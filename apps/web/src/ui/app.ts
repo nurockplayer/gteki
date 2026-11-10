@@ -1498,7 +1498,7 @@ export class App {
     this.jumpPin = null;
     this.arrived = false;
     this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
-    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : []);
   }
 
   /** Per guide run: where each instruction starts (m), the first one the guide shows, and how far the guide has got. */
@@ -1736,7 +1736,7 @@ export class App {
         const li = el("li", undefined, m.attribution);
         li.append(el("span", "muted", " · "), modelLink(m.source.label, m.source.href), el("span", "muted", " / "));
         li.append(modelLink(m.author.label, m.author.href), el("span", "muted", " / "), modelLink(m.license.label, m.license.href));
-        li.append(el("span", "muted", ` · ${m.modification}`));
+        li.append(el("span", "muted", ` · ${m.modification[this.s.lang] ?? m.modification.en}`));
         models.append(li);
       }
       d.append(models);

@@ -111,7 +111,9 @@ if (!enabled) test.skip("recognition proxy captures (set GTEKI_RECOGNITION=1; ne
 for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captures (#342 Q5) @phone`, async ({ page }, testInfo) => {
   test.setTimeout(600_000);
   const avatarFallback: string[] = [];
+  const identityFraming: unknown[] = [];
   page.on("console", (message) => {
+    if (message.type() === "info" && message.text().startsWith("[identity-framing]")) identityFraming.push(JSON.parse(message.text().slice("[identity-framing]".length)));
     if (message.type() === "warning" && message.text().includes("GLB avatar unavailable")) avatarFallback.push(message.text());
   });
   await openStation(page, key);
@@ -186,7 +188,7 @@ for (const key of enabled ? STATIONS : []) test(`${key}: recognition proxy captu
   }
   save(testInfo, `${key}-recognition.json`, {
     label: "recognition proxy", station: key, project: testInfo.project.name, sha, tier, viewport: page.viewportSize(), fonts, hasIdentityHook: hasIdentity, stationIdentityAtReady: atReady.stationIdentity,
-    avatarFallback, route: ROUTES[key], views: views.map(({ id, node, note, facing }) => ({ id, node, note, facing })), frameS: FRAME_S, frames,
+    avatarFallback, identityFraming, route: ROUTES[key], views: views.map(({ id, node, note, facing }) => ({ id, node, note, facing })), frameS: FRAME_S, frames,
   });
   save(testInfo, `${key}-recognition-key.json`, frames.map((f) => ({ anon: f.anon, station: key, view: f.view, i: f.i, project: testInfo.project.name })));
 });

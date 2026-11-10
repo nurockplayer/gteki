@@ -13,7 +13,7 @@ import { IDENTITY_FADE_NEAR, IDENTITY_FADE_FAR, IDENTITY_FADE_FRAGMENT, identity
 import { Explorer } from "../../../apps/web/src/explorer/explorer.ts";
 import { FOLLOW, FOV, NO_SLOPE } from "../../../apps/web/src/explorer/followCamera.ts";
 import { collectIdentityBoards } from "../../../apps/web/src/explorer/identityBoards.ts";
-import { freeArea } from "../../../apps/web/src/explorer/overviewFraming.ts";
+import { freeAreas } from "../../../apps/web/src/explorer/overviewFraming.ts";
 import { castAll, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { spawnHeading } from "../../../apps/web/src/ui/spawnHeading.ts";
@@ -38,8 +38,9 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
   root.add(scene.root);
   root.updateMatrixWorld(true);
   const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);
-  const free = freeArea({ w: width, h: height }, width > 600 ? { x: 16, y: 58, w: 400, h: 327 } : null,
+  const frees = freeAreas({ w: width, h: height }, width > 600 ? { x: 16, y: 58, w: 400, h: 327 } : null,
     width > 600 ? 30 : 38, width > 600 ? { x: width - 206, y: 60, w: 190, h: 370 } : { x: width - 144, y: 60, w: 128, h: 376 });
+  const free = frees[0]!;
   const state = Object.assign(Object.create(Explorer.prototype), {
     mode: "overview", scene: root, stationScene: scene, camera: new THREE.PerspectiveCamera(FOV.overview, width / height, 0.05, 400),
     pos: new THREE.Vector3(), ray: new THREE.Raycaster(), walkable: scene.walkable, groundTargets: targets.ground,
@@ -48,7 +49,7 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
     pitch: -0.12, yaw: 0, camDistance: FOLLOW.defaultDistance, qaCamera: {}, qaCameraSnap: false,
     firstPerson: false, slope: NO_SLOPE, slopeY: 0, descentDrop: 0, boomRaise: 0, boomActual: 0,
     reducedMotion: true, guideIdentityCentre: new THREE.Vector3(), guideIdentityOffset: { yaw: 0, pitch: 0 },
-    lastAvatarPos: new THREE.Vector3(), freeRect: () => free, stopGuide: () => {},
+    lastAvatarPos: new THREE.Vector3(), freeRect: () => free, freeRects: () => frees, stopGuide: () => {},
     setMode(mode: string) { this.mode = mode; }, applyAvatarFade: () => {},
   });
   expect(state.walkFromNode(bundle, bundle.spawnNodeIds![0]!, spawnHeading(bundle, { kind: "node", nodeId: bundle.spawnNodeIds![0]! }, []))).toBe(true);
