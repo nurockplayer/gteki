@@ -175,7 +175,16 @@
           "text": "ルミネ新宿 ルミネ1"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ルミネ"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -184,7 +193,7 @@
         "sourceIds": [
           "lumine-shinjuku-floorguide-2026-10"
         ],
-        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY; alias source https://www.lumine.ne.jp/shinjuku/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-25"
       },
       "notes": [
@@ -207,7 +216,16 @@
           "text": "ルミネ新宿 ルミネ2"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ルミネ"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -216,7 +234,7 @@
         "sourceIds": [
           "lumine-shinjuku-floorguide-2026-10"
         ],
-        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY; alias source https://www.lumine.ne.jp/shinjuku/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-25"
       },
       "notes": [
@@ -239,7 +257,16 @@
           "text": "ルミネエスト新宿"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "ja",
+          "text": "ルミネ"
+        },
+        {
+          "lang": "en",
+          "text": "LUMINE"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -248,7 +275,7 @@
         "sourceIds": [
           "lumine-est-shinjuku-floorguide-2026-10"
         ],
-        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only floor guide (OD-34), UNVERIFIED, SEARCH_ONLY; alias source https://www.lumine.ne.jp/est/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-25"
       },
       "notes": [
@@ -303,7 +330,16 @@
           "text": "新宿マルイ 本館"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "en",
+          "text": "MARUI"
+        },
+        {
+          "lang": "en",
+          "text": "OIOI"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -312,7 +348,7 @@
         "sourceIds": [
           "marui-shinjuku-floorguide-2026-10"
         ],
-        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY; alias source https://www.0101.co.jp/003/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-25"
       },
       "notes": [
@@ -335,7 +371,16 @@
           "text": "新宿マルイ アネックス"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "en",
+          "text": "MARUI"
+        },
+        {
+          "lang": "en",
+          "text": "OIOI"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -344,7 +389,7 @@
         "sourceIds": [
           "marui-shinjuku-floorguide-2026-10"
         ],
-        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY; alias source https://www.0101.co.jp/003/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-25"
       },
       "notes": [
@@ -367,7 +412,16 @@
           "text": "新宿マルイ メン"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "en",
+          "text": "MARUI"
+        },
+        {
+          "lang": "en",
+          "text": "OIOI"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -376,7 +430,7 @@
         "sourceIds": [
           "marui-shinjuku-floorguide-2026-10"
         ],
-        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25, no clause found), UNVERIFIED, SEARCH_ONLY; alias source https://www.0101.co.jp/003/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-25"
       },
       "notes": [
@@ -431,7 +485,12 @@
           "text": "伊勢丹新宿店 メンズ館"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "en",
+          "text": "ISETAN"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -440,7 +499,7 @@
         "sourceIds": [
           "isetan-shinjuku-floorguide-2026-10"
         ],
-        "method": "facts-only floor guide (OD-34 ruling 2026-10-25 on #522, scope clause), proxy read, UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only floor guide (OD-34 ruling 2026-10-25 on #522, scope clause), proxy read, UNVERIFIED, SEARCH_ONLY; alias source https://www.imhds.co.jp/en/group/department_store/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-25"
       },
       "notes": [
@@ -463,7 +522,12 @@
           "text": "京王百貨店"
         }
       ],
-      "aliases": [],
+      "aliases": [
+        {
+          "lang": "en",
+          "text": "Keio"
+        }
+      ],
       "floorId": null,
       "displayPosition": null,
       "connectorNodeIds": [],
@@ -472,7 +536,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-exit-list-2026-10"
         ],
-        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY; alias source https://www.keionet.com/info/shinjuku/, read 2026-11-10 19:13 JST",
         "checkedDate": "2026-10-26"
       },
       "notes": [

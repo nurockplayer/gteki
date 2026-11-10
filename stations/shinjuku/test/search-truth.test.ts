@@ -8,6 +8,8 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import approxPositions from "../sources/s03-approx-positions.json" with { type: "json" };
 import recoveryBatch from "../../../docs/research/merchants/shinjuku-recovery-batch1.json" with { type: "json" };
+import deptStores from "../../../docs/research/merchants/shinjuku-dept-stores.json" with { type: "json" };
+import odakyuDept from "../../../docs/research/merchants/shinjuku-odakyu-dept.json" with { type: "json" };
 
 /**
  * Search truth for the Shinjuku (E27) POIs (issue #106): names are distinct, nothing in a name or
@@ -288,6 +290,8 @@ describe("POI aliases", () => {
       for (const a of p.aliases) {
         if (p.id.startsWith("shop-sjk-rec-")) {
           expect(recoveryBatch.pois.find((shop) => shop.id === p.id)?.aliases).toContainEqual(a);
+        } else if ([...deptStores.pois, ...odakyuDept.pois].some((shop) => shop.id === p.id)) {
+          expect([...deptStores.pois, ...odakyuDept.pois].find((shop) => shop.id === p.id)?.aliases).toContainEqual(a);
         } else if (isShop(p)) expect(a.lang, `${p.id} alias ${a.text}`).toBe("ja-Hrkt");
         else if (isSeparate(p)) {
           expect(["ja"], `${p.id} alias ${a.lang}`).toContain(a.lang);
@@ -783,7 +787,7 @@ describe("merchant shops (#214)", () => {
     for (const [id, name, floors, operator] of store) {
       const p = pois.find((x) => x.id === id)!;
       expect(p.names[0]!.text, id).toBe(name);
-      expect(p.aliases, id).toEqual([]);
+      expect(p.aliases, id).toEqual(deptStores.pois.find((shop) => shop.id === id)?.aliases ?? []);
       const ja = p.notes!.find((n) => n.lang === "ja")!.text;
       if (floors) expect(ja, id).toContain(floors);
       else expect(ja, id).not.toMatch(/\d+F/);
@@ -812,6 +816,34 @@ describe("merchant shops (#214)", () => {
   it("finds a shop by its own printed name (read from pois.json, not written here)", () => {
     const shop = shops.find((p) => p.names[0]!.text.length >= 4)!;
     expect(index.search(shop.names[0]!.text, { limit: 10 }).map((h) => h.poi.id)).toContain(shop.id);
+  });
+});
+
+describe("department store search", () => {
+  const search = createSearchIndex(bundle);
+  it.each([
+    ["shop-sjk-isetan-honkan", ["伊勢丹", "Isetan"]],
+    ["shop-sjk-isetan-mens", ["伊勢丹", "Isetan"]],
+    ["shop-sjk-marui-honkan", ["マルイ", "Marui", "OIOI"]],
+    ["shop-sjk-marui-annex", ["マルイ", "Marui", "OIOI"]],
+    ["shop-sjk-marui-men", ["マルイ", "Marui", "OIOI"]],
+    ["shop-sjk-takashimaya", ["高島屋", "Takashimaya"]],
+    ["shop-sjk-keio", ["京王", "Keio"]],
+    ["shop-sjk-odakyudept", ["小田急", "Odakyu"]],
+    ["shop-sjk-lumine1", ["ルミネ", "Lumine", "ルミネ1"]],
+    ["shop-sjk-lumine2", ["ルミネ", "Lumine", "ルミネ2"]],
+    ["shop-sjk-lumineest", ["ルミネ", "Lumine", "ルミネエスト"]],
+  ])("finds %s in the top three", (id, queries) => {
+    for (const query of [pois.find((p) => p.id === id)!.names[0]!.text, ...queries]) expect(search.search(query, { limit: 3 }).map((hit) => hit.poi.id), query).toContain(id);
+  });
+
+  it.each([
+    ["shop-sjk-marui-honkan", ["アップル", "Apple", "ビヨンドザバインズ", "Beyond The Vines"]],
+    ["shop-sjk-marui-annex", ["エディテッド　ジャパン　シンジュク", "EDITed JAPAN  SHINJUKU", "トップトイ", "TOP TOY"]],
+    ["shop-sjk-marui-men", ["ライオンハート", "LION HEART", "レネンバイハルプ", "RENNEN by HALB"]],
+    ["shop-sjk-odakyudept", ["アクセーヌ", "ACSEINE", "アタオ", "ATAO"]],
+  ])("finds tenant cards for %s", (id, queries) => {
+    for (const query of queries) expect(search.search(query, { limit: 1000 }).find((hit) => hit.poi.id === id)?.tenant, query).toBeDefined();
   });
 });
 
