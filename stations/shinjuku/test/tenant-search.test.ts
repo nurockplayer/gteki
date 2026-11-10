@@ -24,7 +24,7 @@ describe("Department store brand search (#419)", () => {
 
   it("loads the brand directories with no validation errors", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
-    expect(bundle.tenants).toHaveLength(3018);
+    expect(bundle.tenants).toHaveLength(3016);
     expect(new Set(bundle.tenants!.map((t) => t.poiId))).toEqual(
       new Set([
         "shop-sjk-odakyudept",
@@ -133,5 +133,32 @@ describe("Department store brand search (#419)", () => {
       matched: brand,
       tenant: { name: brand, floorLabel: floor },
     });
+  });
+
+  it("2026-11-10 refresh: added brands are found at their store and floor, removed ones are gone (#1140)", () => {
+    for (const [brand, poiId, floorLabel] of [
+      ["ビック・ママ", "shop-sjk-marui-annex", "7F"],
+      ["サボン", "shop-sjk-keio", "1階"],
+      ["小樽茶房", "shop-sjk-keio", "4階"],
+    ] as const) {
+      expect(search(brand).find((hit) => hit.poi.id === poiId)).toMatchObject({
+        poi: { id: poiId },
+        matched: brand,
+        tenant: { name: brand, floorLabel },
+      });
+    }
+
+    for (const [brand, poiId] of [
+      ["HealthyTOKYO CBD Shop ＆ Cafe", "shop-sjk-marui-honkan"],
+      ["ヴィヴィアン・ウエストウッド マン", "shop-sjk-marui-men"],
+      ["ジューススタンド バブルス", "shop-sjk-odakyudept"],
+      ["パステル", "shop-sjk-odakyudept"],
+      ["フレグランス", "shop-sjk-odakyudept"],
+    ] as const) {
+      expect(bundle.tenants!.some((tenant) => tenant.poiId === poiId
+        && tenant.names.some((name) => name.text === brand))).toBe(false);
+      // Partial matches stay (e.g. アイフレグランス at Odakyu); only the removed brand itself must be gone.
+      expect(search(brand).some((hit) => hit.poi.id === poiId && hit.tenant?.name === brand)).toBe(false);
+    }
   });
 });

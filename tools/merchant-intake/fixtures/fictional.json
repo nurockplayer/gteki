@@ -1,0 +1,12 @@
+{
+  "schema": "gteki.merchant-submission/0.1",
+  "clientRequestId": "fictional-1",
+  "submittedAt": "2026-11-01T00:00:00Z",
+  "station": { "id": "ikebukuro", "folder": "ikebukuro" },
+  "shop": { "names": [{ "lang": "en", "text": "Fictional Shop" }], "aliases": [], "category": "shop", "facility": null },
+  "location": { "floorId": "b1", "anchor": { "poiId": "exit-22", "wording": "near exit" }, "insideGates": "not_sure" },
+  "hours": { "text": "10:00-18:00", "asOf": "2026-11-01" },
+  "url": "https://example.com/shop",
+  "contact": { "kind": "email", "value": "intake-fixture-739@example.com" },
+  "consent": { "accepted": true, "termsVersion": "2026-10-24", "acceptedAt": "2026-11-01T00:00:00Z" }
+}

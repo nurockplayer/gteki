@@ -283,6 +283,7 @@ containmentShift	function	apps/web/src/explorer/labelDeclutter.ts
 declutter	function	apps/web/src/explorer/labelDeclutter.ts
 estimateLabelBox	function	apps/web/src/explorer/labelDeclutter.ts
 labelClass	function	apps/web/src/explorer/labelDeclutter.ts
+placeOverviewChip	function	apps/web/src/explorer/labelDeclutter.ts
 revealedUnmeasured	function	apps/web/src/explorer/labelDeclutter.ts
 FLOOR_BAND_M	const	apps/web/src/explorer/labelVisibility.ts
 LabelOcclusion	type	apps/web/src/explorer/labelVisibility.ts
@@ -657,6 +658,7 @@ gteki:dev	script	package.json
 gteki:dev:private	script	package.json
 gteki:field:ingest	script	package.json
 gteki:fonts:subset	script	package.json
+gteki:intake	script	package.json
 gteki:map:gen	script	package.json
 gteki:test	script	package.json
 gteki:test:heavy	script	package.json
@@ -2488,6 +2490,17 @@ ZipReadOptions	type	tools/gis/src/zip.ts
 readZip	function	tools/gis/src/zip.ts
 generateSymbols	function	tools/map/gen-symbols.mjs
 repoRoot	const	tools/map/gen-symbols.mjs
+Check	type	tools/merchant-intake/intake.ts
+MERCHANT_TERMS_URL	const	tools/merchant-intake/intake.ts
+QueueRecord	type	tools/merchant-intake/intake.ts
+checkSubmission	function	tools/merchant-intake/intake.ts
+checksFor	function	tools/merchant-intake/intake.ts
+identityFor	function	tools/merchant-intake/intake.ts
+loadBundle	function	tools/merchant-intake/intake.ts
+main	function	tools/merchant-intake/intake.ts
+recordsToPrune	function	tools/merchant-intake/intake.ts
+reserveAndWrite	function	tools/merchant-intake/intake.ts
+submissionShape	function	tools/merchant-intake/intake.ts
 Additions	interface	tools/private-overlay/build-overlay.ts
 StationFiles	interface	tools/private-overlay/build-overlay.ts
 buildOverlay	function	tools/private-overlay/build-overlay.ts
