@@ -54,6 +54,9 @@ PLACE_IDS = {"west-exit-b1", "west-exit-south-b1", "east-exit-b1"}
 PLACE_MIN_GAP_M = 6.0  # a place board stays at least this far (polyline m) from the neighbouring repeaters
 DIST_STEP_M = 5.0
 
+# Sign-only translations and their official source are recorded in this file (#1093).
+SIGN_NAMES_EN = json.load(open(os.path.join(ROOT, "scene", "sign-names-en.json")))["names"]
+
 
 def name(p, lang):
     return next((t["text"] for t in p["names"] if t["lang"] == lang), None)
@@ -72,7 +75,7 @@ def exit_item(p):
 
 
 def gate_item(p):
-    return {"id": p["id"], "ja": name(p, "ja"), "en": name(p, "en")}
+    return {"id": p["id"], "ja": name(p, "ja"), "en": name(p, "en") or SIGN_NAMES_EN.get(p["id"], {}).get("en")}
 
 
 def along(geom, d):
@@ -306,7 +309,7 @@ def place_dists(adj, dest, start, banned_edge):
 
 
 def place_item(p, d):
-    return {"id": p["id"], "ja": name(p, "ja"), "en": name(p, "en"), "distanceM": step_dist(d)}
+    return {"id": p["id"], "ja": name(p, "ja"), "en": name(p, "en") or SIGN_NAMES_EN.get(p["id"], {}).get("en"), "distanceM": step_dist(d)}
 
 
 def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest, sight):
