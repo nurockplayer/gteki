@@ -56,22 +56,6 @@ jobs:
           GTEKI_GUIDE_FLOW_ONLY: "1"
         run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off --grep-invert "station switching"
 
-      - name: Run golden cameras
-        timeout-minutes: 15
-        working-directory: tests/e2e
-        env:
-          GTEKI_ROOT: ${{ github.workspace }}
-        run: pnpm exec playwright test specs/29-golden-shots.spec.ts --project=desktop-chromium --trace=off
-
-      - name: Upload golden shots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: golden-shots
-          path: tests/e2e/artifacts/golden/**
-          retention-days: 7
-          if-no-files-found: ignore
-
       # The station switch (Ikebukuro -> Shinjuku) runs on its own step so its [switch-timings] line is easy to find
       # (#647). It blocks again since #1026: the old 15 s ready limit was the cause of the failures, and with the 120 s
       # limit 20 of 20 runs passed (switchReadyMs 19-24 s under SwiftShader). Real-device switch time stays on the field-run checklist.
@@ -93,6 +77,47 @@ jobs:
             tests/e2e/artifacts/results.json
             tests/e2e/artifacts/evidence/**/*.json
             tests/e2e/artifacts/test-results
+          retention-days: 7
+          if-no-files-found: ignore
+
+  golden-cameras:
+    name: golden-cameras (${{ matrix.station }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        station: [ikebukuro, shinjuku]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            tests/e2e/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install Playwright harness
+        working-directory: tests/e2e
+        run: |
+          pnpm install --ignore-workspace --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+      - name: Run golden cameras
+        timeout-minutes: 12
+        working-directory: tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}
+          GTEKI_GOLDEN_STATION: ${{ matrix.station }}
+        run: pnpm exec playwright test specs/29-golden-shots.spec.ts --project=desktop-chromium --trace=off
+      - name: Upload golden shots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-shots-${{ matrix.station }}
+          path: tests/e2e/artifacts/golden/**
           retention-days: 7
           if-no-files-found: ignore
 

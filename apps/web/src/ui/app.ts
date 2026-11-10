@@ -1843,6 +1843,9 @@ export class App {
       sceneInfo: () => this.explorer.sceneInfo(),
       overviewDraws: () => this.explorer.overviewDraws(),
       goldenProbe: () => this.explorer.goldenProbe(),
+      setView: ({ node, headingDeg }: { node: string; headingDeg: number }) => this.s.loaded
+        ? this.explorer.setView(this.s.loaded.bundle, node, headingDeg)
+        : { placed: false, placeMs: 0, turnMs: 0 },
       layer: (name: string, visible?: boolean) => this.explorer.layer(name, visible),
       portalView: () => this.explorer.portalView(),
       routeGroundCheck: () => this.explorer.routeGroundCheck(this.s.polyline, this.s.route?.ok ? this.s.route.steps : [], guideStops(this.s.polyline, this.s.instructions).map(({ point }) => polylineLengthM(this.s.polyline.slice(0, point + 1)))),

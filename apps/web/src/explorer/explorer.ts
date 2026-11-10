@@ -571,8 +571,7 @@ export class Explorer {
     const root = this.stationScene?.root;
     if (!root) throw new Error("Station scene is not loaded");
     const renderer = this.renderer;
-    const size = renderer.getDrawingBufferSize(new THREE.Vector2());
-    const width = size.x, height = size.y;
+    const width = 320, height = 200;
     const target = new THREE.WebGLRenderTarget(width, height);
     const shown = new Uint8Array(width * height * 4), hidden = new Uint8Array(shown.length);
     const oldTarget = renderer.getRenderTarget(), background = this.scene.background;
@@ -1894,6 +1893,19 @@ export class Explorer {
     if (!n) return false;
     const z = nodeDisplayZ(n, bundle.floors.find((f) => f.id === n.floorId)).z;
     return this.walkFrom({ x: n.position.x, y: n.position.y, z }, headingDeg);
+  }
+
+  /** QA-only: place the walker and snap the follow camera to an absolute heading. */
+  setView(bundle: StationBundle, nodeId: string, headingDeg: number): { placed: boolean; placeMs: number; turnMs: number } {
+    const start = performance.now();
+    const placed = this.walkFromNode(bundle, nodeId, headingDeg);
+    const afterPlace = performance.now();
+    if (placed) {
+      this.yaw = -THREE.MathUtils.degToRad(headingDeg);
+      this.bodyYaw = this.yaw;
+      this.placeCamera(0, true);
+    }
+    return { placed, placeMs: afterPlace - start, turnMs: performance.now() - afterPlace };
   }
 
   private groundAt(x: number, fromY: number, z: number, maxDrop: number): number | null {

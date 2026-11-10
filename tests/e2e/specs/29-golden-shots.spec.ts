@@ -13,40 +13,6 @@ const config = JSON.parse(fs.readFileSync(new URL("../golden-cameras.json", impo
   cameras: Camera[];
 };
 
-async function turn(page: Page, heading: number) {
-  const point = await page.evaluate(() => {
-    const c = document.querySelector("canvas.gteki-canvas")!.getBoundingClientRect();
-    for (const [fx, fy] of [[0.5, 0.45], [0.7, 0.35], [0.3, 0.35], [0.6, 0.6], [0.85, 0.5]]) {
-      const x = c.left + c.width * fx!, y = c.top + c.height * fy!;
-      const el = document.elementFromPoint(x, y);
-      if (el?.classList.contains("gteki-canvas") || el?.classList.contains("gteki-labels")) return { x, y, width: c.width };
-    }
-    return { x: c.left + c.width / 2, y: c.top + c.height / 2, width: c.width };
-  });
-  async function drag(dx: number) {
-    const chunkMax = Math.max(20, Math.floor(point.width * 0.3));
-    let sent = 0;
-    while (Math.abs(dx - sent) >= 1) {
-      const chunk = Math.max(-chunkMax, Math.min(chunkMax, Math.round(dx - sent)));
-      await page.mouse.move(point.x, point.y); await page.mouse.down();
-      await page.mouse.move(point.x + chunk, point.y, { steps: 3 }); await page.mouse.up();
-      sent += chunk;
-    }
-  }
-  const delta = Math.atan2(Math.sin(heading * Math.PI / 180), Math.cos(heading * Math.PI / 180));
-  await drag(Math.round(delta / 0.0042));
-  for (let i = 0; i < 4; i++) {
-    await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
-    await page.waitForTimeout(600);
-    const dir = (await hooks.sceneInfo(page)).cameraDirection as number[];
-    const facing = (Math.atan2(dir[0]!, -dir[2]!) * 180 / Math.PI + 360) % 360;
-    const error = ((heading - facing + 540) % 360) - 180;
-    if (Math.abs(error) < 3) return;
-    if (i < 3) await drag(Math.round(error * Math.PI / 180 / 0.0042));
-    else throw new Error(`heading ${heading} ended at ${facing.toFixed(1)}`);
-  }
-}
-
 async function screenshotFlatRatio(page: Page, png: Buffer): Promise<number> {
   const rgba = await page.evaluate(async (b64) => {
     const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();
@@ -60,32 +26,48 @@ async function screenshotFlatRatio(page: Page, png: Buffer): Promise<number> {
   return flatRatio(Buffer.from(rgba, "base64"));
 }
 
-test("golden cameras: void, coverage and flat frames", async ({ page }, testInfo) => {
-  test.setTimeout(840_000);
+test("golden cameras: void, coverage and flat frames", async ({ page: initialPage, context }, testInfo) => {
+  test.setTimeout(700_000);
+  let page = initialPage;
+  const filter = process.env.GTEKI_GOLDEN_STATION;
+  if (filter && !["ikebukuro", "shinjuku"].includes(filter)) throw new Error(`Unknown golden station: ${filter}`);
   const out = path.join(ARTIFACTS, "golden", testInfo.project.name);
   fs.mkdirSync(out, { recursive: true });
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const rows: object[] = [], failures: string[] = [];
   let station: StationKey | undefined, tier = "", renderer: unknown = null;
-  for (const camera of config.cameras) {
+  for (const camera of config.cameras.filter(c => !filter || c.station === filter)) {
     const started = Date.now();
+    const phases = { place: 0, turn: 0, settle: 0, screenshot: 0, probe: 0 };
+    let phaseStart = started;
     try {
+      if (page.isClosed()) { page = await context.newPage(); station = undefined; }
       if (station !== camera.station) {
         await openStation(page, camera.station); station = camera.station;
         tier = await hooks.quality(page);
         renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);
       }
+      phaseStart = Date.now();
       if (camera.kind === "node") {
-        if (!await hooks.walkFromNode(page, camera.node!)) throw new Error(`walkFromNode ${camera.node} failed`);
-        await turn(page, camera.headingDeg!);
+        const result = await page.evaluate(({ node, headingDeg }) => (window as any).__gteki.setView({ node, headingDeg }), { node: camera.node!, headingDeg: camera.headingDeg! }) as { placed: boolean; placeMs: number; turnMs: number };
+        phases.place = result.placeMs;
+        phases.turn = result.turnMs;
+        if (!result.placed) throw new Error(`setView ${camera.node} failed: node or walkable ground unavailable`);
       } else {
         if (await hooks.mode(page) !== "overview") {
           await page.locator(".hud").getByRole("button", { name: "Overview", exact: true }).click();
         }
-        await page.waitForTimeout(1500);
+        phases.place = Date.now() - phaseStart;
       }
+      phaseStart = Date.now();
+      await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+      phases.settle = Date.now() - phaseStart;
+      phaseStart = Date.now();
       const png = await page.screenshot({ path: path.join(out, `${camera.id}.png`), timeout: 60_000 });
+      phases.screenshot = Date.now() - phaseStart;
+      phaseStart = Date.now();
       const probe = await page.evaluate(() => (window as any).__gteki.goldenProbe()) as { voidRatio: number; stationShare: number };
+      phases.probe = Date.now() - phaseStart;
       const metrics = { ...probe, flatRatio: await screenshotFlatRatio(page, png), nearBlack: (await imageStats(page, png)).nearBlack };
       const thresholds = camera.kind === "overview" ? camera.thresholds! : config.thresholds;
       const checks = (Object.entries(thresholds) as [Metric, number][]).map(([metric, threshold]) => evaluateCheck(metric, metrics[metric], threshold, camera.known));
@@ -96,7 +78,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page }, testInfo
       console.error(`[golden] ${camera.id}: ${String(error)}`);
     }
     fs.writeFileSync(path.join(out, "golden.json"), JSON.stringify({ sha, project: testInfo.project.name, tier, renderer, cameras: rows }, null, 2));
-    console.log(`[golden] ${camera.id}: ${((Date.now() - started) / 1000).toFixed(1)}s`);
+    console.log(`[golden] ${camera.id}: total=${((Date.now() - started) / 1000).toFixed(1)}s ${Object.entries(phases).map(([name, ms]) => `${name}=${(ms / 1000).toFixed(2)}s`).join(" ")}`);
   }
   expect(failures, failures.join("\n")).toEqual([]);
 });
