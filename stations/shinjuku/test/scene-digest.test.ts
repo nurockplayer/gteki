@@ -35,6 +35,7 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * #858 item 12 (2026-11-06 JST) adds one merged wall-props mesh; only the visual map gains its material
  * entry. protect, station, walkable, colliders, camera blockers, walls, semantic and spawn are unchanged.
  * #860 (2026-11-09 JST): raised train changes the five visible train material triangle hashes.
+ * #1086 (2026-11-10 JST): shared escalator shells change only the visible wall and ceiling triangle sets.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
