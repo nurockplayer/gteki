@@ -38,7 +38,7 @@ import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZon
 import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
-import { containmentShift, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
@@ -417,6 +417,8 @@ export class Explorer {
   /** Consumed by the first successful walker placement, including when no board qualifies. */
   private identityPlaced = false;
   private identityLabelsDirty = true;
+  private identityRegions: ScreenRect[] = [];
+  private identityOverlap = 0;
   private labelMode: ExplorerMode | null = null;
   private labelCamFov = NaN;
   private labelCamAspect = NaN;
@@ -724,8 +726,8 @@ export class Explorer {
   }
 
   /** POI label states for automated visual checks. */
-  labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number } {
-    const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0 };
+  labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number; identityOverlap: number } {
+    const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0, identityOverlap: this.mode === "overview" ? this.identityOverlap : 0 };
     // A label dropped by the overview declutter is off screen: counted there, not as shown or faded.
     for (const l of this.poiLabels) { if (l.decluttered && l.state !== "hidden") n.decluttered++; else n[l.state]++; }
     return n;
@@ -2320,6 +2322,8 @@ export class Explorer {
       }
     }
     regions.sort((a, b) => a.y0 - b.y0);
+    this.identityRegions = regions;
+    this.declutterDirty = true;
     // Measure unmeasured labels in one read-only batch before changing any chip's translate.
     if (regions.length) for (const l of this.poiLabels) {
       const el = l.obj.element;
@@ -2364,6 +2368,7 @@ export class Explorer {
         l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
       }
       this.declutterActive = false;
+      this.identityOverlap = 0;
       this.declutterDirty = true;
       return;
     }
@@ -2399,9 +2404,9 @@ export class Explorer {
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
       let x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
       l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
-      if (x < 0 || x > vw || y - l.identityOffsetY < 0 || y - l.identityOffsetY > vh) { l.decluttered = true; continue; }
-      const dx = containmentShift(x - size.w / 2, size.w, vw);
-      const dy = containmentShift(y - size.h / 2, size.h, vh);
+      const placement = placeOverviewChip({ x, y, ...size }, { endpoint: l.klass === LABEL_CLASS.endpoint, selected: l.selected, vw, vh, identityRegions: this.identityRegions, anchorY: y - l.identityOffsetY });
+      if (placement.hidden) { l.decluttered = true; continue; }
+      const { dx, dy } = placement;
       x += dx; y += dy;
       l.obj.element.style.translate = `${dx}px ${l.identityOffsetY + dy}px`;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
@@ -2409,6 +2414,12 @@ export class Explorer {
     }
     const keep = declutter(items, { blocked });
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
+    this.identityOverlap = items.filter((item) => {
+      const label = byId.get(item.id)!;
+      if (!keep.has(item.id) || label.selected || label.state === "hidden") return false;
+      const rect = { x0: item.x - item.w / 2, x1: item.x + item.w / 2, y0: item.y - item.h / 2, y1: item.y + item.h / 2 };
+      return this.identityRegions.some((region) => intersectsRect(rect, region));
+    }).length;
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
     // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
     for (const id of revealedUnmeasured(items, keep)) {
