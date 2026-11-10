@@ -27256,6 +27256,15 @@
    "derivation": "pipeline/build_station.py crowd_lanes(): per verified edge (gteki/graph.json geometry), the lateral width a pedestrian may stand off the polyline, sampled on the PLATEAU walkable grid (build/ubld_enu.json, >= 0.35 m from walls) inside the routable coverage areas (data/graph.src.json). sourceIds = PLATEAU, the routable areas' sources and every verified edge's geometry/access evidence and end nodes' sourceRefs (a wide set)"
   },
   {
+   "id": "underfloor-backing",
+   "path": "scene/underfloor_backing.json",
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "Hand-transcribed from the PLATEAU exterior GroundSurface_1 triangles identified in issue #1098; visual backing only"
+  },
+  {
    "id": "walk-bridges",
    "path": "scene/walk_bridges.json",
    "sourceIds": [
