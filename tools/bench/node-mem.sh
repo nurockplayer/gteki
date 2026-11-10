@@ -14,7 +14,10 @@ mkdir -p "$out"
 for _ in 1 2 3 4 5 6; do docker info >/dev/null 2>&1 && break; orbctl start >/dev/null 2>&1; sleep 10; done
 digest=$(docker image inspect "gteki-bench:$variant" --format '{{.Id}}')
 for ((rep=1; rep<=reps; rep++)); do
-  if [[ -f $out/runs.jsonl ]] && jq -e --arg s "$suite" --arg v "$variant" --argjson r "$rep" 'select(.suite==$s and .variant==$v and .rep==$r)' "$out/runs.jsonl" >/dev/null; then echo "skip $variant $suite $rep"; continue; fi
+  memory=3g; cpus=4; [[ $suite == box ]] && { memory=${BENCH_BOX_MEMORY:-2g}; cpus=2; }
+  if node tools/bench/skip-key.cjs "$out/runs.jsonl" "$suite" "$variant" "$rep" "$memory" "${BENCH_FILES:-}" "${BENCH_WALL_S:-}"; then echo "skip $variant $suite $rep"; continue; fi
+  attempt=$(node tools/bench/skip-key.cjs --attempt "$out" "$variant-$suite-$rep")
+  attempt_arg=(); [[ -n $attempt ]] && attempt_arg=(--attempt "$attempt")
   free=$(memory_pressure | grep 'free percentage' | awk -F': ' '{print $2+0}')
   if [[ -z $free ]] || ((free < 20)); then echo 'memory pressure gate: free below 20% or unavailable' >&2; exit 3; fi
   vm=$(vm_stat -c 3 5)
@@ -23,9 +26,8 @@ for ((rep=1; rep<=reps; rep++)); do
   # Capture first: grep -q closing the pipe early would fail it under pipefail.
   status=$(orb-test --status --porcelain 2>/dev/null || true)
   if [[ ${BENCH_CONCURRENT_HEAVY:-} =~ ^[01]$ ]]; then concurrent=$BENCH_CONCURRENT_HEAVY; elif grep -q $'^running\t' <<< "$status"; then concurrent=1; fi
-  memory=3g; cpus=4; [[ $suite == box ]] && { memory=${BENCH_BOX_MEMORY:-2g}; cpus=2; }
   opts=(); ((heavy)) && opts+=(--heavy)
-  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" --env "BENCH_FILES=${BENCH_FILES:-}" --env "BENCH_WALL_S=${BENCH_WALL_S:-}" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" \
+  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" --env "BENCH_FILES=${BENCH_FILES:-}" --env "BENCH_WALL_S=${BENCH_WALL_S:-}" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" "${attempt_arg[@]}" \
     || { code=$?; echo "rep $rep of $variant/$suite failed (exit $code); continuing" >&2; failed=$code; }
 done
 exit "${failed:-0}"
