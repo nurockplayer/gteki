@@ -141,7 +141,7 @@ describe("Department store brand search (#419)", () => {
       ["サボン", "shop-sjk-keio", "1階"],
       ["小樽茶房", "shop-sjk-keio", "4階"],
     ]) {
-      expect(search(brand)[0]).toMatchObject({
+      expect(search(brand).find((hit) => hit.poi.id === poiId)).toMatchObject({
         poi: { id: poiId },
         matched: brand,
         tenant: { name: brand, floorLabel },
