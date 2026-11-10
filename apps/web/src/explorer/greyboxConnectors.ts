@@ -487,7 +487,16 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
 /** Plan length of the leading segments that stay within a step of the path's start: past it, a walk at that height no longer meets the path. */
 function levelRun(points: readonly THREE.Vector3[]): number {
   let run = 0;
-  for (let i = 1; i < points.length && Math.abs(points[i]!.y - points[0]!.y) <= WALKER_BODY.stepUpM; i++) run += Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.z - points[i - 1]!.z);
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1]!, b = points[i]!, length = Math.hypot(b.x - a.x, b.z - a.z);
+    const delta = b.y - points[0]!.y;
+    if (Math.abs(delta) > WALKER_BODY.stepUpM) {
+      const limit = points[0]!.y + Math.sign(delta) * WALKER_BODY.stepUpM;
+      run += length * Math.max(0, Math.min(1, (limit - a.y) / (b.y - a.y)));
+      break;
+    }
+    run += length;
+  }
   return run;
 }
 
