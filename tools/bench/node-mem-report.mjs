@@ -23,7 +23,7 @@ function delta(rows, refRows, field) {
 }
 console.log('Memory columns use every run with valid samples, including failed or OOM-killed runs (see the OOM column); pass rate counts exit 0 with a valid Vitest report. Deltas pair runs by rep number. Worker RSS sums concurrent workers; worker heap is the maximum of individual workers.');
 for (const concurrent of [0,1]) {
- if (![...groups.keys()].some(k => Number(k.split('|')[0]) === concurrent)) continue;
+ if (![...groups.keys()].some(k => Number(JSON.parse(JSON.parse(k)[0])[0]) === concurrent)) continue;
  console.log(`\n## ${concurrent ? 'Concurrent heavy job' : 'No concurrent heavy job'}\n`);
  if (concurrent) console.log('與 #156 並行，時間僅供參考\n');
  console.log('| Suite | Variant | n | Pass | OOM kills | Tests passed (median) | Tree peak RSS median / max MiB | cgroup anon peak median / max MiB | cgroup current peak median MiB (incl. page cache) | Worker RSS sum peak MiB | Max per-worker heapUsed MiB | Max main heapUsed MiB | heapTotal MiB | external MiB | elapsed median s | CPU median s | Δ tree RSS vs node24 | Δ tree RSS caged vs node26 |');
