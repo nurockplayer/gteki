@@ -24,7 +24,7 @@ describe("Department store brand search (#419)", () => {
 
   it("loads the brand directories with no validation errors", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
-    expect(bundle.tenants).toHaveLength(3018);
+    expect(bundle.tenants).toHaveLength(3016);
     expect(new Set(bundle.tenants!.map((t) => t.poiId))).toEqual(
       new Set([
         "shop-sjk-odakyudept",
