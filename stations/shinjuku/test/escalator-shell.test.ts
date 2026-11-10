@@ -51,6 +51,8 @@ describe("#49 render-only escalator enclosure", () => {
     const noLifts = { ...bundle, edges: [] };
     const single = escalatorShellGeometry(empty, noLifts);
     const paired = escalatorShellGeometry({ ...empty, runs: [first, second] }, noLifts);
+    const raised = { ...second, a: { ...second.a, z: -9.85 }, b: { ...second.b, z: -9.85 } };
+    const stepped = escalatorShellGeometry({ ...empty, runs: [first, raised] }, noLifts);
     const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
     const ray = new THREE.Raycaster(), mesh = new THREE.Mesh(paired.sides!, material);
     try {
@@ -63,9 +65,11 @@ describe("#49 render-only escalator enclosure", () => {
       }, 0)) / 2, 0);
       expect(paired.finishes.reduce((sum, finish) => sum + area(finish.rings), 0)).toBeCloseTo(11.2 * 3.65, 3);
       expect(single.finishes.reduce((sum, finish) => sum + area(finish.rings), 0)).toBeCloseTo(11.2 * 2.15, 3);
+      expect(stepped.finishes.reduce((sum, finish) => sum + area(finish.rings), 0)).toBeCloseTo(11.2 * 3.65, 3);
+      expect(stepped.finishes.every((finish) => Math.abs(soffitHeight(finish, { x: 5, y: 0.75 }) - (-10 + SHELL_RISE)) < 1e-6)).toBe(true);
       expect(single.sides!.index!.count).toBeGreaterThan(0);
     } finally {
-      single.sides?.dispose(); single.soffits?.dispose(); paired.sides?.dispose(); paired.soffits?.dispose(); material.dispose();
+      single.sides?.dispose(); single.soffits?.dispose(); paired.sides?.dispose(); paired.soffits?.dispose(); stepped.sides?.dispose(); stepped.soffits?.dispose(); material.dispose();
     }
   });
 

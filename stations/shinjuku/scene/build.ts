@@ -326,7 +326,12 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
     // joins the inclined finish to landing ceilings without closing either run mouth.
     const roof = pitched(r, 0.45, 0.6);
-    roof.z += SHELL_RISE;
+    // A shared enclosure uses one plane throughout, so adjacent roof panels
+    // meet even when the source flights have slightly different gradients.
+    const anchor = pitched(runs[Math.min(...groups[runIndex]!)]!, 0.45, 0.6);
+    roof.z = anchor.z + SHELL_RISE;
+    roof.origin = anchor.origin;
+    roof.slope = anchor.slope;
     // A lower finish trims the side above its underside. Keep the backing
     // shell roof when the planes differ: cutting it by footprint alone leaves
     // an open step between the two heights.
