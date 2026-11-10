@@ -1,13 +1,37 @@
 {
   "schema": "gteki.research.tenants/0.1",
-  "note": "Facts-only brand list of 京王百貨店 新宿店 (593 rows), as the store's 「ショップ検索」 page prints it. Read from the JSON that page (/info/shinjuku/shop/) loads, https://www.keionet.com/re2024/json/shop_shinjuku.json (342,902 bytes, SHA-256 6151a6ba2be7fce32feab4f8aba22a6196a5502a2caf4dcdbf4549c57b2962a5; plain curl with the default User-Agent; retrieved 2026-11-01T19:28:16Z = 2026-11-02 04:28 JST). The file has a trailing comma before its final ], stripped before parsing; the raw file is not committed. Only the printed facts are kept: title as name (trimmed), floor as floorLabel exactly as printed (１階 .. Ｂ1, ＭＢ, 屋上), salesfloor as category (null when blank). Ids are the source row id. Rows kept in the JSON's own order (not floor order). 0 rows skipped for a missing title or floor, 0 exact name+floor duplicates dropped. Nothing else (tel, memorandum, dates, head, category/category_child) is taken. Not POIs. UNVERIFIED.",
-  "sourceId": "keio-shinjuku-shopsearch-2026-11",
+  "note": "Facts-only shop-search list refreshed by plain curl on 2026-11-10 12:51 JST; source IDs, printed title, floor and sales floor, 595 rows. Same method and rights as the 2026-11-02 JST capture.",
+  "sourceId": "keio-shinjuku-shopsearch-2026-11-10",
   "storePoiIds": [
     "shop-sjk-keio"
   ],
-  "retrievedAt": "2026-11-01T19:28:16Z",
+  "retrievedAt": "2026-11-10T12:51:00+09:00",
   "removed": [],
   "tenants": [
+    {
+      "id": "tenant-sjk-keio-033535",
+      "name": "カインドケア",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": "ハートフルプラザ売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033533",
+      "name": "サボン",
+      "aliases": [],
+      "floorLabel": "1階",
+      "category": "化粧品売場",
+      "storePoiId": "shop-sjk-keio"
+    },
+    {
+      "id": "tenant-sjk-keio-033534",
+      "name": "小樽茶房",
+      "aliases": [],
+      "floorLabel": "4階",
+      "category": null,
+      "storePoiId": "shop-sjk-keio"
+    },
     {
       "id": "tenant-sjk-keio-033514",
       "name": "赤ちゃんの城",
@@ -1694,14 +1718,6 @@
       "aliases": [],
       "floorLabel": "3階",
       "category": "プレミアムキャリア・マダム売場",
-      "storePoiId": "shop-sjk-keio"
-    },
-    {
-      "id": "tenant-sjk-keio-020283",
-      "name": "カインドケア",
-      "aliases": [],
-      "floorLabel": "8階",
-      "category": "ハートフルプラザ売場",
       "storePoiId": "shop-sjk-keio"
     },
     {

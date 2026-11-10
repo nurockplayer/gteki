@@ -237,6 +237,29 @@ describe("context visibility gate", () => {
 });
 
 describe("context material", () => {
+  it("adds facade bands only to the building material", () => {
+    const building = createContextMaterial(THREE, { streetY: 32.5, facade: true });
+    const plain = createContextMaterial(THREE, { streetY: 32.5 });
+    const road = createContextMaterial(THREE, { color: 0x62635f });
+    expect(building.customProgramCacheKey()).not.toBe(plain.customProgramCacheKey());
+    const compile = (mat: THREE.MeshBasicMaterial) => {
+      const shader = { vertexShader: THREE.ShaderLib.basic.vertexShader, fragmentShader: THREE.ShaderLib.basic.fragmentShader } as THREE.WebGLProgramParametersWithUniforms;
+      mat.onBeforeCompile(shader, null as never);
+      return shader;
+    };
+    const shader = compile(building);
+    expect(shader.vertexShader).toContain("vCtxPos = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;");
+    expect(shader.fragmentShader).toContain("fwidth( value )");
+    expect(shader.fragmentShader).toContain("ctxWindow");
+    expect(compile(road).fragmentShader).not.toContain("ctxWindow");
+    const group = new THREE.Group();
+    const wall = new THREE.Mesh(), street = new THREE.Mesh();
+    wall.name = "ctx_bldg_test"; street.name = "ctx_road_test";
+    group.add(wall, street);
+    dressContext(group, building, road);
+    expect(wall.material).toBe(building);
+    expect(street.material).toBe(road);
+  });
   it("is a double-sided, fogged, unlit-by-the-rig material and dressContext changes nothing but the material", () => {
     const mat = createContextMaterial(THREE);
     expect(mat).toBeInstanceOf(THREE.MeshBasicMaterial);

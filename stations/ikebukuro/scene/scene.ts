@@ -481,7 +481,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
   ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     (loaded) => {
-      const material = createContextMaterial(THREE, { streetY });
+      const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
       dressContext(loaded.scene, material, roadMaterial);
       if (disposed) {
@@ -676,6 +676,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); streetAmbience?.setZone(next); } } : {}),
     settled: () => catalogKit.settled(),
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
+    setCameraFocus: (p, sign) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign),
     update: (dt, elapsed, camera) => {
       catalogKit.start();
       if (camera) catalogKit.update(camera);

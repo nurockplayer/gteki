@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DECLUTTER_HOLD_PX, DECLUTTER_PAD_PX, LABEL_CLASS, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem } from "./labelDeclutter.ts";
+import { DECLUTTER_HOLD_PX, DECLUTTER_PAD_PX, LABEL_CLASS, placeOverviewChip, containmentShift, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem } from "./labelDeclutter.ts";
 
 const item = (id: string, x: number, y: number, over: Partial<DeclutterItem> = {}): DeclutterItem => ({
   id, x, y, w: 80, h: 24, klass: LABEL_CLASS.other, routable: true, ...over,
@@ -24,6 +24,13 @@ describe("declutter", () => {
   it("keeps everything when nothing touches", () => {
     const items = [item("a", 0, 0), item("b", 200, 0), item("c", 0, 100)];
     expect([...declutter(items)].sort()).toEqual(["a", "b", "c"]);
+  });
+
+  it("keeps every label class clear of UI rectangles without blocking other labels", () => {
+    const blocked = [{ x0: 0, y0: 0, x1: 200, y1: 40 }];
+    const items = [item("endpoint", 50, 30, { klass: LABEL_CLASS.endpoint }), item("exit", 50, 60, { klass: LABEL_CLASS.exit }), item("outside", 250, 30)];
+    expect([...declutter(items, { blocked })]).toEqual(["exit", "outside"]);
+    expect(declutter([item("touching", 50, 52)], { blocked }).has("touching")).toBe(true);
   });
 
   it("drops the lower-priority label of an overlapping pair, whatever the input order", () => {
@@ -187,5 +194,40 @@ describe("revealedUnmeasured", () => {
     expect(revealedUnmeasured([hidden, front], declutter([hidden, front]))).toEqual([]);
     const measured = [a, b, c].map((i) => ({ ...i, measured: true }));
     expect(revealedUnmeasured(measured, declutter(measured))).toEqual([]);
+  });
+});
+
+describe("containmentShift", () => {
+  it("moves clipped chips to the margin and leaves fitting chips alone", () => {
+    expect(containmentShift(-17, 309, 412)).toBe(25);
+    expect(containmentShift(20, 100, 412)).toBe(0);
+    expect(containmentShift(-17, 500, 412)).toBe(25);
+  });
+});
+
+
+describe("placeOverviewChip", () => {
+  it("rechecks identity regions after containment moves a chip", () => {
+    const chip = { x: 195, y: 100, w: 40, h: 20 };
+    const opts = { endpoint: false, selected: false, vw: 200, vh: 200 };
+    const region = { x0: 153, x1: 160, y0: 95, y1: 105 };
+    const plain = placeOverviewChip(chip, { ...opts, identityRegions: [] });
+    expect(plain).toEqual({ hidden: false, dx: -23, dy: 0 });
+    const placed = placeOverviewChip(chip, { ...opts, identityRegions: [region] });
+    if (!placed.hidden) {
+      expect(placed.dy).not.toBe(0);
+      const top = chip.y - chip.h / 2 + placed.dy;
+      expect(top >= region.y1 || top + chip.h <= region.y0).toBe(true);
+    }
+  });
+
+  it("keeps partly visible endpoints but hides offscreen ordinary labels and endpoints", () => {
+    const opts = { selected: true, vw: 200, vh: 200, identityRegions: [] };
+    const chip = { x: -10, y: 100, w: 40, h: 20 };
+    const endpoint = placeOverviewChip(chip, { ...opts, endpoint: true });
+    expect(endpoint.hidden).toBe(false);
+    if (!endpoint.hidden) expect(chip.x - chip.w / 2 + endpoint.dx).toBe(8);
+    expect(placeOverviewChip(chip, { ...opts, endpoint: false })).toEqual({ hidden: true });
+    expect(placeOverviewChip({ ...chip, x: -30 }, { ...opts, endpoint: true })).toEqual({ hidden: true });
   });
 });

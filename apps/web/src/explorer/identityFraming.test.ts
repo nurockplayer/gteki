@@ -10,6 +10,15 @@ const board = (x: number, y: number, z: number): FramingBoard => {
 };
 
 describe("identityFraming", () => {
+  it("traces a facing rejection but not a framed board", () => {
+    const away = board(0, 3, -9), visible = board(0, 3, -12);
+    away.front.negate();
+    const traced: [FramingBoard, string][] = [];
+    const look = identityFraming(head, 0, 0, [away, visible], 16 / 9, 50, undefined, undefined, undefined, (b, reason) => traced.push([b, reason]));
+    expect(look).not.toBeNull();
+    expect(traced).toEqual([[away, "facing"]]);
+  });
+
   it.each([board(0, 3, -9), board(-7, 4, -8), board(0, 8, -8), board(2, 3, 9), board(0, 7, -10)])("frames a front-readable board at $centre for both aspect ratios", (b) => {
     for (const aspect of [16 / 9, 9 / 19.5]) {
       const before = b.centre.clone();

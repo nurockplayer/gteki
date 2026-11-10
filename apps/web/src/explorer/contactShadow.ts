@@ -23,3 +23,30 @@ export function contactShadow(radiusM = 0.5, opacity = 0.42): THREE.Mesh<THREE.P
   mesh.name = "contact-shadow";
   return mesh;
 }
+
+/** Opacity of a paw contact shadow at its height above the avatar floor. */
+export function pawShadowState(pawWorldY: number, floorY: number): number {
+  return 0.5 * Math.max(0, Math.min(1, (0.06 - (pawWorldY - floorY)) / 0.05));
+}
+
+const pawNames = ["forepaw_L", "forepaw_R", "hindpaw_L", "hindpaw_R"];
+const pawBones = new WeakMap<THREE.Object3D, (THREE.Object3D | undefined)[]>();
+const pawPosition = new THREE.Vector3();
+
+/** Place each paw shadow beneath its bone in avatar-local coordinates. */
+export function placePawShadows(shadows: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[], rigRoot: THREE.Object3D, avatar: THREE.Object3D, floorY: number): void {
+  let paws = pawBones.get(rigRoot);
+  if (!paws) {
+    paws = pawNames.map((name) => rigRoot.getObjectByName(name));
+    pawBones.set(rigRoot, paws);
+  }
+  for (let i = 0; i < shadows.length; i++) {
+    const paw = paws[i];
+    if (!paw) continue;
+    const shadow = shadows[i]!;
+    paw.getWorldPosition(pawPosition);
+    shadow.material.opacity = pawShadowState(pawPosition.y, floorY);
+    avatar.worldToLocal(pawPosition);
+    shadow.position.set(pawPosition.x, 0.012, pawPosition.z);
+  }
+}

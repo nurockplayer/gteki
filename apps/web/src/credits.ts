@@ -29,7 +29,7 @@ export interface ModelCredit {
   source: { label: string; href: string | null };
   author: { label: string; href: string | null };
   license: { label: string; href: string | null };
-  modification: string;
+  modification: { ja: string; en: string };
 }
 
 const CAT_SOURCE_URL = "https://sketchfab.com/3d-models/3d-modelling-my-cat-fripouille-0ab14bf98e754f8d90fe1bf1c84ca66c";
@@ -41,7 +41,10 @@ export const CAT_MODEL_CREDIT: ModelCredit = {
   source: { label: "3d modelling my cat: Fripouille", href: safeHref(CAT_SOURCE_URL) },
   author: { label: "guillaume bolis", href: safeHref("https://sketchfab.com/guillaume.bolis.neko") },
   license: { label: "CC BY 4.0", href: safeHref("http://creativecommons.org/licenses/by/4.0/") },
-  modification: "Modified by GTEki contributors: whiskers removed, mesh decimated, recoloured solid blue-grey with vertex colours (textures removed), skeleton re-derived and bones renamed, ear bones added and reweighted, animation clips authored.",
+  modification: {
+    ja: "GTEki の協力者による改変：ひげを削除、メッシュを軽量化、頂点カラーで青灰色の単色に変更（テクスチャは削除）、骨格を作り直してボーン名を変更、耳のボーンを追加してウェイトを付け直し、アニメーションを作成。",
+    en: "Modified by GTEki contributors: whiskers removed, mesh decimated, recoloured solid blue-grey with vertex colours (textures removed), skeleton re-derived and bones renamed, ear bones added and reweighted, animation clips authored.",
+  },
 };
 
 /** 3D model credits shown in the Coverage dialog's "3D models" section. */
