@@ -124,6 +124,7 @@ export class App {
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
     hud: el("div", "hud"),
+    topbar: el("header", "topbar"),
     minimap: new Minimap(() => this.explorer.getPose()),
     coverage: el("dialog", "coverage"),
     toast: el("div", "toast"),
@@ -183,6 +184,10 @@ export class App {
     if (typeof ResizeObserver !== "undefined") {
       new ResizeObserver(() => this.root.style.setProperty("--hud-height", `${this.ui.hud.offsetHeight}px`)).observe(this.ui.hud);
     }
+    const updateTopbarBottom = () => this.root.style.setProperty("--topbar-bottom", `${Math.round(this.ui.topbar.getBoundingClientRect().bottom)}px`);
+    updateTopbarBottom();
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(updateTopbarBottom).observe(this.ui.topbar);
+    window.addEventListener("resize", updateTopbarBottom);
     // On a phone the open route sheet is a bottom occluder of the same kind (#385).
     this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
@@ -208,7 +213,7 @@ export class App {
     this.root.innerHTML = "";
     this.root.className = "app";
     const viewport = el("div", "viewport");
-    const top = el("header", "topbar");
+    const top = this.ui.topbar;
     const brand = el("div", "brand");
     brand.append(el("span", "logo", "GTEki"), el("span", "tagline", this.t.tagline));
     if (PRIVATE_BUILD) {
