@@ -512,14 +512,6 @@
           {
             "poiId": "poi:platform:oedo",
             "score": 105
-          },
-          {
-            "poiId": "poi:exit:2",
-            "score": 7.666666666666666
-          },
-          {
-            "poiId": "poi:exit:5",
-            "score": 6.739130434782608
           }
         ]
       },
