@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: GTEki contributors
 import { createHmac } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import { MERCHANT_TERMS_VERSION, MERCHANT_SUBMISSION_SCHEMA, type MerchantSubmission } from "../../apps/web/src/merchant/submission.ts";
+import { readFileSync, readdirSync, realpathSync, unlinkSync, writeFileSync } from "node:fs";
+import { join, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
+import { MERCHANT_LICENSE_ID, MERCHANT_TERMS_VERSION, MERCHANT_SUBMISSION_SCHEMA, type MerchantSubmission } from "../../apps/web/src/merchant/submission.ts";
 import { parseStationFiles } from "../../packages/schema/src/parse.ts";
 
-export type QueueRecord = { submission: MerchantSubmission; identity: string; state: string; checkedAt: string; sourceId?: string };
+export type QueueRecord = { submission: MerchantSubmission; identity: string; state: string; checkedAt: string; sourceId?: string; closedAt?: string };
 export type Check = { id: string; pass: boolean; detail: string; supersedes?: string };
+// Move this to the versioned terms page when that page exists.
+export const MERCHANT_TERMS_URL = "https://github.com/nurockplayer/gteki/blob/main/docs/research/merchants/merchant-self-service-spec.md#4-consent-and-licence-reviewed-by-core-rights-a9-440";
 const day = 86400000;
 const text = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
 const date = (v: unknown): v is string => text(v) && Number.isFinite(Date.parse(v));
@@ -81,3 +84,126 @@ export function checksFor(submission: MerchantSubmission, identity: string, queu
   add("hours-age", true, stale ? "Hours are older than 180 days and will be dropped" : "Hours are within 180 days or absent");
   return checks;
 }
+
+/** Build a report without copying contact information into it. */
+export function checkSubmission(s: MerchantSubmission, key: string, queue: QueueRecord[], bundle: ReturnType<typeof loadBundle>, now: Date) {
+  const identity = identityFor(s.contact, key);
+  const checks = checksFor(s, identity, queue, bundle, now);
+  if (bundle.station.id !== s.station.id) checks.find(c => c.id === "schema")!.pass = false;
+  const matches = bundle.pois.filter(p => p.floorId === s.location.floorId && p.names.some(n => s.shop.names.some(x => x.text === n.text)));
+  const existing = matches[0];
+  let proposal: null | { source: unknown; poi: unknown; previous: Record<string, unknown> | null } = null;
+  if (checks.every(c => c.pass)) {
+    // Station POI IDs use shop-<short code>-...; otherwise the folder itself is a usable code.
+    const code = bundle.pois.map(p => /^shop-([a-z0-9]+)-/.exec(p.id)?.[1]).find(Boolean) ?? s.station.folder;
+    const ids = [...bundle.sources.map(source => source.id), ...queue.map(record => record.sourceId ?? "")];
+    let n = 1;
+    while (ids.includes(`msub-${code}-${String(n).padStart(3, "0")}`) || bundle.pois.some(p => p.id === `shop-${code}-msub-${String(n).padStart(3, "0")}`)) n++;
+    const suffix = String(n).padStart(3, "0");
+    const sourceId = `msub-${code}-${suffix}`;
+    const submittedDate = s.submittedAt.slice(0, 10);
+    const checkedDate = now.toISOString().slice(0, 10);
+    const notes = [
+      { lang: "ja", text: `店舗提供の情報（${submittedDate}）・GTEki 未確認` },
+      { lang: "en", text: `Merchant-submitted (${submittedDate}), not verified by GTEki` },
+    ];
+    if (s.hours && Date.parse(s.hours.asOf) >= now.getTime() - 180 * day) {
+      notes.push({ lang: "ja", text: `${s.hours.text}（${s.hours.asOf}）出典日時点の情報です。変更されている場合があります` },
+        { lang: "en", text: `${s.hours.text} (${s.hours.asOf}). As of the source date; may have changed` });
+    }
+    if (s.location.anchor?.wording) notes.push({ lang: "ja", text: `「${s.location.anchor.wording}（店舗申告）」` });
+    if (s.shop.facility) notes.push({ lang: "ja", text: s.shop.facility });
+    notes.push({ lang: "ja", text: `${{ inside: "改札内", outside: "改札外", not_sure: "改札内外不明" }[s.location.insideGates]}（店舗申告）` });
+    const changes = {
+      category: s.shop.category, names: s.shop.names, aliases: s.shop.aliases, floorId: s.location.floorId,
+      displayPosition: null, connectorNodeIds: existing?.connectorNodeIds ?? [], paid: null,
+      evidence: { sourceIds: [sourceId], method: `merchant-submitted (${s.clientRequestId}, ${submittedDate}), UNVERIFIED`, checkedDate }, notes,
+    };
+    const previous = existing ? Object.fromEntries([...Object.keys(changes), "hours"].map(k => [k, (existing as unknown as Record<string, unknown>)[k] ?? null])) : null;
+    const source = { id: sourceId, title: `Merchant submission ${s.clientRequestId}`, publisher: s.shop.names[0]!.text,
+      url: s.url, license: { name: MERCHANT_LICENSE_ID, url: MERCHANT_TERMS_URL }, rights: "REUSABLE_WITH_CONDITIONS", usage: "data",
+      decision: { url: "<acceptance record URL, added by the Owner>", date: checkedDate },
+      attribution: `${s.shop.names[0]!.text} 店舗提供 / merchant-submitted, ${s.consent.termsVersion}`, modified: false,
+      retrievedAt: submittedDate, datasetDate: submittedDate };
+    const { hours: _oldHours, ...oldPoi } = existing ?? {};
+    proposal = { source, poi: { ...oldPoi, ...changes, id: existing?.id ?? `shop-${code}-msub-${suffix}` }, previous };
+  }
+  return { clientRequestId: s.clientRequestId, station: s.station, identity, state: proposal ? "ACCEPTED" : "EXCEPTION", checks, proposal };
+}
+
+/** Select the records whose retention clock has passed. */
+export function recordsToPrune(records: QueueRecord[], now: Date): QueueRecord[] {
+  return records.filter(r => {
+    const clock = r.state === "EXCEPTION" ? r.closedAt : ["ACCEPTED", "REJECTED", "WITHDRAWN", "ROLLED_BACK"].includes(r.state) ? r.checkedAt : undefined;
+    return !!clock && Date.parse(clock) < now.getTime() - 90 * day;
+  });
+}
+
+const readJson = (file: string) => JSON.parse(readFileSync(file, "utf8"));
+function queueFiles(dir: string) {
+  return readdirSync(dir).filter(name => name.endsWith(".json")).sort().map(name => ({ name, record: readJson(join(dir, name)) as QueueRecord }));
+}
+function options(args: string[]) {
+  const result: Record<string, string | boolean> = {};
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i]!;
+    if (["--write", "--dry-run"].includes(arg)) result[arg] = true;
+    else if (["--queue", "--now"].includes(arg) && args[i + 1] && !args[i + 1]!.startsWith("--")) result[arg] = args[++i]!;
+    else throw new Error("invalid arguments");
+  }
+  if (typeof result["--queue"] !== "string") throw new Error("--queue <dir> is required");
+  return result;
+}
+function privateQueue(dir: string) {
+  const queue = realpathSync(dir);
+  const repo = realpathSync(resolve(import.meta.dirname, "../.."));
+  if (queue === repo || queue.startsWith(repo + sep)) throw new Error("queue must be outside the public repository");
+  return queue;
+}
+
+export function main(args: string[], env = process.env): number {
+  try {
+    const command = args[0];
+    if (command !== "check" && command !== "prune") throw new Error("usage: intake check <submission.json> --queue <dir> [--now <ISO>] [--write] | intake prune --queue <dir> [--now <ISO>] [--dry-run]");
+    const file = command === "check" ? args[1] : undefined;
+    if (command === "check" && (!file || file.startsWith("--"))) throw new Error("submission file is required");
+    const opts = options(args.slice(command === "check" ? 2 : 1));
+    if ((command === "check" && opts["--dry-run"]) || (command === "prune" && opts["--write"])) throw new Error("invalid arguments");
+    const now = opts["--now"] ? new Date(opts["--now"] as string) : new Date();
+    if (!Number.isFinite(now.getTime()) || (opts["--now"] && !/T.*(?:Z|[+-]\d\d:\d\d)$/i.test(opts["--now"] as string))) throw new Error("--now must be an ISO timestamp with zone");
+    const dir = privateQueue(opts["--queue"] as string);
+    const entries = queueFiles(dir);
+    if (command === "prune") {
+      const selected = new Set(recordsToPrune(entries.map(e => e.record), now));
+      const expired = entries.filter(e => selected.has(e.record));
+      if (!opts["--dry-run"]) for (const entry of expired) unlinkSync(join(dir, entry.name));
+      console.log(JSON.stringify(expired.map(e => e.record.submission.clientRequestId)));
+      return 0;
+    }
+    const key = env.MERCHANT_INTAKE_KEY;
+    if (!key) throw new Error("MERCHANT_INTAKE_KEY is required");
+    const submission = readJson(file!);
+    if (!submissionShape(submission)) {
+      console.log(JSON.stringify({ clientRequestId: null, station: null, identity: null, state: "EXCEPTION", checks: [{ id: "schema", pass: false, detail: "Invalid submission fields" }], proposal: null }));
+      return 1;
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(submission.clientRequestId)) throw new Error("invalid clientRequestId");
+    const report = checkSubmission(submission, key, entries.map(e => e.record), loadBundle(submission.station.folder, resolve(import.meta.dirname, "../..")), now);
+    const output = JSON.stringify(report);
+    const contact = submission.contact.value.trim().toLowerCase();
+    const local = submission.contact.kind === "email" ? contact.split("@")[0]! : contact;
+    if (output.toLowerCase().includes(contact) || (local && output.toLowerCase().includes(local))) throw new Error("submission contains contact information in a report field");
+    if (opts["--write"]) {
+      const sourceId = report.proposal ? (report.proposal.source as { id: string }).id : undefined;
+      const record: QueueRecord = { submission, identity: report.identity, state: report.state, checkedAt: now.toISOString(), ...(sourceId ? { sourceId } : {}) };
+      writeFileSync(join(dir, `${submission.clientRequestId}.json`), JSON.stringify(record, null, 2) + "\n", { flag: "wx", mode: 0o600 });
+    }
+    console.log(output);
+    return report.state === "ACCEPTED" ? 0 : 1;
+  } catch (error) {
+    console.error(`intake: ${(error as Error).message}`);
+    return 2;
+  }
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) process.exitCode = main(process.argv.slice(2));
