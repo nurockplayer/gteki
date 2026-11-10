@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 
 it("prints department-store query ranks", () => {
+  const results: string[] = [];
   const read = (f: string) => JSON.parse(readFileSync(`stations/ikebukuro/gteki/${f}.json`, "utf8"));
   const ikb = parseStationFiles(read("station"), read("graph"), read("pois"), read("tenants"));
   if (!ikb.bundle) throw new Error("Ikebukuro bundle failed");
@@ -15,7 +16,8 @@ it("prints department-store query ranks", () => {
     const index = createSearchIndex(bundle);
     for (const [id, ...queries] of rows) {
       const poi = bundle.pois.find(p => p.id === id);
-      console.log(JSON.stringify({id, names: poi?.names, ranks: Object.fromEntries(queries.map(q => [q, index.search(q, {limit: 1000}).findIndex(h => h.poi.id === id) + 1]))}));
+      results.push(JSON.stringify({id, names: poi?.names, ranks: Object.fromEntries(queries.map(q => [q, index.search(q, {limit: 1000}).findIndex(h => h.poi.id === id) + 1]))}));
     }
   }
+  throw new Error(`Probe output:\n${results.join("\n")}`);
 });
