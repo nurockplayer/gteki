@@ -84,7 +84,11 @@ jobs:
   e2e-smoke-webkit:
     name: e2e-smoke-webkit
     runs-on: ubuntu-latest
-    timeout-minutes: 8  # measured 1m39s; apt deps for --with-deps webkit vary
+    timeout-minutes: 8  # measured 1m39s
+    # WebKit's system deps come preinstalled in the image: --with-deps on the
+    # runner stalled on the azure apt mirror and timed out ~1 run in 3.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble  # keep in step with tests/e2e @playwright/test
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -101,13 +105,11 @@ jobs:
         working-directory: tests/e2e
         run: |
           pnpm install --ignore-workspace --frozen-lockfile
-          pnpm exec playwright install --with-deps webkit
       - name: Run WebKit smoke specs
         timeout-minutes: 4
         working-directory: tests/e2e
-        env:
-          GTEKI_ROOT: ${{ github.workspace }}
-        run: pnpm exec playwright test specs/01-smoke.spec.ts --project=phone-webkit --trace=off
+        # github.workspace is the host path; inside the container it is $GITHUB_WORKSPACE.
+        run: GTEKI_ROOT="$GITHUB_WORKSPACE" pnpm exec playwright test specs/01-smoke.spec.ts --project=phone-webkit --trace=off
       - name: Upload failure artifacts
         if: failure()
         uses: actions/upload-artifact@v4
