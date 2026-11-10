@@ -157,6 +157,6 @@ describe("stairwell recipes", () => {
   }, 900_000);
 
   it.each(["shinjuku", "ikebukuro"])("%s: committed recipes match a fresh bake", (station) => {
-    execFileSync(process.execPath, ["--import", "tsx", "packages/godot/src/stairwell-bake.ts", "--station", station, "--check"], { cwd: ROOT, stdio: "pipe" });
+    execFileSync("pnpm", ["exec", "tsx", "packages/godot/src/stairwell-bake.ts", "--station", station, "--check"], { cwd: ROOT, stdio: "pipe" });
   }, 900_000);
 });
