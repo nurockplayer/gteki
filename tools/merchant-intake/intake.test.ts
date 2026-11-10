@@ -221,3 +221,26 @@ it("serializes writes and rejects repeated request IDs without orphan reservatio
   expect(report.checks.find((c: { id: string }) => c.id === "duplicate").pass).toBe(false);
   expect(report.checks.find((c: { id: string }) => c.id === "claim").pass).toBe(false);
 }, 20000);
+
+it("removes a partially written record and its reservation when the write fails", () => {
+  const dir = mkdtempSync(join(tmpdir(), "merchant-write-failure-"));
+  const queue = join(dir, "queue");
+  mkdirSync(queue);
+  const input = join(dir, "submission.txt");
+  writeFileSync(input, JSON.stringify(fixture));
+  const fault = join(dir, "fault.mjs");
+  writeFileSync(fault, `import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
+const write = fs.writeFileSync;
+fs.writeFileSync = function (file, ...args) {
+  if (typeof file === "number") { write(file, "{partial"); throw new Error("simulated disk full"); }
+  return write(file, ...args);
+};
+syncBuiltinESMExports();
+`);
+  const args = ["--import", "tsx", "--import", fault, resolve("tools/merchant-intake/intake.ts"), "check", input, "--queue", queue, "--write"];
+  const result = spawnSync(process.execPath, args, { env: { ...process.env, MERCHANT_INTAKE_KEY: "test key" }, encoding: "utf8" });
+  expect(result.status).toBe(2);
+  expect(result.stderr).toContain("simulated disk full");
+  expect(readdirSync(queue)).toEqual([]);
+});

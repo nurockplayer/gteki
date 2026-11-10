@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: GTEki contributors
 import { createHmac } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { MERCHANT_LICENSE_ID, MERCHANT_TERMS_VERSION, MERCHANT_SUBMISSION_SCHEMA, type MerchantSubmission } from "../../apps/web/src/merchant/submission.ts";
@@ -167,9 +167,16 @@ export function reserveAndWrite(dir: string, submission: MerchantSubmission, key
       }
     }
     const record: QueueRecord = { submission, identity: report.identity, state: report.state, checkedAt: now.toISOString(), ...(sourceId ? { sourceId } : {}) };
+    let fd: number | undefined;
     try {
-      writeFileSync(recordPath, JSON.stringify(record, null, 2) + "\n", { flag: "wx", mode: 0o600 });
+      fd = openSync(recordPath, "wx", 0o600);
+      writeFileSync(fd, JSON.stringify(record, null, 2) + "\n");
+      closeSync(fd);
     } catch (error) {
+      if (fd !== undefined) {
+        closeSync(fd);
+        unlinkSync(recordPath);
+      }
       if (sourceId) unlinkSync(join(dir, `${sourceId}.reserved`));
       throw error;
     }
