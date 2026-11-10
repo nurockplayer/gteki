@@ -134,4 +134,30 @@ describe("Department store brand search (#419)", () => {
       tenant: { name: brand, floorLabel: floor },
     });
   });
+
+  it("2026-11-10 refresh: added brands are found at their store and floor, removed ones are gone (#1140)", () => {
+    for (const [brand, poiId, floorLabel] of [
+      ["ビック・ママ", "shop-sjk-marui-annex", "7F"],
+      ["サボン", "shop-sjk-keio", "1階"],
+      ["小樽茶房", "shop-sjk-keio", "4階"],
+    ]) {
+      expect(search(brand)[0]).toMatchObject({
+        poi: { id: poiId },
+        matched: brand,
+        tenant: { name: brand, floorLabel },
+      });
+    }
+
+    for (const [brand, poiId] of [
+      ["HealthyTOKYO CBD Shop ＆ Cafe", "shop-sjk-marui-honkan"],
+      ["ヴィヴィアン・ウエストウッド マン", "shop-sjk-marui-men"],
+      ["ジューススタンド バブルス", "shop-sjk-odakyudept"],
+      ["パステル", "shop-sjk-odakyudept"],
+      ["フレグランス", "shop-sjk-odakyudept"],
+    ]) {
+      expect(bundle.tenants!.some((tenant) => tenant.poiId === poiId
+        && tenant.names.some((name) => name.text === brand))).toBe(false);
+      expect(search(brand).some((hit) => hit.poi.id === poiId)).toBe(false);
+    }
+  });
 });
