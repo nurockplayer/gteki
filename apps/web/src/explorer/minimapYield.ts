@@ -7,8 +7,12 @@ export function signSamples(centre: Point3, corners: readonly Point3[], inset = 
   }))];
 }
 
-export function anySampleClear(samples: readonly Point3[], overMap: (i: number) => boolean, blocked: (i: number) => boolean): boolean {
-  for (let i = 0; i < samples.length; i++) if (overMap(i) && !blocked(i)) return true;
+/**
+ * Whether any sample of a sign whose screen box overlaps the minimap has a clear line of sight. Samples are not
+ * required to fall over the minimap itself: a large sign can cover the whole minimap between its samples (#1126).
+ */
+export function anySampleClear(samples: readonly Point3[], blocked: (i: number) => boolean): boolean {
+  for (let i = 0; i < samples.length; i++) if (!blocked(i)) return true;
   return false;
 }
 

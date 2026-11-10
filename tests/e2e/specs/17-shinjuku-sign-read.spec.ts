@@ -10,7 +10,8 @@ test.use({ trace: "off" });
  * by a reviewer (the report lists every shot with its sign, face direction and the measured stand-off).
  *
  * Distances are horizontal, along the routed polyline, from the walker's projection onto it to the sign node's.
- * Skipped unless GTEKI_SIGN_READ=1; run on phone-chromium (low tier) one invocation at a time.
+ * Skipped unless GTEKI_SIGN_READ=1; run on phone-chromium (low tier) one invocation at a time. The minimap-yield
+ * check at sign 453ea111 (#838 shots 21, 23) is desktop only: run --project=desktop-chromium for it.
  */
 test.skip(process.env.GTEKI_SIGN_READ !== "1", "set GTEKI_SIGN_READ=1 to run the Shinjuku sign readability probe");
 

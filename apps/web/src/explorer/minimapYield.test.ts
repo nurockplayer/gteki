@@ -43,7 +43,6 @@ describe("insideCameraCut", () => {
   });
 });
 
-
 describe("sign samples", () => {
   const centre = { x: 0, y: 0, z: 2 };
   const corners = [{ x: -5, y: -5, z: 2 }, { x: 5, y: -5, z: 2 }, { x: 5, y: 5, z: 2 }, { x: -5, y: 5, z: 2 }];
@@ -53,11 +52,9 @@ describe("sign samples", () => {
     expect(samples).toEqual([centre, { x: -4, y: -4, z: 2 }, { x: 4, y: -4, z: 2 }, { x: 4, y: 4, z: 2 }, { x: -4, y: 4, z: 2 }]);
   });
 
-  it("yields for a clear sample over the map and skips rays outside it", () => {
-    expect(anySampleClear(samples, () => true, (i) => i !== 1)).toBe(true);
-    const checked: number[] = [];
-    expect(anySampleClear(samples, (i) => i !== 1, (i) => { checked.push(i); return i !== 1; })).toBe(false);
-    expect(checked).not.toContain(1);
-    expect(anySampleClear(samples, () => true, () => true)).toBe(false);
+  it("yields when any sample is clear, including a blocked centre", () => {
+    expect(anySampleClear(samples, (i) => i !== 1)).toBe(true);
+    expect(anySampleClear(samples, (i) => i === 0)).toBe(true);
+    expect(anySampleClear(samples, () => true)).toBe(false);
   });
 });

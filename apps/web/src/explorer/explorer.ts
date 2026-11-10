@@ -455,15 +455,6 @@ export class Explorer {
   private readonly minimapSignPoint = new THREE.Vector3();
   private readonly minimapSignDirection = new THREE.Vector3();
   private minimapSampleSign = 0;
-  private minimapMapRect!: DOMRect;
-  private minimapCanvasRect!: DOMRect;
-  private readonly minimapSampleOverMap = (i: number): boolean => {
-    const point = this.minimapSignPoint.copy(this.minimapSigns[this.minimapSampleSign]!.samples[i]!).project(this.camera);
-    const canvas = this.minimapCanvasRect, map = this.minimapMapRect;
-    const x = canvas.left + (point.x + 1) * canvas.width / 2;
-    const y = canvas.top + (1 - point.y) * canvas.height / 2;
-    return x >= map.left && x <= map.right && y >= map.top && y <= map.bottom;
-  };
   private readonly minimapSampleBlocked = (i: number): boolean => {
     const sign = this.minimapSigns[this.minimapSampleSign]!;
     const direction = this.minimapSignDirection.subVectors(sign.samples[i]!, this.camera.position);
@@ -2764,7 +2755,6 @@ export class Explorer {
     if (!map || this.mode === "overview" || map.hidden || map.getClientRects().length === 0) return;
     const mapRect = map.getBoundingClientRect();
     const canvasRect = this.renderer.domElement.getBoundingClientRect();
-    this.minimapMapRect = mapRect; this.minimapCanvasRect = canvasRect;
     for (let i = 0; i < this.minimapSigns.length; i++) {
       const { mesh, corners, samples, face } = this.minimapSigns[i]!;
       const rect = this.minimapSignRects[i]!;
@@ -2801,7 +2791,7 @@ export class Explorer {
       if (rect.left >= mapRect.right || rect.right <= mapRect.left || rect.top >= mapRect.bottom || rect.bottom <= mapRect.top) continue;
       const oldNear = this.ray.near, oldFar = this.ray.far;
       this.minimapSampleSign = i;
-      const clear = anySampleClear(samples, this.minimapSampleOverMap, this.minimapSampleBlocked);
+      const clear = anySampleClear(samples, this.minimapSampleBlocked);
       this.ray.near = oldNear; this.ray.far = oldFar;
       if (clear) rect.behind = false;
     }
