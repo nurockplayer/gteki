@@ -155,7 +155,7 @@ describe("#419 department-store brand search end to end", () => {
   it("Shinjuku: アナ スイ → 小田急百貨店 card with １階 → no route", () => {
     expectBrandFlow(bundleOf(sjkStation, sjkGraph, sjkPois, sjkTenants), {
       stationDir: "shinjuku", query: "アナ スイ", brand: "アナ スイ", storeId: "shop-sjk-odakyudept", storeName: "小田急百貨店 新宿店",
-      floor: "１階", tenantId: "tenant-sjk-odakyudept-013", checkedDate: "2026-10-24",
+      floor: "１階", tenantId: "tenant-sjk-odakyudept-013", checkedDate: "2026-11-10",
       resultMeta: "１階 · “アナ スイ” · 入口未確認のため道案内なし（現地確認待ち）",
       sourceNote: "新宿西口ハルクで営業", originId: "poi:exit:1",
     });

@@ -1,4 +1,40 @@
 type Point3 = { x: number; y: number; z: number };
+/** Whether any of `count` samples has a clear line of sight. */
+export function anySampleClear(count: number, blocked: (i: number) => boolean): boolean {
+  for (let i = 0; i < count; i++) if (!blocked(i)) return true;
+  return false;
+}
+
+type Rect = { left: number; right: number; top: number; bottom: number };
+
+/**
+ * The centre and four inset corners of the part of a sign's screen box that lies over the minimap, in pixels.
+ * Sampling there (not on the sign itself) catches a sign that covers the whole minimap between its own corners,
+ * and ignores a clear part of the sign away from the minimap (#1110).
+ */
+export function overlapSamples(sign: Rect, map: Rect, out: { x: number; y: number }[], inset = 0.8): void {
+  const left = Math.max(sign.left, map.left), right = Math.min(sign.right, map.right);
+  const top = Math.max(sign.top, map.top), bottom = Math.min(sign.bottom, map.bottom);
+  const x = (left + right) / 2, y = (top + bottom) / 2, hx = (right - left) / 2 * inset, hy = (bottom - top) / 2 * inset;
+  const offsets = [[0, 0], [-1, -1], [1, -1], [1, 1], [-1, 1]] as const;
+  offsets.forEach(([dx, dy], i) => { out[i]!.x = x + dx * hx; out[i]!.y = y + dy * hy; });
+}
+
+/** Where a ray meets a rectangular sign face spanned by `a→b` and `a→c`; false when it misses the face. */
+export function rayOnQuad(origin: Point3, dir: Point3, a: Point3, b: Point3, c: Point3, out: Point3): boolean {
+  const ux = b.x - a.x, uy = b.y - a.y, uz = b.z - a.z, vx = c.x - a.x, vy = c.y - a.y, vz = c.z - a.z;
+  const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+  const denom = nx * dir.x + ny * dir.y + nz * dir.z;
+  if (Math.abs(denom) < 1e-12) return false;
+  const t = (nx * (a.x - origin.x) + ny * (a.y - origin.y) + nz * (a.z - origin.z)) / denom;
+  if (t <= 0) return false;
+  out.x = origin.x + dir.x * t; out.y = origin.y + dir.y * t; out.z = origin.z + dir.z * t;
+  const px = out.x - a.x, py = out.y - a.y, pz = out.z - a.z;
+  const u = (px * ux + py * uy + pz * uz) / (ux * ux + uy * uy + uz * uz);
+  const v = (px * vx + py * vy + pz * vz) / (vx * vx + vy * vy + vz * vz);
+  return u >= 0 && u <= 1 && v >= 0 && v <= 1;
+}
+
 export type FaceEligibility = { centre: Point3; normal: Point3; cameraPos: Point3; viewZ: readonly number[]; near: number; maxDistance: number };
 
 export function faceEligible(face: FaceEligibility): boolean {
