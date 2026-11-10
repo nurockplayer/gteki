@@ -40,7 +40,7 @@ describe("merchant intake checks", () => {
 });
 
 import { execFileSync, spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { checkSubmission, recordsToPrune, reserveAndWrite } from "./intake.ts";
@@ -193,3 +193,31 @@ it("does not prune reservations outside the selected queue", () => {
   expect(readdirSync(queue)).toEqual([]);
   expect(readFileSync(reservation, "utf8")).toBe("other");
 });
+
+it("serializes writes and rejects repeated request IDs without orphan reservations", () => {
+  const dir = mkdtempSync(join(tmpdir(), "merchant-lock-"));
+  const queue = join(dir, "queue");
+  mkdirSync(queue);
+  const input = join(dir, "submission.txt");
+  writeFileSync(input, JSON.stringify(fixture));
+  const args = ["--import", "tsx", resolve("tools/merchant-intake/intake.ts"), "check", input, "--queue", queue, "--now", "2026-11-10T00:00:00Z", "--write"];
+  const env = { ...process.env, MERCHANT_INTAKE_KEY: "test key" };
+  mkdirSync(join(queue, ".lock"));
+  const locked = spawnSync(process.execPath, args, { env, encoding: "utf8" });
+  expect(locked.status).toBe(2);
+  expect(locked.stderr).toContain(`queue is locked (remove ${join(queue, ".lock")} if no intake is running)`);
+  expect(readdirSync(queue)).toEqual([".lock"]);
+  rmSync(join(queue, ".lock"), { recursive: true });
+  expect(JSON.parse(execFileSync(process.execPath, args, { env, encoding: "utf8" })).state).toBe("ACCEPTED");
+  const repeated = spawnSync(process.execPath, args, { env, encoding: "utf8" });
+  expect(repeated.status).toBe(2);
+  expect(repeated.stderr).toContain("submission already in queue");
+  expect(readdirSync(queue)).toEqual(["fictional-1.json", "msub-ikb-001.reserved"]);
+  writeFileSync(input, JSON.stringify({ ...fixture, clientRequestId: "fictional-2", contact: { kind: "email", value: "other-739@example.com" } }));
+  const second = spawnSync(process.execPath, args, { env, encoding: "utf8" });
+  expect(second.status).toBe(1);
+  const report = JSON.parse(second.stdout);
+  expect(report.state).toBe("EXCEPTION");
+  expect(report.checks.find((c: { id: string }) => c.id === "duplicate").pass).toBe(false);
+  expect(report.checks.find((c: { id: string }) => c.id === "claim").pass).toBe(false);
+}, 20000);
