@@ -326,6 +326,14 @@ precedence = "override"
 SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
 
+# docs/visual/d6: project-made Shinjuku E27 renders (D6 blind test sheets), repo licence plus the
+# Hokonavi E27 marker of the geometry they show (4c).
+[[annotations]]
+path = "docs/visual/d6/*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
+
 [[annotations]]
 path = "docs/visual/evidence/crowd-lineup.jpg"
 precedence = "override"

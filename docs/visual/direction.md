@@ -4,10 +4,11 @@ The persistent decision log for the look of the 2026-11-22 slice (token-rules 25
 
 Owner: gteki-visual (art director, provisional until the audition closes). Every AI verdict here is **provisional** until the Owner has seen the walk video for it (token-rules 25 g). Read this file first after every /clear.
 
-## Status (2026-11-11 04:38 JST)
+## Status (2026-11-11 18:1x JST)
 
 - Seat audition: two proposals in (`.claude/director/drafts/audition/direction-A.md`, `direction-B.md`, anonymous), the GPT one still to come. The decisions below take what A and B agree on and rule on where they differ. When the third proposal lands, anything it changes is logged as a new entry, not edited in place.
-- No render has been judged against these decisions yet. The first golden render of the 12 slice cameras (after #1170) is the baseline.
+- First judged render: the D6 blind test (D7, preset B). The first golden render of the 12 slice cameras (after #1170) is the baseline for everything else.
+- Next: the B v2 brief and its rerun (D7), then B as the default behind an art-acceptance PR.
 
 ## Visual thesis
 
@@ -97,6 +98,42 @@ Three presets behind a URL flag, all with the magenta landing accent:
 - **C**: dim shaft at 0.4×, a hard landing pool and shaft haze.
 
 Render four poses per preset on both tiers: escalator top, mid-run, bottom approach and dismount. UI hidden, fixed NPC seed, files renamed at random. Critics are models that did not build it, scoring 1–5 on "where would you go next?", "how deep does this feel?" and "does this look like a Tokyo subway?". Numeric guards: the landing/mid-shaft luminance ratio and frame time on both tiers. Prior: B. A B/C tie goes to B, because C risks phones and plausibility. The pick is provisional until the Owner sees the walk video.
+
+### D7 (2026-11-11 18:1x JST) D6 result: preset B wins; haze rejected
+The D6 blind render ran on 2026-11-11 (job `d6-blind`, `orb-test --heavy --host`, exit 0 at 17:49 JST): 4 poses × 3 presets × 2 tiers, UI meant to be hidden, files renamed at random, sheets shuffled per pose. Three critics that did not build it (Sonnet 5.5, Fable 5.1, Gemini via Antigravity) scored each variant 1–5. Averages per preset over mid, bottom and dismount on both tiers; the top pose is left out because it shows the B3 concourse wall, not the escalator, and the three presets look the same there:
+
+| preset | Sonnet: where / depth / Tokyo | Fable | Gemini |
+|---|---|---|---|
+| A even 5000 K | 3.00 / 3.00 / 3.00 | 3.33 / 3.33 / 3.17 | 3.83 / 3.50 / 3.50 |
+| **B warm shaft, cool landing** | 3.67 / 3.33 / **3.67** | **3.67 / 3.67 / 3.50** | **4.83 / 4.33 / 4.83** |
+| C dim shaft, hard pool, haze | **4.00 / 4.17** / 2.83 | 2.83 / 3.17 / 2.00 | 1.83 / 1.67 / 1.33 |
+
+High tier, left to right A, B, C:
+
+![mid-run](d6/d6-high-mid-abc.jpg)
+![bottom approach](d6/d6-high-bottom-abc.jpg)
+![dismount](d6/d6-high-dismount-abc.jpg)
+
+Low tier, mid-run: ![low mid-run](d6/d6-low-mid-abc.jpg)
+
+Decision:
+- **B is the escalator light for the slice.** All three critics score it highest on "looks like a Tokyo subway"; two of three score it highest overall. It matches the director's own read, written down before the scores came in.
+- **C is rejected.** Its haze pulls the eye (Sonnet's top score on where and depth) but whites out the landing and turns the walls muddy grey ("steam pipe", "white hole"). This confirms D5: no haze, not even confined to the shaft. Sonnet's idea of a faint glow at the landing end only is folded into B v2 as light, not fog.
+- A stays in the code as the neutral reference arm.
+
+B v2, before B becomes the default (one brief, then a rerun of the same render):
+- make the landing pool read as cool: today it barely does (landing/mid luminance ratio at the bottom pose 1.98 high, 1.78 low). Target ≥ 2.2 high and ≥ 2.0 low, with a visibly cooler tint than the shaft;
+- lift the darkest mid-shaft wall by about 15% (Fable: the right wall goes nearly black);
+- tone down the handrail highlight streaks (two critics).
+
+Render fixes for the rerun:
+- the top pose must look down the escalator from its top;
+- hide all UI, including the "Search" and "Approximate, not surveyed" pills and the ring markers, which leaked into every shot;
+- measure frame time uncapped: every shot logged a vsync-capped 16.7 ms, so the frame-time guard said nothing. Draw calls were equal across presets.
+
+Not a lighting matter: two critics flagged stepped, floating ceiling slabs above the bottom pose on both tiers. That is breakage and goes to #1086.
+
+The console showed no errors or warnings for any preset on either tier, so #1177 is closed. Provisional until the Owner sees the walk video.
 
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
