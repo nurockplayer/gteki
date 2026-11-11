@@ -193,7 +193,8 @@ describe("Central Gate 2 notes in the route panel (#787, #799)", () => {
       a.s.origin = { kind: "poi", poi: jr };
       a.s.destination = gate;
       a.computeRoute();
-      expect(instructions(a).at(-1)).toContain(destinationNote);
+      expect(instructions(a).at(-1)).not.toContain(destinationNote);
+      expect([...a.ui.sheet.querySelectorAll(".card.route p.muted")].map((p) => p.textContent)).toContain(destinationNote);
       expect(instructions(a).join("\n")).not.toContain(originNote);
 
       a.s.origin = { kind: "poi", poi: gate };
