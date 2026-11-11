@@ -44,6 +44,35 @@ describe("#49 render-only escalator enclosure", () => {
     scene?.dispose();
   });
 
+  it("shares a roof and keeps only outer sides for antiparallel runs (#1086)", () => {
+    const first = { ...runs[0]!, edgeId: "first", width: 1.25, a: { x: 0, y: 0, z: -10 }, b: { x: 10, y: 0, z: -10 } };
+    const second = { ...first, edgeId: "second", a: { x: 10, y: 1.5, z: -10 }, b: { x: 0, y: 1.5, z: -10 } };
+    const empty = { ...layout, levels: [], pads: [], linkStrips: [], streetPads: [], runs: [first], soffits: [], shaftFinishes: [] };
+    const noLifts = { ...bundle, edges: [] };
+    const single = escalatorShellGeometry(empty, noLifts);
+    const paired = escalatorShellGeometry({ ...empty, runs: [first, second] }, noLifts);
+    const raised = { ...second, a: { ...second.a, z: -9.85 }, b: { ...second.b, z: -9.85 } };
+    const stepped = escalatorShellGeometry({ ...empty, runs: [first, raised] }, noLifts);
+    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+    const ray = new THREE.Raycaster(), mesh = new THREE.Mesh(paired.sides!, material);
+    try {
+      ray.set(new THREE.Vector3(5, -7.2, -0.75), new THREE.Vector3(0, 0, 1)); ray.far = 3;
+      expect(ray.intersectObject(mesh).map((hit) => hit.point.z)).toEqual([expect.closeTo(1.075)]);
+      ray.set(new THREE.Vector3(5, -7.2, -0.75), new THREE.Vector3(0, 0, -1));
+      expect(ray.intersectObject(mesh).map((hit) => hit.point.z)).toEqual([expect.closeTo(-2.575)]);
+      const area = (rings: XY[][]) => rings.reduce((sum, ring, i) => sum + (i ? -1 : 1) * Math.abs(ring.reduce((a, p, k) => {
+        const q = ring[(k + 1) % ring.length]!; return a + p.x * q.y - q.x * p.y;
+      }, 0)) / 2, 0);
+      expect(paired.finishes.reduce((sum, finish) => sum + area(finish.rings), 0)).toBeCloseTo(11.2 * 3.65, 3);
+      expect(single.finishes.reduce((sum, finish) => sum + area(finish.rings), 0)).toBeCloseTo(11.2 * 2.15, 3);
+      expect(stepped.finishes.reduce((sum, finish) => sum + area(finish.rings), 0)).toBeCloseTo(11.2 * 3.65, 3);
+      expect(stepped.finishes.every((finish) => Math.abs(soffitHeight(finish, { x: 5, y: 0.75 }) - (-10 + SHELL_RISE)) < 1e-6)).toBe(true);
+      expect(single.sides!.index!.count).toBeGreaterThan(0);
+    } finally {
+      single.sides?.dispose(); single.soffits?.dispose(); paired.sides?.dispose(); paired.soffits?.dispose(); stepped.sides?.dispose(); stepped.soffits?.dispose(); material.dispose();
+    }
+  });
+
   it("encloses the underground voids of 22 runs, including eight reaching B6, and hands off to existing finish", () => {
     expect(runs).toHaveLength(22);
     const b6 = layout.levels.find((lv) => lv.label === "B6")!.z;
@@ -53,7 +82,10 @@ describe("#49 render-only escalator enclosure", () => {
     // 2026-11-03 JST: per-flight finishes replace legacy pitched hull roofs.
     // Noncoincident shell backing remains to close the step between both planes.
     // #789: the restored c7fa5f74 run and corrected 4bee1c5e rise change the shell.
-    expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([12418, 141]);
+    expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([4120, 135]);
+    const sharedPairs = [["904c66c3", "88ef3d09"], ["abdb4369", "7628a98a"], ["6113a228", "abdb4369"],
+      ["2692fe08", "e1fa6530"], ["fd3365c8", "2692fe08"], ["06a78a8f", "4fc06b0d"], ["d1463e42", "06a78a8f"],
+      ["2768d162", "ac906cd9"], ["fc787100", "2768d162"], ["fe73ae6f", "4b7d9463"], ["296f6709", "42a9f882"]];
     const misses: string[] = [];
     const roofs: (SlabPoly & { origin?: XY; slope?: XY })[] = [...layout.levels.flatMap((lv) => lv.ceilings),
       ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
@@ -95,7 +127,12 @@ describe("#49 render-only escalator enclosure", () => {
             // only mid-run as before #316. A street-bound flight hands off above the slab.
             const streetHandoff = Math.max(r.a.z, r.b.z) >= -0.5 && p.z + 2.8 >= STREET_UNDERSIDE;
             const atSide = { ...p, x: p.x - dy / length * side * (r.width / 2 + 0.45), y: p.y + dx / length * side * (r.width / 2 + 0.45) };
-            if (!streetHandoff && !covered(atSide, p.z + SHELL_RISE) && !inHeadBand({ ...atSide, z: p.z + 2.8 })) {
+            const sharedSide = sharedPairs.some(([a, b]) => {
+              const otherId = r.edgeId.includes(a!) ? b : r.edgeId.includes(b!) ? a : undefined;
+              const other = otherId && runs.find((candidate) => candidate.edgeId.includes(otherId));
+              return other && side * (-dy * (other.a.x + other.b.x - r.a.x - r.b.x) + dx * (other.a.y + other.b.y - r.a.y - r.b.y)) > 0;
+            });
+            if (!sharedSide && !streetHandoff && !covered(atSide, p.z + SHELL_RISE) && !inHeadBand({ ...atSide, z: p.z + 2.8 })) {
               misses.push(`${r.edgeId}@${t}:side${side}`);
             }
           }
