@@ -11,7 +11,10 @@
       "kind": "overview",
       "expect": "Ikebukuro station structure fills the middle of the overview.",
       "thresholds": {
-        "stationShare": 0.01
+        "stationShare": 0.01,
+        "voidRatio": 0.98,
+        "flatRatio": 0.85,
+        "nearBlack": 0.3
       }
     },
     {
@@ -84,7 +87,10 @@
       "kind": "overview",
       "expect": "Shinjuku station structure fills the middle of the overview.",
       "thresholds": {
-        "stationShare": 0.01
+        "stationShare": 0.01,
+        "voidRatio": 0.98,
+        "flatRatio": 0.85,
+        "nearBlack": 0.3
       }
     },
     {
