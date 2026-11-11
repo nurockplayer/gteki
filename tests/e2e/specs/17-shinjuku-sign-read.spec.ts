@@ -63,6 +63,10 @@ for (const r of routes) {
     await chooseBySearch(page, "to", r.to[0], r.to[1]);
     const route = await hooks.route(page);
     expect(route?.ok, "route exists").toBe(true);
+    if (r.label === "exit1-platform") {
+      await expect(page.locator(".sheet .card.route p.muted").filter({ hasText: "Data for the Toei Oedo Line station" })).toBeVisible();
+      expect((await hooks.instructions(page)).at(-1)).toBe("Arrive at destination");
+    }
     const wps = routeWaypoints("shinjuku", route.steps);
     const total = along(wps, wps.at(-1)!.p).s;
     const { graph } = stationData("shinjuku");

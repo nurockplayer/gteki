@@ -339,6 +339,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .app[data-mode="guide"] .hud-instruction { padding: 7px 12px; }
   .app[data-mode="guide"] .hud-instruction--long { font-size: 13px; line-height: 1.1; padding: 4px 10px; }
   .app[data-mode="guide"] .hud-row { padding: 5px; }
+  .app[data-mode="guide"] .hud-arrival { padding-block: 1px; }
   .app[data-mode="guide"] .rail-launch { min-height: 32px; padding: 4px 12px; font-size: 12px; }
   /* The guide screen keeps the map's circle and controls, dropping its text block so it ends above the view centre (#838).
      120 px is the compact map spec 22 still accepts; with it and the two control rows the block ends above 30 % of the height. */

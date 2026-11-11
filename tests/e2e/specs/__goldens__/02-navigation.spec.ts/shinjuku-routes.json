@@ -42,7 +42,7 @@
         "Turn left, then left again, ~21 m. After ~17 m, continue straight through the junction.",
         "Turn right, ~6 m",
         "Take the escalator down to B6",
-        "Arrive at destination. Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name, for search, from Tokyo Metropolitan Government data as of March 2020; some gates and transfers also carry an approximate position derived from that data's shapes (search display only, not for routing). There is no route for them. The Toei Shinjuku Line and other lines are not modelled."
+        "Arrive at destination"
       ],
       "steps": [
         "<e:b503c7d9461a4f239a60bbd4011022e9",
@@ -194,7 +194,7 @@
         "Turn left, then left again, ~17 m",
         "Turn right, ~45 m. After ~24 m, continue straight through the junction.",
         "Turn left, then right, ~5 m, then turn left",
-        "Arrive at destination. Position is a representative point of the toilet space, not the door."
+        "Arrive at destination"
       ],
       "steps": [
         "<e:45ebdab487134925b3b47cd29bffb99c",
@@ -324,7 +324,7 @@
         "Turn right, then pass the ticket gate",
         "Go straight ~6 m",
         "Turn left, then left again, then take the elevator down to B6",
-        "Arrive at destination. Data for the Toei Oedo Line station (E27). Ticket gates and platforms of JR, Keio, Odakyu and the Tokyo Metro Marunouchi Line are listed by name, for search, from Tokyo Metropolitan Government data as of March 2020; some gates and transfers also carry an approximate position derived from that data's shapes (search display only, not for routing). There is no route for them. The Toei Shinjuku Line and other lines are not modelled."
+        "Arrive at destination"
       ],
       "steps": [
         "<e:65edd7ca50844b609d4dcb25bd296936",

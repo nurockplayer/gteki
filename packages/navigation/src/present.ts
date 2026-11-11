@@ -875,14 +875,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, connector: kind, text: t.connectorArrive(kind, poiDisplayName(destination, lang), ridden), label: null });
   } else {
     // The public-side/inside-not-modelled gate claim applies only where the data has no paid side (#203 B7).
-    // Any non-exit destination keeps its own note in this language when it has one; another language's note
-    // is never shown as if it were this one.
-    const note = destination && destination.category !== "exit" ? poiNote(destination, lang) : null;
-    const base = destination?.category === "ticket_gate" && !paidModelled ? t.gateArrive() : t.arrive();
-    const separator = lang === "ja"
-      ? (base.endsWith("。") ? "" : "。")
-      : (base.endsWith(".") ? " " : ". ");
-    const text = note ? `${base}${separator}${note}` : base;
+    const text = destination?.category === "ticket_gate" && !paidModelled ? t.gateArrive() : t.arrive();
     out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, text, label: null });
   }
 

@@ -1240,9 +1240,9 @@ export class App {
     const arrivalTie = this.s.destination && arrivalPrecision(this.s.destination) ? this.s.destination : null;
     if (arrivalTie) {
       card.append(el("p", "muted entrance-unverified", r.profile.stepFree && arrivalPrecision(arrivalTie) === "tie" ? t.merchant.stepFreeTie : t.merchant.precision[arrivalPrecision(arrivalTie)!]));
-      const arrivalNote = poiNoteText(arrivalTie, this.s.lang);
-      if (arrivalNote) card.append(el("p", "muted", arrivalNote));
     }
+    const arrivalNote = poiNoteText(this.s.destination, this.s.lang);
+    if (arrivalNote) card.append(el("p", "muted", arrivalNote));
     sheet.append(card);
     const merchant = this.merchantCard();
     if (merchant) sheet.append(merchant);
