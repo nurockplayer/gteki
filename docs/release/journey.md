@@ -8,15 +8,15 @@ This table is what "done" is measured against until v1.0. [acceptance.md](../acc
 
 Baseline play of production (`gteki.pages.dev`, main 8b111c1f, 2026-11-12 08:27–08:37 JST, desktop 1476×996 and phone 390×844, real GPU):
 
-- Opening the site lands on Ikebukuro: a search form over a small model on a grey field, 24 MB and about 11 s to settle. Reaching the slice takes four actions (station, from, to, start). ![first open](evidence/2026-11-12/desktop-first-open-10s.jpg)
-- The guided walk exit 1 → platform lasts about 160 s. About 35 s of it reads as a station (B1 concourse, gate, B3). At 6 s the camera sits inside a slab, at 14 s black stair wedges hide the cat, and both escalator rides (about 75 s together) show splayed, torn ceilings from a camera that fights the shaft. The arrival is covered by a paragraph of data notes. ![0–24 s](evidence/2026-11-12/walk-001-024s.jpg) ![36–84 s](evidence/2026-11-12/walk-036-084s.jpg) ![88–119 s](evidence/2026-11-12/walk-088-119s.jpg) ![128–158 s](evidence/2026-11-12/walk-128-158s.jpg)
-- Phone: the overlay covers 35% of the guided view and NPC legs hide the cat. ![phone](evidence/2026-11-12/phone-open-and-walk.jpg)
+- Opening the site lands on Ikebukuro: a search form over a small model on a grey field, 24 MB and about 11 s to settle. Reaching the slice takes four actions (station, from, to, start). ![first open](evidence/2026-11-12/ikebukuro-desktop-first-open-10s.jpg)
+- The guided walk exit 1 → platform lasts about 160 s. About 35 s of it reads as a station (B1 concourse, gate, B3). At 6 s the camera sits inside a slab, at 14 s black stair wedges hide the cat, and both escalator rides (about 75 s together) show splayed, torn ceilings from a camera that fights the shaft. The arrival is covered by a paragraph of data notes. ![0–24 s](evidence/2026-11-12/shinjuku-walk-001-024s.jpg) ![36–84 s](evidence/2026-11-12/shinjuku-walk-036-084s.jpg) ![88–119 s](evidence/2026-11-12/shinjuku-walk-088-119s.jpg) ![128–158 s](evidence/2026-11-12/shinjuku-walk-128-158s.jpg)
+- Phone: the same form on opening; in the guided walk the overlay covers 35% of the view and NPC legs hide the cat. ![phone, first open](evidence/2026-11-12/ikebukuro-phone-first-open.jpg) ![phone, walk](evidence/2026-11-12/shinjuku-phone-walk.jpg)
 
 None of this was a failing check. The golden cameras look from fixed nodes with the UI hidden, the walk scan measures floor hits only, and no row covered what a visitor sees first. The checks sampled something other than what the player sees.
 
 ## The table
 
-Rows are in playhead order: the time a first-time visitor reaches them. "Script" rows are judged by the journey spec in CI; "person" rows by the art director on the journey reel, and finally by the Owner on the walk video. Times are for the guided walk at its default pace.
+Rows are in playhead order: the time a first-time visitor reaches them. "Script" rows are judged by the journey spec in CI (not built yet: until it runs in CI, a script row is judged by hand from a play of production like the baseline above, and stays FAIL or "not judged" unless that play shows it passing); "person" rows by the art director on the journey reel, and finally by the Owner on the walk video. Times are for the guided walk at its default pace.
 
 | # | When | What the player gets | Judged by | 2026-11-12 |
 |---|---|---|---|---|
@@ -46,7 +46,7 @@ Pass count 2026-11-12: **1 / 14**.
 ## Method
 
 1. **Playhead first.** Work the earliest failing row. A defect at second 3 outranks one at second 70: every visitor sees second 3. Breakage (token-rules 24) keeps its priority and is ordered the same way.
-2. **The reel is the evidence.** The journey spec plays the real guided walk with the real follow camera and the real UI, on desktop and phone, and writes frames, contact sheets and per-sample numbers. Still cameras stay as the technical gate; they are not evidence that the walk is good.
+2. **The reel is the evidence.** The journey spec (to be added as `tests/e2e/specs/30-journey.spec.ts` with its own CI job) plays the real guided walk with the real follow camera and the real UI, on desktop and phone, and writes frames, contact sheets and per-sample numbers. Still cameras stay as the technical gate; they are not evidence that the walk is good. Evidence images go in `docs/release/evidence/<date>/`, one station per file, named `ikebukuro-*` or `shinjuku-*` (the prefix selects the rights annotation in `REUSE.toml`).
 3. **Every PR names its row** (`Row: J5`), or says none. A PR that changes what the player sees carries the reel sheets for its row, before and after.
 4. **Verify in CI.** e2e and visual specs run in GitHub Actions (7–9 min) on the draft PR. The Mac's GPU lock is for the art director's renders. Local runs are for unit specs.
 5. **Lead decides, Codex builds.** The project lead reads the reel, decides the change and writes the brief; Codex implements; the art director owns the look and accepts visual PRs on the reel. A hard problem goes diagnose (read-only) → decide → implement.
