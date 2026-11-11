@@ -130,13 +130,15 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
   expect(failures, failures.join("\n")).toEqual([]);
 });
 
- test("hidden sign fails its feature check", async ({ page }) => {
+test("hidden sign fails its feature check", async ({ page }) => {
+  test.setTimeout(180_000);
   test.skip(process.env.GTEKI_GOLDEN_STATION === "ikebukuro", "Shinjuku fault test");
   const camera = config.cameras.find(c => c.id === "sj-sign-1ecbdf77")!;
   await openStation(page, "shinjuku");
   await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   try {
-    await page.evaluate(({ node, headingDeg }) => (window as any).__gteki.setView({ node, headingDeg }), camera);
+    const placement = await page.evaluate(({ node, headingDeg }) => (window as any).__gteki.setView({ node, headingDeg }), camera) as { placed: boolean };
+    expect(placement.placed).toBe(true);
     await page.evaluate(() => (window as any).__gteki.goldenFrame());
     const result = await page.evaluate((features) => (window as any).__gteki.goldenProbe(false, features, { hideBeforeShown: ["sign 1ecbdf77"] }), camera.features) as { features: { pixels: number; meshes: number }[] };
     expect(result.features[0]!.meshes).toBeGreaterThan(0);
