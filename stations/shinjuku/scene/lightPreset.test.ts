@@ -17,9 +17,9 @@ describe("lightpreset", () => {
     expect(shaftGrade("b", 0.5, 0, 20).gain).toBeCloseTo(0.7);
     expect(shaftGrade("b", 0.3, 0, 20).tint).toEqual([1, 0.9, 0.78]);
     expect(shaftGrade("b", 0, 0, 40).gain).toBe(1);
-    expect(shaftGrade("b", 0.9, 0, 10).gain).toBe(1);
+    expect(shaftGrade("b", 0.9, 0, 12).gain).toBe(1);
     expect(shaftGrade("b", 1, 0, 0).gain).toBeCloseTo(1.9);
-    expect(shaftGrade("b", 1, 0, 0).tint).toEqual([0.86, 0.93, 1]);
+    expect(shaftGrade("b", 1, 0, 0).tint).toEqual([0.8, 0.9, 1]);
   });
   it("grades C's dim shaft and hard pool", () => {
     expect(shaftGrade("c", 0.5, 0, 20).gain).toBeCloseTo(0.4);
@@ -28,7 +28,7 @@ describe("lightpreset", () => {
   });
   it("leaves fragments outside both regions neutral", () => {
     for (const p of ["a", "b", "c"] as const) {
-      for (const [s, r, d, h] of [[0.5, 6, 10, 0], [-0.05, 0, 20, 0], [1.05, 0, 10, 0], [2, 10, 0, 3]]) {
+      for (const [s, r, d, h] of [[0.5, 6, 12, 0], [-0.05, 0, 20, 0], [1.05, 0, 12, 0], [2, 10, 0, 3]]) {
         expect(shaftGrade(p, s!, r!, d!, h!)).toEqual({ gain: 1, tint: [1, 1, 1] });
       }
     }
@@ -64,7 +64,7 @@ describe("lightpreset", () => {
     expect(shader.fragmentShader).toContain("d6Apply(outgoingLight)");
     expect(shader.uniforms).toHaveProperty("gtekiCutEnd");
     expect(material.customProgramCacheKey()).toContain("bump-key");
-    expect(material.customProgramCacheKey()).toContain("shinjuku-d6-v1");
+    expect(material.customProgramCacheKey()).toContain("shinjuku-d6-v3");
     expect(material.customProgramCacheKey()).toContain("gteki-camera-cut");
     mesh.geometry.dispose(); material.dispose(); mesh.dispose();
   });

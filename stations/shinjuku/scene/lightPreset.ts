@@ -6,7 +6,7 @@ const BOTTOM = new THREE.Vector3(-22.07, -42.87, -117.78);
 const LENGTH = TOP.distanceTo(BOTTOM);
 const warm = [1, 0.90, 0.78] as const;
 const cool = [0.94, 0.97, 1] as const;
-const coolB = [0.86, 0.93, 1] as const;
+const coolB = [0.8, 0.9, 1] as const;
 const smooth = (a: number, b: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -21,7 +21,7 @@ export function parseLightPreset(search: string): LightPreset | null {
 export function shaftGrade(preset: LightPreset, s: number, r: number, landingDist: number, landingHeight = 0): { gain: number; tint: [number, number, number] } {
   const shaft = (1 - smooth(5, 6, r)) * smooth(-0.05, -0.05 + 1 / LENGTH, s)
     * (1 - smooth(1.05 - 1 / LENGTH, 1.05, s));
-  const pool = (1 - smooth(preset === "c" ? 6.5 : 0, 7, landingDist))
+  const pool = (1 - smooth(preset === "c" ? 6.5 : 0, 12, landingDist))
     * (1 - smooth(2, 3, Math.abs(landingHeight)));
   const dip = smooth(0, 0.5, s) * (1 - smooth(0.5, 0.9, s));
   const gain = 1 + shaft * (preset === "c" ? -0.6 : preset === "b" ? -0.3 * dip : 0);
@@ -46,7 +46,7 @@ void d6Apply(inout vec3 colour) {
   float shaft = (1.0 - smoothstep(5.0, 6.0, r))
     * smoothstep(-0.05, -0.05 + 1.0 / len, s)
     * (1.0 - smoothstep(1.05 - 1.0 / len, 1.05, s));
-  float landing = (1.0 - smoothstep(d6Grade.w, 7.0, length(d6World.xz - d6Bottom.xz)))
+  float landing = (1.0 - smoothstep(d6Grade.w, 12.0, length(d6World.xz - d6Bottom.xz)))
     * (1.0 - smoothstep(2.0, 3.0, abs(d6World.y - d6Bottom.y)));
   float dip = smoothstep(0.0, 0.5, s) * (1.0 - smoothstep(0.5, 0.9, s));
   float gain = mix(1.0, d6Grade.x - d6Grade.y * dip, shaft);
@@ -108,7 +108,7 @@ export function installLightPreset(root: THREE.Object3D, preset: LightPreset | n
       material.customProgramCacheKey = () => {
         const wrapped = material.onBeforeCompile;
         material.onBeforeCompile = previous;
-        try { return `${previousKey.call(material)}|shinjuku-d6-v2`; }
+        try { return `${previousKey.call(material)}|shinjuku-d6-v3`; }
         finally { material.onBeforeCompile = wrapped; }
       };
       material.needsUpdate = true;
