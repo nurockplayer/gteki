@@ -71,6 +71,8 @@ export interface ExplorerOptions {
   avatarGlbUrl?: string;
   /** Cat protagonist (#854 stage 1): proportions and follow-camera framing change; the human stays default. */
   avatarKind?: AvatarKind;
+  /** Preview channel (`?next=1`): turns on v1.0 journey changes that are not the default yet (docs/release/journey.md). */
+  previewNext?: boolean;
 }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
@@ -315,6 +317,8 @@ export class Explorer {
 
   private readonly avatar = new THREE.Group();
   private avatarRig: AvatarSelection | null = null;
+  /** `?next=1` preview channel: journey changes that are not the default yet branch on this (docs/release/journey.md). */
+  readonly previewNext: boolean;
   /** Cat protagonist: lower follow pivot, shorter boom and a smaller marker ring. */
   private catAvatar: boolean;
   private avatarMarker: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] | null = null;
@@ -482,6 +486,7 @@ export class Explorer {
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
+    this.previewNext = options.previewNext === true;
     this.catAvatar = options.avatarKind === "cat";
     if (this.catAvatar) { this.camDistance = FOLLOW_CAT.distance; this.pitch = FOLLOW_CAT.pitch; }
     // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
