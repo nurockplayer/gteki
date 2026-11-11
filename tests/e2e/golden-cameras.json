@@ -175,6 +175,102 @@
       "node": "n:ea71c5f746934d0a934c43782d861da5",
       "headingDeg": 70,
       "expect": "Shinjuku escalator bottom and its surrounding structure are visible."
+    },
+    {
+      "id": "slice-01-exit1-mouth",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:a06f3d191885497bac197b666c4daef9",
+      "headingDeg": 174,
+      "expect": "Exit 1 entrance stairs and their sign are visible from the street."
+    },
+    {
+      "id": "slice-02-exit1-landing",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:49924b2c3a1e4b6b8ebd802a6d137205",
+      "headingDeg": 174,
+      "expect": "The exit 1 stair landing and the next flight down are visible."
+    },
+    {
+      "id": "slice-03-b1-arrival",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:e764ee9de7834a9aae179ce41bbf2e9a",
+      "headingDeg": 111,
+      "expect": "The B1 concourse opens from the foot of the exit 1 stairs."
+    },
+    {
+      "id": "slice-04-b1-corridor",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:1ecbdf77f58f423fa3142d1b71e078bf",
+      "headingDeg": 70,
+      "expect": "The B1 corridor and its overhead sign are visible."
+    },
+    {
+      "id": "slice-05-gate",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:d9cd1bb0f76a440d83010e5b9f63ad65",
+      "headingDeg": 159,
+      "expect": "The Oedo ticket gate line is visible."
+    },
+    {
+      "id": "slice-06-to-escalator",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:2d2bc35b4043433da2914b2705ef69bb",
+      "headingDeg": 84,
+      "expect": "The paid concourse leading to the first escalator is visible."
+    },
+    {
+      "id": "slice-07-escalator1-top",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:e4365ef27b14448eb770343c8a024f80",
+      "headingDeg": 250,
+      "expect": "The escalator from B1 down to B3 is visible from its top."
+    },
+    {
+      "id": "slice-08-b3-arrival",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:ea71c5f746934d0a934c43782d861da5",
+      "headingDeg": 244,
+      "expect": "The B3 concourse is visible from the foot of the first escalator."
+    },
+    {
+      "id": "slice-09-b3-sign",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:180ce956ffb7470b9cc42ec7e75255d4",
+      "headingDeg": 148,
+      "expect": "The B3 concourse and its overhead sign are visible."
+    },
+    {
+      "id": "slice-10-escalator2-top",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:9c7256cd531a4154abd7353ace7797be",
+      "headingDeg": 165,
+      "expect": "The long escalator down to the B6 platform is visible from its top."
+    },
+    {
+      "id": "slice-11-b6-arrival",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:aa29caed939f47449d2b76b11043109b",
+      "headingDeg": 159,
+      "expect": "The B6 platform is visible from the foot of the long escalator."
+    },
+    {
+      "id": "slice-12-platform",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:3c2d58645c62448b8e4c97f010d9ce32",
+      "headingDeg": 75,
+      "expect": "The Oedo platform and track are visible."
     }
   ]
 }
