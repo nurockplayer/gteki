@@ -487,50 +487,6 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   regions.push(...privateRegions);
   const holes = privateHolePlanes(privateRegions);
   const model = buildWalkableModel([...regions, ...flights], (_wall, outside) => hasFloor(enu(new THREE.Vector3(outside.x, outside.y, outside.z))), WALKER_BODY.stepUpM, 0, holes);
-  // A retained strip can end at a shared node after the adjacent approach was deduplicated. Its cap is still a
-  // boundary of the union, although the graph's other approach carries on through it.
-  const mouths: { at: THREE.Vector3; direction: THREE.Vector3; half: number; cuts: PlanPoint[][] }[] = [];
-  for (const run of runs) {
-    const path = edgePoints(bundle, run.edge, nodes, floors);
-    for (const [id, point, neighbour, endpoint] of [
-      [run.edge.from, run.points[0], run.points[1], path[0]],
-      [run.edge.to, run.points.at(-1), run.points.at(-2), path.at(-1)],
-    ] as const) {
-      if (!point || !neighbour || !endpoint || R(point.x, point.y, point.z).distanceTo(endpoint) > 1e-5) continue;
-      const direction = endpoint.clone().sub(R(neighbour.x, neighbour.y, neighbour.z)).setY(0).normalize();
-      if (!direction.lengthSq()) continue;
-      const cuts: PlanPoint[][] = [];
-      for (const edge of bundle.edges) {
-        if (edge.id === run.edge.id || !traversable(edge) || (edge.from !== id && edge.to !== id)) continue;
-        const other = edgePoints(bundle, edge, nodes, floors);
-        if (edge.to === id) other.reverse();
-        if (other.length < 2 || Math.abs(other[0]!.y - endpoint.y) > WALKER_BODY.stepUpM) continue;
-        const along = other[1]!.clone().sub(other[0]!).setY(0).normalize();
-        if (!along.lengthSq()) continue;
-        const half = widthOf(edge) / 2, across = new THREE.Vector3(-along.z, 0, along.x).multiplyScalar(half);
-        const start = other[0]!.clone().addScaledVector(along, -0.01), end = other[0]!.clone().addScaledVector(along, 2 * Math.max(half, widthOf(run.edge) / 2));
-        cuts.push([start.clone().add(across), end.clone().add(across), end.clone().sub(across), start.clone().sub(across)].map((p) => ({ x: p.x, z: p.z })));
-      }
-      if (cuts.length) mouths.push({ at: endpoint, direction, half: widthOf(run.edge) / 2, cuts });
-    }
-  }
-  model.walls = model.walls.flatMap((wall) => {
-    const dx = wall.bx - wall.ax, dz = wall.bz - wall.az, length = Math.hypot(dx, dz);
-    const matching = mouths.filter(({ at, direction, half }) => length > 0
-      && Math.abs(dx * direction.x + dz * direction.z) < 1e-5 * length
-      && Math.abs((wall.ax - at.x) * direction.x + (wall.az - at.z) * direction.z) < 1e-4
-      && Math.abs(wall.ay - at.y) <= WALKER_BODY.stepUpM && Math.abs(wall.by - at.y) <= WALKER_BODY.stepUpM
-      && Math.min(Math.hypot(wall.ax - at.x, wall.az - at.z), Math.hypot(wall.bx - at.x, wall.bz - at.z)) <= half + length);
-    if (!matching.length) return [wall];
-    const cuts = matching.flatMap((mouth) => mouth.cuts);
-    const height = (values: [number, number, number], t: number) => t <= 0.5 ? values[0] + (values[1] - values[0]) * t * 2 : values[1] + (values[2] - values[1]) * (t * 2 - 1);
-    return outsideIntervals({ x: wall.ax, z: wall.az }, { x: wall.bx, z: wall.bz }, cuts).map(([a, b]) => ({
-      ...wall, ax: wall.ax + dx * a, az: wall.az + dz * a, bx: wall.ax + dx * b, bz: wall.az + dz * b,
-      ay: wall.ay + (wall.by - wall.ay) * a, by: wall.ay + (wall.by - wall.ay) * b,
-      ...(wall.bottomY ? { bottomY: [height(wall.bottomY, a), height(wall.bottomY, (a + b) / 2), height(wall.bottomY, b)] as [number, number, number] } : {}),
-      ...(wall.topY ? { topY: [height(wall.topY, a), height(wall.topY, (a + b) / 2), height(wall.topY, b)] as [number, number, number] } : {}),
-    }));
-  });
   // Floors and ceilings follow the level stack: a floor standing less than the clearance over another level leaves
   // that part out, and a ceiling another level's floor stands in does too. Regions are runs, then pads, then junctions.
   const uncut = (p: THREE.Vector3, q: THREE.Vector3, cuts: readonly PlanPoint[][]) => {
