@@ -91,6 +91,14 @@ describe("unmodelledRunsByEdge", () => {
 
 describe("buildGreybox", () => {
   const emptyScene = { colliderNear: () => false, wallHit: () => null };
+  it("extends terminal caps while keeping degree-two caps at the node", () => {
+    const run = { edge: bundle.edges[0]!, points: [{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }] };
+    const capX = (station: StationBundle) => emitGreybox(station, [run], () => false, emptyScene, "high").wallSegments
+      .filter((wall) => Math.abs(wall.ax - wall.bx) < 1e-6 && wall.ax > 9).map((wall) => wall.ax);
+    expect(capX(bundle)).toContainEqual(expect.closeTo(10 + WALKER_BODY.radiusM + 0.05));
+    const degreeTwo = { ...bundle, edges: [...bundle.edges, { ...bundle.edges[0]!, id: "other", from: "b", to: "a" }] };
+    expect(capX(degreeTwo)).toContainEqual(expect.closeTo(10));
+  });
   it("emits no wall piece without plan length where two stair cuts' bounds differ only by rounding", () => {
     // A flight whose both ends are on passages is cut from each end, in opposite directions: on a wall it crosses the
     // two cut grids can differ by rounding only, and the slivers between them made zero-length walls (found by a
@@ -438,8 +446,7 @@ describe("buildGreybox", () => {
     const wallLengthNear = (z: number) => result.wallSegments.filter((w) => Math.abs((w.az + w.bz) / 2 - z) < 0.01 && w.yMax > 1.11).reduce((sum, w) => sum + Math.hypot(w.bx - w.ax, w.bz - w.az), 0);
     // The renderer frame mirrors north into -z; take whichever side the corridor's near wall lands on.
     // The full-height wall gives way to a low guard over the flight's 2 m width; the rest stays full-height.
-    expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeGreaterThan(20 - MODE_WIDTH.stairs! - 1e-3);
-    expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeLessThan(20 - MODE_WIDTH.stairs! + 1e-3);
+    expect(Math.max(wallLengthNear(1.4), wallLengthNear(-1.4))).toBeCloseTo(20 - MODE_WIDTH.stairs! + 2 * (WALKER_BODY.radiusM + 0.05));
   });
 
   it("makes a junction patch and keeps wall segments out of its disc", () => {
@@ -572,7 +579,7 @@ describe("buildGreybox", () => {
     const result = buildGreybox(long, () => true, () => false, { ...emptyScene, colliderNear: (p) => Math.abs(p.x - 19) < 0.01 }, "high");
     for (const sign of [-1, 1]) {
       const walls = result.wallSegments.filter((wall) => Math.abs(wall.az - wall.bz) < 1e-9 && Math.sign(wall.az) === sign);
-      expect(walls.reduce((length, wall) => length + Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), 0)).toBeCloseTo(40);
+      expect(walls.reduce((length, wall) => length + Math.hypot(wall.bx - wall.ax, wall.bz - wall.az), 0)).toBeCloseTo(40 + 2 * (WALKER_BODY.radiusM + 0.05));
     }
   });
 

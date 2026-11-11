@@ -407,6 +407,21 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   }
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
+  const degree = new Map<string, number>();
+  for (const edge of bundle.edges) for (const id of new Set([edge.from, edge.to])) degree.set(id, (degree.get(id) ?? 0) + 1);
+  const shellRuns = runs.map((run) => ({ ...run, points: [...run.points] }));
+  for (const run of shellRuns) {
+    const path = edgePoints(bundle, run.edge, nodes, floors);
+    for (const [id, i, j, endpoint] of [[run.edge.from, 0, 1, path[0]], [run.edge.to, run.points.length - 1, run.points.length - 2, path.at(-1)]] as const) {
+      const point = run.points[i], neighbour = run.points[j];
+      if (!point || !neighbour || !endpoint || degree.get(id) !== 1) continue;
+      const at = R(point.x, point.y, point.z);
+      if (at.distanceTo(endpoint) > 1e-5) continue;
+      const direction = at.clone().sub(R(neighbour.x, neighbour.y, neighbour.z));
+      const flat = Math.hypot(direction.x, direction.z);
+      if (flat) run.points[i] = enu(at.addScaledVector(direction, (WALKER_BODY.radiusM + 0.05) / flat));
+    }
+  }
   const junctions = new Map<string, { at: THREE.Vector3; width: number; count: number; floor: string; edges: Set<string>; bendOf?: Edge }>();
   for (const run of detected) {
     const edgePointsR = edgePoints(bundle, run.edge, nodes, floors);
@@ -474,7 +489,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
     return { floorLevels: [nodes.get(edge.from)?.floorId ?? "", nodes.get(edge.to)?.floorId ?? ""], floorHeights: [points[0]!.y, points.at(-1)!.y] };
   };
   const regions: Region[] = [];
-  for (const run of runs) {
+  for (const run of shellRuns) {
     regions.push({ kind: "strip", group: run.edge.id, level: runLevel(run.edge), ...floorMembership(run.edge), points: run.points.map((p) => R(p.x, p.y, p.z)), halfWidth: widthOf(run.edge) / 2 });
   }
   for (const pad of pads) {
@@ -554,7 +569,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
   for (const [runIndex, run] of runs.entries()) {
     const width = widthOf(run.edge), half = width / 2;
     const b = getBatch(nodes.get(run.edge.from)?.floorId ?? "");
-    const pts = run.points.map((p) => R(p.x, p.y, p.z));
+    const pts = shellRuns[runIndex]!.points.map((p) => R(p.x, p.y, p.z));
     const finishesRun = !!runEnds.get(run.edge.id)?.some((p) => same(p, run.points.at(-1)));
     // What lies beyond a run's end: the edge's own geometry before/after it, or, at the edge's node, the next point of
     // every other edge there.
@@ -640,6 +655,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
       // segment crosses, the same way, each opening resuming 0.05 m past its wall (256 walls per segment at most).
       const span = Math.hypot(pz.x - pa.x, pz.z - pa.z);
       if (span > 1e-9) {
+        const a = R(pa.x, pa.y, pa.z), z = R(pz.x, pz.y, pz.z), flat = Math.hypot(z.x - a.x, z.z - a.z);
         let start = 0;
         for (let n = 0; n < 256; n++) {
           const t = Math.min(1, start / span);
@@ -658,7 +674,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           const throughRunEnd = (end: THREE.Vector3, inside: THREE.Vector3, first: boolean) => side(inside) !== 0 && beyondRun(end, first).some((p) => side(p) === -side(inside));
           const atEnd = at > flat - 0.05;
           const crossed = atEnd
-            ? (i === pts.length - 1 ? (side(a) !== 0 && side(a) === -side(z)) || (finishesRun && throughRunEnd(z, a, false)) : side(a) !== 0 && side(a) === -side(pts[i + 1]!))
+            ? (i === pts.length - 1 ? (side(a) !== 0 && side(a) === -side(z)) || (finishesRun && throughRunEnd(z, a, false)) : side(a) !== 0 && side(a) === -side(R(run.points[i + 1]!.x, run.points[i + 1]!.y, run.points[i + 1]!.z)))
             : at >= 0.05 || (side(a) !== 0 && side(a) === -side(z)) || (i === 1 && side(a) === 0 && throughRunEnd(a, z, true));
           if (crossed) {
             const cosine = hit.wallNormal ? Math.abs(along.dot(hit.wallNormal)) : 1;
@@ -670,7 +686,7 @@ export function emitGreybox(bundle: StationBundle, detected: readonly Unmodelled
           if (start >= flat) break;
         }
       }
-      travelled += length; lengthM += length;
+      travelled += length; lengthM += R(pa.x, pa.y, pa.z).distanceTo(R(pz.x, pz.y, pz.z));
     }
   }
   for (const [k, j] of activeJunctions.entries()) {
