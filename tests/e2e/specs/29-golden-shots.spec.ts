@@ -7,7 +7,7 @@ import { evaluateCheck, flatRatio, type Metric } from "../lib/golden.ts";
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
-type Camera = { id: string; station: StationKey; kind: string; node?: string; headingDeg?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
+type Camera = { id: string; station: StationKey; kind: string; knownIssue?: number; node?: string; headingDeg?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
 const config = JSON.parse(fs.readFileSync(new URL("../golden-cameras.json", import.meta.url), "utf8")) as {
   thresholds: Record<"voidRatio" | "flatRatio" | "nearBlack", number>;
   cameras: Camera[];
@@ -34,9 +34,13 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
   if (filter && !["ikebukuro", "shinjuku"].includes(filter)) throw new Error(`Unknown golden station: ${filter}`);
   const out = path.join(ARTIFACTS, "golden", testInfo.project.name);
   fs.mkdirSync(out, { recursive: true });
-  const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
+  let sha: string;
+  try {
+    sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    sha = process.env.GITHUB_SHA || process.env.GTEKI_SHA || "unknown";
+  }
   const rows: object[] = [], failures: string[] = [];
-  const diagnosed = new Set<StationKey>();
   let station: StationKey | undefined, tier = "", renderer: unknown = null;
   for (const camera of config.cameras.filter(c => !filter || c.station === filter)) {
     const started = Date.now();
@@ -80,9 +84,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       diagnostics.screenshotAfter = await page.evaluate(() => (window as any).__gteki.goldenRenderState());
       phases.screenshotAfter = Date.now() - phaseStart;
       phaseStart = Date.now();
-      const compareTarget = camera.kind === "node" && !diagnosed.has(camera.station);
-      const probe = await page.evaluate(({ overview, compareTarget }) => (window as any).__gteki.goldenProbe(overview, compareTarget), { overview: camera.kind === "overview", compareTarget }) as { voidRatio: number; stationShare: number | null; renders: unknown[] };
-      if (compareTarget) diagnosed.add(camera.station);
+      const probe = await page.evaluate((overview) => (window as any).__gteki.goldenProbe(overview), camera.kind === "overview") as { voidRatio: number; stationShare: number | null; renders: unknown[] };
       diagnostics.probe = probe.renders;
       phases.probe = Date.now() - phaseStart;
       phaseStart = Date.now();
@@ -96,8 +98,13 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       const metrics = { voidRatio: probe.voidRatio, stationShare: probe.stationShare, flatRatio: flat.value, nearBlack: image.nearBlack };
       const thresholds = camera.kind === "overview" ? camera.thresholds! : config.thresholds;
       const checks = (Object.entries(thresholds) as [Metric, number][]).map(([metric, threshold]) => evaluateCheck(metric, metrics[metric]!, threshold, camera.known));
-      for (const c of checks) if (c.status === "fail") failures.push(`${camera.id}: ${c.metric}=${c.value} threshold=${c.threshold}`);
-      rows.push({ ...camera, phases, diagnostics, metrics, checks, status: checks.some(c => c.status === "fail") ? "fail" : checks.some(c => c.status === "known") ? "known" : "pass" });
+      const failedChecks = checks.filter(c => c.status === "fail");
+      if (camera.knownIssue) {
+        console.log(`[golden] ${camera.id}: KNOWN #${camera.knownIssue}${failedChecks.length ? "" : " now passes, remove the entry"}`);
+      } else {
+        for (const c of failedChecks) failures.push(`${camera.id}: ${c.metric}=${c.value} threshold=${c.threshold}`);
+      }
+      rows.push({ ...camera, phases, diagnostics, metrics, checks, status: camera.knownIssue ? "known" : failedChecks.length ? "fail" : checks.some(c => c.status === "known") ? "known" : "pass" });
     } catch (error) {
       failures.push(`${camera.id}: ${String(error)}`); rows.push({ ...camera, phases, diagnostics, status: "fail", error: String(error) });
       console.error(`[golden] ${camera.id}: ${String(error)}`);

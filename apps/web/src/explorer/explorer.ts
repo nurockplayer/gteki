@@ -1,3 +1,4 @@
+import { goldenPixels } from "./goldenPixels";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -589,7 +590,7 @@ export class Explorer {
   }
 
   /** QA-only: reuse displayed-frame programs by probing the default framebuffer. */
-  goldenProbe(overview: boolean, compareTarget = false) {
+  goldenProbe(overview: boolean) {
     const root = this.stationScene?.root;
     if (!root) throw new Error("Station scene is not loaded");
     const renderer = this.renderer, gl = renderer.getContext();
@@ -601,11 +602,10 @@ export class Explorer {
     const scissorTest = renderer.getScissorTest(), autoUpdate = renderer.shadowMap.autoUpdate;
     const visible = root.visible;
     const renders: { label: string; before: ReturnType<Explorer["goldenRenderState"]>; after: ReturnType<Explorer["goldenRenderState"]>; ms: number }[] = [];
-    const capture = (label: string, pixels: Uint8Array, target?: THREE.WebGLRenderTarget) => {
+    const capture = (label: string, pixels: Uint8Array) => {
       const before = this.goldenRenderState(), started = performance.now();
       renderer.render(this.scene, this.camera);
-      if (target) renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
-      else gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
       const after = this.goldenRenderState(), ms = performance.now() - started;
       renders.push({ label, before, after, ms });
       console.log(`[golden] probe ${label}: ${JSON.stringify({ before, after, ms })}`);
@@ -613,14 +613,6 @@ export class Explorer {
     try {
       this.scene.background = new THREE.Color(0xff00ff);
       renderer.shadowMap.autoUpdate = false;
-      // One diagnostic comparison per station measures the old target's program cost before removal.
-      if (compareTarget) {
-        const target = new THREE.WebGLRenderTarget(width, height);
-        try {
-          renderer.setRenderTarget(target);
-          capture("target-baseline", shown, target);
-        } finally { target.dispose(); }
-      }
       renderer.setRenderTarget(null);
       const ratio = renderer.getPixelRatio();
       renderer.setViewport(0, 0, width / ratio, height / ratio);
@@ -631,12 +623,7 @@ export class Explorer {
         root.visible = false;
         capture("hidden", hidden);
       }
-      let empty = 0, changed = 0;
-      for (let i = 0; i < shown.length; i += 4) {
-        if (shown[i] === 255 && shown[i + 1] === 0 && shown[i + 2] === 255) empty++;
-        if (shown[i] !== hidden[i] || shown[i + 1] !== hidden[i + 1] || shown[i + 2] !== hidden[i + 2]) changed++;
-      }
-      return { voidRatio: empty / (width * height), stationShare: overview ? changed / (width * height) : null, renders };
+      return { ...goldenPixels(shown, overview ? hidden : null), renders };
     } finally {
       root.visible = visible;
       this.scene.background = background;
