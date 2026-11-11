@@ -92,6 +92,35 @@ for (const r of routes) {
       await page.setViewportSize(view);
       await page.waitForTimeout(500);
     }
+    if (phone) {
+      // Pause and visit every instruction at both sizes before the sign walk resumes.
+      await page.locator(".guide-pause").click();
+      const instructions = await hooks.instructions(page);
+      const longest = new Set([...new Set(instructions.slice(1))].sort((a, b) => b.length - a.length).slice(0, 4));
+      const measurements: { viewport: string; text: string; topPercent: number; height: number }[] = [];
+      for (const size of [view, { width: 393, height: 659 }]) {
+        await page.setViewportSize(size);
+        for (let i = 1; i < instructions.length; i++) {
+          const instruction = page.locator(".hud-instruction");
+          await expect(instruction).toHaveText(instructions[i]!);
+          const dimensions = await instruction.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
+          expect.soft(dimensions.scroll, `${r.label} step ${i}: full instruction fits`).toBeLessThanOrEqual(dimensions.client + 1);
+          await expectHudClear(page, true, `${size.width}x${size.height} ${r.label} step ${i}`);
+          const hud = (await page.locator(".hud").boundingBox())!;
+          measurements.push({ viewport: `${size.width}x${size.height}`, text: instructions[i]!, topPercent: hud.y / size.height * 100, height: hud.height });
+          if (longest.has(instructions[i]!)) {
+            await page.screenshot({ path: shotPath(testInfo, `guide-${r.label}-${size.width}x${size.height}-step-${i}.png`) });
+            longest.delete(instructions[i]!);
+          }
+          if (i < instructions.length - 1) await page.locator(".guide-next").click();
+        }
+        // Return to the first guide instruction for the next viewport or sign walk.
+        for (let i = 1; i < instructions.length - 1; i++) await page.locator(".guide-prev").click();
+      }
+      save(testInfo, `guide-fit-${r.label}.json`, measurements);
+      await page.setViewportSize(view);
+      await page.locator(".guide-pause").click();
+    }
     const t0 = Date.now();
     while (pending.length && Date.now() - t0 < 360_000 && (await guideMode(page)) === "guide") {
       const av = await hooks.avatar(page);

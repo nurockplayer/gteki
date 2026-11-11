@@ -40,6 +40,7 @@ import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 import { shortStationLabel } from "./shortStationLabel.ts";
+import { needsCompact } from "./guideTextFit.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -188,6 +189,7 @@ export class App {
     updateTopbarBottom();
     if (typeof ResizeObserver !== "undefined") new ResizeObserver(updateTopbarBottom).observe(this.ui.topbar);
     window.addEventListener("resize", updateTopbarBottom);
+    window.addEventListener("resize", () => this.fitGuideText());
     // On a phone the open route sheet is a bottom occluder of the same kind (#385).
     this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
@@ -1388,6 +1390,7 @@ export class App {
     row.append(fp, net, ov, snd);
     hud.append(row);
     this.syncGuideStep();
+    this.fitGuideText();
     this.trackInstruction();
   }
 
@@ -1443,8 +1446,19 @@ export class App {
     else hud.prepend(this.guideBox(ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
     this.syncGuideStep();
+    this.fitGuideText();
     this.announceInstruction();
     this.trackInstruction();
+  }
+
+  private fitGuideText(): void {
+    const text = this.ui.hud.querySelector<HTMLElement>(".hud-instruction");
+    if (!text) return;
+    text.classList.remove("hud-instruction--long");
+    if (!window.matchMedia("(max-width: 720px)").matches) return;
+    const style = getComputedStyle(text);
+    const contentHeight = text.scrollHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    text.classList.toggle("hud-instruction--long", needsCompact(parseFloat(style.lineHeight), contentHeight, 2));
   }
 
   private spokenInstruction: Instruction | null = null;

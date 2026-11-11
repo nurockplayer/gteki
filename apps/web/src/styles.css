@@ -330,13 +330,14 @@ button.on { border-color: var(--accent); color: var(--accent); }
   /* Mode buttons share one row instead of wrapping to two: the guide stack keeps the view centre clear (#838). */
   .hud-row > button { padding: 5px 8px; font-size: 12px; }
   .hud-line { width: 100%; }
-  /* Two lines of instruction at most; the mascot's chatter bubble yields on the phone (its figure stays). */
-  .hud-instruction { font-size: 15px; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  /* The mascot's chatter bubble yields on the phone (its figure stays). */
+  .hud-instruction { font-size: 15px; line-height: 1.2; text-align: center; overflow-wrap: anywhere; }
   .hud-line .mascot-bubble { display: none; }
   /* The guide stack is bottom-anchored, so its own height is what decides how far up the view it reaches: the
      guide box, the Ride-train button and the control row are compacted here so the stack ends below 70 % of the
      height and the middle band stays map (#838). The 44 px prev/next hit area is kept. */
   .app[data-mode="guide"] .hud-instruction { padding: 7px 12px; }
+  .app[data-mode="guide"] .hud-instruction--long { font-size: 13px; line-height: 1.1; padding: 4px 10px; }
   .app[data-mode="guide"] .hud-row { padding: 5px; }
   .app[data-mode="guide"] .rail-launch { min-height: 32px; padding: 4px 12px; font-size: 12px; }
   /* The guide screen keeps the map's circle and controls, dropping its text block so it ends above the view centre (#838).
@@ -357,6 +358,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .app[data-mode="guide"] .rail-launch { display: none; }
   .app[data-mode="guide"] .hud { gap: 2px; }
   .app[data-mode="guide"] .hud-instruction { padding: 6px 12px; }
+  .app[data-mode="guide"] .hud-instruction--long { padding: 4px 10px; }
   .app[data-mode="guide"] .hud-row > button { padding: 4px 8px; }
   .app[data-mode="guide"] .hud-guide .guide-step { flex: 0 0 38px; min-width: 38px; min-height: 38px; }
   .app[data-mode="guide"] .minimap-map { width: 72px; justify-self: center; }
