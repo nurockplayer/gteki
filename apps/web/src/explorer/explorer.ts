@@ -610,7 +610,34 @@ export class Explorer {
       renders.push({ label, before, after, ms });
       console.log(`[golden] probe ${label}: ${JSON.stringify({ before, after, ms })}`);
     };
-    const matches = features.map((feature) => {
+    const signMeshes: THREE.Mesh[] = [];
+    root.traverse((object) => {
+      if ((object as THREE.Mesh).isMesh && (object.name.startsWith("sign-faces:") || object.name.startsWith("sign-faces-"))) signMeshes.push(object as THREE.Mesh);
+    });
+    const signRects = features.map((feature) => {
+      if (feature.match.namePrefix !== "sign:") return null;
+      const corners: THREE.Vector3[] = [];
+      let faces = 0;
+      root.traverse((object) => {
+        if (object.userData.gteki_role !== "sign" || !Array.isArray(object.userData.faces)) return;
+        for (const face of object.userData.faces) {
+          if (typeof face.id !== "string" || !face.id.includes(feature.match.contains ?? "") || !Array.isArray(face.corners)) continue;
+          faces++;
+          for (const corner of face.corners) corners.push(new THREE.Vector3().fromArray(corner).applyMatrix4(root.matrixWorld));
+        }
+      });
+      this.camera.updateMatrixWorld();
+      const projected = corners.map((point) => ({ behind: point.clone().applyMatrix4(this.camera.matrixWorldInverse).z >= 0, point: point.project(this.camera) }));
+      const front = projected.filter((p) => !p.behind);
+      if (!front.length) return { faces, rect: null };
+      const xs = front.map(({ point }) => (point.x + 1) * width / 2);
+      const ys = front.map(({ point }) => (point.y + 1) * height / 2);
+      const x0 = Math.max(0, Math.floor(Math.min(...xs) - 4)), x1 = Math.min(width, Math.ceil(Math.max(...xs) + 4));
+      const y0 = Math.max(0, Math.floor(Math.min(...ys) - 4)), y1 = Math.min(height, Math.ceil(Math.max(...ys) + 4));
+      return { faces, rect: x0 < x1 && y0 < y1 ? { x0, x1, y0, y1 } : null };
+    });
+    const matches = features.map((feature, i) => {
+      if (signRects[i]) return signMeshes;
       const meshes: THREE.Mesh[] = [];
       root.traverse((object) => {
         if (!(object as THREE.Mesh).isMesh) return;
@@ -653,7 +680,16 @@ export class Explorer {
         for (const mesh of meshes) mesh.visible = false;
         try {
           if (meshes.length) capture(`feature:${feature.name}`, hidden);
-          return { name: feature.name, pixels: meshes.length ? goldenPixelDiff(shown, hidden) : 0, meshes: meshes.length };
+          const sign = signRects[i];
+          let pixels = meshes.length ? goldenPixelDiff(shown, hidden) : 0;
+          if (sign) {
+            pixels = 0;
+            if (sign.rect) for (let y = sign.rect.y0; y < sign.rect.y1; y++) for (let x = sign.rect.x0; x < sign.rect.x1; x++) {
+              const offset = (y * width + x) * 4;
+              if (Math.abs(shown[offset]! - hidden[offset]!) > 3 || Math.abs(shown[offset + 1]! - hidden[offset + 1]!) > 3 || Math.abs(shown[offset + 2]! - hidden[offset + 2]!) > 3) pixels++;
+            }
+          }
+          return { name: feature.name, pixels, meshes: sign ? (sign.faces ? meshes.length : 0) : meshes.length };
         } finally { meshes.forEach((mesh, j) => { mesh.visible = before[j]!; }); }
       });
       return { ...goldenPixels(shown, overview ? hidden : null), features: featureResults, renders };
