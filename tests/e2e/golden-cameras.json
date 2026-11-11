@@ -93,7 +93,17 @@
       "kind": "node",
       "node": "n:9ff85d09ae4e40469ec227099d95c775",
       "headingDeg": 250,
-      "expect": "The passage and overhead sign 1ecbdf77 are visible."
+      "expect": "The passage and overhead sign 1ecbdf77 are visible.",
+      "features": [
+        {
+          "name": "sign 1ecbdf77",
+          "match": {
+            "namePrefix": "sign:",
+            "contains": "1ecbdf77"
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-sign-2d2bc35b",
@@ -101,7 +111,17 @@
       "kind": "node",
       "node": "n:20014f524ee643c18b80575cf3064334",
       "headingDeg": 266,
-      "expect": "The passage and overhead sign 2d2bc35b are visible."
+      "expect": "The passage and overhead sign 2d2bc35b are visible.",
+      "features": [
+        {
+          "name": "sign 2d2bc35b",
+          "match": {
+            "namePrefix": "sign:",
+            "contains": "2d2bc35b"
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-sign-453ea111",
@@ -109,7 +129,17 @@
       "kind": "node",
       "node": "n:180ce956ffb7470b9cc42ec7e75255d4",
       "headingDeg": 334,
-      "expect": "The passage and overhead sign 453ea111 are visible."
+      "expect": "The passage and overhead sign 453ea111 are visible.",
+      "features": [
+        {
+          "name": "sign 453ea111",
+          "match": {
+            "namePrefix": "sign:",
+            "contains": "453ea111"
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-sign-c2d39002",
@@ -117,7 +147,17 @@
       "kind": "node",
       "node": "n:6bd46cd107a4491bba3469e8f51f9900",
       "headingDeg": 78,
-      "expect": "The passage and overhead sign c2d39002 are visible."
+      "expect": "The passage and overhead sign c2d39002 are visible.",
+      "features": [
+        {
+          "name": "sign c2d39002",
+          "match": {
+            "namePrefix": "sign:",
+            "contains": "c2d39002"
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-sign-e31954cb",
@@ -125,7 +165,17 @@
       "kind": "node",
       "node": "n:3c2d58645c62448b8e4c97f010d9ce32",
       "headingDeg": 75,
-      "expect": "The passage and overhead sign e31954cb are visible."
+      "expect": "The passage and overhead sign e31954cb are visible.",
+      "features": [
+        {
+          "name": "sign e31954cb",
+          "match": {
+            "namePrefix": "sign:",
+            "contains": "e31954cb"
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-stair-1-top",
@@ -133,7 +183,17 @@
       "kind": "node",
       "node": "n:3af66366dc9f478ea4a6e509235a8799",
       "headingDeg": 240,
-      "expect": "Shinjuku stair 1 top and its surrounding structure are visible."
+      "expect": "Shinjuku stair 1 top and its surrounding structure are visible.",
+      "features": [
+        {
+          "name": "stairs",
+          "match": {
+            "role": "stairs_ramps",
+            "withinM": 15
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-stair-1-bottom",
@@ -141,7 +201,17 @@
       "kind": "node",
       "node": "n:399c24bf916c45f197e22e812433aed9",
       "headingDeg": 60,
-      "expect": "Shinjuku stair 1 bottom and its surrounding structure are visible."
+      "expect": "Shinjuku stair 1 bottom and its surrounding structure are visible.",
+      "features": [
+        {
+          "name": "stairs",
+          "match": {
+            "role": "stairs_ramps",
+            "withinM": 15
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-stair-2-top",
@@ -149,7 +219,17 @@
       "kind": "node",
       "node": "n:d1ccc52ef25e474dac70020771b7ea76",
       "headingDeg": 240,
-      "expect": "Shinjuku stair 2 top and its surrounding structure are visible."
+      "expect": "Shinjuku stair 2 top and its surrounding structure are visible.",
+      "features": [
+        {
+          "name": "stairs",
+          "match": {
+            "role": "stairs_ramps",
+            "withinM": 15
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-stair-2-bottom",
@@ -158,7 +238,17 @@
       "kind": "node",
       "node": "n:51435d9112ba409e8ad5ab02dbbd060f",
       "headingDeg": 60,
-      "expect": "Shinjuku stair 2 bottom and its surrounding structure are visible."
+      "expect": "Shinjuku stair 2 bottom and its surrounding structure are visible.",
+      "features": [
+        {
+          "name": "stairs",
+          "match": {
+            "role": "stairs_ramps",
+            "withinM": 15
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-escalator-top",
@@ -166,7 +256,17 @@
       "kind": "node",
       "node": "n:e4365ef27b14448eb770343c8a024f80",
       "headingDeg": 250,
-      "expect": "Shinjuku escalator top and its surrounding structure are visible."
+      "expect": "Shinjuku escalator top and its surrounding structure are visible.",
+      "features": [
+        {
+          "name": "escalator",
+          "match": {
+            "namePrefix": "escalator-steps:",
+            "withinM": 15
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "sj-escalator-bottom",
@@ -174,7 +274,17 @@
       "kind": "node",
       "node": "n:ea71c5f746934d0a934c43782d861da5",
       "headingDeg": 70,
-      "expect": "Shinjuku escalator bottom and its surrounding structure are visible."
+      "expect": "Shinjuku escalator bottom and its surrounding structure are visible.",
+      "features": [
+        {
+          "name": "escalator",
+          "match": {
+            "namePrefix": "escalator-steps:",
+            "withinM": 15
+          },
+          "minPixels": 1
+        }
+      ]
     },
     {
       "id": "slice-01-exit1-mouth",

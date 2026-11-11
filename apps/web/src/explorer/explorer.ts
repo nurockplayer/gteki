@@ -1,4 +1,4 @@
-import { goldenPixels } from "./goldenPixels";
+import { goldenPixels, goldenPixelDiff } from "./goldenPixels";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -590,7 +590,7 @@ export class Explorer {
   }
 
   /** QA-only: reuse displayed-frame programs by probing the default framebuffer. */
-  goldenProbe(overview: boolean) {
+  goldenProbe(overview: boolean, features: { name: string; match: { namePrefix?: string; contains?: string; role?: string; withinM?: number }; minPixels: number }[] = [], options: { hideBeforeShown?: string[] } = {}) {
     const root = this.stationScene?.root;
     if (!root) throw new Error("Station scene is not loaded");
     const renderer = this.renderer, gl = renderer.getContext();
@@ -610,6 +610,26 @@ export class Explorer {
       renders.push({ label, before, after, ms });
       console.log(`[golden] probe ${label}: ${JSON.stringify({ before, after, ms })}`);
     };
+    const matches = features.map((feature) => {
+      const meshes: THREE.Mesh[] = [];
+      root.traverse((object) => {
+        if (!(object as THREE.Mesh).isMesh) return;
+        let matched = false;
+        for (let parent: THREE.Object3D | null = object; parent && parent !== root; parent = parent.parent) {
+          if ((!feature.match.namePrefix || parent.name.startsWith(feature.match.namePrefix)) &&
+              (!feature.match.contains || parent.name.includes(feature.match.contains)) &&
+              (!feature.match.role || parent.userData.gteki_role === feature.match.role)) { matched = true; break; }
+        }
+        if (matched && feature.match.withinM !== undefined) {
+          const bounds = new THREE.Box3().setFromObject(object);
+          matched = bounds.distanceToPoint(this.camera.position) <= feature.match.withinM;
+        }
+        if (matched) meshes.push(object as THREE.Mesh);
+      });
+      return meshes;
+    });
+    const visibility = new Map<THREE.Mesh, boolean>();
+    for (const meshes of matches) for (const mesh of meshes) visibility.set(mesh, mesh.visible);
     try {
       this.scene.background = new THREE.Color(0xff00ff);
       renderer.shadowMap.autoUpdate = false;
@@ -618,14 +638,28 @@ export class Explorer {
       renderer.setViewport(0, 0, width / ratio, height / ratio);
       renderer.setScissor(0, 0, width / ratio, height / ratio);
       renderer.setScissorTest(true);
+      features.forEach((feature, i) => {
+        if (options.hideBeforeShown?.includes(feature.name)) for (const mesh of matches[i]!) mesh.visible = false;
+      });
       capture("shown", shown);
       if (overview) {
         root.visible = false;
         capture("hidden", hidden);
       }
-      return { ...goldenPixels(shown, overview ? hidden : null), renders };
+      root.visible = visible;
+      const featureResults = features.map((feature, i) => {
+        const meshes = matches[i]!;
+        const before = meshes.map(mesh => mesh.visible);
+        for (const mesh of meshes) mesh.visible = false;
+        try {
+          if (meshes.length) capture(`feature:${feature.name}`, hidden);
+          return { name: feature.name, pixels: meshes.length ? goldenPixelDiff(shown, hidden) : 0, meshes: meshes.length };
+        } finally { meshes.forEach((mesh, j) => { mesh.visible = before[j]!; }); }
+      });
+      return { ...goldenPixels(shown, overview ? hidden : null), features: featureResults, renders };
     } finally {
       root.visible = visible;
+      for (const [mesh, wasVisible] of visibility) mesh.visible = wasVisible;
       this.scene.background = background;
       renderer.shadowMap.autoUpdate = autoUpdate;
       renderer.setRenderTarget(oldTarget);
