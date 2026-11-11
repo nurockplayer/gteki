@@ -687,7 +687,7 @@
     },
     "[\"MeshStandardMaterial\",\"mat.stair\",\"c7c2b8\",\"000000\",1,1,false,0,true,0.42,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 11344,
-     "hash": "4ab42ac918b1d1895440912ca27bbc51cffe4d8cc246c3dee0804cb6904b7736"
+     "hash": "c55eb740cd093dda49451ec6e418b97adcb30e48e731663a81a4cbb430613258"
     },
     "[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 57232,
@@ -1870,7 +1870,7 @@
     },
     "[\"MeshStandardMaterial\",\"mat.stair\",\"c7c2b8\",\"000000\",1,1,false,0,true,0.42,0,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 11344,
-     "hash": "4ab42ac918b1d1895440912ca27bbc51cffe4d8cc246c3dee0804cb6904b7736"
+     "hash": "c55eb740cd093dda49451ec6e418b97adcb30e48e731663a81a4cbb430613258"
     },
     "[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 57232,
