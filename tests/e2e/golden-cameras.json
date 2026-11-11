@@ -242,6 +242,7 @@
     },
     {
       "id": "slice-09-b3-sign",
+      "knownIssue": 1192,
       "station": "shinjuku",
       "kind": "node",
       "node": "n:180ce956ffb7470b9cc42ec7e75255d4",
