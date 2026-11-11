@@ -51,7 +51,42 @@ AI paint-overs (OpenAI image_gen via Codex) of the 2026-11-09 GPU captures, to t
 | [po1-b1-corridor](paintovers/po1-b1-corridor.jpg) | H2, B1 corridor (slice-04) | troffer pools on polished stone; varied walkers, no clones | magenta bands on pillars; invented tactile-paving route (only where evidence exists); drifted pillar rhythm and sign positions |
 | [po1-escalator-platform-end](paintovers/po1-escalator-platform-end.jpg) | stand-in for H4 | glass, steel and handrail materials; riders | starburst troffers (they run parallel to the axis); an invented yellow arrow sign (sign faces stay abstract); the landing not distinctly cool |
 
+## Hero target frames (2026-11-12)
+
+These are the frames the game is judged against for the slice. Each is an AI paint-over (batch 2) of a 2026-11-12 GPU capture of the game: preset B, high tier, UI hidden. Prompts and provenance are in [targets/provenance.md](targets/provenance.md); the choice between variants is [direction.md D8](direction.md). Each list is what must change in the game to match. Verdicts are provisional until the Owner sees them.
+
+### H1, first recognisable view (slice-01, exit 1 mouth)
+![H1](targets/h1-exit1-mouth.jpg)
+- The chunky white box railings become slim brushed-stainless posts with glass infill.
+- The floor becomes polished stone (roughness about 0.35) that reflects the strip lights.
+- The washed-out white street becomes warm overcast daylight on the façades, and the mouth's exposure stops clipping.
+- The canopy glass gets a visible frame and faint reflections instead of flat white.
+- One or two pedestrians appear at street level.
+
+### H2, main corridor landmark (slice-04, B1 corridor)
+![H2](targets/h2-b1-corridor.jpg)
+- Each troffer leaves a soft, separate pool on the floor; today the floor is one flat grey.
+- The floor becomes polished stone with soft, elongated highlights, never a mirror.
+- The walls become enamel panels with joints over a stainless baseboard and a shadow line.
+- The overhead signs become the brightest things in frame.
+- Three to five walkers appear, with different strides and distances.
+
+### H3, escalator transition (slice-10, long escalator)
+![H3](targets/h3-escalator-run.jpg)
+- The left balustrade, today an opaque grey slab with long streaks, becomes near-clear glass with a faint rim, with the up-run riders visible through it.
+- The handrails become black rubber with a soft highlight instead of chrome streaks (the handrail follow-up from D7).
+- The skirts become brushed stainless with small, low glints along the run.
+- The walls become warm cream enamel with joints; the right lower wall stays dim but readable (#1184 v4).
+- The far landing stays a bright, cool pool, as preset B already does.
+
+### H4, platform arrival (slice-11, B6 landing)
+![H4](targets/h4-b6-landing.jpg)
+- The landing floor gets separate troffer pools inside its cool pool; preset B gives the pool but no fixture pools.
+- The handrails become black rubber, and the skirts brushed stainless with warm streaks.
+- The figure on the landing reads as a clean dark silhouette against the light.
+- The walls become brighter cream enamel with panel joints.
+- The steps get crisp yellow edges.
+
 ## Still to come
 
-- **Four hero target frames** (H1 slice-01, H2 slice-04, H3 slice-10, H4 slice-11), painted over the golden renders of those cameras once #1170 lands, so that layout and geometry are the game's own. H1 (the exit 1 mouth) has no capture yet.
 - A visual pass over refs 2–4, 8, 9 and 11, noting fixture layout, balustrade type and finishes in the "what it shows" column.

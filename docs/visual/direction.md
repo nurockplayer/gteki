@@ -1,14 +1,15 @@
 # Art direction log: the Shinjuku slice
 
-The persistent decision log for the look of the 2026-11-22 slice (token-rules 25): Shinjuku, Toei Oedo E27, street exit 1 → B1 concourse → escalators → B6 platform (`toei-nwd-m6`, render −42.87 m). Viewpoints and the four hero moments: [slice-views.md](slice-views.md). References, hero target frames and paint-overs: `references.md` (to come).
+The persistent decision log for the look of the 2026-11-22 slice (token-rules 25): Shinjuku, Toei Oedo E27, street exit 1 → B1 concourse → escalators → B6 platform (`toei-nwd-m6`, render −42.87 m). Viewpoints and the four hero moments: [slice-views.md](slice-views.md). References, hero target frames and paint-overs: [references.md](references.md).
 
 Owner: gteki-visual (art director, provisional until the audition closes). Every AI verdict here is **provisional** until the Owner has seen the walk video for it (token-rules 25 g). Read this file first after every /clear.
 
-## Status (2026-11-11 18:1x JST)
+## Status (2026-11-12 05:4x JST)
 
 - Seat audition: two proposals in (`.claude/director/drafts/audition/direction-A.md`, `direction-B.md`, anonymous), the GPT one still to come. The decisions below take what A and B agree on and rule on where they differ. When the third proposal lands, anything it changes is logged as a new entry, not edited in place.
 - First judged render: the D6 blind test (D7, preset B). The first golden render of the 12 slice cameras (after #1170) is the baseline for everything else.
-- Next: the B v2 brief and its rerun (D7), then B as the default behind an art-acceptance PR.
+- Hero target frames H1–H4 accepted (D8).
+- Next: B v3/v4 renders (#1184; v3 meets the landing target on the floor, the mid wall is still too dark, v4 lowers the dip), then B as the default behind an art-acceptance PR.
 
 ## Visual thesis
 
@@ -134,6 +135,26 @@ Render fixes for the rerun:
 Not a lighting matter: two critics flagged stepped, floating ceiling slabs above the bottom pose on both tiers. That is breakage and goes to #1086.
 
 The console showed no errors or warnings for any preset on either tier, so #1177 is closed. Provisional until the Owner sees the walk video.
+
+### D8 (2026-11-12 05:4x JST) Hero target frames H1–H4
+The four hero moments of [slice-views.md](slice-views.md) now have target frames: [references.md § Hero target frames](references.md#hero-target-frames-2026-11-12). Each is an AI paint-over of a 2026-11-12 GPU capture of the game (preset B, high tier, UI hidden), so camera and layout are the game's own. Prompts and provenance: [targets/provenance.md](targets/provenance.md).
+
+The brief asked for two variants of each frame, a staying close to the base and b pushing the light further. Base | a | b:
+
+![all variants](targets/variants-base-a-b.jpg)
+
+| Hero | Chosen | Why | Rejected variant |
+|---|---|---|---|
+| H1 exit 1 mouth | **b** | warm street and cool, bright stairs read at once: the thesis's "warmer near the street" | a: a wet, rainy street (weather is not decided) and a weaker warm–cool split |
+| H2 B1 corridor | **b** | soft, separate troffer pools on stone that is not a mirror; the overhead signs carry | a: the floor drifts towards a mirror |
+| H3 escalator run | **a** | keeps the glass balustrade with the up-run riders behind it; the right lower wall is dim but readable; the cool landing glow pulls the eye | b: turns the glass balustrade into a solid steel wall (a geometry change) and is darker than "Tokyo subways are bright" allows |
+| H4 B6 landing | **b** | black rubber handrails, a distinctly cool landing with floor pools, and a clean silhouette | a: copper-lit handrails (wrong material) |
+
+Batch 2 kept the geometry where batch 1 did not, because the brief locked every edge and banned new magenta. These four frames are therefore **layout and light targets**, not only mood boards. Known drift:
+- H4 b straightens the magenta band's jog on the left wall, and the game keeps its own jog;
+- the street façades in H1 are invented detail (allowed as background, never a landmark).
+
+Each frame's "what must change" list in references.md is the work order. The hero scene repair list (day 4) and the B default PR are judged against these frames. Check: the golden cameras slice-01/04/10/11 side by side with the targets at each art acceptance. Provisional until the Owner sees them.
 
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 

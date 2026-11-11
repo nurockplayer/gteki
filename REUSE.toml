@@ -461,3 +461,12 @@ precedence = "override"
 SPDX-FileCopyrightText = "No licence granted: facts-only source (豊島区); compiled by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
 
+
+# docs/visual/targets: hero target frames, AI-assisted paint-overs (OpenAI image_gen via Codex,
+# prompts in provenance.md) of project-made Shinjuku E27 renders, repo licence plus the Hokonavi
+# E27 marker of the geometry they show (4c).
+[[annotations]]
+path = "docs/visual/targets/*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
