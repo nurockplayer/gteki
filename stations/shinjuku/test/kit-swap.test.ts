@@ -66,7 +66,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1032 (2026-11-10 JST): render-only corner fills; scene wall delta 0, geometry and bytes re-measured.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "88471b802552ddfdcaaad96c3f5405745968fe18bc446b4273b05894b94c23b8",
+    "geometryDigest": "2997a5096d497d65eea889a51ae11719f6363367a03e0b3037e093fc6d3196e8",
     "appearanceDigest": "59a5284df7a544b383a55e1895262504d7c44fcb560e3b0e86fe76410656d832",
     "nodesDigest": "36f8a11d5c2532c0b82e895eafda9ec8aa7105d895d364f66de7c705d8c7117e",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",

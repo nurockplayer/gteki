@@ -1517,6 +1517,7 @@ LevelLayout	interface	stations/shinjuku/scene/layout.ts
 Plan	interface	stations/shinjuku/scene/layout.ts
 PlanLevel	interface	stations/shinjuku/scene/layout.ts
 PlanSpace	interface	stations/shinjuku/scene/layout.ts
+RUN_WALL_OFFSET	const	stations/shinjuku/scene/layout.ts
 Railing	interface	stations/shinjuku/scene/layout.ts
 Run	interface	stations/shinjuku/scene/layout.ts
 STREET_PAD	const	stations/shinjuku/scene/layout.ts
