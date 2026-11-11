@@ -14,12 +14,12 @@ describe("lightpreset", () => {
     }
   });
   it("grades B's warm shaft and cool pool", () => {
-    expect(shaftGrade("b", 0.5, 0, 20).gain).toBeCloseTo(0.6);
+    expect(shaftGrade("b", 0.5, 0, 20).gain).toBeCloseTo(0.7);
     expect(shaftGrade("b", 0.3, 0, 20).tint).toEqual([1, 0.9, 0.78]);
     expect(shaftGrade("b", 0, 0, 40).gain).toBe(1);
     expect(shaftGrade("b", 0.9, 0, 10).gain).toBe(1);
-    expect(shaftGrade("b", 1, 0, 0).gain).toBeCloseTo(1.6);
-    expect(shaftGrade("b", 1, 0, 0).tint).toEqual([0.94, 0.97, 1]);
+    expect(shaftGrade("b", 1, 0, 0).gain).toBeCloseTo(1.9);
+    expect(shaftGrade("b", 1, 0, 0).tint).toEqual([0.86, 0.93, 1]);
   });
   it("grades C's dim shaft and hard pool", () => {
     expect(shaftGrade("c", 0.5, 0, 20).gain).toBeCloseTo(0.4);

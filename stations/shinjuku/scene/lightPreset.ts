@@ -6,6 +6,7 @@ const BOTTOM = new THREE.Vector3(-22.07, -42.87, -117.78);
 const LENGTH = TOP.distanceTo(BOTTOM);
 const warm = [1, 0.90, 0.78] as const;
 const cool = [0.94, 0.97, 1] as const;
+const coolB = [0.86, 0.93, 1] as const;
 const smooth = (a: number, b: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -23,12 +24,12 @@ export function shaftGrade(preset: LightPreset, s: number, r: number, landingDis
   const pool = (1 - smooth(preset === "c" ? 6.5 : 0, 7, landingDist))
     * (1 - smooth(2, 3, Math.abs(landingHeight)));
   const dip = smooth(0, 0.5, s) * (1 - smooth(0.5, 0.9, s));
-  const gain = 1 + shaft * (preset === "c" ? -0.6 : preset === "b" ? -0.4 * dip : 0);
+  const gain = 1 + shaft * (preset === "c" ? -0.6 : preset === "b" ? -0.3 * dip : 0);
   const tint = [0, 1, 2].map((i) => {
     const shaftTint = 1 + shaft * (preset === "b" ? warm[i]! - 1 : 0);
-    return shaftTint + (cool[i]! - shaftTint) * (preset === "a" ? 0 : pool);
+    return shaftTint + ((preset === "b" ? coolB : cool)[i]! - shaftTint) * (preset === "a" ? 0 : pool);
   }) as [number, number, number];
-  return { gain: gain + ((preset === "a" ? 1 : 1.6) - gain) * pool, tint };
+  return { gain: gain + ((preset === "a" ? 1 : preset === "b" ? 1.9 : 1.6) - gain) * pool, tint };
 }
 
 const fragment = `
@@ -67,8 +68,8 @@ export function installLightPreset(root: THREE.Object3D, preset: LightPreset | n
   const uniforms = {
     d6Top: { value: TOP }, d6Bottom: { value: BOTTOM },
     d6ShaftTint: { value: new THREE.Vector3(...(preset === "b" ? warm : [1, 1, 1] as const)) },
-    d6Cool: { value: new THREE.Vector3(...(preset === "a" ? [1, 1, 1] as const : cool)) },
-    d6Grade: { value: new THREE.Vector4(preset === "c" ? 0.4 : 1, preset === "b" ? 0.4 : 0, preset === "a" ? 1 : 1.6, preset === "c" ? 6.5 : 0) },
+    d6Cool: { value: new THREE.Vector3(...(preset === "a" ? [1, 1, 1] as const : preset === "b" ? coolB : cool)) },
+    d6Grade: { value: new THREE.Vector4(preset === "c" ? 0.4 : 1, preset === "b" ? 0.3 : 0, preset === "a" ? 1 : preset === "b" ? 1.9 : 1.6, preset === "c" ? 6.5 : 0) },
     d6Haze: { value: preset === "c" ? 1 : 0 },
     d6Accent: { value: new THREE.Color("#E8318A").multiplyScalar(0.4) },
   };
@@ -107,7 +108,7 @@ export function installLightPreset(root: THREE.Object3D, preset: LightPreset | n
       material.customProgramCacheKey = () => {
         const wrapped = material.onBeforeCompile;
         material.onBeforeCompile = previous;
-        try { return `${previousKey.call(material)}|shinjuku-d6-v1`; }
+        try { return `${previousKey.call(material)}|shinjuku-d6-v2`; }
         finally { material.onBeforeCompile = wrapped; }
       };
       material.needsUpdate = true;
