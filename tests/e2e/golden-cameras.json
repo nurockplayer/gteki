@@ -153,7 +153,6 @@
     },
     {
       "id": "sj-stair-2-bottom",
-      "knownIssue": 1180,
       "station": "shinjuku",
       "kind": "node",
       "node": "n:51435d9112ba409e8ad5ab02dbbd060f",

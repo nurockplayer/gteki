@@ -44,6 +44,20 @@ describe("#49 render-only escalator enclosure", () => {
     scene?.dispose();
   });
 
+  it("fills the gap between stair treads and the side wall (#1180)", () => {
+    const r = layout.runs.find((run) => run.mode === "stairs" && Math.abs(run.a.z - run.b.z) > 0.05)!;
+    const lo = r.a.z <= r.b.z ? r.a : r.b, hi = r.a.z <= r.b.z ? r.b : r.a;
+    const dx = hi.x - lo.x, dy = hi.y - lo.y, length = Math.hypot(dx, dy);
+    const steps = Math.max(2, Math.round((hi.z - lo.z) / 0.165));
+    const i = Math.floor(steps / 2), t = (i + 0.5) / steps;
+    const offset = r.width / 2 + 0.04;
+    const top = lo.z + (hi.z - lo.z) * (i + 1) / steps;
+    const origin = v3({ x: lo.x + dx * t - dy / length * offset, y: lo.y + dy * t + dx / length * offset, z: top + 0.2 });
+    const stairs = scene.root.children.find((child) => child.name === "walkable")!;
+    const ray = new THREE.Raycaster(origin, new THREE.Vector3(0, -1, 0), 0, 0.25);
+    expect(castAll(ray, [stairs])[0]?.distance).toBeCloseTo(0.2, 3);
+  });
+
   it("shares a roof and keeps only outer sides for antiparallel runs (#1086)", () => {
     const first = { ...runs[0]!, edgeId: "first", width: 1.25, a: { x: 0, y: 0, z: -10 }, b: { x: 10, y: 0, z: -10 } };
     const second = { ...first, edgeId: "second", a: { x: 10, y: 1.5, z: -10 }, b: { x: 0, y: 1.5, z: -10 } };
