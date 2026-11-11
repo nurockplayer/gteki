@@ -47,7 +47,8 @@ for (const station of ["ikebukuro", "shinjuku"]) {
     const digest = connectorHash({ ...connectors, stats: oldStats } as typeof connectors);
     const physical = (c: ReturnType<typeof referenceBuild>) => ({ walls: c.wallSegments, paths: [...c.pathByEdge], skipped: c.skippedEdgeIds });
     const physicalHash = (c: ReturnType<typeof referenceBuild>) => createHash("sha256").update(JSON.stringify(physical(c))).digest("hex");
-    console.log("[proof]", station, JSON.stringify({ referencePhysical: physicalHash(reference!), currentPhysical: physicalHash(connectors), walls: connectors.wallSegments.length, paths: connectors.pathByEdge.size, skipped: connectors.skippedEdgeIds.length, visualSuppressed }));
+    fs.mkdirSync("tmp221", { recursive: true });
+    fs.writeFileSync(`tmp221/${station}.json`, JSON.stringify({ referencePhysical: physicalHash(reference!), currentPhysical: physicalHash(connectors), walls: connectors.wallSegments.length, paths: connectors.pathByEdge.size, skipped: connectors.skippedEdgeIds.length, visualSuppressed }));
     expect(physical(connectors)).toEqual(physical(reference!));
     console.log("[connector-geometry]", station, { reference: referenceHash, optimized: digest });
     expect(referenceHash).toBeDefined();

@@ -1146,6 +1146,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     counts.stairs += legacy.stats.connectors.stairs; counts.escalator += legacy.stats.connectors.escalator;
     stats.meshes = root.children.length; stats.triangles += legacy.stats.triangles; stats.visualSuppressed += legacy.stats.visualSuppressed;
   }
+  if (!stats.visualSuppressed) delete (stats as { visualSuppressed?: number }).visualSuppressed;
   return { root, walkable, colliders, wallSegments, segments, pathByEdge, stats, skippedEdgeIds };
 }
 
