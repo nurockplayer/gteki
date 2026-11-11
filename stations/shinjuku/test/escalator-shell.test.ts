@@ -53,7 +53,7 @@ describe("#49 render-only escalator enclosure", () => {
     const offset = r.width / 2 + 0.04;
     const top = lo.z + (hi.z - lo.z) * (i + 1) / steps;
     const origin = v3({ x: lo.x + dx * t - dy / length * offset, y: lo.y + dy * t + dx / length * offset, z: top + 0.2 });
-    const stairs = scene.root.children.find((child) => child.name === "walkable")!;
+    const stairs = scene.root.children.find((child) => child.name === "walkable" && (child as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>).material.color.equals(new THREE.Color("#c7c2b8")))!;
     const ray = new THREE.Raycaster(origin, new THREE.Vector3(0, -1, 0), 0, 0.25);
     expect(castAll(ray, [stairs])[0]?.distance).toBeCloseTo(0.2, 3);
   });
