@@ -1,0 +1,326 @@
+{
+  "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+  "routes": [
+    {
+      "route": "exit-4",
+      "origin": "n:e4cfe61e944e4f5e8ad8caeb6d521750",
+      "destination": "n:3c5c2ccdd1014dbcba9f287702b24823",
+      "flights": [
+        "e:c3fe6342f158400ab602dd610f636329",
+        "e:c690df6cad7b48bba7b3b30fee65eda2",
+        "e:dcbc1a258ceb41b09ab50e417aabc8b4",
+        "e:bdcdf9229c9f49dc9bc02bec79c4a8fe",
+        "e:85f51acf3bfe4da797fbdf82497ce706",
+        "e:e9a119f724e44645899a1b1bc14ace69",
+        "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
+        "e:a622b94372e643d69f5f2f6c20d00186"
+      ]
+    },
+    {
+      "route": "exit-3",
+      "origin": "n:e6feaa2cc7514b68be2758b956baeb28",
+      "destination": "n:3c5c2ccdd1014dbcba9f287702b24823",
+      "flights": [
+        "e:65edd7ca50844b609d4dcb25bd296936",
+        "e:ed7e56a8e6234197be06280fcb24aecc",
+        "e:0ac77dfc247649a4a854e5a2d8da1c21",
+        "e:85f51acf3bfe4da797fbdf82497ce706",
+        "e:e9a119f724e44645899a1b1bc14ace69",
+        "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
+        "e:a622b94372e643d69f5f2f6c20d00186"
+      ]
+    }
+  ],
+  "flights": [
+    {
+      "edgeId": "e:c3fe6342f158400ab602dd610f636329",
+      "routes": [
+        "exit-4"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:3af66366dc9f478ea4a6e509235a8799",
+          "floor": "toei-nwd-0",
+          "headings": {
+            "into": 239.96427968070725,
+            "reverse": 59.96427968070725
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:399c24bf916c45f197e22e812433aed9",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 59.96427968070725,
+            "reverse": 239.96427968070725
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:c690df6cad7b48bba7b3b30fee65eda2",
+      "routes": [
+        "exit-4"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:d1ccc52ef25e474dac70020771b7ea76",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 239.76919853029165,
+            "reverse": 59.769198530291646
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:51435d9112ba409e8ad5ab02dbbd060f",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 59.769198530291646,
+            "reverse": 239.76919853029165
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:dcbc1a258ceb41b09ab50e417aabc8b4",
+      "routes": [
+        "exit-4"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:b1f35094d6184b58ab3f0fe737cc1e02",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 60.15406805031262,
+            "reverse": 240.15406805031262
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:a5599a091242438da3a5ed85c8695a25",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 240.1540680503126,
+            "reverse": 60.15406805031262
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:bdcdf9229c9f49dc9bc02bec79c4a8fe",
+      "routes": [
+        "exit-4"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:b9286042a013472ca7f6544a09dbbfac",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 60.1391061468193,
+            "reverse": 240.1391061468193
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:dcf372321b004a54ab0fdd12e89792e5",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 240.1391061468193,
+            "reverse": 60.1391061468193
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:85f51acf3bfe4da797fbdf82497ce706",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:620f68feea9644af823da53ec7fb7cb9",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 73.25254323992931,
+            "reverse": 253.2525432399293
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:353fa507524d461b8beee216ca24d7e8",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 253.2525432399293,
+            "reverse": 73.25254323992931
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:e9a119f724e44645899a1b1bc14ace69",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:9d826e12432244b687f4b37dbf26434c",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 73.25341171835078,
+            "reverse": 253.25341171835078
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:5936d5af0a944dce99800d25a5875907",
+          "floor": "toei-nwd-m2",
+          "headings": {
+            "into": 253.25341171835078,
+            "reverse": 73.25341171835078
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:3d7aa1de3d284ba69787c5876b5b245a",
+          "floor": "toei-nwd-m2",
+          "headings": {
+            "into": 333.37078784244784,
+            "reverse": 153.37078784244784
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:3d154fc290ac43c992ec8de105c82997",
+          "floor": "toei-nwd-m2_5",
+          "headings": {
+            "into": 153.37078784244784,
+            "reverse": 333.37078784244784
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:a622b94372e643d69f5f2f6c20d00186",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:eb838d55673249e5b9d96ee19c7fde4d",
+          "floor": "toei-nwd-m2_5",
+          "headings": {
+            "into": 353.1014480034394,
+            "reverse": 173.10144800343937
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:e26f39c2df0f4f3b82b9163d2230d4c8",
+          "floor": "toei-nwd-m3",
+          "headings": {
+            "into": 173.10144800343937,
+            "reverse": 353.1014480034394
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:65edd7ca50844b609d4dcb25bd296936",
+      "routes": [
+        "exit-3"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:5b824a37524e4fd8abbe9cfa07654556",
+          "floor": "toei-nwd-1",
+          "headings": {
+            "into": 74.78367328797702,
+            "reverse": 254.78367328797702
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:e6feaa2cc7514b68be2758b956baeb28",
+          "floor": "toei-nwd-1",
+          "headings": {
+            "into": 254.78367328797702,
+            "reverse": 74.78367328797702
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:ed7e56a8e6234197be06280fcb24aecc",
+      "routes": [
+        "exit-3"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:5b824a37524e4fd8abbe9cfa07654556",
+          "floor": "toei-nwd-1",
+          "headings": {
+            "into": 346.55138494831345,
+            "reverse": 166.5513849483134
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:cbaeded02c114348a1bd8d0c0590584c",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 166.5513849483134,
+            "reverse": 346.5513849483134
+          }
+        }
+      ]
+    },
+    {
+      "edgeId": "e:0ac77dfc247649a4a854e5a2d8da1c21",
+      "routes": [
+        "exit-3"
+      ],
+      "ends": [
+        {
+          "end": "top",
+          "nodeId": "n:cbaeded02c114348a1bd8d0c0590584c",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 73.68614757373945,
+            "reverse": 253.68614757373945
+          }
+        },
+        {
+          "end": "bottom",
+          "nodeId": "n:63987a2523494905b055f9f424a1890b",
+          "floor": "toei-nwd-m1",
+          "headings": {
+            "into": 253.68614757373945,
+            "reverse": 73.68614757373945
+          }
+        }
+      ]
+    }
+  ]
+}
