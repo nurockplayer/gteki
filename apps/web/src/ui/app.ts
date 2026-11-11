@@ -1842,6 +1842,13 @@ export class App {
       holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
       overviewDraws: () => this.explorer.overviewDraws(),
+      goldenRenderState: () => this.explorer.goldenRenderState(),
+      holdFrames: (hold: boolean) => this.explorer.holdFrames(hold),
+      goldenFrame: () => this.explorer.goldenFrame(),
+      goldenProbe: (overview: boolean) => this.explorer.goldenProbe(overview),
+      setView: ({ node, headingDeg }: { node: string; headingDeg: number }) => this.s.loaded
+        ? this.explorer.setView(this.s.loaded.bundle, node, headingDeg)
+        : { placed: false, placeMs: 0, turnMs: 0 },
       layer: (name: string, visible?: boolean) => this.explorer.layer(name, visible),
       portalView: () => this.explorer.portalView(),
       routeGroundCheck: () => this.explorer.routeGroundCheck(this.s.polyline, this.s.route?.ok ? this.s.route.steps : [], guideStops(this.s.polyline, this.s.instructions).map(({ point }) => polylineLengthM(this.s.polyline.slice(0, point + 1)))),
