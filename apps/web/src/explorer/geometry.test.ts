@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import * as THREE from "three";
-import { ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, clipFlatGeometry, ribbonGeometry, routeSegmentProfile, steppedProfile } from "./geometry.ts";
+import { ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, clipFlatGeometry, ribbonGeometry, routeRunsOutsideSpans, routeSegmentProfile, steppedProfile } from "./geometry.ts";
 
 it("preserves vertical endpoints and ignores ground far below a connector", () => {
   const start = new THREE.Vector3(0, 0, 0), end = new THREE.Vector3(0, 4, 0);
@@ -43,4 +43,15 @@ it("draws the walking ribbon 0.40 m wide and the overview ribbon 1.1 m wide", ()
   };
   expect(width(ROUTE_RIBBON_WIDTH_WALK)).toBeCloseTo(0.4, 6);
   expect(width(ROUTE_RIBBON_WIDTH_OVERVIEW)).toBeCloseTo(1.1, 6);
+});
+
+ it("omits escalator spans at both ends with half-metre margins", () => {
+  const points = [0, 2, 5, 8, 10].map((x) => new THREE.Vector3(x, 0, 0));
+  const runs = routeRunsOutsideSpans(points, [{ fromS: 0, toS: 2 }, { fromS: 8, toS: 10 }]);
+  expect(runs.map((run) => run.map((p) => p.x))).toEqual([[2.5, 5, 7.5]]);
+  const positions = ribbonGeometry(runs[0]!, 0.4).getAttribute("position");
+  for (let i = 0; i < positions.count; i++) {
+    expect(positions.getX(i)).toBeGreaterThanOrEqual(2.5);
+    expect(positions.getX(i)).toBeLessThanOrEqual(7.5);
+  }
 });

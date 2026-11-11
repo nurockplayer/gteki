@@ -70,6 +70,31 @@ export function routeSegmentProfile(a: THREE.Vector3, b: THREE.Vector3, groundHe
   return steppedProfile(samples);
 }
 
+/** Split a polyline outside arc-length spans, leaving a half-metre gap at each end. */
+export function routeRunsOutsideSpans(points: readonly THREE.Vector3[], spans: readonly { fromS: number; toS: number }[]): THREE.Vector3[][] {
+  const cuts = spans.map((span) => ({ fromS: Math.max(0, span.fromS - 0.5), toS: span.toS + 0.5 })).sort((a, b) => a.fromS - b.fromS);
+  const runs: THREE.Vector3[][] = [];
+  let distance = 0;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1]!, b = points[i]!;
+    const length = a.distanceTo(b);
+    if (!length) continue;
+    const end = distance + length;
+    const boundaries = [distance, ...cuts.flatMap((cut) => [cut.fromS, cut.toS]).filter((s) => s > distance && s < end), end].sort((x, y) => x - y);
+    for (let j = 1; j < boundaries.length; j++) {
+      const from = boundaries[j - 1]!, to = boundaries[j]!;
+      if (cuts.some((cut) => (from + to) / 2 >= cut.fromS && (from + to) / 2 < cut.toS)) continue;
+      const start = a.clone().lerp(b, (from - distance) / length);
+      const finish = a.clone().lerp(b, (to - distance) / length);
+      const previous = runs.at(-1);
+      if (previous && previous.at(-1)!.equals(start)) previous.push(finish);
+      else runs.push([start, finish]);
+    }
+    distance = end;
+  }
+  return runs;
+}
+
 export function ribbonGeometry(points: readonly THREE.Vector3[], width: number, lift = 0, uScale = 1): THREE.BufferGeometry {
   const pos: number[] = [];
   const uv: number[] = [];
