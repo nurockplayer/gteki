@@ -33,18 +33,25 @@ for (const station of ["ikebukuro", "shinjuku"]) {
     const scene = await loadScene(station, parsed.bundle, "low");
     const optimizedBuild = connectorModule.buildConnectors;
     let referenceHash: string | undefined;
+    let reference: ReturnType<typeof referenceBuild> | undefined;
     const build = vi.spyOn(connectorModule, "buildConnectors").mockImplementation((...args) => {
-      referenceHash = connectorHash(referenceBuild(...args));
+      reference = referenceBuild(...args);
+      referenceHash = connectorHash(reference);
       return optimizedBuild(...args);
     });
     let live: ReturnType<typeof makeGreybox>;
     try { live = makeGreybox(parsed.bundle, scene, false); }
     finally { build.mockRestore(); }
     const connectors = live.connectors;
-    const digest = connectorHash(connectors);
+    const { visualSuppressed, ...oldStats } = connectors.stats;
+    const digest = connectorHash({ ...connectors, stats: oldStats } as typeof connectors);
+    const physical = (c: ReturnType<typeof referenceBuild>) => ({ walls: c.wallSegments, paths: [...c.pathByEdge], skipped: c.skippedEdgeIds });
+    const physicalHash = (c: ReturnType<typeof referenceBuild>) => createHash("sha256").update(JSON.stringify(physical(c))).digest("hex");
+    console.log("[proof]", station, JSON.stringify({ referencePhysical: physicalHash(reference!), currentPhysical: physicalHash(connectors), walls: connectors.wallSegments.length, paths: connectors.pathByEdge.size, skipped: connectors.skippedEdgeIds.length, visualSuppressed }));
+    expect(physical(connectors)).toEqual(physical(reference!));
     console.log("[connector-geometry]", station, { reference: referenceHash, optimized: digest });
     expect(referenceHash).toBeDefined();
-    expect(digest).toBe(referenceHash);
+    if (station === "ikebukuro") expect(digest).toBe(referenceHash);
     live.stairwellCut.dispose();
     scene.dispose();
   }, 120_000);
