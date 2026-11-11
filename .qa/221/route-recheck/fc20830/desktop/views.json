@@ -1110,6 +1110,912 @@
         "z": -7.799999940015425
       },
       "file": "016.jpg"
+    },
+    {
+      "index": 17,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:85f51acf3bfe4da797fbdf82497ce706",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:620f68feea9644af823da53ec7fb7cb9",
+      "floor": "toei-nwd-m1",
+      "direction": "reverse",
+      "requestedHeading": 253.2525432399293,
+      "measuredHeading": 253.15483036400408,
+      "missed": false,
+      "position": {
+        "x": 3.97,
+        "y": 3.08,
+        "z": -7.799999940015425
+      },
+      "file": "017.jpg",
+      "timings": {
+        "walkFromNode": 514,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 850
+        },
+        "screenshot": 90
+      }
+    },
+    {
+      "index": 18,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:85f51acf3bfe4da797fbdf82497ce706",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:353fa507524d461b8beee216ca24d7e8",
+      "floor": "toei-nwd-m1",
+      "direction": "into",
+      "requestedHeading": 253.2525432399293,
+      "measuredHeading": 253.15483036400408,
+      "missed": false,
+      "position": {
+        "x": 9.42,
+        "y": 4.72,
+        "z": -11.960000038146973
+      },
+      "file": "018.jpg",
+      "timings": {
+        "walkFromNode": 333,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 847
+        },
+        "screenshot": 59
+      }
+    },
+    {
+      "index": 19,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:85f51acf3bfe4da797fbdf82497ce706",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:353fa507524d461b8beee216ca24d7e8",
+      "floor": "toei-nwd-m1",
+      "direction": "reverse",
+      "requestedHeading": 73.25254323992931,
+      "measuredHeading": 73.15440944570463,
+      "missed": false,
+      "position": {
+        "x": 9.42,
+        "y": 4.72,
+        "z": -11.960000038146973
+      },
+      "file": "019.jpg",
+      "timings": {
+        "walkFromNode": 333,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 851
+        },
+        "screenshot": 104
+      }
+    },
+    {
+      "index": 20,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:e9a119f724e44645899a1b1bc14ace69",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:9d826e12432244b687f4b37dbf26434c",
+      "floor": "toei-nwd-m1",
+      "direction": "into",
+      "requestedHeading": 73.25341171835078,
+      "measuredHeading": 73.15525128230354,
+      "missed": false,
+      "position": {
+        "x": 10.86,
+        "y": 5.16,
+        "z": -11.960000038146973
+      },
+      "file": "020.jpg",
+      "timings": {
+        "walkFromNode": 327,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 1,
+          "ms": 802
+        },
+        "screenshot": 67
+      }
+    },
+    {
+      "index": 21,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:e9a119f724e44645899a1b1bc14ace69",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:9d826e12432244b687f4b37dbf26434c",
+      "floor": "toei-nwd-m1",
+      "direction": "reverse",
+      "requestedHeading": 253.25341171835078,
+      "measuredHeading": 253.15483036400408,
+      "missed": false,
+      "position": {
+        "x": 10.86,
+        "y": 5.16,
+        "z": -11.960000038146973
+      },
+      "file": "021.jpg",
+      "timings": {
+        "walkFromNode": 327,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 894
+        },
+        "screenshot": 50
+      }
+    },
+    {
+      "index": 22,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:e9a119f724e44645899a1b1bc14ace69",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:5936d5af0a944dce99800d25a5875907",
+      "floor": "toei-nwd-m2",
+      "direction": "into",
+      "requestedHeading": 253.25341171835078,
+      "measuredHeading": 253.15483036400408,
+      "missed": false,
+      "position": {
+        "x": 16.41,
+        "y": 6.83,
+        "z": -16.200000106625584
+      },
+      "file": "022.jpg",
+      "timings": {
+        "walkFromNode": 258,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 845
+        },
+        "screenshot": 45
+      }
+    },
+    {
+      "index": 23,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:e9a119f724e44645899a1b1bc14ace69",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:5936d5af0a944dce99800d25a5875907",
+      "floor": "toei-nwd-m2",
+      "direction": "reverse",
+      "requestedHeading": 73.25341171835078,
+      "measuredHeading": 73.15440944570463,
+      "missed": false,
+      "position": {
+        "x": 16.41,
+        "y": 6.83,
+        "z": -16.200000106625584
+      },
+      "file": "023.jpg",
+      "timings": {
+        "walkFromNode": 258,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 846
+        },
+        "screenshot": 38
+      }
+    },
+    {
+      "index": 24,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:3d7aa1de3d284ba69787c5876b5b245a",
+      "floor": "toei-nwd-m2",
+      "direction": "into",
+      "requestedHeading": 333.37078784244784,
+      "measuredHeading": 333.288707591001,
+      "missed": false,
+      "position": {
+        "x": -15.72,
+        "y": 117.52,
+        "z": -16.1999989360962
+      },
+      "file": "024.jpg",
+      "timings": {
+        "walkFromNode": 386,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 1,
+          "ms": 797
+        },
+        "screenshot": 69
+      }
+    },
+    {
+      "index": 25,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:3d7aa1de3d284ba69787c5876b5b245a",
+      "floor": "toei-nwd-m2",
+      "direction": "reverse",
+      "requestedHeading": 153.37078784244784,
+      "measuredHeading": 153.2882866727016,
+      "missed": false,
+      "position": {
+        "x": -15.72,
+        "y": 117.52,
+        "z": -16.1999989360962
+      },
+      "file": "025.jpg",
+      "timings": {
+        "walkFromNode": 386,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 901
+        },
+        "screenshot": 67
+      }
+    },
+    {
+      "index": 26,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:3d154fc290ac43c992ec8de105c82997",
+      "floor": "toei-nwd-m2_5",
+      "direction": "into",
+      "requestedHeading": 153.37078784244784,
+      "measuredHeading": 153.28912850930044,
+      "missed": false,
+      "position": {
+        "x": -17.51,
+        "y": 121.09,
+        "z": -19.940000148126646
+      },
+      "file": "026.jpg",
+      "timings": {
+        "walkFromNode": 292,
+        "settle": 706,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 919
+        },
+        "screenshot": 98
+      }
+    },
+    {
+      "index": 27,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:41b6ebb3ce0846719aa1c9985f9cd4d1",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:3d154fc290ac43c992ec8de105c82997",
+      "floor": "toei-nwd-m2_5",
+      "direction": "reverse",
+      "requestedHeading": 333.37078784244784,
+      "measuredHeading": 333.288707591001,
+      "missed": false,
+      "position": {
+        "x": -17.51,
+        "y": 121.09,
+        "z": -19.940000148126646
+      },
+      "file": "027.jpg",
+      "timings": {
+        "walkFromNode": 292,
+        "settle": 706,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 847
+        },
+        "screenshot": 50
+      }
+    },
+    {
+      "index": 28,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:a622b94372e643d69f5f2f6c20d00186",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:eb838d55673249e5b9d96ee19c7fde4d",
+      "floor": "toei-nwd-m2_5",
+      "direction": "into",
+      "requestedHeading": 353.1014480034394,
+      "measuredHeading": 353.0213740553066,
+      "missed": false,
+      "position": {
+        "x": -17.81,
+        "y": 121.98,
+        "z": -19.939998249726216
+      },
+      "file": "028.jpg",
+      "timings": {
+        "walkFromNode": 334,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 1,
+          "ms": 778
+        },
+        "screenshot": 62
+      }
+    },
+    {
+      "index": 29,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:a622b94372e643d69f5f2f6c20d00186",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:eb838d55673249e5b9d96ee19c7fde4d",
+      "floor": "toei-nwd-m2_5",
+      "direction": "reverse",
+      "requestedHeading": 173.10144800343937,
+      "measuredHeading": 173.02095313700718,
+      "missed": false,
+      "position": {
+        "x": -17.81,
+        "y": 121.98,
+        "z": -19.939998249726216
+      },
+      "file": "029.jpg",
+      "timings": {
+        "walkFromNode": 334,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 858
+        },
+        "screenshot": 59
+      }
+    },
+    {
+      "index": 30,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:a622b94372e643d69f5f2f6c20d00186",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:e26f39c2df0f4f3b82b9163d2230d4c8",
+      "floor": "toei-nwd-m3",
+      "direction": "into",
+      "requestedHeading": 173.10144800343937,
+      "measuredHeading": 173.021794973606,
+      "missed": false,
+      "position": {
+        "x": -18.3,
+        "y": 126.03,
+        "z": -23.73999822091469
+      },
+      "file": "030.jpg",
+      "timings": {
+        "walkFromNode": 287,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 868
+        },
+        "screenshot": 70
+      }
+    },
+    {
+      "index": 31,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:a622b94372e643d69f5f2f6c20d00186",
+      "routes": [
+        "exit-4",
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:e26f39c2df0f4f3b82b9163d2230d4c8",
+      "floor": "toei-nwd-m3",
+      "direction": "reverse",
+      "requestedHeading": 353.1014480034394,
+      "measuredHeading": 353.0213740553066,
+      "missed": false,
+      "position": {
+        "x": -18.3,
+        "y": 126.03,
+        "z": -23.73999822091469
+      },
+      "file": "031.jpg",
+      "timings": {
+        "walkFromNode": 287,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 850
+        },
+        "screenshot": 54
+      }
+    },
+    {
+      "index": 32,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:65edd7ca50844b609d4dcb25bd296936",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:5b824a37524e4fd8abbe9cfa07654556",
+      "floor": "toei-nwd-1",
+      "direction": "into",
+      "requestedHeading": 74.78367328797702,
+      "measuredHeading": 74.83974719998815,
+      "missed": false,
+      "position": {
+        "x": -3.84,
+        "y": 3.22,
+        "z": -8.940697071579962e-10
+      },
+      "file": "032.jpg",
+      "timings": {
+        "walkFromNode": 428,
+        "settle": 718,
+        "turn": {
+          "iterations": 1,
+          "drags": 1,
+          "ms": 893
+        },
+        "screenshot": 342
+      }
+    },
+    {
+      "index": 33,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:65edd7ca50844b609d4dcb25bd296936",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:5b824a37524e4fd8abbe9cfa07654556",
+      "floor": "toei-nwd-1",
+      "direction": "reverse",
+      "requestedHeading": 254.78367328797702,
+      "measuredHeading": 254.84016811828758,
+      "missed": false,
+      "position": {
+        "x": -3.84,
+        "y": 3.22,
+        "z": -8.940697071579962e-10
+      },
+      "file": "033.jpg",
+      "timings": {
+        "walkFromNode": 428,
+        "settle": 718,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 880
+        },
+        "screenshot": 172
+      }
+    },
+    {
+      "index": 34,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:65edd7ca50844b609d4dcb25bd296936",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:e6feaa2cc7514b68be2758b956baeb28",
+      "floor": "toei-nwd-1",
+      "direction": "into",
+      "requestedHeading": 254.78367328797702,
+      "measuredHeading": 254.83932628168873,
+      "missed": false,
+      "position": {
+        "x": -2.59,
+        "y": 3.56,
+        "z": -2.220446049250313e-16
+      },
+      "file": "034.jpg",
+      "timings": {
+        "walkFromNode": 315,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 848
+        },
+        "screenshot": 63
+      }
+    },
+    {
+      "index": 35,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:65edd7ca50844b609d4dcb25bd296936",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:e6feaa2cc7514b68be2758b956baeb28",
+      "floor": "toei-nwd-1",
+      "direction": "reverse",
+      "requestedHeading": 74.78367328797702,
+      "measuredHeading": 74.83974719998815,
+      "missed": false,
+      "position": {
+        "x": -2.59,
+        "y": 3.56,
+        "z": -2.220446049250313e-16
+      },
+      "file": "035.jpg",
+      "timings": {
+        "walkFromNode": 315,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 842
+        },
+        "screenshot": 47
+      }
+    },
+    {
+      "index": 36,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:ed7e56a8e6234197be06280fcb24aecc",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:5b824a37524e4fd8abbe9cfa07654556",
+      "floor": "toei-nwd-1",
+      "direction": "into",
+      "requestedHeading": 346.55138494831345,
+      "measuredHeading": 346.524032658523,
+      "missed": false,
+      "position": {
+        "x": -3.84,
+        "y": 3.22,
+        "z": -8.940697071579962e-10
+      },
+      "file": "036.jpg",
+      "timings": {
+        "walkFromNode": 273,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 1,
+          "ms": 791
+        },
+        "screenshot": 53
+      }
+    },
+    {
+      "index": 37,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:ed7e56a8e6234197be06280fcb24aecc",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:5b824a37524e4fd8abbe9cfa07654556",
+      "floor": "toei-nwd-1",
+      "direction": "reverse",
+      "requestedHeading": 166.5513849483134,
+      "measuredHeading": 166.52361174022363,
+      "missed": false,
+      "position": {
+        "x": -3.84,
+        "y": 3.22,
+        "z": -8.940697071579962e-10
+      },
+      "file": "037.jpg",
+      "timings": {
+        "walkFromNode": 273,
+        "settle": 702,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 859
+        },
+        "screenshot": 47
+      }
+    },
+    {
+      "index": 38,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:ed7e56a8e6234197be06280fcb24aecc",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:cbaeded02c114348a1bd8d0c0590584c",
+      "floor": "toei-nwd-m1",
+      "direction": "into",
+      "requestedHeading": 166.5513849483134,
+      "measuredHeading": 166.52445357682245,
+      "missed": false,
+      "position": {
+        "x": -3.95,
+        "y": 3.68,
+        "z": -7.800000190734863
+      },
+      "file": "038.jpg",
+      "timings": {
+        "walkFromNode": 274,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 847
+        },
+        "screenshot": 90
+      }
+    },
+    {
+      "index": 39,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:ed7e56a8e6234197be06280fcb24aecc",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:cbaeded02c114348a1bd8d0c0590584c",
+      "floor": "toei-nwd-m1",
+      "direction": "reverse",
+      "requestedHeading": 346.5513849483134,
+      "measuredHeading": 346.524032658523,
+      "missed": false,
+      "position": {
+        "x": -3.95,
+        "y": 3.68,
+        "z": -7.800000190734863
+      },
+      "file": "039.jpg",
+      "timings": {
+        "walkFromNode": 274,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 833
+        },
+        "screenshot": 88
+      }
+    },
+    {
+      "index": 40,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:0ac77dfc247649a4a854e5a2d8da1c21",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:cbaeded02c114348a1bd8d0c0590584c",
+      "floor": "toei-nwd-m1",
+      "direction": "into",
+      "requestedHeading": 73.68614757373945,
+      "measuredHeading": 73.6365358302134,
+      "missed": false,
+      "position": {
+        "x": -3.95,
+        "y": 3.68,
+        "z": -7.800000190734863
+      },
+      "file": "040.jpg",
+      "timings": {
+        "walkFromNode": 261,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 1,
+          "ms": 780
+        },
+        "screenshot": 56
+      }
+    },
+    {
+      "index": 41,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:0ac77dfc247649a4a854e5a2d8da1c21",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "top",
+      "nodeId": "n:cbaeded02c114348a1bd8d0c0590584c",
+      "floor": "toei-nwd-m1",
+      "direction": "reverse",
+      "requestedHeading": 253.68614757373945,
+      "measuredHeading": 253.63611491191398,
+      "missed": false,
+      "position": {
+        "x": -3.95,
+        "y": 3.68,
+        "z": -7.800000190734863
+      },
+      "file": "041.jpg",
+      "timings": {
+        "walkFromNode": 261,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 848
+        },
+        "screenshot": 70
+      }
+    },
+    {
+      "index": 42,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:0ac77dfc247649a4a854e5a2d8da1c21",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:63987a2523494905b055f9f424a1890b",
+      "floor": "toei-nwd-m1",
+      "direction": "into",
+      "requestedHeading": 253.68614757373945,
+      "measuredHeading": 253.63611491191398,
+      "missed": false,
+      "position": {
+        "x": -2.72,
+        "y": 4.04,
+        "z": -7.800000190734863
+      },
+      "file": "042.jpg",
+      "timings": {
+        "walkFromNode": 330,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 858
+        },
+        "screenshot": 42
+      }
+    },
+    {
+      "index": 43,
+      "project": "desktop-chromium",
+      "quality": "high",
+      "sha": "fc208307de4226a3b5e32e0a93cb78d3bda3dbed",
+      "edgeId": "e:0ac77dfc247649a4a854e5a2d8da1c21",
+      "routes": [
+        "exit-3"
+      ],
+      "end": "bottom",
+      "nodeId": "n:63987a2523494905b055f9f424a1890b",
+      "floor": "toei-nwd-m1",
+      "direction": "reverse",
+      "requestedHeading": 73.68614757373945,
+      "measuredHeading": 73.63569399361455,
+      "missed": false,
+      "position": {
+        "x": -2.72,
+        "y": 4.04,
+        "z": -7.800000190734863
+      },
+      "file": "043.jpg",
+      "timings": {
+        "walkFromNode": 330,
+        "settle": 701,
+        "turn": {
+          "iterations": 1,
+          "drags": 2,
+          "ms": 848
+        },
+        "screenshot": 36
+      }
     }
   ]
 }
