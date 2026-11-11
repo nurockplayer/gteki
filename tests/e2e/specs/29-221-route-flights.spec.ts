@@ -47,13 +47,14 @@ for (const [flightIndex, flight] of capture.flights.entries()) {
   for (const [endIndex, end] of flight.ends.entries()) {
     test(`#221 flight ${flightIndex} ${end.end} @phone`, async ({ page }, info) => {
       test.setTimeout(240_000);
-      const project = info.project.name.startsWith("phone") ? "phone" : "desktop";
+      const project = info.project.name === "desktop-chromium" ? "desktop" : info.project.name === "phone-chromium" ? "phone" : info.project.name;
+      const resume = process.env.GTEKI_CAPTURE_RESUME === "1";
       const out = path.join(root, ".qa/221/route-recheck", capture.sha.slice(0, 7), project);
       fs.mkdirSync(out, { recursive: true });
       const manifestPath = path.join(out, "views.json");
       const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, "utf8")) : { sha: capture.sha, project: info.project.name, routes: capture.routes, flights: capture.flights, views: [] };
       const shots = (["into", "reverse"] as const).map((direction, i) => ({ direction, target: end.headings[direction], index: flightIndex * 4 + endIndex * 2 + i }));
-      if (shots.every(shot => fs.existsSync(path.join(out, `${String(shot.index).padStart(3, "0")}.jpg`)))) return;
+      if (resume && shots.every(shot => fs.existsSync(path.join(out, `${String(shot.index).padStart(3, "0")}.jpg`)))) return;
       await openStation(page, "shinjuku");
       const quality = await hooks.quality(page);
       let started = Date.now();
@@ -64,7 +65,7 @@ for (const [flightIndex, flight] of capture.flights.entries()) {
       started = Date.now(); await settle(page); const settleMs = Date.now() - started;
       for (const shot of shots) {
         const file = `${String(shot.index).padStart(3, "0")}.jpg`;
-        if (fs.existsSync(path.join(out, file))) continue;
+        if (resume && fs.existsSync(path.join(out, file))) continue;
         const turnResult = await turn(page, shot.target);
         const missed = Math.abs(((turnResult.measured - shot.target + 540) % 360) - 180) > 5;
         started = Date.now();
