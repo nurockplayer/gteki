@@ -97,7 +97,7 @@ All 14 edges are `verification: "verified"`, `closed: false`, `hours: null`, `ma
 
 `nwd-link-present` is stored with `(maint_date=2025-09-19)` on every row. "GSI `toll` both ends" is the stored `spatial-join:space.toll / spatial-join:space.toll`. Link #14 is the only paid↔free transition on the path and the only edge whose fare state comes from the gate rule rather than the space join. Link attributes are the NWD link fields (`roof`: 2 = roofed; `lev_diff`: 5 = a level change; source spec in S1's `notes`).
 
-Floor naming evidence (2026-11-12 JST): [Toei media guide index21](https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html) identifies the Oedo platform as B7F. The secondary [1rankup photo guide](https://1rankup.jp/shinjuku/oe-ee.html) describes B7F → B4F → B1F; the graph has matching direct escalators. The GSI B6/B3 source labels remain provenance, while player-facing labels use B7/B4. **GAP:** Toei's label for `toei-nwd-m2` is unresolved (B2 or B3); B2 remains until evidence settles it. Landing labels name their adjacent display floors, not operator-sourced floor labels.
+Floor naming evidence (2026-11-12 JST): [Toei media guide index21](https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html) identifies the Oedo platform as B7F. **GAP:** B4 for `toei-nwd-m3` is inferred from the Toei B7 platform and three escalator flights to the concourse; it is not sourced. The GSI B6/B3 source labels remain provenance, while player-facing labels use B7/B4. **GAP:** Toei's label for `toei-nwd-m2` is unresolved (B2 or B3); B2 remains until evidence settles it. Landing labels name their adjacent display floors, not operator-sourced floor labels.
 
 ## 3. Sources behind every edge
 

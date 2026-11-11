@@ -579,8 +579,6 @@ const floors: Floor[] = floorOrdinals.map((o) => {
   if (ml) labels.push({ operatorId: OP, label: `GSI ${ml.label} (${raw.levels.find((l) => l.label === ml.label)!.floors[0]!.properties.name})`, sourceId: SRC_MAP });
   if (o === -4.5) labels.push({ operatorId: OP, label: "spatially within GSI 地下5階 (B5) polygons — equivalence not asserted", sourceId: SRC_MAP });
   if (o === -6) labels.push({ operatorId: OP, label: "「都営大江戸線」 B7F", sourceId: "toei-media-guide-2026-index21" });
-  if (o === -3) labels.push({ operatorId: OP, label: "B4F (transfer concourse)", sourceId: "1rankup-shinjuku-oedo-east-exit" });
-  if (o === -1) labels.push({ operatorId: OP, label: "B1F (Keio Shinsen gate)", sourceId: "1rankup-shinjuku-oedo-east-exit" });
   return {
     id: floorId(o),
     operatorId: OP,
@@ -1096,8 +1094,7 @@ for (const { level, f, p } of allFacilities) {
 // ---------------------------------------------------------------- sources, coverage
 const sha = raw.sha256;
 const sources: Source[] = [
-  {"id": "toei-media-guide-2026-index21", "title": "都営交通メディアガイド 2026 index21", "publisher": "東京都交通局", "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html", "license": null, "rights": "REFERENCE_ONLY", "attribution": "東京都交通局 都営交通メディアガイド 2026 (facts only)", "modified": false, "retrievedAt": null, "datasetDate": null, "usage": "facts-only"},
-  {"id": "1rankup-shinjuku-oedo-east-exit", "title": "新宿駅｜都営大江戸線から東口まで徒歩何分何秒？乗車位置と行き方は？", "publisher": "1rankup", "url": "https://1rankup.jp/shinjuku/oe-ee.html", "license": null, "rights": "REFERENCE_ONLY", "attribution": "1rankup (facts only)", "modified": false, "retrievedAt": null, "datasetDate": null, "usage": "facts-only"},
+  {"id": "toei-media-guide-2026-index21", "title": "都営交通メディアガイド 2026 index21", "publisher": "東京都交通局", "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html", "license": null, "rights": "REFERENCE_ONLY", "attribution": "東京都交通局 都営交通メディアガイド 2026 (facts only)", "modified": false, "retrievedAt": null, "datasetDate": null, "usage": "facts-only", "decision": {"url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24"}},
 
   {
     id: SRC_NWD,
