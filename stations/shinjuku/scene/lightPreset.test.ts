@@ -14,7 +14,7 @@ describe("lightpreset", () => {
     }
   });
   it("grades B's warm shaft and cool pool", () => {
-    expect(shaftGrade("b", 0.5, 0, 20).gain).toBeCloseTo(0.7);
+    expect(shaftGrade("b", 0.5, 0, 20).gain).toBeCloseTo(0.82);
     expect(shaftGrade("b", 0.3, 0, 20).tint).toEqual([1, 0.9, 0.78]);
     expect(shaftGrade("b", 0, 0, 40).gain).toBe(1);
     expect(shaftGrade("b", 0.9, 0, 12).gain).toBe(1);
@@ -64,7 +64,7 @@ describe("lightpreset", () => {
     expect(shader.fragmentShader).toContain("d6Apply(outgoingLight)");
     expect(shader.uniforms).toHaveProperty("gtekiCutEnd");
     expect(material.customProgramCacheKey()).toContain("bump-key");
-    expect(material.customProgramCacheKey()).toContain("shinjuku-d6-v3");
+    expect(material.customProgramCacheKey()).toContain("shinjuku-d6-v4");
     expect(material.customProgramCacheKey()).toContain("gteki-camera-cut");
     mesh.geometry.dispose(); material.dispose(); mesh.dispose();
   });
