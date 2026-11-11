@@ -163,6 +163,7 @@ ribbonGeometry	function	apps/web/src/explorer/geometry.ts
 routeNearFade	function	apps/web/src/explorer/geometry.ts
 routeSegmentProfile	function	apps/web/src/explorer/geometry.ts
 steppedProfile	function	apps/web/src/explorer/geometry.ts
+goldenPixels	function	apps/web/src/explorer/goldenPixels.ts
 GraphView	interface	apps/web/src/explorer/graphView.ts
 MODE_WIDTH	const	apps/web/src/explorer/graphView.ts
 buildGraphView	function	apps/web/src/explorer/graphView.ts
