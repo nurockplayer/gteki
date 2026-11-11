@@ -1,0 +1,4 @@
+{
+  "thresholds": { "voidRatio": 0.005, "nearBlack": 0.3, "nearClip": 0.10, "catVisibleMin": 0.5, "overlayPctDesktop": 20, "overlayPctPhone": 30 },
+  "known": []
+}
