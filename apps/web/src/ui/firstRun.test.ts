@@ -8,7 +8,7 @@ import shinjukuManifest from "../../../../stations/shinjuku/gteki/station.json" 
 import shinjukuGraph from "../../../../stations/shinjuku/gteki/graph.json" with { type: "json" };
 import shinjukuPois from "../../../../stations/shinjuku/gteki/pois.json" with { type: "json" };
 import { stationClock } from "../stationClock.ts";
-import { demoPair, FIRST_RUN_KEY, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
+import { coldOpenPair, demoPair, FIRST_RUN_KEY, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 
 const tokyo = stationClock(new Date(), "Asia/Tokyo");
 const appDefaultProfile = {
@@ -51,4 +51,13 @@ describe("first visit guide card state", () => {
     const route = routeBetween(createRouter(parsed.bundle), { kind: "poi", poi: pair.from }, pair.to, appDefaultProfile);
     expect(route).toMatchObject({ ok: true });
   });
+});
+
+it("selects the routable Shinjuku cold-open pair and rejects a missing endpoint", () => {
+  const parsed = parseStationFiles(shinjukuManifest, shinjukuGraph, shinjukuPois);
+  if (!parsed.ok) throw new Error("station files failed validation");
+  const pair = coldOpenPair("shinjuku", parsed.bundle.pois);
+  expect([pair?.from.id, pair?.to.id]).toEqual(["poi:exit:1", "poi:platform:oedo"]);
+  expect(routeBetween(createRouter(parsed.bundle), { kind: "poi", poi: pair!.from }, pair!.to, appDefaultProfile)).toMatchObject({ ok: true });
+  expect(coldOpenPair("shinjuku", parsed.bundle.pois.filter((p) => p.id !== "poi:exit:1"))).toBeNull();
 });

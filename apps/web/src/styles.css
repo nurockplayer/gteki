@@ -532,3 +532,10 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .station-identity-card .identity-ja { font-size: 24px; }
   .identity-art { height: 60px; margin-bottom: 4px; }
 }
+
+.cold-open { position: absolute; z-index: 5; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom) + var(--credit-extra)); display: grid; gap: 6px; padding: 10px; border-radius: 12px; background: var(--glass-strong); border: 1px solid var(--line); }
+.cold-open[hidden] { display: none; }
+.cold-open-title { font-size: 13px; font-weight: 700; }
+.cold-open-search { border: 0; background: transparent; padding: 4px; }
+.cold-opening .hud, .cold-opening .panel-entry { display: none !important; }
+@media (max-width: 600px) { .cold-open { left: 50%; transform: translateX(-50%); white-space: nowrap; } }
