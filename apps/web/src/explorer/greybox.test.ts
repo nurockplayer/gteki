@@ -91,6 +91,28 @@ describe("unmodelledRunsByEdge", () => {
 
 describe("buildGreybox", () => {
   const emptyScene = { colliderNear: () => false, wallHit: () => null };
+  it("opens a shared-node cap only across a compatible approach, retaining the cap one storey below", () => {
+    const nodes = [
+      { id: "a", floorId: "f", position: { x: 0, y: 0, z: 0 } }, { id: "b", floorId: "f", position: { x: 10, y: 0, z: 0 } },
+      { id: "c", floorId: "g", position: { x: 0, y: 0, z: 4 } }, { id: "d", floorId: "g", position: { x: 10, y: 0, z: 4 } },
+      { id: "e", floorId: "g", position: { x: 20, y: 0, z: 4 } },
+    ];
+    const edges = [
+      { id: "lower", from: "a", to: "b", mode: "walk" }, { id: "upper", from: "c", to: "d", mode: "walk" },
+      { id: "approach", from: "d", to: "e", mode: "walk", attributes: { width: { m: 1 } } },
+    ];
+    const station = { ...bundle, floors: [...bundle.floors, { id: "g", renderElevationM: 4 }], nodes, edges } as unknown as StationBundle;
+    const runs = [
+      { edge: edges[0]!, points: [new THREE.Vector3(0, 0, 0), new THREE.Vector3(10, 0, 0)] },
+      { edge: edges[1]!, points: [new THREE.Vector3(0, 0, 4), new THREE.Vector3(10, 0, 4)] },
+    ];
+    const result = emitGreybox(station, runs as never, () => false, emptyScene, "high");
+    const caps = result.wallSegments.filter((w) => Math.abs(w.ax - 10) < 1e-5 && Math.abs(w.bx - 10) < 1e-5);
+    const crossesCentre = (w: typeof caps[number]) => Math.min(w.az, w.bz) < 0 && Math.max(w.az, w.bz) > 0;
+    expect(caps.some((w) => w.yMin < 1 && crossesCentre(w))).toBe(true);
+    expect(caps.some((w) => w.yMin > 3 && crossesCentre(w))).toBe(false);
+    expect(caps.filter((w) => w.yMin > 3).reduce((sum, w) => sum + Math.abs(w.az - w.bz), 0)).toBeCloseTo(MODE_WIDTH.walk! - 1);
+  });
   it("emits no wall piece without plan length where two stair cuts' bounds differ only by rounding", () => {
     // A flight whose both ends are on passages is cut from each end, in opposite directions: on a wall it crosses the
     // two cut grids can differ by rounding only, and the slivers between them made zero-length walls (found by a
