@@ -2,18 +2,19 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { hooks, openStation, stationData } from "../lib/gteki.ts";
+import { hooks, openStation } from "../lib/gteki.ts";
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
-const routes = [{ id: "exit-4", poi: "poi:exit:4" }, { id: "exit-3", poi: "poi:exit:3" }];
-const destination = "poi:toilet:1";
 const settle = async (page: Page) => { await page.waitForTimeout(700); };
 const heading = async (page: Page) => page.evaluate(() => ((-(window as any).__gteki.camera().yaw * 180 / Math.PI) % 360 + 360) % 360);
 
 async function turn(page: Page, target: number) {
+  const started = Date.now();
+  let iterations = 0, drags = 0;
   for (let i = 0; i < 4; i++) {
     const error = ((target - await heading(page) + 540) % 360) - 180;
     if (Math.abs(error) <= 3) break;
+    iterations++;
     const box = (await page.locator("canvas.gteki-canvas").boundingBox())!;
     const at = await page.evaluate(() => {
       const c = document.querySelector("canvas.gteki-canvas")!.getBoundingClientRect();
@@ -27,88 +28,55 @@ async function turn(page: Page, target: number) {
     const dx = Math.round(error * Math.PI / 180 / 0.0042), chunkMax = Math.max(20, Math.floor(box.width * 0.3));
     let sent = 0;
     while (Math.abs(dx - sent) >= 1) {
+      drags++;
       const chunk = Math.max(-chunkMax, Math.min(chunkMax, dx - sent));
       await page.mouse.move(at.x, at.y); await page.mouse.down();
       await page.mouse.move(at.x + chunk, at.y, { steps: 3 }); await page.mouse.up(); sent += chunk;
     }
     await settle(page);
   }
-  return heading(page);
+  return { measured: await heading(page), iterations, drags, ms: Date.now() - started };
 }
 
-test("#221 route flight ends @phone", async ({ page }, info) => {
-  test.setTimeout(1_800_000);
-  const root = process.env.GTEKI_ROOT!;
-  const sha = execFileSync("git", ["merge-base", "HEAD", "origin/main"], { cwd: root, encoding: "utf8" }).trim();
-  const project = info.project.name.startsWith("phone") ? "phone" : "desktop";
-  const out = path.join(root, ".qa/221/route-recheck", sha.slice(0, 7), project);
-  fs.mkdirSync(out, { recursive: true });
-  const { graph, pois, station } = stationData("shinjuku");
-  const nodes = new Map(graph.nodes.map(n => [n.id, n]));
-  const edges = new Map(graph.edges.map(e => [e.id, e]));
-  const floors = new Map((station.floors as { id: string; renderElevationM: number }[]).map(f => [f.id, f.renderElevationM]));
-  const flights = new Map<string, { edge: (typeof graph.edges)[number]; routes: string[] }>();
-  const routeResults: Record<string, unknown>[] = [];
-  await openStation(page, "shinjuku");
-  const quality = await hooks.quality(page);
-  for (const route of routes) {
-    const origin = pois.find(p => p.id === route.poi)?.connectorNodeIds[0];
-    const dest = pois.find(p => p.id === destination)?.connectorNodeIds[0];
-    if (!origin || !dest) throw new Error(`DECISION: endpoint missing for ${route.id}`);
-    expect(await hooks.setOrigin(page, route.poi)).toBe(true);
-    expect(await hooks.setDestination(page, destination)).toBe(true);
-    const result = await hooks.route(page);
-    if (!result?.ok) throw new Error(`DECISION: route ${route.id} failed: ${JSON.stringify(result)}`);
-    const ids: string[] = [];
-    for (const step of result.steps as { edgeId: string }[]) {
-      const edge = edges.get(step.edgeId)!;
-      const a = nodes.get(edge.from)!, b = nodes.get(edge.to)!;
-      if (!["stairs", "escalator", "elevator"].includes(edge.mode) && a.floorId === b.floorId) continue;
-      ids.push(edge.id);
-      const previous = flights.get(edge.id);
-      if (previous) previous.routes.push(route.id); else flights.set(edge.id, { edge, routes: [route.id] });
-    }
-    routeResults.push({ route: route.id, origin, destination: dest, flights: ids });
-  }
-  const rows: Record<string, unknown>[] = [];
-  const manifest = () => fs.writeFileSync(path.join(out, "views.json"), JSON.stringify({ sha, project: info.project.name, quality, routes: routeResults, flights: [...flights.values()], views: rows }, null, 2) + "\n");
-  manifest();
-  let first = true;
-  for (const { edge, routes: memberRoutes } of flights.values()) {
-    const a = nodes.get(edge.from)!, b = nodes.get(edge.to)!;
-    const height = (n: typeof a) => n.position.z ?? n.renderZ ?? floors.get(n.floorId) ?? 0;
-    const ends = height(a) >= height(b) ? [a, b] : [b, a];
-    for (const [endIndex, node] of ends.entries()) {
-      const other = ends[1 - endIndex]!;
-      expect(await hooks.walkFromNode(page, node.id), `walkFromNode(${node.id})`).toBe(true);
+const root = process.env.GTEKI_ROOT!;
+const capture = JSON.parse(fs.readFileSync(path.join(root, ".qa/221/route-recheck/flights.json"), "utf8")) as {
+  sha: string; routes: unknown[]; flights: { edgeId: string; routes: string[]; ends: { end: string; nodeId: string; floor: string; headings: { into: number; reverse: number } }[] }[];
+};
+
+for (const [flightIndex, flight] of capture.flights.entries()) {
+  for (const [endIndex, end] of flight.ends.entries()) {
+    test(`#221 flight ${flightIndex} ${end.end} @phone`, async ({ page }, info) => {
+      test.setTimeout(240_000);
+      const project = info.project.name.startsWith("phone") ? "phone" : "desktop";
+      const out = path.join(root, ".qa/221/route-recheck", capture.sha.slice(0, 7), project);
+      fs.mkdirSync(out, { recursive: true });
+      const manifestPath = path.join(out, "views.json");
+      const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, "utf8")) : { sha: capture.sha, project: info.project.name, routes: capture.routes, flights: capture.flights, views: [] };
+      const shots = (["into", "reverse"] as const).map((direction, i) => ({ direction, target: end.headings[direction], index: flightIndex * 4 + endIndex * 2 + i }));
+      if (shots.every(shot => fs.existsSync(path.join(out, `${String(shot.index).padStart(3, "0")}.jpg`)))) return;
+      await openStation(page, "shinjuku");
+      const quality = await hooks.quality(page);
+      let started = Date.now();
+      expect(await hooks.walkFromNode(page, end.nodeId), `walkFromNode(${end.nodeId})`).toBe(true);
       await expect.poll(() => hooks.mode(page)).toBe("walk");
-      if (first) { await page.getByRole("button", { name: /^(First person|一人称)$/ }).click(); first = false; }
-      await settle(page);
-      const into = ((Math.atan2(other.position.x - node.position.x, other.position.y - node.position.y) * 180 / Math.PI) + 360) % 360;
-      for (const [direction, target] of [["into", into], ["reverse", (into + 180) % 360]] as const) {
-        const measured = await turn(page, target);
-        const missed = Math.abs(((measured - target + 540) % 360) - 180) > 5;
-        const index = rows.length, file = `${String(index).padStart(3, "0")}.jpg`;
+      const walkFromNode = Date.now() - started;
+      await page.getByRole("button", { name: /^(First person|一人称)$/ }).click();
+      started = Date.now(); await settle(page); const settleMs = Date.now() - started;
+      for (const shot of shots) {
+        const file = `${String(shot.index).padStart(3, "0")}.jpg`;
+        if (fs.existsSync(path.join(out, file))) continue;
+        const turnResult = await turn(page, shot.target);
+        const missed = Math.abs(((turnResult.measured - shot.target + 540) % 360) - 180) > 5;
+        started = Date.now();
         await page.screenshot({ path: path.join(out, file), type: "jpeg", quality: 85, scale: "css" });
+        const screenshot = Date.now() - started;
         if (project === "desktop") execFileSync("sips", ["--resampleWidth", "1024", "-s", "formatOptions", "85", path.join(out, file)], { stdio: "ignore" });
-        rows.push({ index, project: info.project.name, quality, sha, edgeId: edge.id, routes: memberRoutes, end: endIndex === 0 ? "top" : "bottom", nodeId: node.id, floor: node.floorId, direction, requestedHeading: target, measuredHeading: measured, missed, position: await hooks.avatar(page), file });
-        manifest();
+        const row = { index: shot.index, project: info.project.name, quality, sha: capture.sha, edgeId: flight.edgeId, routes: flight.routes, end: end.end, nodeId: end.nodeId, floor: end.floor, direction: shot.direction, requestedHeading: shot.target, measuredHeading: turnResult.measured, missed, position: await hooks.avatar(page), file, timings: { walkFromNode, settle: settleMs, turn: { iterations: turnResult.iterations, drags: turnResult.drags, ms: turnResult.ms }, screenshot } };
+        manifest.views = manifest.views.filter((view: { index: number }) => view.index !== shot.index);
+        manifest.views.push(row);
+        manifest.views.sort((a: { index: number }, b: { index: number }) => a.index - b.index);
+        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
       }
-    }
+    });
   }
-  // Compose labelled thumbnails in the browser; each original remains available separately.
-  const images = rows.map(r => ({ index: r.index, data: fs.readFileSync(path.join(out, String(r.file))).toString("base64") }));
-  const sheet = await page.evaluate(async (items) => {
-    const w = 384, h = 250, cols = 4, canvas = document.createElement("canvas");
-    canvas.width = w * cols; canvas.height = Math.max(1, Math.ceil(items.length / cols)) * h;
-    const ctx = canvas.getContext("2d")!; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    for (let i = 0; i < items.length; i++) {
-      const img = new Image(); img.src = `data:image/jpeg;base64,${items[i]!.data}`; await img.decode();
-      const x = i % cols * w, y = Math.floor(i / cols) * h, scale = Math.min(w / img.width, (h - 25) / img.height);
-      ctx.drawImage(img, x, y + 25, img.width * scale, img.height * scale);
-      ctx.fillStyle = "#000"; ctx.font = "20px sans-serif"; ctx.fillText(String(items[i]!.index), x + 5, y + 20);
-    }
-    return canvas.toDataURL("image/jpeg", 0.85).split(",")[1]!;
-  }, images);
-  fs.writeFileSync(path.join(out, "contact-sheet.jpg"), Buffer.from(sheet, "base64"));
-});
+}
