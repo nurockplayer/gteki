@@ -212,7 +212,7 @@ describe("Explorer wall fallback and QA controls", () => {
     place(state);
     expect(state.camera.position.distanceTo(held)).toBeLessThan(1e-9);
     expect(qa(state).cameraInfo()).toEqual({
-      fov: 50, far: 2000, slopeOn: false, boomWanted: 2, boomActual: 2,
+      lock: 0, fov: 50, far: 2000, slopeOn: false, boomWanted: 2, boomActual: 2,
       raise: 0, pitch: -0.5, yaw: 1, avatarFade: 1, reflections: true, mode: "walk",
     });
     qa(state).setCamera(null);
@@ -372,14 +372,17 @@ describe("Explorer descending framing", () => {
 });
 
 describe("Explorer guide stair lens", () => {
-  it("locks the preview cat to a descending escalator and restores level framing", () => {
-    const state = Object.assign(cameraStand(), { previewNext: true, catAvatar: true, mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0, pitch: 0, camDistance: FOLLOW_CAT_NEXT.distance });
+  it.each([false, true])("frames a descending cat escalator with previewNext=%s", (previewNext) => {
+    const state = Object.assign(cameraStand(), { previewNext, catAvatar: true, mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0, pitch: 0, camDistance: FOLLOW_CAT_NEXT.distance });
     state.camera.aspect = 1.6;
-    state.camera.fov = 55;
+    state.camera.fov = previewNext ? 55 : 60;
+    state.setFov = vi.fn((target: number, snap: boolean, dt: number) => {
+      (Explorer.prototype as unknown as { setFov(target: number, snap: boolean, dt: number): void }).setFov.call(state, target, snap, dt);
+    });
     const route = [
       { x: 0, y: 0, z: 0, zKnown: true, stepIndex: -1, floorId: "b1" },
-      { x: 0, y: -5, z: -Math.sqrt(75), zKnown: true, stepIndex: 0, floorId: "b1" },
-      { x: 0, y: -5, z: -20, zKnown: true, stepIndex: 1, floorId: "b1" },
+      { x: 0, y: Math.sqrt(75), z: -5, zKnown: true, stepIndex: 0, floorId: "b1" },
+      { x: 0, y: 20, z: -5, zKnown: true, stepIndex: 1, floorId: "b1" },
     ];
     const spans = guidePaceSpans(route, [{ mode: "escalator" }, { mode: "walk" }], []);
     qa(state).startGuide(route, 0, [], spans);
@@ -389,16 +392,19 @@ describe("Explorer guide stair lens", () => {
       state.guide!.s += 0.9 / 60;
       state.pos.addScaledVector(axis, 0.9 / 60);
       place(state);
-      expect(state.setFov.mock.lastCall?.[0]).toBe(55);
+      expect(state.camera.fov).toBe(previewNext ? 55 : 60);
     }
-    expect((state as unknown as Explorer).cameraInfo().lock).toBe(1);
+    expect((state as unknown as Explorer).cameraInfo().lock).toBe(previewNext ? 1 : 0);
     const ride = escalatorPose(state.pos, axis, 0.2, 1, state.yaw, 0);
-    expect(state.camera.position.distanceTo(ride.position)).toBeLessThan(0.15);
+    if (previewNext) expect(state.camera.position.distanceTo(ride.position)).toBeLessThan(0.15);
     state.guide!.s = spans[0]!.toS;
     for (let i = 0; i < 72; i++) place(state);
     expect((state as unknown as Explorer).cameraInfo().lock).toBe(0);
-    expect(state.camera.position.y - state.pos.y).toBeCloseTo(0.90, 2);
-    expect(state.camera.position.z - state.pos.z).toBeCloseTo(2.20, 2);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(previewNext ? 55 : 50);
+    if (previewNext) {
+      expect(Math.abs(state.camera.position.y - state.pos.y - 0.90)).toBeLessThan(0.01);
+      expect(Math.abs(state.camera.position.z - state.pos.z - 2.20)).toBeLessThan(0.01);
+    }
   });
 
   it.each(["stairs", "escalator"] as const)("widens on shallow %s and holds across a short landing", (mode) => {
