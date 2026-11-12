@@ -24,6 +24,7 @@ export interface PreparedLayout {
   cached: boolean;
 }
 export interface PrepareOptions {
+  previewNext?: boolean;
   /** Reuse and fill the per-content snapshot. Off by default so tests that mutate inputs stay isolated. */
   reuse?: boolean;
   /** Passed to protectFareAndAccess; see its doc. Default true. */
@@ -39,14 +40,14 @@ export function clearLayoutCache() {
 }
 
 export function prepareLayout(bundle: StationBundle, plan: Plan, options: PrepareOptions = {}): PreparedLayout {
-  const key = options.reuse ? contentKey(bundle, plan) : "";
+  const key = options.reuse ? contentKey(bundle, plan) + (options.previewNext ? ":next" : "") : "";
   const verify = options.verifyGeneratedInput !== false;
   if (entry && options.reuse && entry.key === key && (entry.verified || !verify)) {
     const copy = structuredClone(entry.snapshot);
     adoptRestrictedAccess(copy.layout, plan, bundle);
     return { ...copy, cached: true };
   }
-  const layout = buildLayout(bundle, plan);
+  const layout = buildLayout(bundle, plan, options);
   const protection = protectFareAndAccess(layout, plan, bundle, { verifyGeneratedInput: options.verifyGeneratedInput });
   if (options.reuse) entry = { key, verified: verify, snapshot: structuredClone({ layout, protection }) };
   return { layout, protection, cached: false };

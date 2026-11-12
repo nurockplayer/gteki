@@ -139,6 +139,8 @@ export interface StationScene {
 export interface SceneContext {
   THREE: typeof THREE;
   bundle: StationBundle;
+  /** Host's ?next=1 preview; absent keeps the shipping scene. */
+  previewNext?: boolean;
   /** Extra curated shopfronts supplied only by a private overlay (OD-35). */
   privateShops?: { shops: unknown[]; openings: unknown[] };
   enuToRenderer(p: { x: number; y: number; z: number }): [number, number, number];
