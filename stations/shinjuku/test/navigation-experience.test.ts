@@ -88,7 +88,7 @@ describe("route overview and narration", () => {
     expect(s.distanceM).toBe(Math.round(route.totalLengthM));
     expect(s.minutes * 60).toBeGreaterThanOrEqual(route.estimatedSeconds);
     expect(s.floorChanges).toBe(route.floorChanges);
-    expect(s.floorLabels[0]).toBe("B6");
+    expect(s.floorLabels[0]).toBe("B7");
     expect(route.unknowns.map((u) => u.kind)).toContain("hours");
   });
   it.each([true, false, null])("keeps three-valued fare state (%s)", (crossesFareBoundary) => {
