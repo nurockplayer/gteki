@@ -1,3 +1,4 @@
+import { goldenPixels } from "./goldenPixels";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -70,6 +71,8 @@ export interface ExplorerOptions {
   avatarGlbUrl?: string;
   /** Cat protagonist (#854 stage 1): proportions and follow-camera framing change; the human stays default. */
   avatarKind?: AvatarKind;
+  /** Preview channel (`?next=1`): turns on v1.0 journey changes that are not the default yet (docs/release/journey.md). */
+  previewNext?: boolean;
 }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
@@ -314,6 +317,8 @@ export class Explorer {
 
   private readonly avatar = new THREE.Group();
   private avatarRig: AvatarSelection | null = null;
+  /** `?next=1` preview channel: journey changes that are not the default yet branch on this (docs/release/journey.md). */
+  readonly previewNext: boolean;
   /** Cat protagonist: lower follow pivot, shorter boom and a smaller marker ring. */
   private catAvatar: boolean;
   private avatarMarker: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] | null = null;
@@ -481,6 +486,7 @@ export class Explorer {
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
+    this.previewNext = options.previewNext === true;
     this.catAvatar = options.avatarKind === "cat";
     if (this.catAvatar) { this.camDistance = FOLLOW_CAT.distance; this.pitch = FOLLOW_CAT.pitch; }
     // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
@@ -564,6 +570,74 @@ export class Explorer {
 
   get qualityLevel(): "low" | "high" {
     return this.quality;
+  }
+
+  /** QA-only: renderer counters around captures, including shader-program variants. */
+  goldenRenderState() {
+    return {
+      quality: this.qualityLevel, shadows: this.renderer.shadowMap.enabled,
+      shadowAutoUpdate: this.renderer.shadowMap.autoUpdate,
+      programs: this.renderer.info.programs?.length ?? 0,
+      calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles,
+    };
+  }
+
+  /** QA-only: stop automatic frames while a capture explicitly renders its camera. */
+  holdFrames(hold: boolean): void {
+    this.renderer.setAnimationLoop(hold ? null : () => this.frame());
+  }
+
+  /** QA-only: render exactly one displayed frame while automatic frames are held. */
+  goldenFrame() {
+    const before = this.goldenRenderState(), started = performance.now();
+    this.frame();
+    return { before, after: this.goldenRenderState(), ms: performance.now() - started };
+  }
+
+  /** QA-only: reuse displayed-frame programs by probing the default framebuffer. */
+  goldenProbe(overview: boolean) {
+    const root = this.stationScene?.root;
+    if (!root) throw new Error("Station scene is not loaded");
+    const renderer = this.renderer, gl = renderer.getContext();
+    const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+    const width = Math.min(320, size.x), height = Math.min(200, size.y);
+    const shown = new Uint8Array(width * height * 4), hidden = new Uint8Array(shown.length);
+    const oldTarget = renderer.getRenderTarget(), background = this.scene.background;
+    const viewport = renderer.getViewport(new THREE.Vector4()), scissor = renderer.getScissor(new THREE.Vector4());
+    const scissorTest = renderer.getScissorTest(), autoUpdate = renderer.shadowMap.autoUpdate;
+    const visible = root.visible;
+    const renders: { label: string; before: ReturnType<Explorer["goldenRenderState"]>; after: ReturnType<Explorer["goldenRenderState"]>; ms: number }[] = [];
+    const capture = (label: string, pixels: Uint8Array) => {
+      const before = this.goldenRenderState(), started = performance.now();
+      renderer.render(this.scene, this.camera);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      const after = this.goldenRenderState(), ms = performance.now() - started;
+      renders.push({ label, before, after, ms });
+      console.log(`[golden] probe ${label}: ${JSON.stringify({ before, after, ms })}`);
+    };
+    try {
+      this.scene.background = new THREE.Color(0xff00ff);
+      renderer.shadowMap.autoUpdate = false;
+      renderer.setRenderTarget(null);
+      const ratio = renderer.getPixelRatio();
+      renderer.setViewport(0, 0, width / ratio, height / ratio);
+      renderer.setScissor(0, 0, width / ratio, height / ratio);
+      renderer.setScissorTest(true);
+      capture("shown", shown);
+      if (overview) {
+        root.visible = false;
+        capture("hidden", hidden);
+      }
+      return { ...goldenPixels(shown, overview ? hidden : null), renders };
+    } finally {
+      root.visible = visible;
+      this.scene.background = background;
+      renderer.shadowMap.autoUpdate = autoUpdate;
+      renderer.setRenderTarget(oldTarget);
+      renderer.setViewport(viewport);
+      renderer.setScissor(scissor);
+      renderer.setScissorTest(scissorTest);
+    }
   }
 
   /** QA-only: count actual station and surface mesh draws over three animation frames. */
@@ -1861,6 +1935,19 @@ export class Explorer {
     if (!n) return false;
     const z = nodeDisplayZ(n, bundle.floors.find((f) => f.id === n.floorId)).z;
     return this.walkFrom({ x: n.position.x, y: n.position.y, z }, headingDeg);
+  }
+
+  /** QA-only: place the walker and snap the follow camera to an absolute heading. */
+  setView(bundle: StationBundle, nodeId: string, headingDeg: number): { placed: boolean; placeMs: number; turnMs: number } {
+    const start = performance.now();
+    const placed = this.walkFromNode(bundle, nodeId, headingDeg);
+    const afterPlace = performance.now();
+    if (placed) {
+      this.yaw = -THREE.MathUtils.degToRad(headingDeg);
+      this.bodyYaw = this.yaw;
+      this.placeCamera(0, true);
+    }
+    return { placed, placeMs: afterPlace - start, turnMs: performance.now() - afterPlace };
   }
 
   private groundAt(x: number, fromY: number, z: number, maxDrop: number): number | null {

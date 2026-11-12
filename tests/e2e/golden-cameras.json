@@ -1,0 +1,277 @@
+{
+  "thresholds": {
+    "voidRatio": 0.005,
+    "flatRatio": 0.85,
+    "nearBlack": 0.3
+  },
+  "cameras": [
+    {
+      "id": "ikebukuro-overview",
+      "station": "ikebukuro",
+      "kind": "overview",
+      "expect": "Ikebukuro station structure fills the middle of the overview.",
+      "thresholds": {
+        "stationShare": 0.01
+      }
+    },
+    {
+      "id": "ike-g_jr_c1",
+      "station": "ikebukuro",
+      "kind": "node",
+      "node": "g_jr_c1",
+      "headingDeg": 355,
+      "expect": "Ikebukuro passage and station features at g_jr_c1 are visible."
+    },
+    {
+      "id": "ike-g_jr_s",
+      "station": "ikebukuro",
+      "kind": "node",
+      "node": "g_jr_s",
+      "headingDeg": 167,
+      "expect": "Ikebukuro passage and station features at g_jr_s are visible."
+    },
+    {
+      "id": "ike-c_g2",
+      "station": "ikebukuro",
+      "kind": "node",
+      "node": "c_g2",
+      "headingDeg": 0,
+      "expect": "Ikebukuro passage and station features at c_g2 are visible."
+    },
+    {
+      "id": "ike-w_c",
+      "station": "ikebukuro",
+      "kind": "node",
+      "node": "w_c",
+      "headingDeg": 144,
+      "expect": "Ikebukuro passage and station features at w_c are visible."
+    },
+    {
+      "id": "ike-x35",
+      "station": "ikebukuro",
+      "kind": "node",
+      "node": "x35",
+      "headingDeg": 306,
+      "expect": "Ikebukuro passage and station features at x35 are visible."
+    },
+    {
+      "id": "ike-x39",
+      "station": "ikebukuro",
+      "kind": "node",
+      "node": "x39",
+      "headingDeg": 243,
+      "expect": "Ikebukuro passage and station features at x39 are visible."
+    },
+    {
+      "id": "ike-c_mid",
+      "station": "ikebukuro",
+      "kind": "node",
+      "node": "c_mid",
+      "headingDeg": 295,
+      "expect": "Ikebukuro passage and station features at c_mid are visible."
+    },
+    {
+      "id": "ike-sw_h",
+      "station": "ikebukuro",
+      "kind": "node",
+      "node": "sw_h",
+      "headingDeg": 115,
+      "expect": "Ikebukuro passage and station features at sw_h are visible."
+    },
+    {
+      "id": "shinjuku-overview",
+      "station": "shinjuku",
+      "kind": "overview",
+      "expect": "Shinjuku station structure fills the middle of the overview.",
+      "thresholds": {
+        "stationShare": 0.01
+      }
+    },
+    {
+      "id": "sj-sign-1ecbdf77",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:9ff85d09ae4e40469ec227099d95c775",
+      "headingDeg": 250,
+      "expect": "The passage and overhead sign 1ecbdf77 are visible."
+    },
+    {
+      "id": "sj-sign-2d2bc35b",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:20014f524ee643c18b80575cf3064334",
+      "headingDeg": 266,
+      "expect": "The passage and overhead sign 2d2bc35b are visible."
+    },
+    {
+      "id": "sj-sign-453ea111",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:180ce956ffb7470b9cc42ec7e75255d4",
+      "headingDeg": 334,
+      "expect": "The passage and overhead sign 453ea111 are visible."
+    },
+    {
+      "id": "sj-sign-c2d39002",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:6bd46cd107a4491bba3469e8f51f9900",
+      "headingDeg": 78,
+      "expect": "The passage and overhead sign c2d39002 are visible."
+    },
+    {
+      "id": "sj-sign-e31954cb",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:3c2d58645c62448b8e4c97f010d9ce32",
+      "headingDeg": 75,
+      "expect": "The passage and overhead sign e31954cb are visible."
+    },
+    {
+      "id": "sj-stair-1-top",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:3af66366dc9f478ea4a6e509235a8799",
+      "headingDeg": 240,
+      "expect": "Shinjuku stair 1 top and its surrounding structure are visible."
+    },
+    {
+      "id": "sj-stair-1-bottom",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:399c24bf916c45f197e22e812433aed9",
+      "headingDeg": 60,
+      "expect": "Shinjuku stair 1 bottom and its surrounding structure are visible."
+    },
+    {
+      "id": "sj-stair-2-top",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:d1ccc52ef25e474dac70020771b7ea76",
+      "headingDeg": 240,
+      "expect": "Shinjuku stair 2 top and its surrounding structure are visible."
+    },
+    {
+      "id": "sj-stair-2-bottom",
+      "knownIssue": 1180,
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:51435d9112ba409e8ad5ab02dbbd060f",
+      "headingDeg": 60,
+      "expect": "Shinjuku stair 2 bottom and its surrounding structure are visible."
+    },
+    {
+      "id": "sj-escalator-top",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:e4365ef27b14448eb770343c8a024f80",
+      "headingDeg": 250,
+      "expect": "Shinjuku escalator top and its surrounding structure are visible."
+    },
+    {
+      "id": "sj-escalator-bottom",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:ea71c5f746934d0a934c43782d861da5",
+      "headingDeg": 70,
+      "expect": "Shinjuku escalator bottom and its surrounding structure are visible."
+    },
+    {
+      "id": "slice-01-exit1-mouth",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:a06f3d191885497bac197b666c4daef9",
+      "headingDeg": 174,
+      "expect": "Exit 1 entrance stairs and their sign are visible from the street."
+    },
+    {
+      "id": "slice-02-exit1-landing",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:49924b2c3a1e4b6b8ebd802a6d137205",
+      "headingDeg": 174,
+      "expect": "The exit 1 stair landing and the next flight down are visible."
+    },
+    {
+      "id": "slice-03-b1-arrival",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:e764ee9de7834a9aae179ce41bbf2e9a",
+      "headingDeg": 111,
+      "expect": "The B1 concourse opens from the foot of the exit 1 stairs."
+    },
+    {
+      "id": "slice-04-b1-corridor",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:1ecbdf77f58f423fa3142d1b71e078bf",
+      "headingDeg": 70,
+      "expect": "The B1 corridor and its overhead sign are visible."
+    },
+    {
+      "id": "slice-05-gate",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:d9cd1bb0f76a440d83010e5b9f63ad65",
+      "headingDeg": 159,
+      "expect": "The Oedo ticket gate line is visible."
+    },
+    {
+      "id": "slice-06-to-escalator",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:2d2bc35b4043433da2914b2705ef69bb",
+      "headingDeg": 84,
+      "expect": "The paid concourse leading to the first escalator is visible."
+    },
+    {
+      "id": "slice-07-escalator1-top",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:e4365ef27b14448eb770343c8a024f80",
+      "headingDeg": 250,
+      "expect": "The escalator from B1 down to B3 is visible from its top."
+    },
+    {
+      "id": "slice-08-b3-arrival",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:ea71c5f746934d0a934c43782d861da5",
+      "headingDeg": 244,
+      "expect": "The B3 concourse is visible from the foot of the first escalator."
+    },
+    {
+      "id": "slice-09-b3-sign",
+      "knownIssue": 1192,
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:180ce956ffb7470b9cc42ec7e75255d4",
+      "headingDeg": 148,
+      "expect": "The B3 concourse and its overhead sign are visible."
+    },
+    {
+      "id": "slice-10-escalator2-top",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:9c7256cd531a4154abd7353ace7797be",
+      "headingDeg": 165,
+      "expect": "The long escalator down to the B6 platform is visible from its top."
+    },
+    {
+      "id": "slice-11-b6-arrival",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:aa29caed939f47449d2b76b11043109b",
+      "headingDeg": 159,
+      "expect": "The B6 platform is visible from the foot of the long escalator."
+    },
+    {
+      "id": "slice-12-platform",
+      "station": "shinjuku",
+      "kind": "node",
+      "node": "n:3c2d58645c62448b8e4c97f010d9ce32",
+      "headingDeg": 75,
+      "expect": "The Oedo platform and track are visible."
+    }
+  ]
+}
