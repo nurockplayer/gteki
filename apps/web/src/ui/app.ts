@@ -1074,7 +1074,7 @@ export class App {
       }
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
-      this.explorer.showRoute(this.s.polyline);
+      this.explorer.showRoute(this.s.polyline, guidePaceSpans(this.s.polyline, best.steps, []).filter((span) => span.mode === "escalator"));
       this.ui.minimap.setRoute({ points: this.s.polyline, steps: best.steps }, destination);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
     }

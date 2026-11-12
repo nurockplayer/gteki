@@ -16,7 +16,7 @@ import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from 
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
 import { anySampleClear, faceEligible, insideCameraCut, minimapYield, overlapSamples, rayOnQuad, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
-import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
+import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeRunsOutsideSpans, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
@@ -1805,6 +1805,7 @@ export class Explorer {
     if (routeGlow) routeGlow.visible = mode === "overview";
     const routeGlowOccluded = this.routeGroup.getObjectByName("route-glow-occluded");
     if (routeGlowOccluded) routeGlowOccluded.visible = mode === "overview";
+    if (this.previewNext) this.setRouteMarkersVisible(this.routeMarkersVisible);
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -2116,14 +2117,15 @@ export class Explorer {
 
   // ---- Routes & POIs -------------------------------------------------------------
 
-  showRoute(polyline: PolylinePoint[]): void {
+  showRoute(polyline: PolylinePoint[], escalators: readonly { fromS: number; toS: number }[] = []): void {
     this.clearRoute();
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
     const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
-    const ribbonPoints = [pts[0]!];
-    for (let i = 1; i < pts.length; i++) {
-      const a = pts[i - 1]!, b = pts[i]!;
+    const profile = (points: readonly THREE.Vector3[]): THREE.Vector3[] => {
+    const ribbonPoints = [points[0]!];
+    for (let i = 1; i < points.length; i++) {
+      const a = points[i - 1]!, b = points[i]!;
       const segment = routeSegmentProfile(a, b, (p) => {
         this.ray.set(p.clone().add(new THREE.Vector3(0, 0.6, 0)), new THREE.Vector3(0, -1, 0));
         this.ray.far = 1.2;
@@ -2136,12 +2138,20 @@ export class Explorer {
       ribbonPoints.pop();
       ribbonPoints.push(...segment);
     }
+    return ribbonPoints;
+    };
+    const ribbonPoints = profile(pts);
     this.routeTexture = chevronTexture();
     this.routeTexture.repeat.set(1 / ROUTE_CHEVRON_PITCH_OVERVIEW, 1);
     // Walk and guide draw a narrow, faint band that fades out under the camera; the overview keeps today's wide, opaque ribbon.
     const walkMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, opacity: 0.45, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     routeNearFade(walkMat);
-    const ribbon = new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
+    const ribbon = this.previewNext ? new THREE.Group() : new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
+    if (this.previewNext) for (const run of routeRunsOutsideSpans(pts, escalators)) {
+      const mesh = new THREE.Mesh(ribbonGeometry(profile(run), ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
+      mesh.renderOrder = 5;
+      ribbon.add(mesh);
+    }
     ribbon.renderOrder = 5;
     ribbon.name = "route-ribbon";
     ribbon.visible = this.mode !== "overview";
@@ -2182,7 +2192,10 @@ export class Explorer {
         this.routeGroup.add(band);
       }
     }
-    this.routeGroup.add(this.beacon(pts[0]!, 0x7dffa0, 2.2), this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
+    const start = this.beacon(pts[0]!, 0x7dffa0, 2.2);
+    start.userData.routeStart = true;
+    this.routeGroup.add(start, this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
+    if (this.previewNext) this.setRouteMarkersVisible(this.routeMarkersVisible);
     this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length, greybox: routeUsesGreybox(polyline, this.greyboxSegments) };
     this.updateGreyboxLegend();
   }
@@ -2203,7 +2216,11 @@ export class Explorer {
   /** QA hook: show or hide the route's start/destination beacons; the route and guidance are untouched. */
   setRouteMarkersVisible(visible: boolean): void {
     this.routeMarkersVisible = visible;
-    for (const g of this.routeGroup.children) if (g.userData.routeMarker) g.visible = visible;
+    for (const g of this.routeGroup.children) if (g.userData.routeMarker) {
+      const quiet = this.previewNext && this.mode !== "overview";
+      g.visible = visible && !(quiet && g.userData.routeStart);
+      g.children[0]!.visible = !quiet;
+    }
   }
 
   /** Removing the route also ends any guidance along it: a recomputed or failed route never keeps the old guide. */
