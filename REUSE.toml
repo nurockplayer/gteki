@@ -470,3 +470,26 @@ path = "docs/visual/targets/*.jpg"
 precedence = "override"
 SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# docs/release/evidence: project-made screenshots of the running app for the release journey table
+# (docs/release/journey.md), one station per file. Same pattern as 4h: repo licence for the rendering
+# work plus the marker of the geometry shown (Ikebukuro: PLATEAU; Shinjuku: Hokonavi E27).
+[[annotations]]
+path = "docs/release/evidence/**/ikebukuro-*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省 Project PLATEAU; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy"
+
+[[annotations]]
+path = "docs/release/evidence/**/shinjuku-*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# docs/visual/live: screenshots of the deployed game on gteki.pages.dev (Shinjuku E27 scene), repo
+# licence plus the Hokonavi E27 marker of the geometry they show (4c).
+[[annotations]]
+path = "docs/visual/live/*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"

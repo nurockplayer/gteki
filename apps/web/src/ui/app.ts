@@ -38,7 +38,7 @@ import { Minimap } from "./minimap.ts";
 import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
-import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
+import { coldOpenPair, demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 import { shortStationLabel } from "./shortStationLabel.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
@@ -145,6 +145,7 @@ export class App {
   /** Pending and failed directories stay null so a focus never starts a retry loop. */
   private readonly directories = new Map<string, { bundle: StationBundle; search: SearchIndex } | null>();
   private panelExpanded = false;
+  private coldOpen = false;
   /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
   private compositionEndMs = -Infinity;
   private readonly interactionPrompt = new InteractionPrompt(() => this.t, () => this.explorer.interact(), (text) => this.ui.live.announce(text));
@@ -162,8 +163,10 @@ export class App {
   }
 
   async start(): Promise<void> {
-    this.layout();
     const params = new URLSearchParams(location.search);
+    this.coldOpen = (params.get("open") === "world" || params.get("next") === "1") && !params.has("from") && !params.has("to") && (params.get("station") ?? "shinjuku") === "shinjuku";
+    if (this.coldOpen) this.panelFold.fold();
+    this.layout();
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
       onWalkStart: () => this.panelFold.fold(true),
@@ -175,7 +178,7 @@ export class App {
         const poi = this.s.loaded?.bundle.pois.find((p) => p.id === id);
         if (poi) this.setDestination(poi);
       },
-    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params) });
+    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params), previewNext: params.get("next") === "1" });
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
@@ -202,7 +205,7 @@ export class App {
     if (typeof matchMedia === "function") {
       matchMedia("(max-width: 600px)").addEventListener("change", () => this.renderStationSelect());
     }
-    const wanted = params.get("station");
+    const wanted = params.get("station") ?? (this.coldOpen ? "shinjuku" : null);
     const entry = this.s.entries.find((e) => e.key === wanted) ?? this.s.entries.find((e) => !e.synthetic) ?? this.s.entries[0]!;
     await this.openStation(entry, params.get("from"), params.get("to"));
   }
@@ -224,7 +227,7 @@ export class App {
     this.ui.stationSelect.setAttribute("aria-label", this.t.station);
     this.ui.stationSelect.addEventListener("change", () => {
       const entry = this.s.entries.find((e) => e.key === this.ui.stationSelect.value);
-      if (entry) void this.openStation(entry);
+      if (entry) { this.dismissColdOpen(); void this.openStation(entry); }
     });
     this.ui.langBtn.addEventListener("click", () => {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
@@ -294,6 +297,17 @@ export class App {
     this.ui.firstRun.append(this.ui.firstRunClose, firstRunSteps, this.ui.firstRunTry);
     panel.append(this.identityView.overview, this.ui.banner, fields, filterRow, this.ui.firstRun, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
+    const cold = el("div", "cold-open");
+    const title = el("div", "cold-open-title");
+    const guide = el("button", "primary");
+    const search = el("button", "cold-open-search");
+    cold.append(title, guide, search);
+    cold.hidden = !this.coldOpen;
+    this.root.classList.toggle("cold-opening", this.coldOpen);
+    guide.addEventListener("click", () => { this.dismissColdOpen(); this.startGuide(); });
+    search.addEventListener("click", () => { this.dismissColdOpen(); this.panelFold.open(true); });
+    this.ui.panelEntry.addEventListener("click", () => this.dismissColdOpen());
+    this.root.append(cold);
     this.ui.hint.setAttribute("role", "note");
     this.ui.greyboxLegend.hidden = true;
     this.root.append(viewport, top, panel, this.ui.panelEntry, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit, this.ui.greyboxLegend);
@@ -303,6 +317,12 @@ export class App {
   private layoutText(): void {
     const t = this.t;
     this.ui.greyboxLegend.textContent = t.greyboxLegend;
+    const cold = this.root.querySelector<HTMLElement>(".cold-open");
+    if (cold) {
+      cold.querySelector<HTMLElement>(".cold-open-title")!.textContent = t.coldOpen.title;
+      cold.querySelector<HTMLElement>(".primary")!.textContent = t.coldOpen.guide;
+      cold.querySelector<HTMLElement>(".cold-open-search")!.textContent = t.coldOpen.search;
+    }
     document.documentElement.lang = this.s.lang;
     this.ui.langBtn.textContent = t.language;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
@@ -384,7 +404,7 @@ export class App {
 
   private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null, fromRide = false): Promise<void> {
     if (!fromRide) { this.railRide?.dispose(); this.railRide = null; }
-    this.panelFold.open();
+    if (!this.coldOpen) this.panelFold.open();
     this.ui.railBtn.hidden = true;
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
@@ -451,7 +471,26 @@ export class App {
     const to = pois.find((p) => p.id === toId);
     if (from) this.s.origin = { kind: "poi", poi: from };
     if (to) this.s.destination = to;
-    this.refreshAll();
+    const pair = this.coldOpen ? coldOpenPair(entry.key, pois) : null;
+    if (pair) {
+      this.setOrigin({ kind: "poi", poi: pair.from });
+      this.setDestination(pair.to);
+      const first = this.s.polyline[0];
+      if (first) this.explorer.walkFrom(first, spawnHeading(this.s.loaded.bundle, this.s.origin, this.s.polyline));
+      this.panelFold.fold();
+    } else {
+      if (this.coldOpen) { this.dismissColdOpen(); this.panelFold.open(); }
+      this.refreshAll();
+      this.updateUrl();
+    }
+  }
+
+  private dismissColdOpen(): void {
+    if (!this.coldOpen) return;
+    this.coldOpen = false;
+    this.root.classList.remove("cold-opening");
+    const card = this.root.querySelector<HTMLElement>(".cold-open");
+    if (card) card.hidden = true;
     this.updateUrl();
   }
 
@@ -1021,6 +1060,7 @@ export class App {
   private updateUrl(): void {
     const p = new URLSearchParams(location.search);
     if (this.s.entry) p.set("station", this.s.entry.key);
+    if (this.coldOpen) { p.delete("from"); p.delete("to"); history.replaceState(null, "", `${location.pathname}?${p.toString()}`); return; }
     if (this.s.origin?.kind === "poi") p.set("from", this.s.origin.poi.id); else p.delete("from");
     if (this.s.destination) p.set("to", this.s.destination.id); else p.delete("to");
     history.replaceState(null, "", `${location.pathname}?${p.toString()}`);
@@ -1074,7 +1114,7 @@ export class App {
       }
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
-      this.explorer.showRoute(this.s.polyline);
+      this.explorer.showRoute(this.s.polyline, guidePaceSpans(this.s.polyline, best.steps, []).filter((span) => span.mode === "escalator"));
       this.ui.minimap.setRoute({ points: this.s.polyline, steps: best.steps }, destination);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
     }
@@ -1284,7 +1324,7 @@ export class App {
 
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
-    if (mode === "overview") this.panelFold.open();
+    if (mode === "overview" && !this.coldOpen) this.panelFold.open();
     else if (mode === "guide" || (mode === "walk" && typeof matchMedia === "function" && matchMedia("(max-width: 720px)").matches)) this.panelFold.fold();
     this.renderIdentity(mode);
     this.renderSpawnChips(this.s.loaded?.bundle);
@@ -1824,6 +1864,7 @@ export class App {
       setDestination: (poiId: string) => { const p = this.s.loaded?.bundle.pois.find((x) => x.id === poiId); if (p) this.setDestination(p); return Boolean(p); },
       setProfile: (patch: Partial<State["profile"]>) => { Object.assign(this.s.profile, patch); this.renderProfile(); this.computeRoute(); },
       route: () => this.s.route,
+      routeEndpoints: () => ({ from: this.s.origin?.kind === "poi" ? this.s.origin.poi.id : null, to: this.s.destination?.id ?? null, first: this.s.polyline[0] ?? null }),
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
       interaction: () => this.explorer.interaction,

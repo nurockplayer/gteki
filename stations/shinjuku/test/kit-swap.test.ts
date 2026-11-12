@@ -64,11 +64,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // textures re-measured, every explorer list unchanged.
 // 2026-11-09 JST: route sign groups carry their position and sightline dimensions; nodes re-measured.
 // #1032 (2026-11-10 JST): render-only corner fills; scene wall delta 0, geometry and bytes re-measured.
+// #221 (2026-11-11 JST): modelled stair edge metadata changes nodes only.
 const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "32b0d36c16b7d91456d4e1f628b3f18178c43c80dbb4b0e9819e57f376779e6a",
     "appearanceDigest": "59a5284df7a544b383a55e1895262504d7c44fcb560e3b0e86fe76410656d832",
-    "nodesDigest": "36f8a11d5c2532c0b82e895eafda9ec8aa7105d895d364f66de7c705d8c7117e",
+    "nodesDigest": "b73f255a30ea707124aa6fa4c1c2b572182e450de52d680543702b45de82ad56",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
     "meshes": 96,
     "bytes": 16190712
