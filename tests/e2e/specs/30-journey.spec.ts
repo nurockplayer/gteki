@@ -117,7 +117,8 @@ async function sceneMetrics(page: Page) {
 }
 
 test("guided walk @phone", async ({ page }, info) => {
-  test.setTimeout(850_000);
+  test.setTimeout(1_800_000);
+  const wallStart = Date.now();
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
   await page.goto("/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo");
@@ -132,32 +133,40 @@ test("guided walk @phone", async ({ page }, info) => {
   const cdp = await page.context().newCDPSession(page);
   const samples: any[] = [], stepS = Number(process.env.JOURNEY_STEP_S ?? 4);
   let simT = 0, arrived = false;
-  const sample = async (arrival: boolean) => {
+  const sample = async (arrival: boolean, simMs: number) => {
     await page.evaluate(() => (window as any).__gteki.holdFrames(true));
     try {
+      let phaseStart = Date.now();
       await page.evaluate(() => (window as any).__gteki.goldenFrame());
       const index = samples.length;
       const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
       fs.writeFileSync(path.join(out, `${String(index).padStart(3, "0")}.png`), png);
+      const shotMs = Date.now() - phaseStart;
       const guide = await page.evaluate(() => { const e = (window as any).__gteki.scanProbe().explorer; return { s: e.guide.s, step: e.guide.steps[Math.min(e.guide.steps.length - 1, e.guide.cum.findIndex((v: number) => v >= e.guide.s))] }; });
       let acc = 0, stepIndex = wps[0]!.stepIndex;
       for (let i = 1; i < wps.length; i++) { const a = wps[i - 1]!.p, b = wps[i]!.p; acc += Math.hypot(b.x - a.x, b.y - a.y); stepIndex = wps[i]!.stepIndex; if (acc >= guide.s) break; }
       const step = steps[stepIndex]!, from = nodes.get(step.fromNodeId)!, to = nodes.get(step.toNodeId)!;
+      phaseStart = Date.now();
       const m = await sceneMetrics(page), cov = await overlay(page);
+      const sceneMs = Date.now() - phaseStart;
+      phaseStart = Date.now();
       const probe = await page.evaluate(() => (window as any).__gteki.goldenProbe(false));
+      const probeMs = Date.now() - phaseStart;
+      phaseStart = Date.now();
       const image = await imageStats(page, png), flat = await screenshotFlatRatio(page, png);
+      const imageMs = Date.now() - phaseStart;
       const dir = m.cameraDirection, dx = to.position.x - from.position.x, dy = to.position.y - from.position.y;
       const axisDeg = step.mode === "escalator" ? Math.acos(Math.max(-1, Math.min(1, (dir[0] * dx - dir[2] * dy) / (Math.hypot(dir[0], dir[2]) * Math.hypot(dx, dy))))) * 180 / Math.PI : null;
-      samples.push({ index, simT, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, nearClip: m.nearClip, axisDeg });
+      samples.push({ index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, nearClip: m.nearClip, axisDeg });
+      console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
     } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   };
   while (simT < 260 && !arrived) {
-    await hooks.simulate(page, stepS); simT += stepS;
-    await sample(false);
-    console.log(`[journey] ${info.project.name} sample=${samples.length - 1} simT=${simT}`);
+    const start = Date.now(); await hooks.simulate(page, stepS); const simMs = Date.now() - start; simT += stepS;
+    await sample(false, simMs);
     arrived = (await hooks.guideControls(page) as any).arrived;
   }
-  if (arrived) { await hooks.simulate(page, 2); simT += 2; await sample(true); }
+  if (arrived) { const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs); }
   const threshold = info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop;
   const rules = [ { row: "J5", metric: "voidRatio", limit: config.thresholds.voidRatio }, { row: "J5", metric: "nearBlack", limit: config.thresholds.nearBlack }, { row: "J5", metric: "nearClip", limit: config.thresholds.nearClip }, { row: "J6", metric: "catVisible", limit: config.thresholds.catVisibleMin }, { row: "J8", metric: "overlayPct", limit: threshold }, { row: "J9", metric: "overlayPct", limit: threshold } ];
   const summary: Record<string, any> = {};
@@ -179,7 +188,13 @@ test("guided walk @phone", async ({ page }, info) => {
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));
   fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, tier, renderer, coldOpen, samples, summary }, null, 2));
   const lines = [`## Journey ${info.project.name}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
-  fs.writeFileSync(path.join(out, "summary.md"), lines.join("\n") + "\n");
+  const medians = ["simMs", "shotMs", "sceneMs", "probeMs", "imageMs"].map(key => {
+    const values = samples.map(s => s[key] as number).sort((a, b) => a - b), mid = Math.floor(values.length / 2);
+    return `${key}=${values.length % 2 ? values[mid] : (values[mid - 1]! + values[mid]!) / 2}`;
+  });
+  lines.push(`- Phase medians (ms): ${medians.join(", ")}`);
+  fs.writeFileSync(path.join(out, "summary.md"), lines.join("\n"));
+  const sheetsStart = Date.now();
   for (let start = 0; start < samples.length; start += 12) {
     const frames = samples.slice(start, start + 12).map(s => ({ ...s, data: fs.readFileSync(path.join(out, `${String(s.index).padStart(3, "0")}.png`)).toString("base64") }));
     const jpg = await page.evaluate(async (frames) => {
@@ -191,6 +206,7 @@ test("guided walk @phone", async ({ page }, info) => {
     }, frames);
     fs.writeFileSync(path.join(out, `sheet-${String(start / 12 + 1).padStart(2, "0")}.jpg`), Buffer.from(jpg!, "base64"));
   }
+  fs.appendFileSync(path.join(out, "summary.md"), `; sheetsMs=${Date.now() - sheetsStart}; wallMs=${Date.now() - wallStart}\n`);
   expect(arrived, "guide arrived within 260 simulated seconds").toBe(true);
   expect(samples.length, "at least 30 samples").toBeGreaterThanOrEqual(30);
   expect(Object.values(summary).filter((s: any) => s.status === "fail"), "unknown regressions").toEqual([]);

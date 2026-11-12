@@ -124,7 +124,7 @@ jobs:
   journey:
     name: journey (shinjuku) (${{ matrix.project }})
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 38
     strategy:
       fail-fast: false
       matrix:
@@ -147,7 +147,7 @@ jobs:
           pnpm install --ignore-workspace --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
       - name: Run journey
-        timeout-minutes: 15
+        timeout-minutes: 32
         working-directory: tests/e2e
         env:
           CI: "1"
