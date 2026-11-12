@@ -1,0 +1,258 @@
+{
+  "thresholds": {
+    "voidRatio": 0.005,
+    "nearBlack": 0.3,
+    "nearClip": 0.1,
+    "catVisibleMin": 0.5,
+    "overlayPctDesktop": 20,
+    "overlayPctPhone": 30
+  },
+  "known": [
+    {
+      "project": "desktop-chromium",
+      "metric": "voidRatio",
+      "from": 21,
+      "to": 21,
+      "row": "J5",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "nearClip",
+      "from": 2,
+      "to": 2,
+      "row": "J5",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "nearClip",
+      "from": 10,
+      "to": 18,
+      "row": "J5",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "nearClip",
+      "from": 19,
+      "to": 19,
+      "row": "J5",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 1,
+      "to": 3,
+      "row": "J6",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 5,
+      "to": 6,
+      "row": "J6",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 8,
+      "to": 9,
+      "row": "J6",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 20,
+      "to": 22,
+      "row": "J6",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 36,
+      "to": 37,
+      "row": "J6",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "overlayPct",
+      "from": 0,
+      "to": 37,
+      "row": "J8",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST",
+      "maxValues": [
+        35.677083333333336,
+        34.895833333333336,
+        33.854166666666664,
+        35.9375,
+        33.59375,
+        38.28125,
+        39.84375,
+        32.291666666666664,
+        34.635416666666664,
+        36.197916666666664,
+        37.239583333333336,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        36.197916666666664,
+        32.291666666666664,
+        34.375,
+        34.375,
+        34.375,
+        34.375,
+        33.072916666666664,
+        34.375,
+        34.375,
+        34.375,
+        33.072916666666664,
+        34.635416666666664,
+        34.375,
+        34.375,
+        34.375,
+        47.395833333333336
+      ]
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "overlayPct",
+      "from": 38,
+      "to": 38,
+      "row": "J9",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST",
+      "maxValues": [
+        47.916666666666664
+      ]
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "voidRatio",
+      "from": 21,
+      "to": 21,
+      "row": "J5",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "nearClip",
+      "from": 2,
+      "to": 2,
+      "row": "J5",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "nearClip",
+      "from": 10,
+      "to": 18,
+      "row": "J5",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "nearClip",
+      "from": 19,
+      "to": 19,
+      "row": "J5",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "catVisible",
+      "from": 0,
+      "to": 3,
+      "row": "J6",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "catVisible",
+      "from": 10,
+      "to": 20,
+      "row": "J6",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "catVisible",
+      "from": 36,
+      "to": 37,
+      "row": "J6",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "overlayPct",
+      "from": 0,
+      "to": 37,
+      "row": "J8",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST",
+      "maxValues": [
+        32.8125,
+        32.552083333333336,
+        31.25,
+        31.25,
+        31.510416666666668,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        32.291666666666664,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        31.25,
+        34.375,
+        34.114583333333336,
+        34.114583333333336,
+        34.114583333333336,
+        31.25,
+        34.114583333333336,
+        34.114583333333336,
+        31.25,
+        31.25,
+        31.25,
+        34.114583333333336,
+        36.979166666666664
+      ]
+    },
+    {
+      "project": "phone-chromium",
+      "metric": "overlayPct",
+      "from": 38,
+      "to": 38,
+      "row": "J9",
+      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST",
+      "maxValues": [
+        36.979166666666664
+      ]
+    }
+  ]
+}
