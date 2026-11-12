@@ -96,7 +96,7 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
   liveColliders.push(...greybox.colliders, ...stairwellCut.colliders);
   liveBlockers.push(...stairwellCut.cameraBlockers);
   const targetsMs = elapsed();
-  const connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: sceneMeshProbe([root]), envMap: options.envMap ?? null }, tier);
+  const connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: sceneMeshProbe([root]), envMap: options.envMap ?? null, visuallyModelled: root.userData.modelledStairEdges ? new Set<string>(root.userData.modelledStairEdges) : undefined }, tier);
   const connectorsMs = elapsed();
   liveWalkable.push(...connectors.walkable);
   liveColliders.push(...connectors.colliders);
