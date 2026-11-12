@@ -9,8 +9,8 @@ export function flatRatio(rgba: ArrayLike<number>): number {
   return rgba.length ? largest / (rgba.length / 4) : 0;
 }
 
-export type Metric = "voidRatio" | "stationShare" | "flatRatio" | "nearBlack";
+export type Metric = "voidRatio" | "stationShare" | "flatRatio" | "nearBlack" | `feature:${string}`;
 export function evaluateCheck(metric: Metric, value: number, threshold: number, known?: Partial<Record<Metric, string>>) {
-  const passes = metric === "stationShare" ? value >= threshold : value <= threshold;
+  const passes = (metric === "stationShare" || metric.startsWith("feature:")) ? value >= threshold : value <= threshold;
   return { metric, value, threshold, status: passes ? "pass" : known?.[metric] ? "known" : "fail", issue: passes ? undefined : known?.[metric] };
 }

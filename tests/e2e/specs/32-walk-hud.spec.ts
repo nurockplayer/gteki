@@ -1,15 +1,17 @@
 import fs from "node:fs";
 import { expect, test } from "@playwright/test";
-import { PROBE_SCRIPT, hooks, overlayGrid, settleFrames, shotPath } from "../lib/gteki";
+import { installBootFrameProbe, PROBE_SCRIPT, hooks, overlayGrid, settleFrames, shotPath, waitBootLift } from "../lib/gteki";
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
 test("compact guide and arrival @phone", async ({ page }, info) => {
   test.setTimeout(720_000);
   await page.setViewportSize(info.project.name === "phone-chromium" ? { width: 390, height: 844 } : { width: 1280, height: 800 });
+  await installBootFrameProbe(page);
   await page.addInitScript(PROBE_SCRIPT);
   await page.goto("/?next=1");
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000 });
+  await waitBootLift(page, info);
   await settleFrames(page, "cold open");
   await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   try {

@@ -8,7 +8,8 @@ import { screenshotFlatRatio } from "../lib/screenshot-flat.ts";
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
-type Camera = { id: string; station: StationKey; kind: string; knownIssue?: number; node?: string; headingDeg?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
+type Feature = { name: string; match: { namePrefix?: string; contains?: string; role?: string; withinM?: number }; minPixels: number };
+type Camera = { features?: Feature[]; id: string; station: StationKey; kind: string; knownIssue?: number; node?: string; headingDeg?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
 const config = JSON.parse(fs.readFileSync(new URL("../golden-cameras.json", import.meta.url), "utf8")) as {
   thresholds: Record<"voidRatio" | "flatRatio" | "nearBlack", number>;
   cameras: Camera[];
@@ -72,7 +73,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       diagnostics.screenshotAfter = await page.evaluate(() => (window as any).__gteki.goldenRenderState());
       phases.screenshotAfter = Date.now() - phaseStart;
       phaseStart = Date.now();
-      const probe = await page.evaluate((overview) => (window as any).__gteki.goldenProbe(overview), camera.kind === "overview") as { voidRatio: number; stationShare: number | null; renders: unknown[] };
+      const probe = await page.evaluate(({ overview, features }) => (window as any).__gteki.goldenProbe(overview, features), { overview: camera.kind === "overview", features: camera.features }) as { voidRatio: number; stationShare: number | null; features: { name: string; pixels: number; meshes: number }[]; renders: unknown[] };
       diagnostics.probe = probe.renders;
       phases.probe = Date.now() - phaseStart;
       phaseStart = Date.now();
@@ -83,9 +84,16 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       const image = await imageStats(page, png);
       phases.image = Date.now() - phaseStart;
       diagnostics.imageInPageMs = image.ms;
-      const metrics = { voidRatio: probe.voidRatio, stationShare: probe.stationShare, flatRatio: flat.value, nearBlack: image.nearBlack };
+      const metrics: Record<string, number | null> = { voidRatio: probe.voidRatio, stationShare: probe.stationShare, flatRatio: flat.value, nearBlack: image.nearBlack };
       const thresholds = camera.kind === "overview" ? camera.thresholds! : config.thresholds;
       const checks = (Object.entries(thresholds) as [Metric, number][]).map(([metric, threshold]) => evaluateCheck(metric, metrics[metric]!, threshold, camera.known));
+      for (const feature of camera.features ?? []) {
+        const result = probe.features.find(f => f.name === feature.name)!;
+        const check = evaluateCheck(`feature:${feature.name}`, result.pixels, feature.minPixels, camera.known);
+        if (!result.meshes && check.status !== "known") { check.status = "fail"; if (!camera.knownIssue) failures.push(`${camera.id}: feature not found: ${feature.name}`); }
+        checks.push(check);
+      }
+      diagnostics.features = probe.features;
       const failedChecks = checks.filter(c => c.status === "fail");
       if (camera.knownIssue) {
         console.log(`[golden] ${camera.id}: KNOWN #${camera.knownIssue}${failedChecks.length ? "" : " now passes, remove the entry"}`);
@@ -108,4 +116,20 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
     console.log(`[golden] ${camera.id}: total=${((Date.now() - started) / 1000).toFixed(1)}s ${Object.entries(phases).map(([name, ms]) => `${name}=${(ms / 1000).toFixed(2)}s`).join(" ")}`);
   }
   expect(failures, failures.join("\n")).toEqual([]);
+});
+
+test("hidden sign fails its feature check", async ({ page }) => {
+  test.setTimeout(180_000);
+  test.skip(process.env.GTEKI_GOLDEN_STATION === "ikebukuro", "Shinjuku fault test");
+  const camera = config.cameras.find(c => c.id === "sj-sign-1ecbdf77")!;
+  await openStation(page, "shinjuku");
+  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
+  try {
+    const placement = await page.evaluate(({ node, headingDeg }) => (window as any).__gteki.setView({ node, headingDeg }), camera) as { placed: boolean };
+    expect(placement.placed).toBe(true);
+    await page.evaluate(() => (window as any).__gteki.goldenFrame());
+    const result = await page.evaluate((features) => (window as any).__gteki.goldenProbe(false, features, { hideBeforeShown: ["sign 1ecbdf77"] }), camera.features) as { features: { pixels: number; meshes: number }[] };
+    expect(result.features[0]!.meshes).toBeGreaterThan(0);
+    expect(evaluateCheck("feature:sign 1ecbdf77", result.features[0]!.pixels, camera.features![0]!.minPixels).status).toBe("fail");
+  } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
 });

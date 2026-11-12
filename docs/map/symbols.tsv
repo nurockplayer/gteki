@@ -168,6 +168,7 @@ routeNearFade	function	apps/web/src/explorer/geometry.ts
 routeRunsOutsideSpans	function	apps/web/src/explorer/geometry.ts
 routeSegmentProfile	function	apps/web/src/explorer/geometry.ts
 steppedProfile	function	apps/web/src/explorer/geometry.ts
+goldenPixelDiff	function	apps/web/src/explorer/goldenPixels.ts
 goldenPixels	function	apps/web/src/explorer/goldenPixels.ts
 GraphView	interface	apps/web/src/explorer/graphView.ts
 MODE_WIDTH	const	apps/web/src/explorer/graphView.ts
@@ -552,6 +553,9 @@ stationClock	function	apps/web/src/stationClock.ts
 App	class	apps/web/src/ui/app.ts
 barrierFreeResults	function	apps/web/src/ui/barrierFree.ts
 isAccessibleToilet	function	apps/web/src/ui/barrierFree.ts
+BootStage	type	apps/web/src/ui/bootCard.ts
+FrameReadiness	class	apps/web/src/ui/bootCard.ts
+bootProgress	function	apps/web/src/ui/bootCard.ts
 CATEGORY_ORDER	const	apps/web/src/ui/categoryFilter.ts
 categoriesIn	function	apps/web/src/ui/categoryFilter.ts
 AriaAttrs	type	apps/web/src/ui/combobox.ts

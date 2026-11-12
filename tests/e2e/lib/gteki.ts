@@ -62,6 +62,37 @@ export const PROBE_SCRIPT = `(() => {
 
 export interface Diagnostics { console: string[]; pageErrors: string[]; failedRequests: string[] }
 
+export async function installBootFrameProbe(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const w = window as any;
+    w.__bootFrames = [];
+    const frame = (t: number) => {
+      w.__bootFrames.push(t);
+      if (w.__bootReadyAt === undefined && w.__gteki?.phase() === "ready") w.__bootReadyAt = t;
+      const card = document.querySelector<HTMLElement>(".boot-card");
+      if (w.__bootFrames.length < 2000 && !(card && card.hidden)) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  });
+}
+
+export async function waitBootLift(page: Page, info: TestInfo): Promise<void> {
+  const card = page.locator(".boot-card");
+  const coldOpen = await card.count() > 0;
+  await expect(card).toBeHidden({ timeout: 30_000 });
+  const timing = await page.evaluate(() => {
+    const walk = performance.getEntriesByName("boot-walk")[0]?.startTime;
+    const lift = performance.getEntriesByName("boot-lift")[0]?.startTime;
+    const w = window as any;
+    if (walk === undefined || lift === undefined) return null;
+    const frames: number[] = w.__bootFrames.filter((t: number) => t >= walk && t <= lift);
+    const intervals = frames.slice(1).map((t, i) => Math.round(t - frames[i]));
+    return { readyToWalkMs: Math.round(walk - w.__bootReadyAt), walkToLiftMs: Math.round(lift - walk), frames: frames.length, maxDtMs: Math.max(0, ...intervals), dtMs: intervals.slice(0, 20).join(",") };
+  });
+  if (coldOpen) expect(timing, "cold open must record boot-walk and boot-lift marks").not.toBeNull();
+  if (timing) console.log(`[boot-lift] ${info.project.name} ${path.basename(info.file)}: readyToWalkMs=${timing.readyToWalkMs} walkToLiftMs=${timing.walkToLiftMs} frames=${timing.frames} maxDtMs=${timing.maxDtMs} dtMs=${timing.dtMs}`);
+}
+
 /** Collect console errors/warnings, uncaught errors and failed requests for the whole test. */
 export function watch(page: Page): Diagnostics {
   const d: Diagnostics = { console: [], pageErrors: [], failedRequests: [] };
