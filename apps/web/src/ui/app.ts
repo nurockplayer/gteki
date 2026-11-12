@@ -39,7 +39,7 @@ import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { coldOpenPair, demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
-import { guideCardText } from "./guideCard.ts";
+import { escalatorArrow, guideCardText } from "./guideCard.ts";
 import { bootProgress, FrameReadiness, type BootStage } from "./bootCard.ts";
 import { shortStationLabel } from "./shortStationLabel.ts";
 
@@ -1618,22 +1618,24 @@ export class App {
     const ins = this.s.instructions[this.s.activeInstruction]!;
     if (this.escalatorSpan) {
       let distance = 0;
-      let end = this.s.polyline[0];
+      let start = this.s.polyline[0];
+      let end = start;
       for (let i = 1; i < this.s.polyline.length; i++) {
         const a = this.s.polyline[i - 1]!, b = this.s.polyline[i]!;
+        if (distance <= this.escalatorSpan.fromS + 0.001) start = a;
         distance += Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
         if (distance >= this.escalatorSpan.toS - 0.001) { end = b; break; }
       }
       const floor = floorDisplayName(this.s.loaded?.bundle.floors.find((f) => f.id === end?.floorId), this.s.lang).replace(/GL[–-]B1 landing/g, "B1");
       const seconds = Math.round((this.escalatorSpan.toS - this.guideS) / this.escalatorSpan.maxMps / 5) * 5;
-      box.append(el("div", "hud-instruction", `↓ ${floor}${this.escalatorSpan.maxMps ? ` · ~${seconds} s` : ""}`));
+      box.append(el("div", "hud-instruction", `${escalatorArrow(start!.y, end!.y)} ${floor}${this.escalatorSpan.maxMps ? ` · ~${seconds} s` : ""}`));
       return box;
     }
     const card = guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
     const instruction = el("div", "hud-instruction");
     const line = el("span", "guide-card-line", card.line);
     instruction.append(line);
-    if (this.s.activeInstruction === this.firstGuideInstruction) box.append(this.ui.mascot.root);
+    if (!this.explorer.previewNext || this.s.activeInstruction === this.firstGuideInstruction) box.append(this.ui.mascot.root);
     box.append(instruction);
     requestAnimationFrame(() => {
       if (!instruction.isConnected) return;
