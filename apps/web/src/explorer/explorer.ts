@@ -645,7 +645,7 @@ export class Explorer {
         for (let parent: THREE.Object3D | null = object; parent && parent !== root; parent = parent.parent) {
           if ((!feature.match.namePrefix || parent.name.startsWith(feature.match.namePrefix)) &&
               (!feature.match.contains || parent.name.includes(feature.match.contains)) &&
-              (!feature.match.role || parent.userData.gteki_role === feature.match.role)) { matched = true; break; }
+              (!feature.match.role || parent.userData.gteki_role === feature.match.role || parent.userData.goldenRole === feature.match.role)) { matched = true; break; }
         }
         if (matched && feature.match.withinM !== undefined) {
           const bounds = new THREE.Box3().setFromObject(object);

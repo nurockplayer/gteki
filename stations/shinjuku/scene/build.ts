@@ -1093,8 +1093,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       root.add(mesh);
       return mesh;
     };
-    add(stairGeos, mat.stair, "walkable");
-    add(riserGeos, mat.riser);
+    const stairMesh = add(stairGeos, mat.stair, "walkable");
+    const riserMesh = add(riserGeos, mat.riser);
+    if (stairMesh) stairMesh.userData.goldenRole = "stairs_ramps";
+    if (riserMesh) riserMesh.userData.goldenRole = "stairs_ramps";
     add(trussGeos, mat.escTruss);
     const nosingMesh = add(nosingGeos, mat.nosing);
     if (nosingMesh) ledger?.bind("stair-nosing", nosingMesh, nosingGeos);
