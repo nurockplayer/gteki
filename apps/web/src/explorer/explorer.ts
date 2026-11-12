@@ -3308,8 +3308,8 @@ export class Explorer {
     const lock = stepEscalatorLock(this.escalatorProgress, lockOn, dt, lockSnap);
     this.escalatorProgress = lock.progress;
     this.escalatorWeight = lock.weight;
-    if (snap || this.firstPerson || !this.previewNext || !this.catAvatar || this.escalatorWeight > 0
-      || this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined) {
+    if (this.bodyRaiseHold && (snap || this.firstPerson || !this.previewNext || !this.catAvatar || this.escalatorWeight > 0
+      || this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined)) {
       this.bodyRaiseHold.seconds = this.bodyRaiseHold.target = 0;
     }
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
