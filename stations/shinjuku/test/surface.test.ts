@@ -171,6 +171,11 @@ describe("street geometry and collision", () => {
     }
   });
   it("keeps surface rendering near street level and above an exit's first landing", () => {
+    const bottom = bundle.nodes.find((n) => n.id === "n:51435d9112ba409e8ad5ab02dbbd060f")!.position;
+    const flight = layout.runs.find((r) => r.edgeId === "e:c690df6cad7b48bba7b3b30fee65eda2")!;
+    const length = Math.hypot(flight.b.x - flight.a.x, flight.b.y - flight.a.y);
+    expect(surfaceVisibleAt(layout, bundle, { ...bottom, z: -2.5 })).toBe(true);
+    expect(surfaceVisibleAt(layout, bundle, { x: bottom.x - 6 * (flight.b.y - flight.a.y) / length, y: bottom.y + 6 * (flight.b.x - flight.a.x) / length, z: -2.5 })).toBe(false);
     const exit = surfaceEntrances(layout, bundle).find((e) => e.id === "poi:exit:4")!;
     // The north-exit follow camera can sit beside the street opening while still
     // looking through it; the sky/canopy must remain present across that shoulder.

@@ -162,6 +162,8 @@ export interface Layout {
   shaftFinishes: Soffit[];
   /** Render-only closure of height steps; wall bounds the connected polygon when present. */
   shaftFascias: { floorId: string; wall: WallSeg; polygon?: { rings: XY[][]; axis: XY; offset: number } }[];
+  /** Render-only plan footprints for capped stair surface visibility. */
+  surfaceStairShafts?: { rings: XY[][]; minZ: number }[];
   /** ?next=1 render view only; original arrays remain the physical/bake inputs. */
   shaftCeilingPreview?: { roofs: Soffit[]; ceilings: SlabPoly[][]; soffits: Soffit[]; fascias: Layout["shaftFascias"] };
   nodeZ: Map<string, number>;
@@ -934,6 +936,11 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const minS = Math.min(...stations) - 0.25, maxS = Math.max(...stations) + 0.25;
     const minN = Math.min(...corners), maxN = Math.max(...corners);
     const at = (s: number, c: number): XY => ({ x: lo.x + u.x * s + n.x * c, y: lo.y + u.y * s + n.y * c });
+    if (capToRoof && group[0]!.mode === "stairs") {
+      const widths = group.flatMap((r) => [r.a, r.b].flatMap((p) => [across(p) - r.width / 2, across(p) + r.width / 2]));
+      const a = Math.min(...stations), b = Math.max(...stations), c = Math.min(...widths), d = Math.max(...widths);
+      (layout.surfaceStairShafts ??= []).push({ rings: [[at(a, c), at(b, c), at(b, d), at(a, d), at(a, c)]], minZ: Math.min(...group.flatMap((r) => [r.a.z, r.b.z])) });
+    }
     // One rectangular hull spans intermediate landings and parallel lanes without interior walls.
     const envelope = [ [ [at(minS, minN), at(maxS, minN), at(maxS, maxN), at(minS, maxN), at(minS, minN)] ] ];
     // Pairwise, undirected axes: a shared plane must accommodate every lane.

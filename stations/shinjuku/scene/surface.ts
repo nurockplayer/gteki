@@ -262,5 +262,5 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;root.add(dome);
   root.userData.drawCallBudget=batches.size+4;root.userData.buildingParts=buildings.length;
   batches.clear();
-  return {root,resources,visibility:{entrances,openings:streets.holes}};
+  return {root,resources,visibility:{entrances,openings:streets.holes,shafts:layout.surfaceStairShafts ?? []}};
 }
