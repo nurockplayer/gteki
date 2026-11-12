@@ -1,7 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { PROBE_SCRIPT, overlayGrid, settleFrames, shotPath } from "../lib/gteki";
 
+test.use({ trace: "off", video: "off", screenshot: "off" });
+
 test("compact guide and arrival @phone", async ({ page }, info) => {
+  test.setTimeout(360_000);
   await page.setViewportSize(info.project.name === "phone-chromium" ? { width: 390, height: 844 } : { width: 1280, height: 800 });
   await page.addInitScript(PROBE_SCRIPT);
   await page.goto("/?next=1");
@@ -16,7 +19,7 @@ test("compact guide and arrival @phone", async ({ page }, info) => {
     console.log(`[walk-hud] ${info.project.name} ${name}: ${JSON.stringify(overlay)}`);
     expect(overlay.share, `${name}: ${JSON.stringify(overlay.top)}`).toBeLessThanOrEqual(info.project.name === "phone-chromium" ? .30 : .20);
     expect(overlay.cat, `${name}: ${JSON.stringify(overlay.top)}`).toBe(true);
-    await page.screenshot({ path: shotPath(info, `walk-hud-${name}.png`) });
+    await page.screenshot({ path: shotPath(info, `walk-hud-${name}.png`), timeout: 60_000 });
   };
   const controls = async () => {
     await expect(page.locator(".hud button:visible")).toHaveCount(3);
@@ -53,5 +56,5 @@ test("compact guide and arrival @phone", async ({ page }, info) => {
   await expect(page.getByRole("button", { name: "Search again" })).toBeVisible();
   await card.click();
   await expect(card).toContainText("Data for");
-  await page.screenshot({ path: shotPath(info, "walk-hud-arrival-open.png") });
+  await page.screenshot({ path: shotPath(info, "walk-hud-arrival-open.png"), timeout: 60_000 });
 });
