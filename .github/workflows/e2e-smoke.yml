@@ -63,6 +63,13 @@ jobs:
           GTEKI_ROOT: ${{ github.workspace }}
         run: pnpm exec playwright test specs/31-cold-open.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
 
+      - name: Boot card (desktop + phone)
+        timeout-minutes: 12
+        working-directory: tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/33-boot-card.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
+
       # The station switch (Ikebukuro -> Shinjuku) runs on its own step so its [switch-timings] line is easy to find
       # (#647). It blocks again since #1026: the old 15 s ready limit was the cause of the failures, and with the 120 s
       # limit 20 of 20 runs passed (switchReadyMs 19-24 s under SwiftShader). Real-device switch time stays on the field-run checklist.
@@ -129,13 +136,14 @@ jobs:
           if-no-files-found: ignore
 
   journey:
-    name: journey (shinjuku) (${{ matrix.project }})
+    name: journey (shinjuku) (${{ matrix.project }}${{ matrix.mode == 'next' && ', next' || '' }})
     runs-on: ubuntu-latest
     timeout-minutes: 38
     strategy:
       fail-fast: false
       matrix:
         project: [desktop-chromium, phone-chromium]
+        mode: [default, next]
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -158,6 +166,7 @@ jobs:
         working-directory: tests/e2e
         env:
           CI: "1"
+          JOURNEY_MODE: ${{ matrix.mode }}
           GTEKI_ROOT: ${{ github.workspace }}
         run: pnpm exec playwright test specs/30-journey.spec.ts --project=${{ matrix.project }} --trace=off
       - name: Append journey summary
@@ -170,8 +179,16 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: journey-reel-${{ matrix.project }}
+          name: journey-reel-${{ matrix.project }}${{ matrix.mode == 'next' && '-next' || '' }}
           path: tests/e2e/artifacts/journey
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Upload journey test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journey-results-${{ matrix.project }}${{ matrix.mode == 'next' && '-next' || '' }}
+          path: tests/e2e/test-results
           retention-days: 14
           if-no-files-found: ignore
 
