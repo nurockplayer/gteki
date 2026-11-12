@@ -539,3 +539,14 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .cold-open-search { border: 0; background: transparent; padding: 4px; }
 .cold-opening .hud, .cold-opening .panel-entry, .cold-opening .minimap, .cold-opening .hint { display: none !important; }
 @media (max-width: 600px) { .cold-open { left: 50%; transform: translateX(-50%); white-space: nowrap; } }
+
+.boot-card { position: absolute; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; opacity: 1; transition: opacity 250ms; }
+.boot-card[hidden] { display: none; }
+.boot-card.lifting { opacity: 0; pointer-events: none; }
+.boot-title { font-size: 40px; font-weight: 700; }
+.boot-sub { font-size: 15px; }
+.boot-track { width: 240px; max-width: 60vw; height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.boot-fill { height: 100%; background: var(--accent); transition: width 300ms; }
+.boot-status { font-size: 13px; color: var(--muted); }
+@media (max-width: 480px) { .boot-title { font-size: 32px; } }
+@media (prefers-reduced-motion: reduce) { .boot-card, .boot-fill { transition: none; } }
