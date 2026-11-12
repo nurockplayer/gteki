@@ -19,11 +19,11 @@ export interface Maneuver {
 /** Display label for an NWD floor: B1, B2, 地上, 1F; intermediate floors as "B2–B3 中間". */
 export function floorLabel(f: Floor | undefined): { ja: string; en: string; short: string } {
   if (!f || f.ordinal === null) return { ja: "不明", en: "unknown", short: "?" };
+  const o = f.ordinal;
+  if (o === 0) return { ja: "地上", en: "Street", short: "GL" };
   const ja = f.displayNames?.find((name) => name.lang === "ja")?.text;
   const en = f.displayNames?.find((name) => name.lang === "en")?.text;
   if (ja && en) return { ja, en, short: en.replace(" landing", "").replace("–", "/") };
-  const o = f.ordinal;
-  if (o === 0) return { ja: "地上", en: "Street", short: "GL" };
   if (o > 0) return { ja: `${o}階`, en: `${o}F`, short: `${o}F` };
   if (!Number.isInteger(o)) {
     const a = Math.ceil(o);
