@@ -66,9 +66,10 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1032 (2026-11-10 JST): render-only corner fills; scene wall delta 0, geometry and bytes re-measured.
 // #221 (2026-11-11 JST): modelled stair edge metadata changes nodes only.
 // #1171 (2026-11-12 JST): golden probe tags in userData (goldenRole on stair and riser meshes; gteki_role and faces on route sign groups); nodes re-measured on the tree merged with #221's modelled stair edge metadata, everything else unchanged.
+// 2026-11-12 JST: station digest remeasured after rebasing on #1213; unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "d7fa06902b4c0c32ed8801f4ceb8348b8893adf78d8a7ae2a5d8ff2d46c233c7",
+    "geometryDigest": "ad286e6bf31691ef2544b08807eeeea85f9c472f173f113d038c7cbb0fcd7506",
     "appearanceDigest": "59a5284df7a544b383a55e1895262504d7c44fcb560e3b0e86fe76410656d832",
     "nodesDigest": "f06536a39c024d1c1762e35b455eff4d127be2a9fec9ea3cbeac7eb15992c708",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",

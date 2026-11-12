@@ -12,6 +12,8 @@ import type { Edge, StationBundle } from "@gteki/schema";
 import polygonClipping, { type Polygon as ClipPolygon } from "polygon-clipping";
 import { stableHypot } from "./stable-hypot.ts";
 
+export const RUN_WALL_OFFSET = 0.08;
+
 export interface XY {
   x: number;
   y: number;
@@ -576,7 +578,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan, options: { previe
     // ~1 m pieces so each only blocks near the run's local height
     const pieces = Math.max(1, Math.ceil(L));
     for (const sgn of [1, -1]) {
-      const off = (r.width / 2 + 0.08) * sgn;
+      const off = (r.width / 2 + RUN_WALL_OFFSET) * sgn;
       for (let i = 0; i < pieces; i++) {
         const t0 = i / pieces;
         const t1 = (i + 1) / pieces;

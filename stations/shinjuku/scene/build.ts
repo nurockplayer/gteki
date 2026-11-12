@@ -7,7 +7,7 @@ import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { centroid, cutWallsByVoids, pointInRings, roomFloorFill, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { centroid, cutWallsByVoids, pointInRings, roomFloorFill, soffitHeight, STREET_PAD, RUN_WALL_OFFSET, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, escalatorStepTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
 import { prepareLayout } from "./build-cache.ts";
 import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
@@ -1025,7 +1025,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             const cx = lo.x + u.x * run * (i + 0.5);
             const cy = lo.y + u.y * run * (i + 0.5);
             const top = lo.z + rise * (i + 1);
-            const box = new THREE.BoxGeometry(run + 0.02, rise + 0.18, r.width);
+            const box = new THREE.BoxGeometry(run + 0.02, rise + 0.18, r.width + 2 * RUN_WALL_OFFSET);
             box.rotateY(yaw);
             box.translate(cx, top - (rise + 0.18) / 2, -cy);
             stairGeos.push(box);
