@@ -64,6 +64,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 
 ### Docs, CI, deploy
 - Architecture and product: `docs/architecture.md`, `docs/product-vision.md`, `docs/acceptance.md`, `docs/ci-limits.md`
+- Release journey: the v1.0 acceptance table (rows J1–J14, in playhead order) and the working method; a PR names the row it moves · `docs/release/journey.md`
 - Core contracts: `docs/core/contract.md`, `docs/core/merchant-submission-format.md`
 - GIS records (acquisitions, decisions, rights, S03): `docs/gis/`; start at `docs/gis/README.md` · data-lane view: [[data-gis]]
 - Research and source register: `docs/research/`; start at `docs/research/source-register.md` · lines, gap table, field run and receipts (#533): [[data-research-lines]]
