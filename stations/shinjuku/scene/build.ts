@@ -274,6 +274,15 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     voids.push({ rings: [[{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }]],
       bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + HEAD_BAND, minX, maxX, minY, maxY });
   }
+  // Old shell panels can cross a shared shaft plane at slightly different pitches.
+  // Clear the preview's interior from those panels just as from the other finishes.
+  for (const roof of layout.shaftCeilingPreview?.roofs ?? []) {
+    const points = roof.rings.flat();
+    voids.push({ rings: roof.rings,
+      bottom: (p: XY) => soffitHeight(roof, p) - 3.3, top: (p: XY) => soffitHeight(roof, p) + 0.01,
+      minX: Math.min(...points.map((p) => p.x)), maxX: Math.max(...points.map((p) => p.x)),
+      minY: Math.min(...points.map((p) => p.y)), maxY: Math.max(...points.map((p) => p.y)) });
+  }
   // Clip arbitrary (possibly holed) roof polygons to an affine height half-plane.
   const heightMask = (polys: polygonClipping.MultiPolygon, value: (p: XY) => number): polygonClipping.MultiPolygon => {
     if (!polys.length) return [];
@@ -864,6 +873,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // ---- underground fixtures, kept in a separate helper for the surface lane's hook
   // The escalator shell soffits are roofs too: without them the inclines get no fixtures (vertical gap #5).
   const shell = escalatorShellGeometry(layout, bundle);
+  if (preview) {
+    const original = escalatorShellGeometry({ ...layout, shaftCeilingPreview: undefined }, bundle);
+    if (original.sides) track(original.sides);
+    if (original.soffits) overheadRoofRoot!.add(new THREE.Mesh(track(original.soffits), mat.ceiling));
+  }
   buildUndergroundLighting(bundle, layout, levelGroups, root, track, shell.finishes);
   if (preview) for (const roof of preview.roofs) {
     const m = new THREE.Mesh(track(soffitGeometry(roof)), mat.ceiling);
@@ -1739,7 +1753,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     // inputs, including shells and surface roofs, while changing only the view.
     root.updateMatrixWorld(true);
     root.traverseVisible((o) => {
-      if (!(o instanceof THREE.Mesh) || o.material !== mat.ceiling || o.name === "preview-shaft-finishes" || o.name.startsWith("pitched-shaft:")) return;
+      if (!(o instanceof THREE.Mesh) || o.material !== mat.ceiling || o.name === "preview-shaft-finishes" || o.name === "escalator-shell-soffits" || o.name.startsWith("pitched-shaft:")) return;
       const copy = o.clone(false);
       copy.matrixAutoUpdate = false;
       copy.matrix.copy(o.matrixWorld);
