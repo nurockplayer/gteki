@@ -17,7 +17,7 @@ jobs:
   e2e-smoke:
     name: e2e-smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -62,6 +62,13 @@ jobs:
         env:
           GTEKI_ROOT: ${{ github.workspace }}
         run: pnpm exec playwright test specs/31-cold-open.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
+
+      - name: Walk HUD (desktop + phone)
+        timeout-minutes: 12
+        working-directory: tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/32-walk-hud.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
 
       - name: Boot card (desktop + phone)
         timeout-minutes: 12

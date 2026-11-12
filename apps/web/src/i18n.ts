@@ -130,6 +130,9 @@ const STRINGS = {
     soundOn: "音声オン",
     soundOff: "音声オフ",
     arrived: "目的地に到着しました",
+    arrivedAt: (name: string) => `到着 · ${name}`,
+    dataNotes: "データの注記",
+    moreControls: "その他の操作",
     noRoute: "データ上で確認できたルートがありません",
     noRouteWhy: {
       no_path: "データ上で確認できた通路だけでは到達できません。条件（段差なし・改札外・営業時間）を見直すか、未調査区間がある可能性があります。",
@@ -390,6 +393,9 @@ const STRINGS = {
     soundOn: "Sound on",
     soundOff: "Sound off",
     arrived: "You have arrived",
+    arrivedAt: (name: string) => `Arrived · ${name}`,
+    dataNotes: "Data notes",
+    moreControls: "More controls",
     noRoute: "No route confirmed in the surveyed data",
     noRouteWhy: {
       no_path: "Passages confirmed in the surveyed data don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet.",
