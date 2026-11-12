@@ -65,6 +65,31 @@ export const FOLLOW = {
  */
 export const FOLLOW_CAT = { pivotY: 0.42, shoulder: 0.2, distance: 2.4, lift: 0.12, drop: 0, pitch: 0 } as const;
 
+/** D2 preview framing, in metres above/behind the cat's feet. */
+export const FOLLOW_CAT_NEXT = { pivotY: 0.42, shoulder: 0.2, distance: 2.25, lift: 0.218, drop: 0, pitch: 0 } as const;
+
+/** Preview lens; the legacy lens keeps its slope/squeeze behaviour. */
+export function followLens(mode: "overview" | "walk" | "guide", firstPerson: boolean, wide: boolean, next: boolean, aspect: number): number {
+  return next && mode !== "overview" && !firstPerson ? (aspect >= 1 ? 55 : 65) : targetFov(mode, firstPerson, wide);
+}
+
+/** Linear progress gives a 0.9 second transition; composition uses its smoothstep weight. */
+export function stepEscalatorLock(progress: number, on: boolean, dt: number, snap = false): { progress: number; weight: number } {
+  const p = snap ? Number(on) : Math.max(0, Math.min(1, progress + (on ? 1 : -1) * Math.max(0, dt) / 0.9));
+  return { progress: p, weight: p * p * (3 - 2 * p) };
+}
+
+/** Axis-relative D2 camera and look, with the visitor's yaw/pitch added to the axis look. */
+export function escalatorPose(feet: THREE.Vector3, axis: THREE.Vector3, shoulder: number, scale: number, yaw: number, pitch: number): { position: THREE.Vector3; target: THREE.Vector3 } {
+  const a = axis.clone().normalize();
+  const right = new THREE.Vector3(-a.z, 0, a.x).normalize();
+  const normal = right.clone().cross(a).normalize();
+  const position = feet.clone().addScaledVector(right, shoulder).addScaledVector(a, -1.4 * scale).addScaledVector(normal, 0.9 * scale);
+  const direction = viewDirection(yaw, Math.asin(a.y) - THREE.MathUtils.degToRad(12) + pitch);
+  return { position, target: position.clone().addScaledVector(direction, FOLLOW.aim) };
+}
+
+
 /**
  * A raised boom keeps aiming ahead of the pivot, which looks past a body this low: above `start` radians the view
  * tilts down only as far as the cat's feet need, so they sit at `feetNdc` below centre and the station stays above
