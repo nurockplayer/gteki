@@ -36,7 +36,7 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -221,6 +221,9 @@ export class Explorer {
   private slope: SlopeState = NO_SLOPE;
   /** Extra downward aim while descending; the boom and ordinary pose stay unchanged. */
   private descentDrop = 0;
+  private escalatorProgress = 0;
+  private escalatorWeight = 0;
+  private escalatorAxis = new THREE.Vector3(0, 0, -1);
   /** The boom is squeezed under its comfortable distance (walls, ceilings); also widens the follow lens (see boomSqueezed). */
   private squeezed = false;
   private slopeY = 0;
@@ -488,7 +491,7 @@ export class Explorer {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
     this.previewNext = options.previewNext === true;
     this.catAvatar = options.avatarKind === "cat";
-    if (this.catAvatar) { this.camDistance = FOLLOW_CAT.distance; this.pitch = FOLLOW_CAT.pitch; }
+    if (this.catAvatar) { const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT; this.camDistance = framing.distance; this.pitch = framing.pitch; }
     // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
     // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
     if (this.quality === "low") {
@@ -540,9 +543,9 @@ export class Explorer {
   }
 
   /** Follow-camera diagnostics for the QA hook. Angles are radians, distances metres. */
-  cameraInfo(): { fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; reflections: boolean; mode: ExplorerMode } {
+  cameraInfo(): { lock: number; fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; reflections: boolean; mode: ExplorerMode } {
     return {
-      fov: this.camera.fov, far: this.camera.far, slopeOn: this.slope.on,
+      lock: this.previewNext ? this.escalatorWeight : 0, fov: this.camera.fov, far: this.camera.far, slopeOn: this.slope.on,
       boomWanted: this.camDistance, boomActual: this.boomActual, raise: this.boomRaise,
       pitch: this.pitch, yaw: this.yaw, avatarFade: this.cameraFade,
       reflections: this.composer?.settings.reflections ?? false, mode: this.mode,
@@ -3202,6 +3205,19 @@ export class Explorer {
     this.slope = stepSlope(resetSlope ? NO_SLOPE : this.slope, resetSlope ? 0 : this.pos.y - this.slopeY, resetSlope ? 0 : dt, onStairs);
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
+    const lockOn = this.previewNext && this.catAvatar && !this.firstPerson && this.catRidingEscalator()
+      && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
+    const lockSnap = snap || this.reducedMotion;
+    if (lockOn) {
+      const g = this.guide!;
+      const { segment } = samplePolyline(g.pts, g.cum, g.s);
+      const axis = g.pts[segment + 1]!.clone().sub(g.pts[segment]!).normalize();
+      if (lockSnap || this.escalatorProgress === 0) this.escalatorAxis.copy(axis);
+      else this.escalatorAxis.lerp(axis, 1 - Math.exp(-dt / 0.3)).normalize();
+    }
+    const lock = stepEscalatorLock(this.escalatorProgress, lockOn, dt, lockSnap);
+    this.escalatorProgress = lock.progress;
+    this.escalatorWeight = lock.weight;
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
@@ -3212,7 +3228,7 @@ export class Explorer {
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
       this.setCameraFocus(null);
-      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
+      this.setFov(followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), lensSnap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
@@ -3226,24 +3242,34 @@ export class Explorer {
       const side = castCamera(this.ray, this.cameraTargets, cameraSides)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
+    const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
     const pose = this.catAvatar
-      ? followPose(head, this.yaw, this.pitch, shoulder, FOLLOW_CAT.lift, FOLLOW_CAT.drop)
+      ? followPose(head, this.yaw, this.pitch, shoulder, framing.lift, framing.drop)
       : followPose(head, this.yaw, this.pitch, shoulder);
     if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
-    let dist = this.camDistance;
+    let wantedDistance = this.camDistance;
+    if (this.escalatorWeight > 0) {
+      const ride = escalatorPose(this.pos, this.escalatorAxis, catShoulder(this.camera.aspect), this.camDistance / FOLLOW_CAT_NEXT.distance, this.yaw, this.pitch);
+      const wanted = pose.pivot.clone().addScaledVector(back, wantedDistance).lerp(ride.position, this.escalatorWeight);
+      back = wanted.sub(pose.pivot);
+      wantedDistance = back.length();
+      back.normalize();
+      pose.target.lerp(ride.target, this.escalatorWeight);
+    }
+    let dist = wantedDistance;
     let raisedClear = false;
     if (!this.cameraTargets.length) this.boomRaise = 0;
-    const cast = (b: THREE.Vector3, length = this.camDistance) => {
+    const cast = (b: THREE.Vector3, length = wantedDistance) => {
       this.ray.set(pose.pivot, b);
       this.ray.far = length + FOLLOW.clearance;
       return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
     };
     if (this.cameraTargets.length) {
-      const solved = solveRaisedBoom(this.camDistance, pose.back, cast, this.boomRaise, dt, snap || this.reducedMotion);
+      const solved = solveRaisedBoom(wantedDistance, back, cast, this.boomRaise, dt, snap || this.reducedMotion);
       // A lip-clearing raise also needs to move the camera now; interpolating from below the slab
       // would recreate the same obstruction even though the target boom has already cleared it.
-      raisedClear = solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, this.camDistance);
+      raisedClear = solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
       back = solved.back;
       dist = solved.distance;
       this.boomRaise = solved.raise;
@@ -3251,7 +3277,7 @@ export class Explorer {
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
-    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
+    this.setFov(followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), lensSnap, dt);
     // Use the last frame's actual boom, measured against its own pivot. Measuring the old
     // camera against the new pivot would rate-limit the walker's movement as contraction.
     const previousDistance = this.boomActual;
@@ -3263,8 +3289,8 @@ export class Explorer {
     const length = offset.length();
     if (length > 1e-9) {
       offset.divideScalar(length);
-      const hits = this.cameraTargets.length ? cast(offset, Math.max(length, this.camDistance)) : [];
-      const target = Math.min(length, dist, followDistance(this.camDistance, hits));
+      const hits = this.cameraTargets.length ? cast(offset, Math.max(length, wantedDistance)) : [];
+      const target = Math.min(length, dist, followDistance(wantedDistance, hits));
       const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
