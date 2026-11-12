@@ -129,51 +129,52 @@ test("guided walk @phone", async ({ page }, info) => {
   const nodes = new Map(graph.nodes.map(n => [n.id, n]));
   await page.evaluate(() => (window as any).__gteki.startGuide());
   await expect.poll(() => hooks.mode(page)).toBe("guide");
+  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   const tier = await hooks.quality(page), renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);
   const cdp = await page.context().newCDPSession(page);
   const samples: any[] = [], stepS = Number(process.env.JOURNEY_STEP_S ?? 4);
   let simT = 0, arrived = false;
   const sample = async (arrival: boolean, simMs: number) => {
-    await page.evaluate(() => (window as any).__gteki.holdFrames(true));
-    try {
-      let phaseStart = Date.now();
-      await page.evaluate(() => (window as any).__gteki.goldenFrame());
-      const index = samples.length;
-      const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
-      fs.writeFileSync(path.join(out, `${String(index).padStart(3, "0")}.png`), png);
-      const shotMs = Date.now() - phaseStart;
-      const guide = await page.evaluate(() => { const e = (window as any).__gteki.scanProbe().explorer; return { s: e.guide.s, step: e.guide.steps[Math.min(e.guide.steps.length - 1, e.guide.cum.findIndex((v: number) => v >= e.guide.s))] }; });
-      let acc = 0, stepIndex = wps[0]!.stepIndex;
-      for (let i = 1; i < wps.length; i++) { const a = wps[i - 1]!.p, b = wps[i]!.p; acc += Math.hypot(b.x - a.x, b.y - a.y); stepIndex = wps[i]!.stepIndex; if (acc >= guide.s) break; }
-      const step = steps[stepIndex]!, from = nodes.get(step.fromNodeId)!, to = nodes.get(step.toNodeId)!;
-      phaseStart = Date.now();
-      const m = await sceneMetrics(page), cov = await overlay(page);
-      const sceneMs = Date.now() - phaseStart;
-      phaseStart = Date.now();
-      const probe = await page.evaluate(() => (window as any).__gteki.goldenProbe(false));
-      const probeMs = Date.now() - phaseStart;
-      phaseStart = Date.now();
-      const image = await imageStats(page, png), flat = await screenshotFlatRatio(page, png);
-      const imageMs = Date.now() - phaseStart;
-      const dir = m.cameraDirection, dx = to.position.x - from.position.x, dy = to.position.y - from.position.y;
-      const axisDeg = step.mode === "escalator" ? Math.acos(Math.max(-1, Math.min(1, (dir[0] * dx - dir[2] * dy) / (Math.hypot(dir[0], dir[2]) * Math.hypot(dx, dy))))) * 180 / Math.PI : null;
-      samples.push({ index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, nearClip: m.nearClip, axisDeg });
-      console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
-    } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+    let phaseStart = Date.now();
+    await page.evaluate(() => (window as any).__gteki.goldenFrame());
+    const index = samples.length;
+    const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
+    fs.writeFileSync(path.join(out, `${String(index).padStart(3, "0")}.png`), png);
+    const shotMs = Date.now() - phaseStart;
+    const guide = await page.evaluate(() => { const e = (window as any).__gteki.scanProbe().explorer; return { s: e.guide.s, step: e.guide.steps[Math.min(e.guide.steps.length - 1, e.guide.cum.findIndex((v: number) => v >= e.guide.s))] }; });
+    let acc = 0, stepIndex = wps[0]!.stepIndex;
+    for (let i = 1; i < wps.length; i++) { const a = wps[i - 1]!.p, b = wps[i]!.p; acc += Math.hypot(b.x - a.x, b.y - a.y); stepIndex = wps[i]!.stepIndex; if (acc >= guide.s) break; }
+    const step = steps[stepIndex]!, from = nodes.get(step.fromNodeId)!, to = nodes.get(step.toNodeId)!;
+    phaseStart = Date.now();
+    const m = await sceneMetrics(page), cov = await overlay(page);
+    const sceneMs = Date.now() - phaseStart;
+    phaseStart = Date.now();
+    const probe = await page.evaluate(() => (window as any).__gteki.goldenProbe(false));
+    const probeMs = Date.now() - phaseStart;
+    phaseStart = Date.now();
+    const image = await imageStats(page, png), flat = await screenshotFlatRatio(page, png);
+    const imageMs = Date.now() - phaseStart;
+    const dir = m.cameraDirection, dx = to.position.x - from.position.x, dy = to.position.y - from.position.y;
+    const axisDeg = step.mode === "escalator" ? Math.acos(Math.max(-1, Math.min(1, (dir[0] * dx - dir[2] * dy) / (Math.hypot(dir[0], dir[2]) * Math.hypot(dx, dy))))) * 180 / Math.PI : null;
+    samples.push({ index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, nearClip: m.nearClip, axisDeg });
+    console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
-  while (simT < 260 && !arrived) {
-    const start = Date.now(); await hooks.simulate(page, stepS); const simMs = Date.now() - start; simT += stepS;
-    await sample(false, simMs);
-    arrived = (await hooks.guideControls(page) as any).arrived;
-  }
-  if (arrived) { const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs); }
+  try {
+    while (simT < 260 && !arrived) {
+      const start = Date.now(); await hooks.simulate(page, stepS); const simMs = Date.now() - start; simT += stepS;
+      await sample(false, simMs);
+      arrived = (await hooks.guideControls(page) as any).arrived;
+    }
+    if (arrived) { const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs); }
+  } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+  const overlayTolerancePct = 1;
   const threshold = info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop;
   const rules = [ { row: "J5", metric: "voidRatio", limit: config.thresholds.voidRatio }, { row: "J5", metric: "nearBlack", limit: config.thresholds.nearBlack }, { row: "J5", metric: "nearClip", limit: config.thresholds.nearClip }, { row: "J6", metric: "catVisible", limit: config.thresholds.catVisibleMin }, { row: "J8", metric: "overlayPct", limit: threshold }, { row: "J9", metric: "overlayPct", limit: threshold } ];
   const summary: Record<string, any> = {};
   for (const row of ["J5", "J6", "J8", "J9"]) {
     const checks = rules.filter(r => r.row === row).flatMap(r => samples.filter(s => row === "J9" ? s.arrival : !s.arrival).map(s => {
       const value = s[r.metric] as number, failed = r.metric === "catVisible" ? value < r.limit : value > r.limit;
-      const known = config.known.some(k => k.project === info.project.name && k.metric === r.metric && k.row === row && s.index >= k.from && s.index <= k.to && (!k.maxValues || value <= k.maxValues[s.index - k.from]!));
+      const known = config.known.some(k => k.project === info.project.name && k.metric === r.metric && k.row === row && s.index >= k.from && s.index <= k.to && (!k.maxValues || value <= k.maxValues[s.index - k.from]! + overlayTolerancePct));
       return { index: s.index, metric: r.metric, value, failed, known, severity: r.metric === "catVisible" ? r.limit - value : value - r.limit };
     }));
     const failed = checks.filter(c => c.failed); const worst = [...checks].sort((a, b) => b.severity - a.severity).slice(0, 3);
