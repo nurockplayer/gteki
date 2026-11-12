@@ -64,11 +64,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // textures re-measured, every explorer list unchanged.
 // 2026-11-09 JST: route sign groups carry their position and sightline dimensions; nodes re-measured.
 // #1032 (2026-11-10 JST): render-only corner fills; scene wall delta 0, geometry and bytes re-measured.
+// #1171 (2026-11-12 JST): golden probe tags in userData (goldenRole on stair and riser meshes; gteki_role and faces on route sign groups); nodes re-measured, everything else unchanged.
 const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "88471b802552ddfdcaaad96c3f5405745968fe18bc446b4273b05894b94c23b8",
     "appearanceDigest": "59a5284df7a544b383a55e1895262504d7c44fcb560e3b0e86fe76410656d832",
-    "nodesDigest": "36f8a11d5c2532c0b82e895eafda9ec8aa7105d895d364f66de7c705d8c7117e",
+    "nodesDigest": "0973c0fc63ef46529da89945ebdaa8472b5ccb808552040eb0373bbb275c6697",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
     "meshes": 96,
     "bytes": 16187458
