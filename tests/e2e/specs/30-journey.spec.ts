@@ -8,7 +8,7 @@ import { screenshotFlatRatio } from "../lib/screenshot-flat.ts";
 test.use({ trace: "off", video: "off", screenshot: "off" });
 const config = JSON.parse(fs.readFileSync(new URL("../journey.json", import.meta.url), "utf8")) as {
   thresholds: Record<string, number>;
-  known: { project: string; metric: string; from: number; to: number; row: string; note: string }[];
+  known: { project: string; metric: string; from: number; to: number; row: string; note: string; maxValues?: number[] }[];
 };
 const outDir = (project: string) => path.join(ARTIFACTS, "journey", project);
 
@@ -164,7 +164,7 @@ test("guided walk @phone", async ({ page }, info) => {
   for (const row of ["J5", "J6", "J8", "J9"]) {
     const checks = rules.filter(r => r.row === row).flatMap(r => samples.filter(s => row === "J9" ? s.arrival : !s.arrival).map(s => {
       const value = s[r.metric] as number, failed = r.metric === "catVisible" ? value < r.limit : value > r.limit;
-      const known = config.known.some(k => k.project === info.project.name && k.metric === r.metric && k.row === row && s.index >= k.from && s.index <= k.to);
+      const known = config.known.some(k => k.project === info.project.name && k.metric === r.metric && k.row === row && s.index >= k.from && s.index <= k.to && (!k.maxValues || value <= k.maxValues[s.index - k.from]!));
       return { index: s.index, metric: r.metric, value, failed, known, severity: r.metric === "catVisible" ? r.limit - value : value - r.limit };
     }));
     const failed = checks.filter(c => c.failed); const worst = [...checks].sort((a, b) => b.severity - a.severity).slice(0, 3);
