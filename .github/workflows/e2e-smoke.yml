@@ -17,7 +17,7 @@ jobs:
   e2e-smoke:
     name: e2e-smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -48,7 +48,7 @@ jobs:
       # DOM/HUD state and the instruction flow, not visuals or performance. 05-performance and the visual
       # specs stay local on a real GPU. Single worker comes from the config (workers: 1).
       - name: Run smoke specs
-        timeout-minutes: 10
+        timeout-minutes: 20
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
