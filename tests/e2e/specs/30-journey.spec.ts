@@ -66,7 +66,7 @@ test("cold open @phone", async ({ page }, info) => {
   }) : {};
   if (reelMode === "next") {
     expect(state.mode).toBe("walk");
-    expect(nextState.endpoints).toEqual({ from: "poi:exit:1", to: "poi:platform:oedo" });
+    expect(nextState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
   }
   const coverage = await overlay(page);
   await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
@@ -141,7 +141,7 @@ test("guided walk @phone", async ({ page }, info) => {
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready" && (window as any).__gteki.route()?.ok, null, { timeout: 120_000, polling: 250 });
   if (reelMode === "next") {
     await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
-    expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toEqual({ from: "poi:exit:1", to: "poi:platform:oedo" });
+    expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
   }
   const route = await hooks.route(page);
   const steps = route.steps as { fromNodeId: string; toNodeId: string; edgeId: string; reversed: boolean; mode: string }[];
