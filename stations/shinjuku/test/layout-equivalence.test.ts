@@ -25,6 +25,6 @@ describe("layout equivalence", () => {
     // at -1.6, 636c6fc9 and 0564105d at -1.68) up to their own roofs, and (fix 1) cuts
     // that shell only where a passage crosses it. Includes the merge with main's
     // cornerFills changes (#1170/#1188).
-    expect(digest).toBe("ed7b2a39b2da43326dc2fe8336fe3b2cc5c0cfa988816738420ed089b84a20f4");
+    expect(digest).toBe("0ff5a47368894e16729779ed911ce6f424c4614165c88623cc7f161cfc75b511");
   });
 });
