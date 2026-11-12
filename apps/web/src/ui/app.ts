@@ -332,6 +332,7 @@ export class App {
         const phase = this.explorer?.phase;
         if (phase === "graph" || phase === "scene" || phase === "composer" || phase === "ready") this.setBootStage(phase);
         if (this.bootWalkAt !== null && previous && this.bootFrames.push(now - previous, now - this.bootWalkAt)) {
+          performance.mark("boot-lift");
           this.setBootStage("settled");
           this.root.querySelector<HTMLElement>(".cold-open")!.hidden = false;
           boot.classList.add("lifting");
@@ -534,6 +535,7 @@ export class App {
       if (first) {
         this.explorer.walkFrom(first, spawnHeading(this.s.loaded.bundle, this.s.origin, this.s.polyline));
         this.bootWalkAt = performance.now();
+        performance.mark("boot-walk");
       } else { this.dismissColdOpen(); this.panelFold.open(); }
       if (first) this.panelFold.fold();
     } else {

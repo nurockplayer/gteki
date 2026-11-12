@@ -1,17 +1,16 @@
-import { expect, test, type Page } from "@playwright/test";
-import { shotPath } from "../lib/gteki";
+import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { installBootFrameProbe, shotPath, waitBootLift } from "../lib/gteki";
 
-async function lifted(page: Page, project: string) {
+async function lifted(page: Page, info: TestInfo) {
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 50 });
-  const readyAt = Date.now();
-  await expect(page.locator(".boot-card")).toBeHidden({ timeout: 6_000 });
-  console.log(`[boot-lift] ${project}: ${Date.now() - readyAt} ms from observed ready`);
+  await waitBootLift(page, info);
   await expect(page.locator(".cold-open")).toBeVisible();
 }
 
 test("loading card blocks early taps and lifts to the route", async ({ page }, info) => {
+  await installBootFrameProbe(page);
   await page.goto("/?next=1");
-  await lifted(page, info.project.name);
+  await lifted(page, info);
   const box = await page.locator(".cold-open .primary").boundingBox();
   expect(box).not.toBeNull();
 
@@ -41,7 +40,7 @@ test("loading card blocks early taps and lifts to the route", async ({ page }, i
   await page.screenshot({ path: shotPath(info, "boot-1s.png") });
   await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
   release();
-  await lifted(page, info.project.name);
+  await lifted(page, info);
   await page.screenshot({ path: shotPath(info, "boot-lifted.png") });
   const state = await page.evaluate(() => {
     const g = (window as any).__gteki;
