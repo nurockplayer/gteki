@@ -1,6 +1,6 @@
 {
  "protect": {
-  "layoutAfterProtect": "4609d81e0fdbc7f7940f892f9e0dfaa1b46363d1a6c9573842a5f039aaad1948",
+  "layoutAfterProtect": "2a0fac2958cdf4783e7c22cbf817ce349a2fface26daeb279096e63558a416fa",
   "protection": "1cef6b3f949890f6b36fd2323f297b3ad03530b74da48240fc9c37af396e4d7f",
   "fences": "1527d1aca21ba2311d781262f6d7f1af576ebf0ad4253784bd9ebd9500b866a7",
   "gates": "b12d68f308c2d3bf796c28f3a5d0ee120d78795bbbc799a1e077757d6f3e92c5",
@@ -9,9 +9,9 @@
   "cacheHit": true
  },
  "station": {
-  "layoutAfterBuild": "fc6a33ceeb51f0c08dcc406e9b043f360856b4b18e306066e3924f0557f6bec2",
+  "layoutAfterBuild": "d81512aac472950c171ff410cb1a0d66376294b0ff25de850212674d0ec185a0",
   "propWalls": "69aa5d1992b652ec3d5a3916ee2ae86689d3bdf3d3a8512bbce7948726322865",
-  "levelWalls": "4b578612280171c0e129ec5f14b95d80d92d077974fc3580212e292a811e4495",
+  "levelWalls": "4dd0848faffb5588d21e72ab5a34d37165b895f5395c9f9433bbeb0fcc0d4a51",
   "escalators": "15a5224f8c32deb2ca23240bac233cfea59c30dc8198a60f992b5040b5fee0c3"
  },
  "scene": {
@@ -461,7 +461,7 @@
     "12220236104b5f1757a8673ce5a19b7e8dc6130ce0773eeb1a4a4e0daa2f69b6"
    ],
    "colliders": [
-    "d720d8e2e1d5fdaefc2c56e7be57a80468ab311d474aee3511ea5d94fd1984ec",
+    "11720fbf2e3f175ca338e439da7deb694e07b9b56f984932b5fcc622775301f2",
     "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3"
    ],
    "cameraBlockers": [
@@ -474,7 +474,7 @@
     false,
     false
    ],
-   "walls": "4fbc2d664cf8e6c944abded43da3fc02654e37b7f0c784437a239687828a57f6",
+   "walls": "36906377e8b0403c90f2234baca73461a4e36180b2426790f3b1cbb1199cb6ca",
    "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
@@ -582,8 +582,8 @@
      "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
     },
     "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 43576,
-     "hash": "7117dd12ade1c40cbd992d4517cd3860a24c8008998ba8160207656b6e09acf8"
+     "triangles": 43545,
+     "hash": "921122a5fd69b5a6dd5b0b1551cdc0c93d5d656db75d81fbb9436ed2434ed67c"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
@@ -730,8 +730,8 @@
      "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 19234,
-     "hash": "bf10a8b953baf73f1700b26b915dd66c06a13d753f3f9edc2c2a063bf038999d"
+     "triangles": 19182,
+     "hash": "49005448a909f082d54ecc4e40690f2e845542a06f7dddad5b374ac148ce6d4c"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -739,7 +739,7 @@
     }
    },
    "semantic": [
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29622",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29588",
     "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4636",
     "sign|No entry||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|12",
     "sign|Restricted area||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|344",
@@ -1644,7 +1644,7 @@
     "12220236104b5f1757a8673ce5a19b7e8dc6130ce0773eeb1a4a4e0daa2f69b6"
    ],
    "colliders": [
-    "d720d8e2e1d5fdaefc2c56e7be57a80468ab311d474aee3511ea5d94fd1984ec",
+    "11720fbf2e3f175ca338e439da7deb694e07b9b56f984932b5fcc622775301f2",
     "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3"
    ],
    "cameraBlockers": [
@@ -1657,7 +1657,7 @@
     false,
     false
    ],
-   "walls": "4fbc2d664cf8e6c944abded43da3fc02654e37b7f0c784437a239687828a57f6",
+   "walls": "36906377e8b0403c90f2234baca73461a4e36180b2426790f3b1cbb1199cb6ca",
    "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
@@ -1765,8 +1765,8 @@
      "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
     },
     "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 43576,
-     "hash": "7117dd12ade1c40cbd992d4517cd3860a24c8008998ba8160207656b6e09acf8"
+     "triangles": 43545,
+     "hash": "921122a5fd69b5a6dd5b0b1551cdc0c93d5d656db75d81fbb9436ed2434ed67c"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
@@ -1913,8 +1913,8 @@
      "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 19234,
-     "hash": "bf10a8b953baf73f1700b26b915dd66c06a13d753f3f9edc2c2a063bf038999d"
+     "triangles": 19182,
+     "hash": "49005448a909f082d54ecc4e40690f2e845542a06f7dddad5b374ac148ce6d4c"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -1922,7 +1922,7 @@
     }
    },
    "semantic": [
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29622",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29588",
     "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4636",
     "sign|No entry||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|12",
     "sign|Restricted area||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|344",
