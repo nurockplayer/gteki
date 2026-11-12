@@ -1231,6 +1231,7 @@ export class Explorer {
     const ctx: SceneContext = {
       THREE,
       bundle,
+      previewNext: this.previewNext,
       enuToRenderer: (p) => enuToRenderer(p),
       assetUrl: (uri) => station.assetUrls.get(uri) ?? null,
       loadGlb: (uri) => {
