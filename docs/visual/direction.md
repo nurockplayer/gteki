@@ -1,14 +1,16 @@
 # Art direction log: the Shinjuku slice
 
-The persistent decision log for the look of the 2026-11-22 slice (token-rules 25): Shinjuku, Toei Oedo E27, street exit 1 → B1 concourse → escalators → B6 platform (`toei-nwd-m6`, render −42.87 m). Viewpoints and the four hero moments: [slice-views.md](slice-views.md). References, hero target frames and paint-overs: `references.md` (to come).
+The persistent decision log for the look of the 2026-11-22 slice (token-rules 25): Shinjuku, Toei Oedo E27, street exit 1 → B1 concourse → escalators → B6 platform (`toei-nwd-m6`, render −42.87 m). Viewpoints and the four hero moments: [slice-views.md](slice-views.md). References, hero target frames and paint-overs: [references.md](references.md).
 
 Owner: gteki-visual (art director, provisional until the audition closes). Every AI verdict here is **provisional** until the Owner has seen the walk video for it (token-rules 25 g). Read this file first after every /clear.
 
-## Status (2026-11-11 18:1x JST)
+## Status (2026-11-12 09:4x JST)
 
 - Seat audition: two proposals in (`.claude/director/drafts/audition/direction-A.md`, `direction-B.md`, anonymous), the GPT one still to come. The decisions below take what A and B agree on and rule on where they differ. When the third proposal lands, anything it changes is logged as a new entry, not edited in place.
 - First judged render: the D6 blind test (D7, preset B). The first golden render of the 12 slice cameras (after #1170) is the baseline for everything else.
-- Next: the B v2 brief and its rerun (D7), then B as the default behind an art-acceptance PR.
+- Hero target frames H1–H4 accepted (D8).
+- Preset B v4 is the default escalator light (D9, #1184).
+- Release steering (token-rules 26): `docs/release/journey.md`; my rows are J10 and the flip acceptances of `?next=1` work, judged live on gteki.pages.dev/?next=1.
 
 ## Visual thesis
 
@@ -134,6 +136,84 @@ Render fixes for the rerun:
 Not a lighting matter: two critics flagged stepped, floating ceiling slabs above the bottom pose on both tiers. That is breakage and goes to #1086.
 
 The console showed no errors or warnings for any preset on either tier, so #1177 is closed. Provisional until the Owner sees the walk video.
+
+### D8 (2026-11-12 05:4x JST) Hero target frames H1–H4
+The four hero moments of [slice-views.md](slice-views.md) now have target frames: [references.md § Hero target frames](references.md#hero-target-frames-2026-11-12). Each is an AI paint-over of a 2026-11-12 GPU capture of the game (preset B, high tier, UI hidden), so camera and layout are the game's own. Prompts and provenance: [targets/provenance.md](targets/provenance.md).
+
+The brief asked for two variants of each frame, a staying close to the base and b pushing the light further. Base | a | b:
+
+![all variants](targets/variants-base-a-b.jpg)
+
+| Hero | Chosen | Why | Rejected variant |
+|---|---|---|---|
+| H1 exit 1 mouth | **b** | warm street and cool, bright stairs read at once: the thesis's "warmer near the street" | a: a wet, rainy street (weather is not decided) and a weaker warm–cool split |
+| H2 B1 corridor | **b** | soft, separate troffer pools on stone that is not a mirror; the overhead signs carry | a: the floor drifts towards a mirror |
+| H3 escalator run | **a** | keeps the glass balustrade with the up-run riders behind it; the right lower wall is dim but readable; the cool landing glow pulls the eye | b: turns the glass balustrade into a solid steel wall (a geometry change) and is darker than "Tokyo subways are bright" allows |
+| H4 B6 landing | **b** | black rubber handrails, a distinctly cool landing with floor pools, and a clean silhouette | a: copper-lit handrails (wrong material) |
+
+Batch 2 kept the geometry where batch 1 did not, because the brief locked every edge and banned new magenta. These four frames are therefore **layout and light targets**, not only mood boards. Known drift:
+- H4 b straightens the magenta band's jog on the left wall, and the game keeps its own jog;
+- the street façades in H1 are invented detail (allowed as background, never a landmark).
+
+Each frame's "what must change" list in references.md is the work order. The hero scene repair list (day 4) and the B default PR are judged against these frames. Check: the golden cameras slice-01/04/10/11 side by side with the targets at each art acceptance. Provisional until the Owner sees them.
+
+### D9 (2026-11-12 09:4x JST) Preset B v4 becomes the default
+B went through three rounds after D7, each rendered as the same 16 A/B shots (GPU heavy jobs `d6-bv2`, `d6-bv3`, `d6-bv4`; v4 at 09:28 JST, console clean):
+- v2 (`28fbe133`): a cooler B tint and a pool gain of 1.9. The pool was too small (7 m) and too faint.
+- v3 (`a72cc24d`): the pool widened to 12 m, B landing tint [0.8, 0.9, 1].
+- v4 (`4a6eecc4`): the mid-run dip went from 0.3 to 0.18.
+
+**Measurements.** All values are linear luminance on fixed patches of the 1600×1000 frames. The workers' "landing box" turned out to see mostly warm wall, so it was replaced. Two patches are used:
+- the landing floor (bottom pose `80x40+720+690`; dismount pose `140x120+520+650`);
+- the dark right lower wall at mid-run (`240x120+1320+720`).
+
+The first bottom patch (`90x40+600+690`) caught a walking NPC in v4, so a clear patch beside it is used.
+
+| | target (D7) | v3 | **v4** |
+|---|---|---|---|
+| landing floor, B ÷ A, bottom pose | ≥ 1.25 | 1.35 high, 1.33 low | **1.35 high, 1.33 low** |
+| landing floor, B ÷ A, dismount pose | ≥ 1.25 | 1.38 high, 1.35 low | **1.36 high, 1.35 low** |
+| landing tint | cooler than the shaft | blue > red | **blue > red** (sRGB 141/148/151 at the dismount) |
+| darkest mid-run wall, B ÷ A | lift about 15% from v1's 0.77 | 0.74 | **0.79 high, 0.82 low** |
+
+High tier, A left, B right:
+
+![mid-run](d6/d9-high-mid-ab.jpg)
+![bottom approach](d6/d9-high-bottom-ab.jpg)
+![dismount](d6/d9-high-dismount-ab.jpg)
+
+Low tier, mid-run: ![low mid-run](d6/d9-low-mid-ab.jpg)
+
+**Decision: B v4 is the default** (no parameter; `?lightpreset=a|c` keep the reference arms, `?lightpreset=off` turns the grade off).
+
+The landing now reads as a bright, cool goal at the end of a warmer shaft, which is the D6 thesis and H3/H4's light. The mid-run wall is short of the 15% lift, but its panel joints now read, so it is no longer black. What is left comes from the warm tint on a dark wall albedo. Lifting the light further would flatten the mid-run dimming that the frame wants. The fix belongs to H3's material list: an enamel and stainless wall in place of the dark brown panel.
+
+Not done by the light:
+- the handrail highlight streaks (the handrail material is outside the preset's selection): H3/H4 "what must change";
+- C's pool edge, which v3 widened for every preset (review major on #1184): a follow-up issue, since C is rejected.
+
+Provisional until the Owner sees the walk video.
+
+### D10 (2026-11-12 09:5x JST) Live check of the B default on gteki.pages.dev
+The first live judgement under token-rules 26. It was made on the production deploy of `2bc75aeb` (#1184) in ego-lite, desktop at 1476×996, through `__gteki.setView` at the slice cameras, with no parameter (B) and with `?lightpreset=off`.
+
+![slice-10 and slice-11, off left, B right](live/2026-11-12-b-default-off-vs-b.jpg)
+
+- **B is live and matches the renders.**
+  - At slice-11 (the B6 landing), the floor reads as the bright, cool pool; with `off` it is flat grey.
+  - At slice-10, the upper walls take the warm shaft tint.
+  - slice-01, slice-04 and slice-12 look the same as with `off`, so the grade does not leak outside the shaft and landing.
+- **No light correction.** The faint magenta accent at the foot of the landing walls stays: it reads as the line colour at waist height, not a wash.
+
+Corrections logged for other rows (not light):
+1. **slice-12 (platform)** shows almost only floor tiles: the follow camera looks down (raise 0.87 rad), and the platform, the track edge and the name sign are out of frame. The arrival frame (J9, hero H4) must show the platform and its name sign.
+
+   ![slice-12 live](live/2026-11-12-slice-12.jpg)
+
+2. **The UI overlay** (search panel, chips, minimap and bottom bar) covers roughly a third to two fifths of the desktop frame at every slice camera. That is J3/J8 (D1 diet), already in flight behind `?next=1`.
+3. **At slice-10**, a dark brown wall wedge fills the right side of the escalator head. That is material and geometry, and it goes to the hero scene repair list.
+
+Provisional until the Owner sees the walk video.
 
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
