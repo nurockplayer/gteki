@@ -176,6 +176,14 @@ jobs:
           path: tests/e2e/artifacts/journey
           retention-days: 14
           if-no-files-found: ignore
+      - name: Upload journey test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journey-results-${{ matrix.project }}${{ matrix.mode == 'next' && '-next' || '' }}
+          path: tests/e2e/test-results
+          retention-days: 14
+          if-no-files-found: ignore
 
   # WebKit replay guard for the stale stairwell recipes in #1012 / #1028.
   e2e-smoke-webkit:

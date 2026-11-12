@@ -47,7 +47,17 @@ test("cold open @phone", async ({ page }, info) => {
   await page.goto(reelMode === "next" ? "/?next=1" : "/", { waitUntil: "commit" });
   const committed = Date.now();
   await page.waitForTimeout(Math.max(0, 1000 - (Date.now() - committed)));
-  await page.screenshot({ path: path.join(out, "open-1s.png"), timeout: 60_000 });
+  const cdp = reelMode === "next" ? await page.context().newCDPSession(page) : undefined;
+  let open1sShot: "ok" | "timeout" | undefined;
+  if (cdp) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const png = await Promise.race([
+      cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false }),
+      new Promise<null>(resolve => { timer = setTimeout(() => resolve(null), 20_000); }),
+    ]).finally(() => clearTimeout(timer));
+    open1sShot = png ? "ok" : "timeout";
+    if (png) fs.writeFileSync(path.join(out, "open-1s.png"), Buffer.from(png.data, "base64"));
+  } else await page.screenshot({ path: path.join(out, "open-1s.png"), timeout: 60_000 });
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
   const readyMs = Date.now() - start;
   let actionMs: number | undefined;
@@ -73,12 +83,11 @@ test("cold open @phone", async ({ page }, info) => {
     await page.evaluate(() => (window as any).__gteki.holdFrames(true));
     try {
       await page.evaluate(() => (window as any).__gteki.goldenFrame());
-      const cdp = await page.context().newCDPSession(page);
-      const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+      const png = await cdp!.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
       fs.writeFileSync(path.join(out, "open-ready.png"), Buffer.from(png.data, "base64"));
     } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   } else await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
-  fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, ...nextState } : {}), ...state, ...coverage }, null, 2));
+  fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, open1sShot, ...nextState } : {}), ...state, ...coverage }, null, 2));
 });
 
 async function sceneMetrics(page: Page) {
