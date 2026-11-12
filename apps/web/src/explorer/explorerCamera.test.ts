@@ -372,6 +372,26 @@ describe("Explorer descending framing", () => {
 });
 
 describe("Explorer guide stair lens", () => {
+  it("keeps the escalator shoulder inside a nearby right wall", () => {
+    const state = Object.assign(cameraStand(), { previewNext: true, catAvatar: true, mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0, pitch: 0, camDistance: FOLLOW_CAT_NEXT.distance });
+    state.camera.aspect = 1.6;
+    const route = [
+      { x: 0, y: 0, z: 0, zKnown: true, stepIndex: -1, floorId: "b1" },
+      { x: 0, y: 10, z: -5, zKnown: true, stepIndex: 0, floorId: "b1" },
+    ];
+    const spans = guidePaceSpans(route, [{ mode: "escalator" }], []);
+    qa(state).startGuide(route, 0, [], spans);
+    state.guide!.s = 1;
+    const side = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    side.rotation.y = Math.PI / 2;
+    side.position.x = 0.3;
+    side.updateMatrixWorld(true);
+    setTargets(state, [side]);
+    for (let i = 0; i < 120; i++) place(state);
+    expect(qa(state).cameraInfo().lock).toBe(1);
+    expect(Math.abs(state.camera.position.x - state.pos.x)).toBeLessThan(0.1);
+  });
+
   it.each([false, true])("frames a descending cat escalator with previewNext=%s", (previewNext) => {
     const state = Object.assign(cameraStand(), { previewNext, catAvatar: true, mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0, pitch: 0, camDistance: FOLLOW_CAT_NEXT.distance });
     state.camera.aspect = 1.6;
