@@ -1,9 +1,63 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { installBootFrameProbe, overlayGrid, PROBE_SCRIPT, settleFrames, waitBootLift } from "../lib/gteki";
+import { installBootFrameProbe, overlayGrid, PROBE_SCRIPT, save, settleFrames, waitBootLift, watch, type Diagnostics } from "../lib/gteki";
 
-test.beforeEach(async ({ page }) => { await installBootFrameProbe(page); });
+type PhaseTimeline = { timeline: { t: number; phase: string }[]; maxRafGapMs: number };
+const records = new WeakMap<Page, { diagnostics: Diagnostics; pages: PhaseTimeline[] }>();
+
+async function collectTimeline(page: Page): Promise<PhaseTimeline | null> {
+  let timer: ReturnType<typeof setTimeout>;
+  try {
+    return await Promise.race([
+      page.evaluate(() => (window as any).__coldOpenPhase ?? null),
+      new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), 2_000); }),
+    ]);
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer!);
+  }
+}
+
+test.beforeEach(async ({ page }) => {
+  records.set(page, { diagnostics: watch(page), pages: [] });
+  await installBootFrameProbe(page);
+  await page.addInitScript(() => {
+    const w = window as any;
+    const record = w.__coldOpenPhase = { timeline: [], maxRafGapMs: 0 };
+    let lastPhase: string | undefined;
+    setInterval(() => {
+      const phase = w.__gteki?.phase();
+      if (phase !== undefined && phase !== lastPhase) {
+        record.timeline.push({ t: Math.round(performance.now()), phase });
+        lastPhase = phase;
+      }
+    }, 250);
+    let lastFrame: number | undefined;
+    const frame = (t: number) => {
+      if (lastFrame !== undefined) record.maxRafGapMs = Math.max(record.maxRafGapMs, Math.round(t - lastFrame));
+      lastFrame = t;
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  });
+});
+
+test.afterEach(async ({ page }, info) => {
+  const record = records.get(page)!;
+  const current = await collectTimeline(page);
+  if (current) record.pages.push(current);
+  const timeline = record.pages.flatMap((entry) => entry.timeline);
+  const maxRafGapMs = Math.max(0, ...record.pages.map((entry) => entry.maxRafGapMs));
+  console.log(`[cold-open-phase] ${info.project.name} ${info.title}: ${timeline.map(({ t, phase }) => `${t}:${phase}`).join(",")} maxRafGapMs=${maxRafGapMs}`);
+  if (info.status !== info.expectedStatus) {
+    const file = save(info, "diagnostics", { timeline, maxRafGapMs, ...record.diagnostics });
+    await info.attach("diagnostics", { path: file, contentType: "application/json" });
+  }
+});
 
 async function ready(page: Page, url: string, info: TestInfo) {
+  const previous = await collectTimeline(page);
+  if (previous) records.get(page)!.pages.push(previous);
   await page.addInitScript(PROBE_SCRIPT);
   await page.goto(url);
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
