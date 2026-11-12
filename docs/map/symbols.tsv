@@ -579,6 +579,7 @@ readRecent	function	apps/web/src/ui/emptySuggestions.ts
 writeRecent	function	apps/web/src/ui/emptySuggestions.ts
 DEMO_PAIRS	const	apps/web/src/ui/firstRun.ts
 FIRST_RUN_KEY	const	apps/web/src/ui/firstRun.ts
+coldOpenPair	function	apps/web/src/ui/firstRun.ts
 demoPair	function	apps/web/src/ui/firstRun.ts
 markFirstRunDone	function	apps/web/src/ui/firstRun.ts
 shouldShowFirstRun	function	apps/web/src/ui/firstRun.ts
