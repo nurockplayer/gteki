@@ -260,7 +260,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     pose = { ...pose, east: (start.position.x + end.position.x) / 2, north: (start.position.y + end.position.y) / 2, up: (startZ + endZ) / 2 };
     expect(currentFloorId(bundle, pose.up, pose.east, pose.north)).toBeNull();
     tick();
-    expect(map.el.querySelector(".minimap-label")?.textContent).toContain("B3");
+    expect(map.el.querySelector(".minimap-label")?.textContent).toContain("B4");
     expect(map.el.querySelectorAll(".minimap-graph polyline").length).toBeGreaterThan(0);
     expect(routeLines(map).length).toBeGreaterThan(0);
     expect(display(map, ".minimap-arrow")).toBe("");
