@@ -1094,7 +1094,7 @@ for (const { level, f, p } of allFacilities) {
 // ---------------------------------------------------------------- sources, coverage
 const sha = raw.sha256;
 const sources: Source[] = [
-  {"id": "toei-media-guide-2026-index21", "title": "都営交通メディアガイド 2026 index21", "publisher": "東京都交通局", "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html", "license": null, "rights": "REFERENCE_ONLY", "attribution": "東京都交通局 都営交通メディアガイド 2026 (facts only)", "modified": false, "retrievedAt": null, "datasetDate": null, "usage": "facts-only", "decision": {"url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24"}},
+  {"id": "toei-media-guide-2026-index21", "title": "都営交通メディアガイド 2026 index21", "publisher": "東京都交通局", "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html", "license": null, "rights": "REFERENCE_ONLY", "attribution": "東京都交通局 都営交通メディアガイド 2026 (facts only)", "modified": false, "retrievedAt": "2026-11-12T00:00:00+09:00", "datasetDate": null, "usage": "facts-only", "decision": {"url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24"}},
 
   {
     id: SRC_NWD,
