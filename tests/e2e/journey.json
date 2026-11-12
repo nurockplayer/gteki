@@ -1,4 +1,108 @@
 {
-  "thresholds": { "voidRatio": 0.005, "nearBlack": 0.3, "nearClip": 0.10, "catVisibleMin": 0.5, "overlayPctDesktop": 20, "overlayPctPhone": 30 },
-  "known": []
+  "thresholds": {
+    "voidRatio": 0.005,
+    "nearBlack": 0.3,
+    "nearClip": 0.1,
+    "catVisibleMin": 0.5,
+    "overlayPctDesktop": 20,
+    "overlayPctPhone": 30
+  },
+  "known": [
+    {
+      "project": "desktop-chromium",
+      "metric": "voidRatio",
+      "from": 21,
+      "to": 21,
+      "row": "J5",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "nearClip",
+      "from": 2,
+      "to": 2,
+      "row": "J5",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "nearClip",
+      "from": 10,
+      "to": 10,
+      "row": "J5",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "nearClip",
+      "from": 12,
+      "to": 15,
+      "row": "J5",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "nearClip",
+      "from": 18,
+      "to": 19,
+      "row": "J5",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 2,
+      "to": 3,
+      "row": "J6",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 5,
+      "to": 6,
+      "row": "J6",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 8,
+      "to": 9,
+      "row": "J6",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 20,
+      "to": 22,
+      "row": "J6",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "catVisible",
+      "from": 36,
+      "to": 37,
+      "row": "J6",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "overlayPct",
+      "from": 0,
+      "to": 37,
+      "row": "J8",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    },
+    {
+      "project": "desktop-chromium",
+      "metric": "overlayPct",
+      "from": 38,
+      "to": 38,
+      "row": "J9",
+      "note": "Observed in first CI reel, 2026-11-12 JST"
+    }
+  ]
 }

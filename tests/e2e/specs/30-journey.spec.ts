@@ -121,13 +121,16 @@ test("guided walk @phone", async ({ page }, info) => {
   await page.evaluate(() => (window as any).__gteki.startGuide());
   await expect.poll(() => hooks.mode(page)).toBe("guide");
   const tier = await hooks.quality(page), renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);
+  const cdp = await page.context().newCDPSession(page);
   const samples: any[] = [], stepS = Number(process.env.JOURNEY_STEP_S ?? 4);
   let simT = 0, arrived = false;
   const sample = async (arrival: boolean) => {
     await page.evaluate(() => (window as any).__gteki.holdFrames(true));
     try {
       await page.evaluate(() => (window as any).__gteki.goldenFrame());
-      const index = samples.length, png = await page.screenshot({ path: path.join(out, `${String(index).padStart(3, "0")}.png`), timeout: 60_000 });
+      const index = samples.length;
+      const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
+      fs.writeFileSync(path.join(out, `${String(index).padStart(3, "0")}.png`), png);
       const guide = await page.evaluate(() => { const e = (window as any).__gteki.scanProbe().explorer; return { s: e.guide.s, step: e.guide.steps[Math.min(e.guide.steps.length - 1, e.guide.cum.findIndex((v: number) => v >= e.guide.s))] }; });
       let acc = 0, stepIndex = wps[0]!.stepIndex;
       for (let i = 1; i < wps.length; i++) { const a = wps[i - 1]!.p, b = wps[i]!.p; acc += Math.hypot(b.x - a.x, b.y - a.y); stepIndex = wps[i]!.stepIndex; if (acc >= guide.s) break; }
