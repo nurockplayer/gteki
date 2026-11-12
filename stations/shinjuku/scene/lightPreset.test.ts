@@ -4,9 +4,10 @@ import { CameraCut } from "../../../apps/web/src/explorer/cameraCut.ts";
 import { installLightPreset, parseLightPreset, shaftGrade } from "./lightPreset.ts";
 
 describe("lightpreset", () => {
-  it("parses only a, b and c", () => {
+  it("defaults to b, keeps a and c, and turns off only on off", () => {
     for (const p of ["a", "b", "c"]) expect(parseLightPreset(`?kit=0&lightpreset=${p}`)).toBe(p);
-    for (const search of ["", "?lightpreset=", "?lightpreset=junk"]) expect(parseLightPreset(search)).toBeNull();
+    for (const search of ["", "?lightpreset=", "?lightpreset=junk"]) expect(parseLightPreset(search)).toBe("b");
+    expect(parseLightPreset("?lightpreset=off")).toBeNull();
   });
   it("keeps A neutral everywhere", () => {
     for (const [s, r, d] of [[0, 0, 40], [0.5, 0, 20], [1, 0, 0], [2, 10, 10]]) {
@@ -33,12 +34,12 @@ describe("lightpreset", () => {
       }
     }
   });
-  it("leaves every material untouched without a flag", () => {
+  it("leaves every material untouched when off", () => {
     const material = new THREE.MeshStandardMaterial();
     material.name = "mat.wall";
     const root = new THREE.Mesh(new THREE.BoxGeometry(), material);
     const hook = material.onBeforeCompile, key = material.customProgramCacheKey, version = material.version;
-    installLightPreset(root, parseLightPreset(""));
+    installLightPreset(root, parseLightPreset("?lightpreset=off"));
     expect(material.onBeforeCompile).toBe(hook);
     expect(material.customProgramCacheKey).toBe(key);
     expect(material.version).toBe(version);

@@ -12,9 +12,11 @@ const smooth = (a: number, b: number, x: number) => {
   return t * t * (3 - 2 * t);
 };
 
+/** B is the default (D9); a and c stay as reference arms, off disables the grade. */
 export function parseLightPreset(search: string): LightPreset | null {
   const value = new URLSearchParams(search).get("lightpreset");
-  return value === "a" || value === "b" || value === "c" ? value : null;
+  if (value === "off") return null;
+  return value === "a" || value === "c" ? value : "b";
 }
 
 /** landingHeight is world Y minus B.y; four-argument callers sample B's height. */
