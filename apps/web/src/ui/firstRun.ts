@@ -27,3 +27,11 @@ export function demoPair(stationKey: string, pois: readonly Poi[]): { from: Poi;
   if (!from || !to || from.connectorNodeIds.length === 0 || to.connectorNodeIds.length === 0) return null;
   return { from, to };
 }
+
+/** First-visit station route, only when both endpoints are routable. */
+export function coldOpenPair(stationKey: string, pois: readonly Poi[]): { from: Poi; to: Poi } | null {
+  if (stationKey !== "shinjuku") return null;
+  const from = pois.find((poi) => poi.id === "poi:exit:1");
+  const to = pois.find((poi) => poi.id === "poi:platform:oedo");
+  return from?.connectorNodeIds.length && to?.connectorNodeIds.length ? { from, to } : null;
+}
