@@ -86,6 +86,14 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     expect(exactHash(prepareLayout(bundle, plan, { reuse: true }).layout)).toBe(base.protect.layoutAfterProtect);
   }, 120_000);
 
+  it("publishes exactly the modelled stair-run edge ids", () => {
+    const expectedEdges = prepareLayout(bundle, plan, { reuse: true }).layout.runs.filter((r) => r.mode === "stairs").map((r) => r.edgeId);
+    const built = withCanvasStub(() => buildStation(bundle, plan, { quality: "low", reuseLayout: true }));
+    expect(expectedEdges.length).toBeGreaterThan(0);
+    expect(built.root.userData.modelledStairEdges).toEqual(expectedEdges);
+    built.dispose();
+  }, 120_000);
+
   it("every mesh drawn with a vertex-colour material carries a colour attribute", () => {
     withCanvasStub(() => {
       const built = buildStation(bundle, plan, { quality: "low" });
