@@ -552,6 +552,9 @@ stationClock	function	apps/web/src/stationClock.ts
 App	class	apps/web/src/ui/app.ts
 barrierFreeResults	function	apps/web/src/ui/barrierFree.ts
 isAccessibleToilet	function	apps/web/src/ui/barrierFree.ts
+BootStage	type	apps/web/src/ui/bootCard.ts
+FrameReadiness	class	apps/web/src/ui/bootCard.ts
+bootProgress	function	apps/web/src/ui/bootCard.ts
 CATEGORY_ORDER	const	apps/web/src/ui/categoryFilter.ts
 categoriesIn	function	apps/web/src/ui/categoryFilter.ts
 AriaAttrs	type	apps/web/src/ui/combobox.ts
