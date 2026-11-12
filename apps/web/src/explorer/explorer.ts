@@ -1867,22 +1867,24 @@ export class Explorer {
     const toNdc = (r: ViewRect) => ({ x0: 2 * r.x / w - 1, x1: 2 * (r.x + r.w) / w - 1, y0: 1 - 2 * (r.y + r.h) / h, y1: 1 - 2 * r.y / h });
     let ndcFree = toNdc(free), tried = 0;
     // The cat's low boom meets the floor on a look-up, so only its framing checks the walker and the settled boom.
+    const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
+    const lens = this.previewNext && !this.firstPerson ? followLens("walk", false, false, true, this.camera.aspect) : FOV.follow;
     let rig: FramingRig | undefined;
     if (this.catAvatar) {
       const feet = this.pos.clone(), top = feet.clone().add(new THREE.Vector3(0, CAT_AVATAR_HEIGHT_M, 0));
       const walkerTargets = this.cameraTargets.filter((o) => !signs.has(o));
       rig = {
-        shoulder: catShoulder(this.camera.aspect), lift: FOLLOW_CAT.lift, drop: FOLLOW_CAT.drop, distance: FOLLOW_CAT.distance,
+        shoulder: catShoulder(this.camera.aspect), lift: framing.lift, drop: framing.drop, distance: framing.distance,
         body: [feet, top],
         clear: (cameraPos, pivot) => {
           // The live rig raises its boom over the floor, so judge the pose it would really settle on.
           const cast = (back: THREE.Vector3) => {
             this.ray.set(pivot, back);
             this.ray.near = 0;
-            this.ray.far = FOLLOW_CAT.distance + FOLLOW.clearance;
+            this.ray.far = framing.distance + FOLLOW.clearance;
             return castCamera(this.ray, this.cameraTargets, this.cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
           };
-          const solved = solveRaisedBoom(FOLLOW_CAT.distance, cameraPos.clone().sub(pivot).normalize(), cast, 0, 0, true);
+          const solved = solveRaisedBoom(framing.distance, cameraPos.clone().sub(pivot).normalize(), cast, 0, 0, true);
           if (solved.distance < FOLLOW.comfortDistance) return false;
           const settled = pivot.clone().addScaledVector(solved.back, solved.distance);
           const direction = feet.clone().lerp(top, 0.5).sub(settled);
@@ -1898,7 +1900,7 @@ export class Explorer {
       const ndc = toNdc(rect);
       tried++;
       for (const record of boardRecords) record.reason = null;
-      look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndc, rig, (board, reason) => {
+      look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, lens, guideHeading, ndc, rig, (board, reason) => {
         boardRecords[boards.indexOf(board as typeof boards[number])]!.reason = reason;
       });
       if (look) { ndcFree = ndc; break; }
@@ -3267,7 +3269,7 @@ export class Explorer {
     let back = pose.back;
     let wantedDistance = this.camDistance;
     if (this.escalatorWeight > 0) {
-      const ride = escalatorPose(this.pos, this.escalatorAxis, catShoulder(this.camera.aspect), this.camDistance / FOLLOW_CAT_NEXT.distance, this.yaw, this.pitch);
+      const ride = escalatorPose(this.pos, this.escalatorAxis, shoulder, this.camDistance / FOLLOW_CAT_NEXT.distance, this.yaw, this.pitch);
       const wanted = pose.pivot.clone().addScaledVector(back, wantedDistance).lerp(ride.position, this.escalatorWeight);
       back = wanted.sub(pose.pivot);
       wantedDistance = back.length();
