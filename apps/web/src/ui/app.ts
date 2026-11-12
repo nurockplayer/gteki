@@ -39,6 +39,7 @@ import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { coldOpenPair, demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
+import { guideCardText } from "./guideCard.ts";
 import { shortStationLabel } from "./shortStationLabel.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
@@ -179,6 +180,7 @@ export class App {
         if (poi) this.setDestination(poi);
       },
     }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params), previewNext: params.get("next") === "1" });
+    this.root.classList.toggle("next", this.explorer.previewNext);
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
     this.explorer.setPanel(this.ui.panel);
@@ -1406,6 +1408,19 @@ export class App {
       // One no-wrap group, so the phone row never splits the playback controls (the other buttons may wrap below it).
       const group = el("div", "hud-guide");
       group.append(prev, pause, next, speed, stop);
+      if (this.explorer.previewNext) {
+        const more = el("button", "ghost guide-more", "…");
+        more.setAttribute("aria-label", t.moreControls);
+        const extras = [prev, next, speed, this.ui.railBtn];
+        const sync = () => {
+          more.setAttribute("aria-expanded", String(this.guideMoreOpen));
+          for (const node of extras) node.classList.toggle("guide-extra-hidden", !this.guideMoreOpen);
+          for (const node of [fp, net, ov, snd]) node.classList.toggle("guide-extra-hidden", !this.guideMoreOpen);
+        };
+        more.addEventListener("click", () => { this.guideMoreOpen = !this.guideMoreOpen; sync(); });
+        group.append(more);
+        queueMicrotask(sync);
+      }
       row.append(group);
     }
     const fp = el("button", "ghost", t.firstPerson);
@@ -1479,6 +1494,11 @@ export class App {
     const ins = this.s.instructions[this.s.activeInstruction];
     const cur = hud.querySelector(".hud-instruction");
     if (!ins) hud.querySelector(".hud-line")?.remove();
+    else if (cur && this.explorer.previewNext) {
+      const old = hud.querySelector(".hud-line");
+      const replacement = this.guideBox(ins.text);
+      old?.replaceWith(replacement);
+    }
     else if (cur) cur.textContent = ins.text;
     else hud.prepend(this.guideBox(ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
@@ -1488,6 +1508,8 @@ export class App {
   }
 
   private spokenInstruction: Instruction | null = null;
+  private guideTurnSaid = false;
+  private guideMoreOpen = false;
 
   /** Announce the guide's active instruction once per change (not per progress tick); forgotten outside the guide. */
   private announceInstruction(): void {
@@ -1498,14 +1520,40 @@ export class App {
     if (!ins) return;
     this.ui.live.announce(ins.text);
     // A nudge only: the instruction text itself is the router's job (and was just announced).
-    if (changed && this.ui.hud.contains(this.ui.mascot.root)) this.ui.mascot.say({ kind: "turn" });
+    if (changed && this.ui.hud.contains(this.ui.mascot.root) && (!this.explorer.previewNext || !this.guideTurnSaid)) { this.ui.mascot.say({ kind: "turn" }); this.guideTurnSaid = true; }
   }
 
   /** The guide box: the mascot beside the instruction text, never over it. */
   private guideBox(text: string): HTMLElement {
     const box = el("div", "hud-line");
     this.ui.mascot.setResident(true);
-    box.append(this.ui.mascot.root, el("div", "hud-instruction", text));
+    if (!this.explorer.previewNext || this.explorer.currentMode !== "guide") {
+      box.append(this.ui.mascot.root, el("div", "hud-instruction", text));
+      return box;
+    }
+    const ins = this.s.instructions[this.s.activeInstruction]!;
+    const card = guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang });
+    const instruction = el("div", "hud-instruction");
+    const line = el("span", "guide-card-line", card.line);
+    instruction.append(line);
+    box.append(this.ui.mascot.root, instruction);
+    requestAnimationFrame(() => {
+      if (!instruction.isConnected) return;
+      const overflow = line.scrollWidth > line.clientWidth || line.scrollHeight > line.clientHeight;
+      if (!card.detail && !overflow) return;
+      const button = el("button", "hud-instruction guide-card");
+      button.setAttribute("aria-label", this.t.dataNotes);
+      button.setAttribute("aria-expanded", "false");
+      const label = el("span", "guide-card-line", card.line);
+      const icon = el("span", "guide-card-icon", "ⓘ");
+      button.append(label, icon);
+      button.addEventListener("click", () => {
+        const open = button.getAttribute("aria-expanded") !== "true";
+        button.setAttribute("aria-expanded", String(open));
+        label.textContent = open ? card.detail ?? card.line : card.line;
+      });
+      instruction.replaceWith(button);
+    });
     return box;
   }
 
@@ -1542,6 +1590,8 @@ export class App {
     this.insClock.reset();
     this.jumpPin = null;
     this.arrived = false;
+    this.guideTurnSaid = false;
+    this.guideMoreOpen = false;
     this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
     this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : []);
   }
@@ -1574,7 +1624,7 @@ export class App {
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === j.index));
     if (this.arrived) {
-      this.toast(this.arrivalText(), 2500);
+      if (!this.explorer.previewNext) this.toast(this.arrivalText(), 2500);
       this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
     }
   }
@@ -1647,7 +1697,7 @@ export class App {
       this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
       if (p.done) {
-        this.toast(this.arrivalText(), 2500);
+        if (!this.explorer.previewNext) this.toast(this.arrivalText(), 2500);
         this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
       }
     }

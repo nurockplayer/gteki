@@ -63,6 +63,14 @@ jobs:
           GTEKI_ROOT: ${{ github.workspace }}
         run: pnpm exec playwright test specs/31-cold-open.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
 
+      - name: Walk HUD (desktop + phone)
+        timeout-minutes: 12
+        working-directory: tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/32-walk-hud.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
+
+
       # The station switch (Ikebukuro -> Shinjuku) runs on its own step so its [switch-timings] line is easy to find
       # (#647). It blocks again since #1026: the old 15 s ready limit was the cause of the failures, and with the 120 s
       # limit 20 of 20 runs passed (switchReadyMs 19-24 s under SwiftShader). Real-device switch time stays on the field-run checklist.
