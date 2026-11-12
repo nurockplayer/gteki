@@ -537,5 +537,5 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .cold-open[hidden] { display: none; }
 .cold-open-title { font-size: 13px; font-weight: 700; }
 .cold-open-search { border: 0; background: transparent; padding: 4px; }
-.cold-opening .hud, .cold-opening .panel-entry { display: none !important; }
+.cold-opening .hud, .cold-opening .panel-entry, .cold-opening .minimap, .cold-opening .hint { display: none !important; }
 @media (max-width: 600px) { .cold-open { left: 50%; transform: translateX(-50%); white-space: nowrap; } }

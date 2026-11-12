@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
-import { settleFrames } from "../lib/gteki";
+import { PROBE_SCRIPT, settleFrames } from "../lib/gteki";
 
 async function ready(page: Page, url: string) {
+  await page.addInitScript(PROBE_SCRIPT);
   await page.goto(url);
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
 }
@@ -29,20 +30,28 @@ test("cold open starts a route and guide @phone", async ({ page }, info) => {
   expect(state.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
   expect(Math.hypot(state.avatar.x - state.endpoints.first.x, state.avatar.y - state.endpoints.first.y, state.avatar.z - state.endpoints.first.z)).toBeLessThan(3);
   await expect(page.locator(".panel")).toBeHidden();
+  await expect(page.locator(".minimap")).toBeHidden();
   expect(new URL(page.url()).searchParams.has("from")).toBe(false);
   expect(new URL(page.url()).searchParams.has("to")).toBe(false);
   const overlay = await page.evaluate(() => {
     let covered = 0;
+    const elements: Record<string, number> = {};
     for (let y = 0; y < 16; y++) for (let x = 0; x < 24; x++) {
-      if (!document.elementFromPoint((x + .5) * innerWidth / 24, (y + .5) * innerHeight / 16)?.matches("canvas.gteki-canvas")) covered++;
+      const element = document.elementFromPoint((x + .5) * innerWidth / 24, (y + .5) * innerHeight / 16);
+      if (!element?.matches("canvas.gteki-canvas")) {
+        covered++;
+        const name = element ? `${element.tagName.toLowerCase()}.${Array.from(element.classList).join(".")}` : "none";
+        elements[name] = (elements[name] ?? 0) + 1;
+      }
     }
     const g = (window as any).__gteki;
     const point = g.projectEnu([g.avatar()])[0];
-    return { share: covered / 384, cat: document.elementFromPoint(point.x, point.y)?.matches("canvas.gteki-canvas") };
+    return { share: covered / 384, cat: document.elementFromPoint(point.x, point.y)?.matches("canvas.gteki-canvas"), top: Object.entries(elements).sort((a, b) => b[1] - a[1]).slice(0, 5) };
   });
-  expect(overlay.share).toBeLessThanOrEqual(info.project.name === "phone-chromium" ? .30 : .20);
+  expect(overlay.share, `Top overlays: ${JSON.stringify(overlay.top)}`).toBeLessThanOrEqual(info.project.name === "phone-chromium" ? .30 : .20);
   expect(overlay.cat).toBe(true);
   await page.locator(".cold-open .primary").click({ timeout: 60_000 });
+  await expect(page.locator(".minimap")).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as any).__gteki.mode())).toBe("guide");
   await expect.poll(() => page.evaluate(() => (window as any).__gteki.audio().state)).toBe("running");
   await expect(page.locator(".cold-open")).toBeHidden();
