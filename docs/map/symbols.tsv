@@ -117,6 +117,7 @@ CameraHold	interface	apps/web/src/explorer/followCamera.ts
 DESCENT	const	apps/web/src/explorer/followCamera.ts
 FOLLOW	const	apps/web/src/explorer/followCamera.ts
 FOLLOW_CAT	const	apps/web/src/explorer/followCamera.ts
+FOLLOW_CAT_NEXT	const	apps/web/src/explorer/followCamera.ts
 FOV	const	apps/web/src/explorer/followCamera.ts
 FollowPose	interface	apps/web/src/explorer/followCamera.ts
 NO_SLOPE	const	apps/web/src/explorer/followCamera.ts
@@ -133,15 +134,18 @@ clampDistance	function	apps/web/src/explorer/followCamera.ts
 constrainedPitch	function	apps/web/src/explorer/followCamera.ts
 descentAimDrop	function	apps/web/src/explorer/followCamera.ts
 easeRaise	function	apps/web/src/explorer/followCamera.ts
+escalatorPose	function	apps/web/src/explorer/followCamera.ts
 fadeHold	function	apps/web/src/explorer/followCamera.ts
 followBoom	function	apps/web/src/explorer/followCamera.ts
 followDistance	function	apps/web/src/explorer/followCamera.ts
+followLens	function	apps/web/src/explorer/followCamera.ts
 followPose	function	apps/web/src/explorer/followCamera.ts
 guideSignInView	function	apps/web/src/explorer/followCamera.ts
 patchCameraHold	function	apps/web/src/explorer/followCamera.ts
 raisedBack	function	apps/web/src/explorer/followCamera.ts
 solveRaisedBoom	function	apps/web/src/explorer/followCamera.ts
 stepAvatarFade	function	apps/web/src/explorer/followCamera.ts
+stepEscalatorLock	function	apps/web/src/explorer/followCamera.ts
 stepSlope	function	apps/web/src/explorer/followCamera.ts
 targetFov	function	apps/web/src/explorer/followCamera.ts
 viewDirection	function	apps/web/src/explorer/followCamera.ts
@@ -161,6 +165,7 @@ dashTexture	function	apps/web/src/explorer/geometry.ts
 edgePoints	function	apps/web/src/explorer/geometry.ts
 ribbonGeometry	function	apps/web/src/explorer/geometry.ts
 routeNearFade	function	apps/web/src/explorer/geometry.ts
+routeRunsOutsideSpans	function	apps/web/src/explorer/geometry.ts
 routeSegmentProfile	function	apps/web/src/explorer/geometry.ts
 steppedProfile	function	apps/web/src/explorer/geometry.ts
 goldenPixels	function	apps/web/src/explorer/goldenPixels.ts
