@@ -161,6 +161,7 @@ dashTexture	function	apps/web/src/explorer/geometry.ts
 edgePoints	function	apps/web/src/explorer/geometry.ts
 ribbonGeometry	function	apps/web/src/explorer/geometry.ts
 routeNearFade	function	apps/web/src/explorer/geometry.ts
+routeRunsOutsideSpans	function	apps/web/src/explorer/geometry.ts
 routeSegmentProfile	function	apps/web/src/explorer/geometry.ts
 steppedProfile	function	apps/web/src/explorer/geometry.ts
 goldenPixels	function	apps/web/src/explorer/goldenPixels.ts
