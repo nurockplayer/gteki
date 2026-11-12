@@ -387,6 +387,7 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
+  private readonly bodyRaiseHold = { seconds: 0, target: 0 };
   private boomActual = 0;
   private cameraFade = 1;
   /** Set when the follow camera resumes after the overview: the fade left from before it is stale, so it snaps once. */
@@ -3307,6 +3308,10 @@ export class Explorer {
     const lock = stepEscalatorLock(this.escalatorProgress, lockOn, dt, lockSnap);
     this.escalatorProgress = lock.progress;
     this.escalatorWeight = lock.weight;
+    if (snap || this.firstPerson || !this.previewNext || !this.catAvatar || this.escalatorWeight > 0
+      || this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined) {
+      this.bodyRaiseHold.seconds = this.bodyRaiseHold.target = 0;
+    }
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
@@ -3355,7 +3360,25 @@ export class Explorer {
       return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
     };
     if (this.cameraTargets.length) {
-      const solved = solveRaisedBoom(wantedDistance, back, cast, this.boomRaise, dt, snap || this.reducedMotion);
+      const checkBody = this.previewNext && this.catAvatar && this.escalatorWeight === 0
+        && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
+      const cameraPoint = new THREE.Vector3();
+      const direction = new THREE.Vector3();
+      const point = new THREE.Vector3();
+      const bodyHidden = checkBody ? (b: THREE.Vector3, distance: number) => {
+        cameraPoint.copy(pose.pivot).addScaledVector(b, distance);
+        let blocked = 0;
+        for (let i = 0; i < 3; i++) {
+          if (i === 2) point.copy(head);
+          else point.copy(this.pos).y += i === 0 ? 0.08 : 0.22;
+          direction.subVectors(point, cameraPoint);
+          this.ray.set(cameraPoint, direction.normalize());
+          this.ray.far = cameraPoint.distanceTo(point) - 0.05;
+          if (castCamera(this.ray, this.cameraTargets, cameraSides).length && ++blocked >= 2) return true;
+        }
+        return false;
+      } : undefined;
+      const solved = solveRaisedBoom(wantedDistance, back, cast, this.boomRaise, dt, snap || this.reducedMotion, bodyHidden, checkBody ? this.bodyRaiseHold : undefined);
       // A lip-clearing raise also needs to move the camera now; interpolating from below the slab
       // would recreate the same obstruction even though the target boom has already cleared it.
       raisedClear = solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
