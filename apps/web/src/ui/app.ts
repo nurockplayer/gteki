@@ -1542,10 +1542,11 @@ export class App {
       const overflow = line.scrollWidth > line.clientWidth || line.scrollHeight > line.clientHeight;
       if (!card.detail && !overflow) return;
       const button = el("button", "hud-instruction guide-card");
-      button.setAttribute("aria-label", this.t.dataNotes);
       button.setAttribute("aria-expanded", "false");
       const label = el("span", "guide-card-line", card.line);
       const icon = el("span", "guide-card-icon", "ⓘ");
+      icon.setAttribute("role", "img");
+      icon.setAttribute("aria-label", this.t.dataNotes);
       button.append(label, icon);
       button.addEventListener("click", () => {
         const open = button.getAttribute("aria-expanded") !== "true";
