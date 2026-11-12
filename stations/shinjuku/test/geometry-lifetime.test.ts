@@ -55,6 +55,7 @@ describe("station geometry lifetime", () => {
     // scene-digest fixture records those changes. Retired arrays stay collectible.
     // #342 (2026-11-06 JST): only the identity faces and hardware moved.
     // #870 (2026-11-06 JST): platform door panels and caps split around the aligned openings (+3,360 B).
+    // 2026-11-12 JST: remeasured after rebasing on #1213; geometry hash unchanged.
     expect(result.geometryHash).toBe("ba758cb8ebd8f849ff05926d2a15d71e8bd6e3f21692c9efa875dc249676aa7a");
   }, 60_000);
 
