@@ -16,26 +16,28 @@ None of this was a failing check. The golden cameras look from fixed nodes with 
 
 ## The table
 
-Rows are in playhead order: the time a first-time visitor reaches them. "Script" rows are judged by the journey spec in CI (not built yet: until it runs in CI, a script row is judged by hand from a play of production like the baseline above, and stays FAIL or "not judged" unless that play shows it passing); "person" rows by the art director on the journey reel, and finally by the Owner on the walk video. Times are for the guided walk at its default pace.
+Rows are in playhead order: the time a first-time visitor reaches them. "Script" rows are judged by the journey spec in CI (job `journey (shinjuku)`, since #1196; a row the reel does not measure yet is judged by hand from a play of production like the baseline above, and stays FAIL or "not judged" unless that play shows it passing); "person" rows by the art director on the journey reel, and finally by the Owner on the walk video. Times are for the guided walk at its default pace.
 
-| # | When | What the player gets | Judged by | 2026-11-12 |
+| # | When | What the player gets | Judged by | 2026-11-12, reel at 8ad71c13 (desktop / phone) |
 |---|---|---|---|---|
-| J1 | 0–2 s | A designed first frame (title and progress), never a bare form on black | script: screenshot at 1 s | FAIL (desktop) |
-| J2 | ≤ 5 s desktop, ≤ 8 s phone | Without any input: in the station as the cat, at the exit 1 mouth, stairs ahead (hero H1). Download to that frame ≤ 6 MB | script: mode, pose, time, bytes | FAIL |
-| J3 | first frame | The world owns the frame: overlay ≤ 20% desktop, ≤ 30% phone, one primary action | script: DOM overlay grid | FAIL |
-| J4 | first tap | One tap starts the walk and the sound | script: one click → guide mode, audio running | FAIL (4 actions) |
-| J5 | whole walk | No void, no black holes, the camera never inside geometry | script: every 2.5 m with the guide camera | FAIL (6 s, 14 s) |
-| J6 | whole walk | The cat is always in view | script: avatar visible in ≥ 95% of samples | FAIL |
-| J7 | escalators | The ride reads as a ride: camera on the escalator axis (D2), ceiling intact | person on the reel; script: axis angle | FAIL |
-| J8 | whole walk | Guidance stays quiet (D1): overlay ≤ 20% / 30%, no debug text, small markers | script: overlay and visible strings | FAIL |
-| J9 | arrival | Arrival is a moment: platform and name sign in view, data notes one tap away | script: overlay at arrival; person | FAIL |
+| J1 | 0–2 s | A designed first frame (title and progress), never a bare form on black | script: screenshot at 1 s | FAIL: opens on the Ikebukuro search form |
+| J2 | ≤ 5 s desktop, ≤ 8 s phone | Without any input: in the station as the cat, at the exit 1 mouth, stairs ahead (hero H1). Download to that frame ≤ 6 MB | script: mode, pose, time, bytes | FAIL: Ikebukuro overview; 13.0 / 11.1 MB to ready |
+| J3 | first frame | The world owns the frame: overlay ≤ 20% desktop, ≤ 30% phone, one primary action | script: DOM overlay grid | FAIL: overlay 44% / 51% |
+| J4 | first tap | One tap starts the walk and the sound | script: one click → guide mode, audio running | FAIL (4 actions; by hand, the reel does not take this path) |
+| J5 | whole walk | No void, no black holes, the camera never inside geometry | script: every 2.5 m with the guide camera | FAIL: 10 / 12 of 39 samples. Camera in geometry on the exit stairs at 12 s (near clip 0.35 / 0.70) and from 44 to 80 s on the first escalator (0.13–0.20); void 1% / 3% on B3 at 88 s |
+| J6 | whole walk | The cat is always in view | script: avatar visible in ≥ 95% of samples | FAIL: visible in 72% / 56% of samples. Hidden by geometry on the exit stairs (12–16 s) and before arrival (148–152 s), by the UI on phone through the first escalator (44–84 s) |
+| J7 | escalators | The ride reads as a ride: camera on the escalator axis (D2), ceiling intact | person on the reel; script: axis angle | FAIL (by hand; the person judgement on the reel is outstanding). Script: on the axis in 18 of 20 ride samples, 31° and 1° entering the two rides |
+| J8 | whole walk | Guidance stays quiet (D1): overlay ≤ 20% / 30%, no debug text, small markers | script: overlay and visible strings | FAIL: overlay 32–48% (median 36%) / 31–37% (median 31%), over the limit in all 38 walk samples; "Run ≈1.3 m/s" and the minimap caption on screen |
+| J9 | arrival | Arrival is a moment: platform and name sign in view, data notes one tap away | script: overlay at arrival; person | FAIL: overlay 48% / 37% at arrival, the cat not in view, the data note in the headline |
 | J10 | whole walk | It looks like a Tokyo subway: hero frames H1–H4 accepted against the targets | art director, then Owner | not judged |
-| J11 | whole walk | It sounds like one: ambience that changes with depth, escalator, distant train | script: audio state; person | not judged |
-| J12 | whole walk | It holds frame rate: ≥ 50 fps desktop (M2), ≥ 30 fps on a mid-range phone | GPU measurement | not measured |
-| J13 | always | Truth kept: "approximate, not surveyed" visible, data scope one tap away, nothing invented (D3) | person: truth review | PASS |
-| J14 | always | Release hygiene: no console errors, a message when WebGL is unavailable, credits, ja and en | script | not judged |
+| J11 | whole walk | It sounds like one: ambience that changes with depth, escalator, distant train | script: audio state; person | not judged (the reel records no audio state) |
+| J12 | whole walk | It holds frame rate: ≥ 50 fps desktop (M2), ≥ 30 fps on a mid-range phone | GPU measurement | not measured (CI renders in software) |
+| J13 | always | Truth kept: "approximate, not surveyed" visible, data scope one tap away, nothing invented (D3) | person: truth review | PASS: the "Approximate, not surveyed" badge, "Coverage" and "demo, not surveyed" are on screen through the walk (frame 013 of both reels) |
+| J14 | always | Release hygiene: no console errors, a message when WebGL is unavailable, credits, ja and en | script | not judged (the reel records no console state) |
 
 Pass count 2026-11-12: **1 / 14**.
+
+Read on 2026-11-12 13:35 JST from the reel of main 8ad71c13 (the last E2E smoke run of #1196, run 43147254922: 39 samples over a 154 s, 204 m walk on each project). It is the default experience: what sits behind `?next=1` (cold open, route diet, slope camera) is read from the reel's `next` mode once that is on main. CI renders in software at the low tier, so its load and frame times say nothing about a real GPU (the time in J2, J12). The reel's string list misses the "Approximate, not surveyed" badge, so J13 is read from the frames.
 
 ## Release
 
@@ -46,7 +48,7 @@ Pass count 2026-11-12: **1 / 14**.
 ## Method
 
 1. **Playhead first.** Work the earliest failing row. A defect at second 3 outranks one at second 70: every visitor sees second 3. Breakage (token-rules 24) keeps its priority and is ordered the same way.
-2. **The reel is the evidence.** The journey spec (to be added as `tests/e2e/specs/30-journey.spec.ts` with its own CI job) plays the real guided walk with the real follow camera and the real UI, on desktop and phone, and writes frames, contact sheets and per-sample numbers. Still cameras stay as the technical gate; they are not evidence that the walk is good. Evidence images go in `docs/release/evidence/<date>/`, one station per file, named `ikebukuro-*` or `shinjuku-*` (the prefix selects the rights annotation in `REUSE.toml`).
+2. **The reel is the evidence.** The journey spec (`tests/e2e/specs/30-journey.spec.ts`, CI job `journey (shinjuku)`) plays the real guided walk with the real follow camera and the real UI, on desktop and phone, and writes frames, contact sheets and per-sample numbers. Still cameras stay as the technical gate; they are not evidence that the walk is good. Evidence images go in `docs/release/evidence/<date>/`, one station per file, named `ikebukuro-*` or `shinjuku-*` (the prefix selects the rights annotation in `REUSE.toml`).
 3. **Every PR names its row** (`Row: J5`), or says none. A PR that changes what the player sees carries the reel sheets for its row, before and after.
 4. **Verify in CI.** e2e and visual specs run in GitHub Actions (7–9 min) on the draft PR. The Mac's GPU lock is for the art director's renders. Local runs are for unit specs.
 5. **Lead decides, Codex builds.** The project lead reads the reel, decides the change and writes the brief; Codex implements; the art director owns the look and accepts visual PRs on the reel. A hard problem goes diagnose (read-only) → decide → implement.
