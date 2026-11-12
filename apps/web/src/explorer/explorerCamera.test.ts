@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
 import { Explorer } from "./explorer.ts";
-import { FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
+import { FOLLOW_CAT_NEXT, escalatorPose, FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
 import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
 import type { IdentityBoard } from "./identityBoards.ts";
 
@@ -13,6 +13,7 @@ function cameraStand() {
   const pose = followPose(new THREE.Vector3(0, 1.62, 0), 0, -0.12);
   camera.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
   const state = {
+    previewNext: false, escalatorProgress: 0, escalatorWeight: 0, escalatorAxis: new THREE.Vector3(0, 0, -1),
     pos, camera, slope: { ...NO_SLOPE }, slopeY: 0, firstPerson: false, mode: "walk",
     yaw: 0, pitch: -0.12, camDistance: FOLLOW.defaultDistance as number, boomRaise: 0,
     cameraTargets: [] as THREE.Object3D[], cameraSides: new Set<THREE.Object3D>(), blockerTargets: new Set<THREE.Object3D>(),
@@ -211,7 +212,7 @@ describe("Explorer wall fallback and QA controls", () => {
     place(state);
     expect(state.camera.position.distanceTo(held)).toBeLessThan(1e-9);
     expect(qa(state).cameraInfo()).toEqual({
-      fov: 50, far: 2000, slopeOn: false, boomWanted: 2, boomActual: 2,
+      lock: 0, fov: 50, far: 2000, slopeOn: false, boomWanted: 2, boomActual: 2,
       raise: 0, pitch: -0.5, yaw: 1, avatarFade: 1, reflections: true, mode: "walk",
     });
     qa(state).setCamera(null);
@@ -371,6 +372,61 @@ describe("Explorer descending framing", () => {
 });
 
 describe("Explorer guide stair lens", () => {
+  it("keeps the escalator shoulder inside a nearby right wall", () => {
+    const state = Object.assign(cameraStand(), { previewNext: true, catAvatar: true, mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0, pitch: 0, camDistance: FOLLOW_CAT_NEXT.distance });
+    state.camera.aspect = 1.6;
+    const route = [
+      { x: 0, y: 0, z: 0, zKnown: true, stepIndex: -1, floorId: "b1" },
+      { x: 0, y: 10, z: -5, zKnown: true, stepIndex: 0, floorId: "b1" },
+    ];
+    const spans = guidePaceSpans(route, [{ mode: "escalator" }], []);
+    qa(state).startGuide(route, 0, [], spans);
+    state.guide!.s = 1;
+    const side = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    side.rotation.y = Math.PI / 2;
+    side.position.x = 0.3;
+    side.updateMatrixWorld(true);
+    setTargets(state, [side]);
+    for (let i = 0; i < 120; i++) place(state);
+    expect(qa(state).cameraInfo().lock).toBe(1);
+    expect(Math.abs(state.camera.position.x - state.pos.x)).toBeLessThan(0.1);
+  });
+
+  it.each([false, true])("frames a descending cat escalator with previewNext=%s", (previewNext) => {
+    const state = Object.assign(cameraStand(), { previewNext, catAvatar: true, mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0, pitch: 0, camDistance: FOLLOW_CAT_NEXT.distance });
+    state.camera.aspect = 1.6;
+    state.camera.fov = previewNext ? 55 : 60;
+    state.setFov = vi.fn((target: number, snap: boolean, dt: number) => {
+      (Explorer.prototype as unknown as { setFov(target: number, snap: boolean, dt: number): void }).setFov.call(state, target, snap, dt);
+    });
+    const route = [
+      { x: 0, y: 0, z: 0, zKnown: true, stepIndex: -1, floorId: "b1" },
+      { x: 0, y: Math.sqrt(75), z: -5, zKnown: true, stepIndex: 0, floorId: "b1" },
+      { x: 0, y: 20, z: -5, zKnown: true, stepIndex: 1, floorId: "b1" },
+    ];
+    const spans = guidePaceSpans(route, [{ mode: "escalator" }, { mode: "walk" }], []);
+    qa(state).startGuide(route, 0, [], spans);
+    state.guide!.s = 0.01;
+    const axis = new THREE.Vector3(0, -0.5, -Math.sqrt(0.75));
+    for (let i = 0; i < 120; i++) {
+      state.guide!.s += 0.9 / 60;
+      state.pos.addScaledVector(axis, 0.9 / 60);
+      place(state);
+      expect(state.camera.fov).toBe(previewNext ? 55 : 60);
+    }
+    expect((state as unknown as Explorer).cameraInfo().lock).toBe(previewNext ? 1 : 0);
+    const ride = escalatorPose(state.pos, axis, 0.2, 1, state.yaw, 0);
+    if (previewNext) expect(state.camera.position.distanceTo(ride.position)).toBeLessThan(0.15);
+    state.guide!.s = spans[0]!.toS;
+    for (let i = 0; i < 72; i++) place(state);
+    expect((state as unknown as Explorer).cameraInfo().lock).toBe(0);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(previewNext ? 55 : 50);
+    if (previewNext) {
+      expect(Math.abs(state.camera.position.y - state.pos.y - 0.90)).toBeLessThan(0.01);
+      expect(Math.abs(state.camera.position.z - state.pos.z - 2.20)).toBeLessThan(0.01);
+    }
+  });
+
   it.each(["stairs", "escalator"] as const)("widens on shallow %s and holds across a short landing", (mode) => {
     const state = Object.assign(cameraStand(), { mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0 });
     const route = [
