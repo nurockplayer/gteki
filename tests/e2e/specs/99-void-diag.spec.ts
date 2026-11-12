@@ -50,7 +50,7 @@ test('sj-stair-2-bottom void diagnosis', async ({ page }) => {
         ctx.putImageData(data, 0, 0); return canvas.toDataURL('image/png').split(',')[1];
       };
       const images = { mask: png(true), shown: png(false) };
-      if (Math.abs(baseline - 0.0192) > 0.003) return { baseline, images, decision: 'Baseline does not reproduce approximately 0.019; stopped before toggles' };
+      if (baseline < 0.01) return { baseline, images, decision: 'Baseline hole absent (voidRatio < 0.01); stopped before toggles' };
       const objects: any[] = [], meshes: any[] = [], sides = new Map<any, number>();
       scene.traverse((o: any) => {
         objects.push(o);
@@ -114,7 +114,9 @@ test('sj-stair-2-bottom void diagnosis', async ({ page }) => {
         try { o.material = Array.isArray(original) ? clones : clones[0]; isolated.push({ name: o.name, uuid: o.uuid, voidRatio: g.goldenProbe(false).voidRatio }); }
         finally { o.material = original; clones.forEach((m: any) => m.dispose()); }
       }
-      return { baseline, toggles, closes, instances, groups, samples, isolated, images, camera: { near, far, position: camera.position.toArray() } };
+      const baselineAfter = g.goldenProbe(false).voidRatio;
+      const toggleDeltas = Object.fromEntries(Object.entries(toggles).map(([name, value]) => [name, value - baseline]));
+      return { baseline, baselineAfter, baselineDelta: baselineAfter - baseline, toggles, toggleDeltas, closes, instances, groups, samples, isolated, images, camera: { near, far, position: camera.position.toArray() } };
     });
     const { images, samples, instances, ...summary } = result as any;
     if (images) for (const [name, b64] of Object.entries(images)) fs.writeFileSync(path.join(out, `baseline-${name}.png`), Buffer.from(b64 as string, 'base64'));
