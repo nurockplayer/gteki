@@ -15,7 +15,7 @@ function cameraStand() {
   const state = {
     previewNext: false, escalatorProgress: 0, escalatorWeight: 0, escalatorAxis: new THREE.Vector3(0, 0, -1),
     pos, camera, slope: { ...NO_SLOPE }, slopeY: 0, firstPerson: false, mode: "walk",
-    yaw: 0, pitch: -0.12, camDistance: FOLLOW.defaultDistance as number, boomRaise: 0,
+    yaw: 0, pitch: -0.12, camDistance: FOLLOW.defaultDistance as number, boomRaise: 0, bodyRaiseHold: { seconds: 0, target: 0 },
     cameraTargets: [] as THREE.Object3D[], cameraSides: new Set<THREE.Object3D>(), blockerTargets: new Set<THREE.Object3D>(),
     ray: new THREE.Raycaster(), reducedMotion: false, squeezed: false,
     setFov: vi.fn(), avatarRig: { root: new THREE.Group(), setFade: vi.fn() },
@@ -47,6 +47,17 @@ const pocket = () => {
 };
 
 describe("Explorer follow camera wiring", () => {
+  it.each(["default", "escalator"])("skips body casts in %s mode", (mode) => {
+    const state = Object.assign(cameraStand(), { catAvatar: true, previewNext: mode === "escalator", escalatorProgress: mode === "escalator" ? 1 : 0 });
+    const target = new THREE.Mesh(new THREE.PlaneGeometry(1, 1));
+    target.position.set(100, 100, 100);
+    target.updateMatrixWorld(true);
+    setTargets(state, [target]);
+    const casts = vi.spyOn(state.ray, "set");
+    place(state);
+    expect(casts).toHaveBeenCalledTimes(3);
+    if (mode === "escalator") expect(state.escalatorWeight).toBeGreaterThan(0);
+  });
   it.each([false, true].flatMap((floor) => [
     { motion: "walk", speed: 1.4, turn: 0, floor },
     { motion: "run", speed: WALKER_SPEED.runMps, turn: 0, floor },
