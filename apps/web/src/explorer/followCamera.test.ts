@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("scales the cat shoulder for portrait aspect", () => {
@@ -652,4 +652,69 @@ it("gates an upcoming sign by 12 m and the camera's forward direction", () => {
   expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, -12))).toBe(true);
   expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, -12.1))).toBe(false);
   expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, 2))).toBe(false);
+});
+
+
+describe("D2 preview camera", () => {
+  it("keeps the preview lens fixed across slopes and squeezed booms", () => {
+    for (const mode of ["walk", "guide"] as const) for (const wide of [false, true]) {
+      expect(followLens(mode, false, wide, true, 1.6)).toBe(55);
+      expect(followLens(mode, false, wide, true, 0.46)).toBe(65);
+      expect(followLens(mode, true, wide, true, 1.6)).toBe(60);
+    }
+    expect(followLens("overview", false, true, true, 1.6)).toBe(60);
+  });
+
+  it("frames the level cat 0.90 m high and 2.20 m behind", () => {
+    const f = FOLLOW_CAT_NEXT;
+    const pose = followPose(new THREE.Vector3(0, f.pivotY, 0), 0, f.pitch, f.shoulder, f.lift, f.drop);
+    const camera = pose.pivot.addScaledVector(pose.back, f.distance);
+    expect(camera.y).toBeCloseTo(0.90, 2);
+    expect(camera.z).toBeCloseTo(2.20, 2);
+  });
+
+  it.each([-30, 30, 0])("frames a %s degree escalator in its own vertical plane", (degrees) => {
+    for (const yaw of [0, -Math.PI / 2]) {
+      const angle = THREE.MathUtils.degToRad(degrees);
+      const a = viewDirection(yaw, angle);
+      const r = new THREE.Vector3(-a.z, 0, a.x).normalize();
+      const n = r.clone().cross(a).normalize();
+      const feet = new THREE.Vector3(3, 2, 1);
+      const pose = escalatorPose(feet, a, 0.2, 1, yaw, 0);
+      const offset = pose.position.clone().sub(feet);
+      expect(offset.dot(a)).toBeCloseTo(-1.4, 3);
+      expect(offset.dot(n)).toBeCloseTo(0.9, 3);
+      expect(offset.dot(r)).toBeCloseTo(0.2, 3);
+      const direction = pose.target.clone().sub(pose.position).normalize();
+      expect(THREE.MathUtils.radToDeg(Math.asin(direction.y))).toBeCloseTo(degrees - 12, 1);
+      expect(Math.atan2(-direction.x, -direction.z)).toBeCloseTo(yaw, 5);
+      const camera = new THREE.PerspectiveCamera(55, 1.6, 0.05, 2000);
+      camera.position.copy(pose.position);
+      camera.lookAt(pose.target);
+      camera.updateMatrixWorld(true);
+      const foot = feet.clone().project(camera);
+      const vanishing = camera.position.clone().addScaledVector(a, 100000).project(camera);
+      expect(foot.y).toBeLessThan(-1 / 3);
+      expect(foot.x).toBeLessThan(0);
+      expect(vanishing.y).toBeGreaterThan(0.35);
+      expect(vanishing.y).toBeLessThan(0.45);
+    }
+  });
+
+  it("enters and leaves monotonically over 0.9 s and snaps at once", () => {
+    let progress = 0;
+    for (const on of [true, false]) {
+      let elapsed = 0;
+      while (elapsed < 1.2 && progress !== Number(on)) {
+        const next = stepEscalatorLock(progress, on, 1 / 60);
+        expect(on ? next.progress >= progress : next.progress <= progress).toBe(true);
+        progress = next.progress;
+        elapsed += 1 / 60;
+      }
+      expect(progress).toBe(Number(on));
+      expect(elapsed).toBeGreaterThanOrEqual(0.6);
+      expect(elapsed).toBeLessThanOrEqual(1.2);
+      expect(stepEscalatorLock(0.5, on, 0, true).weight).toBe(Number(on));
+    }
+  });
 });

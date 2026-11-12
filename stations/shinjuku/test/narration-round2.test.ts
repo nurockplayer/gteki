@@ -55,7 +55,7 @@ describe("round-two route narration", () => {
     const instructions = narrate(bundle, result).filter((m) => m.kind === "elevator");
     expect(instructions).toHaveLength(1);
     expect(instructions[0]!.toFloorLabel).toBe("B1");
-    expect(instructions[0]!.floorChanges).toEqual([{ from: "B6", to: "B3" }, { from: "B3", to: "B1" }]);
+    expect(instructions[0]!.floorChanges).toEqual([{ from: "B7", to: "B4" }, { from: "B4", to: "B1" }]);
   });
 
   it("keeps spoken floor cues when a short floor-changing walk merges into the next maneuver", () => {

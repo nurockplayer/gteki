@@ -578,6 +578,7 @@ const floors: Floor[] = floorOrdinals.map((o) => {
   const labels: Floor["sourceLabels"] = [{ operatorId: OP, label: `NWD floor=${o}`, sourceId: SRC_NWD }];
   if (ml) labels.push({ operatorId: OP, label: `GSI ${ml.label} (${raw.levels.find((l) => l.label === ml.label)!.floors[0]!.properties.name})`, sourceId: SRC_MAP });
   if (o === -4.5) labels.push({ operatorId: OP, label: "spatially within GSI 地下5階 (B5) polygons — equivalence not asserted", sourceId: SRC_MAP });
+  if (o === -6) labels.push({ operatorId: OP, label: "「都営大江戸線」 B7F", sourceId: "toei-media-guide-2026-index21" });
   return {
     id: floorId(o),
     operatorId: OP,
@@ -591,7 +592,11 @@ const floors: Floor[] = floorOrdinals.map((o) => {
 });
 // Display names (UI wording only; the same rule as the lane app's floor labels).
 for (const f of floors) {
-  const l = floorLabel(f);
+  const names: Record<number, { ja: string; en: string }> = {
+    [-6]: { ja: "地下7階", en: "B7" }, [-3]: { ja: "地下4階", en: "B4" },
+    [-4.5]: { ja: "B4–B7 中間", en: "B4–B7 landing" }, [-2.5]: { ja: "B2–B4 中間", en: "B2–B4 landing" },
+  };
+  const l = names[f.ordinal!] ?? floorLabel(f);
   if (f.ordinal !== null) f.displayNames = [{ lang: "ja", text: l.ja }, { lang: "en", text: l.en }];
 }
 const floorById = new Map(floors.map((f) => [f.id, f]));
@@ -1089,6 +1094,8 @@ for (const { level, f, p } of allFacilities) {
 // ---------------------------------------------------------------- sources, coverage
 const sha = raw.sha256;
 const sources: Source[] = [
+  {"id": "toei-media-guide-2026-index21", "title": "都営交通メディアガイド 2026 index21", "publisher": "東京都交通局", "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html", "license": null, "rights": "REFERENCE_ONLY", "attribution": "東京都交通局 都営交通メディアガイド 2026 (facts only)", "modified": false, "retrievedAt": "2026-11-12T00:00:00+09:00", "datasetDate": "2026", "usage": "facts-only", "decision": {"url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24"}},
+
   {
     id: SRC_NWD,
     title: "歩行空間ネットワークデータ（都営地下鉄大江戸線 新宿駅）［GeoJSON形式］",
@@ -1176,7 +1183,7 @@ const gaps: CoverageGap[] = [
   { id: "gap:exit-numbers", floorId: null, zone: [{ lang: "en", text: "Exits" }, { lang: "ja", text: "出口" }], missingFact: [{ lang: "en", text: "Official exit numbers/names (A1, 3, 4 …) are not in the dataset" }, { lang: "ja", text: "正式な出口番号・名称（A1、3、4 など）はデータセットに含まれていない" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Operator confirmation or field check; OSM labels used only as flagged cross-check" }, { lang: "ja", text: "事業者による確認または現地確認。OSM のラベルは照合の参考にのみ使い、その旨を明示する" }] },
   { id: "gap:hours", floorId: null, zone: [{ lang: "en", text: "All links" }, { lang: "ja", text: "すべての経路" }], missingFact: [{ lang: "en", text: "Operating hours (start_time/end_time) not published" }, { lang: "ja", text: "出口・通路ごとの利用できる時間（開始・終了時刻）は公開されていない" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Operator hours per exit/passage" }, { lang: "ja", text: "事業者による、出口・通路ごとの利用できる時間" }] },
   { id: "gap:escalator-direction", floorId: null, zone: [{ lang: "en", text: "Escalators" }, { lang: "ja", text: "エスカレーター" }], missingFact: [{ lang: "en", text: "Escalator directions are a 2025-09 snapshot; time-of-day reversals unknown" }, { lang: "ja", text: "エスカレーターの運転方向（上り・下り）は 2025 年 9 月時点の情報で、時間帯によって切り替わるかどうかは不明" }], sourceDate: "2025-09-19", fieldWorkNeeded: [{ lang: "en", text: "Field check at peak/off-peak" }, { lang: "ja", text: "ピーク時と閑散時の現地確認" }] },
-  { id: "gap:platform-sides", floorId: floorId(-6), zone: [{ lang: "en", text: "Platform (地下6階)" }, { lang: "ja", text: "ホーム（地下6階）" }], missingFact: [{ lang: "en", text: "Which side serves which direction (都庁前 / 両国・六本木)" }, { lang: "ja", text: "どちら側のホームがどの方面か（都庁前 / 両国・六本木）" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Field check or licensed operator data" }, { lang: "ja", text: "現地確認、またはライセンスのある事業者データ" }] },
+  { id: "gap:platform-sides", floorId: floorId(-6), zone: [{ lang: "en", text: "Platform (地下7階)" }, { lang: "ja", text: "ホーム（地下7階）" }], missingFact: [{ lang: "en", text: "Which side serves which direction (都庁前 / 両国・六本木)" }, { lang: "ja", text: "どちら側のホームがどの方面か（都庁前 / 両国・六本木）" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Field check or licensed operator data" }, { lang: "ja", text: "現地確認、またはライセンスのある事業者データ" }] },
   { id: "gap:reuse-after-publication", floorId: null, zone: [{ lang: "en", text: "All E27-derived data (graph, geometry, POIs)" }, { lang: "ja", text: "E27 由来の全データ（経路網、形状、施設情報）" }], missingFact: [{ lang: "en", text: `Provider confirmation that GTEki's derived Web 3D data may still be reused/distributed (incl. commercially) after the publication period ends ${PUBLICATION_PERIOD_END}. The licence basis for the E27 resources is unconfirmed (published under the Owner's override at #16; PDL 1.0 is not treated as covering them, #39 Q11 = No).` }, { lang: "ja", text: `公開提供期限（${PUBLICATION_PERIOD_END}）の経過後も GTEki の派生 Web 3D データを再利用・配布（商用を含む）してよいかは、提供者の確認待ち。E27 資料のライセンス根拠は未確認で、オーナー判断により公開している。PDL 1.0 の対象とはみなしていない。` }], sourceDate: "2026-09-17", fieldWorkNeeded: [{ lang: "en", text: "Written answer from MLIT ほこナビDP窓口; E27 itself ships under the Owner's #16 override; any other public release relying on it stays HOLD until confirmed" }, { lang: "ja", text: "MLIT ほこナビDP窓口からの書面での回答。E27 自体はオーナー判断により公開している。確認が取れるまで、これに依拠する他の公開は保留。" }] },
   { id: "gap:closures", floorId: null, zone: [{ lang: "en", text: "Construction areas around 新宿駅西口・南口" }, { lang: "ja", text: "新宿駅西口・南口周辺の工事区域" }], missingFact: [{ lang: "en", text: "Current closures (e.g. OSM notes exit 2 closed since 2024-03-30 for building demolition — outside E27 data)" }, { lang: "ja", text: "現在の通行止め（例: OSM のメモによると出口 2 は 2024-03-30 から建物解体のため閉鎖、E27 データの範囲外）" }], sourceDate: null, fieldWorkNeeded: [{ lang: "en", text: "Operator notices + field check before any real-world guidance" }, { lang: "ja", text: "実際の案内を出す前に、事業者からの告知の確認と現地確認" }] },
 ];
