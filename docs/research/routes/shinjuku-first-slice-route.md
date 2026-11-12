@@ -9,7 +9,7 @@
 
 | Role | POI | Name (en) | Floor | Connector node |
 | --- | --- | --- | --- | --- |
-| Start landmark | `poi:platform:oedo` | Toei Oedo Line platform (Shinjuku Station, E27) | B6 (`toei-nwd-m6`) | 21 candidate nodes; the router chose `n:e31954cbec9e4b1cac647326d5bcb4e4` |
+| Start landmark | `poi:platform:oedo` | Toei Oedo Line platform (Shinjuku Station, E27) | B7 (`toei-nwd-m6`) | 21 candidate nodes; the router chose `n:e31954cbec9e4b1cac647326d5bcb4e4` |
 | Destination | `poi:gate:2` | Ticket gates (B1, north side) | B1 (`toei-nwd-m1`) | `n:d9cd1bb0f76a440d83010e5b9f63ad65` |
 
 Why this pair:
@@ -37,7 +37,7 @@ Observed result (exact values):
 | `steps` / nodes | 14 edges / 15 nodes |
 | `totalLengthM` | 136.5 (sum of the source links' `distance` attribute; see G-04) |
 | `estimatedSeconds` | 146.55 (router paces: walk 1.2 m/s, escalator 0.75 m/s, 45 s per lift; a model, not a measurement) |
-| `floorChanges` | 2 (B6→B3, B3→B1) |
+| `floorChanges` | 2 (B7→B4, B4→B1) |
 | `crossesFareBoundary` | true (one gate edge, `e:3763bee44e4740ac86216e99e212f8d1`) |
 | `unknowns` | `hours` on 14 of 14 edges |
 | `stale` | false at `today=2026-10-25` (`staleAfterDays` default 730) |
@@ -48,7 +48,7 @@ Observed result (exact values):
 | `operatorIds` | `["toei"]` |
 | `synthetic` | false |
 
-Narration (ja): 出発 / エスカレーターで上へ・地下3階へ / 約6m 直進 / 左へ曲がり約21m。約4m先の分岐はそのまま直進 / 右へ曲がり、さらに右へ曲がり約9m / エスカレーターで上へ・地下1階へ / 左へ曲がり約9m / 左へ曲がり約8m / 右へ曲がり約8m / 改札を通過 / 目的地に到着. The en narration has the same 11 instructions.
+Narration (ja): 出発 / エスカレーターで上へ・地下4階へ / 約6m 直進 / 左へ曲がり約21m。約4m先の分岐はそのまま直進 / 右へ曲がり、さらに右へ曲がり約9m / エスカレーターで上へ・地下1階へ / 左へ曲がり約9m / 左へ曲がり約8m / 右へ曲がり約8m / 改札を通過 / 目的地に到着. The en narration has the same 11 instructions.
 
 ### 2.1 Nodes, in traversal order
 
@@ -56,14 +56,14 @@ Every node's `sourceRefs` is one `{sourceId: "mlit-hokonavi-e27-nwd", featureId}
 
 | # | Node id | Floor | Kind |
 | --- | --- | --- | --- |
-| 0 | `n:e31954cbec9e4b1cac647326d5bcb4e4` | B6 | platform |
-| 1 | `n:f05b059c1a26438aa642be9782e20e89` | B6 | escalator_end |
-| 2 | `n:c99810e72aa449b284a4d630880a7aa9` | B3 | escalator_end |
-| 3 | `n:c2d390021c29442f86dda359e503febd` | B3 | junction |
-| 4 | `n:6bd46cd107a4491bba3469e8f51f9900` | B3 | junction |
-| 5 | `n:180ce956ffb7470b9cc42ec7e75255d4` | B3 | junction |
-| 6 | `n:453ea111f1524cef8f3ac139bbf2e26b` | B3 | junction |
-| 7 | `n:5d2a3fac668d4a068a98e0b9e3aeaf5d` | B3 | escalator_end |
+| 0 | `n:e31954cbec9e4b1cac647326d5bcb4e4` | B7 | platform |
+| 1 | `n:f05b059c1a26438aa642be9782e20e89` | B7 | escalator_end |
+| 2 | `n:c99810e72aa449b284a4d630880a7aa9` | B4 | escalator_end |
+| 3 | `n:c2d390021c29442f86dda359e503febd` | B4 | junction |
+| 4 | `n:6bd46cd107a4491bba3469e8f51f9900` | B4 | junction |
+| 5 | `n:180ce956ffb7470b9cc42ec7e75255d4` | B4 | junction |
+| 6 | `n:453ea111f1524cef8f3ac139bbf2e26b` | B4 | junction |
+| 7 | `n:5d2a3fac668d4a068a98e0b9e3aeaf5d` | B4 | escalator_end |
 | 8 | `n:57e00b46b8804e7f95bd92ba9a20fb7b` | B1 | escalator_end |
 | 9 | `n:2d2bc35b4043433da2914b2705ef69bb` | B1 | junction |
 | 10 | `n:1452afaefe044bc98bdd66b7a746842c` | B1 | junction |
@@ -80,14 +80,14 @@ All 14 edges are `verification: "verified"`, `closed: false`, `hours: null`, `ma
 
 | # | Edge id | Mode | Length | Floors | Paid | Fare boundary | Wheelchair | Steps | One-way | Geometry evidence method | Access evidence method | Link attributes (route_type / width m / lev_diff / roof) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | `e:451d2ec8f7c84ec5ba9d95591af20721` | walk | 3.4 m | B6→B6 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 2 / 1 / 2 |
-| 2 | `e:2768d162a2d648cf9df2fc76ca89257f` | escalator | 35.5 m | B6→B3 | true | false | false | true | yes | space-category:B023 (route_type=6) | nwd-link-present; fare: GSI `toll` both ends | 6 / 2 / 5 / 2 |
-| 3 | `e:9609e8988c7f4ca8a2842bbc882d036e` | walk | 5.8 m | B3→B3 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
-| 4 | `e:291d449b63224d49ae45000c2c16b7ca` | walk | 3.8 m | B3→B3 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
-| 5 | `e:55ef6f47ff854c04b6c1a8800ad16e12` | walk | 16.8 m | B3→B3 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
-| 6 | `e:a4ed9fc953984c52a914f0cbe73cd318` | walk | 4.8 m | B3→B3 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
-| 7 | `e:525935a8223f47698df67818a2af4362` | walk | 9.0 m | B3→B3 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
-| 8 | `e:2692fe08625f4a3f92d69a1380a58ccd` | escalator | 30.1 m | B3→B1 | true | false | false | true | yes | space-category:B023 (route_type=6) | nwd-link-present; fare: GSI `toll` both ends | 6 / 2 / 5 / 2 |
+| 1 | `e:451d2ec8f7c84ec5ba9d95591af20721` | walk | 3.4 m | B7→B7 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 2 / 1 / 2 |
+| 2 | `e:2768d162a2d648cf9df2fc76ca89257f` | escalator | 35.5 m | B7→B4 | true | false | false | true | yes | space-category:B023 (route_type=6) | nwd-link-present; fare: GSI `toll` both ends | 6 / 2 / 5 / 2 |
+| 3 | `e:9609e8988c7f4ca8a2842bbc882d036e` | walk | 5.8 m | B4→B4 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
+| 4 | `e:291d449b63224d49ae45000c2c16b7ca` | walk | 3.8 m | B4→B4 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
+| 5 | `e:55ef6f47ff854c04b6c1a8800ad16e12` | walk | 16.8 m | B4→B4 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
+| 6 | `e:a4ed9fc953984c52a914f0cbe73cd318` | walk | 4.8 m | B4→B4 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
+| 7 | `e:525935a8223f47698df67818a2af4362` | walk | 9.0 m | B4→B4 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
+| 8 | `e:2692fe08625f4a3f92d69a1380a58ccd` | escalator | 30.1 m | B4→B1 | true | false | false | true | yes | space-category:B023 (route_type=6) | nwd-link-present; fare: GSI `toll` both ends | 6 / 2 / 5 / 2 |
 | 9 | `e:38541dff6da6468697900bff23840f98` | walk | 8.6 m | B1→B1 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
 | 10 | `e:8fcace9d16974a91ae8617b1423de276` | walk | 4.3 m | B1→B1 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
 | 11 | `e:b56c4b8d15ec46118120e3430388d9f0` | walk | 3.5 m | B1→B1 | true | false | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: GSI `toll` both ends | 1 / 4 / 1 / 2 |
@@ -96,6 +96,8 @@ All 14 edges are `verification: "verified"`, `closed: false`, `hours: null`, `ma
 | 14 | `e:3763bee44e4740ac86216e99e212f8d1` | gate | 3.1 m | B1→B1 | true | **true** | true | false | – | source-attribute:route_type=1 | nwd-link-present; fare: **gate: toll transition + F106 ≤8 m** | 1 / 2 / 1 / 2 |
 
 `nwd-link-present` is stored with `(maint_date=2025-09-19)` on every row. "GSI `toll` both ends" is the stored `spatial-join:space.toll / spatial-join:space.toll`. Link #14 is the only paid↔free transition on the path and the only edge whose fare state comes from the gate rule rather than the space join. Link attributes are the NWD link fields (`roof`: 2 = roofed; `lev_diff`: 5 = a level change; source spec in S1's `notes`).
+
+Floor naming evidence (2026-11-12 JST): [Toei media guide index21](https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html) identifies the Oedo platform as B7F. **GAP:** B4 for `toei-nwd-m3` is inferred from the Toei B7 platform and three escalator flights to the concourse; it is not sourced. The GSI B6/B3 source labels remain provenance, while player-facing labels use B7/B4. **GAP:** Toei's label for `toei-nwd-m2` is unresolved (B2 or B3); B2 remains until evidence settles it. Landing labels name their adjacent display floors, not operator-sourced floor labels.
 
 ## 3. Sources behind every edge
 
@@ -150,15 +152,15 @@ Other refusals observed on the chosen route (same command, profile changed):
 | --- | --- | --- |
 | `--unpaid-only` | `no_path`, "origin poi:platform:oedo is inside the paid area" | The platform is on the paid side (`poi.platform.paid` = true); a traveller without a ticket cannot start there. Fails closed, as designed. |
 | `--strict-hours` | `no_path`, "No traversable path connects the start to a goal." | Every edge has `hours: null`; the strict profile excludes unknown hours. The dataset publishes no opening hours. |
-| `--step-free` | **ok**, a different 26-edge path (166.3 m as the router measures — lift rides add time, not length; est. 401.2 s, 2 floor changes, same fare boundary) using lifts (B6→B3→B1) | The walking route uses stairs/escalators, which are `wheelchair: false`; a lift-based alternative exists in the same E27 graph. Not evidence-checked in this card (Follow-ups). |
+| `--step-free` | **ok**, a different 26-edge path (166.3 m as the router measures — lift rides add time, not length; est. 401.2 s, 2 floor changes, same fare boundary) using lifts (B7→B4→B1) | The walking route uses stairs/escalators, which are `wheelchair: false`; a lift-based alternative exists in the same E27 graph. Not evidence-checked in this card (Follow-ups). |
 
 ## 5. Freshness and geographic limits
 
 - **Dates.** Source dataset page last modified 2026-09-17; raw files acquired 2026-10-20T10:45:52Z and hashed; every edge's link `maint_date` is 2025-09-19; every evidence block's `checkedDate` is 2026-10-20. At `today=2026-10-25` the route is **not stale** under the 730-day rule (oldest source 2026-09-17).
 - **What the dates do not cover.** The network content is a 2025-09 snapshot (README G0). Changes after that — West Exit closures/works (freshness checklist FR-03), the Toei exit 1/2 closure notice (FR-05), and any later construction — are **not known to be reflected**. The reusable slice must be re-checked when the dataset updates (FR-10, due 2027-01-22).
 - **Publication limit.** The dataset page states availability only until 2027-03-12; reuse after that date is unconfirmed (FR-18). `validUntil` is deliberately `null`, so the router treats the route as valid and the limit is a rights matter, not a routing one.
-- **Extent.** E27 (Toei Oedo Line) only: 233 nodes, 263 edges, 61 POIs (16 routable E27 POIs + 45 S03 search-only), 9 NWD levels from 1F/street to B6 (`toei-nwd-1`, `toei-nwd-0`, `toei-nwd-m0_5`, `-m1`, `-m2`, `-m2_5`, `-m3`, `-m4_5`, `-m6`). JR, Keio, Odakyu, Toei Shinjuku Line, Tokyo Metro and Shinjuku-nishiguchi (E01) are **not** in the graph; no transfer passage exists in it.
-- **Frame.** Station-local ENU, origin 35.687 N, 139.6994 E, declared `JGD2011` / `EPSG:6668` in `station.json`; the source is GeoJSON lon/lat read in that frame. Floors carry `elevationM: null`; only display-only `renderElevationM` exists (B6 −42.87 m … street 0 m) — symbolic, not measured.
+- **Extent.** E27 (Toei Oedo Line) only: 233 nodes, 263 edges, 61 POIs (16 routable E27 POIs + 45 S03 search-only), 9 NWD levels from 1F/street to B7 (`toei-nwd-1`, `toei-nwd-0`, `toei-nwd-m0_5`, `-m1`, `-m2`, `-m2_5`, `-m3`, `-m4_5`, `-m6`). JR, Keio, Odakyu, Toei Shinjuku Line, Tokyo Metro and Shinjuku-nishiguchi (E01) are **not** in the graph; no transfer passage exists in it.
+- **Frame.** Station-local ENU, origin 35.687 N, 139.6994 E, declared `JGD2011` / `EPSG:6668` in `station.json`; the source is GeoJSON lon/lat read in that frame. Floors carry `elevationM: null`; only display-only `renderElevationM` exists (B7 −42.87 m … street 0 m) — symbolic, not measured.
 - **Vertical truth.** The source publishes no elevations and every node has `position.z: null`. The route's two floor changes are level labels from the NWD `floor` attribute, not measured heights (G-04).
 
 ## 6. Gap list
@@ -171,7 +173,7 @@ Legend: **S** = the route is currently blocked as a public-current claim until t
 | G-02 | C | **Freshness stops at the 2025-09 snapshot.** Dataset published 2026-09-17 but content dated by link `maint_date` 2025-09-19; later closures/works are not known to be included. | All edges | README G0; FR-03, FR-10; #203 A8 (aged sources) |
 | G-03 | C | **Opening hours are UNKNOWN on all 14 edges** (dataset has no `start_time`/`end_time`), so the router reports `hours` on every step. Operator hours published for official exits 4–8 do not cover these passages or the north gates, and official exit numbers are not mappable to E27 POIs. | All 14 edges | `accessEvidence.note`; FR-14; FR-05; README G2 |
 | G-04 | C | **Heights and lengths are not measured.** Every node's z is null and every floor elevation is null; render heights are symbolic estimates, so floor changes are labels. Edge `lengthM` is the source link `distance`; whether that field includes the vertical run is UNKNOWN in this card. The 136.5 m / 146.55 s figures are therefore source facts plus a pace model, not a survey. | All nodes/edges; §2 totals | README G1; importer header; #203 A1 (stairs tagged end-to-end), B3 ("verified" ≠ on-site) |
-| G-05 | C | **Not step-free.** The chosen path uses two one-way escalators (`wheelchair: false`, `steps: true`). A lift-based alternative exists in the graph but was not evidence-checked here, and lift data has a known F012 cross-check gap (elevator 2 has no B3 F012 point). Barrier-free claims require source evidence and continuity. | Edges 2 and 8; destination | import-report `liftCrossCheck`; acceptance G0; README G2 (unknown list) |
+| G-05 | C | **Not step-free.** The chosen path uses two one-way escalators (`wheelchair: false`, `steps: true`). A lift-based alternative exists in the graph but was not evidence-checked here, and lift data has a known F012 cross-check gap (elevator 2 has no GSI B3 F012 point). Barrier-free claims require source evidence and continuity. | Edges 2 and 8; destination | import-report `liftCrossCheck`; acceptance G0; README G2 (unknown list) |
 | G-06 | C | **Escalator direction is one-way in the data and time-of-day reversal is UNKNOWN.** Both escalator edges are `direction: "forward"`; the dataset does not say whether they reverse at peak times, so the route is only correct while they run up. | Edges 2 and 8 | README G2; acceptance G0 (no guessed 24-hour access) |
 | G-07 | C | **Fare state is derived, not published.** No link-level fare attribute exists; `paid`/`crossesFareBoundary` come from a GSI `toll` spatial join, propagation along non-gate links, and the gate rule next to F106 points. The only paid↔free transition on the path is edge 14. The full 8-shard fare-containment replay is not done. | Edge 14 and the route's fare flag | importer header (0 anomalies); #156 (fare replay gate) |
 | G-08 | F | **Street exits are not usable as a destination yet.** The alternative platform → exit 1 route (194 m, 23 edges, 4 floor changes) is equally source-backed, but the current operating status of `poi:exit:1` is unknown: the Toei page tags official exits 1 and 2 as closed (checked 2026-10-22), E27 has no official exit numbers, and the mapping from that notice to `poi:exit:1` is itself UNKNOWN. The router carries no closure state and does not incorporate the notice, so it would present the path as usable whatever the exit's real status. | Any exit-terminating route; not the chosen gate route | FR-05, `gap:exit-numbers`; #203 A2/A4 (exit levels and names); `docs/stations/shinjuku/search-expected.md` |
