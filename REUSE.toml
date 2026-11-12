@@ -470,3 +470,18 @@ path = "docs/visual/targets/*.jpg"
 precedence = "override"
 SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# docs/release/evidence: project-made screenshots of the running app for the release journey table
+# (docs/release/journey.md), one station per file. Same pattern as 4h: repo licence for the rendering
+# work plus the marker of the geometry shown (Ikebukuro: PLATEAU; Shinjuku: Hokonavi E27).
+[[annotations]]
+path = "docs/release/evidence/**/ikebukuro-*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省 Project PLATEAU; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy"
+
+[[annotations]]
+path = "docs/release/evidence/**/shinjuku-*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
