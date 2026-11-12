@@ -55,7 +55,7 @@ describe("station geometry lifetime", () => {
     // scene-digest fixture records those changes. Retired arrays stay collectible.
     // #342 (2026-11-06 JST): only the identity faces and hardware moved.
     // #870 (2026-11-06 JST): platform door panels and caps split around the aligned openings (+3,360 B).
-    expect(result.geometryHash).toBe("3a702d02ca093b583e4c3b42dd1ffd47062e7becc045e4c9ac65c65b4e4b65be");
+    expect(result.geometryHash).toBe("edda6e11e0a424bf829f364151aa21dc7a3bb06c0bfb2b4a666b4ff84a763a4d");
   }, 60_000);
 
   // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the

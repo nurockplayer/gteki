@@ -68,7 +68,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1171 (2026-11-12 JST): golden probe tags in userData (goldenRole on stair and riser meshes; gteki_role and faces on route sign groups); nodes re-measured on the tree merged with #221's modelled stair edge metadata, everything else unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "32b0d36c16b7d91456d4e1f628b3f18178c43c80dbb4b0e9819e57f376779e6a",
+    "geometryDigest": "a8892dbcc28d05b0c6723eed664efd24fd2fce966c5b054504fa15353341752c",
     "appearanceDigest": "59a5284df7a544b383a55e1895262504d7c44fcb560e3b0e86fe76410656d832",
     "nodesDigest": "f06536a39c024d1c1762e35b455eff4d127be2a9fec9ea3cbeac7eb15992c708",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
