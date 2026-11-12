@@ -17,5 +17,5 @@ it("keeps the B3 wall at the shaft corner", () => {
   };
   expect(layout.cornerFills.some((w) => w.level === "B3" && atCorner(w))).toBe(true);
   expect(level.walls.some(atCorner)).toBe(false);
-  expect(createHash("sha256").update(JSON.stringify(layout.levels.map((lv) => lv.walls))).digest("hex")).toBe("dd59f268500854e15376167d37f5a4666008f11fa612fa56a38d9c01f741361e");
+  expect(createHash("sha256").update(JSON.stringify(layout.levels.map((lv) => lv.walls))).digest("hex")).toBe("8a14eef41029388912390d01fba99aeefff60386d88f573906e3cc32d88d0b83");
 }, 30_000);

@@ -680,6 +680,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
+  root.userData.modelledStairEdges = layout.runs.filter((r) => r.mode === "stairs").map((r) => r.edgeId);
   const disposables: { dispose(): void }[] = [];
   const track = <T extends { dispose(): void }>(x: T) => (disposables.push(x), x);
   // Bookkeeping for the optional kit swap: records which placeholder triangles belong to which anchor.
@@ -1093,8 +1094,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       root.add(mesh);
       return mesh;
     };
-    add(stairGeos, mat.stair, "walkable");
-    add(riserGeos, mat.riser);
+    const stairMesh = add(stairGeos, mat.stair, "walkable");
+    const riserMesh = add(riserGeos, mat.riser);
+    if (stairMesh) stairMesh.userData.goldenRole = "stairs_ramps";
+    if (riserMesh) riserMesh.userData.goldenRole = "stairs_ramps";
     add(trussGeos, mat.escTruss);
     const nosingMesh = add(nosingGeos, mat.nosing);
     if (nosingMesh) ledger?.bind("stair-nosing", nosingMesh, nosingGeos);
@@ -2165,7 +2168,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
   const out: THREE.Object3D[] = [];
   const caseGeos: THREE.BufferGeometry[] = [], rodGeos: THREE.BufferGeometry[] = [];
   const placed: XYZ[] = [];
-  type FaceDraft = { floorId: string; center: XYZ; facing: XY; lines: Parameters<typeof signTexture>[0] };
+  type FaceDraft = { floorId: string; center: XYZ; facing: XY; lines: Parameters<typeof signTexture>[0]; group: THREE.Group };
   const faceDrafts: FaceDraft[] = [];
   const candidates = bundle.nodes.filter((n) => (adj.get(n.id)?.length ?? 0) >= 3 && n.inOut === "inside" && n.kind !== "elevator");
   // prefer nodes with more connections
@@ -2226,7 +2229,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     const center = { x: n.position.x, y: n.position.y, z: lv.ceilingZ - 0.55 };
     group.position.set(center.x, center.z, -center.y);
     for (const facing of [axis, { x: -axis.x, y: -axis.y }]) {
-      faceDrafts.push({ floorId: lv.floorId, center: { x: center.x + facing.x * 0.04, y: center.y + facing.y * 0.04, z: center.z }, facing, lines: makeFace({ x: -facing.x, y: -facing.y }) });
+      faceDrafts.push({ floorId: lv.floorId, center: { x: center.x + facing.x * 0.04, y: center.y + facing.y * 0.04, z: center.z }, facing, lines: makeFace({ x: -facing.x, y: -facing.y }), group });
     }
     const box = new THREE.BoxGeometry(1.96, (1.9 / 8) * valid.length + 0.06, 0.07);
     box.rotateY(Math.atan2(axis.y, axis.x) + Math.PI / 2).translate(center.x, center.z, -center.y);
@@ -2237,7 +2240,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
       rod.translate(center.x + off.x, center.z + 0.45, -(center.y + off.y));
       rodGeos.push(rod);
     }
-    group.userData = { signHalfWidthX: -axis.y * 0.95, signHalfWidthZ: -axis.x * 0.95, signHalfHeight: (1.9 / 8) * valid.length / 2, nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
+    group.userData = { gteki_role: "sign", faces: [], signHalfWidthX: -axis.y * 0.95, signHalfWidthZ: -axis.x * 0.95, signHalfHeight: (1.9 / 8) * valid.length / 2, nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
     root.add(group);
     out.push(group);
     placed.push({ x: n.position.x, y: n.position.y, z });
@@ -2305,6 +2308,8 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
         plane.lookAt(v3({ x: face.center.x + face.facing.x, y: face.center.y + face.facing.y, z: face.center.z }));
         plane.updateMatrix();
         geometry.applyMatrix4(plane.matrix);
+        const position = geometry.getAttribute("position");
+        face.group.userData.faces.push({ id: face.group.userData.nodeId, corners: Array.from({ length: position.count }, (_, i) => [position.getX(i), position.getY(i), position.getZ(i)]) });
         const key = `${floorId}:${pageIndex}`;
         faceBuckets.set(key, [...(faceBuckets.get(key) ?? []), geometry]);
         source.texture.dispose();

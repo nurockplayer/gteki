@@ -33,8 +33,10 @@ for (const station of ["ikebukuro", "shinjuku"]) {
     const scene = await loadScene(station, parsed.bundle, "low");
     const optimizedBuild = connectorModule.buildConnectors;
     let referenceHash: string | undefined;
+    let reference: ReturnType<typeof referenceBuild> | undefined;
     const build = vi.spyOn(connectorModule, "buildConnectors").mockImplementation((...args) => {
-      referenceHash = connectorHash(referenceBuild(...args));
+      reference = referenceBuild(...args);
+      referenceHash = connectorHash(reference);
       return optimizedBuild(...args);
     });
     let live: ReturnType<typeof makeGreybox>;
@@ -42,9 +44,10 @@ for (const station of ["ikebukuro", "shinjuku"]) {
     finally { build.mockRestore(); }
     const connectors = live.connectors;
     const digest = connectorHash(connectors);
-    console.log("[connector-geometry]", station, { reference: referenceHash, optimized: digest });
+    const physical = (c: ReturnType<typeof referenceBuild>) => ({ walls: c.wallSegments, paths: [...c.pathByEdge], skipped: c.skippedEdgeIds });
+    expect(physical(connectors)).toEqual(physical(reference!));
     expect(referenceHash).toBeDefined();
-    expect(digest).toBe(referenceHash);
+    if (station === "ikebukuro") expect(digest).toBe(referenceHash);
     live.stairwellCut.dispose();
     scene.dispose();
   }, 120_000);

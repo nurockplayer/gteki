@@ -64,22 +64,24 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // textures re-measured, every explorer list unchanged.
 // 2026-11-09 JST: route sign groups carry their position and sightline dimensions; nodes re-measured.
 // #1032 (2026-11-10 JST): render-only corner fills; scene wall delta 0, geometry and bytes re-measured.
+// #221 (2026-11-11 JST): modelled stair edge metadata changes nodes only.
+// #1171 (2026-11-12 JST): golden probe tags in userData (goldenRole on stair and riser meshes; gteki_role and faces on route sign groups); nodes re-measured on the tree merged with #221's modelled stair edge metadata, everything else unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "2997a5096d497d65eea889a51ae11719f6363367a03e0b3037e093fc6d3196e8",
+    "geometryDigest": "32b0d36c16b7d91456d4e1f628b3f18178c43c80dbb4b0e9819e57f376779e6a",
     "appearanceDigest": "59a5284df7a544b383a55e1895262504d7c44fcb560e3b0e86fe76410656d832",
-    "nodesDigest": "36f8a11d5c2532c0b82e895eafda9ec8aa7105d895d364f66de7c705d8c7117e",
+    "nodesDigest": "f06536a39c024d1c1762e35b455eff4d127be2a9fec9ea3cbeac7eb15992c708",
     "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
     "meshes": 96,
-    "bytes": 16187458
+    "bytes": 16190712
   },
   "lists": {
-    "listsDigest": "606d44695c79a26510cd2e16af8097817a6e8a98117ea7b1d2451a8217006c39",
+    "listsDigest": "3700a63cc8dedd6f2b4df547b5bfd30c16ae4f6d50b9a62df5db9b42aef4eac1",
     "counts": {
       "walkable": 442,
       "colliders": 2,
       "cameraBlockers": 3,
-      "walls": 14884
+      "walls": 14903
     }
   }
 };

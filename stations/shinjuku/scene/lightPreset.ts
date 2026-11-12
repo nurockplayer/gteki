@@ -6,29 +6,32 @@ const BOTTOM = new THREE.Vector3(-22.07, -42.87, -117.78);
 const LENGTH = TOP.distanceTo(BOTTOM);
 const warm = [1, 0.90, 0.78] as const;
 const cool = [0.94, 0.97, 1] as const;
+const coolB = [0.8, 0.9, 1] as const;
 const smooth = (a: number, b: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
 };
 
+/** B is the default (D9); a and c stay as reference arms, off disables the grade. */
 export function parseLightPreset(search: string): LightPreset | null {
   const value = new URLSearchParams(search).get("lightpreset");
-  return value === "a" || value === "b" || value === "c" ? value : null;
+  if (value === "off") return null;
+  return value === "a" || value === "c" ? value : "b";
 }
 
 /** landingHeight is world Y minus B.y; four-argument callers sample B's height. */
 export function shaftGrade(preset: LightPreset, s: number, r: number, landingDist: number, landingHeight = 0): { gain: number; tint: [number, number, number] } {
   const shaft = (1 - smooth(5, 6, r)) * smooth(-0.05, -0.05 + 1 / LENGTH, s)
     * (1 - smooth(1.05 - 1 / LENGTH, 1.05, s));
-  const pool = (1 - smooth(preset === "c" ? 6.5 : 0, 7, landingDist))
+  const pool = (1 - smooth(preset === "c" ? 6.5 : 0, 12, landingDist))
     * (1 - smooth(2, 3, Math.abs(landingHeight)));
   const dip = smooth(0, 0.5, s) * (1 - smooth(0.5, 0.9, s));
-  const gain = 1 + shaft * (preset === "c" ? -0.6 : preset === "b" ? -0.4 * dip : 0);
+  const gain = 1 + shaft * (preset === "c" ? -0.6 : preset === "b" ? -0.18 * dip : 0);
   const tint = [0, 1, 2].map((i) => {
     const shaftTint = 1 + shaft * (preset === "b" ? warm[i]! - 1 : 0);
-    return shaftTint + (cool[i]! - shaftTint) * (preset === "a" ? 0 : pool);
+    return shaftTint + ((preset === "b" ? coolB : cool)[i]! - shaftTint) * (preset === "a" ? 0 : pool);
   }) as [number, number, number];
-  return { gain: gain + ((preset === "a" ? 1 : 1.6) - gain) * pool, tint };
+  return { gain: gain + ((preset === "a" ? 1 : preset === "b" ? 1.9 : 1.6) - gain) * pool, tint };
 }
 
 const fragment = `
@@ -45,7 +48,7 @@ void d6Apply(inout vec3 colour) {
   float shaft = (1.0 - smoothstep(5.0, 6.0, r))
     * smoothstep(-0.05, -0.05 + 1.0 / len, s)
     * (1.0 - smoothstep(1.05 - 1.0 / len, 1.05, s));
-  float landing = (1.0 - smoothstep(d6Grade.w, 7.0, length(d6World.xz - d6Bottom.xz)))
+  float landing = (1.0 - smoothstep(d6Grade.w, 12.0, length(d6World.xz - d6Bottom.xz)))
     * (1.0 - smoothstep(2.0, 3.0, abs(d6World.y - d6Bottom.y)));
   float dip = smoothstep(0.0, 0.5, s) * (1.0 - smoothstep(0.5, 0.9, s));
   float gain = mix(1.0, d6Grade.x - d6Grade.y * dip, shaft);
@@ -67,8 +70,8 @@ export function installLightPreset(root: THREE.Object3D, preset: LightPreset | n
   const uniforms = {
     d6Top: { value: TOP }, d6Bottom: { value: BOTTOM },
     d6ShaftTint: { value: new THREE.Vector3(...(preset === "b" ? warm : [1, 1, 1] as const)) },
-    d6Cool: { value: new THREE.Vector3(...(preset === "a" ? [1, 1, 1] as const : cool)) },
-    d6Grade: { value: new THREE.Vector4(preset === "c" ? 0.4 : 1, preset === "b" ? 0.4 : 0, preset === "a" ? 1 : 1.6, preset === "c" ? 6.5 : 0) },
+    d6Cool: { value: new THREE.Vector3(...(preset === "a" ? [1, 1, 1] as const : preset === "b" ? coolB : cool)) },
+    d6Grade: { value: new THREE.Vector4(preset === "c" ? 0.4 : 1, preset === "b" ? 0.18 : 0, preset === "a" ? 1 : preset === "b" ? 1.9 : 1.6, preset === "c" ? 6.5 : 0) },
     d6Haze: { value: preset === "c" ? 1 : 0 },
     d6Accent: { value: new THREE.Color("#E8318A").multiplyScalar(0.4) },
   };
@@ -107,7 +110,7 @@ export function installLightPreset(root: THREE.Object3D, preset: LightPreset | n
       material.customProgramCacheKey = () => {
         const wrapped = material.onBeforeCompile;
         material.onBeforeCompile = previous;
-        try { return `${previousKey.call(material)}|shinjuku-d6-v1`; }
+        try { return `${previousKey.call(material)}|shinjuku-d6-v4`; }
         finally { material.onBeforeCompile = wrapped; }
       };
       material.needsUpdate = true;

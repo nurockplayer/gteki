@@ -160,7 +160,24 @@ describe("underground enclosure", () => {
     for (const s of layout.soffits.filter((s) => !s.spaceId.startsWith("elevator-cap:"))) for (const p of s.rings.flat()) expect(soffitHeight(s, p)).toBeLessThanOrEqual(-0.18 + 0.001);
     // The lift to street has a concealed hood above its highest (street) landing.
     for (const s of layout.soffits.filter((s) => s.spaceId.startsWith("elevator-cap:"))) expect(s.z).toBeLessThanOrEqual(2.6);
-    for (const lv of layout.levels) for (const w of lv.walls.filter((w) => w.finish)) expect(w.zMax).toBeLessThanOrEqual(-0.18);
+    // #1000: three shafts land closer to the street underside than the 2.1 m head band
+    // (c3fe6342/c690df6c at -1.6, 636c6fc9 and 0564105d at -1.68), where a cap at -0.18
+    // would cut the standing walker. Only their shell walls carry up to the shaft roof.
+    const nearStreet = layout.runs.filter((r) => [r.a, r.b].some((p) => Math.abs(p.z) > 0.1 && -0.18 - p.z < 2.1));
+    const lifted = (w: WallSeg) => nearStreet.some((r) => {
+      const d = { x: r.b.x - r.a.x, y: r.b.y - r.a.y }, l2 = d.x * d.x + d.y * d.y || 1;
+      const m = { x: (w.a.x + w.b.x) / 2, y: (w.a.y + w.b.y) / 2 };
+      const t = Math.max(0, Math.min(1, ((m.x - r.a.x) * d.x + (m.y - r.a.y) * d.y) / l2));
+      return Math.hypot(m.x - (r.a.x + d.x * t), m.y - (r.a.y + d.y * t)) < 3.6;
+    });
+    for (const lv of layout.levels) for (const w of lv.walls.filter((w) => w.finish)) {
+      if (w.zMax <= -0.18) continue;
+      expect(lifted(w), `wall top ${w.zMax} outside a near-street shaft`).toBe(true);
+      // #1000 fix 1: with the shell cut only where a passage crosses it, the c3fe6342 shaft
+      // beside the escalator keeps its side wall to the roof the pitch extension gives it
+      // (5.31 m at x 3.48, y -15.09); the 636c/0564 roofs stay at or below 4.72 m.
+      expect(w.zMax).toBeLessThanOrEqual(5.31 + 0.001);
+    }
   });
 
   it("preserves a finished underside below the walker's own floor", () => {
