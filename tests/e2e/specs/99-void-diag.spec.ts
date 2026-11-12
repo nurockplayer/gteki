@@ -42,16 +42,25 @@ test('sj-stair-2-bottom void diagnosis', async ({ page }) => {
         ...root.children.filter((o: any) => o.isMesh && o.name === 'walkable' && !o.visible),
         ...streetLevels.flatMap((o: any) => o.children.filter((c: any) => c.isMesh && !c.visible && (c.name === 'walkable' || c.material === ceiling))),
       ];
+      if (h2.length !== 3) return { decision: `Expected three H2 meshes, found ${h2.length}` };
+      // UUIDs vary between loads; retain the prior-run UUID as a label and locate by identity.
+      const singles = new Map([
+        ['H2:3abdf4ba', h2.find(o => o.name === 'walkable' && o.parent === root)],
+        ['H2:79568654', h2.find(o => o.name === 'walkable' && streetLevels.includes(o.parent))],
+        ['H2:c4826c12', h2.find(o => o.material === ceiling && streetLevels.includes(o.parent))],
+      ]);
+      if ([...singles.values()].some(o => !o) || new Set(singles.values()).size !== 3) return { decision: 'Cannot identify each H2 mesh uniquely' };
       const originalBefore = scene.onBeforeRender;
       const savedVisibility = new Map<any, boolean>(objects.map(o => [o, o.visible]));
       let mode = 'baseline', renderVisibility: Map<any, boolean> | undefined;
       const hookFrames: any[] = [];
       scene.onBeforeRender = function (...args: any[]) {
         originalBefore.apply(this, args);
-        if (mode === 'baseline' && !renderVisibility) renderVisibility = new Map(objects.map(o => [o, o.visible]));
         const hiddenLevels = levels.filter((o: any) => !o.visible).map((o: any) => o.name);
         if (mode === 'H1' || mode === 'H1+H2') for (const o of levels) o.visible = true;
         if (mode === 'H2' || mode === 'H1+H2') for (const o of h2) o.visible = true;
+        if (singles.has(mode)) singles.get(mode).visible = true;
+        renderVisibility = new Map(objects.map(o => [o, o.visible]));
         hookFrames.push({ mode, hiddenLevelsBeforeToggle: hiddenLevels, hiddenLevelsAfterToggle: levels.filter((o: any) => !o.visible).map((o: any) => o.name) });
       };
       const capture = () => {
@@ -97,38 +106,60 @@ test('sj-stair-2-bottom void diagnosis', async ({ page }) => {
         const first = capture(), baseline = first.voidRatio;
         const images: Record<string, string> = { 'baseline-mask': png(first.pixels, true), 'baseline-shown': png(first.pixels) };
         if (!renderVisibility) return { baseline, images, decision: 'Baseline render hook did not run' };
-        const mask = Array.from({ length: 64000 }, (_, i) => i).filter(i => magenta(first.pixels, i));
+        const h2Targets = h2.map(describe);
+        const toggles: Record<string, number> = {};
+        let h2Frame: ReturnType<typeof capture> | undefined, h2Visibility: Map<any, boolean> | undefined;
+        for (const toggle of [...singles.keys(), 'H2']) {
+          mode = toggle;
+          const frame = capture(); toggles[toggle] = frame.voidRatio;
+          images[`${toggle.replace(':', '-')}-shown`] = png(frame.pixels);
+          if (toggle === 'H2') {
+            h2Frame = frame; h2Visibility = renderVisibility;
+            images['H2-mask'] = png(frame.pixels, true);
+          }
+        }
+        renderVisibility = h2Visibility!;
+        const mask = Array.from({ length: 64000 }, (_, i) => i).filter(i => magenta(h2Frame!.pixels, i));
         const samples: any[] = [], groups = new Map<string, any>();
-        let noHit = 0;
+        let noVisibleHit = 0, noHiddenHit = 0;
         const ray = new e.ray.constructor(); ray.layers.mask = camera.layers.mask;
         ray.firstHitOnly = false;
         scene.updateMatrixWorld(true); camera.updateMatrixWorld(true);
-        for (let k = 0; k < Math.min(200, mask.length); k++) {
-          const index = mask[Math.floor((k + 0.5) * mask.length / Math.min(200, mask.length))]!, x = index % 320, y = Math.floor(index / 320);
-          ray.setFromCamera({ x: (x + 0.5) / 160 - 1, y: (y + 0.5) / 100 - 1 }, camera);
-          // Deliberately traverse all objects, including invisible ancestors and meshes.
-          const hits = ray.intersectObject(scene, true), hit = hits[0];
-          if (!hit) { noHit++; samples.push({ x, y: 199 - y, miss: true, hitCount: 0 }); continue; }
+        const stationMeshes = meshes.filter(o => {
+          for (let p = o; p; p = p.parent) {
+            if (p.name === 'gteki:graph-overlay') return false;
+            if (p === root) return true;
+          }
+          return false;
+        });
+        const hitInfo = (hit: any) => {
+          if (!hit) return null;
           const o = hit.object, material = Array.isArray(o.material) ? o.material[hit.face?.materialIndex ?? 0] : o.material;
-          const info = { ...describe(o), material: material?.name || '(unnamed)', materialUuid: material?.uuid, materialVisible: material?.visible, materialSide: material?.side };
-          samples.push({ x, y: 199 - y, ...info, hitCount: hits.length, instanceId: hit.instanceId ?? null, point: hit.point.toArray(), distance: hit.distance });
-          const key = JSON.stringify([info.name, info.material, info.hiddenBy]);
-          const group = groups.get(key) ?? { name: info.name, material: info.material, hiddenBy: info.hiddenBy, count: 0, levelGroups: [], meshUuids: [], materialUuids: [] };
-          group.count++;
-          if (!group.levelGroups.includes(info.levelGroup)) group.levelGroups.push(info.levelGroup);
-          if (!group.meshUuids.includes(o.uuid)) group.meshUuids.push(o.uuid);
-          if (!group.materialUuids.includes(material?.uuid)) group.materialUuids.push(material?.uuid);
-          groups.set(key, group);
-        }
-        const toggles: Record<string, number> = {};
-        for (const toggle of ['H1', 'H2', 'H1+H2']) {
-          mode = toggle;
-          const frame = capture(); toggles[toggle] = frame.voidRatio;
-          if (frame.voidRatio < baseline) images[`${toggle}-shown`] = png(frame.pixels);
+          const info = describe(o);
+          return { ...info, effectiveVisible: info.effectiveVisible && material?.visible !== false,
+            material: material?.name || '(unnamed)', materialUuid: material?.uuid, materialVisible: material?.visible,
+            materialSide: material?.side, instanceId: hit.instanceId ?? null, point: hit.point.toArray(), distance: hit.distance };
+        };
+        // Attribute every remaining H2 void pixel, with independent visible and hidden hits.
+        for (const index of mask) {
+          const x = index % 320, y = Math.floor(index / 320);
+          ray.setFromCamera({ x: (x + 0.5) / 160 - 1, y: (y + 0.5) / 100 - 1 }, camera);
+          const hits = ray.intersectObjects(stationMeshes, false).filter((hit: any) => hit.distance >= 0.05).map(hitInfo);
+          const firstVisible = hits.find((hit: any) => hit.effectiveVisible) ?? null;
+          const firstHidden = hits.find((hit: any) => !hit.effectiveVisible) ?? null;
+          if (!firstVisible) noVisibleHit++;
+          if (!firstHidden) noHiddenHit++;
+          samples.push({ x, y: 199 - y, firstVisible, firstHidden, hitCount: hits.length });
+          for (const [visibility, info] of [['visible', firstVisible], ['hidden', firstHidden]] as const) {
+            if (!info) continue;
+            const key = JSON.stringify([visibility, info.uuid, info.materialUuid, info.hiddenBy]);
+            const group = groups.get(key) ?? { visibility, ...info, count: 0 };
+            group.count++; groups.set(key, group);
+          }
         }
         mode = 'baselineAfter';
         const baselineAfter = capture().voidRatio;
-        return { baseline, baselineAfter, baselineDelta: baselineAfter - baseline, toggles, groups: [...groups.values()], sampledVoidRays: samples.length, totalVoidPixels: mask.length, noHit, samples, images, hookFrames, h2Targets: h2.map(describe), levelGroups: levels.map((o: any) => o.name), camera: { near: camera.near, far: camera.far, position: camera.position.toArray() } };
+        return { baseline, baselineAfter, baselineDelta: baselineAfter - baseline, toggles, groups: [...groups.values()], attributionMode: 'H2', sampledVoidRays: samples.length, totalVoidPixels: mask.length, baselineVoidPixels: Array.from({ length: 64000 }, (_, i) => i).filter(i => magenta(first.pixels, i)).length, noVisibleHit, noHiddenHit, samples, images, hookFrames, h2Targets, singleTargets: [...singles].map(([label, o]) => ({ label, ...describe(o) })), levelGroups: levels.map((o: any) => o.name), camera: { near: camera.near, far: camera.far, position: camera.position.toArray() } };
       } finally {
         scene.onBeforeRender = originalBefore;
         for (const [o, visible] of savedVisibility) o.visible = visible;
