@@ -680,6 +680,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
+  root.userData.modelledStairEdges = layout.runs.filter((r) => r.mode === "stairs").map((r) => r.edgeId);
   const disposables: { dispose(): void }[] = [];
   const track = <T extends { dispose(): void }>(x: T) => (disposables.push(x), x);
   // Bookkeeping for the optional kit swap: records which placeholder triangles belong to which anchor.

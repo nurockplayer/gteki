@@ -250,7 +250,7 @@ function escalatorWalk(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] 
   return from.y <= to.y ? path : path.reverse();
 }
 
-export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean; envMap?: THREE.Texture | null }
+export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean; envMap?: THREE.Texture | null; visuallyModelled?: ReadonlySet<string> }
 
 function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THREE.Material[]): THREE.Mesh {
   const materialIndex = (p: ConnectorPart) => p.material === "lampOk" ? 1 : p.material === "lampNo" ? 2 : 0;
@@ -744,7 +744,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const batches = new Map<string, ConnectorPart[]>();
   const counts = { escalator: 0, stairs: 0, elevator: 0 };
-  let approximateFits = 0, omittedLandings = 0, connectorsSkipped = 0;
+  let approximateFits = 0, omittedLandings = 0, connectorsSkipped = 0, visualSuppressed = 0;
   const connectorsSkippedByReason: Record<"unsupported_shape" | "short_run", number> = { unsupported_shape: 0, short_run: 0 };
   const skippedEdgeIds: string[] = [];
   // An unsupported shape is not left out: main's builder builds it as before (#640 r18 ruling), so it is not a skipped edge.
@@ -1017,11 +1017,14 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   }
   for (const { edge, parts, pads, path, halfWidth } of built) {
     for (let i = 1; i < path.length; i++) segments.push({ line: new THREE.Line3(path[i - 1]!.clone(), path[i]!.clone()), halfWidth });
-    for (const part of parts) part.edgeId = edge.id;
+    const suppress = edge.mode === "stairs" && scope.visuallyModelled?.has(edge.id);
+    if (suppress) visualSuppressed++;
+    for (const part of parts) { part.edgeId = edge.id; if (suppress) part.walkableOnly = true; }
     if (parts.some((p) => p.userData?.fit === "approximate")) approximateFits++;
     const key = tier === "low" ? "all" : nodes.get(edge.from)?.floorId ?? "";
     const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => !p.walkableOnly)); batches.set(key, batch);
     for (const pad of pads) {
+      if (suppress) continue;
       const floorKey = tier === "low" ? "all" : pad.floorId;
       const floorBatch = batches.get(floorKey) ?? []; floorBatch.push(pad.part); batches.set(floorKey, floorBatch);
     }
@@ -1122,7 +1125,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (material === lampMaterials) lightBatches.push({ mesh, parts });
     }
   }
-  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, connectorsSkippedByReason, legacyConnectors: legacyEdgeIds.size, overBudget: null as string | null,
+  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, visualSuppressed, connectorsSkippedByReason, legacyConnectors: legacyEdgeIds.size, overBudget: null as string | null,
     dropSoffits() {
       for (const batch of lightBatches) {
         const kept = batch.parts.filter((p) => !p.soffit);
@@ -1141,8 +1144,9 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
     walkable.push(...legacy.walkable); colliders.push(...legacy.colliders); wallSegments.push(...legacy.wallSegments); segments.push(...legacy.segments);
     for (const [edgeId, path] of legacy.pathByEdge) pathByEdge.set(edgeId, path);
     counts.stairs += legacy.stats.connectors.stairs; counts.escalator += legacy.stats.connectors.escalator;
-    stats.meshes = root.children.length; stats.triangles += legacy.stats.triangles;
+    stats.meshes = root.children.length; stats.triangles += legacy.stats.triangles; stats.visualSuppressed += legacy.stats.visualSuppressed;
   }
+  if (!stats.visualSuppressed) delete (stats as { visualSuppressed?: number }).visualSuppressed;
   return { root, walkable, colliders, wallSegments, segments, pathByEdge, stats, skippedEdgeIds };
 }
 

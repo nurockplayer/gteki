@@ -200,7 +200,7 @@ function escalatorWalk(from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3[] 
   return from.y <= to.y ? path : path.reverse();
 }
 
-export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean }
+export interface ConnectorScope { hasFloor: (p: V3) => boolean; nearMesh: (p: THREE.Vector3, radius: number) => boolean; visuallyModelled?: ReadonlySet<string> }
 
 function meshFor(parts: readonly ConnectorPart[], material: THREE.Material | THREE.Material[]): THREE.Mesh {
   const materialIndex = (p: ConnectorPart) => p.material === "lampOk" ? 1 : p.material === "lampNo" ? 2 : 0;
@@ -236,7 +236,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const batches = new Map<string, ConnectorPart[]>();
   const counts = { escalator: 0, stairs: 0 };
-  let approximateFits = 0, omittedLandings = 0, connectorsSkipped = 0;
+  let approximateFits = 0, omittedLandings = 0, connectorsSkipped = 0, visualSuppressed = 0;
   const shellMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, side: THREE.DoubleSide });
   const lightMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, emissive: "#fff6e8", emissiveIntensity: 3.2, side: THREE.DoubleSide });
   const lampMaterials = [lightMaterial, new THREE.MeshStandardMaterial({ color: "#00ff00", emissive: "#00ff00", emissiveIntensity: 3.2 }), new THREE.MeshStandardMaterial({ color: "#ff0000", emissive: "#ff0000", emissiveIntensity: 3.2 })];
@@ -312,13 +312,16 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       pads.push({ part: pad[0]!, floorId });
     }
     if (edge.mode === "escalator" && bentEscalator) for (const p of parts) p.userData = { ...p.userData, fit: "approximate" };
-    for (const part of parts) part.edgeId = edge.id;
+    const suppress = edge.mode === "stairs" && scope.visuallyModelled?.has(edge.id);
+    if (suppress) visualSuppressed++;
+    for (const part of parts) { part.edgeId = edge.id; if (suppress) part.walkableOnly = true; }
     if (edge.mode === "stairs" || edge.mode === "escalator") counts[edge.mode]++;
     if (parts.some((p) => p.userData?.fit === "approximate")) approximateFits++;
     omittedLandings += edgeOmitted;
     const key = tier === "low" ? "all" : nodes.get(edge.from)?.floorId ?? "";
     const batch = batches.get(key) ?? []; batch.push(...parts.filter((p) => !p.walkableOnly)); batches.set(key, batch);
     for (const pad of pads) {
+      if (suppress) continue;
       const floorKey = tier === "low" ? "all" : pad.floorId;
       const floorBatch = batches.get(floorKey) ?? []; floorBatch.push(pad.part); batches.set(floorKey, floorBatch);
     }
@@ -335,7 +338,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (material === lampMaterials) lightBatches.push({ mesh, parts });
     }
   }
-  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, overBudget: null as string | null,
+  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, visualSuppressed, overBudget: null as string | null,
     dropSoffits() {
       for (const batch of lightBatches) {
         const kept = batch.parts.filter((p) => !p.soffit);
