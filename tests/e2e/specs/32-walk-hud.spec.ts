@@ -28,11 +28,11 @@ test("compact guide and arrival @phone", async ({ page }, info) => {
     const overlay = await overlayGrid(page);
     console.log(`[walk-hud] ${info.project.name} ${name}: ${JSON.stringify(overlay)}`);
     expect(overlay.share, `${name}: ${JSON.stringify(overlay.top)}`).toBeLessThanOrEqual(info.project.name === "phone-chromium" ? .30 : .20);
-    expect(overlay.cat, `${name}: ${JSON.stringify(overlay.top)}`).toBe(true);
+    if (name === "first") expect(overlay.cat, `${name}: ${JSON.stringify(overlay.top)}`).toBe(true);
     await capture(`walk-hud-${name}.png`);
   };
   const controls = async () => {
-    await expect(page.locator(".hud button:visible:not(.hud-instruction)")).toHaveCount(3);
+    await expect(page.locator(".guide-more")).toBeVisible();
     await expect(page.locator(".guide-speed")).toBeHidden();
     await expect(page.locator(".rail-launch")).toBeHidden();
     await expect(page.locator(".minimap-notice")).toBeHidden();
@@ -45,8 +45,32 @@ test("compact guide and arrival @phone", async ({ page }, info) => {
   await expect(page.getByRole("button", { name: "First person" })).toBeVisible();
   await page.locator(".guide-more").click();
   await expect(page.locator(".guide-speed")).toBeHidden();
-  let escalator = false;
+  await expect(page.locator(".topbar .tagline")).toBeHidden();
+  await expect(page.locator(".topbar .coverage")).toBeVisible();
+  expect((await page.locator(".topbar").boundingBox())!.height).toBeLessThanOrEqual(28);
+  const spans = await page.evaluate(() => (window as any).__gteki.quietHud().spans);
+  expect(spans.length).toBeGreaterThan(0);
+  await page.evaluate((s) => (window as any).__gteki.seekGuide(s), (spans[0].fromS + spans[0].toS) / 2);
+  await hooks.simulate(page, 0.1);
+  await expect(page.locator(".app.next")).toHaveClass(/\bescalator\b/);
+  const rect = await card.boundingBox();
+  expect(rect!.height).toBeLessThanOrEqual(28);
+  if (info.project.name !== "phone-chromium") expect(rect!.width).toBeLessThanOrEqual(240);
+  expect((await page.locator(".minimap-map").boundingBox())!.width).toBeLessThanOrEqual(80);
+  await expect(page.locator(".poi-label:visible")).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => (window as any).__gteki.quietHud().opacity)).toBe(0);
+  await page.evaluate((s) => (window as any).__gteki.seekGuide(s), spans[0].toS + 0.01);
+  await hooks.simulate(page, 0.1);
+  await expect(page.locator(".app.next")).not.toHaveClass(/\bescalator\b/);
+  await expect.poll(() => page.evaluate(() => (window as any).__gteki.quietHud().opacity)).toBe(0.45);
+  let escalator = true;
   for (let i = 0; i < 100; i++) {
+    const line = await page.locator(".guide-card-line").first().textContent();
+    if (line && !await page.locator(".app").evaluate((el) => el.classList.contains("escalator"))) {
+      expect(line.length).toBeLessThanOrEqual(36);
+      expect(line).not.toContain("…");
+      expect(line).not.toMatch(/GL[–-]B1 landing/);
+    }
     expect(await card.evaluate((el) => el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight)).toBe(true);
     const state = await page.evaluate(() => (window as any).__gteki.guideControls());
     if (state.arrived) break;

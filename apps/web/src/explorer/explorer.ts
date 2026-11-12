@@ -313,6 +313,7 @@ export class Explorer {
   private noModelTexture: THREE.CanvasTexture | null = null;
   /** QA hook state: the start/destination beacons follow it, including across route recomputes. */
   private routeMarkersVisible = true;
+  private routeQuiet = false;
   /** `toneMapped: false` overlays whose colour is pre-compensated for the high tier's OutputPass (see applyOverlayTone). */
   private overlayTints: OverlayTint[] = [];
   /** Max modelled display error (0..255) over the compensated overlays; null on the low tier or with no overlays. */
@@ -2286,12 +2287,41 @@ export class Explorer {
     return g;
   }
 
+  routeRibbonOpacity(): number | null {
+    let opacity: number | null = null;
+    this.routeGroup.getObjectByName("route-ribbon")?.traverse((node) => {
+      const material = (node as THREE.Mesh).material;
+      if (material && !Array.isArray(material)) opacity = material.opacity;
+    });
+    return opacity;
+  }
+
+  setRouteQuiet(quiet: boolean): void {
+    if (!this.previewNext || this.routeQuiet === quiet) return;
+    this.routeQuiet = quiet;
+    this.setRouteMarkersVisible(this.routeMarkersVisible);
+    const ribbon = this.routeGroup.getObjectByName("route-ribbon");
+    const materials = new Set<THREE.Material>();
+    ribbon?.traverse((node) => { const mat = (node as THREE.Mesh).material; if (mat && !Array.isArray(mat)) materials.add(mat); });
+    const start = performance.now();
+    for (const material of materials) {
+      const from = material.opacity;
+      const tick = (now: number): void => {
+        if (this.routeQuiet !== quiet) return;
+        const t = Math.min(1, (now - start) / 300);
+        material.opacity = from + ((quiet ? 0 : 0.45) - from) * t;
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+  }
+
   /** QA hook: show or hide the route's start/destination beacons; the route and guidance are untouched. */
   setRouteMarkersVisible(visible: boolean): void {
     this.routeMarkersVisible = visible;
     for (const g of this.routeGroup.children) if (g.userData.routeMarker) {
       const quiet = this.previewNext && this.mode !== "overview";
-      g.visible = visible && !(quiet && g.userData.routeStart);
+      g.visible = visible && !this.routeQuiet && !(quiet && g.userData.routeStart);
       g.children[0]!.visible = !quiet;
     }
   }

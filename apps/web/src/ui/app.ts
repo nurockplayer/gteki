@@ -131,7 +131,7 @@ export class App {
     coverage: el("dialog", "coverage"),
     toast: el("div", "toast"),
     langBtn: el("button", "ghost lang"),
-    coverageBtn: el("button", "ghost"),
+    coverageBtn: el("button", "ghost coverage"),
     railBtn: el("button", "ghost rail-launch"),
     hint: el("div", "hint"),
     credit: el("footer", "credit-line"),
@@ -248,7 +248,15 @@ export class App {
     this.ui.railBtn.hidden = true;
     this.ui.railBtn.addEventListener("click", () => this.startRailRide());
     const actions = el("div", "top-actions");
-    actions.append(this.ui.coverageBtn, this.ui.langBtn);
+    const topMore = el("details", "top-more");
+    topMore.append(el("summary", "top-more-button", "…"));
+    actions.append(this.ui.coverageBtn, this.ui.langBtn, topMore);
+    const syncTop = () => {
+      if (this.explorer.previewNext && this.explorer.currentMode === "guide") topMore.append(this.ui.langBtn);
+      else actions.insertBefore(this.ui.langBtn, topMore);
+    };
+    this.root.addEventListener("transitionend", syncTop);
+    this.syncTopMenu = syncTop;
     top.append(brand, this.ui.stationSelect, actions);
 
     const panel = this.ui.panel;
@@ -1179,7 +1187,8 @@ export class App {
       }
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
-      this.explorer.showRoute(this.s.polyline, guidePaceSpans(this.s.polyline, best.steps, []).filter((span) => span.mode === "escalator"));
+      this.escalatorSpans = guidePaceSpans(this.s.polyline, best.steps, []).filter((span) => span.mode === "escalator");
+      this.explorer.showRoute(this.s.polyline, this.escalatorSpans);
       this.ui.minimap.setRoute({ points: this.s.polyline, steps: best.steps }, destination);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
     }
@@ -1387,8 +1396,16 @@ export class App {
 
   // ---- Modes / HUD -----------------------------------------------------------------
 
+  private syncTopMenu: () => void = () => {};
+
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
+    this.syncTopMenu();
+    if (mode !== "guide" && this.explorer.previewNext) {
+      this.escalatorSpan = undefined;
+      this.root.classList.remove("escalator");
+      this.explorer.setRouteQuiet(false);
+    }
     if (mode === "overview" && !this.coldOpen) this.panelFold.open();
     else if (mode === "guide" || (mode === "walk" && typeof matchMedia === "function" && matchMedia("(max-width: 720px)").matches)) this.panelFold.fold();
     this.renderIdentity(mode);
@@ -1478,6 +1495,7 @@ export class App {
         const sync = () => {
           more.setAttribute("aria-expanded", String(this.guideMoreOpen));
           for (const node of extras) node.classList.toggle("guide-extra-hidden", !this.guideMoreOpen);
+          for (const node of [pause, stop]) node.classList.toggle("guide-phone-hidden", !this.guideMoreOpen);
           for (const node of [fp, net, ov, snd]) node.classList.toggle("guide-extra-hidden", !this.guideMoreOpen);
         };
         more.addEventListener("click", () => { this.guideMoreOpen = !this.guideMoreOpen; sync(); });
@@ -1573,6 +1591,9 @@ export class App {
   private spokenInstruction: Instruction | null = null;
   private guideTurnSaid = false;
   private guideMoreOpen = false;
+  private escalatorSpans: PaceSpan[] = [];
+  private escalatorSpan: PaceSpan | undefined;
+  private firstGuideInstruction = 0;
 
   /** Announce the guide's active instruction once per change (not per progress tick); forgotten outside the guide. */
   private announceInstruction(): void {
@@ -1595,11 +1616,25 @@ export class App {
       return box;
     }
     const ins = this.s.instructions[this.s.activeInstruction]!;
-    const card = guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang });
+    if (this.escalatorSpan) {
+      let distance = 0;
+      let end = this.s.polyline[0];
+      for (let i = 1; i < this.s.polyline.length; i++) {
+        const a = this.s.polyline[i - 1]!, b = this.s.polyline[i]!;
+        distance += Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+        if (distance >= this.escalatorSpan.toS - 0.001) { end = b; break; }
+      }
+      const floor = floorDisplayName(this.s.loaded?.bundle.floors.find((f) => f.id === end?.floorId), this.s.lang).replace(/GL[–-]B1 landing/g, "B1");
+      const seconds = Math.round((this.escalatorSpan.toS - this.guideS) / this.escalatorSpan.maxMps / 5) * 5;
+      box.append(el("div", "hud-instruction", `↓ ${floor}${this.escalatorSpan.maxMps ? ` · ~${seconds} s` : ""}`));
+      return box;
+    }
+    const card = guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
     const instruction = el("div", "hud-instruction");
     const line = el("span", "guide-card-line", card.line);
     instruction.append(line);
-    box.append(this.ui.mascot.root, instruction);
+    if (this.s.activeInstruction === this.firstGuideInstruction) box.append(this.ui.mascot.root);
+    box.append(instruction);
     requestAnimationFrame(() => {
       if (!instruction.isConnected) return;
       const overflow = line.scrollWidth > line.clientWidth || line.scrollHeight > line.clientHeight;
@@ -1650,6 +1685,7 @@ export class App {
     }
     this.guideStarts = instructionStartsM(this.s.polyline, this.s.instructions);
     this.guideFirst = this.s.instructions[0]?.kind === "start" && this.s.instructions.length > 1 ? 1 : 0;
+    this.firstGuideInstruction = this.guideFirst;
     this.guideS = 0;
     this.insClock.reset();
     this.jumpPin = null;
@@ -1745,6 +1781,17 @@ export class App {
     // Guide time stops while paused and at arrival (the guide stays in guide mode there; Previous must not read that as time spent).
     this.insClock.tick(performance.now(), !this.explorer.guidePaused && !this.arrived && !p.done);
     this.guideS = p.s;
+    if (this.explorer.previewNext) {
+      const span = this.escalatorSpans.find((s) => s.fromS <= p.s && p.s < s.toS);
+      const changed = span !== this.escalatorSpan;
+      this.escalatorSpan = span;
+      this.root.classList.toggle("escalator", !!span);
+      if (changed) { this.explorer.setRouteQuiet(!!span); this.updateGuideHud(); }
+      else if (span) {
+        const card = this.ui.hud.querySelector<HTMLElement>(".hud-instruction");
+        if (card) card.textContent = card.textContent?.replace(/~\d+ s/, `~${Math.round((span.toS - p.s) / span.maxMps / 5) * 5} s`) ?? "";
+      }
+    }
     // Just after a jump the guide stands on the instruction's first point, which still reports the previous step: keep the chosen one.
     if (this.jumpPin !== null) {
       if (!p.done && Math.abs(p.s - this.jumpPin) < 0.05) return;
@@ -1984,6 +2031,8 @@ export class App {
       interaction: () => this.explorer.interaction,
       interactables: () => this.explorer.interactableInfo(),
       startGuide: () => this.startGuide(),
+      quietHud: () => ({ spans: this.escalatorSpans, opacity: this.explorer.routeRibbonOpacity() }),
+      seekGuide: (s: number) => this.explorer.seekGuide(s, 0),
       guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier), instruction: this.s.activeInstruction, distanceM: this.guideS, arrived: this.arrived }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
