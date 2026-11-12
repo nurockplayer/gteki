@@ -783,7 +783,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
             const sb = w.x * (s.b.y - p.y) - w.y * (s.b.x - p.x);
             // A passage endpoint on the wall line still opens a doorway at that end; a
             // vertical opening has no side at all.
-            const vertical = Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y) < 1e-6;
+            const vertical = stableHypot(s.b.x - s.a.x, s.b.y - s.a.y) < 1e-6;
             if (!(vertical || Math.abs(sa) < 1e-6 || Math.abs(sb) < 1e-6 || (sa < 0) !== (sb < 0))) continue;
           }
           const d = sub(s.b, s.a), l2 = d.x * d.x + d.y * d.y || 1;
