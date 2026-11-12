@@ -39,6 +39,7 @@ import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { coldOpenPair, demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
+import { bootProgress, FrameReadiness, type BootStage } from "./bootCard.ts";
 import { shortStationLabel } from "./shortStationLabel.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
@@ -146,6 +147,9 @@ export class App {
   private readonly directories = new Map<string, { bundle: StationBundle; search: SearchIndex } | null>();
   private panelExpanded = false;
   private coldOpen = false;
+  private bootValue = 0;
+  private bootWalkAt: number | null = null;
+  private bootFrames = new FrameReadiness();
   /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
   private compositionEndMs = -Infinity;
   private readonly interactionPrompt = new InteractionPrompt(() => this.t, () => this.explorer.interact(), (text) => this.ui.live.announce(text));
@@ -201,6 +205,7 @@ export class App {
     });
     this.exposeTestHooks();
     this.s.entries = await listStations();
+    this.setBootStage("stations");
     this.renderStationSelect();
     if (typeof matchMedia === "function") {
       matchMedia("(max-width: 600px)").addEventListener("change", () => this.renderStationSelect());
@@ -302,7 +307,7 @@ export class App {
     const guide = el("button", "primary");
     const search = el("button", "cold-open-search");
     cold.append(title, guide, search);
-    cold.hidden = !this.coldOpen;
+    cold.hidden = true;
     this.root.classList.toggle("cold-opening", this.coldOpen);
     guide.addEventListener("click", () => { this.dismissColdOpen(); this.startGuide(); });
     search.addEventListener("click", () => { this.dismissColdOpen(); this.panelFold.open(true); });
@@ -311,12 +316,60 @@ export class App {
     this.ui.hint.setAttribute("role", "note");
     this.ui.greyboxLegend.hidden = true;
     this.root.append(viewport, top, panel, this.ui.panelEntry, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit, this.ui.greyboxLegend);
+    if (this.coldOpen) {
+      const boot = el("div", "boot-card");
+      const track = el("div", "boot-track");
+      track.setAttribute("role", "progressbar");
+      track.setAttribute("aria-valuemin", "0");
+      track.setAttribute("aria-valuemax", "100");
+      track.append(el("div", "boot-fill"));
+      boot.append(el("div", "boot-brand logo", "GTEki"), el("div", "boot-title"), el("div", "boot-sub"), track, el("div", "boot-status"));
+      this.root.append(boot);
+      this.setBootStage("start");
+      let previous = 0;
+      const frame = (now: number) => {
+        if (boot.hidden || boot.classList.contains("lifting")) return;
+        const phase = this.explorer?.phase;
+        if (phase === "graph" || phase === "scene" || phase === "composer" || phase === "ready") this.setBootStage(phase);
+        if (this.bootWalkAt !== null && previous && this.bootFrames.push(now - previous, now - this.bootWalkAt)) {
+          this.setBootStage("settled");
+          this.root.querySelector<HTMLElement>(".cold-open")!.hidden = false;
+          boot.classList.add("lifting");
+          if (matchMedia("(prefers-reduced-motion: reduce)").matches) boot.hidden = true;
+          else setTimeout(() => { boot.hidden = true; }, 250);
+          return;
+        }
+        previous = now;
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    }
     this.layoutText();
+  }
+
+  private setBootStage(stage: BootStage): void {
+    const track = this.root.querySelector<HTMLElement>(".boot-track");
+    if (!track) return;
+    this.bootValue = Math.max(this.bootValue, bootProgress(stage));
+    track.setAttribute("aria-valuenow", String(Math.round(this.bootValue * 100)));
+    track.querySelector<HTMLElement>(".boot-fill")!.style.width = `${this.bootValue * 100}%`;
+  }
+
+  private removeBootCard(): void {
+    const boot = this.root.querySelector<HTMLElement>(".boot-card");
+    if (boot) boot.hidden = true;
   }
 
   private layoutText(): void {
     const t = this.t;
     this.ui.greyboxLegend.textContent = t.greyboxLegend;
+    const boot = this.root.querySelector<HTMLElement>(".boot-card");
+    if (boot) {
+      boot.querySelector<HTMLElement>(".boot-title")!.textContent = t.boot.title;
+      boot.querySelector<HTMLElement>(".boot-sub")!.textContent = t.boot.sub;
+      boot.querySelector<HTMLElement>(".boot-status")!.textContent = t.loading;
+      boot.querySelector<HTMLElement>(".boot-track")!.setAttribute("aria-label", t.loading);
+    }
     const cold = this.root.querySelector<HTMLElement>(".cold-open");
     if (cold) {
       cold.querySelector<HTMLElement>(".cold-open-title")!.textContent = t.coldOpen.title;
@@ -442,21 +495,23 @@ export class App {
     this.ui.live.announce(`${names.ja} ${names.kana} ${names.en} · ${this.t.loading}`);
     try {
       const loaded = await entry.load();
-      if (!current()) return;
+      if (!current()) { this.removeBootCard(); return; }
+      this.setBootStage("data");
       this.identityView.showCard(loaded.bundle.station.identity, entry.label, this.s.lang);
       this.s.loaded = loaded;
       this.s.router = createRouter(loaded.bundle, { allowUnverified: PRIVATE_BUILD });
       this.s.search = createSearchIndex(loaded.bundle);
       const ready = await this.explorer.loadStation(loaded, this.s.router);
-      if (!current()) return;
+      if (!current()) { this.removeBootCard(); return; }
       this.identityView.hideCard();
-      if (!ready) return;
+      if (!ready) { if (this.coldOpen) { this.dismissColdOpen(); this.panelFold.open(); } return; }
       this.ui.minimap.setStation(loaded.bundle, this.s.lang);
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
       // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
       if (this.explorer.sceneError) this.mascotSay({ kind: "scene_fallback" }, this.ui.panel);
     } catch (err) {
-      if (!current()) return;
+      if (!current()) { this.removeBootCard(); return; }
+      if (this.coldOpen) { this.dismissColdOpen(); this.panelFold.open(); }
       this.s.loaded = null;
       this.s.router = null;
       this.s.search = null;
@@ -474,10 +529,13 @@ export class App {
     const pair = this.coldOpen ? coldOpenPair(entry.key, pois) : null;
     if (pair) {
       this.setOrigin({ kind: "poi", poi: pair.from });
-      this.setDestination(pair.to);
+      this.setDestination(pair.to, null, true);
       const first = this.s.polyline[0];
-      if (first) this.explorer.walkFrom(first, spawnHeading(this.s.loaded.bundle, this.s.origin, this.s.polyline));
-      this.panelFold.fold();
+      if (first) {
+        this.explorer.walkFrom(first, spawnHeading(this.s.loaded.bundle, this.s.origin, this.s.polyline));
+        this.bootWalkAt = performance.now();
+      } else { this.dismissColdOpen(); this.panelFold.open(); }
+      if (first) this.panelFold.fold();
     } else {
       if (this.coldOpen) { this.dismissColdOpen(); this.panelFold.open(); }
       this.refreshAll();
@@ -486,6 +544,7 @@ export class App {
   }
 
   private dismissColdOpen(): void {
+    this.removeBootCard();
     if (!this.coldOpen) return;
     this.coldOpen = false;
     this.root.classList.remove("cold-opening");
@@ -988,10 +1047,12 @@ export class App {
   }
 
   /** `tenant` is set only when the destination was picked through a store's brand directory (#419). */
-  private setDestination(p: Poi, tenant: Tenant | null = null): void {
+  private setDestination(p: Poi, tenant: Tenant | null = null, auto = false): void {
     if (!this.ownsPoi(p)) return;
-    this.firstRunDismissed = true;
-    markFirstRunDone(safeStorage());
+    if (!auto) {
+      this.firstRunDismissed = true;
+      markFirstRunDone(safeStorage());
+    }
     this.s.destination = p;
     this.s.destinationTenant = tenant;
     this.refreshAll();

@@ -5,6 +5,7 @@ async function ready(page: Page, url: string) {
   await page.addInitScript(PROBE_SCRIPT);
   await page.goto(url);
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
+  await expect(page.locator(".boot-card")).toBeHidden({ timeout: 6_000 });
 }
 
 test("cold open starts a route and guide @phone", async ({ page }, info) => {
