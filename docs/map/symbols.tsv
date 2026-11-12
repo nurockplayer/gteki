@@ -168,6 +168,7 @@ routeNearFade	function	apps/web/src/explorer/geometry.ts
 routeRunsOutsideSpans	function	apps/web/src/explorer/geometry.ts
 routeSegmentProfile	function	apps/web/src/explorer/geometry.ts
 steppedProfile	function	apps/web/src/explorer/geometry.ts
+goldenPixelDiff	function	apps/web/src/explorer/goldenPixels.ts
 goldenPixels	function	apps/web/src/explorer/goldenPixels.ts
 GraphView	interface	apps/web/src/explorer/graphView.ts
 MODE_WIDTH	const	apps/web/src/explorer/graphView.ts

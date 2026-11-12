@@ -1949,7 +1949,7 @@ export class App {
       goldenRenderState: () => this.explorer.goldenRenderState(),
       holdFrames: (hold: boolean) => this.explorer.holdFrames(hold),
       goldenFrame: () => this.explorer.goldenFrame(),
-      goldenProbe: (overview: boolean) => this.explorer.goldenProbe(overview),
+      goldenProbe: (...args: Parameters<Explorer["goldenProbe"]>) => this.explorer.goldenProbe(...args),
       setView: ({ node, headingDeg }: { node: string; headingDeg: number }) => this.s.loaded
         ? this.explorer.setView(this.s.loaded.bundle, node, headingDeg)
         : { placed: false, placeMs: 0, turnMs: 0 },

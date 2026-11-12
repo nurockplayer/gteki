@@ -1,4 +1,4 @@
-import { goldenPixels } from "./goldenPixels";
+import { goldenPixels, goldenPixelDiff } from "./goldenPixels";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -598,7 +598,7 @@ export class Explorer {
   }
 
   /** QA-only: reuse displayed-frame programs by probing the default framebuffer. */
-  goldenProbe(overview: boolean) {
+  goldenProbe(overview: boolean, features: { name: string; match: { namePrefix?: string; contains?: string; role?: string; withinM?: number }; minPixels: number }[] = [], options: { hideBeforeShown?: string[] } = {}) {
     const root = this.stationScene?.root;
     if (!root) throw new Error("Station scene is not loaded");
     const renderer = this.renderer, gl = renderer.getContext();
@@ -618,6 +618,53 @@ export class Explorer {
       renders.push({ label, before, after, ms });
       console.log(`[golden] probe ${label}: ${JSON.stringify({ before, after, ms })}`);
     };
+    const signMeshes: THREE.Mesh[] = [];
+    root.traverse((object) => {
+      if ((object as THREE.Mesh).isMesh && (object.name.startsWith("sign-faces:") || object.name.startsWith("sign-faces-"))) signMeshes.push(object as THREE.Mesh);
+    });
+    const signRects = features.map((feature) => {
+      if (feature.match.namePrefix !== "sign:") return null;
+      const corners: THREE.Vector3[] = [];
+      let faces = 0;
+      root.traverse((object) => {
+        if (object.userData.gteki_role !== "sign" || !Array.isArray(object.userData.faces)) return;
+        for (const face of object.userData.faces) {
+          if (typeof face.id !== "string" || !face.id.includes(feature.match.contains ?? "") || !Array.isArray(face.corners)) continue;
+          faces++;
+          for (const corner of face.corners) corners.push(new THREE.Vector3().fromArray(corner).applyMatrix4(root.matrixWorld));
+        }
+      });
+      this.camera.updateMatrixWorld();
+      const projected = corners.map((point) => ({ behind: point.clone().applyMatrix4(this.camera.matrixWorldInverse).z >= 0, point: point.project(this.camera) }));
+      const front = projected.filter((p) => !p.behind);
+      if (!front.length) return { faces, rect: null };
+      const xs = front.map(({ point }) => (point.x + 1) * width / 2);
+      const ys = front.map(({ point }) => (point.y + 1) * height / 2);
+      const x0 = Math.max(0, Math.floor(Math.min(...xs) - 4)), x1 = Math.min(width, Math.ceil(Math.max(...xs) + 4));
+      const y0 = Math.max(0, Math.floor(Math.min(...ys) - 4)), y1 = Math.min(height, Math.ceil(Math.max(...ys) + 4));
+      return { faces, rect: x0 < x1 && y0 < y1 ? { x0, x1, y0, y1 } : null };
+    });
+    const matches = features.map((feature, i) => {
+      if (signRects[i]) return signMeshes;
+      const meshes: THREE.Mesh[] = [];
+      root.traverse((object) => {
+        if (!(object as THREE.Mesh).isMesh) return;
+        let matched = false;
+        for (let parent: THREE.Object3D | null = object; parent && parent !== root; parent = parent.parent) {
+          if ((!feature.match.namePrefix || parent.name.startsWith(feature.match.namePrefix)) &&
+              (!feature.match.contains || parent.name.includes(feature.match.contains)) &&
+              (!feature.match.role || parent.userData.gteki_role === feature.match.role || parent.userData.goldenRole === feature.match.role)) { matched = true; break; }
+        }
+        if (matched && feature.match.withinM !== undefined) {
+          const bounds = new THREE.Box3().setFromObject(object);
+          matched = bounds.distanceToPoint(this.camera.position) <= feature.match.withinM;
+        }
+        if (matched) meshes.push(object as THREE.Mesh);
+      });
+      return meshes;
+    });
+    const visibility = new Map<THREE.Mesh, boolean>();
+    for (const meshes of matches) for (const mesh of meshes) visibility.set(mesh, mesh.visible);
     try {
       this.scene.background = new THREE.Color(0xff00ff);
       renderer.shadowMap.autoUpdate = false;
@@ -626,14 +673,37 @@ export class Explorer {
       renderer.setViewport(0, 0, width / ratio, height / ratio);
       renderer.setScissor(0, 0, width / ratio, height / ratio);
       renderer.setScissorTest(true);
+      features.forEach((feature, i) => {
+        if (options.hideBeforeShown?.includes(feature.name)) for (const mesh of matches[i]!) mesh.visible = false;
+      });
       capture("shown", shown);
       if (overview) {
         root.visible = false;
         capture("hidden", hidden);
       }
-      return { ...goldenPixels(shown, overview ? hidden : null), renders };
+      root.visible = visible;
+      const featureResults = features.map((feature, i) => {
+        const meshes = matches[i]!;
+        const before = meshes.map(mesh => mesh.visible);
+        for (const mesh of meshes) mesh.visible = false;
+        try {
+          if (meshes.length) capture(`feature:${feature.name}`, hidden);
+          const sign = signRects[i];
+          let pixels = meshes.length ? goldenPixelDiff(shown, hidden) : 0;
+          if (sign) {
+            pixels = 0;
+            if (sign.rect) for (let y = sign.rect.y0; y < sign.rect.y1; y++) for (let x = sign.rect.x0; x < sign.rect.x1; x++) {
+              const offset = (y * width + x) * 4;
+              if (Math.abs(shown[offset]! - hidden[offset]!) > 3 || Math.abs(shown[offset + 1]! - hidden[offset + 1]!) > 3 || Math.abs(shown[offset + 2]! - hidden[offset + 2]!) > 3) pixels++;
+            }
+          }
+          return { name: feature.name, pixels, meshes: sign ? (sign.faces ? meshes.length : 0) : meshes.length };
+        } finally { meshes.forEach((mesh, j) => { mesh.visible = before[j]!; }); }
+      });
+      return { ...goldenPixels(shown, overview ? hidden : null), features: featureResults, renders };
     } finally {
       root.visible = visible;
+      for (const [mesh, wasVisible] of visibility) mesh.visible = wasVisible;
       this.scene.background = background;
       renderer.shadowMap.autoUpdate = autoUpdate;
       renderer.setRenderTarget(oldTarget);

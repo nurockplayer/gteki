@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { evaluateCheck, flatRatio } from "./golden";
-import { goldenPixels } from "../../../apps/web/src/explorer/goldenPixels";
+import { goldenPixelDiff, goldenPixels } from "../../../apps/web/src/explorer/goldenPixels";
 
 describe("golden camera checks", () => {
   it("finds the largest quantised RGB bucket", () => {
@@ -26,5 +26,14 @@ describe("golden camera checks", () => {
   it("rejects a magenta void frame", () => {
     const pixels = new Uint8Array([255, 0, 255, 255, 12, 34, 56, 255]);
     expect(evaluateCheck("voidRatio", goldenPixels(pixels, null).voidRatio, 0.005).status).toBe("fail");
+  });
+});
+
+describe("golden pixel differences", () => {
+  it("counts changed pixels above the tolerance", () => {
+    const original = new Uint8Array(40), changed = original.slice();
+    expect(goldenPixelDiff(original, changed)).toBe(0);
+    changed[0] = 4; changed[5] = 20; changed[10] = 3;
+    expect(goldenPixelDiff(original, changed)).toBe(2);
   });
 });
