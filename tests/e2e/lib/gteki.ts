@@ -406,3 +406,21 @@ export function shotPath(testInfo: TestInfo, name: string): string {
   fs.mkdirSync(dir, { recursive: true });
   return path.join(dir, name);
 }
+
+export async function overlayGrid(page: Page) {
+  return page.evaluate(() => {
+    let covered = 0;
+    const elements: Record<string, number> = {};
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 24; x++) {
+      const element = document.elementFromPoint((x + .5) * innerWidth / 24, (y + .5) * innerHeight / 16);
+      if (!element?.matches("canvas.gteki-canvas")) {
+        covered++;
+        const name = element ? `${element.tagName.toLowerCase()}.${Array.from(element.classList).join(".")}` : "none";
+        elements[name] = (elements[name] ?? 0) + 1;
+      }
+    }
+    const g = (window as any).__gteki;
+    const point = g.projectEnu([g.avatar()])[0];
+    return { share: covered / 384, cat: document.elementFromPoint(point.x, point.y)?.matches("canvas.gteki-canvas"), top: Object.entries(elements).sort((a, b) => b[1] - a[1]).slice(0, 5) };
+  });
+}
