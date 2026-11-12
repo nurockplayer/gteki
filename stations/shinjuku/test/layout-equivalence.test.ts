@@ -23,7 +23,8 @@ describe("layout equivalence", () => {
     // #789 intentionally repairs eight display rises; preserve that physical layout.
     // #1000 carries the shell of the three shafts with a near-street landing (c3fe6342
     // at -1.6, 636c6fc9 and 0564105d at -1.68) up to their own roofs, and (fix 1) cuts
-    // that shell only where a passage crosses it; only those walls move.
-    expect(digest).toBe("5a259b259ac3d9acf1c28889e2a5d2488f4183031c3756b810b42d23787cde63");
+    // that shell only where a passage crosses it. Includes the merge with main's
+    // cornerFills changes (#1170/#1188).
+    expect(digest).toBe("ed7b2a39b2da43326dc2fe8336fe3b2cc5c0cfa988816738420ed089b84a20f4");
   });
 });
