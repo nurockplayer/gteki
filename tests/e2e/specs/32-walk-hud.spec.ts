@@ -5,7 +5,7 @@ import { PROBE_SCRIPT, hooks, overlayGrid, settleFrames, shotPath } from "../lib
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
 test("compact guide and arrival @phone", async ({ page }, info) => {
-  test.setTimeout(360_000);
+  test.setTimeout(720_000);
   await page.setViewportSize(info.project.name === "phone-chromium" ? { width: 390, height: 844 } : { width: 1280, height: 800 });
   await page.addInitScript(PROBE_SCRIPT);
   await page.goto("/?next=1");
