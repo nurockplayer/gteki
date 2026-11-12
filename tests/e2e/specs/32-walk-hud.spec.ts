@@ -30,7 +30,7 @@ test("compact guide and arrival @phone", async ({ page }, info) => {
     await capture(`walk-hud-${name}.png`);
   };
   const controls = async () => {
-    await expect(page.locator(".hud button:visible")).toHaveCount(3);
+    await expect(page.locator(".hud button:visible:not(.hud-instruction)")).toHaveCount(3);
     await expect(page.locator(".guide-speed")).toBeHidden();
     await expect(page.locator(".rail-launch")).toBeHidden();
     await expect(page.locator(".minimap-notice")).toBeHidden();
