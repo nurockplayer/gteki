@@ -3,7 +3,8 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
 import { ARTIFACTS, hooks, imageStats, openStation, type StationKey } from "../lib/gteki.ts";
-import { evaluateCheck, flatRatio, type Metric } from "../lib/golden.ts";
+import { evaluateCheck, type Metric } from "../lib/golden.ts";
+import { screenshotFlatRatio } from "../lib/screenshot-flat.ts";
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
@@ -13,19 +14,6 @@ const config = JSON.parse(fs.readFileSync(new URL("../golden-cameras.json", impo
   cameras: Camera[];
 };
 
-async function screenshotFlatRatio(page: Page, png: Buffer): Promise<{ value: number; ms: number }> {
-  const decoded = await page.evaluate(async (b64) => {
-    const started = performance.now();
-    const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();
-    const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
-    const ctx = c.getContext("2d")!; ctx.drawImage(img, 0, 0);
-    const data = ctx.getImageData(0, 0, c.width, c.height).data;
-    let binary = "";
-    for (let i = 0; i < data.length; i += 32768) binary += String.fromCharCode(...data.subarray(i, i + 32768));
-    return { rgba: btoa(binary), ms: performance.now() - started };
-  }, png.toString("base64"));
-  return { value: flatRatio(Buffer.from(decoded.rgba, "base64")), ms: decoded.ms };
-}
 
 test("golden cameras: void, coverage and flat frames", async ({ page: initialPage, context }, testInfo) => {
   test.setTimeout(700_000);
