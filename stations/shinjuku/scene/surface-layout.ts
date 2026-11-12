@@ -336,8 +336,9 @@ export function surfaceVisibleAt(layout: Layout, bundle: StationBundle, viewer: 
  * (small) and let go of the layout (#72). */
 export function surfaceVisibleIn(context: { entrances: ReturnType<typeof surfaceEntrances>; openings: ReturnType<typeof surfaceOpenings>; shafts: ReturnType<typeof surfaceStairShafts> }, viewer: { x: number; y: number; z: number }): boolean {
   if (viewer.z >= 0) return true;
+  // The follow camera can sit behind the bottom of the stair flight.
   if (context.shafts.some(({ rings, minZ }) => viewer.z > minZ - 0.2 &&
-    (pointInRings(viewer, rings) || rings.some((r) => r.slice(1).some((p, i) => dist(viewer, r[i]!, p).d < 0.8))))) return true;
+    (pointInRings(viewer, rings) || rings.some((r) => r.slice(1).some((p, i) => dist(viewer, r[i]!, p).d < 3))))) return true;
   const nearTop = viewer.z > -2 || context.entrances.some((e) =>
     stableHypot(viewer.x - e.top.x, viewer.y - e.top.y) <= 30 && viewer.z > e.firstLandingZ + 1.2);
   if (!nearTop) return false;
