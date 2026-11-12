@@ -1123,6 +1123,8 @@ function step(dt: number, render = true) {
 addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
+  // Rotating to portrait drops the arrival rise, as catArrivalRise does for a portrait start (#1019).
+  if (camera.aspect < 1) arrivalRise = 0;
   renderer.setSize(innerWidth, innerHeight);
   composer.setSize(innerWidth, innerHeight);
 });

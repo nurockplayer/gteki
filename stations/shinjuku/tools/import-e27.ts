@@ -1608,9 +1608,10 @@ const assets: Asset[] = [{
   role: "visual",
   sourceIds: [SRC_CATALOG],
   files: [KIT_MANIFEST],
+  derivationSummary: [{ lang: "ja", text: "GTEki オリジナルのエスカレーター装飾（欄干、手すり、くし板など）を Blender で作り、スマートフォン向けにまとめた表示用モデルです。歩ける範囲や経路には使いません。" }, { lang: "en", text: "Original GTEki escalator dressings (balustrades, handrails, comb plates and more), built in Blender and bundled for phones. Visual only; never used for walking areas or routing." }],
   derivation: "tools/blender build + bundle_kit.py bundle (mobile profile) from stations/shinjuku/kit/catalog.json: ten escalator dressings (balustrade, handrail, newel, comb; AO baked), one self-contained GLB with shared textures. Loaded by the scene's kit swap (scene/kit/load.ts), not by the asset loader: visual only, never walkable, never a collider, never route evidence. The manifest beside it is what scene/kit/manifest.ts reads.",
 }];
-assets.push({ id: "shopfront-kit", uri: "kit/high/gteki_shopfront_door_w2000.glb", uriMobile: "kit/low/gteki_shopfront_door_w2000.glb", format: "glb", floorIds: kitFloorIds, role: "visual", sourceIds: ["gteki-kit-0-1-0"], derivation: "Original GTEki shopfront kit, copied from Ikebukuro; visual only." });
+assets.push({ id: "shopfront-kit", uri: "kit/high/gteki_shopfront_door_w2000.glb", uriMobile: "kit/low/gteki_shopfront_door_w2000.glb", format: "glb", floorIds: kitFloorIds, role: "visual", sourceIds: ["gteki-kit-0-1-0"], derivationSummary: [{ lang: "ja", text: "GTEki オリジナルの店頭キットで、池袋と同じものを使っています。表示用で、実在の店の位置を示すものではありません。" }, { lang: "en", text: "Original GTEki shopfront kit, shared with Ikebukuro. Visual only; it does not mark a real shop's position." }], derivation: "Original GTEki shopfront kit, copied from Ikebukuro; visual only." });
 
 const bundle: StationBundle = {
   schema: SCHEMA_VERSION,

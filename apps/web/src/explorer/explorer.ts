@@ -1,3 +1,4 @@
+import { goldenPixels } from "./goldenPixels";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -14,7 +15,8 @@ import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api"
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
-import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade } from "./geometry.ts";
+import { anySampleClear, faceEligible, insideCameraCut, minimapYield, overlapSamples, rayOnQuad, type FaceEligibility, type YieldRect } from "./minimapYield.ts";
+import { R, ROUTE_CHEVRON_PITCH_OVERVIEW, ROUTE_CHEVRON_PITCH_WALK, ROUTE_RIBBON_WIDTH_OVERVIEW, ROUTE_RIBBON_WIDTH_WALK, chevronTexture, dashTexture, ribbonGeometry, routeNearFade, routeSegmentProfile } from "./geometry.ts";
 import { floorProbe, unmodelledRuns } from "./routeGaps.ts";
 import { buildConnectors, skippedConnectorPath, withinGreyboxBudget } from "./greyboxConnectors.ts";
 import { cutPortals, disposePortalCuts, type PortalCutResources } from "./portalCut.ts";
@@ -33,11 +35,11 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { ZONE_LOOK, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { CAT_NPC_FADE, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
+import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
-import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
+import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
@@ -47,7 +49,7 @@ import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelec
 import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 import { catTapHit } from "./catMeow.ts";
 import { advancePaws, pawSurface, playCatMeow, playPawStep } from "./catSound.ts";
-import { contactShadow } from "./contactShadow.ts";
+import { contactShadow, placePawShadows } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
 import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, needsCasterRetune, setCasters, shadowFitRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
@@ -247,6 +249,8 @@ export class Explorer {
 
   private station: LoadedStation | null = null;
   private stationScene: StationScene | null = null;
+  /** Shinjuku's street surface layer, looked up once per station scene; overview suppresses it (see tick). */
+  private surfaceLayer: { scene: StationScene; obj: THREE.Object3D | undefined } | null = null;
   private interactionController = new InteractionController([]);
   private interactionSnapshot = "";
   /** Reaction objects by interactable id, and the station's decorative wall-prop mesh (#858 item 12). */
@@ -313,7 +317,8 @@ export class Explorer {
   private avatarRig: AvatarSelection | null = null;
   /** Cat protagonist: lower follow pivot, shorter boom and a smaller marker ring. */
   private catAvatar: boolean;
-  private avatarMarker: [THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>, THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>] | null = null;
+  private avatarMarker: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>[] | null = null;
+  private pawShadows: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial>[] = [];
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private catBodyPitch = 0;
@@ -390,6 +395,9 @@ export class Explorer {
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
+  private cameraFocus: THREE.Vector3 | null = null;
+  private cameraSignFocus: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null;
+  private guideSigns: { s: number; anchor: THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number } }[] = [];
   /** The framed board's name centre, and the framed look's offset from that board's bearing: the hold keeps the board in view. */
   private readonly guideIdentityCentre = new THREE.Vector3();
   private readonly guideIdentityOffset = { yaw: 0, pitch: 0 };
@@ -410,6 +418,8 @@ export class Explorer {
   /** Consumed by the first successful walker placement, including when no board qualifies. */
   private identityPlaced = false;
   private identityLabelsDirty = true;
+  private identityRegions: ScreenRect[] = [];
+  private identityOverlap = 0;
   private labelMode: ExplorerMode | null = null;
   private labelCamFov = NaN;
   private labelCamAspect = NaN;
@@ -442,6 +452,25 @@ export class Explorer {
   /** The route sheet: a full-width bottom sheet on a phone, so the overview keeps clear of it there (#385). */
   private sheetEl: HTMLElement | null = null;
   private minimapEl: HTMLElement | null = null;
+  private minimapSigns: { mesh: THREE.Object3D; corners: THREE.Vector3[]; face: FaceEligibility }[] = [];
+  private minimapSignRects: YieldRect[] = [];
+  private minimapYieldState = { lastOverlap: -Infinity };
+  private readonly minimapSignPoint = new THREE.Vector3();
+  private readonly minimapSignDirection = new THREE.Vector3();
+  private minimapSampleSign = 0;
+  private readonly minimapQuadScreen = Array.from({ length: 4 }, () => ({ x: 0, y: 0 }));
+  private readonly minimapScreenSamples = Array.from({ length: 9 }, () => ({ x: 0, y: 0 }));
+  private readonly minimapSamples = Array.from({ length: 9 }, () => new THREE.Vector3());
+  private readonly minimapSampleBlocked = (i: number): boolean => {
+    const sign = this.minimapSigns[this.minimapSampleSign]!;
+    const direction = this.minimapSignDirection.subVectors(this.minimapSamples[i]!, this.camera.position);
+    const distance = direction.length();
+    this.ray.set(this.camera.position, direction.divideScalar(distance));
+    this.ray.near = 0;
+    this.ray.far = distance;
+    const hit = castCamera(this.ray, this.cameraTargets, this.cameraSides)[0];
+    return !!hit && hit.distance < distance - 0.05 && hit.object !== sign.mesh;
+  };
   /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
   private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
@@ -468,7 +497,8 @@ export class Explorer {
       };
     }
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
+    // High-tier DPR 2 measured 33 ms on M2 Pro (#42); the 1.5 cap measured 16.7 ms median.
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
     this.renderer.toneMapping = THREE.AgXToneMapping;
     this.renderer.toneMappingExposure = resolveLighting().toneMappingExposure;
@@ -535,6 +565,104 @@ export class Explorer {
 
   get qualityLevel(): "low" | "high" {
     return this.quality;
+  }
+
+  /** QA-only: renderer counters around captures, including shader-program variants. */
+  goldenRenderState() {
+    return {
+      quality: this.qualityLevel, shadows: this.renderer.shadowMap.enabled,
+      shadowAutoUpdate: this.renderer.shadowMap.autoUpdate,
+      programs: this.renderer.info.programs?.length ?? 0,
+      calls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles,
+    };
+  }
+
+  /** QA-only: stop automatic frames while a capture explicitly renders its camera. */
+  holdFrames(hold: boolean): void {
+    this.renderer.setAnimationLoop(hold ? null : () => this.frame());
+  }
+
+  /** QA-only: render exactly one displayed frame while automatic frames are held. */
+  goldenFrame() {
+    const before = this.goldenRenderState(), started = performance.now();
+    this.frame();
+    return { before, after: this.goldenRenderState(), ms: performance.now() - started };
+  }
+
+  /** QA-only: reuse displayed-frame programs by probing the default framebuffer. */
+  goldenProbe(overview: boolean) {
+    const root = this.stationScene?.root;
+    if (!root) throw new Error("Station scene is not loaded");
+    const renderer = this.renderer, gl = renderer.getContext();
+    const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+    const width = Math.min(320, size.x), height = Math.min(200, size.y);
+    const shown = new Uint8Array(width * height * 4), hidden = new Uint8Array(shown.length);
+    const oldTarget = renderer.getRenderTarget(), background = this.scene.background;
+    const viewport = renderer.getViewport(new THREE.Vector4()), scissor = renderer.getScissor(new THREE.Vector4());
+    const scissorTest = renderer.getScissorTest(), autoUpdate = renderer.shadowMap.autoUpdate;
+    const visible = root.visible;
+    const renders: { label: string; before: ReturnType<Explorer["goldenRenderState"]>; after: ReturnType<Explorer["goldenRenderState"]>; ms: number }[] = [];
+    const capture = (label: string, pixels: Uint8Array) => {
+      const before = this.goldenRenderState(), started = performance.now();
+      renderer.render(this.scene, this.camera);
+      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+      const after = this.goldenRenderState(), ms = performance.now() - started;
+      renders.push({ label, before, after, ms });
+      console.log(`[golden] probe ${label}: ${JSON.stringify({ before, after, ms })}`);
+    };
+    try {
+      this.scene.background = new THREE.Color(0xff00ff);
+      renderer.shadowMap.autoUpdate = false;
+      renderer.setRenderTarget(null);
+      const ratio = renderer.getPixelRatio();
+      renderer.setViewport(0, 0, width / ratio, height / ratio);
+      renderer.setScissor(0, 0, width / ratio, height / ratio);
+      renderer.setScissorTest(true);
+      capture("shown", shown);
+      if (overview) {
+        root.visible = false;
+        capture("hidden", hidden);
+      }
+      return { ...goldenPixels(shown, overview ? hidden : null), renders };
+    } finally {
+      root.visible = visible;
+      this.scene.background = background;
+      renderer.shadowMap.autoUpdate = autoUpdate;
+      renderer.setRenderTarget(oldTarget);
+      renderer.setViewport(viewport);
+      renderer.setScissor(scissor);
+      renderer.setScissorTest(scissorTest);
+    }
+  }
+
+  /** QA-only: count actual station and surface mesh draws over three animation frames. */
+  async overviewDraws(): Promise<{ surfaceMeshes: number; surface: number; station: number }> {
+    const root = this.stationScene?.root;
+    const surface = root?.getObjectByName("surface-render-only");
+    if (!root || !surface) return { surfaceMeshes: 0, surface: 0, station: 0 };
+    const counts = { surfaceMeshes: 0, surface: 0, station: 0 };
+    const restore: (() => void)[] = [];
+    root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      let parent: THREE.Object3D | null = mesh;
+      while (parent && parent !== surface) parent = parent.parent;
+      const isSurface = parent === surface;
+      if (isSurface) counts.surfaceMeshes++;
+      const previous = mesh.onAfterRender;
+      mesh.onAfterRender = function (...args) {
+        previous.apply(this, args);
+        if (args[2] === camera) counts[isSurface ? "surface" : "station"]++;
+      };
+      restore.push(() => { mesh.onAfterRender = previous; });
+    });
+    const camera = this.camera;
+    try {
+      for (let i = 0; i < 4; i++) await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      return counts;
+    } finally {
+      for (const undo of restore) undo();
+    }
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
@@ -669,8 +797,8 @@ export class Explorer {
   }
 
   /** POI label states for automated visual checks. */
-  labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number } {
-    const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0 };
+  labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number; identityOverlap: number } {
+    const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0, identityOverlap: this.mode === "overview" ? this.identityOverlap : 0 };
     // A label dropped by the overview declutter is off screen: counted there, not as shown or faded.
     for (const l of this.poiLabels) { if (l.decluttered && l.state !== "hidden") n.decluttered++; else n[l.state]++; }
     return n;
@@ -862,13 +990,10 @@ export class Explorer {
   }
 
   /**
-   * Per walking frame, after the street backdrop: re-classify when the walker moved half a metre (or
-   * snapped), then ease exposure, fog and hemisphere tint toward the zone's preset. Once settled, writes
-   * nothing until the zone changes. Outdoors the street backdrop owns fog, so only exposure eases.
+   * Re-classify when the walker moved half a metre or snapped, before updating the street backdrop.
    */
-  private updateZone(dt: number, snap: boolean): void {
-    const fog = this.zoneFog;
-    if (!fog) return;
+  private classify(snap: boolean): void {
+    if (!this.zoneFog) return;
     if (snap || this.zoneAt.distanceToSquared(this.pos) >= ZONE_RECHECK_M2) {
       this.zoneAt.copy(this.pos);
       this.zone = classifyZone(this.pos, this.streetProbe.outdoors, this.zoneAnchors);
@@ -877,6 +1002,12 @@ export class Explorer {
         this.stationScene?.setAcousticZone?.(this.zone);
       }
     }
+  }
+
+  /** Ease the zone look after the backdrop; outdoors the backdrop owns fog. */
+  private updateZone(dt: number, snap: boolean): void {
+    const fog = this.zoneFog;
+    if (!fog) return;
     const look = ZONE_LOOK[this.zone];
     const tinted = this.zone !== "outdoor";
     const near = (a: number, b: number) => Math.abs(a - b) <= ZONE_EPS;
@@ -1015,6 +1146,7 @@ export class Explorer {
         mesh.material.dispose();
       }
       this.avatarMarker = null;
+      this.pawShadows = [];
     }
     if (this.quality === "high") {
       // A slim marker ring keeps "this is you" readable without outshining the character.
@@ -1022,7 +1154,8 @@ export class Explorer {
       const outer = this.catAvatar ? 0.33 : 0.5;
       const ring = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
       ring.position.y = 0.02;
-      this.avatarMarker = [contactShadow(this.catAvatar ? 0.28 : 0.42), ring];
+      this.pawShadows = this.catAvatar ? Array.from({ length: 4 }, () => contactShadow(0.055, 0)) : [];
+      this.avatarMarker = [this.catAvatar ? contactShadow(0.3, 0.28) : contactShadow(0.42), ring, ...this.pawShadows];
       this.avatar.add(...this.avatarMarker);
     }
   }
@@ -1144,7 +1277,7 @@ export class Explorer {
       // The crowd's distance fade must reach GTAO's depth/normal buffers too (high tier only).
       this.composer?.setDepthTwins(built?.root ?? null);
     }
-    this.interactionController = new InteractionController(built?.interactables ?? []);
+    this.interactionController.setSpecs(built?.interactables ?? []);
     this.interactionSnapshot = "";
     this.interactionVisuals = new Map();
     this.wallProps = undefined;
@@ -1273,6 +1406,20 @@ export class Explorer {
       this.seeThrough = this.cameraCut.apply(this.stationScene.root, signs);
       this.signMeshes = new Set(signs);
       this.identityBoards = collectIdentityBoards(this.stationScene.root);
+      this.stationScene.root.traverse((object) => {
+        if (!object.name.startsWith("sign-faces:") && !object.name.startsWith("sign-faces-")) return;
+        const position = (object as THREE.Mesh).geometry.getAttribute("position");
+        for (let i = 0; i + 3 < position.count; i += 4) {
+          const corners: THREE.Vector3[] = [];
+          for (let j = 0; j < 4; j++) corners.push(new THREE.Vector3().fromBufferAttribute(position, i + j).applyMatrix4(object.matrixWorld));
+          const centre = new THREE.Vector3();
+          for (const corner of corners) centre.add(corner);
+          centre.multiplyScalar(0.25);
+          const normal = new THREE.Vector3().subVectors(corners[2]!, corners[0]!).cross(new THREE.Vector3().subVectors(corners[1]!, corners[0]!)).normalize();
+          this.minimapSigns.push({ mesh: object, corners, face: { centre, normal, cameraPos: this.camera.position, viewZ: [0, 0, 0, 0], near: this.camera.near, maxDistance: 15 } });
+          this.minimapSignRects.push({ left: 0, right: 0, top: 0, bottom: 0, behind: false, distance: 0 });
+        }
+      });
       // After the cut: shadows read the materials as they will be drawn. Frustum fit runs in the next step().
       this.attachShadows(this.stationScene.root);
     }
@@ -1324,7 +1471,7 @@ export class Explorer {
 
   /** `leaving`: the explorer is switching to a different station (or disposing), so the previous station's GPU textures are freed. */
   private clearStation(leaving = false): void {
-    this.interactionController = new InteractionController([]);
+    this.interactionController.setSpecs([]);
     this.interactionSnapshot = "";
     this.interactionVisuals = undefined;
     this.wallProps = undefined;
@@ -1400,8 +1547,15 @@ export class Explorer {
     this.walls = [];
     this.seeThrough = [];
     this.signMeshes = new Set();
+    this.minimapSigns = [];
+    this.minimapSignRects = [];
+    this.minimapYieldState = { lastOverlap: -Infinity };
+    if (this.minimapEl) delete this.minimapEl.dataset.yield;
     this.identityBoards = [];
     this.identityPlaced = false;
+    this.cameraFocus = null;
+    this.cameraSignFocus = null;
+    this.guideSigns = [];
     this.identityLabelsDirty = true;
     this.cameraCut.clear();
     this.occluders = [];
@@ -1539,7 +1693,24 @@ export class Explorer {
    * phone's open route sheet) and minimap. Their page rects are measured here, on a resize or an occluder
    * change — never per frame.
    */
+  /** Canvas-relative rects of the occluders freeRect measures (#1074 trace); null when not rendered. */
+  private occluderRects(): Record<string, { x: number; y: number; w: number; h: number } | null> {
+    // Headless fixtures build the Explorer without a host element.
+    const host = this.host?.getBoundingClientRect();
+    if (!host) return {};
+    const rect = (el: HTMLElement | null) => {
+      if (!el || el.getClientRects().length === 0) return null;
+      const r = el.getBoundingClientRect();
+      return { x: Math.round(r.left - host.left), y: Math.round(r.top - host.top), w: Math.round(r.width), h: Math.round(r.height) };
+    };
+    return { panel: rect(this.panelEl), minimap: rect(this.minimapEl), sheet: rect(this.sheetEl), credit: rect(this.creditEl) };
+  }
+
   private freeRect(): ViewRect {
+    return this.freeRects()[0]!;
+  }
+
+  private freeRects(): ViewRect[] {
     const { w, h } = this.viewSize;
     const el = this.panelEl;
     // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
@@ -1550,7 +1721,7 @@ export class Explorer {
     const corner = cornerRect && host ? { x: cornerRect.left - host.left, y: cornerRect.top - host.top, w: cornerRect.width, h: cornerRect.height } : null;
     // Both are full-width bands along the same canvas bottom: the taller one sets where the free area ends.
     const bottom = Math.max(this.creditInset(host), this.sheetInset(host));
-    return freeArea({ w, h }, panel, bottom, corner);
+    return freeAreas({ w, h }, panel, bottom, corner);
   }
 
   /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
@@ -1615,13 +1786,17 @@ export class Explorer {
     this.orbit.enabled = mode === "overview";
     this.avatar.visible = mode !== "overview" && !this.firstPerson;
     this.input.enabled = mode !== "overview";
-    if (mode === "overview") this.orbit.target.copy(this.pos);
+    if (mode === "overview") { this.orbit.target.copy(this.pos); this.setCameraFocus(null); }
     const xray = this.routeGroup.getObjectByName("route-xray");
     if (xray) xray.visible = mode === "overview";
     const walkRibbon = this.routeGroup.getObjectByName("route-ribbon");
     if (walkRibbon) walkRibbon.visible = mode !== "overview";
     const overviewRibbon = this.routeGroup.getObjectByName("route-ribbon-overview");
     if (overviewRibbon) overviewRibbon.visible = mode === "overview";
+    const routeGlow = this.routeGroup.getObjectByName("route-glow");
+    if (routeGlow) routeGlow.visible = mode === "overview";
+    const routeGlowOccluded = this.routeGroup.getObjectByName("route-glow-occluded");
+    if (routeGlowOccluded) routeGlowOccluded.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -1651,7 +1826,13 @@ export class Explorer {
     const head = this.followHead();
     // Signs stay transparent to this placement probe, including solid sign materials.
     const signs = new Set(this.stationScene ? seeThroughMeshes(this.stationScene.root) : []);
-    const boards = this.identityBoards.filter((b) => inScene(b.object, this.scene) && objectVisible(b.object)).map((board) => {
+    let notInScene = 0, notVisible = 0;
+    const boardRecords: { id: string; distanceM: number; blocked: "range" | "ray" | null; reason: string | null }[] = [];
+    const boards = this.identityBoards.filter((b) => {
+      if (!inScene(b.object, this.scene)) { notInScene++; return false; }
+      if (!objectVisible(b.object)) { notVisible++; return false; }
+      return true;
+    }).map((board) => {
       board.object.updateWorldMatrix(true, false);
       const centre = identityNameCentre(board);
       const targets = this.cameraTargets.filter((o) => !signs.has(o) && !withinObject(o, board.object));
@@ -1662,12 +1843,20 @@ export class Explorer {
         this.ray.far = Math.max(0, direction.length() - 0.05);
         return castAll(this.ray, targets).length === 0;
       };
-      return { centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: head.distanceTo(centre) > IDENTITY_RANGE_M || !visible(head, centre), visible };
+      const distance = head.distanceTo(centre);
+      const blocked = distance > IDENTITY_RANGE_M ? "range" : !visible(head, centre) ? "ray" : null;
+      const id = board.object.name || `board-${this.identityBoards.indexOf(board)}`;
+      boardRecords.push({ id, distanceM: Math.round(distance * 100) / 100, blocked, reason: null });
+      return { id, centre, front: identityFront(board), nameCorners: identityNameCorners(board), blocked: blocked !== null, visible };
     });
-    if (boards.length === 0) return false;
+    if (boards.length === 0) {
+      console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: [], framed: false }));
+      return false;
+    }
     const { w, h } = this.viewSize;
-    const free = this.freeRect();
-    const ndcFree = { x0: 2 * free.x / w - 1, x1: 2 * (free.x + free.w) / w - 1, y0: 1 - 2 * (free.y + free.h) / h, y1: 1 - 2 * free.y / h };
+    const rects = this.freeRects(), free = rects[0]!;
+    const toNdc = (r: ViewRect) => ({ x0: 2 * r.x / w - 1, x1: 2 * (r.x + r.w) / w - 1, y0: 1 - 2 * (r.y + r.h) / h, y1: 1 - 2 * r.y / h });
+    let ndcFree = toNdc(free), tried = 0;
     // The cat's low boom meets the floor on a look-up, so only its framing checks the walker and the settled boom.
     let rig: FramingRig | undefined;
     if (this.catAvatar) {
@@ -1695,7 +1884,18 @@ export class Explorer {
         },
       };
     }
-    const look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndcFree, rig);
+    let look: ReturnType<typeof identityFraming> = null;
+    if (boards.length) for (const rect of rects) {
+      const ndc = toNdc(rect);
+      tried++;
+      for (const record of boardRecords) record.reason = null;
+      look = identityFraming(head, this.yaw, this.pitch, boards, this.camera.aspect, FOV.follow, guideHeading, ndc, rig, (board, reason) => {
+        boardRecords[boards.indexOf(board as typeof boards[number])]!.reason = reason;
+      });
+      if (look) { ndcFree = ndc; break; }
+    }
+    const round = (n: number) => Math.round(n * 100) / 100;
+    console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: boardRecords, aspect: round(this.camera.aspect), ndcFree: { x0: round(ndcFree.x0), x1: round(ndcFree.x1), y0: round(ndcFree.y0), y1: round(ndcFree.y1) }, tried, catRig: !!this.catAvatar, framed: !!look, view: { w, h }, free, occluders: this.occluderRects() }));
     if (!look) return false;
     this.yaw = look.yaw;
     this.pitch = look.pitch;
@@ -1730,6 +1930,19 @@ export class Explorer {
     if (!n) return false;
     const z = nodeDisplayZ(n, bundle.floors.find((f) => f.id === n.floorId)).z;
     return this.walkFrom({ x: n.position.x, y: n.position.y, z }, headingDeg);
+  }
+
+  /** QA-only: place the walker and snap the follow camera to an absolute heading. */
+  setView(bundle: StationBundle, nodeId: string, headingDeg: number): { placed: boolean; placeMs: number; turnMs: number } {
+    const start = performance.now();
+    const placed = this.walkFromNode(bundle, nodeId, headingDeg);
+    const afterPlace = performance.now();
+    if (placed) {
+      this.yaw = -THREE.MathUtils.degToRad(headingDeg);
+      this.bodyYaw = this.yaw;
+      this.placeCamera(0, true);
+    }
+    return { placed, placeMs: afterPlace - start, turnMs: performance.now() - afterPlace };
   }
 
   private groundAt(x: number, fromY: number, z: number, maxDrop: number): number | null {
@@ -1899,17 +2112,33 @@ export class Explorer {
     this.clearRoute();
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
+    const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
+    const ribbonPoints = [pts[0]!];
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1]!, b = pts[i]!;
+      const segment = routeSegmentProfile(a, b, (p) => {
+        this.ray.set(p.clone().add(new THREE.Vector3(0, 0.6, 0)), new THREE.Vector3(0, -1, 0));
+        this.ray.far = 1.2;
+        const hit = castAll(this.ray, routeGround).find((h) => {
+          const material = (h.object as THREE.Mesh).material;
+          return (Array.isArray(material) ? material[h.face?.materialIndex ?? 0] : material)?.visible !== false;
+        });
+        return hit?.point.y;
+      });
+      ribbonPoints.pop();
+      ribbonPoints.push(...segment);
+    }
     this.routeTexture = chevronTexture();
     this.routeTexture.repeat.set(1 / ROUTE_CHEVRON_PITCH_OVERVIEW, 1);
     // Walk and guide draw a narrow, faint band that fades out under the camera; the overview keeps today's wide, opaque ribbon.
     const walkMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, opacity: 0.45, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     routeNearFade(walkMat);
-    const ribbon = new THREE.Mesh(ribbonGeometry(pts, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
+    const ribbon = new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
     ribbon.renderOrder = 5;
     ribbon.name = "route-ribbon";
     ribbon.visible = this.mode !== "overview";
     const overviewMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
-    const overviewRibbon = new THREE.Mesh(ribbonGeometry(pts, ROUTE_RIBBON_WIDTH_OVERVIEW, 0.07), overviewMat);
+    const overviewRibbon = new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_OVERVIEW, 0.07), overviewMat);
     overviewRibbon.renderOrder = 5;
     overviewRibbon.name = "route-ribbon-overview";
     overviewRibbon.visible = this.mode === "overview";
@@ -1919,6 +2148,9 @@ export class Explorer {
     this.trackOverlay(this.routeLines.occluded);
     this.routeLines.setXray(this.mode === "overview");
     const glow = this.routeLines.lines(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0.12, 0)))), 6);
+    glow[0]!.name = "route-glow-occluded";
+    glow[1]!.name = "route-glow";
+    for (const line of glow) line.visible = this.mode === "overview";
     // Symbolic (unknown) heights are drawn dashed above the ribbon so they read as approximate.
     const symbolic = polyline.some((p) => !p.zKnown);
     // X-ray copy so the route stays readable through ceilings/slabs in overview.
@@ -1930,7 +2162,6 @@ export class Explorer {
     this.routeGroup.add(ribbon, overviewRibbon, ...glow, xray);
     // Stretches with no scene floor under them (the graph runs through space the scene doesn't model):
     // an always-on-top dashed amber band, so they read as "not modelled" rather than as a route in the void.
-    const routeGround = this.stationScene ? this.sceneGroundTargets : this.groundTargets;
     const gaps = routeGround.length === 0 ? [] : unmodelledRuns(polyline, floorProbe(this.ray, routeGround));
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
@@ -2175,6 +2406,8 @@ export class Explorer {
       }
     }
     regions.sort((a, b) => a.y0 - b.y0);
+    this.identityRegions = regions;
+    this.declutterDirty = true;
     // Measure unmeasured labels in one read-only batch before changing any chip's translate.
     if (regions.length) for (const l of this.poiLabels) {
       const el = l.obj.element;
@@ -2186,7 +2419,7 @@ export class Explorer {
       const el = l.obj.element;
       if (!regions.length) {
         if (l.identityHidden) l.identityHidden = false;
-        if (l.identityOffsetY) { l.identityOffsetY = 0; el.style.translate = ""; }
+        if (l.identityOffsetY) { l.identityOffsetY = 0; el.style.translate = ""; this.declutterDirty = true; }
         continue;
       }
       if (!l.size && l.measureTries++ < MEASURE_TRIES) this.identityLabelsDirty = true;
@@ -2198,6 +2431,7 @@ export class Explorer {
       if (l.identityHidden !== result.hidden) l.identityHidden = result.hidden;
       if (l.identityOffsetY !== result.offsetY) {
         l.identityOffsetY = result.offsetY;
+        this.declutterDirty = true;
         el.style.translate = result.offsetY ? `0 ${result.offsetY}px` : "";
       }
     }
@@ -2213,8 +2447,12 @@ export class Explorer {
     const labels = this.poiLabels;
     if (this.mode !== "overview") {
       // Walk and guide never declutter; undo an earlier overview pass once.
-      if (this.declutterActive) for (const l of labels) l.decluttered = false;
+      if (this.declutterActive) for (const l of labels) {
+        l.decluttered = false;
+        l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
+      }
       this.declutterActive = false;
+      this.identityOverlap = 0;
       this.declutterDirty = true;
       return;
     }
@@ -2232,12 +2470,14 @@ export class Explorer {
     const { w: vw, h: vh } = this.viewSize;
     const items: DeclutterItem[] = [];
     const byId = new Map<string, PoiLabel>();
-    // The credit footer and the disclaimer badge are never text under a label (#838). Blocked chips stay out of
-    // the declutter itself, so the chip they would have beaten still gets its place.
-    const footers = [this.creditEl, this.legendEl]
+    // Keep chips off the top bar (#1072), credit footer and disclaimer badge (#838).
+    const host = this.host.getBoundingClientRect();
+    const blocked = [this.host.parentElement?.querySelector<HTMLElement>(".topbar"), this.creditEl, this.legendEl]
       .filter((el): el is HTMLElement => el != null && el.getClientRects().length > 0)
-      .map((el) => el.getBoundingClientRect());
-    const blocked = new Set<string>();
+      .map((el) => {
+        const q = el.getBoundingClientRect();
+        return { x0: q.left - host.left, y0: q.top - host.top, x1: q.right - host.left, y1: q.bottom - host.top };
+      });
     const p = new THREE.Vector3();
     for (const l of labels) {
       l.decluttered = false;
@@ -2246,14 +2486,24 @@ export class Explorer {
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
       const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
-      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
-      if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
+      let x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
+      l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
+      const placement = placeOverviewChip({ x, y, ...size }, { endpoint: l.klass === LABEL_CLASS.endpoint, selected: l.selected, vw, vh, identityRegions: this.identityRegions, anchorY: y - l.identityOffsetY });
+      if (placement.hidden) { l.decluttered = true; continue; }
+      const { dx, dy } = placement;
+      x += dx; y += dy;
+      l.obj.element.style.translate = `${dx}px ${l.identityOffsetY + dy}px`;
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
-      if (footers.some((q) => x - size.w / 2 < q.right && x + size.w / 2 > q.left && y - size.h / 2 < q.bottom && y + size.h / 2 > q.top)) blocked.add(l.poiId);
     }
-    const keep = declutter(items.filter((it) => !blocked.has(it.id)));
+    const keep = declutter(items, { blocked });
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
+    this.identityOverlap = items.filter((item) => {
+      const label = byId.get(item.id)!;
+      if (!keep.has(item.id) || label.selected || label.state === "hidden") return false;
+      const rect = { x0: item.x - item.w / 2, x1: item.x + item.w / 2, y0: item.y - item.h / 2, y1: item.y + item.h / 2 };
+      return this.identityRegions.some((region) => intersectsRect(rect, region));
+    }).length;
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
     // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
     for (const id of revealedUnmeasured(items, keep)) {
@@ -2365,13 +2615,18 @@ export class Explorer {
    * for opening hours): it never moves past one before being resumed, including several at one spot.
    * `paceSpans` cap speed and carry connector modes for the stair lens (see guidePace.ts).
    */
-  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = []): void {
+  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = []): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
     this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
     this.guideAllStops = stops.slice();
+    this.guideSigns = routeNodes.flatMap((id, index) => {
+      const sign = this.stationScene?.root.getObjectByName(`sign:${id}`);
+      const pointIndex = index === 0 ? 0 : polyline.findLastIndex((point) => point.stepIndex === index - 1);
+      return sign && pointIndex >= 0 ? [{ s: cum[pointIndex]!, anchor: Object.assign(sign.getWorldPosition(new THREE.Vector3()), { halfWidthX: sign.userData.signHalfWidthX as number, halfWidthZ: sign.userData.signHalfWidthZ as number, halfHeight: sign.userData.signHalfHeight as number }) }] : [];
+    });
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
@@ -2591,6 +2846,66 @@ export class Explorer {
     this.labels.render(this.scene, this.camera);
   }
 
+  private updateMinimapYield(t: number): void {
+    const map = this.minimapEl;
+    if (!map || this.mode === "overview" || map.hidden || map.getClientRects().length === 0) return;
+    const mapRect = map.getBoundingClientRect();
+    const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    for (let i = 0; i < this.minimapSigns.length; i++) {
+      const { mesh, corners, face } = this.minimapSigns[i]!;
+      const rect = this.minimapSignRects[i]!;
+      rect.behind = true;
+      let visible = true;
+      for (let object: THREE.Object3D | null = mesh; object; object = object.parent) {
+        if (!object.visible) { visible = false; break; }
+      }
+      if (!visible) continue;
+      const material = (mesh as THREE.Mesh).material;
+      let fullyCut = true;
+      if (Array.isArray(material)) {
+        for (const m of material) if (!this.cameraCut.cuts(m)) { fullyCut = false; break; }
+      } else fullyCut = this.cameraCut.cuts(material);
+      const viewZ = face.viewZ as number[];
+      for (let j = 0; j < 4; j++) {
+        const point = this.minimapSignPoint.copy(corners[j]!).applyMatrix4(this.camera.matrixWorldInverse);
+        viewZ[j] = point.z;
+        if (fullyCut && !insideCameraCut(point, this.cameraCut.uniforms.gtekiCutEnd.value, this.cameraCut.uniforms.gtekiCutRadii.value)) fullyCut = false;
+      }
+      if (fullyCut) continue;
+      face.near = this.camera.near;
+      if (!faceEligible(face)) continue;
+      rect.distance = this.minimapSignDirection.subVectors(face.centre as THREE.Vector3, this.camera.position).length();
+      rect.left = rect.top = Infinity;
+      rect.right = rect.bottom = -Infinity;
+      for (let j = 0; j < 4; j++) {
+        const point = this.minimapSignPoint.copy(corners[j]!).project(this.camera);
+        const x = canvasRect.left + (point.x + 1) * canvasRect.width / 2;
+        const y = canvasRect.top + (1 - point.y) * canvasRect.height / 2;
+        const screen = this.minimapQuadScreen[j < 2 ? j : 5 - j]!;
+        screen.x = x; screen.y = y;
+        rect.left = Math.min(rect.left, x); rect.right = Math.max(rect.right, x);
+        rect.top = Math.min(rect.top, y); rect.bottom = Math.max(rect.bottom, y);
+      }
+      if (rect.left >= mapRect.right || rect.right <= mapRect.left || rect.top >= mapRect.bottom || rect.bottom <= mapRect.top) continue;
+      // Sample the clipped sign over the minimap, mapped back onto the sign face.
+      const n = overlapSamples(this.minimapQuadScreen, mapRect, this.minimapScreenSamples);
+      let count = 0;
+      for (let j = 0; j < n; j++) {
+        const s = this.minimapScreenSamples[j]!;
+        const dir = this.minimapSignDirection.set((s.x - canvasRect.left) / canvasRect.width * 2 - 1, 1 - (s.y - canvasRect.top) / canvasRect.height * 2, 0.5)
+          .unproject(this.camera).sub(this.camera.position);
+        if (rayOnQuad(this.camera.position, dir, corners[0]!, corners[1]!, corners[2]!, this.minimapSamples[count]!)) count++;
+      }
+      const oldNear = this.ray.near, oldFar = this.ray.far;
+      this.minimapSampleSign = i;
+      const clear = anySampleClear(count, this.minimapSampleBlocked);
+      this.ray.near = oldNear; this.ray.far = oldFar;
+      if (clear) rect.behind = false;
+    }
+    if (minimapYield(this.minimapSignRects, mapRect, t, this.minimapYieldState)) map.dataset.yield = "sign";
+    else delete map.dataset.yield;
+  }
+
   private step(dt: number, t: number): void {
     if (this.routeTexture && !this.reducedMotion) this.routeTexture.offset.x -= dt * 0.9;
     for (const g of this.routeGroup.children) {
@@ -2599,6 +2914,19 @@ export class Explorer {
     }
     // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
     this.stationScene?.update?.(dt, t, this.camera);
+    // Overview looks down on the underground model: Shinjuku's street surface layer (shown from any camera at
+    // or above street level) would cover it with buildings and haze. The layer re-checks its own visibility on
+    // every render pass, so veto it through its suppressed flag rather than setting visible once.
+    if (this.stationScene) {
+      if (this.surfaceLayer?.scene !== this.stationScene) {
+        this.surfaceLayer = { scene: this.stationScene, obj: this.stationScene.root.getObjectByName("surface-render-only") };
+      }
+      const surface = this.surfaceLayer.obj;
+      if (surface) {
+        surface.userData.suppressed = this.mode === "overview";
+        if (surface.userData.suppressed) surface.visible = false;
+      }
+    }
 
     if (this.mode === "walk") this.stepWalk(dt);
     else if (this.mode === "guide") this.stepGuide(dt);
@@ -2615,13 +2943,15 @@ export class Explorer {
       this.zoneSnap = false;
       if (snap) this.streetProbe.at.set(Infinity, 0, 0);
       this.updateStreetProbe(dt);
-      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level, snap);
+      this.classify(snap || zoneSnap);
+      this.street.update(this.scene, this.camera, this.pos, backdropOutdoors(this.streetProbe.outdoors, this.zone), dt, this.streetProbe.level, snap);
       this.updateZone(dt, snap || zoneSnap);
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
     this.camera.updateMatrixWorld();
     const cutY = this.catAvatar && !this.firstPerson ? FOLLOW_CAT.pivotY : EYE;
     this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, cutY, 0)), this.mode !== "overview");
+    this.updateMinimapYield(t);
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw, this.catAvatar ? CAT_TURN_RATE : undefined);
     const previousYaw = this.bodyYaw;
     this.bodyYaw = motion.yaw;
@@ -2642,6 +2972,9 @@ export class Explorer {
     if (state.phase === "active" && state.nearId) {
       const target = this.interactionVisuals?.get(state.nearId);
       if (target) this.avatar.rotation.y = Math.atan2(this.pos.x - target.position.x, this.pos.z - target.position.z);
+    }
+    if (this.pawShadows.length && this.avatarRig) {
+      placePawShadows(this.pawShadows, this.avatarRig.root, this.avatar, this.pos.y);
     }
     this.updateShadows();
   }
@@ -2841,10 +3174,21 @@ export class Explorer {
     this.camera.updateProjectionMatrix();
   }
 
+  private setCameraFocus(p: THREE.Vector3 | null, sign: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null): void {
+    const changed = (a: THREE.Vector3 | null | undefined, b: THREE.Vector3 | null) =>
+      a == null || b == null ? (a ?? null) !== b : a.distanceToSquared(b) > 0.05 * 0.05;
+    if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign) return;
+    this.cameraFocus = p ? (this.cameraFocus ?? new THREE.Vector3()).copy(p) : null;
+    this.cameraSignFocus = sign;
+    this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus);
+  }
+
   private placeCamera(dt: number, snap = false): void {
     if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
     if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
     if (this.qaCamera.distance !== undefined) this.camDistance = this.qaCamera.distance;
+    // #1014: a teleport snaps the pose but no longer the lens; only a pinned QA camera still snaps it.
+    const lensSnap = this.qaCameraSnap;
     snap ||= this.qaCameraSnap;
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
@@ -2862,7 +3206,8 @@ export class Explorer {
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
-      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+      this.setCameraFocus(null);
+      this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
@@ -2901,7 +3246,7 @@ export class Explorer {
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
-    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
+    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), lensSnap, dt);
     // Use the last frame's actual boom, measured against its own pivot. Measuring the old
     // camera against the new pivot would rate-limit the walker's movement as contraction.
     const previousDistance = this.boomActual;
@@ -2920,6 +3265,10 @@ export class Explorer {
     }
     if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
     this.camera.lookAt(pose.target);
+    const nextSign = this.mode === "guide" && this.guide ? this.guideSigns?.find((sign) => sign.s >= this.guide!.s) : undefined;
+    const forward = this.camera.getWorldDirection(new THREE.Vector3());
+    const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
+    this.setCameraFocus(pose.target, sign);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
     this.applyAvatarFade(dt, snap);

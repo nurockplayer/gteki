@@ -79,7 +79,10 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   const dome = root.getObjectByName("surface-sky")!;
   dome.onBeforeRender = (_renderer, _scene, camera) => { dome.position.copy(camera.position); dome.updateMatrixWorld(); };
   let disposed = false, viewer: XYZ | null = null;
-  const update = (_dt: number, _t: number) => { root.visible = viewer !== null && surfaceVisibleIn(visibility, viewer); };
+  // A host can veto the layer with root.userData.suppressed (the explorer's overview looks down on the
+  // underground model, which the street would cover); every re-evaluation, including the per-render
+  // setViewer from the viewer probe, honours it.
+  const update = (_dt: number, _t: number) => { root.visible = root.userData.suppressed !== true && viewer !== null && surfaceVisibleIn(visibility, viewer); };
   return { root, update, setViewer(p: XYZ) { viewer = { ...p }; update(0, 0); }, dispose() { if (disposed) return; disposed = true; for (const r of resources) r.dispose(); resources.clear(); root.clear(); } };
 }
 function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {

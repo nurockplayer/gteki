@@ -21,7 +21,7 @@ function runtime(boardZ = -10) {
   const e = Object.create(Explorer.prototype) as any;
   Object.assign(e, {
     interactionController: new InteractionController([]), interactionSnapshot: "",
-    scene, stationScene: { root }, identityBoards: collectIdentityBoards(root), identityPlaced: false,
+    scene, stationScene: { root }, identityRegions: [], identityOverlap: 0, identityBoards: collectIdentityBoards(root), identityPlaced: false,
     greybox: null, greyboxOpenings: [], greyboxSegments: [], greyboxLegendVisible: false, sceneGroundTargets: [],
     pos: new THREE.Vector3(), lastAvatarPos: new THREE.Vector3(), yaw: 0, pitch: -0.12, bodyYaw: 0,
     mode: "overview", camera: new THREE.PerspectiveCamera(50, 9 / 19.5, 0.05, 100),

@@ -31,4 +31,17 @@ describe("InteractionController", () => {
     expect(controller.start().step).toBe("choose");
     expect(controller.update(1, input({ x: 10, y: 0, z: 0 }))).toMatchObject({ phase: "done", items: ["can"] });
   });
+
+  it("keeps held items and once-only records across a station switch and back", () => {
+    const controller = new InteractionController(fixtures);
+    controller.update(0, input());
+    controller.start();
+    controller.update(2, input());
+    controller.setSpecs([]);
+    expect(controller.update(0, input())).toMatchObject({ nearId: null, phase: "idle", items: ["bag"] });
+    controller.setSpecs(fixtures);
+    expect(controller.update(0, input())).toMatchObject({ nearId: "shop", unavailable: "already-done", items: ["bag"] });
+    expect(controller.start().phase).toBe("idle");
+    expect(controller.update(2, input()).items).toEqual(["bag"]);
+  });
 });

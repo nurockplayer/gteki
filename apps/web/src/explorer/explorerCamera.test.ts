@@ -255,6 +255,25 @@ describe("Explorer placement snapping", () => {
     expect(state.boomActual).toBeCloseTo(FOLLOW.defaultDistance, 9);
   });
 
+  it("eases the lens through a teleport placement and snaps it only for a pinned QA camera", () => {
+    const state = cameraStand();
+    state.setFov.mockImplementation((...args: unknown[]) => {
+      (Explorer.prototype as unknown as { setFov(target: number, snap: boolean, dt: number): void })
+        .setFov.apply(state, args as [number, boolean, number]);
+    });
+    state.camera.fov = 60; // Start guide left the overview lens.
+    place(state, true);
+    expect(state.camera.fov).toBeGreaterThan(50);
+    expect(state.camera.fov).toBeLessThan(60);
+    for (let frame = 0; frame < 120; frame++) place(state);
+    expect(state.camera.fov).toBe(50);
+    state.camera.fov = 60;
+    qa(state).setCamera({ yaw: 0 });
+    place(state);
+    expect(state.camera.fov).toBe(50);
+    qa(state).setCamera(null);
+  });
+
   it("marks guide starts, seeks and restarts for the same solved camera snap", () => {
     const state = Object.assign(cameraStand(), { mode: "guide", lastAvatarPos: new THREE.Vector3(), teleported: false, bodyYaw: 0 });
     const route = [0, 2].map((x, i) => ({ x, y: 0, z: 0, zKnown: true, stepIndex: i, floorId: "b1" }));

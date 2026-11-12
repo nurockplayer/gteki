@@ -137,7 +137,9 @@ describe("the shipped mobile kit bundle dresses the escalators", () => {
       for (const group of near) for (const child of group.visible ? group.children : []) {
         const mesh = child as THREE.Mesh;
         if (!mesh.isMesh) continue;
-        triangles += (mesh.geometry.index?.count ?? mesh.geometry.attributes.position.count) / 3;
+        const position = mesh.geometry.attributes.position;
+        if (!position) throw new Error(`${child.name}: mesh geometry has no position attribute`);
+        triangles += (mesh.geometry.index?.count ?? position.count) / 3;
         const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
         draws += materials.reduce((n, m) => n + (m.transparent && m.side === THREE.DoubleSide && !m.forceSinglePass ? 2 : 1), 0);
       }

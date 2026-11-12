@@ -4,6 +4,8 @@ import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
+import { castAll } from "../explorer/raycast.ts";
+import { prepareRayTrees } from "../explorer/meshBvh.ts";
 import { avatarGlbUrl, avatarKind } from "../explorer/avatarSelection.ts";
 import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
@@ -19,7 +21,7 @@ import { categoriesIn } from "./categoryFilter.ts";
 import { barrierFreeResults } from "./barrierFree.ts";
 import { arrivalPrecision, merchantCardEl, merchantCardModel } from "./merchantCard.ts";
 import { stationClock } from "../stationClock.ts";
-import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, overrideCredits, sourceCredit } from "../credits.ts";
+import { assetDerivationPresentation, dataFileCredits, dataFileRowText, factsOnlyCredit, MODEL_CREDITS, overrideCredits, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
@@ -37,6 +39,7 @@ import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
+import { shortStationLabel } from "./shortStationLabel.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -121,6 +124,7 @@ export class App {
     profile: el("div", "chips profile"),
     sheet: el("section", "sheet"),
     hud: el("div", "hud"),
+    topbar: el("header", "topbar"),
     minimap: new Minimap(() => this.explorer.getPose()),
     coverage: el("dialog", "coverage"),
     toast: el("div", "toast"),
@@ -180,6 +184,10 @@ export class App {
     if (typeof ResizeObserver !== "undefined") {
       new ResizeObserver(() => this.root.style.setProperty("--hud-height", `${this.ui.hud.offsetHeight}px`)).observe(this.ui.hud);
     }
+    const updateTopbarBottom = () => this.root.style.setProperty("--topbar-bottom", `${Math.round(this.ui.topbar.getBoundingClientRect().bottom)}px`);
+    updateTopbarBottom();
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(updateTopbarBottom).observe(this.ui.topbar);
+    window.addEventListener("resize", updateTopbarBottom);
     // On a phone the open route sheet is a bottom occluder of the same kind (#385).
     this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
@@ -191,6 +199,9 @@ export class App {
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
+    if (typeof matchMedia === "function") {
+      matchMedia("(max-width: 600px)").addEventListener("change", () => this.renderStationSelect());
+    }
     const wanted = params.get("station");
     const entry = this.s.entries.find((e) => e.key === wanted) ?? this.s.entries.find((e) => !e.synthetic) ?? this.s.entries[0]!;
     await this.openStation(entry, params.get("from"), params.get("to"));
@@ -202,7 +213,7 @@ export class App {
     this.root.innerHTML = "";
     this.root.className = "app";
     const viewport = el("div", "viewport");
-    const top = el("header", "topbar");
+    const top = this.ui.topbar;
     const brand = el("div", "brand");
     brand.append(el("span", "logo", "GTEki"), el("span", "tagline", this.t.tagline));
     if (PRIVATE_BUILD) {
@@ -217,6 +228,7 @@ export class App {
     });
     this.ui.langBtn.addEventListener("click", () => {
       this.s.lang = this.s.lang === "ja" ? "en" : "ja";
+      this.renderStationSelect();
       this.ui.minimap.setLang(this.s.lang);
       this.layoutText();
       this.interactionPrompt.refresh();
@@ -352,12 +364,18 @@ export class App {
   // ---- Station ---------------------------------------------------------------------
 
   private renderStationSelect(): void {
+    const selected = this.ui.stationSelect.value;
+    const isPhone = typeof matchMedia === "function" && matchMedia("(max-width: 600px)").matches;
     this.ui.stationSelect.innerHTML = "";
     for (const e of this.s.entries) {
-      const o = el("option", undefined, e.synthetic ? `⚠ ${e.label}` : e.label);
+      const fullLabel = e.synthetic ? `⚠ ${e.label}` : e.label;
+      const shortLabel = shortStationLabel(e.label, this.s.lang);
+      const o = el("option", undefined, e.synthetic ? `⚠ ${isPhone ? shortLabel : e.label}` : isPhone ? shortLabel : e.label);
       o.value = e.key;
+      o.title = fullLabel;
       this.ui.stationSelect.append(o);
     }
+    this.ui.stationSelect.value = selected;
   }
 
   private openGeneration = 0;
@@ -1485,7 +1503,7 @@ export class App {
     this.jumpPin = null;
     this.arrived = false;
     this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
-    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : []);
   }
 
   /** Per guide run: where each instruction starts (m), the first one the guide shows, and how far the guide has got. */
@@ -1708,6 +1726,25 @@ export class App {
         src.append(li);
       }
       d.append(src);
+      // Third-party 3D model credits (#854): the upstream credit line verbatim with source, author and licence links.
+      d.append(el("h3", undefined, this.t.models3d));
+      const models = el("ul");
+      const modelLink = (label: string, href: string | null): HTMLElement => {
+        if (!href) return el("span", undefined, label);
+        const a = el("a", undefined, label);
+        a.href = href;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        return a;
+      };
+      for (const m of MODEL_CREDITS) {
+        const li = el("li", undefined, m.attribution);
+        li.append(el("span", "muted", " · "), modelLink(m.source.label, m.source.href), el("span", "muted", " / "));
+        li.append(modelLink(m.author.label, m.author.href), el("span", "muted", " / "), modelLink(m.license.label, m.license.href));
+        li.append(el("span", "muted", ` · ${m.modification[this.s.lang] ?? m.modification.en}`));
+        models.append(li);
+      }
+      d.append(models);
       // Asset modification notices (e.g. "Blender build from PLATEAU …") disclose how sources were processed.
       const derived = (b.assets ?? []).filter((a) => a.derivation);
       if (derived.length) {
@@ -1780,6 +1817,7 @@ export class App {
   private exposeTestHooks(): void {
     (window as unknown as { __gteki: unknown }).__gteki = {
       version: "gteki.web/0.1",
+      scanProbe: () => ({ explorer: this.explorer, castAll, prepareRayTrees }),
       stations: () => this.s.entries.map((e) => ({ key: e.key, label: e.label, synthetic: e.synthetic })),
       openStation: (key: string) => { const e = this.s.entries.find((x) => x.key === key); return e ? this.openStation(e) : Promise.reject(new Error(`no station ${key}`)); },
       setOrigin: (poiId: string) => { const p = this.s.loaded?.bundle.pois.find((x) => x.id === poiId); if (p) this.setOrigin({ kind: "poi", poi: p }); return Boolean(p); },
@@ -1803,6 +1841,14 @@ export class App {
       setCamera: (patch: { yaw?: number; pitch?: number; distance?: number } | null) => this.explorer.setCamera(patch),
       holdAvatarFade: (value: number | null) => this.explorer.holdAvatarFade(value),
       sceneInfo: () => this.explorer.sceneInfo(),
+      overviewDraws: () => this.explorer.overviewDraws(),
+      goldenRenderState: () => this.explorer.goldenRenderState(),
+      holdFrames: (hold: boolean) => this.explorer.holdFrames(hold),
+      goldenFrame: () => this.explorer.goldenFrame(),
+      goldenProbe: (overview: boolean) => this.explorer.goldenProbe(overview),
+      setView: ({ node, headingDeg }: { node: string; headingDeg: number }) => this.s.loaded
+        ? this.explorer.setView(this.s.loaded.bundle, node, headingDeg)
+        : { placed: false, placeMs: 0, turnMs: 0 },
       layer: (name: string, visible?: boolean) => this.explorer.layer(name, visible),
       portalView: () => this.explorer.portalView(),
       routeGroundCheck: () => this.explorer.routeGroundCheck(this.s.polyline, this.s.route?.ok ? this.s.route.steps : [], guideStops(this.s.polyline, this.s.instructions).map(({ point }) => polylineLengthM(this.s.polyline.slice(0, point + 1)))),

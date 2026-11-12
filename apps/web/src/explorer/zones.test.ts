@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Floor, Node } from "@gteki/schema";
-import { classifyZone, zoneAnchors, type ZoneAnchor } from "./zones.ts";
+import { backdropOutdoors, classifyZone, zoneAnchors, type ZoneAnchor } from "./zones.ts";
 
 const at = (x: number, y: number, z: number): { x: number; y: number; z: number } => ({ x, y, z });
 const platform = (x: number, y: number, z: number): ZoneAnchor => ({ kind: "platform", x, y, z });
@@ -72,4 +72,8 @@ describe("zoneAnchors", () => {
     );
     expect(anchors).toEqual([]);
   });
+});
+
+it("activates the backdrop at a covered outdoor exit", () => {
+  expect(backdropOutdoors(false, "outdoor")).toBe(true);
 });

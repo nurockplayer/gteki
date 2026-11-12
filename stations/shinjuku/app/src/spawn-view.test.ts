@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { CAT_ARRIVAL, catArrivalRise } from "./spawn-view.ts";
 
@@ -31,6 +32,28 @@ describe("catArrivalRise", () => {
     expect(extra).toBeGreaterThan(0.1);
     expect(ndcY(board, extra)).toBeCloseTo(CAT_ARRIVAL.boardNdc, 6);
     expect(ndcY(feet, extra)).toBeGreaterThan(-CAT_ARRIVAL.feetNdc);
+  });
+
+  it("frames an off-axis board under a real perspective camera (#1019)", () => {
+    const toRenderer = (p: { x: number; y: number; z: number }) => new THREE.Vector3(p.x, p.z, -p.y);
+    const project = (p: { x: number; y: number; z: number }, extra: number) => {
+      const camera = new THREE.PerspectiveCamera(fovDeg, aspect, 0.05, 100);
+      camera.position.copy(toRenderer(eye));
+      camera.lookAt(toRenderer({ ...look, z: look.z + extra }));
+      camera.updateMatrixWorld();
+      return toRenderer(p).project(camera).y;
+    };
+    const low = { x: 2.5, y: 0, z: 1.6 };
+    const lowRise = rise([low]);
+    expect(lowRise).toBeGreaterThan(0);
+    expect(project(low, lowRise)).toBeCloseTo(CAT_ARRIVAL.boardNdc, 6);
+    expect(project(feet, lowRise)).toBeGreaterThan(-CAT_ARRIVAL.feetNdc);
+    // The reviewer's example sits high enough that the feet cap binds: feet on the cap, board still on screen.
+    const high = { x: 2.5, y: 0, z: 2.2 };
+    const highRise = rise([high]);
+    expect(project(feet, highRise)).toBeCloseTo(-CAT_ARRIVAL.feetNdc, 6);
+    expect(project(high, highRise)).toBeGreaterThan(CAT_ARRIVAL.boardNdc);
+    expect(project(high, highRise)).toBeLessThan(1);
   });
 
   it("stops at the feetNdc cap when the board is too high", () => {

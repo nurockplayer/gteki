@@ -8,7 +8,8 @@
 # A thin wrapper: tools/qa/run-candidate.sh builds the exact candidate and runs only the tests of <station>
 # (ikebukuro or shinjuku) with workers 1 (config) and traces off, on desktop-chromium and phone-webkit. Add
 # --project after `--` replaces both defaults, so list every project you want (phone-chromium too). Then
-# tools/qa/l2-pack.mjs builds tests/e2e/artifacts/l2-pack-<station>/ (l2-review.md, l2-pack.json, contact sheets).
+# tools/qa/l2-pack.mjs builds tests/e2e/artifacts/l2-pack-<station>/ (l2-review.md, l2-pack.json, manifest.json,
+# contact sheets). The pack survives later candidate runs, which clear only what they own (#1017).
 # The pack is evidence for a human or independent reviewer, never an acceptance (docs/qa/l2-acceptance.md).
 # Exits with the Playwright / prerequisite status.
 #
@@ -40,7 +41,12 @@ status=0
 
 art="$here/tests/e2e/artifacts"
 if [ -d "$art/evidence" ]; then
-  node "$here/tools/qa/l2-pack.mjs" "$art/evidence" --station "$station" --candidate "$work/candidate" --out "$art/l2-pack-$station" || status=$?
+  if node "$here/tools/qa/l2-pack.mjs" "$art/evidence" --station "$station" --candidate "$work/candidate" --out "$art/l2-pack-$station"; then
+    # Each kept pack carries the manifest of the run that produced it (#1017).
+    cp "$art/manifest.json" "$art/l2-pack-$station/manifest.json"
+  else
+    status=$?
+  fi
 else
   echo "no evidence under $art/evidence: the run stopped before the tests (see $work/logs)" >&2
   [ "$status" -ne 0 ] || status=1

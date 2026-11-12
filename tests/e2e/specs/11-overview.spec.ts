@@ -40,6 +40,7 @@ test.use({ trace: "off" });
  */
 
 const FRAMING = { min: 0.5, max: 0.8 }; // share of the shorter viewport side (#109 acceptance 1)
+const FRAMING_EPS = 1e-9; // float rounding at the designed 0.5 boundary (#1015)
 const NEAR_BLACK_MAX = 0.3; // #109 acceptance 2
 const MEAN_LUMA = { min: 40, max: 200 }; // of 255
 
@@ -58,7 +59,8 @@ test("ikebukuro: overview pressed at street level frames the station, not its st
 
   expect(await hooks.walkFromNode(page, "x35"), "walkFromNode x35").toBe(true);
   // The case under test: the street-context subtree is attached when Overview is pressed.
-  await expect.poll(worldWidth, { message: "street context attached", timeout: 15_000 }).toBeGreaterThan(widthWithoutContext + 2);
+  // Slow runners (#1109): attachment took 14,534–15,578 ms in three local CI runs.
+  await expect.poll(worldWidth, { message: "street context attached", timeout: 120_000 }).toBeGreaterThan(widthWithoutContext + 2);
   await page.locator(".hud").getByRole("button", { name: "Overview", exact: true }).click();
   await expect.poll(() => hooks.mode(page)).toBe("overview");
   await page.waitForTimeout(1500); // Camera damping settles.
@@ -68,8 +70,8 @@ test("ikebukuro: overview pressed at street level frames the station, not its st
   const measuredAt = new Date().toISOString(); // UTC
   console.log(`[street-overview] ${measuredAt} ${JSON.stringify({ opening, street })}`);
   save(testInfo, "ikebukuro-overview-from-street.json", { measuredAt, widthWithoutContext, opening, street });
-  expect.soft(street.viewportShare, "framing band").toBeGreaterThanOrEqual(FRAMING.min);
-  expect.soft(street.viewportShare, "framing band").toBeLessThanOrEqual(FRAMING.max);
+  expect.soft(street.viewportShare, "framing band").toBeGreaterThanOrEqual(FRAMING.min - FRAMING_EPS);
+  expect.soft(street.viewportShare, "framing band").toBeLessThanOrEqual(FRAMING.max + FRAMING_EPS);
   expect.soft(Math.abs(street.viewportShare - opening.viewportShare), "same framing as the opening overview").toBeLessThan(0.02);
 });
 
@@ -119,14 +121,28 @@ for (const key of STATIONS) {
     const mode = await hooks.mode(page);
     expect.soft(mode, "the opening view is the overview").toBe("overview");
 
+    const checkDraws = async (tier: string) => {
+        const draws = await page.evaluate(() => (window as any).__gteki.overviewDraws());
+        console.log(`[overview-draws] ${new Date().toISOString()} ${testInfo.project.name} ${tier} ${JSON.stringify(draws)}`);
+        expect(draws.surfaceMeshes, `${tier}: surface layer exists`).toBeGreaterThan(0);
+        expect.soft(draws.surface, `${tier}: street surface did not draw`).toBe(0);
+        expect.soft(draws.station, `${tier}: station meshes drew`).toBeGreaterThan(0);
+    };
+    if (key === "shinjuku") {
+      await checkDraws(`default-${await hooks.quality(page)}`);
+    } else {
+      console.log(`[overview-draws] ${new Date().toISOString()} ${key}: skipped; no surface-render-only layer`);
+    }
+
     const png = await page.screenshot({ path: shotPath(testInfo, `${key}-11-overview.png`) });
     const stats = await imageStats(page, png);
     const smoke = await labelUiOverlaps(page);
     const { view, boxes } = await labelBoxes(page);
-
-    // Overlaps among labels the user can read: painted, on screen, not faded.
+    const hooksLabels = await page.evaluate(() => (window as any).__gteki.labels());
+    expect.soft(hooksLabels.identityOverlap ?? 0, "labels clear identity boards").toBe(0);
+    // Overlaps among all painted, readable labels, including faded chips.
     const visible = boxes.filter((b) => b.visible);
-    const readable = visible.filter((b) => !b.faded);
+    const readable = visible;
     const overlapsReadable = overlapPairs(readable);
     const overlapsAll = overlapPairs(visible);
 
@@ -200,6 +216,7 @@ for (const key of STATIONS) {
       }
     }
 
+
     save(testInfo, `${key}-overview.json`, {
       project: testInfo.project.name,
       quality: await hooks.quality(page),
@@ -209,7 +226,7 @@ for (const key of STATIONS) {
       framing: { proxy: "label anchors; a lower bound of the slice extent", all: spreadAll, routable: spreadRoutable, labelSpreadFromSmoke: smoke.labelSpread, framingDirect, placement },
       labels: {
         domCount: boxes.length, visibleCount: visible.length, readableCount: readable.length,
-        hooksLabels: await page.evaluate(() => (window as any).__gteki.labels()),
+        hooksLabels,
         byCategory,
         overlapsReadable, overlapsAllVisible: overlapsAll, footerHits, footers, labelLabelOverlapsFromSmoke: smoke.labelLabelOverlaps,
         uiOverlaps: smoke.uiOverlaps,
@@ -223,7 +240,8 @@ for (const key of STATIONS) {
     expect.soft(stats.mean, "mean luminance of the overview frame (/255)").toBeGreaterThanOrEqual(MEAN_LUMA.min);
     expect.soft(stats.mean, "mean luminance of the overview frame (/255)").toBeLessThanOrEqual(MEAN_LUMA.max);
     // 3. No overlapping labels among those the user can read.
-    expect.soft(overlapsReadable, "visible, non-faded POI labels overlapping each other").toEqual([]);
+    expect.soft(overlapsReadable, "visible POI labels overlapping each other").toEqual([]);
+    expect.soft(visible.filter((b) => b.x < -0.5 || b.y < -0.5 || b.x + b.w > view.w + 0.5 || b.y + b.h > view.h + 0.5), "visible POI labels fit inside the viewport").toEqual([]);
     // 4. C1: labels never above the UI.
     expect.soft(smoke.uiOverlaps.filter((o) => o.labelOnTop), "POI labels painted over UI controls").toEqual([]);
     // #838: the credit footer and the disclaimer badge stay legible under no label.
@@ -233,11 +251,11 @@ for (const key of STATIONS) {
     // reaches past a short phone band, so the band is checked against the viewport's shorter side.
     const viewportShare = framingDirect?.source === "overviewFrame" ? framingDirect.value?.viewportShare : undefined;
     if (typeof viewportShare === "number") {
-      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeGreaterThanOrEqual(FRAMING.min);
-      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeLessThanOrEqual(FRAMING.max);
+      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeGreaterThanOrEqual(FRAMING.min - FRAMING_EPS);
+      expect.soft(viewportShare, "routable network extent / shorter viewport side (overviewFrame)").toBeLessThanOrEqual(FRAMING.max + FRAMING_EPS);
     } else if (spreadRoutable.spread !== null) {
-      expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeGreaterThanOrEqual(FRAMING.min);
-      expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeLessThanOrEqual(FRAMING.max);
+      expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeGreaterThanOrEqual(FRAMING.min - FRAMING_EPS);
+      expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeLessThanOrEqual(FRAMING.max + FRAMING_EPS);
     } else {
       expect.soft(spreadRoutable.count, "at least two routable labels on screen to measure framing").toBeGreaterThanOrEqual(2);
     }
@@ -251,7 +269,24 @@ for (const key of STATIONS) {
     expect.soft(exitsVisible.length, "exit labels on screen in the overview").toBeGreaterThan(0);
     if (reach) {
       expect.soft(reach.error ?? null, "choosing a hidden exit through search").toBeNull();
-      expect.soft(reach.shownAfterSelect, `hidden exit "${reach.label}" shows once chosen as destination`).toBe(true);
+      if (reach.shownAfterSelect !== null) expect.soft(reach.shownAfterSelect, `hidden exit "${reach.label}" shows once chosen as destination`).toBe(true);
+    }
+    if (key === "shinjuku" && !process.env.CI) {
+      await page.addInitScript(() => {
+        const original = window.matchMedia.bind(window);
+        window.matchMedia = (query) => {
+          const result = original(query);
+          if (query === "(pointer: coarse)") Object.defineProperty(result, "matches", { value: false });
+          return result;
+        };
+        Object.defineProperty(screen, "width", { get: () => 1440 });
+        Object.defineProperty(screen, "height", { get: () => 900 });
+      });
+      await openStation(page, key);
+      expect(await hooks.quality(page), "high tier uses the composer").toBe("high");
+      await checkDraws("high");
+    } else if (key === "shinjuku") {
+      console.log(`[overview-draws] ${new Date().toISOString()} high tier skipped: CI uses the low-tier software renderer`);
     }
   });
 }

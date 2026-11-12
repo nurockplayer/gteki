@@ -74,14 +74,20 @@ describe("station POI search", () => {
 
   it("ranks exact, prefix, substring, then fuzzy matches", () => {
     const index = indexFor(bundleWith([
-      poi("substring", "North West Gate"), poi("fuzzy", "Wonderful Entrance Sign Terminal"),
-      poi("prefix", "West Gate"), poi("exact", "West"),
+      poi("substring", "North Western Gate"), poi("fuzzy", "Wonderful Entrance Sign Terminal Eastern Road North"),
+      poi("prefix", "Western Gate"), poi("exact", "Western"),
     ]));
-    const hits = index.search("west");
+    const hits = index.search("western");
     expect(hits.map((hit) => hit.poi.id)).toEqual(["exact", "prefix", "substring", "fuzzy"]);
     expect(hits.slice(0, 3).map((hit) => hit.score)).toEqual([100, 80, 60]);
     expect(hits[3]!.score).toBeGreaterThan(0);
     expect(hits[3]!.score).toBeLessThanOrEqual(40);
+  });
+
+  it("rejects short Latin fuzzy matches with a different first letter while retaining a one-character gap", () => {
+    const index = indexFor(bundleWith([poi("tobu", "Tobu"), poi("typo", "axbcd")]));
+    expect(index.search("seibu")).toEqual([]);
+    expect(index.search("abcd").map((hit) => hit.poi.id)).toEqual(["typo"]);
   });
 
   it("uses the best matching alias, returning only one hit per POI", () => {
@@ -92,16 +98,16 @@ describe("station POI search", () => {
   });
 
   it("penalises subsequence gaps and rejects reversed character order", () => {
-    const index = indexFor(bundleWith([poi("wide", "a---xxx---b---xxx---c---d"), poi("tight", "axbcd"), poi("wrong", "dcba")]));
-    const hits = index.search("abcd");
+    const index = indexFor(bundleWith([poi("wide", "a---xxx---b---xxx---c---d---e---f"), poi("tight", "axbcdef"), poi("wrong", "fedcba")]));
+    const hits = index.search("abcdef");
     expect(hits.map((hit) => hit.poi.id)).toEqual(["tight", "wide"]);
     expect(hits[0]!.score).toBeGreaterThan(hits[1]!.score);
     expect(hits[0]!.score).toBeLessThanOrEqual(40);
   });
 
   it("finds a tight later subsequence rather than penalising an early loose match", () => {
-    const index = indexFor(bundleWith([poi("later", "a very long path axbcd"), poi("only", "axxbcd")]));
-    expect(index.search("abcd").map((hit) => hit.poi.id)).toEqual(["later", "only"]);
+    const index = indexFor(bundleWith([poi("later", "a very long path axbcdef"), poi("only", "axxbcdef")]));
+    expect(index.search("abcdef").map((hit) => hit.poi.id)).toEqual(["later", "only"]);
   });
 
   it("matches multi-word latin tokens in a different order", () => {

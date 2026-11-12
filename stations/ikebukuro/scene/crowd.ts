@@ -886,33 +886,47 @@ export function buildCrowd(
   // Camera position as last rendered (onBeforeRender gives the camera without any API change);
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
+  let cameraFocus: THREE_NS.Vector3 | null = null;
+  let cameraSignFocus: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null;
+  const projected = new THREE.Vector3();
+  const focusSegment = new THREE.Vector3(), focusBody = new THREE.Vector3();
+  const camForward = new THREE.Vector3(0, 0, -1), camHeading = new THREE.Vector3();
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
   let renders = 0;
   (lowMesh ?? P.torso.mesh).onBeforeRender = (_r, _s, camera) => {
     renders++;
     cam.setFromMatrixPosition(camera.matrixWorld);
+    camHeading.setFromMatrixColumn(camera.matrixWorld, 2).negate(); // the camera looks down its local -Z
+    camHeading.y = 0;
+    if (camHeading.lengthSq() > 1e-8) camForward.copy(camHeading).normalize(); // straight down/up: keep the last heading
     frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   };
   // A fixed head-count spread over every verified passage is ~1 person per 30 m on phones. Instead,
-  // people far from the camera and out of its view step back in on a passage 12-40 m away, still
-  // out of view, so the crowd stays around the player without drawing more of them.
-  const FAR_M = 50, SPAWN_MIN_M = 12, SPAWN_MAX_M = 40, MAX_MOVES_PER_FRAME = 2;
+  // people far from the camera and out of view step back in 6-40 m away on low tier, or 12-40 m
+  // on high tier. Low tier prefers landings ahead of the camera and walks toward the camera
+  // along the local path tangent, so a person beyond the top of the frame can walk into it.
+  const FAR_M = 50, SPAWN_MIN_M = low ? 6 : 12, SPAWN_MAX_M = 40, MAX_MOVES_PER_FRAME = 2;
   // The camera's actual view volume, padded by a body-sized sphere (any aspect ratio or FOV).
   const body = new THREE.Sphere(new THREE.Vector3(), 1.2);
   // The pad grows ~7° with distance: the view used is the last rendered one, a frame behind a fast turn.
   const inView = (p: THREE_NS.Vector3) =>
     frustum.intersectsSphere(body.set(body.center.set(p.x, p.y + 0.9, p.z), 1.2 + 0.12 * p.distanceTo(cam)));
   function relocate(a: Agent): boolean {
-    for (let attempt = 0; attempt < 8; attempt++) {
+    for (let attempt = 0; attempt < (low ? 24 : 8); attempt++) {
       let r = rand() * total, k = 0;
       while (k < paths.length - 1 && r > paths[k]!.length) r -= paths[k++]!.length;
       sample(paths[k]!, r);
       const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
       const d = Math.hypot(dx, dy, dz);
       if (d < SPAWN_MIN_M || d > SPAWN_MAX_M || Math.abs(dy) > 6 || inView(pos)) continue;
+      // Someone who steps in behind the camera is never seen, so the first 16 attempts only take a
+      // spot ahead of it; the last 8 keep the old rule so a passage that only runs backwards still
+      // accepts a landing.
+      if (low && attempt < 16 && dx * camForward.x + dz * camForward.z < 0) continue;
+      const towardCamera = -dir.x * dx - dir.z * dz;
+      a.forward = !low || Math.abs(towardCamera) < 1e-6 ? rand() < 0.5 : towardCamera > 0;
       a.path = k;
       a.s = Math.min(paths[k]!.length, r);
-      a.forward = rand() < 0.5;
       a.hiddenUntil = renders;
       setDest(a);
       return true;
@@ -1110,6 +1124,13 @@ export function buildCrowd(
 
   function update(dt: number, _elapsed: number) {
     let near = 0, moves = 0;
+    let signMinX = Infinity, signMaxX = -Infinity, signMinY = Infinity, signMaxY = -Infinity;
+    const sign = cameraSignFocus;
+    if (sign) for (let x = -1; x <= 1; x += 2) for (let y = -1; y <= 1; y += 2) {
+      projected.set(sign.x + x * sign.halfWidthX, sign.y + y * sign.halfHeight, sign.z + x * sign.halfWidthZ).applyMatrix4(viewProj);
+      signMinX = Math.min(signMinX, projected.x); signMaxX = Math.max(signMaxX, projected.x);
+      signMinY = Math.min(signMinY, projected.y); signMaxY = Math.max(signMaxY, projected.y);
+    }
     const hideRadius = Math.max(NEAR_CAM_M, nearFade.value.x);
     clock += dt;
     collectGateLines();
@@ -1250,7 +1271,24 @@ export function buildCrowd(
         else shown = false;
       }
       pos.y = floorY;
-      if (!shown || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
+      let blocksFocus = false;
+      if (cameraFocus) {
+        focusSegment.copy(cameraFocus).sub(cam);
+        focusBody.set(pos.x, floorY + 0.9, pos.z).sub(cam);
+        const lengthSq = focusSegment.lengthSq();
+        const t = lengthSq > 0 ? focusBody.dot(focusSegment) / lengthSq : -1;
+        blocksFocus = t >= 0 && t <= 1 && focusBody.addScaledVector(focusSegment, -t).lengthSq() <= 0.45 * 0.45;
+      }
+      if (!blocksFocus && sign && focusBody.set(pos.x, floorY + 0.9 * L.sh, pos.z).distanceToSquared(cam) < focusSegment.set(sign.x, sign.y, sign.z).distanceToSquared(cam)) {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (let x = -1; x <= 1; x += 2) for (let y = 0; y <= 1; y++) for (let z = -1; z <= 1; z += 2) {
+          projected.set(pos.x + x * 0.65 * L.sw, floorY + y * 1.95 * L.sh, pos.z + z * 0.65 * L.sw).applyMatrix4(viewProj);
+          minX = Math.min(minX, projected.x); maxX = Math.max(maxX, projected.x);
+          minY = Math.min(minY, projected.y); maxY = Math.max(maxY, projected.y);
+        }
+        blocksFocus = minX <= signMaxX && maxX >= signMinX && minY <= signMaxY && maxY >= signMinY;
+      }
+      if (!shown || blocksFocus || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
         hide(i);
         continue;
       }
@@ -1270,6 +1308,11 @@ export function buildCrowd(
   return {
     group,
     update,
+    setCameraFocus(x: number | null, y = 0, z = 0, sign: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null) {
+      if (x === null) cameraFocus = null;
+      else (cameraFocus ??= new THREE.Vector3()).set(x, y, z);
+      cameraSignFocus = sign;
+    },
     setCameraNearFade(startM: number, endM: number) { nearFade.value.set(startM, endM); },
     /** Pedestrians within 8 m of the last rendered camera (for ambience). */
     nearby: () => nearby,

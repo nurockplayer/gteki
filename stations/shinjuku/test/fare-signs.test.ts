@@ -35,7 +35,7 @@ describe("access barrier sign truth", () => {
   it("labels the reviewer's B1 source-restricted space as restricted", () => {
     const sign = signs.find(s => s.sourceSpaceId === "aabd65fc5e8c4d1cabafa98e06faaf39");
     expect(sign).toBeDefined();
-    expect(sign.sourceSpaceId).toBe("aabd65fc5e8c4d1cabafa98e06faaf39");
-    expect(sign.en).toBe("Restricted area");
+    expect(sign!.sourceSpaceId).toBe("aabd65fc5e8c4d1cabafa98e06faaf39");
+    expect(sign!.en).toBe("Restricted area");
   });
 });

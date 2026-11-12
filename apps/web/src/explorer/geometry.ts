@@ -42,6 +42,34 @@ export function routeNearFade(material: THREE.Material, near = ROUTE_FADE_NEAR_M
  * Flat ribbon along a renderer-space polyline (constant width in XZ, following Y), with
  * `u` = arc length (metres) × `uScale` for scrolling textures and `v` across the strip.
  */
+export function steppedProfile(samples: readonly THREE.Vector3[]): THREE.Vector3[] {
+  if (samples.length < 2 || !samples.some((p, i) => i > 0 && Math.abs(p.y - samples[i - 1]!.y) > 0.05)) return [...samples];
+  const out = [samples[0]!.clone()];
+  for (let i = 1; i < samples.length; i++) {
+    const prev = samples[i - 1]!, p = samples[i]!;
+    if (Math.abs(p.y - prev.y) > 0.05) {
+      const edge = p.y > prev.y ? prev : p;
+      out.push(new THREE.Vector3(edge.x, prev.y, edge.z), new THREE.Vector3(edge.x, p.y, edge.z));
+    }
+  }
+  out.push(samples[samples.length - 1]!.clone());
+  return out.filter((p, i) => i === 0 || !p.equals(out[i - 1]!));
+}
+
+/** Sample steep segments against nearby ground; vertical segments retain their endpoints. */
+export function routeSegmentProfile(a: THREE.Vector3, b: THREE.Vector3, groundHeight: (p: THREE.Vector3) => number | undefined): THREE.Vector3[] {
+  const horizontal = Math.hypot(b.x - a.x, b.z - a.z);
+  if (horizontal === 0 || Math.abs(b.y - a.y) <= horizontal * Math.tan(Math.PI / 12)) return [a, b];
+  const count = Math.ceil(horizontal / 0.05);
+  const samples = Array.from({ length: count + 1 }, (_, j) => {
+    const p = a.clone().lerp(b, j / count);
+    const height = groundHeight(p);
+    if (height !== undefined && Math.abs(height - p.y) <= 0.6) p.y = height;
+    return p;
+  });
+  return steppedProfile(samples);
+}
+
 export function ribbonGeometry(points: readonly THREE.Vector3[], width: number, lift = 0, uScale = 1): THREE.BufferGeometry {
   const pos: number[] = [];
   const uv: number[] = [];

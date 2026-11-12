@@ -1,9 +1,34 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { collectIdentityBoards, identityFront, identityNameCentre, identityNameCorners, identityRegionRect, intersectsRect, parseIdentityBoard, protectIdentityChip } from "./identityBoards.ts";
+import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameCentre, identityNameCorners, identityRegionRect, intersectsRect, parseIdentityBoard, protectIdentityChip } from "./identityBoards.ts";
 
 const mesh = () => new THREE.Mesh(new THREE.BoxGeometry(4, 2, 0.2), new THREE.MeshBasicMaterial());
 describe("identity tags", () => {
+  it("ignores untagged sign faces outside the name region and includes overlapping faces, including proxy boards", () => {
+    const parent = new THREE.Group();
+    const board = new THREE.Group();
+    board.userData.gteki_identity = { regions: [{ kind: "name", min: [-1, -0.5, 0], max: [1, 0.5, 0] }] };
+    const face = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 0.001), new THREE.MeshBasicMaterial());
+    face.position.z = 0.01; face.userData.gteki_role = "sign";
+    const elsewhere = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 0.01), new THREE.MeshBasicMaterial());
+    elsewhere.position.x = 5; elsewhere.userData.gteki_role = "sign";
+    const mergedBatch = new THREE.Mesh(new THREE.BoxGeometry(14, 1, 0.01), new THREE.MeshBasicMaterial());
+    mergedBatch.position.set(0, 0, -1); mergedBatch.userData.gteki_role = "sign";
+    parent.add(board, face, elsewhere, mergedBatch); parent.updateMatrixWorld(true);
+    const taggedBoard = parseIdentityBoard(board)!;
+    expect(identityBoardObjects(taggedBoard, [taggedBoard])).toContain(face);
+    expect(identityBoardObjects(taggedBoard, [taggedBoard])).not.toContain(elsewhere);
+    expect(identityBoardObjects(taggedBoard, [taggedBoard])).not.toContain(mergedBatch);
+
+    const proxyParent = new THREE.Group();
+    const proxy = new THREE.Object3D();
+    proxy.userData.gteki_identity = { regions: [{ kind: "name", min: [-1, -0.5, 0], max: [1, 0.5, 0] }] };
+    const proxyFace = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 0.01), new THREE.MeshBasicMaterial());
+    proxyFace.position.z = 0.005; proxyFace.userData.gteki_role = "sign";
+    proxyParent.add(proxy, proxyFace); proxyParent.updateMatrixWorld(true);
+    const proxyBoard = parseIdentityBoard(proxy)!;
+    expect(identityBoardObjects(proxyBoard, [proxyBoard])).toContain(proxyFace);
+  });
   it("defaults to +Z and whole mesh bounds, independently of sign role", () => {
     const o = mesh();
     o.userData.gteki_identity = {};

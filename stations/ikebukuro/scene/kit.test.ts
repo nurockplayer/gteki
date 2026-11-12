@@ -299,6 +299,20 @@ describe("the access fences: labels move onto the rails, the collider does not c
     b.dispose();
   });
 
+  it("keeps every panel top at or below 0.65 m above its floor, under the cat camera's eye line (#1011)", () => {
+    for (const rails of [undefined, railed]) {
+      const built = buildAccessFences(THREE, fences, toRenderer, rails);
+      const p = positions(built.visual);
+      fences.marks.forEach((m, i) => {
+        // renderer y is ENU z; each mark owns 2 faces x 6 vertices
+        let top = -Infinity;
+        for (let k = i * 36 + 1; k < i * 36 + 36; k += 3) top = Math.max(top, p[k]!);
+        expect(top - m.z, `mark ${i}`).toBeLessThanOrEqual(0.65 + 1e-6);
+      });
+      built.dispose();
+    }
+  });
+
   it("with no rails builds today's boards; with rails, only railed stretches move, by 7.5 cm along their face normal, at the same height", () => {
     const a = buildAccessFences(THREE, fences, toRenderer);
     const b = buildAccessFences(THREE, fences, toRenderer, railed);

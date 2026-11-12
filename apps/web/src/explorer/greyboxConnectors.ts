@@ -142,7 +142,10 @@ export function buildStairs(from: THREE.Vector3, to: THREE.Vector3, widthM: numb
       const n = Math.min(flightSteps, count - start), x = xAt(start), length = n * tread;
       const angle = Math.atan2(n * rise, length), incline = Math.hypot(length, n * rise);
       const flight = f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x + length / 2, start * rise + n * rise / 2, side * (widthM / 2 + 0.03))).multiply(new THREE.Matrix4().makeRotationZ(angle));
-      box(parts, "nosing", flight, 0, 0.015 * Math.cos(angle), 0, incline, 0.27 * Math.cos(angle), 0.06);
+      const stripHeight = 0.27 * Math.cos(angle) ** 2;
+      const stripTransform = f.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(x + length / 2, start * rise + n * rise / 2 + stripHeight / 2, side * (widthM / 2 + 0.03)));
+      stripTransform.multiply(new THREE.Matrix4().set(1, 0, 0, 0, n * rise / length, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
+      parts.push(part(new THREE.BoxGeometry(length, stripHeight, 0.06), "nosing", stripTransform));
       const railGeo = new THREE.CylinderGeometry(0.026, 0.026, incline, 8);
       const railTransform = flight.clone().multiply(new THREE.Matrix4().makeTranslation(0, 0.96 * Math.cos(angle), 0)).multiply(new THREE.Matrix4().makeRotationZ(-Math.PI / 2));
       parts.push(part(railGeo, "steel", railTransform));
@@ -484,7 +487,16 @@ function junctionOpenings(sourcePolygons: MultiPolygon, outline: readonly PlanPo
 /** Plan length of the leading segments that stay within a step of the path's start: past it, a walk at that height no longer meets the path. */
 function levelRun(points: readonly THREE.Vector3[]): number {
   let run = 0;
-  for (let i = 1; i < points.length && Math.abs(points[i]!.y - points[0]!.y) <= WALKER_BODY.stepUpM; i++) run += Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.z - points[i - 1]!.z);
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1]!, b = points[i]!, length = Math.hypot(b.x - a.x, b.z - a.z);
+    const delta = b.y - points[0]!.y;
+    if (Math.abs(delta) > WALKER_BODY.stepUpM) {
+      const limit = points[0]!.y + Math.sign(delta) * WALKER_BODY.stepUpM;
+      run += length * Math.max(0, Math.min(1, (limit - a.y) / (b.y - a.y)));
+      break;
+    }
+    run += length;
+  }
   return run;
 }
 

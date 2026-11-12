@@ -100,11 +100,11 @@ function makeTrainAudio(tracks: { at: (s: number, off: number) => { x: number; y
     const tt = (clock.value + tr.phase) % headway;
     const car = tr.cars[Math.floor(tr.cars.length / 2)]!;
     const p = tr.at(tr.stopS, tr.trackOff);
-    const stop = new THREE.Vector3(p.x, tr.z - 1.1, -p.y);
+    const stop = new THREE.Vector3(p.x, tr.z - 0.255, -p.y);
     car.parent?.localToWorld(stop);
     const stopEnds = [-1, 1].map((direction) => {
       const end = tr.at(tr.stopS + direction * (tr.cars.length - 1) * CAR_PITCH / 2, tr.trackOff);
-      const point = new THREE.Vector3(end.x, tr.z - 1.1, -end.y);
+      const point = new THREE.Vector3(end.x, tr.z - 0.255, -end.y);
       return car.parent ? car.parent.localToWorld(point) : point;
     }) as [THREE.Vector3, THREE.Vector3];
     const pos = tt >= 14 && tt < 40 ? stop.clone() : tt < 54 ? car.getWorldPosition(new THREE.Vector3()).add(tr.cars[tr.cars.length / 2 - 1]!.getWorldPosition(new THREE.Vector3())).multiplyScalar(0.5) : null;
@@ -299,11 +299,39 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
   const snap = (polys: polygonClipping.MultiPolygon): polygonClipping.MultiPolygon => polys.map((poly) => poly.map((ring) =>
     ring.map(([x, y]) => [Math.round(x! * 1e4) / 1e4, Math.round(y! * 1e4) / 1e4])));
   const walls: { wall: WallSeg; covered: { rings: XY[][]; roof: Finish }[] }[] = [], roofs: THREE.BufferGeometry[] = [], finishes: Soffit[] = [];
-  for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
+  const runs = layout.runs.filter((r) => r.mode === "escalator");
+  const neighbours = runs.map(() => new Set<number>());
+  for (let i = 0; i < runs.length; i++) for (let j = 0; j < i; j++) {
+    const a = runs[i]!, b = runs[j]!, dx = a.b.x - a.a.x, dy = a.b.y - a.a.y, length = stableHypot(dx, dy);
+    const ux = dx / length, uy = dy / length, ex = b.b.x - b.a.x, ey = b.b.y - b.a.y, otherLength = stableHypot(ex, ey);
+    if (Math.abs((dx * ex + dy * ey) / (length * otherLength)) <= 0.98) continue;
+    const along = (p: XY) => (p.x - a.a.x) * ux + (p.y - a.a.y) * uy;
+    const lateral = (p: XY) => -(p.x - a.a.x) * uy + (p.y - a.a.y) * ux;
+    const t0 = along(b.a), t1 = along(b.b), lo = Math.max(0, Math.min(t0, t1)), hi = Math.min(length, Math.max(t0, t1));
+    if (hi <= lo) continue;
+    const sideAt = (t: number) => lateral(b.a) + (lateral(b.b) - lateral(b.a)) * (t - t0) / (t1 - t0);
+    const s0 = sideAt(lo), s1 = sideAt(hi), separation = s0 * s1 <= 0 ? 0 : Math.min(Math.abs(s0), Math.abs(s1));
+    if (separation >= (a.width + b.width) / 2 + 0.9) continue;
+    const heightDiff = (t: number) => a.a.z + (a.b.z - a.a.z) * t / length - (b.a.z + (b.b.z - b.a.z) * (t - t0) / (t1 - t0));
+    if ([lo, (lo + hi) / 2, hi].some((t) => Math.abs(heightDiff(t)) >= 0.5)) continue;
+    neighbours[i]!.add(j); neighbours[j]!.add(i);
+  }
+  const groups = runs.map((_, i) => {
+    const members = new Set([i]), queue = [i];
+    for (const n of queue) for (const other of neighbours[n]!) if (!members.has(other)) { members.add(other); queue.push(other); }
+    return members;
+  });
+  const drawn = runs.map((): Soffit[] => []);
+  for (const [runIndex, r] of runs.entries()) {
     // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
     // joins the inclined finish to landing ceilings without closing either run mouth.
     const roof = pitched(r, 0.45, 0.6);
-    roof.z += SHELL_RISE;
+    // A shared enclosure uses one plane throughout, so adjacent roof panels
+    // meet even when the source flights have slightly different gradients.
+    const anchor = pitched(runs[Math.min(...groups[runIndex]!)]!, 0.45, 0.6);
+    roof.z = anchor.z + SHELL_RISE;
+    roof.origin = anchor.origin;
+    roof.slope = anchor.slope;
     // A lower finish trims the side above its underside. Keep the backing
     // shell roof when the planes differ: cutting it by footprint alone leaves
     // an open step between the two heights.
@@ -339,7 +367,13 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     }
     panels = heightMask(panels, (p) => streetLimit - soffitHeight(roof, p));
     const ring = roof.rings[0]!;
-    for (const [a, b] of [[ring[0]!, ring[1]!], [ring[3]!, ring[2]!]]) {
+    for (const [side, [a, b]] of [[ring[0]!, ring[1]!], [ring[3]!, ring[2]!]].entries()) {
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y;
+      const facing = [...neighbours[runIndex]!].some((i) => {
+        const other = runs[i]!, offset = -dy * (other.a.x + other.b.x - r.a.x - r.b.x) + dx * (other.a.y + other.b.y - r.a.y - r.b.y);
+        return side === 0 ? offset < 0 : offset > 0;
+      });
+      if (facing) continue;
       const topA = soffitHeight(roof, a!), topB = soffitHeight(roof, b!);
       walls.push({ wall: { a: a!, b: b!, side: 1, kind: "wall", zMin: Math.min(topA, topB) - 4.5, zMax: Math.max(topA, topB),
         profile: { bottomA: topA - 4.5, bottomB: topB - 4.5, topA, topB } }, covered });
@@ -357,12 +391,18 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       cut = heightMask(cut, (p) => v.top(p) - soffitHeight(roof, p));
       if (cut.length) panels = polygonClipping.difference(panels, snap(cut));
     }
+    for (let i = 0; i < runIndex; i++) if (groups[runIndex]!.has(i)) {
+      for (const prior of drawn[i]!) {
+        if (panels.length) panels = polygonClipping.difference(snap(panels), snap([polygon(prior.rings)]));
+      }
+    }
     const lowZ = Math.min(r.a.z, r.b.z);
     const floorId = layout.levels.reduce<Layout["levels"][number] | undefined>((best, lv) => !best || Math.abs(lv.z - lowZ) < Math.abs(best.z - lowZ) ? lv : best, undefined)?.floorId ?? "";
     for (const panel of panels) {
       const finish = { ...roof, floorId, rings: ringsOf(panel) };
       roofs.push(soffitGeometry(finish));
       finishes.push(finish);
+      drawn[runIndex]!.push(finish);
     }
   }
   const sides: THREE.BufferGeometry[] = [];
@@ -779,7 +819,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     // walls (u continuous along each segment)
     for (const w of lv.walls.filter((w) => w.finish === "fascia")) fasciaGeos.push(enclosureWallGeometry(w));
     // public-facing "room" walls use the station cladding as well; plain material only for very short jogs
-    const wg = cladWallGeometry(lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia"));
+    const wg = cladWallGeometry([...lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia"), ...layout.cornerFills.filter((w) => w.level === lv.label)]);
     if (wg) {
       const m = new THREE.Mesh(track(wg), mat.wall);
       m.receiveShadow = true;
@@ -1225,7 +1265,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const planeGeo = merged(planeGeos);
     if (planeGeo) root.add(new THREE.Mesh(track(planeGeo), mat.portal));
     const signGeo = merged(signGeos);
-    if (signGeo) root.add(new THREE.Mesh(track(signGeo), signMat));
+    if (signGeo) {
+      const signMesh = new THREE.Mesh(track(signGeo), signMat);
+      // Coplanar with the veil, so it must draw after it.
+      signMesh.renderOrder = 1;
+      root.add(signMesh);
+    }
   }
 
   // ---- street level around surface exits (minimal, non-authoritative)
@@ -1441,10 +1486,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const carLen = 16.3;
     const shape = new THREE.Shape();
     const w = 2.48;
-    const h = 3.05;
-    const r = 0.45;
-    shape.moveTo(-w / 2, 0.25);
-    shape.lineTo(w / 2, 0.25);
+    const h = 2.39;
+    const r = 0.3;
+    shape.moveTo(-w / 2, -0.25);
+    shape.lineTo(w / 2, -0.25);
     shape.lineTo(w / 2, h - r);
     shape.quadraticCurveTo(w / 2, h, w / 2 - r, h);
     shape.lineTo(-w / 2 + r, h);
@@ -1452,16 +1497,17 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     shape.closePath();
     const body = track(new THREE.ExtrudeGeometry(shape, { depth: carLen, bevelEnabled: false, curveSegments: 6 }));
     body.translate(0, 0, -carLen / 2);
-    const windowBand = track(new THREE.BoxGeometry(w + 0.02, 0.85, carLen - 1.2));
-    windowBand.translate(0, 1.75, 0);
+    const windowBand = track(new THREE.BoxGeometry(w + 0.02, 0.65, carLen - 1.2));
+    windowBand.translate(0, 1.745, 0);
     const stripe = track(new THREE.BoxGeometry(w + 0.03, 0.12, carLen - 0.4));
     stripe.translate(0, 1.18, 0);
-    const doorGeo = track(merged([-DOOR_PITCH, 0, DOOR_PITCH].map((z) => new THREE.BoxGeometry(w + 0.025, 1.85, 1.3).translate(0, 1.18, z)))!);
-    const skirt = track(new THREE.BoxGeometry(w - 0.1, 0.45, carLen - 0.6));
-    skirt.translate(0, 0.2, 0);
+    const doorGeo = track(merged([-DOOR_PITCH, 0, DOOR_PITCH].map((z) => new THREE.BoxGeometry(w + 0.025, 1.8, 1.3).translate(0, 1.155, z)))!);
+    const skirt = track(new THREE.BoxGeometry(w - 0.1, 0.205, carLen - 0.6));
+    skirt.translate(0, -0.3525, 0);
     for (let i = 0; i < n; i++) {
       const car = new THREE.Group();
       car.visible = false;
+      car.userData.gteki_shadow = "dynamic";
       train.push(car);
     }
     // Cars retain their independent curved-track transforms; repeated finishes share draws.
@@ -1472,6 +1518,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.name = "train-cars:instanced-finish";
       mesh.visible = false;
+      mesh.userData.gteki_shadow = "dynamic";
       // A whole eight-car bounding sphere can intersect an upstairs camera even when
       // all cars lie outside it. Cull that empty batch in both colour and GTAO passes.
       mesh.onBeforeRender = (_renderer, _scene, camera) => {
@@ -1524,7 +1571,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const sc = s + (i - (n - 1) / 2) * CAR_PITCH;
         const p = tr.at(sc, tr.trackOff);
         const tg = tr.tangentAt(sc);
-        car.position.set(p.x, tr.z - 1.1, -p.y);
+        car.position.set(p.x, tr.z - 0.255, -p.y);
         car.rotation.y = Math.atan2(tg.x, -tg.y);
       });
       const open = tt > 16 && tt < 37 ? Math.min(1, (tt - 16) / 2, (37 - tt) / 2) : 0;
@@ -2177,6 +2224,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
     const group = new THREE.Group();
     group.name = `sign:${n.id}`;
     const center = { x: n.position.x, y: n.position.y, z: lv.ceilingZ - 0.55 };
+    group.position.set(center.x, center.z, -center.y);
     for (const facing of [axis, { x: -axis.x, y: -axis.y }]) {
       faceDrafts.push({ floorId: lv.floorId, center: { x: center.x + facing.x * 0.04, y: center.y + facing.y * 0.04, z: center.z }, facing, lines: makeFace({ x: -facing.x, y: -facing.y }) });
     }
@@ -2189,7 +2237,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, roo
       rod.translate(center.x + off.x, center.z + 0.45, -(center.y + off.y));
       rodGeos.push(rod);
     }
-    group.userData = { nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
+    group.userData = { signHalfWidthX: -axis.y * 0.95, signHalfWidthZ: -axis.x * 0.95, signHalfHeight: (1.9 / 8) * valid.length / 2, nodeId: n.id, generated: "GTEki wayfinding from verified graph (not operator signage)" };
     root.add(group);
     out.push(group);
     placed.push({ x: n.position.x, y: n.position.y, z });

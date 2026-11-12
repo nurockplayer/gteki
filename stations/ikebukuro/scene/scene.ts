@@ -26,6 +26,7 @@ import finishManifest from "./finishes.json";
 import signage from "./signage.json";
 import identity from "./identity.json";
 import walkBridges from "./walk_bridges.json";
+import underfloorBacking from "./underfloor_backing.json";
 import accessFences from "./access_fences.json";
 import kitManifest from "./kit/kit.json";
 import kitPlacements from "./kit_placements.json";
@@ -434,6 +435,21 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   });
   attachSurfaceData(THREE, meshesByRole);
   root.add(gltf.scene, ...extra);
+  const backingPositions = underfloorBacking.triangles.flatMap(({ enu }) => enu.flatMap(([x, y, z]) =>
+    ctx.enuToRenderer({ x: x!, y: y!, z: z! })));
+  const backingGeometry = new THREE.BufferGeometry();
+  backingGeometry.setAttribute("position", new THREE.Float32BufferAttribute(backingPositions, 3));
+  backingGeometry.computeVertexNormals();
+  backingGeometry.computeBoundingSphere();
+  const backingMaterial = mats.byRole.floor!.clone() as THREE_NS.MeshStandardMaterial;
+  backingMaterial.side = THREE.DoubleSide;
+  backingMaterial.lightMap = null;
+  const backing = new THREE.Mesh(backingGeometry, backingMaterial);
+  backing.name = "underfloor_backing";
+  backing.userData.gteki_role = "underfloor_backing";
+  backing.userData.gteki_source = "plateau";
+  backing.matrixAutoUpdate = false;
+  root.add(backing);
   if (bridges) root.add(bridges);
 
   // Surveyed floor outside the routable areas (e.g. the JR-Tobu passage, possibly a fare-paid transfer
@@ -481,7 +497,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
   ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     (loaded) => {
-      const material = createContextMaterial(THREE, { streetY });
+      const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
       dressContext(loaded.scene, material, roadMaterial);
       if (disposed) {
@@ -676,6 +692,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); streetAmbience?.setZone(next); } } : {}),
     settled: () => catalogKit.settled(),
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
+    setCameraFocus: (p, sign) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign),
     update: (dt, elapsed, camera) => {
       catalogKit.start();
       if (camera) catalogKit.update(camera);

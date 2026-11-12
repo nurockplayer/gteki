@@ -7,6 +7,7 @@ import { greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox
 import { strings } from "../i18n.ts";
 import { darkSampleDistances } from "./routeGroundQa.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { InteractionController } from "./interaction.ts";
 import { prepareRayTrees } from "./meshBvh.ts";
 import { castCamera } from "./raycast.ts";
 import { floorProbe } from "./routeGaps.ts";
@@ -23,6 +24,7 @@ function fixture() {
   const scene = { root, walkable: [floor], colliders: [wall, secondWall], walls: [{ a: { x: 2.05, y: -3 }, b: { x: 2.05, y: 3 }, zMin: 0, zMax: 3 }], dispose: vi.fn() };
   const keys = new Set<string>();
   const state = Object.assign(Object.create(Explorer.prototype), {
+    interactionController: new InteractionController([]),
     loadGeneration: 0, disposed: false, mode: "walk", quality: "high", stationCaches: { remember: vi.fn() },
     releaseStationCaches: vi.fn(), clearStation: vi.fn(), ensureAudio: () => false,
     buildStationScene: async () => scene, overviewLook: { set: vi.fn() }, street: { restore: vi.fn(), attach: vi.fn() },
@@ -131,6 +133,34 @@ describe("greybox station integration", () => {
         expect(notify).toHaveBeenLastCalledWith(false);
       }
     } finally { vi.unstubAllGlobals(); }
+  });
+
+  it("shows both route glow lines only in overview and follows mode switches", () => {
+    const context = { clearRect: vi.fn(), fillRect: vi.fn(), beginPath: vi.fn(), moveTo: vi.fn(), lineTo: vi.fn(), stroke: vi.fn() };
+    vi.stubGlobal("document", { createElement: () => ({ width: 0, height: 0, getContext: () => context }) });
+    const point = (x: number, z: number) => ({ x, y: 0, z, zKnown: true, stepIndex: 0, floorId: "concourse" });
+    const state = Object.assign(Object.create(Explorer.prototype), {
+      mode: "walk", routeGroup: new THREE.Group(), routeTexture: null, routeLines: null,
+      groundTargets: [], sceneGroundTargets: [], stationScene: null, ray: new THREE.Raycaster(),
+      greyboxSegments: [], trackOverlay: (material: THREE.Material) => material,
+      updateGreyboxLegend: vi.fn(), clearRoute: vi.fn(),
+    });
+    state.showRoute([point(0, 0), point(10, 4)]);
+    const lines = [state.routeGroup.getObjectByName("route-glow"), state.routeGroup.getObjectByName("route-glow-occluded")];
+    expect(lines.every((line: THREE.Object3D | undefined) => line?.visible === false)).toBe(true);
+
+    Object.assign(state, {
+      guideIdentityHoldS: 0, fadeStale: false, camera: { far: 500, updateProjectionMatrix: vi.fn() },
+      orbit: { enabled: true, target: new THREE.Vector3() }, avatar: { visible: true }, input: { enabled: false },
+      pos: new THREE.Vector3(), firstPerson: false, restoreZone: vi.fn(), zoneSnap: false,
+      events: {}, street: { restore: vi.fn() }, setFov: vi.fn(), overviewLook: { set: vi.fn() },
+      graph: { setXray: vi.fn() }, updateGreyboxLegend: vi.fn(),
+    });
+    state.setMode("overview");
+    expect(lines.every((line: THREE.Object3D | undefined) => line?.visible === true)).toBe(true);
+    state.setMode("guide");
+    expect(lines.every((line: THREE.Object3D | undefined) => line?.visible === false)).toBe(true);
+    vi.unstubAllGlobals();
   });
 
   it("builds floor and targets and walks through a portal in the original collider", async () => {
@@ -246,6 +276,7 @@ describe("greybox station integration", () => {
     const hit = greyboxSceneProbes([wall], []).wallHit({ x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 });
     expect(hit?.wallNormal?.x).toBeCloseTo(Math.SQRT1_2); expect(hit?.wallNormal?.z).toBeCloseTo(Math.SQRT1_2);
     const state = Object.assign(Object.create(Explorer.prototype), {
+      interactionController: new InteractionController([]),
       colliders: [wall], colliderTargets: [wall], sceneColliderTargets: new Set([wall]), ray: new THREE.Raycaster(), portalExemptions: 0,
       greyboxOpenings: [{ center: new THREE.Vector3(), along: new THREE.Vector3(0, 0, 1), across: new THREE.Vector3(1, 0, 0), wallNormal: hit!.wallNormal!, width: 2, depth: 0.6, height: 2.3 }],
     });
@@ -322,6 +353,7 @@ describe("greybox station integration", () => {
   it("updates the localized legend when a route or nearby walk needs it", () => {
     const notify = vi.fn();
     const state = Object.assign(Object.create(Explorer.prototype), {
+      interactionController: new InteractionController([]),
       routeGroup: new THREE.Group(), mode: "overview", pos: new THREE.Vector3(5, 0, 0),
       greyboxSegments: [{ line: new THREE.Line3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(10, 0, 0)), halfWidth: 1 }],
       greyboxLegendVisible: false, events: { onGreyboxLegend: notify },

@@ -146,6 +146,7 @@ for (const key of STATIONS) {
     const nodes = new Map(stationData(key).graph.nodes.map((n) => [n.id, n]));
     const poses: Record<string, unknown>[] = [];
     let posesWithLabels = 0;
+    const routePosesWithLabels: Record<string, number> = {};
     let totalShown = 0;
     let totalFaded = 0;
     let totalOffFloor = 0;
@@ -208,6 +209,7 @@ for (const key of STATIONS) {
         const offFloor = labels.filter(floorFaded).length;
         const shown = labels.length - faded - offFloor;
         if (labels.length > 0) posesWithLabels++;
+        routePosesWithLabels[r.label] = (routePosesWithLabels[r.label] ?? 0) + (labels.length > 0 ? 1 : 0);
         totalFaded += faded;
         totalOffFloor += offFloor;
         totalShown += shown;
@@ -221,10 +223,15 @@ for (const key of STATIONS) {
       }
     }
 
-    save(testInfo, `${key}-label-fade.json`, { station: key, project: testInfo.project.name, routes: resolved.map((r) => r.label), totalPoses: poses.length, posesWithVisibleLabels: posesWithLabels, totalShown, totalFaded, totalOffFloor, poses });
+    save(testInfo, `${key}-label-fade.json`, { station: key, project: testInfo.project.name, routes: resolved.map((r) => r.label), totalPoses: poses.length, posesWithVisibleLabels: posesWithLabels, routePosesWithLabels, totalShown, totalFaded, totalOffFloor, poses });
     console.log(`[label-fade] ${key} ${testInfo.project.name}: ${poses.length} poses, ${posesWithLabels} with visible labels, visible labels shown=${totalShown} faded=${totalFaded} off-floor=${totalOffFloor}`);
     // Only a blank page is flagged; whether any fade is justified is a human call on the C frames.
     expect.soft(poses.length, "poses captured").toBeGreaterThan(0);
-    expect.soft(posesWithLabels, `poses with at least one visible label (of ${poses.length})`).toBeGreaterThanOrEqual(Math.ceil(poses.length / 2));
+    // A blank page is a route with no pose showing any label (#1015). Half the poses was the earlier rule, but that
+    // measured viewport width and POI density: on main 14aba477 (2026-11-09 JST) Shinjuku had 7/16 poses with a label
+    // on phone-webkit and 9/16 on desktop-chromium with the same label states per pose and none faded on phone.
+    for (const r of resolved) {
+      expect.soft(routePosesWithLabels[r.label] ?? 0, `${r.label}: poses with at least one visible label`).toBeGreaterThanOrEqual(1);
+    }
   });
 }

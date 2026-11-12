@@ -8,7 +8,7 @@
     "field:ingest": "tsx tools/field-ingest/ingest.ts",
     "map:gen": "node tools/map/gen-symbols.mjs",
     "data:age": "tsx tools/data-age/report.ts",
-    "coverage:matrix": "tsx tools/coverage-matrix/report.ts",
+    "coverage:matrix": "node --import tsx/esm tools/coverage-matrix/report.ts",
     "bake:stairwells": "tsx packages/godot/src/stairwell-bake.ts --station shinjuku",
     "bake:stairwells:check": "tsx packages/godot/src/stairwell-bake.ts --station shinjuku --check",
     "typecheck": "tsc -p tsconfig.json",
@@ -20,7 +20,8 @@
     "build": "pnpm --filter @gteki/web build",
     "build:private": "sh tools/private-overlay/run.sh build",
     "deploy:private": "bash scripts/deploy-private.sh",
-    "dev:private": "sh tools/private-overlay/run.sh dev"
+    "dev:private": "sh tools/private-overlay/run.sh dev",
+    "intake": "tsx tools/merchant-intake/intake.ts"
   },
   "devDependencies": {
     "@babel/parser": "7.28.5",

@@ -1,3 +1,5 @@
+import { protectIdentityChip, type ScreenRect } from "./identityBoards.ts";
+
 /**
  * Screen-space declutter for POI labels in the overview, kept free of three.js and the DOM so it can be
  * unit-tested. Labels are placed greedily by priority; one whose rectangle meets an already placed
@@ -35,11 +37,38 @@ export interface DeclutterItem {
   measured?: boolean;
 }
 
+/** Offset a box into the viewport margin; oversized boxes are pinned to the near edge. */
+export function containmentShift(start: number, size: number, viewport: number, margin = 8): number {
+  return Math.max(margin, Math.min(start, viewport - margin - size)) - start;
+}
+
+/** Place an overview chip inside the viewport and protect identity boards after moving it. */
+export function placeOverviewChip(
+  chip: { x: number; y: number; w: number; h: number },
+  opts: { endpoint: boolean; selected: boolean; vw: number; vh: number; identityRegions: readonly ScreenRect[]; anchorY?: number },
+): { hidden: true } | { hidden: false; dx: number; dy: number } {
+  const { x, y, w, h } = chip;
+  const rect = { x0: x - w / 2, y0: y - h / 2, x1: x + w / 2, y1: y + h / 2 };
+  if (opts.endpoint
+    ? rect.x1 <= 0 || rect.x0 >= opts.vw || rect.y1 <= 0 || rect.y0 >= opts.vh
+    : x < 0 || x > opts.vw || (opts.anchorY ?? y) < 0 || (opts.anchorY ?? y) > opts.vh) return { hidden: true };
+  const dx = containmentShift(rect.x0, w, opts.vw);
+  let dy = containmentShift(rect.y0, h, opts.vh);
+  if ((dx || dy) && opts.identityRegions.length) {
+    const result = protectIdentityChip({ x0: rect.x0 + dx, x1: rect.x1 + dx, y0: rect.y0 + dy, y1: rect.y1 + dy }, opts.selected, opts.identityRegions, opts.vh);
+    if (result.hidden) return { hidden: true };
+    dy += result.offsetY;
+  }
+  return { hidden: false, dx, dy };
+}
+
 export interface DeclutterOptions {
   /** Clearance (px) kept around every placed label. */
   pad?: number;
   /** Extra clearance (px) a label that was hidden needs before it comes back. */
   hold?: number;
+  /** Screen rectangles reserved for UI controls. */
+  blocked?: readonly { x0: number; y0: number; x1: number; y1: number }[];
 }
 
 export const DECLUTTER_PAD_PX = 3;
@@ -65,6 +94,7 @@ export function declutter(items: readonly DeclutterItem[], options: DeclutterOpt
   for (const it of order) {
     const hw = it.w / 2, hh = it.h / 2;
     const l = it.x - hw, t = it.y - hh, r = it.x + hw, b = it.y + hh;
+    if (options.blocked?.some((q) => l < q.x1 && r > q.x0 && t < q.y1 && b > q.y0)) continue;
     // `gap` is the clearance kept to every placed label; one that was hidden needs the extra `hold` to come back.
     const gap = it.klass === LABEL_CLASS.endpoint ? 0 : it.wasVisible ? pad : pad + hold;
     let clear = true;

@@ -27,12 +27,12 @@ const OUT = join(HERE, "../gteki/tenants.json");
 const SOURCES = [
   {
     file: join(HERE, "../../../docs/research/merchants/shinjuku-odakyu-dept-tenants.json"),
-    sourceId: "odakyu-dept-shinjuku-2026-10",
+    sourceId: "odakyu-dept-shinjuku-2026-11-10",
     storePoiIds: ["shop-sjk-odakyudept"],
   },
   {
     file: join(HERE, "../../../docs/research/merchants/shinjuku-marui-tenants.json"),
-    sourceId: "marui-shinjuku-floorguide-2026-10",
+    sourceId: "marui-shinjuku-floorguide-2026-11-10",
     storePoiIds: ["shop-sjk-marui-honkan", "shop-sjk-marui-annex", "shop-sjk-marui-men"],
   },
   {
@@ -52,7 +52,7 @@ const SOURCES = [
   },
   {
     file: join(HERE, "../../../docs/research/merchants/shinjuku-keio-tenants.json"),
-    sourceId: "keio-shinjuku-shopsearch-2026-11",
+    sourceId: "keio-shinjuku-shopsearch-2026-11-10",
     storePoiIds: ["shop-sjk-keio"],
   },
   {

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { hooks, openStation, shotPath } from "../lib/gteki.ts";
+import { chooseBySearch, hooks, openStation, shotPath } from "../lib/gteki.ts";
 
 test("search panel folds while walking @phone", async ({ page }, info) => {
   const phone = info.project.name.startsWith("phone");
@@ -39,4 +39,53 @@ test("search panel folds while walking @phone", async ({ page }, info) => {
     await expect(panel).toBeVisible();
     await expect(page.locator('#gteki-to')).toBeFocused();
   }
+});
+
+test("greybox badge clears the guide HUD @phone", async ({ page }, info) => {
+  await openStation(page, "ikebukuro");
+  await chooseBySearch(page, "from", "中央2", /JR 中央2改札/);
+  await chooseBySearch(page, "to", "35", /^35番出口$/);
+  await page.locator(".sheet .card.route button.primary").click();
+  await expect.poll(() => hooks.mode(page)).toBe("guide");
+
+  const check = async (phase: string) => {
+    const badge = page.locator(".greybox-legend");
+    await expect(badge).toBeVisible();
+    await expect(page.locator(".hud-instruction")).toBeVisible();
+    let sample: { legend: { x: number; y: number; width: number; height: number } | null; instruction: { x: number; y: number; width: number; height: number } | null; hud: { element: string; x: number; y: number; width: number; height: number }[]; viewport: { width: number; height: number } } | null = null;
+    try {
+      await expect.poll(async () => {
+        sample = await page.evaluate(() => {
+          const rect = (e: Element | null) => {
+            if (!e || !e.getClientRects().length || getComputedStyle(e).visibility === "hidden") return null;
+            const r = e.getBoundingClientRect();
+            return { x: r.x, y: r.y, width: r.width, height: r.height };
+          };
+          const hud = Array.from(document.querySelectorAll(".hud > *, .hud button")).flatMap((e) => {
+            const box = rect(e);
+            return box ? [{ element: e.className || e.tagName, ...box }] : [];
+          });
+          return { legend: rect(document.querySelector(".greybox-legend")), instruction: rect(document.querySelector(".hud-instruction")), hud, viewport: { width: innerWidth, height: innerHeight } };
+        });
+        const { legend, instruction, hud, viewport } = sample;
+        if (!legend || !instruction || !hud.length) return "missing geometry";
+        if (legend.x < 0 || legend.y < 0 || legend.x + legend.width > viewport.width || legend.y + legend.height > viewport.height) return "badge outside viewport";
+        const overlaps = (rect: NonNullable<typeof legend>) => legend.x < rect.x + rect.width && legend.x + legend.width > rect.x && legend.y < rect.y + rect.height && legend.y + legend.height > rect.y;
+        if (overlaps(instruction)) return "badge overlaps HUD instruction";
+        const overlapping = hud.find(overlaps);
+        return overlapping ? `badge overlaps HUD ${overlapping.element}` : "clear";
+      }, { timeout: 3_000 }).toBe("clear");
+    } finally {
+      console.log(`[panel-fold] ${new Date().toISOString()} ${info.project.name} ${phase} ${JSON.stringify(sample)}`);
+    }
+  };
+
+  await check("initial");
+  const instruction = await page.locator(".hud-instruction").textContent();
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline && await page.locator(".hud-instruction").textContent() === instruction) {
+    await hooks.simulate(page, 1);
+  }
+  await expect(page.locator(".hud-instruction")).not.toHaveText(instruction!);
+  await check("advanced");
 });

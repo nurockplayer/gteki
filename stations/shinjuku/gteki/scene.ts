@@ -9,6 +9,7 @@ import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { OEDO_MAGENTA, STREET_UNDERSIDE, buildStation, slabGeometry, soffitGeometry, type BuiltStation } from "../scene/build.ts";
+import { installLightPreset, parseLightPreset } from "../scene/lightPreset.ts";
 import { kitSwapRequested, prepareKitSwap, type KitSwap } from "../scene/kit/index.ts";
 import { currentTimeBand } from "../../ikebukuro/scene/time-band.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
@@ -217,6 +218,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
   const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
   const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
+  installLightPreset(built.root, parseLightPreset(typeof location === "undefined" ? "" : location.search));
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
@@ -425,7 +427,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // headless build (no renderer, no env map) gets none; nothing renders there anyway.
   const adapted = crowdEdges(sceneBundle, (id) => layout.nodeZ.get(id) ?? nodes.get(id)?.renderZ ?? 0);
   const crowd = envTarget
-    ? buildCrowd(T, adapted.edges, crowdVector(T, ctx.enuToRenderer), low ? 56 : 150, envTarget.texture, adapted.lanes, timeBand)
+    ? buildCrowd(T, adapted.edges, crowdVector(T, ctx.enuToRenderer), low ? 80 : 150, envTarget.texture, adapted.lanes, timeBand)
     : null;
   if (crowd) built.root.add(crowd.group);
   if (shopKit && !shopKit.placements.length) {
@@ -497,7 +499,10 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     ...(audio.setAcousticZone ? { setAcousticZone: audio.setAcousticZone } : {}),
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
     ...(built.afterRender ? { afterRender: built.afterRender } : {}),
-    ...(crowd ? { setCameraNearFade: crowd.setCameraNearFade.bind(crowd) } : {}),
+    ...(crowd ? {
+      setCameraNearFade: crowd.setCameraNearFade.bind(crowd),
+      setCameraFocus: (p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign),
+    } : {}),
     ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
   return scene;
