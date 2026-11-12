@@ -164,7 +164,7 @@ export class App {
 
   async start(): Promise<void> {
     const params = new URLSearchParams(location.search);
-    this.coldOpen = params.get("open") === "world" && !params.has("from") && !params.has("to") && (params.get("station") ?? "shinjuku") === "shinjuku";
+    this.coldOpen = (params.get("open") === "world" || params.get("next") === "1") && !params.has("from") && !params.has("to") && (params.get("station") ?? "shinjuku") === "shinjuku";
     if (this.coldOpen) this.panelFold.fold();
     this.layout();
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {

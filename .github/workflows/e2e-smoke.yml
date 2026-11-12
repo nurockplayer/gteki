@@ -17,7 +17,7 @@ jobs:
   e2e-smoke:
     name: e2e-smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -48,20 +48,20 @@ jobs:
       # DOM/HUD state and the instruction flow, not visuals or performance. 05-performance and the visual
       # specs stay local on a real GPU. Single worker comes from the config (workers: 1).
       - name: Run smoke specs
-        timeout-minutes: 20
+        timeout-minutes: 10
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
           # 03 checks the guide's UI flow only; arrival needs the real-time playback a GPU host gives (see the spec).
           GTEKI_GUIDE_FLOW_ONLY: "1"
-        run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts specs/31-cold-open.spec.ts --project=desktop-chromium --trace=off --grep-invert "station switching"
+        run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off --grep-invert "station switching"
 
-      - name: Cold open on phone
-        timeout-minutes: 10
+      - name: Cold open (desktop + phone)
+        timeout-minutes: 12
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
-        run: pnpm exec playwright test specs/31-cold-open.spec.ts --project=phone-chromium --trace=off
+        run: pnpm exec playwright test specs/31-cold-open.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
 
       # The station switch (Ikebukuro -> Shinjuku) runs on its own step so its [switch-timings] line is easy to find
       # (#647). It blocks again since #1026: the old 15 s ready limit was the cause of the failures, and with the 120 s
