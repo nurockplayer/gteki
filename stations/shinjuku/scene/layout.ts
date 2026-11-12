@@ -702,6 +702,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   // Finish exit shafts against the 180 mm street slab underside, rather than
   // stopping 330 mm below it. This remains below the surface canopy and its walls.
   const streetUnderside = -0.18;
+  const streetSurface = streetUnderside + 0.18;
   const landingClearance = 3.2;
   const underground = layout.levels.filter((lv) => lv.z < -0.5);
   const levelAt = (z: number) => underground.reduce((a, b) => Math.abs(a.z - z) < Math.abs(b.z - z) ? a : b);
@@ -920,7 +921,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     // A landing closer to the street than a head band cannot carry a wall cap at the
     // street underside: a person standing there already reaches above it, so every
     // closure at -0.18 is cut away as a walk void. Such a shaft (and only such a
-    // shaft) carries its shell up to the roof it already builds.
+    // shaft) carries its shell up to its roof, capped at the street floor top.
     const capToRoof = group.some((r) => [r.a, r.b].some((p) => Math.abs(p.z) > 0.1 && streetUnderside - p.z < 2.1));
     const lv = levelAt(lo.z);
     const u = { x: d.x / Math.sqrt(l2), y: d.y / Math.sqrt(l2) }, n = { x: -u.y, y: u.x };
@@ -1028,7 +1029,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         z: lo.z + Math.min(...offsets) - 0.3 };
       shaftHulls.push(invert);
       for (const panel of cropUndergroundRoof(invert, streetUnderside)) layout.soffits.push(...clearSoffit(panel, passages, 0.025, 2.1));
-      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => base(p) + rise : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined);
+      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => Math.min(base(p) + rise, streetSurface) : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined);
     }
     // Raised short collars bridge the clearance cut at the tangent change between an
     // inclined shaft and a flat hall. Without this step, two individually safe cut roofs
@@ -1091,11 +1092,9 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     // rather than continuing a high sheet out above the adjoining low hall.
     const ceilingHeights = mouths.map((p) => Math.min(layout.levels.find((level) => Math.abs(level.z - p.z) < 0.1)?.ceilingZ ?? p.z + 3.2, streetUnderside));
     for (const s of [Math.min(...stations), Math.max(...stations)]) {
-      // A near-street shaft end carries its finish band up to the same roof the hull
-      // walls now reach, instead of stopping at the street underside.
-      const endTop = capToRoof ? base(at(s, 0)) + rise : Math.max(...ceilingHeights);
-      // The near-street end has no street underside to stop at: run its finish from the
-      // landing mouth up to the same roof the hull walls reach.
+      // Near-street end faces share the hull cap at the street floor top.
+      const endTop = capToRoof ? Math.min(base(at(s, 0)) + rise, streetSurface) : Math.max(...ceilingHeights);
+      // Keep the closure below the street continuous from the landing mouth.
       const endBottom = capToRoof ? Math.min(...mouths.map((p) => p.z)) - 0.18 : Math.min(...ceilingHeights);
       for (const [bottom, top] of [[endBottom, endTop],
         [Math.min(...mouths.map((p) => p.z)) - 0.18, Math.max(...mouths.map((p) => p.z)) - 0.18]]) {
