@@ -62,6 +62,8 @@ Local runs of the full suite need a real GPU for 05 and the visual specs. Run th
 - 19-avatar-baseline — #339 F0 avatar baseline: foot slide, captures and frame time.
 - 20-recognition — #342 Q5 recognition-proxy captures (OCR, proxy table).
 - 21-vertical-shots — vertical transport before/after: Shinjuku escalator bank and Exit 1 stairs at fixed cameras, both tiers, plus a walk down and up the bank (`docs/visual/vertical-gap.md`).
+- 30-journey — Shinjuku cold open and guided-walk reel, with per-sample metrics and contact sheets.
+- journey (shinjuku) CI job — runs the reel on desktop and phone Chromium and uploads it on every PR.
 - walkscan — opt-in GPU route-wide player-view floor scan, with ray measurements and contact sheets (#1032).
 
 ## Pitfalls

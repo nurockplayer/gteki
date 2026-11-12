@@ -121,6 +121,53 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+  journey:
+    name: journey (shinjuku) (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 38
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [desktop-chromium, phone-chromium]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            tests/e2e/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install Playwright harness
+        working-directory: tests/e2e
+        run: |
+          pnpm install --ignore-workspace --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+      - name: Run journey
+        timeout-minutes: 32
+        working-directory: tests/e2e
+        env:
+          CI: "1"
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/30-journey.spec.ts --project=${{ matrix.project }} --trace=off
+      - name: Append journey summary
+        if: always()
+        run: |
+          if [ -f "tests/e2e/artifacts/journey/${{ matrix.project }}/summary.md" ]; then
+            cat "tests/e2e/artifacts/journey/${{ matrix.project }}/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload journey reel
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journey-reel-${{ matrix.project }}
+          path: tests/e2e/artifacts/journey
+          retention-days: 14
+          if-no-files-found: ignore
+
   # WebKit replay guard for the stale stairwell recipes in #1012 / #1028.
   e2e-smoke-webkit:
     name: e2e-smoke-webkit
