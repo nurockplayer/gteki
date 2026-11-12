@@ -51,7 +51,7 @@ test("compact guide and arrival @phone", async ({ page }, info) => {
   await expect(card).toContainText("Arrived");
   await expect(card).not.toContainText("Data for");
   await expect(card).toHaveAttribute("aria-expanded", "false");
-  await expect(page.locator(".toast")).toBeHidden();
+  await expect(page.locator(".toast")).not.toHaveClass(/\bshow\b/);
   await expect(page.getByRole("button", { name: "Reverse route" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Search again" })).toBeVisible();
   await card.click();
