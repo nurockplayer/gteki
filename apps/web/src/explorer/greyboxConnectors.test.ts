@@ -31,6 +31,24 @@ import { buildConnectors, buildElevator, buildEscalator, buildStairs, withinGrey
 import { buildConnectors as buildLegacyConnectors, buildEscalator as buildLegacyEscalator } from "./greyboxConnectorsLegacy.ts";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
 
+it("suppresses only modelled stair visuals while preserving physical geometry", () => {
+  const station = { ...bundle, nodes: [...bundle.nodes, ...bundle.nodes.map((n) => ({ ...n, id: n.id + "2", position: { ...n.position, y: n.position.y + 20 } }))],
+    edges: [...bundle.edges, { ...bundle.edges[0]!, id: "other", from: "a2", to: "b2" }] } as StationBundle;
+  const scope = { hasFloor: () => false, nearMesh: () => false };
+  const plain = buildConnectors(station, () => true, scope, "high");
+  const hidden = buildConnectors(station, () => true, { ...scope, visuallyModelled: new Set(["e"]) }, "high");
+  const positions = (objects: THREE.Object3D[]) => objects.map((o) => Array.from((o as THREE.Mesh).geometry.getAttribute("position").array));
+  expect(positions(hidden.walkable)).toEqual(positions(plain.walkable));
+  expect(positions(hidden.colliders)).toEqual(positions(plain.colliders));
+  expect(hidden.wallSegments).toEqual(plain.wallSegments);
+  const triangles = (result: typeof plain, id: string) => result.root.children.reduce((sum, o) => sum + (o.userData.edgeRanges as { edgeId: string; start: number; end: number }[]).filter((r) => r.edgeId === id).reduce((n, r) => n + (r.end - r.start) / 3, 0), 0);
+  expect(triangles(plain, "e")).toBeGreaterThan(0);
+  expect(triangles(hidden, "e")).toBe(0);
+  expect(triangles(hidden, "other")).toBe(triangles(plain, "other"));
+  expect(triangles(hidden, "other")).toBeGreaterThan(0);
+  expect(hidden.stats.visualSuppressed).toBe(1);
+});
+
 it("builds a lift scene gap as a shaft, not a stair or escalator (#645 step 2b)", () => {
   const station = { ...bundle, edges: [{ ...bundle.edges[0]!, mode: "elevator", attributes: { sceneGap: true } }] } as StationBundle;
   const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");
