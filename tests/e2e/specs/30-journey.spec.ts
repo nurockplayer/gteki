@@ -68,7 +68,7 @@ async function sceneMetrics(page: Page) {
     const under = (o: any, root: any) => { for (let p = o; p; p = p.parent) if (p === root) return true; return false; };
     const visible = (o: any) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
     const meshes = scene.filter((o: any) => visible(o) && !under(o, e.avatar));
-    const hits = () => castAll(e.ray, meshes).filter((h: any) => {
+    const hits = (targets = meshes) => castAll(e.ray, targets).filter((h: any) => {
       const m = Array.isArray(h.object.material) ? h.object.material[h.face?.materialIndex ?? 0] : h.object.material;
       return m?.visible !== false;
     });
@@ -97,11 +97,19 @@ async function sceneMetrics(page: Page) {
         else { let npc = false; for (let o = hit.object; o; o = o.parent) if (o.userData?.gteki_role === "ambient_crowd" || /crowd/i.test(o.name)) npc = true; hidden[npc ? "npc" : "geometry"]++; }
       }
     } else hidden.offscreen = 9;
+    // A mesh whose world bounding sphere is farther than 0.3 m cannot contribute to nearClip.
+    // Keep dynamic meshes in the ray set: their geometry bounds need not contain their posed instances.
+    const nearMeshes = meshes.filter((o: any) => {
+      if (o.isInstancedMesh || o.isSkinnedMesh || !o.geometry) return true;
+      if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+      const sphere = o.geometry.boundingSphere?.clone().applyMatrix4(o.matrixWorld);
+      return !sphere || sphere.distanceToPoint(camera.position) <= 0.3;
+    });
     let near = 0;
     for (let y = 0; y < 10; y++) for (let x = 0; x < 16; x++) {
       e.ray.setFromCamera({ x: (x + 0.5) / 8 - 1, y: 1 - (y + 0.5) / 5 }, camera);
       e.ray.near = 0; e.ray.far = 0.3;
-      if (hits().length) near++;
+      if (hits(nearMeshes).length) near++;
     }
     const occluder = Object.entries(hidden).sort((a, b) => b[1] - a[1])[0];
     return { catVisible: good / 9, catOccluder: good === 9 ? null : occluder[0], nearClip: near / 160, cameraDirection: camera.getWorldDirection(e.pos.clone()).toArray() };
@@ -146,6 +154,7 @@ test("guided walk @phone", async ({ page }, info) => {
   while (simT < 260 && !arrived) {
     await hooks.simulate(page, stepS); simT += stepS;
     await sample(false);
+    console.log(`[journey] ${info.project.name} sample=${samples.length - 1} simT=${simT}`);
     arrived = (await hooks.guideControls(page) as any).arrived;
   }
   if (arrived) { await hooks.simulate(page, 2); simT += 2; await sample(true); }
