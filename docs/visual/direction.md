@@ -194,6 +194,27 @@ Not done by the light:
 
 Provisional until the Owner sees the walk video.
 
+### D10 (2026-11-12 09:5x JST) Live check of the B default on gteki.pages.dev
+The first live judgement under token-rules 26. It was made on the production deploy of `2bc75aeb` (#1184) in ego-lite, desktop at 1476×996, through `__gteki.setView` at the slice cameras, with no parameter (B) and with `?lightpreset=off`.
+
+![slice-10 and slice-11, off left, B right](live/2026-11-12-b-default-off-vs-b.jpg)
+
+- **B is live and matches the renders.**
+  - At slice-11 (the B6 landing), the floor reads as the bright, cool pool; with `off` it is flat grey.
+  - At slice-10, the upper walls take the warm shaft tint.
+  - slice-01, slice-04 and slice-12 look the same as with `off`, so the grade does not leak outside the shaft and landing.
+- **No light correction.** The faint magenta accent at the foot of the landing walls stays: it reads as the line colour at waist height, not a wash.
+
+Corrections logged for other rows (not light):
+1. **slice-12 (platform)** shows almost only floor tiles: the follow camera looks down (raise 0.87 rad), and the platform, the track edge and the name sign are out of frame. The arrival frame (J9, hero H4) must show the platform and its name sign.
+
+   ![slice-12 live](live/2026-11-12-slice-12.jpg)
+
+2. **The UI overlay** (search panel, chips, minimap and bottom bar) covers roughly a third to two fifths of the desktop frame at every slice camera. That is J3/J8 (D1 diet), already in flight behind `?next=1`.
+3. **At slice-10**, a dark brown wall wedge fills the right side of the escalator head. That is material and geometry, and it goes to the hero scene repair list.
+
+Provisional until the Owner sees the walk video.
+
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
 1. Flat ambient light: fixtures light nothing, there are no floor pools or contact shadows, and pillars, walls and floor share one value band.
