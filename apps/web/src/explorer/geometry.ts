@@ -84,8 +84,9 @@ export function routeRunsOutsideSpans(points: readonly THREE.Vector3[], spans: r
     for (let j = 1; j < boundaries.length; j++) {
       const from = boundaries[j - 1]!, to = boundaries[j]!;
       if (cuts.some((cut) => (from + to) / 2 >= cut.fromS && (from + to) / 2 < cut.toS)) continue;
-      const start = a.clone().lerp(b, (from - distance) / length);
-      const finish = a.clone().lerp(b, (to - distance) / length);
+      // Segment ends stay the exact vertices, so runs join across ordinary corners (a lerp at t ≈ 1 misses by an ulp).
+      const start = from === distance ? a.clone() : a.clone().lerp(b, (from - distance) / length);
+      const finish = to === end ? b.clone() : a.clone().lerp(b, (to - distance) / length);
       const previous = runs.at(-1);
       if (previous && previous.at(-1)!.equals(start)) previous.push(finish);
       else runs.push([start, finish]);

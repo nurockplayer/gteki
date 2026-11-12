@@ -55,3 +55,10 @@ it("draws the walking ribbon 0.40 m wide and the overview ribbon 1.1 m wide", ()
     expect(positions.getX(i)).toBeLessThanOrEqual(7.5);
   }
 });
+
+it("keeps a route with no escalator as one run across its corners", () => {
+  const points = [[0, 0], [1.3, 2.7], [4.9, 8.1], [8.4, 3.6], [11.8, 9.1]].map(([x, z]) => new THREE.Vector3(x, 0, z));
+  const runs = routeRunsOutsideSpans(points, []);
+  expect(runs).toHaveLength(1);
+  expect(runs[0]).toEqual(points);
+});
