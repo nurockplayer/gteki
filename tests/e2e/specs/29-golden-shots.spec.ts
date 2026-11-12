@@ -102,7 +102,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       for (const feature of camera.features ?? []) {
         const result = probe.features.find(f => f.name === feature.name)!;
         const check = evaluateCheck(`feature:${feature.name}`, result.pixels, feature.minPixels, camera.known);
-        if (!result.meshes) { check.status = "fail"; if (!camera.knownIssue) failures.push(`${camera.id}: feature not found: ${feature.name}`); }
+        if (!result.meshes && check.status !== "known") { check.status = "fail"; if (!camera.knownIssue) failures.push(`${camera.id}: feature not found: ${feature.name}`); }
         checks.push(check);
       }
       diagnostics.features = probe.features;

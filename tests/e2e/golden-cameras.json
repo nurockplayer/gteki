@@ -107,7 +107,7 @@
             "namePrefix": "sign:",
             "contains": "1ecbdf77"
           },
-          "minPixels": 1
+          "minPixels": 18
         }
       ]
     },
@@ -125,7 +125,7 @@
             "namePrefix": "sign:",
             "contains": "2d2bc35b"
           },
-          "minPixels": 1
+          "minPixels": 24
         }
       ]
     },
@@ -143,7 +143,7 @@
             "namePrefix": "sign:",
             "contains": "453ea111"
           },
-          "minPixels": 1
+          "minPixels": 30
         }
       ]
     },
@@ -161,12 +161,13 @@
             "namePrefix": "sign:",
             "contains": "c2d39002"
           },
-          "minPixels": 1
+          "minPixels": 170
         }
       ]
     },
     {
       "id": "sj-sign-e31954cb",
+      "known": { "feature:sign e31954cb": "#1205" },
       "station": "shinjuku",
       "kind": "node",
       "node": "n:3c2d58645c62448b8e4c97f010d9ce32",
@@ -197,7 +198,7 @@
             "role": "stairs_ramps",
             "withinM": 15
           },
-          "minPixels": 1
+          "minPixels": 13
         }
       ]
     },
@@ -215,12 +216,13 @@
             "role": "stairs_ramps",
             "withinM": 15
           },
-          "minPixels": 1
+          "minPixels": 2901
         }
       ]
     },
     {
       "id": "sj-stair-2-top",
+      "known": { "feature:stairs": "#1205" },
       "station": "shinjuku",
       "kind": "node",
       "node": "n:d1ccc52ef25e474dac70020771b7ea76",
@@ -252,12 +254,13 @@
             "role": "stairs_ramps",
             "withinM": 15
           },
-          "minPixels": 1
+          "minPixels": 2436
         }
       ]
     },
     {
       "id": "sj-escalator-top",
+      "known": { "feature:escalator": "#1205" },
       "station": "shinjuku",
       "kind": "node",
       "node": "n:e4365ef27b14448eb770343c8a024f80",
@@ -288,7 +291,7 @@
             "namePrefix": "escalator-steps:",
             "withinM": 15
           },
-          "minPixels": 1
+          "minPixels": 2046
         }
       ]
     },
