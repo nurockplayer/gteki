@@ -107,9 +107,10 @@ async function sceneMetrics(page: Page) {
     // Mesh name with up to two named ancestors, e.g. "surface-steel<shinjuku-surface".
     const label = (o: any) => { const names: string[] = []; for (let p = o; p && names.length < 3; p = p.parent) if (p.name) names.push(p.name); return names.join("<") || `(unnamed ${o.type})`; };
     const tally = (into: Record<string, number>, o: any) => { const k = label(o); into[k] = (into[k] ?? 0) + 1; };
+    // Overlays (route ribbon, route lines) are transparent and write no depth: they tint the cat, never hide it.
     const hits = (targets = meshes) => castAll(e.ray, targets).filter((h: any) => {
       const m = Array.isArray(h.object.material) ? h.object.material[h.face?.materialIndex ?? 0] : h.object.material;
-      return m?.visible !== false;
+      return m?.visible !== false && !(m?.transparent && m?.depthWrite === false);
     });
     e.scene.updateMatrixWorld(true); e.camera.updateMatrixWorld(true);
     const camera = e.camera, canvas = e.renderer.domElement;
