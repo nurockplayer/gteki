@@ -69,7 +69,15 @@ test("cold open @phone", async ({ page }, info) => {
     expect(nextState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
   }
   const coverage = await overlay(page);
-  await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
+  if (reelMode === "next") {
+    await page.evaluate(() => (window as any).__gteki.holdFrames(true));
+    try {
+      await page.evaluate(() => (window as any).__gteki.goldenFrame());
+      const cdp = await page.context().newCDPSession(page);
+      const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+      fs.writeFileSync(path.join(out, "open-ready.png"), Buffer.from(png.data, "base64"));
+    } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+  } else await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
   fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, ...nextState } : {}), ...state, ...coverage }, null, 2));
 });
 
