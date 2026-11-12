@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { installBootFrameProbe, shotPath, waitBootLift } from "../lib/gteki";
 
@@ -7,7 +8,7 @@ async function lifted(page: Page, info: TestInfo) {
   await expect(page.locator(".cold-open")).toBeVisible();
 }
 
-test("loading card blocks early taps and lifts to the route", async ({ page }, info) => {
+test("loading card blocks early taps and lifts to the route @phone", async ({ page }, info) => {
   await installBootFrameProbe(page);
   await page.goto("/?next=1");
   await lifted(page, info);
@@ -38,10 +39,11 @@ test("loading card blocks early taps and lifts to the route", async ({ page }, i
   await expect(page.locator(".cold-open")).toBeHidden();
   await expect(page.locator(".panel")).toBeHidden();
   await page.screenshot({ path: shotPath(info, "boot-1s.png") });
-  await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  const point = { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 };
+  expect(await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest(".boot-card"), point)).toBe(true);
+  await page.mouse.click(point.x, point.y);
   release();
   await lifted(page, info);
-  await page.screenshot({ path: shotPath(info, "boot-lifted.png") });
   const state = await page.evaluate(() => {
     const g = (window as any).__gteki;
     return { mode: g.mode(), route: g.route(), endpoints: g.routeEndpoints(), flag: localStorage.getItem("gteki.firstRunDone") };
@@ -50,6 +52,15 @@ test("loading card blocks early taps and lifts to the route", async ({ page }, i
   expect(state.route.ok).toBe(true);
   expect(state.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
   expect(state.flag).toBeNull();
+  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
+  try {
+    await page.evaluate(() => (window as any).__gteki.goldenFrame());
+    const cdp = await page.context().newCDPSession(page);
+    const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+    fs.writeFileSync(shotPath(info, "boot-lifted.png"), Buffer.from(png.data, "base64"));
+  } finally {
+    await page.evaluate(() => (window as any).__gteki.holdFrames(false));
+  }
   await page.locator(".cold-open .primary").click();
   await expect.poll(() => page.evaluate(() => (window as any).__gteki.mode())).toBe("guide");
 });
