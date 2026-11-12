@@ -1264,6 +1264,14 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   }
   layout.shaftFascias = compactShaftFascias(layout.shaftFascias, layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia")));
   if (pitchedRoofs.length) {
+    // Clipping snaps flight corners to millimetres. Bound those final corners too,
+    // so rounding cannot leave the preview plane below an existing flight roof.
+    for (const roof of pitchedRoofs) {
+      const prefix = roof.spaceId.replace("pitched-shaft", "shaft-roof") + ":flight:";
+      const offsets = layout.shaftFinishes.filter((s) => s.spaceId.startsWith(prefix))
+        .flatMap((s) => s.rings.flat().map((p) => soffitHeight(s, p) - soffitHeight(roof, p)));
+      roof.z += Math.max(0, ...offsets);
+    }
     const voids = pitchedRoofs.map((roof) => ({ rings: roof.rings,
       bottom: (p: XY) => soffitHeight(roof, p) - 3.3, top: (p: XY) => soffitHeight(roof, p) + 0.01 }));
     const trim = <T extends SlabPoly & { origin?: XY; slope?: XY }>(sheet: T): T[] => {
