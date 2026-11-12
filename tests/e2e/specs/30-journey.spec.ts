@@ -14,7 +14,7 @@ const config = JSON.parse(fs.readFileSync(new URL("../journey.json", import.meta
 };
 const outDir = (project: string) => path.join(ARTIFACTS, "journey", project);
 
-type Overlay = { overlayPct: number; overlayText: string[] };
+type Overlay = { overlayPct: number; overlayText: string[]; legend: boolean };
 async function overlay(page: Page): Promise<Overlay> {
   return page.evaluate(() => {
     const canvas = document.querySelector("canvas");
@@ -35,7 +35,10 @@ async function overlay(page: Page): Promise<Overlay> {
       }
       if (paints) covered++;
     }
-    return { overlayPct: covered * 100 / 384, overlayText: [...strings] };
+    // J13: the badge has pointer-events: none, so elementFromPoint above never sees it.
+    const badge = document.querySelector<HTMLElement>(".greybox-legend"), r = badge?.getBoundingClientRect(), bs = badge && getComputedStyle(badge);
+    const legend = !!(badge && r && bs && !badge.hidden && bs.display !== "none" && bs.visibility !== "hidden" && Number(bs.opacity) > 0 && r.width > 0 && r.height > 0 && r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight);
+    return { overlayPct: covered * 100 / 384, overlayText: [...strings], legend };
   });
 }
 
@@ -101,6 +104,9 @@ async function sceneMetrics(page: Page) {
     const under = (o: any, root: any) => { for (let p = o; p; p = p.parent) if (p === root) return true; return false; };
     const visible = (o: any) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
     const meshes = scene.filter((o: any) => visible(o) && !under(o, e.avatar));
+    // Mesh name with up to two named ancestors, e.g. "surface-steel<shinjuku-surface".
+    const label = (o: any) => { const names: string[] = []; for (let p = o; p && names.length < 3; p = p.parent) if (p.name) names.push(p.name); return names.join("<") || `(unnamed ${o.type})`; };
+    const tally = (into: Record<string, number>, o: any) => { const k = label(o); into[k] = (into[k] ?? 0) + 1; };
     const hits = (targets = meshes) => castAll(e.ray, targets).filter((h: any) => {
       const m = Array.isArray(h.object.material) ? h.object.material[h.face?.materialIndex ?? 0] : h.object.material;
       return m?.visible !== false;
@@ -114,7 +120,7 @@ async function sceneMetrics(page: Page) {
       const b = o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld);
       if (box) box.union(b); else box = b;
     });
-    let good = 0; const hidden: Record<string, number> = { geometry: 0, npc: 0, ui: 0, offscreen: 0 };
+    let good = 0; const hidden: Record<string, number> = { geometry: 0, npc: 0, ui: 0, offscreen: 0 }; const catMeshes: Record<string, number> = {}, nearMeshNames: Record<string, number> = {};
     if (box) {
       const center = box.getCenter(e.pos.clone());
       const points = [center];
@@ -127,7 +133,7 @@ async function sceneMetrics(page: Page) {
         e.ray.ray.set(camera.position, direction.normalize()); e.ray.near = 0; e.ray.far = distance;
         const hit = hits()[0];
         if (!hit || hit.distance >= distance) good++;
-        else { let npc = false; for (let o = hit.object; o; o = o.parent) if (o.userData?.gteki_role === "ambient_crowd" || /crowd/i.test(o.name)) npc = true; hidden[npc ? "npc" : "geometry"]++; }
+        else { let npc = false; for (let o = hit.object; o; o = o.parent) if (o.userData?.gteki_role === "ambient_crowd" || /crowd/i.test(o.name)) npc = true; hidden[npc ? "npc" : "geometry"]++; if (!npc) tally(catMeshes, hit.object); }
       }
     } else hidden.offscreen = 9;
     // A mesh whose world bounding sphere is farther than 0.3 m cannot contribute to nearClip.
@@ -142,10 +148,11 @@ async function sceneMetrics(page: Page) {
     for (let y = 0; y < 10; y++) for (let x = 0; x < 16; x++) {
       e.ray.setFromCamera({ x: (x + 0.5) / 8 - 1, y: 1 - (y + 0.5) / 5 }, camera);
       e.ray.near = 0; e.ray.far = 0.3;
-      if (hits(nearMeshes).length) near++;
+      const nearHit = hits(nearMeshes)[0];
+      if (nearHit) { near++; tally(nearMeshNames, nearHit.object); }
     }
     const occluder = Object.entries(hidden).sort((a, b) => b[1] - a[1])[0];
-    return { catVisible: good / 9, catOccluder: good === 9 ? null : occluder[0], nearClip: near / 160, cameraDirection: camera.getWorldDirection(e.pos.clone()).toArray() };
+    return { catVisible: good / 9, catOccluder: good === 9 ? null : occluder[0], catOccluderMeshes: catMeshes, nearClip: near / 160, nearClipMeshes: nearMeshNames, cameraDirection: camera.getWorldDirection(e.pos.clone()).toArray() };
   });
 }
 
@@ -197,7 +204,7 @@ test("guided walk @phone", async ({ page }, info) => {
     const dir = m.cameraDirection, dx = to.position.x - from.position.x, dy = to.position.y - from.position.y;
     const axisDeg = step.mode === "escalator" ? Math.acos(Math.max(-1, Math.min(1, (dir[0] * dx - dir[2] * dy) / (Math.hypot(dir[0], dir[2]) * Math.hypot(dx, dy))))) * 180 / Math.PI : null;
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
-    samples.push({ ...(arrival ? { identity } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, nearClip: m.nearClip, axisDeg });
+    samples.push({ ...(arrival ? { identity } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -240,6 +247,8 @@ test("guided walk @phone", async ({ page }, info) => {
   fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
   const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
   lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}`);
+  const noLegend = samples.filter(s => !s.legend).map(s => s.index);
+  lines.push(`- J13 (report): badge on screen in ${samples.length - noLegend.length} / ${samples.length} samples; missing at: ${noLegend.join(", ") || "none"}`);
   const unknownReport = unknown.join(", ") || "none";
   lines.push(`- Unknown regressions: ${unknownReport}`);
   console.log(`[journey] ${info.project.name} unknown regressions: ${unknownReport}`);
