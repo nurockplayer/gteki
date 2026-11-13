@@ -4,7 +4,12 @@ import path from 'node:path';
 import { test, expect } from '@playwright/test';
 import { PROBE_SCRIPT, settleFrames } from '../lib/gteki.ts';
 
-test.use({ trace: 'off', video: 'off', screenshot: 'off' });
+// Reproduce #1192's desktop high tier even when CI defaults to 960x600.
+test.use({
+  viewport: { width: 1440, height: 900 }, screen: { width: 1440, height: 900 },
+  isMobile: false, hasTouch: false, deviceScaleFactor: 1,
+  trace: 'off', video: 'off', screenshot: 'off',
+});
 test('slice-09-b3-sign void diagnosis', async ({ page }) => {
   test.setTimeout(700_000);
   const out = path.resolve(import.meta.dirname, '../artifacts/void-diag');
@@ -18,6 +23,19 @@ test('slice-09-b3-sign void diagnosis', async ({ page }) => {
   await page.waitForFunction(() => typeof (window as any).__gteki?.phase === 'function', null, { timeout: 30_000, polling: 250 });
   await page.waitForFunction(() => (window as any).__gteki.phase() === 'ready', null, { timeout: 360_000, polling: 250 });
   await expect(page.locator('.chips .chip').first()).toBeAttached();
+  const renderConfiguration = await page.evaluate(() => {
+    const g = (window as any).__gteki, gl = g.scanProbe().explorer.renderer.getContext();
+    const debug = gl.getExtension('WEBGL_debug_renderer_info');
+    return {
+      quality: g.quality(), viewport: { width: innerWidth, height: innerHeight },
+      screen: { width: screen.width, height: screen.height }, devicePixelRatio,
+      renderer: gl.getParameter(debug ? debug.UNMASKED_RENDERER_WEBGL : gl.RENDERER),
+    };
+  });
+  fs.writeFileSync(path.join(out, 'render-configuration.json'), JSON.stringify(renderConfiguration, null, 2));
+  expect(renderConfiguration.quality).toBe('high');
+  expect(renderConfiguration.viewport).toEqual({ width: 1440, height: 900 });
+  expect(renderConfiguration.screen).toEqual({ width: 1440, height: 900 });
   await settleFrames(page, 'void diagnosis station ready');
   await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   try {
@@ -111,7 +129,7 @@ test('slice-09-b3-sign void diagnosis', async ({ page }) => {
         if (baseline < 0.01) {
           mode = 'baselineAfter';
           const baselineAfter = capture().voidRatio;
-          return { baseline, baselineAfter, images, stopped: 'Baseline below 0.01' };
+          return { baseline, baselineAfter, images, decision: 'NON_REPRODUCTION: baseline below 0.01; hypotheses not investigated' };
         }
         const samples: any[] = [], groups = new Map<string, any>();
         let noHit = 0, noVisibleHit = 0, noHiddenHit = 0;
@@ -178,8 +196,8 @@ test('slice-09-b3-sign void diagnosis', async ({ page }) => {
     const { images, samples, ...summary } = result as any;
     if (images) for (const [name, b64] of Object.entries(images)) fs.writeFileSync(path.join(out, `${name}.png`), Buffer.from(b64 as string, 'base64'));
     const timestamp = new Date().toISOString().replace('Z', ' UTC');
-    fs.writeFileSync(path.join(out, 'diagnosis.json'), JSON.stringify({ timestamp, ...summary, samples }, null, 2));
-    console.log(JSON.stringify({ timestamp, kind: 'summary', ...summary }));
+    fs.writeFileSync(path.join(out, 'diagnosis.json'), JSON.stringify({ timestamp, renderConfiguration, ...summary, samples }, null, 2));
+    console.log(JSON.stringify({ timestamp, kind: 'summary', renderConfiguration, ...summary }));
 
     if (summary.decision) throw new Error(`DECISION: ${summary.decision}`);
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }

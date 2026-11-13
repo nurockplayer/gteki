@@ -28,7 +28,9 @@ jobs:
         run: |
           pnpm install --ignore-workspace --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
-      - name: Diagnose B3 concourse void
+      # The spec overrides CI screen/viewport to 1440x900 and asserts high tier.
+      # Ubuntu still uses SwiftShader; renderer identity is recorded in the artifact.
+      - name: Diagnose B3 concourse void (1440x900 high tier)
         timeout-minutes: 15
         working-directory: tests/e2e
         env:
