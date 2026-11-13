@@ -67,7 +67,7 @@ export interface BuiltStation {
 
 export interface BuildOptions {
   quality: "low" | "high";
-  previewNext?: boolean;
+  pitchedCeilings?: boolean;
   /**
    * Optional Lane E kit swap (Issue #94). Absent = the station is built exactly as before. Present, it is
    * applied once after every placeholder exists and before the static finishes merge; it adds visual
@@ -688,7 +688,7 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 // ---------------------------------------------------------------- main
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
-  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput, previewNext: opts.previewNext });
+  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput, pitchedCeilings: opts.pitchedCeilings });
   const preview = layout.shaftCeilingPreview;
   const overheadRoofRoot = preview ? new THREE.Group() : undefined;
   const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];

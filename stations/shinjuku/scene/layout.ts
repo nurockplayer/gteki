@@ -324,7 +324,7 @@ export function stairShaftGroups(runs: Run[]): Run[][] {
   return shafts;
 }
 
-export function buildLayout(bundle: StationBundle, plan: Plan, options: { previewNext?: boolean } = {}): Layout {
+export function buildLayout(bundle: StationBundle, plan: Plan, options: { pitchedCeilings?: boolean } = {}): Layout {
   const nodeZ = new Map<string, number>(Object.entries(plan.nodeRenderZ));
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const zOf = (id: string) => nodeZ.get(id) ?? 0;
@@ -680,7 +680,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan, options: { previe
   const cutStreet = cutWalkingSlabs(streetPads);
   const layout: Layout = { levels, cornerFills: [], runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips: cutWalkingSlabs(linkStrips), runWalls, soffits: [], shaftFinishes: [], shaftFascias: [], nodeZ, bounds: { min, max } };
   const elevatorLandings = bundle.nodes.filter((n) => n.kind === "elevator" && zOf(n.id) < -0.5).map((n) => ({ ...n.position, z: zOf(n.id) }));
-  finishUnderground(layout, plan, [...segs, ...elevatorPassages], elevatorLandings, elevatorPassages, options.previewNext);
+  finishUnderground(layout, plan, [...segs, ...elevatorPassages], elevatorLandings, elevatorPassages, options.pitchedCeilings);
   return layout;
 }
 
@@ -738,7 +738,7 @@ export function clearSoffit<T extends SlabPoly & { origin?: XY; slope?: XY }>(s:
  * Flat roofs cover the complete source outline and graph sleeves; pitched roofs cover runs.
  * New vertical panels are in lv.walls so both consumers use the same physical enclosure.
  */
-function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elevatorLandings: XYZ[], elevatorPassages: Passage[], previewNext = false) {
+function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elevatorLandings: XYZ[], elevatorPassages: Passage[], pitchedCeilings = true) {
   const cross = (a: XY, b: XY) => a.x * b.y - a.y * b.x;
   // Finish exit shafts against the 180 mm street slab underside, rather than
   // stopping 330 mm below it. This remains below the surface canopy and its walls.
@@ -950,7 +950,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       const pitch = (r: Run, l: number) => Math.atan2(Math.abs(r.b.z - r.a.z), l);
       return angle <= Math.PI / 180 && Math.abs(pitch(a, la) - pitch(b, lb)) <= Math.PI / 180;
     }));
-    if (previewNext && parallel) {
+    if (pitchedCeilings && parallel) {
       // The maximum endpoint offset bounds every affine flight roof, including
       // transverse pitch differences. Never lower any existing flight ceiling.
       const roofRise = 3 + Math.max(...group.flatMap((r) => {

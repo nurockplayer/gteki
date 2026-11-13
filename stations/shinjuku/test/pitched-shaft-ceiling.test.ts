@@ -56,14 +56,14 @@ function producer(hit: THREE.Intersection | undefined, layout: Layout) {
   return "level/other";
 }
 
-describe("J7 preview pitched shaft ceilings (2026-11-12 JST)", () => {
+describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   let off: StationScene, on: StationScene, layout: Layout, oldLayout: Layout;
   beforeAll(() => {
     const ctx = { THREE, bundle, quality: "low" as const };
-    off = withCanvasStub(() => assembleScene(ctx as never));
-    oldLayout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
-    on = withCanvasStub(() => assembleScene({ ...ctx, previewNext: true } as never));
-    layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true, previewNext: true }).layout;
+    off = withCanvasStub(() => assembleScene(ctx as never, undefined, undefined, { pitchedCeilings: false }));
+    oldLayout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true, pitchedCeilings: false }).layout;
+    on = withCanvasStub(() => assembleScene(ctx as never));
+    layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
   }, 120_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
