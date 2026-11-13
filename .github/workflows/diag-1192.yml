@@ -1,0 +1,42 @@
+name: Void diagnosis 1192
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/diag-1192.yml'
+      - 'tests/e2e/specs/99-void-diag.spec.ts'
+
+jobs:
+  void-diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            tests/e2e/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install Playwright harness
+        working-directory: tests/e2e
+        run: |
+          pnpm install --ignore-workspace --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+      - name: Diagnose B3 concourse void
+        timeout-minutes: 15
+        working-directory: tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/99-void-diag.spec.ts --project=desktop-chromium --trace=off
+      - name: Upload diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: void-diag-1192
+          path: tests/e2e/artifacts/void-diag/**
