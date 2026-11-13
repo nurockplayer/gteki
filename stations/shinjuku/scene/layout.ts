@@ -324,7 +324,7 @@ export function stairShaftGroups(runs: Run[]): Run[][] {
   return shafts;
 }
 
-export function buildLayout(bundle: StationBundle, plan: Plan, options: { previewNext?: boolean } = {}): Layout {
+export function buildLayout(bundle: StationBundle, plan: Plan, options: { pitchedCeilings?: boolean } = {}): Layout {
   const nodeZ = new Map<string, number>(Object.entries(plan.nodeRenderZ));
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const zOf = (id: string) => nodeZ.get(id) ?? 0;
@@ -686,7 +686,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan, options: { previe
   const cutStreet = cutWalkingSlabs(streetPads);
   const layout: Layout = { levels, cornerFills: [], runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips: cutWalkingSlabs(linkStrips), runWalls, soffits: [], shaftFinishes: [], shaftFascias: [], nodeZ, bounds: { min, max } };
   const elevatorLandings = bundle.nodes.filter((n) => n.kind === "elevator" && zOf(n.id) < -0.5).map((n) => ({ ...n.position, z: zOf(n.id) }));
-  finishUnderground(layout, plan, [...segs, ...elevatorPassages], elevatorLandings, elevatorPassages, options.previewNext);
+  finishUnderground(layout, plan, [...segs, ...elevatorPassages], elevatorLandings, elevatorPassages, options.pitchedCeilings);
   return layout;
 }
 
@@ -744,7 +744,7 @@ export function clearSoffit<T extends SlabPoly & { origin?: XY; slope?: XY }>(s:
  * Flat roofs cover the complete source outline and graph sleeves; pitched roofs cover runs.
  * New vertical panels are in lv.walls so both consumers use the same physical enclosure.
  */
-function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elevatorLandings: XYZ[], elevatorPassages: Passage[], previewNext = false) {
+function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elevatorLandings: XYZ[], elevatorPassages: Passage[], pitchedCeilings = true) {
   const cross = (a: XY, b: XY) => a.x * b.y - a.y * b.x;
   // Finish exit shafts against the 180 mm street slab underside, rather than
   // stopping 330 mm below it. This remains below the surface canopy and its walls.
@@ -915,6 +915,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   const shaftHulls: Soffit[] = [];
   const shaftEndFaces: Layout["shaftFascias"] = [];
   const pitchedRoofs: Soffit[] = [];
+  const streetPitchedRoofs = new Set<Soffit>();
   const shaftRoofCuts: { prefix: string; rings: XY[][] }[] = [];
   const ends = (r: Run) => r.a.z < r.b.z ? [r.a, r.b] as const : [r.b, r.a] as const;
   const shafts = stairShaftGroups(layout.runs);
@@ -956,7 +957,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       const pitch = (r: Run, l: number) => Math.atan2(Math.abs(r.b.z - r.a.z), l);
       return angle <= Math.PI / 180 && Math.abs(pitch(a, la) - pitch(b, lb)) <= Math.PI / 180;
     }));
-    if (previewNext && parallel) {
+    if (pitchedCeilings && parallel) {
       // The maximum endpoint offset bounds every affine flight roof, including
       // transverse pitch differences. Never lower any existing flight ceiling.
       const roofRise = 3 + Math.max(...group.flatMap((r) => {
@@ -964,8 +965,10 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         return [r.a, r.b].flatMap((p) => [-1, 1].map((side) => p.z - base({
           x: p.x - rd.y / length * r.width / 2 * side, y: p.y + rd.x / length * r.width / 2 * side })));
       }));
-      pitchedRoofs.push({ spaceId: `pitched-shaft:${si}`, floorId: lv.floorId, kind: "shaft", clearance: 3,
-        rings: envelope[0]!, origin: lo, slope, z: lo.z + roofRise, fare: null, category: "ceiling" });
+      const roof: Soffit = { spaceId: `pitched-shaft:${si}`, floorId: lv.floorId, kind: "shaft", clearance: 3,
+        rings: envelope[0]!, origin: lo, slope, z: lo.z + roofRise, fare: null, category: "ceiling" };
+      pitchedRoofs.push(roof);
+      if (group.some((r) => Math.max(r.a.z, r.b.z) >= -0.01)) streetPitchedRoofs.add(roof);
     }
     // The hull remains the physical enclosure. Its visible inclined sheets belong
     // to individual flights only, with no endpoint extension or shared pitch.
@@ -1308,7 +1311,25 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         .flatMap((s) => s.rings.flat().map((p) => soffitHeight(s, p) - soffitHeight(roof, p)));
       roof.z += Math.max(0, ...offsets);
     }
-    const voids = pitchedRoofs.map((roof) => ({ rings: roof.rings,
+    // At street mouths the walkable landing extends back under the inclined roof.
+    // Lift that short section to street clearance and taper back to the original plane.
+    const renderedRoofs = pitchedRoofs.flatMap((roof) => {
+      if (!streetPitchedRoofs.has(roof)) return [roof];
+      const floor = 2.901, taper = floor - 0.5, join = floor - 0.3;
+      const height = (p: XY) => soffitHeight(roof, p);
+      const band = (low: number, high: number) => affineMask(roof.rings, (p) => height(p) - low)
+        .flatMap((rings) => affineMask(rings, (p) => high - height(p)));
+      const part = (rings: XY[][], z: number, factor: number): Soffit => ({ ...roof, rings,
+        z, slope: { x: roof.slope!.x * factor, y: roof.slope!.y * factor } });
+      const ratio = (floor - taper) / (join - taper);
+      return [
+        ...affineMask(roof.rings, (p) => taper - height(p)).map((rings) => ({ ...roof, rings })),
+        ...band(taper, join).map((rings) => part(rings, taper + (roof.z - taper) * ratio, ratio)),
+        ...band(join, floor).map((rings) => part(rings, floor, 0)),
+        ...affineMask(roof.rings, (p) => height(p) - floor).map((rings) => ({ ...roof, rings })),
+      ];
+    });
+    const voids = renderedRoofs.map((roof) => ({ rings: roof.rings,
       bottom: (p: XY) => soffitHeight(roof, p) - 3.3, top: (p: XY) => soffitHeight(roof, p) + 0.01 }));
     const trim = <T extends SlabPoly & { origin?: XY; slope?: XY }>(sheet: T): T[] => {
       let panels = [sheet];
@@ -1333,7 +1354,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
           profile: { bottomA: Math.min(za, hall), bottomB: Math.min(zb, hall), topA: Math.max(za, hall), topB: Math.max(zb, hall) } } });
       }
     }
-    layout.shaftCeilingPreview = { roofs: pitchedRoofs, ceilings: layout.levels.map((lv) => lv.ceilings.flatMap(trim)),
+    layout.shaftCeilingPreview = { roofs: renderedRoofs, ceilings: layout.levels.map((lv) => lv.ceilings.flatMap(trim)),
       soffits: [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes].flatMap(trim), fascias };
   }
 }
