@@ -73,6 +73,18 @@ export const ARRIVAL_SHOTS: Record<string, { desktop: { heading: number; distanc
   "poi:platform:oedo": { desktop: { heading: 200, distance: 3, height: 1.1, pitch: -4, fov: 55 }, phone: { heading: 165, distance: 4.2, height: 2.05, pitch: -8, fov: 72 } },
 };
 
+/** Authored exit-mouth opening framing; shoulder places the cat just left of centre. */
+export const OPENING_SHOTS: Record<string, { desktop: { heading: number; distance: number; height: number; pitch: number; fov: number; shoulder: number }; phone: { heading: number; distance: number; height: number; pitch: number; fov: number; shoulder: number } }> = {
+  "poi:exit:1": { desktop: { heading: 174, distance: 2.75, height: 1.3, pitch: -3, fov: 55, shoulder: 0.12 }, phone: { heading: 174, distance: 3, height: 1.3, pitch: -12, fov: 65, shoulder: 0 } },
+};
+
+/** Hold immediately in next mode, then release once on guide start or visitor input. */
+export function openingShotState(state: "waiting" | "active" | "ended", next: boolean, origin: string | null, release: boolean, input: boolean): "waiting" | "active" | "ended" {
+  if (state === "active" && (release || input)) return "ended";
+  if (state === "waiting" && next && origin && OPENING_SHOTS[origin] && !release && !input) return "active";
+  return state;
+}
+
 /** One shot per guide, cancelled by the first visitor input. */
 export function arrivalShotState(state: "waiting" | "active" | "ended", next: boolean, destination: string | null, done: boolean, input: boolean): "waiting" | "active" | "ended" {
   if (state === "active" && input) return "ended";
