@@ -2081,7 +2081,7 @@ function buildUndergroundLighting(
       seen.add(key);
       const candidate = { a: { ...p, z: rp.z - 0.065 }, b: { ...q, z: rq.z - 0.065 } };
       const corners = (f: { a: XYZ; b: XYZ }) => {
-        const dx = f.b.x - f.a.x, dy = f.b.y - f.a.y, len = Math.hypot(dx, dy);
+        const dx = f.b.x - f.a.x, dy = f.b.y - f.a.y, len = stableHypot(dx, dy);
         const ux = dx / len, uy = dy / len, cx = (f.a.x + f.b.x) / 2, cy = (f.a.y + f.b.y) / 2;
         return [-1, 1].flatMap((along) => [-1, 1].map((side) => ({
           x: cx + along * dx * 0.52 - side * uy * 0.15,
