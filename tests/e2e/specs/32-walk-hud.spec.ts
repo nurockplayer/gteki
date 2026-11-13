@@ -65,11 +65,11 @@ test("compact guide and arrival @phone", async ({ page }, info) => {
   await expect.poll(() => page.evaluate(() => (window as any).__gteki.quietHud().opacity)).toBe(0.45);
   let escalator = true;
   for (let i = 0; i < 100; i++) {
-    const line = await page.locator(".guide-card-line").first().textContent();
-    if (line && !await page.locator(".app").evaluate((el) => el.classList.contains("escalator"))) {
-      expect(line.length).toBeLessThanOrEqual(36);
-      expect(line).not.toContain("…");
-      expect(line).not.toMatch(/GL[–-]B1 landing/);
+    const line = await page.locator(".guide-card-line").first().allTextContents();
+    if (line.length && !await page.locator(".app").evaluate((el) => el.classList.contains("escalator"))) {
+      expect(line[0]!.length).toBeLessThanOrEqual(36);
+      expect(line[0]).not.toContain("…");
+      expect(line[0]).not.toMatch(/GL[–-]B1 landing/);
     }
     expect(await card.evaluate((el) => el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight)).toBe(true);
     const state = await page.evaluate(() => (window as any).__gteki.guideControls());
