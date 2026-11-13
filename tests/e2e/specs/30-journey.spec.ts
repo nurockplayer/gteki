@@ -207,13 +207,21 @@ test("guided walk @phone", async ({ page }, info) => {
     const boxes = arrival && reelMode === "next" ? await page.evaluate(() => {
       const g = (window as any).__gteki;
       const cat = g.scanProbe().explorer.catScreenBox();
-      const rect = document.querySelector(".hud-instruction")!.getBoundingClientRect();
-      return { cat, card: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom } };
+      const rect = (selector: string) => {
+        const r = document.querySelector(selector)!.getBoundingClientRect();
+        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+      };
+      return { cat, card: rect(".hud-instruction"), badge: rect(".greybox-legend"), coverage: rect("button.coverage") };
     }) : undefined;
     if (boxes) {
-      const { cat, card } = boxes;
+      const { cat, card, badge, coverage } = boxes;
+      const separated = (a: typeof badge, b: typeof badge, gap = 0) => a.right + gap <= b.left || a.left >= b.right + gap || a.bottom + gap <= b.top || a.top >= b.bottom + gap;
       expect(cat, "arrival cat box").not.toBeNull();
       expect(card.right <= cat.left || card.left >= cat.right || card.bottom <= cat.top || card.top >= cat.bottom, `arrival card/cat overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(cov.legend, `arrival badge visible inside viewport: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(separated(badge, coverage, 8), `arrival badge/Coverage gap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(separated(badge, card), `arrival badge/card overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(separated(badge, cat), `arrival badge/cat overlap: ${JSON.stringify(boxes)}`).toBe(true);
     }
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
     const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
