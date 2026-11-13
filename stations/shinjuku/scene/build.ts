@@ -65,6 +65,7 @@ export interface BuiltStation {
 
 export interface BuildOptions {
   quality: "low" | "high";
+  previewNext?: boolean;
   pitchedCeilings?: boolean;
   /**
    * Optional Lane E kit swap (Issue #94). Absent = the station is built exactly as before. Present, it is
