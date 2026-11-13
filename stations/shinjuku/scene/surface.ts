@@ -9,7 +9,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, XY, XYZ } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
-import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleIn } from "./surface-layout.ts";
+import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceStairShafts, surfaceVisibleIn } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
 import { inside, strip, surfaceKerbs, surfaceLampRails, surfacePaving, surfaceStreets } from "./surface-street.ts";
 import { OEDO_MAGENTA } from "./palette.ts";
@@ -262,5 +262,5 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;root.add(dome);
   root.userData.drawCallBudget=batches.size+4;root.userData.buildingParts=buildings.length;
   batches.clear();
-  return {root,resources,visibility:{entrances,openings:streets.holes}};
+  return {root,resources,visibility:{entrances,openings:streets.holes,shafts:surfaceStairShafts(layout)}};
 }

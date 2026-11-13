@@ -1,7 +1,7 @@
 /** Surface geometry/collision contracts. Procedural context never adds a walk surface. */
 import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clipping";
 import type { StationBundle } from "@gteki/schema";
-import { pointInRings, widthFromClass, type Layout, type XY, type WallSeg } from "./layout.ts";
+import { pointInRings, stairShaftGroups, widthFromClass, type Layout, type XY, type WallSeg } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
 import { stableHypot } from "./stable-hypot.ts";
 
@@ -312,15 +312,33 @@ export function surfaceRoofs(layout: Layout, bundle: StationBundle, entrances = 
   return roofs;
 }
 
+export function surfaceStairShafts(layout: Layout) {
+  return stairShaftGroups(layout.runs).filter((group) => group[0]!.mode === "stairs" && group.some((r) =>
+    [r.a, r.b].some((p) => Math.abs(p.z) > 0.1 && -0.18 - p.z < 2.1))).map((group) => {
+    const first = group[0]!, lo = first.a.z < first.b.z ? first.a : first.b, hi = first.a.z < first.b.z ? first.b : first.a;
+    const length = stableHypot(hi.x - lo.x, hi.y - lo.y), u = { x: (hi.x - lo.x) / length, y: (hi.y - lo.y) / length };
+    const along = (p: XY) => (p.x - lo.x) * u.x + (p.y - lo.y) * u.y;
+    const across = (p: XY) => -(p.x - lo.x) * u.y + (p.y - lo.y) * u.x;
+    const stations = group.flatMap((r) => [along(r.a), along(r.b)]);
+    const widths = group.flatMap((r) => [r.a, r.b].flatMap((p) => [across(p) - r.width / 2, across(p) + r.width / 2]));
+    const a = Math.min(...stations), b = Math.max(...stations), c = Math.min(...widths), d = Math.max(...widths);
+    const at = (x: number, y: number) => ({ x: lo.x + u.x * x - u.y * y, y: lo.y + u.y * x + u.x * y });
+    return { rings: [[at(a, c), at(b, c), at(b, d), at(a, d), at(a, c)]], minZ: Math.min(...group.flatMap((r) => [r.a.z, r.b.z])) };
+  });
+}
+
 /** Surface rendering is only needed in the open air or close to an exit after
  * the viewer has risen above its first landing. `viewer` is station ENU. */
-export function surfaceVisibleAt(layout: Layout, bundle: StationBundle, viewer: { x: number; y: number; z: number }, context = { entrances: surfaceEntrances(layout, bundle), openings: surfaceOpenings(layout, bundle) }): boolean {
+export function surfaceVisibleAt(layout: Layout, bundle: StationBundle, viewer: { x: number; y: number; z: number }, context = { entrances: surfaceEntrances(layout, bundle), openings: surfaceOpenings(layout, bundle), shafts: surfaceStairShafts(layout) }): boolean {
   return surfaceVisibleIn(context, viewer);
 }
-/** The visibility rule itself. It needs only the entrances and openings, so a live scene can keep those
+/** The visibility rule itself. It needs only the entrances, openings and shafts, so a live scene can keep those
  * (small) and let go of the layout (#72). */
-export function surfaceVisibleIn(context: { entrances: ReturnType<typeof surfaceEntrances>; openings: ReturnType<typeof surfaceOpenings> }, viewer: { x: number; y: number; z: number }): boolean {
+export function surfaceVisibleIn(context: { entrances: ReturnType<typeof surfaceEntrances>; openings: ReturnType<typeof surfaceOpenings>; shafts: ReturnType<typeof surfaceStairShafts> }, viewer: { x: number; y: number; z: number }): boolean {
   if (viewer.z >= 0) return true;
+  // The follow camera can sit behind the bottom of the stair flight.
+  if (context.shafts.some(({ rings, minZ }) => viewer.z > minZ - 0.2 &&
+    (pointInRings(viewer, rings) || rings.some((r) => r.slice(1).some((p, i) => dist(viewer, r[i]!, p).d < 3))))) return true;
   const nearTop = viewer.z > -2 || context.entrances.some((e) =>
     stableHypot(viewer.x - e.top.x, viewer.y - e.top.y) <= 30 && viewer.z > e.firstLandingZ + 1.2);
   if (!nearTop) return false;

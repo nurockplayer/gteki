@@ -384,6 +384,28 @@ describe("constrainedPitch", () => {
   const raiseOf = (b: THREE.Vector3) => Math.asin(b.y) - Math.asin(back0.y);
   const deg = (r: number) => (r * 180) / Math.PI;
 
+  it("raises a comfortable boom only to the first body-clear step", () => {
+    const hidden = (b: THREE.Vector3) => deg(raiseOf(b)) < 19;
+    expect(deg(constrainedPitch(wanted, back0, wanted, () => [], new THREE.Vector3(), hidden))).toBeCloseTo(20);
+    expect(constrainedPitch(wanted, back0, wanted, () => [], new THREE.Vector3(), () => true)).toBe(0);
+  });
+
+  it("skips a comfortable raised boom that still hides the body", () => {
+    const hidden = (b: THREE.Vector3) => deg(raiseOf(b)) < 19;
+    expect(deg(constrainedPitch(wanted, back0, 0.7, () => [], new THREE.Vector3(), hidden))).toBeCloseTo(20);
+  });
+
+  it("holds the body raise target after it clears, and clears the hold on snap", () => {
+    const hold = { seconds: 0, target: 0 };
+    const hidden = (b: THREE.Vector3) => deg(raiseOf(b)) < 19;
+    const raised = solveRaisedBoom(wanted, back0, () => [], 0, 0.1, false, hidden, hold);
+    const held = solveRaisedBoom(wanted, back0, () => [], raised.raise, 0.1, false, () => false, hold);
+    expect(held.raise).toBeGreaterThan(raised.raise);
+    expect(hold.seconds).toBeCloseTo(0.4);
+    expect(solveRaisedBoom(wanted, back0, () => [], held.raise, 0.1, true, () => false, hold).raise).toBe(0);
+    expect(hold.seconds).toBe(0);
+  });
+
   it("finds a raise that clears only at a steep angle (distance is not monotonic in the raise)", () => {
     let n = 0;
     // blocked at every middling angle, clear only in a 44-51 degree window

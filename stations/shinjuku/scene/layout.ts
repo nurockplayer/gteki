@@ -285,6 +285,45 @@ const SUBSEG = 0.5;
 export const STREET_PAD = 8;
 const PROBE = 0.18;
 
+/** Groups underground runs using the shaft enclosure rules. */
+export function stairShaftGroups(runs: Run[]): Run[][] {
+  const shafts: Run[][] = [];
+  const ends = (r: Run) => r.a.z < r.b.z ? [r.a, r.b] as const : [r.b, r.a] as const;
+  const undergroundRuns = runs.filter((r) => Math.min(r.a.z, r.b.z) < -0.5);
+  const similarAxis = (a: Run, b: Run) => {
+    if (a.mode !== b.mode) return false;
+    const [al, ah] = ends(a), [bl, bh] = ends(b);
+    const ad = sub(ah, al), bd = sub(bh, bl), an = len(ad), bn = len(bd);
+    if (an < 1e-6 || bn < 1e-6 || (ad.x * bd.x + ad.y * bd.y) / (an * bn) < 0.995) return false;
+    const as = { x: ad.x * (ah.z - al.z) / (an * an), y: ad.y * (ah.z - al.z) / (an * an) };
+    const bs = { x: bd.x * (bh.z - bl.z) / (bn * bn), y: bd.y * (bh.z - bl.z) / (bn * bn) };
+    return stableHypot(as.x - bs.x, as.y - bs.y) < 0.025;
+  };
+  const joined = (a: Run, b: Run) => {
+    if (!similarAxis(a, b)) return false;
+    const [al, ah] = ends(a), [bl, bh] = ends(b);
+    // Same-level opposing mouths indicate serial flights; corresponding nearby endpoints
+    // preserve the existing shared-envelope behavior for parallel lanes.
+    const serial = (Math.abs(ah.z - bl.z) < 0.3 && len(sub(ah, bl)) < 1.65) || (Math.abs(bh.z - al.z) < 0.3 && len(sub(bh, al)) < 1.65);
+    const lanes = Math.abs(al.z - bl.z) < 0.35 && Math.abs(ah.z - bh.z) < 0.35 && len(sub(al, bl)) < 3.6 && len(sub(ah, bh)) < 3.6;
+    return serial || lanes;
+  };
+  const remaining = new Set(undergroundRuns);
+  while (remaining.size) {
+    const seed = remaining.values().next().value as Run;
+    remaining.delete(seed);
+    const group = [seed];
+    for (let i = 0; i < group.length; i++) for (const candidate of [...remaining]) {
+      if (group.some((member) => joined(member, candidate))) {
+        group.push(candidate);
+        remaining.delete(candidate);
+      }
+    }
+    shafts.push(group);
+  }
+  return shafts;
+}
+
 export function buildLayout(bundle: StationBundle, plan: Plan, options: { previewNext?: boolean } = {}): Layout {
   const nodeZ = new Map<string, number>(Object.entries(plan.nodeRenderZ));
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
@@ -867,44 +906,12 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
 
   // Parallel lanes and near-collinear serial flights form one continuous shaft. In particular,
   // enclosing every stair flight separately creates crossing walls at the shared landing.
-  const shafts: Run[][] = [];
   const shaftHulls: Soffit[] = [];
   const shaftEndFaces: Layout["shaftFascias"] = [];
   const pitchedRoofs: Soffit[] = [];
   const shaftRoofCuts: { prefix: string; rings: XY[][] }[] = [];
   const ends = (r: Run) => r.a.z < r.b.z ? [r.a, r.b] as const : [r.b, r.a] as const;
-  const undergroundRuns = layout.runs.filter((r) => Math.min(r.a.z, r.b.z) < -0.5);
-  const similarAxis = (a: Run, b: Run) => {
-    if (a.mode !== b.mode) return false;
-    const [al, ah] = ends(a), [bl, bh] = ends(b);
-    const ad = sub(ah, al), bd = sub(bh, bl), an = len(ad), bn = len(bd);
-    if (an < 1e-6 || bn < 1e-6 || (ad.x * bd.x + ad.y * bd.y) / (an * bn) < 0.995) return false;
-    const as = { x: ad.x * (ah.z - al.z) / (an * an), y: ad.y * (ah.z - al.z) / (an * an) };
-    const bs = { x: bd.x * (bh.z - bl.z) / (bn * bn), y: bd.y * (bh.z - bl.z) / (bn * bn) };
-    return stableHypot(as.x - bs.x, as.y - bs.y) < 0.025;
-  };
-  const joined = (a: Run, b: Run) => {
-    if (!similarAxis(a, b)) return false;
-    const [al, ah] = ends(a), [bl, bh] = ends(b);
-    // Same-level opposing mouths indicate serial flights; corresponding nearby endpoints
-    // preserve the existing shared-envelope behavior for parallel lanes.
-    const serial = (Math.abs(ah.z - bl.z) < 0.3 && len(sub(ah, bl)) < 1.65) || (Math.abs(bh.z - al.z) < 0.3 && len(sub(bh, al)) < 1.65);
-    const lanes = Math.abs(al.z - bl.z) < 0.35 && Math.abs(ah.z - bh.z) < 0.35 && len(sub(al, bl)) < 3.6 && len(sub(ah, bh)) < 3.6;
-    return serial || lanes;
-  };
-  const remaining = new Set(undergroundRuns);
-  while (remaining.size) {
-    const seed = remaining.values().next().value as Run;
-    remaining.delete(seed);
-    const group = [seed];
-    for (let i = 0; i < group.length; i++) for (const candidate of [...remaining]) {
-      if (group.some((member) => joined(member, candidate))) {
-        group.push(candidate);
-        remaining.delete(candidate);
-      }
-    }
-    shafts.push(group);
-  }
+  const shafts = stairShaftGroups(layout.runs);
   for (const [si, group] of shafts.entries()) {
     const [lo, hi] = ends(group[0]!);
     const d = sub(hi, lo), l2 = d.x * d.x + d.y * d.y;
