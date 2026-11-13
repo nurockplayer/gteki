@@ -228,6 +228,9 @@ test("guided walk @phone", async ({ page }, info) => {
     }
     if (arrived) { const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs); }
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+  for (const sample of samples.filter(s => !s.arrival)) {
+    expect(sample.overlayText.join(" "), `J8 visible text #${sample.index}`).not.toMatch(/Run ≈|GL[–-]B1 landing|unknown/i);
+  }
   const overlayTolerancePct = 1;
   const threshold = info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop;
   const rules = [ { row: "J5", metric: "voidRatio", limit: config.thresholds.voidRatio }, { row: "J5", metric: "nearBlack", limit: config.thresholds.nearBlack }, { row: "J5", metric: "nearClip", limit: config.thresholds.nearClip }, { row: "J6", metric: "catVisible", limit: config.thresholds.catVisibleMin }, { row: "J8", metric: "overlayPct", limit: threshold }, { row: "J9", metric: "overlayPct", limit: threshold } ];

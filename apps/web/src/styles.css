@@ -541,17 +541,17 @@ button.on { border-color: var(--accent); color: var(--accent); }
 @media (max-width: 600px) { .cold-open { left: 50%; transform: translateX(-50%); white-space: nowrap; } }
 
 /* Compact guide HUD for the next preview. */
-.app.next[data-mode="guide"] .guide-extra-hidden { display: none; }
-.app.next[data-mode="guide"] .guide-card-line { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; min-width: 0; }
-.app.next[data-mode="guide"] .guide-card { display: flex; align-items: center; gap: 6px; text-align: left; }
-.app.next[data-mode="guide"] .guide-card[aria-expanded="true"] .guide-card-line { display: block; max-height: 40vh; overflow: auto; overflow-wrap: anywhere; }
-.app.next[data-mode="guide"] .minimap { --minimap-size: 132px; }
-.app.next[data-mode="guide"] .minimap-floor, .app.next[data-mode="guide"] .minimap-label span, .app.next[data-mode="guide"] .minimap-route-label, .app.next[data-mode="guide"] .minimap-notice, .app.next[data-mode="guide"] .minimap-zoom, .app.next[data-mode="guide"] .minimap-controls { display: none; }
-.app.next[data-mode="guide"] .minimap-label { display: grid; }
+.app[data-mode="guide"] .guide-extra-hidden { display: none; }
+.app[data-mode="guide"] .guide-card-line { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; min-width: 0; }
+.app[data-mode="guide"] .guide-card { display: flex; align-items: center; gap: 6px; text-align: left; }
+.app[data-mode="guide"] .guide-card[aria-expanded="true"] .guide-card-line { display: block; max-height: 40vh; overflow: auto; overflow-wrap: anywhere; }
+.app[data-mode="guide"] .minimap { --minimap-size: 132px; }
+.app[data-mode="guide"] .minimap-floor, .app[data-mode="guide"] .minimap-label span, .app[data-mode="guide"] .minimap-route-label, .app[data-mode="guide"] .minimap-notice, .app[data-mode="guide"] .minimap-zoom, .app[data-mode="guide"] .minimap-controls { display: none; }
+.app.app[data-mode="guide"] .minimap-label { display: grid; }
 @media (max-width: 480px) {
-  .app.next[data-mode="guide"] .guide-card-line { -webkit-line-clamp: 2; }
-  .app.next[data-mode="guide"] .minimap { --minimap-size: 96px; }
-  .app.next[data-mode="guide"] .minimap-map { width: 100%; }
+  .app[data-mode="guide"] .guide-card-line { -webkit-line-clamp: 2; }
+  .app[data-mode="guide"] .minimap { --minimap-size: 96px; }
+  .app[data-mode="guide"] .minimap-map { width: 100%; }
 }
 
 .boot-card { position: absolute; inset: 0; z-index: 100; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; opacity: 1; transition: opacity 250ms; }
@@ -565,27 +565,27 @@ button.on { border-color: var(--accent); color: var(--accent); }
 @media (max-width: 480px) { .boot-title { font-size: 32px; } }
 @media (prefers-reduced-motion: reduce) { .boot-card, .boot-fill { transition: none; } }
 
-.app.next[data-mode="guide"] .topbar { height: 28px; box-sizing: border-box; padding: 0 16px; background: transparent; text-shadow: 0 1px 4px #000; }
-.app.next[data-mode="guide"] .topbar .tagline, .app.next[data-mode="guide"] .topbar .station-select { display: none; }
-.app.next[data-mode="guide"] .top-actions { margin-left: auto; align-items: center; }
-.app.next[data-mode="guide"] .top-actions > button, .app.next[data-mode="guide"] .top-more-button { padding: 2px 6px; font-size: 12px; }
-.app.next[data-mode="guide"] .top-more { position: relative; display: block; }
-.app.next[data-mode="guide"] .top-more .lang { position: absolute; right: 0; top: 28px; }
-.app.next[data-mode="guide"] .top-more-button { cursor: pointer; list-style: none; }
-.app.next:not([data-mode="guide"]) .top-more, .app:not(.next) .top-more { display: none; }
-.app.next[data-mode="guide"] .minimap-map { transition: width 300ms, height 300ms; }
-.app.next.escalator[data-mode="guide"] .minimap { --minimap-size: 80px; }
-.app.next.escalator[data-mode="guide"] .minimap-map { width: 80px; }
-.app.next.escalator[data-mode="guide"] .poi-label { opacity: 0 !important; visibility: hidden; }
-.app.next.escalator[data-mode="guide"] .hud-line { max-width: 240px; }
-.app.next.escalator[data-mode="guide"] .hud-instruction { box-sizing: border-box; height: 28px; padding: 3px 10px; border-radius: 14px; font-size: 14px; white-space: nowrap; }
+.app[data-mode="guide"] .topbar { height: 28px; box-sizing: border-box; padding: 0 16px; background: transparent; text-shadow: 0 1px 4px #000; }
+.app[data-mode="guide"] .topbar .tagline, .app[data-mode="guide"] .topbar .station-select { display: none; }
+.app[data-mode="guide"] .top-actions { margin-left: auto; align-items: center; }
+.app[data-mode="guide"] .top-actions > button, .app[data-mode="guide"] .top-more-button { padding: 2px 6px; font-size: 12px; }
+.app[data-mode="guide"] .top-more { position: relative; display: block; }
+.app[data-mode="guide"] .top-more .lang { position: absolute; right: 0; top: 28px; }
+.app[data-mode="guide"] .top-more-button { cursor: pointer; list-style: none; }
+.app:not([data-mode="guide"]) .top-more { display: none; }
+.app[data-mode="guide"] .minimap-map { transition: width 300ms, height 300ms; }
+.app.escalator[data-mode="guide"] .minimap { --minimap-size: 80px; }
+.app.escalator[data-mode="guide"] .minimap-map { width: 80px; }
+.app.escalator[data-mode="guide"] .poi-label { opacity: 0 !important; visibility: hidden; }
+.app.escalator[data-mode="guide"] .hud-line { max-width: 240px; }
+.app.escalator[data-mode="guide"] .hud-instruction { box-sizing: border-box; height: 28px; padding: 3px 10px; border-radius: 14px; font-size: 14px; white-space: nowrap; }
 @media (max-width: 480px) {
-  .app.next[data-mode="guide"] .guide-phone-hidden { display: none; }
-  .app.next[data-mode="guide"] .hud { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
-  .app.next[data-mode="guide"] .hud-line { grid-column: 1; }
-  .app.next[data-mode="guide"] .hud-row:not(.hud-arrival) { grid-column: 2; padding: 0; }
-  .app.next[data-mode="guide"] .hud-guide { flex-wrap: wrap; }
-  .app.next.escalator[data-mode="guide"] .hud-line { max-width: none; }
+  .app[data-mode="guide"] .guide-phone-hidden { display: none; }
+  .app[data-mode="guide"] .hud { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+  .app[data-mode="guide"] .hud-line { grid-column: 1; }
+  .app[data-mode="guide"] .hud-row:not(.hud-arrival) { grid-column: 2; padding: 0; }
+  .app[data-mode="guide"] .hud-guide { flex-wrap: wrap; }
+  .app.escalator[data-mode="guide"] .hud-line { max-width: none; }
 }
 
 .app.next.arrival[data-mode="guide"] .minimap { display: none; }
