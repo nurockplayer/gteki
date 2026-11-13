@@ -272,8 +272,8 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     voids.push({ rings: [[{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }]],
       bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + HEAD_BAND, minX, maxX, minY, maxY });
   }
-  // Old shell panels can cross a shared shaft plane at slightly different pitches.
-  // Clear the preview's interior from those panels just as from the other finishes.
+  // Preview roofs replace old soffits without removing the enclosure sides.
+  const sideVoids = [...voids];
   for (const roof of layout.shaftCeilingPreview?.roofs ?? []) {
     const points = roof.rings.flat();
     voids.push({ rings: roof.rings,
@@ -422,7 +422,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     const along = (p: XY) => (p.x - wall.a.x) * u.x + (p.y - wall.a.y) * u.y;
     const roofVoids = covered.map(({ rings, roof }) => ({ rings,
       bottom: (p: XY) => soffitHeight(roof, p), top: () => wall.zMax + 1 }));
-    const pieces = cutWallsByVoids([wall], [...voids, ...roofVoids]).map((w): polygonClipping.Polygon => {
+    const pieces = cutWallsByVoids([wall], [...sideVoids, ...roofVoids]).map((w): polygonClipping.Polygon => {
       const p = w.profile!;
       return [[[along(w.a), p.bottomA], [along(w.b), p.bottomB], [along(w.b), p.topB], [along(w.a), p.topA]]];
     });
