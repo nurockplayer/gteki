@@ -1,12 +1,13 @@
 # Art direction log: the Shinjuku slice
 
-The persistent decision log for the look of the 2026-11-22 slice (token-rules 25): Shinjuku, Toei Oedo E27, street exit 1 → B1 concourse → escalators → B6 platform (`toei-nwd-m6`, render −42.87 m). Viewpoints and the four hero moments: [slice-views.md](slice-views.md). References, hero target frames and paint-overs: [references.md](references.md).
+The persistent decision log for the look of the 2026-11-22 slice (token-rules 25): Shinjuku, Toei Oedo E27, street exit 1 → B1 concourse → escalators → B7 platform (Toei B7F, ruled 2026-11-11; data id `toei-nwd-m6`, render −42.87 m). Viewpoints and the four hero moments: [slice-views.md](slice-views.md). References, hero target frames and paint-overs: [references.md](references.md).
 
-Owner: gteki-visual (art director, provisional until the audition closes). Every AI verdict here is **provisional** until the Owner has seen the walk video for it (token-rules 25 g). Read this file first after every /clear.
+Owner: gteki-visual (art director, Opus 5.5, confirmed by the Owner after audition round 2; D11). Every AI verdict here is **provisional** until the Owner has seen the walk video for it (token-rules 25 g). Read this file first after every /clear.
 
-## Status (2026-11-12 09:4x JST)
+## Status (2026-11-13 08:3x JST)
 
-- Seat audition: two proposals in (`.claude/director/drafts/audition/direction-A.md`, `direction-B.md`, anonymous), the GPT one still to come. The decisions below take what A and B agree on and rule on where they differ. When the third proposal lands, anything it changes is logged as a new entry, not edited in place.
+- Seat: confirmed, Opus 5.5 (audition round 2, Owner-approved; D11). D1–D7 came from round 1's proposals A and B.
+- `?next=1` verdicts (D11): #1240 cat on stairs flips; cold open, compact HUD, escalator camera and arrival get one more round against the D11 targets.
 - First judged render: the D6 blind test (D7, preset B). The first golden render of the 12 slice cameras (after #1170) is the baseline for everything else.
 - Hero target frames H1–H4 accepted (D8).
 - Preset B v4 is the default escalator light (D9, #1184).
@@ -64,7 +65,7 @@ Check: the unobstructed viewport from DOM overlay rects; canvas readback showing
 - Desktop vertical FOV goes from 60° to **55°** in walk and descent, and does **not** widen on the escalator. Rejected: A's 60 → 70 on descent. A wider lens splays the walls and makes the run read short (B's reading of shot6, where the horizontal FOV is about 85° at 16:10). The run should read deep.
 - Phone portrait keeps a vertical FOV of 65°.
 - On flat ground the camera follows at about **0.9 m** above the floor, 2.2 m behind (between A's 0.7 m and B's 0.9 m; 0.9 m keeps signs and ceiling in frame).
-- On the escalator the camera eases in over 0.6–1.2 s to the escalator axis: 1.4 m behind, 0.9 m above the cat's step, pitch about −12°. The cat sits on the lower third (left side, the Tokyo standing side) and the landing on the upper third.
+- *(Escalator numbers superseded by D11: frame targets from H3.)* On the escalator the camera eases in over 0.6–1.2 s to the escalator axis: 1.4 m behind, 0.9 m above the cat's step, pitch about −12°. The cat sits on the lower third (left side, the Tokyo standing side) and the landing on the upper third.
 - Camera collision against the balustrades fixes the dark near-plane wedge at the escalator top.
 
 Check: camera-y minus floor-y logged per golden camera; zero near-plane clips against the balustrades on the scripted walk; cat at 8–12% of frame height; ceiling plus far wall ≥ 35% of the slice-04 frame.
@@ -214,6 +215,60 @@ Corrections logged for other rows (not light):
 3. **At slice-10**, a dark brown wall wedge fills the right side of the escalator head. That is material and geometry, and it goes to the hero scene repair list.
 
 Provisional until the Owner sees the walk video.
+
+### D11 (2026-11-13 08:3x JST) Seat confirmed; five verdicts on the `?next=1` work; D2 rewritten
+**Seat.** Audition round 2 closed. The Owner approved Opus 5.5 as art director (decision on #1244). Four candidates answered the same packet of five real judgements: Opus 5.5, Fable 5.1, Fable 5.2 and GPT-6. Three blind judges ranked the answers (Borda 10/8/7/5, in that order). The packet, answers and judge notes are in `.claude/director/drafts/audition-r2/`. This log's verdicts are mine from here on. Fable 5.2 (`claude -p --model claude-fable-5-2`) is the blind critic; it critiques, it does not co-direct. Every verdict stays provisional until the Owner sees the walk video (25 g).
+
+The frames are CI captures in software rendering (SwiftShader) from the real guided walk with `?next=1`: run 43210708781 (before #1240) and run 43222933757 (#1240 head 0ce340f9). Desktop 960×600, phone 412×839. They settle composition, camera, UI and what is in view. They do not settle light or material.
+
+**Measured on the targets** (s6 sheet, H panels 800×500, read 2026-11-13). These numbers replace the guesses in my audition answer:
+
+| frame | cat height | cat centre x | vanishing point / far end (y from top) |
+|---|---|---|---|
+| H1 exit 1 mouth | ~20%, feet behind the front rail | ~46% | ~53%, camera near level |
+| H3 escalator run | ~17% | ~46% | ~79% (landing glow just above the cat) |
+| H4 escalator foot | ~15% | ~46% | ~70% (landing opening) |
+
+**The five verdicts** (all three judges agreed on each):
+
+1. **Cold open (J2, J3): ONE MORE ROUND.** J3 passes on numbers (overlay 11.2% desktop, 15.4% phone). The camera does not match H1: it is raised 20° and looks down onto the cat. Floating POI labels show in the first frame. The phone shows a bare loader at 1 s, and the desktop 1 s capture is missing. Correction to my audition numbers: H1's cat is ~20%, not 10–12%. My proposed pose (2.4 m back, 1.4 m up, −6°, 55°) would put the feet at ~93%, not 80%. Targets:
+   - desktop: far end at 50–56%; cat x 45–50%, height 18–22%; feet ≤ 90% (clear of the attribution strip); street ≥ 20% of the frame top;
+   - phone: feet ≤ 68% (above the card); horizon 30–40%;
+   - where they conflict, keep the feet and the far end and let the cat height give, down to 14%;
+   - starting values: camera 1.3 m above the floor (above the 1.1 m rail), pitch −3° desktop / −12° phone, distance tuned for the cat height;
+   - no floating labels or rings before the walk starts;
+   - a poster of this pose from first paint, cross-faded into the canvas over 400 ms at ready.
+2. **Cat on stairs, #1240 (J6): FLIP NOW.** Accepted on #1240 (comment 6839006042).
+   - #005 and #007 before: the cat is hidden on both aspects. After: it is in view, clear of the card (0.22 → 0.55, 0.44 → 0.77).
+   - #041 (escalator, skipped by design) is unchanged.
+   - Condition for the flip PR: the walk video shows the 10° steps easing (≤ 3° per frame).
+
+   ![#1240 before/after, desktop](live/2026-11-13-j6-stairs-cat-desktop.jpg)
+
+3. **Compact HUD (J8): ONE MORE ROUND.** Overlay passes on numbers (desktop 16.6–19.2%, phone 16.1–24.7%), but it fails D1:
+   - the card is truncated and is not a one-line instruction;
+   - there is no escalator mode: the stale "Turn right…" card and the floating chevrons stay up during the ride (#016, #022, #024);
+   - the mascot icon sits on the cat (#010, #024, #016, #022; on the cat's head at #042);
+   - "GL-B1 landing" is an internal code shown to the visitor;
+   - the B3 concourse shows a "B4" label.
+4. **Escalator camera (J7): ONE MORE ROUND.** The axis lock works. The composition is the opposite of H3: the cat fills ~35% of the frame height on desktop and ~27% on phone, and the run's far end sits in the top ~35%. The shot looks down a chute; H3 is a tall shaft with the landing low and the ceiling filling the frame. At #022 the upper centre is a featureless slab with chevrons floating in it (ceiling, #1086).
+
+   ![escalator frames #016 #022 #030 #036, desktop and phone](live/2026-11-13-j7-escalator-ci.jpg)
+
+5. **Arrival (J9): ONE MORE ROUND.** The name sign is in frame but small, on a blank slab. The platform edge (4.2 m away, bearing 259°) and the rail (5.0 m, bearing 253°) are out of frame, because the walk ends at heading 147.7° (#1208). The arrival stack shows five actions and a bubble, a large yellow ring, and desktop overlay at 21.0% (fails J8 by 1 pt). **H4 is the escalator foot, not the platform.** The arrival shot gets its own composition, and H4 is delivered by the escalator camera on the last run.
+
+**D2 rewritten (escalator part).** D2's "1.4 m behind, 0.9 m above the step, pitch about −12°, landing on the upper third" contradicts H3 (D8). D2's cat target of 8–12% is also below H3's ~17%. The escalator camera is now specified by frame targets; camera numbers are only starting values:
+- desktop (vFOV 55°): far end of the run at 70–78% of frame height; cat height 14–17%; cat centre x 45–50%; feet ≤ 92%; ceiling and walls above the far end ≥ 50% of the frame;
+- phone (vFOV 65°): far end at 58–62%; cat height 12–15%; no intersection between the cat's box and the overlay rects;
+- starting values for a 30° run (computed, consistent with the targets):
+  - desktop: boom 2.6 m uphill along the axis, camera 0.7 m above the step surface beneath it, pitch −18° (far end ≈ 70%, feet ≈ 92%);
+  - phone: boom 3.2 m, same height, pitch −24° (far end ≈ 58%, feet ≈ 72%);
+  - tune the boom for the cat height and the pitch for the far end;
+- keep the 0.6–1.2 s ease and the balustrade collision. Start the ease 2 m before the comb plate (fixes #041's steep look at the escalator head). The lock already holds at #022; that frame's problem is the ceiling, not the camera.
+
+D2's flat-ground and FOV rules stand.
+
+Check: walk frames #016, #030, #036 and golden cameras slice-10/11 measured against the targets above, on desktop and phone.
 
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
