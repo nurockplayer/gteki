@@ -7,6 +7,7 @@ import plan from "../data/plan.json" with { type: "json" };
 
 it("lists nearby walls", () => {
   const layout = prepareLayout(planBundle(loadShinjukuBundle().bundle), plan as unknown as Plan, { reuse: true }).layout;
+  for (const r of layout.runs.filter(r => r.edgeId.startsWith("e:e1fa6530") || r.edgeId.startsWith("e:ac906cd9"))) console.log("RUN", JSON.stringify(r));
   for (const lv of layout.levels) for (const w of [...lv.walls, ...layout.cornerFills.filter(w => w.level === lv.label)]) {
     if (w.kind === "trackside" || w.finish === "fascia") continue;
     if (Math.min(Math.hypot(w.a.x + 47.6, w.a.y - 165.5), Math.hypot(w.b.x + 47.6, w.b.y - 165.5)) > 6) continue;
