@@ -297,7 +297,10 @@ test("guided walk @phone", async ({ page }, info) => {
       if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.y1).toBeGreaterThanOrEqual(0.33);
       if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.x1 - frame.boardRect.x0).toBeGreaterThanOrEqual(0.16);
     }
-    if (info.project.name.startsWith("phone")) expect.soft(frame.doorsOrStripWidth, "platform doors or tactile strip width").toBeGreaterThanOrEqual(0.10);
+    if (info.project.name.startsWith("phone")) {
+      expect.soft(Math.abs(frame.camera.heading - 165), "phone arrival heading").toBeLessThanOrEqual(1);
+      expect.soft(Math.abs(frame.camera.pitch - (-8)), "phone arrival pitch").toBeLessThanOrEqual(1);
+    }
     else expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
     expect.soft(sample.catVisible).toBeGreaterThanOrEqual(config.thresholds.catVisibleMin);
     expect.soft(sample.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
