@@ -160,8 +160,9 @@ export function sceneDigest(scene: StationScene): Digest {
 
 export type ProtectDigest = { layoutAfterProtect: string; protection: string; fences: string; gates: string; removedAccess: string; restrictedConflicts: string; cacheHit: boolean };
 export function protectionDigest(layout: Layout, p: FareProtection): ProtectDigest {
+  const { shaftCeilingPreview: _render, ...physical } = layout;
   return {
-    layoutAfterProtect: exactHash(layout),
+    layoutAfterProtect: exactHash(physical),
     protection: exactHash(p),
     fences: exactHash(p.fences),
     gates: exactHash(p.gates),
@@ -174,8 +175,9 @@ export function protectionDigest(layout: Layout, p: FareProtection): ProtectDige
 /** Digest of what `buildStation` hands the lane app and tests: collision world inputs after the build. */
 export type StationDigest = { layoutAfterBuild: string; propWalls: string; levelWalls: string; escalators: string };
 export function stationDigest(built: ReturnType<typeof buildStation>): StationDigest {
+  const { shaftCeilingPreview: _render, ...physical } = built.layout;
   return {
-    layoutAfterBuild: exactHash(built.layout),
+    layoutAfterBuild: exactHash(physical),
     propWalls: exactHash(built.propWalls),
     levelWalls: exactHash(built.layout.levels.map((l) => l.walls)),
     escalators: exactHash(built.escalators.map((e) => e.run)),
