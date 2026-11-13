@@ -12,6 +12,10 @@ describe("guideCardText", () => {
     expect(guideCardText({ text: "Walk about 1.5 m, then take the escalator down to B1." }, next).line).toBe("Take the escalator down to B1");
     expect(guideCardText({ text: "GL–B1 landing" }, next).line).toBe("B1");
   });
+  it("shows the arrival name and notes in both languages", () => {
+    expect(guideCardText({ text: "Platform data" }, { ...opts, next: true, arrived: true })).toEqual({ line: "Arrived · Platform", detail: "Platform data" });
+    expect(guideCardText({ text: "ホームのデータ" }, { ...opts, next: true, arrived: true, lang: "ja", t: { arrived: "到着", arrivedAt: (name) => `到着 · ${name}` } })).toEqual({ line: "到着 · Platform", detail: "ホームのデータ" });
+  });
   it("shows the up arrow for an upward escalator", () => expect(escalatorArrow(1, 2)).toBe("↑"));
   it("keeps walk instructions", () => expect(guideCardText({ text: "Walk ahead" }, opts)).toEqual({ line: "Walk ahead", detail: null }));
   it("puts an arrival note behind the line", () => expect(guideCardText({ text: "Arrive at destination. Data for the platform." }, { ...opts, arrived: true })).toEqual({ line: "Arrived · Platform", detail: "Arrive at destination. Data for the platform." }));
