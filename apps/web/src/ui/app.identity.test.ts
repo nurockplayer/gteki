@@ -10,7 +10,7 @@ vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, 
 import { App } from "./app.ts";
 
 type Harness = {
-  explorer: { currentMode: string; sceneError: null; cancelPendingLoad: () => void; loadStation: (s: LoadedStation) => Promise<boolean>; getPose: () => null };
+  explorer: { currentMode: string; sceneError: null; cancelPendingLoad: () => void; setRouteQuiet: () => void; loadStation: (s: LoadedStation) => Promise<boolean>; getPose: () => null };
   identityView: StationIdentityView;
   ui: { sheet: HTMLElement };
   openStation: (e: StationEntry) => Promise<void>;
