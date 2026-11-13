@@ -1,6 +1,8 @@
 import type { Instruction } from "@gteki/navigation";
 
 export function guideCardText(ins: Pick<Instruction, "text">, opts: { arrived: boolean; connector: boolean; name: string; lang: "en" | "ja"; next?: boolean; t: { arrived: string; arrivedAt: (name: string) => string } }): { line: string; detail: string | null } {
+  if (opts.arrived && opts.connector) return { line: ins.text, detail: null };
+  if (opts.next && opts.arrived && !opts.connector) return { line: opts.name ? opts.t.arrivedAt(opts.name) : opts.t.arrived, detail: ins.text };
   if (!opts.arrived || opts.connector) {
     if (!opts.next) return { line: ins.text, detail: null };
     const clean = ins.text.replace(/GL[–-]B1 landing/g, "B1");

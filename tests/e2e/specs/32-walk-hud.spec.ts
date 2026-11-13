@@ -84,12 +84,19 @@ test("compact guide and arrival @phone", async ({ page }, info) => {
   }
   expect(escalator).toBe(true);
   await sample("arrival");
-  await expect(card).toContainText("Arrived");
+  await expect(card).toHaveCount(1);
+  await expect(card).toContainText("Arrived ·");
+  await expect(page.getByRole("button", { name: "Pause" })).toBeHidden();
+  await expect(page.getByRole("button", { name: "End guide" })).toBeHidden();
+  await expect(page.locator(".hud .mascot-bubble:visible")).toHaveCount(0);
+  await expect(page.locator(".minimap")).toBeHidden();
   await expect(card).not.toContainText("Data for");
   await expect(card).toHaveAttribute("aria-expanded", "false");
   await expect(page.locator(".toast")).not.toHaveClass(/\bshow\b/);
-  await expect(page.getByRole("button", { name: "Reverse route" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Search again" })).toBeHidden();
+  await page.locator(".guide-more").click();
   await expect(page.getByRole("button", { name: "Search again" })).toBeVisible();
+  await page.locator(".guide-more").click();
   await card.click();
   await expect(card).toContainText("Data for");
   await page.evaluate(() => (window as any).__gteki.goldenFrame());

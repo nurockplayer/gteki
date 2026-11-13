@@ -2288,6 +2288,40 @@ export class Explorer {
     return g;
   }
 
+  private arrivalBeaconTime: number | null = null;
+
+  setArrivalBeacon(arrived: boolean): void {
+    if (!this.previewNext) return;
+    if (arrived === (this.arrivalBeaconTime !== null)) return;
+    this.arrivalBeaconTime = arrived ? 0 : null;
+    for (const g of this.routeGroup.children) {
+      if (!g.userData.routeMarker || g.userData.routeStart) continue;
+      const ring = g.userData.pulse as THREE.Mesh<THREE.RingGeometry, THREE.MeshBasicMaterial>;
+      ring.geometry.dispose();
+      ring.geometry = new THREE.RingGeometry(0.6, arrived ? 1.2 : 0.8, 40).rotateX(-Math.PI / 2);
+      ring.material.opacity = arrived ? 0.4 : 0.85;
+      (g.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>).material.opacity = 0.28;
+      g.visible = this.routeMarkersVisible && !this.routeQuiet;
+    }
+  }
+
+  catScreenBox(): { left: number; right: number; top: number; bottom: number } | null {
+    this.avatar.updateWorldMatrix(true, true);
+    this.camera.updateWorldMatrix(true, false);
+    const box = new THREE.Box3();
+    this.avatar.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      for (let parent: THREE.Object3D | null = object; parent; parent = parent.parent) if (!parent.visible) return;
+      if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+      if (mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));
+    });
+    if (box.isEmpty()) return null;
+    const points: THREE.Vector3[] = [];
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) points.push(new THREE.Vector3(x, y, z).project(this.camera));
+    return { left: (Math.min(...points.map(p => p.x)) + 1) * innerWidth / 2, right: (Math.max(...points.map(p => p.x)) + 1) * innerWidth / 2, top: (1 - Math.max(...points.map(p => p.y))) * innerHeight / 2, bottom: (1 - Math.min(...points.map(p => p.y))) * innerHeight / 2 };
+  }
+
   routeRibbonOpacity(): number | null {
     let opacity: number | null = null;
     this.routeGroup.getObjectByName("route-ribbon")?.traverse((node) => {
@@ -3036,10 +3070,20 @@ export class Explorer {
   }
 
   private step(dt: number, t: number): void {
+    if (this.arrivalBeaconTime !== null) {
+      this.arrivalBeaconTime += dt;
+      const fade = 1 - Math.max(0, Math.min(1, (this.arrivalBeaconTime - 2) / 0.5));
+      for (const g of this.routeGroup.children) if (g.userData.routeMarker && !g.userData.routeStart) {
+        const ring = g.userData.pulse as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
+        ring.material.opacity = 0.4 * fade;
+        (g.children[0] as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>).material.opacity = 0.28 * fade;
+        g.visible = this.routeMarkersVisible && !this.routeQuiet && fade > 0;
+      }
+    }
     if (this.routeTexture && !this.reducedMotion) this.routeTexture.offset.x -= dt * 0.9;
     for (const g of this.routeGroup.children) {
       const ring = g.userData.pulse as THREE.Mesh | undefined;
-      if (ring) ring.scale.setScalar(this.reducedMotion ? 1 : 1 + 0.25 * Math.sin(t * 3));
+      if (ring) ring.scale.setScalar(this.reducedMotion || (this.arrivalBeaconTime !== null && !g.userData.routeStart) ? 1 : 1 + 0.25 * Math.sin(t * 3));
     }
     // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
     this.stationScene?.update?.(dt, t, this.camera);
