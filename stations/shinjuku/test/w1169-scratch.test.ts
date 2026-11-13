@@ -12,4 +12,4 @@ it("lists nearby walls", () => {
     if (Math.min(Math.hypot(w.a.x + 47.6, w.a.y + 165.5), Math.hypot(w.b.x + 47.6, w.b.y + 165.5)) > 6) continue;
     console.log(JSON.stringify({level:lv.label,a:w.a,b:w.b,profile:w.profile,base:w.surfaceBase, zMin:w.zMin,finish:w.finish}));
   }
-});
+}, 120_000);
