@@ -38,6 +38,8 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * #860 (2026-11-09 JST): raised train changes the five visible train material triangle hashes.
  * #1059 (2026-11-09 JST): small-profile car changes the five visible train material triangle hashes.
  * 2026-11-12 JST: fixture remeasured after rebasing on #1213; unchanged.
+ * #1192 (2026-11-13 JST): restore 1.10 m of B3 wall and collider; regenerate affected
+ * wall/cladding hashes. Floors, fences, camera blockers, props and spawn remain unchanged.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;

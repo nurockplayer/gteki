@@ -24,7 +24,7 @@ describe("layout equivalence", () => {
     // #1000 carries the shell of the three shafts with a near-street landing (c3fe6342
     // at -1.6, 636c6fc9 and 0564105d at -1.68) up to their own roofs, and (fix 1) cuts
     // that shell only where a passage crosses it. Includes the merge with main's
-    // cornerFills changes (#1170/#1188).
-    expect(digest).toBe("0ff5a47368894e16729779ed911ce6f424c4614165c88623cc7f161cfc75b511");
+    // cornerFills changes (#1170/#1188). #1192 restores the B3 concourse source wall.
+    expect(digest).toBe("ed621374ab808e56f13b26144b34905c484c2dcdebddb029ca0c7938a8b729f4");
   });
 });

@@ -587,7 +587,13 @@ export function buildLayout(bundle: StationBundle, plan: Plan, options: { pitche
   for (const lv of levels) {
     const out: WallSeg[] = [];
     for (const w of lv.walls) {
-      if (w.kind === "trackside") {
+      // #1192: B3 concourse edge 104 of space 50087e69e33040668f2c117d073fab3c.
+      // Walk e:a4ed9fc953984c52a914f0cbe73cd318 hugs this wall without crossing it:
+      // its nearest approach is 0.435 m, clear of the 0.3 m walker. The generic
+      // 0.5 m clearance cut otherwise deletes 1.10 m of enclosure at slice-09.
+      const b3ConcourseWall = lv.floorId === "toei-nwd-m3" &&
+        w.a.x === -55.51 && w.a.y === 158.39 && w.b.x === -53.21 && w.b.y === 152.76;
+      if (w.kind === "trackside" || b3ConcourseWall) {
         out.push(w);
         continue;
       }
