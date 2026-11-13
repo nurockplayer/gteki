@@ -42,7 +42,8 @@ test('slice-09-b3-sign void diagnosis', async ({ page }) => {
         for (const [o, visible] of savedVisibility) o.visible = visible;
         for (const [m, side] of savedSides) { if (m.side !== side) { m.side = side; m.needsUpdate = true; } }
         for (const [o, saved] of savedCulling) {
-          o.frustumCulled = saved.frustumCulled; o.onBeforeRender = saved.before;
+          o.frustumCulled = saved.frustumCulled;
+          if (o.userData.tightCulling) o.onBeforeRender = saved.before;
           if (saved.count !== undefined) o.count = saved.count;
         }
       };
@@ -70,7 +71,9 @@ test('slice-09-b3-sign void diagnosis', async ({ page }) => {
           return value;
         };
         try {
+          const beforeHooks = hookFrames.length;
           const voidRatio = g.goldenProbe(false).voidRatio;
+          if (hookFrames.length !== beforeHooks + 1) throw new Error(`Expected one render hook for ${mode}, got ${hookFrames.length - beforeHooks}`);
           if (!pixels) throw new Error('No 320x200 pixels captured');
           return { voidRatio, pixels };
         } finally {
