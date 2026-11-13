@@ -167,11 +167,10 @@
     },
     {
       "id": "sj-sign-e31954cb",
-      "known": { "feature:sign e31954cb": "#1205" },
       "station": "shinjuku",
       "kind": "node",
-      "node": "n:3c2d58645c62448b8e4c97f010d9ce32",
-      "headingDeg": 75,
+      "node": "n:f05b059c1a26438aa642be9782e20e89",
+      "headingDeg": 180,
       "expect": "The passage and overhead sign e31954cb are visible.",
       "features": [
         {
@@ -222,11 +221,10 @@
     },
     {
       "id": "sj-stair-2-top",
-      "known": { "feature:stairs": "#1205" },
       "station": "shinjuku",
       "kind": "node",
       "node": "n:d1ccc52ef25e474dac70020771b7ea76",
-      "headingDeg": 240,
+      "headingDeg": 60,
       "expect": "Shinjuku stair 2 top and its surrounding structure are visible.",
       "features": [
         {
@@ -259,7 +257,7 @@
     },
     {
       "id": "sj-escalator-top",
-      "known": { "feature:escalator": "#1205" },
+      "known": { "feature:escalator": "#1270" },
       "station": "shinjuku",
       "kind": "node",
       "node": "n:e4365ef27b14448eb770343c8a024f80",
