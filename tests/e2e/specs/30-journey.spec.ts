@@ -205,7 +205,8 @@ test("guided walk @phone", async ({ page }, info) => {
     const dir = m.cameraDirection, dx = to.position.x - from.position.x, dy = to.position.y - from.position.y;
     const axisDeg = step.mode === "escalator" ? Math.acos(Math.max(-1, Math.min(1, (dir[0] * dx - dir[2] * dy) / (Math.hypot(dir[0], dir[2]) * Math.hypot(dx, dy))))) * 180 / Math.PI : null;
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
-    samples.push({ ...(arrival ? { identity } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
+    const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
+    samples.push({ ...(arrival ? { identity, arrivalFrame } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -272,6 +273,25 @@ test("guided walk @phone", async ({ page }, info) => {
     fs.writeFileSync(path.join(out, `sheet-${String(start / 12 + 1).padStart(2, "0")}.jpg`), Buffer.from(jpg!, "base64"));
   }
   fs.appendFileSync(path.join(out, "summary.md"), `; sheetsMs=${Date.now() - sheetsStart}; wallMs=${Date.now() - wallStart}\n`);
+  if (reelMode === "next" && arrived) {
+    const sample = samples.find((s) => s.arrival)!;
+    const frame = sample.arrivalFrame;
+    expect.soft(frame.shot, "authored arrival shot").toBe(true);
+    expect.soft(frame.boardRect, "name board in frame").not.toBeNull();
+    if (frame.boardRect) {
+      expect.soft(frame.boardRect.x0).toBeGreaterThanOrEqual(-1);
+      expect.soft(frame.boardRect.x1).toBeLessThanOrEqual(1);
+      expect.soft(frame.boardRect.y0).toBeGreaterThanOrEqual(-1);
+      expect.soft(frame.boardRect.y1).toBeLessThanOrEqual(1);
+      expect.soft(frame.boardRect.y1).toBeGreaterThanOrEqual(0.33);
+      if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.x1 - frame.boardRect.x0).toBeGreaterThanOrEqual(0.16);
+    }
+    expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
+    expect.soft(sample.catVisible).toBeGreaterThanOrEqual(config.thresholds.catVisibleMin);
+    expect.soft(sample.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
+    expect.soft(sample.nearBlack).toBeLessThanOrEqual(config.thresholds.nearBlack);
+    expect.soft(sample.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
+  }
   expect(arrived, "guide arrived within 260 simulated seconds").toBe(true);
   expect(samples.length, "at least 30 samples").toBeGreaterThanOrEqual(30);
 });

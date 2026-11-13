@@ -111,6 +111,7 @@ ExplorerPose	interface	apps/web/src/explorer/explorer.ts
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts
+ARRIVAL_SHOTS	const	apps/web/src/explorer/followCamera.ts
 CAT_NPC_FADE	const	apps/web/src/explorer/followCamera.ts
 CAT_RAISE_AIM	const	apps/web/src/explorer/followCamera.ts
 CameraHold	interface	apps/web/src/explorer/followCamera.ts
@@ -127,6 +128,7 @@ SlopeState	interface	apps/web/src/explorer/followCamera.ts
 aimAtRaisedCat	function	apps/web/src/explorer/followCamera.ts
 approachBoom	function	apps/web/src/explorer/followCamera.ts
 approachFov	function	apps/web/src/explorer/followCamera.ts
+arrivalShotState	function	apps/web/src/explorer/followCamera.ts
 avatarFade	function	apps/web/src/explorer/followCamera.ts
 boomSqueezed	function	apps/web/src/explorer/followCamera.ts
 catShoulder	function	apps/web/src/explorer/followCamera.ts

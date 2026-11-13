@@ -1657,7 +1657,7 @@ export class App {
     this.guideTurnSaid = false;
     this.guideMoreOpen = false;
     this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
-    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : []);
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : [], this.s.destination?.id ?? null);
   }
 
   /** Per guide run: where each instruction starts (m), the first one the guide shows, and how far the guide has got. */
@@ -2010,6 +2010,7 @@ export class App {
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
       signFaces: () => this.explorer.signFaces(),
       identity: () => this.explorer.identity(),
+      arrivalFrame: () => this.explorer.arrivalFrame(),
       setRouteMarkersVisible: (visible: boolean) => this.explorer.setRouteMarkersVisible(visible),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),

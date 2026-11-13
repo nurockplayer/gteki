@@ -475,3 +475,25 @@ describe("Explorer guide stair lens", () => {
     expect(state.setFov.mock.lastCall?.[0]).toBe(50);
   });
 });
+
+
+describe("guide arrival shot", () => {
+  it.each([false, true])("starts once only with next=%s and ends on input", (next) => {
+    const state = Object.assign(cameraStand(), {
+      previewNext: next, mode: "guide", arrivalState: "waiting", arrivalDestination: "poi:platform:oedo", arrivalElapsed: 0,
+      guideIdentityHoldS: 0, tier: "walk", events: {},
+      guide: { pts: [new THREE.Vector3(), new THREE.Vector3(0, 0, -1)], cum: [0, 1], steps: [0, 0], s: 1, paused: true, holding: false, stops: [], spans: [] },
+      input: { consumeLook: vi.fn(() => ({ dx: 0, dy: 0, zoom: 0 })), move: vi.fn(() => ({ x: 0, y: 0, run: false })) },
+    });
+    const step = () => (Explorer.prototype as any).stepGuide.call(state, 1 / 60);
+    step();
+    expect(state.arrivalState).toBe(next ? "active" : "waiting");
+    if (next) {
+      state.input.consumeLook.mockReturnValueOnce({ dx: 1, dy: 0, zoom: 0 });
+      step();
+      expect(state.arrivalState).toBe("ended");
+      step();
+      expect(state.arrivalState).toBe("ended");
+    }
+  });
+});

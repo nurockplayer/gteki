@@ -783,6 +783,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     far: number;
   }[] = [];
 
+  root.userData.platformEdges = layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind === "trackside").map((w) => ({ a: [w.a.x, lv.z, -w.a.y], b: [w.b.x, lv.z, -w.b.y] })));
   const platformTactile: THREE.BufferGeometry[] = [];
   const fasciaGeos: THREE.BufferGeometry[] = [];
   const roomFill = roomFloorFill(layout, plan);
