@@ -37,10 +37,11 @@ import wallPropPlacements from "../scene/wall-props.ts";
  * Kept outside assembleScene so its closure cannot retain the build layout. */
 function addOverheadRoofQueries(T: typeof THREE, cap: THREE.Mesh, root: THREE.Object3D) {
   Object.defineProperty(cap.userData, "gtekiOverheadRaycast", { value: (ray: THREE.Raycaster, hits: THREE.Intersection[]) => {
-    if (ray.ray.origin.y > STREET_UNDERSIDE + 0.0001) return;
     root.traverseVisible((o) => {
       const roof = o as THREE.Mesh;
       if (!roof.isMesh || Array.isArray(roof.material) || !roof.material.visible || roof.material.name !== "mat.ceiling") return;
+      const pitched = roof.name.startsWith("pitched-shaft:");
+      if (!pitched && ray.ray.origin.y > STREET_UNDERSIDE + 0.0001) return;
       cacheBvh(roof.geometry);
       const added: THREE.Intersection[] = [];
       if (roof instanceof T.InstancedMesh && roof.userData.tightCulling) {
@@ -56,7 +57,7 @@ function addOverheadRoofQueries(T: typeof THREE, cap: THREE.Mesh, root: THREE.Ob
         raycastObject(roof, ray, added);
       }
       for (const hit of added) {
-        if (!hit.face || hit.point.y > STREET_UNDERSIDE + 0.0001) continue;
+        if (!hit.face || (!pitched && hit.point.y > STREET_UNDERSIDE + 0.0001)) continue;
         const normal = hit.face.normal.clone().applyNormalMatrix(new T.Matrix3().getNormalMatrix(roof.matrixWorld));
         if (Math.abs(normal.y) < 0.000001) continue; // vertical fascias are not roofs
         normal.applyNormalMatrix(new T.Matrix3().getNormalMatrix(cap.matrixWorld).invert());
