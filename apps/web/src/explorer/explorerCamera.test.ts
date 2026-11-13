@@ -47,16 +47,20 @@ const pocket = () => {
 };
 
 describe("Explorer follow camera wiring", () => {
-  it.each(["default", "escalator"])("skips body casts in %s mode", (mode) => {
-    const state = Object.assign(cameraStand(), { catAvatar: true, previewNext: mode === "escalator", escalatorProgress: mode === "escalator" ? 1 : 0 });
+  it.each(["flat", "stairs", "default escalator", "next escalator"])("checks body casts on %s", (mode) => {
+    const state = Object.assign(cameraStand(), { catAvatar: true, previewNext: mode === "next escalator", escalatorProgress: mode === "next escalator" ? 1 : 0 });
+    if (mode === "stairs" || mode === "default escalator") {
+      state.mode = "guide";
+      state.guide = { s: 1, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: mode === "stairs" ? "stairs" : "escalator" }] };
+    }
     const target = new THREE.Mesh(new THREE.PlaneGeometry(1, 1));
     target.position.set(100, 100, 100);
     target.updateMatrixWorld(true);
     setTargets(state, [target]);
     const casts = vi.spyOn(state.ray, "set");
     place(state);
-    expect(casts).toHaveBeenCalledTimes(3);
-    if (mode === "escalator") expect(state.escalatorWeight).toBeGreaterThan(0);
+    expect(casts).toHaveBeenCalledTimes(mode === "flat" || mode === "stairs" ? 6 : 3);
+    if (mode === "next escalator") expect(state.escalatorWeight).toBeGreaterThan(0);
   });
   it.each([false, true].flatMap((floor) => [
     { motion: "walk", speed: 1.4, turn: 0, floor },

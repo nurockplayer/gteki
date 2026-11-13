@@ -3383,7 +3383,7 @@ export class Explorer {
     const lock = stepEscalatorLock(this.escalatorProgress, lockOn, dt, lockSnap);
     this.escalatorProgress = lock.progress;
     this.escalatorWeight = lock.weight;
-    if (this.bodyRaiseHold && (snap || this.firstPerson || !this.previewNext || !this.catAvatar || this.escalatorWeight > 0
+    if (this.bodyRaiseHold && (snap || this.firstPerson || !this.catAvatar || this.escalatorWeight > 0 || (!this.previewNext && this.catRidingEscalator())
       || this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined)) {
       this.bodyRaiseHold.seconds = this.bodyRaiseHold.target = 0;
     }
@@ -3435,7 +3435,7 @@ export class Explorer {
       return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
     };
     if (this.cameraTargets.length) {
-      const checkBody = this.previewNext && this.catAvatar && this.escalatorWeight === 0
+      const checkBody = this.catAvatar && this.escalatorWeight === 0 && (this.previewNext || !this.catRidingEscalator())
         && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
       const cameraPoint = new THREE.Vector3();
       const direction = new THREE.Vector3();
