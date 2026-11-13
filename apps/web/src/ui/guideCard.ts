@@ -24,6 +24,6 @@ export function guideCardText(ins: Pick<Instruction, "text">, opts: { arrived: b
   return { line: opts.name ? opts.t.arrivedAt(opts.name) : opts.t.arrived, detail: bases.includes(ins.text) ? null : ins.text };
 }
 
-export function escalatorArrow(startY: number, endY: number): string {
-  return endY > startY ? "↑" : "↓";
+export function escalatorArrow(startZ: number, endZ: number): string {
+  return endZ > startZ ? "↑" : "↓";
 }

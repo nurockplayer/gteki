@@ -1628,7 +1628,7 @@ export class App {
       }
       const floor = floorDisplayName(this.s.loaded?.bundle.floors.find((f) => f.id === end?.floorId), this.s.lang).replace(/GL[–-]B1 landing/g, "B1");
       const seconds = Math.round((this.escalatorSpan.toS - this.guideS) / this.escalatorSpan.maxMps / 5) * 5;
-      box.append(el("div", "hud-instruction", `${escalatorArrow(start!.y, end!.y)} ${floor}${this.escalatorSpan.maxMps ? ` · ~${seconds} s` : ""}`));
+      box.append(el("div", "hud-instruction", `${escalatorArrow(start!.z, end!.z)} ${floor}${this.escalatorSpan.maxMps ? ` · ~${seconds} s` : ""}`));
       return box;
     }
     const card = guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
