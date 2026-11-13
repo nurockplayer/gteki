@@ -37,7 +37,7 @@ Rows are in playhead order: the time a first-time visitor reaches them. "Script"
 
 Pass count 2026-11-14: **1 / 14** (default); `?next=1` passes 5 rows by script. One default change has merged since the last reading, the pitched shaft ceilings (#1263, part of J7); no row has flipped yet.
 
-Read on 2026-11-14 06:20 JST from the reel of main 435a2fb0 (E2E smoke run 43502755208, dispatched on main: 39 samples over a 154 s, 204 m walk on each project). It is the default experience; what sits behind `?next=1` is read separately below. CI renders in software at the low tier, so its load and frame times say nothing about a real GPU (the time in J2, J12). J13 is read from the reel's badge check (the badge element is shown and inside the viewport in each sample) and from the frames.
+Read on 2026-11-14 06:05 JST from the reel of main 435a2fb0 (E2E smoke run 43502755208, dispatched on main: 39 samples over a 154 s, 204 m walk on each project). It is the default experience; what sits behind `?next=1` is read separately below. CI renders in software at the low tier, so its load and frame times say nothing about a real GPU (the time in J2, J12). J13 is read from the reel's badge check (the badge element is shown and inside the viewport in each sample) and from the frames.
 
 ## `?next=1` reading
 
