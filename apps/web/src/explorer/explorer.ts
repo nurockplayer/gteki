@@ -859,7 +859,7 @@ export class Explorer {
     };
     const markers = this.routeGroup.children.filter((g) => g.userData.routeMarker).reduce((n, g) => n + g.children.filter(visible).length, 0)
       + Number(Boolean(this.avatarMarker?.[1] && visible(this.avatarMarker[1])));
-    return { shot: this.openingState === "active", cat: { x: (Math.min(...xs) + Math.max(...xs)) / 2, x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }, horizonY: 0.5 - Math.tan(pitch) / Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * 0.5, markers,
+    return { shot: this.openingState === "active", cat: { x: (Math.min(...xs) + Math.max(...xs)) / 2, x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }, horizonY: 0.5 + Math.tan(pitch) / Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * 0.5, markers,
       camera: { heading: headingFromYaw(Math.atan2(-direction.x, -direction.z)), pitch: THREE.MathUtils.radToDeg(pitch), height: this.camera.position.y - this.pos.y, distance: Math.hypot(this.camera.position.x - this.pos.x, this.camera.position.z - this.pos.z), fov: this.camera.fov } };
   }
 
