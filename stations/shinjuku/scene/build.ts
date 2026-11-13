@@ -29,8 +29,6 @@ const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
 
 export interface BuiltStation {
   root: THREE.Group;
-  /** Shipping roof-query inputs retained when the preview changes render ceilings. */
-  overheadRoofRoot?: THREE.Group;
   layout: Layout;
   world: WalkWorld;
   /** Extra collision walls created by props (gate machines, platform doors). */
@@ -690,7 +688,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // `let`, not `const`: both are cleared before returning (see the end of this function).
   let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput, pitchedCeilings: opts.pitchedCeilings });
   const preview = layout.shaftCeilingPreview;
-  const overheadRoofRoot = preview ? new THREE.Group() : undefined;
   const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
@@ -817,10 +814,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...visibleSoffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry), ...layout.shaftFascias.filter((f) => f.floorId === lv.floorId).map(shaftFasciaGeometry)]);
     if (ceil) {
-      const original = new THREE.Mesh(track(ceil), mat.ceiling);
-      if (!preview) g.add(original);
+      if (!preview) g.add(new THREE.Mesh(track(ceil), mat.ceiling));
       else {
-        overheadRoofRoot!.add(original);
+        ceil.dispose();
         const rendered = merged([
           ...preview.ceilings[layout.levels.indexOf(lv)]!.map((s) => slabGeometry(s.rings, s.z, 2.4, true)),
           ...preview.soffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry),
@@ -874,11 +870,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // ---- underground fixtures, kept in a separate helper for the surface lane's hook
   // The escalator shell soffits are roofs too: without them the inclines get no fixtures (vertical gap #5).
   const shell = escalatorShellGeometry(layout, bundle);
-  if (preview) {
-    const original = escalatorShellGeometry({ ...layout, shaftCeilingPreview: undefined }, bundle);
-    if (original.sides) track(original.sides);
-    if (original.soffits) overheadRoofRoot!.add(new THREE.Mesh(track(original.soffits), mat.ceiling));
-  }
   buildUndergroundLighting(bundle, layout, levelGroups, root, track, shell.finishes);
   if (preview) for (const roof of preview.roofs) {
     const m = new THREE.Mesh(track(soffitGeometry(roof)), mat.ceiling);
@@ -1751,23 +1742,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   track(surface);
   disposeRetiredGeometries(root, disposables);
 
-  if (overheadRoofRoot) {
-    // The existing camera-only query reads rendered ceilings. Retain its old
-    // inputs, including shells and surface roofs, while changing only the view.
-    root.updateMatrixWorld(true);
-    root.traverseVisible((o) => {
-      if (!(o instanceof THREE.Mesh) || o.material !== mat.ceiling || o.name === "preview-shaft-finishes" || o.name === "escalator-shell-soffits" || o.name.startsWith("pitched-shaft:")) return;
-      const copy = o.clone(false);
-      copy.matrixAutoUpdate = false;
-      copy.matrix.copy(o.matrixWorld);
-      overheadRoofRoot.add(copy);
-    });
-    overheadRoofRoot.updateMatrixWorld(true);
-  }
-
   const built: BuiltStation = {
     root,
-    ...(overheadRoofRoot ? { overheadRoofRoot } : {}),
     layout,
     world,
     propWalls,

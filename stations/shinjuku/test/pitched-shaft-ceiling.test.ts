@@ -8,6 +8,7 @@ import { pointInRings, soffitHeight, type Layout, type Plan, type Soffit } from 
 import plan from "../data/plan.json" with { type: "json" };
 import { exactHash, withCanvasStub } from "./helpers/scene-digest.ts";
 import { digestSceneLists } from "./helpers/station-digest.ts";
+import { castCamera } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 
 const { bundle } = loadShinjukuBundle();
@@ -67,7 +68,7 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   }, 120_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
-  it("keeps every physical layout and explorer list, including steep overhead queries, identical", () => {
+  it("keeps physical layout and explorer lists identical and caps steep queries at drawn roofs", () => {
     const { shaftCeilingPreview: _render, ...physical } = layout;
     expect(exactHash(physical)).toBe(exactHash(oldLayout));
     expect(digestSceneLists(on)).toEqual(digestSceneLists(off));
@@ -76,8 +77,12 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
       const r = layout.runs.find((r) => r.edgeId === id)!;
       for (const t of [0.1, 0.5, 0.9]) {
         ray.set(v3({ x: r.a.x + (r.b.x - r.a.x) * t, y: r.a.y + (r.b.y - r.a.y) * t, z: r.a.z + (r.b.z - r.a.z) * t + 1.6 }), new THREE.Vector3(0, 1, 0));
-        const query = (s: StationScene) => { const hits: THREE.Intersection[] = []; for (const m of s.cameraBlockers!) raycastObject(m, ray, hits); return [...new Set(hits.map((h) => round(h.distance)))].sort(); };
-        expect(query(on)).toEqual(query(off));
+        const p = { x: ray.ray.origin.x, y: -ray.ray.origin.z };
+        const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings(p, s.rings))!;
+        expect(roof).toBeDefined();
+        const hit = castCamera(ray, on.cameraBlockers!, new Set(on.cameraBlockers!))[0];
+        expect(hit).toBeDefined();
+        expect(hit!.point.y).toBeLessThanOrEqual(soffitHeight(roof, p) + 0.002);
       }
     }
   });

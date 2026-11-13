@@ -384,7 +384,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       proxies.add(m);
       colliders.push(m);
       cameraBlockers.push(m);
-      addOverheadRoofQueries(T, m, built.overheadRoofRoot ?? built.root);
+      addOverheadRoofQueries(T, m, built.root);
     }
   }
   // Hanging wayfinding boxes and fence sign panels are signage (role "sign"): the explorer dithers them
