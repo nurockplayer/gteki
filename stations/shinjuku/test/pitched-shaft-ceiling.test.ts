@@ -68,6 +68,31 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   }, 120_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
+  it("does not overlap underground linear lights at similar heights", () => {
+    const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    expect(mesh).toBeDefined();
+    const fixtures = Array.from({ length: mesh.count }, (_, i) => {
+      const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+      const a = new THREE.Vector3(0, 0, -0.5).applyMatrix4(matrix);
+      const b = new THREE.Vector3(0, 0, 0.5).applyMatrix4(matrix);
+      const dx = b.x - a.x, dy = b.z - a.z, len = Math.hypot(dx, dy);
+      const center = a.clone().add(b).multiplyScalar(0.5);
+      return { center, dx, dy, corners: [-1, 1].flatMap((u) => [-1, 1].map((v) => ({
+        x: center.x + u * dx * 0.52 - v * dy / len * 0.15,
+        y: center.z + u * dy * 0.52 + v * dx / len * 0.15,
+      }))) };
+    });
+    for (let i = 0; i < fixtures.length; i++) for (let j = 0; j < i; j++) {
+      const a = fixtures[i]!, b = fixtures[j]!;
+      if (Math.abs(a.center.y - b.center.y) >= 0.5) continue;
+      const overlap = [a, b].every(({ dx, dy }) => [[dx, dy], [-dy, dx]].every(([x, y]) => {
+        const pa = a.corners.map((p) => p.x * x! + p.y * y!), pb = b.corners.map((p) => p.x * x! + p.y * y!);
+        return Math.max(...pa) > Math.min(...pb) + 1e-5 && Math.max(...pb) > Math.min(...pa) + 1e-5;
+      }));
+      expect(overlap, `fixtures ${i} and ${j}`).toBe(false);
+    }
+  });
+
   it("keeps physical layout and explorer lists identical and caps steep queries at drawn roofs", () => {
     const { shaftCeilingPreview: _render, ...physical } = layout;
     expect(exactHash(physical)).toBe(exactHash(oldLayout));

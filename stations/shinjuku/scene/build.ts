@@ -2061,6 +2061,7 @@ function buildUndergroundLighting(
     return best;
   };
   const seen = new Set<string>();
+  const placed: { a: XYZ; b: XYZ }[] = [];
   for (const e of bundle.edges) {
     if (e.mode === "elevator") continue;
     const a = nodes.get(e.from)!, b = nodes.get(e.to)!;
@@ -2078,8 +2079,30 @@ function buildUndergroundLighting(
       const key = `${m.x.toFixed(1)},${m.y.toFixed(1)},${rm.z.toFixed(1)}`;
       if (seen.has(key)) continue;
       seen.add(key);
+      const candidate = { a: { ...p, z: rp.z - 0.065 }, b: { ...q, z: rq.z - 0.065 } };
+      const corners = (f: { a: XYZ; b: XYZ }) => {
+        const dx = f.b.x - f.a.x, dy = f.b.y - f.a.y, len = Math.hypot(dx, dy);
+        const ux = dx / len, uy = dy / len, cx = (f.a.x + f.b.x) / 2, cy = (f.a.y + f.b.y) / 2;
+        return [-1, 1].flatMap((along) => [-1, 1].map((side) => ({
+          x: cx + along * dx * 0.52 - side * uy * 0.15,
+          y: cy + along * dy * 0.52 + side * ux * 0.15,
+        })));
+      };
+      const overlaps = (other: { a: XYZ; b: XYZ }) => {
+        if (Math.abs((candidate.a.z + candidate.b.z - other.a.z - other.b.z) / 2) >= 0.5) return false;
+        const ca = corners(candidate), cb = corners(other);
+        return [candidate, other].every((f) => {
+          const dx = f.b.x - f.a.x, dy = f.b.y - f.a.y;
+          return [[dx, dy], [-dy, dx]].every(([x, y]) => {
+            const pa = ca.map((p) => p.x * x! + p.y * y!), pb = cb.map((p) => p.x * x! + p.y * y!);
+            return Math.max(...pa) > Math.min(...pb) && Math.max(...pb) > Math.min(...pa);
+          });
+        });
+      };
+      if (placed.some(overlaps)) continue;
+      placed.push(candidate);
       const fixtures = batches.get(rm.floorId) ?? [];
-      fixtures.push({ a: { ...p, z: rp.z - 0.065 }, b: { ...q, z: rq.z - 0.065 }, ground: m });
+      fixtures.push({ ...candidate, ground: m });
       batches.set(rm.floorId, fixtures);
     }
   }
