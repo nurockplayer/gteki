@@ -109,7 +109,10 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
         const p = { x: r.a.x + u.x * s + n.x * lateral, y: r.a.y + u.y * s + n.y * lateral, z: r.a.z + (r.b.z - r.a.z) * s / length + 1.6 };
         const dir = new THREE.Vector3(u.x * Math.sin(angle * Math.PI / 180), Math.cos(angle * Math.PI / 180), -u.y * Math.sin(angle * Math.PI / 180));
         ray.set(v3(p), dir);
-        const h = first(ray, after), old = first(ray, before);
+        const visible = first(ray, after), old = first(ray, before);
+        // Retained enclosure sides may occlude the roof at the edge of a shaft.
+        const h = visible?.object.name === "escalator-shell-sides"
+          ? first(ray, after.filter((mesh) => mesh.name !== "escalator-shell-sides")) : visible;
         const roofDistance = (soffitHeight(roof, p) - p.z) / (dir.y - (roof.slope!.x * dir.x - roof.slope!.y * dir.z));
         const intersection = v3(p).addScaledVector(dir, roofDistance);
         // A ray leaving the flight span is a mouth/hall query, not an interior ceiling query.
