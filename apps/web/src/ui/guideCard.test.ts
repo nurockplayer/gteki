@@ -19,5 +19,7 @@ describe("guideCardText", () => {
   it("shows the up arrow for an upward escalator", () => expect(escalatorArrow(1, 2)).toBe("↑"));
   it("keeps walk instructions", () => expect(guideCardText({ text: "Walk ahead" }, opts)).toEqual({ line: "Walk ahead", detail: null }));
   it("puts an arrival note behind the line", () => expect(guideCardText({ text: "Arrive at destination. Data for the platform." }, { ...opts, arrived: true })).toEqual({ line: "Arrived · Platform", detail: "Arrive at destination. Data for the platform." }));
-  it("keeps connector arrival instructions", () => expect(guideCardText({ text: "Stairs start here" }, { ...opts, arrived: true, connector: true })).toEqual({ line: "Stairs start here", detail: null }));
+  it("keeps connector arrival instructions in both modes", () => {
+    for (const next of [false, true]) expect(guideCardText({ text: "Stairs start here, destination not reached." }, { ...opts, arrived: true, connector: true, next })).toEqual({ line: "Stairs start here, destination not reached.", detail: null });
+  });
 });

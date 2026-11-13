@@ -1468,7 +1468,9 @@ export class App {
       row.append(more, menu);
       hud.append(row);
       this.trackInstruction();
-      requestAnimationFrame(() => this.placeArrivalCard());
+      this.arrivalPlacementKey = "";
+      const placementRun = ++this.arrivalPlacementRun;
+      requestAnimationFrame(() => this.placeArrivalCard(placementRun));
       return;
     }
     if (mode === "guide" && ins) {
@@ -1577,19 +1579,31 @@ export class App {
     row.before(after);
   }
 
-  private placeArrivalCard(): void {
-    if (!this.root.classList.contains("arrival") || this.explorer.currentMode !== "guide") return;
+  private arrivalPlacementRun = 0;
+  private arrivalPlacementKey = "";
+
+  private placeArrivalCard(run: number): void {
+    if (run !== this.arrivalPlacementRun || !this.root.classList.contains("arrival") || this.explorer.currentMode !== "guide") return;
     const card = this.ui.hud.querySelector<HTMLElement>(".hud-instruction");
     const cat = this.explorer.catScreenBox();
-    if (card && cat) {
-      const r = card.getBoundingClientRect();
-      if (r.left < cat.right && r.right > cat.left && r.top < cat.bottom && r.bottom > cat.top) {
-        this.root.classList.toggle("arrival-left");
-        const moved = card.getBoundingClientRect();
-        if (moved.left < cat.right && moved.right > cat.left && moved.top < cat.bottom && moved.bottom > cat.top) this.root.classList.toggle("arrival-bottom");
+    const key = cat ? [innerWidth, innerHeight, cat.left, cat.right, cat.top, cat.bottom].join(",") : "";
+    if (card && cat && key !== this.arrivalPlacementKey) {
+      this.arrivalPlacementKey = key;
+      const previousLeft = this.root.classList.contains("arrival-left");
+      const previousBottom = this.root.classList.contains("arrival-bottom");
+      let fits = false;
+      for (const [left, bottom] of [[false, false], [true, false], [false, true], [true, true]]) {
+        this.root.classList.toggle("arrival-left", left);
+        this.root.classList.toggle("arrival-bottom", bottom);
+        const r = card.getBoundingClientRect();
+        if (r.right <= cat.left || r.left >= cat.right || r.bottom <= cat.top || r.top >= cat.bottom) { fits = true; break; }
+      }
+      if (!fits) {
+        this.root.classList.toggle("arrival-left", previousLeft);
+        this.root.classList.toggle("arrival-bottom", previousBottom);
       }
     }
-    requestAnimationFrame(() => this.placeArrivalCard());
+    requestAnimationFrame(() => this.placeArrivalCard(run));
   }
 
   private instructionEl: Element | null = null;
