@@ -241,7 +241,6 @@
     },
     {
       "id": "sj-stair-2-bottom",
-      "knownIssue": 1180,
       "station": "shinjuku",
       "kind": "node",
       "node": "n:51435d9112ba409e8ad5ab02dbbd060f",
@@ -361,7 +360,6 @@
     },
     {
       "id": "slice-09-b3-sign",
-      "knownIssue": 1192,
       "station": "shinjuku",
       "kind": "node",
       "node": "n:180ce956ffb7470b9cc42ec7e75255d4",

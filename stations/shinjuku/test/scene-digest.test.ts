@@ -38,6 +38,8 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * #860 (2026-11-09 JST): raised train changes the five visible train material triangle hashes.
  * #1059 (2026-11-09 JST): small-profile car changes the five visible train material triangle hashes.
  * 2026-11-12 JST: fixture remeasured after rebasing on #1213; unchanged.
+ * #1192 (2026-11-13 JST): restore 1.10 m of B3 wall and collider; regenerate affected
+ * wall/cladding hashes. Floors, fences, camera blockers, props and spawn remain unchanged.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
@@ -84,7 +86,8 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     }));
     for (const d of digests) expect(d).toEqual(base.station);
     // The snapshot itself is still the pristine post-protect layout.
-    expect(exactHash(prepareLayout(bundle, plan, { reuse: true }).layout)).toBe(base.protect.layoutAfterProtect);
+    const { shaftCeilingPreview: _render, ...physical } = prepareLayout(bundle, plan, { reuse: true }).layout;
+    expect(exactHash(physical)).toBe(base.protect.layoutAfterProtect);
   }, 120_000);
 
   it("publishes exactly the modelled stair-run edge ids", () => {

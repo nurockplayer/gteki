@@ -589,6 +589,7 @@ coldOpenPair	function	apps/web/src/ui/firstRun.ts
 demoPair	function	apps/web/src/ui/firstRun.ts
 markFirstRunDone	function	apps/web/src/ui/firstRun.ts
 shouldShowFirstRun	function	apps/web/src/ui/firstRun.ts
+escalatorArrow	function	apps/web/src/ui/guideCard.ts
 guideCardText	function	apps/web/src/ui/guideCard.ts
 StationIdentityView	class	apps/web/src/ui/identityCard.ts
 identityNamesOf	function	apps/web/src/ui/identityCard.ts
@@ -1555,6 +1556,7 @@ roomFloorFill	function	stations/shinjuku/scene/layout.ts
 runWidth	function	stations/shinjuku/scene/layout.ts
 soffitHeight	function	stations/shinjuku/scene/layout.ts
 spaceRole	function	stations/shinjuku/scene/layout.ts
+stairShaftGroups	function	stations/shinjuku/scene/layout.ts
 widthFromClass	function	stations/shinjuku/scene/layout.ts
 installLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 parseLightPreset	function	stations/shinjuku/scene/lightPreset.ts
@@ -1593,6 +1595,7 @@ surfaceMemoized	function	stations/shinjuku/scene/surface-layout.ts
 surfaceOpenings	function	stations/shinjuku/scene/surface-layout.ts
 surfacePadWalls	function	stations/shinjuku/scene/surface-layout.ts
 surfaceRoofs	function	stations/shinjuku/scene/surface-layout.ts
+surfaceStairShafts	function	stations/shinjuku/scene/surface-layout.ts
 surfaceVisibleAt	function	stations/shinjuku/scene/surface-layout.ts
 surfaceVisibleIn	function	stations/shinjuku/scene/surface-layout.ts
 surfaceWalls	function	stations/shinjuku/scene/surface-layout.ts

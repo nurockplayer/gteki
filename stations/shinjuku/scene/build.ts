@@ -29,8 +29,6 @@ const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
 
 export interface BuiltStation {
   root: THREE.Group;
-  /** Shipping roof-query inputs retained when the preview changes render ceilings. */
-  overheadRoofRoot?: THREE.Group;
   layout: Layout;
   world: WalkWorld;
   /** Extra collision walls created by props (gate machines, platform doors). */
@@ -67,7 +65,7 @@ export interface BuiltStation {
 
 export interface BuildOptions {
   quality: "low" | "high";
-  previewNext?: boolean;
+  pitchedCeilings?: boolean;
   /**
    * Optional Lane E kit swap (Issue #94). Absent = the station is built exactly as before. Present, it is
    * applied once after every placeholder exists and before the static finishes merge; it adds visual
@@ -274,8 +272,8 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     voids.push({ rings: [[{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }]],
       bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + HEAD_BAND, minX, maxX, minY, maxY });
   }
-  // Old shell panels can cross a shared shaft plane at slightly different pitches.
-  // Clear the preview's interior from those panels just as from the other finishes.
+  // Preview roofs replace old soffits without removing the enclosure sides.
+  const sideVoids = [...voids];
   for (const roof of layout.shaftCeilingPreview?.roofs ?? []) {
     const points = roof.rings.flat();
     voids.push({ rings: roof.rings,
@@ -424,7 +422,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     const along = (p: XY) => (p.x - wall.a.x) * u.x + (p.y - wall.a.y) * u.y;
     const roofVoids = covered.map(({ rings, roof }) => ({ rings,
       bottom: (p: XY) => soffitHeight(roof, p), top: () => wall.zMax + 1 }));
-    const pieces = cutWallsByVoids([wall], [...voids, ...roofVoids]).map((w): polygonClipping.Polygon => {
+    const pieces = cutWallsByVoids([wall], [...sideVoids, ...roofVoids]).map((w): polygonClipping.Polygon => {
       const p = w.profile!;
       return [[[along(w.a), p.bottomA], [along(w.b), p.bottomB], [along(w.b), p.topB], [along(w.a), p.topA]]];
     });
@@ -688,9 +686,8 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 // ---------------------------------------------------------------- main
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
-  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput, previewNext: opts.previewNext });
+  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput, pitchedCeilings: opts.pitchedCeilings });
   const preview = layout.shaftCeilingPreview;
-  const overheadRoofRoot = preview ? new THREE.Group() : undefined;
   const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
@@ -818,10 +815,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...visibleSoffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry), ...layout.shaftFascias.filter((f) => f.floorId === lv.floorId).map(shaftFasciaGeometry)]);
     if (ceil) {
-      const original = new THREE.Mesh(track(ceil), mat.ceiling);
-      if (!preview) g.add(original);
+      if (!preview) g.add(new THREE.Mesh(track(ceil), mat.ceiling));
       else {
-        overheadRoofRoot!.add(original);
+        ceil.dispose();
         const rendered = merged([
           ...preview.ceilings[layout.levels.indexOf(lv)]!.map((s) => slabGeometry(s.rings, s.z, 2.4, true)),
           ...preview.soffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry),
@@ -875,11 +871,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // ---- underground fixtures, kept in a separate helper for the surface lane's hook
   // The escalator shell soffits are roofs too: without them the inclines get no fixtures (vertical gap #5).
   const shell = escalatorShellGeometry(layout, bundle);
-  if (preview) {
-    const original = escalatorShellGeometry({ ...layout, shaftCeilingPreview: undefined }, bundle);
-    if (original.sides) track(original.sides);
-    if (original.soffits) overheadRoofRoot!.add(new THREE.Mesh(track(original.soffits), mat.ceiling));
-  }
   buildUndergroundLighting(bundle, layout, levelGroups, root, track, shell.finishes);
   if (preview) for (const roof of preview.roofs) {
     const m = new THREE.Mesh(track(soffitGeometry(roof)), mat.ceiling);
@@ -1752,23 +1743,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   track(surface);
   disposeRetiredGeometries(root, disposables);
 
-  if (overheadRoofRoot) {
-    // The existing camera-only query reads rendered ceilings. Retain its old
-    // inputs, including shells and surface roofs, while changing only the view.
-    root.updateMatrixWorld(true);
-    root.traverseVisible((o) => {
-      if (!(o instanceof THREE.Mesh) || o.material !== mat.ceiling || o.name === "preview-shaft-finishes" || o.name === "escalator-shell-soffits" || o.name.startsWith("pitched-shaft:")) return;
-      const copy = o.clone(false);
-      copy.matrixAutoUpdate = false;
-      copy.matrix.copy(o.matrixWorld);
-      overheadRoofRoot.add(copy);
-    });
-    overheadRoofRoot.updateMatrixWorld(true);
-  }
-
   const built: BuiltStation = {
     root,
-    ...(overheadRoofRoot ? { overheadRoofRoot } : {}),
     layout,
     world,
     propWalls,
@@ -2086,6 +2062,7 @@ function buildUndergroundLighting(
     return best;
   };
   const seen = new Set<string>();
+  const placed: { a: XYZ; b: XYZ }[] = [];
   for (const e of bundle.edges) {
     if (e.mode === "elevator") continue;
     const a = nodes.get(e.from)!, b = nodes.get(e.to)!;
@@ -2103,8 +2080,30 @@ function buildUndergroundLighting(
       const key = `${m.x.toFixed(1)},${m.y.toFixed(1)},${rm.z.toFixed(1)}`;
       if (seen.has(key)) continue;
       seen.add(key);
+      const candidate = { a: { ...p, z: rp.z - 0.065 }, b: { ...q, z: rq.z - 0.065 } };
+      const corners = (f: { a: XYZ; b: XYZ }) => {
+        const dx = f.b.x - f.a.x, dy = f.b.y - f.a.y, len = stableHypot(dx, dy);
+        const ux = dx / len, uy = dy / len, cx = (f.a.x + f.b.x) / 2, cy = (f.a.y + f.b.y) / 2;
+        return [-1, 1].flatMap((along) => [-1, 1].map((side) => ({
+          x: cx + along * dx * 0.52 - side * uy * 0.15,
+          y: cy + along * dy * 0.52 + side * ux * 0.15,
+        })));
+      };
+      const overlaps = (other: { a: XYZ; b: XYZ }) => {
+        if (Math.abs((candidate.a.z + candidate.b.z - other.a.z - other.b.z) / 2) >= 0.5) return false;
+        const ca = corners(candidate), cb = corners(other);
+        return [candidate, other].every((f) => {
+          const dx = f.b.x - f.a.x, dy = f.b.y - f.a.y;
+          return [[dx, dy], [-dy, dx]].every(([x, y]) => {
+            const pa = ca.map((p) => p.x * x! + p.y * y!), pb = cb.map((p) => p.x * x! + p.y * y!);
+            return Math.max(...pa) > Math.min(...pb) && Math.max(...pb) > Math.min(...pa);
+          });
+        });
+      };
+      if (placed.some(overlaps)) continue;
+      placed.push(candidate);
       const fixtures = batches.get(rm.floorId) ?? [];
-      fixtures.push({ a: { ...p, z: rp.z - 0.065 }, b: { ...q, z: rq.z - 0.065 }, ground: m });
+      fixtures.push({ ...candidate, ground: m });
       batches.set(rm.floorId, fixtures);
     }
   }

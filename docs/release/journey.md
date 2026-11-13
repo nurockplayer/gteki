@@ -18,26 +18,44 @@ None of this was a failing check. The golden cameras look from fixed nodes with 
 
 Rows are in playhead order: the time a first-time visitor reaches them. "Script" rows are judged by the journey spec in CI (job `journey (shinjuku)`, since #1196; a row the reel does not measure yet is judged by hand from a play of production like the baseline above, and stays FAIL or "not judged" unless that play shows it passing); "person" rows by the art director on the journey reel, and finally by the Owner on the walk video. Times are for the guided walk at its default pace.
 
-| # | When | What the player gets | Judged by | 2026-11-12, reel at 8ad71c13 (desktop / phone) |
+| # | When | What the player gets | Judged by | 2026-11-13, reel at 199a4009 (desktop / phone) |
 |---|---|---|---|---|
 | J1 | 0–2 s | A designed first frame (title and progress), never a bare form on black | script: screenshot at 1 s | FAIL: opens on the Ikebukuro search form |
-| J2 | ≤ 5 s desktop, ≤ 8 s phone | Without any input: in the station as the cat, at the exit 1 mouth, stairs ahead (hero H1). Download to that frame ≤ 6 MB | script: mode, pose, time, bytes | FAIL: Ikebukuro overview; 13.0 / 11.1 MB to ready |
-| J3 | first frame | The world owns the frame: overlay ≤ 20% desktop, ≤ 30% phone, one primary action | script: DOM overlay grid | FAIL: overlay 44% / 51% |
+| J2 | ≤ 5 s desktop, ≤ 8 s phone | Without any input: in the station as the cat, at the exit 1 mouth, stairs ahead (hero H1). Download to that frame ≤ 6 MB | script: mode, pose, time, bytes | FAIL: Ikebukuro overview; 13.0 / 13.0 MB to ready |
+| J3 | first frame | The world owns the frame: overlay ≤ 20% desktop, ≤ 30% phone, one primary action | script: DOM overlay grid | FAIL: overlay 45% / 51% |
 | J4 | first tap | One tap starts the walk and the sound | script: one click → guide mode, audio running | FAIL (4 actions; by hand, the reel does not take this path) |
-| J5 | whole walk | No void, no black holes, the camera never inside geometry | script: every 2.5 m with the guide camera | FAIL: 10 / 12 of 39 samples. Camera in geometry on the exit stairs at 12 s (near clip 0.35 / 0.70) and from 44 to 80 s on the first escalator (0.13–0.20); void 1% / 3% on B3 at 88 s |
-| J6 | whole walk | The cat is always in view | script: avatar visible in ≥ 95% of samples | FAIL: visible in 72% / 56% of samples. Hidden by geometry on the exit stairs (12–16 s) and before arrival (148–152 s), by the UI on phone through the first escalator (44–84 s) |
-| J7 | escalators | The ride reads as a ride: camera on the escalator axis (D2), ceiling intact | person on the reel; script: axis angle | FAIL (by hand; the person judgement on the reel is outstanding). Script: on the axis in 18 of 20 ride samples, 31° and 1° entering the two rides |
-| J8 | whole walk | Guidance stays quiet (D1): overlay ≤ 20% / 30%, no debug text, small markers | script: overlay and visible strings | FAIL: overlay 32–48% (median 36%) / 31–37% (median 31%), over the limit in all 38 walk samples; "Run ≈1.3 m/s" and the minimap caption on screen |
-| J9 | arrival | Arrival is a moment: platform and name sign in view, data notes one tap away | script: overlay at arrival; person | FAIL: overlay 48% / 37% at arrival, the cat not in view, the data note in the headline |
+| J5 | whole walk | No void, no black holes, the camera never inside geometry | script: every 2.5 m with the guide camera | FAIL: 2 / 2 of 39 samples. Near clip on the first escalator at 60 s (0.19, desktop) and 48–68 s (0.20, phone), and on the walk after it at 80 s (0.13, desktop); void ≤ 0.15% |
+| J6 | whole walk | The cat is always in view | script: avatar visible in ≥ 95% of samples | FAIL: visible in 77% / 56% of samples. Hidden on the exit stairs (desktop 8–24 s, phone 4–16 s) and before arrival (148 s, phone to 152 s); desktop also at 40 s and 84–92 s, phone through the first escalator (44–84 s) |
+| J7 | escalators | The ride reads as a ride: camera on the escalator axis (D2), ceiling intact | person on the reel; script: axis angle | FAIL (by hand; the person judgement on the reel is outstanding). Script: axis median 0° over 20 ride samples, 31° entering the first ride; no axis lock in the default mode |
+| J8 | whole walk | Guidance stays quiet (D1): overlay ≤ 20% / 30%, no debug text, small markers | script: overlay and visible strings | FAIL: overlay median 37% (max 49%) / 31% (max 37%), over the limit in all 38 walk samples; "Run ≈1.3 m/s" (desktop) and "GL–B1 landing" on screen |
+| J9 | arrival | Arrival is a moment: platform and name sign in view, data notes one tap away | script: overlay at arrival; person | FAIL: overlay 49% / 37% at arrival, the data note in the headline |
 | J10 | whole walk | It looks like a Tokyo subway: hero frames H1–H4 accepted against the targets | art director, then Owner | not judged |
 | J11 | whole walk | It sounds like one: ambience that changes with depth, escalator, distant train | script: audio state; person | not judged (the reel records no audio state) |
 | J12 | whole walk | It holds frame rate: ≥ 50 fps desktop (M2), ≥ 30 fps on a mid-range phone | GPU measurement | not measured (CI renders in software) |
 | J13 | always | Truth kept: "approximate, not surveyed" visible, data scope one tap away, nothing invented (D3) | person: truth review | PASS: the "Approximate, not surveyed" badge, "Coverage" and "demo, not surveyed" are on screen through the walk (frame 013 of both reels) |
 | J14 | always | Release hygiene: no console errors, a message when WebGL is unavailable, credits, ja and en | script | not judged (the reel records no console state) |
 
-Pass count 2026-11-12: **1 / 14**.
+Pass count 2026-11-13: **1 / 14** (default); `?next=1` passes 5 rows by script, none flipped yet.
 
-Read on 2026-11-12 13:35 JST from the reel of main 8ad71c13 (the last E2E smoke run of #1196, run 43147254922: 39 samples over a 154 s, 204 m walk on each project). It is the default experience: what sits behind `?next=1` (cold open, route diet, slope camera) is read from the reel's `next` mode once that is on main. CI renders in software at the low tier, so its load and frame times say nothing about a real GPU (the time in J2, J12). The reel's string list misses the "Approximate, not surveyed" badge, so J13 is read from the frames.
+Read on 2026-11-13 16:20 JST from the reel of main 199a4009 (E2E smoke run 43381043711, dispatched on main: 39 samples over a 154 s, 204 m walk on each project). It is the default experience; what sits behind `?next=1` is read separately below. CI renders in software at the low tier, so its load and frame times say nothing about a real GPU (the time in J2, J12). The reel's string list misses the "Approximate, not surveyed" badge, so J13 is read from the frames.
+
+## `?next=1` reading
+
+Same run, the reel's `next` mode (44 samples, desktop / phone). It shows what the flip PRs would deliver. A row changes in the table above only in its flip PR, with the art director's acceptance (token-rules 26 c).
+
+| # | `?next=1`, 2026-11-13, reel at 199a4009 | Open before the flip |
+|---|---|---|
+| J1 | not read (the reel captures the ready frame, not 1 s) | cold open: one more round (D11 1) |
+| J2 | Shinjuku, walk mode, 5.9 / 5.9 MB to ready (time is software rendering) | authored H1 pose (D11 1); time on a GPU |
+| J3 | script passes: overlay 12.0% / 15.4%, one primary action ("Walk to the platform") | cold open round (D11 1) |
+| J5 | script passes: no near clip, void ≤ 0.4% | none |
+| J6 | fails at one sample: 148 s, the foot of the last escalator, cat behind the greybox shell (0.44) while the escalator lock still holds | escalator camera reframe (D11 4) |
+| J7 | axis lock median 1, below 0.99 only entering the two rides (40 s, 96 s), axis max 12° | reframe to H3 (D11 4); person on the reel |
+| J8 | script passes: overlay median 7.3% (max 15.6%) / 3.9% (max 13.0%), no debug strings; the escalator card reads "↓ B4 · ~N s" | art verdict on #1249 (D11 3) |
+| J9 | script passes: overlay 6.3% / 1.0%, cat in view | own platform arrival shot (#1253, D11 5); person |
+| J13 | passes: "Approximate, not surveyed" and the data line visible on both (frame 013). The phone's string list misses them; read from the frames | none |
+
+By script `?next=1` passes J3, J5, J8, J9 (script part) and J13. Before #1236 part of the default J5/J6 "known" failures was the route ribbon, and the default mode's near-clip numbers on the escalators vary from run to run, so compare modes per row, not by counts.
 
 ## Release
 

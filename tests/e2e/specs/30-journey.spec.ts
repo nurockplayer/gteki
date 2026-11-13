@@ -204,9 +204,20 @@ test("guided walk @phone", async ({ page }, info) => {
     const imageMs = Date.now() - phaseStart;
     const dir = m.cameraDirection, dx = to.position.x - from.position.x, dy = to.position.y - from.position.y;
     const axisDeg = step.mode === "escalator" ? Math.acos(Math.max(-1, Math.min(1, (dir[0] * dx - dir[2] * dy) / (Math.hypot(dir[0], dir[2]) * Math.hypot(dx, dy))))) * 180 / Math.PI : null;
+    const boxes = arrival && reelMode === "next" ? await page.evaluate(() => {
+      const g = (window as any).__gteki;
+      const cat = g.scanProbe().explorer.catScreenBox();
+      const rect = document.querySelector(".hud-instruction")!.getBoundingClientRect();
+      return { cat, card: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom } };
+    }) : undefined;
+    if (boxes) {
+      const { cat, card } = boxes;
+      expect(cat, "arrival cat box").not.toBeNull();
+      expect(card.right <= cat.left || card.left >= cat.right || card.bottom <= cat.top || card.top >= cat.bottom, `arrival card/cat overlap: ${JSON.stringify(boxes)}`).toBe(true);
+    }
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
     const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
-    samples.push({ ...(arrival ? { identity, arrivalFrame } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
+    samples.push({ ...(arrival ? { identity, boxes, arrivalFrame } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -286,7 +297,8 @@ test("guided walk @phone", async ({ page }, info) => {
       if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.y1).toBeGreaterThanOrEqual(0.33);
       if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.x1 - frame.boardRect.x0).toBeGreaterThanOrEqual(0.16);
     }
-    expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
+    if (info.project.name.startsWith("phone")) expect.soft(frame.doorsOrStripWidth, "platform doors or tactile strip width").toBeGreaterThanOrEqual(0.10);
+    else expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
     expect.soft(sample.catVisible).toBeGreaterThanOrEqual(config.thresholds.catVisibleMin);
     expect.soft(sample.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
     expect.soft(sample.nearBlack).toBeLessThanOrEqual(config.thresholds.nearBlack);
