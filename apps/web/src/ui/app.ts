@@ -1400,7 +1400,7 @@ export class App {
 
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
-    if (mode !== "guide") { this.root.classList.remove("arrival", "arrival-left", "arrival-bottom"); this.explorer.setArrivalBeacon(false); }
+    if (mode !== "guide") { this.root.classList.remove("arrival", "arrival-left", "arrival-bottom"); if (this.explorer.previewNext) this.explorer.setArrivalBeacon(false); }
     this.syncTopMenu();
     if (mode !== "guide" && this.explorer.previewNext) {
       this.escalatorSpan = undefined;
