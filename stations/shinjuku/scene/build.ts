@@ -272,7 +272,7 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
     voids.push({ rings: [[{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }]],
       bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + HEAD_BAND, minX, maxX, minY, maxY });
   }
-  // Preview roofs replace old soffits and trim only the top of the enclosure sides.
+  // Preview roofs replace old soffits without removing the enclosure sides.
   const sideVoids = [...voids];
   for (const roof of layout.shaftCeilingPreview?.roofs ?? []) {
     const points = roof.rings.flat();
@@ -280,7 +280,6 @@ export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): {
       bottom: (p: XY) => soffitHeight(roof, p) - 3.3, top: (p: XY) => soffitHeight(roof, p) + 0.01,
       minX: Math.min(...points.map((p) => p.x)), maxX: Math.max(...points.map((p) => p.x)),
       minY: Math.min(...points.map((p) => p.y)), maxY: Math.max(...points.map((p) => p.y)) });
-    sideVoids.push({ ...voids[voids.length - 1]!, bottom: (p: XY) => soffitHeight(roof, p) - 1 });
   }
   // Clip arbitrary (possibly holed) roof polygons to an affine height half-plane.
   const heightMask = (polys: polygonClipping.MultiPolygon, value: (p: XY) => number): polygonClipping.MultiPolygon => {
