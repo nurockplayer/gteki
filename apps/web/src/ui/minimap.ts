@@ -423,6 +423,7 @@ export class Minimap {
       name.textContent = `${station.id} · ${pick(station.names, this.lang)}`;
       name.title = name.textContent;
       level.textContent = floor ? floorDisplayName(floor, this.lang) : t.minimapFloorUnknown;
+      if (this.el.closest(".app.next")) level.textContent = level.textContent.replace(/GL[–-]B1 landing/g, "B1");
       this.label.append(name, level);
     }
     this.syncFloorOptions();
