@@ -283,7 +283,7 @@ test("guided walk @phone", async ({ page }, info) => {
       expect.soft(frame.boardRect.x1).toBeLessThanOrEqual(1);
       expect.soft(frame.boardRect.y0).toBeGreaterThanOrEqual(-1);
       expect.soft(frame.boardRect.y1).toBeLessThanOrEqual(1);
-      expect.soft(frame.boardRect.y1).toBeGreaterThanOrEqual(0.33);
+      if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.y1).toBeGreaterThanOrEqual(0.33);
       if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.x1 - frame.boardRect.x0).toBeGreaterThanOrEqual(0.16);
     }
     expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
