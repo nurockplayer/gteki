@@ -70,7 +70,7 @@ export const FOLLOW_CAT_NEXT = { pivotY: 0.42, shoulder: 0.2, distance: 2.25, li
 
 /** Authored Oedo arrival framing, in metres and clockwise degrees from north. */
 export const ARRIVAL_SHOTS: Record<string, { heading: number; distance: number; height: number; desktopPitch: number; phonePitch: number }> = {
-  "poi:platform:oedo": { heading: 210, distance: 3, height: 1.1, desktopPitch: -4, phonePitch: -8 },
+  "poi:platform:oedo": { heading: 200, distance: 3, height: 1.1, desktopPitch: -4, phonePitch: -8 },
 };
 
 /** One shot per guide, cancelled by the first visitor input. */

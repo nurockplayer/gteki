@@ -842,7 +842,8 @@ export class Explorer {
       }
       edgeLength = Math.max(0, hi - lo) * nearest.a.distanceTo(nearest.b);
     }
-    return { boardRect, edgeLength, edgeInFrame: edgeLength >= 1, cat, shot: this.arrivalState === "active" };
+    const direction = this.camera.getWorldDirection(new THREE.Vector3());
+    return { boardRect, edgeLength, edgeInFrame: edgeLength >= 1, cat, shot: this.arrivalState === "active", camera: { heading: headingFromYaw(Math.atan2(-direction.x, -direction.z)), pitch: THREE.MathUtils.radToDeg(Math.asin(direction.y)), height: this.camera.position.y - this.pos.y, distance: Math.hypot(this.camera.position.x - this.pos.x, this.camera.position.z - this.pos.z) } };
   }
 
   identity(): { id: string; worldPosition: number[]; cameraDirection: number[]; cameraFov: number; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
@@ -3393,7 +3394,7 @@ export class Explorer {
     }
     const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
     const pose = this.catAvatar
-      ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(framing.lift, (shot.height - (head.y - this.pos.y)) / shot.distance - Math.sin(pitch), weight) : framing.lift, framing.drop)
+      ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(framing.lift, (shot.height - (head.y - this.pos.y)) / shot.distance + Math.sin(pitch), weight) : framing.lift, framing.drop)
       : followPose(head, yaw, pitch, shoulder);
     if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
