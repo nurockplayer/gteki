@@ -478,6 +478,35 @@ describe("Explorer guide stair lens", () => {
 
 
 describe("guide arrival shot", () => {
+  it("hands movement the rendered shot direction", () => {
+    const state = Object.assign(cameraStand(), {
+      previewNext: true, mode: "guide", arrivalState: "active", arrivalDestination: "poi:platform:oedo", arrivalElapsed: 1.2,
+      guideIdentityHoldS: 0, guide: {}, setMode: vi.fn(),
+      input: { consumeLook: () => ({ dx: 0, dy: 0, zoom: 0 }), move: () => ({ x: 0, y: 1 }) },
+    });
+    const yaw = -THREE.MathUtils.degToRad(165), pitch = -0.1;
+    state.camera.lookAt(new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)).add(state.camera.position));
+    (Explorer.prototype as any).stepGuide.call(state, 1 / 60);
+    expect(state.yaw).toBeCloseTo(yaw);
+    expect(state.pitch).toBeCloseTo(pitch);
+  });
+
+  it("clears the shot when switching to overview and back to walk", () => {
+    const state = Object.assign(cameraStand(), {
+      mode: "guide", arrivalState: "active", arrivalDestination: "poi:platform:oedo", arrivalElapsed: 1.2,
+      guideIdentityHoldS: 0, restoreZone: vi.fn(), orbit: { target: new THREE.Vector3(), enabled: false },
+      avatar: { visible: true }, input: { enabled: true }, routeGroup: new THREE.Group(),
+      setCameraFocus: vi.fn(), setRouteMarkersVisible: vi.fn(), street: { restore: vi.fn() },
+      overviewLook: { set: vi.fn() }, events: {}, updateGreyboxLegend: vi.fn(),
+    });
+    (Explorer.prototype as any).setMode.call(state, "overview");
+    (Explorer.prototype as any).setMode.call(state, "walk");
+    expect(state.arrivalState).toBe("ended");
+    expect(state.arrivalDestination).toBeNull();
+    expect(state.arrivalElapsed).toBe(0);
+    place(state, true);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(50);
+  });
   it.each([false, true])("starts once only with next=%s and ends on input", (next) => {
     const state = Object.assign(cameraStand(), {
       previewNext: next, mode: "guide", arrivalState: "waiting", arrivalDestination: "poi:platform:oedo", arrivalElapsed: 0,

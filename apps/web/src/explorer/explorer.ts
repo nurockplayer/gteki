@@ -1884,6 +1884,9 @@ export class Explorer {
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
     const previous = this.mode;
+    this.arrivalState = "ended";
+    this.arrivalElapsed = 0;
+    this.arrivalDestination = null;
     this.guideIdentityHoldS = 0;
     if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
@@ -2746,9 +2749,6 @@ export class Explorer {
    * `paceSpans` cap speed and carry connector modes for the stair lens (see guidePace.ts).
    */
   startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = [], destination: string | null = null): void {
-    this.arrivalState = "waiting";
-    this.arrivalDestination = destination;
-    this.arrivalElapsed = 0;
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
     const cum = cumulativeLengths(pts);
@@ -2767,6 +2767,9 @@ export class Explorer {
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
+    this.arrivalState = "waiting";
+    this.arrivalDestination = destination;
+    this.arrivalElapsed = 0;
     this.guideIdentityHoldS = this.frameInitialIdentity(this.yaw) ? IDENTITY_HOLD_S : 0;
   }
 
@@ -2816,6 +2819,8 @@ export class Explorer {
   stopGuide(): void {
     this.guideIdentityHoldS = 0;
     this.arrivalState = "ended";
+    this.arrivalElapsed = 0;
+    this.arrivalDestination = null;
     this.guide = null;
     if (this.mode === "guide") this.setMode("walk");
   }
@@ -3211,15 +3216,19 @@ export class Explorer {
     const g = this.guide;
     if (!g) return;
     const look = this.input.consumeLook();
-    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     const mv = this.input.move();
     const input = Boolean(look.dx || look.dy || look.zoom || mv.x || mv.y);
     const wasArrival = this.arrivalState === "active";
     this.arrivalState = arrivalShotState(this.arrivalState, this.previewNext, this.arrivalDestination, false, input);
     if (wasArrival && input) {
-      this.arrivalStart = { yaw: this.yaw, pitch: this.pitch, distance: this.camDistance };
+      const direction = this.camera.getWorldDirection(new THREE.Vector3());
+      this.yaw = Math.atan2(-direction.x, -direction.z);
+      this.pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
+      this.arrivalElapsed = 0;
+      this.arrivalDestination = null;
       this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
     }
+    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     if (input) this.guideIdentityHoldS = 0;
     if (mv.x !== 0 || mv.y !== 0) {
       // Taking the controls hands over to free walking at the current spot.
