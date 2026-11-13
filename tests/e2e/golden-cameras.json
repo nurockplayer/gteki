@@ -179,7 +179,7 @@
             "namePrefix": "sign:",
             "contains": "e31954cb"
           },
-          "minPixels": 1
+          "minPixels": 7
         }
       ]
     },
@@ -233,7 +233,7 @@
             "role": "stairs_ramps",
             "withinM": 15
           },
-          "minPixels": 2861
+          "minPixels": 2835
         }
       ]
     },
