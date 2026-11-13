@@ -68,14 +68,15 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1171 (2026-11-12 JST): golden probe tags in userData (goldenRole on stair and riser meshes; gteki_role and faces on route sign groups); nodes re-measured on the tree merged with #221's modelled stair edge metadata, everything else unchanged.
 // 2026-11-12 JST: station digest remeasured after rebasing on #1213; unchanged.
 // #1192: restore the B3 concourse wall; counts and non-geometry digests stay unchanged.
+// J7 pitched shaft ceilings default-on (2026-11-13 JST): +12 pitched roof meshes; physical lists unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "15fd8c95597a144ca6dd7f8c5f492a6e6a63dd6e5e05de9ff9b22449c1c951f3",
-    "appearanceDigest": "59a5284df7a544b383a55e1895262504d7c44fcb560e3b0e86fe76410656d832",
-    "nodesDigest": "f06536a39c024d1c1762e35b455eff4d127be2a9fec9ea3cbeac7eb15992c708",
-    "texturesDigest": "0dbf6cbe2ea21e4f1c4cd7aa612f261afcdf10360992b5db677f48f0e5f0a396",
-    "meshes": 96,
-    "bytes": 16185958
+    "geometryDigest": "b36fabefe87beaad1f46ee0c955df4d03fad0291747a0ee6baddd61cf51b4833",
+    "appearanceDigest": "48e27d9e7177edd1202226bbcab8b5e6e2c34ac78315f180c89978179fe6297c",
+    "nodesDigest": "8ec850ee9db4179fb6930766d0b3870a908ee6c63a5b2bbf756d5f3a303831bb",
+    "texturesDigest": "438863ac76956a1279b557c9832854d0d57e0c276491475179ac5d6a3b6ac4f2",
+    "meshes": 108,
+    "bytes": 17299194
   },
   "lists": {
     "listsDigest": "d89bd3909b3065da8f13c0e7a600fc93ec4366c5a720ea281d6e4d1005cfc738",
