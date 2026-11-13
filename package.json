@@ -10,7 +10,7 @@
     "data:age": "tsx tools/data-age/report.ts",
     "coverage:matrix": "node --import tsx/esm tools/coverage-matrix/report.ts",
     "bake:stairwells": "tsx packages/godot/src/stairwell-bake.ts --station shinjuku",
-    "bake:stairwells:check": "node --import tsx/esm packages/godot/src/stairwell-bake.ts --station shinjuku --check",
+    "bake:stairwells:check": "tsx packages/godot/src/stairwell-bake.ts --station shinjuku --check",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:heavy": "vitest run --mode heavy --maxWorkers=1 --passWithNoTests",
