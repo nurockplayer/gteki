@@ -169,8 +169,8 @@
       "id": "sj-sign-e31954cb",
       "station": "shinjuku",
       "kind": "node",
-      "node": "n:aa29caed939f47449d2b76b11043109b",
-      "headingDeg": 160,
+      "node": "n:3d7ad1029dd5418698dcd0f919dec05f",
+      "headingDeg": 180,
       "expect": "The passage and overhead sign e31954cb are visible.",
       "features": [
         {
@@ -233,7 +233,7 @@
             "role": "stairs_ramps",
             "withinM": 15
           },
-          "minPixels": 2837
+          "minPixels": 2861
         }
       ]
     },
