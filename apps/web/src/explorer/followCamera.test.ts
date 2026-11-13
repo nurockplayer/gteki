@@ -740,3 +740,14 @@ describe("D2 preview camera", () => {
     }
   });
 });
+
+
+describe("authored arrival lifecycle", () => {
+  it("starts once in next mode and ends on first input", async () => {
+    const { arrivalShotState } = await import("./followCamera.ts");
+    expect(arrivalShotState("waiting", false, "poi:platform:oedo", true, false)).toBe("waiting");
+    expect(arrivalShotState("waiting", true, "poi:platform:oedo", true, false)).toBe("active");
+    expect(arrivalShotState("active", true, "poi:platform:oedo", true, true)).toBe("ended");
+    expect(arrivalShotState("ended", true, "poi:platform:oedo", true, false)).toBe("ended");
+  });
+});

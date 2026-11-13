@@ -65,6 +65,7 @@ export interface BuiltStation {
 
 export interface BuildOptions {
   quality: "low" | "high";
+  previewNext?: boolean;
   pitchedCeilings?: boolean;
   /**
    * Optional Lane E kit swap (Issue #94). Absent = the station is built exactly as before. Present, it is
@@ -780,6 +781,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     far: number;
   }[] = [];
 
+  if (opts.previewNext) root.userData.platformEdges = layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind === "trackside").map((w) => ({ a: [w.a.x, lv.z, -w.a.y], b: [w.b.x, lv.z, -w.b.y] })));
   const platformTactile: THREE.BufferGeometry[] = [];
   const fasciaGeos: THREE.BufferGeometry[] = [];
   const roomFill = roomFloorFill(layout, plan);
