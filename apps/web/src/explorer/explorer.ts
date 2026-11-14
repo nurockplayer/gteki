@@ -676,6 +676,8 @@ export class Explorer {
     });
     const visibility = new Map<THREE.Mesh, boolean>();
     for (const meshes of matches) for (const mesh of meshes) visibility.set(mesh, mesh.visible);
+    const crowd: THREE.Object3D[] = [];
+    if (features.length) this.scene.traverse((object) => { if (object.visible && object.userData.gteki_role === "ambient_crowd") crowd.push(object); });
     try {
       this.scene.background = new THREE.Color(0xff00ff);
       renderer.shadowMap.autoUpdate = false;
@@ -693,6 +695,12 @@ export class Explorer {
         capture("hidden", hidden);
       }
       root.visible = visible;
+      // People walking in front of a sign are not breakage: feature pixels are counted without the crowd.
+      const clear = crowd.length ? new Uint8Array(shown.length) : shown;
+      if (crowd.length) {
+        for (const object of crowd) object.visible = false;
+        capture("shown:no-crowd", clear);
+      }
       const featureResults = features.map((feature, i) => {
         const meshes = matches[i]!;
         const before = meshes.map(mesh => mesh.visible);
@@ -700,12 +708,12 @@ export class Explorer {
         try {
           if (meshes.length) capture(`feature:${feature.name}`, hidden);
           const sign = signRects[i];
-          let pixels = meshes.length ? goldenPixelDiff(shown, hidden) : 0;
+          let pixels = meshes.length ? goldenPixelDiff(clear, hidden) : 0;
           if (sign) {
             pixels = 0;
             if (sign.rect) for (let y = sign.rect.y0; y < sign.rect.y1; y++) for (let x = sign.rect.x0; x < sign.rect.x1; x++) {
               const offset = (y * width + x) * 4;
-              if (Math.abs(shown[offset]! - hidden[offset]!) > 3 || Math.abs(shown[offset + 1]! - hidden[offset + 1]!) > 3 || Math.abs(shown[offset + 2]! - hidden[offset + 2]!) > 3) pixels++;
+              if (Math.abs(clear[offset]! - hidden[offset]!) > 3 || Math.abs(clear[offset + 1]! - hidden[offset + 1]!) > 3 || Math.abs(clear[offset + 2]! - hidden[offset + 2]!) > 3) pixels++;
             }
           }
           return { name: feature.name, pixels, meshes: sign ? (sign.faces ? meshes.length : 0) : meshes.length };
@@ -715,6 +723,7 @@ export class Explorer {
     } finally {
       root.visible = visible;
       for (const [mesh, wasVisible] of visibility) mesh.visible = wasVisible;
+      for (const object of crowd) object.visible = true;
       this.scene.background = background;
       renderer.shadowMap.autoUpdate = autoUpdate;
       renderer.setRenderTarget(oldTarget);
