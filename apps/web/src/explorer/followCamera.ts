@@ -57,6 +57,8 @@ export const FOLLOW = {
   fadeRecoverPerS: 1.5,
   /** Rate (1/s) at which the raise eases toward its wanted value (same damping as the camera position). */
   raiseDamping: 10,
+  /** Body-driven rises take at least 0.33 s for 50 degrees (2.5 degrees per frame at 60 Hz). */
+  bodyRaiseSpeed: (150 * Math.PI) / 180,
 } as const;
 
 /**
@@ -369,6 +371,7 @@ export function easeRaise(current: number, target: number, dt: number, snap = fa
 /**
  * Solve the raised boom before smoothing it. If easing would leave the camera squeezed while the
  * solved raise clears the lip, use the solved pose now; walking must not linger below a slab either.
+ * Body-driven raises ease without either jump; the caller also keeps position damping for them.
  * A placement/reduced-motion snap takes the complete solution immediately, including a zero raise.
  */
 export function solveRaisedBoom(
@@ -380,16 +383,19 @@ export function solveRaisedBoom(
   snap = false,
   bodyHidden?: (back: THREE.Vector3, distance: number) => boolean,
   bodyHold?: { seconds: number; target: number },
-): { back: THREE.Vector3; distance: number; raise: number } {
+): { back: THREE.Vector3; distance: number; raise: number; bodyDriven: boolean } {
   const base = followBoom(wanted, back, cast);
   const scratch = new THREE.Vector3();
   let baseHidden = false;
+  let bodyDriven = false;
   const checkBody = bodyHidden && ((b: THREE.Vector3, distance: number) => {
     const hidden = bodyHidden(b, distance);
+    bodyDriven ||= hidden;
     if (b === base.back) baseHidden = hidden;
     return hidden;
   });
   let target = constrainedPitch(wanted, base.back, base.distance, cast, scratch, checkBody);
+  bodyDriven &&= target > 0;
   if (bodyHold) {
     if (snap) bodyHold.seconds = bodyHold.target = 0;
     if (baseHidden && target > 0) {
@@ -397,15 +403,22 @@ export function solveRaisedBoom(
       bodyHold.target = target;
     } else if (bodyHold.seconds > 0 && bodyHidden) {
       bodyHold.seconds = Math.max(0, bodyHold.seconds - dt);
-      if (bodyHold.seconds > 0) target = Math.max(target, bodyHold.target);
+      if (bodyHold.seconds > 0) {
+        target = Math.max(target, bodyHold.target);
+        bodyDriven = true;
+      }
     } else {
       bodyHold.seconds = bodyHold.target = 0;
     }
   }
   let raise = easeRaise(currentRaise, target, dt, snap);
+  if (bodyDriven && !snap) {
+    const step = FOLLOW.bodyRaiseSpeed * Math.max(0, dt);
+    raise = Math.max(currentRaise - step, Math.min(target, currentRaise + step));
+  }
   let raised = raisedBack(base.back, raise, new THREE.Vector3());
   let distance = raise > 0 ? followDistance(wanted, cast(raised)) : base.distance;
-  if (!snap && target > raise && distance < Math.min(FOLLOW.comfortDistance, wanted)) {
+  if (!snap && !bodyDriven && target > raise && distance < Math.min(FOLLOW.comfortDistance, wanted)) {
     const solved = raisedBack(base.back, target, scratch);
     const clear = followDistance(wanted, cast(solved));
     if (clear >= distance + FOLLOW.raiseGain) {
@@ -414,7 +427,7 @@ export function solveRaisedBoom(
       distance = clear;
     }
   }
-  return { back: raised, distance, raise };
+  return { back: raised, distance, raise, bodyDriven };
 }
 
 /**
