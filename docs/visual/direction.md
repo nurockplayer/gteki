@@ -285,6 +285,24 @@ Check: walk frames #016, #030, #036 and golden cameras slice-10/11 measured agai
 
 Provisional until the Owner sees the walk video.
 
+### D13 (2026-11-14 14:5x JST) Escalator H3 camera live (#1293); D11 targets revised
+**#1293, escalator camera reframed to H3 (J7): the camera is accepted live on GPU.** Judged on production `?next=1` at e8a38776 (ego-lite, ANGLE Metal / M2 Pro), the real guided walk stepped like the journey reel (2 s to 20 s, then 4 s; 1 s steps around both ride entries). Desktop 1440×900, phone 412×839 @2×.
+- Both rides read as the H3 shaft: far end low (desktop ~72%, phone ~58–60%), the ceiling and the magenta band carry the upper half, the cat sits centred just under the landing glow (visible cat ~17% desktop, ~10–11% phone). Lock holds through both runs; yaw drift ≤ 4.4°.
+- Entries (37–43 s, 93–99 s): the ease starts on the concourse and lands on the axis by the second step. At 97–100 s the neighbouring balustrade glass and the B4 landing soffit cross the frame for one sample; transitional, not a blocker.
+- **The J7 flip waits for two fixes, both geometry, not camera:**
+  1. **#1285**, the escalator foot: at 148 s the landing shell hides the cat from the chest down (J6), on both aspects.
+  2. **#1237**, the troffers on the second ride (B4→B7): from 108 s to 128 s the ceiling strips splay at several angles instead of running down the pitched plane. D12 item 1 placed this under J10 material work; with the H3 camera the ceiling is half the frame, so it now blocks the flip.
+- Not blocking, J10 material work (H3 list): the balustrades are solid grey wedges filling both sides of the frame where H3 has glass and a black handrail; specular streaks on the inner panels.
+
+![#1293 live, desktop: 44 s, 60 s, 100 s, 120 s, 148 s](live/2026-11-14-j7-h3-desktop.jpg)
+![#1293 live, phone: same samples](live/2026-11-14-j7-h3-phone.jpg)
+
+**D11 targets revised** (measured on the live frames, not the projected cat box, which includes the cat hidden by the step behind it):
+- D11 item 1 (cold open), desktop far end: **44–56%** (was 50–56%). The #1279 cold open sits in this band and matches the J1 posters.
+- D11 escalator camera, phone cat height: **10–15%** (was 12–15%). A taller phone cat pushes the feet into the card; at 10–11% the cat reads and the far end stays at 58–62%.
+
+Provisional until the Owner sees the walk video.
+
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
 1. Flat ambient light: fixtures light nothing, there are no floor pools or contact shadows, and pillars, walls and floor share one value band.
