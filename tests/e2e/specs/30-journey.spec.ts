@@ -46,20 +46,27 @@ test("cold open @phone", async ({ page }, info) => {
   test.setTimeout(180_000);
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
+  const cdp = reelMode === "next" ? await page.context().newCDPSession(page) : undefined;
+  let frame: string | undefined;
+  let frameDeadline = Infinity;
+  if (cdp) {
+    cdp.on("Page.screencastFrame", ({ data, sessionId }) => {
+      if (Date.now() <= frameDeadline) frame = data;
+      void cdp.send("Page.screencastFrameAck", { sessionId });
+    });
+    await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });
+  }
+  frame = undefined;
   const start = Date.now();
   await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning", { waitUntil: "commit" });
   const committed = Date.now();
-  await page.waitForTimeout(Math.max(0, 1000 - (Date.now() - committed)));
-  const cdp = reelMode === "next" ? await page.context().newCDPSession(page) : undefined;
-  let open1sShot: "ok" | "timeout" | undefined;
+  frameDeadline = committed + 1000;
+  await page.waitForTimeout(Math.max(0, frameDeadline - Date.now()));
+  let open1sShot: "ok" | "none" | undefined;
   if (cdp) {
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    const png = await Promise.race([
-      cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false }),
-      new Promise<null>(resolve => { timer = setTimeout(() => resolve(null), 20_000); }),
-    ]).finally(() => clearTimeout(timer));
-    open1sShot = png ? "ok" : "timeout";
-    if (png) fs.writeFileSync(path.join(out, "open-1s.png"), Buffer.from(png.data, "base64"));
+    await cdp.send("Page.stopScreencast");
+    open1sShot = frame ? "ok" : "none";
+    if (frame) fs.writeFileSync(path.join(out, "open-1s.png"), Buffer.from(frame, "base64"));
   } else await page.screenshot({ path: path.join(out, "open-1s.png"), timeout: 60_000 });
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
   const readyMs = Date.now() - start;
@@ -80,7 +87,13 @@ test("cold open @phone", async ({ page }, info) => {
       const r = el.getBoundingClientRect();
       return style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) > 0 && r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
     }).length;
-    return { endpoints: g.routeEndpoints(), avatar: g.avatar(), camera: g.camera(), opening: await g.openingFrame(), labelsShown };
+    const card = document.querySelector(".cold-open")!.getBoundingClientRect();
+    const badge = document.querySelector(".greybox-legend")!.getBoundingClientRect();
+    const badgeCardGap = Math.max(badge.top - card.bottom, card.top - badge.bottom, badge.left - card.right, card.left - badge.right);
+    const fcpMs = performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? null;
+    const posterMs = (performance.getEntriesByType("resource").find(r => r.name.includes("cold-open/poster-")) as PerformanceResourceTiming | undefined)?.responseEnd ?? null;
+    const liftMs = performance.getEntriesByName("boot-lift")[0]?.startTime ?? null;
+    return { endpoints: g.routeEndpoints(), avatar: g.avatar(), camera: g.camera(), opening: await g.openingFrame(), labelsShown, fcpMs, posterMs, liftMs, badgeCardGap };
 
   }) : null;
   const coverage = await overlay(page);
@@ -96,6 +109,11 @@ test("cold open @phone", async ({ page }, info) => {
   } else await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
   fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, open1sShot, ...nextState, opening: { ...nextState!.opening, catVisible: openingMetrics!.catVisible, catOccluder: openingMetrics!.catOccluder, catOccluderMeshes: openingMetrics!.catOccluderMeshes } } : {}), ...state, ...coverage }, null, 2));
   if (nextState) {
+    expect(open1sShot).toBe("ok");
+    expect(nextState.fcpMs).not.toBeNull();
+    expect(nextState.fcpMs).toBeLessThanOrEqual(1000);
+    expect(nextState.badgeCardGap).toBeGreaterThanOrEqual(8);
+    expect(state.bytes).toBeLessThanOrEqual(6_000_000);
     expect(state.mode).toBe("walk");
     expect(nextState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
     const { opening, labelsShown } = nextState;
@@ -123,6 +141,9 @@ test("cold open @phone", async ({ page }, info) => {
       expect(opening.cat.y1 - opening.cat.y0).toBeGreaterThanOrEqual(0.14);
       expect(opening.cat.y1 - opening.cat.y0).toBeLessThanOrEqual(0.22);
     }
+  } else {
+    await expect(page.locator("#cold-open-poster")).toBeHidden();
+    expect(await page.evaluate(() => performance.getEntriesByType("resource").some(r => r.name.includes("cold-open/poster-")))).toBe(false);
   }
 });
 
