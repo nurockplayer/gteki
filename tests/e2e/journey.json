@@ -28,7 +28,7 @@
       "project": "desktop-chromium",
       "metric": "nearClip",
       "from": 10,
-      "to": 18,
+      "to": 19,
       "row": "J5",
       "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
     },
@@ -37,22 +37,6 @@
       "metric": "catVisible",
       "from": 1,
       "to": 3,
-      "row": "J6",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "desktop-chromium",
-      "metric": "catVisible",
-      "from": 5,
-      "to": 6,
-      "row": "J6",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "desktop-chromium",
-      "metric": "catVisible",
-      "from": 8,
-      "to": 9,
       "row": "J6",
       "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
     },
