@@ -103,16 +103,21 @@ export function stepEscalatorLock(progress: number, on: boolean, dt: number, sna
   return { progress: p, weight: p * p * (3 - 2 * p) };
 }
 
-/** Axis-relative D2 camera and look, with the visitor's yaw/pitch added to the axis look. */
-export function escalatorPose(feet: THREE.Vector3, axis: THREE.Vector3, shoulder: number, scale: number, yaw: number, pitch: number): { position: THREE.Vector3; target: THREE.Vector3 } {
+/** D11 escalator shot (H3): boom behind the cat, height above the axis, and feet fraction from the top. */
+export const ESCALATOR_SHOT = { leadM: 2, desktop: { boom: 2.6, height: 0.7, feet: 0.91 }, phone: { boom: 3.2, height: 0.7, feet: 0.72 } } as const;
+
+export function escalatorPose(feet: THREE.Vector3, axis: THREE.Vector3, shoulder: number, scale: number, yaw: number, pitch: number, aspect: number, fovDeg: number): { position: THREE.Vector3; target: THREE.Vector3 } {
+  const shot = aspect < 1 ? ESCALATOR_SHOT.phone : ESCALATOR_SHOT.desktop;
   const a = axis.clone().normalize();
   const right = new THREE.Vector3(-a.z, 0, a.x).normalize();
-  const normal = right.clone().cross(a).normalize();
-  const position = feet.clone().addScaledVector(right, shoulder).addScaledVector(a, -1.4 * scale).addScaledVector(normal, 0.9 * scale);
-  const direction = viewDirection(yaw, Math.asin(a.y) - THREE.MathUtils.degToRad(12) + pitch);
+  const position = feet.clone().addScaledVector(right, shoulder).addScaledVector(a, -shot.boom * scale);
+  position.y += shot.height * scale;
+  const toFeet = feet.clone().sub(position);
+  const feetElevation = Math.atan2(toFeet.y, Math.hypot(toFeet.x, toFeet.z));
+  const look = feetElevation + Math.atan((2 * shot.feet - 1) * Math.tan(THREE.MathUtils.degToRad(fovDeg) / 2));
+  const direction = viewDirection(yaw, look + pitch);
   return { position, target: position.clone().addScaledVector(direction, FOLLOW.aim) };
 }
-
 
 /**
  * A raised boom keeps aiming ahead of the pivot, which looks past a body this low: above `start` radians the view

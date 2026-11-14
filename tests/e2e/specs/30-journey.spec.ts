@@ -193,6 +193,10 @@ async function sceneMetrics(page: Page) {
 test("guided walk @phone", async ({ page }, info) => {
   test.setTimeout(1_800_000);
   const wallStart = Date.now();
+  const consoleErrors = new Set<string>(), pageErrors = new Set<string>(), failedRequests = new Set<string>();
+  page.on("console", message => { if (message.type() === "error" && consoleErrors.size < 20) consoleErrors.add(message.text()); });
+  page.on("pageerror", error => { if (pageErrors.size < 20) pageErrors.add(error.message); });
+  page.on("response", response => { if (response.status() >= 400 && failedRequests.size < 20) failedRequests.add(`${response.status()} ${response.url()}`); });
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
   await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo&qaTimeBand=morning");
@@ -207,12 +211,38 @@ test("guided walk @phone", async ({ page }, info) => {
   const steps = route.steps as { fromNodeId: string; toNodeId: string; edgeId: string; reversed: boolean; mode: string }[];
   const wps = routeWaypoints("shinjuku", steps), { graph } = stationData("shinjuku");
   const nodes = new Map(graph.nodes.map(n => [n.id, n]));
+  let actions = 0;
   if (reelMode === "next") {
     await page.evaluate(() => (window as any).__gteki.holdFrames(true));
     await page.locator(".cold-open .primary").click();
+    actions++;
   } else await page.evaluate(() => { const g = (window as any).__gteki; g.holdFrames(true); g.startGuide(); });
+  const j4 = await page.evaluate((actions) => { const g = (window as any).__gteki; return { actions, mode: g.mode(), audioRunning: g.audio().state === "running" }; }, actions);
+  if (reelMode === "next") {
+    expect.soft(j4.actions).toBe(1);
+    expect.soft(j4.mode).toBe("guide");
+    expect.soft(j4.audioRunning).toBe(true);
+  }
   await expect.poll(() => hooks.mode(page)).toBe("guide");
   if (reelMode === "next") await expect(page.locator(".cold-open")).toBeHidden();
+  const frameTimes = async (at: "start" | "end") => page.evaluate(async (at) => {
+    const e = (window as any).__gteki.scanProbe().explorer;
+    const deltas: number[] = []; let first = 0, previous = 0;
+    await new Promise<void>(resolve => {
+      const frame = (t: number) => {
+        if (!first) first = t;
+        if (previous) deltas.push(t - previous);
+        previous = t;
+        e.render(0);
+        if (t - first >= 3000) resolve(); else requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    });
+    deltas.sort((a, b) => a - b);
+    const mid = Math.floor(deltas.length / 2);
+    return { at, frames: deltas.length, medianMs: deltas.length ? (deltas.length % 2 ? deltas[mid]! : (deltas[mid - 1]! + deltas[mid]!) / 2) : null, p95Ms: deltas.length ? deltas[Math.ceil(deltas.length * 0.95) - 1]! : null };
+  }, at);
+  const j12 = [await frameTimes("start")];
   const tier = await hooks.quality(page), renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);
   const cdp = await page.context().newCDPSession(page);
   const samples: any[] = [], stepS = Number(process.env.JOURNEY_STEP_S ?? 4);
@@ -261,7 +291,8 @@ test("guided walk @phone", async ({ page }, info) => {
     }
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
     const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
-    samples.push({ ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
+    const ride = reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.rideFrame()) : undefined;
+    samples.push({ ...(reelMode === "next" ? { ride } : {}), ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), audio: await page.evaluate(() => (window as any).__gteki.audio()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -299,6 +330,7 @@ test("guided walk @phone", async ({ page }, info) => {
       await more.click();
       await expect(menu).toBeHidden();
     }
+    j12.push(await frameTimes("end"));
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   for (const sample of samples) expect(sample.legend, `badge visible at sample ${sample.index}`).toBe(true);
   for (const sample of samples.filter(s => !s.arrival)) {
@@ -329,12 +361,18 @@ test("guided walk @phone", async ({ page }, info) => {
     return sorted.length ? (sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2) : null;
   };
   const locks = escalators.map(s => s.camera.lock as number), axes = escalators.map(s => s.axisDeg as number);
-  const j7 = { count: escalators.length, lockMin: locks.length ? Math.min(...locks) : null, lockMedian: median(locks), axisDegMax: axes.length ? Math.max(...axes) : null, axisDegMedian: median(axes), lockBelow099: escalators.filter(s => s.camera.lock < 0.99).map(s => s.index) };
+  const rides = samples.filter(s => s.camera.lock >= 0.99 && s.ride && s.ride.leftM >= 6);
+  const cats = rides.filter(s => s.ride.cat);
+  const j7 = { rideCount: rides.length, farEndY: median(rides.map(s => s.ride.farEndY)), catHeight: median(cats.map(s => s.ride.cat.y1 - s.ride.cat.y0)), feetY: median(cats.map(s => s.ride.cat.y1)), catX: median(cats.map(s => s.ride.cat.x)), count: escalators.length, lockMin: locks.length ? Math.min(...locks) : null, lockMedian: median(locks), axisDegMax: axes.length ? Math.max(...axes) : null, axisDegMedian: median(axes), lockBelow099: escalators.filter(s => s.camera.lock < 0.99).map(s => s.index) };
+  const j11 = { ambience: null, escalatorActive: null, trainActive: null };
+  const j14 = () => ({ consoleErrors: [...consoleErrors], pageErrors: [...pageErrors], failedRequests: [...failedRequests] });
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));
-  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
+  const journey = { sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j4, j7, j11, j12, j14: j14(), unknown };
+  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify(journey, null, 2));
   const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
-  lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}`);
+  lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}; rides ${j7.rideCount}; farEndY ${j7.farEndY ?? "none"}; catHeight ${j7.catHeight ?? "none"}; feetY ${j7.feetY ?? "none"}; catX ${j7.catX ?? "none"}`);
+  lines.push(`- J4 (report): ${JSON.stringify(j4)}`, `- J11 (report): ${JSON.stringify(j11)}`, `- J12 (report): ${JSON.stringify(j12)}`, `- J14 (report): ${JSON.stringify(j14())}`);
   const noLegend = samples.filter(s => !s.legend).map(s => s.index);
   lines.push(`- J13 (report): badge on screen in ${samples.length - noLegend.length} / ${samples.length} samples; missing at: ${noLegend.join(", ") || "none"}`);
   const unknownReport = unknown.join(", ") || "none";
@@ -390,4 +428,8 @@ test("guided walk @phone", async ({ page }, info) => {
     await page.locator(".arrival-menu").getByRole("button", { name: /^(End guide|ガイド終了)$/ }).click();
     await expect.poll(() => hooks.mode(page)).toBe("walk");
   }
+  journey.j14 = j14();
+  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify(journey, null, 2));
+  const summaryPath = path.join(out, "summary.md");
+  fs.writeFileSync(summaryPath, fs.readFileSync(summaryPath, "utf8").replace(/^- J14 \(report\):.*$/m, `- J14 (report): ${JSON.stringify(journey.j14)}`));
 });

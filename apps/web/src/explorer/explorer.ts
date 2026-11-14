@@ -30,13 +30,13 @@ import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollisio
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, guideOnEscalator, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, escalatorSpanAt, guideOnEscalator, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { OPENING_SHOTS, openingShotState, ARRIVAL_SHOTS, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { OPENING_SHOTS, openingShotState, ARRIVAL_SHOTS, ESCALATOR_SHOT, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -678,6 +678,8 @@ export class Explorer {
     });
     const visibility = new Map<THREE.Mesh, boolean>();
     for (const meshes of matches) for (const mesh of meshes) visibility.set(mesh, mesh.visible);
+    const crowd: THREE.Object3D[] = [];
+    if (features.length) this.scene.traverse((object) => { if (object.visible && object.userData.gteki_role === "ambient_crowd") crowd.push(object); });
     try {
       this.scene.background = new THREE.Color(0xff00ff);
       renderer.shadowMap.autoUpdate = false;
@@ -695,6 +697,12 @@ export class Explorer {
         capture("hidden", hidden);
       }
       root.visible = visible;
+      // People walking in front of a sign are not breakage: feature pixels are counted without the crowd.
+      const clear = crowd.length ? new Uint8Array(shown.length) : shown;
+      if (crowd.length) {
+        for (const object of crowd) object.visible = false;
+        capture("shown:no-crowd", clear);
+      }
       const featureResults = features.map((feature, i) => {
         const meshes = matches[i]!;
         const before = meshes.map(mesh => mesh.visible);
@@ -702,12 +710,12 @@ export class Explorer {
         try {
           if (meshes.length) capture(`feature:${feature.name}`, hidden);
           const sign = signRects[i];
-          let pixels = meshes.length ? goldenPixelDiff(shown, hidden) : 0;
+          let pixels = meshes.length ? goldenPixelDiff(clear, hidden) : 0;
           if (sign) {
             pixels = 0;
             if (sign.rect) for (let y = sign.rect.y0; y < sign.rect.y1; y++) for (let x = sign.rect.x0; x < sign.rect.x1; x++) {
               const offset = (y * width + x) * 4;
-              if (Math.abs(shown[offset]! - hidden[offset]!) > 3 || Math.abs(shown[offset + 1]! - hidden[offset + 1]!) > 3 || Math.abs(shown[offset + 2]! - hidden[offset + 2]!) > 3) pixels++;
+              if (Math.abs(clear[offset]! - hidden[offset]!) > 3 || Math.abs(clear[offset + 1]! - hidden[offset + 1]!) > 3 || Math.abs(clear[offset + 2]! - hidden[offset + 2]!) > 3) pixels++;
             }
           }
           return { name: feature.name, pixels, meshes: sign ? (sign.faces ? meshes.length : 0) : meshes.length };
@@ -717,6 +725,7 @@ export class Explorer {
     } finally {
       root.visible = visible;
       for (const [mesh, wasVisible] of visibility) mesh.visible = wasVisible;
+      for (const object of crowd) object.visible = true;
       this.scene.background = background;
       renderer.shadowMap.autoUpdate = autoUpdate;
       renderer.setRenderTarget(oldTarget);
@@ -903,6 +912,18 @@ export class Explorer {
     }
     const direction = this.camera.getWorldDirection(new THREE.Vector3());
     return { boardRect, edgeLength, edgeInFrame: edgeLength >= 1, doorsOrStripWidth, cat, shot: this.arrivalState === "active", camera: { heading: headingFromYaw(Math.atan2(-direction.x, -direction.z)), pitch: THREE.MathUtils.radToDeg(Math.asin(direction.y)), height: this.camera.position.y - this.pos.y, distance: Math.hypot(this.camera.position.x - this.pos.x, this.camera.position.z - this.pos.z) } };
+  }
+
+  rideFrame() {
+    const g = this.guide;
+    const span = g && escalatorSpanAt(g.s, g.spans, ESCALATOR_SHOT.leadM);
+    if (!g || !span || this.escalatorWeight <= 0) return null;
+    this.camera.updateMatrixWorld(true);
+    const end = samplePolyline(g.pts, g.cum, span.toS);
+    const farEndY = (1 - new THREE.Vector3(end.x, end.y, end.z).project(this.camera).y) / 2;
+    const box = this.catScreenBox();
+    const cat = box ? { x: (box.left + box.right) / 2 / innerWidth, y0: box.top / innerHeight, y1: box.bottom / innerHeight } : null;
+    return { farEndY, leftM: span.toS - g.s, cat };
   }
 
   identity(): { id: string; worldPosition: number[]; cameraDirection: number[]; cameraFov: number; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
@@ -3540,12 +3561,13 @@ export class Explorer {
     else if (!this.slope.on) this.stairsLens = false;
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
-    const lockOn = (stairsOn || (this.previewNext && this.catAvatar && !this.firstPerson && this.catRidingEscalator()))
+    const span = this.mode === "guide" && this.guide ? escalatorSpanAt(this.guide.s, this.guide.spans, ESCALATOR_SHOT.leadM) : undefined;
+    const lockOn = (stairsOn || (this.previewNext && this.catAvatar && !this.firstPerson && !!span))
       && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
     const lockSnap = snap || this.reducedMotion;
     if (lockOn) {
       const g = this.guide!;
-      const { segment } = samplePolyline(g.pts, g.cum, g.s);
+      const { segment } = samplePolyline(g.pts, g.cum, !stairsOn && span && g.s < span.fromS ? span.fromS + 0.01 : g.s);
       const axis = g.pts[segment + 1]!.clone().sub(g.pts[segment]!).normalize();
       if (lockSnap || this.escalatorProgress === 0) this.escalatorAxis.copy(axis);
       else this.escalatorAxis.lerp(axis, 1 - Math.exp(-dt / 0.3)).normalize();
@@ -3600,7 +3622,7 @@ export class Explorer {
     let back = pose.back;
     let wantedDistance = distance;
     if (this.escalatorWeight > 0) {
-      const ride = escalatorPose(this.pos, this.escalatorAxis, shoulder, this.camDistance / FOLLOW_CAT_NEXT.distance, yaw, pitch);
+      const ride = escalatorPose(this.pos, this.escalatorAxis, shoulder, this.camDistance / FOLLOW_CAT_NEXT.distance, yaw, pitch, this.camera.aspect, followLens(this.mode, false, false, true, this.camera.aspect));
       const wanted = pose.pivot.clone().addScaledVector(back, wantedDistance).lerp(ride.position, this.escalatorWeight);
       back = wanted.sub(pose.pivot);
       wantedDistance = back.length();
