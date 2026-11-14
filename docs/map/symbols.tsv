@@ -74,6 +74,7 @@ BodyHit	interface	apps/web/src/explorer/bodyCollision.ts
 CastFn	type	apps/web/src/explorer/bodyCollision.ts
 bodyBlock	function	apps/web/src/explorer/bodyCollision.ts
 hitNormal	function	apps/web/src/explorer/bodyCollision.ts
+pushOut	function	apps/web/src/explorer/bodyCollision.ts
 slideAlong	function	apps/web/src/explorer/bodyCollision.ts
 CameraCut	class	apps/web/src/explorer/cameraCut.ts
 injectCut	function	apps/web/src/explorer/cameraCut.ts
@@ -587,6 +588,7 @@ exampleQueries	function	apps/web/src/ui/emptySuggestions.ts
 pushRecent	function	apps/web/src/ui/emptySuggestions.ts
 readRecent	function	apps/web/src/ui/emptySuggestions.ts
 writeRecent	function	apps/web/src/ui/emptySuggestions.ts
+escalatorEtaSuffix	function	apps/web/src/ui/escalatorEta.ts
 DEMO_PAIRS	const	apps/web/src/ui/firstRun.ts
 FIRST_RUN_KEY	const	apps/web/src/ui/firstRun.ts
 coldOpenPair	function	apps/web/src/ui/firstRun.ts

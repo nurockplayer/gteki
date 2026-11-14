@@ -30,6 +30,57 @@ const RADIAL: readonly (readonly [number, number])[] = Array.from({ length: BODY
 const origin = new THREE.Vector3();
 const dir = new THREE.Vector3();
 
+/** Push a spawn point away from collider surfaces within the body radius. */
+export function pushOut(at: THREE.Vector3, cast: CastFn, radius: number, heights = BODY_HEIGHTS, rays = BODY_RAYS, iterations = 3): THREE.Vector3 {
+  const feet = at.clone();
+  // Opposing nearby faces can enclose the spawn. In that case move through the nearest face to a clear disc,
+  // rather than pushing away from each face in turn and oscillating between them.
+  for (const h of heights) {
+    const hits: (number | null)[] = [];
+    for (let i = 0; i < rays; i++) {
+      const angle = (i / rays) * Math.PI * 2;
+      origin.set(feet.x, feet.y + h, feet.z);
+      dir.set(Math.cos(angle), 0, Math.sin(angle));
+      hits.push(cast(origin, dir, radius)?.distance ?? null);
+    }
+    if (rays % 2 !== 0 || !hits.some((hit, i) => hit !== null && hits[(i + rays / 2) % rays] !== null)) continue;
+    let best: THREE.Vector3 | null = null;
+    let bestDistance = Infinity;
+    for (let i = 0; i < rays; i++) {
+      const hit = hits[i];
+      if (hit == null) continue;
+      const distance = hit + radius + 1e-4;
+      if (distance >= bestDistance) continue;
+      const angle = (i / rays) * Math.PI * 2;
+      const candidate = feet.clone().add(new THREE.Vector3(Math.cos(angle) * distance, 0, Math.sin(angle) * distance));
+      if (heights.some((height) => touches(cast, candidate.x, candidate.y + height, candidate.z, radius))) continue;
+      best = candidate;
+      bestDistance = distance;
+    }
+    if (best) return best;
+  }
+  for (let iteration = 0; iteration < iterations; iteration++) {
+    let moved = false;
+    for (const h of heights) {
+      for (let i = 0; i < rays; i++) {
+        const angle = (i / rays) * Math.PI * 2;
+        origin.set(feet.x, feet.y + h, feet.z);
+        dir.set(Math.cos(angle), 0, Math.sin(angle));
+        const hit = cast(origin, dir, radius);
+        if (!hit || hit.distance >= radius) continue;
+        const length = Math.hypot(hit.normal.x, hit.normal.z);
+        const nx = length < 1e-6 ? -dir.x : hit.normal.x / length;
+        const nz = length < 1e-6 ? -dir.z : hit.normal.z / length;
+        feet.x += nx * (radius - hit.distance);
+        feet.z += nz * (radius - hit.distance);
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
+  return feet;
+}
+
 /** Whether any radial ray of length `radius` from (x, y, z) hits a collider: the body disc there overlaps one. */
 function touches(cast: CastFn, x: number, y: number, z: number, radius: number): boolean {
   origin.set(x, y, z);

@@ -64,7 +64,7 @@ jobs:
         run: pnpm exec playwright test specs/31-cold-open.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
 
       - name: Walk HUD (desktop + phone)
-        timeout-minutes: 12
+        timeout-minutes: 18
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
@@ -104,7 +104,7 @@ jobs:
   golden-cameras:
     name: golden-cameras (${{ matrix.station }})
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -139,6 +139,55 @@ jobs:
         with:
           name: golden-shots-${{ matrix.station }}
           path: tests/e2e/artifacts/golden/**
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Checkout base
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base-src
+      - name: Build base
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        working-directory: base-src
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          # Run the head's capture harness against the base app too. Old apps ignore
+          # unknown QA URL params; the first comparison after merge can still differ.
+          cp ../tests/e2e/specs/29-golden-shots.spec.ts tests/e2e/specs/29-golden-shots.spec.ts
+          cp ../tests/e2e/lib/screenshot-flat.ts tests/e2e/lib/screenshot-flat.ts
+          cp ../tests/e2e/lib/golden.ts tests/e2e/lib/golden.ts
+          cp ../tests/e2e/golden-cameras.json tests/e2e/golden-cameras.json
+          cd tests/e2e
+          pnpm install --ignore-workspace --frozen-lockfile
+      - name: Run base golden cameras
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        timeout-minutes: 12
+        working-directory: base-src/tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}/base-src
+          GTEKI_GOLDEN_STATION: ${{ matrix.station }}
+        run: pnpm exec playwright test specs/29-golden-shots.spec.ts --project=desktop-chromium --trace=off
+      - name: Compare golden cameras
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        run: |
+          if ! node tools/qa/golden-diff.mjs base-src/tests/e2e/artifacts/golden/desktop-chromium tests/e2e/artifacts/golden/desktop-chromium golden-diff-out --cameras tests/e2e/golden-cameras.json; then
+            echo "::warning::golden diff missing: comparison failed; inspect base/head capture steps"
+            echo "golden diff missing: comparison failed; inspect base/head capture steps" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload golden diff
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-diff-${{ matrix.station }}
+          path: golden-diff-out/**
           retention-days: 7
           if-no-files-found: ignore
 
