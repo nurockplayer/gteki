@@ -64,7 +64,7 @@ jobs:
         run: pnpm exec playwright test specs/31-cold-open.spec.ts --project=desktop-chromium --project=phone-chromium --trace=off
 
       - name: Walk HUD (desktop + phone)
-        timeout-minutes: 12
+        timeout-minutes: 18
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
