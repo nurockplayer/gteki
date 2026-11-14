@@ -405,7 +405,8 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
         const inSlab = level >= well.upperY - SLAB_BAND_M - 1e-6;
         const opening = inSlab ? reach : depthInterval(rect, level, WALK_CLEAR_M, HEADROOM_M);
         if (!opening) continue;
-        addBand(bands, rect, level, well.rects, index, opening);
+        // #1285: rounding the level can move it across the slab cutoff.
+        addBand(bands, rect, level, well.rects, index, !inSlab && level < well.upperY - SLAB_BAND_M - 0.025 - 1e-6, opening);
       }
     }
   }
@@ -615,12 +616,16 @@ function bandLevels(faces: readonly HorizontalFace[], rect: StairwellRect, floor
 }
 
 /** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
-function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[], index: number, reach?: { from: number; to: number }): void {
+function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[], index: number, lowerLevel: boolean, reach?: { from: number; to: number }): void {
   const corners = rectCorners(rect, 0, reach?.from, reach?.to);
   for (let i = 0; i < 4; i++) {
     const from = corners[i]!, to = corners[(i + 1) % 4]!;
     // The stair mouth: the first piece's start side and the last piece's end side meet the floors, not a slab edge.
     if ((index === 0 && alongOf(rect, from, to) < -rect.halfLength + 1e-3) || (index === pieces.length - 1 && alongOf(rect, from, to) > rect.halfLength - 1e-3)) continue;
+    const along = alongOf(rect, from, to);
+    const alongSpan = (to.x - from.x) * rect.along.x + (to.z - from.z) * rect.along.z;
+    // #1285: suppress spurious lower-level bands in headroom; slab edges stay because the slab fixes the overhang.
+    if (lowerLevel && Math.abs(alongSpan) < 1e-6 && level - (rect.center.y + along * rect.rise / (2 * rect.halfLength)) < HEADROOM_M - 1e-3) continue;
     for (const [a, b] of sideRemainder(from, to, rect, pieces)) {
       quad(out, a.clone().setY(level), b.clone().setY(level), b.clone().setY(level - BAND_DEPTH_M), a.clone().setY(level - BAND_DEPTH_M));
     }
