@@ -234,6 +234,7 @@ guideOnEscalator	function	apps/web/src/explorer/guidePace.ts
 guideOnStairs	function	apps/web/src/explorer/guidePace.ts
 guidePaceSpans	function	apps/web/src/explorer/guidePace.ts
 guideSpeedAt	function	apps/web/src/explorer/guidePace.ts
+guideStairCamera	function	apps/web/src/explorer/guidePace.ts
 guideTierSpeed	function	apps/web/src/explorer/guidePace.ts
 isGuideTier	function	apps/web/src/explorer/guidePace.ts
 nextGuideTier	function	apps/web/src/explorer/guidePace.ts
