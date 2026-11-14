@@ -107,6 +107,7 @@ export interface ExplorerEvents {
 }
 
 const EYE = WALKER_BODY.eyeM;
+const STAIR_POSE = { lift: 0.218, desktop: { distance: 2.25, lens: 55 }, phone: { distance: 2.4, lens: 65 } } as const;
 const RADIUS = WALKER_BODY.radiusM;
 const WALK = WALKER_SPEED.walkMps;
 const RUN = WALKER_SPEED.runMps;
@@ -3562,12 +3563,12 @@ export class Explorer {
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
     const span = this.mode === "guide" && this.guide ? escalatorSpanAt(this.guide.s, this.guide.spans, ESCALATOR_SHOT.leadM) : undefined;
-    const lockOn = (stairsOn || (this.previewNext && this.catAvatar && !this.firstPerson && !!span))
+    const lockOn = this.previewNext && this.catAvatar && !this.firstPerson && !!span
       && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
     const lockSnap = snap || this.reducedMotion;
     if (lockOn) {
       const g = this.guide!;
-      const { segment } = samplePolyline(g.pts, g.cum, !stairsOn && span && g.s < span.fromS ? span.fromS + 0.01 : g.s);
+      const { segment } = samplePolyline(g.pts, g.cum, g.s < span!.fromS ? span!.fromS + 0.01 : g.s);
       const axis = g.pts[segment + 1]!.clone().sub(g.pts[segment]!).normalize();
       if (lockSnap || this.escalatorProgress === 0) this.escalatorAxis.copy(axis);
       else this.escalatorAxis.lerp(axis, 1 - Math.exp(-dt / 0.3)).normalize();
@@ -3586,9 +3587,10 @@ export class Explorer {
     const weight = t * t * (3 - 2 * t);
     const yaw = shot ? this.arrivalStart.yaw + angleDelta(this.arrivalStart.yaw, -THREE.MathUtils.degToRad(shot.heading)) * weight : this.yaw;
     const pitch = shot ? THREE.MathUtils.lerp(this.arrivalStart.pitch, THREE.MathUtils.degToRad(shot.pitch), weight) : this.pitch;
+    const stairPose = this.camera.aspect < 1 ? STAIR_POSE.phone : STAIR_POSE.desktop;
     const distance = (shot ? THREE.MathUtils.lerp(this.arrivalStart.distance, shot.distance, weight) : this.camDistance)
-      * THREE.MathUtils.lerp(1, FOLLOW_CAT_NEXT.distance / FOLLOW_CAT.distance, stairsWeight);
-    const lens = () => followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext || this.stairsLens, this.camera.aspect);
+      * THREE.MathUtils.lerp(1, stairPose.distance / FOLLOW_CAT.distance, stairsWeight);
+    const lens = () => this.stairsLens ? stairPose.lens : followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect);
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
     const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
@@ -3614,7 +3616,7 @@ export class Explorer {
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
-    const lift = this.previewNext ? framing.lift : THREE.MathUtils.lerp(FOLLOW_CAT.lift, FOLLOW_CAT_NEXT.lift, stairsWeight);
+    const lift = this.previewNext ? framing.lift : THREE.MathUtils.lerp(FOLLOW_CAT.lift, STAIR_POSE.lift, stairsWeight);
     const pose = this.catAvatar
       ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(lift, (shot.height - (head.y - this.pos.y)) / shot.distance + Math.sin(pitch), weight) : lift, framing.drop)
       : followPose(head, yaw, pitch, shoulder);
