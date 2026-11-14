@@ -73,24 +73,57 @@ test("cold open @phone", async ({ page }, info) => {
     const e = (window as any).__gteki.scanProbe().explorer;
     return { station: e.station?.key ?? null, mode: (window as any).__gteki.mode(), bytes: performance.getEntriesByType("resource").reduce((n, r) => n + (r as PerformanceResourceTiming).transferSize, 0) };
   });
-  const nextState = reelMode === "next" ? await page.evaluate(() => {
+  const nextState = reelMode === "next" ? await page.evaluate(async () => {
     const g = (window as any).__gteki;
-    return { endpoints: g.routeEndpoints(), avatar: g.avatar(), camera: g.camera() };
-  }) : {};
-  if (reelMode === "next") {
-    expect(state.mode).toBe("walk");
-    expect(nextState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
-  }
+    const labelsShown = [...document.querySelectorAll(".poi-label")].filter((el) => {
+      const style = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity) > 0 && r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 && r.left < innerWidth && r.top < innerHeight;
+    }).length;
+    return { endpoints: g.routeEndpoints(), avatar: g.avatar(), camera: g.camera(), opening: await g.openingFrame(), labelsShown };
+
+  }) : null;
   const coverage = await overlay(page);
+  let openingMetrics: Awaited<ReturnType<typeof sceneMetrics>> | undefined;
   if (reelMode === "next") {
     await page.evaluate(() => (window as any).__gteki.holdFrames(true));
     try {
       await page.evaluate(() => (window as any).__gteki.goldenFrame());
+      openingMetrics = await sceneMetrics(page);
       const png = await cdp!.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
       fs.writeFileSync(path.join(out, "open-ready.png"), Buffer.from(png.data, "base64"));
     } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   } else await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
-  fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, open1sShot, ...nextState } : {}), ...state, ...coverage }, null, 2));
+  fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, open1sShot, ...nextState, opening: { ...nextState!.opening, catVisible: openingMetrics!.catVisible, catOccluder: openingMetrics!.catOccluder, catOccluderMeshes: openingMetrics!.catOccluderMeshes } } : {}), ...state, ...coverage }, null, 2));
+  if (nextState) {
+    expect(state.mode).toBe("walk");
+    expect(nextState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
+    const { opening, labelsShown } = nextState;
+    const phone = info.project.name.startsWith("phone");
+    const authored = phone ? { heading: 174, pitch: -12, height: 1.22, distance: 3, fov: 65 } : { heading: 174, pitch: -3, height: 1.1, distance: 2.75, fov: 55 };
+    expect(opening.shot).toBe(true);
+    expect(Math.abs(opening.camera.heading - authored.heading)).toBeLessThanOrEqual(1);
+    expect(Math.abs(opening.camera.pitch - authored.pitch)).toBeLessThanOrEqual(1);
+    expect(Math.abs(opening.camera.height - authored.height)).toBeLessThanOrEqual(0.05);
+    expect(Math.abs(opening.camera.distance - authored.distance)).toBeLessThanOrEqual(0.1);
+    expect(opening.camera.fov).toBe(authored.fov);
+    expect(labelsShown).toBe(0);
+    expect(opening.markers).toBe(0);
+    expect(opening.cat.x0).toBeGreaterThanOrEqual(0);
+    expect(opening.cat.x1).toBeLessThanOrEqual(1);
+    expect(opening.cat.y0).toBeGreaterThanOrEqual(0);
+    expect(opening.cat.y1).toBeLessThanOrEqual(phone ? 0.68 : 0.90);
+    if (phone) {
+      expect(openingMetrics!.catVisible).toBeGreaterThanOrEqual(0.8);
+      expect(opening.horizonY).toBeGreaterThanOrEqual(0.30);
+      expect(opening.horizonY).toBeLessThanOrEqual(0.40);
+    } else {
+      expect(opening.cat.x).toBeGreaterThanOrEqual(0.45);
+      expect(opening.cat.x).toBeLessThanOrEqual(0.50);
+      expect(opening.cat.y1 - opening.cat.y0).toBeGreaterThanOrEqual(0.14);
+      expect(opening.cat.y1 - opening.cat.y0).toBeLessThanOrEqual(0.22);
+    }
+  }
 });
 
 async function sceneMetrics(page: Page) {

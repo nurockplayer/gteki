@@ -104,9 +104,19 @@ encodeRecipe	function	apps/web/src/explorer/cutRecipe.ts
 fnv1a	function	apps/web/src/explorer/cutRecipe.ts
 sha256Hex	function	apps/web/src/explorer/cutRecipe.ts
 Explorer	class	apps/web/src/explorer/explorer.ts
+Explorer	class	apps/web/src/explorer/explorer.ts
+Explorer	class	apps/web/src/explorer/explorer.ts
+ExplorerEvents	interface	apps/web/src/explorer/explorer.ts
+ExplorerEvents	interface	apps/web/src/explorer/explorer.ts
 ExplorerEvents	interface	apps/web/src/explorer/explorer.ts
 ExplorerMode	type	apps/web/src/explorer/explorer.ts
+ExplorerMode	type	apps/web/src/explorer/explorer.ts
+ExplorerMode	type	apps/web/src/explorer/explorer.ts
 ExplorerOptions	interface	apps/web/src/explorer/explorer.ts
+ExplorerOptions	interface	apps/web/src/explorer/explorer.ts
+ExplorerOptions	interface	apps/web/src/explorer/explorer.ts
+ExplorerPose	interface	apps/web/src/explorer/explorer.ts
+ExplorerPose	interface	apps/web/src/explorer/explorer.ts
 ExplorerPose	interface	apps/web/src/explorer/explorer.ts
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts
@@ -123,6 +133,7 @@ FOLLOW_CAT_NEXT	const	apps/web/src/explorer/followCamera.ts
 FOV	const	apps/web/src/explorer/followCamera.ts
 FollowPose	interface	apps/web/src/explorer/followCamera.ts
 NO_SLOPE	const	apps/web/src/explorer/followCamera.ts
+OPENING_SHOTS	const	apps/web/src/explorer/followCamera.ts
 SLOPE	const	apps/web/src/explorer/followCamera.ts
 SQUEEZE	const	apps/web/src/explorer/followCamera.ts
 SlopeState	interface	apps/web/src/explorer/followCamera.ts
@@ -144,6 +155,7 @@ followDistance	function	apps/web/src/explorer/followCamera.ts
 followLens	function	apps/web/src/explorer/followCamera.ts
 followPose	function	apps/web/src/explorer/followCamera.ts
 guideSignInView	function	apps/web/src/explorer/followCamera.ts
+openingShotState	function	apps/web/src/explorer/followCamera.ts
 patchCameraHold	function	apps/web/src/explorer/followCamera.ts
 raisedBack	function	apps/web/src/explorer/followCamera.ts
 solveRaisedBoom	function	apps/web/src/explorer/followCamera.ts
