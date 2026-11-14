@@ -68,6 +68,18 @@ export const FOLLOW_CAT = { pivotY: 0.42, shoulder: 0.2, distance: 2.4, lift: 0.
 /** D2 preview framing, in metres above/behind the cat's feet. */
 export const FOLLOW_CAT_NEXT = { pivotY: 0.42, shoulder: 0.2, distance: 2.25, lift: 0.218, drop: 0, pitch: 0 } as const;
 
+/** Authored Oedo arrival framing, in metres and clockwise degrees from north. */
+export const ARRIVAL_SHOTS: Record<string, { desktop: { heading: number; distance: number; height: number; pitch: number; fov: number }; phone: { heading: number; distance: number; height: number; pitch: number; fov: number } }> = {
+  "poi:platform:oedo": { desktop: { heading: 200, distance: 3, height: 1.1, pitch: -4, fov: 55 }, phone: { heading: 165, distance: 4.2, height: 2.05, pitch: -8, fov: 72 } },
+};
+
+/** One shot per guide, cancelled by the first visitor input. */
+export function arrivalShotState(state: "waiting" | "active" | "ended", next: boolean, destination: string | null, done: boolean, input: boolean): "waiting" | "active" | "ended" {
+  if (state === "active" && input) return "ended";
+  if (state === "waiting" && next && destination && ARRIVAL_SHOTS[destination] && done && !input) return "active";
+  return state;
+}
+
 /** Preview lens; the legacy lens keeps its slope/squeeze behaviour. */
 export function followLens(mode: "overview" | "walk" | "guide", firstPerson: boolean, wide: boolean, next: boolean, aspect: number): number {
   return next && mode !== "overview" && !firstPerson ? (aspect >= 1 ? 55 : 65) : targetFov(mode, firstPerson, wide);

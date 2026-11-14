@@ -270,6 +270,21 @@ D2's flat-ground and FOV rules stand.
 
 Check: walk frames #016, #030, #036 and golden cameras slice-10/11 measured against the targets above, on desktop and phone.
 
+### D12 (2026-11-14 05:2x JST) Four verdicts: pitched ceilings, phone arrival pose, exit 1 wedges, `?next=1` HUD live
+1. **#1263, pitched escalator ceilings, default-on (J7): accepted.** GPU journey and golden shots at 8bfea48d. Both rides now read as one continuous pitched ceiling, with the troffers following the plane (the H3 shaft read). The crossing strips at the B3→B6 lower landing are fixed. They still splay at two or three angles where the planes meet the landing; that is J10 material work.
+2. **#1253, phone arrival pose (J9): the 165° pose ships.** On this platform the screen doors and the tactile strip are the visible edge. The phone requirement becomes: name board fully in frame, plus doors or the tactile strip over ≥ 10% of the frame width. Of the two candidates, the board matters more: 200° shows the doors but no board. Desktop (200°) accepted as is.
+3. **#1206, exit 1 black wedges (J5): passed and closed** on GPU slice-01/02 at ad5decf2. The remaining gap to H1 is the camera (J2) and the end-wall light strips (J10), not breakage.
+4. **`?next=1` HUD, judged live on production (acae1552, ego-lite GPU):**
+   - **#1249 escalator HUD (J8): accepted.** One fix before the flip: the minimap shows "Floor unknown" on the second ride.
+   - **#1256 arrival HUD (J9): accepted.** One fix before the flip: the "Approximate, not surveyed" badge overlaps Coverage.
+   - "B4" on the intermediate concourse is correct (Toei B7F→B4F→B1F). This withdraws D11 item 3's label complaint.
+   - The escalator camera is still the chute; D11 item 4 stands.
+
+![?next=1 live, desktop 20–144 s and arrival](live/2026-11-14-next1-desktop-walk.jpg)
+![?next=1 live, phone 20–144 s and arrival](live/2026-11-14-next1-phone-walk.jpg)
+
+Provisional until the Owner sees the walk video.
+
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
 1. Flat ambient light: fixtures light nothing, there are no floor pools or contact shadows, and pillars, walls and floor share one value band.
