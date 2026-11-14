@@ -3540,7 +3540,7 @@ export class Explorer {
     else if (!this.slope.on) this.stairsLens = false;
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
-    const lockOn = this.previewNext && this.catAvatar && !this.firstPerson && this.catRidingEscalator()
+    const lockOn = (stairsOn || (this.previewNext && this.catAvatar && !this.firstPerson && this.catRidingEscalator()))
       && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
     const lockSnap = snap || this.reducedMotion;
     if (lockOn) {
