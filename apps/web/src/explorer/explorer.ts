@@ -388,6 +388,7 @@ export class Explorer {
   private pitch = -0.12;
   private camDistance: number = FOLLOW.defaultDistance;
   private stairsFraming = { progress: 0, weight: 0 };
+  private stairsLens = false;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
   private readonly bodyRaiseHold = { seconds: 0, target: 0 };
@@ -1950,7 +1951,7 @@ export class Explorer {
     this.mode = mode;
     this.moving = false;
     // Zone lighting (#861): overview shows the station exactly as before; walking resumes with a snapped re-classify.
-    if (mode === "overview") this.restoreZone();
+    if (mode === "overview") { this.stairsLens = false; this.restoreZone(); }
     else if (previous === "overview") this.zoneSnap = true;
     this.labelSweepDoneAt = -Infinity;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
@@ -3499,6 +3500,7 @@ export class Explorer {
 
   private placeCamera(dt: number, snap = false): void {
     if (this.openingState === "active") {
+      this.stairsLens = false;
       const shots = OPENING_SHOTS[this.openingOrigin!]!;
       const shot = this.camera.aspect < 1 ? shots.phone : shots.desktop;
       const yaw = -THREE.MathUtils.degToRad(shot.heading);
@@ -3528,10 +3530,14 @@ export class Explorer {
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
-    this.stairsFraming = stepEscalatorLock(this.stairsFraming.progress, !this.previewNext && !!this.catAvatar && !this.firstPerson && onStairs, dt, snap || this.reducedMotion);
+    const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && onStairs;
+    this.stairsFraming = stepEscalatorLock(this.stairsFraming.progress, stairsOn, dt, snap || this.reducedMotion);
     const stairsWeight = this.stairsFraming.weight;
     const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
     this.slope = stepSlope(resetSlope ? NO_SLOPE : this.slope, resetSlope ? 0 : this.pos.y - this.slopeY, resetSlope ? 0 : dt, onStairs);
+    if (resetSlope || this.reducedMotion) this.stairsLens = false;
+    if (stairsOn) this.stairsLens = true;
+    else if (!this.slope.on) this.stairsLens = false;
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
     const lockOn = this.previewNext && this.catAvatar && !this.firstPerson && this.catRidingEscalator()
@@ -3560,9 +3566,7 @@ export class Explorer {
     const pitch = shot ? THREE.MathUtils.lerp(this.arrivalStart.pitch, THREE.MathUtils.degToRad(shot.pitch), weight) : this.pitch;
     const distance = (shot ? THREE.MathUtils.lerp(this.arrivalStart.distance, shot.distance, weight) : this.camDistance)
       * THREE.MathUtils.lerp(1, FOLLOW_CAT_NEXT.distance / FOLLOW_CAT.distance, stairsWeight);
-    const lens = () => THREE.MathUtils.lerp(
-      followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect),
-      followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, true, this.camera.aspect), stairsWeight);
+    const lens = () => followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext || this.stairsLens, this.camera.aspect);
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
     const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
