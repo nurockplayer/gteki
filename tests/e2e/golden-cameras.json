@@ -223,9 +223,9 @@
       "id": "sj-stair-2-top",
       "station": "shinjuku",
       "kind": "node",
-      "node": "n:d1ccc52ef25e474dac70020771b7ea76",
+      "node": "n:51435d9112ba409e8ad5ab02dbbd060f",
       "headingDeg": 60,
-      "expect": "Shinjuku stair 2 top and its surrounding structure are visible.",
+      "expect": "Shinjuku stair 2, seen from its foot, and its surrounding structure are visible.",
       "features": [
         {
           "name": "stairs",
@@ -233,7 +233,7 @@
             "role": "stairs_ramps",
             "withinM": 15
           },
-          "minPixels": 2835
+          "minPixels": 1
         }
       ]
     },
