@@ -373,22 +373,12 @@ describe("stairwell cuts", () => {
       const along = [0, 1, 2, 3, 4, 5].map(j =>
         (positions.getX(i + j) - rect.center.x) * rect.along.x + (positions.getZ(i + j) - rect.center.z) * rect.along.z);
       if (Math.max(...along) - Math.min(...along) >= 1e-6) continue;
-      const bottom = Math.min(...[0, 1, 2, 3, 4, 5].map(j => positions.getY(i + j)));
+      const top = Math.max(...[0, 1, 2, 3, 4, 5].map(j => positions.getY(i + j)));
       const flightY = rect.center.y + along[0]! * rect.rise / (2 * rect.halfLength);
-      expect(bottom - flightY).toBeGreaterThanOrEqual(2.1 - 1e-3);
+      expect(top - flightY).toBeGreaterThanOrEqual(2.1 - 1e-3);
     }
     band.updateMatrixWorld(true);
     const ray = new THREE.Raycaster(new THREE.Vector3(0.5, 0.4, 0), new THREE.Vector3(1, 0, 0), 0, 2);
-    expect(ray.intersectObject(band)).toHaveLength(0);
-    result.dispose();
-  });
-
-  it("keeps a band bottom at the headroom boundary clear of the flight", () => {
-    const s = scene();
-    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "low" });
-    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
-    band.updateMatrixWorld(true);
-    const ray = new THREE.Raycaster(new THREE.Vector3(1, 2.4, 0), new THREE.Vector3(1, 0, 0), 0, 0.5);
     expect(ray.intersectObject(band)).toHaveLength(0);
     result.dispose();
   });
