@@ -43,22 +43,6 @@
     {
       "project": "desktop-chromium",
       "metric": "catVisible",
-      "from": 5,
-      "to": 6,
-      "row": "J6",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "desktop-chromium",
-      "metric": "catVisible",
-      "from": 8,
-      "to": 9,
-      "row": "J6",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "desktop-chromium",
-      "metric": "catVisible",
       "from": 20,
       "to": 22,
       "row": "J6",
