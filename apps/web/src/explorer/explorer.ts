@@ -390,6 +390,8 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   private stairsFraming = { progress: 0, weight: 0 };
   private stairsLens = false;
+  /** Previous stair-only aim correction, released with the boom's damping on a landing. */
+  private stairAimDrop?: number;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
   private readonly bodyRaiseHold = { seconds: 0, target: 0 };
@@ -3722,7 +3724,15 @@ export class Explorer {
       const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
-    if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect);
+    if (this.catAvatar) {
+      aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
+      const ordinaryAimY = pose.target.y;
+      if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect);
+      const drop = ordinaryAimY - pose.target.y;
+      const resetAim = snap || this.reducedMotion || pinned || this.mode !== "guide" || this.previewNext;
+      this.stairAimDrop = Math.max(drop, easeRaise(this.stairAimDrop ?? 0, drop, dt, resetAim));
+      pose.target.y = ordinaryAimY - this.stairAimDrop;
+    } else this.stairAimDrop = undefined;
     const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
     if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
     this.camera.lookAt(pose.target);

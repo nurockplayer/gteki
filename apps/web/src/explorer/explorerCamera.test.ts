@@ -448,6 +448,25 @@ describe("default cat stair framing", () => {
     expect(state.camera.position.distanceTo(pose.pivot.clone().addScaledVector(pose.back, 3))).toBeLessThan(1e-9);
   });
 
+  it.each([1.6, 0.7])("releases descending stair aim without a one-frame snap at aspect %s", (aspect) => {
+    const state = Object.assign(cameraStand(), { catAvatar: true, mode: "guide", camDistance: 2.4, pitch: 0 });
+    state.camera.aspect = aspect;
+    state.guide = { s: 1, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: "stairs" }] };
+    Object.assign(state.guide, { pts: [new THREE.Vector3(), new THREE.Vector3(0, -10, -20)], cum: [0, Math.sqrt(500)] });
+    for (let i = 0; i < 120; i++) place(state);
+    state.guide.s = 10;
+    for (let i = 0; i < 180; i++) {
+      const before = state.camera.quaternion.clone();
+      place(state);
+      expect(THREE.MathUtils.radToDeg(before.angleTo(state.camera.quaternion))).toBeLessThanOrEqual(3);
+    }
+    const pose = followPose(new THREE.Vector3(0, 0.42, 0), 0, 0, 0.2 * Math.min(1, aspect), 0.12, 0);
+    const expected = new THREE.PerspectiveCamera();
+    expected.position.copy(pose.pivot).addScaledVector(pose.back, 2.4);
+    expected.lookAt(pose.target);
+    expect(state.camera.quaternion.angleTo(expected.quaternion)).toBeLessThan(1e-7);
+  });
+
   it.each(["flat", "free walk", "escalator", "previewNext"])("preserves %s framing", (mode) => {
     const next = mode === "previewNext";
     const state = Object.assign(cameraStand(), { catAvatar: true, mode: mode === "free walk" ? "walk" : "guide", previewNext: next, camDistance: next ? 2.25 : 2.4, pitch: 0 });
