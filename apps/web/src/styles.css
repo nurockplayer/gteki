@@ -589,6 +589,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 }
 
 .app.arrival[data-mode="guide"] .minimap { display: none; }
+.app.arrival[data-mode="guide"] .panel-entry { left: 84px; top: calc(2px + env(safe-area-inset-top)); padding: 2px 6px; font-size: 12px; }
 .app.arrival[data-mode="guide"] .hud { top: calc(36px + env(safe-area-inset-top)); bottom: auto; }
 .app.arrival[data-mode="guide"] .arrival-menu { display: flex; gap: 6px; }
 .app.arrival[data-mode="guide"] .arrival-menu[hidden] { display: none; }
