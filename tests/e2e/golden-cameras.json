@@ -269,7 +269,7 @@
             "namePrefix": "escalator-steps:",
             "withinM": 15
           },
-          "minPixels": 1
+          "minPixels": 2031
         }
       ]
     },
