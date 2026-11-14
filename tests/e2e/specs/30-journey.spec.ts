@@ -298,6 +298,16 @@ test("guided walk @phone", async ({ page }, info) => {
       for (const r of rects) expect(r.left >= 0 && r.top >= 0 && r.right <= r.width && r.bottom <= r.height, `arrival menu outside viewport: ${JSON.stringify(rects)}`).toBe(true);
       await more.click();
       await expect(menu).toBeHidden();
+      if (reelMode === "next") {
+        await more.click();
+        await menu.locator(".guide-prev").click();
+        expect(await page.evaluate(() => (window as any).__gteki.arrivalFrame().shot)).toBe(false);
+        await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.setGuidePaused(true));
+        await hooks.simulate(page, 2);
+        await page.evaluate(() => (window as any).__gteki.seekGuide(Infinity));
+        await hooks.simulate(page, 2);
+        expect(await page.evaluate(() => (window as any).__gteki.arrivalFrame().shot)).toBe(true);
+      }
     }
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   for (const sample of samples) expect(sample.legend, `badge visible at sample ${sample.index}`).toBe(true);

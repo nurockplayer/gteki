@@ -2918,6 +2918,7 @@ export class Explorer {
     if (!g) return;
     const total = g.cum[g.cum.length - 1]!;
     seekGuideState(g, this.guideAllStops, total, s, firstStop);
+    if (this.previewNext && g.s < total && this.arrivalState === "active") this.arrivalState = "ended";
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
     this.teleported = true;
@@ -3378,7 +3379,6 @@ export class Explorer {
       this.yaw = Math.atan2(-direction.x, -direction.z);
       this.pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
       this.arrivalElapsed = 0;
-      this.arrivalDestination = null;
       this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
     }
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
@@ -3560,6 +3560,7 @@ export class Explorer {
     const shots = this.arrivalState === "active" || (this.arrivalState === "ended" && this.arrivalElapsed > 0) ? ARRIVAL_SHOTS[this.arrivalDestination ?? ""] : undefined;
     const shot = shots ? (this.camera.aspect < 1 ? shots.phone : shots.desktop) : undefined;
     if (shot) this.arrivalElapsed = THREE.MathUtils.clamp(this.arrivalElapsed + (this.arrivalState === "active" ? dt : -dt), 0, 1.2);
+    if (this.previewNext && this.arrivalState === "ended" && this.arrivalElapsed === 0 && this.guide && this.guide.s < this.guide.cum[this.guide.cum.length - 1]!) this.arrivalState = "waiting";
     const t = shot ? this.arrivalElapsed / 1.2 : 0;
     const weight = t * t * (3 - 2 * t);
     const yaw = shot ? this.arrivalStart.yaw + angleDelta(this.arrivalStart.yaw, -THREE.MathUtils.degToRad(shot.heading)) * weight : this.yaw;

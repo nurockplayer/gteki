@@ -478,6 +478,26 @@ describe("Explorer guide stair lens", () => {
 
 
 describe("guide arrival shot", () => {
+  it.each(["active", "ended"] as const)("releases and re-arms a %s shot after seeking back", (initial) => {
+    const state = Object.assign(cameraStand(), {
+      previewNext: true, mode: "guide", arrivalState: initial, arrivalDestination: "poi:platform:oedo", arrivalElapsed: 1.2,
+      arrivalStart: { yaw: 0, pitch: -0.12, distance: FOLLOW.defaultDistance }, guideIdentityHoldS: 0,
+      guideAllStops: [], lastAvatarPos: new THREE.Vector3(), bodyYaw: 0,
+      guide: { pts: [new THREE.Vector3(), new THREE.Vector3(0, 0, -10)], cum: [0, 10], steps: [0, 0], s: 10, paused: true, holding: false, stops: [], spans: [] },
+      tier: "walk", events: {}, input: { consumeLook: () => ({ dx: 0, dy: 0, zoom: 0 }), move: () => ({ x: 0, y: 0 }) },
+    });
+    qa(state).seekGuide(1);
+    expect(state.arrivalState).toBe("ended");
+    place(state);
+    expect(state.arrivalElapsed).toBeLessThan(1.2);
+    expect(state.arrivalState).toBe("ended");
+    for (let i = 0; i < 75; i++) place(state);
+    expect(state.arrivalState).toBe("waiting");
+    qa(state).seekGuide(10);
+    (Explorer.prototype as any).stepGuide.call(state, 1 / 60);
+    expect(state.arrivalState).toBe("active");
+  });
+
   it("hands movement the rendered shot direction", () => {
     const state = Object.assign(cameraStand(), {
       previewNext: true, mode: "guide", arrivalState: "active", arrivalDestination: "poi:platform:oedo", arrivalElapsed: 1.2,
