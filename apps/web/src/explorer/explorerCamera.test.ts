@@ -469,14 +469,17 @@ describe("default cat stair framing", () => {
       (Explorer.prototype as unknown as { setFov(target: number, snap: boolean, dt: number): void }).setFov.apply(state, args as [number, boolean, number]);
     });
     place(state, true);
-    for (const [s, direction] of [[1, 1], [11, -1]] as const) {
+    for (const s of [1, 11]) {
       state.guide.s = s;
       for (let i = 0; i < 180; i++) {
         const before = state.camera.quaternion.clone(), fov = state.camera.fov;
         place(state);
         expect(THREE.MathUtils.radToDeg(before.angleTo(state.camera.quaternion))).toBeLessThanOrEqual(3);
-        expect(direction * (state.camera.fov - fov)).toBeGreaterThanOrEqual(-1e-9);
-        expect(state.camera.fov).toBeLessThanOrEqual(stairFov);
+        const target = s === 1 ? stairFov : state.slope.on ? 60 : 50;
+        expect(state.setFov.mock.lastCall?.[0]).toBe(target);
+        expect(Math.abs(state.camera.fov - target)).toBeLessThanOrEqual(Math.abs(fov - target) + 1e-9);
+        expect(state.camera.fov).toBeLessThanOrEqual(Math.max(60, stairFov));
+        expect(state.stairsLens).toBe(s === 1);
       }
       expect(state.camera.fov).toBe(s === 1 ? stairFov : 50);
     }
