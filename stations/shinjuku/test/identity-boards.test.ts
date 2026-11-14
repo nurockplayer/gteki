@@ -56,8 +56,6 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
     setMode(mode: string) { this.mode = mode; }, applyAvatarFade: () => {},
   });
   expect(state.walkFromNode(bundle, bundle.spawnNodeIds![0]!, spawnHeading(bundle, { kind: "node", nodeId: bundle.spawnNodeIds![0]! }, []))).toBe(true);
-  const spawnNode = bundle.nodes.find(n => n.id === bundle.spawnNodeIds![0])!;
-  console.log("[spawn-clearance]", JSON.stringify({ original: [spawnNode.position.x, -spawnNode.position.y], actual: [state.pos.x, state.pos.z], distanceM: Math.hypot(state.pos.x - spawnNode.position.x, state.pos.z + spawnNode.position.y) }));
   // Private runtime method, deliberately accessed only by this regression harness.
   (state as unknown as { placeCamera(dt: number, snap: boolean): void }).placeCamera(0, true);
   state.camera.updateMatrixWorld(true);
@@ -258,7 +256,7 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     expect(worldFront(board).dot(new THREE.Vector3(chosen.facing.x, 0, -chosen.facing.y))).toBeCloseTo(1, 10);
     console.log(JSON.stringify({ platformIdentity: { ...accepted, nameCenterEnu: { x: target.x, y: -target.z, z: target.y },
       readableFace: "front", ceilingClearance: level.ceilingZ - top - 0.02, attempts: chosen.attempts } }));
-  }, 180_000);
+  });
 
   it("skips an invalid platform slot without throwing, preserves other boards and warns once", () => {
     const missingConnector = { ...bundle, pois: bundle.pois.map(p => p.id === "poi:platform:oedo"
@@ -573,6 +571,6 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         expect(draws).toBe(quality === "low" ? 107 : 128); // Low tier shares one escalator step mesh.
         console.log(JSON.stringify({ quality, identityTexture: entry, totalTextureBytes: budget.totalBytes, meshMaterialDraws: draws }));
       } finally { if (built !== station) built.dispose(); }
-    }, 180_000);
+    }, 60_000);
   }
 });
