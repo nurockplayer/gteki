@@ -320,6 +320,7 @@ export class Explorer {
   private overlayResidual: number | null = null;
 
   private readonly avatar = new THREE.Group();
+  private readonly catFocusAnchor = Object.assign(new THREE.Vector3(), { halfWidthX: 0, halfWidthZ: 0, halfHeight: 0 });
   private avatarRig: AvatarSelection | null = null;
   /** `?next=1` preview channel: journey changes that are not the default yet branch on this (docs/release/journey.md). */
   readonly previewNext: boolean;
@@ -2351,9 +2352,8 @@ export class Explorer {
     }
   }
 
-  catScreenBox(): { left: number; right: number; top: number; bottom: number } | null {
+  private catWorldBox(): THREE.Box3 {
     this.avatar.updateWorldMatrix(true, true);
-    this.camera.updateWorldMatrix(true, false);
     const box = new THREE.Box3();
     this.avatar.traverse((object) => {
       const mesh = object as THREE.Mesh;
@@ -2362,6 +2362,12 @@ export class Explorer {
       if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
       if (mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));
     });
+    return box;
+  }
+
+  catScreenBox(): { left: number; right: number; top: number; bottom: number } | null {
+    const box = this.catWorldBox();
+    this.camera.updateWorldMatrix(true, false);
     if (box.isEmpty()) return null;
     const points: THREE.Vector3[] = [];
     for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) points.push(new THREE.Vector3(x, y, z).project(this.camera));
@@ -3559,12 +3565,24 @@ export class Explorer {
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
     if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
+    const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
     if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
     this.camera.lookAt(pose.target);
     const nextSign = this.mode === "guide" && this.guide ? this.guideSigns?.find((sign) => sign.s >= this.guide!.s) : undefined;
     const forward = this.camera.getWorldDirection(new THREE.Vector3());
     const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
-    this.setCameraFocus(pose.target, sign);
+    if (catFocus) {
+      const box = this.catWorldBox();
+      const anchor = this.catFocusAnchor;
+      box.getCenter(anchor);
+      const dx = anchor.x - this.camera.position.x, dz = anchor.z - this.camera.position.z;
+      const radius = Math.hypot(box.max.x - box.min.x, box.max.z - box.min.z) / 2;
+      const distance = Math.hypot(dx, dz);
+      anchor.halfWidthX = -dz / distance * radius;
+      anchor.halfWidthZ = dx / distance * radius;
+      anchor.halfHeight = (box.max.y - box.min.y) / 2;
+      this.setCameraFocus(catFocus, anchor);
+    } else this.setCameraFocus(pose.target, sign);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
     this.applyAvatarFade(dt, snap);

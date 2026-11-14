@@ -47,7 +47,7 @@ test("cold open @phone", async ({ page }, info) => {
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
   const start = Date.now();
-  await page.goto(reelMode === "next" ? "/?next=1" : "/", { waitUntil: "commit" });
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning", { waitUntil: "commit" });
   const committed = Date.now();
   await page.waitForTimeout(Math.max(0, 1000 - (Date.now() - committed)));
   const cdp = reelMode === "next" ? await page.context().newCDPSession(page) : undefined;
@@ -162,8 +162,10 @@ test("guided walk @phone", async ({ page }, info) => {
   const wallStart = Date.now();
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
-  await page.goto(reelMode === "next" ? "/?next=1" : "/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo");
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo&qaTimeBand=morning");
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready" && (window as any).__gteki.route()?.ok, null, { timeout: 120_000, polling: 250 });
+  const timeBand = new URL(page.url()).searchParams.get("qaTimeBand");
+  expect(timeBand).toBe("morning");
   if (reelMode === "next") {
     await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
     expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
@@ -297,7 +299,7 @@ test("guided walk @phone", async ({ page }, info) => {
   const j7 = { count: escalators.length, lockMin: locks.length ? Math.min(...locks) : null, lockMedian: median(locks), axisDegMax: axes.length ? Math.max(...axes) : null, axisDegMedian: median(axes), lockBelow099: escalators.filter(s => s.camera.lock < 0.99).map(s => s.index) };
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));
-  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
+  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
   const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
   lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}`);
   const noLegend = samples.filter(s => !s.legend).map(s => s.index);
@@ -343,6 +345,7 @@ test("guided walk @phone", async ({ page }, info) => {
     }
     else expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
     expect.soft(sample.catVisible).toBeGreaterThanOrEqual(config.thresholds.catVisibleMin);
+    expect.soft(sample.catOccluder, "no NPC in front of the cat at arrival").not.toBe("npc");
     expect.soft(sample.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
     expect.soft(sample.nearBlack).toBeLessThanOrEqual(config.thresholds.nearBlack);
     expect.soft(sample.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
