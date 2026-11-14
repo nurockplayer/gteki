@@ -3530,7 +3530,7 @@ export class Explorer {
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
-    const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && onStairs;
+    const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && onStairs && !this.catRidingEscalator();
     this.stairsFraming = stepEscalatorLock(this.stairsFraming.progress, stairsOn, dt, snap || this.reducedMotion);
     const stairsWeight = this.stairsFraming.weight;
     const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
