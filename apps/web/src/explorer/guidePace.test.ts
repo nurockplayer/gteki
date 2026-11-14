@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Instruction, PolylinePoint } from "@gteki/navigation";
-import { DEFAULT_GUIDE_TIER, GUIDE_TIERS, MIN_GUIDE_MPS, effectivePace, escalatorSpanAt, guideOnEscalator, guideOnStairs, guidePaceSpans, guideSpeedAt, guideTierSpeed, isGuideTier, MIN_INSTRUCTION_S, nextGuideTier, paceReadout, pacedDistance, pacedDuration, polylineLengthM, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, GUIDE_TIERS, MIN_GUIDE_MPS, effectivePace, escalatorSpanAt, guideOnEscalator, guideOnStairs, guidePaceSpans, guideSpeedAt, guideStairCamera, guideTierSpeed, isGuideTier, MIN_INSTRUCTION_S, nextGuideTier, paceReadout, pacedDistance, pacedDuration, polylineLengthM, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { strings } from "../i18n.ts";
 
 const pt = (x: number, stepIndex: number): PolylinePoint => ({ x, y: 0, z: 0, zKnown: true, stepIndex, floorId: "f" });
@@ -44,6 +44,17 @@ describe("connector pace caps", () => {
     expect(guideOnEscalator(50, spans)).toBe(true);
     expect(guideOnEscalator(60, spans)).toBe(false); // escalator toS
     expect(guideOnEscalator(70, spans)).toBe(false); // elevator
+  });
+
+  it("carries stair framing one follow distance beyond stairs, without extending escalators", () => {
+    expect(guideStairCamera(19.99, spans, 2.4)).toBe(false);
+    expect(guideStairCamera(20, spans, 2.4)).toBe(true);
+    expect(guideStairCamera(41.5, spans, 2.4)).toBe(true);
+    expect(guideStairCamera(42.4, spans, 2.4)).toBe(false);
+    expect(guideStairCamera(50, spans, 2.4)).toBe(false);
+    expect(guideStairCamera(61, spans, 2.4)).toBe(false);
+    expect(guideStairCamera(43, spans, 3)).toBe(false);
+    expect(guideStairCamera(42.9, spans, 3)).toBe(true);
   });
 
   it("finds an escalator inside its span or within the lead", () => {

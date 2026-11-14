@@ -4,6 +4,7 @@ import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
 import { Explorer } from "./explorer.ts";
 import { FOLLOW_CAT_NEXT, escalatorPose, FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
 import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
+import { samplePolyline } from "./walker.ts";
 import type { IdentityBoard } from "./identityBoards.ts";
 
 /** Exercise the real camera wiring with CPU raycasts; no renderer or browser is constructed. */
@@ -390,6 +391,32 @@ describe("Explorer descending framing", () => {
 });
 
 describe("default cat stair framing", () => {
+  it.each([1.6, 0.7])("keeps stair framing across a 1.5 m landing at aspect %s", (aspect) => {
+    const state = Object.assign(cameraStand(), { catAvatar: true, mode: "guide", camDistance: 2.4, pitch: 0 });
+    state.camera.aspect = aspect;
+    // The first flight also contains a 1.2 m flat between descending segments.
+    const pts = [new THREE.Vector3(), new THREE.Vector3(0, -0.5, -1), new THREE.Vector3(0, -0.5, -2.2),
+      new THREE.Vector3(0, -2, -5.2), new THREE.Vector3(0, -2, -6.7), new THREE.Vector3(0, -4, -10.7)];
+    const cum = [0];
+    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1]! + pts[i]!.distanceTo(pts[i - 1]!));
+    const spans: PaceSpan[] = [1, 2, 3, 5].map(i => ({ fromS: cum[i - 1]!, toS: cum[i]!, maxMps: 0.9, scales: true, mode: "stairs" }));
+    state.guide = { s: 0, spans };
+    Object.assign(state.guide, { pts, cum });
+    for (const s of [cum[1]! + 0.6, cum[3]! + 0.75, cum[4]! + 1]) {
+      state.guide.s = s;
+      const p = samplePolyline(pts, cum, s);
+      state.pos.set(p.x, p.y, p.z);
+      state.avatar.position.copy(state.pos).y += 0.25;
+      place(state, true);
+      expect(state.stairsLens).toBe(true);
+      expect(state.stairsFraming.weight).toBe(1);
+      expect(state.setFov.mock.lastCall?.[0]).toBe(aspect >= 1 ? 55 : 65);
+      const centre = state.pos.clone().add(new THREE.Vector3(0, 0.25, 0));
+      const offset = state.camera.position.clone().sub(centre);
+      expect(Math.atan2(offset.y, Math.hypot(offset.x, offset.z))).toBeGreaterThanOrEqual(Math.atan(0.5) + THREE.MathUtils.degToRad(8) - 1e-7);
+    }
+  });
+
   it.each([1.6, 0.7])("uses D2 framing on guide stairs at aspect %s", (aspect) => {
     const state = Object.assign(cameraStand(), { catAvatar: true, mode: "guide", camDistance: 2.4, pitch: 0 });
     state.camera.aspect = aspect;
@@ -454,7 +481,7 @@ describe("default cat stair framing", () => {
     state.guide = { s: 1, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: "stairs" }] };
     Object.assign(state.guide, { pts: [new THREE.Vector3(), new THREE.Vector3(0, -10, -20)], cum: [0, Math.sqrt(500)] });
     for (let i = 0; i < 120; i++) place(state);
-    state.guide.s = 10;
+    state.guide.s = 12.4; // The boom has cleared the stairs and its landing carry-over.
     for (let i = 0; i < 180; i++) {
       const before = state.camera.quaternion.clone();
       place(state);
@@ -480,7 +507,7 @@ describe("default cat stair framing", () => {
 
   it.each([1.6, 0.7])("eases view direction and lens on stairs at aspect %s", (aspect) => {
     const state = Object.assign(cameraStand(), { catAvatar: true, mode: "guide", camDistance: 2.4, pitch: 0 });
-    state.guide = { s: 11, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: "stairs" }] };
+    state.guide = { s: 13, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: "stairs" }] };
     Object.assign(state.guide, { pts: [new THREE.Vector3(), new THREE.Vector3(0, 4, -20)], cum: [0, Math.sqrt(416)] });
     state.camera.aspect = aspect;
     const stairFov = aspect >= 1 ? 55 : 65;
@@ -488,7 +515,7 @@ describe("default cat stair framing", () => {
       (Explorer.prototype as unknown as { setFov(target: number, snap: boolean, dt: number): void }).setFov.apply(state, args as [number, boolean, number]);
     });
     place(state, true);
-    for (const s of [1, 11]) {
+    for (const s of [1, 13]) {
       state.guide.s = s;
       for (let i = 0; i < 180; i++) {
         const before = state.camera.quaternion.clone(), fov = state.camera.fov;

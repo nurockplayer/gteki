@@ -30,7 +30,7 @@ import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollisio
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, escalatorSpanAt, guideOnEscalator, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, escalatorSpanAt, guideOnEscalator, guideOnStairs, guideStairCamera, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
@@ -3555,7 +3555,8 @@ export class Explorer {
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
     const pinned = this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined;
-    const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && onStairs && !this.catRidingEscalator() && !pinned;
+    const stairCamera = this.mode === "guide" && this.guide !== null && guideStairCamera(this.guide.s, this.guide.spans, this.camDistance);
+    const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && stairCamera && !this.catRidingEscalator() && !pinned;
     this.stairsFraming = stepEscalatorLock(this.stairsFraming.progress, stairsOn, dt, snap || this.reducedMotion);
     const stairsWeight = stairsOn ? this.stairsFraming.weight : 0;
     const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
@@ -3638,10 +3639,14 @@ export class Explorer {
     if (stairsOn) {
       const g = this.guide!;
       const { segment } = samplePolyline(g.pts, g.cum, g.s);
-      const axis = g.pts[segment + 1]!.clone().sub(g.pts[segment]!);
-      if (axis.y < 0) {
+      // Short landings retain the last descending axis of this stair run.
+      for (let i = segment; i >= 0; i--) {
+        if (!guideStairCamera(Math.min(g.s, g.cum[i + 1]!) - 1e-6, g.spans, this.camDistance)) break;
+        const axis = g.pts[i + 1]!.clone().sub(g.pts[i]!);
+        if (axis.y >= 0 || !g.spans.some((sp) => sp.mode === "stairs" && g.cum[i]! >= sp.fromS && g.cum[i]! < sp.toS)) continue;
         stairAngle = Math.atan2(-axis.y, Math.hypot(axis.x, axis.z)) + THREE.MathUtils.degToRad(8);
         catCentre = this.catWorldBox().getCenter(new THREE.Vector3());
+        break;
       }
     }
     // Rotate only as far as the descending tread constraint needs, retaining the D2 boom length.
