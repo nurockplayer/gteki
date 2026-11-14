@@ -751,3 +751,16 @@ describe("authored arrival lifecycle", () => {
     expect(arrivalShotState("ended", true, "poi:platform:oedo", true, false)).toBe("ended");
   });
 });
+
+
+describe("authored opening lifecycle", () => {
+  it("holds only a known next origin and releases on guide start or input", async () => {
+    const { openingShotState } = await import("./followCamera.ts");
+    expect(openingShotState("waiting", false, "poi:exit:1", false, false)).toBe("waiting");
+    expect(openingShotState("waiting", true, "unknown", false, false)).toBe("waiting");
+    expect(openingShotState("waiting", true, "poi:exit:1", false, false)).toBe("active");
+    expect(openingShotState("active", true, "poi:exit:1", true, false)).toBe("ended");
+    expect(openingShotState("active", true, "poi:exit:1", false, true)).toBe("ended");
+    expect(openingShotState("ended", true, "poi:exit:1", false, false)).toBe("ended");
+  });
+});
