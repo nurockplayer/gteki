@@ -85,6 +85,8 @@ test("ikebukuro: overview refits above the open route sheet @phone", async ({ pa
   await expect(sheet).toHaveClass(/\bopen\b/);
   await sheet.locator(".card.route button.primary").click();
   await expect.poll(() => hooks.mode(page)).toBe("guide");
+  // Since #1269 the guide HUD keeps Overview behind its "…" (More controls) menu.
+  await page.locator(".hud button.guide-more").click();
   await page.locator(".hud").getByRole("button", { name: "Overview", exact: true }).click();
   await expect.poll(() => hooks.mode(page)).toBe("overview");
   await expect(sheet).toBeVisible();
