@@ -2,14 +2,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
-import { ARTIFACTS, hooks, imageStats, openStation, type StationKey } from "../lib/gteki.ts";
+import { ARTIFACTS, hooks, imageStats, openStation, stationData, type StationKey } from "../lib/gteki.ts";
 import { evaluateCheck, type Metric } from "../lib/golden.ts";
-import { screenshotFlatRatio } from "../lib/screenshot-flat.ts";
+import { screenshotFlatRatio, screenshotGolden } from "../lib/screenshot-flat.ts";
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
+const goldenQuery = "&qaCrowd=off&qaTimeBand=morning&qaEscalatorPhase=0";
 
 type Feature = { name: string; match: { namePrefix?: string; contains?: string; role?: string; withinM?: number }; minPixels: number };
-type Camera = { features?: Feature[]; id: string; station: StationKey; kind: string; knownIssue?: number; node?: string; headingDeg?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
+type Camera = { features?: Feature[]; id: string; station: StationKey; kind: string; knownIssue?: number; node?: string; headingDeg?: number; pitch?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
 const config = JSON.parse(fs.readFileSync(new URL("../golden-cameras.json", import.meta.url), "utf8")) as {
   thresholds: Record<"voidRatio" | "flatRatio" | "nearBlack", number>;
   cameras: Camera[];
@@ -31,6 +32,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
   }
   const rows: object[] = [], failures: string[] = [];
   let station: StationKey | undefined, tier = "", renderer: unknown = null;
+  let nodeFloors = new Map<string, string>();
   for (const camera of config.cameras.filter(c => !filter || c.station === filter)) {
     const started = Date.now();
     const phases = { setup: 0, hold: 0, place: 0, frame: 0, screenshotBefore: 0, screenshot: 0, screenshotAfter: 0, probe: 0, flat: 0, image: 0, release: 0 };
@@ -40,7 +42,8 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
     try {
       if (page.isClosed()) { page = await context.newPage(); station = undefined; }
       if (station !== camera.station) {
-        await openStation(page, camera.station); station = camera.station;
+        await openStation(page, camera.station, goldenQuery); station = camera.station;
+        nodeFloors = new Map(stationData(camera.station).graph.nodes.map((node) => [node.id, node.floorId]));
         tier = await hooks.quality(page);
         renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);
       }
@@ -51,7 +54,12 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       phases.hold = Date.now() - phaseStart;
       phaseStart = Date.now();
       if (camera.kind === "node") {
-        const result = await page.evaluate(({ node, headingDeg }) => (window as any).__gteki.setView({ node, headingDeg }), { node: camera.node!, headingDeg: camera.headingDeg! }) as { placed: boolean; placeMs: number; turnMs: number };
+        const result = await page.evaluate(({ node, headingDeg, pitch }) => {
+          const qa = (window as any).__gteki;
+          // Pitch is in radians; unconfigured shots use the default cat's resting pitch.
+          qa.setCamera({ pitch: pitch ?? 0 });
+          return qa.setView({ node, headingDeg });
+        }, { node: camera.node!, headingDeg: camera.headingDeg!, pitch: camera.pitch }) as { placed: boolean; placeMs: number; turnMs: number };
         diagnostics.placement = result;
         if (!result.placed) throw new Error(`setView ${camera.node} failed: node or walkable ground unavailable`);
       } else {
@@ -67,7 +75,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       diagnostics.screenshotBefore = await page.evaluate(() => (window as any).__gteki.goldenRenderState());
       phases.screenshotBefore = Date.now() - phaseStart;
       phaseStart = Date.now();
-      const png = await page.screenshot({ path: path.join(out, `${camera.id}.png`), timeout: 60_000 });
+      const png = await screenshotGolden(page, path.join(out, `${camera.id}.png`), camera.kind === "node" ? nodeFloors.get(camera.node!)! : null);
       phases.screenshot = Date.now() - phaseStart;
       phaseStart = Date.now();
       diagnostics.screenshotAfter = await page.evaluate(() => (window as any).__gteki.goldenRenderState());
@@ -107,7 +115,10 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
     } finally {
       if (held && !page.isClosed()) {
         phaseStart = Date.now();
-        await page.evaluate(() => (window as any).__gteki.holdFrames(false));
+        await page.evaluate(() => {
+          (window as any).__gteki.setCamera(null);
+          (window as any).__gteki.holdFrames(false);
+        });
         phases.release = Date.now() - phaseStart;
       }
     }
@@ -122,14 +133,23 @@ test("hidden sign fails its feature check", async ({ page }) => {
   test.setTimeout(180_000);
   test.skip(process.env.GTEKI_GOLDEN_STATION === "ikebukuro", "Shinjuku fault test");
   const camera = config.cameras.find(c => c.id === "sj-sign-1ecbdf77")!;
-  await openStation(page, "shinjuku");
+  await openStation(page, "shinjuku", goldenQuery);
   await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   try {
-    const placement = await page.evaluate(({ node, headingDeg }) => (window as any).__gteki.setView({ node, headingDeg }), camera) as { placed: boolean };
+    const placement = await page.evaluate(({ node, headingDeg, pitch }) => {
+      const qa = (window as any).__gteki;
+      qa.setCamera({ pitch: pitch ?? 0 });
+      return qa.setView({ node, headingDeg });
+    }, camera) as { placed: boolean };
     expect(placement.placed).toBe(true);
     await page.evaluate(() => (window as any).__gteki.goldenFrame());
     const result = await page.evaluate((features) => (window as any).__gteki.goldenProbe(false, features, { hideBeforeShown: ["sign 1ecbdf77"] }), camera.features) as { features: { pixels: number; meshes: number }[] };
     expect(result.features[0]!.meshes).toBeGreaterThan(0);
     expect(evaluateCheck("feature:sign 1ecbdf77", result.features[0]!.pixels, camera.features![0]!.minPixels).status).toBe("fail");
-  } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+  } finally {
+    await page.evaluate(() => {
+      (window as any).__gteki.setCamera(null);
+      (window as any).__gteki.holdFrames(false);
+    });
+  }
 });

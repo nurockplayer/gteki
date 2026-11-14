@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW_CAT_NEXT, ESCALATOR_SHOT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("scales the cat shoulder for portrait aspect", () => {
@@ -695,31 +695,25 @@ describe("D2 preview camera", () => {
     expect(camera.z).toBeCloseTo(2.20, 2);
   });
 
-  it.each([-30, 30, 0])("frames a %s degree escalator in its own vertical plane", (degrees) => {
-    for (const yaw of [0, -Math.PI / 2]) {
-      const angle = THREE.MathUtils.degToRad(degrees);
-      const a = viewDirection(yaw, angle);
-      const r = new THREE.Vector3(-a.z, 0, a.x).normalize();
-      const n = r.clone().cross(a).normalize();
+  it.each([-30, 30, 0])("frames a %s degree escalator", (degrees) => {
+    for (const yaw of [0, -Math.PI / 2]) for (const [aspect, fov, shot] of [[1.6, 55, ESCALATOR_SHOT.desktop], [412 / 839, 65, ESCALATOR_SHOT.phone]] as const) {
+      const axis = viewDirection(yaw, THREE.MathUtils.degToRad(degrees));
+      const right = new THREE.Vector3(-axis.z, 0, axis.x).normalize();
       const feet = new THREE.Vector3(3, 2, 1);
-      const pose = escalatorPose(feet, a, 0.2, 1, yaw, 0);
+      const pose = escalatorPose(feet, axis, 0.2, 1, yaw, 0, aspect, fov);
       const offset = pose.position.clone().sub(feet);
-      expect(offset.dot(a)).toBeCloseTo(-1.4, 3);
-      expect(offset.dot(n)).toBeCloseTo(0.9, 3);
-      expect(offset.dot(r)).toBeCloseTo(0.2, 3);
-      const direction = pose.target.clone().sub(pose.position).normalize();
-      expect(THREE.MathUtils.radToDeg(Math.asin(direction.y))).toBeCloseTo(degrees - 12, 1);
-      expect(Math.atan2(-direction.x, -direction.z)).toBeCloseTo(yaw, 5);
-      const camera = new THREE.PerspectiveCamera(55, 1.6, 0.05, 2000);
+      const expected = axis.clone().multiplyScalar(-shot.boom).addScaledVector(right, 0.2).add(new THREE.Vector3(0, shot.height, 0));
+      expect(offset.distanceTo(expected)).toBeLessThan(1e-6);
+      const camera = new THREE.PerspectiveCamera(fov, aspect, 0.05, 2000);
       camera.position.copy(pose.position);
       camera.lookAt(pose.target);
       camera.updateMatrixWorld(true);
-      const foot = feet.clone().project(camera);
-      const vanishing = camera.position.clone().addScaledVector(a, 100000).project(camera);
-      expect(foot.y).toBeLessThan(-1 / 3);
-      expect(foot.x).toBeLessThan(0);
-      expect(vanishing.y).toBeGreaterThan(0.35);
-      expect(vanishing.y).toBeLessThan(0.45);
+      expect((1 - feet.clone().project(camera).y) / 2).toBeCloseTo(shot.feet, 2);
+      if (degrees === -30) {
+        const farY = (1 - feet.clone().addScaledVector(axis, 30).project(camera).y) / 2;
+        expect(farY).toBeGreaterThanOrEqual(aspect >= 1 ? 0.70 : 0.58);
+        expect(farY).toBeLessThanOrEqual(aspect >= 1 ? 0.78 : 0.62);
+      }
     }
   });
 
