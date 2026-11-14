@@ -77,12 +77,12 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
         const center = new THREE.Vector3().setFromMatrixPosition(matrix);
         if (pointInRings({ x: center.x, y: -center.z }, roof.rings)) count++;
       }
-      expect(count, roof.spaceId).toBeGreaterThan(0);
       return { roof: roof.spaceId, count };
     });
     const legacy = off.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
     console.log("2026-11-14 JST J7 strip counts", JSON.stringify(counts));
     console.log("2026-11-14 JST J7 flag-off strips", legacy.count, exactHash(legacy.instanceMatrix.array));
+    for (const { roof, count } of counts) expect(count, roof).toBeGreaterThan(0);
   });
 
   it("keeps flag-off strip counts and matrices identical to main", () => {
