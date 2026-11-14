@@ -8,8 +8,17 @@ import { PNG } from "pngjs";
 const [baseDir, headDir, outDir, flag, camerasFile] = process.argv.slice(2);
 if (!baseDir || !headDir || !outDir || flag !== "--cameras" || !camerasFile) throw new Error("usage: golden-diff.mjs <base> <head> <out> --cameras <json>");
 const cameras = JSON.parse(fs.readFileSync(camerasFile, "utf8")).cameras;
-const files = (dir) => fs.readdirSync(dir).filter((f) => f.endsWith(".png")).map((f) => f.slice(0, -4));
-const ids = [...new Set([...files(baseDir), ...files(headDir)])].sort();
+const missing = (reason) => {
+  console.log(`::warning::golden diff missing: ${reason}`);
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `golden diff missing: ${reason}\n`);
+};
+const files = (dir, side) => {
+  const ids = fs.existsSync(dir) ? fs.readdirSync(dir).filter((f) => f.endsWith(".png")).map((f) => f.slice(0, -4)) : [];
+  if (!ids.length) missing(`no ${side} captures in ${dir}`);
+  return ids;
+};
+const baseIds = files(baseDir, "base"), headIds = files(headDir, "head");
+const ids = [...new Set([...baseIds, ...headIds])].sort();
 const read = (dir, id) => {
   const file = path.join(dir, `${id}.png`);
   return fs.existsSync(file) ? PNG.sync.read(fs.readFileSync(file)) : null;
@@ -17,6 +26,8 @@ const read = (dir, id) => {
 fs.mkdirSync(outDir, { recursive: true });
 const entries = ids.map((camera) => {
   const base = read(baseDir, camera), head = read(headDir, camera);
+  if (!base && baseIds.length) missing(`${camera}: no base capture`);
+  if (!head && headIds.length) missing(`${camera}: no head capture`);
   const width = Math.max(base?.width ?? 0, head?.width ?? 0);
   const height = Math.max(base?.height ?? 0, head?.height ?? 0);
   const mismatch = !base || !head || base.width !== head.width || base.height !== head.height;
@@ -56,3 +67,7 @@ const ratios = entries.map((e) => e.diffRatio).sort((a, b) => a - b);
 const middle = Math.floor(ratios.length / 2);
 const median = ratios.length ? (ratios.length % 2 ? ratios[middle] : (ratios[middle - 1] + ratios[middle]) / 2) : 0;
 console.log(`changed: ${changed.length}; max: ${ratios.at(-1) ?? 0}; median: ${median}`);
+if (process.env.GITHUB_STEP_SUMMARY) {
+  const table = changed.map((r) => `| ${r.camera} | ${r.diffRatio} |`).join("\n");
+  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Golden diff\n\n| Camera | diffRatio |\n| --- | ---: |\n${table}\n\nMax: ${ratios.at(-1) ?? 0}; median: ${median}\n`);
+}

@@ -1,6 +1,12 @@
 import type { Page } from "@playwright/test";
 import { flatRatio } from "./golden.ts";
 
+export async function screenshotGolden(page: Page, path: string): Promise<Buffer> {
+  // Playwright fast-forwards finite CSS transitions (HUD/minimap opacity included)
+  // to their settled state before capturing, without a wall-clock delay.
+  return page.screenshot({ path, timeout: 60_000, animations: "disabled" });
+}
+
 export async function screenshotFlatRatio(page: Page, png: Buffer): Promise<{ value: number; ms: number }> {
   const decoded = await page.evaluate(async (b64) => {
     const started = performance.now();

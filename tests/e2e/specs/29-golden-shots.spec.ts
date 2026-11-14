@@ -4,9 +4,10 @@ import { execFileSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
 import { ARTIFACTS, hooks, imageStats, openStation, type StationKey } from "../lib/gteki.ts";
 import { evaluateCheck, type Metric } from "../lib/golden.ts";
-import { screenshotFlatRatio } from "../lib/screenshot-flat.ts";
+import { screenshotFlatRatio, screenshotGolden } from "../lib/screenshot-flat.ts";
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
+const goldenQuery = "&qaCrowd=off&qaTimeBand=morning&qaEscalatorPhase=0";
 
 type Feature = { name: string; match: { namePrefix?: string; contains?: string; role?: string; withinM?: number }; minPixels: number };
 type Camera = { features?: Feature[]; id: string; station: StationKey; kind: string; knownIssue?: number; node?: string; headingDeg?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
@@ -40,7 +41,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
     try {
       if (page.isClosed()) { page = await context.newPage(); station = undefined; }
       if (station !== camera.station) {
-        await openStation(page, camera.station); station = camera.station;
+        await openStation(page, camera.station, goldenQuery); station = camera.station;
         tier = await hooks.quality(page);
         renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);
       }
@@ -67,7 +68,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       diagnostics.screenshotBefore = await page.evaluate(() => (window as any).__gteki.goldenRenderState());
       phases.screenshotBefore = Date.now() - phaseStart;
       phaseStart = Date.now();
-      const png = await page.screenshot({ path: path.join(out, `${camera.id}.png`), timeout: 60_000 });
+      const png = await screenshotGolden(page, path.join(out, `${camera.id}.png`));
       phases.screenshot = Date.now() - phaseStart;
       phaseStart = Date.now();
       diagnostics.screenshotAfter = await page.evaluate(() => (window as any).__gteki.goldenRenderState());
@@ -122,7 +123,7 @@ test("hidden sign fails its feature check", async ({ page }) => {
   test.setTimeout(180_000);
   test.skip(process.env.GTEKI_GOLDEN_STATION === "ikebukuro", "Shinjuku fault test");
   const camera = config.cameras.find(c => c.id === "sj-sign-1ecbdf77")!;
-  await openStation(page, "shinjuku");
+  await openStation(page, "shinjuku", goldenQuery);
   await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   try {
     const placement = await page.evaluate(({ node, headingDeg }) => (window as any).__gteki.setView({ node, headingDeg }), camera) as { placed: boolean };
