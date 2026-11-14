@@ -390,8 +390,8 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   private stairsFraming = { progress: 0, weight: 0 };
   private stairsLens = false;
-  /** Previous stair-only aim correction, released with the boom's damping on a landing. */
-  private stairAimDrop?: number;
+  /** Previous descending-stair look angle, released with the boom's damping on a landing. */
+  private stairAimElevation?: number;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
   private readonly bodyRaiseHold = { seconds: 0, target: 0 };
@@ -3598,6 +3598,7 @@ export class Explorer {
     if (this.firstPerson) {
       this.boomActual = 0;
       this.boomRaise = 0;
+      this.stairAimElevation = undefined;
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
@@ -3726,13 +3727,17 @@ export class Explorer {
     }
     if (this.catAvatar) {
       aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
-      const ordinaryAimY = pose.target.y;
       if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect);
-      const drop = ordinaryAimY - pose.target.y;
+      const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
+      const elevation = Math.atan2(pose.target.y - this.camera.position.y, ahead);
       const resetAim = snap || this.reducedMotion || pinned || this.mode !== "guide" || this.previewNext;
-      this.stairAimDrop = Math.max(drop, easeRaise(this.stairAimDrop ?? 0, drop, dt, resetAim));
-      pose.target.y = ordinaryAimY - this.stairAimDrop;
-    } else this.stairAimDrop = undefined;
+      if (stairRaise > 0 || resetAim) this.stairAimElevation = stairRaise > 0 ? elevation : undefined;
+      else if (this.stairAimElevation !== undefined) {
+        const eased = easeRaise(this.stairAimElevation, elevation, dt);
+        this.stairAimElevation = eased === elevation ? undefined : eased;
+        pose.target.y = this.camera.position.y + ahead * Math.tan(eased);
+      }
+    } else this.stairAimElevation = undefined;
     const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
     if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
     this.camera.lookAt(pose.target);
