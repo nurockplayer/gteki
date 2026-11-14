@@ -243,11 +243,23 @@ test("guided walk @phone", async ({ page }, info) => {
       await expect(menu).toBeVisible();
       await expect(menu.locator(".guide-prev")).toBeVisible();
       await expect(menu.getByRole("button", { name: /^(End guide|ガイド終了)$/ })).toBeVisible();
+      await expect.poll(() => page.evaluate(() => {
+        const badge = document.querySelector(".greybox-legend")!.getBoundingClientRect();
+        const buttons = [...document.querySelectorAll(".arrival-menu button")];
+        return badge.left >= 0 && badge.top >= 0 && badge.right <= innerWidth && badge.bottom <= innerHeight && buttons.every(button => {
+          const r = button.getBoundingClientRect();
+          return badge.right <= r.left || badge.left >= r.right || badge.bottom <= r.top || badge.top >= r.bottom;
+        });
+      }), { message: "arrival badge inside viewport and clear of menu buttons" }).toBe(true);
+      const badge = await page.locator(".greybox-legend").evaluate(el => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+      });
       const rects = await menu.locator("button").evaluateAll(buttons => buttons.map(button => {
         const r = button.getBoundingClientRect();
         return { text: button.textContent, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: innerWidth, height: innerHeight };
       }));
-      console.log(`[journey] ${info.project.name} ${reelMode} arrival menu rectangles: ${JSON.stringify(rects)}`);
+      console.log(`[journey] ${info.project.name} ${reelMode} arrival menu rectangles: ${JSON.stringify(rects)} badge: ${JSON.stringify(badge)}`);
       for (const r of rects) expect(r.left >= 0 && r.top >= 0 && r.right <= r.width && r.bottom <= r.height, `arrival menu outside viewport: ${JSON.stringify(rects)}`).toBe(true);
       await more.click();
       await expect(menu).toBeHidden();

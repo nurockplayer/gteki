@@ -591,9 +591,10 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .app.arrival[data-mode="guide"] .minimap { display: none; }
 .app.arrival[data-mode="guide"] .panel-entry { left: 84px; top: calc(2px + env(safe-area-inset-top)); padding: 2px 6px; font-size: 12px; }
 .app.arrival[data-mode="guide"] .hud { top: calc(36px + env(safe-area-inset-top)); bottom: auto; }
-.app.arrival[data-mode="guide"] .arrival-controls { position: relative; }
-.app.arrival[data-mode="guide"] .arrival-menu { position: absolute; right: 0; top: 100%; display: flex; flex-wrap: wrap; justify-content: end; gap: 6px; width: max-content; max-width: calc(100vw - 32px); }
-.app.arrival.arrival-left[data-mode="guide"] .arrival-menu { left: 0; right: auto; justify-content: start; }
+.app.arrival[data-mode="guide"] .arrival-controls { flex-wrap: wrap; justify-content: end; max-width: calc(100vw - 32px); }
+.app.arrival.arrival-left[data-mode="guide"] .arrival-controls { justify-content: start; }
+.app.arrival[data-mode="guide"] .arrival-menu { display: flex; flex-wrap: wrap; justify-content: end; gap: 6px; width: max-content; max-width: calc(100vw - 32px); }
+.app.arrival.arrival-left[data-mode="guide"] .arrival-menu { justify-content: start; }
 .app.arrival[data-mode="guide"] .arrival-menu[hidden] { display: none; }
 .app.arrival.arrival-left[data-mode="guide"] .hud { left: 16px; right: auto; justify-items: start; }
 .app.arrival.arrival-bottom[data-mode="guide"] .hud { top: auto; bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra)); }
