@@ -420,7 +420,7 @@ describe("default cat stair framing", () => {
     place(state, true);
     for (const [s, direction] of [[1, 1], [11, -1]] as const) {
       state.guide.s = s;
-      for (let i = 0; i < 120; i++) {
+      for (let i = 0; i < 180; i++) {
         const before = state.camera.quaternion.clone(), fov = state.camera.fov;
         place(state);
         expect(THREE.MathUtils.radToDeg(before.angleTo(state.camera.quaternion))).toBeLessThanOrEqual(3);

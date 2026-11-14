@@ -47,6 +47,7 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
     cameraTargets: targets.camera, cameraSides: new Set(targets.camera), blockerTargets: targets.blockers,
     identityBoards: collectIdentityBoards(scene.root), identityPlaced: false, viewSize: { w: width, h: height },
     pitch: -0.12, yaw: 0, camDistance: FOLLOW.defaultDistance, qaCamera: {}, qaCameraSnap: false,
+    stairsFraming: { progress: 0, weight: 0 }, stairsLens: false,
     firstPerson: false, slope: NO_SLOPE, slopeY: 0, descentDrop: 0, boomRaise: 0, boomActual: 0,
     reducedMotion: true, guideIdentityCentre: new THREE.Vector3(), guideIdentityOffset: { yaw: 0, pitch: 0 },
     lastAvatarPos: new THREE.Vector3(), freeRect: () => free, freeRects: () => frees, stopGuide: () => {},
