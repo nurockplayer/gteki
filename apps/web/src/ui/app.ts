@@ -327,13 +327,17 @@ export class App {
     this.ui.greyboxLegend.hidden = true;
     this.root.append(viewport, top, panel, this.ui.panelEntry, this.ui.sheet, this.ui.hud, this.ui.minimap.el, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit, this.ui.greyboxLegend);
     if (this.coldOpen) {
-      const boot = el("div", "boot-card");
-      const track = el("div", "boot-track");
-      track.setAttribute("role", "progressbar");
-      track.setAttribute("aria-valuemin", "0");
-      track.setAttribute("aria-valuemax", "100");
-      track.append(el("div", "boot-fill"));
-      boot.append(el("div", "boot-brand logo", "GTEki"), el("div", "boot-title"), el("div", "boot-sub"), track, el("div", "boot-status"));
+      const poster = document.documentElement.dataset.coldOpen === "1" ? document.getElementById("cold-open-poster") : null;
+      const boot = poster ?? el("div", "boot-card");
+      boot.classList.add("boot-card");
+      if (!poster) {
+        const track = el("div", "boot-track");
+        track.setAttribute("role", "progressbar");
+        track.setAttribute("aria-valuemin", "0");
+        track.setAttribute("aria-valuemax", "100");
+        track.append(el("div", "boot-fill"));
+        boot.append(el("div", "boot-brand logo", "GTEki"), el("div", "boot-title"), el("div", "boot-sub"), track, el("div", "boot-status"));
+      }
       this.root.append(boot);
       this.setBootStage("start");
       let previous = 0;
@@ -347,7 +351,7 @@ export class App {
           this.root.querySelector<HTMLElement>(".cold-open")!.hidden = false;
           boot.classList.add("lifting");
           if (matchMedia("(prefers-reduced-motion: reduce)").matches) boot.hidden = true;
-          else setTimeout(() => { boot.hidden = true; }, 250);
+          else setTimeout(() => { boot.hidden = true; }, poster ? 400 : 250);
           return;
         }
         previous = now;

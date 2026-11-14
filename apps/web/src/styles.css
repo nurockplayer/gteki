@@ -538,7 +538,11 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .cold-open-title { font-size: 13px; font-weight: 700; }
 .cold-open-search { border: 0; background: transparent; padding: 4px; }
 .cold-opening .hud, .cold-opening .panel-entry, .cold-opening .minimap, .cold-opening .hint { display: none !important; }
-@media (max-width: 600px) { .cold-open { left: 50%; transform: translateX(-50%); white-space: nowrap; } }
+@media (max-width: 600px) {
+  .cold-open { left: 50%; transform: translateX(-50%); white-space: nowrap; }
+  /* Match the badge bottom, then clear its line, padding and the 8 px gap. */
+  .cold-opening .cold-open { bottom: calc(max(var(--hud-clear, 0px), 10px + env(safe-area-inset-bottom) + var(--credit-extra) + var(--hud-height, 0px) + 4px) + 40px); }
+}
 
 /* Compact guide HUD for the next preview. */
 .app[data-mode="guide"] .guide-extra-hidden { display: none; }
