@@ -541,7 +541,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 @media (max-width: 600px) {
   .cold-open { left: 50%; transform: translateX(-50%); white-space: nowrap; }
   /* Match the badge bottom, then clear its line, padding and the 8 px gap. */
-  .cold-opening .cold-open { bottom: calc(max(var(--hud-clear, 0px), 10px + env(safe-area-inset-bottom) + var(--credit-extra) + var(--hud-height, 0px) + 4px) + 40px); }
+  html[data-cold-open="1"] .cold-opening .cold-open { bottom: calc(max(var(--hud-clear, 0px), 10px + env(safe-area-inset-bottom) + var(--credit-extra) + var(--hud-height, 0px) + 4px) + 40px); }
 }
 
 /* Compact guide HUD for the next preview. */
