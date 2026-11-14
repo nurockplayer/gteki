@@ -426,7 +426,7 @@ describe("Explorer guide stair lens", () => {
       expect(state.camera.fov).toBe(previewNext ? 55 : 60);
     }
     expect((state as unknown as Explorer).cameraInfo().lock).toBe(previewNext ? 1 : 0);
-    const ride = escalatorPose(state.pos, axis, 0.2, 1, state.yaw, 0);
+    const ride = escalatorPose(state.pos, axis, 0.2, 1, state.yaw, 0, 1.6, 55);
     if (previewNext) expect(state.camera.position.distanceTo(ride.position)).toBeLessThan(0.15);
     state.guide!.s = spans[0]!.toS;
     for (let i = 0; i < 72; i++) place(state);
