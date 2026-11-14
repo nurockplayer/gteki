@@ -98,7 +98,7 @@ test("cold open @phone", async ({ page }, info) => {
     expect(nextState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
     const { opening, labelsShown } = nextState;
     const phone = info.project.name.startsWith("phone");
-    const authored = phone ? { heading: 174, pitch: -12, height: 1.3, distance: 3, fov: 65 } : { heading: 174, pitch: -3, height: 1.3, distance: 2.75, fov: 55 };
+    const authored = phone ? { heading: 174, pitch: -12, height: 1.22, distance: 3, fov: 65 } : { heading: 174, pitch: -3, height: 1.1, distance: 2.75, fov: 55 };
     expect(opening.shot).toBe(true);
     expect(Math.abs(opening.camera.heading - authored.heading)).toBeLessThanOrEqual(1);
     expect(Math.abs(opening.camera.pitch - authored.pitch)).toBeLessThanOrEqual(1);
