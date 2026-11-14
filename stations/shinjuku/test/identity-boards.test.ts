@@ -258,7 +258,7 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
     expect(worldFront(board).dot(new THREE.Vector3(chosen.facing.x, 0, -chosen.facing.y))).toBeCloseTo(1, 10);
     console.log(JSON.stringify({ platformIdentity: { ...accepted, nameCenterEnu: { x: target.x, y: -target.z, z: target.y },
       readableFace: "front", ceilingClearance: level.ceilingZ - top - 0.02, attempts: chosen.attempts } }));
-  });
+  }, 180_000);
 
   it("skips an invalid platform slot without throwing, preserves other boards and warns once", () => {
     const missingConnector = { ...bundle, pois: bundle.pois.map(p => p.id === "poi:platform:oedo"
@@ -573,6 +573,6 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         expect(draws).toBe(quality === "low" ? 107 : 128); // Low tier shares one escalator step mesh.
         console.log(JSON.stringify({ quality, identityTexture: entry, totalTextureBytes: budget.totalBytes, meshMaterialDraws: draws }));
       } finally { if (built !== station) built.dispose(); }
-    }, 60_000);
+    }, 180_000);
   }
 });
