@@ -68,6 +68,23 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   }, 120_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
+  it("retains underground strips in each shared preview roof", () => {
+    const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    const counts = layout.shaftCeilingPreview!.roofs.map((roof) => {
+      let count = 0;
+      for (let i = 0; i < mesh.count; i++) {
+        const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+        const center = new THREE.Vector3().setFromMatrixPosition(matrix);
+        if (pointInRings({ x: center.x, y: -center.z }, roof.rings)) count++;
+      }
+      expect(count, roof.spaceId).toBeGreaterThan(0);
+      return { roof: roof.spaceId, count };
+    });
+    const legacy = off.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    console.log("2026-11-14 JST J7 strip counts", JSON.stringify(counts));
+    console.log("2026-11-14 JST J7 flag-off strips", legacy.count, exactHash(legacy.instanceMatrix.array));
+  });
+
   it("does not overlap underground linear lights at similar heights", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
     expect(mesh).toBeDefined();
