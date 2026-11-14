@@ -261,7 +261,8 @@ test("guided walk @phone", async ({ page }, info) => {
     }
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
     const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
-    samples.push({ ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
+    const ride = reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.rideFrame()) : undefined;
+    samples.push({ ...(reelMode === "next" ? { ride } : {}), ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -329,12 +330,14 @@ test("guided walk @phone", async ({ page }, info) => {
     return sorted.length ? (sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2) : null;
   };
   const locks = escalators.map(s => s.camera.lock as number), axes = escalators.map(s => s.axisDeg as number);
-  const j7 = { count: escalators.length, lockMin: locks.length ? Math.min(...locks) : null, lockMedian: median(locks), axisDegMax: axes.length ? Math.max(...axes) : null, axisDegMedian: median(axes), lockBelow099: escalators.filter(s => s.camera.lock < 0.99).map(s => s.index) };
+  const rides = samples.filter(s => s.camera.lock >= 0.99 && s.ride && s.ride.leftM >= 6);
+  const cats = rides.filter(s => s.ride.cat);
+  const j7 = { rideCount: rides.length, farEndY: median(rides.map(s => s.ride.farEndY)), catHeight: median(cats.map(s => s.ride.cat.y1 - s.ride.cat.y0)), feetY: median(cats.map(s => s.ride.cat.y1)), catX: median(cats.map(s => s.ride.cat.x)), count: escalators.length, lockMin: locks.length ? Math.min(...locks) : null, lockMedian: median(locks), axisDegMax: axes.length ? Math.max(...axes) : null, axisDegMedian: median(axes), lockBelow099: escalators.filter(s => s.camera.lock < 0.99).map(s => s.index) };
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));
   fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
   const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
-  lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}`);
+  lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}; rides ${j7.rideCount}; farEndY ${j7.farEndY ?? "none"}; catHeight ${j7.catHeight ?? "none"}; feetY ${j7.feetY ?? "none"}; catX ${j7.catX ?? "none"}`);
   const noLegend = samples.filter(s => !s.legend).map(s => s.index);
   lines.push(`- J13 (report): badge on screen in ${samples.length - noLegend.length} / ${samples.length} samples; missing at: ${noLegend.join(", ") || "none"}`);
   const unknownReport = unknown.join(", ") || "none";
