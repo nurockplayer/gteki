@@ -2047,7 +2047,7 @@ export class Explorer {
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
     if (this.colliders.length || this.walls.length) {
-      const pushed = pushOut(this.pos, this.colliderCast, RADIUS);
+      const pushed = pushOut(this.pos, (origin, dir, far) => this.colliderCast(origin, dir, far), RADIUS);
       const clear = resolveWalls(pushed.x, pushed.z, RADIUS, ground, WALKER_BODY.bodyTopM, this.walls);
       const clearGround = this.groundAt(clear.x, ground + 1.5, clear.z, 4);
       if (clearGround !== null) this.pos.set(clear.x, clearGround, clear.z);
@@ -2227,7 +2227,7 @@ export class Explorer {
     return result;
   }
 
-  private colliderCast: CastFn = (origin, dir, far) => {
+  private colliderCast(origin: THREE.Vector3, dir: THREE.Vector3, far: number): ReturnType<CastFn> {
       this.ray.set(origin, dir);
       this.ray.far = far;
       const hit = castAll(this.ray, this.colliderTargets).find((h) => {
@@ -2238,12 +2238,12 @@ export class Explorer {
         return !exempt;
       });
       return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
-  };
+  }
 
   /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
   private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
     if (this.colliders.length === 0) return null;
-    return bodyBlock(from, to, this.colliderCast, RADIUS);
+    return bodyBlock(from, to, (origin, dir, far) => this.colliderCast(origin, dir, far), RADIUS);
   }
 
   // ---- Routes & POIs -------------------------------------------------------------

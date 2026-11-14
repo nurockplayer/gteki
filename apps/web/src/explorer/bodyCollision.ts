@@ -48,7 +48,7 @@ export function pushOut(at: THREE.Vector3, cast: CastFn, radius: number, heights
     let bestDistance = Infinity;
     for (let i = 0; i < rays; i++) {
       const hit = hits[i];
-      if (hit === null) continue;
+      if (hit == null) continue;
       const distance = hit + radius + 1e-4;
       if (distance >= bestDistance) continue;
       const angle = (i / rays) * Math.PI * 2;

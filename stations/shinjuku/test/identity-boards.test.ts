@@ -44,6 +44,8 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
   const state = Object.assign(Object.create(Explorer.prototype), {
     mode: "overview", scene: root, stationScene: scene, camera: new THREE.PerspectiveCamera(FOV.overview, width / height, 0.05, 400),
     pos: new THREE.Vector3(), ray: new THREE.Raycaster(), walkable: scene.walkable, groundTargets: targets.ground,
+    colliders: scene.colliders ?? [], walls: scene.walls ?? [], colliderTargets: targets.collider,
+    greyboxOpenings: [], sceneColliderTargets: new Set(targets.collider), portalExemptions: 0,
     cameraTargets: targets.camera, cameraSides: new Set(targets.camera), blockerTargets: targets.blockers,
     identityBoards: collectIdentityBoards(scene.root), identityPlaced: false, viewSize: { w: width, h: height },
     pitch: -0.12, yaw: 0, camDistance: FOLLOW.defaultDistance, qaCamera: {}, qaCameraSnap: false,
@@ -53,6 +55,8 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
     setMode(mode: string) { this.mode = mode; }, applyAvatarFade: () => {},
   });
   expect(state.walkFromNode(bundle, bundle.spawnNodeIds![0]!, spawnHeading(bundle, { kind: "node", nodeId: bundle.spawnNodeIds![0]! }, []))).toBe(true);
+  const spawnNode = bundle.nodes.find(n => n.id === bundle.spawnNodeIds![0])!;
+  console.log("[spawn-clearance]", JSON.stringify({ original: [spawnNode.position.x, -spawnNode.position.y], actual: [state.pos.x, state.pos.z], distanceM: Math.hypot(state.pos.x - spawnNode.position.x, state.pos.z + spawnNode.position.y) }));
   // Private runtime method, deliberately accessed only by this regression harness.
   (state as unknown as { placeCamera(dt: number, snap: boolean): void }).placeCamera(0, true);
   state.camera.updateMatrixWorld(true);
