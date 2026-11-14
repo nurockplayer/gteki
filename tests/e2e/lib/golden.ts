@@ -14,3 +14,13 @@ export function evaluateCheck(metric: Metric, value: number, threshold: number, 
   const passes = (metric === "stationShare" || metric.startsWith("feature:")) ? value >= threshold : value <= threshold;
   return { metric, value, threshold, status: passes ? "pass" : known?.[metric] ? "known" : "fail", issue: passes ? undefined : known?.[metric] };
 }
+
+/** Browser predicate: CSS transitions can settle before the minimap's 12 Hz refresh. */
+export function goldenMinimapReady(floorId: string | null): boolean {
+  const minimap = document.querySelector<HTMLElement>(".minimap");
+  if (!minimap) return false;
+  if (floorId === null) return minimap.hidden;
+  const option = [...minimap.querySelectorAll<HTMLOptionElement>(".minimap-floor option")].find((o) => o.value === floorId);
+  const expected = option?.textContent?.replace(/GL[–-]B1 landing/g, "B1");
+  return !minimap.hidden && !!expected && minimap.querySelector(".minimap-label strong")?.textContent === expected;
+}

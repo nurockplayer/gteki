@@ -160,6 +160,7 @@ jobs:
           # unknown QA URL params; the first comparison after merge can still differ.
           cp ../tests/e2e/specs/29-golden-shots.spec.ts tests/e2e/specs/29-golden-shots.spec.ts
           cp ../tests/e2e/lib/screenshot-flat.ts tests/e2e/lib/screenshot-flat.ts
+          cp ../tests/e2e/lib/golden.ts tests/e2e/lib/golden.ts
           cp ../tests/e2e/golden-cameras.json tests/e2e/golden-cameras.json
           cd tests/e2e
           pnpm install --ignore-workspace --frozen-lockfile

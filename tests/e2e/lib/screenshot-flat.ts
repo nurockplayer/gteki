@@ -1,7 +1,8 @@
 import type { Page } from "@playwright/test";
-import { flatRatio } from "./golden.ts";
+import { flatRatio, goldenMinimapReady } from "./golden.ts";
 
-export async function screenshotGolden(page: Page, path: string): Promise<Buffer> {
+export async function screenshotGolden(page: Page, path: string, floorId: string | null): Promise<Buffer> {
+  await page.waitForFunction(goldenMinimapReady, floorId, { polling: 50, timeout: 30_000 });
   // Playwright fast-forwards finite CSS transitions (HUD/minimap opacity included)
   // to their settled state before capturing, without a wall-clock delay.
   return page.screenshot({ path, timeout: 60_000, animations: "disabled" });

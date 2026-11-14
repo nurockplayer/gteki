@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
-import { ARTIFACTS, hooks, imageStats, openStation, type StationKey } from "../lib/gteki.ts";
+import { ARTIFACTS, hooks, imageStats, openStation, stationData, type StationKey } from "../lib/gteki.ts";
 import { evaluateCheck, type Metric } from "../lib/golden.ts";
 import { screenshotFlatRatio, screenshotGolden } from "../lib/screenshot-flat.ts";
 
@@ -32,6 +32,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
   }
   const rows: object[] = [], failures: string[] = [];
   let station: StationKey | undefined, tier = "", renderer: unknown = null;
+  let nodeFloors = new Map<string, string>();
   for (const camera of config.cameras.filter(c => !filter || c.station === filter)) {
     const started = Date.now();
     const phases = { setup: 0, hold: 0, place: 0, frame: 0, screenshotBefore: 0, screenshot: 0, screenshotAfter: 0, probe: 0, flat: 0, image: 0, release: 0 };
@@ -42,6 +43,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       if (page.isClosed()) { page = await context.newPage(); station = undefined; }
       if (station !== camera.station) {
         await openStation(page, camera.station, goldenQuery); station = camera.station;
+        nodeFloors = new Map(stationData(camera.station).graph.nodes.map((node) => [node.id, node.floorId]));
         tier = await hooks.quality(page);
         renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);
       }
@@ -68,7 +70,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       diagnostics.screenshotBefore = await page.evaluate(() => (window as any).__gteki.goldenRenderState());
       phases.screenshotBefore = Date.now() - phaseStart;
       phaseStart = Date.now();
-      const png = await screenshotGolden(page, path.join(out, `${camera.id}.png`));
+      const png = await screenshotGolden(page, path.join(out, `${camera.id}.png`), camera.kind === "node" ? nodeFloors.get(camera.node!)! : null);
       phases.screenshot = Date.now() - phaseStart;
       phaseStart = Date.now();
       diagnostics.screenshotAfter = await page.evaluate(() => (window as any).__gteki.goldenRenderState());
