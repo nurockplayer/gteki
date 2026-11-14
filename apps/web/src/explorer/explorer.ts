@@ -824,8 +824,6 @@ export class Explorer {
     return out;
   }
 
-  /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
-  /** Measurements for the authored platform arrival, in normalised device coordinates. */
   /** A final camera pose: collision and body-raise solvers never alter the held opening. */
   setOpeningShot(origin: string | null): void {
     if (!this.previewNext) return;
@@ -864,6 +862,8 @@ export class Explorer {
       camera: { heading: headingFromYaw(Math.atan2(-direction.x, -direction.z)), pitch: THREE.MathUtils.radToDeg(pitch), height: this.camera.position.y - this.pos.y, distance: Math.hypot(this.camera.position.x - this.pos.x, this.camera.position.z - this.pos.z), fov: this.camera.fov } };
   }
 
+  /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
+  /** Measurements for the authored platform arrival, in normalised device coordinates. */
   arrivalFrame() {
     this.camera.updateMatrixWorld(true);
     const board = this.identityBoards.find((b) => b.object.name === "identity:platform:poi:platform:oedo");
@@ -3484,6 +3484,19 @@ export class Explorer {
     this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus);
   }
 
+  private cameraFacingCatAnchor() {
+    const box = this.catWorldBox();
+    const anchor = this.catFocusAnchor;
+    box.getCenter(anchor);
+    const dx = anchor.x - this.camera.position.x, dz = anchor.z - this.camera.position.z;
+    const radius = Math.hypot(box.max.x - box.min.x, box.max.z - box.min.z) / 2;
+    const distance = Math.hypot(dx, dz);
+    anchor.halfWidthX = -dz / distance * radius;
+    anchor.halfWidthZ = dx / distance * radius;
+    anchor.halfHeight = (box.max.y - box.min.y) / 2;
+    return anchor;
+  }
+
   private placeCamera(dt: number, snap = false): void {
     if (this.openingState === "active") {
       const shots = OPENING_SHOTS[this.openingOrigin!]!;
@@ -3500,7 +3513,10 @@ export class Explorer {
       this.boomRaise = 0;
       this.squeezed = false;
       this.applyAvatarFade(0, true);
-      this.setCameraFocus(target);
+      if (this.catAvatar) {
+        const anchor = this.cameraFacingCatAnchor();
+        this.setCameraFocus(anchor, anchor);
+      } else this.setCameraFocus(target);
       return;
     }
     if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
@@ -3653,16 +3669,7 @@ export class Explorer {
     const forward = this.camera.getWorldDirection(new THREE.Vector3());
     const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
     if (catFocus) {
-      const box = this.catWorldBox();
-      const anchor = this.catFocusAnchor;
-      box.getCenter(anchor);
-      const dx = anchor.x - this.camera.position.x, dz = anchor.z - this.camera.position.z;
-      const radius = Math.hypot(box.max.x - box.min.x, box.max.z - box.min.z) / 2;
-      const distance = Math.hypot(dx, dz);
-      anchor.halfWidthX = -dz / distance * radius;
-      anchor.halfWidthZ = dx / distance * radius;
-      anchor.halfHeight = (box.max.y - box.min.y) / 2;
-      this.setCameraFocus(catFocus, anchor);
+      this.setCameraFocus(catFocus, this.cameraFacingCatAnchor());
     } else this.setCameraFocus(pose.target, sign);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
