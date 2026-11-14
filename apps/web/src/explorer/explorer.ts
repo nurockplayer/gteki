@@ -2338,7 +2338,6 @@ export class Explorer {
   private arrivalBeaconTime: number | null = null;
 
   setArrivalBeacon(arrived: boolean): void {
-    if (!this.previewNext) return;
     if (arrived === (this.arrivalBeaconTime !== null)) return;
     this.arrivalBeaconTime = arrived ? 0 : null;
     for (const g of this.routeGroup.children) {

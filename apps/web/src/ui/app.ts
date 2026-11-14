@@ -1400,7 +1400,7 @@ export class App {
 
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
-    if (mode !== "guide") { this.root.classList.remove("arrival", "arrival-left", "arrival-bottom"); if (this.explorer.previewNext) this.explorer.setArrivalBeacon(false); }
+    if (mode !== "guide") { this.root.classList.remove("arrival", "arrival-left", "arrival-bottom"); this.explorer.setArrivalBeacon(false); }
     this.syncTopMenu();
     if (mode !== "guide") {
       this.escalatorSpan = undefined;
@@ -1435,7 +1435,7 @@ export class App {
       if (rideFocused && !this.ui.railBtn.hidden) this.ui.railBtn.focus({ preventScroll: true });
     };
     this.releaseMascot(hud);
-    this.root.classList.toggle("arrival", this.explorer.previewNext && this.explorer.currentMode === "guide" && this.arrived);
+    this.root.classList.toggle("arrival", this.explorer.currentMode === "guide" && this.arrived);
     hud.innerHTML = "";
     hud.append(this.interactionPrompt.el);
     const mode = this.explorer.currentMode;
@@ -1447,7 +1447,7 @@ export class App {
     }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
-    if (mode === "guide" && this.explorer.previewNext && this.arrived && ins) {
+    if (mode === "guide" && this.arrived && ins) {
       hud.append(this.guideBox(ins.text));
       const row = el("div", "hud-row arrival-controls");
       const more = el("button", "ghost guide-more", "…");
@@ -1625,7 +1625,7 @@ export class App {
   /** Refresh the guide HUD's instruction and pause label in place (the buttons must not be replaced mid-click); full rebuild if it isn't a guide HUD. */
   private updateGuideHud(): void {
     const hud = this.ui.hud;
-    if (this.explorer.previewNext && (this.arrived || this.root.classList.contains("arrival"))) { this.renderHud(); return; }
+    if ((this.arrived || this.root.classList.contains("arrival"))) { this.renderHud(); return; }
     const pause = hud.querySelector<HTMLButtonElement>("button.guide-pause");
     if (this.explorer.currentMode !== "guide" || !pause) { this.renderHud(); return; }
     const ins = this.s.instructions[this.s.activeInstruction];
@@ -1666,7 +1666,7 @@ export class App {
   private guideBox(text: string): HTMLElement {
     const box = el("div", "hud-line");
     this.ui.mascot.setResident(true);
-    if (this.explorer.currentMode !== "guide" || (this.arrived && !this.explorer.previewNext)) {
+    if (this.explorer.currentMode !== "guide") {
       box.append(this.ui.mascot.root, el("div", "hud-instruction", text));
       return box;
     }
@@ -1782,19 +1782,11 @@ export class App {
     this.explorer.setArrivalBeacon(this.arrived);
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === j.index));
-    if (this.arrived) {
-      if (!this.explorer.previewNext) this.toast(this.arrivalText(), 2500);
-      if (!this.explorer.previewNext) this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
-    }
   }
 
   /** A route ending on a stair/escalator/ramp connector has not reached the destination: the last instruction says so. */
   private endsOnConnector(): boolean {
     return !!this.s.instructions[this.s.instructions.length - 1]?.connector;
-  }
-
-  private arrivalText(): string {
-    return this.endsOnConnector() ? this.s.instructions[this.s.instructions.length - 1]!.text : this.t.arrived;
   }
 
   /** `[` / `]` or PageUp / PageDown step the guide; never while typing in a field or with a dialog open. */
@@ -1867,10 +1859,6 @@ export class App {
       this.explorer.setArrivalBeacon(this.arrived);
       this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) {
-        if (!this.explorer.previewNext) this.toast(this.arrivalText(), 2500);
-        if (!this.explorer.previewNext) this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
-      }
     }
   }
 

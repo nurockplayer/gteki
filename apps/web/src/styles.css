@@ -588,12 +588,12 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .app.escalator[data-mode="guide"] .hud-line { max-width: none; }
 }
 
-.app.next.arrival[data-mode="guide"] .minimap { display: none; }
-.app.next.arrival[data-mode="guide"] .hud { top: calc(36px + env(safe-area-inset-top)); bottom: auto; }
-.app.next.arrival[data-mode="guide"] .arrival-menu { display: flex; gap: 6px; }
-.app.next.arrival[data-mode="guide"] .arrival-menu[hidden] { display: none; }
-.app.next.arrival.arrival-left[data-mode="guide"] .hud { left: 16px; right: auto; justify-items: start; }
-.app.next.arrival.arrival-bottom[data-mode="guide"] .hud { top: auto; bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra)); }
-.app.next.arrival[data-mode="guide"] .greybox-legend { top: calc(36px + env(safe-area-inset-top) + var(--hud-height, 0px) + 6px); bottom: auto; right: 16px; }
-.app.next.arrival.arrival-left[data-mode="guide"] .greybox-legend { left: 16px; right: auto; }
-.app.next.arrival.arrival-bottom[data-mode="guide"] .greybox-legend { top: auto; bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra) + var(--hud-height, 0px) + 6px); }
+.app.arrival[data-mode="guide"] .minimap { display: none; }
+.app.arrival[data-mode="guide"] .hud { top: calc(36px + env(safe-area-inset-top)); bottom: auto; }
+.app.arrival[data-mode="guide"] .arrival-menu { display: flex; gap: 6px; }
+.app.arrival[data-mode="guide"] .arrival-menu[hidden] { display: none; }
+.app.arrival.arrival-left[data-mode="guide"] .hud { left: 16px; right: auto; justify-items: start; }
+.app.arrival.arrival-bottom[data-mode="guide"] .hud { top: auto; bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra)); }
+.app.arrival[data-mode="guide"] .greybox-legend { top: calc(36px + env(safe-area-inset-top) + var(--hud-height, 0px) + 6px); bottom: auto; right: 16px; }
+.app.arrival.arrival-left[data-mode="guide"] .greybox-legend { left: 16px; right: auto; }
+.app.arrival.arrival-bottom[data-mode="guide"] .greybox-legend { top: auto; bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra) + var(--hud-height, 0px) + 6px); }
