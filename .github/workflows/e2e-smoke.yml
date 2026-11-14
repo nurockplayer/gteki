@@ -156,6 +156,12 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           pnpm build
+          # Run the head's capture harness against the base app too. Old apps ignore
+          # unknown QA URL params; the first comparison after merge can still differ.
+          cp ../tests/e2e/specs/29-golden-shots.spec.ts tests/e2e/specs/29-golden-shots.spec.ts
+          cp ../tests/e2e/lib/screenshot-flat.ts tests/e2e/lib/screenshot-flat.ts
+          cp ../tests/e2e/lib/golden.ts tests/e2e/lib/golden.ts
+          cp ../tests/e2e/golden-cameras.json tests/e2e/golden-cameras.json
           cd tests/e2e
           pnpm install --ignore-workspace --frozen-lockfile
       - name: Run base golden cameras
@@ -171,16 +177,10 @@ jobs:
         if: github.event_name == 'pull_request' && !cancelled()
         continue-on-error: true
         run: |
-          node tools/qa/golden-diff.mjs base-src/tests/e2e/artifacts/golden/desktop-chromium tests/e2e/artifacts/golden/desktop-chromium golden-diff-out --cameras tests/e2e/golden-cameras.json
-          node --input-type=module -e '
-            import fs from "node:fs";
-            const rows = JSON.parse(fs.readFileSync("golden-diff-out/diff.json"));
-            const ratios = rows.map(r => r.diffRatio).sort((a, b) => a - b);
-            const m = Math.floor(ratios.length / 2);
-            const median = ratios.length ? (ratios.length % 2 ? ratios[m] : (ratios[m - 1] + ratios[m]) / 2) : 0;
-            const table = rows.filter(r => r.changed).map(r => `| ${r.camera} | ${r.diffRatio} |`).join("\n");
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Golden diff\n\n| Camera | diffRatio |\n| --- | ---: |\n${table}\n\nMax: ${ratios.at(-1) ?? 0}; median: ${median}\n`);
-          '
+          if ! node tools/qa/golden-diff.mjs base-src/tests/e2e/artifacts/golden/desktop-chromium tests/e2e/artifacts/golden/desktop-chromium golden-diff-out --cameras tests/e2e/golden-cameras.json; then
+            echo "::warning::golden diff missing: comparison failed; inspect base/head capture steps"
+            echo "golden diff missing: comparison failed; inspect base/head capture steps" >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Upload golden diff
         if: github.event_name == 'pull_request' && !cancelled()
         continue-on-error: true
