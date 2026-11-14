@@ -10,7 +10,7 @@ test.use({ trace: "off", video: "off", screenshot: "off" });
 const goldenQuery = "&qaCrowd=off&qaTimeBand=morning&qaEscalatorPhase=0";
 
 type Feature = { name: string; match: { namePrefix?: string; contains?: string; role?: string; withinM?: number }; minPixels: number };
-type Camera = { features?: Feature[]; id: string; station: StationKey; kind: string; knownIssue?: number; node?: string; headingDeg?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
+type Camera = { features?: Feature[]; id: string; station: StationKey; kind: string; knownIssue?: number; node?: string; headingDeg?: number; pitch?: number; expect: string; thresholds?: Partial<Record<Metric, number>>; known?: Partial<Record<Metric, string>> };
 const config = JSON.parse(fs.readFileSync(new URL("../golden-cameras.json", import.meta.url), "utf8")) as {
   thresholds: Record<"voidRatio" | "flatRatio" | "nearBlack", number>;
   cameras: Camera[];
@@ -54,12 +54,12 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       phases.hold = Date.now() - phaseStart;
       phaseStart = Date.now();
       if (camera.kind === "node") {
-        const result = await page.evaluate(({ node, headingDeg }) => {
+        const result = await page.evaluate(({ node, headingDeg, pitch }) => {
           const qa = (window as any).__gteki;
-          // The default cat rests at pitch 0; pin it and snap the next placement's lens.
-          qa.setCamera({ pitch: 0 });
+          // Pitch is in radians; unconfigured shots use the default cat's resting pitch.
+          qa.setCamera({ pitch: pitch ?? 0 });
           return qa.setView({ node, headingDeg });
-        }, { node: camera.node!, headingDeg: camera.headingDeg! }) as { placed: boolean; placeMs: number; turnMs: number };
+        }, { node: camera.node!, headingDeg: camera.headingDeg!, pitch: camera.pitch }) as { placed: boolean; placeMs: number; turnMs: number };
         diagnostics.placement = result;
         if (!result.placed) throw new Error(`setView ${camera.node} failed: node or walkable ground unavailable`);
       } else {
@@ -136,9 +136,9 @@ test("hidden sign fails its feature check", async ({ page }) => {
   await openStation(page, "shinjuku", goldenQuery);
   await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   try {
-    const placement = await page.evaluate(({ node, headingDeg }) => {
+    const placement = await page.evaluate(({ node, headingDeg, pitch }) => {
       const qa = (window as any).__gteki;
-      qa.setCamera({ pitch: 0 });
+      qa.setCamera({ pitch: pitch ?? 0 });
       return qa.setView({ node, headingDeg });
     }, camera) as { placed: boolean };
     expect(placement.placed).toBe(true);
