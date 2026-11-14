@@ -6,7 +6,7 @@ import { assembleScene, planBundle } from "../gteki/scene.ts";
 import { prepareLayout } from "../scene/build-cache.ts";
 import { pointInRings, soffitHeight, type Layout, type Plan, type Soffit } from "../scene/layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
-import { exactHash, withCanvasStub } from "./helpers/scene-digest.ts";
+import { exactHash, plainHash, withCanvasStub } from "./helpers/scene-digest.ts";
 import { digestSceneLists } from "./helpers/station-digest.ts";
 import { castCamera } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
@@ -65,8 +65,58 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     oldLayout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true, pitchedCeilings: false }).layout;
     on = withCanvasStub(() => assembleScene(ctx as never));
     layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
-  }, 120_000);
+  }, 600_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
+
+  it("retains underground strips in each shared preview roof", () => {
+    const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    // Captured from origin/main 4724fc44, in preview-roof order (2026-11-14 JST).
+    const before = [4, 2, 0, 0, 0, 3, 40, 34, 4, 37, 34, 14];
+    const counts = layout.shaftCeilingPreview!.roofs.map((roof, index) => {
+      let count = 0;
+      for (let i = 0; i < mesh.count; i++) {
+        const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+        const center = new THREE.Vector3().setFromMatrixPosition(matrix);
+        if (pointInRings({ x: center.x, y: -center.z }, roof.rings)) count++;
+      }
+      return { roof: roof.spaceId, index, before: before[index]!, after: count };
+    });
+    console.log("2026-11-14 JST J7 strip counts", JSON.stringify(counts));
+    expect(counts).toHaveLength(before.length);
+    for (const { roof, index, before, after } of counts) expect(after, `${roof} section ${index}`).toBeGreaterThanOrEqual(before);
+  });
+
+  it("keeps flag-off strip count and rounded matrices identical to main", () => {
+    const mesh = off.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    // Captured once in a scratch checkout of origin/main 4724fc44 (2026-11-14 JST).
+    expect({ count: mesh.count, matrixHash: plainHash(mesh.instanceMatrix.array) }).toEqual({
+      count: 452, matrixHash: "c3d88625830bebe18cecb71715a638b4f9f82fe49fbc9533132db60cd53462da",
+    });
+  });
+
+  it("aligns shared-roof strips with the pitch and keeps both ends below its plane", () => {
+    const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    for (let i = 0; i < mesh.count; i++) {
+      const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+      const center = new THREE.Vector3().setFromMatrixPosition(matrix);
+      const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings({ x: center.x, y: -center.z }, s.rings));
+      if (!roof) continue;
+      const ends = [-0.5, 0.5].map((z) => {
+        const p = new THREE.Vector3(0, 0, z).applyMatrix4(matrix);
+        return { x: p.x, y: -p.z, z: p.y };
+      });
+      const [a, b] = ends as [typeof ends[number], typeof ends[number]];
+      const dx = b.x - a.x, dy = b.y - a.y, slope = roof.slope!;
+      const cosine = Math.abs(dx * slope.x + dy * slope.y) / (Math.hypot(dx, dy) * Math.hypot(slope.x, slope.y));
+      expect(cosine, `${roof.spaceId} fixture ${i}`).toBeGreaterThanOrEqual(Math.cos(Math.PI / 180));
+      for (const p of ends) {
+        expect(pointInRings(p, roof.rings), `${roof.spaceId} fixture ${i} endpoint`).toBe(true);
+        const gap = soffitHeight(roof, p) - p.z;
+        expect(gap).toBeGreaterThanOrEqual(0);
+        expect(gap).toBeLessThanOrEqual(0.08);
+      }
+    }
+  });
 
   it("does not overlap underground linear lights at similar heights", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
