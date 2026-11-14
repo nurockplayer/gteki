@@ -1,0 +1,12 @@
+{
+  "what": "Cold-open posters: the accepted Shinjuku opening pose (exit 1 mouth, PR #1279), shown from first paint under ?next=1",
+  "capturedBy": "gteki-visual (art director)",
+  "capturedAt": "2026-11-14 13:15 JST",
+  "how": "Live GPU capture in ego-lite of production /?next=1 after PR #1279 (main 7ce9c0ad), held opening pose, UI hidden",
+  "files": {
+    "poster-desktop.webp": { "source": "poster-desktop.png, 1440x900, sha256 c47182296482a241…", "encode": "cwebp -q 85", "bytes": 49096 },
+    "poster-phone.webp": { "source": "poster-phone@2x.png, 824x1678, sha256 b1b6fbaa251d7fa2…", "encode": "cwebp -q 92", "bytes": 36620 }
+  },
+  "encodedBy": "gteki-lead, 2026-11-14 14:05 JST",
+  "budget": "each file at most 50 KB (journey row J2: 6 MB to ready)"
+}
