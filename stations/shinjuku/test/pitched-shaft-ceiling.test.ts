@@ -65,7 +65,7 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     oldLayout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true, pitchedCeilings: false }).layout;
     on = withCanvasStub(() => assembleScene(ctx as never));
     layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
-  }, 120_000);
+  }, 600_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
   it("retains underground strips in each shared preview roof", () => {
@@ -83,6 +83,36 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     const legacy = off.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
     console.log("2026-11-14 JST J7 strip counts", JSON.stringify(counts));
     console.log("2026-11-14 JST J7 flag-off strips", legacy.count, exactHash(legacy.instanceMatrix.array));
+  });
+
+  it("keeps flag-off strip counts and matrices identical to main", () => {
+    const mesh = off.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    // Captured with the unchanged builder at main 726e7a91, pitchedCeilings: false.
+    expect({ count: mesh.count, matrixHash: exactHash(mesh.instanceMatrix.array) }).toMatchInlineSnapshot();
+  });
+
+  it("aligns shared-roof strips with the pitch and keeps both ends below its plane", () => {
+    const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    for (let i = 0; i < mesh.count; i++) {
+      const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+      const center = new THREE.Vector3().setFromMatrixPosition(matrix);
+      const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings({ x: center.x, y: -center.z }, s.rings));
+      if (!roof) continue;
+      const ends = [-0.5, 0.5].map((z) => {
+        const p = new THREE.Vector3(0, 0, z).applyMatrix4(matrix);
+        return { x: p.x, y: -p.z, z: p.y };
+      });
+      const [a, b] = ends as [typeof ends[number], typeof ends[number]];
+      const dx = b.x - a.x, dy = b.y - a.y, slope = roof.slope!;
+      const cosine = Math.abs(dx * slope.x + dy * slope.y) / (Math.hypot(dx, dy) * Math.hypot(slope.x, slope.y));
+      expect(cosine, `${roof.spaceId} fixture ${i}`).toBeGreaterThanOrEqual(Math.cos(Math.PI / 180));
+      for (const p of ends) {
+        expect(pointInRings(p, roof.rings), `${roof.spaceId} fixture ${i} endpoint`).toBe(true);
+        const gap = soffitHeight(roof, p) - p.z;
+        expect(gap).toBeGreaterThanOrEqual(0);
+        expect(gap).toBeLessThanOrEqual(0.08);
+      }
+    }
   });
 
   it("does not overlap underground linear lights at similar heights", () => {

@@ -2052,10 +2052,10 @@ function buildUndergroundLighting(
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
     ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
-  const ceilingAt = (p: XYZ) => {
+  const ceilingAt = (p: XYZ): { z: number; floorId: string; shared?: Soffit } | null => {
     let best: { z: number; floorId: string } | null = null;
     const shared = layout.shaftCeilingPreview?.roofs.find((s) => pointInRings(p, s.rings));
-    if (shared) return { z: soffitHeight(shared, p), floorId: shared.floorId };
+    if (shared) return { z: soffitHeight(shared, p), floorId: shared.floorId, shared };
     for (const s of roofs) {
       const z = soffitHeight(s, p);
       if (z < p.z + 2.5 || z > p.z + 5.2 || (best && best.z <= z) || !pointInRings(p, s.rings)) continue;
@@ -2076,13 +2076,23 @@ function buildUndergroundLighting(
       const t0 = (i + 0.18) / count, t1 = (i + 0.82) / count;
       const at = (t: number): XYZ => ({ x: a.position.x + (b.position.x - a.position.x) * t, y: a.position.y + (b.position.y - a.position.y) * t, z: za + (zb - za) * t });
       const p = at(t0), q = at(t1), m = at((t0 + t1) / 2);
-      const rp = ceilingAt(p), rq = ceilingAt(q), rm = ceilingAt(m);
+      const rm = ceilingAt(m);
+      let p2 = p, q2 = q;
+      if (rm?.shared && (rm.shared.slope?.x || rm.shared.slope?.y)) {
+        const { x: ux, y: uy } = rm.shared.slope!;
+        const n = stableHypot(ux, uy), half = stableHypot(q.x - p.x, q.y - p.y) / 2;
+        p2 = { x: m.x - ux / n * half, y: m.y - uy / n * half, z: m.z };
+        q2 = { x: m.x + ux / n * half, y: m.y + uy / n * half, z: m.z };
+        // Drop boundary-crossing strips rather than projecting their ends onto another ceiling.
+        if (!pointInRings(p2, rm.shared.rings) || !pointInRings(q2, rm.shared.rings)) continue;
+      }
+      const rp = ceilingAt(p2), rq = ceilingAt(q2);
       if (!rp || !rq || !rm || Math.abs(rm.z - (rp.z + rq.z) / 2) > 0.15) continue;
       // Undirected duplicate links must not double the fixtures.
       const key = `${m.x.toFixed(1)},${m.y.toFixed(1)},${rm.z.toFixed(1)}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      const candidate = { a: { ...p, z: rp.z - 0.065 }, b: { ...q, z: rq.z - 0.065 } };
+      const candidate = { a: { ...p2, z: rp.z - 0.065 }, b: { ...q2, z: rq.z - 0.065 } };
       const corners = (f: { a: XYZ; b: XYZ }) => {
         const dx = f.b.x - f.a.x, dy = f.b.y - f.a.y, len = stableHypot(dx, dy);
         const ux = dx / len, uy = dy / len, cx = (f.a.x + f.b.x) / 2, cy = (f.a.y + f.b.y) / 2;
