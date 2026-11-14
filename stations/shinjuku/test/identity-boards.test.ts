@@ -15,6 +15,7 @@ import { FOLLOW, FOV, NO_SLOPE } from "../../../apps/web/src/explorer/followCame
 import { collectIdentityBoards } from "../../../apps/web/src/explorer/identityBoards.ts";
 import { freeAreas } from "../../../apps/web/src/explorer/overviewFraming.ts";
 import { castAll, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { spawnHeading } from "../../../apps/web/src/ui/spawnHeading.ts";
 import { loadScene } from "../../../packages/godot/src/route-clip-audit.ts";
@@ -44,7 +45,7 @@ function explorerSpawnCamera(scene: StationScene, width: number, height: number)
   const state = Object.assign(Object.create(Explorer.prototype), {
     mode: "overview", scene: root, stationScene: scene, camera: new THREE.PerspectiveCamera(FOV.overview, width / height, 0.05, 400),
     pos: new THREE.Vector3(), ray: new THREE.Raycaster(), walkable: scene.walkable, groundTargets: targets.ground,
-    colliders: scene.colliders ?? [], walls: scene.walls ?? [], colliderTargets: targets.collider,
+    colliders: scene.colliders ?? [], walls: (scene.walls ?? []).map(wallToRenderer), colliderTargets: targets.collider,
     greyboxOpenings: [], sceneColliderTargets: new Set(targets.collider), portalExemptions: 0,
     cameraTargets: targets.camera, cameraSides: new Set(targets.camera), blockerTargets: targets.blockers,
     identityBoards: collectIdentityBoards(scene.root), identityPlaced: false, viewSize: { w: width, h: height },
