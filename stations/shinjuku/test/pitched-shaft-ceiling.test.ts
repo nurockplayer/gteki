@@ -88,10 +88,41 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
 
   it("keeps flag-off strip count and rounded matrices identical to main", () => {
     const mesh = off.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    const legacy = new Float32Array(mesh.instanceMatrix.array.length);
+    let unchanged = 0, rolled = 0, other = 0;
+    for (let i = 0; i < mesh.count; i++) {
+      const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+      const z = new THREE.Vector3().setFromMatrixColumn(matrix, 2);
+      const old = new THREE.Matrix4().compose(new THREE.Vector3().setFromMatrixPosition(matrix),
+        new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), z.clone().normalize()),
+        new THREE.Vector3(1, 1, z.length()));
+      old.toArray(legacy, i * 16);
+      const x = new THREE.Vector3().setFromMatrixColumn(matrix, 0);
+      const y = new THREE.Vector3().setFromMatrixColumn(matrix, 1);
+      const oldX = new THREE.Vector3().setFromMatrixColumn(old, 0);
+      const oldY = new THREE.Vector3().setFromMatrixColumn(old, 1);
+      if (x.distanceTo(oldX) < 1e-5 && y.distanceTo(oldY) < 1e-5) unchanged++;
+      else if (x.clone().add(oldX).length() < 1e-5 && y.clone().add(oldY).length() < 1e-5) rolled++;
+      else other++;
+    }
+    console.log("2026-11-15 JST flag-off roll audit", JSON.stringify({ unchanged, rolled, other, legacyHash: plainHash(legacy), matrixHash: plainHash(mesh.instanceMatrix.array) }));
     // Captured once in a scratch checkout of origin/main 4724fc44 (2026-11-14 JST).
     expect({ count: mesh.count, matrixHash: plainHash(mesh.instanceMatrix.array) }).toEqual({
       count: 452, matrixHash: "c3d88625830bebe18cecb71715a638b4f9f82fe49fbc9533132db60cd53462da",
     });
+  });
+
+  it.each([false, true])("keeps every underground casing above its diffuser (pitched=%s)", (enabled) => {
+    const scene = enabled ? on : off;
+    scene.root.updateMatrixWorld(true);
+    const mesh = scene.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    expect(mesh.count).toBeGreaterThan(0);
+    for (let i = 0; i < mesh.count; i++) {
+      const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+      matrix.premultiply(mesh.matrixWorld);
+      const up = new THREE.Vector3(0, 1, 0).transformDirection(matrix);
+      expect(up.y, `fixture ${i}, pitched=${enabled}`).toBeGreaterThan(0.9);
+    }
   });
 
   it("aligns shared-roof strips with the pitch and keeps both ends below its plane", () => {

@@ -2152,9 +2152,19 @@ function buildUndergroundLighting(
     strips.name = "linear-light:underground";
     strips.userData.floorPools = fixtures.map((f) => f.ground);
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), center = new THREE.Vector3(), scale = new THREE.Vector3();
+    const up = new THREE.Vector3(0, 1, 0), xAxis = new THREE.Vector3(), yAxis = new THREE.Vector3(), zAxis = new THREE.Vector3();
     for (const [i, f] of fixtures.entries()) {
       const a = v3(f.a), b = v3(f.b), d = b.clone().sub(a);
-      rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d.clone().normalize());
+      zAxis.copy(d).normalize();
+      xAxis.crossVectors(up, zAxis);
+      if (xAxis.lengthSq() < 1e-12) {
+        rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), zAxis);
+      } else {
+        // Keep the casing above the diffuser, including strips running toward -Z.
+        xAxis.normalize();
+        yAxis.crossVectors(zAxis, xAxis);
+        rotation.setFromRotationMatrix(matrix.makeBasis(xAxis, yAxis, zAxis));
+      }
       center.copy(a).add(b).multiplyScalar(0.5);
       scale.set(1, 1, d.length());
       matrix.compose(center, rotation, scale);
