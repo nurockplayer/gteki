@@ -564,7 +564,8 @@ describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
         expect(Array.isArray(hardware.material)).toBe(false);
         let draws = 0;
         built.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) draws += Array.isArray(m.material) ? m.material.length : 1; });
-        expect(draws).toBe(quality === "low" ? 95 : 116); // Low tier shares one escalator step mesh.
+        // J7 pitched shaft ceilings default-on (2026-11-13 JST): +12 pitched roof meshes.
+        expect(draws).toBe(quality === "low" ? 107 : 128); // Low tier shares one escalator step mesh.
         console.log(JSON.stringify({ quality, identityTexture: entry, totalTextureBytes: budget.totalBytes, meshMaterialDraws: draws }));
       } finally { if (built !== station) built.dispose(); }
     }, 60_000);

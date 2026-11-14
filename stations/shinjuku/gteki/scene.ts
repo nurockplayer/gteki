@@ -37,10 +37,11 @@ import wallPropPlacements from "../scene/wall-props.ts";
  * Kept outside assembleScene so its closure cannot retain the build layout. */
 function addOverheadRoofQueries(T: typeof THREE, cap: THREE.Mesh, root: THREE.Object3D) {
   Object.defineProperty(cap.userData, "gtekiOverheadRaycast", { value: (ray: THREE.Raycaster, hits: THREE.Intersection[]) => {
-    if (ray.ray.origin.y > STREET_UNDERSIDE + 0.0001) return;
     root.traverseVisible((o) => {
       const roof = o as THREE.Mesh;
       if (!roof.isMesh || Array.isArray(roof.material) || !roof.material.visible || roof.material.name !== "mat.ceiling") return;
+      const pitched = roof.name.startsWith("pitched-shaft:");
+      if (!pitched && ray.ray.origin.y > STREET_UNDERSIDE + 0.0001) return;
       cacheBvh(roof.geometry);
       const added: THREE.Intersection[] = [];
       if (roof instanceof T.InstancedMesh && roof.userData.tightCulling) {
@@ -56,7 +57,7 @@ function addOverheadRoofQueries(T: typeof THREE, cap: THREE.Mesh, root: THREE.Ob
         raycastObject(roof, ray, added);
       }
       for (const hit of added) {
-        if (!hit.face || hit.point.y > STREET_UNDERSIDE + 0.0001) continue;
+        if (!hit.face || (!pitched && hit.point.y > STREET_UNDERSIDE + 0.0001)) continue;
         const normal = hit.face.normal.clone().applyNormalMatrix(new T.Matrix3().getNormalMatrix(roof.matrixWorld));
         if (Math.abs(normal.y) < 0.000001) continue; // vertical fascias are not roofs
         normal.applyNormalMatrix(new T.Matrix3().getNormalMatrix(cap.matrixWorld).invert());
@@ -210,14 +211,14 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
 }
 
 /** The scene build itself, with an optional, already prepared kit swap. Exported for tests. */
-export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit): StationScene => {
+export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit, options: { pitchedCeilings?: boolean } = {}): StationScene => {
   const T = ctx.THREE;
   const low = ctx.quality === "low";
   const sceneBundle = planBundle(ctx.bundle);
   // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
   const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
-  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, reuseLayout: true, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
   installLightPreset(built.root, parseLightPreset(typeof location === "undefined" ? "" : location.search));
   const { layout } = built;
 
@@ -384,7 +385,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       proxies.add(m);
       colliders.push(m);
       cameraBlockers.push(m);
-      addOverheadRoofQueries(T, m, built.overheadRoofRoot ?? built.root);
+      addOverheadRoofQueries(T, m, built.root);
     }
   }
   // Hanging wayfinding boxes and fence sign panels are signage (role "sign"): the explorer dithers them

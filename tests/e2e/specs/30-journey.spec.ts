@@ -47,7 +47,7 @@ test("cold open @phone", async ({ page }, info) => {
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
   const start = Date.now();
-  await page.goto(reelMode === "next" ? "/?next=1" : "/", { waitUntil: "commit" });
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning", { waitUntil: "commit" });
   const committed = Date.now();
   await page.waitForTimeout(Math.max(0, 1000 - (Date.now() - committed)));
   const cdp = reelMode === "next" ? await page.context().newCDPSession(page) : undefined;
@@ -162,8 +162,10 @@ test("guided walk @phone", async ({ page }, info) => {
   const wallStart = Date.now();
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
-  await page.goto(reelMode === "next" ? "/?next=1" : "/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo");
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo&qaTimeBand=morning");
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready" && (window as any).__gteki.route()?.ok, null, { timeout: 120_000, polling: 250 });
+  const timeBand = new URL(page.url()).searchParams.get("qaTimeBand");
+  expect(timeBand).toBe("morning");
   if (reelMode === "next") {
     await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
     expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
@@ -204,19 +206,29 @@ test("guided walk @phone", async ({ page }, info) => {
     const imageMs = Date.now() - phaseStart;
     const dir = m.cameraDirection, dx = to.position.x - from.position.x, dy = to.position.y - from.position.y;
     const axisDeg = step.mode === "escalator" ? Math.acos(Math.max(-1, Math.min(1, (dir[0] * dx - dir[2] * dy) / (Math.hypot(dir[0], dir[2]) * Math.hypot(dx, dy))))) * 180 / Math.PI : null;
-    const boxes = arrival && reelMode === "next" ? await page.evaluate(() => {
-      const g = (window as any).__gteki;
-      const cat = g.scanProbe().explorer.catScreenBox();
-      const rect = document.querySelector(".hud-instruction")!.getBoundingClientRect();
-      return { cat, card: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom } };
+    const arrivalHud = await page.evaluate(() => document.querySelector(".app")!.classList.contains("arrival"));
+    const boxes = arrivalHud ? await page.evaluate(() => {
+      const cat = (window as any).__gteki.scanProbe().explorer.catScreenBox();
+      const rect = (selector: string) => {
+        const r = document.querySelector(selector)!.getBoundingClientRect();
+        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+      };
+      const search = document.querySelector<HTMLElement>(".panel-entry")!;
+      return { cat, card: rect(".hud-instruction"), badge: rect(".greybox-legend"), coverage: rect("button.coverage"), guideMore: rect(".arrival-controls .guide-more"), topMore: rect(".top-more-button"), brand: rect(".topbar .brand"), ...(getComputedStyle(search).display !== "none" ? { search: rect(".panel-entry") } : {}) };
     }) : undefined;
     if (boxes) {
-      const { cat, card } = boxes;
-      expect(cat, "arrival cat box").not.toBeNull();
-      expect(card.right <= cat.left || card.left >= cat.right || card.bottom <= cat.top || card.top >= cat.bottom, `arrival card/cat overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(boxes.cat, "arrival cat box").not.toBeNull();
+      expect(cov.legend, `arrival badge visible inside viewport: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(boxes.badge.right + 8 <= boxes.coverage.left || boxes.badge.left >= boxes.coverage.right + 8 || boxes.badge.bottom + 8 <= boxes.coverage.top || boxes.badge.top >= boxes.coverage.bottom + 8, `arrival badge/Coverage gap: ${JSON.stringify(boxes)}`).toBe(true);
+      const entries = Object.entries(boxes) as [string, { left: number; right: number; top: number; bottom: number }][];
+      for (let i = 0; i < entries.length; i++) for (let j = i + 1; j < entries.length; j++) {
+        const [aName, a] = entries[i]!, [bName, b] = entries[j]!;
+        expect(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom, `arrival ${aName}/${bName} overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      }
     }
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
-    samples.push({ ...(arrival ? { identity, boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
+    const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
+    samples.push({ ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -226,8 +238,39 @@ test("guided walk @phone", async ({ page }, info) => {
       await sample(false, simMs);
       arrived = (await hooks.guideControls(page) as any).arrived;
     }
-    if (arrived) { const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs); }
+    if (arrived) {
+      const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs);
+      const more = page.locator(".arrival-controls .guide-more"), menu = page.locator(".arrival-menu");
+      await more.click();
+      await expect(menu).toBeVisible();
+      await expect(menu.locator(".guide-prev")).toBeVisible();
+      await expect(menu.getByRole("button", { name: /^(End guide|ガイド終了)$/ })).toBeVisible();
+      await expect.poll(() => page.evaluate(() => {
+        const badge = document.querySelector(".greybox-legend")!.getBoundingClientRect();
+        const buttons = [...document.querySelectorAll(".arrival-menu button")];
+        return badge.left >= 0 && badge.top >= 0 && badge.right <= innerWidth && badge.bottom <= innerHeight && buttons.every(button => {
+          const r = button.getBoundingClientRect();
+          return badge.right <= r.left || badge.left >= r.right || badge.bottom <= r.top || badge.top >= r.bottom;
+        });
+      }), { message: "arrival badge inside viewport and clear of menu buttons" }).toBe(true);
+      const badge = await page.locator(".greybox-legend").evaluate(el => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+      });
+      const rects = await menu.locator("button").evaluateAll(buttons => buttons.map(button => {
+        const r = button.getBoundingClientRect();
+        return { text: button.textContent, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: innerWidth, height: innerHeight };
+      }));
+      console.log(`[journey] ${info.project.name} ${reelMode} arrival menu rectangles: ${JSON.stringify(rects)} badge: ${JSON.stringify(badge)}`);
+      for (const r of rects) expect(r.left >= 0 && r.top >= 0 && r.right <= r.width && r.bottom <= r.height, `arrival menu outside viewport: ${JSON.stringify(rects)}`).toBe(true);
+      await more.click();
+      await expect(menu).toBeHidden();
+    }
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+  for (const sample of samples) expect(sample.legend, `badge visible at sample ${sample.index}`).toBe(true);
+  for (const sample of samples.filter(s => !s.arrival)) {
+    expect(sample.overlayText.join(" "), `J8 visible text #${sample.index}`).not.toMatch(/Run ≈|GL[–-]B1 landing|unknown/i);
+  }
   const overlayTolerancePct = 1;
   const threshold = info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop;
   const rules = [ { row: "J5", metric: "voidRatio", limit: config.thresholds.voidRatio }, { row: "J5", metric: "nearBlack", limit: config.thresholds.nearBlack }, { row: "J5", metric: "nearClip", limit: config.thresholds.nearClip }, { row: "J6", metric: "catVisible", limit: config.thresholds.catVisibleMin }, { row: "J8", metric: "overlayPct", limit: threshold }, { row: "J9", metric: "overlayPct", limit: threshold } ];
@@ -256,7 +299,7 @@ test("guided walk @phone", async ({ page }, info) => {
   const j7 = { count: escalators.length, lockMin: locks.length ? Math.min(...locks) : null, lockMedian: median(locks), axisDegMax: axes.length ? Math.max(...axes) : null, axisDegMedian: median(axes), lockBelow099: escalators.filter(s => s.camera.lock < 0.99).map(s => s.index) };
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));
-  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
+  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
   const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
   lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}`);
   const noLegend = samples.filter(s => !s.legend).map(s => s.index);
@@ -283,6 +326,35 @@ test("guided walk @phone", async ({ page }, info) => {
     fs.writeFileSync(path.join(out, `sheet-${String(start / 12 + 1).padStart(2, "0")}.jpg`), Buffer.from(jpg!, "base64"));
   }
   fs.appendFileSync(path.join(out, "summary.md"), `; sheetsMs=${Date.now() - sheetsStart}; wallMs=${Date.now() - wallStart}\n`);
+  if (reelMode === "next" && arrived) {
+    const sample = samples.find((s) => s.arrival)!;
+    const frame = sample.arrivalFrame;
+    expect.soft(frame.shot, "authored arrival shot").toBe(true);
+    expect.soft(frame.boardRect, "name board in frame").not.toBeNull();
+    if (frame.boardRect) {
+      expect.soft(frame.boardRect.x0).toBeGreaterThanOrEqual(-1);
+      expect.soft(frame.boardRect.x1).toBeLessThanOrEqual(1);
+      expect.soft(frame.boardRect.y0).toBeGreaterThanOrEqual(-1);
+      expect.soft(frame.boardRect.y1).toBeLessThanOrEqual(1);
+      if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.y1).toBeGreaterThanOrEqual(0.33);
+      if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.x1 - frame.boardRect.x0).toBeGreaterThanOrEqual(0.16);
+    }
+    if (info.project.name.startsWith("phone")) {
+      expect.soft(Math.abs(frame.camera.heading - 165), "phone arrival heading").toBeLessThanOrEqual(1);
+      expect.soft(Math.abs(frame.camera.pitch - (-8)), "phone arrival pitch").toBeLessThanOrEqual(1);
+    }
+    else expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
+    expect.soft(sample.catVisible).toBeGreaterThanOrEqual(config.thresholds.catVisibleMin);
+    expect.soft(sample.catOccluder, "no NPC in front of the cat at arrival").not.toBe("npc");
+    expect.soft(sample.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
+    expect.soft(sample.nearBlack).toBeLessThanOrEqual(config.thresholds.nearBlack);
+    expect.soft(sample.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
+  }
   expect(arrived, "guide arrived within 260 simulated seconds").toBe(true);
   expect(samples.length, "at least 30 samples").toBeGreaterThanOrEqual(30);
+  if (arrived) {
+    await page.locator(".arrival-controls .guide-more").click();
+    await page.locator(".arrival-menu").getByRole("button", { name: /^(End guide|ガイド終了)$/ }).click();
+    await expect.poll(() => hooks.mode(page)).toBe("walk");
+  }
 });

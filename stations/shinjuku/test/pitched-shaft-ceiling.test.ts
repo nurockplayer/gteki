@@ -8,6 +8,7 @@ import { pointInRings, soffitHeight, type Layout, type Plan, type Soffit } from 
 import plan from "../data/plan.json" with { type: "json" };
 import { exactHash, withCanvasStub } from "./helpers/scene-digest.ts";
 import { digestSceneLists } from "./helpers/station-digest.ts";
+import { castCamera } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 
 const { bundle } = loadShinjukuBundle();
@@ -56,18 +57,43 @@ function producer(hit: THREE.Intersection | undefined, layout: Layout) {
   return "level/other";
 }
 
-describe("J7 preview pitched shaft ceilings (2026-11-12 JST)", () => {
+describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   let off: StationScene, on: StationScene, layout: Layout, oldLayout: Layout;
   beforeAll(() => {
     const ctx = { THREE, bundle, quality: "low" as const };
-    off = withCanvasStub(() => assembleScene(ctx as never));
-    oldLayout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
-    on = withCanvasStub(() => assembleScene({ ...ctx, previewNext: true } as never));
-    layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true, previewNext: true }).layout;
+    off = withCanvasStub(() => assembleScene(ctx as never, undefined, undefined, { pitchedCeilings: false }));
+    oldLayout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true, pitchedCeilings: false }).layout;
+    on = withCanvasStub(() => assembleScene(ctx as never));
+    layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
   }, 120_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
-  it("keeps every physical layout and explorer list, including steep overhead queries, identical", () => {
+  it("does not overlap underground linear lights at similar heights", () => {
+    const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    expect(mesh).toBeDefined();
+    const fixtures = Array.from({ length: mesh.count }, (_, i) => {
+      const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+      const a = new THREE.Vector3(0, 0, -0.5).applyMatrix4(matrix);
+      const b = new THREE.Vector3(0, 0, 0.5).applyMatrix4(matrix);
+      const dx = b.x - a.x, dy = b.z - a.z, len = Math.hypot(dx, dy);
+      const center = a.clone().add(b).multiplyScalar(0.5);
+      return { center, dx, dy, corners: [-1, 1].flatMap((u) => [-1, 1].map((v) => ({
+        x: center.x + u * dx * 0.52 - v * dy / len * 0.15,
+        y: center.z + u * dy * 0.52 + v * dx / len * 0.15,
+      }))) };
+    });
+    for (let i = 0; i < fixtures.length; i++) for (let j = 0; j < i; j++) {
+      const a = fixtures[i]!, b = fixtures[j]!;
+      if (Math.abs(a.center.y - b.center.y) >= 0.5) continue;
+      const overlap = [a, b].every(({ dx, dy }) => [[dx, dy], [-dy, dx]].every(([x, y]) => {
+        const pa = a.corners.map((p) => p.x * x! + p.y * y!), pb = b.corners.map((p) => p.x * x! + p.y * y!);
+        return Math.max(...pa) > Math.min(...pb) + 1e-5 && Math.max(...pb) > Math.min(...pa) + 1e-5;
+      }));
+      expect(overlap, `fixtures ${i} and ${j}`).toBe(false);
+    }
+  });
+
+  it("keeps physical layout and explorer lists identical and caps steep queries at drawn roofs", () => {
     const { shaftCeilingPreview: _render, ...physical } = layout;
     expect(exactHash(physical)).toBe(exactHash(oldLayout));
     expect(digestSceneLists(on)).toEqual(digestSceneLists(off));
@@ -76,8 +102,12 @@ describe("J7 preview pitched shaft ceilings (2026-11-12 JST)", () => {
       const r = layout.runs.find((r) => r.edgeId === id)!;
       for (const t of [0.1, 0.5, 0.9]) {
         ray.set(v3({ x: r.a.x + (r.b.x - r.a.x) * t, y: r.a.y + (r.b.y - r.a.y) * t, z: r.a.z + (r.b.z - r.a.z) * t + 1.6 }), new THREE.Vector3(0, 1, 0));
-        const query = (s: StationScene) => { const hits: THREE.Intersection[] = []; for (const m of s.cameraBlockers!) raycastObject(m, ray, hits); return [...new Set(hits.map((h) => round(h.distance)))].sort(); };
-        expect(query(on)).toEqual(query(off));
+        const p = { x: ray.ray.origin.x, y: -ray.ray.origin.z };
+        const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings(p, s.rings))!;
+        expect(roof).toBeDefined();
+        const hit = castCamera(ray, on.cameraBlockers!, new Set(on.cameraBlockers!))[0];
+        expect(hit).toBeDefined();
+        expect(hit!.point.y).toBeLessThanOrEqual(soffitHeight(roof, p) + 0.002);
       }
     }
   });
@@ -104,7 +134,10 @@ describe("J7 preview pitched shaft ceilings (2026-11-12 JST)", () => {
         const p = { x: r.a.x + u.x * s + n.x * lateral, y: r.a.y + u.y * s + n.y * lateral, z: r.a.z + (r.b.z - r.a.z) * s / length + 1.6 };
         const dir = new THREE.Vector3(u.x * Math.sin(angle * Math.PI / 180), Math.cos(angle * Math.PI / 180), -u.y * Math.sin(angle * Math.PI / 180));
         ray.set(v3(p), dir);
-        const h = first(ray, after), old = first(ray, before);
+        const visible = first(ray, after), old = first(ray, before);
+        // Retained enclosure sides may occlude the roof at the edge of a shaft.
+        const h = visible?.object.name === "escalator-shell-sides"
+          ? first(ray, after.filter((mesh) => mesh.name !== "escalator-shell-sides")) : visible;
         const roofDistance = (soffitHeight(roof, p) - p.z) / (dir.y - (roof.slope!.x * dir.x - roof.slope!.y * dir.z));
         const intersection = v3(p).addScaledVector(dir, roofDistance);
         // A ray leaving the flight span is a mouth/hall query, not an interior ceiling query.

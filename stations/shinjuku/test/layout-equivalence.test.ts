@@ -6,7 +6,7 @@ import { buildLayout, type Layout, type Plan } from "../scene/layout.ts";
 
 /** Preserve the original physical layout; visible shaft sheets have their own regression test. */
 export function layoutHash(layout: Layout): string {
-  const { shaftFinishes: _visual, shaftFascias: _fascias, cornerFills: _corners, ...physical } = layout;
+  const { shaftFinishes: _visual, shaftFascias: _fascias, cornerFills: _corners, shaftCeilingPreview: _render, ...physical } = layout;
   return createHash("sha256").update(JSON.stringify(physical, (_key, value: unknown) => {
     if (value instanceof Map) return [...value];
     return typeof value === "number" ? Math.round(value * 1000) / 1000 : value;

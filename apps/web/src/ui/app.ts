@@ -252,7 +252,7 @@ export class App {
     topMore.append(el("summary", "top-more-button", "…"));
     actions.append(this.ui.coverageBtn, this.ui.langBtn, topMore);
     const syncTop = () => {
-      if (this.explorer.previewNext && this.explorer.currentMode === "guide") topMore.append(this.ui.langBtn);
+      if (this.explorer.currentMode === "guide") topMore.append(this.ui.langBtn);
       else actions.insertBefore(this.ui.langBtn, topMore);
     };
     this.root.addEventListener("transitionend", syncTop);
@@ -1400,9 +1400,9 @@ export class App {
 
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
-    if (mode !== "guide") { this.root.classList.remove("arrival", "arrival-left", "arrival-bottom"); if (this.explorer.previewNext) this.explorer.setArrivalBeacon(false); }
+    if (mode !== "guide") { this.root.classList.remove("arrival", "arrival-left", "arrival-bottom"); this.explorer.setArrivalBeacon(false); }
     this.syncTopMenu();
-    if (mode !== "guide" && this.explorer.previewNext) {
+    if (mode !== "guide") {
       this.escalatorSpan = undefined;
       this.root.classList.remove("escalator");
       this.explorer.setRouteQuiet(false);
@@ -1435,7 +1435,7 @@ export class App {
       if (rideFocused && !this.ui.railBtn.hidden) this.ui.railBtn.focus({ preventScroll: true });
     };
     this.releaseMascot(hud);
-    this.root.classList.toggle("arrival", this.explorer.previewNext && this.explorer.currentMode === "guide" && this.arrived);
+    this.root.classList.toggle("arrival", this.explorer.currentMode === "guide" && this.arrived);
     hud.innerHTML = "";
     hud.append(this.interactionPrompt.el);
     const mode = this.explorer.currentMode;
@@ -1447,7 +1447,7 @@ export class App {
     }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
-    if (mode === "guide" && this.explorer.previewNext && this.arrived && ins) {
+    if (mode === "guide" && this.arrived && ins) {
       hud.append(this.guideBox(ins.text));
       const row = el("div", "hud-row arrival-controls");
       const more = el("button", "ghost guide-more", "…");
@@ -1463,7 +1463,13 @@ export class App {
       }
       const again = el("button", "ghost search-again", t.searchAgain);
       again.addEventListener("click", () => this.searchAgain());
-      menu.append(again);
+      const prev = el("button", "ghost guide-step guide-prev", "‹");
+      prev.setAttribute("aria-label", t.guidePrev);
+      prev.title = t.guidePrevTitle;
+      prev.addEventListener("click", () => this.jumpGuide(-1));
+      const stop = el("button", "ghost", t.exitGuide);
+      stop.addEventListener("click", () => this.explorer.stopGuide());
+      menu.append(again, prev, stop);
       more.addEventListener("click", () => { menu.hidden = !menu.hidden; more.setAttribute("aria-expanded", String(!menu.hidden)); });
       row.append(more, menu);
       hud.append(row);
@@ -1516,7 +1522,7 @@ export class App {
       // One no-wrap group, so the phone row never splits the playback controls (the other buttons may wrap below it).
       const group = el("div", "hud-guide");
       group.append(prev, pause, next, speed, stop);
-      if (this.explorer.previewNext) {
+      {
         const more = el("button", "ghost guide-more", "…");
         more.setAttribute("aria-label", t.moreControls);
         const extras = [prev, next, speed, this.ui.railBtn];
@@ -1625,18 +1631,17 @@ export class App {
   /** Refresh the guide HUD's instruction and pause label in place (the buttons must not be replaced mid-click); full rebuild if it isn't a guide HUD. */
   private updateGuideHud(): void {
     const hud = this.ui.hud;
-    if (this.explorer.previewNext && (this.arrived || this.root.classList.contains("arrival"))) { this.renderHud(); return; }
+    if ((this.arrived || this.root.classList.contains("arrival"))) { this.renderHud(); return; }
     const pause = hud.querySelector<HTMLButtonElement>("button.guide-pause");
     if (this.explorer.currentMode !== "guide" || !pause) { this.renderHud(); return; }
     const ins = this.s.instructions[this.s.activeInstruction];
     const cur = hud.querySelector(".hud-instruction");
     if (!ins) hud.querySelector(".hud-line")?.remove();
-    else if (cur && this.explorer.previewNext) {
+    else if (cur) {
       const old = hud.querySelector(".hud-line");
       const replacement = this.guideBox(ins.text);
       old?.replaceWith(replacement);
     }
-    else if (cur) cur.textContent = ins.text;
     else hud.prepend(this.guideBox(ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
     this.syncGuideStep();
@@ -1660,14 +1665,14 @@ export class App {
     if (!ins) return;
     this.ui.live.announce(ins.text);
     // A nudge only: the instruction text itself is the router's job (and was just announced).
-    if (changed && this.ui.hud.contains(this.ui.mascot.root) && (!this.explorer.previewNext || !this.guideTurnSaid)) { this.ui.mascot.say({ kind: "turn" }); this.guideTurnSaid = true; }
+    if (changed && this.ui.hud.contains(this.ui.mascot.root) && !this.guideTurnSaid) { this.ui.mascot.say({ kind: "turn" }); this.guideTurnSaid = true; }
   }
 
   /** The guide box: the mascot beside the instruction text, never over it. */
   private guideBox(text: string): HTMLElement {
     const box = el("div", "hud-line");
     this.ui.mascot.setResident(true);
-    if (!this.explorer.previewNext || this.explorer.currentMode !== "guide") {
+    if (this.explorer.currentMode !== "guide") {
       box.append(this.ui.mascot.root, el("div", "hud-instruction", text));
       return box;
     }
@@ -1691,7 +1696,7 @@ export class App {
     const instruction = el("div", "hud-instruction");
     const line = el("span", "guide-card-line", card.line);
     instruction.append(line);
-    if (!this.arrived && (!this.explorer.previewNext || this.s.activeInstruction === this.firstGuideInstruction)) box.append(this.ui.mascot.root);
+    if (!this.arrived && this.s.activeInstruction === this.firstGuideInstruction) box.append(this.ui.mascot.root);
     box.append(instruction);
     requestAnimationFrame(() => {
       if (!instruction.isConnected) return;
@@ -1752,7 +1757,7 @@ export class App {
     this.guideTurnSaid = false;
     this.guideMoreOpen = false;
     this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
-    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : []);
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans, this.s.route?.ok ? this.s.route.nodeIds : [], this.s.destination?.id ?? null);
   }
 
   /** Per guide run: where each instruction starts (m), the first one the guide shows, and how far the guide has got. */
@@ -1783,19 +1788,11 @@ export class App {
     this.explorer.setArrivalBeacon(this.arrived);
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === j.index));
-    if (this.arrived) {
-      if (!this.explorer.previewNext) this.toast(this.arrivalText(), 2500);
-      if (!this.explorer.previewNext) this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
-    }
   }
 
   /** A route ending on a stair/escalator/ramp connector has not reached the destination: the last instruction says so. */
   private endsOnConnector(): boolean {
     return !!this.s.instructions[this.s.instructions.length - 1]?.connector;
-  }
-
-  private arrivalText(): string {
-    return this.endsOnConnector() ? this.s.instructions[this.s.instructions.length - 1]!.text : this.t.arrived;
   }
 
   /** `[` / `]` or PageUp / PageDown step the guide; never while typing in a field or with a dialog open. */
@@ -1841,7 +1838,7 @@ export class App {
     // Guide time stops while paused and at arrival (the guide stays in guide mode there; Previous must not read that as time spent).
     this.insClock.tick(performance.now(), !this.explorer.guidePaused && !this.arrived && !p.done);
     this.guideS = p.s;
-    if (this.explorer.previewNext) {
+    {
       const span = this.escalatorSpans.find((s) => s.fromS <= p.s && p.s < s.toS);
       const changed = span !== this.escalatorSpan;
       this.escalatorSpan = span;
@@ -1868,10 +1865,6 @@ export class App {
       this.explorer.setArrivalBeacon(this.arrived);
       this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) {
-        if (!this.explorer.previewNext) this.toast(this.arrivalText(), 2500);
-        if (!this.explorer.previewNext) this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
-      }
     }
   }
 
@@ -2120,6 +2113,7 @@ export class App {
       projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
       signFaces: () => this.explorer.signFaces(),
       identity: () => this.explorer.identity(),
+      arrivalFrame: () => this.explorer.arrivalFrame(),
       setRouteMarkersVisible: (visible: boolean) => this.explorer.setRouteMarkersVisible(visible),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),

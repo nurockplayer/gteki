@@ -61,7 +61,7 @@ describe("#49 render-only escalator enclosure", () => {
   it("shares a roof and keeps only outer sides for antiparallel runs (#1086)", () => {
     const first = { ...runs[0]!, edgeId: "first", width: 1.25, a: { x: 0, y: 0, z: -10 }, b: { x: 10, y: 0, z: -10 } };
     const second = { ...first, edgeId: "second", a: { x: 10, y: 1.5, z: -10 }, b: { x: 0, y: 1.5, z: -10 } };
-    const empty = { ...layout, levels: [], pads: [], linkStrips: [], streetPads: [], runs: [first], soffits: [], shaftFinishes: [] };
+    const empty = { ...layout, levels: [], pads: [], linkStrips: [], streetPads: [], runs: [first], soffits: [], shaftFinishes: [], shaftCeilingPreview: undefined };
     const noLifts = { ...bundle, edges: [] };
     const single = escalatorShellGeometry(empty, noLifts);
     const paired = escalatorShellGeometry({ ...empty, runs: [first, second] }, noLifts);
@@ -96,7 +96,8 @@ describe("#49 render-only escalator enclosure", () => {
     // 2026-11-03 JST: per-flight finishes replace legacy pitched hull roofs.
     // Noncoincident shell backing remains to close the step between both planes.
     // #789: the restored c7fa5f74 run and corrected 4bee1c5e rise change the shell.
-    expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([4120, 135]);
+    // J7 pitched shaft ceilings default-on (2026-11-13 JST)
+    expect([sides, soffits].map((m) => m.geometry.index!.count / 3)).toEqual([4120, 132]);
     const sharedPairs = [["904c66c3", "88ef3d09"], ["abdb4369", "7628a98a"], ["6113a228", "abdb4369"],
       ["2692fe08", "e1fa6530"], ["fd3365c8", "2692fe08"], ["06a78a8f", "4fc06b0d"], ["d1463e42", "06a78a8f"],
       ["2768d162", "ac906cd9"], ["fc787100", "2768d162"], ["fe73ae6f", "4b7d9463"], ["296f6709", "42a9f882"]];

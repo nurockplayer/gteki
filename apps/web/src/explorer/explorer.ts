@@ -36,7 +36,7 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { ARRIVAL_SHOTS, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -320,6 +320,7 @@ export class Explorer {
   private overlayResidual: number | null = null;
 
   private readonly avatar = new THREE.Group();
+  private readonly catFocusAnchor = Object.assign(new THREE.Vector3(), { halfWidthX: 0, halfWidthZ: 0, halfHeight: 0 });
   private avatarRig: AvatarSelection | null = null;
   /** `?next=1` preview channel: journey changes that are not the default yet branch on this (docs/release/journey.md). */
   readonly previewNext: boolean;
@@ -402,6 +403,10 @@ export class Explorer {
   private moving = false;
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
+  private arrivalState: "waiting" | "active" | "ended" = "waiting";
+  private arrivalDestination: string | null = null;
+  private arrivalElapsed = 0;
+  private arrivalStart = { yaw: 0, pitch: 0, distance: 0 };
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
   private cameraFocus: THREE.Vector3 | null = null;
@@ -816,6 +821,46 @@ export class Explorer {
   }
 
   /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
+  /** Measurements for the authored platform arrival, in normalised device coordinates. */
+  arrivalFrame() {
+    this.camera.updateMatrixWorld(true);
+    const board = this.identityBoards.find((b) => b.object.name === "identity:platform:poi:platform:oedo");
+    const rects = board?.regions.filter((r) => r.kind === "name").map((r) => identityRegionRect(r.box, board.object, this.camera, this.viewSize.w, this.viewSize.h)).filter((r): r is ScreenRect => r !== null) ?? [];
+    const boardRect = rects.length ? { x0: Math.min(...rects.map((r) => r.x0)) / this.viewSize.w * 2 - 1, x1: Math.max(...rects.map((r) => r.x1)) / this.viewSize.w * 2 - 1, y0: 1 - Math.max(...rects.map((r) => r.y1)) / this.viewSize.h * 2, y1: 1 - Math.min(...rects.map((r) => r.y0)) / this.viewSize.h * 2 } : null;
+    const box = new THREE.Box3().setFromObject(this.avatarRig?.root ?? this.avatar);
+    const corners = boxCorners(box).map((p) => p.project(this.camera));
+    const cat = { x0: Math.min(...corners.map((p) => p.x)), x1: Math.max(...corners.map((p) => p.x)), y0: Math.min(...corners.map((p) => p.y)), y1: Math.max(...corners.map((p) => p.y)) };
+    const edges = (this.stationScene?.root.userData.platformEdges ?? []) as { a: number[]; b: number[] }[];
+    const nearest = edges.map((e) => ({ a: new THREE.Vector3().fromArray(e.a), b: new THREE.Vector3().fromArray(e.b) })).filter((e) => Math.abs(e.a.y - this.pos.y) < 1).sort((a, b) => new THREE.Line3(a.a, a.b).closestPointToPoint(this.pos, true, new THREE.Vector3()).distanceToSquared(this.pos) - new THREE.Line3(b.a, b.b).closestPointToPoint(this.pos, true, new THREE.Vector3()).distanceToSquared(this.pos))[0];
+    let edgeLength = 0, doorsOrStripWidth = 0;
+    if (nearest) {
+      const matrix = new THREE.Matrix4().multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
+      const a = new THREE.Vector4(nearest.a.x, nearest.a.y, nearest.a.z, 1).applyMatrix4(matrix), b = new THREE.Vector4(nearest.b.x, nearest.b.y, nearest.b.z, 1).applyMatrix4(matrix);
+      let lo = 0, hi = 1;
+      for (const [u, v] of [[a.w + a.x, b.w + b.x], [a.w - a.x, b.w - b.x], [a.w + a.y, b.w + b.y], [a.w - a.y, b.w - b.y], [a.w + a.z, b.w + b.z], [a.w - a.z, b.w - b.z]] as const) {
+        if (u < 0 && v < 0) { hi = -1; break; }
+        if (u < 0) lo = Math.max(lo, u / (u - v));
+        if (v < 0) hi = Math.min(hi, u / (u - v));
+      }
+      edgeLength = Math.max(0, hi - lo) * nearest.a.distanceTo(nearest.b);
+      const closest = new THREE.Line3(nearest.a, nearest.b).closestPointToPoint(this.pos, true, new THREE.Vector3());
+      const inward = this.pos.clone().sub(closest).setY(0).normalize();
+      this.refreshOccluders();
+      for (const [offset, height] of [[0.04, 1], [0.64, 0.02]] as const) {
+        const xs: number[] = [];
+        const count = Math.ceil(nearest.a.distanceTo(nearest.b) / 0.25);
+        for (let i = 0; i <= count; i++) {
+          const point = new THREE.Vector3().lerpVectors(nearest.a, nearest.b, i / count).addScaledVector(inward, offset).add(new THREE.Vector3(0, height, 0));
+          const projected = point.clone().project(this.camera);
+          if (Math.abs(projected.x) <= 1 && Math.abs(projected.y) <= 1 && Math.abs(projected.z) <= 1 && this.labelOccluded({ obj: { getWorldPosition: (target) => target.copy(point) }, occluded: "none" }, { segmentOnly: true }) === "none") xs.push(projected.x);
+        }
+        if (xs.length > 1) doorsOrStripWidth = Math.max(doorsOrStripWidth, (Math.max(...xs) - Math.min(...xs)) / 2);
+      }
+    }
+    const direction = this.camera.getWorldDirection(new THREE.Vector3());
+    return { boardRect, edgeLength, edgeInFrame: edgeLength >= 1, doorsOrStripWidth, cat, shot: this.arrivalState === "active", camera: { heading: headingFromYaw(Math.atan2(-direction.x, -direction.z)), pitch: THREE.MathUtils.radToDeg(Math.asin(direction.y)), height: this.camera.position.y - this.pos.y, distance: Math.hypot(this.camera.position.x - this.pos.x, this.camera.position.z - this.pos.z) } };
+  }
+
   identity(): { id: string; worldPosition: number[]; cameraDirection: number[]; cameraFov: number; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
     this.camera.updateMatrixWorld();
     this.refreshOccluders();
@@ -1854,6 +1899,9 @@ export class Explorer {
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
     const previous = this.mode;
+    this.arrivalState = "ended";
+    this.arrivalElapsed = 0;
+    this.arrivalDestination = null;
     this.guideIdentityHoldS = 0;
     if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
@@ -1878,7 +1926,7 @@ export class Explorer {
     if (routeGlow) routeGlow.visible = mode === "overview";
     const routeGlowOccluded = this.routeGroup.getObjectByName("route-glow-occluded");
     if (routeGlowOccluded) routeGlowOccluded.visible = mode === "overview";
-    if (this.previewNext) this.setRouteMarkersVisible(this.routeMarkersVisible);
+    this.setRouteMarkersVisible(this.routeMarkersVisible);
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -2221,8 +2269,8 @@ export class Explorer {
     // Walk and guide draw a narrow, faint band that fades out under the camera; the overview keeps today's wide, opaque ribbon.
     const walkMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, opacity: 0.45, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     routeNearFade(walkMat);
-    const ribbon = this.previewNext ? new THREE.Group() : new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
-    if (this.previewNext) for (const run of routeRunsOutsideSpans(pts, escalators)) {
+    const ribbon = new THREE.Group();
+    for (const run of routeRunsOutsideSpans(pts, escalators)) {
       const mesh = new THREE.Mesh(ribbonGeometry(profile(run), ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
       mesh.renderOrder = 5;
       ribbon.add(mesh);
@@ -2270,7 +2318,7 @@ export class Explorer {
     const start = this.beacon(pts[0]!, 0x7dffa0, 2.2);
     start.userData.routeStart = true;
     this.routeGroup.add(start, this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
-    if (this.previewNext) this.setRouteMarkersVisible(this.routeMarkersVisible);
+    this.setRouteMarkersVisible(this.routeMarkersVisible);
     this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length, greybox: routeUsesGreybox(polyline, this.greyboxSegments) };
     this.updateGreyboxLegend();
   }
@@ -2291,7 +2339,6 @@ export class Explorer {
   private arrivalBeaconTime: number | null = null;
 
   setArrivalBeacon(arrived: boolean): void {
-    if (!this.previewNext) return;
     if (arrived === (this.arrivalBeaconTime !== null)) return;
     this.arrivalBeaconTime = arrived ? 0 : null;
     for (const g of this.routeGroup.children) {
@@ -2305,9 +2352,8 @@ export class Explorer {
     }
   }
 
-  catScreenBox(): { left: number; right: number; top: number; bottom: number } | null {
+  private catWorldBox(): THREE.Box3 {
     this.avatar.updateWorldMatrix(true, true);
-    this.camera.updateWorldMatrix(true, false);
     const box = new THREE.Box3();
     this.avatar.traverse((object) => {
       const mesh = object as THREE.Mesh;
@@ -2316,6 +2362,12 @@ export class Explorer {
       if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
       if (mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));
     });
+    return box;
+  }
+
+  catScreenBox(): { left: number; right: number; top: number; bottom: number } | null {
+    const box = this.catWorldBox();
+    this.camera.updateWorldMatrix(true, false);
     if (box.isEmpty()) return null;
     const points: THREE.Vector3[] = [];
     for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) points.push(new THREE.Vector3(x, y, z).project(this.camera));
@@ -2332,7 +2384,7 @@ export class Explorer {
   }
 
   setRouteQuiet(quiet: boolean): void {
-    if (!this.previewNext || this.routeQuiet === quiet) return;
+    if (this.routeQuiet === quiet) return;
     this.routeQuiet = quiet;
     this.setRouteMarkersVisible(this.routeMarkersVisible);
     const ribbon = this.routeGroup.getObjectByName("route-ribbon");
@@ -2355,7 +2407,7 @@ export class Explorer {
   setRouteMarkersVisible(visible: boolean): void {
     this.routeMarkersVisible = visible;
     for (const g of this.routeGroup.children) if (g.userData.routeMarker) {
-      const quiet = this.previewNext && this.mode !== "overview";
+      const quiet = this.mode !== "overview";
       g.visible = visible && !this.routeQuiet && !(quiet && g.userData.routeStart);
       g.children[0]!.visible = !quiet;
     }
@@ -2778,7 +2830,7 @@ export class Explorer {
    * for opening hours): it never moves past one before being resumed, including several at one spot.
    * `paceSpans` cap speed and carry connector modes for the stair lens (see guidePace.ts).
    */
-  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = []): void {
+  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = [], destination: string | null = null): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
     const cum = cumulativeLengths(pts);
@@ -2797,6 +2849,9 @@ export class Explorer {
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
+    this.arrivalState = "waiting";
+    this.arrivalDestination = destination;
+    this.arrivalElapsed = 0;
     this.guideIdentityHoldS = this.frameInitialIdentity(this.yaw) ? IDENTITY_HOLD_S : 0;
   }
 
@@ -2845,6 +2900,9 @@ export class Explorer {
 
   stopGuide(): void {
     this.guideIdentityHoldS = 0;
+    this.arrivalState = "ended";
+    this.arrivalElapsed = 0;
+    this.arrivalDestination = null;
     this.guide = null;
     if (this.mode === "guide") this.setMode("walk");
   }
@@ -3250,9 +3308,20 @@ export class Explorer {
     const g = this.guide;
     if (!g) return;
     const look = this.input.consumeLook();
-    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     const mv = this.input.move();
-    if (look.dx || look.dy || look.zoom || mv.x || mv.y) this.guideIdentityHoldS = 0;
+    const input = Boolean(look.dx || look.dy || look.zoom || mv.x || mv.y);
+    const wasArrival = this.arrivalState === "active";
+    this.arrivalState = arrivalShotState(this.arrivalState, this.previewNext, this.arrivalDestination, false, input);
+    if (wasArrival && input) {
+      const direction = this.camera.getWorldDirection(new THREE.Vector3());
+      this.yaw = Math.atan2(-direction.x, -direction.z);
+      this.pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
+      this.arrivalElapsed = 0;
+      this.arrivalDestination = null;
+      this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
+    }
+    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
+    if (input) this.guideIdentityHoldS = 0;
     if (mv.x !== 0 || mv.y !== 0) {
       // Taking the controls hands over to free walking at the current spot.
       this.guide = null;
@@ -3274,6 +3343,12 @@ export class Explorer {
       this.yaw += angleDelta(this.yaw, targetYaw) * Math.min(1, steeringDt * 4);
     }
     this.yaw -= look.dx * 0.0042;
+    const previousArrival = this.arrivalState;
+    this.arrivalState = arrivalShotState(this.arrivalState, this.previewNext, this.arrivalDestination, g.s >= total && !g.holding, input);
+    if (previousArrival !== "active" && this.arrivalState === "active") {
+      this.arrivalStart = { yaw: this.yaw, pitch: this.pitch, distance: this.camDistance };
+      this.arrivalElapsed = 0;
+    }
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
     this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total && !g.holding });
     if (stopped !== null) this.events.onGuideStop?.(stopped);
@@ -3387,9 +3462,17 @@ export class Explorer {
       || this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined)) {
       this.bodyRaiseHold.seconds = this.bodyRaiseHold.target = 0;
     }
+    const shots = this.arrivalState === "active" || (this.arrivalState === "ended" && this.arrivalElapsed > 0) ? ARRIVAL_SHOTS[this.arrivalDestination ?? ""] : undefined;
+    const shot = shots ? (this.camera.aspect < 1 ? shots.phone : shots.desktop) : undefined;
+    if (shot) this.arrivalElapsed = THREE.MathUtils.clamp(this.arrivalElapsed + (this.arrivalState === "active" ? dt : -dt), 0, 1.2);
+    const t = shot ? this.arrivalElapsed / 1.2 : 0;
+    const weight = t * t * (3 - 2 * t);
+    const yaw = shot ? this.arrivalStart.yaw + angleDelta(this.arrivalStart.yaw, -THREE.MathUtils.degToRad(shot.heading)) * weight : this.yaw;
+    const pitch = shot ? THREE.MathUtils.lerp(this.arrivalStart.pitch, THREE.MathUtils.degToRad(shot.pitch), weight) : this.pitch;
+    const distance = shot ? THREE.MathUtils.lerp(this.arrivalStart.distance, shot.distance, weight) : this.camDistance;
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
-    const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
+    const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
     if (this.firstPerson) {
       this.boomActual = 0;
       this.boomRaise = 0;
@@ -3403,23 +3486,23 @@ export class Explorer {
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
     // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
     const cameraSides = this.cameraSides;
-    const shoulderMax = this.catAvatar ? catShoulder(this.camera.aspect) : FOLLOW.shoulder;
+    const shoulderMax = this.catAvatar ? (shot ? THREE.MathUtils.lerp(catShoulder(this.camera.aspect), 0.65 * Math.min(1, this.camera.aspect), weight) : catShoulder(this.camera.aspect)) : FOLLOW.shoulder;
     let shoulder: number = shoulderMax;
     if (this.cameraTargets.length) {
-      this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
+      this.ray.set(head, new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)));
       this.ray.far = shoulderMax + 0.25;
       const side = castCamera(this.ray, this.cameraTargets, cameraSides)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
     const pose = this.catAvatar
-      ? followPose(head, this.yaw, this.pitch, shoulder, framing.lift, framing.drop)
-      : followPose(head, this.yaw, this.pitch, shoulder);
+      ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(framing.lift, (shot.height - (head.y - this.pos.y)) / shot.distance + Math.sin(pitch), weight) : framing.lift, framing.drop)
+      : followPose(head, yaw, pitch, shoulder);
     if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
-    let wantedDistance = this.camDistance;
+    let wantedDistance = distance;
     if (this.escalatorWeight > 0) {
-      const ride = escalatorPose(this.pos, this.escalatorAxis, shoulder, this.camDistance / FOLLOW_CAT_NEXT.distance, this.yaw, this.pitch);
+      const ride = escalatorPose(this.pos, this.escalatorAxis, shoulder, this.camDistance / FOLLOW_CAT_NEXT.distance, yaw, pitch);
       const wanted = pose.pivot.clone().addScaledVector(back, wantedDistance).lerp(ride.position, this.escalatorWeight);
       back = wanted.sub(pose.pivot);
       wantedDistance = back.length();
@@ -3464,7 +3547,7 @@ export class Explorer {
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
-    this.setFov(followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), lensSnap, dt);
+    this.setFov(shot ? THREE.MathUtils.lerp(followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), shot.fov, weight) : followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), lensSnap, dt);
     // Use the last frame's actual boom, measured against its own pivot. Measuring the old
     // camera against the new pivot would rate-limit the walker's movement as contraction.
     const previousDistance = this.boomActual;
@@ -3482,11 +3565,24 @@ export class Explorer {
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
     if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
+    const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
+    if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
     this.camera.lookAt(pose.target);
     const nextSign = this.mode === "guide" && this.guide ? this.guideSigns?.find((sign) => sign.s >= this.guide!.s) : undefined;
     const forward = this.camera.getWorldDirection(new THREE.Vector3());
     const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
-    this.setCameraFocus(pose.target, sign);
+    if (catFocus) {
+      const box = this.catWorldBox();
+      const anchor = this.catFocusAnchor;
+      box.getCenter(anchor);
+      const dx = anchor.x - this.camera.position.x, dz = anchor.z - this.camera.position.z;
+      const radius = Math.hypot(box.max.x - box.min.x, box.max.z - box.min.z) / 2;
+      const distance = Math.hypot(dx, dz);
+      anchor.halfWidthX = -dz / distance * radius;
+      anchor.halfWidthZ = dx / distance * radius;
+      anchor.halfHeight = (box.max.y - box.min.y) / 2;
+      this.setCameraFocus(catFocus, anchor);
+    } else this.setCameraFocus(pose.target, sign);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
     this.applyAvatarFade(dt, snap);
