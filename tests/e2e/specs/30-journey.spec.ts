@@ -254,8 +254,12 @@ test("guided walk @phone", async ({ page }, info) => {
         expect(openMenu.y).toBeGreaterThanOrEqual(openCard.y + openCard.height);
         expect(openMenu.y).toBeGreaterThanOrEqual(openMore.y + openMore.height);
       }
-      const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
-      fs.writeFileSync(path.join(out, "arrival-menu.png"), png);
+      await page.evaluate(() => (window as any).__gteki.holdFrames(true));
+      try {
+        await page.evaluate(() => (window as any).__gteki.goldenFrame());
+        const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
+        fs.writeFileSync(path.join(out, "arrival-menu.png"), png);
+      } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
       await expect(menu.locator(".guide-prev")).toBeVisible();
       await expect(menu.getByRole("button", { name: /^(End guide|ガイド終了)$/ })).toBeVisible();
       await expect.poll(() => page.evaluate(() => {
