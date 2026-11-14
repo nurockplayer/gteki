@@ -624,7 +624,7 @@ function addBand(out: number[], rect: StairwellRect, level: number, pieces: read
     const along = alongOf(rect, from, to);
     const alongSpan = (to.x - from.x) * rect.along.x + (to.z - from.z) * rect.along.z;
     // #1285: a cross-lane band within the flight's headroom blocks the lane.
-    if (Math.abs(alongSpan) < 1e-6 && level - (rect.center.y + along * rect.rise / (2 * rect.halfLength)) < HEADROOM_M - 1e-3) continue;
+    if (Math.abs(alongSpan) < 1e-6 && level - BAND_DEPTH_M - (rect.center.y + along * rect.rise / (2 * rect.halfLength)) < HEADROOM_M - 1e-3) continue;
     for (const [a, b] of sideRemainder(from, to, rect, pieces)) {
       quad(out, a.clone().setY(level), b.clone().setY(level), b.clone().setY(level - BAND_DEPTH_M), a.clone().setY(level - BAND_DEPTH_M));
     }
