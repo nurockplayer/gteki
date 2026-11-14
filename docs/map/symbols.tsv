@@ -74,6 +74,7 @@ BodyHit	interface	apps/web/src/explorer/bodyCollision.ts
 CastFn	type	apps/web/src/explorer/bodyCollision.ts
 bodyBlock	function	apps/web/src/explorer/bodyCollision.ts
 hitNormal	function	apps/web/src/explorer/bodyCollision.ts
+pushOut	function	apps/web/src/explorer/bodyCollision.ts
 slideAlong	function	apps/web/src/explorer/bodyCollision.ts
 CameraCut	class	apps/web/src/explorer/cameraCut.ts
 injectCut	function	apps/web/src/explorer/cameraCut.ts
