@@ -104,7 +104,7 @@ jobs:
   golden-cameras:
     name: golden-cameras (${{ matrix.station }})
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
@@ -139,6 +139,55 @@ jobs:
         with:
           name: golden-shots-${{ matrix.station }}
           path: tests/e2e/artifacts/golden/**
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Checkout base
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base-src
+      - name: Build base
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        working-directory: base-src
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          cd tests/e2e
+          pnpm install --ignore-workspace --frozen-lockfile
+      - name: Run base golden cameras
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        timeout-minutes: 12
+        working-directory: base-src/tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}/base-src
+          GTEKI_GOLDEN_STATION: ${{ matrix.station }}
+        run: pnpm exec playwright test specs/29-golden-shots.spec.ts --project=desktop-chromium --trace=off
+      - name: Compare golden cameras
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        run: |
+          node tools/qa/golden-diff.mjs base-src/tests/e2e/artifacts/golden/desktop-chromium tests/e2e/artifacts/golden/desktop-chromium golden-diff-out --cameras tests/e2e/golden-cameras.json
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const rows = JSON.parse(fs.readFileSync("golden-diff-out/diff.json"));
+            const ratios = rows.map(r => r.diffRatio).sort((a, b) => a - b);
+            const m = Math.floor(ratios.length / 2);
+            const median = ratios.length ? (ratios.length % 2 ? ratios[m] : (ratios[m - 1] + ratios[m]) / 2) : 0;
+            const table = rows.filter(r => r.changed).map(r => `| ${r.camera} | ${r.diffRatio} |`).join("\n");
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Golden diff\n\n| Camera | diffRatio |\n| --- | ---: |\n${table}\n\nMax: ${ratios.at(-1) ?? 0}; median: ${median}\n`);
+          '
+      - name: Upload golden diff
+        if: github.event_name == 'pull_request' && !cancelled()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-diff-${{ matrix.station }}
+          path: golden-diff-out/**
           retention-days: 7
           if-no-files-found: ignore
 
