@@ -116,8 +116,8 @@
       "station": "shinjuku",
       "kind": "node",
       "node": "n:20014f524ee643c18b80575cf3064334",
-      "headingDeg": 266,
-      "pitch": 0.2,
+      "headingDeg": 272,
+      "pitch": 0.15,
       "expect": "The passage and overhead sign 2d2bc35b are visible.",
       "features": [
         {
