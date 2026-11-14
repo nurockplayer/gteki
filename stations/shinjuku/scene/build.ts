@@ -2080,10 +2080,20 @@ function buildUndergroundLighting(
       let p2 = p, q2 = q;
       if (rm?.shared && (rm.shared.slope?.x || rm.shared.slope?.y)) {
         const { x: ux, y: uy } = rm.shared.slope!;
-        const n = stableHypot(ux, uy), half = stableHypot(q.x - p.x, q.y - p.y) / 2;
+        const n = stableHypot(ux, uy);
+        let half = stableHypot(q.x - p.x, q.y - p.y) / 2;
+        // Fit the rotated strip inside its roof instead of losing a boundary fixture.
+        for (const ring of rm.shared.rings) for (let j = 0; j < ring.length; j++) {
+          const a = ring[j]!, b = ring[(j + 1) % ring.length]!;
+          const dx = b.x - a.x, dy = b.y - a.y, cross = ux / n * dy - uy / n * dx;
+          if (Math.abs(cross) < 1e-9) continue;
+          const t = ((a.x - m.x) * dy - (a.y - m.y) * dx) / cross;
+          const s = ((a.x - m.x) * uy / n - (a.y - m.y) * ux / n) / cross;
+          if (s >= 0 && s <= 1) half = Math.min(half, Math.abs(t) / 1.04 - 0.001);
+        }
+        if (half <= 0) continue;
         p2 = { x: m.x - ux / n * half, y: m.y - uy / n * half, z: m.z };
         q2 = { x: m.x + ux / n * half, y: m.y + uy / n * half, z: m.z };
-        // Drop boundary-crossing strips rather than projecting their ends onto another ceiling.
         if (!pointInRings(p2, rm.shared.rings) || !pointInRings(q2, rm.shared.rings)) continue;
       }
       const rp = ceilingAt(p2), rq = ceilingAt(q2);
