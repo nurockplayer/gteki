@@ -28,7 +28,7 @@
       "project": "desktop-chromium",
       "metric": "nearClip",
       "from": 10,
-      "to": 18,
+      "to": 19,
       "row": "J5",
       "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
     },

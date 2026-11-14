@@ -387,6 +387,7 @@ export class Explorer {
   private yaw = 0; // radians; 0 = facing north (-Z)
   private pitch = -0.12;
   private camDistance: number = FOLLOW.defaultDistance;
+  private stairsFraming = { progress: 0, weight: 0 };
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
   private readonly bodyRaiseHold = { seconds: 0, target: 0 };
@@ -3527,6 +3528,8 @@ export class Explorer {
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
+    this.stairsFraming = stepEscalatorLock(this.stairsFraming.progress, !this.previewNext && !!this.catAvatar && !this.firstPerson && onStairs, dt, snap || this.reducedMotion);
+    const stairsWeight = this.stairsFraming.weight;
     const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
     this.slope = stepSlope(resetSlope ? NO_SLOPE : this.slope, resetSlope ? 0 : this.pos.y - this.slopeY, resetSlope ? 0 : dt, onStairs);
     this.slopeY = this.pos.y;
@@ -3555,7 +3558,11 @@ export class Explorer {
     const weight = t * t * (3 - 2 * t);
     const yaw = shot ? this.arrivalStart.yaw + angleDelta(this.arrivalStart.yaw, -THREE.MathUtils.degToRad(shot.heading)) * weight : this.yaw;
     const pitch = shot ? THREE.MathUtils.lerp(this.arrivalStart.pitch, THREE.MathUtils.degToRad(shot.pitch), weight) : this.pitch;
-    const distance = shot ? THREE.MathUtils.lerp(this.arrivalStart.distance, shot.distance, weight) : this.camDistance;
+    const distance = (shot ? THREE.MathUtils.lerp(this.arrivalStart.distance, shot.distance, weight) : this.camDistance)
+      * THREE.MathUtils.lerp(1, FOLLOW_CAT_NEXT.distance / FOLLOW_CAT.distance, stairsWeight);
+    const lens = () => THREE.MathUtils.lerp(
+      followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect),
+      followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, true, this.camera.aspect), stairsWeight);
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
     const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
@@ -3566,7 +3573,7 @@ export class Explorer {
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
       this.setCameraFocus(null);
-      this.setFov(followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), lensSnap, dt);
+      this.setFov(lens(), lensSnap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
@@ -3581,8 +3588,9 @@ export class Explorer {
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
+    const lift = this.previewNext ? framing.lift : THREE.MathUtils.lerp(FOLLOW_CAT.lift, FOLLOW_CAT_NEXT.lift, stairsWeight);
     const pose = this.catAvatar
-      ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(framing.lift, (shot.height - (head.y - this.pos.y)) / shot.distance + Math.sin(pitch), weight) : framing.lift, framing.drop)
+      ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(lift, (shot.height - (head.y - this.pos.y)) / shot.distance + Math.sin(pitch), weight) : lift, framing.drop)
       : followPose(head, yaw, pitch, shoulder);
     if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
@@ -3633,7 +3641,7 @@ export class Explorer {
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
-    this.setFov(shot ? THREE.MathUtils.lerp(followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), shot.fov, weight) : followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), lensSnap, dt);
+    this.setFov(shot ? THREE.MathUtils.lerp(lens(), shot.fov, weight) : lens(), lensSnap, dt);
     // Use the last frame's actual boom, measured against its own pivot. Measuring the old
     // camera against the new pivot would rate-limit the walker's movement as contraction.
     const previousDistance = this.boomActual;

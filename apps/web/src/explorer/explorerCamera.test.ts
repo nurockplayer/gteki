@@ -13,7 +13,7 @@ function cameraStand() {
   const pose = followPose(new THREE.Vector3(0, 1.62, 0), 0, -0.12);
   camera.position.copy(pose.pivot).addScaledVector(pose.back, FOLLOW.defaultDistance);
   const state = {
-    previewNext: false, escalatorProgress: 0, escalatorWeight: 0, escalatorAxis: new THREE.Vector3(0, 0, -1),
+    stairsFraming: { progress: 0, weight: 0 }, previewNext: false, escalatorProgress: 0, escalatorWeight: 0, escalatorAxis: new THREE.Vector3(0, 0, -1),
     pos, camera, slope: { ...NO_SLOPE }, slopeY: 0, firstPerson: false, mode: "walk",
     yaw: 0, pitch: -0.12, camDistance: FOLLOW.defaultDistance as number, boomRaise: 0, bodyRaiseHold: { seconds: 0, target: 0 },
     cameraTargets: [] as THREE.Object3D[], cameraSides: new Set<THREE.Object3D>(), blockerTargets: new Set<THREE.Object3D>(),
@@ -383,6 +383,48 @@ describe("Explorer descending framing", () => {
     place(state, true);
     expect(state.descentDrop).toBe(0);
     expect(state.slope).toEqual(NO_SLOPE);
+  });
+});
+
+describe("default cat stair framing", () => {
+  it.each([1.6, 0.7])("uses next framing on guide stairs at aspect %s", (aspect) => {
+    const state = Object.assign(cameraStand(), { catAvatar: true, mode: "guide", camDistance: 2.4, pitch: 0 });
+    state.camera.aspect = aspect;
+    state.guide = { s: 1, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: "stairs" }] };
+    for (let i = 0; i < 120; i++) place(state);
+    const pose = followPose(new THREE.Vector3(0, 0.42, 0), 0, 0, 0.2 * Math.min(1, aspect), 0.218, 0);
+    expect(state.camera.position.distanceTo(pose.pivot.clone().addScaledVector(pose.back, 2.25))).toBeLessThan(0.001);
+    expect(state.camDistance).toBe(2.4);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(aspect >= 1 ? 55 : 65);
+  });
+
+  it.each(["flat", "free walk", "escalator", "previewNext"])("preserves %s framing", (mode) => {
+    const next = mode === "previewNext";
+    const state = Object.assign(cameraStand(), { catAvatar: true, mode: mode === "free walk" ? "walk" : "guide", previewNext: next, camDistance: next ? 2.25 : 2.4, pitch: 0 });
+    const spanMode = mode === "escalator" ? "escalator" : mode === "previewNext" ? "stairs" : "walk";
+    state.guide = { s: 1, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: spanMode }] };
+    for (let i = 0; i < 120; i++) place(state);
+    const pose = followPose(new THREE.Vector3(0, 0.42, 0), 0, 0, 0.2, next ? 0.218 : 0.12, 0);
+    expect(state.camera.position.distanceTo(pose.pivot.clone().addScaledVector(pose.back, next ? 2.25 : 2.4))).toBeLessThan(0.001);
+    expect(state.setFov.mock.lastCall?.[0]).toBe(next ? 55 : mode === "escalator" ? 60 : 50);
+  });
+
+  it("eases view direction and lens on entering and leaving stairs", () => {
+    const state = Object.assign(cameraStand(), { catAvatar: true, mode: "guide", camDistance: 2.4, pitch: 0 });
+    state.guide = { s: 11, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: "stairs" }] };
+    state.setFov.mockImplementation((...args: unknown[]) => {
+      (Explorer.prototype as unknown as { setFov(target: number, snap: boolean, dt: number): void }).setFov.apply(state, args as [number, boolean, number]);
+    });
+    place(state, true);
+    for (const [s, direction] of [[1, 1], [11, -1]] as const) {
+      state.guide.s = s;
+      for (let i = 0; i < 120; i++) {
+        const before = state.camera.quaternion.clone(), fov = state.camera.fov;
+        place(state);
+        expect(THREE.MathUtils.radToDeg(before.angleTo(state.camera.quaternion))).toBeLessThanOrEqual(3);
+        expect(direction * (state.camera.fov - fov)).toBeGreaterThanOrEqual(-1e-9);
+      }
+    }
   });
 });
 
