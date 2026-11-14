@@ -47,7 +47,7 @@ test("cold open @phone", async ({ page }, info) => {
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
   const start = Date.now();
-  await page.goto(reelMode === "next" ? "/?next=1" : "/", { waitUntil: "commit" });
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning", { waitUntil: "commit" });
   const committed = Date.now();
   await page.waitForTimeout(Math.max(0, 1000 - (Date.now() - committed)));
   const cdp = reelMode === "next" ? await page.context().newCDPSession(page) : undefined;
@@ -162,8 +162,10 @@ test("guided walk @phone", async ({ page }, info) => {
   const wallStart = Date.now();
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
-  await page.goto(reelMode === "next" ? "/?next=1" : "/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo");
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo&qaTimeBand=morning");
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready" && (window as any).__gteki.route()?.ok, null, { timeout: 120_000, polling: 250 });
+  const timeBand = new URL(page.url()).searchParams.get("qaTimeBand");
+  expect(timeBand).toBe("morning");
   if (reelMode === "next") {
     await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
     expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
@@ -207,16 +209,25 @@ test("guided walk @phone", async ({ page }, info) => {
     const boxes = arrival && reelMode === "next" ? await page.evaluate(() => {
       const g = (window as any).__gteki;
       const cat = g.scanProbe().explorer.catScreenBox();
-      const rect = document.querySelector(".hud-instruction")!.getBoundingClientRect();
-      return { cat, card: { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom } };
+      const rect = (selector: string) => {
+        const r = document.querySelector(selector)!.getBoundingClientRect();
+        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+      };
+      return { cat, card: rect(".hud-instruction"), badge: rect(".greybox-legend"), coverage: rect("button.coverage") };
     }) : undefined;
     if (boxes) {
-      const { cat, card } = boxes;
+      const { cat, card, badge, coverage } = boxes;
+      const separated = (a: typeof badge, b: typeof badge, gap = 0) => a.right + gap <= b.left || a.left >= b.right + gap || a.bottom + gap <= b.top || a.top >= b.bottom + gap;
       expect(cat, "arrival cat box").not.toBeNull();
       expect(card.right <= cat.left || card.left >= cat.right || card.bottom <= cat.top || card.top >= cat.bottom, `arrival card/cat overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(cov.legend, `arrival badge visible inside viewport: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(separated(badge, coverage, 8), `arrival badge/Coverage gap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(separated(badge, card), `arrival badge/card overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(separated(badge, cat), `arrival badge/cat overlap: ${JSON.stringify(boxes)}`).toBe(true);
     }
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
-    samples.push({ ...(arrival ? { identity, boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
+    const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
+    samples.push({ ...(arrival ? { identity, boxes, arrivalFrame } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -256,7 +267,7 @@ test("guided walk @phone", async ({ page }, info) => {
   const j7 = { count: escalators.length, lockMin: locks.length ? Math.min(...locks) : null, lockMedian: median(locks), axisDegMax: axes.length ? Math.max(...axes) : null, axisDegMedian: median(axes), lockBelow099: escalators.filter(s => s.camera.lock < 0.99).map(s => s.index) };
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));
-  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
+  fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify({ sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j7, unknown }, null, 2));
   const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
   lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}`);
   const noLegend = samples.filter(s => !s.legend).map(s => s.index);
@@ -283,6 +294,30 @@ test("guided walk @phone", async ({ page }, info) => {
     fs.writeFileSync(path.join(out, `sheet-${String(start / 12 + 1).padStart(2, "0")}.jpg`), Buffer.from(jpg!, "base64"));
   }
   fs.appendFileSync(path.join(out, "summary.md"), `; sheetsMs=${Date.now() - sheetsStart}; wallMs=${Date.now() - wallStart}\n`);
+  if (reelMode === "next" && arrived) {
+    const sample = samples.find((s) => s.arrival)!;
+    const frame = sample.arrivalFrame;
+    expect.soft(frame.shot, "authored arrival shot").toBe(true);
+    expect.soft(frame.boardRect, "name board in frame").not.toBeNull();
+    if (frame.boardRect) {
+      expect.soft(frame.boardRect.x0).toBeGreaterThanOrEqual(-1);
+      expect.soft(frame.boardRect.x1).toBeLessThanOrEqual(1);
+      expect.soft(frame.boardRect.y0).toBeGreaterThanOrEqual(-1);
+      expect.soft(frame.boardRect.y1).toBeLessThanOrEqual(1);
+      if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.y1).toBeGreaterThanOrEqual(0.33);
+      if (!info.project.name.startsWith("phone")) expect.soft(frame.boardRect.x1 - frame.boardRect.x0).toBeGreaterThanOrEqual(0.16);
+    }
+    if (info.project.name.startsWith("phone")) {
+      expect.soft(Math.abs(frame.camera.heading - 165), "phone arrival heading").toBeLessThanOrEqual(1);
+      expect.soft(Math.abs(frame.camera.pitch - (-8)), "phone arrival pitch").toBeLessThanOrEqual(1);
+    }
+    else expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
+    expect.soft(sample.catVisible).toBeGreaterThanOrEqual(config.thresholds.catVisibleMin);
+    expect.soft(sample.catOccluder, "no NPC in front of the cat at arrival").not.toBe("npc");
+    expect.soft(sample.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
+    expect.soft(sample.nearBlack).toBeLessThanOrEqual(config.thresholds.nearBlack);
+    expect.soft(sample.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
+  }
   expect(arrived, "guide arrived within 260 simulated seconds").toBe(true);
   expect(samples.length, "at least 30 samples").toBeGreaterThanOrEqual(30);
 });
