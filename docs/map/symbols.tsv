@@ -116,6 +116,7 @@ CAT_NPC_FADE	const	apps/web/src/explorer/followCamera.ts
 CAT_RAISE_AIM	const	apps/web/src/explorer/followCamera.ts
 CameraHold	interface	apps/web/src/explorer/followCamera.ts
 DESCENT	const	apps/web/src/explorer/followCamera.ts
+ESCALATOR_SHOT	const	apps/web/src/explorer/followCamera.ts
 FOLLOW	const	apps/web/src/explorer/followCamera.ts
 FOLLOW_CAT	const	apps/web/src/explorer/followCamera.ts
 FOLLOW_CAT_NEXT	const	apps/web/src/explorer/followCamera.ts
@@ -225,6 +226,7 @@ MIN_GUIDE_MPS	const	apps/web/src/explorer/guidePace.ts
 MIN_INSTRUCTION_S	const	apps/web/src/explorer/guidePace.ts
 PaceSpan	interface	apps/web/src/explorer/guidePace.ts
 effectivePace	function	apps/web/src/explorer/guidePace.ts
+escalatorSpanAt	function	apps/web/src/explorer/guidePace.ts
 guideOnEscalator	function	apps/web/src/explorer/guidePace.ts
 guideOnStairs	function	apps/web/src/explorer/guidePace.ts
 guidePaceSpans	function	apps/web/src/explorer/guidePace.ts
