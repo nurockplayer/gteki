@@ -87,6 +87,7 @@ export class Minimap {
   private collapsed = read(COLLAPSED_KEY) === "true";
   /** The floor actually drawn; in follow mode it tracks the player, otherwise it is the picked floor. */
   private floorId: string | null | undefined;
+  private lastDisplayedFloorId: string | undefined;
   /** A picked floor pins the map; null follows the player's floor. */
   private pickedFloorId: string | null = null;
   /** Station id + language of the options currently in the picker. */
@@ -268,6 +269,7 @@ export class Minimap {
     this.bundle = bundle;
     this.lang = lang;
     this.floorId = undefined;
+    this.lastDisplayedFloorId = undefined;
     // The floor list belongs to the station; a new station starts in follow mode with fresh options.
     this.pickedFloorId = null;
     this.floorOptionsKey = "";
@@ -416,14 +418,14 @@ export class Minimap {
     this.zoomOut.disabled = this.metresPerPx === 1;
     this.zoomLabel.textContent = `${METRES_PER_PX / this.metresPerPx}×`;
     const station = this.bundle?.station;
-    const floor = this.bundle?.floors.find((f) => f.id === this.floorId);
+    const floor = this.bundle?.floors.find((f) => f.id === (this.floorId ?? this.lastDisplayedFloorId));
     this.label.replaceChildren();
     if (station) {
       const name = document.createElement("span"), level = document.createElement("strong");
       name.textContent = `${station.id} · ${pick(station.names, this.lang)}`;
       name.title = name.textContent;
       level.textContent = floor ? floorDisplayName(floor, this.lang) : t.minimapFloorUnknown;
-      if (this.el.closest(".app.next")) level.textContent = level.textContent.replace(/GL[–-]B1 landing/g, "B1");
+      level.textContent = level.textContent.replace(/GL[–-]B1 landing/g, "B1");
       this.label.append(name, level);
     }
     this.syncFloorOptions();
@@ -466,6 +468,7 @@ export class Minimap {
     const floorChanged = drawnFloorId !== this.floorId;
     if (floorChanged) {
       this.floorId = drawnFloorId;
+      if (drawnFloorId) this.lastDisplayedFloorId = drawnFloorId;
       this.overlayDirty = true;
       this.drawFloorGraph();
       this.arrow.style.display = drawnFloorId === null ? "none" : "";
@@ -673,9 +676,9 @@ export class Minimap {
       this.overlayLabel.hidden = lines.length === 0;
       this.overlayArrow.style.display = floorId === null || !this.bundle ? "none" : "";
       const station = this.bundle?.station;
-      const floor = this.bundle?.floors.find((f) => f.id === this.floorId);
+      const floor = this.bundle?.floors.find((f) => f.id === (this.floorId ?? this.lastDisplayedFloorId));
       this.overlayTitle.textContent = station
-        ? `${station.id} · ${pick(station.names, this.lang)} — ${floor ? floorDisplayName(floor, this.lang) : t.minimapFloorUnknown}`
+        ? `${station.id} · ${pick(station.names, this.lang)} — ${floor ? floorDisplayName(floor, this.lang).replace(/GL[–-]B1 landing/g, "B1") : t.minimapFloorUnknown}`
         : t.minimapLargeMap;
     }
     const rotation = this.orientation === "player-up" ? -pose.headingDeg : 0;
