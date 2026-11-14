@@ -596,6 +596,12 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .app.arrival[data-mode="guide"] .arrival-menu { display: flex; flex-wrap: wrap; justify-content: end; gap: 6px; width: max-content; max-width: calc(100vw - 32px); }
 .app.arrival.arrival-left[data-mode="guide"] .arrival-menu { justify-content: start; }
 .app.arrival[data-mode="guide"] .arrival-menu[hidden] { display: none; }
+@media (max-width: 480px) {
+  .app.arrival[data-mode="guide"] .arrival-controls.menu-open { display: contents; }
+  .app.arrival[data-mode="guide"] .arrival-controls.menu-open .guide-more { grid-column: 2; }
+  .app.arrival[data-mode="guide"] .arrival-controls.menu-open .arrival-menu { grid-column: 1 / -1; justify-self: end; }
+  .app.arrival.arrival-left[data-mode="guide"] .arrival-controls.menu-open .arrival-menu { justify-self: start; }
+}
 .app.arrival.arrival-left[data-mode="guide"] .hud { left: 16px; right: auto; justify-items: start; }
 .app.arrival.arrival-bottom[data-mode="guide"] .hud { top: auto; bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra)); }
 .app.arrival[data-mode="guide"] .greybox-legend { top: calc(36px + env(safe-area-inset-top) + var(--hud-height, 0px) + 6px); bottom: auto; right: 16px; }
