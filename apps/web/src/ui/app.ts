@@ -543,7 +543,7 @@ export class App {
       this.setDestination(pair.to, null, true);
       const first = this.s.polyline[0];
       if (first) {
-        this.explorer.walkFrom(first, spawnHeading(this.s.loaded.bundle, this.s.origin, this.s.polyline));
+        if (this.explorer.walkFrom(first, spawnHeading(this.s.loaded.bundle, this.s.origin, this.s.polyline))) this.explorer.setOpeningShot(pair.from.id);
         this.bootWalkAt = performance.now();
         performance.mark("boot-walk");
       } else { this.dismissColdOpen(); this.panelFold.open(); }
@@ -556,6 +556,7 @@ export class App {
   }
 
   private dismissColdOpen(): void {
+    this.explorer.setOpeningShot(null);
     this.removeBootCard();
     if (!this.coldOpen) return;
     this.coldOpen = false;
@@ -2114,6 +2115,7 @@ export class App {
       signFaces: () => this.explorer.signFaces(),
       identity: () => this.explorer.identity(),
       arrivalFrame: () => this.explorer.arrivalFrame(),
+      openingFrame: () => this.explorer.openingFrame(),
       setRouteMarkersVisible: (visible: boolean) => this.explorer.setRouteMarkersVisible(visible),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),
