@@ -1463,7 +1463,13 @@ export class App {
       }
       const again = el("button", "ghost search-again", t.searchAgain);
       again.addEventListener("click", () => this.searchAgain());
-      menu.append(again);
+      const prev = el("button", "ghost guide-step guide-prev", "‹");
+      prev.setAttribute("aria-label", t.guidePrev);
+      prev.title = t.guidePrevTitle;
+      prev.addEventListener("click", () => this.jumpGuide(-1));
+      const stop = el("button", "ghost", t.exitGuide);
+      stop.addEventListener("click", () => this.explorer.stopGuide());
+      menu.append(again, prev, stop);
       more.addEventListener("click", () => { menu.hidden = !menu.hidden; more.setAttribute("aria-expanded", String(!menu.hidden)); });
       row.append(more, menu);
       hud.append(row);

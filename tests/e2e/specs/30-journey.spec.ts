@@ -236,7 +236,22 @@ test("guided walk @phone", async ({ page }, info) => {
       await sample(false, simMs);
       arrived = (await hooks.guideControls(page) as any).arrived;
     }
-    if (arrived) { const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs); }
+    if (arrived) {
+      const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs);
+      const more = page.locator(".arrival-controls .guide-more"), menu = page.locator(".arrival-menu");
+      await more.click();
+      await expect(menu).toBeVisible();
+      await expect(menu.locator(".guide-prev")).toBeVisible();
+      await expect(menu.getByRole("button", { name: /^(End guide|ガイド終了)$/ })).toBeVisible();
+      const rects = await menu.locator("button").evaluateAll(buttons => buttons.map(button => {
+        const r = button.getBoundingClientRect();
+        return { text: button.textContent, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: innerWidth, height: innerHeight };
+      }));
+      console.log(`[journey] ${info.project.name} ${reelMode} arrival menu rectangles: ${JSON.stringify(rects)}`);
+      for (const r of rects) expect(r.left >= 0 && r.top >= 0 && r.right <= r.width && r.bottom <= r.height, `arrival menu outside viewport: ${JSON.stringify(rects)}`).toBe(true);
+      await more.click();
+      await expect(menu).toBeHidden();
+    }
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   for (const sample of samples) expect(sample.legend, `badge visible at sample ${sample.index}`).toBe(true);
   for (const sample of samples.filter(s => !s.arrival)) {
@@ -322,4 +337,9 @@ test("guided walk @phone", async ({ page }, info) => {
   }
   expect(arrived, "guide arrived within 260 simulated seconds").toBe(true);
   expect(samples.length, "at least 30 samples").toBeGreaterThanOrEqual(30);
+  if (arrived) {
+    await page.locator(".arrival-controls .guide-more").click();
+    await page.locator(".arrival-menu").getByRole("button", { name: /^(End guide|ガイド終了)$/ }).click();
+    await expect.poll(() => hooks.mode(page)).toBe("walk");
+  }
 });
