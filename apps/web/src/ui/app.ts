@@ -40,6 +40,7 @@ import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
 import { coldOpenPair, demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 import { escalatorArrow, guideCardText } from "./guideCard.ts";
+import { escalatorEtaSuffix } from "./escalatorEta.ts";
 import { bootProgress, FrameReadiness, type BootStage } from "./bootCard.ts";
 import { shortStationLabel } from "./shortStationLabel.ts";
 
@@ -1689,8 +1690,8 @@ export class App {
         if (distance >= this.escalatorSpan.toS - 0.001) { end = b; break; }
       }
       const floor = floorDisplayName(this.s.loaded?.bundle.floors.find((f) => f.id === end?.floorId), this.s.lang).replace(/GL[–-]B1 landing/g, "B1");
-      const seconds = Math.round((this.escalatorSpan.toS - this.guideS) / this.escalatorSpan.maxMps / 5) * 5;
-      box.append(el("div", "hud-instruction", `${escalatorArrow(start!.z, end!.z)} ${floor}${this.escalatorSpan.maxMps ? ` · ~${seconds} s` : ""}`));
+      const suffix = this.escalatorSpan.maxMps ? escalatorEtaSuffix((this.escalatorSpan.toS - this.guideS) / this.escalatorSpan.maxMps) : "";
+      box.append(el("div", "hud-instruction", `${escalatorArrow(start!.z, end!.z)} ${floor}${suffix}`));
       return box;
     }
     const card = guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
@@ -1847,7 +1848,8 @@ export class App {
       if (changed) { this.explorer.setRouteQuiet(!!span); this.updateGuideHud(); }
       else if (span) {
         const card = this.ui.hud.querySelector<HTMLElement>(".hud-instruction");
-        if (card) card.textContent = card.textContent?.replace(/~\d+ s/, `~${Math.round((span.toS - p.s) / span.maxMps / 5) * 5} s`) ?? "";
+        const suffix = span.maxMps ? escalatorEtaSuffix((span.toS - p.s) / span.maxMps) : "";
+        if (card) card.textContent = (card.textContent ?? "").replace(/(?: · ~\d+ s)?$/, suffix);
       }
     }
     // Just after a jump the guide stands on the instruction's first point, which still reports the previous step: keep the chosen one.

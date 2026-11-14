@@ -1637,13 +1637,14 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       esc.steps.instanceMatrix.needsUpdate = true;
     }
   }
+  const freezeStepPhase = typeof location !== "undefined" && new URLSearchParams(location.search).get("qaEscalatorPhase") === "0";
   function writeSteps(esc: BuiltStation["escalators"][number], t: number, offset = 0) {
     const { lo, hi, yaw, count, L3, stepLen, scale = tmpS } = (esc.steps.userData.ranges?.[esc.run.edgeId] ?? esc.steps.userData) as {
       lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number; scale?: THREE.Vector3;
     };
     const trim = combed.has(esc.run.edgeId) && (!kitSwap?.lod || kitSwap.lod.active.has(esc.run.edgeId)) ? stepLen / 2 : 0;
     tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
-    const phase = (((t * esc.speed) % stepLen) + stepLen) % stepLen;
+    const phase = freezeStepPhase ? 0 : (((t * esc.speed) % stepLen) + stepLen) % stepLen;
     for (let i = 0; i < count; i++) {
       let s = i * stepLen + phase;
       if (s > L3) s -= L3;
