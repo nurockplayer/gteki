@@ -2047,7 +2047,7 @@ function buildUndergroundLighting(
   track: <T extends { dispose(): void }>(x: T) => T,
   extraRoofs: Soffit[] = [],
 ) {
-  type Fixture = { a: XYZ; b: XYZ; ground: XYZ };
+  type Fixture = { a: XYZ; b: XYZ; ground: XYZ; upright: boolean };
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
@@ -2077,8 +2077,9 @@ function buildUndergroundLighting(
       const at = (t: number): XYZ => ({ x: a.position.x + (b.position.x - a.position.x) * t, y: a.position.y + (b.position.y - a.position.y) * t, z: za + (zb - za) * t });
       const p = at(t0), q = at(t1), m = at((t0 + t1) / 2);
       const rm = ceilingAt(m);
-      let p2 = p, q2 = q;
+      let p2 = p, q2 = q, upright = false;
       if (rm?.shared && (rm.shared.slope?.x || rm.shared.slope?.y)) {
+        upright = true;
         const { x: ux, y: uy } = rm.shared.slope!;
         const n = stableHypot(ux, uy);
         let half = stableHypot(q.x - p.x, q.y - p.y) / 2;
@@ -2125,7 +2126,7 @@ function buildUndergroundLighting(
       if (placed.some(overlaps)) continue;
       placed.push(candidate);
       const fixtures = batches.get(rm.floorId) ?? [];
-      fixtures.push({ ...candidate, ground: m });
+      fixtures.push({ ...candidate, ground: m, upright });
       batches.set(rm.floorId, fixtures);
     }
   }
@@ -2157,7 +2158,7 @@ function buildUndergroundLighting(
       const a = v3(f.a), b = v3(f.b), d = b.clone().sub(a);
       zAxis.copy(d).normalize();
       xAxis.crossVectors(up, zAxis);
-      if (xAxis.lengthSq() < 1e-12) {
+      if (!f.upright || xAxis.lengthSq() < 1e-12) {
         rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), zAxis);
       } else {
         // Keep the casing above the diffuser, including strips running toward -Z.
