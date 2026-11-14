@@ -478,7 +478,7 @@ describe("Explorer guide stair lens", () => {
 
 
 describe("guide arrival shot", () => {
-  it.each(["active", "ended"] as const)("releases and re-arms a %s shot after seeking back", (initial) => {
+  it.each([["active", false], ["ended", false], ["active", true]] as const)("releases and re-arms a %s shot after seeking back (immediate return: %s)", (initial, immediate) => {
     const state = Object.assign(cameraStand(), {
       previewNext: true, mode: "guide", arrivalState: initial, arrivalDestination: "poi:platform:oedo", arrivalElapsed: 1.2,
       arrivalStart: { yaw: 0, pitch: -0.12, distance: FOLLOW.defaultDistance }, guideIdentityHoldS: 0,
@@ -488,6 +488,7 @@ describe("guide arrival shot", () => {
     });
     qa(state).seekGuide(1);
     expect(state.arrivalState).toBe("ended");
+    if (immediate) qa(state).seekGuide(10);
     place(state);
     expect(state.arrivalElapsed).toBeLessThan(1.2);
     expect(state.arrivalState).toBe("ended");
@@ -540,6 +541,8 @@ describe("guide arrival shot", () => {
     if (next) {
       state.input.consumeLook.mockReturnValueOnce({ dx: 1, dy: 0, zoom: 0 });
       step();
+      expect(state.arrivalState).toBe("ended");
+      for (let i = 0; i < 75; i++) place(state);
       expect(state.arrivalState).toBe("ended");
       step();
       expect(state.arrivalState).toBe("ended");

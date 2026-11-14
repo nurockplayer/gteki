@@ -408,6 +408,7 @@ export class Explorer {
   private openingElapsed = 0;
   private openingRelease: { position: THREE.Vector3; quaternion: THREE.Quaternion; fov: number } | null = null;
   private arrivalState: "waiting" | "active" | "ended" = "waiting";
+  private arrivalRearm = false;
   private arrivalDestination: string | null = null;
   private arrivalElapsed = 0;
   private arrivalStart = { yaw: 0, pitch: 0, distance: 0 };
@@ -1963,6 +1964,7 @@ export class Explorer {
     if (this.mode === mode) return;
     const previous = this.mode;
     this.arrivalState = "ended";
+    this.arrivalRearm = false;
     this.arrivalElapsed = 0;
     this.arrivalDestination = null;
     this.guideIdentityHoldS = 0;
@@ -2914,6 +2916,7 @@ export class Explorer {
     this.bodyYaw = this.yaw;
     this.setMode("guide");
     this.arrivalState = "waiting";
+    this.arrivalRearm = false;
     this.arrivalDestination = destination;
     this.arrivalElapsed = 0;
     this.guideIdentityHoldS = this.frameInitialIdentity(this.yaw) ? IDENTITY_HOLD_S : 0;
@@ -2930,7 +2933,10 @@ export class Explorer {
     if (!g) return;
     const total = g.cum[g.cum.length - 1]!;
     seekGuideState(g, this.guideAllStops, total, s, firstStop);
-    if (this.previewNext && g.s < total && this.arrivalState === "active") this.arrivalState = "ended";
+    if (this.previewNext && g.s < total && this.arrivalState !== "waiting") {
+      this.arrivalRearm = true;
+      if (this.arrivalState === "active") this.arrivalState = "ended";
+    }
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
     this.teleported = true;
@@ -2966,6 +2972,7 @@ export class Explorer {
   stopGuide(): void {
     this.guideIdentityHoldS = 0;
     this.arrivalState = "ended";
+    this.arrivalRearm = false;
     this.arrivalElapsed = 0;
     this.arrivalDestination = null;
     this.guide = null;
@@ -3573,7 +3580,10 @@ export class Explorer {
     const shots = this.arrivalState === "active" || (this.arrivalState === "ended" && this.arrivalElapsed > 0) ? ARRIVAL_SHOTS[this.arrivalDestination ?? ""] : undefined;
     const shot = shots ? (this.camera.aspect < 1 ? shots.phone : shots.desktop) : undefined;
     if (shot) this.arrivalElapsed = THREE.MathUtils.clamp(this.arrivalElapsed + (this.arrivalState === "active" ? dt : -dt), 0, 1.2);
-    if (this.previewNext && this.arrivalState === "ended" && this.arrivalElapsed === 0 && this.guide && this.guide.s < this.guide.cum[this.guide.cum.length - 1]!) this.arrivalState = "waiting";
+    if (this.previewNext && this.arrivalState === "ended" && this.arrivalElapsed === 0 && this.arrivalRearm) {
+      this.arrivalState = "waiting";
+      this.arrivalRearm = false;
+    }
     const t = shot ? this.arrivalElapsed / 1.2 : 0;
     const weight = t * t * (3 - 2 * t);
     const yaw = shot ? this.arrivalStart.yaw + angleDelta(this.arrivalStart.yaw, -THREE.MathUtils.degToRad(shot.heading)) * weight : this.yaw;

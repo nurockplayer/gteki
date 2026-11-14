@@ -334,9 +334,8 @@ test("guided walk @phone", async ({ page }, info) => {
         await menu.locator(".guide-prev").click();
         expect(await page.evaluate(() => (window as any).__gteki.arrivalFrame().shot)).toBe(false);
         await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.setGuidePaused(true));
-        await hooks.simulate(page, 2);
         await page.evaluate(() => (window as any).__gteki.seekGuide(Infinity));
-        await hooks.simulate(page, 2);
+        await hooks.simulate(page, 3);
         expect(await page.evaluate(() => (window as any).__gteki.arrivalFrame().shot)).toBe(true);
       }
     }
