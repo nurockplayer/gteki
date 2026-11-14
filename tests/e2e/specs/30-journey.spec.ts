@@ -206,28 +206,29 @@ test("guided walk @phone", async ({ page }, info) => {
     const imageMs = Date.now() - phaseStart;
     const dir = m.cameraDirection, dx = to.position.x - from.position.x, dy = to.position.y - from.position.y;
     const axisDeg = step.mode === "escalator" ? Math.acos(Math.max(-1, Math.min(1, (dir[0] * dx - dir[2] * dy) / (Math.hypot(dir[0], dir[2]) * Math.hypot(dx, dy))))) * 180 / Math.PI : null;
-    const boxes = arrival && reelMode === "next" ? await page.evaluate(() => {
-      const g = (window as any).__gteki;
-      const cat = g.scanProbe().explorer.catScreenBox();
+    const arrivalHud = await page.evaluate(() => document.querySelector(".app")!.classList.contains("arrival"));
+    const boxes = arrivalHud ? await page.evaluate(() => {
+      const cat = (window as any).__gteki.scanProbe().explorer.catScreenBox();
       const rect = (selector: string) => {
         const r = document.querySelector(selector)!.getBoundingClientRect();
         return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
       };
-      return { cat, card: rect(".hud-instruction"), badge: rect(".greybox-legend"), coverage: rect("button.coverage") };
+      const search = document.querySelector<HTMLElement>(".panel-entry")!;
+      return { cat, card: rect(".hud-instruction"), badge: rect(".greybox-legend"), coverage: rect("button.coverage"), guideMore: rect(".arrival-controls .guide-more"), topMore: rect(".top-more-button"), brand: rect(".topbar .brand"), ...(getComputedStyle(search).display !== "none" ? { search: rect(".panel-entry") } : {}) };
     }) : undefined;
     if (boxes) {
-      const { cat, card, badge, coverage } = boxes;
-      const separated = (a: typeof badge, b: typeof badge, gap = 0) => a.right + gap <= b.left || a.left >= b.right + gap || a.bottom + gap <= b.top || a.top >= b.bottom + gap;
-      expect(cat, "arrival cat box").not.toBeNull();
-      expect(card.right <= cat.left || card.left >= cat.right || card.bottom <= cat.top || card.top >= cat.bottom, `arrival card/cat overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(boxes.cat, "arrival cat box").not.toBeNull();
       expect(cov.legend, `arrival badge visible inside viewport: ${JSON.stringify(boxes)}`).toBe(true);
-      expect(separated(badge, coverage, 8), `arrival badge/Coverage gap: ${JSON.stringify(boxes)}`).toBe(true);
-      expect(separated(badge, card), `arrival badge/card overlap: ${JSON.stringify(boxes)}`).toBe(true);
-      expect(separated(badge, cat), `arrival badge/cat overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      expect(boxes.badge.right + 8 <= boxes.coverage.left || boxes.badge.left >= boxes.coverage.right + 8 || boxes.badge.bottom + 8 <= boxes.coverage.top || boxes.badge.top >= boxes.coverage.bottom + 8, `arrival badge/Coverage gap: ${JSON.stringify(boxes)}`).toBe(true);
+      const entries = Object.entries(boxes) as [string, { left: number; right: number; top: number; bottom: number }][];
+      for (let i = 0; i < entries.length; i++) for (let j = i + 1; j < entries.length; j++) {
+        const [aName, a] = entries[i]!, [bName, b] = entries[j]!;
+        expect(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom, `arrival ${aName}/${bName} overlap: ${JSON.stringify(boxes)}`).toBe(true);
+      }
     }
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
     const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
-    samples.push({ ...(arrival ? { identity, boxes, arrivalFrame } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
+    samples.push({ ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
@@ -237,8 +238,39 @@ test("guided walk @phone", async ({ page }, info) => {
       await sample(false, simMs);
       arrived = (await hooks.guideControls(page) as any).arrived;
     }
-    if (arrived) { const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs); }
+    if (arrived) {
+      const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs);
+      const more = page.locator(".arrival-controls .guide-more"), menu = page.locator(".arrival-menu");
+      await more.click();
+      await expect(menu).toBeVisible();
+      await expect(menu.locator(".guide-prev")).toBeVisible();
+      await expect(menu.getByRole("button", { name: /^(End guide|ガイド終了)$/ })).toBeVisible();
+      await expect.poll(() => page.evaluate(() => {
+        const badge = document.querySelector(".greybox-legend")!.getBoundingClientRect();
+        const buttons = [...document.querySelectorAll(".arrival-menu button")];
+        return badge.left >= 0 && badge.top >= 0 && badge.right <= innerWidth && badge.bottom <= innerHeight && buttons.every(button => {
+          const r = button.getBoundingClientRect();
+          return badge.right <= r.left || badge.left >= r.right || badge.bottom <= r.top || badge.top >= r.bottom;
+        });
+      }), { message: "arrival badge inside viewport and clear of menu buttons" }).toBe(true);
+      const badge = await page.locator(".greybox-legend").evaluate(el => {
+        const r = el.getBoundingClientRect();
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+      });
+      const rects = await menu.locator("button").evaluateAll(buttons => buttons.map(button => {
+        const r = button.getBoundingClientRect();
+        return { text: button.textContent, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: innerWidth, height: innerHeight };
+      }));
+      console.log(`[journey] ${info.project.name} ${reelMode} arrival menu rectangles: ${JSON.stringify(rects)} badge: ${JSON.stringify(badge)}`);
+      for (const r of rects) expect(r.left >= 0 && r.top >= 0 && r.right <= r.width && r.bottom <= r.height, `arrival menu outside viewport: ${JSON.stringify(rects)}`).toBe(true);
+      await more.click();
+      await expect(menu).toBeHidden();
+    }
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+  for (const sample of samples) expect(sample.legend, `badge visible at sample ${sample.index}`).toBe(true);
+  for (const sample of samples.filter(s => !s.arrival)) {
+    expect(sample.overlayText.join(" "), `J8 visible text #${sample.index}`).not.toMatch(/Run ≈|GL[–-]B1 landing|unknown/i);
+  }
   const overlayTolerancePct = 1;
   const threshold = info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop;
   const rules = [ { row: "J5", metric: "voidRatio", limit: config.thresholds.voidRatio }, { row: "J5", metric: "nearBlack", limit: config.thresholds.nearBlack }, { row: "J5", metric: "nearClip", limit: config.thresholds.nearClip }, { row: "J6", metric: "catVisible", limit: config.thresholds.catVisibleMin }, { row: "J8", metric: "overlayPct", limit: threshold }, { row: "J9", metric: "overlayPct", limit: threshold } ];
@@ -320,4 +352,9 @@ test("guided walk @phone", async ({ page }, info) => {
   }
   expect(arrived, "guide arrived within 260 simulated seconds").toBe(true);
   expect(samples.length, "at least 30 samples").toBeGreaterThanOrEqual(30);
+  if (arrived) {
+    await page.locator(".arrival-controls .guide-more").click();
+    await page.locator(".arrival-menu").getByRole("button", { name: /^(End guide|ガイド終了)$/ }).click();
+    await expect.poll(() => hooks.mode(page)).toBe("walk");
+  }
 });
