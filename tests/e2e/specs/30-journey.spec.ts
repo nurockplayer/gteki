@@ -241,8 +241,21 @@ test("guided walk @phone", async ({ page }, info) => {
     if (arrived) {
       const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs);
       const more = page.locator(".arrival-controls .guide-more"), menu = page.locator(".arrival-menu");
+      const card = page.locator(".hud .hud-line");
+      const closedCard = (await card.boundingBox())!, closedMore = (await more.boundingBox())!;
       await more.click();
       await expect(menu).toBeVisible();
+      const openCard = (await card.boundingBox())!, openMore = (await more.boundingBox())!, openMenu = (await menu.boundingBox())!;
+      if (await page.evaluate(() => innerWidth <= 480)) {
+        expect(openCard.width).toBeGreaterThanOrEqual(closedCard.width - 1);
+        for (const edge of ["x", "y"] as const) expect(Math.abs(openMore[edge] - closedMore[edge])).toBeLessThanOrEqual(1);
+        expect(Math.abs(openMore.x + openMore.width - closedMore.x - closedMore.width)).toBeLessThanOrEqual(1);
+        expect(Math.abs(openMore.y + openMore.height - closedMore.y - closedMore.height)).toBeLessThanOrEqual(1);
+        expect(openMenu.y).toBeGreaterThanOrEqual(openCard.y + openCard.height);
+        expect(openMenu.y).toBeGreaterThanOrEqual(openMore.y + openMore.height);
+      }
+      const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
+      fs.writeFileSync(path.join(out, "arrival-menu.png"), png);
       await expect(menu.locator(".guide-prev")).toBeVisible();
       await expect(menu.getByRole("button", { name: /^(End guide|ガイド終了)$/ })).toBeVisible();
       await expect.poll(() => page.evaluate(() => {
@@ -261,7 +274,7 @@ test("guided walk @phone", async ({ page }, info) => {
         const r = button.getBoundingClientRect();
         return { text: button.textContent, left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: innerWidth, height: innerHeight };
       }));
-      console.log(`[journey] ${info.project.name} ${reelMode} arrival menu rectangles: ${JSON.stringify(rects)} badge: ${JSON.stringify(badge)}`);
+      console.log(`[journey] ${info.project.name} ${reelMode} arrival menu rectangles: ${JSON.stringify(rects)} badge: ${JSON.stringify(badge)} card widths: ${JSON.stringify({ closed: closedCard.width, open: openCard.width })}`);
       for (const r of rects) expect(r.left >= 0 && r.top >= 0 && r.right <= r.width && r.bottom <= r.height, `arrival menu outside viewport: ${JSON.stringify(rects)}`).toBe(true);
       await more.click();
       await expect(menu).toBeHidden();

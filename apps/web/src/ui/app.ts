@@ -1470,7 +1470,7 @@ export class App {
       const stop = el("button", "ghost", t.exitGuide);
       stop.addEventListener("click", () => this.explorer.stopGuide());
       menu.append(again, prev, stop);
-      more.addEventListener("click", () => { menu.hidden = !menu.hidden; more.setAttribute("aria-expanded", String(!menu.hidden)); });
+      more.addEventListener("click", () => { menu.hidden = !menu.hidden; row.classList.toggle("menu-open", !menu.hidden); more.setAttribute("aria-expanded", String(!menu.hidden)); });
       row.append(more, menu);
       hud.append(row);
       this.trackInstruction();
