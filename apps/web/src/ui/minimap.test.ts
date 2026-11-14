@@ -126,7 +126,7 @@ describe("Minimap HUD", () => {
     expect(map.el.querySelectorAll(".minimap-graph polyline").length).toBeGreaterThan(0);
     pose = { ...pose!, east: 1000, north: 1000, up: 100 };
     tick();
-    expect(map.el.textContent).toContain("Floor unknown");
+    expect(map.el.querySelector(".minimap-label")?.textContent).toContain("B1");
     expect(map.el.querySelectorAll(".minimap-graph polyline")).toHaveLength(0);
     expect(map.el.querySelector<SVGElement>(".minimap-arrow")!.style.display).toBe("none");
   });
@@ -272,7 +272,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     expect(map.el.querySelector(".minimap-route-label")!.textContent).toContain("To 1F by stairs");
     pose = { ...pose!, east: 1000, north: 1000, up: 100 };
     tick();
-    expect(map.el.textContent).toContain("Floor unknown");
+    expect(map.el.querySelector(".minimap-label")?.textContent).toContain("B1");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).not.toContain("To 1F by stairs");
     expect(display(map, ".minimap-connector-marker")).toBe("none");
     expect(display(map, ".minimap-connector-rim")).toBe("none");
@@ -511,7 +511,7 @@ describe("Minimap route overlay (#220 PR2)", () => {
     // A remote height near the stairs is outside their vertical span.
     pose = { ...pose!, up: 100 };
     tick();
-    expect(map.el.textContent).toContain("Floor unknown");
+    expect(map.el.querySelector(".minimap-label")?.textContent).toContain("B1");
     expect(display(map, ".minimap-connector-marker")).toBe("none");
     expect(map.el.querySelector(".minimap-route-label")!.textContent).not.toContain("To 1F by stairs");
     // Back on the same floor, the earlier stairs are still the hint, not the later escalator.

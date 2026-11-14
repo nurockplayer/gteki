@@ -1968,7 +1968,7 @@ export class Explorer {
     if (routeGlow) routeGlow.visible = mode === "overview";
     const routeGlowOccluded = this.routeGroup.getObjectByName("route-glow-occluded");
     if (routeGlowOccluded) routeGlowOccluded.visible = mode === "overview";
-    if (this.previewNext) this.setRouteMarkersVisible(this.routeMarkersVisible);
+    this.setRouteMarkersVisible(this.routeMarkersVisible);
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -2311,8 +2311,8 @@ export class Explorer {
     // Walk and guide draw a narrow, faint band that fades out under the camera; the overview keeps today's wide, opaque ribbon.
     const walkMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, opacity: 0.45, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     routeNearFade(walkMat);
-    const ribbon = this.previewNext ? new THREE.Group() : new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
-    if (this.previewNext) for (const run of routeRunsOutsideSpans(pts, escalators)) {
+    const ribbon = new THREE.Group();
+    for (const run of routeRunsOutsideSpans(pts, escalators)) {
       const mesh = new THREE.Mesh(ribbonGeometry(profile(run), ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
       mesh.renderOrder = 5;
       ribbon.add(mesh);
@@ -2360,7 +2360,7 @@ export class Explorer {
     const start = this.beacon(pts[0]!, 0x7dffa0, 2.2);
     start.userData.routeStart = true;
     this.routeGroup.add(start, this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
-    if (this.previewNext) this.setRouteMarkersVisible(this.routeMarkersVisible);
+    this.setRouteMarkersVisible(this.routeMarkersVisible);
     this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length, greybox: routeUsesGreybox(polyline, this.greyboxSegments) };
     this.updateGreyboxLegend();
   }
@@ -2381,7 +2381,6 @@ export class Explorer {
   private arrivalBeaconTime: number | null = null;
 
   setArrivalBeacon(arrived: boolean): void {
-    if (!this.previewNext) return;
     if (arrived === (this.arrivalBeaconTime !== null)) return;
     this.arrivalBeaconTime = arrived ? 0 : null;
     for (const g of this.routeGroup.children) {
@@ -2427,7 +2426,7 @@ export class Explorer {
   }
 
   setRouteQuiet(quiet: boolean): void {
-    if (!this.previewNext || this.routeQuiet === quiet) return;
+    if (this.routeQuiet === quiet) return;
     this.routeQuiet = quiet;
     this.setRouteMarkersVisible(this.routeMarkersVisible);
     const ribbon = this.routeGroup.getObjectByName("route-ribbon");
@@ -2450,7 +2449,7 @@ export class Explorer {
   setRouteMarkersVisible(visible: boolean): void {
     this.routeMarkersVisible = visible;
     for (const g of this.routeGroup.children) if (g.userData.routeMarker) {
-      const quiet = this.previewNext && this.mode !== "overview";
+      const quiet = this.mode !== "overview";
       g.visible = visible && this.openingState !== "active" && !this.routeQuiet && !(quiet && g.userData.routeStart);
       g.children[0]!.visible = !quiet;
     }

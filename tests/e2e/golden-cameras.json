@@ -167,11 +167,10 @@
     },
     {
       "id": "sj-sign-e31954cb",
-      "known": { "feature:sign e31954cb": "#1205" },
       "station": "shinjuku",
       "kind": "node",
-      "node": "n:3c2d58645c62448b8e4c97f010d9ce32",
-      "headingDeg": 75,
+      "node": "n:3d7ad1029dd5418698dcd0f919dec05f",
+      "headingDeg": 180,
       "expect": "The passage and overhead sign e31954cb are visible.",
       "features": [
         {
@@ -180,7 +179,7 @@
             "namePrefix": "sign:",
             "contains": "e31954cb"
           },
-          "minPixels": 1
+          "minPixels": 7
         }
       ]
     },
@@ -222,12 +221,11 @@
     },
     {
       "id": "sj-stair-2-top",
-      "known": { "feature:stairs": "#1205" },
       "station": "shinjuku",
       "kind": "node",
-      "node": "n:d1ccc52ef25e474dac70020771b7ea76",
-      "headingDeg": 240,
-      "expect": "Shinjuku stair 2 top and its surrounding structure are visible.",
+      "node": "n:51435d9112ba409e8ad5ab02dbbd060f",
+      "headingDeg": 60,
+      "expect": "Shinjuku stair 2, seen from its foot, and its surrounding structure are visible.",
       "features": [
         {
           "name": "stairs",
@@ -235,7 +233,7 @@
             "role": "stairs_ramps",
             "withinM": 15
           },
-          "minPixels": 1
+          "minPixels": 2006
         }
       ]
     },
@@ -259,12 +257,11 @@
     },
     {
       "id": "sj-escalator-top",
-      "known": { "feature:escalator": "#1205" },
       "station": "shinjuku",
       "kind": "node",
-      "node": "n:e4365ef27b14448eb770343c8a024f80",
-      "headingDeg": 250,
-      "expect": "Shinjuku escalator top and its surrounding structure are visible.",
+      "node": "n:ea71c5f746934d0a934c43782d861da5",
+      "headingDeg": 60,
+      "expect": "Shinjuku escalator and its surrounding structure are visible from the B3 foot.",
       "features": [
         {
           "name": "escalator",
@@ -272,7 +269,7 @@
             "namePrefix": "escalator-steps:",
             "withinM": 15
           },
-          "minPixels": 1
+          "minPixels": 2031
         }
       ]
     },
