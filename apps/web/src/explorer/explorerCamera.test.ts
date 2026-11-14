@@ -395,7 +395,7 @@ describe("default cat stair framing", () => {
     const axis = new THREE.Vector3(0, -4, -20).normalize();
     Object.assign(state.guide, { pts: [new THREE.Vector3(), axis.clone().multiplyScalar(20)], cum: [0, 20] });
     for (let i = 0; i < 120; i++) place(state);
-    const pose = escalatorPose(state.pos, axis, 0.2 * Math.min(1, aspect), 2.4 / 2.25, 0, 0);
+    const pose = escalatorPose(state.pos, axis, 0.2 * Math.min(1, aspect), 2.4 / 2.25, 0, 0, aspect, state.camera.fov);
     expect(state.camera.position.distanceTo(pose.position)).toBeLessThan(0.001);
     expect(state.camDistance).toBe(2.4);
     expect(state.setFov.mock.lastCall?.[0]).toBe(aspect >= 1 ? 55 : 65);
