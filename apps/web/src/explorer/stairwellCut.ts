@@ -405,7 +405,8 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
         const inSlab = level >= well.upperY - SLAB_BAND_M - 1e-6;
         const opening = inSlab ? reach : depthInterval(rect, level, WALK_CLEAR_M, HEADROOM_M);
         if (!opening) continue;
-        addBand(bands, rect, level, well.rects, index, !inSlab, opening);
+        // #1285: rounding the level can move it across the slab cutoff.
+        addBand(bands, rect, level, well.rects, index, !inSlab && level < well.upperY - SLAB_BAND_M - 0.025 - 1e-6, opening);
       }
     }
   }

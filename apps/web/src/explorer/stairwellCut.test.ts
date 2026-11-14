@@ -404,6 +404,28 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("keeps the cross-lane side when rounding moves a slab level below the cutoff", () => {
+    const s = scene();
+    // The top at 2.823 is above the 2.82 cutoff, but rounds down to 2.80.
+    s.ceiling.position.y = 2.723;
+    s.root.updateMatrixWorld(true);
+    const wells = stairwellWells(lowBundle(4.02), traversable);
+    const rect = wells[0]!.rects[0]!;
+    wells[0]!.rects.push({ ...rect, center: rect.center.clone().add(new THREE.Vector3(100, 0, 0)) });
+    const result = cutStairwells(s.root, wells, { tier: "low" });
+    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
+    const positions = band.geometry.getAttribute("position");
+    let found = false;
+    for (let i = 0; i < positions.count; i += 6) {
+      const along = [0, 1, 2, 3, 4, 5].map(j =>
+        (positions.getX(i + j) - rect.center.x) * rect.along.x + (positions.getZ(i + j) - rect.center.z) * rect.along.z);
+      const top = Math.max(...[0, 1, 2, 3, 4, 5].map(j => positions.getY(i + j)));
+      if (Math.abs(top - 2.8) < 1e-6 && Math.max(...along) - Math.min(...along) < 1e-6) found = true;
+    }
+    expect(found).toBe(true);
+    result.dispose();
+  });
+
   it("stops the follow camera at the edge band, unlit so it cannot fill the view black", () => {
     const s = scene();
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
