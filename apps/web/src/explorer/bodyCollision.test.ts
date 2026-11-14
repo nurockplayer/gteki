@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { WALKER_BODY } from "@gteki/scene-api";
-import { BODY_HEIGHTS, BODY_RAYS, bodyBlock, hitNormal, slideAlong, type CastFn } from "./bodyCollision.ts";
+import { BODY_HEIGHTS, BODY_RAYS, bodyBlock, hitNormal, pushOut, slideAlong, type CastFn } from "./bodyCollision.ts";
 import { castAll, explorerTargets } from "./raycast.ts";
 
 const R = WALKER_BODY.radiusM;
@@ -79,6 +79,24 @@ function walk(start: THREE.Vector3, dx: number, dz: number, steps: number, block
 
 // Ray-sampling slack: a convex corner can sit between two radial rays (see BODY_RAYS), a flat wall up to R(1 - cos(pi / rays)).
 const SAMPLING = 0.065;
+
+describe("pushOut", () => {
+  it("escapes a double-sided wall when the spawn starts inside it", () => {
+    const wall = block(-0.2, 0.2, -20, 20, 0, 2, "mixed");
+    const end = pushOut(v(0, 0), caster(wall), R);
+    expect(Math.abs(end.x)).toBeGreaterThanOrEqual(0.2 + R - 1e-3);
+    expect(blocked(end, end.clone().add(v(Math.sign(end.x) * 0.1, 0)), caster(wall))).toBe(false);
+  });
+
+  it("clears a nearby plane and leaves an unobstructed point unchanged", () => {
+    const wall = block(0.1, 0.2, -20, 20);
+    const start = v(0, 0);
+    const end = pushOut(start, caster(wall), R);
+    expect(0.1 - end.x).toBeGreaterThanOrEqual(R - 1e-3);
+    expect(end.y).toBe(start.y);
+    expect(pushOut(start, caster(), R)).toEqual(start);
+  });
+});
 
 describe("bodyBlock", () => {
   it("never lets the body overlap a wall it slides along from close by", () => {

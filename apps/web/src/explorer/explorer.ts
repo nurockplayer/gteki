@@ -26,7 +26,7 @@ import { buildGreybox, portalWidthAxis, unmodelledRunsByEdge, type Box, type Gre
 import { buildLiveScene } from "./liveScene.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
-import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
+import { bodyBlock, hitNormal, pushOut, slideAlong, type BodyBlock, type CastFn } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
@@ -2111,6 +2111,12 @@ export class Explorer {
     const ground = this.groundAt(p.x, p.y + 1.5, p.z, 4);
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
+    if (this.colliders.length || this.walls.length) {
+      const pushed = pushOut(this.pos, (origin, dir, far) => this.colliderCast(origin, dir, far), RADIUS);
+      const clear = resolveWalls(pushed.x, pushed.z, RADIUS, ground, WALKER_BODY.bodyTopM, this.walls);
+      const clearGround = this.groundAt(clear.x, ground + 1.5, clear.z, 4);
+      if (clearGround !== null) this.pos.set(clear.x, clearGround, clear.z);
+    }
     this.teleported = true;
     this.yaw = (-headingDeg * Math.PI) / 180;
     // The avatar appears at the new spot facing the new heading (no run blend from the old one).
@@ -2286,10 +2292,7 @@ export class Explorer {
     return result;
   }
 
-  /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
-  private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
-    if (this.colliders.length === 0) return null;
-    return bodyBlock(from, to, (origin, dir, far) => {
+  private colliderCast(origin: THREE.Vector3, dir: THREE.Vector3, far: number): ReturnType<CastFn> {
       this.ray.set(origin, dir);
       this.ray.far = far;
       const hit = castAll(this.ray, this.colliderTargets).find((h) => {
@@ -2300,7 +2303,12 @@ export class Explorer {
         return !exempt;
       });
       return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
-    }, RADIUS);
+  }
+
+  /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
+  private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
+    if (this.colliders.length === 0) return null;
+    return bodyBlock(from, to, (origin, dir, far) => this.colliderCast(origin, dir, far), RADIUS);
   }
 
   // ---- Routes & POIs -------------------------------------------------------------
