@@ -85,39 +85,16 @@ test("cold open @phone", async ({ page }, info) => {
   }) : null;
   const coverage = await overlay(page);
   let openingMetrics: Awaited<ReturnType<typeof sceneMetrics>> | undefined;
-  let probeAt: unknown;
   if (reelMode === "next") {
     await page.evaluate(() => (window as any).__gteki.holdFrames(true));
     try {
       await page.evaluate(() => (window as any).__gteki.goldenFrame());
       openingMetrics = await sceneMetrics(page);
-      if (info.project.name.startsWith("desktop")) probeAt = await page.evaluate(() => {
-        const { explorer: e, castAll } = (window as any).__gteki.scanProbe();
-        const meshes: any[] = [];
-        e.scene.updateMatrixWorld(true); e.camera.updateMatrixWorld(true);
-        e.scene.traverse((o: any) => { if (o.isMesh) meshes.push(o); });
-        const objects = new Map<string, unknown>();
-        for (const x of [0.41, 0.42, 0.43]) for (const y of [0.57, 0.58, 0.59]) {
-          e.ray.setFromCamera({ x: x * 2 - 1, y: 1 - y * 2 }, e.camera);
-          e.ray.near = 0; e.ray.far = Infinity;
-          const hits = castAll(e.ray, meshes).filter((h: any) => {
-            for (let p = h.object; p; p = p.parent) if (!p.visible) return false;
-            return true;
-          }).slice(0, 3);
-          for (const hit of hits) {
-            const o = hit.object, ancestors: string[] = [];
-            for (let p = o.parent; p; p = p.parent) ancestors.push(p.name);
-            const material = Array.isArray(o.material) ? o.material[hit.face?.materialIndex ?? 0] : o.material;
-            if (!objects.has(o.uuid)) objects.set(o.uuid, { name: o.name, ancestors, userDataKeys: Object.keys(o.userData), role: o.userData?.gteki_role ?? null, color: material?.color?.getHexString() ?? null, distance: hit.distance });
-          }
-        }
-        return [...objects.values()];
-      });
       const png = await cdp!.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
       fs.writeFileSync(path.join(out, "open-ready.png"), Buffer.from(png.data, "base64"));
     } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   } else await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
-  fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, open1sShot, ...nextState, opening: { ...nextState!.opening, catVisible: openingMetrics!.catVisible, catOccluder: openingMetrics!.catOccluder, catOccluderMeshes: openingMetrics!.catOccluderMeshes }, ...(probeAt ? { probeAt } : {}) } : {}), ...state, ...coverage }, null, 2));
+  fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, open1sShot, ...nextState, opening: { ...nextState!.opening, catVisible: openingMetrics!.catVisible, catOccluder: openingMetrics!.catOccluder, catOccluderMeshes: openingMetrics!.catOccluderMeshes } } : {}), ...state, ...coverage }, null, 2));
   if (nextState) {
     expect(state.mode).toBe("walk");
     expect(nextState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
