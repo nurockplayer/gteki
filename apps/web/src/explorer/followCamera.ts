@@ -412,7 +412,10 @@ export function solveRaisedBoom(
     }
   }
   let raise = easeRaise(currentRaise, target, dt, snap);
-  if (bodyDriven && !snap) raise = Math.min(raise, currentRaise + FOLLOW.bodyRaiseSpeed * Math.max(0, dt));
+  if (bodyDriven && !snap) {
+    const step = FOLLOW.bodyRaiseSpeed * Math.max(0, dt);
+    raise = Math.max(currentRaise - step, Math.min(target, currentRaise + step));
+  }
   let raised = raisedBack(base.back, raise, new THREE.Vector3());
   let distance = raise > 0 ? followDistance(wanted, cast(raised)) : base.distance;
   if (!snap && !bodyDriven && target > raise && distance < Math.min(FOLLOW.comfortDistance, wanted)) {
