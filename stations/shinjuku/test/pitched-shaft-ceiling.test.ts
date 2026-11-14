@@ -10,9 +10,6 @@ import { exactHash, plainHash, withCanvasStub } from "./helpers/scene-digest.ts"
 import { digestSceneLists } from "./helpers/station-digest.ts";
 import { castCamera } from "../../../apps/web/src/explorer/raycast.ts";
 import { prepareRayTrees, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
-import { buildStation } from "../scene/build.ts";
-import { visualDigest } from "./helpers/scene-digest.ts";
-import { digestStation } from "./helpers/station-digest.ts";
 
 const { bundle } = loadShinjukuBundle();
 const v3 = (p: { x: number; y: number; z: number }) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -113,24 +110,7 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
       checked++;
     }
     expect(checked).toBeGreaterThan(0);
-    // Temporary measurement for the approved lighting-only digest refresh (2026-11-15 JST).
-    const skip = (o: THREE.Object3D) => o.name === "walk proxies (invisible)" || o.name === "viewer probe (draws nothing)" || o.name === "kit-fallback";
-    const station = digestStation(on.root, skip);
-    expect({ ...station, geometryDigest: "lighting-only" }).toEqual({
-      geometryDigest: "lighting-only",
-      appearanceDigest: "48e27d9e7177edd1202226bbcab8b5e6e2c34ac78315f180c89978179fe6297c",
-      nodesDigest: "0fcaa3a0706aab1de9d456a285d0d940809de693b586e21c1d261d2ac8efb3c3",
-      texturesDigest: "438863ac76956a1279b557c9832854d0d57e0c276491475179ac5d6a3b6ac4f2",
-      meshes: 108, bytes: 17299194,
-    });
-    const high = withCanvasStub(() => buildStation(bundle, plan as unknown as Plan, { quality: "high" }));
-    try {
-      const highDigest = digestStation(high.root);
-      expect(highDigest.bytes).toBe(17298066);
-      expect(visualDigest(high.root.getObjectByName("linear-light:underground")!)).toEqual(visualDigest(mesh));
-      console.log("2026-11-15 JST upright lighting digests", JSON.stringify({ checked, station, lighting: visualDigest(mesh), geometryHash: highDigest.geometryDigest }));
-    } finally { high.dispose(); }
-  }, 600_000);
+  });
 
   it("aligns shared-roof strips with the pitch and keeps both ends below its plane", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;

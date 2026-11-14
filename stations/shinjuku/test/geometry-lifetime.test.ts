@@ -58,7 +58,7 @@ describe("station geometry lifetime", () => {
     // #870 (2026-11-06 JST): platform door panels and caps split around the aligned openings (+3,360 B).
     // #1192 (2026-11-13 JST): B3 wall restored; geometry hash changes, bytes/counts stay unchanged.
     // J7 (2026-11-13 JST): remove 31 overlapping linear lights.
-    expect(result.geometryHash).toBe("1a394e024285b3a6d3c80f6e84f515cfb88351261c94a76f407fe88e9226ae4a");
+    expect(result.geometryHash).toBe("b7599db06104342c267f9950912ed4c15a2cd3d5a1bad4c7e4438b40f9b6b5e4");
   }, 60_000);
 
   // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the

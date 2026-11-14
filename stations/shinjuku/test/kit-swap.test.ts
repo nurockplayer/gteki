@@ -71,7 +71,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // J7 pitched shaft ceilings default-on (2026-11-13 JST): +12 pitched roof meshes; physical lists unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "654591c2e8f44a6af41214e47395d81aebc7cc0ff411a5fbff2a7c34298af716",
+    "geometryDigest": "dd08497563312cfa14a64e3dc20e48c0e3d91bf234cb08c936495bf3c61a494e",
     "appearanceDigest": "48e27d9e7177edd1202226bbcab8b5e6e2c34ac78315f180c89978179fe6297c",
     "nodesDigest": "0fcaa3a0706aab1de9d456a285d0d940809de693b586e21c1d261d2ac8efb3c3",
     "texturesDigest": "438863ac76956a1279b557c9832854d0d57e0c276491475179ac5d6a3b6ac4f2",
