@@ -233,7 +233,7 @@
             "role": "stairs_ramps",
             "withinM": 15
           },
-          "minPixels": 1
+          "minPixels": 2006
         }
       ]
     },
