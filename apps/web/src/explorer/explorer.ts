@@ -3552,14 +3552,13 @@ export class Explorer {
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
-    const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && onStairs && !this.catRidingEscalator();
+    const pinned = this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined;
+    const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && onStairs && !this.catRidingEscalator() && !pinned;
     this.stairsFraming = stepEscalatorLock(this.stairsFraming.progress, stairsOn, dt, snap || this.reducedMotion);
-    const stairsWeight = this.stairsFraming.weight;
+    const stairsWeight = stairsOn ? this.stairsFraming.weight : 0;
     const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
     this.slope = stepSlope(resetSlope ? NO_SLOPE : this.slope, resetSlope ? 0 : this.pos.y - this.slopeY, resetSlope ? 0 : dt, onStairs);
-    if (resetSlope || this.reducedMotion) this.stairsLens = false;
-    if (stairsOn) this.stairsLens = true;
-    else if (!this.slope.on) this.stairsLens = false;
+    this.stairsLens = stairsOn;
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
     const span = this.mode === "guide" && this.guide ? escalatorSpanAt(this.guide.s, this.guide.spans, ESCALATOR_SHOT.leadM) : undefined;
@@ -3576,7 +3575,7 @@ export class Explorer {
     const lock = stepEscalatorLock(this.escalatorProgress, lockOn, dt, lockSnap);
     this.escalatorProgress = lock.progress;
     this.escalatorWeight = lock.weight;
-    if (this.bodyRaiseHold && (snap || this.firstPerson || !this.catAvatar || this.escalatorWeight > 0 || (!this.previewNext && this.catRidingEscalator())
+    if (this.bodyRaiseHold && (snap || this.firstPerson || !this.catAvatar || this.escalatorWeight > 0 || (!this.previewNext && !stairsOn)
       || this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined)) {
       this.bodyRaiseHold.seconds = this.bodyRaiseHold.target = 0;
     }
@@ -3631,6 +3630,40 @@ export class Explorer {
       back.normalize();
       pose.target.lerp(ride.target, this.escalatorWeight);
     }
+    let stairAngle = 0;
+    let catCentre: THREE.Vector3 | undefined;
+    if (stairsOn) {
+      const g = this.guide!;
+      const { segment } = samplePolyline(g.pts, g.cum, g.s);
+      const axis = g.pts[segment + 1]!.clone().sub(g.pts[segment]!);
+      if (axis.y < 0) {
+        stairAngle = Math.atan2(-axis.y, Math.hypot(axis.x, axis.z)) + THREE.MathUtils.degToRad(8);
+        catCentre = this.catWorldBox().getCenter(new THREE.Vector3());
+      }
+    }
+    // Rotate only as far as the descending tread constraint needs, retaining the D2 boom length.
+    const clearTreads = (direction: THREE.Vector3, length: number) => {
+      if (!catCentre) return direction;
+      const flat = Math.hypot(direction.x, direction.z);
+      if (flat < 1e-9) return direction;
+      const x = direction.x / flat, z = direction.z / flat;
+      const angleAt = (elevation: number) => {
+        const horizontal = length * Math.cos(elevation);
+        return Math.atan2(pose.pivot.y + length * Math.sin(elevation) - catCentre.y,
+          Math.hypot(pose.pivot.x + x * horizontal - catCentre.x, pose.pivot.z + z * horizontal - catCentre.z));
+      };
+      let low = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1)), high = Math.PI / 2;
+      if (angleAt(low) >= stairAngle) return direction;
+      for (let i = 0; i < 24; i++) {
+        const mid = (low + high) / 2;
+        if (angleAt(mid) < stairAngle) low = mid;
+        else high = mid;
+      }
+      return direction.set(x * Math.cos(high), Math.sin(high), z * Math.cos(high));
+    };
+    const nominalElevation = Math.asin(back.y);
+    back = clearTreads(back.clone(), wantedDistance);
+    const stairRaise = Math.max(0, Math.asin(back.y) - nominalElevation);
     let dist = wantedDistance;
     let raisedClear = false;
     if (!this.cameraTargets.length) this.boomRaise = 0;
@@ -3640,7 +3673,7 @@ export class Explorer {
       return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
     };
     if (this.cameraTargets.length) {
-      const checkBody = this.catAvatar && this.escalatorWeight === 0 && (this.previewNext || !this.catRidingEscalator())
+      const checkBody = this.catAvatar && this.escalatorWeight === 0 && (this.previewNext || stairsOn)
         && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
       const cameraPoint = new THREE.Vector3();
       const direction = new THREE.Vector3();
@@ -3681,12 +3714,15 @@ export class Explorer {
     const length = offset.length();
     if (length > 1e-9) {
       offset.divideScalar(length);
+      // Damping cannot lower the camera beneath the tread constraint. The final cast still wins
+      // when this elevation meets a shaft ceiling or shell, shortening the boom on its near side.
+      clearTreads(offset, length);
       const hits = this.cameraTargets.length ? cast(offset, Math.max(length, wantedDistance)) : [];
       const target = Math.min(length, dist, followDistance(wantedDistance, hits));
       const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
-    if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
+    if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect);
     const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
     if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
     this.camera.lookAt(pose.target);
