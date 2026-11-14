@@ -69,9 +69,10 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // 2026-11-12 JST: station digest remeasured after rebasing on #1213; unchanged.
 // #1192: restore the B3 concourse wall; counts and non-geometry digests stay unchanged.
 // J7 pitched shaft ceilings default-on (2026-11-13 JST): +12 pitched roof meshes; physical lists unchanged.
+// #1169 (2026-11-14 JST): shaft stripe UV alignment changes the station geometry digest.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "279e7677928c3927c17e9627df2b953c60dd84847ffb47f3d4415417c0a23895",
+    "geometryDigest": "1d0410beb65963889fbdb77a738a213a8716d850cb7f84837b64bc49e4f0b30a",
     "appearanceDigest": "48e27d9e7177edd1202226bbcab8b5e6e2c34ac78315f180c89978179fe6297c",
     "nodesDigest": "a6712cd2779ed695bb50c39f8618b91bad83529cfc08b05cfa18c8ee2235d20c",
     "texturesDigest": "438863ac76956a1279b557c9832854d0d57e0c276491475179ac5d6a3b6ac4f2",
