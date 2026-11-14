@@ -75,7 +75,7 @@ export const ARRIVAL_SHOTS: Record<string, { desktop: { heading: number; distanc
 
 /** Authored exit-mouth opening framing; shoulder places the cat just left of centre. */
 export const OPENING_SHOTS: Record<string, { desktop: { heading: number; distance: number; height: number; pitch: number; fov: number; shoulder: number }; phone: { heading: number; distance: number; height: number; pitch: number; fov: number; shoulder: number } }> = {
-  "poi:exit:1": { desktop: { heading: 174, distance: 2.75, height: 1.1, pitch: -3, fov: 55, shoulder: 0.12 }, phone: { heading: 174, distance: 3, height: 1.22, pitch: -12, fov: 65, shoulder: 0 } },
+  "poi:exit:1": { desktop: { heading: 174, distance: 2.75, height: 1.1, pitch: -3, fov: 55, shoulder: 0.12 }, phone: { heading: 174, distance: 3, height: 1.22, pitch: -12, fov: 65, shoulder: 0.30 } },
 };
 
 /** Hold immediately in next mode, then release once on guide start or visitor input. */
