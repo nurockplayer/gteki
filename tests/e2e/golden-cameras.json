@@ -257,12 +257,11 @@
     },
     {
       "id": "sj-escalator-top",
-      "known": { "feature:escalator": "#1270" },
       "station": "shinjuku",
       "kind": "node",
-      "node": "n:e4365ef27b14448eb770343c8a024f80",
-      "headingDeg": 250,
-      "expect": "Shinjuku escalator top and its surrounding structure are visible.",
+      "node": "n:ea71c5f746934d0a934c43782d861da5",
+      "headingDeg": 60,
+      "expect": "Shinjuku escalator and its surrounding structure are visible from the B3 foot.",
       "features": [
         {
           "name": "escalator",
