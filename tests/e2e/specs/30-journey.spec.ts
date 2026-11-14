@@ -311,6 +311,7 @@ test("guided walk @phone", async ({ page }, info) => {
     }
     else expect.soft(frame.edgeInFrame, "at least one metre of platform edge in frame").toBe(true);
     expect.soft(sample.catVisible).toBeGreaterThanOrEqual(config.thresholds.catVisibleMin);
+    expect.soft(sample.catOccluder, "no NPC in front of the cat at arrival").not.toBe("npc");
     expect.soft(sample.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
     expect.soft(sample.nearBlack).toBeLessThanOrEqual(config.thresholds.nearBlack);
     expect.soft(sample.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
