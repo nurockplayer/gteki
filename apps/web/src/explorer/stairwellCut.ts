@@ -621,6 +621,10 @@ function addBand(out: number[], rect: StairwellRect, level: number, pieces: read
     const from = corners[i]!, to = corners[(i + 1) % 4]!;
     // The stair mouth: the first piece's start side and the last piece's end side meet the floors, not a slab edge.
     if ((index === 0 && alongOf(rect, from, to) < -rect.halfLength + 1e-3) || (index === pieces.length - 1 && alongOf(rect, from, to) > rect.halfLength - 1e-3)) continue;
+    const along = alongOf(rect, from, to);
+    const alongSpan = (to.x - from.x) * rect.along.x + (to.z - from.z) * rect.along.z;
+    // #1285: a cross-lane band within the flight's headroom blocks the lane.
+    if (Math.abs(alongSpan) < 1e-6 && level - (rect.center.y + along * rect.rise / (2 * rect.halfLength)) < HEADROOM_M - 1e-3) continue;
     for (const [a, b] of sideRemainder(from, to, rect, pieces)) {
       quad(out, a.clone().setY(level), b.clone().setY(level), b.clone().setY(level - BAND_DEPTH_M), a.clone().setY(level - BAND_DEPTH_M));
     }

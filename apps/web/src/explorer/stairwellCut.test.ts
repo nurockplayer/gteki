@@ -359,6 +359,30 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("keeps lower slab bands out of the flight's headroom across the lane", () => {
+    const s = scene();
+    s.ceiling.position.y = 1.1;
+    s.root.updateMatrixWorld(true);
+    const wells = stairwellWells(bundle(), traversable);
+    const rect = wells[0]!.rects[0]!;
+    const result = cutStairwells(s.root, wells, { tier: "low" });
+    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
+    const positions = band.geometry.getAttribute("position");
+    expect(positions.count).toBeGreaterThan(0);
+    for (let i = 0; i < positions.count; i += 6) {
+      const along = [0, 1, 2, 3, 4, 5].map(j =>
+        (positions.getX(i + j) - rect.center.x) * rect.along.x + (positions.getZ(i + j) - rect.center.z) * rect.along.z);
+      if (Math.max(...along) - Math.min(...along) >= 1e-6) continue;
+      const bottom = Math.min(...[0, 1, 2, 3, 4, 5].map(j => positions.getY(i + j)));
+      const flightY = rect.center.y + along[0]! * rect.rise / (2 * rect.halfLength);
+      expect(bottom - flightY).toBeGreaterThanOrEqual(2.1 - 0.3 - 1e-3);
+    }
+    band.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(0.5, 0.4, 0), new THREE.Vector3(1, 0, 0), 0, 2);
+    expect(ray.intersectObject(band)).toHaveLength(0);
+    result.dispose();
+  });
+
   it("stops the follow camera at the edge band, unlit so it cannot fill the view black", () => {
     const s = scene();
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
