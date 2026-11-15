@@ -65,6 +65,8 @@ const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
   "scene/shop_placements.json": { script: "scene/shop_placements.json", sources: () => ["gteki-kit-0-1-0"] },
   "scene/shop_kit.json": { script: "scene/shop_kit.json", sources: () => ["gteki-kit-0-1-0"] },
   "data/plan.json": { script: "tools/import-e27.ts", sources: () => [NWD, MAP] },
+  "data/layout-bake-key.json": { script: "tools/bake-layout.ts", sources: () => [] },
+  "data/layout-baked.bin": { script: "tools/bake-layout.ts", sources: () => [NWD, MAP] },
   "data/surface.json": { script: "tools/import-surface.ts", sources: () => [PLATEAU, ...surfaceExits()] },
   "scene/fare-restricted.generated.json": { script: "test/helpers/generate-restricted-fences.ts", sources: () => [...planPolygons(), ...verifiedEdges()] },
   // #121: derived from surface.json, the bundle and the plan together.

@@ -7,7 +7,7 @@ import { sanitizeAvatarFade } from "./avatarDither.ts";
 export const DEFAULT_AVATAR_GLB_URL = "/avatars/commuter.glb";
 
 /** #339: the soft commuter is opt-in (?avatar=soft); the Owner rejected it as the default on 2026-10-28. */
-export const SOFT_AVATAR_GLB_URL = "/avatars/gteki-commuter-soft.glb";
+export const SOFT_AVATAR_GLB_URL = import.meta.env.PROD ? "/avatars/gteki-commuter-soft.glb.gz" : "/avatars/gteki-commuter-soft.glb";
 
 /** URL reads belong to app.ts; accept only relative paths resolving within the app's origin. */
 export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string | undefined {
@@ -29,7 +29,7 @@ export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string |
 export type AvatarKind = "human" | "cat";
 
 /** #854 scripted cat, picked by gteki-lead on 2026-11-06; a placeholder until the Owner sets breed and coat. */
-export const CAT_AVATAR_GLB_URL = "/avatars/cat.glb";
+export const CAT_AVATAR_GLB_URL = import.meta.env.PROD ? "/avatars/cat.glb.gz" : "/avatars/cat.glb";
 export const CAT_AVATAR_HEIGHT_M = 0.345;
 
 /** Cat mode draws nothing until its GLB arrives: the human must never appear there. */

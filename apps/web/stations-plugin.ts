@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
 import type { Plugin } from "vite";
 // Relative (not @gteki/schema) so Vite's config loader bundles the TypeScript source.
 import { dataFileFactsOnlySources, parseStationFiles, PUBLICATION_RULE_CODES, validateBundle } from "../../packages/schema/src/index.ts";
@@ -358,12 +359,12 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
   /**
    * Dev: a direct /@fs URL of the file's current real path, recomputed on every load, so assets that
    * move (e.g. symlink → real folder) never resolve through a stale cached `?url` module.
-   * Build: `?url` so Vite fingerprints and emits the file.
+   * Build: `?url` so Vite fingerprints and emits the file; GLBs use a gzip sibling.
    */
   const assetLoader = (file: string) =>
     serve
       ? `() => Promise.resolve(${JSON.stringify(fsUrl(fs.realpathSync(file)))})`
-      : `() => import(${fsPath(file + "?url")}).then((m) => m.default)`;
+      : `() => import(${fsPath(file + (file.endsWith(".glb") ? "?url&no-inline" : "?url"))}).then((m) => m.default${file.endsWith(".glb") ? ' + ".gz"' : ""})`;
   return {
     name: "gteki-stations",
     configResolved(config) {
@@ -385,7 +386,7 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
       // A production build publishes what it emits: only valid stations, and only their declared files.
       const published = serve ? null : publishableAssets(stations, { privateBuild });
       if (published) {
-        declaredReal = new Set(stations.flatMap((s) => [...(published.get(s.dir) ?? [])].map((f) => fs.realpathSync(path.join(s.gtekiDir, f)))));
+        declaredReal = new Set(declaredStationFiles(stations).flatMap((s) => [...s.declared]));
       }
       const lines = ["export const stations = ["];
       for (const s of stations) {
@@ -469,6 +470,16 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
         }
       }
       if (refused.size) this.error(`gteki-stations: refusing to publish undeclared files (declare them in a station's assets[].files): ${[...refused].join(", ")}`);
+    },
+    writeBundle(options) {
+      // Vite has copied public/ by now, so this covers both public and emitted station GLBs.
+      const outDir = options.dir!;
+      for (const file of fs.readdirSync(outDir, { recursive: true, encoding: "utf8" })) {
+        if (!file.endsWith(".glb")) continue;
+        const full = path.join(outDir, file);
+        // node:zlib writes no filename and a zero mtime, making the level-9 copy deterministic.
+        fs.writeFileSync(`${full}.gz`, gzipSync(fs.readFileSync(full), { level: 9 }));
+      }
     },
     configureServer(server) {
       for (const root of roots) if (fs.existsSync(root)) server.watcher.add(root);

@@ -4,6 +4,9 @@
  * The fixture began at fe8d3b6; #49 added render-only shells and #342 added identity signage.
  * Regenerate only on purpose: pnpm exec tsx stations/shinjuku/test/helpers/scene-digest-fixture.ts
  */
+import { readFileSync } from "node:fs";
+import { gunzipSync } from "node:zlib";
+import { prepareLayout } from "../../scene/build-cache.ts";
 import { createHash } from "node:crypto";
 import * as THREE from "three";
 import type { StationScene } from "@gteki/scene-api";
@@ -215,6 +218,10 @@ export async function fullDigest(bundle: StationBundle, plan: Plan, opts: { stat
     built.dispose();
     return d;
   });
+  // Headless fetch cannot read file: URLs. Seed the real committed bake so both scene tiers
+  // exercise it while the station/protection above remain the fresh-derivation reference.
+  const layoutBakeText = gunzipSync(readFileSync(new URL("../../data/layout-baked.bin", import.meta.url))).toString("utf8");
+  prepareLayout(bundle, plan, { reuse: true, layoutBakeText });
   const scenes = {} as Record<"low" | "high", Digest>;
   for (const quality of ["low", "high"] as const) {
     const scene = await withCanvasStub(() => buildScene({ THREE, bundle, quality } as never)) as StationScene;

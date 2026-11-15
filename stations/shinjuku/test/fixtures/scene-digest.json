@@ -526,8 +526,8 @@
      "hash": "d7a02aa0488b2fd192779f186a0d9665588cd44ba21e2c826bf0887d586ab45b"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 10992,
-     "hash": "15b947d56aedf9113953df1f1d7780ce1f228dcf85b033156ccb879c6d9c6107"
+     "triangles": 11328,
+     "hash": "bb84a3a6f025b3f28ea9cac4cc442406f1a0068adc3f342b761c5ac1983677b3"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 8,
@@ -731,7 +731,7 @@
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
      "triangles": 19182,
-     "hash": "7c1a23797e4f70bdfb352f242310be9fef2f7b98022d59f7d5cb4b180af1bc0e"
+     "hash": "58e1494d28b002e7a0afa57e4b3177a1c845ff869549cbade9195b897106c2b4"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -1709,8 +1709,8 @@
      "hash": "d7a02aa0488b2fd192779f186a0d9665588cd44ba21e2c826bf0887d586ab45b"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
-     "triangles": 10992,
-     "hash": "15b947d56aedf9113953df1f1d7780ce1f228dcf85b033156ccb879c6d9c6107"
+     "triangles": 11328,
+     "hash": "bb84a3a6f025b3f28ea9cac4cc442406f1a0068adc3f342b761c5ac1983677b3"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 8,
@@ -1914,7 +1914,7 @@
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
      "triangles": 19182,
-     "hash": "7c1a23797e4f70bdfb352f242310be9fef2f7b98022d59f7d5cb4b180af1bc0e"
+     "hash": "58e1494d28b002e7a0afa57e4b3177a1c845ff869549cbade9195b897106c2b4"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,

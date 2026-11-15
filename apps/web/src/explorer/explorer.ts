@@ -7,6 +7,7 @@ import { CSS2DObject, CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRe
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { LightProbeGenerator } from "three/examples/jsm/lights/LightProbeGenerator.js";
 import { ASSET_SCHEME, fencedUrlResolver, stationDir } from "./assetFence.ts";
+import { fetchGlb } from "./fetchGlb.ts";
 import { enuToRenderer } from "@gteki/geo";
 import type { Router, PolylinePoint, RouteStep } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
@@ -1427,7 +1428,7 @@ export class Explorer {
         const url = station.assetUrls.get(uri);
         if (!url) return Promise.reject(new Error(`asset not found in station folder: ${uri}`));
         const loader = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder).setResourcePath(`${ASSET_SCHEME}${stationDir(uri)}/`).register(glbPrimitivePlugin);
-        return loader.loadAsync(url).catch((err: unknown) => { throw fenceError(err); });
+        return fetchGlb(loader, url).catch((err: unknown) => { throw fenceError(err); });
       },
       loadTexture: async (uri, opts = {}) => {
         const url = station.assetUrls.get(uri);

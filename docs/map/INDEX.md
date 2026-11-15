@@ -21,7 +21,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 
 ### App (`apps/web`)
 - Station audio: shared gate taps, chime and speech in `stations/ikebukuro/scene/station-sound.ts`; Shinjuku's train-cycle rumble and cues in `stations/shinjuku/gteki/train-sound.ts`, routed through zone acoustics. Updated 2026-11-06 JST.
-- Explorer: the 3D station view. Scene load, walk/camera, route rendering, POI labels, minimap hookup, model-derived connector guards · `apps/web/src/explorer/` · [[web-explorer]]
+- Explorer: the 3D station view. Scene load (including precompressed GLBs), walk/camera, route rendering, POI labels, minimap hookup, model-derived connector guards · `apps/web/src/explorer/` · [[web-explorer]]
 - UI shell: app frame, search combobox, minimap, identity/merchant cards, rail travel, live region · `apps/web/src/ui/` · [[web-ui]]
 - Field recorder: phone walk, offline notes, public/private receipt JSON and optional private-stop overlay · `apps/web/src/field/` · [[web-field]]
 - Merchant form: the merchant submission form and payload · `apps/web/src/merchant/` · [[web-merchant]]
@@ -37,7 +37,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - godot: Godot HQ client fed by exported GLB + sidecar snapshots; routes/searches by calling the TS CLIs. `src/*.test.ts` runs in root vitest, the GDScript suites in `packages/godot/tests/` run in no CI · `packages/godot/` · [[pkg-godot]]
 
 ### Stations (`stations/`)
-- Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · data generation and raw-data runs: [[data-stations]]; vertical kit: [[shinjuku-kit]]; other scene areas: no note yet (station lead)
+- Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · data generation and raw-data runs: [[data-stations]]; vertical kit: [[shinjuku-kit]]; prepared-layout bake and explorer integration: [[web-explorer]]; other scene areas: no note yet (station lead)
 - Ikebukuro: data (`stations/ikebukuro/gteki/`), scene (`stations/ikebukuro/scene/`), pipeline (`stations/ikebukuro/pipeline/`), lane docs (`stations/ikebukuro/docs/`), entry point `stations/ikebukuro/README.md` · data generation and receipts: [[data-stations]]; scene: no note yet (station lead)
 - Street ambience (#861): synthesized traffic bed and pedestrian-signal chirp, crossfaded by acoustic zone and wired into both explorer stations · `stations/ikebukuro/scene/street-ambience.ts` · no note yet (station lead)
 - Shinjuku explorer crowd (#938): the graph's verified walk, stairs, ramp and gate edges adapted for Ikebukuro's `buildCrowd`, wired into the explorer scene as instanced commuters; no escalator or lift riders, no gate queues here · `stations/shinjuku/gteki/explorer-crowd.ts` · no note yet (station lead)
