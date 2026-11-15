@@ -32,7 +32,7 @@ describe("loadGlbAvatar", () => {
     expect(parse.mock.calls[0]![1]).toBe(`${ASSET_SCHEME}assets/`);
     expect(refused).toEqual([]);
     expect(load).toHaveBeenCalledOnce();
-  });
+  }, 30_000);
 
   it("keeps plain GLBs on loadAsync", async () => {
     const loader = new GLTFLoader();

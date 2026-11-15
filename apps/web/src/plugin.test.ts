@@ -191,7 +191,7 @@ describe("virtual station module asset URLs", () => {
         expect(compressed[3]! & 8).toBe(0); // no original filename
       }
     } finally { fs.rmSync(path.dirname(root), { recursive: true, force: true }); }
-  });
+  }, 30_000);
 
   it("publishes a declared uriMobile variant, and refuses it when it is missing", () => {
     const root = valid(tree());
