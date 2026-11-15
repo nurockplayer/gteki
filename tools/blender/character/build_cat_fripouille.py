@@ -1729,6 +1729,7 @@ def authored_tuning_measurements(arm, body):
     withers = [v.index for v in body.data.vertices if .075 <= v.co.y <= .135 and abs(v.co.x) < .045 and v.co.z > .21]
     for name, gait in AUTHORED_GAITS.items():
         run = gait["gait"] == "run"
+        failures.extend(f"{name}: {reason}" for reason in gait.get("hold_reasons", []))
         head, tail, neck, head_angles, tail_angles = [], [], [], [], []
         swing = {"fore": 0.0, "hind": 0.0}
         worst = 0.0
@@ -1835,7 +1836,7 @@ def authored_tuning_measurements(arm, body):
 
 
 def render_contact_sheets(directory, arm, body):
-    """Freeze the real shaded skin at each data key; same camera width for all eight rows."""
+    """Freeze the shaded skin at selected keys and 12 evaluated phases, at one metric scale."""
     import bpy
     from datetime import datetime
     from mathutils import Vector
@@ -1963,6 +1964,7 @@ def render_contact_sheets(directory, arm, body):
                    "These are centroid pivots and the existing smoothed skin. Visible collapse requires the AD's sheet judgment; no automated visual PASS is claimed.",
                    "A's second suspension and 25 mm stylised root lift deliberately depart from Muybridge's single extended suspension.",
                    "Stance targets use nominal speed times contact duration, with exact linear evaluation during contact. Dense clip baking remains PR 2."])
+    report.extend(["", "## Acceptance failures / lead decision", "", *(failures or ["None."])])
     directory.joinpath("report.md").write_text("\n".join(report) + "\n")
     body.hide_render = True
     temporary = []
