@@ -1847,9 +1847,10 @@ def round4_measurements(arm, body, records):
     """AD round 4: apply the measured rule limits equally to every record."""
     import bpy
     from mathutils import Vector
-    lines = ["", "## Per-rule acceptance (AD round 4)", "",
+    lines = ["", "## Per-rule acceptance (AD rounds 4–5)", "",
              "R1 takes precedence over R10, R11, R8/R9, then R2. Rates use sliding 1/32-cycle windows. N/A means the rule names the other gait.",
-             "AD lead-board cat-run-motion decisions on PR #1348 (2026-11-15 23:20 and 23:29 JST): R10a ≤ 10° per 1/128 cycle, R10c reversal ≤ 3°, T1 boundary bend ≥ 17.5°.", "",
+             "AD lead-board cat-run-motion decisions on PR #1348 (2026-11-15 23:20 and 23:29 JST): R10a ≤ 10° per 1/128 cycle, R10c reversal ≤ 3°, T1 boundary bend ≥ 17.5°.",
+             "AD round-5d acceptance (2026-11-16 JST): [PR #1348 comment](https://github.com/nurockplayer/gteki/pull/1348#issuecomment-6896544158). R11a: paw at most 18 mm inside its hip/shoulder; knee/elbow at most 15 mm outside its own paw. R11b: MOVED #1354; excluded from this PR's acceptance failures.", "",
              "| Record | Rule | Result | Evaluated measurements |", "| --- | --- | --- | --- |"]
     failures = []
     seams = closed_rest_seams(body)
@@ -2061,9 +2062,9 @@ def round4_measurements(arm, body, records):
                     inside = max(inside, (hip-paw, p, k))
                 maxima = [max((v[i], p) for p, v in values) for i in range(4)]
                 leg_maxima.append(k + ' hip/knee/wrist/paw ' + '/'.join(f'{v:.2f}@{p:.4f}' for v, p in maxima))
-            row('R11a', outside[0] <= 15.001 and inside[0] <= 10.001,
+            row('R11a', outside[0] <= 15.001 and inside[0] <= 18.001,
                 f'knee outside paw {outside[0]:.3f} mm at {outside[1]:.4f} {outside[2]}; paw inside hip {inside[0]:.3f} mm at {inside[1]:.4f} {inside[2]}; ' + '; '.join(leg_maxima))
-            lines.append(f'| {name} | R11b | HOLD | 12-phase rear silhouette requires sheet measurement |')
+            lines.append(f'| {name} | R11b | MOVED #1354 | Rear silhouette diagnosis: https://github.com/nurockplayer/gteki/issues/1354; excluded from this PR\'s acceptance failures |')
         gaps=[]
         for phase in [i/12 for i in range(12)]+([.870] if name=='run_a' else []):
             apply_authored_pose(arm,authored_pose(name,phase*gait['cycle_s']))
