@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import { avatarGlbUrl, avatarKind, createAvatarRig, DEFAULT_AVATAR_GLB_URL, SOFT_AVATAR_GLB_URL } from "./avatarSelection.ts";
+import { avatarGlbUrl, avatarKind, catGait, createAvatarRig, DEFAULT_AVATAR_GLB_URL, SOFT_AVATAR_GLB_URL } from "./avatarSelection.ts";
 import { catAvatarFixture, fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
 
 afterEach(() => vi.restoreAllMocks());
@@ -264,4 +264,10 @@ describe("avatarKind", () => {
   it.each(["avatar=procedural", "avatar=soft", "avatar=glb"])("keeps the human avatar for %s", (query) => {
     expect(parse(query)).toBe("human");
   });
+});
+
+ it("selects cat gait only in the next preview", () => {
+  for (const [query, expected] of [["next=1&catGait=a", "a"], ["next=1&catGait=b", "b"], ["catGait=a", undefined], ["next=1&catGait=c", undefined], ["next=1", undefined]] as const) {
+    expect(catGait(new URLSearchParams(query))).toBe(expected);
+  }
 });

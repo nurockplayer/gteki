@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
+import type { CatGait } from "./avatarSelection.ts";
 import type { AvatarRig } from "./avatar.ts";
 import { ditherFade, sanitizeAvatarFade } from "./avatarDither.ts";
 import { MEOW_SECONDS, meowPose } from "./catMeow.ts";
@@ -31,6 +32,7 @@ export interface GlbAvatarOptions {
   heightM?: number;
   /** Four-legged protagonist: gait clip policy and floor-hugging draw order (see `catClips`). */
   cat?: boolean;
+  catGait?: CatGait;
 }
 
 export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promise<AvatarRig> {
@@ -129,7 +131,7 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
     let hold: "sit" | null = null;
     let turnLead = 0;
     const animate = opts.cat
-      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold, () => turnLead)
+      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold, () => turnLead, opts.catGait ? catVariants(gltf.scene) : undefined, opts.catGait)
       : clipCrossfade(mixer, gltf.animations);
     // One overlay bone list for both the camera-pitch lift and the meow; any bone may be missing.
     const bones = opts.cat ? ["neck", "head", "ear_L", "ear_R", "tail_01", "tail_02", "tail_03", "tail_04"].map((name) => ({
@@ -271,6 +273,14 @@ function catCalibration(scene: THREE.Object3D): CatCalibration | undefined {
   return calib;
 }
 
+function catVariants(scene: THREE.Object3D): Record<string, { calib_mps: number }> | undefined {
+  let variants: Record<string, { calib_mps: number }> | undefined;
+  scene.traverse((object) => {
+    variants ??= (object.userData as { gteki_cat?: { variants?: Record<string, { calib_mps: number }> } }).gteki_cat?.variants;
+  });
+  return variants;
+}
+
 /**
  * Cat gait policy (#854): below 0.05 m/s the cat idles and sits after 4 s, then walk below 0.7,
  * trot below 1.9, run above. Each locomotion clip plays at `speed / calib` so the paws stay planted.
@@ -281,12 +291,21 @@ export function catClips(
   calib: CatCalibration | undefined,
   hold: () => "sit" | null = () => null,
   turnLead: () => number = () => 0,
+  variants?: Record<string, { calib_mps: number }>,
+  variant?: CatGait,
 ): (speed: number, dt: number) => void {
   const action = (name: string): THREE.AnimationAction | undefined => {
     const clip = clips.find((candidate) => candidate.name.toLowerCase() === name);
     return clip ? mixer.clipAction(clip) : undefined;
   };
-  const idle = action("idle"), sit = action("sit"), walk = action("walk"), trot = action("trot"), run = action("run");
+  const variantAction = (name: "trot" | "run") => {
+    const key = `${name}_${variant}`;
+    const stride = variants?.[key]?.calib_mps;
+    const clip = variant && Number.isFinite(stride) && stride! > 0 ? action(key) : undefined;
+    return { clip: clip ?? action(name), stride: clip ? stride : calib?.[name] };
+  };
+  const trotVariant = variantAction("trot"), runVariant = variantAction("run");
+  const idle = action("idle"), sit = action("sit"), walk = action("walk"), trot = trotVariant.clip, run = runVariant.clip;
   const start = action("start"), stop = action("stop"), turnL = action("turn_l"), turnR = action("turn_r");
   for (const once of [start, stop]) if (once) {
     once.setLoop(THREE.LoopOnce, 1);
@@ -330,7 +349,7 @@ export function catClips(
     }
     if (!active) return;
     const gait = next === walk ? "walk" : next === trot ? "trot" : next === run ? "run" : undefined;
-    const stride = gait && calib ? calib[gait] : 0;
+    const stride = gait === "trot" ? trotVariant.stride : gait === "run" ? runVariant.stride : gait && calib ? calib[gait] : 0;
     active.timeScale = stride && Number.isFinite(stride) && stride > 0 ? speed / stride : 1;
   };
 }

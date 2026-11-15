@@ -46,7 +46,7 @@ import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
-import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection } from "./avatarSelection.ts";
+import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection, type CatGait } from "./avatarSelection.ts";
 import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 import { catTapHit } from "./catMeow.ts";
 import { advancePaws, pawSurface, playCatMeow, playPawStep } from "./catSound.ts";
@@ -72,6 +72,7 @@ export interface ExplorerOptions {
   avatarGlbUrl?: string;
   /** Cat protagonist (#854 stage 1): proportions and follow-camera framing change; the human stays default. */
   avatarKind?: AvatarKind;
+  catGait?: CatGait;
   /** Preview channel (`?next=1`): turns on v1.0 journey changes that are not the default yet (docs/release/journey.md). */
   previewNext?: boolean;
 }
@@ -1326,7 +1327,7 @@ export class Explorer {
   }
 
   private buildAvatar(options: ExplorerOptions): void {
-    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind, onCatFallback: () => this.fallBackToHumanAvatar() });
+    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl: options.avatarGlbUrl, kind: options.avatarKind, catGait: options.catGait, onCatFallback: () => this.fallBackToHumanAvatar() });
     this.avatar.add(this.avatarRig.root);
     this.buildAvatarMarker();
     this.avatar.visible = false;

@@ -464,3 +464,23 @@ it("uses turn lead with hysteresis and returns to the normal clip", async () => 
   expect(lastClip()).toBe("idle");
   rig.dispose();
 });
+
+it("pairs variant gait clips with their calibration and falls back together", () => {
+  const mixer = new THREE.AnimationMixer(new THREE.Group());
+  const clips = ["idle", "walk", "trot", "run", "trot_a", "run_a"].map((name) => new THREE.AnimationClip(name, 1, []));
+  const calib = { walk: 0.4, trot: 1, run: 2 };
+  const variants = { trot_a: { calib_mps: 1.5 }, run_a: { calib_mps: 2.5 }, trot_b: { calib_mps: 1.7 } };
+  const action = (name: string) => mixer.clipAction(clips.find((clip) => clip.name === name)!);
+  const update = catClips(mixer, clips, calib, undefined, undefined, variants, "a");
+  for (const [speed, name, stride] of [[1.2, "trot_a", 1.5], [3.4, "run_a", 2.5], [0.5, "walk", 0.4]] as const) {
+    update(speed, 0.1); mixer.update(0.1);
+    expect(action(name).isRunning()).toBe(true);
+    expect(action(name).getEffectiveTimeScale()).toBeCloseTo(speed / stride);
+  }
+  mixer.stopAllAction();
+  const fallback = catClips(mixer, clips, calib, undefined, undefined, variants, "b");
+  fallback(1.2, 0.1); mixer.update(0.1);
+  expect(action("trot").isRunning()).toBe(true);
+  expect(action("trot").getEffectiveTimeScale()).toBeCloseTo(1.2 / calib.trot);
+  mixer.stopAllAction();
+});

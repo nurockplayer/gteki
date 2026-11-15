@@ -56,6 +56,7 @@ CAT_TURN_RATE	const	apps/web/src/explorer/avatarMotion.ts
 avatarMotion	function	apps/web/src/explorer/avatarMotion.ts
 stepCatBodyPitch	function	apps/web/src/explorer/avatarMotion.ts
 AvatarKind	type	apps/web/src/explorer/avatarSelection.ts
+CatGait	type	apps/web/src/explorer/avatarSelection.ts
 AvatarSelection	interface	apps/web/src/explorer/avatarSelection.ts
 CAT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts
 CAT_AVATAR_HEIGHT_M	const	apps/web/src/explorer/avatarSelection.ts
@@ -63,6 +64,7 @@ DEFAULT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts
 SOFT_AVATAR_GLB_URL	const	apps/web/src/explorer/avatarSelection.ts
 avatarGlbUrl	function	apps/web/src/explorer/avatarSelection.ts
 avatarKind	function	apps/web/src/explorer/avatarSelection.ts
+catGait	function	apps/web/src/explorer/avatarSelection.ts
 createAvatarRig	function	apps/web/src/explorer/avatarSelection.ts
 AO_MAP_HIGH_SCALE	const	apps/web/src/explorer/bakedAo.ts
 BakedAoCounts	interface	apps/web/src/explorer/bakedAo.ts
