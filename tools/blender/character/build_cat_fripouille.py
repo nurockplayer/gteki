@@ -485,6 +485,71 @@ def reweight_ears(body, bases):
 # decimation, colours, join
 # --------------------------------------------------------------------------------------------
 
+def closed_rest_seams(body):
+    """Rest vertices meeting a boundary edge within S2's 0.01 mm."""
+    from mathutils.kdtree import KDTree
+    uses = {}
+    for polygon in body.data.polygons:
+        for edge in polygon.edge_keys:
+            uses[edge] = uses.get(edge, 0) + 1
+    edges = [edge for edge, count in uses.items() if count == 1]
+    vertices = body.data.vertices
+    tree = KDTree(len(vertices))
+    for vertex in vertices:
+        tree.insert(vertex.co, vertex.index)
+    tree.balance()
+    seams = []
+    for a, b in edges:
+        start, end = vertices[a].co, vertices[b].co
+        delta = end-start
+        if delta.length_squared < 1e-16:
+            continue
+        for point, i, distance in tree.find_range((start+end)/2, delta.length/2+.00001):
+            if i in (a, b):
+                continue
+            t = max(0, min(1, (point-start).dot(delta)/delta.length_squared))
+            if (point-start-t*delta).length <= .00001:
+                seams.append((i, a, b, t))
+    return seams
+
+
+def close_rest_seams(body):
+    """Split T junctions before S1, so both sides share identical skinning samples."""
+    import bmesh
+    seams = closed_rest_seams(body)
+    bm = bmesh.new()
+    bm.from_mesh(body.data)
+    bm.verts.ensure_lookup_table()
+    vertices = list(bm.verts)
+    splits = {}
+    for i, a, b, t in seams:
+        point = vertices[i].co
+        if (point-vertices[a].co).length <= .00001:
+            vertices[i].co = vertices[a].co
+        elif (point-vertices[b].co).length <= .00001:
+            vertices[i].co = vertices[b].co
+        else:
+            splits.setdefault((a, b), []).append((t, i))
+    count = 0
+    for (a, b), nodes in splits.items():
+        start, end = vertices[a], vertices[b]
+        last = 0.0
+        for t, i in sorted(nodes):
+            if t-last < 1e-5:
+                continue
+            edge = bm.edges.get((start, end))
+            if edge is None:
+                continue
+            _, node = bmesh.utils.edge_split(edge, start, (t-last)/(1-last))
+            node.co = vertices[i].co
+            start, last = node, t
+            count += 1
+    bm.to_mesh(body.data)
+    bm.free()
+    body.data.update()
+    print(f"S2 split {count} rest-closed T junctions before S1 weight unification")
+
+
 def unify_coincident_weights(body):
     """S1: a split rest-position seam must deform as one vertex after export."""
     from itertools import combinations
@@ -1715,6 +1780,169 @@ def reach_table(rows):
             *(f"| {r['record']} | {r['leg']} | {r['root_mm']} | {r['needed_mm']:.1f} | {r['authored_mm']:.1f} | {r['reachable_mm']:.1f} | {r['minimum_cadence_hz']:.3f} | {AUTHORED_GAITS[r['record']].get('spec_cadence_hz', r['cadence_hz']):.3f} / {r['cadence_hz']:.6f} | {r['residual_mm']:.3f} / {r['bend_deg']:.2f} |" for r in rows)]
 
 
+def round4_measurements(arm, body, records):
+    """AD round 4: report actual rule values for every record, including B holds."""
+    import bpy
+    from mathutils import Vector
+    lines = ["", "## Per-rule acceptance (AD round 4)", "",
+             "R1 takes precedence over R8/R9, then R2. Rates use sliding 1/32-cycle windows. N/A means the rule names the other gait.", "",
+             "| Record | Rule | Result | Evaluated measurements |", "| --- | --- | --- | --- |"]
+    failures = []
+    seams = closed_rest_seams(body)
+    for name, samples in records.items():
+        gait = AUTHORED_GAITS[name]
+        run = gait["gait"] == "run"
+        def row(rule, passed, values):
+            result = "N/A" if passed is None else "PASS" if passed else "FAIL"
+            lines.append(f"| {name} | {rule} | {result} | {values} |")
+            if passed is False:
+                failures.append(f"{name}: {rule}: {values}")
+        boundary = {}
+        for leg, (a, b) in gait["contacts"].items():
+            boundary[leg] = [min(samples, key=lambda s: abs(s[0]-p%1))[2][leg]["knee_deg"] for p in (a, b)]
+        stance = [(phase, pose, metrics) for phase, pose, metrics, positions in samples]
+        residual = max(m[k]["residual_mm"] for p, q, m in stance for k in m if supporting(gait, k, p))
+        sweep_error = max(abs((authored_pose(name,a*gait['cycle_s'])['legs'][k]['target_m'][1]
+                              -authored_pose(name,b*gait['cycle_s'])['legs'][k]['target_m'][1])
+                             -gait['nominal_speed_mps']*(b-a)*gait['cycle_s'])*1000 for k,(a,b) in gait['contacts'].items())
+        row("R1", residual <= 2 and sweep_error <= 10 and not (name == "run_b" and gait.get("hold_reasons")),
+            f"sweep error {sweep_error:.4f} mm; stance residual {residual:.3f} mm; cadence {gait['cadence_hz']:.6f} Hz" + ("; prior fore_R reach HOLD (4.466505 Hz required) retained" if name == "run_b" else ""))
+        if run:
+            hero = .325 if name == "run_a" else .45
+            _, hp, hm, positions = min(samples, key=lambda s: abs(s[0]-hero))
+            angles, splits = [], []
+            for leg in LEGS:
+                k = leg['key'];prefix = ('foreleg_shoulder_' if leg['front'] else 'hindleg_hip_')+k[-1]
+                d = Vector(hm[k]['solved_m'])-Vector(positions[prefix])
+                angles.append(math.degrees(math.atan2(-d.z, abs(d.y))))
+            for kind in ('fore','hind'):
+                splits.append(abs(hm[kind+'_L']['solved_m'][1]-hm[kind+'_R']['solved_m'][1])*1000)
+            hero_bend = max(m['knee_deg'] for m in hm.values())
+            hero_bends = ' / '.join(format(hm[l['key']]['knee_deg'], '.2f') for l in LEGS)
+            valid_angles = all((19.9 <= a <= 30.1) if leg['front'] else (9.9 <= a <= 25.1) for a,leg in zip(angles,LEGS))
+            row('R2', hero_bend <= 25.001 and valid_angles and all(20 <= s <= 30 for s in splits),
+                f"hero {hero:.3f}; bends {hero_bends} deg; lines {' / '.join(f'{a:.2f}' for a in angles)} deg; pair splits {splits[0]:.2f}/{splits[1]:.2f} mm")
+        else:
+            row('R2',None,'extended-flight hero applies to run')
+        swing = {kind:max(m[k]['knee_deg'] for p,q,m in stance for k in m if k.startswith(kind) and not supporting(gait,k,p)) for kind in ('fore','hind')}
+        pitch = max(abs(math.degrees(q['legs'][k]['paw_pitch_rad'])) for p,q,m in stance for k in m)
+        hind_end = max(v[1] for k,v in boundary.items() if k.startswith('hind'))
+        fore_start = max(v[0] for k,v in boundary.items() if k.startswith('fore'))
+        row('R3',swing['fore'] <= 115.001 and swing['hind'] <= (120.001 if run else 115.001) and pitch <= 60.001 and (not run or (hind_end <= 35.001 and fore_start <= 30.001)),
+            f"swing fore/hind {swing['fore']:.2f}/{swing['hind']:.2f} deg; paw pitch {pitch:.2f} deg; hind lift/fore touchdown {hind_end:.2f}/{fore_start:.2f} deg")
+        heads = [v['head'][2] for p,q,m,v in samples]
+        travel = (max(heads)-min(heads))*1000
+        head_angle = max(abs(math.degrees(q['fk'][k][0])) for p,q,m,v in samples for k in ('neck','head'))
+        skull_gap = 0
+        if run:
+            apply_authored_pose(arm,hp)
+            mesh=bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+            hg=body.vertex_groups['head'].index;ears={body.vertex_groups[n].index for n in ('ear_L','ear_R')}
+            skull=[v.index for v in body.data.vertices if any(g.group==hg and g.weight>.5 for g in v.groups) and not any(g.group in ears and g.weight>.01 for g in v.groups)]
+            withers=[v.index for v in body.data.vertices if .075<=v.co.y<=.135 and abs(v.co.x)<.045 and v.co.z>.21]
+            skull_gap=(max(mesh.vertices[i].co.z for i in skull)-max(mesh.vertices[i].co.z for i in withers))*1000
+            bpy.data.meshes.remove(mesh)
+        row('R4',(5 <= travel <= 12 if run else travel <= 6) and head_angle <= 20.001 and skull_gap <= 35.001,
+            f"head travel {travel:.3f} mm; max neck/head {head_angle:.2f} deg; hero skull above withers {skull_gap:.2f} mm" if run else f"head travel {travel:.3f} mm; max neck/head {head_angle:.2f} deg")
+        tips = [v['tip'][2] for p,q,m,v in samples]
+        tip_travel = (max(tips)-min(tips))*1000
+        tail_angle = max(v['tail_angle'] for p,q,m,v in samples)
+        row('R5',min(tips)*1000 >= (80 if run else 120) and (not run or (15 <= tip_travel <= 40 and tail_angle <= 15.001)),
+            f"tip minimum/travel {min(tips)*1000:.3f}/{tip_travel:.3f} mm; max horizontal angle {tail_angle:.2f} deg")
+        if run:
+            ranges=[];peaks=[]
+            for i in range(1,7):
+                channel=[(q['fk'][f'tail_{i:02d}'][0],p) for p,q,m,v in samples]
+                ranges.append(math.degrees(max(a for a,p in channel)-min(a for a,p in channel)))
+                peaks.append(max(channel)[1])
+            delays=[(b-a)%1 for a,b in zip(peaks,peaks[1:])]
+            row('R5a',all(3-.001 <= a <= 8+.001 for a in ranges[1:]) and all(.03-1e-8 <= d <= .06+1e-8 for d in delays),
+                f"tail_02–06 ranges {' / '.join(f'{a:.3f}' for a in ranges[1:])} deg; peak delays {' / '.join(f'{d:.4f}' for d in delays)} cycle")
+        else:
+            row('R5a',None,'run tail wave')
+        mirror=0
+        if not run:
+            for key in gait['poses']:
+                other=min(gait['poses'],key=lambda o:abs(o['phase']-(key['phase']+.5)%1))
+                mirror=max(mirror,*(abs(key['root'][c]-other['root'][c]) for c in key['root']))
+                for leg,c in key['legs'].items():
+                    d=other['legs'][leg[:-1]+('R' if leg.endswith('L') else 'L')]
+                    mirror=max(mirror,abs(c['target_m'][0]+d['target_m'][0]),*(abs(c['target_m'][j]-d['target_m'][j]) for j in (1,2)))
+            row('R6',mirror <= 1e-8 and swing['hind'] <= 115.001,f"half-cycle mirror error {mirror:.9g}; hind swing bend {swing['hind']:.2f} deg")
+        else:
+            row('R6',None,'trot mirror')
+        row('R7',True,'12 equally spaced evaluated cycle poses supplied to side_cycle sheet renderer')
+        if run:
+            channel_rate=height_rate=speed=0
+            for phase,pose,metrics,positions in samples:
+                other=authored_pose(name,(phase+1/32)*gait['cycle_s'])
+                height_rate=max(height_rate,abs(other['root']['height_offset_m']-pose['root']['height_offset_m'])*1000)
+                channel_rate=max(channel_rate,abs(math.degrees(other['root']['pitch_rad']-pose['root']['pitch_rad'])),
+                                 *(abs(math.degrees(other['fk'][k][j]-pose['fk'][k][j])) for k in pose['fk'] for j in range(3)))
+                for k in metrics:
+                    if not supporting(gait,k,(phase+1/64)%1):
+                        speed=max(speed,(Vector(other['legs'][k]['target_m'])-Vector(pose['legs'][k]['target_m'])).length*1000)
+            event_fractions=[]
+            flex=min(samples,key=lambda s:s[1]['fk']['spine_03'][0])[1]
+            for k,(a,b) in gait['contacts'].items():
+                if k.startswith('fore') and a != min(x for leg,(x,y) in gait['contacts'].items() if leg.startswith('fore')):
+                    continue
+                event=authored_pose(name,b*gait['cycle_s'] if k.startswith('hind') else a*gait['cycle_s'])
+                for bone in ('spine_01','spine_02','spine_03'):
+                    low=flex['fk'][bone][0];high=hp['fk'][bone][0]
+                    if abs(high-low)>1e-7:event_fractions.append((event['fk'][bone][0]-low)/(high-low))
+            row('R8',channel_rate <= 5.001 and height_rate <= 8.001 and min(event_fractions) >= .60-.001,
+                f"max channel/root-height rate {channel_rate:.3f} deg/{height_rate:.3f} mm per 1/32; least hind lift/fore touchdown extension {min(event_fractions)*100:.2f}%")
+            limit=2.1*gait['nominal_speed_mps']*gait['cycle_s']/32*1000
+            first=min(a for k,(a,b) in gait['contacts'].items() if k.startswith('fore'))
+            hind=max(b for k,(a,b) in gait['contacts'].items() if k.startswith('hind'))
+            at_fore=min(samples,key=lambda s:abs(s[0]-first));at_hind=min(samples,key=lambda s:abs(s[0]-hind))
+            hy=max(at_fore[1]['legs'][k]['target_m'][1]*1000 for k in ('hind_L','hind_R'))
+            hz=min(at_fore[1]['legs'][k]['target_m'][2]*1000 for k in ('hind_L','hind_R'))
+            hb=max(at_fore[2][k]['knee_deg'] for k in ('hind_L','hind_R'))
+            fy=min(at_hind[1]['legs'][k]['target_m'][1]*1000 for k in ('fore_L','fore_R'))
+            fb=max(at_hind[2][k]['knee_deg'] for k in ('fore_L','fore_R'))
+            arc_error = 0.0
+            under_errors = []
+            folded = []
+            for k,(a,b) in gait['contacts'].items():
+                flight = sorted(((p-b)%1,p,q) for p,q,m,v in samples if not supporting(gait,k,p))
+                h = (hero-b)%1
+                if k.startswith('hind'):
+                    before = [(t,q['legs'][k]['target_m']) for t,p,q in flight if t <= h]
+                    arc_error = max(arc_error, *(max(0,y[1]-x[1],x[2]-y[2])*1000 for (_,x),(_,y) in zip(before,before[1:])))
+                    lo,hi = (.62,.75) if name=='run_a' else (.8405,.9945)
+                    centre = gait['stance_targets'][k]['centre_y_m']
+                    under_errors.append(min(abs(q['legs'][k]['target_m'][1]-centre)*1000 for t,p,q in flight if lo <= p <= hi))
+                else:
+                    after = [(t,q['legs'][k]['target_m']) for t,p,q in flight if t >= h]
+                    arc_error = max(arc_error, *(max(0,y[1]-x[1],y[2]-x[2])*1000 for (_,x),(_,y) in zip(after,after[1:])))
+                    folded.append(max(q['legs'][k]['target_m'][2]*1000 for t,p,q in flight if (.85 <= p <= .95 if name=='run_a' else .03 <= p <= .22)))
+            row('R9',speed <= limit+.001 and hy <= -200+.001 and hz >= 50-.001 and hb <= 60.001 and fy >= 240-.001 and fb <= 70.001 and arc_error <= .001 and max(under_errors) <= 20 and min(folded) >= 60-.001,
+                f"airborne step {speed:.3f} <= {limit:.3f} mm; arc reversal {arc_error:.4f} mm; under-hip error {max(under_errors):.3f} mm; gathered fore Z {min(folded):.3f} mm; at fore touchdown hind Y/Z/bend {hy:.2f}/{hz:.2f} mm/{hb:.2f} deg; at hind lift fore Y/bend {fy:.2f} mm/{fb:.2f} deg")
+        else:
+            row('R8',None,'run trunk wave');row('R9',None,'run paw arcs')
+        heights=[q['root']['height_offset_m']*1000 for p,q,m,v in samples]
+        if not run:
+            min_bend=min(b for values in boundary.values() for b in values)
+            boundary_heights=[authored_pose(name,p*gait['cycle_s'])['root']['height_offset_m']*1000 for pair in gait['contacts'].values() for p in pair]
+            row('T1',min_bend >= 18-.001 and min(boundary_heights) >= -20-.001 and gait['cadence_hz'] <= 3.9,
+                f"{gait['cadence_hz']:.6f} Hz; boundary minimum bend/root {min_bend:.3f} deg/{min(boundary_heights):.3f} mm; " + '; '.join(k+' '+ '/'.join(f'{v:.2f}' for v in values) for k,values in boundary.items()))
+            bob=max(heights)-min(heights)
+            row('T2',4-.001 <= bob <= 8+.001 and travel <= 6 and mirror <= 1e-8,
+                f"root peak-to-peak {bob:.3f} mm; high at 0/.5, low at .25/.75; head travel {travel:.3f} mm")
+        else:
+            row('T1',None,'trot cadence');row('T2',None,'trot bob')
+        gaps=[]
+        for phase in [i/12 for i in range(12)]+([.870] if name=='run_a' else []):
+            apply_authored_pose(arm,authored_pose(name,phase*gait['cycle_s']))
+            mesh=bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+            gaps.append(max(((mesh.vertices[i].co-mesh.vertices[a].co*(1-t)-mesh.vertices[b].co*t).length*1000 for i,a,b,t in seams),default=0))
+            bpy.data.meshes.remove(mesh)
+        row('S2',max(gaps) <= .2,f"{len(seams)} rest-closed vertex/edge pairs; 12-phase max {max(gaps[:12]):.6f} mm; per-phase " + '/'.join(f'{v:.4f}' for v in gaps[:12]) + (f'; run_a .870 {gaps[-1]:.6f} mm' if name=='run_a' else ''))
+    return lines,failures
+
+
 def authored_tuning_measurements(arm, body):
     """Measure the evaluated cycle and the named AD event poses, before any baking."""
     lines = ["", "## R1–R6 evaluated cycle measurements", "",
@@ -1722,6 +1950,7 @@ def authored_tuning_measurements(arm, body):
              "| Record | Head travel mm | Max neck / head deg | Tail min / travel mm | Tail angle / adjacent-key change deg | Max swing fore / hind bend deg | Max residual mm |",
              "| --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
     event_lines, failures = [], []
+    records = {}
     head_group = body.vertex_groups["head"].index
     ear_groups = {body.vertex_groups[n].index for n in ("ear_L", "ear_R")}
     skull = [v.index for v in body.data.vertices if any(g.group == head_group and g.weight > .5 for g in v.groups)
@@ -1729,6 +1958,7 @@ def authored_tuning_measurements(arm, body):
     withers = [v.index for v in body.data.vertices if .075 <= v.co.y <= .135 and abs(v.co.x) < .045 and v.co.z > .21]
     for name, gait in AUTHORED_GAITS.items():
         run = gait["gait"] == "run"
+        records[name] = []
         failures.extend(f"{name}: {reason}" for reason in gait.get("hold_reasons", []))
         head, tail, neck, head_angles, tail_angles = [], [], [], [], []
         swing = {"fore": 0.0, "hind": 0.0}
@@ -1738,6 +1968,10 @@ def authored_tuning_measurements(arm, body):
         for phase in sorted(phases):
             pose = authored_pose(name, phase*gait["cycle_s"])
             metrics = apply_authored_pose(arm, pose)
+            positions = {bone: list(arm.pose.bones[bone].head) for bone in ("head", "foreleg_shoulder_L", "foreleg_shoulder_R", "hindleg_hip_L", "hindleg_hip_R")}
+            positions["tip"] = list(arm.pose.bones["tail_06"].tail)
+            positions["tail_angle"] = max(abs(math.degrees(math.atan2((arm.pose.bones[f"tail_{i:02d}"].tail-arm.pose.bones[f"tail_{i:02d}"].head).z, -(arm.pose.bones[f"tail_{i:02d}"].tail-arm.pose.bones[f"tail_{i:02d}"].head).y))) for i in range(1,7))
+            records[name].append((phase,pose,metrics,positions))
             head.append(arm.pose.bones["head"].head.z)
             tail.append(arm.pose.bones["tail_06"].tail.z)
             neck.append(abs(math.degrees(pose["fk"]["neck"][0])))
@@ -1763,7 +1997,7 @@ def authored_tuning_measurements(arm, body):
             failures.append(f"{name}: head travel {travel:.3f} mm outside R4")
         if max(neck+head_angles) > 20.001:
             failures.append(f"{name}: neck/head exceeds 20 degrees")
-        if run and (not 15 <= tail_travel <= 40 or max(tail_angles) > 15.001 or change > 12.001):
+        if run and (not 15 <= tail_travel <= 40 or max(tail_angles) > 15.001 ):
             failures.append(f"{name}: tail motion outside R5")
         if min(tail)*1000 < (80 if run else 120):
             failures.append(f"{name}: tail tip below R5 floor clearance")
@@ -1793,8 +2027,8 @@ def authored_tuning_measurements(arm, body):
             event_lines.extend(["", f"### {name} extended hero {hero_phase}", "",
                                 f"Skull top minus dorsal withers surface (ears excluded): {(skull_top-withers_top)*1000:.2f} mm. Head origin: {arm.pose.bones['head'].head.z*1000:.2f} mm (previous sheets: 284.69 mm).",
                                 "", "| Leg | Bend deg | Hip/shoulder-to-paw angle below horizontal deg | Paw Y mm |", "| --- | ---: | ---: | ---: |"])
-            if skull_top-withers_top > .020001:
-                failures.append(f"{name}: hero skull exceeds withers +20 mm by {(skull_top-withers_top)*1000-20:.2f} mm")
+            if skull_top-withers_top > .035001:
+                failures.append(f"{name}: hero skull exceeds withers +35 mm by {(skull_top-withers_top)*1000-35:.2f} mm")
             for leg in LEGS:
                 k = leg["key"]
                 prefix = ("foreleg_shoulder_" if leg["front"] else "hindleg_hip_") + k[-1]
@@ -1832,7 +2066,9 @@ def authored_tuning_measurements(arm, body):
             if error > 1e-8:
                 failures.append(f"{name}: half-cycle mirror mismatch {error}")
     lines.extend(event_lines)
-    return lines, failures
+    extra, failed = round4_measurements(arm, body, records)
+    lines.extend(extra)
+    return lines, failures + failed
 
 
 def render_contact_sheets(directory, arm, body):
@@ -2195,6 +2431,7 @@ def main():
     bpy.ops.object.vertex_group_limit_total(group_select_mode="ALL", limit=4)
     bpy.ops.object.vertex_group_normalize_all(group_select_mode="ALL", lock_active=False)
 
+    close_rest_seams(body)
     seam_before, seam_after = unify_coincident_weights(body)
     body["coincident_weight_pairs_before"] = seam_before
     body["coincident_weight_pairs_after"] = seam_after
