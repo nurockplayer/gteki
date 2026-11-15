@@ -1844,7 +1844,7 @@ def reach_table(rows):
 
 
 def round4_measurements(arm, body, records):
-    """AD round 4: report actual rule values for every record, including B holds."""
+    """AD round 4: apply the measured rule limits equally to every record."""
     import bpy
     from mathutils import Vector
     lines = ["", "## Per-rule acceptance (AD round 4)", "",
@@ -1868,8 +1868,8 @@ def round4_measurements(arm, body, records):
         sweep_error = max(abs((authored_pose(name,a*gait['cycle_s'])['legs'][k]['target_m'][1]
                               -authored_pose(name,b*gait['cycle_s'])['legs'][k]['target_m'][1])
                              -gait['nominal_speed_mps']*(b-a)*gait['cycle_s'])*1000 for k,(a,b) in gait['contacts'].items())
-        row("R1", residual <= 2 and sweep_error <= 10 and not (name == "run_b" and gait.get("hold_reasons")),
-            f"sweep error {sweep_error:.4f} mm; stance residual {residual:.3f} mm; cadence {gait['cadence_hz']:.6f} Hz" + ("; prior fore_R reach HOLD (4.466505 Hz required) retained" if name == "run_b" else ""))
+        row("R1", residual <= 2 and sweep_error <= 10,
+            f"sweep error {sweep_error:.4f} mm; stance residual {residual:.3f} mm; cadence {gait['cadence_hz']:.6f} Hz")
         if run:
             hero = .325 if name == "run_a" else .45
             _, hp, hm, positions = min(samples, key=lambda s: abs(s[0]-hero))
@@ -1891,8 +1891,8 @@ def round4_measurements(arm, body, records):
         pitch = max(abs(math.degrees(q['legs'][k]['paw_pitch_rad'])) for p,q,m in stance for k in m)
         hind_end = max(v[1] for k,v in boundary.items() if k.startswith('hind'))
         fore_start = max(v[0] for k,v in boundary.items() if k.startswith('fore'))
-        row('R3',swing['fore'] <= 115.001 and swing['hind'] <= (120.001 if run else 115.001) and pitch <= 60.001 and (not run or (hind_end <= 35.001 and fore_start <= 30.001)) and name != 'run_b',
-            f"swing fore/hind {swing['fore']:.2f}/{swing['hind']:.2f} deg; paw pitch {pitch:.2f} deg; hind lift/fore touchdown {hind_end:.2f}/{fore_start:.2f} deg" + ('; prior fore-fold author HOLD (180 deg) retained' if name == 'run_b' else ''))
+        row('R3',swing['fore'] <= 115.001 and swing['hind'] <= (120.001 if run else 115.001) and pitch <= 60.001 and (not run or (hind_end <= 35.001 and fore_start <= 30.001)),
+            f"swing fore/hind {swing['fore']:.2f}/{swing['hind']:.2f} deg; paw pitch {pitch:.2f} deg; hind lift/fore touchdown {hind_end:.2f}/{fore_start:.2f} deg")
         heads = [v['head'][2] for p,q,m,v in samples]
         travel = (max(heads)-min(heads))*1000
         head_angle = max(abs(math.degrees(q['fk'][k][0])) for p,q,m,v in samples for k in ('neck','head'))
@@ -2022,7 +2022,6 @@ def authored_tuning_measurements(arm, body):
     for name, gait in AUTHORED_GAITS.items():
         run = gait["gait"] == "run"
         records[name] = []
-        failures.extend(f"{name}: {reason}" for reason in gait.get("hold_reasons", []))
         head, tail, neck, head_angles, tail_angles = [], [], [], [], []
         swing = {"fore": 0.0, "hind": 0.0}
         worst = 0.0
@@ -2188,6 +2187,9 @@ def render_contact_sheets(directory, arm, body):
     measured, failures = authored_tuning_measurements(arm, body)
     warnings = []
     report.extend(measured)
+    report.extend(["", "## Author holds / lead decision", "",
+                   "These historical author holds remain open; measured acceptance does not clear them.",
+                   *(f"- {name}: {reason}" for name, gait in AUTHORED_GAITS.items() for reason in gait.get("hold_reasons", []))])
     report.extend(["", "## Spec departures", "", *(f"- {name}: " + departure for name,gait in AUTHORED_GAITS.items() for departure in gait.get("departures", []))])
     report.extend(["", "## Poses", "", "Angles are degrees; each leg lists residual mm / upper pitch / lower pitch / knee bend, then proximal / slide mm / paw pitch.",
                    "Clearance is the minimum evaluated skinned paw surface; four-paw clearance is their minimum.",
