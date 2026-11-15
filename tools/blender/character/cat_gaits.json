@@ -4979,7 +4979,7 @@
                 -0.2804866598210589,
                 0.11954016864681351
               ],
-              "proximal_pitch_rad": -1.0883246103316975,
+              "proximal_pitch_rad": -1.0483246103316974,
               "proximal_slide_m": -0.0065,
               "paw_pitch_rad": 0
             },
@@ -15837,7 +15837,7 @@
                 0
               ],
               "proximal_pitch_rad": -0.3619106055650916,
-              "proximal_slide_m": 0,
+              "proximal_slide_m": -0.00075,
               "paw_pitch_rad": 0
             }
           },
@@ -22987,7 +22987,7 @@
                 0
               ],
               "proximal_pitch_rad": -0.3619106055650916,
-              "proximal_slide_m": 0,
+              "proximal_slide_m": -0.00075,
               "paw_pitch_rad": 0
             }
           },
@@ -36724,7 +36724,7 @@
               0
             ],
             "neck": [
-              -0.08172569780081299,
+              -0.121725697800813,
               0,
               0
             ],
@@ -36791,7 +36791,7 @@
                 -0.2804866598210589,
                 0.12533644676590072
               ],
-              "proximal_pitch_rad": -1.0883246103316975,
+              "proximal_pitch_rad": -1.0483246103316974,
               "proximal_slide_m": -0.0065,
               "paw_pitch_rad": 0
             },
@@ -46016,7 +46016,7 @@
                 0
               ],
               "proximal_pitch_rad": -0.3619272635461989,
-              "proximal_slide_m": 0,
+              "proximal_slide_m": -0.00075,
               "paw_pitch_rad": 0
             }
           },
@@ -53166,7 +53166,7 @@
                 0
               ],
               "proximal_pitch_rad": -0.3619272635461989,
-              "proximal_slide_m": 0,
+              "proximal_slide_m": -0.00075,
               "paw_pitch_rad": 0
             }
           },
