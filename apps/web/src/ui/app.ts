@@ -6,7 +6,7 @@ import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { castAll } from "../explorer/raycast.ts";
 import { prepareRayTrees } from "../explorer/meshBvh.ts";
-import { avatarGlbUrl, avatarKind } from "../explorer/avatarSelection.ts";
+import { avatarGlbUrl, avatarKind, catGait } from "../explorer/avatarSelection.ts";
 import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
@@ -184,7 +184,7 @@ export class App {
         const poi = this.s.loaded?.bundle.pois.find((p) => p.id === id);
         if (poi) this.setDestination(poi);
       },
-    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params), previewNext: params.get("next") === "1" });
+    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params), catGait: catGait(params), previewNext: params.get("next") === "1" });
     this.root.classList.toggle("next", this.explorer.previewNext);
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).

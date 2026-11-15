@@ -27,6 +27,12 @@ export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string |
 
 /** Which protagonist a page asks for; the cat is the default. */
 export type AvatarKind = "human" | "cat";
+export type CatGait = "a" | "b";
+
+export function catGait(params: URLSearchParams): CatGait | undefined {
+  const gait = params.get("catGait");
+  return params.get("next") === "1" && (gait === "a" || gait === "b") ? gait : undefined;
+}
 
 /** #854 scripted cat, picked by gteki-lead on 2026-11-06; a placeholder until the Owner sets breed and coat. */
 export const CAT_AVATAR_GLB_URL = import.meta.env.PROD ? "/avatars/cat.glb.gz" : "/avatars/cat.glb";
@@ -51,7 +57,7 @@ export interface AvatarSelection extends AvatarRig {
 }
 
 /** The human rig is shown while loading and on GLB failure; cat mode (the default) starts empty instead. */
-export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; onCatFallback?: () => void }): AvatarSelection {
+export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; catGait?: CatGait; onCatFallback?: () => void }): AvatarSelection {
   const cat = opts.kind === "cat";
   let current = cat ? emptyRig() : createAvatar({ quality: opts.quality });
   let generation = 0;
@@ -80,7 +86,7 @@ export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string
       if (disposed || loaded || !url) return Promise.resolve();
       if (pending) return pending;
       const token = ++generation;
-      const load = cat ? { quality: opts.quality, loader: opts.loader, heightM: CAT_AVATAR_HEIGHT_M, cat: true } : opts;
+      const load = cat ? { quality: opts.quality, loader: opts.loader, heightM: CAT_AVATAR_HEIGHT_M, cat: true, catGait: opts.catGait } : opts;
       pending = loadGlbAvatar(url, load).then((next) => {
         if (disposed || token !== generation) { next.dispose(); return; }
         next.setHold?.(hold);
