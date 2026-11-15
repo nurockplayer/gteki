@@ -5,6 +5,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import type { AvatarRig } from "./avatar.ts";
 import { ditherFade, sanitizeAvatarFade } from "./avatarDither.ts";
 import { MEOW_SECONDS, meowPose } from "./catMeow.ts";
+import { fetchGlb } from "./fetchGlb.ts";
 
 type AvatarAsset = Pick<GLTF, "scene" | "animations"> & Partial<Pick<GLTF, "scenes">>;
 /** Like GLTFLoader, an injected loader transfers ownership of the asset's resources to the rig. */
@@ -34,8 +35,9 @@ export interface GlbAvatarOptions {
 
 export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promise<AvatarRig> {
   // Both quality tiers use the supplied URL for now; Lane E supplies the tiered assets later.
-  const loader = opts.loader ?? new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-  const gltf = await loader.loadAsync(url);
+  const gltf = await (opts.loader
+    ? opts.loader.loadAsync(url)
+    : fetchGlb(new GLTFLoader().setMeshoptDecoder(MeshoptDecoder), url));
   const root = new THREE.Group();
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
