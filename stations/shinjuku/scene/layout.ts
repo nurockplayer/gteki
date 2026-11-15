@@ -1427,11 +1427,8 @@ function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[]
   for (const plane of planes.values()) {
     // Exact copies are common when a shoulder is referenced by several flights.
     const unique = [...new Map(plane.panels.map((p) => [JSON.stringify(p), p])).values()];
-    // A multi-polygon subject unions the panels during subtraction, avoiding
-    // a second sweep through the same segments and intersection vertices.
-    const polygons = plane.covered.length
-      ? polygonClipping.difference(unique, ...plane.covered)
-      : polygonClipping.union(unique[0]!, ...unique.slice(1));
+    let polygons = polygonClipping.union(unique[0]!, ...unique.slice(1));
+    if (plane.covered.length) polygons = polygonClipping.difference(polygons, ...plane.covered);
     for (const polygon of polygons) {
       const points = polygon.flat(), min = Math.min(...points.map((p) => p[0]!)), max = Math.max(...points.map((p) => p[0]!));
       const bottom = Math.min(...points.map((p) => p[1]!)), top = Math.max(...points.map((p) => p[1]!));
