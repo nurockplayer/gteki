@@ -2054,15 +2054,15 @@ function buildUndergroundLighting(
   track: <T extends { dispose(): void }>(x: T) => T,
   extraRoofs: Soffit[] = [],
 ) {
-  type Fixture = { a: XYZ; b: XYZ; ground: XYZ };
+  type Fixture = { a: XYZ; b: XYZ; ground: XYZ; upright: boolean };
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
     ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
-  const ceilingAt = (p: XYZ) => {
+  const ceilingAt = (p: XYZ): { z: number; floorId: string; shared?: Soffit } | null => {
     let best: { z: number; floorId: string } | null = null;
     const shared = layout.shaftCeilingPreview?.roofs.find((s) => pointInRings(p, s.rings));
-    if (shared) return { z: soffitHeight(shared, p), floorId: shared.floorId };
+    if (shared) return { z: soffitHeight(shared, p), floorId: shared.floorId, shared };
     for (const s of roofs) {
       const z = soffitHeight(s, p);
       if (z < p.z + 2.5 || z > p.z + 5.2 || (best && best.z <= z) || !pointInRings(p, s.rings)) continue;
@@ -2083,13 +2083,34 @@ function buildUndergroundLighting(
       const t0 = (i + 0.18) / count, t1 = (i + 0.82) / count;
       const at = (t: number): XYZ => ({ x: a.position.x + (b.position.x - a.position.x) * t, y: a.position.y + (b.position.y - a.position.y) * t, z: za + (zb - za) * t });
       const p = at(t0), q = at(t1), m = at((t0 + t1) / 2);
-      const rp = ceilingAt(p), rq = ceilingAt(q), rm = ceilingAt(m);
+      const rm = ceilingAt(m);
+      let p2 = p, q2 = q, upright = false;
+      if (rm?.shared && (rm.shared.slope?.x || rm.shared.slope?.y)) {
+        upright = true;
+        const { x: ux, y: uy } = rm.shared.slope!;
+        const n = stableHypot(ux, uy);
+        let half = stableHypot(q.x - p.x, q.y - p.y) / 2;
+        // Fit the rotated strip inside its roof instead of losing a boundary fixture.
+        for (const ring of rm.shared.rings) for (let j = 0; j < ring.length; j++) {
+          const a = ring[j]!, b = ring[(j + 1) % ring.length]!;
+          const dx = b.x - a.x, dy = b.y - a.y, cross = ux / n * dy - uy / n * dx;
+          if (Math.abs(cross) < 1e-9) continue;
+          const t = ((a.x - m.x) * dy - (a.y - m.y) * dx) / cross;
+          const s = ((a.x - m.x) * uy / n - (a.y - m.y) * ux / n) / cross;
+          if (s >= 0 && s <= 1) half = Math.min(half, Math.abs(t) / 1.04 - 0.001);
+        }
+        if (half <= 0) continue;
+        p2 = { x: m.x - ux / n * half, y: m.y - uy / n * half, z: m.z };
+        q2 = { x: m.x + ux / n * half, y: m.y + uy / n * half, z: m.z };
+        if (!pointInRings(p2, rm.shared.rings) || !pointInRings(q2, rm.shared.rings)) continue;
+      }
+      const rp = ceilingAt(p2), rq = ceilingAt(q2);
       if (!rp || !rq || !rm || Math.abs(rm.z - (rp.z + rq.z) / 2) > 0.15) continue;
       // Undirected duplicate links must not double the fixtures.
       const key = `${m.x.toFixed(1)},${m.y.toFixed(1)},${rm.z.toFixed(1)}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      const candidate = { a: { ...p, z: rp.z - 0.065 }, b: { ...q, z: rq.z - 0.065 } };
+      const candidate = { a: { ...p2, z: rp.z - 0.065 }, b: { ...q2, z: rq.z - 0.065 } };
       const corners = (f: { a: XYZ; b: XYZ }) => {
         const dx = f.b.x - f.a.x, dy = f.b.y - f.a.y, len = stableHypot(dx, dy);
         const ux = dx / len, uy = dy / len, cx = (f.a.x + f.b.x) / 2, cy = (f.a.y + f.b.y) / 2;
@@ -2112,7 +2133,7 @@ function buildUndergroundLighting(
       if (placed.some(overlaps)) continue;
       placed.push(candidate);
       const fixtures = batches.get(rm.floorId) ?? [];
-      fixtures.push({ ...candidate, ground: m });
+      fixtures.push({ ...candidate, ground: m, upright });
       batches.set(rm.floorId, fixtures);
     }
   }
@@ -2139,9 +2160,19 @@ function buildUndergroundLighting(
     strips.name = "linear-light:underground";
     strips.userData.floorPools = fixtures.map((f) => f.ground);
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), center = new THREE.Vector3(), scale = new THREE.Vector3();
+    const up = new THREE.Vector3(0, 1, 0), xAxis = new THREE.Vector3(), yAxis = new THREE.Vector3(), zAxis = new THREE.Vector3();
     for (const [i, f] of fixtures.entries()) {
       const a = v3(f.a), b = v3(f.b), d = b.clone().sub(a);
-      rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d.clone().normalize());
+      zAxis.copy(d).normalize();
+      xAxis.crossVectors(up, zAxis);
+      if (!f.upright || xAxis.lengthSq() < 1e-12) {
+        rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), zAxis);
+      } else {
+        // Keep the casing above the diffuser, including strips running toward -Z.
+        xAxis.normalize();
+        yAxis.crossVectors(zAxis, xAxis);
+        rotation.setFromRotationMatrix(matrix.makeBasis(xAxis, yAxis, zAxis));
+      }
       center.copy(a).add(b).multiplyScalar(0.5);
       scale.set(1, 1, d.length());
       matrix.compose(center, rotation, scale);
