@@ -485,6 +485,35 @@ def reweight_ears(body, bases):
 # decimation, colours, join
 # --------------------------------------------------------------------------------------------
 
+def unify_coincident_weights(body):
+    """S1: a split rest-position seam must deform as one vertex after export."""
+    from itertools import combinations
+    buckets = {}
+    for vertex in body.data.vertices:
+        buckets.setdefault(tuple(vertex.co), []).append(vertex)
+    before = after = 0
+    for vertices in buckets.values():
+        if len(vertices) < 2:
+            continue
+        rows = [{g.group: g.weight for g in v.groups} for v in vertices]
+        before += sum(any(abs(a.get(g, 0) - b.get(g, 0)) > 1e-4 for g in a.keys() | b.keys())
+                      for a, b in combinations(rows, 2))
+        average = {g: sum(row.get(g, 0) for row in rows) / len(rows)
+                   for row in rows for g in row}
+        kept = sorted(average, key=lambda g: (-average[g], g))[:4]
+        total = sum(average[g] for g in kept)
+        indices = [v.index for v in vertices]
+        for g in average:
+            body.vertex_groups[g].remove(indices)
+        for g in kept:
+            body.vertex_groups[g].add(indices, average[g] / total, "REPLACE")
+        rows = [{g.group: g.weight for g in v.groups} for v in vertices]
+        after += sum(any(abs(a.get(g, 0) - b.get(g, 0)) > 1e-4 for g in a.keys() | b.keys())
+                     for a, b in combinations(rows, 2))
+    print(f"S1 coincident pairs differing by > 1e-4: {before} before, {after} after")
+    return before, after
+
+
 def decimate(obj, budget):
     import bpy
     triangles = kit.mesh_triangles(obj.data)
@@ -1613,6 +1642,69 @@ def apply_authored_pose(arm, pose):
     return metrics
 
 
+def authored_reach_envelope(arm):
+    """R0: scan the actual proximal FK and verify extremal two-link solves."""
+    from mathutils import Matrix, Vector
+    rows = []
+    for name, gait in AUTHORED_GAITS.items():
+        height = -.035 if gait["gait"] == "run" else -.030
+        for leg in LEGS:
+            k = leg["key"]
+            prefix = ("foreleg_shoulder_" if leg["front"] else "hindleg_hip_") + k[-1]
+            proximal = arm.data.bones[prefix]
+            upper, lower, paw = [arm.data.bones[n] for n in leg_names(leg["front"], leg["side"])]
+            origin = proximal.head_local + Vector((0, 0, height))
+            x = paw.head_local.x
+            z = -min(point.z for point in CONTACT_VERTICES[k])
+            radius = math.sqrt(upper.length**2 + lower.length**2
+                               + 2*upper.length*lower.length*math.cos(math.radians(10.01)))
+            bounds = []
+            for step in range(-360, 361):
+                angle = math.radians(step / 2)
+                delta = proximal.matrix_local.to_3x3() @ (Matrix.Rotation(angle, 3, "X") @ Vector((0, proximal.length, 0)))
+                joint = origin + delta
+                square = radius**2 - (joint.z-z)**2 - (joint.x-x)**2
+                if square < 0:
+                    continue
+                for direction in (-1, 1):
+                    slide = direction*.020 if leg["front"] else 0
+                    y = joint.y + slide + direction*math.sqrt(square)
+                    bounds.append((y, angle, slide))
+            low, high = min(bounds), max(bounds)
+            # Check the endpoints through exactly the same FK + IK used by the sheets.
+            residual, bend = 0.0, 180.0
+            for y, angle, slide in (low, high):
+                pose = authored_pose(name, 0)
+                pose["root"] = {"height_offset_m": height, "pitch_rad": 0.0}
+                pose["fk"] = {bone: [0, 0, 0] for bone in pose["fk"]}
+                for control in pose["legs"].values():
+                    control["target_m"][2] = 0
+                pose["legs"][k] = {"target_m": [x, y, 0], "proximal_pitch_rad": angle,
+                                    "proximal_slide_m": slide, "paw_pitch_rad": 0.0}
+                metric = apply_authored_pose(arm, pose)[k]
+                residual = max(residual, metric["residual_mm"])
+                bend = min(bend, metric["knee_deg"])
+            start, end = gait["contacts"][k]
+            # Existing authored sweep is evaluated at the actual contact endpoints.
+            a = authored_pose(name, start*gait["cycle_s"])["legs"][k]["target_m"][1]
+            b = authored_pose(name, end*gait["cycle_s"])["legs"][k]["target_m"][1]
+            sweep = high[0]-low[0]
+            row = {"record": name, "leg": k, "root_mm": height*1000,
+                   "needed_mm": gait["nominal_speed_mps"]*(end-start)*gait["cycle_s"]*1000,
+                   "authored_mm": (a-b)*1000, "reachable_mm": sweep*1000,
+                   "minimum_cadence_hz": gait["nominal_speed_mps"]*(end-start)/sweep,
+                   "cadence_hz": gait["cadence_hz"], "residual_mm": residual, "bend_deg": bend,
+                   "low": low, "high": high, "centre_y_m": origin.y}
+            rows.append(row)
+    return rows
+
+
+def reach_table(rows):
+    return ["| Record | Leg | Stance root mm | Needed mm | Authored mm | Reachable mm | Min Hz | Current Hz | Residual mm / bend deg |",
+            "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+            *(f"| {r['record']} | {r['leg']} | {r['root_mm']:.0f} | {r['needed_mm']:.1f} | {r['authored_mm']:.1f} | {r['reachable_mm']:.1f} | {r['minimum_cadence_hz']:.3f} | {r['cadence_hz']:.3f} | {r['residual_mm']:.3f} / {r['bend_deg']:.2f} |" for r in rows)]
+
+
 def render_contact_sheets(directory, arm, body):
     """Freeze the real shaded skin at each data key; same camera width for all eight rows."""
     import bpy
@@ -1646,11 +1738,15 @@ def render_contact_sheets(directory, arm, body):
         for n, length in zip(names, lengths):
             dims.append(f"| {n} length | {length:.6f} |")
         dims.append(f"| {leg['key']} full-chain reach | {sum(lengths):.6f} |")
+    reach = authored_reach_envelope(arm)
     report = ["# Cat authored-pose sheets", "", f"Generated {datetime.now().astimezone().isoformat(timespec='seconds')} (zone included).",
+              "", "## R0 reachable planted sweep", "", *reach_table(reach), "",
+              "Envelope: flat torso, zero root pitch, lowest permitted stance root; proximal rotation sampled every 0.5 degrees, fore slide +/-20 mm, hind slide zero. Endpoints are verified through the sheet solver with bend >=10 degrees and residual <=2 mm. This is an envelope, not yet a tuned contact trajectory.",
+              f"S1 coincident rest-position pairs differing by >1e-4: {body['coincident_weight_pairs_before']} before, {body['coincident_weight_pairs_after']} after (target 0).",
               "", "## Dimensions", "", "| Dimension | Metres |", "| --- | ---: |", *dims,
               "", "Scale includes ears; joint heights are centroid-derived and await AD review.",
               "Paw target XY is the paw-origin projection; target Z is the lowest rigid weighted contact surface.",
-              "No bone lengths or skin weights changed. Full-chain reach includes the proximal segment.",
+              "Bone lengths unchanged. S1 unifies weights at coincident rest positions. Full-chain reach includes the proximal segment.",
               "", "## Contact schedules", "", "| Record | Unwrapped contacts | Flight intervals | Flight fraction |",
               "| --- | --- | --- | ---: |"]
     for name, gait in AUTHORED_GAITS.items():
@@ -1947,6 +2043,11 @@ def main():
     bpy.context.view_layer.objects.active = body
     bpy.ops.object.vertex_group_limit_total(group_select_mode="ALL", limit=4)
     bpy.ops.object.vertex_group_normalize_all(group_select_mode="ALL", lock_active=False)
+
+    seam_before, seam_after = unify_coincident_weights(body)
+    body["coincident_weight_pairs_before"] = seam_before
+    body["coincident_weight_pairs_after"] = seam_after
+    checker.check(seam_after == 0, f"S1 coincident weight mismatches: {seam_after}")
 
     mesh_checks(checker, body)
     bind_checks(checker, body, arm)
