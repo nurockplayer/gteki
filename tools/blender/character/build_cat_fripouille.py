@@ -1848,7 +1848,8 @@ def round4_measurements(arm, body, records):
     import bpy
     from mathutils import Vector
     lines = ["", "## Per-rule acceptance (AD round 4)", "",
-             "R1 takes precedence over R8/R9, then R2. Rates use sliding 1/32-cycle windows. N/A means the rule names the other gait.", "",
+             "R1 takes precedence over R10, R11, R8/R9, then R2. Rates use sliding 1/32-cycle windows. N/A means the rule names the other gait.",
+             "AD lead-board cat-run-motion decisions on PR #1348 (2026-11-15 23:20 and 23:29 JST): R10a ≤ 10° per 1/128 cycle, R10c reversal ≤ 3°, T1 boundary bend ≥ 17.5°.", "",
              "| Record | Rule | Result | Evaluated measurements |", "| --- | --- | --- | --- |"]
     failures = []
     seams = closed_rest_seams(body)
@@ -1989,7 +1990,7 @@ def round4_measurements(arm, body, records):
         if not run:
             min_bend=min(b for values in boundary.values() for b in values)
             boundary_heights=[authored_pose(name,p*gait['cycle_s'])['root']['height_offset_m']*1000 for pair in gait['contacts'].values() for p in pair]
-            row('T1',min_bend >= 18-.001 and min(boundary_heights) >= -20-.001 and gait['cadence_hz'] <= 3.9,
+            row('T1',min_bend >= 17.5-.001 and min(boundary_heights) >= -20-.001 and gait['cadence_hz'] <= 3.9,
                 f"{gait['cadence_hz']:.6f} Hz; boundary minimum bend/root {min_bend:.3f} deg/{min(boundary_heights):.3f} mm; " + '; '.join(k+' '+ '/'.join(f'{v:.2f}' for v in values) for k,values in boundary.items()))
             bob=max(heights)-min(heights)
             row('T2',4-.001 <= bob <= 8+.001 and travel <= 6 and mirror <= 1e-8,
@@ -2043,7 +2044,7 @@ def round4_measurements(arm, body, records):
         else:
             hero_ok = True
             hero_text = 'N/A (trot has no hero phase)'
-        row('R10', worst_a[0] <= 9.001 and rates['planted'][0] <= 10.001 and rates['air'][0] <= 25.001 and shape[0] <= .01 and hero_ok,
+        row('R10', worst_a[0] <= 10.001 and rates['planted'][0] <= 10.001 and rates['air'][0] <= 25.001 and shape[0] <= 3.001 and hero_ok,
             f"a {worst_a[0]:.3f} deg at {worst_a[1]:.4f} {worst_a[2]} {worst_a[3]}; "
             f"b planted {rates['planted'][0]:.3f} deg at {rates['planted'][1]:.4f} {rates['planted'][2]}, air {rates['air'][0]:.3f} deg at {rates['air'][1]:.4f} {rates['air'][2]}; "
             f"c reversal {shape[0]:.3f} deg at {shape[1]:.4f} {shape[2]}; d {hero_text}")
