@@ -1154,15 +1154,6 @@ def sit_checks(checker, arm, body, groups, actions):
     scene = bpy.context.scene
     arm.animation_data.action = actions["sit"]
     frames = list(range(0, CLIPS["sit"]["frames"] + 1, CLIPS["sit"]["sample"]))
-    AUTHORED_GAITS = load_authored_gaits()
-    CONTACT_VERTICES = authored_contact_vertices(body, arm)
-    if args.sheets:
-        render_contact_sheets(args.sheets, arm, body)
-        if args.sheet_only:
-            if checker.failures:
-                fail("; ".join(checker.failures))
-            return
-
     pelvis = pelvis_indices(body)
     checker.check(bool(pelvis), f"sit pelvis region found ({len(pelvis)} vertices)")
     lowest = 1.0
@@ -1963,6 +1954,15 @@ def main():
     groups = [paw_group(leg) for leg in LEGS]
     OFF_EPS = kit.stance_offset(arm, body, groups)
     print("INFO stance offsets: " + ", ".join(f"{k} {v * 1000:+.1f} mm" for k, v in OFF_EPS.items()))
+    AUTHORED_GAITS = load_authored_gaits()
+    CONTACT_VERTICES = authored_contact_vertices(body, arm)
+    if args.sheets:
+        render_contact_sheets(args.sheets, arm, body)
+        if args.sheet_only:
+            if checker.failures:
+                fail("; ".join(checker.failures))
+            return
+
     pelvis = pelvis_indices(body)
     sit_pitch = SIT_PITCH
     while True:
