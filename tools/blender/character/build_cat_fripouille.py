@@ -2048,6 +2048,22 @@ def round4_measurements(arm, body, records):
             f"a {worst_a[0]:.3f} deg at {worst_a[1]:.4f} {worst_a[2]} {worst_a[3]}; "
             f"b planted {rates['planted'][0]:.3f} deg at {rates['planted'][1]:.4f} {rates['planted'][2]}, air {rates['air'][0]:.3f} deg at {rates['air'][1]:.4f} {rates['air'][2]}; "
             f"c reversal {shape[0]:.3f} deg at {shape[1]:.4f} {shape[2]}; d {hero_text}")
+        if run:
+            outside = (0.0, 0.0, '')
+            inside = (0.0, 0.0, '')
+            leg_maxima = []
+            for leg in LEGS:
+                k = leg['key']
+                values = [(p, v['r11'][k]) for p, q, m, v in samples]
+                air = [(p, v) for p, v in values if not supporting(gait, k, p)]
+                for p, (hip, knee, wrist, paw) in air:
+                    outside = max(outside, (knee-paw, p, k))
+                    inside = max(inside, (hip-paw, p, k))
+                maxima = [max((v[i], p) for p, v in values) for i in range(4)]
+                leg_maxima.append(k + ' hip/knee/wrist/paw ' + '/'.join(f'{v:.2f}@{p:.4f}' for v, p in maxima))
+            row('R11a', outside[0] <= 15.001 and inside[0] <= 10.001,
+                f'knee outside paw {outside[0]:.3f} mm at {outside[1]:.4f} {outside[2]}; paw inside hip {inside[0]:.3f} mm at {inside[1]:.4f} {inside[2]}; ' + '; '.join(leg_maxima))
+            row('R11b', None, '12-phase rear silhouette requires sheet measurement')
         gaps=[]
         for phase in [i/12 for i in range(12)]+([.870] if name=='run_a' else []):
             apply_authored_pose(arm,authored_pose(name,phase*gait['cycle_s']))
@@ -2086,6 +2102,12 @@ def authored_tuning_measurements(arm, body):
             pose = authored_pose(name, phase*gait["cycle_s"])
             metrics = apply_authored_pose(arm, pose)
             positions = {bone: list(arm.pose.bones[bone].head) for bone in ("head", "foreleg_shoulder_L", "foreleg_shoulder_R", "hindleg_hip_L", "hindleg_hip_R")}
+            positions['r11'] = {}
+            for leg in LEGS:
+                k = leg['key']
+                upper, lower, paw = leg_names(leg['front'], leg['side'])
+                proximal = ('foreleg_shoulder_' if leg['front'] else 'hindleg_hip_') + k[-1]
+                positions['r11'][k] = tuple(abs(arm.pose.bones[n].head.x)*1000 for n in (proximal, lower, paw, paw))
             positions["tip"] = list(arm.pose.bones["tail_06"].tail)
             positions["tail_angle"] = max(abs(math.degrees(math.atan2((arm.pose.bones[f"tail_{i:02d}"].tail-arm.pose.bones[f"tail_{i:02d}"].head).z, -(arm.pose.bones[f"tail_{i:02d}"].tail-arm.pose.bones[f"tail_{i:02d}"].head).y))) for i in range(1,7))
             records[name].append((phase,pose,metrics,positions))
