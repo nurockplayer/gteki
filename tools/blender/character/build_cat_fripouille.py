@@ -1651,66 +1651,187 @@ def apply_authored_pose(arm, pose):
 
 
 def authored_reach_envelope(arm):
-    """R0: scan the actual proximal FK and verify extremal two-link solves."""
+    """R0: reach at the record's touchdown/lift-off torso poses, verified with sheet IK."""
     from mathutils import Matrix, Vector
+    import copy
     rows = []
     for name, gait in AUTHORED_GAITS.items():
-        height = -.035 if gait["gait"] == "run" else -.030
         for leg in LEGS:
             k = leg["key"]
             prefix = ("foreleg_shoulder_" if leg["front"] else "hindleg_hip_") + k[-1]
             proximal = arm.data.bones[prefix]
             upper, lower, paw = [arm.data.bones[n] for n in leg_names(leg["front"], leg["side"])]
-            origin = proximal.head_local + Vector((0, 0, height))
-            x = paw.head_local.x
+            start, end = gait["contacts"][k]
+            x = gait.get("stance_targets", {}).get(k, {}).get("x_m", paw.head_local.x)
             z = -min(point.z for point in CONTACT_VERTICES[k])
             radius = math.sqrt(upper.length**2 + lower.length**2
-                               + 2*upper.length*lower.length*math.cos(math.radians(10.01)))
-            bounds = []
-            for step in range(-360, 361):
-                angle = math.radians(step / 2)
-                delta = proximal.matrix_local.to_3x3() @ (Matrix.Rotation(angle, 3, "X") @ Vector((0, proximal.length, 0)))
-                joint = origin + delta
-                square = radius**2 - (joint.z-z)**2 - (joint.x-x)**2
-                if square < 0:
-                    continue
-                for direction in (-1, 1):
-                    slide = direction*.020 if leg["front"] else 0
-                    y = joint.y + slide + direction*math.sqrt(square)
-                    bounds.append((y, angle, slide))
-            low, high = min(bounds), max(bounds)
-            # Check the endpoints through exactly the same FK + IK used by the sheets.
+                               + 2*upper.length*lower.length*math.cos(math.radians(10.25)))
+            extremes, heights, centres = [], [], []
             residual, bend = 0.0, 180.0
-            for y, angle, slide in (low, high):
-                pose = authored_pose(name, 0)
-                pose["root"] = {"height_offset_m": height, "pitch_rad": 0.0}
-                pose["fk"] = {bone: [0, 0, 0] for bone in pose["fk"]}
-                for control in pose["legs"].values():
-                    control["target_m"][2] = 0
-                pose["legs"][k] = {"target_m": [x, y, 0], "proximal_pitch_rad": angle,
-                                    "proximal_slide_m": slide, "paw_pitch_rad": 0.0}
-                metric = apply_authored_pose(arm, pose)[k]
+            for phase, direction in ((start, 1), (end, -1)):
+                pose = authored_pose(name, phase*gait["cycle_s"])
+                if "stance_targets" not in gait:
+                    pose["root"] = {"height_offset_m": -.035 if gait["gait"] == "run" else -.030, "pitch_rad": 0}
+                    pose["fk"] = {bone: [0, 0, 0] for bone in pose["fk"]}
+                apply_authored_pose(arm, pose)
+                control = pose["legs"][k]
+                base = arm.pose.bones[prefix].matrix @ Matrix.Rotation(-control["proximal_pitch_rad"], 4, "X")
+                base.translation -= Vector((0, control["proximal_slide_m"], 0))
+                heights.append(pose["root"]["height_offset_m"]*1000)
+                centres.append(base.translation.y)
+                bounds = []
+                slide = direction*.020 if leg["front"] else 0
+                for step in range(-360, 361):
+                    angle = math.radians(step/2)
+                    joint = base @ (Matrix.Rotation(angle, 4, "X") @ Vector((0, proximal.length, 0)))
+                    joint.y += slide
+                    square = radius**2-(joint.z-z)**2-(joint.x-x)**2
+                    if square >= 0:
+                        bounds.append((joint.y+direction*math.sqrt(square), angle, slide))
+                point = max(bounds) if direction > 0 else min(bounds)
+                extremes.append(point)
+                trial = copy.deepcopy(pose)
+                trial["legs"][k] = {"target_m": [x, point[0], 0], "proximal_pitch_rad": point[1],
+                                     "proximal_slide_m": point[2], "paw_pitch_rad": 0}
+                metric = apply_authored_pose(arm, trial)[k]
                 residual = max(residual, metric["residual_mm"])
                 bend = min(bend, metric["knee_deg"])
-            start, end = gait["contacts"][k]
-            # Existing authored sweep is evaluated at the actual contact endpoints.
+            high, low = extremes
             a = authored_pose(name, start*gait["cycle_s"])["legs"][k]["target_m"][1]
             b = authored_pose(name, end*gait["cycle_s"])["legs"][k]["target_m"][1]
             sweep = high[0]-low[0]
-            row = {"record": name, "leg": k, "root_mm": height*1000,
-                   "needed_mm": gait["nominal_speed_mps"]*(end-start)*gait["cycle_s"]*1000,
-                   "authored_mm": (a-b)*1000, "reachable_mm": sweep*1000,
-                   "minimum_cadence_hz": gait["nominal_speed_mps"]*(end-start)/sweep,
-                   "cadence_hz": gait["cadence_hz"], "residual_mm": residual, "bend_deg": bend,
-                   "low": low, "high": high, "centre_y_m": origin.y}
-            rows.append(row)
+            rows.append({"record": name, "leg": k, "root_mm": "/".join(f"{h:.1f}" for h in heights),
+                         "needed_mm": gait["nominal_speed_mps"]*(end-start)*gait["cycle_s"]*1000,
+                         "authored_mm": (a-b)*1000, "reachable_mm": sweep*1000,
+                         "minimum_cadence_hz": gait["nominal_speed_mps"]*(end-start)/sweep,
+                         "cadence_hz": gait["cadence_hz"], "residual_mm": residual, "bend_deg": bend,
+                         "centre_offset_mm": ((a+b)/2-sum(centres)/2)*1000})
     return rows
 
 
 def reach_table(rows):
-    return ["| Record | Leg | Stance root mm | Needed mm | Authored mm | Reachable mm | Min Hz | Current Hz | Residual mm / bend deg |",
+    return ["| Record | Leg | Stance root mm | Needed mm | Authored mm | Reachable mm | Min Hz | Spec / final Hz | Residual mm / bend deg |",
             "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-            *(f"| {r['record']} | {r['leg']} | {r['root_mm']:.0f} | {r['needed_mm']:.1f} | {r['authored_mm']:.1f} | {r['reachable_mm']:.1f} | {r['minimum_cadence_hz']:.3f} | {r['cadence_hz']:.3f} | {r['residual_mm']:.3f} / {r['bend_deg']:.2f} |" for r in rows)]
+            *(f"| {r['record']} | {r['leg']} | {r['root_mm']} | {r['needed_mm']:.1f} | {r['authored_mm']:.1f} | {r['reachable_mm']:.1f} | {r['minimum_cadence_hz']:.3f} | {AUTHORED_GAITS[r['record']].get('spec_cadence_hz', r['cadence_hz']):.3f} / {r['cadence_hz']:.6f} | {r['residual_mm']:.3f} / {r['bend_deg']:.2f} |" for r in rows)]
+
+
+def authored_tuning_measurements(arm, body):
+    """Measure the evaluated cycle and the named AD event poses, before any baking."""
+    lines = ["", "## R1–R6 evaluated cycle measurements", "",
+             "240 evenly spaced samples plus every authored key and contact boundary. Tail tip is the last bone endpoint; head is its bone origin.", "",
+             "| Record | Head travel mm | Max neck / head deg | Tail min / travel mm | Tail angle / adjacent-key change deg | Max swing fore / hind bend deg | Max residual mm |",
+             "| --- | ---: | ---: | ---: | ---: | ---: | ---: |"]
+    event_lines, failures = [], []
+    head_group = body.vertex_groups["head"].index
+    ear_groups = {body.vertex_groups[n].index for n in ("ear_L", "ear_R")}
+    skull = [v.index for v in body.data.vertices if any(g.group == head_group and g.weight > .5 for g in v.groups)
+             and not any(g.group in ear_groups and g.weight > .01 for g in v.groups)]
+    withers = [v.index for v in body.data.vertices if .075 <= v.co.y <= .135 and abs(v.co.x) < .045 and v.co.z > .21]
+    for name, gait in AUTHORED_GAITS.items():
+        run = gait["gait"] == "run"
+        head, tail, neck, head_angles, tail_angles = [], [], [], [], []
+        swing = {"fore": 0.0, "hind": 0.0}
+        worst = 0.0
+        phases = {i/240 for i in range(240)} | {k["phase"] for k in gait["poses"]}
+        phases |= {p % 1 for pair in gait["contacts"].values() for p in pair}
+        for phase in sorted(phases):
+            pose = authored_pose(name, phase*gait["cycle_s"])
+            metrics = apply_authored_pose(arm, pose)
+            head.append(arm.pose.bones["head"].head.z)
+            tail.append(arm.pose.bones["tail_06"].tail.z)
+            neck.append(abs(math.degrees(pose["fk"]["neck"][0])))
+            head_angles.append(abs(math.degrees(pose["fk"]["head"][0])))
+            for i in range(1, 7):
+                bone = arm.pose.bones[f"tail_{i:02d}"]
+                delta = bone.tail-bone.head
+                tail_angles.append(abs(math.degrees(math.atan2(delta.z, -delta.y))))
+            for leg, metric in metrics.items():
+                worst = max(worst, metric["residual_mm"])
+                if not supporting(gait, leg, phase):
+                    kind = leg.split("_")[0]
+                    swing[kind] = max(swing[kind], metric["knee_deg"])
+        change = max(abs(math.degrees(math.remainder(b["fk_xyz_rad"][f"tail_{i:02d}"][0]
+                        -a["fk_xyz_rad"][f"tail_{i:02d}"][0], math.tau)))
+                     for a, b in zip(gait["poses"], gait["poses"][1:]+gait["poses"][:1]) for i in range(1, 7))
+        travel = (max(head)-min(head))*1000
+        tail_travel = (max(tail)-min(tail))*1000
+        lines.append(f"| {name} | {travel:.3f} | {max(neck):.2f} / {max(head_angles):.2f} | {min(tail)*1000:.2f} / {tail_travel:.2f} | {max(tail_angles):.2f} / {change:.2f} | {swing['fore']:.2f} / {swing['hind']:.2f} | {worst:.3f} |")
+        if worst > 2:
+            failures.append(f"{name}: cycle IK residual {worst:.3f} mm > 2")
+        if (run and not 5 <= travel <= 12) or (not run and travel > 6):
+            failures.append(f"{name}: head travel {travel:.3f} mm outside R4")
+        if max(neck+head_angles) > 20.001:
+            failures.append(f"{name}: neck/head exceeds 20 degrees")
+        if run and (not 15 <= tail_travel <= 40 or max(tail_angles) > 15.001 or change > 12.001):
+            failures.append(f"{name}: tail motion outside R5")
+        if min(tail)*1000 < (80 if run else 120):
+            failures.append(f"{name}: tail tip below R5 floor clearance")
+        if swing["fore"] > 115.001 or swing["hind"] > (120.001 if run else 115.001):
+            failures.append(f"{name}: swing bend outside R3/R6")
+        event_lines.extend(["", f"### {name} contact boundaries", "",
+                            "| Leg | Touchdown / lift-off Y mm | Needed / authored sweep mm | Touchdown / lift-off bend deg |", "| --- | ---: | ---: | ---: |"])
+        for leg, (start, end) in gait["contacts"].items():
+            poses = [authored_pose(name, phase*gait["cycle_s"]) for phase in (start, end)]
+            bends = []
+            for pose in poses:
+                bends.append(apply_authored_pose(arm, pose)[leg]["knee_deg"])
+            a, b = [p["legs"][leg]["target_m"][1]*1000 for p in poses]
+            needed = gait["nominal_speed_mps"]*(end-start)*gait["cycle_s"]*1000
+            event_lines.append(f"| {leg} | {a:.2f} / {b:.2f} | {needed:.2f} / {a-b:.2f} | {bends[0]:.2f} / {bends[1]:.2f} |")
+            if run and ((leg.startswith("hind") and bends[1] > 35.001) or (leg.startswith("fore") and bends[0] > 30.001)):
+                failures.append(f"{name} {leg}: contact-boundary bend outside R3")
+        if run:
+            import bpy
+            hero_phase = .325 if name == "run_a" else .45
+            pose = authored_pose(name, hero_phase*gait["cycle_s"])
+            metrics = apply_authored_pose(arm, pose)
+            mesh = bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+            skull_top = max(mesh.vertices[i].co.z for i in skull)
+            withers_top = max(mesh.vertices[i].co.z for i in withers)
+            bpy.data.meshes.remove(mesh)
+            event_lines.extend(["", f"### {name} extended hero {hero_phase}", "",
+                                f"Skull top minus dorsal withers surface (ears excluded): {(skull_top-withers_top)*1000:.2f} mm. Head origin: {arm.pose.bones['head'].head.z*1000:.2f} mm (previous sheets: 284.69 mm).",
+                                "", "| Leg | Bend deg | Hip/shoulder-to-paw angle below horizontal deg | Paw Y mm |", "| --- | ---: | ---: | ---: |"])
+            if skull_top-withers_top > .020001:
+                failures.append(f"{name}: hero skull exceeds withers +20 mm by {(skull_top-withers_top)*1000-20:.2f} mm")
+            for leg in LEGS:
+                k = leg["key"]
+                prefix = ("foreleg_shoulder_" if leg["front"] else "hindleg_hip_") + k[-1]
+                delta = arm.pose.bones[paw_group(leg)].head-arm.pose.bones[prefix].head
+                angle = math.degrees(math.atan2(-delta.z, abs(delta.y)))
+                event_lines.append(f"| {k} | {metrics[k]['knee_deg']:.2f} | {angle:.2f} | {arm.pose.bones[paw_group(leg)].head.y*1000:.2f} |")
+                if metrics[k]["knee_deg"] > 25.001 or not ((19.9 <= angle <= 30.1) if leg["front"] else (9.9 <= angle <= 25.1)):
+                    failures.append(f"{name} {k}: hero bend/line outside R2")
+            for front in (True, False):
+                pair = [leg for leg in LEGS if leg["front"] == front]
+                split = abs(arm.pose.bones[paw_group(pair[0])].head.y-arm.pose.bones[paw_group(pair[1])].head.y)*1000
+                event_lines.append(f"{'Fore' if front else 'Hind'} pair Y split: {split:.2f} mm.")
+                if not 20 <= split <= 30:
+                    failures.append(f"{name}: hero pair split {split:.2f} mm outside R2")
+            nose = arm.pose.bones["head"].tail.y
+            fore_y = min(arm.pose.bones[paw_group(leg)].head.y for leg in LEGS if leg["front"])
+            event_lines.append(f"Nose Y / least forward forepaw Y: {nose*1000:.2f} / {fore_y*1000:.2f} mm.")
+            if fore_y < nose:
+                failures.append(f"{name}: hero forepaw behind nose")
+        if not run:
+            error = 0.0
+            for key in gait["poses"]:
+                other = next(k for k in gait["poses"] if abs(k["phase"]-(key["phase"]+.5)%1) < 1e-7)
+                for leg, control in key["legs"].items():
+                    opposite = leg[:-1]+("R" if leg.endswith("L") else "L")
+                    for channel, value in control.items():
+                        rhs = other["legs"][opposite][channel]
+                        if channel == "target_m":
+                            error = max(error, abs(value[0]+rhs[0]), abs(value[1]-rhs[1]), abs(value[2]-rhs[2]))
+                        else:
+                            error = max(error, abs(value-rhs))
+                error = max(error, *(abs(key["root"][k]-other["root"][k]) for k in key["root"]),
+                            *(abs(v-w) for bone in key["fk_xyz_rad"] for v,w in zip(key["fk_xyz_rad"][bone], other["fk_xyz_rad"][bone])))
+            event_lines.append(f"R6 half-cycle mirror error in authored channels: {error:.9g} (target 0).")
+            if error > 1e-8:
+                failures.append(f"{name}: half-cycle mirror mismatch {error}")
+    lines.extend(event_lines)
+    return lines, failures
 
 
 def render_contact_sheets(directory, arm, body):
@@ -1749,7 +1870,8 @@ def render_contact_sheets(directory, arm, body):
     reach = authored_reach_envelope(arm)
     report = ["# Cat authored-pose sheets", "", f"Generated {datetime.now().astimezone().isoformat(timespec='seconds')} (zone included).",
               "", "## R0 reachable planted sweep", "", *reach_table(reach), "",
-              "Envelope: flat torso, zero root pitch, lowest permitted stance root; proximal rotation sampled every 0.5 degrees, fore slide +/-20 mm, hind slide zero. Endpoints are verified through the sheet solver with bend >=10 degrees and residual <=2 mm. This is an envelope, not yet a tuned contact trajectory.",
+              "Envelope: actual touchdown/lift-off torso poses and root heights; proximal rotation sampled every 0.5 degrees, fore slide +/-20 mm, hind slide zero. Extremal targets are independently verified through the sheet solver with bend >=10 degrees and residual <=2 mm. Root heights are touchdown/lift-off. Sweep midpoint offsets from the mean joint projection are listed below; R1 permits reach-forced offsets beyond 20 mm.",
+              *(f"- {r['record']} {r['leg']}: sweep midpoint offset {r['centre_offset_mm']:.2f} mm." for r in reach), "",
               f"S1 coincident rest-position pairs differing by >1e-4: {body['coincident_weight_pairs_before']} before, {body['coincident_weight_pairs_after']} after (target 0).",
               "", "## Dimensions", "", "| Dimension | Metres |", "| --- | ---: |", *dims,
               "", "Scale includes ears; joint heights are centroid-derived and await AD review.",
@@ -1763,7 +1885,10 @@ def render_contact_sheets(directory, arm, body):
         report.append(f"| {name} | " + "; ".join(f"{k} {a:.2f}–{b:.2f}" for k, (a, b) in gait["contacts"].items())
                       + " | " + (", ".join(f"{a:.2f}–{b:.2f}" for a, b in flights) or "none")
                       + f" | {sum(b-a for a,b in flights):.1%} |")
-    failures, warnings = [], []
+    measured, failures = authored_tuning_measurements(arm, body)
+    warnings = []
+    report.extend(measured)
+    report.extend(["", "## Spec departures", "", *(f"- {name}: " + departure for name,gait in AUTHORED_GAITS.items() for departure in gait.get("departures", []))])
     report.extend(["", "## Poses", "", "Angles are degrees; each leg lists residual mm / upper pitch / lower pitch / knee bend, then proximal / slide mm / paw pitch.",
                    "Clearance is the minimum evaluated skinned paw surface; four-paw clearance is their minimum.",
                    "", "| Record / phase / reference | Root height mm / pitch; spine; neck/head | Leg solves and controls | Paw clearances mm (FL, FR, HL, HR); four-paw min |",
