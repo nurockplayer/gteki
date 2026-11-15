@@ -2063,7 +2063,7 @@ def round4_measurements(arm, body, records):
                 leg_maxima.append(k + ' hip/knee/wrist/paw ' + '/'.join(f'{v:.2f}@{p:.4f}' for v, p in maxima))
             row('R11a', outside[0] <= 15.001 and inside[0] <= 10.001,
                 f'knee outside paw {outside[0]:.3f} mm at {outside[1]:.4f} {outside[2]}; paw inside hip {inside[0]:.3f} mm at {inside[1]:.4f} {inside[2]}; ' + '; '.join(leg_maxima))
-            row('R11b', None, '12-phase rear silhouette requires sheet measurement')
+            lines.append(f'| {name} | R11b | HOLD | 12-phase rear silhouette requires sheet measurement |')
         gaps=[]
         for phase in [i/12 for i in range(12)]+([.870] if name=='run_a' else []):
             apply_authored_pose(arm,authored_pose(name,phase*gait['cycle_s']))
