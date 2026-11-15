@@ -2184,6 +2184,10 @@ def render_contact_sheets(directory, arm, body):
         report.append(f"| {name} | " + "; ".join(f"{k} {a:.2f}–{b:.2f}" for k, (a, b) in gait["contacts"].items())
                       + " | " + (", ".join(f"{a:.2f}–{b:.2f}" for a, b in flights) or "none")
                       + f" | {sum(b-a for a,b in flights):.1%} |")
+    specs = {"run_a": "0.90", "trot_a": "0.45–0.60", "run_b": "1.00", "trot_b": "0.69"}
+    report.extend(["", "## Stride lengths", "",
+                   *(f"- {name}: {gait['nominal_speed_mps']/gait['cadence_hz']:.3f} m; spec {specs[name]} m."
+                     for name, gait in AUTHORED_GAITS.items())])
     measured, failures = authored_tuning_measurements(arm, body)
     warnings = []
     report.extend(measured)
