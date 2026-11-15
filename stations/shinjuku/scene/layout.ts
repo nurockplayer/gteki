@@ -1227,9 +1227,15 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   // A patch edge may end inside another finish's footprint, not only on
   // another polygon edge. Join every such height step to the unchanged hull
   // datum so T junctions and overlapping flight/shoulder planes stay closed.
-  for (const sheet of layout.shaftFinishes) for (const hull of [...shaftHulls, ...layout.shaftFinishes]) {
+  const hullsByShaft = new Map<string, Soffit[]>();
+  for (const hull of [...shaftHulls, ...layout.shaftFinishes]) {
+    const key = hull.spaceId.split(":").slice(0, 2).join(":");
+    const hulls = hullsByShaft.get(key);
+    if (hulls) hulls.push(hull);
+    else hullsByShaft.set(key, [hull]);
+  }
+  for (const sheet of layout.shaftFinishes) for (const hull of hullsByShaft.get(sheet.spaceId.split(":").slice(0, 2).join(":"))!) {
     if (sheet === hull) continue;
-    if (sheet.spaceId.split(":").slice(0, 2).join(":") !== hull.spaceId.split(":").slice(0, 2).join(":")) continue;
     for (const ring of sheet.rings) for (let i = 1; i < ring.length; i++) {
       const a = ring[i - 1]!, b = ring[i]!, direction = sub(b, a), length = len(direction);
       if (length < 0.002) continue;
@@ -1298,7 +1304,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   }
   // Union the repeated references before cutting: difference distributes over
   // this union, so the same openings survive without clipping each copy.
-  for (const f of compactShaftFascias(joins)) for (const span of fasciaSpans(f)) for (const wall of cutWallsByVoids([span], [...voids, ...platformVoids])) {
+  const fasciaVoids = [...voids, ...platformVoids];
+  for (const f of compactShaftFascias(joins)) for (const wall of cutWallsByVoids(fasciaSpans(f), fasciaVoids)) {
     layout.shaftFascias.push({ floorId: f.floorId, wall });
   }
   layout.shaftFascias = compactShaftFascias(layout.shaftFascias, layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia")));
@@ -1362,7 +1369,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
 /** Union vertical finish panels in their own plane, retaining openings and
  * affine top/bottom edges. Physical wall lists never enter the result. */
 function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[] = []): Layout["shaftFascias"] {
-  type Plane = { floorId: string; u: XY; offset: number; panels: ClipPolygon[]; covered: ClipPolygon[] };
+  type Plane = { floorId: string; u: XY; offset: number; min: number; max: number; panels: ClipPolygon[]; covered: ClipPolygon[] };
   const planes = new Map<string, Plane>();
   const snap = (v: number) => Math.round(v * 1e4) / 1e4;
   const add = (wall: WallSeg, floorId?: string, target?: Plane) => {
@@ -1373,13 +1380,19 @@ function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[]
     const u = { x: dx / length * sign, y: dy / length * sign }, offset = -wall.a.x * u.y + wall.a.y * u.x;
     const key = `${u.x.toFixed(5)},${u.y.toFixed(5)},${offset.toFixed(4)}`;
     let plane = target ?? planes.get(key);
-    if (!plane && floorId !== undefined) { plane = { floorId, u, offset, panels: [], covered: [] }; }
+    if (!plane && floorId !== undefined) { plane = { floorId, u, offset, min: Infinity, max: -Infinity, panels: [], covered: [] }; }
     if (!plane) return;
     const a = snap(wall.a.x * plane.u.x + wall.a.y * plane.u.y), b = snap(wall.b.x * plane.u.x + wall.b.y * plane.u.y);
     if (Math.abs(a - b) < 1e-6) return;
+    // Covered walls outside this plane's panel extent cannot remove any finish.
+    if (floorId === undefined && (Math.max(a, b) < plane.min || Math.min(a, b) > plane.max)) return;
     if (Math.max(snap(p.topA) - snap(p.bottomA), snap(p.topB) - snap(p.bottomB)) < 1e-6) return;
     const polygon: ClipPolygon = [[[a, snap(p.bottomA)], [b, snap(p.bottomB)], [b, snap(p.topB)], [a, snap(p.topA)], [a, snap(p.bottomA)]]];
-    if (floorId !== undefined) planes.set(key, plane);
+    if (floorId !== undefined) {
+      plane.min = Math.min(plane.min, a, b);
+      plane.max = Math.max(plane.max, a, b);
+      planes.set(key, plane);
+    }
     (floorId === undefined ? plane.covered : plane.panels).push(polygon);
   };
   for (const f of fascias) add(f.wall, f.floorId);
