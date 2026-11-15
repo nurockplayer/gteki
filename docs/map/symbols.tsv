@@ -2,6 +2,7 @@ symbol	kind	path
 @gteki/web:build	script	apps/web/package.json
 @gteki/web:dev	script	apps/web/package.json
 @gteki/web:preview	script	apps/web/package.json
+@gteki/web:typecheck	script	apps/web/package.json
 CreditBundle	interface	apps/web/src/creditLine.ts
 CreditGroup	interface	apps/web/src/creditLine.ts
 composeCreditLine	function	apps/web/src/creditLine.ts

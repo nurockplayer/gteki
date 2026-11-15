@@ -14,7 +14,7 @@ afterEach(() => {
 });
 
 describe("loadGlbAvatar", () => {
-  it("decodes gzip to the original cat bytes with the existing loader and fenced resource path", async () => {
+  it.each([false, true])("decodes the original cat bytes with the existing loader and resource fence (HTTP gzip: %s)", async (httpGzip) => {
     const cat = fs.readFileSync(new URL("../../public/avatars/cat.glb", import.meta.url));
     const url = "/assets/cat.glb.gz";
     const refused: string[] = [];
@@ -23,7 +23,9 @@ describe("loadGlbAvatar", () => {
     const loader = new GLTFLoader(manager).setResourcePath(`${ASSET_SCHEME}assets/`);
     const asset = catAvatarFixture();
     const parse = vi.spyOn(loader, "parseAsync").mockResolvedValue(asset as any);
-    const fetch = vi.fn().mockResolvedValue(new Response(gzipSync(cat)));
+    const fetch = vi.fn().mockResolvedValue(httpGzip
+      ? new Response(cat, { headers: { "Content-Encoding": "gzip" } })
+      : new Response(gzipSync(cat)));
     vi.stubGlobal("fetch", fetch);
     const load = vi.fn(); manager.onLoad = load;
     expect(await fetchGlb(loader, url)).toBe(asset);

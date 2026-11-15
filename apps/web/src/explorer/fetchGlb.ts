@@ -9,7 +9,11 @@ export async function fetchGlb(loader: GLTFLoader, url: string): Promise<GLTF> {
   try {
     const response = await fetch(resolved);
     if (!response.ok) throw new Error(`GLB fetch failed: ${response.status} ${resolved}`);
-    const buffer = await new Response(response.body!.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+    // Fetch already decodes Content-Encoding (Vite preview sets it on .gz files).
+    const body = response.headers.get("Content-Encoding") === "gzip"
+      ? response.body!
+      : response.body!.pipeThrough(new DecompressionStream("gzip"));
+    const buffer = await new Response(body).arrayBuffer();
     return await loader.parseAsync(buffer, loader.resourcePath || LoaderUtils.extractUrlBase(url));
   } catch (error) {
     loader.manager.itemError(resolved);

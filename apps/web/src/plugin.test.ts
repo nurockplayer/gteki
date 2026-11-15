@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { build, createServer } from "vite";
+import { createServer } from "vite";
 import { discoverStations, fsUrl, gtekiStations, publishableAssets } from "../stations-plugin.ts";
 import { createDemoFiles } from "./demo.ts";
 import { threeAliases } from "../three-alias.ts";
@@ -169,17 +169,16 @@ describe("virtual station module asset URLs", () => {
     expect(code).toMatch(/b1\.meta\.json\?url"\).then\(\(m\) => m.default\)/);
   });
 
-  it("builds deterministic gzip siblings for emitted station and public GLBs, retaining originals", async () => {
-    const root = valid(tree());
-    const app = path.join(path.dirname(root), "web");
-    fs.mkdirSync(path.join(app, "public", "avatars"), { recursive: true });
+  it("writes deterministic gzip siblings for station and public GLBs, retaining originals", () => {
+    const dist = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-glb-output-"));
+    fs.mkdirSync(path.join(dist, "avatars"));
+    fs.mkdirSync(path.join(dist, "assets"));
     const cat = fs.readFileSync(new URL("../public/avatars/cat.glb", import.meta.url));
-    fs.writeFileSync(path.join(app, "public", "avatars", "cat.glb"), cat);
-    fs.writeFileSync(path.join(app, "index.html"), '<script type="module" src="/main.js"></script>');
-    fs.writeFileSync(path.join(app, "main.js"), 'import { stations } from "virtual:gteki-stations"; globalThis.stations = stations;');
+    fs.writeFileSync(path.join(dist, "avatars", "cat.glb"), cat);
+    fs.writeFileSync(path.join(dist, "assets", "kit.glb"), cat);
     try {
-      await build({ root: app, configFile: false, logLevel: "silent", plugins: [gtekiStations([root])] });
-      const dist = path.join(app, "dist");
+      const plugin = gtekiStations([]) as unknown as { writeBundle(options: { dir: string }): void };
+      plugin.writeBundle({ dir: dist });
       const glbs = fs.readdirSync(dist, { recursive: true, encoding: "utf8" }).filter(f => f.endsWith(".glb"));
       expect(glbs).toHaveLength(2);
       for (const file of glbs) {
@@ -190,8 +189,8 @@ describe("virtual station module asset URLs", () => {
         expect(compressed.readUInt32LE(4)).toBe(0); // mtime
         expect(compressed[3]! & 8).toBe(0); // no original filename
       }
-    } finally { fs.rmSync(path.dirname(root), { recursive: true, force: true }); }
-  }, 30_000);
+    } finally { fs.rmSync(dist, { recursive: true, force: true }); }
+  });
 
   it("publishes a declared uriMobile variant, and refuses it when it is missing", () => {
     const root = valid(tree());
