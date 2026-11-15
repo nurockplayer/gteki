@@ -1759,11 +1759,11 @@ def apply_authored_pose(arm, pose):
         channels = pose["legs"][leg["key"]]
         proximal_name = ("foreleg_shoulder_" if leg["front"] else "hindleg_hip_") + leg["key"][-1]
         proximal = arm.pose.bones[proximal_name]
-        proximal.rotation_quaternion = Quaternion((1, 0, 0), channels["proximal_pitch_rad"])
-        bpy.context.view_layer.update()
-        # Translation is along the ribcage in armature space, independently of the swing.
-        matrix = proximal.matrix.copy()
-        matrix.translation += Vector((0, channels["proximal_slide_m"], 0))
+        # Pitch in the sagittal plane, preserving the slanted rest bone's lateral offset.
+        base = proximal.matrix.copy()
+        matrix = (Matrix.Rotation(channels["proximal_pitch_rad"], 3, "X")
+                  @ base.to_3x3()).to_4x4()
+        matrix.translation = base.translation + Vector((0, channels["proximal_slide_m"], 0))
         proximal.matrix = matrix
         bpy.context.view_layer.update()
         target = Vector(channels["target_m"])
@@ -1803,15 +1803,17 @@ def authored_reach_envelope(arm):
                     pose["fk"] = {bone: [0, 0, 0] for bone in pose["fk"]}
                 apply_authored_pose(arm, pose)
                 control = pose["legs"][k]
-                base = arm.pose.bones[prefix].matrix @ Matrix.Rotation(-control["proximal_pitch_rad"], 4, "X")
-                base.translation -= Vector((0, control["proximal_slide_m"], 0))
+                posed = arm.pose.bones[prefix].matrix
+                base = (Matrix.Rotation(-control["proximal_pitch_rad"], 3, "X")
+                        @ posed.to_3x3()).to_4x4()
+                base.translation = posed.translation - Vector((0, control["proximal_slide_m"], 0))
                 heights.append(pose["root"]["height_offset_m"]*1000)
                 centres.append(base.translation.y)
                 bounds = []
                 slide = direction*.020 if leg["front"] else 0
                 for step in range(-360, 361):
                     angle = math.radians(step/2)
-                    joint = base @ (Matrix.Rotation(angle, 4, "X") @ Vector((0, proximal.length, 0)))
+                    joint = base.translation + Matrix.Rotation(angle, 3, "X") @ (base.to_3x3() @ Vector((0, proximal.length, 0)))
                     joint.y += slide
                     square = radius**2-(joint.z-z)**2-(joint.x-x)**2
                     if square >= 0:
@@ -1850,10 +1852,14 @@ def round4_measurements(arm, body, records):
     lines = ["", "## Per-rule acceptance (AD rounds 4–5)", "",
              "R1 takes precedence over R10, R11, R8/R9, then R2. Rates use sliding 1/32-cycle windows. N/A means the rule names the other gait.",
              "AD lead-board cat-run-motion decisions on PR #1348 (2026-11-15 23:20 and 23:29 JST): R10a ≤ 10° per 1/128 cycle, R10c reversal ≤ 3°, T1 boundary bend ≥ 17.5°.",
-             "AD round-5d acceptance (2026-11-16 JST): [PR #1348 comment](https://github.com/nurockplayer/gteki/pull/1348#issuecomment-6896544158). R11a: paw at most 18 mm inside its hip/shoulder; knee/elbow at most 15 mm outside its own paw. R11b: MOVED #1354; excluded from this PR's acceptance failures.", "",
+             "AD round-5d acceptance (2026-11-16 JST): [PR #1348 comment](https://github.com/nurockplayer/gteki/pull/1348#issuecomment-6896544158). R11a: paw at most 18 mm inside its hip/shoulder; knee/elbow at most 15 mm outside its own paw. R11b (#1354): rear silhouette below trunk / trunk width ≤ 1.15 at every run sheet phase.",
+             "R11b uses the evaluated skin in the rear camera frame (screen right = world X, up = world Z). Trunk vertices have combined spine_01–03 rest weights > 0.5; trunk width is their projected lateral span. Below-trunk skin is clipped at the lowest posed hip/shoulder head height, including edge intersections. Widths are full left-to-right projected spans, not joint widths. Upper-origin drift is max |posed X − rest X| over the dense cycle samples, limit 3 mm per leg.", "",
              "| Record | Rule | Result | Evaluated measurements |", "| --- | --- | --- | --- |"]
     failures = []
     seams = closed_rest_seams(body)
+    trunk_groups = {body.vertex_groups[n].index for n in ('spine_01', 'spine_02', 'spine_03')}
+    trunk_vertices = [v.index for v in body.data.vertices
+                      if sum(g.weight for g in v.groups if g.group in trunk_groups) > .5]
     for name, samples in records.items():
         gait = AUTHORED_GAITS[name]
         run = gait["gait"] == "run"
@@ -2064,7 +2070,31 @@ def round4_measurements(arm, body, records):
                 leg_maxima.append(k + ' hip/knee/wrist/paw ' + '/'.join(f'{v:.2f}@{p:.4f}' for v, p in maxima))
             row('R11a', outside[0] <= 15.001 and inside[0] <= 18.001,
                 f'knee outside paw {outside[0]:.3f} mm at {outside[1]:.4f} {outside[2]}; paw inside hip {inside[0]:.3f} mm at {inside[1]:.4f} {inside[2]}; ' + '; '.join(leg_maxima))
-            lines.append(f'| {name} | R11b | MOVED #1354 | Rear silhouette diagnosis: https://github.com/nurockplayer/gteki/issues/1354; excluded from this PR\'s acceptance failures |')
+        drift = {leg['key']: max((v['upper_drift'][leg['key']], p) for p, q, m, v in samples) for leg in LEGS}
+        row('Upper-origin drift', all(value <= 3.001 for value, phase in drift.values()),
+            '; '.join(f'{leg} {value:.3f} mm at {phase:.6f}' for leg, (value, phase) in drift.items()))
+        if run:
+            sheet_phases = {i/12 for i in range(12)} | set(gait.get('sheet_phases', [key['phase'] for key in gait['poses']]))
+            for phase in sorted(sheet_phases):
+                apply_authored_pose(arm, authored_pose(name, phase*gait['cycle_s']))
+                depsgraph = bpy.context.evaluated_depsgraph_get()
+                evaluated_arm = arm.evaluated_get(depsgraph)
+                evaluated_body = body.evaluated_get(depsgraph)
+                mesh = bpy.data.meshes.new_from_object(evaluated_body)
+                points = [evaluated_body.matrix_world @ v.co for v in mesh.vertices]
+                cutoff = min((evaluated_arm.matrix_world @ evaluated_arm.pose.bones[n].head).z
+                             for n in ('hindleg_hip_L', 'hindleg_hip_R', 'foreleg_shoulder_L', 'foreleg_shoulder_R'))
+                below = [p.x for p in points if p.z <= cutoff]
+                for edge in mesh.edges:
+                    a, b = (points[i] for i in edge.vertices)
+                    if (a.z < cutoff < b.z) or (b.z < cutoff < a.z):
+                        below.append(a.x + (b.x-a.x)*(cutoff-a.z)/(b.z-a.z))
+                trunk = [points[i].x for i in trunk_vertices]
+                trunk_width, lower_width = max(trunk)-min(trunk), max(below)-min(below)
+                ratio = lower_width/trunk_width
+                row(f'R11b phase {phase:.6f}', ratio <= 1.15,
+                    f'below/trunk {lower_width*1000:.3f}/{trunk_width*1000:.3f} mm = {ratio:.4f}; cutoff {cutoff*1000:.3f} mm')
+                bpy.data.meshes.remove(mesh)
         gaps=[]
         for phase in [i/12 for i in range(12)]+([.870] if name=='run_a' else []):
             apply_authored_pose(arm,authored_pose(name,phase*gait['cycle_s']))
@@ -2094,7 +2124,7 @@ def authored_tuning_measurements(arm, body):
         head, tail, neck, head_angles, tail_angles = [], [], [], [], []
         swing = {"fore": 0.0, "hind": 0.0}
         worst = 0.0
-        phases = {i/240 for i in range(240)} | {i/128 for i in range(128)} | {k["phase"] for k in gait["poses"]}
+        phases = {i/240 for i in range(240)} | {i/128 for i in range(128)} | {i/12 for i in range(12)} | {k["phase"] for k in gait["poses"]}
         if run:
             hero = .325 if name == "run_a" else .45
             phases |= {hero-.035, hero+.035}
@@ -2104,11 +2134,13 @@ def authored_tuning_measurements(arm, body):
             metrics = apply_authored_pose(arm, pose)
             positions = {bone: list(arm.pose.bones[bone].head) for bone in ("head", "foreleg_shoulder_L", "foreleg_shoulder_R", "hindleg_hip_L", "hindleg_hip_R")}
             positions['r11'] = {}
+            positions['upper_drift'] = {}
             for leg in LEGS:
                 k = leg['key']
                 upper, lower, paw = leg_names(leg['front'], leg['side'])
                 proximal = ('foreleg_shoulder_' if leg['front'] else 'hindleg_hip_') + k[-1]
                 positions['r11'][k] = tuple(abs(arm.pose.bones[n].head.x)*1000 for n in (proximal, lower, paw, paw))
+                positions['upper_drift'][k] = abs(arm.pose.bones[upper].head.x-arm.data.bones[upper].head_local.x)*1000
             positions["tip"] = list(arm.pose.bones["tail_06"].tail)
             positions["tail_angle"] = max(abs(math.degrees(math.atan2((arm.pose.bones[f"tail_{i:02d}"].tail-arm.pose.bones[f"tail_{i:02d}"].head).z, -(arm.pose.bones[f"tail_{i:02d}"].tail-arm.pose.bones[f"tail_{i:02d}"].head).y))) for i in range(1,7))
             records[name].append((phase,pose,metrics,positions))
