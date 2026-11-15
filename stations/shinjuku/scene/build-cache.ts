@@ -14,7 +14,7 @@
  */
 import type { StationBundle } from "@gteki/schema";
 import { buildLayout, type Layout, type Plan } from "./layout.ts";
-import { contentKey } from "./content-key.ts";
+import { layoutInputKey, readLayoutBake } from "./layout-bake.ts";
 import { adoptRestrictedAccess, protectFareAndAccess, type FareProtection } from "./fare-fence.ts";
 
 export interface PreparedLayout {
@@ -25,6 +25,8 @@ export interface PreparedLayout {
 }
 export interface PrepareOptions {
   pitchedCeilings?: boolean;
+  /** Preloaded text, consumed only on a reuse cache miss. */
+  layoutBakeText?: string | null;
   /** Reuse and fill the per-content snapshot. Off by default so tests that mutate inputs stay isolated. */
   reuse?: boolean;
   /** Passed to protectFareAndAccess; see its doc. Default true. */
@@ -40,10 +42,17 @@ export function clearLayoutCache() {
 }
 
 export function prepareLayout(bundle: StationBundle, plan: Plan, options: PrepareOptions = {}): PreparedLayout {
-  const key = options.reuse ? contentKey(bundle, plan) + (options.pitchedCeilings === false ? ":flat" : ":pitched") : "";
+  const key = options.reuse ? layoutInputKey(bundle, plan, options.pitchedCeilings !== false) : "";
   const verify = options.verifyGeneratedInput !== false;
   if (entry && options.reuse && entry.key === key && (entry.verified || !verify)) {
     const copy = structuredClone(entry.snapshot);
+    adoptRestrictedAccess(copy.layout, plan, bundle);
+    return { ...copy, cached: true };
+  }
+  const baked = options.reuse ? readLayoutBake(options.layoutBakeText, key, verify) : null;
+  if (baked) {
+    entry = { key, verified: verify, snapshot: baked };
+    const copy = structuredClone(baked);
     adoptRestrictedAccess(copy.layout, plan, bundle);
     return { ...copy, cached: true };
   }

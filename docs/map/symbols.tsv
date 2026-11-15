@@ -1339,6 +1339,7 @@ createTrainSound	function	stations/shinjuku/gteki/train-sound.ts
 rumbleCutoffHz	function	stations/shinjuku/gteki/train-sound.ts
 rumbleLevel	function	stations/shinjuku/gteki/train-sound.ts
 trainSoundCues	function	stations/shinjuku/gteki/train-sound.ts
+@gteki/station-shinjuku:bake:layout	script	stations/shinjuku/package.json
 @gteki/station-shinjuku:bake:surface	script	stations/shinjuku/package.json
 @gteki/station-shinjuku:build	script	stations/shinjuku/package.json
 @gteki/station-shinjuku:check	script	stations/shinjuku/package.json
@@ -1534,6 +1535,13 @@ PlaceholderGroup	type	stations/shinjuku/scene/kit/types.ts
 PlaceholderLedgerView	interface	stations/shinjuku/scene/kit/types.ts
 RunAnchor	interface	stations/shinjuku/scene/kit/types.ts
 ToiletAnchor	interface	stations/shinjuku/scene/kit/types.ts
+LayoutBake	interface	stations/shinjuku/scene/layout-bake.ts
+LayoutSnapshot	type	stations/shinjuku/scene/layout-bake.ts
+fetchLayoutBake	function	stations/shinjuku/scene/layout-bake.ts
+layoutInputKey	function	stations/shinjuku/scene/layout-bake.ts
+readLayoutBake	function	stations/shinjuku/scene/layout-bake.ts
+decodeLayoutSnapshot	function	stations/shinjuku/scene/layout-codec.ts
+encodeLayoutSnapshot	function	stations/shinjuku/scene/layout-codec.ts
 GateLine	interface	stations/shinjuku/scene/layout.ts
 Layout	interface	stations/shinjuku/scene/layout.ts
 LevelLayout	interface	stations/shinjuku/scene/layout.ts
@@ -1739,6 +1747,10 @@ TextureEntry	interface	stations/shinjuku/test/helpers/texture-memory.ts
 collectTextures	function	stations/shinjuku/test/helpers/texture-memory.ts
 textureBudget	function	stations/shinjuku/test/helpers/texture-memory.ts
 textureBytes	function	stations/shinjuku/test/helpers/texture-memory.ts
+LAYOUT_BAKED_PATH	const	stations/shinjuku/tools/bake-layout.ts
+bakeLayoutFile	function	stations/shinjuku/tools/bake-layout.ts
+layoutBakedText	function	stations/shinjuku/tools/bake-layout.ts
+layoutSourceKey	function	stations/shinjuku/tools/bake-layout.ts
 BAKED_PATH	const	stations/shinjuku/tools/bake-surface.ts
 DERIVATION_SOURCES	const	stations/shinjuku/tools/bake-surface.ts
 bakeSurfaceFile	function	stations/shinjuku/tools/bake-surface.ts

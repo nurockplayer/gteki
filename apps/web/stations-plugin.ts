@@ -386,7 +386,7 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
       // A production build publishes what it emits: only valid stations, and only their declared files.
       const published = serve ? null : publishableAssets(stations, { privateBuild });
       if (published) {
-        declaredReal = new Set(stations.flatMap((s) => [...(published.get(s.dir) ?? [])].map((f) => fs.realpathSync(path.join(s.gtekiDir, f)))));
+        declaredReal = new Set(declaredStationFiles(stations).flatMap((s) => [...s.declared]));
       }
       const lines = ["export const stations = ["];
       for (const s of stations) {

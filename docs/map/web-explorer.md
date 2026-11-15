@@ -111,3 +111,5 @@ Crowd sightlines (#1087): `Explorer.placeCamera()` sends the follow look target 
 - #137 — persistent data-credit line (PR #187).
 - Stairwells — the slab cut through vertical connectors and the upper-floor guard rail (`stairwellCut.ts`), on top of the #633 `cutRegions` refactor of `portalCut.ts`.
 - See also [[web-ui]] for the shell that drives this class, [[pkg-scene-api]] for the scene contract, [[pkg-navigation]] for routes, and [[INDEX]].
+
+Shinjuku J2 prepared-layout bake (#1317): `stations/shinjuku/scene/layout-codec.ts` preserves snapshot identity, property order and special values; `stations/shinjuku/scene/layout-bake.ts` fetches the committed gzip `stations/shinjuku/data/layout-baked.bin` alongside kit loading. `stations/shinjuku/tools/bake-layout.ts` (`bake:layout`) fingerprints inputs and derivation sources. `build-cache.ts` consumes matching text on a reuse miss, adopts restricted access and keeps a pristine snapshot; every build receives its own copy. Releasing station caches drops the decoded snapshot.

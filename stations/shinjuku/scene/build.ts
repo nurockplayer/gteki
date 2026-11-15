@@ -78,6 +78,7 @@ export interface BuildOptions {
   /** Reuse the built layout and fences across builds of equal bundle and plan (the shared explorer's
    * reopen). Output is byte-identical; see build-cache.ts. */
   reuseLayout?: boolean;
+  layoutBakeText?: string | null;
   /** Default true, and buildScene keeps it true: the restricted-area input fingerprint (~90 ms cold) is the only
    * load-time guard against a stale generated fence table; root CI (`root-test`, #148) also fails on one.
    * false is for tests that exercise the unchecked path. */
@@ -690,7 +691,9 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 // ---------------------------------------------------------------- main
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
-  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput, pitchedCeilings: opts.pitchedCeilings });
+  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, layoutBakeText: opts.layoutBakeText, verifyGeneratedInput: opts.verifyRestrictedInput, pitchedCeilings: opts.pitchedCeilings });
+  // Build callbacks share this scope; release the large fetch text before retaining any of them.
+  opts = { ...opts, layoutBakeText: undefined };
   markScene("build-layout");
   const preview = layout.shaftCeilingPreview;
   const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
