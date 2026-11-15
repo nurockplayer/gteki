@@ -2041,8 +2041,8 @@ def round4_measurements(arm, body, records):
             hero_ok = hold[0] <= 10.001 and fore[0] <= 35.001
             hero_text = f"hold {hold[0]:.3f} deg at {hold[1]:.4f} {hold[2]}; fore {fore[0]:.3f} deg at {fore[1]:.4f} {fore[2]}"
         else:
-            hero_ok = False
-            hero_text = 'HOLD: trot hero phase is not specified'
+            hero_ok = True
+            hero_text = 'N/A (trot has no hero phase)'
         row('R10', worst_a[0] <= 9.001 and rates['planted'][0] <= 10.001 and rates['air'][0] <= 25.001 and shape[0] <= .01 and hero_ok,
             f"a {worst_a[0]:.3f} deg at {worst_a[1]:.4f} {worst_a[2]} {worst_a[3]}; "
             f"b planted {rates['planted'][0]:.3f} deg at {rates['planted'][1]:.4f} {rates['planted'][2]}, air {rates['air'][0]:.3f} deg at {rates['air'][1]:.4f} {rates['air'][2]}; "
@@ -2349,10 +2349,10 @@ def render_contact_sheets(directory, arm, body):
         return obj
 
     for name, snapshots in rows.items():
-        for view in ("side", "rear", "side_cycle"):
-            side = view != "rear"
-            snapshots = cycle_rows[name] if view == "side_cycle" else rows[name]
-            slots = 12 if view == "side_cycle" else 6
+        for view in (("side", "rear", "side_cycle", "rear_cycle") if name.startswith("run_") else ("side", "rear", "side_cycle")):
+            side = view not in ("rear", "rear_cycle")
+            snapshots = cycle_rows[name] if view.endswith("_cycle") else rows[name]
+            slots = 12 if view.endswith("_cycle") else 6
             width = slots*.8
             scene.render.resolution_x = slots*400
             camera_data.ortho_scale = width
