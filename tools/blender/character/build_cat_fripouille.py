@@ -486,8 +486,9 @@ def reweight_ears(body, bases):
 # --------------------------------------------------------------------------------------------
 
 def closed_rest_seams(body):
-    """Rest vertices meeting a boundary edge within S2's 0.01 mm."""
+    """Rest-closed vertex/edge and edge/edge junctions within S2's 0.01 mm."""
     from mathutils.kdtree import KDTree
+    from mathutils.geometry import intersect_line_line
     uses = {}
     for polygon in body.data.polygons:
         for edge in polygon.edge_keys:
@@ -509,12 +510,39 @@ def closed_rest_seams(body):
                 continue
             t = max(0, min(1, (point-start).dot(delta)/delta.length_squared))
             if (point-start-t*delta).length <= .00001:
-                seams.append((i, a, b, t))
+                seams.append((i, i, 0.0, a, b, t))
+    midpoints = KDTree(len(edges))
+    radius = 0
+    for i,(a,b) in enumerate(edges):
+        midpoints.insert((vertices[a].co+vertices[b].co)/2,i)
+        radius = max(radius,(vertices[a].co-vertices[b].co).length/2)
+    midpoints.balance()
+    for i,(a,b) in enumerate(edges):
+        start,end = vertices[a].co,vertices[b].co
+        delta = end-start
+        if delta.length_squared < 1e-16:
+            continue
+        for _,j,_ in midpoints.find_range((start+end)/2,delta.length/2+radius+.00001):
+            if j <= i:
+                continue
+            c,d = edges[j]
+            if {a,b} & {c,d}:
+                continue
+            other = vertices[d].co-vertices[c].co
+            if other.length_squared < 1e-16:
+                continue
+            pair = intersect_line_line(start,end,vertices[c].co,vertices[d].co)
+            if pair is None or (pair[0]-pair[1]).length > .00001:
+                continue
+            t = (pair[0]-start).dot(delta)/delta.length_squared
+            u = (pair[1]-vertices[c].co).dot(other)/other.length_squared
+            if 1e-5 < t < 1-1e-5 and 1e-5 < u < 1-1e-5:
+                seams.append((a,b,t,c,d,u))
     return seams
 
 
 def close_rest_seams(body):
-    """Split T junctions before S1, so both sides share identical skinning samples."""
+    """Split rest-closed junctions before S1 so both sides share skinning samples."""
     import bmesh
     seams = closed_rest_seams(body)
     bm = bmesh.new()
@@ -522,32 +550,33 @@ def close_rest_seams(body):
     bm.verts.ensure_lookup_table()
     vertices = list(bm.verts)
     splits = {}
-    for i, a, b, t in seams:
-        point = vertices[i].co
-        if (point-vertices[a].co).length <= .00001:
-            vertices[i].co = vertices[a].co
-        elif (point-vertices[b].co).length <= .00001:
-            vertices[i].co = vertices[b].co
-        else:
-            splits.setdefault((a, b), []).append((t, i))
+    for a,b,t,c,d,u in seams:
+        point = vertices[a].co.copy() if a == b else (vertices[a].co*(1-t)+vertices[b].co*t+vertices[c].co*(1-u)+vertices[d].co*u)/2
+        for i,j,v in ((a,b,t),(c,d,u)):
+            if i == j or (point-vertices[i].co).length <= .00001:
+                vertices[i].co = point
+            elif (point-vertices[j].co).length <= .00001:
+                vertices[j].co = point
+            else:
+                splits.setdefault((i,j),[]).append((v,point.copy()))
     count = 0
-    for (a, b), nodes in splits.items():
-        start, end = vertices[a], vertices[b]
+    for (a,b),nodes in splits.items():
+        start,end = vertices[a],vertices[b]
         last = 0.0
-        for t, i in sorted(nodes):
+        for t,point in sorted(nodes,key=lambda node:node[0]):
             if t-last < 1e-5:
                 continue
-            edge = bm.edges.get((start, end))
+            edge = bm.edges.get((start,end))
             if edge is None:
                 continue
-            _, node = bmesh.utils.edge_split(edge, start, (t-last)/(1-last))
-            node.co = vertices[i].co
-            start, last = node, t
+            _,node = bmesh.utils.edge_split(edge,start,(t-last)/(1-last))
+            node.co = point
+            start,last = node,t
             count += 1
     bm.to_mesh(body.data)
     bm.free()
     body.data.update()
-    print(f"S2 split {count} rest-closed T junctions before S1 weight unification")
+    print(f"S2 split {count} rest-closed T/edge junctions before S1 weight unification")
 
 
 def unify_coincident_weights(body):
@@ -1828,8 +1857,8 @@ def round4_measurements(arm, body, records):
         pitch = max(abs(math.degrees(q['legs'][k]['paw_pitch_rad'])) for p,q,m in stance for k in m)
         hind_end = max(v[1] for k,v in boundary.items() if k.startswith('hind'))
         fore_start = max(v[0] for k,v in boundary.items() if k.startswith('fore'))
-        row('R3',swing['fore'] <= 115.001 and swing['hind'] <= (120.001 if run else 115.001) and pitch <= 60.001 and (not run or (hind_end <= 35.001 and fore_start <= 30.001)),
-            f"swing fore/hind {swing['fore']:.2f}/{swing['hind']:.2f} deg; paw pitch {pitch:.2f} deg; hind lift/fore touchdown {hind_end:.2f}/{fore_start:.2f} deg")
+        row('R3',swing['fore'] <= 115.001 and swing['hind'] <= (120.001 if run else 115.001) and pitch <= 60.001 and (not run or (hind_end <= 35.001 and fore_start <= 30.001)) and name != 'run_b',
+            f"swing fore/hind {swing['fore']:.2f}/{swing['hind']:.2f} deg; paw pitch {pitch:.2f} deg; hind lift/fore touchdown {hind_end:.2f}/{fore_start:.2f} deg" + ('; prior fore-fold author HOLD (180 deg) retained' if name == 'run_b' else ''))
         heads = [v['head'][2] for p,q,m,v in samples]
         travel = (max(heads)-min(heads))*1000
         head_angle = max(abs(math.degrees(q['fk'][k][0])) for p,q,m,v in samples for k in ('neck','head'))
@@ -1937,9 +1966,9 @@ def round4_measurements(arm, body, records):
         for phase in [i/12 for i in range(12)]+([.870] if name=='run_a' else []):
             apply_authored_pose(arm,authored_pose(name,phase*gait['cycle_s']))
             mesh=bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
-            gaps.append(max(((mesh.vertices[i].co-mesh.vertices[a].co*(1-t)-mesh.vertices[b].co*t).length*1000 for i,a,b,t in seams),default=0))
+            gaps.append(max(((mesh.vertices[a].co*(1-t)+mesh.vertices[b].co*t-mesh.vertices[c].co*(1-u)-mesh.vertices[d].co*u).length*1000 for a,b,t,c,d,u in seams),default=0))
             bpy.data.meshes.remove(mesh)
-        row('S2',max(gaps) <= .2,f"{len(seams)} rest-closed vertex/edge pairs; 12-phase max {max(gaps[:12]):.6f} mm; per-phase " + '/'.join(f'{v:.4f}' for v in gaps[:12]) + (f'; run_a .870 {gaps[-1]:.6f} mm' if name=='run_a' else ''))
+        row('S2',max(gaps) <= .2,f"{len(seams)} rest-closed vertex/edge and edge/edge pairs; 12-phase max {max(gaps[:12]):.6f} mm; per-phase " + '/'.join(f'{v:.4f}' for v in gaps[:12]) + (f'; run_a .870 {gaps[-1]:.6f} mm' if name=='run_a' else ''))
     return lines,failures
 
 
