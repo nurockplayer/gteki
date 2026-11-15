@@ -35,6 +35,7 @@
     "explorer-walk": "tsx tools/explorer-walk.ts",
     "perf": "tsx tools/perf.ts",
     "heap": "tsx tools/heap.ts",
+    "bake:layout": "tsx tools/bake-layout.ts",
     "bake:surface": "tsx tools/bake-surface.ts",
     "shops:bays": "tsx tools/shop-bays.ts"
   },

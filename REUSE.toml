@@ -208,6 +208,8 @@ path = [
   "stations/shinjuku/gteki/graph.json",
   "stations/shinjuku/gteki/pois.json",
   "stations/shinjuku/data/plan.json",
+  "stations/shinjuku/data/layout-baked.bin",
+  "stations/shinjuku/data/layout-bake-key.json",
   "stations/shinjuku/data/import-report.json",
   "stations/shinjuku/scene/fare-restricted.generated.json",
   "stations/shinjuku/scene/shop_bays.json",

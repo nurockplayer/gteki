@@ -14,6 +14,7 @@ import { kitSwapRequested, prepareKitSwap, type KitSwap } from "../scene/kit/ind
 import { currentTimeBand } from "../../ikebukuro/scene/time-band.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
+import { fetchLayoutBake } from "../scene/layout-bake.ts";
 import { clearLayoutCache } from "../scene/build-cache.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
@@ -189,6 +190,7 @@ export const stairwellRecipeUrl = async (tier: "high" | "low"): Promise<string |
  */
 export const buildScene: BuildScene = (ctx) => {
   markScene("start");
+  const layoutBake = fetchLayoutBake();
   const request = kitSwapRequested(typeof location === "undefined" ? undefined : location.search);
   const swap = request.enabled ? prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}), ...(request.roles ? { roles: request.roles } : {}) }) : Promise.resolve(null);
   const shops = loadShopKit(ctx.THREE, ctx, shopKitManifest as KitManifest,
@@ -197,9 +199,9 @@ export const buildScene: BuildScene = (ctx) => {
     .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; })
     .finally(() => markScene("shops"));
   const markedSwap = swap.finally(() => markScene("kit"));
-  return Promise.all([markedSwap, shops]).then(([kit, shopKit]) => {
+  return Promise.all([markedSwap, shops, layoutBake]).then(([kit, shopKit, layoutBakeText]) => {
     markScene("assemble-start");
-    return assembleScene(ctx, kit ?? undefined, shopKit ?? undefined);
+    return assembleScene(ctx, kit ?? undefined, shopKit ?? undefined, { layoutBakeText });
   });
 };
 
@@ -219,14 +221,14 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
 }
 
 /** The scene build itself, with an optional, already prepared kit swap. Exported for tests. */
-export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit, options: { pitchedCeilings?: boolean } = {}): StationScene => {
+export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit, options: { pitchedCeilings?: boolean; layoutBakeText?: string | null } = {}): StationScene => {
   const T = ctx.THREE;
   const low = ctx.quality === "low";
   const sceneBundle = planBundle(ctx.bundle);
   // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
   const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
-  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, layoutBakeText: options.layoutBakeText, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
   installLightPreset(built.root, parseLightPreset(typeof location === "undefined" ? "" : location.search));
   const { layout } = built;
 

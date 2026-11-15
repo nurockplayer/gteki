@@ -68,6 +68,6 @@ describe("station geometry lifetime", () => {
     const { stdout } = await run(process.execPath, [
       "--expose-gc", "--import", "tsx", fileURLToPath(new URL("./helpers/scene-scope.ts", import.meta.url)),
     ], { timeout: 180_000 });
-    expect(JSON.parse(stdout).sceneScopeCollected).toBe(true);
+    expect(JSON.parse(stdout)).toEqual({ sceneScopeCollected: true, bakedHit: true });
   }, 180_000);
 });
