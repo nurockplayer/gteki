@@ -2,6 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { gunzipSync, gzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { createServer } from "vite";
 import { discoverStations, fsUrl, gtekiStations, publishableAssets } from "../stations-plugin.ts";
@@ -163,7 +164,32 @@ describe("virtual station module asset URLs", () => {
 
   it("uses statically resolvable, fingerprinted ?url imports for production builds", () => {
     // One literal specifier: Vite must see "?url" without folding a runtime concatenation.
-    expect(load([valid(tree())], "build")).toMatch(/import\("[^"]*\/b1\.glb\?url"\)/);
+    const code = load([valid(tree())], "build");
+    expect(code).toMatch(/import\("[^"]*\/b1\.glb\?url&no-inline"\).then\(\(m\) => m.default \+ "\.gz"\)/);
+    expect(code).toMatch(/b1\.meta\.json\?url"\).then\(\(m\) => m.default\)/);
+  });
+
+  it("writes deterministic gzip siblings for station and public GLBs, retaining originals", () => {
+    const dist = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-glb-output-"));
+    fs.mkdirSync(path.join(dist, "avatars"));
+    fs.mkdirSync(path.join(dist, "assets"));
+    const cat = fs.readFileSync(new URL("../public/avatars/cat.glb", import.meta.url));
+    fs.writeFileSync(path.join(dist, "avatars", "cat.glb"), cat);
+    fs.writeFileSync(path.join(dist, "assets", "kit.glb"), cat);
+    try {
+      const plugin = gtekiStations([]) as unknown as { writeBundle(options: { dir: string }): void };
+      plugin.writeBundle({ dir: dist });
+      const glbs = fs.readdirSync(dist, { recursive: true, encoding: "utf8" }).filter(f => f.endsWith(".glb"));
+      expect(glbs).toHaveLength(2);
+      for (const file of glbs) {
+        const plain = fs.readFileSync(path.join(dist, file));
+        const compressed = fs.readFileSync(path.join(dist, `${file}.gz`));
+        expect(gunzipSync(compressed)).toEqual(plain);
+        expect(compressed).toEqual(gzipSync(plain, { level: 9 }));
+        expect(compressed.readUInt32LE(4)).toBe(0); // mtime
+        expect(compressed[3]! & 8).toBe(0); // no original filename
+      }
+    } finally { fs.rmSync(dist, { recursive: true, force: true }); }
   });
 
   it("publishes a declared uriMobile variant, and refuses it when it is missing", () => {

@@ -2,6 +2,7 @@ symbol	kind	path
 @gteki/web:build	script	apps/web/package.json
 @gteki/web:dev	script	apps/web/package.json
 @gteki/web:preview	script	apps/web/package.json
+@gteki/web:typecheck	script	apps/web/package.json
 CreditBundle	interface	apps/web/src/creditLine.ts
 CreditGroup	interface	apps/web/src/creditLine.ts
 composeCreditLine	function	apps/web/src/creditLine.ts
@@ -109,6 +110,7 @@ ExplorerEvents	interface	apps/web/src/explorer/explorer.ts
 ExplorerMode	type	apps/web/src/explorer/explorer.ts
 ExplorerOptions	interface	apps/web/src/explorer/explorer.ts
 ExplorerPose	interface	apps/web/src/explorer/explorer.ts
+fetchGlb	function	apps/web/src/explorer/fetchGlb.ts
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts
 FloorReflectionSettings	interface	apps/web/src/explorer/floorReflectionPass.ts

@@ -83,6 +83,7 @@ test("cold open @phone", async ({ page }, info) => {
       station: e.station?.key ?? null,
       mode: (window as any).__gteki.mode(),
       bytes: performance.getEntriesByType("resource").reduce((n, r) => n + (r as PerformanceResourceTiming).transferSize, 0),
+      glbRequests: performance.getEntriesByType("resource").filter(r => /\.glb(?:\.gz)?$/.test(r.name)).map(r => ({ url: r.name, bytes: (r as PerformanceResourceTiming).transferSize })),
       loadTimings: (window as any).__gteki.sceneInfo().loadTimings,
       marks: performance.getEntriesByType("mark").map((m) => [m.name, Math.round(m.startTime)]),
       navTiming: { responseEnd: Math.round(nav.responseEnd), domContentLoadedEventEnd: Math.round(nav.domContentLoadedEventEnd) },
