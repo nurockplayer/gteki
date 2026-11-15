@@ -26,6 +26,8 @@ Usage (Blender 5.2, headless, from the repository root):
     --src      the checked-in source directory (scene.gltf, scene.bin, textures/, license.txt)
     --out      directory for cat.glb
     --preview  render bind poses and clip phases into this directory (outside the repository)
+    --sheets   render authored A/B side/rear rows and report.md into this directory
+    --sheet-only  build the rig and sheets, then exit before clip baking/export
 
 Coordinates. Authored in Blender's Z-up frame: X = the cat's right (its left is -X), Y = forward
 (the nose at +Y), Z = height (feet at 0). The glTF exporter writes (x, z, -y), so the exported cat
@@ -665,6 +667,8 @@ def set_fk(arm, fk):
 
 
 def apply_pose(arm, pose):
+    if "authored" in pose:
+        return apply_authored_pose(arm, pose)
     import bpy
     from mathutils import Quaternion
     kit.reset_pose(arm)
@@ -896,6 +900,8 @@ def frame_pose(arm, clip, frame, sit):
         pose = idle_pose(t)
     elif clip == "sit":
         pose = sit_pose(t, sit)
+    elif clip in AUTHORED_GAITS:
+        pose = authored_pose(clip, t)
     elif clip in GAITS:
         pose = locomotion_pose(clip, t)
     elif clip == "start":
@@ -1148,6 +1154,15 @@ def sit_checks(checker, arm, body, groups, actions):
     scene = bpy.context.scene
     arm.animation_data.action = actions["sit"]
     frames = list(range(0, CLIPS["sit"]["frames"] + 1, CLIPS["sit"]["sample"]))
+    AUTHORED_GAITS = load_authored_gaits()
+    CONTACT_VERTICES = authored_contact_vertices(body, arm)
+    if args.sheets:
+        render_contact_sheets(args.sheets, arm, body)
+        if args.sheet_only:
+            if checker.failures:
+                fail("; ".join(checker.failures))
+            return
+
     pelvis = pelvis_indices(body)
     checker.check(bool(pelvis), f"sit pelvis region found ({len(pelvis)} vertices)")
     lowest = 1.0
@@ -1421,6 +1436,392 @@ def render_previews(directory, arm):
 
 
 # --------------------------------------------------------------------------------------------
+# Data-authored gait layer (#1347). Legacy clips retain their own solver and timing.
+# --------------------------------------------------------------------------------------------
+
+AUTHORED_GAITS = {}
+CONTACT_VERTICES = {}
+
+
+def load_authored_gaits():
+    import json
+    path = Path(__file__).with_name("cat_gaits.json")
+    data = json.loads(path.read_text())
+    for name, gait in data["gaits"].items():
+        if not math.isclose(gait["cycle_s"] * gait["cadence_hz"], 1.0, abs_tol=1e-9):
+            fail(f"{name}: cycle_s and cadence_hz disagree")
+    return data["gaits"]
+
+
+def hermite_channel(gait, phase, path, angle=False):
+    """Periodic Hermite; tangents are value/phase, scalar or nested channel maps."""
+    def channel(value):
+        for key in path:
+            value = value[key]
+        return value
+
+    keys = gait["poses"]
+    values = [channel(key) for key in keys]
+    if isinstance(values[0], list):
+        return [hermite_channel(gait, phase, (*path, i), angle) for i in range(len(values[0]))]
+    if angle:
+        # Preserve a continuous angle branch, including the seam to the next cycle.
+        for i in range(1, len(values)):
+            values[i] = values[i - 1] + math.remainder(values[i] - values[i - 1], math.tau)
+    p = phase % 1.0
+    left = next((i - 1 for i, key in enumerate(keys) if key["phase"] > p), len(keys) - 1)
+    right = (left + 1) % len(keys)
+    t0, t1 = keys[left]["phase"], keys[right]["phase"]
+    if right == 0:
+        t1 += 1.0
+    if p < t0:
+        p += 1.0
+    span = t1 - t0
+    u = (p - t0) / span
+    a, b = values[left], values[right]
+    if angle:
+        b = a + math.remainder(b - a, math.tau)
+
+    def tangent(key, name):
+        value = key.get(name, 0.0)
+        return value if isinstance(value, (int, float)) else channel(value)
+
+    m0 = tangent(keys[left], "tangent_out") * span
+    m1 = tangent(keys[right], "tangent_in") * span
+    return ((2*u**3 - 3*u*u + 1)*a + (u**3 - 2*u*u + u)*m0
+            + (-2*u**3 + 3*u*u)*b + (u**3 - u*u)*m1)
+
+
+def authored_pose(name, seconds):
+    gait = AUTHORED_GAITS[name]
+    phase = (seconds / gait["cycle_s"]) % 1.0
+    sample = lambda *path, angle=False: hermite_channel(gait, phase, path, angle)
+    root = {key: sample("root", key, angle=key == "pitch_rad")
+            for key in gait["poses"][0]["root"]}
+    flight = gait.get("flight_root")
+    if flight:
+        start, end = flight["interval"]
+        low, high = flight["chord_height_m"]
+        duration = (end - start) * gait["cycle_s"]
+        acceleration = flight["com_exaggeration"] * flight["gravity_mps2"]
+        # The quadratic ballistic arc is exactly representable by cubic Hermite.
+        # Insert its endpoints and derivatives so entry/exit remain continuous too.
+        curve = [{"phase": key["phase"], "height": key["root"]["height_offset_m"],
+                  "tangent_in": 0, "tangent_out": 0}
+                 for key in gait["poses"] if not start <= key["phase"] <= end]
+        slope = (high - low) / (end - start)
+        for phase_key, value, derivative in ((start, low, slope + acceleration*duration**2/(2*(end-start))),
+                                              (end, high, slope - acceleration*duration**2/(2*(end-start)))):
+            curve.append({"phase": phase_key, "height": value,
+                          "tangent_in": derivative, "tangent_out": derivative})
+        root["height_offset_m"] = hermite_channel({"poses": sorted(curve, key=lambda k: k["phase"])}, phase, ("height",))
+    return {"authored": name, "phase": phase, "root": root,
+            "fk": {bone: sample("fk_xyz_rad", bone, angle=True)
+                   for bone in gait["poses"][0]["fk_xyz_rad"]},
+            "legs": {leg: {key: sample("legs", leg, key, angle=key.endswith("_rad"))
+                           for key in channels}
+                     for leg, channels in gait["poses"][0]["legs"].items()}}
+
+
+def supporting(gait, leg, phase):
+    touchdown, toe_off = gait["contacts"][leg]
+    return any(touchdown <= phase + cycle < toe_off for cycle in (-1, 0, 1))
+
+
+def support_intervals(gait):
+    events = sorted({0.0, 1.0, *(v % 1.0 for pair in gait["contacts"].values() for v in pair)})
+    return [(start, end, [leg for leg in gait["contacts"]
+                         if supporting(gait, leg, (start + end) / 2)])
+            for start, end in zip(events, events[1:])]
+
+
+def authored_contact_vertices(body, arm):
+    """Rigid paw regions after the existing weight/decimation pipeline, in rest armature space."""
+    kit.reset_pose(arm)
+    import bpy
+    bpy.context.view_layer.update()
+    return {leg["key"]: [v.co.copy() - arm.data.bones[paw_group(leg)].head_local
+                         for v in body.data.vertices
+                         if any(g.group == body.vertex_groups[paw_group(leg)].index and g.weight > .5
+                                for g in v.groups)] for leg in LEGS}
+
+
+def solve_authored_leg(arm, leg, target, pitch):
+    """Exact two-link solve from the moved proximal joint; infeasible targets remain reported."""
+    import bpy
+    from mathutils import Matrix, Vector
+    names = leg_names(leg["front"], leg["side"])
+    upper, lower, paw = [arm.pose.bones[n] for n in names]
+    head, goal = upper.head.copy(), Vector(target)
+    delta = goal - head
+    distance = delta.length
+    l1, l2 = upper.bone.length, lower.bone.length
+    direction = delta.normalized() if distance else Vector((0, 0, -1))
+    # Outside the annulus, draw the nearest physically attainable chain and expose its residual.
+    solved_distance = min(l1 + l2, max(abs(l1 - l2), distance))
+    solved_goal = head + direction * solved_distance
+    along = (solved_distance**2 + l1*l1 - l2*l2) / (2 * solved_distance)
+    height = math.sqrt(max(0.0, l1*l1 - along*along))
+    bend = Vector((0, -direction.z, direction.y))
+    if bend.length < 1e-8:
+        bend = Vector((0, 1, 0))
+    bend.normalize()
+    knee = head + direction*along + bend*height*KNEE_SIGN[leg["key"]]
+    for bone, start, end in ((upper, head, knee), (lower, knee, solved_goal)):
+        rest = bone.bone.matrix_local.to_3x3()
+        swing = (rest @ Vector((0, 1, 0))).rotation_difference((end - start).normalized())
+        matrix = (swing.to_matrix() @ rest).to_4x4()
+        matrix.translation = start
+        bone.matrix = matrix
+        bpy.context.view_layer.update()
+    matrix = (Matrix.Rotation(pitch, 3, "X") @ paw.bone.matrix_local.to_3x3()).to_4x4()
+    matrix.translation = solved_goal
+    paw.matrix = matrix
+    bpy.context.view_layer.update()
+    residual = (paw.head - goal).length
+    return {"residual_mm": residual * 1000,
+            "upper_pitch_deg": math.degrees(math.atan2((knee-head).y, -(knee-head).z)),
+            "lower_pitch_deg": math.degrees(math.atan2((solved_goal-knee).y, -(solved_goal-knee).z)),
+            "knee_deg": math.degrees((knee-head).angle(solved_goal-knee)),
+            "requested_m": list(goal), "solved_m": list(paw.head)}
+
+
+def apply_authored_pose(arm, pose):
+    import bpy
+    from mathutils import Matrix, Quaternion, Vector
+    kit.reset_pose(arm)
+    root = arm.pose.bones["root"]
+    pitch = pose["root"]["pitch_rad"]
+    pivot = arm.data.bones["spine_01"].head_local
+    rotation = Matrix.Rotation(pitch, 3, "X")
+    root.location = pivot - rotation @ pivot + Vector((0, 0, pose["root"]["height_offset_m"]))
+    root.rotation_quaternion = Quaternion((1, 0, 0), pitch)
+    set_fk(arm, pose["fk"])
+    bpy.context.view_layer.update()
+    metrics = {}
+    for leg in LEGS:
+        channels = pose["legs"][leg["key"]]
+        proximal_name = ("foreleg_shoulder_" if leg["front"] else "hindleg_hip_") + leg["key"][-1]
+        proximal = arm.pose.bones[proximal_name]
+        proximal.rotation_quaternion = Quaternion((1, 0, 0), channels["proximal_pitch_rad"])
+        bpy.context.view_layer.update()
+        # Translation is along the ribcage in armature space, independently of the swing.
+        matrix = proximal.matrix.copy()
+        matrix.translation += Vector((0, channels["proximal_slide_m"], 0))
+        proximal.matrix = matrix
+        bpy.context.view_layer.update()
+        target = Vector(channels["target_m"])
+        paw_rotation = Matrix.Rotation(channels["paw_pitch_rad"], 3, "X")
+        sole = min((paw_rotation @ point).z for point in CONTACT_VERTICES[leg["key"]])
+        target.z -= sole
+        metrics[leg["key"]] = solve_authored_leg(arm, leg, target, channels["paw_pitch_rad"])
+        residual = metrics[leg["key"]]["residual_mm"]
+        if residual > .001:
+            print(f"UNREACHABLE {pose['authored']} phase {pose['phase']:.6f} {leg['key']}: residual {residual:.3f} mm")
+    pose["ik"] = metrics
+    return metrics
+
+
+def render_contact_sheets(directory, arm, body):
+    """Freeze the real shaded skin at each data key; same camera width for all eight rows."""
+    import bpy
+    from datetime import datetime
+    from mathutils import Vector
+    directory.mkdir(parents=True, exist_ok=True)
+    scene = bpy.context.scene
+    scene.render.engine = "BLENDER_WORKBENCH"
+    scene.render.resolution_x, scene.render.resolution_y = 2400, 420
+    scene.render.resolution_percentage = 100
+    scene.render.image_settings.file_format = "PNG"
+    shading = scene.display.shading
+    shading.light, shading.color_type = "STUDIO", "VERTEX"
+    shading.show_shadows, shading.show_cavity = True, True
+    shading.background_type = "VIEWPORT"
+    shading.background_color = (.85, .87, .89)
+    camera_data = bpy.data.cameras.new("sheet_camera")
+    camera_data.type, camera_data.ortho_scale = "ORTHO", 4.8
+    camera = bpy.data.objects.new("sheet_camera", camera_data)
+    scene.collection.objects.link(camera)
+    scene.camera = camera
+    arm.animation_data.action = None
+    groups = [paw_group(leg) for leg in LEGS]
+    dims = []
+    for label, bone in (("withers", "spine_03"), ("hip height", "hindleg_hip_L")):
+        dims.append(f"| {label} | {arm.data.bones[bone].head_local.z:.6f} |")
+    for leg in LEGS:
+        prefix = ("foreleg_shoulder_" if leg["front"] else "hindleg_hip_") + leg["key"][-1]
+        names = [prefix, *leg_names(leg["front"], leg["side"])[:2]]
+        lengths = [arm.data.bones[n].length for n in names]
+        for n, length in zip(names, lengths):
+            dims.append(f"| {n} length | {length:.6f} |")
+        dims.append(f"| {leg['key']} full-chain reach | {sum(lengths):.6f} |")
+    report = ["# Cat authored-pose sheets", "", f"Generated {datetime.now().astimezone().isoformat(timespec='seconds')} (zone included).",
+              "", "## Dimensions", "", "| Dimension | Metres |", "| --- | ---: |", *dims,
+              "", "Scale includes ears; joint heights are centroid-derived and await AD review.",
+              "Paw target XY is the paw-origin projection; target Z is the lowest rigid weighted contact surface.",
+              "No bone lengths or skin weights changed. Full-chain reach includes the proximal segment.",
+              "", "## Contact schedules", "", "| Record | Unwrapped contacts | Flight intervals | Flight fraction |",
+              "| --- | --- | --- | ---: |"]
+    for name, gait in AUTHORED_GAITS.items():
+        intervals = support_intervals(gait)
+        flights = [(a, b) for a, b, legs in intervals if not legs]
+        report.append(f"| {name} | " + "; ".join(f"{k} {a:.2f}–{b:.2f}" for k, (a, b) in gait["contacts"].items())
+                      + " | " + (", ".join(f"{a:.2f}–{b:.2f}" for a, b in flights) or "none")
+                      + f" | {sum(b-a for a,b in flights):.1%} |")
+    failures, warnings = [], []
+    report.extend(["", "## Poses", "", "Angles are degrees; each leg lists residual mm / upper pitch / lower pitch / knee bend, then proximal / slide mm / paw pitch.",
+                   "Clearance is the minimum evaluated skinned paw surface; four-paw clearance is their minimum.",
+                   "", "| Record / phase / reference | Root height mm / pitch; spine; neck/head | Leg solves and controls | Paw clearances mm (FL, FR, HL, HR); four-paw min |",
+                   "| --- | --- | --- | --- |"])
+    rows, support_notes, envelopes = {}, [], []
+    for name, gait in AUTHORED_GAITS.items():
+        rows[name] = []
+        head_heights, head_pitches = [], []
+        for key in gait["poses"]:
+            phase = key["phase"]
+            pose = authored_pose(name, phase*gait["cycle_s"])
+            apply_pose(arm, pose)
+            head_heights.append(arm.pose.bones["head"].head.z)
+            head_pitches.append(arm.pose.bones["head"].matrix.to_euler("XYZ").x)
+            paw_data = kit.evaluated_paw_points(body, groups)
+            clearances = [paw_data[paw_group(leg)][1]*1000 for leg in LEGS]
+            mesh = bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+            rows[name].append((key, mesh, {leg["key"]: arm.pose.bones[paw_group(leg)].head.copy() for leg in LEGS}))
+            solves = []
+            for leg in LEGS:
+                k = leg["key"]
+                metric, control = pose["ik"][k], pose["legs"][k]
+                solves.append(f"{k}: {metric['residual_mm']:.3f} / {metric['upper_pitch_deg']:.1f} / {metric['lower_pitch_deg']:.1f} / {metric['knee_deg']:.1f}; "
+                              f"{math.degrees(control['proximal_pitch_rad']):.1f} / {control['proximal_slide_m']*1000:.1f} / {math.degrees(control['paw_pitch_rad']):.1f}")
+                if metric["residual_mm"] > .001:
+                    message = (f"{name} phase {phase:.3f} {k}: residual {metric['residual_mm']:.3f} mm; "
+                               f"requested {metric['requested_m']}; solved {metric['solved_m']}")
+                    warnings.append(message)
+                if metric["residual_mm"] > 2:
+                    failures.append(warnings[-1])
+            angles = ", ".join(f"{math.degrees(pose['fk'][n][0]):.1f}" for n in ("spine_01", "spine_02", "spine_03", "neck", "head"))
+            report.append(f"| {name} {phase:.3f}: {key['name']}; {key['reference']} | "
+                          f"{pose['root']['height_offset_m']*1000:.2f} / {math.degrees(pose['root']['pitch_rad']):.1f}; {angles} | "
+                          + "<br>".join(solves) + " | " + ", ".join(f"{v:.2f}" for v in clearances) + f"; **{min(clearances):.2f}** |")
+        support_notes.extend(["", f"### {name} support intervals", ""])
+        support_notes.extend(f"- {start:.2f}–{end:.2f}: {', '.join(legs) or 'flight'}" for start, end, legs in support_intervals(gait))
+        envelopes.append(f"- {name}: head origin travel at keys {(max(head_heights)-min(head_heights))*1000:.3f} mm; head pitch excursion {math.degrees(max(head_pitches)-min(head_pitches)):.3f}°.")
+    report.extend(["", "## Body measurements", "", *envelopes, *support_notes])
+    # Check the B hero interval against the actual skin, not only the hero key.
+    hero_min = float("inf")
+    gait = AUTHORED_GAITS["run_b"]
+    for i in range(35):
+        phase = .38 + .14*i/34
+        pose = authored_pose("run_b", phase*gait["cycle_s"])
+        apply_pose(arm, pose)
+        for leg, metric in pose["ik"].items():
+            if metric["residual_mm"] > .001:
+                message = f"run_b hero phase {phase:.6f} {leg}: residual {metric['residual_mm']:.3f} mm"
+                warnings.append(message)
+                if metric["residual_mm"] > 2:
+                    failures.append(message)
+        hero_min = min(hero_min, *(v[1]*1000 for v in kit.evaluated_paw_points(body, groups).values()))
+    report.extend(["", f"B hero interval 0.38–0.52: minimum skinned four-paw clearance **{hero_min:.3f} mm** (35 samples, approximately 826 Hz).",
+                   "B flight root is a ballistic arc above its authored chord with COM exaggeration 1.0; rise = "
+                   f"{9.81*(.27*gait['cycle_s'])**2/8*1000:.3f} mm."])
+    if hero_min < 10:
+        failures.append(f"run_b hero clearance {hero_min:.3f} mm < 10 mm")
+    report.extend(["", "## Unreachable targets", "", *(warnings or ["None (all recorded targets reached within 0.001 mm)."]),
+                   "", "## Deformation / AD inspection", "",
+                   "Inspect chest and belly at gathered poses, shoulder seams at maximum scapula swing/slide, and wrists at maximum fold.",
+                   "These are centroid pivots and the existing smoothed skin. Visible collapse requires the AD's sheet judgment; no automated visual PASS is claimed.",
+                   "A's second suspension and 25 mm stylised root lift deliberately depart from Muybridge's single extended suspension.",
+                   "These first-pass keys are silhouette drafts. Nominal speed and cadence are metadata; planted displacement/slip and dense clip acceptance belong to PR 2."])
+    directory.joinpath("report.md").write_text("\n".join(report) + "\n")
+    body.hide_render = True
+    temporary = []
+
+    def material(color):
+        mat = bpy.data.materials.new("sheet_ink")
+        mat.diffuse_color = (*color, 1)
+        return mat
+
+    ink, grid_ink, support_ink = material((.04,.06,.08)), material((.57,.61,.65)), material((.02,.32,.10))
+
+    def line(points, radius, mat):
+        curve = bpy.data.curves.new("sheet_line", "CURVE")
+        curve.dimensions, curve.bevel_depth, curve.bevel_resolution = "3D", radius, 0
+        spline = curve.splines.new("POLY")
+        spline.points.add(len(points)-1)
+        for point, co in zip(spline.points, points):
+            point.co = (*co, 1)
+        obj = bpy.data.objects.new("sheet_line", curve)
+        scene.collection.objects.link(obj)
+        obj.data.materials.append(mat)
+        temporary.append(obj)
+        return obj
+
+    for name, snapshots in rows.items():
+        for view in ("side", "rear"):
+            side = view == "side"
+            direction = Vector((-1,0,0) if side else (0,1,0))
+            centre = Vector((0,0,.15))
+            camera.location = centre - direction*3
+            camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+            right = Vector((0,1,0) if side else (1,0,0))
+            back = direction*.30
+            for i in range(-48, 49):
+                x = i*.05
+                line([back+right*x+Vector((0,0,-.08)), back+right*x+Vector((0,0,.48))], .00035, grid_ink)
+            for i in range(-1, 10):
+                z = i*.05
+                line([back-right*2.4+Vector((0,0,z)),back+right*2.4+Vector((0,0,z))], .0012 if i==0 else .00035, ink if i==0 else grid_ink)
+            for i, (key, mesh, paws) in enumerate(snapshots):
+                offset = right*((i-2.5)*.8)
+                obj = bpy.data.objects.new("sheet_cat", mesh)
+                scene.collection.objects.link(obj)
+                obj.location = offset
+                temporary.append(obj)
+                for leg in LEGS:
+                    paw = paws[leg["key"]] + offset
+                    # Mark on the camera-facing side, preserving the actual paw's height.
+                    marker = paw-direction*.14
+                    ring = [marker+right*(.008*math.cos(a))+Vector((0,0,.008*math.sin(a))) for a in [math.tau*k/24 for k in range(25)]]
+                    filled = supporting(AUTHORED_GAITS[name], leg["key"], key["phase"])
+                    line(ring, .0012, support_ink if filled else ink)
+                    if filled:
+                        for k in range(-3,4):
+                            z=k*.002
+                            width=math.sqrt(.007**2-z*z)
+                            line([marker-right*width+Vector((0,0,z)), marker+right*width+Vector((0,0,z))], .001, support_ink)
+                text_data = bpy.data.curves.new("sheet_label", "FONT")
+                # Short frame correspondence; full references are in report.md and the JSON.
+                text_data.body = (f"{name}  phase {key['phase']:.3f}\n{key['name']}\n" + key["reference"].replace("; ", "\n") + "\nfilled: support / ring: airborne")
+                text_data.size = .019
+                text_data.align_x = "CENTER"
+                text = bpy.data.objects.new("sheet_label", text_data)
+                scene.collection.objects.link(text)
+                text.location = offset-direction*.32+Vector((0,0,-.035))
+                text.rotation_euler = camera.rotation_euler
+                text.data.materials.append(ink)
+                temporary.append(text)
+            scene.render.filepath = str(directory/f"{name}_{view}.png")
+            bpy.ops.render.render(write_still=True)
+            for obj in temporary:
+                data = obj.data
+                bpy.data.objects.remove(obj, do_unlink=True)
+                if data.users == 0 and data not in [row[1] for row in snapshots]:
+                    if isinstance(data, bpy.types.Curve):
+                        bpy.data.curves.remove(data)
+            temporary.clear()
+    for snapshots in rows.values():
+        for _key, mesh, _paws in snapshots:
+            bpy.data.meshes.remove(mesh)
+    bpy.data.objects.remove(camera, do_unlink=True)
+    body.hide_render = False
+    kit.reset_pose(arm)
+    bpy.context.view_layer.update()
+    print(f"SHEETS {directory}: 8 PNGs and report.md; {len(failures)} acceptance failure(s)")
+    if failures:
+        fail("authored sheets: " + "; ".join(failures))
+
+
+# --------------------------------------------------------------------------------------------
 # main
 # --------------------------------------------------------------------------------------------
 
@@ -1429,7 +1830,12 @@ def main():
     parser.add_argument("--src", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--preview", type=Path, default=None)
+    parser.add_argument("--sheets", type=Path, default=None)
+    parser.add_argument("--sheet-only", action="store_true")
     args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else [])
+
+    if args.sheet_only and args.sheets is None:
+        parser.error("--sheet-only requires --sheets <dir>")
 
     import bpy
     from mathutils import Matrix, Vector
@@ -1441,7 +1847,7 @@ def main():
     checker = kit.Checker()
 
     global REST_TARGET, STANCE_CENTRE, REST_DISTAL, OFF_EPS, GAITS, CALIB
-    global SHOULDER_LEVER, HIP_LEVER, KNEE_SIGN
+    global SHOULDER_LEVER, HIP_LEVER, KNEE_SIGN, AUTHORED_GAITS, CONTACT_VERTICES
 
     body, eyes = import_source(args.src)
     height, yaw = canonicalise(body)

@@ -1,0 +1,1987 @@
+{
+  "version": 1,
+  "rest_pose": {
+    "identifier": "Fripouille HEIGHT_M=0.345; joint_table centroid rig",
+    "source_scene_sha256": "4de30cd1548d90a7ad06c571ed141428029e2cc4a367370ad353c9e29270f6f5"
+  },
+  "units": {
+    "length": "metres",
+    "angle": "radians",
+    "time": "seconds"
+  },
+  "axes": {
+    "forward": "+Y",
+    "up": "+Z",
+    "left": "-X",
+    "fk": "bone-local XYZ",
+    "proximal": "bone-local sagittal X; slide armature +Y",
+    "paw_targets": "armature XY at paw origin; Z is lowest contact-region height (weight > 0.5)",
+    "root": "height and X pitch about spine_01 rest head"
+  },
+  "contact_regions": {
+    "fore_L": {
+      "group": "forepaw_L",
+      "weight_threshold": 0.5,
+      "pivot": "lowest evaluated weighted paw surface"
+    },
+    "fore_R": {
+      "group": "forepaw_R",
+      "weight_threshold": 0.5,
+      "pivot": "lowest evaluated weighted paw surface"
+    },
+    "hind_L": {
+      "group": "hindpaw_L",
+      "weight_threshold": 0.5,
+      "pivot": "lowest evaluated weighted paw surface"
+    },
+    "hind_R": {
+      "group": "hindpaw_R",
+      "weight_threshold": 0.5,
+      "pivot": "lowest evaluated weighted paw surface"
+    }
+  },
+  "gaits": {
+    "run_a": {
+      "variant": "a",
+      "gait": "run",
+      "cycle_s": 0.27027027027027023,
+      "nominal_speed_mps": 3.4,
+      "cadence_hz": 3.7,
+      "poses": [
+        {
+          "phase": 0,
+          "name": "hind touchdown",
+          "root": {
+            "height_offset_m": -0.024,
+            "pitch_rad": -0.10472
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.20944,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.20944,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.349066,
+              0,
+              0
+            ],
+            "neck": [
+              -0.242404,
+              0,
+              0
+            ],
+            "head": [
+              -0.001942,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.145512,
+                0.043809
+              ],
+              "proximal_pitch_rad": -0.126245,
+              "proximal_slide_m": -0.00434,
+              "paw_pitch_rad": -1.181676
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.163781,
+                0.054699
+              ],
+              "proximal_pitch_rad": -0.020362,
+              "proximal_slide_m": -0.0007,
+              "paw_pitch_rad": -1.475403
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.068319,
+                0
+              ],
+              "proximal_pitch_rad": 0.356338,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.071002,
+                0.004483
+              ],
+              "proximal_pitch_rad": 0.337827,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.049791
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 1; Muybridge 719 frame 4 (gather)"
+        },
+        {
+          "phase": 0.23,
+          "name": "hind push-off",
+          "root": {
+            "height_offset_m": -0.029,
+            "pitch_rad": 0.0
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.087266,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.034907,
+              0,
+              0
+            ],
+            "neck": [
+              0.676826,
+              0,
+              0
+            ],
+            "head": [
+              -0.676826,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.177712,
+                0.052308
+              ],
+              "proximal_pitch_rad": 0.061087,
+              "proximal_slide_m": 0.0021,
+              "paw_pitch_rad": -1.410921
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.195981,
+                0.035938
+              ],
+              "proximal_pitch_rad": 0.16697,
+              "proximal_slide_m": 0.00574,
+              "paw_pitch_rad": -0.969369
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.173319,
+                0
+              ],
+              "proximal_pitch_rad": -0.356338,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.164145,
+                0
+              ],
+              "proximal_pitch_rad": -0.294366,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 2; Muybridge 719 frame 3 (support)"
+        },
+        {
+          "phase": 0.325,
+          "name": "extended flight hero",
+          "root": {
+            "height_offset_m": -0.004,
+            "pitch_rad": 0.069813
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.139626,
+              0,
+              0
+            ],
+            "spine_03": [
+              -0.279253,
+              0,
+              0
+            ],
+            "neck": [
+              1.429497,
+              0,
+              0
+            ],
+            "head": [
+              -1.150245,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.257212,
+                0.05
+              ],
+              "proximal_pitch_rad": 0.523599,
+              "proximal_slide_m": 0.018,
+              "paw_pitch_rad": -0.261799
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.257281,
+                0.05
+              ],
+              "proximal_pitch_rad": 0.523599,
+              "proximal_slide_m": 0.018,
+              "paw_pitch_rad": -0.261799
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.200819,
+                0.05
+              ],
+              "proximal_pitch_rad": -0.542991,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0.20944
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.200775,
+                0.05
+              ],
+              "proximal_pitch_rad": -0.542991,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0.20944
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 3; Muybridge 720 frames 1-2 (extension)"
+        },
+        {
+          "phase": 0.4,
+          "name": "fore touchdown",
+          "root": {
+            "height_offset_m": -0.018,
+            "pitch_rad": -0.122173
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.069813,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.10472,
+              0,
+              0
+            ],
+            "spine_03": [
+              -0.10472,
+              0,
+              0
+            ],
+            "neck": [
+              1.342231,
+              0,
+              0
+            ],
+            "head": [
+              -1.150245,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.201512,
+                0.028491
+              ],
+              "proximal_pitch_rad": 0.199549,
+              "proximal_slide_m": 0.00686,
+              "paw_pitch_rad": -0.768509
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.219781,
+                0
+              ],
+              "proximal_pitch_rad": 0.305433,
+              "proximal_slide_m": 0.0105,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.150137,
+                0.035162
+              ],
+              "proximal_pitch_rad": -0.198994,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.390531
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.152821,
+                0.031598
+              ],
+              "proximal_pitch_rad": -0.217505,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.350945
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 4; Muybridge 719 frame 3 (support)"
+        },
+        {
+          "phase": 0.65,
+          "name": "fore push-off",
+          "root": {
+            "height_offset_m": -0.026,
+            "pitch_rad": 0.087266
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.087266,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.296706,
+              0,
+              0
+            ],
+            "neck": [
+              -0.484777,
+              0,
+              0
+            ],
+            "head": [
+              0.153165,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.169312,
+                0
+              ],
+              "proximal_pitch_rad": 0.012217,
+              "proximal_slide_m": 0.00042,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.114781,
+                0
+              ],
+              "proximal_pitch_rad": -0.305433,
+              "proximal_slide_m": -0.0105,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.116046,
+                0.05444
+              ],
+              "proximal_pitch_rad": 0.032394,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.604648
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.11873,
+                0.054897
+              ],
+              "proximal_pitch_rad": 0.013883,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.609722
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 5; Muybridge 719 frame 3 (support)"
+        },
+        {
+          "phase": 0.87,
+          "name": "gathered flight",
+          "root": {
+            "height_offset_m": -0.001,
+            "pitch_rad": 0.0
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.20944,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.20944,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.349066,
+              0,
+              0
+            ],
+            "neck": [
+              -1.214256,
+              0,
+              0
+            ],
+            "head": [
+              0.86519,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.132212,
+                0.05
+              ],
+              "proximal_pitch_rad": -0.203622,
+              "proximal_slide_m": -0.007,
+              "paw_pitch_rad": -1.48353
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.132281,
+                0.05
+              ],
+              "proximal_pitch_rad": -0.203622,
+              "proximal_slide_m": -0.007,
+              "paw_pitch_rad": -1.48353
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.065819,
+                0.05
+              ],
+              "proximal_pitch_rad": 0.373307,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.436332
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.065775,
+                0.05
+              ],
+              "proximal_pitch_rad": 0.373307,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.436332
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 6; Muybridge 719 frame 4 (gather)"
+        }
+      ],
+      "contacts": {
+        "hind_L": [
+          0,
+          0.23
+        ],
+        "hind_R": [
+          0.02,
+          0.25
+        ],
+        "fore_R": [
+          0.4,
+          0.65
+        ],
+        "fore_L": [
+          0.53,
+          0.78
+        ]
+      },
+      "interpolation": "periodic cubic Hermite; angles unwrapped; tangents in value/phase",
+      "references": [
+        "spec-a \u00a72",
+        "spec-a erratum",
+        "Muybridge plates 719, 720"
+      ]
+    },
+    "trot_a": {
+      "variant": "a",
+      "gait": "trot",
+      "cycle_s": 0.3333333333333333,
+      "nominal_speed_mps": 1.45,
+      "cadence_hz": 3,
+      "poses": [
+        {
+          "phase": 0,
+          "name": "diagonal touchdown HL+FR",
+          "root": {
+            "height_offset_m": -0.03,
+            "pitch_rad": 0.0
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.05236,
+              0,
+              0
+            ],
+            "neck": [
+              0.308679,
+              0,
+              0
+            ],
+            "head": [
+              -0.378492,
+              0,
+              0
+            ],
+            "tail_01": [
+              0.139626,
+              0,
+              0
+            ],
+            "tail_02": [
+              0.069813,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.125089,
+                0
+              ],
+              "proximal_pitch_rad": -0.24506,
+              "proximal_slide_m": -0.008425,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.214781,
+                0
+              ],
+              "proximal_pitch_rad": 0.276344,
+              "proximal_slide_m": 0.0095,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.073319,
+                0
+              ],
+              "proximal_pitch_rad": 0.322401,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.162898,
+                0
+              ],
+              "proximal_pitch_rad": -0.285903,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 1; Muybridge plate 718 (trot); spec-a erratum \u00a71"
+        },
+        {
+          "phase": 0.25,
+          "name": "diagonal recovery HR+FL",
+          "root": {
+            "height_offset_m": -0.03,
+            "pitch_rad": 0.034907
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              -0.05236,
+              0,
+              0
+            ],
+            "neck": [
+              1.060156,
+              0,
+              0
+            ],
+            "head": [
+              -1.02525,
+              0,
+              0
+            ],
+            "tail_01": [
+              0.139626,
+              0,
+              0
+            ],
+            "tail_02": [
+              0.069813,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.16418,
+                0.031839
+              ],
+              "proximal_pitch_rad": -0.017639,
+              "proximal_slide_m": -0.000606,
+              "paw_pitch_rad": -0.607797
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.16997,
+                0
+              ],
+              "proximal_pitch_rad": 0.015642,
+              "proximal_slide_m": 0.000538,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.11813,
+                0
+              ],
+              "proximal_pitch_rad": 0.018249,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.123807,
+                0.031839
+              ],
+              "proximal_pitch_rad": -0.020579,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.607797
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 2; Muybridge plate 718 (trot); spec-a erratum \u00a71"
+        },
+        {
+          "phase": 0.5,
+          "name": "diagonal touchdown HR+FL",
+          "root": {
+            "height_offset_m": -0.03,
+            "pitch_rad": 0.0
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.05236,
+              0,
+              0
+            ],
+            "neck": [
+              0.308679,
+              0,
+              0
+            ],
+            "head": [
+              -0.378492,
+              0,
+              0
+            ],
+            "tail_01": [
+              0.139626,
+              0,
+              0
+            ],
+            "tail_02": [
+              0.069813,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.214712,
+                0
+              ],
+              "proximal_pitch_rad": 0.276344,
+              "proximal_slide_m": 0.0095,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.125159,
+                0
+              ],
+              "proximal_pitch_rad": -0.24506,
+              "proximal_slide_m": -0.008425,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.162942,
+                0
+              ],
+              "proximal_pitch_rad": -0.285903,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.073275,
+                0
+              ],
+              "proximal_pitch_rad": 0.322401,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 3; Muybridge plate 718 (trot); spec-a erratum \u00a71"
+        },
+        {
+          "phase": 0.75,
+          "name": "diagonal recovery HL+FR",
+          "root": {
+            "height_offset_m": -0.03,
+            "pitch_rad": -0.034907
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              -0.05236,
+              0,
+              0
+            ],
+            "neck": [
+              1.254965,
+              0,
+              0
+            ],
+            "head": [
+              -1.150245,
+              0,
+              0
+            ],
+            "tail_01": [
+              0.139626,
+              0,
+              0
+            ],
+            "tail_02": [
+              0.069813,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.1699,
+                0
+              ],
+              "proximal_pitch_rad": 0.015642,
+              "proximal_slide_m": 0.000538,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.164249,
+                0.031839
+              ],
+              "proximal_pitch_rad": -0.017639,
+              "proximal_slide_m": -0.000606,
+              "paw_pitch_rad": -0.607797
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.123851,
+                0.031839
+              ],
+              "proximal_pitch_rad": -0.020579,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.607797
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.118086,
+                0
+              ],
+              "proximal_pitch_rad": 0.018249,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-a \u00a72 pose 4; Muybridge plate 718 (trot); spec-a erratum \u00a71"
+        }
+      ],
+      "contacts": {
+        "hind_L": [
+          0,
+          0.53
+        ],
+        "fore_R": [
+          0,
+          0.53
+        ],
+        "hind_R": [
+          0.5,
+          1.03
+        ],
+        "fore_L": [
+          0.5,
+          1.03
+        ]
+      },
+      "interpolation": "periodic cubic Hermite; angles unwrapped; tangents in value/phase",
+      "references": [
+        "spec-a \u00a72",
+        "spec-a erratum",
+        "Muybridge plates 719, 720"
+      ]
+    },
+    "run_b": {
+      "variant": "b",
+      "gait": "run",
+      "cycle_s": 0.29411764705882354,
+      "nominal_speed_mps": 3.4,
+      "cadence_hz": 3.4,
+      "poses": [
+        {
+          "phase": 0,
+          "name": "hind touchdown",
+          "root": {
+            "height_offset_m": -0.024,
+            "pitch_rad": -0.069813
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.174533,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.174533,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.261799,
+              0,
+              0
+            ],
+            "neck": [
+              -0.147424,
+              0,
+              0
+            ],
+            "head": [
+              -0.044562,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.130462,
+                0
+              ],
+              "proximal_pitch_rad": -0.213803,
+              "proximal_slide_m": -0.00735,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.137484,
+                0.034552
+              ],
+              "proximal_pitch_rad": -0.173354,
+              "proximal_slide_m": -0.005959,
+              "paw_pitch_rad": -0.931983
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.068319,
+                0
+              ],
+              "proximal_pitch_rad": 0.356338,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.082713,
+                0.023026
+              ],
+              "proximal_pitch_rad": 0.258345,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.255745
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 hind touchdown; Muybridge 719 frame 4 (gather)"
+        },
+        {
+          "phase": 0.22,
+          "name": "hind push-off",
+          "root": {
+            "height_offset_m": -0.029,
+            "pitch_rad": 0.0
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.034907,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.069813,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.034907,
+              0,
+              0
+            ],
+            "neck": [
+              0.728837,
+              0,
+              0
+            ],
+            "head": [
+              -0.728837,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.139649,
+                0.037334
+              ],
+              "proximal_pitch_rad": -0.160352,
+              "proximal_slide_m": -0.005513,
+              "paw_pitch_rad": -1.007021
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.1687,
+                0.05495
+              ],
+              "proximal_pitch_rad": 0.008255,
+              "proximal_slide_m": 0.000284,
+              "paw_pitch_rad": -1.482193
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.173319,
+                0
+              ],
+              "proximal_pitch_rad": -0.356338,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.126025,
+                0
+              ],
+              "proximal_pitch_rad": -0.035634,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 hind push-off; Muybridge 719 frame 3 (support)"
+        },
+        {
+          "phase": 0.45,
+          "name": "extended flight hero",
+          "root": {
+            "height_offset_m": -0.011092,
+            "pitch_rad": 0.05236
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.139626,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.10472,
+              0,
+              0
+            ],
+            "spine_03": [
+              -0.226893,
+              0,
+              0
+            ],
+            "neck": [
+              1.359684,
+              0,
+              0
+            ],
+            "head": [
+              -1.150245,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.257212,
+                0.05
+              ],
+              "proximal_pitch_rad": 0.523599,
+              "proximal_slide_m": 0.018,
+              "paw_pitch_rad": -0.261799
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.257281,
+                0.05
+              ],
+              "proximal_pitch_rad": 0.523599,
+              "proximal_slide_m": 0.018,
+              "paw_pitch_rad": -0.261799
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.200819,
+                0.05
+              ],
+              "proximal_pitch_rad": -0.542991,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0.20944
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.200775,
+                0.05
+              ],
+              "proximal_pitch_rad": -0.542991,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0.20944
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 extended flight hero; Muybridge 720 frames 1-2 (extension)"
+        },
+        {
+          "phase": 0.58,
+          "name": "fore touchdown",
+          "root": {
+            "height_offset_m": -0.014,
+            "pitch_rad": -0.087266
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.069813,
+              0,
+              0
+            ],
+            "spine_03": [
+              -0.087266,
+              0,
+              0
+            ],
+            "neck": [
+              1.307324,
+              0,
+              0
+            ],
+            "head": [
+              -1.150245,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.186899,
+                0.045731
+              ],
+              "proximal_pitch_rad": 0.114537,
+              "proximal_slide_m": 0.003938,
+              "paw_pitch_rad": -1.23351
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.219781,
+                0
+              ],
+              "proximal_pitch_rad": 0.305433,
+              "proximal_slide_m": 0.0105,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.124857,
+                0.054599
+              ],
+              "proximal_pitch_rad": -0.027411,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.606411
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.137838,
+                0.047987
+              ],
+              "proximal_pitch_rad": -0.11581,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.532977
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 fore touchdown; Muybridge 719 frame 3 (support)"
+        },
+        {
+          "phase": 0.84,
+          "name": "fore push-off",
+          "root": {
+            "height_offset_m": -0.026,
+            "pitch_rad": 0.069813
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.034907,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.0,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.20944,
+              0,
+              0
+            ],
+            "neck": [
+              -0.301839,
+              0,
+              0
+            ],
+            "head": [
+              0.057493,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.214462,
+                0
+              ],
+              "proximal_pitch_rad": 0.274889,
+              "proximal_slide_m": 0.00945,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.114781,
+                0
+              ],
+              "proximal_pitch_rad": -0.305433,
+              "proximal_slide_m": -0.0105,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.089857,
+                0.033041
+              ],
+              "proximal_pitch_rad": 0.210148,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.366973
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.103713,
+                0.047987
+              ],
+              "proximal_pitch_rad": 0.11581,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.532977
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 fore push-off; Muybridge 719 frame 3 (support)"
+        },
+        {
+          "phase": 0.94,
+          "name": "gathered stance",
+          "root": {
+            "height_offset_m": -0.024,
+            "pitch_rad": 0.0
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.174533,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.174533,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.261799,
+              0,
+              0
+            ],
+            "neck": [
+              -0.530654,
+              0,
+              0
+            ],
+            "head": [
+              0.268854,
+              0,
+              0
+            ],
+            "tail_01": [
+              -0.20944,
+              0,
+              0
+            ],
+            "tail_02": [
+              -0.087266,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.161962,
+                0
+              ],
+              "proximal_pitch_rad": -0.030543,
+              "proximal_slide_m": -0.00105,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.12897,
+                0.022655
+              ],
+              "proximal_pitch_rad": -0.222883,
+              "proximal_slide_m": -0.007662,
+              "paw_pitch_rad": -0.611068
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.076396,
+                0.013162
+              ],
+              "proximal_pitch_rad": 0.301517,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.14619
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.090588,
+                0.03405
+              ],
+              "proximal_pitch_rad": 0.204894,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.378183
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 gathered stance; Muybridge 719 frame 4 (gather)"
+        }
+      ],
+      "contacts": {
+        "hind_L": [
+          0,
+          0.22
+        ],
+        "hind_R": [
+          0.11,
+          0.31
+        ],
+        "fore_R": [
+          0.58,
+          0.84
+        ],
+        "fore_L": [
+          0.83,
+          1.03
+        ]
+      },
+      "interpolation": "periodic cubic Hermite; angles unwrapped; tangents in value/phase",
+      "references": [
+        "spec-b \u00a72, \u00a74, \u00a76",
+        "Muybridge plates 719, 720"
+      ],
+      "flight_root": {
+        "interval": [
+          0.31,
+          0.58
+        ],
+        "chord_height_m": [
+          -0.024,
+          -0.014
+        ],
+        "com_exaggeration": 1.0,
+        "gravity_mps2": 9.81
+      }
+    },
+    "trot_b": {
+      "variant": "b",
+      "gait": "trot",
+      "cycle_s": 0.47619047619047616,
+      "nominal_speed_mps": 1.45,
+      "cadence_hz": 2.1,
+      "poses": [
+        {
+          "phase": 0,
+          "name": "diagonal touchdown HL+FR",
+          "root": {
+            "height_offset_m": -0.03,
+            "pitch_rad": 0.0
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.05236,
+              0,
+              0
+            ],
+            "neck": [
+              0.308679,
+              0,
+              0
+            ],
+            "head": [
+              -0.378492,
+              0,
+              0
+            ],
+            "tail_01": [
+              0.139626,
+              0,
+              0
+            ],
+            "tail_02": [
+              0.069813,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.126749,
+                0
+              ],
+              "proximal_pitch_rad": -0.235404,
+              "proximal_slide_m": -0.008093,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.214781,
+                0
+              ],
+              "proximal_pitch_rad": 0.276344,
+              "proximal_slide_m": 0.0095,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.073319,
+                0
+              ],
+              "proximal_pitch_rad": 0.322401,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.161238,
+                0
+              ],
+              "proximal_pitch_rad": -0.274638,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 diagonal touchdown HL+FR; Muybridge plate 718 (trot); spec-b \u00a72 trot contacts"
+        },
+        {
+          "phase": 0.25,
+          "name": "diagonal recovery HR+FL",
+          "root": {
+            "height_offset_m": -0.03,
+            "pitch_rad": 0.034907
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              -0.05236,
+              0,
+              0
+            ],
+            "neck": [
+              1.060156,
+              0,
+              0
+            ],
+            "head": [
+              -1.02525,
+              0,
+              0
+            ],
+            "tail_01": [
+              0.139626,
+              0,
+              0
+            ],
+            "tail_02": [
+              0.069813,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.163081,
+                0.031702
+              ],
+              "proximal_pitch_rad": -0.02403,
+              "proximal_slide_m": -0.000826,
+              "paw_pitch_rad": -0.605176
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.1708,
+                0
+              ],
+              "proximal_pitch_rad": 0.02047,
+              "proximal_slide_m": 0.000704,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.1173,
+                0
+              ],
+              "proximal_pitch_rad": 0.023882,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.124906,
+                0.031702
+              ],
+              "proximal_pitch_rad": -0.028035,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.605176
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 diagonal recovery HR+FL; Muybridge plate 718 (trot); spec-b \u00a72 trot contacts"
+        },
+        {
+          "phase": 0.5,
+          "name": "diagonal touchdown HR+FL",
+          "root": {
+            "height_offset_m": -0.03,
+            "pitch_rad": 0.0
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              -0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              0.05236,
+              0,
+              0
+            ],
+            "neck": [
+              0.308679,
+              0,
+              0
+            ],
+            "head": [
+              -0.378492,
+              0,
+              0
+            ],
+            "tail_01": [
+              0.139626,
+              0,
+              0
+            ],
+            "tail_02": [
+              0.069813,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.214712,
+                0
+              ],
+              "proximal_pitch_rad": 0.276344,
+              "proximal_slide_m": 0.0095,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.126818,
+                0
+              ],
+              "proximal_pitch_rad": -0.235404,
+              "proximal_slide_m": -0.008093,
+              "paw_pitch_rad": 0
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.161282,
+                0
+              ],
+              "proximal_pitch_rad": -0.274638,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.073275,
+                0
+              ],
+              "proximal_pitch_rad": 0.322401,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 diagonal touchdown HR+FL; Muybridge plate 718 (trot); spec-b \u00a72 trot contacts"
+        },
+        {
+          "phase": 0.75,
+          "name": "diagonal recovery HL+FR",
+          "root": {
+            "height_offset_m": -0.03,
+            "pitch_rad": -0.034907
+          },
+          "fk_xyz_rad": {
+            "spine_01": [
+              -0.05236,
+              0,
+              0
+            ],
+            "spine_02": [
+              0.034907,
+              0,
+              0
+            ],
+            "spine_03": [
+              -0.05236,
+              0,
+              0
+            ],
+            "neck": [
+              1.254965,
+              0,
+              0
+            ],
+            "head": [
+              -1.150245,
+              0,
+              0
+            ],
+            "tail_01": [
+              0.139626,
+              0,
+              0
+            ],
+            "tail_02": [
+              0.069813,
+              0,
+              0
+            ]
+          },
+          "legs": {
+            "fore_L": {
+              "target_m": [
+                -0.025507,
+                0.17073,
+                0
+              ],
+              "proximal_pitch_rad": 0.02047,
+              "proximal_slide_m": 0.000704,
+              "paw_pitch_rad": 0
+            },
+            "fore_R": {
+              "target_m": [
+                0.025685,
+                0.163151,
+                0.031702
+              ],
+              "proximal_pitch_rad": -0.02403,
+              "proximal_slide_m": -0.000826,
+              "paw_pitch_rad": -0.605176
+            },
+            "hind_L": {
+              "target_m": [
+                -0.021063,
+                -0.124949,
+                0.031702
+              ],
+              "proximal_pitch_rad": -0.028035,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": -0.605176
+            },
+            "hind_R": {
+              "target_m": [
+                0.02086,
+                -0.117257,
+                0
+              ],
+              "proximal_pitch_rad": 0.023882,
+              "proximal_slide_m": 0,
+              "paw_pitch_rad": 0
+            }
+          },
+          "tangent_in": 0,
+          "tangent_out": 0,
+          "reference": "spec-b \u00a72 diagonal recovery HL+FR; Muybridge plate 718 (trot); spec-b \u00a72 trot contacts"
+        }
+      ],
+      "contacts": {
+        "hind_L": [
+          0,
+          0.54
+        ],
+        "fore_R": [
+          0,
+          0.54
+        ],
+        "hind_R": [
+          0.5,
+          1.04
+        ],
+        "fore_L": [
+          0.5,
+          1.04
+        ]
+      },
+      "interpolation": "periodic cubic Hermite; angles unwrapped; tangents in value/phase",
+      "references": [
+        "spec-b \u00a72, \u00a74, \u00a76",
+        "Muybridge plates 719, 720"
+      ]
+    }
+  }
+}
