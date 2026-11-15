@@ -1102,7 +1102,7 @@ def bake_variant(checker, arm, body, name, sit):
     action = bpy.data.actions.new(name)
     action.use_fake_user = True
     arm.animation_data.action = action
-    solved, samples, channels = [], [], []
+    solved, samples = [], []
     for i in range(33):
         seconds = i * duration / 32
         frame = seconds * FPS
@@ -1110,9 +1110,6 @@ def bake_variant(checker, arm, body, name, sit):
         pose = frame_pose(arm, name, frame, sit)
         solved.append(pose_matrices(arm))
         samples.append((i / 32, pose["ik"]))
-        channels.append({(bone, axis): angle for leg in LEGS
-                         for bone in (*leg_chain(leg)[2], paw_group(leg))
-                         for axis, angle in zip("XYZ", arm.pose.bones[bone].rotation_quaternion.to_euler())})
         for bone in arm.pose.bones:
             bone.keyframe_insert("location", frame=frame, group=bone.name)
             bone.keyframe_insert("rotation_quaternion", frame=frame, group=bone.name)
@@ -1135,10 +1132,6 @@ def bake_variant(checker, arm, body, name, sit):
                 for n in solved[0] if arm.data.bones[n].use_deform)
     checker.check(gap <= .0005 and angle <= math.radians(.5),
                   f"{name} loop closure: {gap*1000:.4f} mm, {math.degrees(angle):.4f} deg")
-    step, key, index = max((abs(math.degrees(math.remainder(b[k]-a[k], math.tau))), k, i)
-                           for i, (a, b) in enumerate(zip(channels, channels[1:])) for k in a)
-    print(f"INFO {name} largest leg channel step {step:.4f} deg, {key[0]} {key[1]}, "
-          f"t={index*duration/32:.6f}->{(index+1)*duration/32:.6f} s")
     variant_grid_checks(checker, arm, body, name, action, samples)
     return action
 
@@ -1569,6 +1562,33 @@ def legacy_clip_checks(checker, path):
         return next(n["extras"]["gteki_cat"]["calib"] for n in doc["nodes"]
                     if n.get("extras", {}).get("gteki_cat"))
     checker.check(calib(old) == calib(new), "legacy calib unchanged")
+
+
+def report_exported_leg_steps(path):
+    """Report shortest local rotation changes at consecutive exported sampler keys."""
+    doc, binary = kit.glb_json(path), glb_binary(path)
+    bones = {bone for leg in LEGS for bone in (*leg_chain(leg)[2], paw_group(leg))}
+    for animation in doc["animations"]:
+        name = animation["name"]
+        if name not in (*AUTHORED_GAITS, "trot", "run"):
+            continue
+        steps = []
+        for channel in animation["channels"]:
+            target = channel["target"]
+            bone = doc["nodes"][target["node"]]["name"]
+            if target["path"] != "rotation" or bone not in bones:
+                continue
+            sampler = animation["samplers"][channel["sampler"]]
+            times, _ = glb_accessor(doc, binary, sampler["input"], {"SCALAR": 1})
+            rotations, _ = glb_accessor(doc, binary, sampler["output"], {"VEC4": 4})
+            for i, (a, b) in enumerate(zip(rotations, rotations[1:])):
+                dot = abs(sum(x*y for x, y in zip(a, b)))
+                dot /= math.sqrt(sum(x*x for x in a) * sum(x*x for x in b))
+                angle = math.degrees(2 * math.acos(min(1.0, dot)))
+                steps.append((angle, bone, times[i][0], times[i+1][0]))
+        for rank, (angle, bone, start, end) in enumerate(sorted(steps, reverse=True)[:3], 1):
+            print(f"INFO {name} leg rotation step #{rank}: {bone} "
+                  f"t={start:.6f}->{end:.6f} s, {angle:.4f} deg")
 
 
 def linear_to_srgb(value):
@@ -2844,6 +2864,7 @@ def main():
     exported_speeds = exported_planted_speeds(out, {
         **{name: CLIPS[name]["frames"] / FPS for name in ("walk", "trot", "run")}, **durations})
     write_variant_calibration(out, exported_speeds)
+    report_exported_leg_steps(out)
     triangles, size = glb_checks(checker, out, exported_speeds, variant_speeds)
 
     if args.preview:
