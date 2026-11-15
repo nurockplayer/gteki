@@ -1424,10 +1424,17 @@ function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[]
     }
   }
   const out: Layout["shaftFascias"] = [];
+  // Parallel shaft faces often contain the exact same panels in plane space.
+  const unions = new Map<string, ReturnType<typeof polygonClipping.union>>();
   for (const plane of planes.values()) {
     // Exact copies are common when a shoulder is referenced by several flights.
     const unique = [...new Map(plane.panels.map((p) => [JSON.stringify(p), p])).values()];
-    let polygons = polygonClipping.union(unique[0]!, ...unique.slice(1));
+    const key = JSON.stringify(unique);
+    let polygons = unions.get(key);
+    if (!polygons) {
+      polygons = polygonClipping.union(unique[0]!, ...unique.slice(1));
+      unions.set(key, polygons);
+    }
     if (plane.covered.length) polygons = polygonClipping.difference(polygons, ...plane.covered);
     for (const polygon of polygons) {
       const points = polygon.flat(), min = Math.min(...points.map((p) => p[0]!)), max = Math.max(...points.map((p) => p[0]!));
