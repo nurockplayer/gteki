@@ -101,13 +101,32 @@ test("cold open starts a route and guide @phone", async ({ page }, info) => {
 });
 
 test("search opens the destination field @phone", async ({ page }, info) => {
+  await page.addInitScript(() => {
+    const attach = setInterval(() => {
+      const g = (window as any).__gteki;
+      const card = document.querySelector<HTMLElement>(".boot-card");
+      if (!g || !card) return;
+      clearInterval(attach);
+      const hold = () => {
+        if (!card.hidden) return;
+        g.holdFrames(true);
+        observer.disconnect();
+      };
+      const observer = new MutationObserver(hold);
+      observer.observe(card, { attributes: true, attributeFilter: ["hidden"] });
+      hold();
+    }, 50);
+  });
   await ready(page, "/?next=1", info);
-  await settleFrames(page, "cold open");
-  await page.locator(".cold-open-search").click({ timeout: 60_000 });
-  await expect(page.locator(".panel")).toBeVisible();
-  await expect(page.locator("#gteki-to")).toBeFocused();
-  await expect(page.locator(".cold-open")).toBeHidden();
-  expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("walk");
+  try {
+    await page.locator(".cold-open-search").click({ timeout: 60_000 });
+    await expect(page.locator(".panel")).toBeVisible();
+    await expect(page.locator("#gteki-to")).toBeFocused();
+    await expect(page.locator(".cold-open")).toBeHidden();
+    expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("walk");
+  } finally {
+    await page.evaluate(() => (window as any).__gteki.holdFrames(false));
+  }
 });
 
 test("other stations and deep links retain their state @phone", async ({ page }, info) => {
