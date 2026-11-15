@@ -406,6 +406,35 @@ describe("constrainedPitch", () => {
     expect(hold.seconds).toBe(0);
   });
 
+  it("keeps body-driven boom elevation changes below 3 degrees per 60 Hz frame, including a lip", () => {
+    const hidden = (b: THREE.Vector3) => deg(raiseOf(b)) < 49;
+    const lip = (b: THREE.Vector3): Hit[] => deg(raiseOf(b)) < 19 ? [{ distance: 0.8, cameraOnly: false }] : [];
+    for (const cast of [() => [], lip]) {
+      let raise = 0;
+      let previous = back0;
+      for (let frame = 0; frame < 60; frame++) {
+        const solved = solveRaisedBoom(wanted, back0, cast, raise, 1 / 60, false, hidden);
+        expect(solved.bodyDriven).toBe(true);
+        expect(deg(solved.back.angleTo(previous))).toBeLessThanOrEqual(3);
+        if (frame < 18) expect(solved.raise).toBeLessThan(FOLLOW.maxRaise);
+        previous = solved.back;
+        raise = solved.raise;
+      }
+      expect(deg(raise)).toBeCloseTo(50);
+    }
+  });
+
+  it("keeps a held body target eased when a geometry lip appears", () => {
+    const hold = { seconds: 0, target: 0 };
+    const first = solveRaisedBoom(wanted, back0, () => [], 0, 1 / 60, false,
+      (b) => deg(raiseOf(b)) < 49, hold);
+    const lip = (b: THREE.Vector3): Hit[] => deg(raiseOf(b)) < 19 ? [{ distance: 0.8, cameraOnly: false }] : [];
+    const held = solveRaisedBoom(wanted, back0, lip, first.raise, 1 / 60, false, () => false, hold);
+    expect(held.bodyDriven).toBe(true);
+    expect(deg(held.back.angleTo(first.back))).toBeLessThanOrEqual(3);
+    expect(held.distance).toBeLessThan(FOLLOW.comfortDistance);
+  });
+
   it("finds a raise that clears only at a steep angle (distance is not monotonic in the raise)", () => {
     let n = 0;
     // blocked at every middling angle, clear only in a 44-51 degree window
@@ -521,6 +550,10 @@ describe("solved raise after a slab squeeze", () => {
     expect(solved.distance).toBe(FOLLOW.defaultDistance);
     expect(solved.raise).toBeGreaterThan(0);
     expect(cast(solved.back)).toEqual([]);
+    expect(solved.bodyDriven).toBe(false);
+    const bodyClear = solveRaisedBoom(FOLLOW.defaultDistance, back, cast, 0, 1 / 60, false, () => false);
+    expect(bodyClear.raise).toBe(solved.raise);
+    expect(bodyClear.bodyDriven).toBe(false);
   });
 
   it("clears stale raise immediately on a seek to open space and eases it during walking", () => {

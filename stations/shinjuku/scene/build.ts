@@ -26,6 +26,7 @@ import { stableHypot } from "./stable-hypot.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
+const markScene = (name: string) => { if (typeof performance !== "undefined") performance.mark(`gteki:scene:${name}`); };
 
 export interface BuiltStation {
   root: THREE.Group;
@@ -688,6 +689,7 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   // `let`, not `const`: both are cleared before returning (see the end of this function).
   let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput, pitchedCeilings: opts.pitchedCeilings });
+  markScene("build-layout");
   const preview = layout.shaftCeilingPreview;
   const visibleSoffits = [...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes];
   const root = new THREE.Group();
@@ -707,6 +709,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const paidTiles = tileTextures({ base: "#76776f", grout: "#4c4f49", n: 4, seed: 23, speckle: 0.12 });
   const platformTiles = tileTextures({ base: "#777b7a", grout: "#484d4c", n: 4, seed: 37, speckle: 0.13 });
   const wallMaps = wallTexture(OEDO_MAGENTA), ceilingMaps = ceilingTexture();
+  markScene("build-textures-generated");
   if (opts.quality === "low") {
     for (const maps of [concourseTiles, paidTiles, platformTiles, wallMaps, ceilingMaps]) for (const texture of Object.values(maps)) {
       const source = texture.image as HTMLCanvasElement;
@@ -717,6 +720,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       texture.image = canvas;
     }
   }
+  markScene("build-textures");
   for (const texture of Object.values(wallMaps)) texture.wrapT = THREE.ClampToEdgeWrapping;
   for (const t of [concourseTiles, paidTiles, platformTiles, wallMaps, ceilingMaps]) for (const tex of Object.values(t)) (tex.anisotropy = aniso), track(tex);
   const mat = {
@@ -1774,6 +1778,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // for callers that want it (the lane app, tests); the shared explorer's scene drops `built`.
   layout = undefined as never;
   protection = undefined as never;
+  markScene("build-geometry");
   return built;
 }
 
