@@ -1095,6 +1095,89 @@ def bake_clip(arm, clip, sit):
     return action
 
 
+def bake_variant(checker, arm, body, name, sit):
+    """The AD's 32 equal intervals, including the closing key; no authored-key inserts."""
+    import bpy
+    duration = AUTHORED_GAITS[name]["cycle_s"]
+    action = bpy.data.actions.new(name)
+    action.use_fake_user = True
+    arm.animation_data.action = action
+    solved, samples = [], []
+    for i in range(33):
+        seconds = i * duration / 32
+        frame = seconds * FPS
+        bpy.context.scene.frame_set(int(frame), subframe=frame % 1)
+        pose = frame_pose(arm, name, frame, sit)
+        solved.append(pose_matrices(arm))
+        samples.append((i / 32, pose["ik"]))
+        for bone in arm.pose.bones:
+            bone.keyframe_insert("location", frame=frame, group=bone.name)
+            bone.keyframe_insert("rotation_quaternion", frame=frame, group=bone.name)
+    for curve in kit.action_fcurves(action):
+        for key in curve.keyframe_points:
+            key.interpolation = "LINEAR"
+    worst_head, worst_angle = 0.0, 0.0
+    for i, expected in enumerate(solved):
+        frame = i * duration * FPS / 32
+        bpy.context.scene.frame_set(int(frame), subframe=frame % 1)
+        for bone in arm.pose.bones:
+            if bone.bone.use_deform:
+                worst_head = max(worst_head, (bone.head - expected[bone.name].translation).length)
+                worst_angle = max(worst_angle, matrix_angle(expected[bone.name], bone.matrix))
+    checker.check(worst_head <= .0005 and worst_angle <= math.radians(.5),
+                  f"{name} baked vs solved: {worst_head*1000:.4f} mm, {math.degrees(worst_angle):.4f} deg")
+    gap = max((solved[0][n].translation - solved[-1][n].translation).length
+              for n in solved[0] if arm.data.bones[n].use_deform)
+    angle = max(matrix_angle(solved[0][n], solved[-1][n])
+                for n in solved[0] if arm.data.bones[n].use_deform)
+    checker.check(gap <= .0005 and angle <= math.radians(.5),
+                  f"{name} loop closure: {gap*1000:.4f} mm, {math.degrees(angle):.4f} deg")
+    variant_grid_checks(checker, arm, body, name, action, samples)
+    return action
+
+
+def variant_grid_checks(checker, arm, body, name, action, samples):
+    """Read the existing hind-bend, skin-height and nearest-boundary metrics on the bake grid."""
+    import bpy
+    gait = AUTHORED_GAITS[name]
+    duration = gait["cycle_s"]
+    arm.animation_data.action = action
+    if gait["gait"] == "run":
+        hero = .325 if name == "run_a" else .45
+        bend, phase, leg = max((m[k]["knee_deg"], p, k) for p, m in samples
+                               if abs(math.remainder(p-hero, 1)) <= .035+1e-8
+                               for k in m if k.startswith("hind"))
+        checker.check(bend <= 30, f"GRID R2 {name} {leg} t={phase*duration:.6f} s "
+                      f"phase={phase:.5f}: {bend:.4f} deg <= 30")
+        hg = body.vertex_groups["head"].index
+        ears = {body.vertex_groups[n].index for n in ("ear_L", "ear_R")}
+        skull = [v.index for v in body.data.vertices if any(g.group == hg and g.weight > .5 for g in v.groups)
+                 and not any(g.group in ears and g.weight > .01 for g in v.groups)]
+        withers = [v.index for v in body.data.vertices if .075 <= v.co.y <= .135
+                   and abs(v.co.x) < .045 and v.co.z > .21]
+        gaps = []
+        for phase, _ in samples:
+            if abs(math.remainder(phase-hero, 1)) > .035+1e-8:
+                continue
+            frame = phase * duration * FPS
+            bpy.context.scene.frame_set(int(frame), subframe=frame % 1)
+            mesh = bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+            gaps.append(((max(mesh.vertices[i].co.z for i in skull)
+                          - max(mesh.vertices[i].co.z for i in withers))*1000, phase))
+            bpy.data.meshes.remove(mesh)
+        gap, phase = max(gaps)
+        checker.check(gap <= 36.5, f"GRID R4 {name} t={phase*duration:.6f} s "
+                      f"phase={phase:.5f}: {gap:.4f} mm <= 36.5")
+        print(f"INFO GRID T1 {name}: N/A (run)")
+    else:
+        boundary = [(leg, min(samples, key=lambda s: abs(s[0]-p%1)))
+                    for leg, pair in gait["contacts"].items() for p in pair]
+        bend, phase, leg = min((m[k]["knee_deg"], p, k) for k, (p, m) in boundary)
+        checker.check(bend >= 15, f"GRID T1 {name} {leg} t={phase*duration:.6f} s "
+                      f"phase={phase:.5f}: {bend:.4f} deg >= 15")
+        print(f"INFO GRID R2/R4 {name}: N/A (run hold window)")
+
+
 # --------------------------------------------------------------------------------------------
 # checks
 # --------------------------------------------------------------------------------------------
@@ -1384,20 +1467,22 @@ def glb_accessor(doc, binary, index, widths):
     return values, accessor
 
 
-def planted_speeds(arm, actions):
+def planted_speeds(arm, actions, durations=None):
     """Mean horizontal paw displacement per second over low, contiguous stretches."""
     import bpy
     scene = bpy.context.scene
     paws = [paw_group(leg) for leg in LEGS]
     rest = {name: (arm.matrix_world @ arm.data.bones[name].head_local).z for name in paws}
     result = {}
-    for clip in ("walk", "trot", "run"):
+    if durations is None:
+        durations = {name: CLIPS[name]["frames"] / FPS for name in ("walk", "trot", "run")}
+    for clip, duration in durations.items():
         arm.animation_data.action = actions[clip]
         speeds = {name: [] for name in paws}
         starts = {name: None for name in paws}
         # Two cycles capture stretches crossing the loop boundary, at the test's 60 Hz.
-        for sample in range(CLIPS[clip]["frames"] * 4 + 1):
-            frame = (sample / 2) % CLIPS[clip]["frames"]
+        for sample in range(math.ceil(duration * FPS * 4) + 1):
+            frame = (sample / 2) % (duration * FPS)
             scene.frame_set(int(frame), subframe=frame % 1)
             for name in paws:
                 point = arm.matrix_world @ arm.pose.bones[name].head
@@ -1418,7 +1503,7 @@ def planted_speeds(arm, actions):
     return result
 
 
-def exported_planted_speeds(path):
+def exported_planted_speeds(path, durations=None):
     import bpy
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=str(path))
@@ -1428,14 +1513,89 @@ def exported_planted_speeds(path):
                if len(track.strips)}
     for track in arm.animation_data.nla_tracks:
         track.mute = True
-    return planted_speeds(arm, actions)
+    return planted_speeds(arm, actions, durations)
+
+
+def write_variant_calibration(path, measured):
+    """Attach the measured exported speeds without re-exporting imported actions."""
+    import json
+    import struct
+    doc, binary = kit.glb_json(path), glb_binary(path)
+    holder = next(n["extras"]["gteki_cat"] for n in doc["nodes"]
+                  if n.get("extras", {}).get("gteki_cat"))
+    holder["variants"] = {name: {"calib_mps": measured[name], "cycle_s": gait["cycle_s"],
+                                "nominal_speed_mps": gait["nominal_speed_mps"]}
+                          for name, gait in AUTHORED_GAITS.items()}
+    encoded = json.dumps(doc, separators=(",", ":")).encode()
+    encoded += b" " * (-len(encoded) % 4)
+    path.write_bytes(struct.pack("<III", 0x46546C67, 2, 28 + len(encoded) + len(binary))
+                     + struct.pack("<II", len(encoded), 0x4E4F534A) + encoded
+                     + struct.pack("<II", len(binary), 0x004E4942) + binary)
+
+
+def legacy_clip_checks(checker, path):
+    """Compare named channels, rather than accessor/node indices, to the shipped asset."""
+    baseline = Path(__file__).resolve().parents[3] / "apps/web/public/avatars/cat.glb"
+    old, new = kit.glb_json(baseline), kit.glb_json(path)
+    widths = {"SCALAR": 1, "VEC3": 3, "VEC4": 4}
+    def channels(doc, binary, name):
+        animation = next(a for a in doc["animations"] if a["name"] == name)
+        result = {}
+        for channel in animation["channels"]:
+            sampler = animation["samplers"][channel["sampler"]]
+            target = channel["target"]
+            result[(doc["nodes"][target["node"]]["name"], target["path"])] = (
+                sampler.get("interpolation", "LINEAR"),
+                *(glb_accessor(doc, binary, sampler[k], widths)[0] for k in ("input", "output")))
+        return result
+    old_bin, new_bin = glb_binary(baseline), glb_binary(path)
+    for name in CLIP_ORDER:
+        a, b = channels(old, old_bin, name), channels(new, new_bin, name)
+        equal = a.keys() == b.keys()
+        for key in a.keys() & b.keys():
+            equal &= a[key][0] == b[key][0]
+            for left, right in zip(a[key][1:], b[key][1:]):
+                equal &= len(left) == len(right) and all(
+                    abs(x-y) <= 1e-5 for xs, ys in zip(left, right) for x, y in zip(xs, ys))
+        checker.check(equal, f"legacy {name} sampler times/values unchanged within 1e-5")
+    def calib(doc):
+        return next(n["extras"]["gteki_cat"]["calib"] for n in doc["nodes"]
+                    if n.get("extras", {}).get("gteki_cat"))
+    checker.check(calib(old) == calib(new), "legacy calib unchanged")
+
+
+def report_exported_leg_steps(path):
+    """Report shortest local rotation changes at consecutive exported sampler keys."""
+    doc, binary = kit.glb_json(path), glb_binary(path)
+    bones = {bone for leg in LEGS for bone in (*leg_chain(leg)[2], paw_group(leg))}
+    for animation in doc["animations"]:
+        name = animation["name"]
+        if name not in (*AUTHORED_GAITS, "trot", "run"):
+            continue
+        steps = []
+        for channel in animation["channels"]:
+            target = channel["target"]
+            bone = doc["nodes"][target["node"]]["name"]
+            if target["path"] != "rotation" or bone not in bones:
+                continue
+            sampler = animation["samplers"][channel["sampler"]]
+            times, _ = glb_accessor(doc, binary, sampler["input"], {"SCALAR": 1})
+            rotations, _ = glb_accessor(doc, binary, sampler["output"], {"VEC4": 4})
+            for i, (a, b) in enumerate(zip(rotations, rotations[1:])):
+                dot = abs(sum(x*y for x, y in zip(a, b)))
+                dot /= math.sqrt(sum(x*x for x in a) * sum(x*x for x in b))
+                angle = math.degrees(2 * math.acos(min(1.0, dot)))
+                steps.append((angle, bone, times[i][0], times[i+1][0]))
+        for rank, (angle, bone, start, end) in enumerate(sorted(steps, reverse=True)[:3], 1):
+            print(f"INFO {name} leg rotation step #{rank}: {bone} "
+                  f"t={start:.6f}->{end:.6f} s, {angle:.4f} deg")
 
 
 def linear_to_srgb(value):
     return 12.92 * value if value <= 0.0031308 else 1.055 * value ** (1.0 / 2.4) - 0.055
 
 
-def glb_checks(checker, path):
+def glb_checks(checker, path, exported_speeds, variant_speeds):
     doc = kit.glb_json(path)
     meshes = doc.get("meshes", [])
     checker.check(len(meshes) == 1, f"GLB has one mesh ({len(meshes)})")
@@ -1453,7 +1613,20 @@ def glb_checks(checker, path):
             triangles += doc["accessors"][primitive["attributes"]["POSITION"]]["count"] // 3
     checker.check(triangles <= TRI_BUDGET, f"GLB triangles {triangles} <= {TRI_BUDGET}")
     names = sorted(animation.get("name", "") for animation in doc.get("animations", []))
-    checker.check(names == sorted(CLIP_ORDER), f"GLB clips {names}")
+    checker.check(names == sorted([*CLIP_ORDER, *AUTHORED_GAITS]), f"GLB clips {names}")
+    binary = glb_binary(path)
+    for animation in doc.get("animations", []):
+        name = animation["name"]
+        if name not in AUTHORED_GAITS:
+            continue
+        duration = AUTHORED_GAITS[name]["cycle_s"]
+        for index, sampler in enumerate(animation["samplers"]):
+            times, _ = glb_accessor(doc, binary, sampler["input"], {"SCALAR": 1})
+            checker.check(len(times) == 33 and all(abs(t[0]-i*duration/32) <= 1e-4
+                                                 for i, t in enumerate(times)),
+                          f"{name} sampler {index}: 33 uniform times ending at {duration:.6f} s")
+            checker.check(sampler.get("interpolation") == "LINEAR", f"{name} sampler {index}: LINEAR")
+    legacy_clip_checks(checker, path)
     node_names = {node.get("name") for node in doc.get("nodes", [])}
     for required in ("root", "neck", "head", "ear_L", "ear_R", "tail_01", "tail_02", "tail_03", "tail_04"):
         checker.check(required in node_names, f"GLB node {required}")
@@ -1522,9 +1695,21 @@ def glb_checks(checker, path):
                   f"GLB extras gteki_cat.calib {calib}")
     for name, value in expected.items():
         checker.check(abs(calib.get(name, -1.0) - value) <= 1e-6, f"calib.{name} = {value:.4f}")
-    for name, value in exported_planted_speeds(path).items():
+    for name in ("walk", "trot", "run"):
+        value = exported_speeds[name]
         checker.check(abs(calib.get(name, 0.0) - value) <= value * 0.02,
                       f"calib.{name} {calib.get(name, 0.0):.4f} vs GLB measured {value:.4f} (within 2%)")
+    variants = (holder or {}).get("extras", {}).get("gteki_cat", {}).get("variants", {})
+    checker.check(set(variants) == set(AUTHORED_GAITS), "GLB variants has all four records")
+    for name, gait in AUTHORED_GAITS.items():
+        values = variants.get(name, {})
+        speed = values.get("calib_mps", 0)
+        checker.check(math.isfinite(speed) and speed > 0 and speed == exported_speeds[name]
+                      and abs(speed-variant_speeds[name]) <= variant_speeds[name]*.02,
+                      f"variants.{name}.calib_mps {speed:.6f} vs Blender {variant_speeds[name]:.6f} (within 2%)")
+        checker.check(values.get("cycle_s") == gait["cycle_s"]
+                      and values.get("nominal_speed_mps") == gait["nominal_speed_mps"],
+                      f"variants.{name} cycle and nominal speed match authored JSON")
     where = doc["accessors"][mesh["primitives"][0]["attributes"]["POSITION"]]
     checker.check(abs(where["min"][1]) <= 0.002, f"GLB feet at y = {where['min'][1]:.4f}")
     checker.check(abs(where["max"][1] - HEIGHT_M) <= 0.005, f"GLB height {where['max'][1]:.3f} m")
@@ -2654,6 +2839,8 @@ def main():
         actions[clip] = bake_clip(arm, clip, sit)
         print(f"INFO baked {clip}: {CLIPS[clip]['frames']} frames, "
               f"{len(kit.action_fcurves(actions[clip]))} curves")
+    for name in AUTHORED_GAITS:
+        actions[name] = bake_variant(checker, arm, body, name, sit)
 
     arm.animation_data.action = None
     scene.frame_set(0)
@@ -2665,6 +2852,8 @@ def main():
 
     designed = dict(CALIB)
     CALIB.update(planted_speeds(arm, actions))
+    durations = {name: gait["cycle_s"] for name, gait in AUTHORED_GAITS.items()}
+    variant_speeds = planted_speeds(arm, actions, durations)
     print("INFO calib designed vs measured: " + ", ".join(
         f"{name} {designed[name]:.3f} vs {CALIB[name]:.3f}" for name in ("walk", "trot", "run")))
 
@@ -2672,7 +2861,11 @@ def main():
     arm.animation_data.action = bpy.data.actions["idle"]
     scene.frame_set(0)
     out = kit.export_glb(arm, body, args.out / "cat.glb")
-    triangles, size = glb_checks(checker, out)
+    exported_speeds = exported_planted_speeds(out, {
+        **{name: CLIPS[name]["frames"] / FPS for name in ("walk", "trot", "run")}, **durations})
+    write_variant_calibration(out, exported_speeds)
+    report_exported_leg_steps(out)
+    triangles, size = glb_checks(checker, out, exported_speeds, variant_speeds)
 
     if args.preview:
         render_previews(args.preview, arm)

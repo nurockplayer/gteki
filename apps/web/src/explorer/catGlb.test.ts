@@ -10,7 +10,7 @@ interface GlbJson {
   accessors?: { count: number; bufferView: number; byteOffset?: number; componentType: number; type: string; normalized?: boolean }[];
   bufferViews?: { byteOffset?: number; byteLength: number; byteStride?: number }[];
   images?: unknown[];
-  nodes?: { name?: string; extras?: { gteki_cat?: { calib?: Record<string, number> } } }[];
+  nodes?: { name?: string; extras?: { gteki_cat?: { calib?: Record<string, number>; variants?: Record<string, { calib_mps: number; cycle_s: number }> } } }[];
   skins?: { joints: number[] }[];
   animations?: { name?: string }[];
 }
@@ -112,6 +112,16 @@ describe("cat.glb (#854)", () => {
     for (const speed of ["walk", "trot", "run"]) {
       expect(Number.isFinite(calib[0]![speed]), speed).toBe(true);
       expect(calib[0]![speed]!, speed).toBeGreaterThan(0);
+    }
+    const variants = nodes.find((n) => n.extras?.gteki_cat?.calib)?.extras?.gteki_cat?.variants;
+    const variantNames = ["trot_a", "run_a", "trot_b", "run_b"];
+    expect(Object.keys(variants ?? {}).sort()).toEqual([...variantNames].sort());
+    for (const name of variantNames) {
+      expect(clips, name).toContain(name);
+      for (const field of ["calib_mps", "cycle_s"] as const) {
+        expect(Number.isFinite(variants![name]![field]), `${name}.${field}`).toBe(true);
+        expect(variants![name]![field], `${name}.${field}`).toBeGreaterThan(0);
+      }
     }
   });
 });
