@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
+import fs from "node:fs";
+import { gzipSync } from "node:zlib";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { catClips, loadGlbAvatar } from "./avatarGlb.ts";
 import { catAvatarFixture, fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
+import { fetchGlb } from "./fetchGlb.ts";
+import { ASSET_SCHEME, fencedUrlResolver } from "./assetFence.ts";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -9,6 +14,35 @@ afterEach(() => {
 });
 
 describe("loadGlbAvatar", () => {
+  it.each([false, true])("decodes the original cat bytes with the existing loader and resource fence (HTTP gzip: %s)", async (httpGzip) => {
+    const cat = fs.readFileSync(new URL("../../public/avatars/cat.glb", import.meta.url));
+    const url = "/assets/cat.glb.gz";
+    const refused: string[] = [];
+    const manager = new THREE.LoadingManager();
+    manager.setURLModifier(fencedUrlResolver(new Map([["assets/cat.glb", url]]), refused));
+    const loader = new GLTFLoader(manager).setResourcePath(`${ASSET_SCHEME}assets/`);
+    const asset = catAvatarFixture();
+    const parse = vi.spyOn(loader, "parseAsync").mockResolvedValue(asset as any);
+    const fetch = vi.fn().mockResolvedValue(httpGzip
+      ? new Response(cat, { headers: { "Content-Encoding": "gzip" } })
+      : new Response(gzipSync(cat)));
+    vi.stubGlobal("fetch", fetch);
+    const load = vi.fn(); manager.onLoad = load;
+    expect(await fetchGlb(loader, url)).toBe(asset);
+    expect(fetch).toHaveBeenCalledWith(url);
+    expect(Buffer.from(parse.mock.calls[0]![0] as ArrayBuffer)).toEqual(cat);
+    expect(parse.mock.calls[0]![1]).toBe(`${ASSET_SCHEME}assets/`);
+    expect(refused).toEqual([]);
+    expect(load).toHaveBeenCalledOnce();
+  }, 30_000);
+
+  it("keeps plain GLBs on loadAsync", async () => {
+    const loader = new GLTFLoader();
+    const load = vi.spyOn(loader, "loadAsync").mockResolvedValue({} as any);
+    await fetchGlb(loader, "/avatars/cat.glb");
+    expect(load).toHaveBeenCalledWith("/avatars/cat.glb");
+  });
+
   it("loads a generated skin, normalizes its feet/height, and advances idle/walk/run with one mixer", async () => {
     const asset = skinnedAvatarFixture();
     const update = vi.spyOn(THREE.AnimationMixer.prototype, "update");
