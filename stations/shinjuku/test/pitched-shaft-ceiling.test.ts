@@ -4,6 +4,7 @@ import type { StationScene } from "@gteki/scene-api";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { assembleScene, planBundle } from "../gteki/scene.ts";
 import { prepareLayout } from "../scene/build-cache.ts";
+import { cladWallGeometry } from "../scene/build.ts";
 import { pointInRings, soffitHeight, type Layout, type Plan, type Soffit } from "../scene/layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { exactHash, withCanvasStub } from "./helpers/scene-digest.ts";
@@ -67,6 +68,31 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
   }, 120_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
+
+  it("keeps the flight stripe continuous with the B3 landing sleeve", () => {
+    const corner = { x: -47.88399540831238, y: 166.38398726353313 };
+    const walls = [...layout.levels.find((lv) => lv.label === "B3")!.walls,
+      ...layout.cornerFills.filter((w) => w.level === "B3")];
+    const touches = (p: { x: number; y: number }) => Math.hypot(p.x - corner.x, p.y - corner.y) < 0.0001;
+    const pitched = walls.find((w) => w.finish === "shaft" && touches(w.b) && w.surfaceBase &&
+      Math.abs(w.surfaceBase.a - w.surfaceBase.b) > 0.01 && w.surfaceBase.b < -23)!;
+    const flat = walls.find((w) => w.finish === "shaft" && touches(w.a) && w.surfaceBase &&
+      Math.abs(w.surfaceBase.a + 23.92) < 0.001 && Math.abs(w.surfaceBase.b + 23.92) < 0.001 &&
+      Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y) > 1)!;
+    expect(pitched).toBeDefined();
+    expect(flat).toBeDefined();
+    const datum = (wall: typeof pitched) => {
+      const geometry = cladWallGeometry([wall])!;
+      const p = geometry.attributes.position!, uv = geometry.attributes.uv!;
+      let nearest = 0;
+      for (let i = 1; i < p.count; i++) if (Math.hypot(p.getX(i) - corner.x, -p.getZ(i) - corner.y) <
+        Math.hypot(p.getX(nearest) - corner.x, -p.getZ(nearest) - corner.y)) nearest = i;
+      const result = p.getY(nearest) - uv.getY(nearest) * 3.2;
+      geometry.dispose();
+      return result;
+    };
+    expect(Math.abs(datum(pitched) - datum(flat))).toBeLessThanOrEqual(0.03);
+  });
 
   it("does not overlap underground linear lights at similar heights", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
