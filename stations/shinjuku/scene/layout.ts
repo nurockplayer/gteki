@@ -1427,8 +1427,11 @@ function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[]
   for (const plane of planes.values()) {
     // Exact copies are common when a shoulder is referenced by several flights.
     const unique = [...new Map(plane.panels.map((p) => [JSON.stringify(p), p])).values()];
-    let polygons = polygonClipping.union(unique[0]!, ...unique.slice(1));
-    if (plane.covered.length) polygons = polygonClipping.difference(polygons, ...plane.covered);
+    // A multi-polygon subject unions the panels during subtraction, avoiding
+    // a second sweep through the same segments and intersection vertices.
+    const polygons = plane.covered.length
+      ? polygonClipping.difference(unique, ...plane.covered)
+      : polygonClipping.union(unique[0]!, ...unique.slice(1));
     for (const polygon of polygons) {
       const points = polygon.flat(), min = Math.min(...points.map((p) => p[0]!)), max = Math.max(...points.map((p) => p[0]!));
       const bottom = Math.min(...points.map((p) => p[1]!)), top = Math.max(...points.map((p) => p[1]!));
@@ -1565,16 +1568,21 @@ export function cutWallsByVoids(walls: WallSeg[], voids: { rings: XY[][]; bottom
 // Prepare immutable void geometry once when several batches share the same openings.
 function wallVoidCutter(voids: Parameters<typeof cutWallsByVoids>[1]) {
   const cross = (a: XY, b: XY) => a.x * b.y - a.y * b.x;
-  const distanceToSegment = (p: XY, a: XY, b: XY) => {
-    const d = sub(b, a), l2 = d.x * d.x + d.y * d.y || 1;
-    const t = Math.max(0, Math.min(1, ((p.x - a.x) * d.x + (p.y - a.y) * d.y) / l2));
-    return len(sub(p, lerp(a, b, t)));
-  };
-  const inside = (p: XY, rings: XY[][]) => pointInRings(p, rings) && rings.every((ring) =>
-    ring.every((a, i) => distanceToSegment(p, a, ring[(i + 1) % ring.length]!) > 1e-5));
   const boundedVoids = voids.map((v) => {
     const pts = v.rings.flat();
-    return { ...v, minX: Math.min(...pts.map((p) => p.x)), maxX: Math.max(...pts.map((p) => p.x)), minY: Math.min(...pts.map((p) => p.y)), maxY: Math.max(...pts.map((p) => p.y)) };
+    const edges = v.rings.flatMap((ring) => ring.map((a, i) => {
+      const b = ring[(i + 1) % ring.length]!, d = sub(b, a);
+      return { a, b, d, l2: d.x * d.x + d.y * d.y || 1,
+        minX: Math.min(a.x, b.x) - 1e-5, maxX: Math.max(a.x, b.x) + 1e-5,
+        minY: Math.min(a.y, b.y) - 1e-5, maxY: Math.max(a.y, b.y) + 1e-5 };
+    }));
+    return { ...v, edges, minX: Math.min(...pts.map((p) => p.x)), maxX: Math.max(...pts.map((p) => p.x)), minY: Math.min(...pts.map((p) => p.y)), maxY: Math.max(...pts.map((p) => p.y)) };
+  });
+  const inside = (p: XY, v: typeof boundedVoids[number]) => pointInRings(p, v.rings) && v.edges.every((e) => {
+    // Most edges are too far away to put this point on the void boundary.
+    if (p.x < e.minX || p.x > e.maxX || p.y < e.minY || p.y > e.maxY) return true;
+    const t = Math.max(0, Math.min(1, ((p.x - e.a.x) * e.d.x + (p.y - e.a.y) * e.d.y) / e.l2));
+    return len(sub(p, lerp(e.a, e.b, t))) > 1e-5;
   });
   const profileAt = (w: WallSeg, t: number) => ({
     bottom: w.profile ? w.profile.bottomA + (w.profile.bottomB - w.profile.bottomA) * t : w.zMin,
@@ -1598,8 +1606,8 @@ function wallVoidCutter(voids: Parameters<typeof cutWallsByVoids>[1]) {
         result.push(w);
         continue;
       }
-      for (const v of candidates) for (const ring of v.rings) for (let i = 0; i < ring.length; i++) {
-        const c = ring[i]!, edge = sub(ring[(i + 1) % ring.length]!, c), denominator = cross(direction, edge);
+      for (const v of candidates) for (const { a: c, d: edge } of v.edges) {
+        const denominator = cross(direction, edge);
         if (Math.abs(denominator) < 1e-10) continue;
         const offset = sub(c, w.a), t = cross(offset, edge) / denominator, u = cross(offset, direction) / denominator;
         if (t > 1e-8 && t < 1 - 1e-8 && u >= -1e-8 && u <= 1 + 1e-8) cuts.push(t);
@@ -1620,7 +1628,7 @@ function wallVoidCutter(voids: Parameters<typeof cutWallsByVoids>[1]) {
         const to = unique[i + 1]!, mid = lerp(w.a, w.b, (from + to) / 2);
         const p = lerp(w.a, w.b, from), q = lerp(w.a, w.b, to), ba = profileAt(w, from), bb = profileAt(w, to);
         const active = candidates.filter((v) => {
-          if (!inside(mid, v.rings)) return false;
+          if (!inside(mid, v)) return false;
           const aboveBottom = positiveInterval(ba.top - v.bottom(p), bb.top - v.bottom(q));
           const belowTop = positiveInterval(v.top(p) - ba.bottom, v.top(q) - bb.bottom);
           return !!aboveBottom && !!belowTop && Math.min(aboveBottom[1], belowTop[1]) - Math.max(aboveBottom[0], belowTop[0]) > 1e-8;
@@ -1663,7 +1671,7 @@ function wallVoidCutter(voids: Parameters<typeof cutWallsByVoids>[1]) {
             }];
           };
           for (const v of part.active) {
-            if (!inside(mid, v.rings)) continue;
+            if (!inside(mid, v)) continue;
             pieces = pieces.flatMap((piece) => {
               const pa = lerp(p, q, piece.u0), pb = lerp(p, q, piece.u1);
               const vbA = v.bottom(pa), vbB = v.bottom(pb), vtA = v.top(pa), vtB = v.top(pb);
