@@ -270,6 +270,39 @@ D2's flat-ground and FOV rules stand.
 
 Check: walk frames #016, #030, #036 and golden cameras slice-10/11 measured against the targets above, on desktop and phone.
 
+### D12 (2026-11-14 05:2x JST) Four verdicts: pitched ceilings, phone arrival pose, exit 1 wedges, `?next=1` HUD live
+1. **#1263, pitched escalator ceilings, default-on (J7): accepted.** GPU journey and golden shots at 8bfea48d. Both rides now read as one continuous pitched ceiling, with the troffers following the plane (the H3 shaft read). The crossing strips at the B3→B6 lower landing are fixed. They still splay at two or three angles where the planes meet the landing; that is J10 material work.
+2. **#1253, phone arrival pose (J9): the 165° pose ships.** On this platform the screen doors and the tactile strip are the visible edge. The phone requirement becomes: name board fully in frame, plus doors or the tactile strip over ≥ 10% of the frame width. Of the two candidates, the board matters more: 200° shows the doors but no board. Desktop (200°) accepted as is.
+3. **#1206, exit 1 black wedges (J5): passed and closed** on GPU slice-01/02 at ad5decf2. The remaining gap to H1 is the camera (J2) and the end-wall light strips (J10), not breakage.
+4. **`?next=1` HUD, judged live on production (acae1552, ego-lite GPU):**
+   - **#1249 escalator HUD (J8): accepted.** One fix before the flip: the minimap shows "Floor unknown" on the second ride.
+   - **#1256 arrival HUD (J9): accepted.** One fix before the flip: the "Approximate, not surveyed" badge overlaps Coverage.
+   - "B4" on the intermediate concourse is correct (Toei B7F→B4F→B1F). This withdraws D11 item 3's label complaint.
+   - The escalator camera is still the chute; D11 item 4 stands.
+
+![?next=1 live, desktop 20–144 s and arrival](live/2026-11-14-next1-desktop-walk.jpg)
+![?next=1 live, phone 20–144 s and arrival](live/2026-11-14-next1-phone-walk.jpg)
+
+Provisional until the Owner sees the walk video.
+
+### D13 (2026-11-14 14:5x JST) Escalator H3 camera live (#1293); D11 targets revised
+**#1293, escalator camera reframed to H3 (J7): the camera is accepted live on GPU.** Judged on production `?next=1` at e8a38776 (ego-lite, ANGLE Metal / M2 Pro), the real guided walk stepped like the journey reel (2 s to 20 s, then 4 s; 1 s steps around both ride entries). Desktop 1440×900, phone 412×839 @2×.
+- Both rides read as the H3 shaft: far end low (desktop ~72%, phone ~58–60%), the ceiling and the magenta band carry the upper half, the cat sits centred just under the landing glow (visible cat ~17% desktop, ~10–11% phone). Lock holds through both runs; yaw drift ≤ 4.4°.
+- Entries (37–43 s, 93–99 s): the ease starts on the concourse and lands on the axis by the second step. At 97–100 s the neighbouring balustrade glass and the B4 landing soffit cross the frame for one sample; transitional, not a blocker.
+- **The J7 flip waits for two fixes, both geometry, not camera:**
+  1. **#1285**, the escalator foot: at 148 s the landing shell hides the cat from the chest down (J6), on both aspects.
+  2. **#1237**, the troffers on the second ride (B4→B7): from 108 s to 128 s the ceiling strips splay at several angles instead of running down the pitched plane. D12 item 1 placed this under J10 material work; with the H3 camera the ceiling is half the frame, so it now blocks the flip.
+- Not blocking, J10 material work (H3 list): the balustrades are solid grey wedges filling both sides of the frame where H3 has glass and a black handrail; specular streaks on the inner panels.
+
+![#1293 live, desktop: 44 s, 60 s, 100 s, 120 s, 148 s](live/2026-11-14-j7-h3-desktop.jpg)
+![#1293 live, phone: same samples](live/2026-11-14-j7-h3-phone.jpg)
+
+**D11 targets revised** (measured on the live frames, not the projected cat box, which includes the cat hidden by the step behind it):
+- D11 item 1 (cold open), desktop far end: **44–56%** (was 50–56%). The #1279 cold open sits in this band and matches the J1 posters.
+- D11 escalator camera, phone cat height: **10–15%** (was 12–15%). A taller phone cat pushes the feet into the card; at 10–11% the cat reads and the far end stays at 58–62%.
+
+Provisional until the Owner sees the walk video.
+
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
 1. Flat ambient light: fixtures light nothing, there are no floor pools or contact shadows, and pillars, walls and floor share one value band.

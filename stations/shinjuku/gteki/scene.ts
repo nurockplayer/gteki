@@ -30,6 +30,8 @@ import shopBays from "../scene/shop_bays.json" with { type: "json" };
 import shopPlacements from "../scene/shop_placements.json" with { type: "json" };
 import wallPropPlacements from "../scene/wall-props.ts";
 
+const markScene = (name: string) => { if (typeof performance !== "undefined") performance.mark(`gteki:scene:${name}`); };
+
 /** Supplement the existing attributed cap only for a camera looking above
  * the walker. The default follow boom and every horizontal walking ray retain
  * the legacy query. Actual roof meshes supply footprints and post-cut heights;
@@ -186,13 +188,19 @@ export const stairwellRecipeUrl = async (tier: "high" | "low"): Promise<string |
  * swap off entirely, which is still the same synchronous build as before the kit.
  */
 export const buildScene: BuildScene = (ctx) => {
+  markScene("start");
   const request = kitSwapRequested(typeof location === "undefined" ? undefined : location.search);
   const swap = request.enabled ? prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}), ...(request.roles ? { roles: request.roles } : {}) }) : Promise.resolve(null);
   const shops = loadShopKit(ctx.THREE, ctx, shopKitManifest as KitManifest,
     [...shopPlacements.shops, ...(ctx.privateShops?.shops ?? [])] as Shop[],
     [...shopBays.openings, ...(ctx.privateShops?.openings ?? [])] as Opening[], ctx.quality === "low")
-    .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; });
-  return Promise.all([swap, shops]).then(([kit, shopKit]) => assembleScene(ctx, kit ?? undefined, shopKit ?? undefined));
+    .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; })
+    .finally(() => markScene("shops"));
+  const markedSwap = swap.finally(() => markScene("kit"));
+  return Promise.all([markedSwap, shops]).then(([kit, shopKit]) => {
+    markScene("assemble-start");
+    return assembleScene(ctx, kit ?? undefined, shopKit ?? undefined);
+  });
 };
 
 /**
@@ -218,7 +226,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
   const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
-  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
   installLightPreset(built.root, parseLightPreset(typeof location === "undefined" ? "" : location.search));
   const { layout } = built;
 
@@ -259,6 +267,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     addProxy(g);
   }
   built.root.add(proxies);
+  markScene("collision-proxies");
 
   // Neutral decorative wall props (#858 item 12): one merged mesh, one draw. They are at most
   // WALKER_BODY.radiusM deep and flush to a layout wall, so no collider is added; the wall already
@@ -406,11 +415,13 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   built.root.add(hemi);
   let envTarget: THREE.WebGLRenderTarget | null = null;
   if (ctx.renderer) {
+    markScene("pmrem-start");
     const pmrem = new T.PMREMGenerator(ctx.renderer);
     const room = new RoomEnvironment();
     envTarget = pmrem.fromScene(room, 0.04);
     pmrem.dispose();
     room.dispose(); // the capture scene's geometry/materials are throwaway
+    markScene("pmrem-end");
     const tex = envTarget.texture;
     built.root.traverse((o) => {
       for (const m of [(o as THREE.Mesh).material].flat()) {
@@ -431,6 +442,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     ? buildCrowd(T, adapted.edges, crowdVector(T, ctx.enuToRenderer), low ? 80 : 150, envTarget.texture, adapted.lanes, timeBand)
     : null;
   if (crowd) built.root.add(crowd.group);
+  markScene("crowd");
   if (shopKit && !shopKit.placements.length) {
     shopKit.dispose();
     shopKit = undefined;
@@ -446,6 +458,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       shopKit = undefined;
     }
   }
+  markScene("shops-placement");
 
   // Explorer ambience and station sound (#859): an original bed plus gate taps, an original approach
   // chime and our own ja-JP announcements. Sites come from the bundle's graph nodes, converted to renderer space.
@@ -506,6 +519,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     } : {}),
     ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
+  markScene("assemble-end");
   return scene;
 };
 

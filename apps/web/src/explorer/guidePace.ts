@@ -88,9 +88,19 @@ export function guideOnStairs(s: number, spans: readonly PaceSpan[]): boolean {
   return spans.some((sp) => (sp.mode === "stairs" || sp.mode === "escalator") && s >= sp.fromS && s < sp.toS);
 }
 
+/** Keep stair framing until the follow boom has cleared the last stair segment. */
+export function guideStairCamera(s: number, spans: readonly PaceSpan[], boomM: number): boolean {
+  return spans.some((sp) => sp.mode === "stairs" && s >= sp.fromS && s < sp.toS + boomM);
+}
+
 /** True while `s` is on an escalator span: the rider stands still and the steps carry them. */
 export function guideOnEscalator(s: number, spans: readonly PaceSpan[]): boolean {
   return spans.some((sp) => sp.mode === "escalator" && s >= sp.fromS && s < sp.toS);
+}
+
+/** The escalator span containing `s`, or starting within `leadM` ahead of it. */
+export function escalatorSpanAt(s: number, spans: readonly PaceSpan[], leadM = 0): PaceSpan | undefined {
+  return spans.find((sp) => sp.mode === "escalator" && s >= sp.fromS - leadM && s < sp.toS);
 }
 
 /** The guide's speed (m/s) at distance `s`: the tier's, capped by every span containing `s`, never below MIN_GUIDE_MPS. */

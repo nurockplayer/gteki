@@ -26,17 +26,17 @@ import { buildGreybox, portalWidthAxis, unmodelledRunsByEdge, type Box, type Gre
 import { buildLiveScene } from "./liveScene.ts";
 import { greyboxPathSegments, greyboxSceneProbes, insideGreyboxOpening, nearGreybox, routeUsesGreybox, type GreyboxSegment } from "./greyboxScene.ts";
 import { darkSampleDistances, routeGroundCounts, sceneMeshNear } from "./routeGroundQa.ts";
-import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
+import { bodyBlock, hitNormal, pushOut, slideAlong, type BodyBlock, type CastFn } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, guideOnEscalator, guideOnStairs, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, escalatorSpanAt, guideOnEscalator, guideOnStairs, guideStairCamera, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { OPENING_SHOTS, openingShotState, ARRIVAL_SHOTS, ESCALATOR_SHOT, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -107,6 +107,7 @@ export interface ExplorerEvents {
 }
 
 const EYE = WALKER_BODY.eyeM;
+const STAIR_POSE = { lift: 0.218, desktop: { distance: 2.25, lens: 55 }, phone: { distance: 2.4, lens: 65 } } as const;
 const RADIUS = WALKER_BODY.radiusM;
 const WALK = WALKER_SPEED.walkMps;
 const RUN = WALKER_SPEED.runMps;
@@ -320,6 +321,7 @@ export class Explorer {
   private overlayResidual: number | null = null;
 
   private readonly avatar = new THREE.Group();
+  private readonly catFocusAnchor = Object.assign(new THREE.Vector3(), { halfWidthX: 0, halfWidthZ: 0, halfHeight: 0 });
   private avatarRig: AvatarSelection | null = null;
   /** `?next=1` preview channel: journey changes that are not the default yet branch on this (docs/release/journey.md). */
   readonly previewNext: boolean;
@@ -386,6 +388,10 @@ export class Explorer {
   private yaw = 0; // radians; 0 = facing north (-Z)
   private pitch = -0.12;
   private camDistance: number = FOLLOW.defaultDistance;
+  private stairsFraming = { progress: 0, weight: 0 };
+  private stairsLens = false;
+  /** Previous descending-stair look angle, released with the boom's damping on a landing. */
+  private stairAimElevation?: number;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
   private readonly bodyRaiseHold = { seconds: 0, target: 0 };
@@ -402,6 +408,15 @@ export class Explorer {
   private moving = false;
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
+  private openingState: "waiting" | "active" | "ended" = "waiting";
+  private openingOrigin: string | null = null;
+  private openingElapsed = 0;
+  private openingRelease: { position: THREE.Vector3; quaternion: THREE.Quaternion; fov: number } | null = null;
+  private arrivalState: "waiting" | "active" | "ended" = "waiting";
+  private arrivalRearm = false;
+  private arrivalDestination: string | null = null;
+  private arrivalElapsed = 0;
+  private arrivalStart = { yaw: 0, pitch: 0, distance: 0 };
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
   private cameraFocus: THREE.Vector3 | null = null;
@@ -667,6 +682,8 @@ export class Explorer {
     });
     const visibility = new Map<THREE.Mesh, boolean>();
     for (const meshes of matches) for (const mesh of meshes) visibility.set(mesh, mesh.visible);
+    const crowd: THREE.Object3D[] = [];
+    if (features.length) this.scene.traverse((object) => { if (object.visible && object.userData.gteki_role === "ambient_crowd") crowd.push(object); });
     try {
       this.scene.background = new THREE.Color(0xff00ff);
       renderer.shadowMap.autoUpdate = false;
@@ -684,6 +701,12 @@ export class Explorer {
         capture("hidden", hidden);
       }
       root.visible = visible;
+      // People walking in front of a sign are not breakage: feature pixels are counted without the crowd.
+      const clear = crowd.length ? new Uint8Array(shown.length) : shown;
+      if (crowd.length) {
+        for (const object of crowd) object.visible = false;
+        capture("shown:no-crowd", clear);
+      }
       const featureResults = features.map((feature, i) => {
         const meshes = matches[i]!;
         const before = meshes.map(mesh => mesh.visible);
@@ -691,12 +714,12 @@ export class Explorer {
         try {
           if (meshes.length) capture(`feature:${feature.name}`, hidden);
           const sign = signRects[i];
-          let pixels = meshes.length ? goldenPixelDiff(shown, hidden) : 0;
+          let pixels = meshes.length ? goldenPixelDiff(clear, hidden) : 0;
           if (sign) {
             pixels = 0;
             if (sign.rect) for (let y = sign.rect.y0; y < sign.rect.y1; y++) for (let x = sign.rect.x0; x < sign.rect.x1; x++) {
               const offset = (y * width + x) * 4;
-              if (Math.abs(shown[offset]! - hidden[offset]!) > 3 || Math.abs(shown[offset + 1]! - hidden[offset + 1]!) > 3 || Math.abs(shown[offset + 2]! - hidden[offset + 2]!) > 3) pixels++;
+              if (Math.abs(clear[offset]! - hidden[offset]!) > 3 || Math.abs(clear[offset + 1]! - hidden[offset + 1]!) > 3 || Math.abs(clear[offset + 2]! - hidden[offset + 2]!) > 3) pixels++;
             }
           }
           return { name: feature.name, pixels, meshes: sign ? (sign.faces ? meshes.length : 0) : meshes.length };
@@ -706,6 +729,7 @@ export class Explorer {
     } finally {
       root.visible = visible;
       for (const [mesh, wasVisible] of visibility) mesh.visible = wasVisible;
+      for (const object of crowd) object.visible = true;
       this.scene.background = background;
       renderer.shadowMap.autoUpdate = autoUpdate;
       renderer.setRenderTarget(oldTarget);
@@ -815,7 +839,97 @@ export class Explorer {
     return out;
   }
 
+  /** A final camera pose: collision and body-raise solvers never alter the held opening. */
+  setOpeningShot(origin: string | null): void {
+    if (!this.previewNext) return;
+    if (origin === null) {
+      if (this.openingState !== "active") return;
+      this.openingRelease = { position: this.camera.position.clone(), quaternion: this.camera.quaternion.clone(), fov: this.camera.fov };
+      this.openingElapsed = 0;
+      this.openingState = openingShotState(this.openingState, true, this.openingOrigin, true, false);
+    } else {
+      if (!OPENING_SHOTS[origin]) return;
+      this.openingOrigin = origin;
+      this.openingState = openingShotState("waiting", true, origin, false, false);
+      this.openingRelease = null;
+      this.placeCamera(0, true);
+    }
+    this.poiGroup.visible = this.openingState !== "active";
+    if (this.avatarMarker?.[1]) this.avatarMarker[1].visible = this.openingState !== "active";
+    this.setRouteMarkersVisible(this.routeMarkersVisible);
+  }
+
+  openingFrame() {
+    this.camera.updateMatrixWorld(true);
+    this.avatar.updateWorldMatrix(true, true);
+    const corners = boxCorners(new THREE.Box3().setFromObject(this.avatarRig?.root ?? this.avatar)).map((p) => p.project(this.camera));
+    const xs = corners.map((p) => (p.x + 1) / 2);
+    const ys = corners.map((p) => (1 - p.y) / 2);
+    const direction = this.camera.getWorldDirection(new THREE.Vector3());
+    const pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
+    const visible = (o: THREE.Object3D): boolean => {
+      for (let p: THREE.Object3D | null = o; p; p = p.parent) if (!p.visible) return false;
+      return true;
+    };
+    const markers = this.routeGroup.children.filter((g) => g.userData.routeMarker).reduce((n, g) => n + g.children.filter(visible).length, 0)
+      + Number(Boolean(this.avatarMarker?.[1] && visible(this.avatarMarker[1])));
+    return { shot: this.openingState === "active", cat: { x: (Math.min(...xs) + Math.max(...xs)) / 2, x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }, horizonY: 0.5 + Math.tan(pitch) / Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * 0.5, markers,
+      camera: { heading: headingFromYaw(Math.atan2(-direction.x, -direction.z)), pitch: THREE.MathUtils.radToDeg(pitch), height: this.camera.position.y - this.pos.y, distance: Math.hypot(this.camera.position.x - this.pos.x, this.camera.position.z - this.pos.z), fov: this.camera.fov } };
+  }
+
   /** Live recognition-proxy evidence in page CSS pixels; no renderer or label state is changed. */
+  /** Measurements for the authored platform arrival, in normalised device coordinates. */
+  arrivalFrame() {
+    this.camera.updateMatrixWorld(true);
+    const board = this.identityBoards.find((b) => b.object.name === "identity:platform:poi:platform:oedo");
+    const rects = board?.regions.filter((r) => r.kind === "name").map((r) => identityRegionRect(r.box, board.object, this.camera, this.viewSize.w, this.viewSize.h)).filter((r): r is ScreenRect => r !== null) ?? [];
+    const boardRect = rects.length ? { x0: Math.min(...rects.map((r) => r.x0)) / this.viewSize.w * 2 - 1, x1: Math.max(...rects.map((r) => r.x1)) / this.viewSize.w * 2 - 1, y0: 1 - Math.max(...rects.map((r) => r.y1)) / this.viewSize.h * 2, y1: 1 - Math.min(...rects.map((r) => r.y0)) / this.viewSize.h * 2 } : null;
+    const box = new THREE.Box3().setFromObject(this.avatarRig?.root ?? this.avatar);
+    const corners = boxCorners(box).map((p) => p.project(this.camera));
+    const cat = { x0: Math.min(...corners.map((p) => p.x)), x1: Math.max(...corners.map((p) => p.x)), y0: Math.min(...corners.map((p) => p.y)), y1: Math.max(...corners.map((p) => p.y)) };
+    const edges = (this.stationScene?.root.userData.platformEdges ?? []) as { a: number[]; b: number[] }[];
+    const nearest = edges.map((e) => ({ a: new THREE.Vector3().fromArray(e.a), b: new THREE.Vector3().fromArray(e.b) })).filter((e) => Math.abs(e.a.y - this.pos.y) < 1).sort((a, b) => new THREE.Line3(a.a, a.b).closestPointToPoint(this.pos, true, new THREE.Vector3()).distanceToSquared(this.pos) - new THREE.Line3(b.a, b.b).closestPointToPoint(this.pos, true, new THREE.Vector3()).distanceToSquared(this.pos))[0];
+    let edgeLength = 0, doorsOrStripWidth = 0;
+    if (nearest) {
+      const matrix = new THREE.Matrix4().multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
+      const a = new THREE.Vector4(nearest.a.x, nearest.a.y, nearest.a.z, 1).applyMatrix4(matrix), b = new THREE.Vector4(nearest.b.x, nearest.b.y, nearest.b.z, 1).applyMatrix4(matrix);
+      let lo = 0, hi = 1;
+      for (const [u, v] of [[a.w + a.x, b.w + b.x], [a.w - a.x, b.w - b.x], [a.w + a.y, b.w + b.y], [a.w - a.y, b.w - b.y], [a.w + a.z, b.w + b.z], [a.w - a.z, b.w - b.z]] as const) {
+        if (u < 0 && v < 0) { hi = -1; break; }
+        if (u < 0) lo = Math.max(lo, u / (u - v));
+        if (v < 0) hi = Math.min(hi, u / (u - v));
+      }
+      edgeLength = Math.max(0, hi - lo) * nearest.a.distanceTo(nearest.b);
+      const closest = new THREE.Line3(nearest.a, nearest.b).closestPointToPoint(this.pos, true, new THREE.Vector3());
+      const inward = this.pos.clone().sub(closest).setY(0).normalize();
+      this.refreshOccluders();
+      for (const [offset, height] of [[0.04, 1], [0.64, 0.02]] as const) {
+        const xs: number[] = [];
+        const count = Math.ceil(nearest.a.distanceTo(nearest.b) / 0.25);
+        for (let i = 0; i <= count; i++) {
+          const point = new THREE.Vector3().lerpVectors(nearest.a, nearest.b, i / count).addScaledVector(inward, offset).add(new THREE.Vector3(0, height, 0));
+          const projected = point.clone().project(this.camera);
+          if (Math.abs(projected.x) <= 1 && Math.abs(projected.y) <= 1 && Math.abs(projected.z) <= 1 && this.labelOccluded({ obj: { getWorldPosition: (target) => target.copy(point) }, occluded: "none" }, { segmentOnly: true }) === "none") xs.push(projected.x);
+        }
+        if (xs.length > 1) doorsOrStripWidth = Math.max(doorsOrStripWidth, (Math.max(...xs) - Math.min(...xs)) / 2);
+      }
+    }
+    const direction = this.camera.getWorldDirection(new THREE.Vector3());
+    return { boardRect, edgeLength, edgeInFrame: edgeLength >= 1, doorsOrStripWidth, cat, shot: this.arrivalState === "active", camera: { heading: headingFromYaw(Math.atan2(-direction.x, -direction.z)), pitch: THREE.MathUtils.radToDeg(Math.asin(direction.y)), height: this.camera.position.y - this.pos.y, distance: Math.hypot(this.camera.position.x - this.pos.x, this.camera.position.z - this.pos.z) } };
+  }
+
+  rideFrame() {
+    const g = this.guide;
+    const span = g && escalatorSpanAt(g.s, g.spans, ESCALATOR_SHOT.leadM);
+    if (!g || !span || this.escalatorWeight <= 0) return null;
+    this.camera.updateMatrixWorld(true);
+    const end = samplePolyline(g.pts, g.cum, span.toS);
+    const farEndY = (1 - new THREE.Vector3(end.x, end.y, end.z).project(this.camera).y) / 2;
+    const box = this.catScreenBox();
+    const cat = box ? { x: (box.left + box.right) / 2 / innerWidth, y0: box.top / innerHeight, y1: box.bottom / innerHeight } : null;
+    return { farEndY, leftM: span.toS - g.s, cat };
+  }
+
   identity(): { id: string; worldPosition: number[]; cameraDirection: number[]; cameraFov: number; inFrame: boolean; frontFacing: boolean; facingDeg: number; nameRect: ScreenRect | null; nameHeightPx: number | null; coveredByChip: boolean; occluded: LabelOcclusion }[] {
     this.camera.updateMatrixWorld();
     this.refreshOccluders();
@@ -1519,6 +1633,7 @@ export class Explorer {
     this.setupComposer();
     this.frameAll();
     lap("composer");
+    timings.startAt = Math.round(loadStart);
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");
@@ -1854,12 +1969,16 @@ export class Explorer {
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
     const previous = this.mode;
+    this.arrivalState = "ended";
+    this.arrivalRearm = false;
+    this.arrivalElapsed = 0;
+    this.arrivalDestination = null;
     this.guideIdentityHoldS = 0;
     if (this.mode === "overview") this.fadeStale = true;
     this.mode = mode;
     this.moving = false;
     // Zone lighting (#861): overview shows the station exactly as before; walking resumes with a snapped re-classify.
-    if (mode === "overview") this.restoreZone();
+    if (mode === "overview") { this.stairsLens = false; this.restoreZone(); }
     else if (previous === "overview") this.zoneSnap = true;
     this.labelSweepDoneAt = -Infinity;
     // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
@@ -1878,7 +1997,7 @@ export class Explorer {
     if (routeGlow) routeGlow.visible = mode === "overview";
     const routeGlowOccluded = this.routeGroup.getObjectByName("route-glow-occluded");
     if (routeGlowOccluded) routeGlowOccluded.visible = mode === "overview";
-    if (this.previewNext) this.setRouteMarkersVisible(this.routeMarkersVisible);
+    this.setRouteMarkersVisible(this.routeMarkersVisible);
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.setFov(FOV.overview, true); }
@@ -1998,6 +2117,12 @@ export class Explorer {
     const ground = this.groundAt(p.x, p.y + 1.5, p.z, 4);
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
+    if (this.colliders.length || this.walls.length) {
+      const pushed = pushOut(this.pos, (origin, dir, far) => this.colliderCast(origin, dir, far), RADIUS);
+      const clear = resolveWalls(pushed.x, pushed.z, RADIUS, ground, WALKER_BODY.bodyTopM, this.walls);
+      const clearGround = this.groundAt(clear.x, ground + 1.5, clear.z, 4);
+      if (clearGround !== null) this.pos.set(clear.x, clearGround, clear.z);
+    }
     this.teleported = true;
     this.yaw = (-headingDeg * Math.PI) / 180;
     // The avatar appears at the new spot facing the new heading (no run blend from the old one).
@@ -2173,10 +2298,7 @@ export class Explorer {
     return result;
   }
 
-  /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
-  private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
-    if (this.colliders.length === 0) return null;
-    return bodyBlock(from, to, (origin, dir, far) => {
+  private colliderCast(origin: THREE.Vector3, dir: THREE.Vector3, far: number): ReturnType<CastFn> {
       this.ray.set(origin, dir);
       this.ray.far = far;
       const hit = castAll(this.ray, this.colliderTargets).find((h) => {
@@ -2187,7 +2309,12 @@ export class Explorer {
         return !exempt;
       });
       return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
-    }, RADIUS);
+  }
+
+  /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
+  private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
+    if (this.colliders.length === 0) return null;
+    return bodyBlock(from, to, (origin, dir, far) => this.colliderCast(origin, dir, far), RADIUS);
   }
 
   // ---- Routes & POIs -------------------------------------------------------------
@@ -2221,8 +2348,8 @@ export class Explorer {
     // Walk and guide draw a narrow, faint band that fades out under the camera; the overview keeps today's wide, opaque ribbon.
     const walkMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, opacity: 0.45, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     routeNearFade(walkMat);
-    const ribbon = this.previewNext ? new THREE.Group() : new THREE.Mesh(ribbonGeometry(ribbonPoints, ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
-    if (this.previewNext) for (const run of routeRunsOutsideSpans(pts, escalators)) {
+    const ribbon = new THREE.Group();
+    for (const run of routeRunsOutsideSpans(pts, escalators)) {
       const mesh = new THREE.Mesh(ribbonGeometry(profile(run), ROUTE_RIBBON_WIDTH_WALK, 0.07, ROUTE_CHEVRON_PITCH_OVERVIEW / ROUTE_CHEVRON_PITCH_WALK), walkMat);
       mesh.renderOrder = 5;
       ribbon.add(mesh);
@@ -2270,7 +2397,7 @@ export class Explorer {
     const start = this.beacon(pts[0]!, 0x7dffa0, 2.2);
     start.userData.routeStart = true;
     this.routeGroup.add(start, this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
-    if (this.previewNext) this.setRouteMarkersVisible(this.routeMarkersVisible);
+    this.setRouteMarkersVisible(this.routeMarkersVisible);
     this.routeGroup.userData = { symbolicHeights: symbolic, noModelRuns: gaps.length, greybox: routeUsesGreybox(polyline, this.greyboxSegments) };
     this.updateGreyboxLegend();
   }
@@ -2291,7 +2418,6 @@ export class Explorer {
   private arrivalBeaconTime: number | null = null;
 
   setArrivalBeacon(arrived: boolean): void {
-    if (!this.previewNext) return;
     if (arrived === (this.arrivalBeaconTime !== null)) return;
     this.arrivalBeaconTime = arrived ? 0 : null;
     for (const g of this.routeGroup.children) {
@@ -2305,9 +2431,8 @@ export class Explorer {
     }
   }
 
-  catScreenBox(): { left: number; right: number; top: number; bottom: number } | null {
+  private catWorldBox(): THREE.Box3 {
     this.avatar.updateWorldMatrix(true, true);
-    this.camera.updateWorldMatrix(true, false);
     const box = new THREE.Box3();
     this.avatar.traverse((object) => {
       const mesh = object as THREE.Mesh;
@@ -2316,6 +2441,12 @@ export class Explorer {
       if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
       if (mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox.clone().applyMatrix4(mesh.matrixWorld));
     });
+    return box;
+  }
+
+  catScreenBox(): { left: number; right: number; top: number; bottom: number } | null {
+    const box = this.catWorldBox();
+    this.camera.updateWorldMatrix(true, false);
     if (box.isEmpty()) return null;
     const points: THREE.Vector3[] = [];
     for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) points.push(new THREE.Vector3(x, y, z).project(this.camera));
@@ -2332,7 +2463,7 @@ export class Explorer {
   }
 
   setRouteQuiet(quiet: boolean): void {
-    if (!this.previewNext || this.routeQuiet === quiet) return;
+    if (this.routeQuiet === quiet) return;
     this.routeQuiet = quiet;
     this.setRouteMarkersVisible(this.routeMarkersVisible);
     const ribbon = this.routeGroup.getObjectByName("route-ribbon");
@@ -2355,8 +2486,8 @@ export class Explorer {
   setRouteMarkersVisible(visible: boolean): void {
     this.routeMarkersVisible = visible;
     for (const g of this.routeGroup.children) if (g.userData.routeMarker) {
-      const quiet = this.previewNext && this.mode !== "overview";
-      g.visible = visible && !this.routeQuiet && !(quiet && g.userData.routeStart);
+      const quiet = this.mode !== "overview";
+      g.visible = visible && this.openingState !== "active" && !this.routeQuiet && !(quiet && g.userData.routeStart);
       g.children[0]!.visible = !quiet;
     }
   }
@@ -2778,9 +2909,10 @@ export class Explorer {
    * for opening hours): it never moves past one before being resumed, including several at one spot.
    * `paceSpans` cap speed and carry connector modes for the stair lens (see guidePace.ts).
    */
-  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = []): void {
+  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = [], destination: string | null = null): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
+    this.setOpeningShot(null);
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
     this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
@@ -2797,6 +2929,10 @@ export class Explorer {
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
+    this.arrivalState = "waiting";
+    this.arrivalRearm = false;
+    this.arrivalDestination = destination;
+    this.arrivalElapsed = 0;
     this.guideIdentityHoldS = this.frameInitialIdentity(this.yaw) ? IDENTITY_HOLD_S : 0;
   }
 
@@ -2811,6 +2947,10 @@ export class Explorer {
     if (!g) return;
     const total = g.cum[g.cum.length - 1]!;
     seekGuideState(g, this.guideAllStops, total, s, firstStop);
+    if (this.previewNext && g.s < total && this.arrivalState !== "waiting") {
+      this.arrivalRearm = true;
+      if (this.arrivalState === "active") this.arrivalState = "ended";
+    }
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
     this.teleported = true;
@@ -2845,6 +2985,10 @@ export class Explorer {
 
   stopGuide(): void {
     this.guideIdentityHoldS = 0;
+    this.arrivalState = "ended";
+    this.arrivalRearm = false;
+    this.arrivalElapsed = 0;
+    this.arrivalDestination = null;
     this.guide = null;
     if (this.mode === "guide") this.setMode("walk");
   }
@@ -3003,6 +3147,9 @@ export class Explorer {
   }
 
   private render(dt: number): void {
+    if (this.openingState === "active") {
+      for (const g of this.routeGroup.children) if (g.userData.routeMarker) g.visible = false;
+    }
     if (this.composer) this.composer.render(dt);
     else this.renderer.render(this.scene, this.camera);
     this.updateLabels();
@@ -3214,10 +3361,16 @@ export class Explorer {
 
   private stepWalk(dt: number): void {
     const look = this.input.consumeLook();
+    const mv = this.input.move();
+    if (this.openingState === "active" && (look.dx || look.dy || look.zoom || mv.x || mv.y)) {
+      const direction = this.camera.getWorldDirection(new THREE.Vector3());
+      this.yaw = Math.atan2(-direction.x, -direction.z);
+      this.pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
+      this.setOpeningShot(null);
+    }
     this.yaw -= look.dx * 0.0042;
     this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
-    const mv = this.input.move();
     const moving = mv.x !== 0 || mv.y !== 0;
     if (moving && !this.moving) this.events?.onWalkStart?.();
     this.moving = moving;
@@ -3250,9 +3403,19 @@ export class Explorer {
     const g = this.guide;
     if (!g) return;
     const look = this.input.consumeLook();
-    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
     const mv = this.input.move();
-    if (look.dx || look.dy || look.zoom || mv.x || mv.y) this.guideIdentityHoldS = 0;
+    const input = Boolean(look.dx || look.dy || look.zoom || mv.x || mv.y);
+    const wasArrival = this.arrivalState === "active";
+    this.arrivalState = arrivalShotState(this.arrivalState, this.previewNext, this.arrivalDestination, false, input);
+    if (wasArrival && input) {
+      const direction = this.camera.getWorldDirection(new THREE.Vector3());
+      this.yaw = Math.atan2(-direction.x, -direction.z);
+      this.pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
+      this.arrivalElapsed = 0;
+      this.camDistance = THREE.MathUtils.clamp(this.camDistance + look.zoom * 0.004, 1.8, 9);
+    }
+    this.pitch = THREE.MathUtils.clamp(this.pitch - look.dy * 0.0032, LOOK_PITCH.min, LOOK_PITCH.max);
+    if (input) this.guideIdentityHoldS = 0;
     if (mv.x !== 0 || mv.y !== 0) {
       // Taking the controls hands over to free walking at the current spot.
       this.guide = null;
@@ -3274,6 +3437,12 @@ export class Explorer {
       this.yaw += angleDelta(this.yaw, targetYaw) * Math.min(1, steeringDt * 4);
     }
     this.yaw -= look.dx * 0.0042;
+    const previousArrival = this.arrivalState;
+    this.arrivalState = arrivalShotState(this.arrivalState, this.previewNext, this.arrivalDestination, g.s >= total && !g.holding, input);
+    if (previousArrival !== "active" && this.arrivalState === "active") {
+      this.arrivalStart = { yaw: this.yaw, pitch: this.pitch, distance: this.camDistance };
+      this.arrivalElapsed = 0;
+    }
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
     this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total && !g.holding });
     if (stopped !== null) this.events.onGuideStop?.(stopped);
@@ -3356,7 +3525,42 @@ export class Explorer {
     this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus);
   }
 
+  private cameraFacingCatAnchor() {
+    const box = this.catWorldBox();
+    const anchor = this.catFocusAnchor;
+    box.getCenter(anchor);
+    const dx = anchor.x - this.camera.position.x, dz = anchor.z - this.camera.position.z;
+    const radius = Math.hypot(box.max.x - box.min.x, box.max.z - box.min.z) / 2;
+    const distance = Math.hypot(dx, dz);
+    anchor.halfWidthX = -dz / distance * radius;
+    anchor.halfWidthZ = dx / distance * radius;
+    anchor.halfHeight = (box.max.y - box.min.y) / 2;
+    return anchor;
+  }
+
   private placeCamera(dt: number, snap = false): void {
+    if (this.openingState === "active") {
+      this.stairsLens = false;
+      const shots = OPENING_SHOTS[this.openingOrigin!]!;
+      const shot = this.camera.aspect < 1 ? shots.phone : shots.desktop;
+      const yaw = -THREE.MathUtils.degToRad(shot.heading);
+      const pitch = THREE.MathUtils.degToRad(shot.pitch);
+      const back = Math.sqrt(shot.distance ** 2 - shot.shoulder ** 2);
+      this.camera.position.copy(this.pos).add(new THREE.Vector3(Math.sin(yaw) * back + Math.cos(yaw) * shot.shoulder, shot.height, Math.cos(yaw) * back - Math.sin(yaw) * shot.shoulder));
+      const target = this.camera.position.clone().addScaledVector(new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)), FOLLOW.aim);
+      this.camera.lookAt(target);
+      this.camera.fov = shot.fov;
+      this.camera.updateProjectionMatrix();
+      this.boomActual = shot.distance;
+      this.boomRaise = 0;
+      this.squeezed = false;
+      this.applyAvatarFade(0, true);
+      if (this.catAvatar) {
+        const anchor = this.cameraFacingCatAnchor();
+        this.setCameraFocus(anchor, anchor);
+      } else this.setCameraFocus(target);
+      return;
+    }
     if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
     if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
     if (this.qaCamera.distance !== undefined) this.camDistance = this.qaCamera.distance;
@@ -3366,16 +3570,23 @@ export class Explorer {
     this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     const onStairs = this.mode === "guide" && this.guide !== null && guideOnStairs(this.guide.s, this.guide.spans);
+    const pinned = this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined;
+    const stairCamera = this.mode === "guide" && this.guide !== null && guideStairCamera(this.guide.s, this.guide.spans, this.camDistance);
+    const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && stairCamera && !this.catRidingEscalator() && !pinned;
+    this.stairsFraming = stepEscalatorLock(this.stairsFraming.progress, stairsOn, dt, snap || this.reducedMotion);
+    const stairsWeight = stairsOn ? this.stairsFraming.weight : 0;
     const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
     this.slope = stepSlope(resetSlope ? NO_SLOPE : this.slope, resetSlope ? 0 : this.pos.y - this.slopeY, resetSlope ? 0 : dt, onStairs);
+    this.stairsLens = stairsOn;
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
-    const lockOn = this.previewNext && this.catAvatar && !this.firstPerson && this.catRidingEscalator()
+    const span = this.mode === "guide" && this.guide ? escalatorSpanAt(this.guide.s, this.guide.spans, ESCALATOR_SHOT.leadM) : undefined;
+    const lockOn = this.previewNext && this.catAvatar && !this.firstPerson && !!span
       && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
     const lockSnap = snap || this.reducedMotion;
     if (lockOn) {
       const g = this.guide!;
-      const { segment } = samplePolyline(g.pts, g.cum, g.s);
+      const { segment } = samplePolyline(g.pts, g.cum, g.s < span!.fromS ? span!.fromS + 0.01 : g.s);
       const axis = g.pts[segment + 1]!.clone().sub(g.pts[segment]!).normalize();
       if (lockSnap || this.escalatorProgress === 0) this.escalatorAxis.copy(axis);
       else this.escalatorAxis.lerp(axis, 1 - Math.exp(-dt / 0.3)).normalize();
@@ -3383,49 +3594,104 @@ export class Explorer {
     const lock = stepEscalatorLock(this.escalatorProgress, lockOn, dt, lockSnap);
     this.escalatorProgress = lock.progress;
     this.escalatorWeight = lock.weight;
-    if (this.bodyRaiseHold && (snap || this.firstPerson || !this.previewNext || !this.catAvatar || this.escalatorWeight > 0
+    if (this.bodyRaiseHold && (snap || this.firstPerson || !this.catAvatar || this.escalatorWeight > 0 || (!this.previewNext && !stairsOn)
       || this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined)) {
       this.bodyRaiseHold.seconds = this.bodyRaiseHold.target = 0;
     }
+    const shots = this.arrivalState === "active" || (this.arrivalState === "ended" && this.arrivalElapsed > 0) ? ARRIVAL_SHOTS[this.arrivalDestination ?? ""] : undefined;
+    const shot = shots ? (this.camera.aspect < 1 ? shots.phone : shots.desktop) : undefined;
+    if (shot) this.arrivalElapsed = THREE.MathUtils.clamp(this.arrivalElapsed + (this.arrivalState === "active" ? dt : -dt), 0, 1.2);
+    if (this.previewNext && this.arrivalState === "ended" && this.arrivalElapsed === 0 && this.arrivalRearm) {
+      this.arrivalState = "waiting";
+      this.arrivalRearm = false;
+    }
+    const t = shot ? this.arrivalElapsed / 1.2 : 0;
+    const weight = t * t * (3 - 2 * t);
+    const yaw = shot ? this.arrivalStart.yaw + angleDelta(this.arrivalStart.yaw, -THREE.MathUtils.degToRad(shot.heading)) * weight : this.yaw;
+    const pitch = shot ? THREE.MathUtils.lerp(this.arrivalStart.pitch, THREE.MathUtils.degToRad(shot.pitch), weight) : this.pitch;
+    const stairPose = this.camera.aspect < 1 ? STAIR_POSE.phone : STAIR_POSE.desktop;
+    const distance = (shot ? THREE.MathUtils.lerp(this.arrivalStart.distance, shot.distance, weight) : this.camDistance)
+      * THREE.MathUtils.lerp(1, stairPose.distance / FOLLOW_CAT.distance, stairsWeight);
+    const lens = () => this.stairsLens ? stairPose.lens : followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect);
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
-    const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
+    const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
     if (this.firstPerson) {
       this.boomActual = 0;
       this.boomRaise = 0;
+      this.stairAimElevation = undefined;
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
       this.camera.lookAt(eye.clone().add(dir));
       this.setCameraFocus(null);
-      this.setFov(followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), lensSnap, dt);
+      this.setFov(lens(), lensSnap, dt);
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
     // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
     const cameraSides = this.cameraSides;
-    const shoulderMax = this.catAvatar ? catShoulder(this.camera.aspect) : FOLLOW.shoulder;
+    const shoulderMax = this.catAvatar ? (shot ? THREE.MathUtils.lerp(catShoulder(this.camera.aspect), 0.65 * Math.min(1, this.camera.aspect), weight) : catShoulder(this.camera.aspect)) : FOLLOW.shoulder;
     let shoulder: number = shoulderMax;
     if (this.cameraTargets.length) {
-      this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
+      this.ray.set(head, new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)));
       this.ray.far = shoulderMax + 0.25;
       const side = castCamera(this.ray, this.cameraTargets, cameraSides)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
+    const lift = this.previewNext ? framing.lift : THREE.MathUtils.lerp(FOLLOW_CAT.lift, STAIR_POSE.lift, stairsWeight);
     const pose = this.catAvatar
-      ? followPose(head, this.yaw, this.pitch, shoulder, framing.lift, framing.drop)
-      : followPose(head, this.yaw, this.pitch, shoulder);
+      ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(lift, (shot.height - (head.y - this.pos.y)) / shot.distance + Math.sin(pitch), weight) : lift, framing.drop)
+      : followPose(head, yaw, pitch, shoulder);
     if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
-    let wantedDistance = this.camDistance;
+    let wantedDistance = distance;
     if (this.escalatorWeight > 0) {
-      const ride = escalatorPose(this.pos, this.escalatorAxis, shoulder, this.camDistance / FOLLOW_CAT_NEXT.distance, this.yaw, this.pitch);
+      const ride = escalatorPose(this.pos, this.escalatorAxis, shoulder, this.camDistance / FOLLOW_CAT_NEXT.distance, yaw, pitch, this.camera.aspect, followLens(this.mode, false, false, true, this.camera.aspect));
       const wanted = pose.pivot.clone().addScaledVector(back, wantedDistance).lerp(ride.position, this.escalatorWeight);
       back = wanted.sub(pose.pivot);
       wantedDistance = back.length();
       back.normalize();
       pose.target.lerp(ride.target, this.escalatorWeight);
     }
+    let stairAngle = 0;
+    let catCentre: THREE.Vector3 | undefined;
+    if (stairsOn) {
+      const g = this.guide!;
+      const { segment } = samplePolyline(g.pts, g.cum, g.s);
+      // Short landings retain the last descending axis of this stair run.
+      for (let i = segment; i >= 0; i--) {
+        if (!guideStairCamera(Math.min(g.s, g.cum[i + 1]!) - 1e-6, g.spans, this.camDistance)) break;
+        const axis = g.pts[i + 1]!.clone().sub(g.pts[i]!);
+        if (axis.y >= 0 || !g.spans.some((sp) => sp.mode === "stairs" && g.cum[i]! >= sp.fromS && g.cum[i]! < sp.toS)) continue;
+        stairAngle = Math.atan2(-axis.y, Math.hypot(axis.x, axis.z)) + THREE.MathUtils.degToRad(8);
+        catCentre = this.catWorldBox().getCenter(new THREE.Vector3());
+        break;
+      }
+    }
+    // Rotate only as far as the descending tread constraint needs, retaining the D2 boom length.
+    const clearTreads = (direction: THREE.Vector3, length: number) => {
+      if (!catCentre) return direction;
+      const flat = Math.hypot(direction.x, direction.z);
+      if (flat < 1e-9) return direction;
+      const x = direction.x / flat, z = direction.z / flat;
+      const angleAt = (elevation: number) => {
+        const horizontal = length * Math.cos(elevation);
+        return Math.atan2(pose.pivot.y + length * Math.sin(elevation) - catCentre.y,
+          Math.hypot(pose.pivot.x + x * horizontal - catCentre.x, pose.pivot.z + z * horizontal - catCentre.z));
+      };
+      let low = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1)), high = Math.PI / 2;
+      if (angleAt(low) >= stairAngle) return direction;
+      for (let i = 0; i < 24; i++) {
+        const mid = (low + high) / 2;
+        if (angleAt(mid) < stairAngle) low = mid;
+        else high = mid;
+      }
+      return direction.set(x * Math.cos(high), Math.sin(high), z * Math.cos(high));
+    };
+    const nominalElevation = Math.asin(back.y);
+    back = clearTreads(back.clone(), wantedDistance);
+    const stairRaise = Math.max(0, Math.asin(back.y) - nominalElevation);
     let dist = wantedDistance;
     let raisedClear = false;
     if (!this.cameraTargets.length) this.boomRaise = 0;
@@ -3435,7 +3701,7 @@ export class Explorer {
       return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
     };
     if (this.cameraTargets.length) {
-      const checkBody = this.previewNext && this.catAvatar && this.escalatorWeight === 0
+      const checkBody = this.catAvatar && this.escalatorWeight === 0 && (this.previewNext || stairsOn)
         && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
       const cameraPoint = new THREE.Vector3();
       const direction = new THREE.Vector3();
@@ -3456,7 +3722,7 @@ export class Explorer {
       const solved = solveRaisedBoom(wantedDistance, back, cast, this.boomRaise, dt, snap || this.reducedMotion, bodyHidden, checkBody ? this.bodyRaiseHold : undefined);
       // A lip-clearing raise also needs to move the camera now; interpolating from below the slab
       // would recreate the same obstruction even though the target boom has already cleared it.
-      raisedClear = solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
+      raisedClear = !solved.bodyDriven && solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
       back = solved.back;
       dist = solved.distance;
       this.boomRaise = solved.raise;
@@ -3464,7 +3730,7 @@ export class Explorer {
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
-    this.setFov(followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect), lensSnap, dt);
+    this.setFov(shot ? THREE.MathUtils.lerp(lens(), shot.fov, weight) : lens(), lensSnap, dt);
     // Use the last frame's actual boom, measured against its own pivot. Measuring the old
     // camera against the new pivot would rate-limit the walker's movement as contraction.
     const previousDistance = this.boomActual;
@@ -3476,17 +3742,46 @@ export class Explorer {
     const length = offset.length();
     if (length > 1e-9) {
       offset.divideScalar(length);
+      // Damping cannot lower the camera beneath the tread constraint. The final cast still wins
+      // when this elevation meets a shaft ceiling or shell, shortening the boom on its near side.
+      clearTreads(offset, length);
       const hits = this.cameraTargets.length ? cast(offset, Math.max(length, wantedDistance)) : [];
       const target = Math.min(length, dist, followDistance(wantedDistance, hits));
       const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
-    if (this.catAvatar) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
+    if (this.catAvatar) {
+      aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
+      if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect);
+      const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
+      const elevation = Math.atan2(pose.target.y - this.camera.position.y, ahead);
+      const resetAim = snap || this.reducedMotion || pinned || this.mode !== "guide" || this.previewNext;
+      if (stairRaise > 0 || resetAim) this.stairAimElevation = stairRaise > 0 ? elevation : undefined;
+      else if (this.stairAimElevation !== undefined) {
+        const eased = easeRaise(this.stairAimElevation, elevation, dt);
+        this.stairAimElevation = eased === elevation ? undefined : eased;
+        pose.target.y = this.camera.position.y + ahead * Math.tan(eased);
+      }
+    } else this.stairAimElevation = undefined;
+    const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
+    if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
     this.camera.lookAt(pose.target);
+    if (this.openingRelease) {
+      this.openingElapsed = Math.min(1.2, this.openingElapsed + dt);
+      const t = this.openingElapsed / 1.2;
+      const weight = t * t * (3 - 2 * t);
+      this.camera.position.lerp(this.openingRelease.position, 1 - weight);
+      this.camera.quaternion.slerp(this.openingRelease.quaternion, 1 - weight);
+      this.camera.fov = THREE.MathUtils.lerp(this.openingRelease.fov, this.camera.fov, weight);
+      this.camera.updateProjectionMatrix();
+      if (t === 1) this.openingRelease = null;
+    }
     const nextSign = this.mode === "guide" && this.guide ? this.guideSigns?.find((sign) => sign.s >= this.guide!.s) : undefined;
     const forward = this.camera.getWorldDirection(new THREE.Vector3());
     const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
-    this.setCameraFocus(pose.target, sign);
+    if (catFocus) {
+      this.setCameraFocus(catFocus, this.cameraFacingCatAnchor());
+    } else this.setCameraFocus(pose.target, sign);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
     this.boomActual = this.camera.position.distanceTo(pose.pivot);
     this.applyAvatarFade(dt, snap);

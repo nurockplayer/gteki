@@ -48,6 +48,7 @@ for (const key of STATIONS) {
 
       // The fast tier (top speed FAST_MPS, close to the old ×4 at 1.6 m/s) keeps recordings reviewable; other tiers narrate the same instructions.
       // The tier persists across sessions, so read it and click (cycle order run, fast, walk) until it is "fast".
+      await page.locator(".hud button.guide-more").click();
       const speed = page.locator(".hud button.guide-speed");
       for (let n = 0; n < 3 && (await hooks.guideControls(page)).tier !== "fast"; n++) await speed.click();
       const guideTier = (await hooks.guideControls(page)).tier;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW_CAT_NEXT, ESCALATOR_SHOT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("scales the cat shoulder for portrait aspect", () => {
@@ -406,6 +406,35 @@ describe("constrainedPitch", () => {
     expect(hold.seconds).toBe(0);
   });
 
+  it("keeps body-driven boom elevation changes below 3 degrees per 60 Hz frame, including a lip", () => {
+    const hidden = (b: THREE.Vector3) => deg(raiseOf(b)) < 49;
+    const lip = (b: THREE.Vector3): Hit[] => deg(raiseOf(b)) < 19 ? [{ distance: 0.8, cameraOnly: false }] : [];
+    for (const cast of [() => [], lip]) {
+      let raise = 0;
+      let previous = back0;
+      for (let frame = 0; frame < 60; frame++) {
+        const solved = solveRaisedBoom(wanted, back0, cast, raise, 1 / 60, false, hidden);
+        expect(solved.bodyDriven).toBe(true);
+        expect(deg(solved.back.angleTo(previous))).toBeLessThanOrEqual(3);
+        if (frame < 18) expect(solved.raise).toBeLessThan(FOLLOW.maxRaise);
+        previous = solved.back;
+        raise = solved.raise;
+      }
+      expect(deg(raise)).toBeCloseTo(50);
+    }
+  });
+
+  it("keeps a held body target eased when a geometry lip appears", () => {
+    const hold = { seconds: 0, target: 0 };
+    const first = solveRaisedBoom(wanted, back0, () => [], 0, 1 / 60, false,
+      (b) => deg(raiseOf(b)) < 49, hold);
+    const lip = (b: THREE.Vector3): Hit[] => deg(raiseOf(b)) < 19 ? [{ distance: 0.8, cameraOnly: false }] : [];
+    const held = solveRaisedBoom(wanted, back0, lip, first.raise, 1 / 60, false, () => false, hold);
+    expect(held.bodyDriven).toBe(true);
+    expect(deg(held.back.angleTo(first.back))).toBeLessThanOrEqual(3);
+    expect(held.distance).toBeLessThan(FOLLOW.comfortDistance);
+  });
+
   it("finds a raise that clears only at a steep angle (distance is not monotonic in the raise)", () => {
     let n = 0;
     // blocked at every middling angle, clear only in a 44-51 degree window
@@ -521,6 +550,10 @@ describe("solved raise after a slab squeeze", () => {
     expect(solved.distance).toBe(FOLLOW.defaultDistance);
     expect(solved.raise).toBeGreaterThan(0);
     expect(cast(solved.back)).toEqual([]);
+    expect(solved.bodyDriven).toBe(false);
+    const bodyClear = solveRaisedBoom(FOLLOW.defaultDistance, back, cast, 0, 1 / 60, false, () => false);
+    expect(bodyClear.raise).toBe(solved.raise);
+    expect(bodyClear.bodyDriven).toBe(false);
   });
 
   it("clears stale raise immediately on a seek to open space and eases it during walking", () => {
@@ -695,31 +728,25 @@ describe("D2 preview camera", () => {
     expect(camera.z).toBeCloseTo(2.20, 2);
   });
 
-  it.each([-30, 30, 0])("frames a %s degree escalator in its own vertical plane", (degrees) => {
-    for (const yaw of [0, -Math.PI / 2]) {
-      const angle = THREE.MathUtils.degToRad(degrees);
-      const a = viewDirection(yaw, angle);
-      const r = new THREE.Vector3(-a.z, 0, a.x).normalize();
-      const n = r.clone().cross(a).normalize();
+  it.each([-30, 30, 0])("frames a %s degree escalator", (degrees) => {
+    for (const yaw of [0, -Math.PI / 2]) for (const [aspect, fov, shot] of [[1.6, 55, ESCALATOR_SHOT.desktop], [412 / 839, 65, ESCALATOR_SHOT.phone]] as const) {
+      const axis = viewDirection(yaw, THREE.MathUtils.degToRad(degrees));
+      const right = new THREE.Vector3(-axis.z, 0, axis.x).normalize();
       const feet = new THREE.Vector3(3, 2, 1);
-      const pose = escalatorPose(feet, a, 0.2, 1, yaw, 0);
+      const pose = escalatorPose(feet, axis, 0.2, 1, yaw, 0, aspect, fov);
       const offset = pose.position.clone().sub(feet);
-      expect(offset.dot(a)).toBeCloseTo(-1.4, 3);
-      expect(offset.dot(n)).toBeCloseTo(0.9, 3);
-      expect(offset.dot(r)).toBeCloseTo(0.2, 3);
-      const direction = pose.target.clone().sub(pose.position).normalize();
-      expect(THREE.MathUtils.radToDeg(Math.asin(direction.y))).toBeCloseTo(degrees - 12, 1);
-      expect(Math.atan2(-direction.x, -direction.z)).toBeCloseTo(yaw, 5);
-      const camera = new THREE.PerspectiveCamera(55, 1.6, 0.05, 2000);
+      const expected = axis.clone().multiplyScalar(-shot.boom).addScaledVector(right, 0.2).add(new THREE.Vector3(0, shot.height, 0));
+      expect(offset.distanceTo(expected)).toBeLessThan(1e-6);
+      const camera = new THREE.PerspectiveCamera(fov, aspect, 0.05, 2000);
       camera.position.copy(pose.position);
       camera.lookAt(pose.target);
       camera.updateMatrixWorld(true);
-      const foot = feet.clone().project(camera);
-      const vanishing = camera.position.clone().addScaledVector(a, 100000).project(camera);
-      expect(foot.y).toBeLessThan(-1 / 3);
-      expect(foot.x).toBeLessThan(0);
-      expect(vanishing.y).toBeGreaterThan(0.35);
-      expect(vanishing.y).toBeLessThan(0.45);
+      expect((1 - feet.clone().project(camera).y) / 2).toBeCloseTo(shot.feet, 2);
+      if (degrees === -30) {
+        const farY = (1 - feet.clone().addScaledVector(axis, 30).project(camera).y) / 2;
+        expect(farY).toBeGreaterThanOrEqual(aspect >= 1 ? 0.70 : 0.58);
+        expect(farY).toBeLessThanOrEqual(aspect >= 1 ? 0.78 : 0.62);
+      }
     }
   });
 
@@ -738,5 +765,29 @@ describe("D2 preview camera", () => {
       expect(elapsed).toBeLessThanOrEqual(1.2);
       expect(stepEscalatorLock(0.5, on, 0, true).weight).toBe(Number(on));
     }
+  });
+});
+
+
+describe("authored arrival lifecycle", () => {
+  it("starts once in next mode and ends on first input", async () => {
+    const { arrivalShotState } = await import("./followCamera.ts");
+    expect(arrivalShotState("waiting", false, "poi:platform:oedo", true, false)).toBe("waiting");
+    expect(arrivalShotState("waiting", true, "poi:platform:oedo", true, false)).toBe("active");
+    expect(arrivalShotState("active", true, "poi:platform:oedo", true, true)).toBe("ended");
+    expect(arrivalShotState("ended", true, "poi:platform:oedo", true, false)).toBe("ended");
+  });
+});
+
+
+describe("authored opening lifecycle", () => {
+  it("holds only a known next origin and releases on guide start or input", async () => {
+    const { openingShotState } = await import("./followCamera.ts");
+    expect(openingShotState("waiting", false, "poi:exit:1", false, false)).toBe("waiting");
+    expect(openingShotState("waiting", true, "unknown", false, false)).toBe("waiting");
+    expect(openingShotState("waiting", true, "poi:exit:1", false, false)).toBe("active");
+    expect(openingShotState("active", true, "poi:exit:1", true, false)).toBe("ended");
+    expect(openingShotState("active", true, "poi:exit:1", false, true)).toBe("ended");
+    expect(openingShotState("ended", true, "poi:exit:1", false, false)).toBe("ended");
   });
 });

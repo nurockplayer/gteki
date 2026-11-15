@@ -57,6 +57,8 @@ export const FOLLOW = {
   fadeRecoverPerS: 1.5,
   /** Rate (1/s) at which the raise eases toward its wanted value (same damping as the camera position). */
   raiseDamping: 10,
+  /** Body-driven rises take at least 0.33 s for 50 degrees (2.5 degrees per frame at 60 Hz). */
+  bodyRaiseSpeed: (150 * Math.PI) / 180,
 } as const;
 
 /**
@@ -67,6 +69,30 @@ export const FOLLOW_CAT = { pivotY: 0.42, shoulder: 0.2, distance: 2.4, lift: 0.
 
 /** D2 preview framing, in metres above/behind the cat's feet. */
 export const FOLLOW_CAT_NEXT = { pivotY: 0.42, shoulder: 0.2, distance: 2.25, lift: 0.218, drop: 0, pitch: 0 } as const;
+
+/** Authored Oedo arrival framing, in metres and clockwise degrees from north. */
+export const ARRIVAL_SHOTS: Record<string, { desktop: { heading: number; distance: number; height: number; pitch: number; fov: number }; phone: { heading: number; distance: number; height: number; pitch: number; fov: number } }> = {
+  "poi:platform:oedo": { desktop: { heading: 200, distance: 3, height: 1.1, pitch: -4, fov: 55 }, phone: { heading: 165, distance: 4.2, height: 2.05, pitch: -8, fov: 72 } },
+};
+
+/** Authored exit-mouth opening framing; shoulder places the cat just left of centre. */
+export const OPENING_SHOTS: Record<string, { desktop: { heading: number; distance: number; height: number; pitch: number; fov: number; shoulder: number }; phone: { heading: number; distance: number; height: number; pitch: number; fov: number; shoulder: number } }> = {
+  "poi:exit:1": { desktop: { heading: 174, distance: 2.75, height: 1.1, pitch: -3, fov: 55, shoulder: 0.12 }, phone: { heading: 174, distance: 3, height: 1.22, pitch: -12, fov: 65, shoulder: 0.30 } },
+};
+
+/** Hold immediately in next mode, then release once on guide start or visitor input. */
+export function openingShotState(state: "waiting" | "active" | "ended", next: boolean, origin: string | null, release: boolean, input: boolean): "waiting" | "active" | "ended" {
+  if (state === "active" && (release || input)) return "ended";
+  if (state === "waiting" && next && origin && OPENING_SHOTS[origin] && !release && !input) return "active";
+  return state;
+}
+
+/** One shot per guide, cancelled by the first visitor input. */
+export function arrivalShotState(state: "waiting" | "active" | "ended", next: boolean, destination: string | null, done: boolean, input: boolean): "waiting" | "active" | "ended" {
+  if (state === "active" && input) return "ended";
+  if (state === "waiting" && next && destination && ARRIVAL_SHOTS[destination] && done && !input) return "active";
+  return state;
+}
 
 /** Preview lens; the legacy lens keeps its slope/squeeze behaviour. */
 export function followLens(mode: "overview" | "walk" | "guide", firstPerson: boolean, wide: boolean, next: boolean, aspect: number): number {
@@ -79,16 +105,21 @@ export function stepEscalatorLock(progress: number, on: boolean, dt: number, sna
   return { progress: p, weight: p * p * (3 - 2 * p) };
 }
 
-/** Axis-relative D2 camera and look, with the visitor's yaw/pitch added to the axis look. */
-export function escalatorPose(feet: THREE.Vector3, axis: THREE.Vector3, shoulder: number, scale: number, yaw: number, pitch: number): { position: THREE.Vector3; target: THREE.Vector3 } {
+/** D11 escalator shot (H3): boom behind the cat, height above the axis, and feet fraction from the top. */
+export const ESCALATOR_SHOT = { leadM: 2, desktop: { boom: 2.6, height: 0.7, feet: 0.91 }, phone: { boom: 3.2, height: 0.7, feet: 0.72 } } as const;
+
+export function escalatorPose(feet: THREE.Vector3, axis: THREE.Vector3, shoulder: number, scale: number, yaw: number, pitch: number, aspect: number, fovDeg: number): { position: THREE.Vector3; target: THREE.Vector3 } {
+  const shot = aspect < 1 ? ESCALATOR_SHOT.phone : ESCALATOR_SHOT.desktop;
   const a = axis.clone().normalize();
   const right = new THREE.Vector3(-a.z, 0, a.x).normalize();
-  const normal = right.clone().cross(a).normalize();
-  const position = feet.clone().addScaledVector(right, shoulder).addScaledVector(a, -1.4 * scale).addScaledVector(normal, 0.9 * scale);
-  const direction = viewDirection(yaw, Math.asin(a.y) - THREE.MathUtils.degToRad(12) + pitch);
+  const position = feet.clone().addScaledVector(right, shoulder).addScaledVector(a, -shot.boom * scale);
+  position.y += shot.height * scale;
+  const toFeet = feet.clone().sub(position);
+  const feetElevation = Math.atan2(toFeet.y, Math.hypot(toFeet.x, toFeet.z));
+  const look = feetElevation + Math.atan((2 * shot.feet - 1) * Math.tan(THREE.MathUtils.degToRad(fovDeg) / 2));
+  const direction = viewDirection(yaw, look + pitch);
   return { position, target: position.clone().addScaledVector(direction, FOLLOW.aim) };
 }
-
 
 /**
  * A raised boom keeps aiming ahead of the pivot, which looks past a body this low: above `start` radians the view
@@ -340,6 +371,7 @@ export function easeRaise(current: number, target: number, dt: number, snap = fa
 /**
  * Solve the raised boom before smoothing it. If easing would leave the camera squeezed while the
  * solved raise clears the lip, use the solved pose now; walking must not linger below a slab either.
+ * Body-driven raises ease without either jump; the caller also keeps position damping for them.
  * A placement/reduced-motion snap takes the complete solution immediately, including a zero raise.
  */
 export function solveRaisedBoom(
@@ -351,16 +383,19 @@ export function solveRaisedBoom(
   snap = false,
   bodyHidden?: (back: THREE.Vector3, distance: number) => boolean,
   bodyHold?: { seconds: number; target: number },
-): { back: THREE.Vector3; distance: number; raise: number } {
+): { back: THREE.Vector3; distance: number; raise: number; bodyDriven: boolean } {
   const base = followBoom(wanted, back, cast);
   const scratch = new THREE.Vector3();
   let baseHidden = false;
+  let bodyDriven = false;
   const checkBody = bodyHidden && ((b: THREE.Vector3, distance: number) => {
     const hidden = bodyHidden(b, distance);
+    bodyDriven ||= hidden;
     if (b === base.back) baseHidden = hidden;
     return hidden;
   });
   let target = constrainedPitch(wanted, base.back, base.distance, cast, scratch, checkBody);
+  bodyDriven &&= target > 0;
   if (bodyHold) {
     if (snap) bodyHold.seconds = bodyHold.target = 0;
     if (baseHidden && target > 0) {
@@ -368,15 +403,22 @@ export function solveRaisedBoom(
       bodyHold.target = target;
     } else if (bodyHold.seconds > 0 && bodyHidden) {
       bodyHold.seconds = Math.max(0, bodyHold.seconds - dt);
-      if (bodyHold.seconds > 0) target = Math.max(target, bodyHold.target);
+      if (bodyHold.seconds > 0) {
+        target = Math.max(target, bodyHold.target);
+        bodyDriven = true;
+      }
     } else {
       bodyHold.seconds = bodyHold.target = 0;
     }
   }
   let raise = easeRaise(currentRaise, target, dt, snap);
+  if (bodyDriven && !snap) {
+    const step = FOLLOW.bodyRaiseSpeed * Math.max(0, dt);
+    raise = Math.max(currentRaise - step, Math.min(target, currentRaise + step));
+  }
   let raised = raisedBack(base.back, raise, new THREE.Vector3());
   let distance = raise > 0 ? followDistance(wanted, cast(raised)) : base.distance;
-  if (!snap && target > raise && distance < Math.min(FOLLOW.comfortDistance, wanted)) {
+  if (!snap && !bodyDriven && target > raise && distance < Math.min(FOLLOW.comfortDistance, wanted)) {
     const solved = raisedBack(base.back, target, scratch);
     const clear = followDistance(wanted, cast(solved));
     if (clear >= distance + FOLLOW.raiseGain) {
@@ -385,7 +427,7 @@ export function solveRaisedBoom(
       distance = clear;
     }
   }
-  return { back: raised, distance, raise };
+  return { back: raised, distance, raise, bodyDriven };
 }
 
 /**

@@ -4,10 +4,39 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b1018" />
+    <script>
+      const params = new URLSearchParams(location.search);
+      if (params.get("next") === "1" && !params.has("from") && !params.has("to") && (params.get("station") ?? "shinjuku") === "shinjuku") {
+        document.documentElement.dataset.coldOpen = "1";
+      }
+    </script>
+    <style>
+      #cold-open-poster { display: none; position: fixed; inset: 0; z-index: 100; color: #e8eef6; font-family: system-ui, sans-serif; flex-direction: column; align-items: center; justify-content: center; gap: 12px; opacity: 1; transition: opacity 400ms; }
+      html[data-cold-open="1"] #cold-open-poster:not([hidden]) { display: flex; background: linear-gradient(#0b101855, #0b1018bb), url("./cold-open/poster-desktop.webp") center / cover; }
+      #cold-open-poster.lifting { opacity: 0; pointer-events: none; }
+      #cold-open-poster .boot-brand { font-weight: 800; letter-spacing: .04em; color: #5ef0ff; }
+      #cold-open-poster .boot-title { font-size: 40px; font-weight: 700; }
+      #cold-open-poster .boot-sub { font-size: 15px; }
+      #cold-open-poster .boot-track { width: 240px; max-width: 60vw; height: 4px; border-radius: 4px; background: rgba(160, 190, 220, .16); overflow: hidden; }
+      #cold-open-poster .boot-fill { height: 100%; width: 4%; background: #5ef0ff; transition: width 300ms; }
+      #cold-open-poster .boot-status { font-size: 13px; color: #bcc8d8; }
+      @media (orientation: portrait) {
+        html[data-cold-open="1"] #cold-open-poster:not([hidden]) { background-image: linear-gradient(#0b101855, #0b1018bb), url("./cold-open/poster-phone.webp"); }
+      }
+      @media (max-width: 480px) { #cold-open-poster .boot-title { font-size: 32px; } }
+      @media (prefers-reduced-motion: reduce) { #cold-open-poster, #cold-open-poster .boot-fill { transition: none; } }
+    </style>
     <title>GTEki — 駅を探して、歩いて確かめる</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1018'/%3E%3Cpath d='M8 22 L16 8 L24 22' stroke='%235ef0ff' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
   </head>
   <body>
+    <div id="cold-open-poster">
+      <div class="boot-brand logo">GTEki</div>
+      <div class="boot-title">Shinjuku</div>
+      <div class="boot-sub">Toei Oedo Line</div>
+      <div class="boot-track" role="progressbar" aria-label="Loading…" aria-valuemin="0" aria-valuemax="100" aria-valuenow="4"><div class="boot-fill"></div></div>
+      <div class="boot-status">Loading…</div>
+    </div>
     <div id="app"></div>
     <script type="module" src="./src/main.ts"></script>
   </body>

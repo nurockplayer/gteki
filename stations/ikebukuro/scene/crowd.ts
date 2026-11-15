@@ -682,6 +682,8 @@ export function buildCrowd(
   interface Part { mesh: THREE_NS.InstancedMesh; per: number; slots: Int32Array | null }
   const group = new THREE.Group();
   group.name = "ikebukuro_crowd";
+  // QA captures keep commuters out of both stations, regardless of elapsed frames.
+  group.visible = typeof location === "undefined" || new URLSearchParams(location.search).get("qaCrowd") !== "off";
   const c = new THREE.Color();
   const owned: THREE_NS.BufferGeometry[] = [];
   const make = (name: string, g: THREE_NS.BufferGeometry, m: THREE_NS.Material, per: number, has: ((l: Look, i: number) => boolean) | null, colorKey: string): Part => {

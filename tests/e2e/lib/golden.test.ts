@@ -1,8 +1,26 @@
+// @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { evaluateCheck, flatRatio } from "./golden";
+import { evaluateCheck, flatRatio, goldenMinimapReady } from "./golden";
 import { goldenPixelDiff, goldenPixels } from "../../../apps/web/src/explorer/goldenPixels";
 
 describe("golden camera checks", () => {
+  it("waits for the minimap floor label after camera floor changes", () => {
+    document.body.innerHTML = `<div class="minimap">
+      <select class="minimap-floor"><option value="m1">B1</option><option value="m3">B4</option><option value="m6">B7</option></select>
+      <div class="minimap-label"><strong>B1</strong></div>
+    </div>`;
+    const label = document.querySelector(".minimap-label strong")!;
+    expect(goldenMinimapReady("m3")).toBe(false);
+    label.textContent = "B4";
+    expect(goldenMinimapReady("m3")).toBe(true);
+    expect(goldenMinimapReady("m6")).toBe(false);
+    label.textContent = "B7";
+    expect(goldenMinimapReady("m6")).toBe(true);
+    expect(goldenMinimapReady(null)).toBe(false);
+    document.querySelector<HTMLElement>(".minimap")!.hidden = true;
+    expect(goldenMinimapReady(null)).toBe(true);
+    expect(goldenMinimapReady("m6")).toBe(false);
+  });
   it("finds the largest quantised RGB bucket", () => {
     expect(flatRatio([0, 0, 0, 255, 15, 15, 15, 255, 16, 0, 0, 255])).toBe(2 / 3);
   });
