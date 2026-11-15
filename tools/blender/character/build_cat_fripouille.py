@@ -1535,12 +1535,20 @@ def authored_pose(name, seconds):
             curve.append({"phase": phase_key, "height": value,
                           "tangent_in": derivative, "tangent_out": derivative})
         root["height_offset_m"] = hermite_channel({"poses": sorted(curve, key=lambda k: k["phase"])}, phase, ("height",))
+    legs = {leg: {key: sample("legs", leg, key, angle=key.endswith("_rad"))
+                  for key in channels} for leg, channels in gait["poses"][0]["legs"].items()}
+    for leg, stance in gait.get("stance_targets", {}).items():
+        start, end = gait["contacts"][leg]
+        elapsed = (phase - start) % 1.0
+        if elapsed <= end - start + 1e-9:
+            # A planted paw has constant world velocity relative to the moving body.
+            # Keep this line exact between authored keys, including wrapped contacts.
+            legs[leg]["target_m"] = [stance["x_m"], stance["centre_y_m"]
+                                      + stance["sweep_m"]*(.5-elapsed/(end-start)), 0.0]
+            legs[leg]["paw_pitch_rad"] = 0.0
     return {"authored": name, "phase": phase, "root": root,
             "fk": {bone: sample("fk_xyz_rad", bone, angle=True)
-                   for bone in gait["poses"][0]["fk_xyz_rad"]},
-            "legs": {leg: {key: sample("legs", leg, key, angle=key.endswith("_rad"))
-                           for key in channels}
-                     for leg, channels in gait["poses"][0]["legs"].items()}}
+                   for bone in gait["poses"][0]["fk_xyz_rad"]}, "legs": legs}
 
 
 def supporting(gait, leg, phase):
@@ -1760,7 +1768,7 @@ def render_contact_sheets(directory, arm, body):
                    "Clearance is the minimum evaluated skinned paw surface; four-paw clearance is their minimum.",
                    "", "| Record / phase / reference | Root height mm / pitch; spine; neck/head | Leg solves and controls | Paw clearances mm (FL, FR, HL, HR); four-paw min |",
                    "| --- | --- | --- | --- |"])
-    rows, support_notes, envelopes = {}, [], []
+    rows, cycle_rows, support_notes, envelopes = {}, {}, [], []
     for name, gait in AUTHORED_GAITS.items():
         rows[name] = []
         head_heights, head_pitches = [], []
@@ -1773,7 +1781,10 @@ def render_contact_sheets(directory, arm, body):
             paw_data = kit.evaluated_paw_points(body, groups)
             clearances = [paw_data[paw_group(leg)][1]*1000 for leg in LEGS]
             mesh = bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
-            rows[name].append((key, mesh, {leg["key"]: arm.pose.bones[paw_group(leg)].head.copy() for leg in LEGS}))
+            if any(abs(phase-p) < 1e-8 for p in gait.get("sheet_phases", [k["phase"] for k in gait["poses"]])):
+                rows[name].append((key, mesh, {leg["key"]: arm.pose.bones[paw_group(leg)].head.copy() for leg in LEGS}))
+            else:
+                bpy.data.meshes.remove(mesh)
             solves = []
             for leg in LEGS:
                 k = leg["key"]
@@ -1790,6 +1801,14 @@ def render_contact_sheets(directory, arm, body):
             report.append(f"| {name} {phase:.3f}: {key['name']}; {key['reference']} | "
                           f"{pose['root']['height_offset_m']*1000:.2f} / {math.degrees(pose['root']['pitch_rad']):.1f}; {angles} | "
                           + "<br>".join(solves) + " | " + ", ".join(f"{v:.2f}" for v in clearances) + f"; **{min(clearances):.2f}** |")
+        cycle_rows[name] = []
+        for i in range(12):
+            phase = i/12
+            pose = authored_pose(name, phase*gait["cycle_s"])
+            apply_pose(arm, pose)
+            mesh = bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+            cycle_rows[name].append(({"phase": phase, "name": "evaluated cycle", "reference": "R7: evenly spaced phases"}, mesh,
+                                     {leg["key"]: arm.pose.bones[paw_group(leg)].head.copy() for leg in LEGS}))
         support_notes.extend(["", f"### {name} support intervals", ""])
         support_notes.extend(f"- {start:.2f}–{end:.2f}: {', '.join(legs) or 'flight'}" for start, end, legs in support_intervals(gait))
         envelopes.append(f"- {name}: head origin travel at keys {(max(head_heights)-min(head_heights))*1000:.3f} mm; head pitch excursion {math.degrees(max(head_pitches)-min(head_pitches)):.3f}°.")
@@ -1818,7 +1837,7 @@ def render_contact_sheets(directory, arm, body):
                    "Inspect chest and belly at gathered poses, shoulder seams at maximum scapula swing/slide, and wrists at maximum fold.",
                    "These are centroid pivots and the existing smoothed skin. Visible collapse requires the AD's sheet judgment; no automated visual PASS is claimed.",
                    "A's second suspension and 25 mm stylised root lift deliberately depart from Muybridge's single extended suspension.",
-                   "These first-pass keys are silhouette drafts. Nominal speed and cadence are metadata; planted displacement/slip and dense clip acceptance belong to PR 2."])
+                   "Stance targets use nominal speed times contact duration, with exact linear evaluation during contact. Dense clip baking remains PR 2."])
     directory.joinpath("report.md").write_text("\n".join(report) + "\n")
     body.hide_render = True
     temporary = []
@@ -1844,22 +1863,27 @@ def render_contact_sheets(directory, arm, body):
         return obj
 
     for name, snapshots in rows.items():
-        for view in ("side", "rear"):
-            side = view == "side"
+        for view in ("side", "rear", "side_cycle"):
+            side = view != "rear"
+            snapshots = cycle_rows[name] if view == "side_cycle" else rows[name]
+            slots = 12 if view == "side_cycle" else 6
+            width = slots*.8
+            scene.render.resolution_x = slots*400
+            camera_data.ortho_scale = width
             direction = Vector((-1,0,0) if side else (0,1,0))
             centre = Vector((0,0,.15))
             camera.location = centre - direction*3
             camera.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
             right = Vector((0,1,0) if side else (1,0,0))
             back = direction*.30
-            for i in range(-48, 49):
+            for i in range(-slots*8, slots*8+1):
                 x = i*.05
                 line([back+right*x+Vector((0,0,-.08)), back+right*x+Vector((0,0,.48))], .00035, grid_ink)
             for i in range(-1, 10):
                 z = i*.05
-                line([back-right*2.4+Vector((0,0,z)),back+right*2.4+Vector((0,0,z))], .0012 if i==0 else .00035, ink if i==0 else grid_ink)
+                line([back-right*(width/2)+Vector((0,0,z)),back+right*(width/2)+Vector((0,0,z))], .0012 if i==0 else .00035, ink if i==0 else grid_ink)
             for i, (key, mesh, paws) in enumerate(snapshots):
-                offset = right*((i-2.5)*.8)
+                offset = right*((i-(slots-1)/2)*.8)
                 obj = bpy.data.objects.new("sheet_cat", mesh)
                 scene.collection.objects.link(obj)
                 obj.location = offset
@@ -1896,14 +1920,14 @@ def render_contact_sheets(directory, arm, body):
                     if isinstance(data, bpy.types.Curve):
                         bpy.data.curves.remove(data)
             temporary.clear()
-    for snapshots in rows.values():
+    for snapshots in [*rows.values(), *cycle_rows.values()]:
         for _key, mesh, _paws in snapshots:
             bpy.data.meshes.remove(mesh)
     bpy.data.objects.remove(camera, do_unlink=True)
     body.hide_render = False
     kit.reset_pose(arm)
     bpy.context.view_layer.update()
-    print(f"SHEETS {directory}: 8 PNGs and report.md; {len(failures)} acceptance failure(s)")
+    print(f"SHEETS {directory}: 12 PNGs and report.md; {len(failures)} acceptance failure(s)")
     if failures:
         fail("authored sheets: " + "; ".join(failures))
 
