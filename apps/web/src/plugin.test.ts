@@ -180,7 +180,7 @@ describe("virtual station module asset URLs", () => {
     try {
       await build({ root: app, configFile: false, logLevel: "silent", plugins: [gtekiStations([root])] });
       const dist = path.join(app, "dist");
-      const glbs = fs.readdirSync(dist, { recursive: true }).filter(f => f.endsWith(".glb"));
+      const glbs = fs.readdirSync(dist, { recursive: true, encoding: "utf8" }).filter(f => f.endsWith(".glb"));
       expect(glbs).toHaveLength(2);
       for (const file of glbs) {
         const plain = fs.readFileSync(path.join(dist, file));

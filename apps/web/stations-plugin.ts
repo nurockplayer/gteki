@@ -474,7 +474,7 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
     writeBundle(options) {
       // Vite has copied public/ by now, so this covers both public and emitted station GLBs.
       const outDir = options.dir!;
-      for (const file of fs.readdirSync(outDir, { recursive: true })) {
+      for (const file of fs.readdirSync(outDir, { recursive: true, encoding: "utf8" })) {
         if (!file.endsWith(".glb")) continue;
         const full = path.join(outDir, file);
         // node:zlib writes no filename and a zero mtime, making the level-9 copy deterministic.
