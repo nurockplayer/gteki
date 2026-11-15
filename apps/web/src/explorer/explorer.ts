@@ -1633,6 +1633,7 @@ export class Explorer {
     this.setupComposer();
     this.frameAll();
     lap("composer");
+    timings.startAt = Math.round(loadStart);
     timings.total = Math.round(performance.now() - loadStart);
     this.loadTimings = timings;
     this.overviewLook.set(this.scene, this.world, this.mode === "overview");

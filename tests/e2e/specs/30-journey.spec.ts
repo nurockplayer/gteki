@@ -78,7 +78,15 @@ test("cold open @phone", async ({ page }, info) => {
   }
   const state = await page.evaluate(() => {
     const e = (window as any).__gteki.scanProbe().explorer;
-    return { station: e.station?.key ?? null, mode: (window as any).__gteki.mode(), bytes: performance.getEntriesByType("resource").reduce((n, r) => n + (r as PerformanceResourceTiming).transferSize, 0) };
+    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
+    return {
+      station: e.station?.key ?? null,
+      mode: (window as any).__gteki.mode(),
+      bytes: performance.getEntriesByType("resource").reduce((n, r) => n + (r as PerformanceResourceTiming).transferSize, 0),
+      loadTimings: (window as any).__gteki.sceneInfo().loadTimings,
+      marks: performance.getEntriesByType("mark").map((m) => [m.name, Math.round(m.startTime)]),
+      navTiming: { responseEnd: Math.round(nav.responseEnd), domContentLoadedEventEnd: Math.round(nav.domContentLoadedEventEnd) },
+    };
   });
   const nextState = reelMode === "next" ? await page.evaluate(async () => {
     const g = (window as any).__gteki;
