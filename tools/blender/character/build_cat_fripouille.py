@@ -580,32 +580,66 @@ def close_rest_seams(body):
 
 
 def unify_coincident_weights(body):
-    """S1: a split rest-position seam must deform as one vertex after export."""
+    """S1/S2: exact duplicates and rest-closed junctions deform together."""
     from itertools import combinations
+    from mathutils.kdtree import KDTree
+    vertices = body.data.vertices
+    exact = {}
+    tree = KDTree(len(vertices))
+    parent = list(range(len(vertices)))
+    for v in vertices:
+        exact.setdefault(tuple(v.co), []).append(v.index)
+        tree.insert(v.co,v.index)
+    tree.balance()
+
+    def root(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    def join(indices):
+        first = root(indices[0])
+        for i in indices[1:]:
+            parent[root(i)] = first
+
+    def mismatches():
+        count = 0
+        for indices in exact.values():
+            rows = [{g.group:g.weight for g in vertices[i].groups} for i in indices]
+            count += sum(any(abs(a.get(g,0)-b.get(g,0)) > 1e-4 for g in a.keys() | b.keys())
+                         for a,b in combinations(rows,2))
+        return count
+
+    before = mismatches()
+    for v in vertices:
+        join([v.index,*(i for _,i,_ in tree.find_range(v.co,.00001))])
+    # Splitting can leave a crossing inside the 0.01 mm rest tolerance.
+    # A common blend on its local endpoints makes the entire crossing affine.
+    for a,b,t,c,d,u in closed_rest_seams(body):
+        p = vertices[a].co*(1-t)+vertices[b].co*t
+        q = vertices[c].co*(1-u)+vertices[d].co*u
+        inside_ab = a != b and min((p-vertices[a].co).length,(p-vertices[b].co).length) > .00001
+        inside_cd = c != d and min((q-vertices[c].co).length,(q-vertices[d].co).length) > .00001
+        if (a == b and inside_cd) or (inside_ab and inside_cd):
+            join([a,b,c,d])
     buckets = {}
-    for vertex in body.data.vertices:
-        buckets.setdefault(tuple(vertex.co), []).append(vertex)
-    before = after = 0
-    for vertices in buckets.values():
-        if len(vertices) < 2:
+    for v in vertices:
+        buckets.setdefault(root(v.index),[]).append(v.index)
+    for indices in buckets.values():
+        if len(indices) < 2:
             continue
-        rows = [{g.group: g.weight for g in v.groups} for v in vertices]
-        before += sum(any(abs(a.get(g, 0) - b.get(g, 0)) > 1e-4 for g in a.keys() | b.keys())
-                      for a, b in combinations(rows, 2))
-        average = {g: sum(row.get(g, 0) for row in rows) / len(rows)
-                   for row in rows for g in row}
-        kept = sorted(average, key=lambda g: (-average[g], g))[:4]
+        rows = [{g.group:g.weight for g in vertices[i].groups} for i in indices]
+        average = {g:sum(row.get(g,0) for row in rows)/len(rows) for row in rows for g in row}
+        kept = sorted(average,key=lambda g:(-average[g],g))[:4]
         total = sum(average[g] for g in kept)
-        indices = [v.index for v in vertices]
         for g in average:
             body.vertex_groups[g].remove(indices)
         for g in kept:
-            body.vertex_groups[g].add(indices, average[g] / total, "REPLACE")
-        rows = [{g.group: g.weight for g in v.groups} for v in vertices]
-        after += sum(any(abs(a.get(g, 0) - b.get(g, 0)) > 1e-4 for g in a.keys() | b.keys())
-                     for a, b in combinations(rows, 2))
+            body.vertex_groups[g].add(indices,average[g]/total,'REPLACE')
+    after = mismatches()
     print(f"S1 coincident pairs differing by > 1e-4: {before} before, {after} after")
-    return before, after
+    return before,after
 
 
 def decimate(obj, budget):
