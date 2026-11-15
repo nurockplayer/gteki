@@ -1283,7 +1283,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   // same level belong to that union; inclined mouths still cut its side panels.
   for (const lv of underground) {
     const envelopes = union([...lv.slabs, ...layout.linkStrips.filter((s) => Math.abs(s.z - lv.z) < 0.05)].map((s) => s.rings));
-    const boundaryVoids = voids.filter((_, i) => Math.abs(finishPassages[i]!.a.z - lv.z) > 0.05 || Math.abs(finishPassages[i]!.b.z - lv.z) > 0.05);
+    const cutBoundaryWalls = wallVoidCutter(voids.filter((_, i) => Math.abs(finishPassages[i]!.a.z - lv.z) > 0.05 || Math.abs(finishPassages[i]!.b.z - lv.z) > 0.05));
     for (const rings of envelopes) for (const ring of rings) for (let i = 1; i < ring.length; i++) {
       const a = ring[i - 1]!, b = ring[i]!, d = sub(b, a), breaks = [0, 1];
       for (const hull of shaftHulls) for (const boundary of hull.rings) for (let k = 1; k < boundary.length; k++) {
@@ -1298,14 +1298,14 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         const mid = lerp(a, b, (breaks[k - 1]! + breaks[k]!) / 2);
         if (!shaftHulls.some((h) => pointInRings(mid, h.rings))) continue;
         const wall: WallSeg = { a: lerp(a, b, breaks[k - 1]!), b: lerp(a, b, breaks[k]!), side: 1, kind: "wall", zMin: lv.z, zMax: lv.ceilingZ };
-        for (const part of cutWallsByVoids([wall], boundaryVoids)) layout.shaftFascias.push({ floorId: lv.floorId, wall: part });
+        for (const part of cutBoundaryWalls([wall])) layout.shaftFascias.push({ floorId: lv.floorId, wall: part });
       }
     }
   }
   // Union the repeated references before cutting: difference distributes over
   // this union, so the same openings survive without clipping each copy.
-  const fasciaVoids = [...voids, ...platformVoids];
-  for (const f of compactShaftFascias(joins)) for (const wall of cutWallsByVoids(fasciaSpans(f), fasciaVoids)) {
+  const cutFasciaWalls = wallVoidCutter([...voids, ...platformVoids]);
+  for (const f of compactShaftFascias(joins)) for (const wall of cutFasciaWalls(fasciaSpans(f))) {
     layout.shaftFascias.push({ floorId: f.floorId, wall });
   }
   layout.shaftFascias = compactShaftFascias(layout.shaftFascias, layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia")));
@@ -1348,7 +1348,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       });
       return panels;
     };
-    const fascias = layout.shaftFascias.flatMap((f) => cutWallsByVoids(fasciaSpans(f), voids).map((wall) => ({ floorId: f.floorId, wall })));
+    const cutPreviewWalls = wallVoidCutter(voids);
+    const fascias = layout.shaftFascias.flatMap((f) => cutPreviewWalls(fasciaSpans(f)).map((wall) => ({ floorId: f.floorId, wall })));
     // Close the two tangent changes against their unchanged flat hall datum.
     for (const roof of pitchedRoofs) {
       const ring = roof.rings[0]!;
@@ -1536,6 +1537,11 @@ function affineMask(rings: XY[][], value: (p: XY) => number): XY[][][] {
  * their portions inside the swept head/body volume are removed.
  */
 export function cutWallsByVoids(walls: WallSeg[], voids: { rings: XY[][]; bottom: (p: XY) => number; top: (p: XY) => number }[]): WallSeg[] {
+  return wallVoidCutter(voids)(walls);
+}
+
+// Prepare immutable void geometry once when several batches share the same openings.
+function wallVoidCutter(voids: Parameters<typeof cutWallsByVoids>[1]) {
   const cross = (a: XY, b: XY) => a.x * b.y - a.y * b.x;
   const distanceToSegment = (p: XY, a: XY, b: XY) => {
     const d = sub(b, a), l2 = d.x * d.x + d.y * d.y || 1;
@@ -1548,7 +1554,6 @@ export function cutWallsByVoids(walls: WallSeg[], voids: { rings: XY[][]; bottom
     const pts = v.rings.flat();
     return { ...v, minX: Math.min(...pts.map((p) => p.x)), maxX: Math.max(...pts.map((p) => p.x)), minY: Math.min(...pts.map((p) => p.y)), maxY: Math.max(...pts.map((p) => p.y)) };
   });
-  const result: WallSeg[] = [];
   const profileAt = (w: WallSeg, t: number) => ({
     bottom: w.profile ? w.profile.bottomA + (w.profile.bottomB - w.profile.bottomA) * t : w.zMin,
     top: w.profile ? w.profile.topA + (w.profile.topB - w.profile.topA) * t : w.zMax,
@@ -1561,98 +1566,101 @@ export function cutWallsByVoids(walls: WallSeg[], voids: { rings: XY[][]; bottom
     const t = da / (da - db);
     return da > 0 ? [0, t] : [t, 1];
   };
-  for (const w of walls) {
-    const direction = sub(w.b, w.a), cuts = [0, 1];
-    const minX = Math.min(w.a.x, w.b.x), maxX = Math.max(w.a.x, w.b.x), minY = Math.min(w.a.y, w.b.y), maxY = Math.max(w.a.y, w.b.y);
-    const candidates = boundedVoids.filter((v) => v.maxX >= minX && v.minX <= maxX && v.maxY >= minY && v.minY <= maxY);
-    if (!candidates.length) {
-      result.push(w);
-      continue;
-    }
-    for (const v of candidates) for (const ring of v.rings) for (let i = 0; i < ring.length; i++) {
-      const c = ring[i]!, edge = sub(ring[(i + 1) % ring.length]!, c), denominator = cross(direction, edge);
-      if (Math.abs(denominator) < 1e-10) continue;
-      const offset = sub(c, w.a), t = cross(offset, edge) / denominator, u = cross(offset, direction) / denominator;
-      if (t > 1e-8 && t < 1 - 1e-8 && u >= -1e-8 && u <= 1 + 1e-8) cuts.push(t);
-    }
-    // min/max of two affine heights is piecewise affine. Split at each height
-    // crossing before clipping bands; interpolating endpoint min/max over the
-    // whole wall otherwise removes a long triangular wedge outside the void.
-    const wa = profileAt(w, 0), wb = profileAt(w, 1);
-    for (const v of candidates) for (const height of [v.bottom, v.top]) {
-      const va = height(w.a), vb = height(w.b);
-      for (const [a, b] of [[wa.bottom - va, wb.bottom - vb], [wa.top - va, wb.top - vb]]) {
-        if (a! * b! < 0) cuts.push(a! / (a! - b!));
-      }
-    }
-    cuts.sort((a, b) => a - b);
-    const unique = cuts.filter((t, i) => !i || t - cuts[i - 1]! > 1e-7);
-    const intervals = unique.slice(0, -1).map((from, i) => {
-      const to = unique[i + 1]!, mid = lerp(w.a, w.b, (from + to) / 2);
-      const p = lerp(w.a, w.b, from), q = lerp(w.a, w.b, to), ba = profileAt(w, from), bb = profileAt(w, to);
-      const active = candidates.filter((v) => {
-        if (!inside(mid, v.rings)) return false;
-        const aboveBottom = positiveInterval(ba.top - v.bottom(p), bb.top - v.bottom(q));
-        const belowTop = positiveInterval(v.top(p) - ba.bottom, v.top(q) - bb.bottom);
-        return !!aboveBottom && !!belowTop && Math.min(aboveBottom[1], belowTop[1]) - Math.max(aboveBottom[0], belowTop[0]) > 1e-8;
-      });
-      return { from, to, active };
-    });
-    // Preserve untouched source walls exactly: no subdivision, profile conversion, or UV drift.
-    if (!intervals.some((part) => part.active.length)) {
-      result.push(w);
-      continue;
-    }
-    const appendUncut = (from: number, to: number) => {
-      const a = profileAt(w, from), b = profileAt(w, to), u0 = surfaceAt(w, from), u1 = surfaceAt(w, to);
-      const slice: WallSeg = { ...w, a: lerp(w.a, w.b, from), b: lerp(w.a, w.b, to), zMin: w.zMin, zMax: w.zMax };
-      if (w.profile) slice.profile = { bottomA: a.bottom, bottomB: b.bottom, topA: a.top, topB: b.top };
-      if (u0 !== undefined && u1 !== undefined) slice.surfaceBase = { a: u0, b: u1 };
-      result.push(slice);
-    };
-    for (let ci = 0; ci + 1 < unique.length; ci++) {
-      const part = intervals[ci]!, from = part.from, to = part.to;
-      if (!part.active.length) {
-        appendUncut(from, to);
+  return (walls: WallSeg[]): WallSeg[] => {
+    const result: WallSeg[] = [];
+    for (const w of walls) {
+      const direction = sub(w.b, w.a), cuts = [0, 1];
+      const minX = Math.min(w.a.x, w.b.x), maxX = Math.max(w.a.x, w.b.x), minY = Math.min(w.a.y, w.b.y), maxY = Math.max(w.a.y, w.b.y);
+      const candidates = boundedVoids.filter((v) => v.maxX >= minX && v.minX <= maxX && v.maxY >= minY && v.minY <= maxY);
+      if (!candidates.length) {
+        result.push(w);
         continue;
       }
-      {
-        const t0 = from, t1 = to;
-        const p = lerp(w.a, w.b, t0), q = lerp(w.a, w.b, t1), mid = lerp(p, q, 0.5);
-        type Band = { u0: number; u1: number; bottomA: number; bottomB: number; topA: number; topB: number };
-        let pieces: Band[] = [{ u0: 0, u1: 1, bottomA: profileAt(w, t0).bottom, bottomB: profileAt(w, t1).bottom, topA: profileAt(w, t0).top, topB: profileAt(w, t1).top }];
-        const valid = (band: Band): Band[] => {
-          const ha = band.topA - band.bottomA - 0.015, hb = band.topB - band.bottomB - 0.015;
-          if (ha > 0 && hb > 0) return [band];
-          if (ha <= 0 && hb <= 0) return [];
-          const crossAt = ha / (ha - hb), lo = ha > 0 ? 0 : crossAt, hi = ha > 0 ? crossAt : 1;
-          const lerpBand = (a: number, b: number, t: number) => a + (b - a) * t;
-          return [{
-            u0: lerpBand(band.u0, band.u1, lo), u1: lerpBand(band.u0, band.u1, hi),
-            bottomA: lerpBand(band.bottomA, band.bottomB, lo), bottomB: lerpBand(band.bottomA, band.bottomB, hi),
-            topA: lerpBand(band.topA, band.topB, lo), topB: lerpBand(band.topA, band.topB, hi),
-          }];
-        };
-        for (const v of part.active) {
-          if (!inside(mid, v.rings)) continue;
-          pieces = pieces.flatMap((piece) => {
-            const pa = lerp(p, q, piece.u0), pb = lerp(p, q, piece.u1);
-            const vbA = v.bottom(pa), vbB = v.bottom(pb), vtA = v.top(pa), vtB = v.top(pb);
-            const lower = { ...piece, topA: Math.min(piece.topA, vbA), topB: Math.min(piece.topB, vbB) };
-            const upper = { ...piece, bottomA: Math.max(piece.bottomA, vtA), bottomB: Math.max(piece.bottomB, vtB) };
-            return [...valid(lower), ...valid(upper)];
-          });
+      for (const v of candidates) for (const ring of v.rings) for (let i = 0; i < ring.length; i++) {
+        const c = ring[i]!, edge = sub(ring[(i + 1) % ring.length]!, c), denominator = cross(direction, edge);
+        if (Math.abs(denominator) < 1e-10) continue;
+        const offset = sub(c, w.a), t = cross(offset, edge) / denominator, u = cross(offset, direction) / denominator;
+        if (t > 1e-8 && t < 1 - 1e-8 && u >= -1e-8 && u <= 1 + 1e-8) cuts.push(t);
+      }
+      // min/max of two affine heights is piecewise affine. Split at each height
+      // crossing before clipping bands; interpolating endpoint min/max over the
+      // whole wall otherwise removes a long triangular wedge outside the void.
+      const wa = profileAt(w, 0), wb = profileAt(w, 1);
+      for (const v of candidates) for (const height of [v.bottom, v.top]) {
+        const va = height(w.a), vb = height(w.b);
+        for (const [a, b] of [[wa.bottom - va, wb.bottom - vb], [wa.top - va, wb.top - vb]]) {
+          if (a! * b! < 0) cuts.push(a! / (a! - b!));
         }
-        for (const piece of pieces) {
-          const s0 = t0 + (t1 - t0) * piece.u0, s1 = t0 + (t1 - t0) * piece.u1;
-          const a = lerp(w.a, w.b, s0), b = lerp(w.a, w.b, s1);
-          const surfaceA = surfaceAt(w, s0) ?? piece.bottomA, surfaceB = surfaceAt(w, s1) ?? piece.bottomB;
-          result.push({ ...w, a, b, zMin: Math.min(piece.bottomA, piece.bottomB), zMax: Math.max(piece.topA, piece.topB), finish: w.finish ?? "shaft", profile: { bottomA: piece.bottomA, bottomB: piece.bottomB, topA: piece.topA, topB: piece.topB }, surfaceBase: { a: surfaceA, b: surfaceB } });
+      }
+      cuts.sort((a, b) => a - b);
+      const unique = cuts.filter((t, i) => !i || t - cuts[i - 1]! > 1e-7);
+      const intervals = unique.slice(0, -1).map((from, i) => {
+        const to = unique[i + 1]!, mid = lerp(w.a, w.b, (from + to) / 2);
+        const p = lerp(w.a, w.b, from), q = lerp(w.a, w.b, to), ba = profileAt(w, from), bb = profileAt(w, to);
+        const active = candidates.filter((v) => {
+          if (!inside(mid, v.rings)) return false;
+          const aboveBottom = positiveInterval(ba.top - v.bottom(p), bb.top - v.bottom(q));
+          const belowTop = positiveInterval(v.top(p) - ba.bottom, v.top(q) - bb.bottom);
+          return !!aboveBottom && !!belowTop && Math.min(aboveBottom[1], belowTop[1]) - Math.max(aboveBottom[0], belowTop[0]) > 1e-8;
+        });
+        return { from, to, active };
+      });
+      // Preserve untouched source walls exactly: no subdivision, profile conversion, or UV drift.
+      if (!intervals.some((part) => part.active.length)) {
+        result.push(w);
+        continue;
+      }
+      const appendUncut = (from: number, to: number) => {
+        const a = profileAt(w, from), b = profileAt(w, to), u0 = surfaceAt(w, from), u1 = surfaceAt(w, to);
+        const slice: WallSeg = { ...w, a: lerp(w.a, w.b, from), b: lerp(w.a, w.b, to), zMin: w.zMin, zMax: w.zMax };
+        if (w.profile) slice.profile = { bottomA: a.bottom, bottomB: b.bottom, topA: a.top, topB: b.top };
+        if (u0 !== undefined && u1 !== undefined) slice.surfaceBase = { a: u0, b: u1 };
+        result.push(slice);
+      };
+      for (let ci = 0; ci + 1 < unique.length; ci++) {
+        const part = intervals[ci]!, from = part.from, to = part.to;
+        if (!part.active.length) {
+          appendUncut(from, to);
+          continue;
+        }
+        {
+          const t0 = from, t1 = to;
+          const p = lerp(w.a, w.b, t0), q = lerp(w.a, w.b, t1), mid = lerp(p, q, 0.5);
+          type Band = { u0: number; u1: number; bottomA: number; bottomB: number; topA: number; topB: number };
+          let pieces: Band[] = [{ u0: 0, u1: 1, bottomA: profileAt(w, t0).bottom, bottomB: profileAt(w, t1).bottom, topA: profileAt(w, t0).top, topB: profileAt(w, t1).top }];
+          const valid = (band: Band): Band[] => {
+            const ha = band.topA - band.bottomA - 0.015, hb = band.topB - band.bottomB - 0.015;
+            if (ha > 0 && hb > 0) return [band];
+            if (ha <= 0 && hb <= 0) return [];
+            const crossAt = ha / (ha - hb), lo = ha > 0 ? 0 : crossAt, hi = ha > 0 ? crossAt : 1;
+            const lerpBand = (a: number, b: number, t: number) => a + (b - a) * t;
+            return [{
+              u0: lerpBand(band.u0, band.u1, lo), u1: lerpBand(band.u0, band.u1, hi),
+              bottomA: lerpBand(band.bottomA, band.bottomB, lo), bottomB: lerpBand(band.bottomA, band.bottomB, hi),
+              topA: lerpBand(band.topA, band.topB, lo), topB: lerpBand(band.topA, band.topB, hi),
+            }];
+          };
+          for (const v of part.active) {
+            if (!inside(mid, v.rings)) continue;
+            pieces = pieces.flatMap((piece) => {
+              const pa = lerp(p, q, piece.u0), pb = lerp(p, q, piece.u1);
+              const vbA = v.bottom(pa), vbB = v.bottom(pb), vtA = v.top(pa), vtB = v.top(pb);
+              const lower = { ...piece, topA: Math.min(piece.topA, vbA), topB: Math.min(piece.topB, vbB) };
+              const upper = { ...piece, bottomA: Math.max(piece.bottomA, vtA), bottomB: Math.max(piece.bottomB, vtB) };
+              return [...valid(lower), ...valid(upper)];
+            });
+          }
+          for (const piece of pieces) {
+            const s0 = t0 + (t1 - t0) * piece.u0, s1 = t0 + (t1 - t0) * piece.u1;
+            const a = lerp(w.a, w.b, s0), b = lerp(w.a, w.b, s1);
+            const surfaceA = surfaceAt(w, s0) ?? piece.bottomA, surfaceB = surfaceAt(w, s1) ?? piece.bottomB;
+            result.push({ ...w, a, b, zMin: Math.min(piece.bottomA, piece.bottomB), zMax: Math.max(piece.topA, piece.topB), finish: w.finish ?? "shaft", profile: { bottomA: piece.bottomA, bottomB: piece.bottomB, topA: piece.topA, topB: piece.topB }, surfaceBase: { a: surfaceA, b: surfaceB } });
+          }
         }
       }
     }
-  }
-  return result;
+    return result;
+  };
 }
 
 /** Clip an affine roof at the street underside without changing its pitch. */
