@@ -1397,9 +1397,31 @@ function compactShaftFascias(fascias: Layout["shaftFascias"], covered: WallSeg[]
     (floorId === undefined ? plane.covered : plane.panels).push(polygon);
   };
   for (const f of fascias) add(f.wall, f.floorId);
-  for (const w of covered) for (const plane of planes.values()) {
-    const distance = (p: XY) => Math.abs(-p.x * plane.u.y + p.y * plane.u.x - plane.offset);
-    if (distance(w.a) < 0.002 && distance(w.b) < 0.002) add(w, undefined, plane);
+  // Only planes near a covered wall can pass the distance and span checks.
+  // Include the 2 mm plane tolerance and projection snapping at cell edges.
+  const cells = new Map<string, Set<Plane>>();
+  for (const plane of planes.values()) {
+    const ax = plane.u.x * plane.min - plane.u.y * plane.offset, bx = plane.u.x * plane.max - plane.u.y * plane.offset;
+    const ay = plane.u.y * plane.min + plane.u.x * plane.offset, by = plane.u.y * plane.max + plane.u.x * plane.offset;
+    for (let x = Math.floor((Math.min(ax, bx) - 0.01) / 8); x <= Math.floor((Math.max(ax, bx) + 0.01) / 8); x++) {
+      for (let y = Math.floor((Math.min(ay, by) - 0.01) / 8); y <= Math.floor((Math.max(ay, by) + 0.01) / 8); y++) {
+        const key = `${x},${y}`, cell = cells.get(key);
+        if (cell) cell.add(plane);
+        else cells.set(key, new Set([plane]));
+      }
+    }
+  }
+  for (const w of covered) {
+    const nearby = new Set<Plane>();
+    for (let x = Math.floor(Math.min(w.a.x, w.b.x) / 8); x <= Math.floor(Math.max(w.a.x, w.b.x) / 8); x++) {
+      for (let y = Math.floor(Math.min(w.a.y, w.b.y) / 8); y <= Math.floor(Math.max(w.a.y, w.b.y) / 8); y++) {
+        for (const plane of cells.get(`${x},${y}`) ?? []) nearby.add(plane);
+      }
+    }
+    for (const plane of nearby) {
+      const distance = (p: XY) => Math.abs(-p.x * plane.u.y + p.y * plane.u.x - plane.offset);
+      if (distance(w.a) < 0.002 && distance(w.b) < 0.002) add(w, undefined, plane);
+    }
   }
   const out: Layout["shaftFascias"] = [];
   for (const plane of planes.values()) {
