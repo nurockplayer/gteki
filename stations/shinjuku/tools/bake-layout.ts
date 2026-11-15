@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { gzipSync } from "node:zlib";
+import { gunzipSync, gzipSync } from "node:zlib";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import { protectFareAndAccess } from "../scene/fare-fence.ts";
@@ -31,15 +31,15 @@ export function layoutBakedText(): string {
     snapshot: encodeLayoutSnapshot({ layout, protection }) } satisfies LayoutBake) + "\n";
 }
 export function bakeLayoutFile(check = false) {
-  const payload = gzipSync(layoutBakedText(), { level: 9 });
+  const text = layoutBakedText();
   const keyText = JSON.stringify({ sourceKey: layoutSourceKey() }) + "\n";
   if (check) {
-    if (!readFileSync(LAYOUT_BAKED_PATH).equals(payload) || readFileSync(keyPath, "utf8") !== keyText)
+    if (gunzipSync(readFileSync(LAYOUT_BAKED_PATH)).toString("utf8") !== text || readFileSync(keyPath, "utf8") !== keyText)
       throw new Error("layout bake is stale; run bake:layout");
   } else {
-    writeFileSync(LAYOUT_BAKED_PATH, payload);
+    writeFileSync(LAYOUT_BAKED_PATH, gzipSync(text, { level: 9 }));
     writeFileSync(keyPath, keyText);
   }
-  console.log(`${check ? "Checked" : "Wrote"} layout-baked.bin, ${payload.byteLength} gzip bytes`);
+  console.log(`${check ? "Checked" : "Wrote"} layout-baked.bin, ${readFileSync(LAYOUT_BAKED_PATH).byteLength} gzip bytes`);
 }
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) bakeLayoutFile(process.argv.includes("--check"));

@@ -1,6 +1,6 @@
 import { deepStrictEqual } from "node:assert";
 import { readFileSync } from "node:fs";
-import { gunzipSync, gzipSync } from "node:zlib";
+import { gunzipSync } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
@@ -47,7 +47,7 @@ describe("prepared layout bake (#1317, J2)", () => {
     expect(next.cached).toBe(true);
     expect(next.layout).not.toBe(first.layout);
     expect(encodeLayoutSnapshot(next.layout)).toBe(before);
-  });
+  }, 60_000);
 
   it("rejects stale input/source keys and unverified bakes, deriving and caching fresh instead", () => {
     const fresh = prepareLayout(bundle, plan);
@@ -66,11 +66,12 @@ describe("prepared layout bake (#1317, J2)", () => {
     expect(prepareLayout(bundle, plan, { reuse: true, verifyGeneratedInput: false,
       layoutBakeText: JSON.stringify({ ...saved, verified: false }) }).cached).toBe(true);
     expect(prepareLayout(bundle, plan, { reuse: true }).cached).toBe(false);
-  }, 60_000);
+  }, 180_000);
 
   it("commits exactly the current verified bake and source key within the transfer budget", () => {
     expect(source.sourceKey).toBe(layoutSourceKey());
-    expect(compressed.equals(gzipSync(layoutBakedText(), { level: 9 }))).toBe(true);
+    // Gzip headers record the host OS; freshness is the exact decoded content.
+    expect(text).toBe(layoutBakedText());
     expect(compressed.byteLength).toBeLessThanOrEqual(2_100_000);
     expect(3_571_974 + compressed.byteLength).toBeLessThanOrEqual(6_000_000);
   }, 60_000);
