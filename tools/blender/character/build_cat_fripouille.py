@@ -1996,6 +1996,57 @@ def round4_measurements(arm, body, records):
                 f"root peak-to-peak {bob:.3f} mm; high at 0/.5, low at .25/.75; head travel {travel:.3f} mm")
         else:
             row('T1',None,'trot cadence');row('T2',None,'trot bob')
+        grid = [min(samples, key=lambda s: abs(s[0]-i/128)) for i in range(128)]
+        worst_a = (0.0, 0.0, '', '')
+        rates = {'planted': (0.0, 0.0, ''), 'air': (0.0, 0.0, '')}
+        for i, (_, pose, metrics, _) in enumerate(grid):
+            _, next_pose, next_metrics, _ = grid[(i+1)%128]
+            _, _, next_four, _ = grid[(i+4)%128]
+            for leg in LEGS:
+                k = leg['key']
+                channels = {'bend': (metrics[k]['knee_deg'], next_metrics[k]['knee_deg']),
+                            'upper': (metrics[k]['upper_pitch_deg'], next_metrics[k]['upper_pitch_deg']),
+                            'lower': (metrics[k]['lower_pitch_deg'], next_metrics[k]['lower_pitch_deg']),
+                            'proximal': (math.degrees(pose['legs'][k]['proximal_pitch_rad']), math.degrees(next_pose['legs'][k]['proximal_pitch_rad']))}
+                for channel, (a, b) in channels.items():
+                    change = abs(math.degrees(math.remainder(math.radians(b-a), math.tau)))
+                    worst_a = max(worst_a, (change, i/128, k, channel))
+                state = 'planted' if any(supporting(gait, k, ((i+j)%128)/128) for j in range(5)) else 'air'
+                rates[state] = max(rates[state], (abs(next_four[k]['knee_deg']-metrics[k]['knee_deg']), i/128, k))
+        shape = (0.0, 0.0, '')
+        for leg in LEGS:
+            k = leg['key']
+            if run and leg['front']:
+                continue
+            start, end = gait['contacts'][k]
+            stance_bends = sorted(((p-start)%1, p, m[k]['knee_deg']) for p, q, m, v in samples
+                                   if (p-start)%1 <= end-start+1e-8)
+            peak = max(range(len(stance_bends)), key=lambda i: stance_bends[i][2]) if not run else 0
+            for i, (a, b) in enumerate(zip(stance_bends, stance_bends[1:])):
+                reversal = max(0.0, a[2]-b[2] if not run and i < peak else b[2]-a[2])
+                shape = max(shape, (reversal, a[1], k))
+        if run:
+            hero = .325 if name == 'run_a' else .45
+            hero_sample = min(samples, key=lambda s: abs(s[0]-hero))
+            hold = (0.0, 0.0, '')
+            fore = (0.0, 0.0, '')
+            for leg in LEGS:
+                k = leg['key']
+                baseline = hero_sample[2][k]['knee_deg']
+                for phase, pose, metrics, positions in samples:
+                    if abs(math.remainder(phase-hero, 1)) <= .035+1e-8:
+                        hold = max(hold, (abs(metrics[k]['knee_deg']-baseline), phase, k))
+                    if leg['front'] and (phase-hero)%1 <= (gait['contacts'][k][0]-hero)%1+1e-8:
+                        fore = max(fore, (metrics[k]['knee_deg'], phase, k))
+            hero_ok = hold[0] <= 10.001 and fore[0] <= 35.001
+            hero_text = f"hold {hold[0]:.3f} deg at {hold[1]:.4f} {hold[2]}; fore {fore[0]:.3f} deg at {fore[1]:.4f} {fore[2]}"
+        else:
+            hero_ok = False
+            hero_text = 'HOLD: trot hero phase is not specified'
+        row('R10', worst_a[0] <= 9.001 and rates['planted'][0] <= 10.001 and rates['air'][0] <= 25.001 and shape[0] <= .01 and hero_ok,
+            f"a {worst_a[0]:.3f} deg at {worst_a[1]:.4f} {worst_a[2]} {worst_a[3]}; "
+            f"b planted {rates['planted'][0]:.3f} deg at {rates['planted'][1]:.4f} {rates['planted'][2]}, air {rates['air'][0]:.3f} deg at {rates['air'][1]:.4f} {rates['air'][2]}; "
+            f"c reversal {shape[0]:.3f} deg at {shape[1]:.4f} {shape[2]}; d {hero_text}")
         gaps=[]
         for phase in [i/12 for i in range(12)]+([.870] if name=='run_a' else []):
             apply_authored_pose(arm,authored_pose(name,phase*gait['cycle_s']))
@@ -2025,7 +2076,10 @@ def authored_tuning_measurements(arm, body):
         head, tail, neck, head_angles, tail_angles = [], [], [], [], []
         swing = {"fore": 0.0, "hind": 0.0}
         worst = 0.0
-        phases = {i/240 for i in range(240)} | {k["phase"] for k in gait["poses"]}
+        phases = {i/240 for i in range(240)} | {i/128 for i in range(128)} | {k["phase"] for k in gait["poses"]}
+        if run:
+            hero = .325 if name == "run_a" else .45
+            phases |= {hero-.035, hero+.035}
         phases |= {p % 1 for pair in gait["contacts"].values() for p in pair}
         for phase in sorted(phases):
             pose = authored_pose(name, phase*gait["cycle_s"])
