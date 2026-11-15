@@ -26,6 +26,7 @@ import { stableHypot } from "./stable-hypot.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
+const markScene = (name: string) => { if (typeof performance !== "undefined") performance.mark(`gteki:scene:${name}`); };
 
 export interface BuiltStation {
   root: THREE.Group;
@@ -717,6 +718,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       texture.image = canvas;
     }
   }
+  markScene("build-textures");
   for (const texture of Object.values(wallMaps)) texture.wrapT = THREE.ClampToEdgeWrapping;
   for (const t of [concourseTiles, paidTiles, platformTiles, wallMaps, ceilingMaps]) for (const tex of Object.values(t)) (tex.anisotropy = aniso), track(tex);
   const mat = {
@@ -1774,6 +1776,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // for callers that want it (the lane app, tests); the shared explorer's scene drops `built`.
   layout = undefined as never;
   protection = undefined as never;
+  markScene("build-geometry");
   return built;
 }
 
