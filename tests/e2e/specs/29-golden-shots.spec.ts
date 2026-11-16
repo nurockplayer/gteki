@@ -43,6 +43,7 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
       if (page.isClosed()) { page = await context.newPage(); station = undefined; }
       if (station !== camera.station) {
         await openStation(page, camera.station, goldenQuery); station = camera.station;
+        await page.addStyleTag({ content: ".minimap { visibility: hidden !important; }" });
         nodeFloors = new Map(stationData(camera.station).graph.nodes.map((node) => [node.id, node.floorId]));
         tier = await hooks.quality(page);
         renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);

@@ -5,7 +5,7 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildScene, planBundle } from "../gteki/scene.ts";
 import { prepareLayout } from "../scene/build-cache.ts";
 import { escalatorShellGeometry, soffitGeometry, HEAD_BAND, SHELL_RISE, STREET_UNDERSIDE } from "../scene/build.ts";
-import { buildLayout, pointInRings, soffitHeight, type Plan, type SlabPoly, type XY, type XYZ } from "../scene/layout.ts";
+import { buildLayout, pointInRings, soffitHeight, RUN_WALL_OFFSET, type Plan, type SlabPoly, type XY, type XYZ } from "../scene/layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import baseline from "./fixtures/scene-digest.json" with { type: "json" };
 import { exactHash, geometryBytesHash, withCanvasStub } from "./helpers/scene-digest.ts";
@@ -56,6 +56,42 @@ describe("#49 render-only escalator enclosure", () => {
     const stairs = scene.root.children.find((child) => child.name === "walkable" && (child as THREE.Mesh<THREE.BufferGeometry, THREE.MeshStandardMaterial>).material.color.equals(new THREE.Color("#c7c2b8")))!;
     const ray = new THREE.Raycaster(origin, new THREE.Vector3(0, -1, 0), 0, 0.25);
     expect(castAll(ray, [stairs])[0]?.distance).toBeCloseTo(0.2, 3);
+  });
+
+  it("separates every stair tread side and stringer from its side-wall plane by at least 3 mm (#1243)", () => {
+    const meshes: THREE.Mesh[] = [];
+    scene.root.traverse((o) => { if (o instanceof THREE.Mesh) meshes.push(o); });
+    const stairMesh = meshes.find((m) => (m.material as THREE.Material).name === "mat.stair" && m.name === "walkable")!;
+    const stringerMesh = meshes.find((m) => (m.material as THREE.Material).name === "mat.nosing")!;
+    const stairs = layout.runs.filter((r) => r.mode === "stairs");
+    const stepCount = (r: typeof stairs[number]) => Math.abs(r.a.z - r.b.z) < 0.05 ? 1 : Math.max(2, Math.round(Math.abs(r.a.z - r.b.z) / 0.165));
+    const positions = stairMesh.geometry.attributes.position!;
+    // The tread boxes follow fascia geometry in this batch; each box has 24 vertices.
+    let cursor = positions.count - stairs.reduce((n, r) => n + stepCount(r) * 24, 0);
+    for (const r of stairs) {
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, length = Math.hypot(dx, dy);
+      const wallOffset = r.width / 2 + RUN_WALL_OFFSET;
+      for (let i = 0; i < stepCount(r) * 24; i++, cursor++) {
+        const lateral = (-(positions.getX(cursor) - r.a.x) * dy + (-positions.getZ(cursor) - r.a.y) * dx) / length;
+        expect(wallOffset - Math.abs(lateral), `${r.edgeId} tread vertex ${i}`).toBeGreaterThanOrEqual(0.003);
+      }
+    }
+    const byId = new Map(stairs.map((r) => [r.edgeId, r]));
+    const walls = layout.runWalls.filter((w) => byId.has(w.runEdgeId!));
+    const stringers = stringerMesh.geometry.attributes.position!;
+    // The retained wall pieces contribute the final four-vertex stringer quads.
+    cursor = stringers.count - walls.length * 4;
+    expect(walls.length).toBeGreaterThan(0);
+    for (const w of walls) {
+      const r = byId.get(w.runEdgeId!)!;
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, length = Math.hypot(dx, dy);
+      const side = Math.sign(-(w.a.x - r.a.x) * dy + (w.a.y - r.a.y) * dx);
+      for (let i = 0; i < 4; i++, cursor++) {
+        const inward = side * ((stringers.getX(cursor) - w.a.x) * dy - (-stringers.getZ(cursor) - w.a.y) * dx) / length;
+        expect(inward, `${r.edgeId} stringer vertex ${i}`).toBeGreaterThanOrEqual(0.003);
+        expect(inward).toBeLessThanOrEqual(0.007);
+      }
+    }
   });
 
   it("shares a roof and keeps only outer sides for antiparallel runs (#1086)", () => {
