@@ -39,7 +39,7 @@ import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
 import type { AcousticZone, SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
-import { buildWallProps, wallPropDrawRanges } from "@gteki/scene-api";
+import { WALKER_BODY, buildWallProps, wallPropDrawRanges } from "@gteki/scene-api";
 import wallPropPlacements from "./wall-props.ts";
 
 type ThreeNS = typeof THREE_NS;
@@ -67,7 +67,7 @@ const SPAWNS: { nodeId: string; headingDeg: number; label: string }[] = [
   { nodeId: "sw_h", headingDeg: 110, label: "西口（南）地下広場 West Exit (South) hall" },
 ];
 
-function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh) {
+function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: [THREE_NS.Vector3, THREE_NS.Vector3][]) {
   // Horizontal openings above 31 m TP are the tops of exit stairs (street daylight);
   // everything else is an opening into space the open data does not model.
   const src = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry;
@@ -76,13 +76,33 @@ function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh) {
   const beyond: number[] = [];
   const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
   const ab = new THREE.Vector3(), n = new THREE.Vector3();
+  const triangle = new THREE.Triangle();
+  const prisms = routes.map(([start, end]) => {
+    const length = Math.hypot(end.x - start.x, end.z - start.z);
+    const dx = length ? (end.x - start.x) / length : 1;
+    const dz = length ? (end.z - start.z) / length : 0;
+    const box = new THREE.Box3(
+      new THREE.Vector3(0, Math.min(start.y, end.y), -0.75),
+      new THREE.Vector3(length, Math.max(start.y, end.y) + WALKER_BODY.bodyTopM, 0.75),
+    );
+    return { start, dx, dz, box };
+  });
   for (let i = 0; i < pos.count; i += 3) {
     a.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
     b.fromBufferAttribute(pos, i + 1).applyMatrix4(mesh.matrixWorld);
     c.fromBufferAttribute(pos, i + 2).applyMatrix4(mesh.matrixWorld);
     n.subVectors(c, b).cross(ab.subVectors(a, b)).normalize();
     const cy = (a.y + b.y + c.y) / 3;
-    const target = Math.abs(n.y) > 0.9 && cy > 31 ? sky : beyond;
+    const isSky = Math.abs(n.y) > 0.9 && cy > 31;
+    // Keep the full stair segment's foot-to-head span open, not just its midpoint.
+    if (isSky && prisms.some(({ start, dx, dz, box }) => {
+      for (const [src, dst] of [[a, triangle.a], [b, triangle.b], [c, triangle.c]] as const) {
+        const x = src.x - start.x, z = src.z - start.z;
+        dst.set(x * dx + z * dz, src.y, -x * dz + z * dx);
+      }
+      return box.intersectsTriangle(triangle);
+    })) continue;
+    const target = isSky ? sky : beyond;
     target.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
   }
   const make = (arr: number[], band: boolean) => {
@@ -334,7 +354,7 @@ export function assembleCollision(
     m.userData.gteki_source = "plateau";
     meshesByRole.set(role, [...(meshesByRole.get(role) ?? []), m]);
     if (role === "portals") {
-      const { sky, beyond } = splitPortals(THREE, m);
+      const { sky, beyond } = splitPortals(THREE, m, routeSegments);
       const beyondMesh = new THREE.Mesh(beyond, o.materialFor("portal_beyond"));
       beyondMesh.userData.gteki_role = "portal_beyond";
       beyondMesh.userData.gteki_source = "boundary";
