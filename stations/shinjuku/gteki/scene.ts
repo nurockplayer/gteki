@@ -133,20 +133,41 @@ function crowdVector(T: typeof THREE, enuToRenderer: (point: { x: number; y: num
  * same reason as sceneLifecycle: the closures keep only the audio nodes and the train-audio sampler, never the
  * build layout or the built station (#968). Conditions and order are unchanged.
  */
-function stationAudio({ ambience, streetAmbience, stationSound, trainSound, acoustics, crowd, trainAudio }: {
-  ambience: ReturnType<typeof createAmbience> | null;
-  streetAmbience: ReturnType<typeof createStreetAmbience> | null;
-  stationSound: ReturnType<typeof createStationSound> | null;
-  trainSound: ReturnType<typeof createTrainSound> | null;
-  acoustics: ReturnType<typeof createZoneAcoustics> | null;
-  crowd: Crowd | null;
-  trainAudio: BuiltStation["trainAudio"];
-}) {
+function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters<BuildScene>[0], crowd: Crowd | null, trainAudio: BuiltStation["trainAudio"]) {
+  let acoustics: ReturnType<typeof createZoneAcoustics> | null = null;
+  let ambience: ReturnType<typeof createAmbience> | null = null;
+  let streetAmbience: ReturnType<typeof createStreetAmbience> | null = null;
+  let stationSound: ReturnType<typeof createStationSound> | null = null;
+  let trainSound: ReturnType<typeof createTrainSound> | null = null;
+  const startAudio: NonNullable<StationScene["startAudio"]> = (audio) => {
+    if (acoustics) return;
+    acoustics = createZoneAcoustics(audio.context, audio.destination);
+    ambience = createAmbience(audio.context, acoustics.input);
+    streetAmbience = createStreetAmbience(audio.context, acoustics.input);
+    const graphNodes = bundle.nodes;
+    const siteAt = (n: (typeof graphNodes)[number]): V3 => {
+      const [x, y, z] = enuToRenderer({ x: n.position.x, y: n.position.y, z: n.position.z ?? n.renderZ ?? 0 });
+      return { x, y, z };
+    };
+    stationSound = createStationSound({
+      context: audio.context,
+      destination: acoustics.input,
+      isMuted: audio.isMuted,
+      stationNameJa: "新宿",
+      sites: {
+        gates: graphNodes.filter((n) => n.kind === "ticket_gate").map(siteAt),
+        announce: graphNodes.filter((n) => n.kind === "ticket_gate" || n.kind === "escalator_end").map(siteAt),
+        chime: [],
+      },
+    });
+    trainSound = createTrainSound({ context: audio.context, destination: acoustics.input, isMuted: audio.isMuted, chimeAt: stationSound.chimeAt });
+  };
+  if (initialAudio) startAudio(initialAudio);
   let zone: AcousticZone = "passage";
   let trainAudioElapsed = 0.25;
-  const on = ambience !== null || streetAmbience !== null || stationSound !== null;
   return {
-    stepAudio: on ? (dt: number, camera?: THREE.Camera) => {
+    startAudio,
+    stepAudio: (dt: number, camera?: THREE.Camera) => {
       ambience?.update({ nearby: crowd?.nearby() ?? 6, openness: ZONE_ACOUSTICS[zone].openness });
       streetAmbience?.update();
       stationSound?.update(dt, camera);
@@ -155,15 +176,15 @@ function stationAudio({ ambience, streetAmbience, stationSound, trainSound, acou
         trainAudioElapsed = 0;
         trainSound.update(trainAudio(), camera.position);
       }
-    } : null,
-    disposeAudio: on ? () => {
+    },
+    disposeAudio: () => {
       trainSound?.dispose();
       stationSound?.dispose();
       ambience?.dispose();
       streetAmbience?.dispose();
       acoustics?.dispose();
-    } : null,
-    setAcousticZone: acoustics ? (next: AcousticZone) => { zone = next; acoustics.setZone(next); streetAmbience?.setZone(next); } : null,
+    },
+    setAcousticZone: (next: AcousticZone) => { zone = next; acoustics?.setZone(next); streetAmbience?.setZone(next); },
   };
 }
 
@@ -462,29 +483,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   }
   markScene("shops-placement");
 
-  // Explorer ambience and station sound (#859): an original bed plus gate taps, an original approach
-  // chime and our own ja-JP announcements. Sites come from the bundle's graph nodes, converted to renderer space.
-  const acoustics = ctx.audio ? createZoneAcoustics(ctx.audio.context, ctx.audio.destination) : null;
-  const ambience = ctx.audio && acoustics ? createAmbience(ctx.audio.context, acoustics.input) : null;
-  const streetAmbience = ctx.audio && acoustics ? createStreetAmbience(ctx.audio.context, acoustics.input) : null;
-  const graphNodes = ctx.bundle.nodes;
-  const siteAt = (n: (typeof graphNodes)[number]): V3 => {
-    const [x, y, z] = ctx.enuToRenderer({ x: n.position.x, y: n.position.y, z: n.position.z ?? n.renderZ ?? 0 });
-    return { x, y, z };
-  };
-  const stationSound = ctx.audio && acoustics ? createStationSound({
-    context: ctx.audio.context,
-    destination: acoustics.input,
-    isMuted: ctx.audio.isMuted,
-    stationNameJa: "新宿",
-    sites: {
-      gates: graphNodes.filter((n) => n.kind === "ticket_gate").map(siteAt),
-      announce: graphNodes.filter((n) => n.kind === "ticket_gate" || n.kind === "escalator_end").map(siteAt),
-      chime: [],
-    },
-  }) : null;
-  const trainSound = ctx.audio && acoustics && stationSound ? createTrainSound({ context: ctx.audio.context, destination: acoustics.input, isMuted: ctx.audio.isMuted, chimeAt: stationSound.chimeAt }) : null;
-  const audio = stationAudio({ ambience, streetAmbience, stationSound, trainSound, acoustics, crowd, trainAudio: built.trainAudio });
+  const audio = stationAudio(ctx, crowd, built.trainAudio);
 
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
     const n = nodes.get(id);
@@ -512,7 +511,8 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
-    ...(audio.setAcousticZone ? { setAcousticZone: audio.setAcousticZone } : {}),
+    startAudio: audio.startAudio,
+    setAcousticZone: audio.setAcousticZone,
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
     ...(built.afterRender ? { afterRender: built.afterRender } : {}),
     ...(crowd ? {

@@ -3,6 +3,8 @@ import { installBootFrameProbe, overlayGrid, PROBE_SCRIPT, save, settleFrames, w
 
 type PhaseTimeline = { timeline: { t: number; phase: string }[]; maxRafGapMs: number };
 const records = new WeakMap<Page, { diagnostics: Diagnostics; pages: PhaseTimeline[] }>();
+// Software-rendered CI loads plus 60 s frame-settle waits run 4+ min per test; the 240 s default tore the browser down (#1376).
+test.describe.configure({ timeout: 480_000 });
 
 async function collectTimeline(page: Page): Promise<PhaseTimeline | null> {
   let timer: ReturnType<typeof setTimeout>;
