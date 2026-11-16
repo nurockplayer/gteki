@@ -303,6 +303,27 @@ Provisional until the Owner sees the walk video.
 
 Provisional until the Owner sees the walk video.
 
+### D14 (2026-11-17 01:1x JST) Cat gait (#1347): run A is the default, trot A waits
+**The Owner picked run A over run B on 2026-11-16 22:2x JST** (rule 27c: both were built behind `?next=1&catGait=a|b`; the Owner picked from the run comparison clip, side and rear views). The pick covers the run only: the clip had no trot.
+
+**#1390, the flip:**
+1. **Head 37c84445 (walk, trot and run all A): not accepted.** From behind, in the default follow camera (boom 2.4 m, fov 50), trot A shows a black slit under the root of the tail for about half of every stride: 59–97 black px in a 90×70 px window (device scale 2) in 9 of every 17 frames; the legacy trot shows 0 px in 40 of 40. The trot is the gait of the guided walk (1.6 m/s) and of plain W (1.45 m/s), so it is what a visitor watches for most of the visit. Trot A also holds the tail about 45° up, which swings 45–70° in 0.2 s at every start, stop and Shift press.
+2. **Head 1d1c0f3a (legacy walk and trot + run A): accepted for the look.** Production build, GPU, from behind: trot 40 of 40 frames and idle → trot → run → trot → stop 129 of 129 frames with 0 px in the window; the legacy trot ↔ run A crossfades read clean in the default and the `?next=1` framing. `?next=1&catGait=a` still plays trot A for judging; `b` stays preview-only; `?catGait=legacy` is all legacy.
+
+**Departures from the real animal in run A, deliberate (rule 27d; this list went to the Owner with the clip):**
+- The body rises up to about 25 mm in flight, 2.5–4 times the true ballistic arc.
+- There is a gathered flight as well as the extended one; all four feet are off the ground for 30% of the cycle or more.
+- Reason for both: the flight has to read from the follow camera behind the cat.
+
+**Not departures, defects still open:** the trot A slit (#1398; trot A becomes the default only with 0 px in the window over 40 rear frames in the default and the `?next=1` framing, and my look at the sheet); rump and flank specks in the run from behind, the trot B chest notch and the hooked hind paw at extension (#1379); the rigid tail; the rig's overall look, which the Owner finds unnatural (#1389).
+
+**Lesson:** a flip is judged on every gait it makes the default, from behind, in the default framing. I had judged the trot from the side only.
+
+![Trot A from behind at 37c84445 (frames 3, 4, 12, 21, 22, 37) beside the legacy trot (frames 3, 12)](live/2026-11-17-cat-trot-a-rear-slit.jpg)
+![Default at 1d1c0f3a from behind: start, trot → run, run A, run → trot, stop](live/2026-11-17-cat-default-rear-seq.jpg)
+
+Provisional until the Owner sees the walk video.
+
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 
 1. Flat ambient light: fixtures light nothing, there are no floor pools or contact shadows, and pillars, walls and floor share one value band.
