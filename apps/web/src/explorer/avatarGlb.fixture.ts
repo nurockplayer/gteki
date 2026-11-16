@@ -43,6 +43,27 @@ export function catAvatarFixture() {
   return asset;
 }
 
+/** Cat gait integration fixture with the GLB node extras used by loadGlbAvatar. */
+export function catGaitAvatarFixture(options: { variants?: boolean; runA?: boolean } = {}) {
+  const asset = catAvatarFixture();
+  const pose = (name: string, value: number) => new THREE.AnimationClip(name, 1, [
+    new THREE.NumberKeyframeTrack("spine.rotation[z]", [0, 1], [value, value]),
+  ]);
+  asset.animations = [
+    pose("idle", 0), pose("sit", 0), pose("walk", 0),
+    pose("trot", 0.1), pose("run", 0.2),
+    pose("trot_a", 0.3), ...(options.runA === false ? [] : [pose("run_a", 0.4)]),
+    pose("trot_b", 0.5), pose("run_b", 0.6),
+  ];
+  if (options.variants !== false) {
+    asset.spine.userData.gteki_cat.variants = {
+      trot_a: { calib_mps: 1.5 }, run_a: { calib_mps: 3 },
+      trot_b: { calib_mps: 2 }, run_b: { calib_mps: 4 },
+    };
+  }
+  return asset;
+}
+
 export function fadeUniform(material: THREE.Material): THREE.IUniform {
   const shader = { uniforms: {} as Record<string, THREE.IUniform>, fragmentShader: THREE.ShaderLib.standard.fragmentShader };
   material.onBeforeCompile(shader as THREE.WebGLProgramParametersWithUniforms, null as unknown as THREE.WebGLRenderer);
