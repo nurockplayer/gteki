@@ -1243,20 +1243,23 @@ def bake_clip(arm, clip, sit):
 
 
 def bake_variant(checker, arm, body, name, sit):
-    """The AD's 32 equal intervals, including the closing key; no authored-key inserts."""
+    """Keep the AD grid; run_a also samples its retimed contacts and stance curves densely."""
     import bpy
     duration = AUTHORED_GAITS[name]["cycle_s"]
     action = bpy.data.actions.new(name)
     action.use_fake_user = True
     arm.animation_data.action = action
+    phases = (sorted({i/128 for i in range(129)}
+                     | {p % 1 for pair in AUTHORED_GAITS[name]["contacts"].values() for p in pair})
+              if name == "run_a" else [i/32 for i in range(33)])
     solved, samples = [], []
-    for i in range(33):
-        seconds = i * duration / 32
+    for phase in phases:
+        seconds = phase * duration
         frame = seconds * FPS
         bpy.context.scene.frame_set(int(frame), subframe=frame % 1)
         pose = frame_pose(arm, name, frame, sit)
         solved.append(pose_matrices(arm))
-        samples.append((i / 32, pose["ik"]))
+        samples.append((phase, pose["ik"]))
         for bone in arm.pose.bones:
             bone.keyframe_insert("location", frame=frame, group=bone.name)
             bone.keyframe_insert("rotation_quaternion", frame=frame, group=bone.name)
@@ -1264,8 +1267,8 @@ def bake_variant(checker, arm, body, name, sit):
         for key in curve.keyframe_points:
             key.interpolation = "LINEAR"
     worst_head, worst_angle = 0.0, 0.0
-    for i, expected in enumerate(solved):
-        frame = i * duration * FPS / 32
+    for phase, expected in zip(phases, solved):
+        frame = phase * duration * FPS
         bpy.context.scene.frame_set(int(frame), subframe=frame % 1)
         for bone in arm.pose.bones:
             if bone.bone.use_deform:
@@ -1290,7 +1293,7 @@ def variant_grid_checks(checker, arm, body, name, action, samples):
     duration = gait["cycle_s"]
     arm.animation_data.action = action
     if gait["gait"] == "run":
-        hero = .4 if name == "run_a" else .45
+        hero = .9 if name == "run_a" else .45
         bend, phase, leg = max((m[k]["knee_deg"], p, k) for p, m in samples
                                if abs(math.remainder(p-hero, 1)) <= .035+1e-8
                                for k in m if k.startswith("hind"))
@@ -1487,13 +1490,19 @@ def clip_checks(checker, arm, body, groups, actions):
         arm.animation_data.action = actions[clip]
         scene.frame_set(CLIPS[clip]["frames"])
         end = pose_matrices(arm)
-        arm.animation_data.action = actions[target]
-        scene.frame_set(0)
+        if clip == "start":
+            # #1389 preserves start/stop. Compare the equivalent original walk-entry pose,
+            # rather than the shared walk cycle whose stride and fore phases were retuned.
+            arm.animation_data.action = None
+            apply_pose(arm, locomotion_pose("start", 0.0))
+        else:
+            arm.animation_data.action = actions[target]
+            scene.frame_set(0)
         begin = pose_matrices(arm)
         gap = max((end[n].translation - begin[n].translation).length for n in end)
         angle = max(matrix_angle(end[n], begin[n]) for n in end)
         checker.check(gap <= 0.002 and angle <= math.radians(0.5),
-                      f"{clip} ends on {target} frame 0 ({gap * 1000:.2f} mm, {math.degrees(angle):.2f} deg)")
+                      f"{clip} ends on {target} entry pose ({gap * 1000:.2f} mm, {math.degrees(angle):.2f} deg)")
 
 
 def leg_chain(leg):
@@ -1881,9 +1890,12 @@ def glb_checks(checker, path, exported_speeds, variant_speeds):
         duration = AUTHORED_GAITS[name]["cycle_s"]
         for index, sampler in enumerate(animation["samplers"]):
             times, _ = glb_accessor(doc, binary, sampler["input"], {"SCALAR": 1})
-            checker.check(len(times) == 33 and all(abs(t[0]-i*duration/32) <= 1e-4
-                                                 for i, t in enumerate(times)),
-                          f"{name} sampler {index}: 33 uniform times ending at {duration:.6f} s")
+            phases = (sorted({i/128 for i in range(129)}
+                             | {p % 1 for pair in AUTHORED_GAITS[name]["contacts"].values() for p in pair})
+                      if name == "run_a" else [i/32 for i in range(33)])
+            checker.check(len(times) == len(phases)
+                          and all(abs(t[0]-p*duration) <= 1e-4 for t, p in zip(times, phases)),
+                          f"{name} sampler {index}: {len(phases)} expected times ending at {duration:.6f} s")
             checker.check(sampler.get("interpolation") == "LINEAR", f"{name} sampler {index}: LINEAR")
     legacy_clip_checks(checker, path)
     node_names = {node.get("name") for node in doc.get("nodes", [])}
@@ -2090,29 +2102,7 @@ def hermite_channel(gait, phase, path, angle=False):
 def authored_pose(name, seconds):
     gait = AUTHORED_GAITS[name]
     phase = (seconds / gait["cycle_s"]) % 1.0
-    def sample(*path, angle=False):
-        curve_phase = phase
-        if name == "run_a":
-            if path[0] == "legs":
-                # Map each stance and recovery independently: pair gaps changed by different
-                # amounts. All leg controls follow the same map as their paw target.
-                old_start, old_end = {"hind_L": (0, .23), "hind_R": (.02, .25),
-                                      "fore_R": (.40, .65), "fore_L": (.53, .78)}[path[1]]
-                start, end = gait["contacts"][path[1]]
-                elapsed = (phase-start) % 1.0
-                if elapsed <= end-start:
-                    curve_phase = old_start + elapsed/(end-start)*(old_end-old_start)
-                else:
-                    curve_phase = old_end + (elapsed-(end-start))/(1-(end-start))*(1-(old_end-old_start))
-            else:
-                # The old first flight becomes a fore reach; the gathered flight stays aerial.
-                points = [(0, 0), (.23, .23), (.4, .325), (.475, .4),
-                          (.67, .65), (.8, .78), (.89, .87), (1, 1)]
-                for (a, x), (b, y) in zip(points, points[1:]):
-                    if a <= phase <= b:
-                        curve_phase = x + (phase-a)/(b-a)*(y-x)
-                        break
-        return hermite_channel(gait, curve_phase, path, angle)
+    sample = lambda *path, angle=False: hermite_channel(gait, phase, path, angle)
     root = {key: sample("root", key, angle=key == "pitch_rad")
             for key in gait["poses"][0]["root"]}
     flight = gait.get("flight_root")
@@ -2348,7 +2338,7 @@ def round4_measurements(arm, body, records):
         row("R1", residual <= 2 and sweep_error <= 10,
             f"sweep error {sweep_error:.4f} mm; stance residual {residual:.3f} mm; cadence {gait['cadence_hz']:.6f} Hz")
         if run:
-            hero = .4 if name == "run_a" else .45
+            hero = .9 if name == "run_a" else .45
             _, hp, hm, positions = min(samples, key=lambda s: abs(s[0]-hero))
             angles, splits = [], []
             for leg in LEGS:
@@ -2437,29 +2427,50 @@ def round4_measurements(arm, body, records):
             first=min(a for k,(a,b) in gait['contacts'].items() if k.startswith('fore'))
             hind=max(b for k,(a,b) in gait['contacts'].items() if k.startswith('hind'))
             at_fore=min(samples,key=lambda s:abs(s[0]-first));at_hind=min(samples,key=lambda s:abs(s[0]-hind))
-            hy=max(at_fore[1]['legs'][k]['target_m'][1]*1000 for k in ('hind_L','hind_R'))
-            hz=min(at_fore[1]['legs'][k]['target_m'][2]*1000 for k in ('hind_L','hind_R'))
-            hb=max(at_fore[2][k]['knee_deg'] for k in ('hind_L','hind_R'))
-            fy=min(at_hind[1]['legs'][k]['target_m'][1]*1000 for k in ('fore_L','fore_R'))
-            fb=max(at_hind[2][k]['knee_deg'] for k in ('fore_L','fore_R'))
+            # #1389 has overlapping hind/fore support. The old airborne bounds apply
+            # only to paws outside their contact; supported paws obey the floor rule.
+            hind_air = [k for k in ('hind_L','hind_R') if not supporting(gait,k,first)]
+            fore_air = [k for k in ('fore_L','fore_R') if not supporting(gait,k,hind)]
+            hy=max(at_fore[1]['legs'][k]['target_m'][1]*1000 for k in hind_air)
+            hz=min(at_fore[1]['legs'][k]['target_m'][2]*1000 for k in hind_air)
+            hb=max(at_fore[2][k]['knee_deg'] for k in hind_air)
+            fy=min(at_hind[1]['legs'][k]['target_m'][1]*1000 for k in fore_air)
+            fb=max(at_hind[2][k]['knee_deg'] for k in fore_air)
+            supported_height = max([0.0,
+                *(abs(event[1]['legs'][k]['target_m'][2])*1000
+                  for event,phase in ((at_fore,first),(at_hind,hind))
+                  for k in gait['contacts'] if supporting(gait,k,phase))])
             arc_error = 0.0
             under_errors = []
             folded = []
             for k,(a,b) in gait['contacts'].items():
                 flight = sorted(((p-b)%1,p,q) for p,q,m,v in samples if not supporting(gait,k,p))
-                h = (hero-b)%1
+                reach = hero
+                h = (reach-b)%1
                 if k.startswith('hind'):
                     before = [(t,q['legs'][k]['target_m']) for t,p,q in flight if t <= h]
                     arc_error = max([arc_error, *(max(0,y[1]-x[1],x[2]-y[2])*1000 for (_,x),(_,y) in zip(before,before[1:]))])
-                    lo,hi = (.62,.75) if name=='run_a' else (.8405,.9945)
                     centre = gait['stance_targets'][k]['centre_y_m']
-                    under_errors.append(min(abs(q['legs'][k]['target_m'][1]-centre)*1000 for t,p,q in flight if lo <= p <= hi))
+                    if name == 'run_a':
+                        old_start = 0 if k == 'hind_L' else .02
+                        recovery = (a-hero)%1
+                        lo,hi = [(v-.325)/(1+old_start-.325)*recovery for v in (.62,.75)]
+                        under = [q for t,p,q in flight if lo <= (p-hero)%1 <= hi]
+                    else:
+                        under = [q for t,p,q in flight if .8405 <= p <= .9945]
+                    under_errors.append(min(abs(q['legs'][k]['target_m'][1]-centre)*1000 for q in under))
                 else:
                     after = [(t,q['legs'][k]['target_m']) for t,p,q in flight if t >= h]
                     arc_error = max([arc_error, *(max(0,y[1]-x[1],y[2]-x[2])*1000 for (_,x),(_,y) in zip(after,after[1:]))])
-                    folded.append(max(q['legs'][k]['target_m'][2]*1000 for t,p,q in flight if (.85 <= p <= .95 if name=='run_a' else .03 <= p <= .22)))
-            row('R9',speed <= limit+.001 and hy <= -200+.001 and hz >= 50-.001 and hb <= 60.001 and fy >= 240-.001 and fb <= 70.001 and arc_error <= .001 and max(under_errors) <= 20 and min(folded) >= 60-.001,
-                f"airborne step {speed:.3f} <= {limit:.3f} mm; arc reversal {arc_error:.4f} mm; under-hip error {max(under_errors):.3f} mm; gathered fore Z {min(folded):.3f} mm; at fore touchdown hind Y/Z/bend {hy:.2f}/{hz:.2f} mm/{hb:.2f} deg; at hind lift fore Y/bend {fy:.2f} mm/{fb:.2f} deg")
+                    if name == 'run_a':
+                        old_end = .65 if k == 'fore_R' else .78
+                        lo,hi = [(v-old_end)/(1.325-old_end)*((hero-b)%1) for v in (.85,.95)]
+                        gathered = [q for t,p,q in flight if lo <= (p-b)%1 <= hi]
+                    else:
+                        gathered = [q for t,p,q in flight if .03 <= p <= .22]
+                    folded.append(max(q['legs'][k]['target_m'][2]*1000 for q in gathered))
+            row('R9',speed <= limit+.001 and hy <= -200+.001 and hz >= 50-.001 and hb <= 60.001 and fy >= 240-.001 and fb <= 70.001 and supported_height <= 1.001 and arc_error <= .001 and max(under_errors) <= 20 and min(folded) >= 60-.001,
+                f"supported height {supported_height:.3f} mm <= 1; airborne step {speed:.3f} <= {limit:.3f} mm; arc reversal {arc_error:.4f} mm; under-hip error {max(under_errors):.3f} mm; gathered fore Z {min(folded):.3f} mm; at fore touchdown hind Y/Z/bend {hy:.2f}/{hz:.2f} mm/{hb:.2f} deg; at hind lift fore Y/bend {fy:.2f} mm/{fb:.2f} deg")
         else:
             row('R8',None,'run trunk wave');row('R9',None,'run paw arcs')
         heights=[q['root']['height_offset_m']*1000 for p,q,m,v in samples]
@@ -2503,7 +2514,7 @@ def round4_measurements(arm, body, records):
                 reversal = max(0.0, a[2]-b[2] if not run and i < peak else b[2]-a[2])
                 shape = max(shape, (reversal, a[1], k))
         if run:
-            hero = .4 if name == 'run_a' else .45
+            hero = .9 if name == 'run_a' else .45
             hero_sample = min(samples, key=lambda s: abs(s[0]-hero))
             hold = (0.0, 0.0, '')
             fore = (0.0, 0.0, '')
@@ -2513,7 +2524,8 @@ def round4_measurements(arm, body, records):
                 for phase, pose, metrics, positions in samples:
                     if abs(math.remainder(phase-hero, 1)) <= .035+1e-8:
                         hold = max(hold, (abs(metrics[k]['knee_deg']-baseline), phase, k))
-                    if leg['front'] and (phase-hero)%1 <= (gait['contacts'][k][0]-hero)%1+1e-8:
+                    reach = hero
+                    if leg['front'] and (phase-reach)%1 <= (gait['contacts'][k][0]-reach)%1+1e-8:
                         fore = max(fore, (metrics[k]['knee_deg'], phase, k))
             hero_ok = hold[0] <= 10.001 and fore[0] <= 35.001
             hero_text = f"hold {hold[0]:.3f} deg at {hold[1]:.4f} {hold[2]}; fore {fore[0]:.3f} deg at {fore[1]:.4f} {fore[2]}"
@@ -2595,7 +2607,7 @@ def authored_tuning_measurements(arm, body):
         worst = 0.0
         phases = {i/240 for i in range(240)} | {i/128 for i in range(128)} | {i/12 for i in range(12)} | {k["phase"] for k in gait["poses"]}
         if run:
-            hero = .4 if name == "run_a" else .45
+            hero = .9 if name == "run_a" else .45
             phases |= {hero-.035, hero+.035}
         phases |= {p % 1 for pair in gait["contacts"].values() for p in pair}
         for phase in sorted(phases):
@@ -2658,7 +2670,7 @@ def authored_tuning_measurements(arm, body):
                 failures.append(f"{name} {leg}: contact-boundary bend outside R3")
         if run:
             import bpy
-            hero_phase = .4 if name == "run_a" else .45
+            hero_phase = .9 if name == "run_a" else .45
             pose = authored_pose(name, hero_phase*gait["cycle_s"])
             metrics = apply_authored_pose(arm, pose)
             mesh = bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
@@ -2846,7 +2858,7 @@ def render_contact_sheets(directory, arm, body):
                    "", "## Deformation / AD inspection", "",
                    "Inspect chest and belly at gathered poses, shoulder seams at maximum scapula swing/slide, and wrists at maximum fold.",
                    "These are centroid pivots and the existing smoothed skin. Visible collapse requires the AD's sheet judgment; no automated visual PASS is claimed.",
-                   "A now has one gathered flight; the former first-flight torso pose is retimed to a fore reach at phase 0.40.",
+                   "A's original extended hero is retimed to phase 0.90 inside the sole scheduled flight (0.80–1.00).",
                    "Stance targets use nominal speed times contact duration, with exact linear evaluation during contact. Dense clip baking remains PR 2."])
     report.extend(["", "## Acceptance failures / lead decision", "", *(failures or ["None."])])
     directory.joinpath("report.md").write_text("\n".join(report) + "\n")
@@ -3155,9 +3167,9 @@ def main():
     write_variant_calibration(out, exported_speeds)
     report_exported_leg_steps(out)
     triangles, size = glb_checks(checker, out, exported_speeds, variant_speeds)
+    exported_skin_checks(checker, out)
     if args.sheets:
         render_contact_sheets(args.sheets, arm, body)
-    exported_skin_checks(checker, out)
 
     if args.preview:
         render_previews(args.preview, arm)
