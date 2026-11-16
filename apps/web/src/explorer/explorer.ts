@@ -554,6 +554,11 @@ export class Explorer {
 
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
+    this.audioUnlock = () => {
+      if (this.ensureAudio()) void this.audio!.context.resume();
+      this.removeAudioUnlock();
+    };
+    for (const type of AUDIO_UNLOCK_EVENTS) window.addEventListener(type, this.audioUnlock, { capture: true });
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
@@ -1417,7 +1422,7 @@ export class Explorer {
     const manager = new THREE.LoadingManager();
     manager.setURLModifier(fencedUrlResolver(station.assetUrls, refused));
     const fenceError = (err: unknown) => refused.length ? new Error(`blocked asset request outside station folder: ${refused.join(", ")}`) : err;
-    const audioBus = this.ensureAudio() ? this.newStationAudioBus() : null;
+    const audioBus = this.audio ? this.newStationAudioBus() : null;
     const ctx: SceneContext = {
       THREE,
       bundle,
@@ -1468,6 +1473,7 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
+    if (this.audio) this.startStationAudio();
     if (this.catAvatar) {
       built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
       // The crowd's distance fade must reach GTAO's depth/normal buffers too (high tier only).
@@ -2913,6 +2919,7 @@ export class Explorer {
   startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = [], destination: string | null = null): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
+    this.ensureAudio();
     this.setOpeningShot(null);
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
@@ -3801,14 +3808,15 @@ export class Explorer {
     } catch {
       return false;
     }
-    // Browsers keep audio suspended until a user gesture.
-    const unlock = () => {
-      void this.audio?.context.resume();
-      this.removeAudioUnlock();
-    };
-    this.audioUnlock = unlock;
-    for (const type of AUDIO_UNLOCK_EVENTS) window.addEventListener(type, unlock, { capture: true });
+    this.startStationAudio();
     return true;
+  }
+
+  private startStationAudio(): void {
+    if (!this.audio || !this.stationScene?.startAudio) return;
+    const destination = this.stationAudio ?? this.newStationAudioBus();
+    this.stationScene.startAudio({ context: this.audio.context, destination, isMuted: () => this.muted });
+    this.stationScene.setAcousticZone?.(this.zone);
   }
 
   private removeAudioUnlock(): void {
