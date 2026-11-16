@@ -1,5 +1,7 @@
+import fs from "node:fs";
+import path from "node:path";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { installBootFrameProbe, overlayGrid, PROBE_SCRIPT, save, settleFrames, waitBootLift, watch, type Diagnostics } from "../lib/gteki";
+import { ARTIFACTS, installBootFrameProbe, overlayGrid, PROBE_SCRIPT, save, settleFrames, waitBootLift, watch, type Diagnostics } from "../lib/gteki";
 
 type PhaseTimeline = { timeline: { t: number; phase: string }[]; maxRafGapMs: number };
 const records = new WeakMap<Page, { diagnostics: Diagnostics; pages: PhaseTimeline[] }>();
@@ -20,8 +22,12 @@ async function collectTimeline(page: Page): Promise<PhaseTimeline | null> {
   }
 }
 
-test.beforeEach(async ({ page }) => {
-  records.set(page, { diagnostics: watch(page), pages: [] });
+test.beforeEach(async ({ page }, info) => {
+  // Startup errors are expected with WebGL disabled; keep them out of diagnostics.
+  const diagnostics = info.title === "no WebGL (J14) @phone"
+    ? { console: [], pageErrors: [], failedRequests: [] }
+    : watch(page);
+  records.set(page, { diagnostics, pages: [] });
   await installBootFrameProbe(page);
   await page.addInitScript(() => {
     const w = window as any;
@@ -65,6 +71,56 @@ async function ready(page: Page, url: string, info: TestInfo) {
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
   await waitBootLift(page, info);
 }
+
+function recordJ14(info: TestInfo, record: Record<string, unknown>) {
+  const out = path.join(ARTIFACTS, "journey", info.project.name);
+  fs.mkdirSync(out, { recursive: true });
+  const file = path.join(out, "j14.json");
+  const previous = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : { j14: {} };
+  const j14 = { ...previous.j14, ...record };
+  fs.writeFileSync(file, JSON.stringify({ j14 }, null, 2));
+  console.log(`J14 (report): ${info.project.name} ${JSON.stringify(j14)}`);
+}
+
+test("release hygiene (J14) @phone", async ({ page }, info) => {
+  await ready(page, "/", info);
+  const primary = page.locator(".cold-open .primary");
+  await expect(primary).toBeVisible();
+  await page.locator(".credit-btn").click({ timeout: 60_000 });
+  const coverage = page.locator("dialog.coverage");
+  await expect(coverage).toBeVisible();
+  const links = await coverage.locator("a[href]:visible").evaluateAll((anchors) => anchors.map((anchor) => ({
+    text: anchor.textContent?.trim(),
+    host: new URL((anchor as HTMLAnchorElement).href).host,
+  })));
+  await coverage.locator(".close").click({ timeout: 60_000 });
+  await expect(coverage).toBeHidden();
+  const before = { lang: await page.locator("html").getAttribute("lang"), primary: await primary.innerText() };
+  await page.locator("button.lang").click({ timeout: 60_000 });
+  const after = { lang: await page.locator("html").getAttribute("lang"), primary: await primary.innerText() };
+  await page.locator("button.lang").click({ timeout: 60_000 });
+  recordJ14(info, { credits: { visibleLinks: links.length, links }, language: { before, after } });
+  expect.soft(links.length).toBeGreaterThanOrEqual(1);
+  expect([before.lang, after.lang].sort()).toEqual(["en", "ja"]);
+  expect(after.primary).not.toBe(before.primary);
+  await expect(page.locator("html")).toHaveAttribute("lang", before.lang!);
+  await expect(primary).toHaveText(before.primary);
+});
+
+test("no WebGL (J14) @phone", async ({ page }, info) => {
+  await page.addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (kind: string, ...args: unknown[]) {
+      if (["webgl", "webgl2", "experimental-webgl"].includes(kind)) return null;
+      return Reflect.apply(getContext, this, [kind, ...args]);
+    };
+  });
+  await page.goto("/");
+  const message = page.locator("#app");
+  await expect(message).toBeVisible({ timeout: 30_000 });
+  await expect(message).toHaveText(/^GTEki failed to start:\s*\S[\s\S]*$/, { timeout: 30_000 });
+  recordJ14(info, { noWebGL: { message: (await message.innerText()).trim() } });
+});
 
 for (const url of ["/", "/?next=1", "/?open=world"])
 test(`${url}: cold open starts a route and guide @phone`, async ({ page }, info) => {
