@@ -447,6 +447,58 @@ export function gtekiStations(roots: string[], opts: { overlay?: string | null }
       if (inlineDataGateMode() === "error") this.error(message);
       else this.warn(`${message} [GTEKI_INLINE_DATA_GATE=warn: not failing the build]`);
     },
+    transformIndexHtml: {
+      order: "post",
+      handler(_html, ctx) {
+        if (!ctx.bundle || path.basename(ctx.filename) !== "index.html") return;
+        // Resolve fingerprints from the actual build, including the GLB gzip siblings written below.
+        const modules = new Set<string>();
+        const assets: { href: string; as: string; tier?: "high" | "low" }[] = [];
+        const addModule = (fileName: string) => {
+          if (modules.has(fileName)) return;
+          modules.add(fileName);
+          const chunk = ctx.bundle![fileName];
+          if (chunk?.type === "chunk") for (const imported of chunk.imports) addModule(imported);
+        };
+        for (const output of Object.values(ctx.bundle)) {
+          if (output.type === "chunk") {
+            if (Object.keys(output.modules).some((id) =>
+              /\/stations\/[^/]+\/gteki\/station\.json$/.test(id) ||
+              /\/stations\/shinjuku\/gteki\/(graph|pois|tenants)\.json$/.test(id) ||
+              /\/shinjuku\/gteki\/.*\?url/.test(id) ||
+              id.endsWith("/stations/shinjuku/navmesh-paths.json") ||
+              id.endsWith("/stations/shinjuku/gteki/scene.ts") ||
+              /\/stations\/shinjuku\/scene\/stairwell-recipe-(high|low)\.ts$/.test(id) ||
+              id.endsWith("/assets/library/mobile/manifest.json") ||
+              id.endsWith("/stations/shinjuku/gteki/assets/kit/mobile.manifest.json"))) addModule(output.fileName);
+          } else {
+            const originals = output.originalFileNames ?? [];
+            if (originals.some((id) => id.endsWith("/shinjuku/data/layout-baked.bin"))) assets.push({ href: output.fileName, as: "fetch" });
+            if (originals.some((id) => id.endsWith("/fonts/GTEkiSignJP-subset.woff2"))) assets.push({ href: output.fileName, as: "font" });
+            if (originals.some((id) => id.endsWith("/shinjuku/gteki/assets/kit/mobile.glb"))) assets.push({ href: output.fileName + ".gz", as: "fetch" });
+            const door = originals.find((id) => /\/shinjuku\/gteki\/kit\/(high|low)\/gteki_shopfront_door_w2000\.glb$/.test(id));
+            if (door) assets.push({ href: output.fileName + ".gz", as: "fetch", tier: door.includes("/kit/low/") ? "low" : "high" });
+          }
+        }
+        // Insert before the stylesheet: a later classic script would wait for CSS and cost another RTT.
+        return _html.replace('document.documentElement.dataset.coldOpen = "1";', `
+document.documentElement.dataset.coldOpen = "1";
+  const low = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700;
+  for (const href of ${JSON.stringify([...modules])}) {
+    if (href.includes("stairwell-recipe-" + (low ? "high" : "low"))) continue;
+    const link = document.createElement("link");
+    link.rel = "modulepreload"; link.href = "./" + href; link.crossOrigin = "anonymous";
+    document.head.append(link);
+  }
+  for (const asset of ${JSON.stringify(assets)}) {
+    if (asset.tier && asset.tier !== (low ? "low" : "high")) continue;
+    const link = document.createElement("link");
+    link.rel = "preload"; link.as = asset.as; link.href = "./" + asset.href; link.crossOrigin = "anonymous";
+    document.head.append(link);
+  }
+`);
+      },
+    },
     /**
      * Defence in depth for files scene code imports directly (`?url`, `new URL(…, import.meta.url)`,
      * symlinks): every emitted file that isn't code or a stylesheet must be a declared station file
