@@ -42,18 +42,20 @@ async function overlay(page: Page): Promise<Overlay> {
   });
 }
 
-test("cold open @phone", async ({ page }, info) => {
+test("cold open @phone", async ({ page, browserName }, info) => {
   test.setTimeout(180_000);
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
-  const cdp = await page.context().newCDPSession(page);
+  const cdp = browserName === "chromium" ? await page.context().newCDPSession(page) : undefined;
   let frame: string | undefined;
   let frameDeadline = Infinity;
-  cdp.on("Page.screencastFrame", ({ data, sessionId }) => {
-    if (Date.now() <= frameDeadline) frame = data;
-    void cdp.send("Page.screencastFrameAck", { sessionId });
-  });
-  await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });
+  if (cdp) {
+    cdp.on("Page.screencastFrame", ({ data, sessionId }) => {
+      if (Date.now() <= frameDeadline) frame = data;
+      void cdp.send("Page.screencastFrameAck", { sessionId });
+    });
+    await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });
+  }
   frame = undefined;
   const start = Date.now();
   await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning", { waitUntil: "commit" });
@@ -61,9 +63,14 @@ test("cold open @phone", async ({ page }, info) => {
   frameDeadline = committed + 1000;
   await page.waitForTimeout(Math.max(0, frameDeadline - Date.now()));
   let open1sShot: "ok" | "none" | undefined;
-  await cdp.send("Page.stopScreencast");
-  open1sShot = frame ? "ok" : "none";
-  if (frame) fs.writeFileSync(path.join(out, "open-1s.png"), Buffer.from(frame, "base64"));
+  if (cdp) {
+    await cdp.send("Page.stopScreencast");
+    open1sShot = frame ? "ok" : "none";
+    if (frame) fs.writeFileSync(path.join(out, "open-1s.png"), Buffer.from(frame, "base64"));
+  } else {
+    await page.screenshot({ path: path.join(out, "open-1s.png"), timeout: 60_000 });
+    open1sShot = "ok";
+  }
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
   const readyMs = Date.now() - start;
   await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 60_000 });
@@ -104,8 +111,10 @@ test("cold open @phone", async ({ page }, info) => {
   try {
     await page.evaluate(() => (window as any).__gteki.goldenFrame());
     openingMetrics = await sceneMetrics(page);
-    const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
-    fs.writeFileSync(path.join(out, "open-ready.png"), Buffer.from(png.data, "base64"));
+    if (cdp) {
+      const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+      fs.writeFileSync(path.join(out, "open-ready.png"), Buffer.from(png.data, "base64"));
+    } else await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, actionMs, open1sShot, ...coldState, opening: { ...coldState.opening, catVisible: openingMetrics!.catVisible, catOccluder: openingMetrics!.catOccluder, catOccluderMeshes: openingMetrics!.catOccluderMeshes }, ...state, ...coverage }, null, 2));
   expect(open1sShot).toBe("ok");
