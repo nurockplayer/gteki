@@ -423,28 +423,6 @@ def rigid_paws(body, arm):
     return rigid
 
 
-def rigid_hind_pastern(body, arm):
-    """Extend the hind paw blend up its pastern; existing rigid contacts stay rigid."""
-    count = 0
-    for side in ("L", "R"):
-        paw = body.vertex_groups[f"hindpaw_{side}"]
-        height = arm.data.bones[paw.name].head_local.z
-        for vertex in body.data.vertices:
-            row = {g.group: g.weight for g in vertex.groups}
-            if row.get(paw.index, 0) <= .5 or row[paw.index] >= .999999:
-                continue
-            # Full paw control below head + 6 mm, smooth to the old blend at +36 mm.
-            t = max(0, min(1, (vertex.co.z-height-.006)/.030))
-            transfer = 1-t*t*(3-2*t)
-            if transfer == 0:
-                continue
-            for group, weight in row.items():
-                body.vertex_groups[group].add([vertex.index],
-                    weight*(1-transfer)+(transfer if group == paw.index else 0), 'REPLACE')
-            count += 1
-    print(f"INFO hind pastern: {count} paw-majority vertices extended; rigid sole/toe unchanged")
-
-
 def smooth_weights(body, rigid, iterations=3, keep=4, factor=0.5):
     """Relax the distance seams with 1-ring averaging, then keep the strongest `keep` and normalise."""
     groups = list(body.vertex_groups)

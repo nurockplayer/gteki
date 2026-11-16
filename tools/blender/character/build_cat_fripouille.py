@@ -780,7 +780,7 @@ def chest_penetration_info(body, arm, before, selected):
     print(f"INFO chest correction {'kept' if keep else 'reverted'}: "
           f"trot_b phase 0 {rows[0][0][0]:.3f} -> {rows[1][0][0]:.3f} mm; "
           f"cycle max {max(r[0] for r in rows[0]):.3f} -> {max(r[0] for r in rows[1]):.3f} mm; "
-          "keep only with lower cycle maximum and no phase-0 increase; seams/pastern retained")
+          "keep only with lower cycle maximum and no phase-0 increase; seams retained")
     kit.reset_pose(arm)
 
 
@@ -3050,7 +3050,6 @@ def main():
 
     close_rest_seams(body)
     seam_before, seam_after = unify_coincident_weights(body)
-    kit.rigid_hind_pastern(body, arm)
     before_chest = [{g.group:g.weight for g in v.groups} for v in body.data.vertices]
     chest_region = chest_weights(body, arm)
     _, seam_after = unify_coincident_weights(body)
