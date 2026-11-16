@@ -8,9 +8,11 @@ async function lifted(page: Page, info: TestInfo) {
   await expect(page.locator(".cold-open")).toBeVisible();
 }
 
-test("loading card blocks early taps and lifts to the route @phone", async ({ page }, info) => {
+for (const url of ["/", "/?next=1"])
+test(`${url}: loading card blocks early taps and lifts to the route @phone`, async ({ page }, info) => {
   await installBootFrameProbe(page);
-  await page.goto("/?next=1");
+  await page.goto(url);
+  expect(await page.locator("html").getAttribute("data-cold-open")).toBe("1");
   await lifted(page, info);
   const box = await page.locator(".cold-open .primary").boundingBox();
   expect(box).not.toBeNull();
@@ -32,6 +34,16 @@ test("loading card blocks early taps and lifts to the route @phone", async ({ pa
   const bounds = await boot.boundingBox();
   const viewport = page.viewportSize()!;
   expect(bounds).toMatchObject({ x: 0, y: 0, width: viewport.width, height: viewport.height });
+  if (info.project.name.startsWith("phone")) {
+    for (const phone of [{ width: 412, height: 839 }, { width: 390, height: 844 }]) {
+      await page.setViewportSize(phone);
+      const track = await page.locator("#cold-open-poster .boot-track").boundingBox();
+      expect(track).not.toBeNull();
+      const catTop = 455 / 839 * phone.height;
+      expect(catTop - (track!.y + track!.height), `${phone.width}×${phone.height} poster bar gap`).toBeGreaterThanOrEqual(8);
+    }
+    await page.setViewportSize(viewport);
+  }
   await expect(page.locator(".boot-title")).not.toBeEmpty();
   const progress = Number(await page.locator('[role="progressbar"]').getAttribute("aria-valuenow"));
   expect(progress).toBeGreaterThan(0);
