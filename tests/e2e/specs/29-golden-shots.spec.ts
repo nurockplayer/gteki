@@ -32,7 +32,6 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
   }
   const rows: object[] = [], failures: string[] = [];
   let station: StationKey | undefined, tier = "", renderer: unknown = null;
-  let minimapHiddenOn: Page | null = null;
   let nodeFloors = new Map<string, string>();
   for (const camera of config.cameras.filter(c => !filter || c.station === filter)) {
     const started = Date.now();
@@ -41,16 +40,13 @@ test("golden cameras: void, coverage and flat frames", async ({ page: initialPag
     let held = false;
     let phaseStart = started;
     try {
-      if (page.isClosed()) { page = await context.newPage(); station = undefined; minimapHiddenOn = null; }
+      if (page.isClosed()) { page = await context.newPage(); station = undefined; }
       if (station !== camera.station) {
         await openStation(page, camera.station, goldenQuery); station = camera.station;
+        await page.addStyleTag({ content: ".minimap { visibility: hidden !important; }" });
         nodeFloors = new Map(stationData(camera.station).graph.nodes.map((node) => [node.id, node.floorId]));
         tier = await hooks.quality(page);
         renderer = await page.evaluate(() => (window as any).__qa?.gl ?? null);
-      }
-      if (minimapHiddenOn !== page) {
-        await page.addStyleTag({ content: ".minimap { visibility: hidden !important; }" });
-        minimapHiddenOn = page;
       }
       phases.setup = Date.now() - phaseStart;
       phaseStart = Date.now();
