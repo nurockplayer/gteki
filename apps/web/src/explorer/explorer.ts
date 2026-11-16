@@ -75,6 +75,7 @@ export interface ExplorerOptions {
   catGait?: CatGait;
   /** Preview channel (`?next=1`): turns on v1.0 journey changes that are not the default yet (docs/release/journey.md). */
   previewNext?: boolean;
+  maxPixelRatio?: number;
 }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
@@ -412,6 +413,7 @@ export class Explorer {
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private openingState: "waiting" | "active" | "ended" = "waiting";
   private openingOrigin: string | null = null;
+  private cameraOpeningHold = false;
   private openingElapsed = 0;
   private openingRelease: { position: THREE.Vector3; quaternion: THREE.Quaternion; fov: number } | null = null;
   private arrivalState: "waiting" | "active" | "ended" = "waiting";
@@ -525,7 +527,7 @@ export class Explorer {
     }
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     // High-tier DPR 2 measured 33 ms on M2 Pro (#42); the 1.5 cap measured 16.7 ms median.
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, options.maxPixelRatio ?? 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
     this.renderer.toneMapping = THREE.AgXToneMapping;
     this.renderer.toneMappingExposure = resolveLighting().toneMappingExposure;
@@ -853,6 +855,7 @@ export class Explorer {
       this.openingRelease = { position: this.camera.position.clone(), quaternion: this.camera.quaternion.clone(), fov: this.camera.fov };
       this.openingElapsed = 0;
       this.openingState = openingShotState(this.openingState, true, this.openingOrigin, true, false);
+      this.setCameraFocus(this.cameraFocus, this.cameraSignFocus);
     } else {
       if (!OPENING_SHOTS[origin]) return;
       this.openingOrigin = origin;
@@ -3528,10 +3531,12 @@ export class Explorer {
   private setCameraFocus(p: THREE.Vector3 | null, sign: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null): void {
     const changed = (a: THREE.Vector3 | null | undefined, b: THREE.Vector3 | null) =>
       a == null || b == null ? (a ?? null) !== b : a.distanceToSquared(b) > 0.05 * 0.05;
-    if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign) return;
+    const opening = this.openingState === "active";
+    if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign && this.cameraOpeningHold === opening) return;
+    this.cameraOpeningHold = opening;
     this.cameraFocus = p ? (this.cameraFocus ?? new THREE.Vector3()).copy(p) : null;
     this.cameraSignFocus = sign;
-    this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus);
+    this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus, opening ? { camera: this.camera, floorY: this.pos.y } : null);
   }
 
   private cameraFacingCatAnchor() {

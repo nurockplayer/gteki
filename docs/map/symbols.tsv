@@ -363,6 +363,7 @@ routableBounds	function	apps/web/src/explorer/overviewFraming.ts
 routablePoints	function	apps/web/src/explorer/overviewFraming.ts
 screenBox	function	apps/web/src/explorer/overviewFraming.ts
 OverviewLook	class	apps/web/src/explorer/overviewLook.ts
+pixelRatioCap	function	apps/web/src/explorer/pixelRatio.ts
 CutRegion	interface	apps/web/src/explorer/portalCut.ts
 CutResult	interface	apps/web/src/explorer/portalCut.ts
 Plane	type	apps/web/src/explorer/portalCut.ts
