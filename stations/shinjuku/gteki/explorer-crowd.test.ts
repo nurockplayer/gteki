@@ -93,3 +93,80 @@ describe("shinjuku explorer crowd", () => {
     }
   }, 60_000);
 });
+
+
+describe("cold-open crowd exclusion (#1373)", () => {
+  // Place the seeded first walker on a flat path, then put the camera/cat around it.
+  const path = [{ id: "opening", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }] }];
+  const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
+
+  it.each([56, 150])("excludes the three opening zones and keeps a walker 7 m ahead visible (%i tier)", (count) => {
+    for (const zone of ["near", "segment", "half-sunk", "stairs"] as const) {
+      const crowd = buildCrowd(THREE, path, toRenderer, count, new THREE.Texture());
+      try {
+        const meshes = crowd.group.children as THREE.InstancedMesh[];
+        const people = meshes.find(m => m.name === "crowd_low" || m.name === "crowd_torso")!;
+        const matrix = new THREE.Matrix4();
+        people.getMatrixAt(0, matrix);
+        const x = matrix.elements[12]!, z = matrix.elements[14]!;
+        const camera = new THREE.PerspectiveCamera(70, 1.5, 0.05, 100);
+        camera.position.set(x, 0.9, z + (zone === "near" ? 4 : zone === "segment" ? 6 : 7));
+        camera.lookAt(x, 0.9, z);
+        camera.updateMatrixWorld(true);
+        const cat = zone === "segment" ? new THREE.Vector3(x, 0.9, z + 0.5)
+          : zone === "near" ? new THREE.Vector3(x + 2, 0.9, z + 4)
+          : zone === "half-sunk" ? new THREE.Vector3(x + 3, 1.3, z + 4)
+          : new THREE.Vector3(x, -0.4, z + 4);
+        const opening = { camera, floorY: zone === "half-sunk" ? 1 : zone === "stairs" ? -1 : 0 };
+        // setCameraFocus applies the exclusion immediately, before any camera render callback.
+        crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening);
+        people.getMatrixAt(0, matrix);
+        expect(matrix.determinant() === 0, zone).toBe(zone !== "stairs");
+        crowd.update(0, 0);
+        people.getMatrixAt(0, matrix);
+        expect(matrix.determinant() === 0, zone).toBe(zone !== "stairs");
+        crowd.setCameraFocus(null);
+        crowd.update(0.5, 0.5);
+        people.getMatrixAt(0, matrix);
+        expect(matrix.determinant(), `${zone} after hold`).not.toBe(0);
+        expect(people.geometry.getAttribute("openingFade").getX(0)).toBe(1);
+      } finally { crowd.dispose(); }
+    }
+  });
+
+  it.each([56, 150])("fades a walker back in only after it leaves the opening zone (%i tier)", (count) => {
+    const crowd = buildCrowd(THREE, path, toRenderer, count, new THREE.Texture());
+    try {
+      const meshes = crowd.group.children as THREE.InstancedMesh[];
+      const people = meshes.find(m => m.name === "crowd_low" || m.name === "crowd_torso")!;
+      const matrix = new THREE.Matrix4();
+      people.getMatrixAt(0, matrix);
+      const x = matrix.elements[12]!, z = matrix.elements[14]!;
+      const camera = new THREE.PerspectiveCamera(70, 1.5, 0.05, 100);
+      const cat = new THREE.Vector3(x + 3, 0.9, z + 4);
+      camera.position.set(x, 0.9, z + 4);
+      camera.lookAt(cat);
+      const opening = { camera, floorY: 0 };
+      crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening);
+      crowd.update(0.1, 0.1);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).toBe(0);
+      camera.position.z += 2;
+      camera.lookAt(cat);
+      crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).not.toBe(0);
+      expect(people.geometry.getAttribute("openingFade").getX(0)).toBe(0);
+      crowd.update(0.1, 0.2);
+      // Optional meshes pack only wearers; their slot 0 may belong to another walker.
+      const bodyParts = new Set(["crowd_low", "crowd_torso", "crowd_head", "crowd_upper_arm", "crowd_forearm", "crowd_hand", "crowd_thigh", "crowd_shin", "crowd_shoe"]);
+      for (const mesh of meshes.filter(m => bodyParts.has(m.name))) {
+        const fade = mesh.geometry.getAttribute("openingFade").getX(0);
+        expect(fade).toBeGreaterThan(0);
+        expect(fade).toBeLessThan(1);
+      }
+      crowd.update(0.4, 0.6);
+      expect(people.geometry.getAttribute("openingFade").getX(0)).toBe(1);
+    } finally { crowd.dispose(); }
+  });
+});
