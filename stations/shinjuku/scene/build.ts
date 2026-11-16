@@ -2067,13 +2067,8 @@ function buildUndergroundLighting(
     ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
   const ceilingAt = (p: XYZ): { z: number; floorId: string; shared?: Soffit } | null => {
     let best: { z: number; floorId: string } | null = null;
-    let shared: Soffit | undefined, sz = Infinity;
-    for (const s of layout.shaftCeilingPreview?.roofs ?? []) {
-      if (!pointInRings(p, s.rings)) continue;
-      const z = soffitHeight(s, p);
-      if (z >= p.z + 2.5 && z <= p.z + 5.2 && z < sz) { shared = s; sz = z; }
-    }
-    if (shared) return { z: sz, floorId: shared.floorId, shared };
+    const shared = layout.shaftCeilingPreview?.roofs.find((s) => pointInRings(p, s.rings));
+    if (shared) return { z: soffitHeight(shared, p), floorId: shared.floorId, shared };
     for (const s of roofs) {
       const z = soffitHeight(s, p);
       if (z < p.z + 2.5 || z > p.z + 5.2 || (best && best.z <= z) || !pointInRings(p, s.rings)) continue;

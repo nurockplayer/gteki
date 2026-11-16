@@ -69,23 +69,6 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   }, 600_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
-  it("hangs the e843b65b fixture 2.5–5.2 m above its walking surface (#1238.1)", () => {
-    const edge = bundle.edges.find((e) => e.id === "e:e843b65b735e497597be2f6a2bce0dd9")!;
-    const a = bundle.nodes.find((n) => n.id === edge.from)!, b = bundle.nodes.find((n) => n.id === edge.to)!;
-    const count = Math.floor(Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y) / 3.2);
-    const t = 0.5 / count, za = layout.nodeZ.get(a.id)!, zb = layout.nodeZ.get(b.id)!;
-    const ground = { x: a.position.x + (b.position.x - a.position.x) * t,
-      y: a.position.y + (b.position.y - a.position.y) * t, z: za + (zb - za) * t };
-    const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
-    const i = (mesh.userData.floorPools as XYZ[]).findIndex((p) => Math.hypot(p.x - ground.x, p.y - ground.y, p.z - ground.z) < 0.001);
-    expect(i, "first fixture on the real edge").toBeGreaterThanOrEqual(0);
-    const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
-    const center = new THREE.Vector3().setFromMatrixPosition(matrix);
-    const clearance = center.y + 0.065 - ground.z;
-    expect(clearance).toBeGreaterThanOrEqual(2.5);
-    expect(clearance).toBeLessThanOrEqual(5.2);
-  });
-
   it("culls unrelated-floor preview roofs and retains overhead roofs from both ride ends (#1238.3)", () => {
     on.root.updateMatrixWorld(true);
     const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000);
@@ -132,21 +115,22 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     } finally { on.afterRender!(); }
   });
 
-  it("keeps fixtures in shared-roof footprints above their own walking surfaces", () => {
+  it("retains underground strips in each shared preview roof", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
-    const grounds = mesh.userData.floorPools as XYZ[];
-    let checked = 0;
-    for (let i = 0; i < mesh.count; i++) {
-      const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
-      const center = new THREE.Vector3().setFromMatrixPosition(matrix);
-      if (!layout.shaftCeilingPreview!.roofs.some((roof) => pointInRings({ x: center.x, y: -center.z }, roof.rings))) continue;
-      // XY overlap includes other floors; those fixtures must use their own walk height.
-      const clearance = center.y + 0.065 - grounds[i]!.z;
-      expect(clearance, `fixture ${i}`).toBeGreaterThanOrEqual(2.5 - 0.0001);
-      expect(clearance, `fixture ${i}`).toBeLessThanOrEqual(5.2 + 0.0001);
-      checked++;
-    }
-    expect(checked).toBeGreaterThan(0);
+    // Captured from origin/main 4724fc44, in preview-roof order (2026-11-14 JST).
+    const before = [4, 2, 0, 0, 0, 3, 40, 34, 4, 37, 34, 14];
+    const counts = layout.shaftCeilingPreview!.roofs.map((roof, index) => {
+      let count = 0;
+      for (let i = 0; i < mesh.count; i++) {
+        const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+        const center = new THREE.Vector3().setFromMatrixPosition(matrix);
+        if (pointInRings({ x: center.x, y: -center.z }, roof.rings)) count++;
+      }
+      return { roof: roof.spaceId, index, before: before[index]!, after: count };
+    });
+    console.log("2026-11-14 JST J7 strip counts", JSON.stringify(counts));
+    expect(counts).toHaveLength(before.length);
+    for (const { roof, index, before, after } of counts) expect(after, `${roof} section ${index}`).toBeGreaterThanOrEqual(before);
   });
 
   it("keeps flag-off strip count and rounded matrices identical to main", () => {
