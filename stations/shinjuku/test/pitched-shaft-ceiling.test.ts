@@ -4,7 +4,7 @@ import type { StationScene } from "@gteki/scene-api";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { assembleScene, planBundle } from "../gteki/scene.ts";
 import { prepareLayout } from "../scene/build-cache.ts";
-import { cladWallGeometry } from "../scene/build.ts";
+import { cladWallGeometry, escalatorShellGeometry } from "../scene/build.ts";
 import { pointInRings, soffitHeight, stairShaftGroups, type Layout, type Plan, type Soffit, type XYZ } from "../scene/layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { exactHash, plainHash, withCanvasStub } from "./helpers/scene-digest.ts";
@@ -59,13 +59,16 @@ function producer(hit: THREE.Intersection | undefined, layout: Layout) {
 }
 
 describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
-  let off: StationScene, on: StationScene, layout: Layout, oldLayout: Layout;
+  let off: StationScene, on: StationScene, layout: Layout, oldLayout: Layout, regularRoofs: Soffit[];
   beforeAll(() => {
     const ctx = { THREE, bundle, quality: "low" as const };
     off = withCanvasStub(() => assembleScene(ctx as never, undefined, undefined, { pitchedCeilings: false }));
     oldLayout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true, pitchedCeilings: false }).layout;
     on = withCanvasStub(() => assembleScene(ctx as never));
     layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
+    regularRoofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
+      ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)),
+      ...layout.shaftFinishes, ...escalatorShellGeometry(layout, planBundle(bundle)).finishes];
   }, 600_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
@@ -147,8 +150,14 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
       const f = fixture(mesh, i), tag = `${f.edgeId}@${f.sample} fixture ${i}`;
       const samples = [-0.5, 0, 0.5].map((z) => f.at(0, 0, z));
       heights.push(samples[1]!.z);
-      for (const p of samples) {
-        const clearance = soffitHeight(f.roof, p) - f.surfaceZ(p);
+      for (const [index, p] of samples.entries()) {
+        // A regular strip may cross flight/landing sections; do not extend its centre plane.
+        const roof = index === 1 || f.section >= 0 ? f.roof : regularRoofs.filter((r) => {
+          const clearance = soffitHeight(r, p) - f.surfaceZ(p);
+          return pointInRings(p, r.rings) && clearance >= 2.5 - 0.00002 && clearance <= 5.2 + 0.00002;
+        }).sort((a, b) => soffitHeight(a, p) - soffitHeight(b, p))[0]!;
+        expect(roof, tag).toBeDefined();
+        const clearance = soffitHeight(roof, p) - f.surfaceZ(p);
         clearances.push(clearance);
         expect(clearance, tag).toBeGreaterThanOrEqual(2.5 - 0.00002);
         expect(clearance, tag).toBeLessThanOrEqual(5.2 + 0.00002);
@@ -210,14 +219,18 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
       samples.push(...[-0.125, 0.125].flatMap((x) => [-0.52, 0.52].map((z) => f.at(x, 0.0575, z))));
       for (const [sample, p] of samples.entries()) {
         // Street-mouth sections share an ID. At a seam use the section covering this XY.
-        const sections = f.section < 0 ? [f.roof] : layout.shaftCeilingPreview!.roofs.filter((r) => r.spaceId === f.roof.spaceId);
-        const roofs = sections.filter((r) => pointInRings(p, r.rings));
-        const valid = roofs.some((roof) => {
+        const sections = f.section < 0 ? regularRoofs : layout.shaftCeilingPreview!.roofs.filter((r) => r.spaceId === f.roof.spaceId);
+        const roofs = sections.filter((r) => pointInRings(p, r.rings)).filter((r) => {
+          const clearance = soffitHeight(r, p) - f.surfaceZ(p);
+          return clearance >= 2.5 - 0.00002 && clearance <= 5.2 + 0.00002;
+        }).sort((a, b) => soffitHeight(a, p) - soffitHeight(b, p));
+        const valid = roofs.slice(0, 1).some((roof) => {
           const underside = soffitHeight(roof, p), gap = underside - p.z;
           const clearance = underside - f.surfaceZ(p);
           return gap >= -0.01 && gap <= 0.065 + 0.01 && clearance >= 2.5 - 0.00002 && clearance <= 5.2 + 0.00002;
         });
-        if (!valid) failures.push(`${i} ${f.edgeId}@${f.sample} ${f.roof.spaceId} section ${f.section} sample ${sample}`);
+        if (!valid) failures.push(`${i} ${f.edgeId}@${f.sample} ${f.roof.spaceId} section ${f.section} sample ${sample}: ` +
+          (roofs[0] ? `${roofs[0].spaceId} gap ${(soffitHeight(roofs[0], p) - p.z).toFixed(4)}` : "no covering own-surface roof"));
       }
     }
     expect(failures).toEqual([]);
