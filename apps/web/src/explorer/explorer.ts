@@ -75,6 +75,7 @@ export interface ExplorerOptions {
   catGait?: CatGait;
   /** Preview channel (`?next=1`): turns on v1.0 journey changes that are not the default yet (docs/release/journey.md). */
   previewNext?: boolean;
+  maxPixelRatio?: number;
 }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
@@ -525,7 +526,7 @@ export class Explorer {
     }
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     // High-tier DPR 2 measured 33 ms on M2 Pro (#42); the 1.5 cap measured 16.7 ms median.
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, options.maxPixelRatio ?? 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
     this.renderer.toneMapping = THREE.AgXToneMapping;
     this.renderer.toneMappingExposure = resolveLighting().toneMappingExposure;
