@@ -41,6 +41,7 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * #1192 (2026-11-13 JST): restore 1.10 m of B3 wall and collider; regenerate affected
  * wall/cladding hashes. Floors, fences, camera blockers, props and spawn remain unchanged.
  * #1169 (2026-11-14 JST): shaft stripe UV datums change the wall visual hash only.
+ * #1238/#1243 (2026-11-16 JST): stair insets change visual sets (#1238.1 split out); physical fields unchanged.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;

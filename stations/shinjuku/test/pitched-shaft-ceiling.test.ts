@@ -5,7 +5,7 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import { assembleScene, planBundle } from "../gteki/scene.ts";
 import { prepareLayout } from "../scene/build-cache.ts";
 import { cladWallGeometry } from "../scene/build.ts";
-import { pointInRings, soffitHeight, type Layout, type Plan, type Soffit } from "../scene/layout.ts";
+import { pointInRings, soffitHeight, type Layout, type Plan, type Soffit, type XYZ } from "../scene/layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { exactHash, plainHash, withCanvasStub } from "./helpers/scene-digest.ts";
 import { digestSceneLists } from "./helpers/station-digest.ts";
@@ -69,6 +69,52 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   }, 600_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
+  it("culls unrelated-floor preview roofs and retains overhead roofs from both ride ends (#1238.3)", () => {
+    on.root.updateMatrixWorld(true);
+    const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 1000);
+    const visibleAt = (p: XYZ) => {
+      camera.position.copy(v3({ ...p, z: p.z + 1.65 })); camera.updateMatrixWorld(true);
+      on.beforeRender!(null, camera);
+      const visible = new Set<THREE.Object3D>();
+      on.root.traverseVisible((o) => visible.add(o));
+      return visible;
+    };
+    const roofs = layout.shaftCeilingPreview!.roofs;
+    const bottom = layout.levels.reduce((a, b) => a.z < b.z ? a : b);
+    // A real floor node away from any run keeps this camera off a ride.
+    const node = bundle.nodes.find((n) => Math.abs((layout.nodeZ.get(n.id) ?? Infinity) - bottom.z) < 0.01 &&
+      layout.runs.every((r) => {
+        const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y;
+        const t = Math.max(0, Math.min(1, ((n.position.x - r.a.x) * dx + (n.position.y - r.a.y) * dy) / (dx * dx + dy * dy)));
+        return Math.hypot(n.position.x - r.a.x - dx * t, n.position.y - r.a.y - dy * t) > r.width;
+      }))!;
+    expect(node).toBeDefined();
+    const unrelated = roofs.filter((r) => layout.levels.find((l) => l.floorId === r.floorId)!.label === "B1");
+    expect(unrelated.length).toBeGreaterThan(0);
+    try {
+      const visible = visibleAt({ ...node.position, z: bottom.z });
+      for (const roof of unrelated) expect(visible.has(on.root.getObjectByName(roof.spaceId)!)).toBe(false);
+      let checked = 0;
+      for (const run of layout.runs) {
+        const at = (t: number): XYZ => ({ x: run.a.x + (run.b.x - run.a.x) * t,
+          y: run.a.y + (run.b.y - run.a.y) * t, z: run.a.z + (run.b.z - run.a.z) * t });
+        const overhead = roofs.filter((roof) => [0.1, 0.5, 0.9].some((t) => {
+          const p = at(t), gap = soffitHeight(roof, p) - p.z;
+          return pointInRings(p, roof.rings) && gap >= 2.5 && gap <= 5.2;
+        }));
+        if (!overhead.length) continue;
+        for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+          const visible = visibleAt(at(t));
+          for (const roof of overhead) {
+            expect(visible.has(on.root.getObjectByName(roof.spaceId)!), `${roof.spaceId} above ${run.edgeId}@${t}`).toBe(true);
+            checked++;
+          }
+        }
+      }
+      expect(checked).toBeGreaterThan(0);
+    } finally { on.afterRender!(); }
+  });
+
   it("retains underground strips in each shared preview roof", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
     // Captured from origin/main 4724fc44, in preview-roof order (2026-11-14 JST).
@@ -102,7 +148,8 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     for (let i = 0; i < mesh.count; i++) {
       const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
       const center = new THREE.Vector3().setFromMatrixPosition(matrix);
-      const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings({ x: center.x, y: -center.z }, s.rings));
+      const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings({ x: center.x, y: -center.z }, s.rings) &&
+        Math.abs(soffitHeight(s, { x: center.x, y: -center.z }) - center.y - 0.065) < 0.01);
       if (!roof || !(roof.slope?.x || roof.slope?.y)) continue;
       matrix.premultiply(mesh.matrixWorld);
       const up = new THREE.Vector3(0, 1, 0).transformDirection(matrix);
@@ -118,7 +165,8 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     for (let i = 0; i < mesh.count; i++) {
       const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
       const center = new THREE.Vector3().setFromMatrixPosition(matrix);
-      const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings({ x: center.x, y: -center.z }, s.rings));
+      const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings({ x: center.x, y: -center.z }, s.rings) &&
+        Math.abs(soffitHeight(s, { x: center.x, y: -center.z }) - center.y - 0.065) < 0.01);
       if (!roof) continue;
       const ends = [-0.5, 0.5].map((z) => {
         const p = new THREE.Vector3(0, 0, z).applyMatrix4(matrix);
