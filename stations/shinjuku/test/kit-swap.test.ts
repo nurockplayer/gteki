@@ -73,9 +73,9 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1238/#1243 (2026-11-16 JST): stair insets and roof parenting (#1238.1 split out); physical lists unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "483562131be79506e9b6f0d1e258c92aab695cf9df89fbfe274b07f36e07f4ec",
+    "geometryDigest": "3579a771518bf7cb68426cd8b67d8cb6a9165ec8b1fed747ee8f375ff877ce58",
     "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
-    "nodesDigest": "d205f7f5c77df05cd5d97397fa39cb38f8bc32f9f019e22477737c75b861559b",
+    "nodesDigest": "a720c05832031a57e2b09bad9aea99241e80b6ea21f215b37aa171bf3a82ba57",
     "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
     "meshes": 108,
     "bytes": 17299194
