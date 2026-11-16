@@ -3854,8 +3854,8 @@ export class Explorer {
     if (this.audio) this.audio.master.gain.setTargetAtTime(muted ? 0 : 1, this.audio.context.currentTime, 0.05);
   }
 
-  audioInfo(): { available: boolean; state: string | null; muted: boolean; stationBus: boolean } {
-    return { available: this.audio !== null, state: this.audio?.context.state ?? null, muted: this.muted, stationBus: this.stationAudio !== null };
+  audioInfo(): { available: boolean; state: string | null; muted: boolean; stationBus: boolean; station: ReturnType<NonNullable<StationScene["audioInfo"]>> | null } {
+    return { available: this.audio !== null, state: this.audio?.context.state ?? null, muted: this.muted, stationBus: this.stationAudio !== null, station: this.stationScene?.audioInfo?.() ?? null };
   }
 
   dispose(): void {
