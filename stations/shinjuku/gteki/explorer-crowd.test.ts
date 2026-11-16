@@ -158,7 +158,9 @@ describe("cold-open crowd exclusion (#1373)", () => {
       expect(matrix.determinant()).not.toBe(0);
       expect(people.geometry.getAttribute("openingFade").getX(0)).toBe(0);
       crowd.update(0.1, 0.2);
-      for (const mesh of meshes) {
+      // Optional meshes pack only wearers; their slot 0 may belong to another walker.
+      const bodyParts = new Set(["crowd_low", "crowd_torso", "crowd_head", "crowd_upper_arm", "crowd_forearm", "crowd_hand", "crowd_thigh", "crowd_shin", "crowd_shoe"]);
+      for (const mesh of meshes.filter(m => bodyParts.has(m.name))) {
         const fade = mesh.geometry.getAttribute("openingFade").getX(0);
         expect(fade).toBeGreaterThan(0);
         expect(fade).toBeLessThan(1);
