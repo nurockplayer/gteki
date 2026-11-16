@@ -695,6 +695,7 @@ export function buildCrowd(
       for (let i = 0; i < count; i++) if (has(looks[i]!, i)) slots[i] = people++;
     }
     const n = people * per;
+    g.setAttribute("openingFade", new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, people)).fill(1), 1, false, per).setUsage(THREE.DynamicDrawUsage));
     const mesh = new THREE.InstancedMesh(g, m, Math.max(1, n));
     mesh.count = n;
     mesh.name = `crowd_${name}`;
@@ -771,6 +772,7 @@ export function buildCrowd(
     merged.setAttribute("stride", new THREE.InstancedBufferAttribute(new Float32Array(looks.map((l) => l.stride)), 1));
     lowPhase = new THREE.InstancedBufferAttribute(new Float32Array(count), 1).setUsage(THREE.DynamicDrawUsage);
     merged.setAttribute("phase", lowPhase);
+    merged.setAttribute("openingFade", new THREE.InstancedBufferAttribute(new Float32Array(count).fill(1), 1).setUsage(THREE.DynamicDrawUsage));
     M.cloth.onBeforeCompile = (shader) => {
       shader.vertexShader = shader.vertexShader.replace("#include <common>", `#include <common>
         attribute vec4 part, palette0, palette1, look;
@@ -839,11 +841,13 @@ export function buildCrowd(
     material.onBeforeCompile = (shader, renderer) => {
       previous.call(material, shader, renderer);
       shader.uniforms.uNearFade = nearFade;
+      shader.vertexShader = shader.vertexShader
+        .replace("void main() {", "attribute float openingFade;\nvarying float vOpeningFade;\nvoid main() {\nvOpeningFade = openingFade;");
       shader.fragmentShader = shader.fragmentShader
-        .replace("void main() {", "uniform vec2 uNearFade;\nvoid main() {")
+        .replace("void main() {", "uniform vec2 uNearFade;\nvarying float vOpeningFade;\nvoid main() {")
         .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
-          if (uNearFade.y > 0.0) {
-            float crowdFade = smoothstep(uNearFade.x, uNearFade.y, length(vViewPosition));
+          if (uNearFade.y > 0.0 || vOpeningFade < 1.0) {
+            float crowdFade = vOpeningFade * (uNearFade.y > 0.0 ? smoothstep(uNearFade.x, uNearFade.y, length(vViewPosition)) : 1.0);
             float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
             if (ign >= crowdFade) discard;
           }`);
@@ -865,13 +869,14 @@ export function buildCrowd(
     normalTwin.onBeforeCompile = (shader) => {
       shader.uniforms.uNearFade = nearFade;
       shader.vertexShader = shader.vertexShader
+        .replace("void main() {", "attribute float openingFade;\nvarying float vOpeningFade;\nvoid main() {\nvOpeningFade = openingFade;")
         .replace("#include <common>", `varying vec3 vCrowdView;\n#include <common>`)
         .replace("#include <project_vertex>", `#include <project_vertex>\nvCrowdView = -mvPosition.xyz;`);
       shader.fragmentShader = shader.fragmentShader
-        .replace("void main() {", "uniform vec2 uNearFade;\nvarying vec3 vCrowdView;\nvoid main() {")
+        .replace("void main() {", "uniform vec2 uNearFade;\nvarying float vOpeningFade;\nvarying vec3 vCrowdView;\nvoid main() {")
         .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
-          if (uNearFade.y > 0.0) {
-            float crowdFade = smoothstep(uNearFade.x, uNearFade.y, length(vCrowdView));
+          if (uNearFade.y > 0.0 || vOpeningFade < 1.0) {
+            float crowdFade = vOpeningFade * (uNearFade.y > 0.0 ? smoothstep(uNearFade.x, uNearFade.y, length(vCrowdView)) : 1.0);
             float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
             if (ign >= crowdFade) discard;
           }`);
@@ -889,6 +894,8 @@ export function buildCrowd(
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
   let cameraFocus: THREE_NS.Vector3 | null = null;
+  let openingZone: { camera: THREE_NS.Camera; floorY: number } | null = null;
+  const openingFades = new Float32Array(count).fill(1);
   let cameraSignFocus: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null;
   const projected = new THREE.Vector3();
   const focusSegment = new THREE.Vector3(), focusBody = new THREE.Vector3();
@@ -1290,7 +1297,38 @@ export function buildCrowd(
         }
         blocksFocus = minX <= signMaxX && maxX >= signMinX && minY <= signMaxY && maxY >= signMinY;
       }
-      if (!shown || blocksFocus || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
+      let excluded = false;
+      if (openingZone) {
+        focusBody.set(pos.x, floorY + 0.9 * L.sh, pos.z);
+        const distanceSq = focusBody.distanceToSquared(cam);
+        excluded = distanceSq < 25
+          || (distanceSq < 64 && floorY < openingZone.floorY && floorY + 1.95 * L.sh > openingZone.floorY && inView(pos));
+        if (!excluded && cameraFocus) {
+          focusSegment.copy(cameraFocus).sub(cam);
+          const length = focusSegment.length();
+          if (length > 0) {
+            focusSegment.multiplyScalar((length + 1) / length);
+            focusBody.sub(cam);
+            const t = clamp(focusBody.dot(focusSegment) / focusSegment.lengthSq(), 0, 1);
+            excluded = focusBody.addScaledVector(focusSegment, -t).lengthSq() <= 0.6 * 0.6;
+          }
+        }
+      }
+      // Reuse the near-fade dither for a half-second return after leaving any opening zone.
+      const fade = excluded ? 0 : Math.min(1, openingFades[i]! + dt / 0.5);
+      if (fade !== openingFades[i]) {
+        openingFades[i] = fade;
+        if (lowMesh) {
+          const attr = lowMesh.geometry.getAttribute("openingFade") as THREE_NS.InstancedBufferAttribute;
+          attr.setX(i, fade); attr.needsUpdate = true;
+        } else for (const part of parts) {
+          const who = part.slots ? part.slots[i]! : i;
+          if (who < 0) continue;
+          const attr = part.mesh.geometry.getAttribute("openingFade") as THREE_NS.InstancedBufferAttribute;
+          attr.setX(who, fade); attr.needsUpdate = true;
+        }
+      }
+      if (excluded || !shown || blocksFocus || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
         hide(i);
         continue;
       }
@@ -1310,10 +1348,18 @@ export function buildCrowd(
   return {
     group,
     update,
-    setCameraFocus(x: number | null, y = 0, z = 0, sign: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null) {
+    setCameraFocus(x: number | null, y = 0, z = 0, sign: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null, opening: { camera: THREE_NS.Camera; floorY: number } | null = null) {
       if (x === null) cameraFocus = null;
       else (cameraFocus ??= new THREE.Vector3()).set(x, y, z);
       cameraSignFocus = sign;
+      openingZone = opening;
+      if (opening) {
+        // Apply before the first render too: the usual camera callback is one frame behind.
+        opening.camera.updateMatrixWorld(true);
+        cam.setFromMatrixPosition(opening.camera.matrixWorld);
+        frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(opening.camera.projectionMatrix, opening.camera.matrixWorldInverse));
+        update(0, clock);
+      }
     },
     setCameraNearFade(startM: number, endM: number) { nearFade.value.set(startM, endM); },
     /** Pedestrians within 8 m of the last rendered camera (for ambience). */
