@@ -59,7 +59,8 @@ describe("station geometry lifetime", () => {
     // #1192 (2026-11-13 JST): B3 wall restored; geometry hash changes, bytes/counts stay unchanged.
     // J7 (2026-11-13 JST): remove 31 overlapping linear lights.
     // #1169 (2026-11-14 JST): align the shaft stripe UV datum; positions and counts are unchanged.
-    expect(result.geometryHash).toBe("c78eaeffeba8c8ee2895a68bc44a46953f277035e433562a087e6b9d008a398f");
+    // #1238/#1243 (2026-11-16 JST): inset stair render surfaces and reparent preview roofs.
+    expect(result.geometryHash).toBe("51877d0e63de6d24b375d80922e5f9b54a76adfa5f74d906ee0a25cdde56ce1f");
   }, 60_000);
 
   // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the
