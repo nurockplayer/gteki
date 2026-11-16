@@ -885,7 +885,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   if (preview) for (const roof of preview.roofs) {
     const m = new THREE.Mesh(track(soffitGeometry(roof)), mat.ceiling);
     m.name = roof.spaceId;
-    root.add(m);
+    (levelGroups.get(roof.floorId) ?? root).add(m);
   }
   const liftAnchors = buildElevatorPortals(bundle, layout, root, mat, track, ledger);
 
@@ -1027,7 +1027,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             const cx = lo.x + u.x * run * (i + 0.5);
             const cy = lo.y + u.y * run * (i + 0.5);
             const top = lo.z + rise * (i + 1);
-            const box = new THREE.BoxGeometry(run + 0.02, rise + 0.18, r.width + 2 * RUN_WALL_OFFSET);
+            const box = new THREE.BoxGeometry(run + 0.02, rise + 0.18, r.width + 2 * RUN_WALL_OFFSET - 0.01);
             box.rotateY(yaw);
             box.translate(cx, top - (rise + 0.18) / 2, -cy);
             stairGeos.push(box);
@@ -1111,8 +1111,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const a = v3({ ...w.a, z: za + 0.96 }), b = v3({ ...w.b, z: zb + 0.96 });
       if (r.mode === "stairs") {
         handGeos.push(cylAlong(a, b, 0.026));
-        // Dark side stringer and small stainless brackets stay on the retained side wall.
-        nosingGeos.push(enclosureWallGeometry({ ...w, profile: { bottomA: za - 0.12, bottomB: zb - 0.12, topA: za + 0.15, topB: zb + 0.15 } }));
+        // Keep the dark stringer 5 mm inside the side-wall plane to avoid depth fighting.
+        const length = Math.sqrt(l2), nx = -d.y / length, ny = d.x / length;
+        const side = Math.sign((w.a.x - r.a.x) * nx + (w.a.y - r.a.y) * ny);
+        const inward = (p: XY) => ({ x: p.x - nx * side * 0.005, y: p.y - ny * side * 0.005 });
+        nosingGeos.push(enclosureWallGeometry({ ...w, a: inward(w.a), b: inward(w.b), profile: { bottomA: za - 0.12, bottomB: zb - 0.12, topA: za + 0.15, topB: zb + 0.15 } }));
         const mid = a.clone().add(b).multiplyScalar(0.5);
         handGeos.push(cylAlong(mid.clone().add(new THREE.Vector3(0, -0.16, 0)), mid, 0.015, 6));
       } else {
