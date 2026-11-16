@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { gzipSync } from "node:zlib";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { catClips, loadGlbAvatar } from "./avatarGlb.ts";
-import { catAvatarFixture, fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
+import { catAvatarFixture, catGaitAvatarFixture, fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
 import { fetchGlb } from "./fetchGlb.ts";
 import { ASSET_SCHEME, fencedUrlResolver } from "./assetFence.ts";
 
@@ -230,6 +230,52 @@ describe("loadGlbAvatar", () => {
 });
 
 describe("cat avatar", () => {
+  it.each([
+    { gait: "a" as const, speed: 1.2, expected: "trot_a", rate: 1.2 / 1.5 },
+    { gait: "a" as const, speed: 2.5, expected: "run_a", rate: 2.5 / 3 },
+    { gait: "b" as const, speed: 1.2, expected: "trot_b", rate: 1.2 / 2 },
+    { gait: "b" as const, speed: 2.5, expected: "run_b", rate: 2.5 / 4 },
+    { gait: undefined, speed: 1.2, expected: "trot", rate: 1.2 },
+    { gait: undefined, speed: 2.5, expected: "run", rate: 2.5 / 2.285714285714286 },
+  ])("selects $expected with the matching stride rate", async ({ gait, speed, expected, rate }) => {
+    const asset = catGaitAvatarFixture();
+    const actions = new Map<string, THREE.AnimationAction>();
+    const original = THREE.AnimationMixer.prototype.clipAction;
+    vi.spyOn(THREE.AnimationMixer.prototype, "clipAction").mockImplementation(function (this: THREE.AnimationMixer, clip: string | THREE.AnimationClip, root?: THREE.AnimationObjectGroup | THREE.Object3D, blendMode?: THREE.AnimationBlendMode) {
+      const action = original.call(this, clip, root, blendMode);
+      if (action) actions.set(typeof clip === "string" ? clip : clip.name, action);
+      return action;
+    });
+    const rig = await loadGlbAvatar("/cat.glb", {
+      quality: "low", loader: { loadAsync: async () => asset }, cat: true,
+      ...(gait ? { catGait: gait } : {}),
+    });
+    rig.update(0.25, speed);
+    expect(actions.get(expected)?.isRunning()).toBe(true);
+    expect(actions.get(expected)?.timeScale).toBeCloseTo(rate);
+    rig.dispose();
+  });
+
+  it("falls back to legacy trot and run when variant metadata is missing", async () => {
+    for (const [speed, expected] of [[1.2, "trot"], [2.5, "run"]] as const) {
+      const asset = catGaitAvatarFixture({ variants: false });
+      const actions = new Map<string, THREE.AnimationAction>();
+      const original = THREE.AnimationMixer.prototype.clipAction;
+      const spy = vi.spyOn(THREE.AnimationMixer.prototype, "clipAction").mockImplementation(function (this: THREE.AnimationMixer, clip: string | THREE.AnimationClip, root?: THREE.AnimationObjectGroup | THREE.Object3D, blendMode?: THREE.AnimationBlendMode) {
+        const action = original.call(this, clip, root, blendMode);
+        if (action) actions.set(typeof clip === "string" ? clip : clip.name, action);
+        return action;
+      });
+      const rig = await loadGlbAvatar("/cat.glb", {
+        quality: "low", loader: { loadAsync: async () => asset }, cat: true, catGait: "a",
+      });
+      rig.update(0.25, speed);
+      expect(actions.get(expected)?.isRunning()).toBe(true);
+      rig.dispose();
+      spy.mockRestore();
+    }
+  });
+
   it("lifts the head without accumulating and ignores downward pitch", async () => {
     const asset = catAvatarFixture();
     const neck = new THREE.Bone();
