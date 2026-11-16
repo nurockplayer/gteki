@@ -334,8 +334,13 @@ test("guided walk @phone", async ({ page }, info) => {
         for (const edge of ["x", "y"] as const) expect(Math.abs(openMore[edge] - closedMore[edge])).toBeLessThanOrEqual(1);
         expect(Math.abs(openMore.x + openMore.width - closedMore.x - closedMore.width)).toBeLessThanOrEqual(1);
         expect(Math.abs(openMore.y + openMore.height - closedMore.y - closedMore.height)).toBeLessThanOrEqual(1);
-        expect(openMenu.y).toBeGreaterThanOrEqual(openCard.y + openCard.height);
-        expect(openMenu.y).toBeGreaterThanOrEqual(openMore.y + openMore.height);
+        if (await page.locator(".app").evaluate(el => el.classList.contains("arrival-bottom"))) {
+          expect(openMenu.y + openMenu.height).toBeLessThanOrEqual(openCard.y);
+          expect(openMenu.y + openMenu.height).toBeLessThanOrEqual(openMore.y);
+        } else {
+          expect(openMenu.y).toBeGreaterThanOrEqual(openCard.y + openCard.height);
+          expect(openMenu.y).toBeGreaterThanOrEqual(openMore.y + openMore.height);
+        }
       }
       await page.evaluate(() => (window as any).__gteki.holdFrames(true));
       try {
@@ -365,6 +370,60 @@ test("guided walk @phone", async ({ page }, info) => {
       for (const r of rects) expect(r.left >= 0 && r.top >= 0 && r.right <= r.width && r.bottom <= r.height, `arrival menu outside viewport: ${JSON.stringify(rects)}`).toBe(true);
       await more.click();
       await expect(menu).toBeHidden();
+      if (info.project.name === "phone-chromium") {
+        for (const bottom of [true, false]) {
+          // Pin the requested anchor while the placement loop re-checks the new HUD height.
+          const anchor = await page.evaluateHandle(bottom => {
+            const root = document.querySelector(".app")!;
+            const previousBottom = root.classList.contains("arrival-bottom"), left = root.classList.contains("arrival-left");
+            const pin = () => {
+              if (root.classList.contains("arrival-bottom") !== bottom) root.classList.toggle("arrival-bottom", bottom);
+              if (root.classList.contains("arrival-left") !== left) root.classList.toggle("arrival-left", left);
+            };
+            pin();
+            const observer = new MutationObserver(pin);
+            observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+            return { root, observer, previousBottom, left };
+          }, bottom);
+          const boxes = async () => {
+            await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+            return page.evaluate(() => {
+              const rect = (selector: string) => {
+                const r = document.querySelector(selector)!.getBoundingClientRect();
+                return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+              };
+              return { card: rect(".hud-instruction"), more: rect(".arrival-controls .guide-more"), cat: (window as any).__gteki.scanProbe().explorer.catScreenBox() };
+            });
+          };
+          try {
+            const closed = await boxes();
+            fs.writeFileSync(path.join(out, `arrival-${bottom ? "bottom" : "top"}-closed.png`), Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64"));
+            await more.click();
+            await expect(menu).toBeVisible();
+            const opened = await boxes();
+            fs.writeFileSync(path.join(out, `arrival-${bottom ? "bottom" : "top"}-open.png`), Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64"));
+            await more.click();
+            await expect(menu).toBeHidden();
+            const reclosed = await boxes();
+            const states = [closed, opened, reclosed];
+            for (let i = 0; i < states.length; i++) {
+              const { card, cat } = states[i]!;
+              expect(cat, "arrival cat box").not.toBeNull();
+              expect(card.right <= cat.left || card.left >= cat.right || card.bottom <= cat.top || card.top >= cat.bottom, `arrival ${bottom ? "bottom" : "top"} card/cat overlap in state ${i}`).toBe(true);
+              for (let j = i + 1; j < states.length; j++) for (const box of ["card", "more"] as const) for (const edge of ["left", "right", "top", "bottom"] as const) {
+                expect(Math.abs(states[i]![box][edge] - states[j]![box][edge]), `arrival ${bottom ? "bottom" : "top"} ${box}.${edge} moved between states ${i}/${j}`).toBeLessThanOrEqual(2);
+              }
+            }
+          } finally {
+            await anchor.evaluate(({ root, observer, previousBottom, left }) => {
+              observer.disconnect();
+              root.classList.toggle("arrival-bottom", previousBottom);
+              root.classList.toggle("arrival-left", left);
+            });
+            await anchor.dispose();
+          }
+        }
+      }
       if (reelMode === "next") {
         await more.click();
         await menu.locator(".guide-prev").click();
