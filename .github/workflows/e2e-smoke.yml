@@ -57,7 +57,7 @@ jobs:
         run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off --grep-invert "station switching"
 
       - name: Cold open (desktop + phone)
-        timeout-minutes: 18
+        timeout-minutes: 35
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}

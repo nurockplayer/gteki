@@ -843,7 +843,6 @@ export class Explorer {
 
   /** A final camera pose: collision and body-raise solvers never alter the held opening. */
   setOpeningShot(origin: string | null): void {
-    if (!this.previewNext) return;
     if (origin === null) {
       if (this.openingState !== "active") return;
       this.openingRelease = { position: this.camera.position.clone(), quaternion: this.camera.quaternion.clone(), fov: this.camera.fov };

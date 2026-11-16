@@ -109,7 +109,7 @@ export async function openStation(page: Page, key: StationKey, query = ""): Prom
   await page.addInitScript(() => { try { localStorage.setItem("gteki.firstRunDone", "1"); } catch {} });
   await page.addInitScript(PROBE_SCRIPT);
   const t0 = Date.now();
-  await page.goto(`/?station=${key}&lang=en${query}`);
+  await page.goto(`/?open=search&station=${key}&lang=en${query}`);
   // Poll on a timer, not on animation frames: under SwiftShader a frame can take seconds while shaders compile (#647).
   await page.waitForFunction(() => typeof (window as any).__gteki?.phase === "function", null, { timeout: 30_000, polling: 250 });
   await page.waitForFunction(() => (window as any).__gteki.phase() === "ready", null, { timeout: 120_000, polling: 250 });

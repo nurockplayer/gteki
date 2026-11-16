@@ -86,7 +86,7 @@ for (const key of ["ikebukuro", "shinjuku"] as StationKey[]) {
         expect.soft(m.overlapPx.hud, `${state}: no overlap with the HUD (px²)`).toBeLessThanOrEqual(1);
       };
 
-      await page.goto(`/?station=${key}&lang=en`);
+      await page.goto(`/?open=search&station=${key}&lang=en`);
       await ready(page);
       await check("en-idle");
       const en = await creditsList(page);
