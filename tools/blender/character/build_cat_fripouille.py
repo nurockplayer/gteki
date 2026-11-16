@@ -1468,7 +1468,7 @@ def glb_accessor(doc, binary, index, widths):
 
 
 def planted_speeds(arm, actions, durations=None):
-    """Mean horizontal paw displacement per second over low, contiguous stretches."""
+    """Mean paw speed over authored contacts, or low stretches for legacy clips."""
     import bpy
     scene = bpy.context.scene
     paws = [paw_group(leg) for leg in LEGS]
@@ -1478,16 +1478,23 @@ def planted_speeds(arm, actions, durations=None):
         durations = {name: CLIPS[name]["frames"] / FPS for name in ("walk", "trot", "run")}
     for clip, duration in durations.items():
         arm.animation_data.action = actions[clip]
+        gait = AUTHORED_GAITS.get(clip)
         speeds = {name: [] for name in paws}
         starts = {name: None for name in paws}
         # Two cycles capture stretches crossing the loop boundary, at the test's 60 Hz.
         for sample in range(math.ceil(duration * FPS * 4) + 1):
             frame = (sample / 2) % (duration * FPS)
             scene.frame_set(int(frame), subframe=frame % 1)
-            for name in paws:
+            for leg, name in zip(LEGS, paws):
                 point = arm.matrix_world @ arm.pose.bones[name].head
                 start = starts[name]
-                if point.z < rest[name] + 0.01:
+                if gait:
+                    phase = (frame / (gait["cycle_s"] * FPS)) % 1.0
+                    touchdown, toe_off = gait["contacts"][leg["key"]]
+                    planted = (phase - touchdown) % 1.0 < toe_off - touchdown
+                else:
+                    planted = point.z < rest[name] + 0.01
+                if planted:
                     if start is None:
                         starts[name] = (sample, point.copy())
                 elif start is not None:
@@ -1707,6 +1714,9 @@ def glb_checks(checker, path, exported_speeds, variant_speeds):
         checker.check(math.isfinite(speed) and speed > 0 and speed == exported_speeds[name]
                       and abs(speed-variant_speeds[name]) <= variant_speeds[name]*.02,
                       f"variants.{name}.calib_mps {speed:.6f} vs Blender {variant_speeds[name]:.6f} (within 2%)")
+        nominal = gait["nominal_speed_mps"]
+        checker.check(abs(speed - nominal) <= 0.01 * nominal,
+                      f"variants.{name}.calib_mps {speed:.6f} vs nominal {nominal:.6f} (within 1%)")
         checker.check(values.get("cycle_s") == gait["cycle_s"]
                       and values.get("nominal_speed_mps") == gait["nominal_speed_mps"],
                       f"variants.{name} cycle and nominal speed match authored JSON")
