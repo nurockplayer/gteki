@@ -37,7 +37,7 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { OPENING_SHOTS, openingShotState, ARRIVAL_SHOTS, ESCALATOR_SHOT, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { CAT_RAISE_AIM, OPENING_SHOTS, openingShotState, ARRIVAL_SHOTS, ESCALATOR_SHOT, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -397,6 +397,7 @@ export class Explorer {
   private stairAimElevation?: number;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
+  private gateAimHeld = false;
   private readonly bodyRaiseHold = { seconds: 0, target: 0 };
   private boomActual = 0;
   private cameraFade = 1;
@@ -3567,6 +3568,7 @@ export class Explorer {
       this.camera.updateProjectionMatrix();
       this.boomActual = shot.distance;
       this.boomRaise = 0;
+      this.gateAimHeld = false;
       this.squeezed = false;
       this.applyAvatarFade(0, true);
       if (this.catAvatar) {
@@ -3633,6 +3635,7 @@ export class Explorer {
     if (this.firstPerson) {
       this.boomActual = 0;
       this.boomRaise = 0;
+      this.gateAimHeld = false;
       this.stairAimElevation = undefined;
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
@@ -3771,9 +3774,11 @@ export class Explorer {
     }
     if (gateHeld && !gate!.clearPosition(this.camera.position)) this.camera.position.copy(desired);
     if (this.catAvatar) {
-      // Gate release can lower the solved boom before position damping has lowered the camera.
-      const aimRaise = gate ? Math.max(this.boomRaise, Math.asin(this.camera.position.clone().sub(pose.pivot).normalize().y) - Math.asin(pose.back.y)) : this.boomRaise;
-      aimAtRaisedCat(pose.target, this.camera.position, this.pos, aimRaise, this.camera.fov, this.camera.aspect);
+      this.gateAimHeld = gateHeld || (!snap && !this.reducedMotion && this.gateAimHeld && this.boomRaise > 0);
+      // Retain the local aim through release after all positions have left the gate footprint.
+      const aimRaise = this.gateAimHeld ? Math.max(this.boomRaise, Math.asin(this.camera.position.clone().sub(pose.pivot).normalize().y) - Math.asin(pose.back.y)) : this.boomRaise;
+      // Keep the feet correction complete while a local gate raise is releasing.
+      aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.gateAimHeld ? Math.max(aimRaise, CAT_RAISE_AIM.end) : aimRaise, this.camera.fov, this.camera.aspect);
       if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect);
       const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
       const elevation = Math.atan2(pose.target.y - this.camera.position.y, ahead);

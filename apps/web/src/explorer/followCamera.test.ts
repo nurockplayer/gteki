@@ -814,7 +814,7 @@ describe("Ikebukuro JR gate camera (#1378)", () => {
       if (heading === 347) expect(after).toEqual(before);
     }
     expect(replay.run(167, false, false, true)).toEqual(replay.run(167, false, true, true));
-    const fence = replay.targets.find((o) => o.name.startsWith("access_fences_collider"));
+    const fence = replay.targets.find((o) => o.userData.gteki_role === "access_fences_collider");
     expect(fence, "authored fence remains in the camera targets").toBeDefined();
     expect(metrics[0]!.beforeIntrusions).toBe(56);
     expect(metrics[0]!.beforeFrameExits).toBe(5);
