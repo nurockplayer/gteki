@@ -603,26 +603,34 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   root.add(crowd.group);
 
   let zone: AcousticZone = "passage";
-  const acoustics = ctx.audio ? createZoneAcoustics(ctx.audio.context, ctx.audio.destination) : null;
-  const ambience = ctx.audio && acoustics ? createAmbience(ctx.audio.context, acoustics.input) : null;
-  const streetAmbience = ctx.audio && acoustics ? createStreetAmbience(ctx.audio.context, acoustics.input) : null;
-  // Station sound (#859): gates are ticket_gate nodes; with no escalator or platform nodes here,
-  // announcements also come from the stairs and the approach chime is heard from behind the gates.
-  const stationNodes = (graph as { nodes: { id: string; kind?: string; position: { x: number; y: number; z: number | null }; renderZ?: number }[] }).nodes;
-  const siteAt = (n: { position: { x: number; y: number; z: number | null }; renderZ?: number }) =>
-    toRenderer(n.position.x, n.position.y, n.position.z ?? n.renderZ ?? 0);
-  const gateSites = stationNodes.filter((n) => n.kind === "ticket_gate");
-  const stationSound = ctx.audio && acoustics ? createStationSound({
-    context: ctx.audio.context,
-    destination: acoustics.input,
-    isMuted: ctx.audio.isMuted,
-    stationNameJa: "池袋",
-    sites: {
-      gates: gateSites.map(siteAt),
-      announce: stationNodes.filter((n) => n.kind === "ticket_gate" || n.kind === "stair_end").map(siteAt),
-      chime: gateSites.map(siteAt),
-    },
-  }) : null;
+  let acoustics: ReturnType<typeof createZoneAcoustics> | null = null;
+  let ambience: ReturnType<typeof createAmbience> | null = null;
+  let streetAmbience: ReturnType<typeof createStreetAmbience> | null = null;
+  let stationSound: ReturnType<typeof createStationSound> | null = null;
+  const startAudio: NonNullable<StationScene["startAudio"]> = (audio) => {
+    if (acoustics) return;
+    acoustics = createZoneAcoustics(audio.context, audio.destination);
+    ambience = createAmbience(audio.context, acoustics.input);
+    streetAmbience = createStreetAmbience(audio.context, acoustics.input);
+    // Station sound (#859): gates are ticket_gate nodes; with no escalator or platform nodes here,
+    // announcements also come from the stairs and the approach chime is heard from behind the gates.
+    const stationNodes = (graph as { nodes: { id: string; kind?: string; position: { x: number; y: number; z: number | null }; renderZ?: number }[] }).nodes;
+    const siteAt = (n: { position: { x: number; y: number; z: number | null }; renderZ?: number }) =>
+      toRenderer(n.position.x, n.position.y, n.position.z ?? n.renderZ ?? 0);
+    const gateSites = stationNodes.filter((n) => n.kind === "ticket_gate");
+    stationSound = createStationSound({
+      context: audio.context,
+      destination: acoustics.input,
+      isMuted: audio.isMuted,
+      stationNameJa: "池袋",
+      sites: {
+        gates: gateSites.map(siteAt),
+        announce: stationNodes.filter((n) => n.kind === "ticket_gate" || n.kind === "stair_end").map(siteAt),
+        chime: gateSites.map(siteAt),
+      },
+    });
+  };
+  if (ctx.audio) startAudio(ctx.audio);
 
   const nodes = new Map((graph as { nodes: { id: string; position: { x: number; y: number; z: number | null } }[] }).nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = [];
@@ -709,7 +717,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     // With a lightmap the hemisphere is only 0.06 and scene.environment is null, so the explorer's generated
     // meshes take this map to pick up any light at all (#1008).
     ...(lightmap ? { generatedMeshEnvMap: env } : {}),
-    ...(acoustics ? { setAcousticZone: (next: AcousticZone) => { zone = next; acoustics.setZone(next); streetAmbience?.setZone(next); } } : {}),
+    startAudio,
+    setAcousticZone: (next: AcousticZone) => { zone = next; acoustics?.setZone(next); streetAmbience?.setZone(next); },
     settled: () => catalogKit.settled(),
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
     setCameraFocus: (p, sign) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign),
