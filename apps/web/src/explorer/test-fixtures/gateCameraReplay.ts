@@ -75,10 +75,10 @@ export async function gateCameraReplay() {
       const gate = built.cameraGateAisles.find((g) => g.node === "g_jr_s")!;
       const local = e.camera.position.clone().applyMatrix4(gate.worldToLocal);
       const probes = [.08, .22, .42].map((y) => e.pos.clone().add(new THREE.Vector3(0, y, 0)).project(e.camera));
-      const nearCorners = [-1, 1].flatMap((x) => [-1, 1].map((y) => new THREE.Vector3(x, y, -1).unproject(e.camera).applyMatrix4(gate.worldToLocal)));
+      const nearRadius = e.camera.near * Math.hypot(1, Math.tan(THREE.MathUtils.degToRad(e.camera.fov) / 2) * Math.hypot(1, e.camera.aspect));
       frames.push({ camera: e.camera.position.toArray(), quaternion: e.camera.quaternion.toArray(), fov: e.camera.fov,
         raise: e.boomRaise, probes, inside: gate.cabinets.some((box) => box.containsPoint(local)),
-        nearInside: gate.cabinets.some((box) => nearCorners.some((point) => box.containsPoint(point))),
+        nearInside: gate.cabinets.some((box) => box.distanceToPoint(local) <= nearRadius),
       });
     }
     return frames;

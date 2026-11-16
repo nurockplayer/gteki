@@ -3709,7 +3709,7 @@ export class Explorer {
     let dist = wantedDistance;
     let raisedClear = false;
     const gate = this.catAvatar && this.stationScene?.cameraGateAisles
-      ? cameraGateConstraint(this.stationScene.cameraGateAisles, this.pos, this.camera.position, pose.pivot, this.camera.near, 60, this.camera.aspect)
+      ? cameraGateConstraint(this.stationScene.cameraGateAisles, this.pos, this.camera.position, pose.pivot.clone().addScaledVector(back, wantedDistance), pose.pivot, this.camera.near, 60, this.camera.aspect)
       : undefined;
     let gateHeld = false;
     if (!this.cameraTargets.length) this.boomRaise = 0;
@@ -3771,7 +3771,9 @@ export class Explorer {
     }
     if (gateHeld && !gate!.clearPosition(this.camera.position)) this.camera.position.copy(desired);
     if (this.catAvatar) {
-      aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
+      // Gate release can lower the solved boom before position damping has lowered the camera.
+      const aimRaise = gate ? Math.max(this.boomRaise, Math.asin(this.camera.position.clone().sub(pose.pivot).normalize().y) - Math.asin(pose.back.y)) : this.boomRaise;
+      aimAtRaisedCat(pose.target, this.camera.position, this.pos, aimRaise, this.camera.fov, this.camera.aspect);
       if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect);
       const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
       const elevation = Math.atan2(pose.target.y - this.camera.position.y, ahead);

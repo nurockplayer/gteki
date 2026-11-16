@@ -332,7 +332,7 @@ export function raisedBack(back: THREE.Vector3, raise: number, out: THREE.Vector
 }
 
 /** Local gate envelope test, including a sphere enclosing the camera and all near-plane corners. */
-export function cameraGateConstraint(aisles: readonly CameraGateAisle[], feet: THREE.Vector3, position: THREE.Vector3, pivot: THREE.Vector3, near: number, fov: number, aspect: number) {
+export function cameraGateConstraint(aisles: readonly CameraGateAisle[], feet: THREE.Vector3, position: THREE.Vector3, nominal: THREE.Vector3, pivot: THREE.Vector3, near: number, fov: number, aspect: number) {
   const radius = near * Math.hypot(1, Math.tan(THREE.MathUtils.degToRad(fov) / 2) * Math.hypot(1, aspect));
   const local = new THREE.Vector3();
   const gates = aisles.filter((gate) => {
@@ -342,6 +342,8 @@ export function cameraGateConstraint(aisles: readonly CameraGateAisle[], feet: T
       && local.z >= gate.envelope.min.z - radius && local.z <= gate.envelope.max.z + radius;
     if (inside()) return true;
     local.copy(position).applyMatrix4(gate.worldToLocal);
+    if (inside()) return true;
+    local.copy(nominal).applyMatrix4(gate.worldToLocal);
     return inside();
   });
   if (!gates.length) return undefined;
