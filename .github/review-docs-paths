@@ -1,0 +1,3 @@
+# PRs wholly under these globs take the tachiko-harness docs review lane:
+# review-run --provider docs (the lead's own approve bound to the head); review-gate still needs green CI.
+docs/release/**
