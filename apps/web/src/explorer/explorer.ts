@@ -1680,7 +1680,8 @@ export class Explorer {
     this.wallProps = undefined;
     this.avatarRig?.setHold?.(null);
     this.publishInteraction(this.interactionController.state);
-    this.avatarRig?.cancelPendingLoad();
+    // The first open reuses the avatar already loading from the constructor.
+    if (this.station) this.avatarRig?.cancelPendingLoad();
     this.street.restore(this.scene);
     this.street.attach(null);
     this.streetY = null;
