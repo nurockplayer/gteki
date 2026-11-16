@@ -1598,7 +1598,7 @@ export class App {
     if (run !== this.arrivalPlacementRun || !this.root.classList.contains("arrival") || this.explorer.currentMode !== "guide") return;
     const card = this.ui.hud.querySelector<HTMLElement>(".hud-instruction");
     const cat = this.explorer.catScreenBox();
-    const key = card && cat ? [innerWidth, innerHeight, cat.left, cat.right, cat.top, cat.bottom, card.offsetWidth, card.offsetHeight].join(",") : "";
+    const key = card && cat ? [innerWidth, innerHeight, cat.left, cat.right, cat.top, cat.bottom, card.offsetWidth, card.offsetHeight, this.ui.hud.offsetHeight].join(",") : "";
     if (card && cat && key !== this.arrivalPlacementKey) {
       this.arrivalPlacementKey = key;
       const previousLeft = this.root.classList.contains("arrival-left");
