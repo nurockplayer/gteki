@@ -30,6 +30,9 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
   const panner = context.createPanner(); panner.panningModel = "equalpower"; panner.distanceModel = "inverse"; panner.refDistance = 3;
   source.connect(filter).connect(gain).connect(panner).connect(destination); source.start();
   const prev: number[] = [];
+  let phase: number | null = null;
+  let sourcePosition: V3 = { x: 0, y: 0, z: 0 };
+  let listenerPosition: V3 | null = null;
   let disposed = false;
   function position(p: PannerNode, at: V3) { if (p.positionX) { p.positionX.value = at.x; p.positionY.value = at.y; p.positionZ.value = at.z; } else p.setPosition(at.x, at.y, at.z); }
   function oneShot(cue: Cue, at: V3) {
@@ -48,6 +51,16 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
     }
   }
   return {
+    info() {
+      const at = { x: panner.positionX?.value ?? sourcePosition.x, y: panner.positionY?.value ?? sourcePosition.y, z: panner.positionZ?.value ?? sourcePosition.z };
+      return {
+        phase,
+        gain: gain.gain.value,
+        cutoffHz: filter.frequency.value,
+        sourcePosition: at,
+        listenerDistance: listenerPosition ? Math.hypot(at.x - listenerPosition.x, at.y - listenerPosition.y, at.z - listenerPosition.z) : null,
+      };
+    },
     update(tracks: Track[], listener: V3) {
       if (disposed) return;
       let nearest: Track | undefined; let distance = Infinity;
@@ -64,7 +77,12 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
         prev[i] = track.tt;
         if (track.pos) { const d = Math.hypot(track.pos.x - listener.x, track.pos.y - listener.y, track.pos.z - listener.z); if (d < distance) { distance = d; nearest = track; } }
       });
-      if (nearest?.pos) position(panner, nearest.pos);
+      phase = nearest?.tt ?? null;
+      listenerPosition = { x: listener.x, y: listener.y, z: listener.z };
+      if (nearest?.pos) {
+        position(panner, nearest.pos);
+        sourcePosition = { x: nearest.pos.x, y: nearest.pos.y, z: nearest.pos.z };
+      }
       gain.gain.setTargetAtTime(nearest ? rumbleLevel(nearest.tt) : 0, context.currentTime, 0.1);
       filter.frequency.setTargetAtTime(nearest ? rumbleCutoffHz(nearest.tt) : 180, context.currentTime, 0.1);
     },

@@ -61,6 +61,9 @@ export function createStreetAmbience(ctx: AudioContext, destination: AudioNode) 
   }
 
   return {
+    info() {
+      return { streetGain: master.gain.value };
+    },
     setZone(zone: AcousticZone) {
       target = streetLevel(zone);
       master.gain.setTargetAtTime(target, ctx.currentTime, 1.5);
