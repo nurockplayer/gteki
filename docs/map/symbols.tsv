@@ -44,6 +44,7 @@ ditherFade	function	apps/web/src/explorer/avatarDither.ts
 patchAvatarDither	function	apps/web/src/explorer/avatarDither.ts
 sanitizeAvatarFade	function	apps/web/src/explorer/avatarDither.ts
 catAvatarFixture	function	apps/web/src/explorer/avatarGlb.fixture.ts
+catGaitAvatarFixture	function	apps/web/src/explorer/avatarGlb.fixture.ts
 fadeUniform	function	apps/web/src/explorer/avatarGlb.fixture.ts
 skinnedAvatarFixture	function	apps/web/src/explorer/avatarGlb.fixture.ts
 AvatarGlbLoader	interface	apps/web/src/explorer/avatarGlb.ts
