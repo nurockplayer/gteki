@@ -266,8 +266,8 @@ describe("avatarKind", () => {
   });
 });
 
- it("defaults cat gait to A, with B as a next preview", () => {
-  for (const [query, expected] of [["", "a"], ["next=1", "a"], ["catGait=a", "a"], ["catGait=b", "a"], ["next=1&catGait=b", "b"], ["catGait=legacy", undefined], ["next=1&catGait=legacy", undefined], ["catGait=c", "a"]] as const) {
-    expect(catGait(new URLSearchParams(query))).toBe(expected);
+ it("selects cat trot and run clips independently", () => {
+  for (const [query, expected] of [["", { run: "a" }], ["next=1", { run: "a" }], ["next=1&catGait=a", { trot: "a", run: "a" }], ["next=1&catGait=b", { trot: "b", run: "b" }], ["catGait=legacy", undefined], ["next=1&catGait=legacy", undefined], ["catGait=a", { run: "a" }], ["catGait=b", { run: "a" }], ["catGait=c", { run: "a" }]] as const) {
+    expect(catGait(new URLSearchParams(query))).toEqual(expected);
   }
 });
