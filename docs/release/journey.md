@@ -21,7 +21,7 @@ Rows are in playhead order: the time a first-time visitor reaches them. "Script"
 | # | When | What the player gets | Judged by | 2026-11-14, reel at 15ef23e8 (desktop / phone) |
 |---|---|---|---|---|
 | J1 | 0–2 s | A designed first frame (title and progress), never a bare form on black | script: screenshot at 1 s | PASS (default since #1363, reel at e88ef45): designed boot card at 1 s, poster 103 / 71 ms; art acceptance PR #1363 comment 6908862317 |
-| J2 | ≤ 5 s desktop, ≤ 8 s phone | Without any input: in the station as the cat, at the exit 1 mouth, stairs ahead (hero H1). Download to that frame ≤ 6 MB | script: mode, pose, time, bytes | PASS (default since #1363): Shinjuku walk mode at the exit 1 mouth, authored H1 pose accepted by the art director; 5.57 / 5.56 MB to ready. Time on this Mac's GPU (4249fd8d, same code path behind ?next=1): 3914 ms desktop, phone project 3383 ms (a Mac GPU, not a phone); CI software render 13.9 / 13.3 s does not count |
+| J2 | ≤ 5 s desktop, ≤ 8 s phone | Without any input: in the station as the cat, at the exit 1 mouth, stairs ahead (hero H1). Download to that frame ≤ 6 MB | script: mode, pose, time, bytes | FAIL on time only (default since #1363): pose, mode and bytes pass (Shinjuku walk mode at the exit 1 mouth, H1 pose accepted by the art director; 5.57 / 5.56 MB). Live cold loads at / (272c7f28, cache disabled, this Mac's GPU, art director 2026-11-16 15:48 JST): desktop ready 5.1 / 5.4 / 6.9 s, over 5 s; phone project 4.2 / 4.5 s. The warm GPU reel (4249fd8d) read 3914 ms desktop; CI software render does not count |
 | J3 | first frame | The world owns the frame: overlay ≤ 20% desktop, ≤ 30% phone, one primary action | script: DOM overlay grid | PASS (default since #1363): overlay 10.7% / 13.3%, one primary action ("Walk to the platform") |
 | J4 | first tap | One tap starts the walk and the sound | script: one click → guide mode, audio running | FAIL (4 actions; by hand, the reel does not take this path) |
 | J5 | whole walk | No void, no black holes, the camera never inside geometry | script: every 2.5 m with the guide camera | FAIL: 1 / 2 of 39 samples. Near clip on the first escalator at 48 s (0.13, desktop) and at 68 s and 76 s (0.20, phone); void ≤ 0.15% |
@@ -35,7 +35,7 @@ Rows are in playhead order: the time a first-time visitor reaches them. "Script"
 | J13 | always | Truth kept: "approximate, not surveyed" visible, data scope one tap away, nothing invented (D3) | person: truth review | PASS: the "Approximate, not surveyed" badge is on screen in 39 of 39 samples on desktop and on phone. The exception of the last reading (desktop at 152 s, the arrival data note pushed the badge off screen) is closed by the quiet arrival HUD (#1269) |
 | J14 | always | Release hygiene: no console errors, a message when WebGL is unavailable, credits, ja and en | script | not judged (the reel records no console state) |
 
-Pass count 2026-11-16: **6 / 14** (default: J1, J2, J3, J6, J8 and J13). J1–J3 flipped with #1363 (cold open as the default, merged 2026-11-16 15:3x JST); a real-phone J2 time is still to be read on the Owner's device.
+Pass count 2026-11-16: **5 / 14** (default: J1, J3, J6, J8 and J13). J1 and J3 flipped with #1363 (cold open as the default, merged 2026-11-16 15:36 JST); J2 passes everything but the desktop cold-load time (5.1–6.9 s live vs ≤ 5 s).
 
 Pass count 2026-11-15: **3 / 14** (default: J6, J8 and J13). J6 passes since #1332.
 
