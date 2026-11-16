@@ -46,16 +46,14 @@ test("cold open @phone", async ({ page }, info) => {
   test.setTimeout(180_000);
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
-  const cdp = reelMode === "next" ? await page.context().newCDPSession(page) : undefined;
+  const cdp = await page.context().newCDPSession(page);
   let frame: string | undefined;
   let frameDeadline = Infinity;
-  if (cdp) {
-    cdp.on("Page.screencastFrame", ({ data, sessionId }) => {
-      if (Date.now() <= frameDeadline) frame = data;
-      void cdp.send("Page.screencastFrameAck", { sessionId });
-    });
-    await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });
-  }
+  cdp.on("Page.screencastFrame", ({ data, sessionId }) => {
+    if (Date.now() <= frameDeadline) frame = data;
+    void cdp.send("Page.screencastFrameAck", { sessionId });
+  });
+  await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });
   frame = undefined;
   const start = Date.now();
   await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning", { waitUntil: "commit" });
@@ -63,19 +61,14 @@ test("cold open @phone", async ({ page }, info) => {
   frameDeadline = committed + 1000;
   await page.waitForTimeout(Math.max(0, frameDeadline - Date.now()));
   let open1sShot: "ok" | "none" | undefined;
-  if (cdp) {
-    await cdp.send("Page.stopScreencast");
-    open1sShot = frame ? "ok" : "none";
-    if (frame) fs.writeFileSync(path.join(out, "open-1s.png"), Buffer.from(frame, "base64"));
-  } else await page.screenshot({ path: path.join(out, "open-1s.png"), timeout: 60_000 });
+  await cdp.send("Page.stopScreencast");
+  open1sShot = frame ? "ok" : "none";
+  if (frame) fs.writeFileSync(path.join(out, "open-1s.png"), Buffer.from(frame, "base64"));
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
   const readyMs = Date.now() - start;
-  let actionMs: number | undefined;
-  if (reelMode === "next") {
-    await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 60_000 });
-    await page.waitForFunction(() => (window as any).__gteki.route()?.ok, null, { timeout: 60_000 });
-    actionMs = Date.now() - start;
-  }
+  await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 60_000 });
+  await page.waitForFunction(() => (window as any).__gteki.route()?.ok, null, { timeout: 60_000 });
+  const actionMs = Date.now() - start;
   const state = await page.evaluate(() => {
     const e = (window as any).__gteki.scanProbe().explorer;
     const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming;
@@ -89,7 +82,7 @@ test("cold open @phone", async ({ page }, info) => {
       navTiming: { responseEnd: Math.round(nav.responseEnd), domContentLoadedEventEnd: Math.round(nav.domContentLoadedEventEnd) },
     };
   });
-  const nextState = reelMode === "next" ? await page.evaluate(async () => {
+  const coldState = await page.evaluate(async () => {
     const g = (window as any).__gteki;
     const labelsShown = [...document.querySelectorAll(".poi-label")].filter((el) => {
       const style = getComputedStyle(el);
@@ -104,55 +97,48 @@ test("cold open @phone", async ({ page }, info) => {
     const liftMs = performance.getEntriesByName("boot-lift")[0]?.startTime ?? null;
     return { endpoints: g.routeEndpoints(), avatar: g.avatar(), camera: g.camera(), opening: await g.openingFrame(), labelsShown, fcpMs, posterMs, liftMs, badgeCardGap };
 
-  }) : null;
+  });
   const coverage = await overlay(page);
   let openingMetrics: Awaited<ReturnType<typeof sceneMetrics>> | undefined;
-  if (reelMode === "next") {
-    await page.evaluate(() => (window as any).__gteki.holdFrames(true));
-    try {
-      await page.evaluate(() => (window as any).__gteki.goldenFrame());
-      openingMetrics = await sceneMetrics(page);
-      const png = await cdp!.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
-      fs.writeFileSync(path.join(out, "open-ready.png"), Buffer.from(png.data, "base64"));
-    } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
-  } else await page.screenshot({ path: path.join(out, "open-ready.png"), timeout: 60_000 });
-  fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, ...(reelMode === "next" ? { actionMs, open1sShot, ...nextState, opening: { ...nextState!.opening, catVisible: openingMetrics!.catVisible, catOccluder: openingMetrics!.catOccluder, catOccluderMeshes: openingMetrics!.catOccluderMeshes } } : {}), ...state, ...coverage }, null, 2));
-  if (nextState) {
-    expect(open1sShot).toBe("ok");
-    expect(nextState.fcpMs).not.toBeNull();
-    expect(nextState.fcpMs).toBeLessThanOrEqual(1000);
-    expect(nextState.badgeCardGap).toBeGreaterThanOrEqual(8);
-    expect(state.bytes).toBeLessThanOrEqual(6_000_000);
-    expect(state.mode).toBe("walk");
-    expect(nextState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
-    const { opening, labelsShown } = nextState;
-    const phone = info.project.name.startsWith("phone");
-    const authored = phone ? { heading: 174, pitch: -12, height: 1.22, distance: 3, fov: 65 } : { heading: 174, pitch: -3, height: 1.1, distance: 2.75, fov: 55 };
-    expect(opening.shot).toBe(true);
-    expect(Math.abs(opening.camera.heading - authored.heading)).toBeLessThanOrEqual(1);
-    expect(Math.abs(opening.camera.pitch - authored.pitch)).toBeLessThanOrEqual(1);
-    expect(Math.abs(opening.camera.height - authored.height)).toBeLessThanOrEqual(0.05);
-    expect(Math.abs(opening.camera.distance - authored.distance)).toBeLessThanOrEqual(0.1);
-    expect(opening.camera.fov).toBe(authored.fov);
-    expect(labelsShown).toBe(0);
-    expect(opening.markers).toBe(0);
-    expect(opening.cat.x0).toBeGreaterThanOrEqual(0);
-    expect(opening.cat.x1).toBeLessThanOrEqual(1);
-    expect(opening.cat.y0).toBeGreaterThanOrEqual(0);
-    expect(opening.cat.y1).toBeLessThanOrEqual(phone ? 0.68 : 0.90);
-    if (phone) {
-      expect(openingMetrics!.catVisible).toBeGreaterThanOrEqual(0.8);
-      expect(opening.horizonY).toBeGreaterThanOrEqual(0.30);
-      expect(opening.horizonY).toBeLessThanOrEqual(0.40);
-    } else {
-      expect(opening.cat.x).toBeGreaterThanOrEqual(0.45);
-      expect(opening.cat.x).toBeLessThanOrEqual(0.50);
-      expect(opening.cat.y1 - opening.cat.y0).toBeGreaterThanOrEqual(0.14);
-      expect(opening.cat.y1 - opening.cat.y0).toBeLessThanOrEqual(0.22);
-    }
+  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
+  try {
+    await page.evaluate(() => (window as any).__gteki.goldenFrame());
+    openingMetrics = await sceneMetrics(page);
+    const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+    fs.writeFileSync(path.join(out, "open-ready.png"), Buffer.from(png.data, "base64"));
+  } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+  fs.writeFileSync(path.join(out, "cold-open.json"), JSON.stringify({ readyMs, actionMs, open1sShot, ...coldState, opening: { ...coldState.opening, catVisible: openingMetrics!.catVisible, catOccluder: openingMetrics!.catOccluder, catOccluderMeshes: openingMetrics!.catOccluderMeshes }, ...state, ...coverage }, null, 2));
+  expect(open1sShot).toBe("ok");
+  expect(coldState.fcpMs).not.toBeNull();
+  expect(coldState.fcpMs).toBeLessThanOrEqual(1000);
+  expect(coldState.badgeCardGap).toBeGreaterThanOrEqual(8);
+  expect(state.bytes).toBeLessThanOrEqual(6_000_000);
+  expect(state.mode).toBe("walk");
+  expect(coldState.endpoints).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
+  const { opening, labelsShown } = coldState;
+  const phone = info.project.name.startsWith("phone");
+  const authored = phone ? { heading: 174, pitch: -12, height: 1.22, distance: 3, fov: 65 } : { heading: 174, pitch: -3, height: 1.1, distance: 2.75, fov: 55 };
+  expect(opening.shot).toBe(true);
+  expect(Math.abs(opening.camera.heading - authored.heading)).toBeLessThanOrEqual(1);
+  expect(Math.abs(opening.camera.pitch - authored.pitch)).toBeLessThanOrEqual(1);
+  expect(Math.abs(opening.camera.height - authored.height)).toBeLessThanOrEqual(0.05);
+  expect(Math.abs(opening.camera.distance - authored.distance)).toBeLessThanOrEqual(0.1);
+  expect(opening.camera.fov).toBe(authored.fov);
+  expect(labelsShown).toBe(0);
+  expect(opening.markers).toBe(0);
+  expect(opening.cat.x0).toBeGreaterThanOrEqual(0);
+  expect(opening.cat.x1).toBeLessThanOrEqual(1);
+  expect(opening.cat.y0).toBeGreaterThanOrEqual(0);
+  expect(opening.cat.y1).toBeLessThanOrEqual(phone ? 0.68 : 0.90);
+  if (phone) {
+    expect(openingMetrics!.catVisible).toBeGreaterThanOrEqual(0.8);
+    expect(opening.horizonY).toBeGreaterThanOrEqual(0.30);
+    expect(opening.horizonY).toBeLessThanOrEqual(0.40);
   } else {
-    await expect(page.locator("#cold-open-poster")).toBeHidden();
-    expect(await page.evaluate(() => performance.getEntriesByType("resource").some(r => r.name.includes("cold-open/poster-")))).toBe(false);
+    expect(opening.cat.x).toBeGreaterThanOrEqual(0.45);
+    expect(opening.cat.x).toBeLessThanOrEqual(0.50);
+    expect(opening.cat.y1 - opening.cat.y0).toBeGreaterThanOrEqual(0.14);
+    expect(opening.cat.y1 - opening.cat.y0).toBeLessThanOrEqual(0.22);
   }
 });
 
@@ -229,32 +215,26 @@ test("guided walk @phone", async ({ page }, info) => {
   page.on("response", response => { if (response.status() >= 400 && failedRequests.size < 20) failedRequests.add(`${response.status()} ${response.url()}`); });
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   await page.addInitScript(PROBE_SCRIPT);
-  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?station=shinjuku&from=poi:exit:1&to=poi:platform:oedo&qaTimeBand=morning");
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning");
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready" && (window as any).__gteki.route()?.ok, null, { timeout: 120_000, polling: 250 });
   const timeBand = new URL(page.url()).searchParams.get("qaTimeBand");
   expect(timeBand).toBe("morning");
-  if (reelMode === "next") {
-    await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
-    expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
-  }
+  await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
+  expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
   const route = await hooks.route(page);
   const steps = route.steps as { fromNodeId: string; toNodeId: string; edgeId: string; reversed: boolean; mode: string }[];
   const wps = routeWaypoints("shinjuku", steps), { graph } = stationData("shinjuku");
   const nodes = new Map(graph.nodes.map(n => [n.id, n]));
   let actions = 0;
-  if (reelMode === "next") {
-    await page.evaluate(() => (window as any).__gteki.holdFrames(true));
-    await page.locator(".cold-open .primary").click();
-    actions++;
-  } else await page.evaluate(() => { const g = (window as any).__gteki; g.holdFrames(true); g.startGuide(); });
+  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
+  await page.locator(".cold-open .primary").click();
+  actions++;
   const j4 = await page.evaluate((actions) => { const g = (window as any).__gteki; return { actions, mode: g.mode(), audioRunning: g.audio().state === "running" }; }, actions);
-  if (reelMode === "next") {
-    expect.soft(j4.actions).toBe(1);
-    expect.soft(j4.mode).toBe("guide");
-    expect.soft(j4.audioRunning).toBe(true);
-  }
+  expect.soft(j4.actions).toBe(1);
+  expect.soft(j4.mode).toBe("guide");
+  expect.soft(j4.audioRunning).toBe(true);
   await expect.poll(() => hooks.mode(page)).toBe("guide");
-  if (reelMode === "next") await expect(page.locator(".cold-open")).toBeHidden();
+  await expect(page.locator(".cold-open")).toBeHidden();
   const frameTimes = async (at: "start" | "end") => page.evaluate(async (at) => {
     const e = (window as any).__gteki.scanProbe().explorer;
     const deltas: number[] = []; let first = 0, previous = 0;

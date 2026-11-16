@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#0b1018" />
     <script>
       const params = new URLSearchParams(location.search);
-      if (params.get("next") === "1" && !params.has("from") && !params.has("to") && (params.get("station") ?? "shinjuku") === "shinjuku") {
+      if (params.get("open") !== "search" && !params.has("from") && !params.has("to") && (params.get("station") ?? "shinjuku") === "shinjuku") {
         document.documentElement.dataset.coldOpen = "1";
       }
     </script>
@@ -23,7 +23,10 @@
       @media (orientation: portrait) {
         html[data-cold-open="1"] #cold-open-poster:not([hidden]) { background-image: linear-gradient(#0b101855, #0b1018bb), url("./cold-open/poster-phone.webp"); }
       }
-      @media (max-width: 480px) { #cold-open-poster .boot-title { font-size: 32px; } }
+      @media (max-width: 480px) {
+        #cold-open-poster { padding-bottom: 96px; box-sizing: border-box; }
+        #cold-open-poster .boot-title { font-size: 32px; }
+      }
       @media (prefers-reduced-motion: reduce) { #cold-open-poster, #cold-open-poster .boot-fill { transition: none; } }
     </style>
     <title>GTEki — 駅を探して、歩いて確かめる</title>
