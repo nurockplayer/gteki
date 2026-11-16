@@ -8,6 +8,9 @@ async function lifted(page: Page, info: TestInfo) {
   await expect(page.locator(".cold-open")).toBeVisible();
 }
 
+// Each case takes 2.2–4.1 min under CI software rendering, past the 240 s default (#1401).
+test.describe.configure({ timeout: 420_000 });
+
 for (const url of ["/", "/?next=1"])
 test(`${url}: loading card blocks early taps and lifts to the route @phone`, async ({ page }, info) => {
   await installBootFrameProbe(page);
