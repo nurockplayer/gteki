@@ -29,9 +29,12 @@ export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string |
 export type AvatarKind = "human" | "cat";
 export type CatGait = "a" | "b";
 
+/** Cat gait A is default; B is preview-only, and legacy keeps the procedural gait. */
 export function catGait(params: URLSearchParams): CatGait | undefined {
   const gait = params.get("catGait");
-  return params.get("next") === "1" && (gait === "a" || gait === "b") ? gait : undefined;
+  if (gait === "legacy") return undefined;
+  if (gait === "b" && params.get("next") === "1") return "b";
+  return "a";
 }
 
 /** #854 scripted cat, picked by gteki-lead on 2026-11-06; a placeholder until the Owner sets breed and coat. */

@@ -266,8 +266,8 @@ describe("avatarKind", () => {
   });
 });
 
- it("selects cat gait only in the next preview", () => {
-  for (const [query, expected] of [["next=1&catGait=a", "a"], ["next=1&catGait=b", "b"], ["catGait=a", undefined], ["next=1&catGait=c", undefined], ["next=1", undefined]] as const) {
+ it("defaults cat gait to A, with B as a next preview", () => {
+  for (const [query, expected] of [["", "a"], ["next=1", "a"], ["catGait=a", "a"], ["catGait=b", "a"], ["next=1&catGait=b", "b"], ["catGait=legacy", undefined], ["next=1&catGait=legacy", undefined], ["catGait=c", "a"]] as const) {
     expect(catGait(new URLSearchParams(query))).toBe(expected);
   }
 });
