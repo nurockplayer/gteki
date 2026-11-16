@@ -797,14 +797,19 @@ describe("Ikebukuro JR gate camera (#1378)", () => {
     const { gateCameraReplay } = await import("./test-fixtures/gateCameraReplay.ts");
     const replay = await gateCameraReplay();
     const metrics = [];
+    const checks = [];
     for (const [heading, walking] of [[167, true], [167, false], [257, false], [347, true], [347, false]] as const) {
       const before = replay.run(heading, walking, true), after = replay.run(heading, walking);
       const exits = (frames: typeof after) => frames.filter((f) => f.probes.some((p) => Math.abs(p.x) > 1 || Math.abs(p.y) > 1 || Math.abs(p.z) > 1)).length;
       metrics.push({ heading, walking, beforeIntrusions: before.filter((f) => f.inside).length,
         afterIntrusions: after.filter((f) => f.inside).length, beforeFrameExits: exits(before), afterFrameExits: exits(after),
         beforeLowY: Math.min(...before.map((f) => f.probes[0]!.y)), maxRaiseDeg: Math.max(...after.map((f) => THREE.MathUtils.radToDeg(f.raise))) });
+      checks.push({ heading, before, after, exits: exits(after) });
+    }
+    console.log("#1378 CPU before/after (2026-11-17 JST):", JSON.stringify(metrics));
+    for (const { heading, before, after, exits } of checks) {
       expect(after.filter((f) => f.inside || f.nearInside), `${heading} cabinet/near-plane`).toHaveLength(0);
-      expect(exits(after), `${heading} cat probes`).toBe(0);
+      expect(exits, `${heading} cat probes`).toBe(0);
       if (heading === 347) expect(after).toEqual(before);
     }
     expect(replay.run(167, false, false, true)).toEqual(replay.run(167, false, true, true));
@@ -812,7 +817,6 @@ describe("Ikebukuro JR gate camera (#1378)", () => {
     expect(fence, "authored fence remains in the camera targets").toBeDefined();
     expect(metrics[0]!.beforeIntrusions).toBe(56);
     expect(metrics[0]!.beforeFrameExits).toBe(5);
-    console.log("#1378 CPU before/after (2026-11-17 JST):", JSON.stringify(metrics));
     replay.kit.dispose();
   }, 120_000);
 });

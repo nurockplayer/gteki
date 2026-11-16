@@ -692,7 +692,8 @@ describe("the walk graph and the walker's world do not depend on the kit", () =>
   it("the scene hands the explorer only the PLATEAU and fence colliders: kit.ts never builds walkable or collider meshes", () => {
     const src = fs.readFileSync(path.join(HERE, "scene.ts"), "utf8");
     // kit goes onto `root` and nowhere else
-    expect(src).toMatch(/root\.add\(kit\.build\(THREE, env, toRenderer\)\.group\)/);
+    expect(src).toMatch(/const builtKit = kit\.build\(THREE, env, toRenderer\)/);
+    expect(src).toMatch(/root\.add\(builtKit\.group\)/);
     const lines = src.split("\n").filter((l) => /\bkit\b/.test(l));
     expect(lines.filter((l) => /walkable|colliders|assembleCollision|tileCollision/.test(l))).toEqual([]);
     const kitSrc = fs.readFileSync(path.join(HERE, "kit.ts"), "utf8");
@@ -714,7 +715,7 @@ describe("camera-only JR gate metadata (#1378)", () => {
     cabinet.name = "COL_cabinet_0-colonly";
     cabinet.position.set(-.82, .46, -.95);
     gltf.scene.children[0]!.add(cabinet);
-    const loaded = await loadKit(THREE, host([`kit/high/${GATE}.glb`], async () => gltf), kit, [], false, graph);
+    const loaded = await loadKit(THREE, { assetUrl: (uri) => uri, loadGlb: async () => gltf }, kit, [], false, graph);
     const built = loaded.build(THREE, new THREE.Texture(), toRenderer);
     expect(built.cameraGateAisles.map((g) => g.node).sort()).toEqual([...GATE_NODES].sort());
     built.group.traverse((object) => {

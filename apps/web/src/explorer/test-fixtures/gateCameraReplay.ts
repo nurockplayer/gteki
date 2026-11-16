@@ -1,6 +1,7 @@
 // CPU replay of production methods; rendering/UI callbacks alone are omitted (2026-11-17 JST).
 import fs from "node:fs";
-import ts from "typescript";
+import { parse } from "@babel/parser";
+import { stripTypeScriptTypes } from "node:module";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
@@ -34,11 +35,14 @@ export async function gateCameraReplay() {
   json("stations/ikebukuro/scene/access_fences.json").marks, false, graph as KitGraph);
   const built = kit.build(THREE, new THREE.Texture(), (x, y, z) => new THREE.Vector3(x, z, -y));
   // Extract the named methods exactly, including current body sliding, casts and final smoothing.
-  const source = ts.createSourceFile("explorer.ts", fs.readFileSync(new URL("../explorer.ts", import.meta.url), "utf8"), ts.ScriptTarget.Latest, true);
-  const explorer = source.statements.find((s): s is ts.ClassDeclaration => ts.isClassDeclaration(s) && s.name?.text === "Explorer")!;
+  const source = fs.readFileSync(new URL("../explorer.ts", import.meta.url), "utf8");
+  const declarations = parse(source, { sourceType: "module", plugins: ["typescript"] }).program.body
+    .flatMap((node) => node.type === "ExportNamedDeclaration" && node.declaration?.type === "ClassDeclaration" ? [node.declaration] : []);
+  const explorer = declarations.find((node) => node.id?.name === "Explorer")!;
   const names = ["walkFrom", "stepWalk", "placeCamera", "followHead", "groundAt", "colliderCast", "blockedByColliders", "setFov", "applyAvatarFade"];
-  const methods = explorer.members.filter((m) => m.name && names.includes(m.name.getText(source))).map((m) => m.getText(source)).join("\n");
-  const code = ts.transpileModule(`class CpuExplorer { ${methods} }`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  const methods = explorer.body.body.filter((node) => node.type === "ClassMethod" && node.key.type === "Identifier" && names.includes(node.key.name))
+    .map((node) => source.slice(node.start!, node.end!)).join("\n");
+  const code = stripTypeScriptTypes(`class CpuExplorer { ${methods} }`);
   const dependencies = { THREE, ...follow, ...walker, ...body, WALKER_BODY, LOOK_PITCH, insideGreyboxOpening, castAll, castCamera, portalWallNormal,
     R: (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y), EYE: WALKER_BODY.eyeM, RADIUS: WALKER_BODY.radiusM,
     WALK: WALKER_SPEED.walkMps, RUN: WALKER_SPEED.runMps,
