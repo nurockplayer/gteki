@@ -166,6 +166,12 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters
   let zone: AcousticZone = "passage";
   let trainAudioElapsed = 0.25;
   return {
+    audioInfo: (): ReturnType<NonNullable<StationScene["audioInfo"]>> => ({
+      zone,
+      ambience: acoustics && ambience && streetAmbience ? { ...acoustics.info(), ...ambience.info(), ...streetAmbience.info() } : null,
+      escalator: null,
+      train: trainSound?.info() ?? null,
+    }),
     startAudio,
     stepAudio: (dt: number, camera?: THREE.Camera) => {
       ambience?.update({ nearby: crowd?.nearby() ?? 6, openness: ZONE_ACOUSTICS[zone].openness });
@@ -513,6 +519,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
     startAudio: audio.startAudio,
     setAcousticZone: audio.setAcousticZone,
+    audioInfo: audio.audioInfo,
     ...(built.beforeRender ? { beforeRender: built.beforeRender } : {}),
     ...(built.afterRender ? { afterRender: built.afterRender } : {}),
     ...(crowd ? {

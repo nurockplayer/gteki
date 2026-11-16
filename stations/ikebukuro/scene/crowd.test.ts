@@ -410,6 +410,27 @@ describe("ikebukuro crowd near-camera hiding", () => {
     c.dispose();
   });
 
+  it("hides a body crossing the arrival cat sightline with its centre beyond the cat", () => {
+    const w = firstWalker();
+    const c = buildCrowd(THREE, LONG, toRenderer, 1, new THREE.Texture(), {});
+    try {
+      const cat = { x: w.s, y: 0.3, z: 0.2, halfWidthX: 0.3, halfWidthZ: 0, halfHeight: 0.3 };
+      camera.position.set(w.s, 1.085, 3);
+      camera.lookAt(cat.x, cat.y, cat.z);
+      camera.updateMatrixWorld(true);
+      named(c, "torso").onBeforeRender(null as never, null as never, camera, null as never, null as never, null as never);
+      c.setCameraFocus(cat.x, cat.y, cat.z);
+      c.update(0, 0);
+      // The 0.45 m segment test ends short of this body; it is not near the lens either.
+      expect(hidden(c)).toBe(false);
+      c.setCameraFocus(cat.x, cat.y, cat.z, cat);
+      c.update(0, 0);
+      expect(hidden(c)).toBe(true);
+    } finally {
+      c.dispose();
+    }
+  });
+
   it("extends hiding for the cat and restores the legacy radius when disabled", () => {
     const w = firstWalker();
     const c = buildCrowd(THREE, LONG, toRenderer, 1, new THREE.Texture(), {});

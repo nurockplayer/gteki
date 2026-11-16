@@ -2,7 +2,7 @@
 import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
-import type { CatGait } from "./avatarSelection.ts";
+import type { CatGaitChoice } from "./avatarSelection.ts";
 import type { AvatarRig } from "./avatar.ts";
 import { ditherFade, sanitizeAvatarFade } from "./avatarDither.ts";
 import { MEOW_SECONDS, meowPose } from "./catMeow.ts";
@@ -32,7 +32,7 @@ export interface GlbAvatarOptions {
   heightM?: number;
   /** Four-legged protagonist: gait clip policy and floor-hugging draw order (see `catClips`). */
   cat?: boolean;
-  catGait?: CatGait;
+  catGait?: CatGaitChoice;
 }
 
 export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promise<AvatarRig> {
@@ -131,7 +131,7 @@ export async function loadGlbAvatar(url: string, opts: GlbAvatarOptions): Promis
     let hold: "sit" | null = null;
     let turnLead = 0;
     const animate = opts.cat
-      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold, () => turnLead, opts.catGait ? catVariants(gltf.scene) : undefined, opts.catGait)
+      ? catClips(mixer, gltf.animations, catCalibration(gltf.scene), () => hold, () => turnLead, opts.catGait !== undefined ? catVariants(gltf.scene) : undefined, opts.catGait)
       : clipCrossfade(mixer, gltf.animations);
     // One overlay bone list for both the camera-pitch lift and the meow; any bone may be missing.
     const bones = opts.cat ? ["neck", "head", "ear_L", "ear_R", "tail_01", "tail_02", "tail_03", "tail_04"].map((name) => ({
@@ -292,16 +292,17 @@ export function catClips(
   hold: () => "sit" | null = () => null,
   turnLead: () => number = () => 0,
   variants?: Record<string, { calib_mps: number }>,
-  variant?: CatGait,
+  variant?: CatGaitChoice,
 ): (speed: number, dt: number) => void {
   const action = (name: string): THREE.AnimationAction | undefined => {
     const clip = clips.find((candidate) => candidate.name.toLowerCase() === name);
     return clip ? mixer.clipAction(clip) : undefined;
   };
   const variantAction = (name: "trot" | "run") => {
-    const key = `${name}_${variant}`;
+    const letter = variant?.[name];
+    const key = letter ? `${name}_${letter}` : name;
     const stride = variants?.[key]?.calib_mps;
-    const clip = variant && Number.isFinite(stride) && stride! > 0 ? action(key) : undefined;
+    const clip = letter && Number.isFinite(stride) && stride! > 0 ? action(key) : undefined;
     return { clip: clip ?? action(name), stride: clip ? stride : calib?.[name] };
   };
   const trotVariant = variantAction("trot"), runVariant = variantAction("run");

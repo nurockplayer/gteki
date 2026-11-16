@@ -899,6 +899,7 @@ export function buildCrowd(
   let cameraSignFocus: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null;
   const projected = new THREE.Vector3();
   const focusSegment = new THREE.Vector3(), focusBody = new THREE.Vector3();
+  const focusBounds = new THREE.Box3();
   const camForward = new THREE.Vector3(0, 0, -1), camHeading = new THREE.Vector3();
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
   let renders = 0;
@@ -1288,7 +1289,10 @@ export function buildCrowd(
         const t = lengthSq > 0 ? focusBody.dot(focusSegment) / lengthSq : -1;
         blocksFocus = t >= 0 && t <= 1 && focusBody.addScaledVector(focusSegment, -t).lengthSq() <= 0.45 * 0.45;
       }
-      if (!blocksFocus && sign && focusBody.set(pos.x, floorY + 0.9 * L.sh, pos.z).distanceToSquared(cam) < focusSegment.set(sign.x, sign.y, sign.z).distanceToSquared(cam)) {
+      // A leg or shoe can cross the target even when the body's centre is behind it.
+      focusBounds.min.set(pos.x - 0.65 * L.sw, floorY, pos.z - 0.65 * L.sw);
+      focusBounds.max.set(pos.x + 0.65 * L.sw, floorY + 1.95 * L.sh, pos.z + 0.65 * L.sw);
+      if (!blocksFocus && sign && focusBounds.distanceToPoint(cam) ** 2 < focusSegment.set(sign.x, sign.y, sign.z).distanceToSquared(cam)) {
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         for (let x = -1; x <= 1; x += 2) for (let y = 0; y <= 1; y++) for (let z = -1; z <= 1; z += 2) {
           projected.set(pos.x + x * 0.65 * L.sw, floorY + y * 1.95 * L.sh, pos.z + z * 0.65 * L.sw).applyMatrix4(viewProj);
