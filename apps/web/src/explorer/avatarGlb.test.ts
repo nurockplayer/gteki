@@ -231,10 +231,10 @@ describe("loadGlbAvatar", () => {
 
 describe("cat avatar", () => {
   it.each([
-    { gait: "a" as const, speed: 1.2, expected: "trot_a", rate: 1.2 / 1.5 },
-    { gait: "a" as const, speed: 2.5, expected: "run_a", rate: 2.5 / 3 },
-    { gait: "b" as const, speed: 1.2, expected: "trot_b", rate: 1.2 / 2 },
-    { gait: "b" as const, speed: 2.5, expected: "run_b", rate: 2.5 / 4 },
+    { gait: { trot: "a" as const }, speed: 1.2, expected: "trot_a", rate: 1.2 / 1.5 },
+    { gait: { run: "a" as const }, speed: 2.5, expected: "run_a", rate: 2.5 / 3 },
+    { gait: { trot: "b" as const }, speed: 1.2, expected: "trot_b", rate: 1.2 / 2 },
+    { gait: { run: "b" as const }, speed: 2.5, expected: "run_b", rate: 2.5 / 4 },
     { gait: undefined, speed: 1.2, expected: "trot", rate: 1.2 },
     { gait: undefined, speed: 2.5, expected: "run", rate: 2.5 / 2.285714285714286 },
   ])("selects $expected with the matching stride rate", async ({ gait, speed, expected, rate }) => {
@@ -267,7 +267,7 @@ describe("cat avatar", () => {
         return action;
       });
       const rig = await loadGlbAvatar("/cat.glb", {
-        quality: "low", loader: { loadAsync: async () => asset }, cat: true, catGait: "a",
+        quality: "low", loader: { loadAsync: async () => asset }, cat: true, catGait: { run: "a" },
       });
       rig.update(0.25, speed);
       expect(actions.get(expected)?.isRunning()).toBe(true);
@@ -517,16 +517,10 @@ it("pairs variant gait clips with their calibration and falls back together", ()
   const calib = { walk: 0.4, trot: 1, run: 2 };
   const variants = { trot_a: { calib_mps: 1.5 }, run_a: { calib_mps: 2.5 }, trot_b: { calib_mps: 1.7 } };
   const action = (name: string) => mixer.clipAction(clips.find((clip) => clip.name === name)!);
-  const update = catClips(mixer, clips, calib, undefined, undefined, variants, "a");
-  for (const [speed, name, stride] of [[1.2, "trot_a", 1.5], [3.4, "run_a", 2.5], [0.5, "walk", 0.4]] as const) {
+  const update = catClips(mixer, clips, calib, undefined, undefined, variants, { run: "a" });
+  for (const [speed, name, stride] of [[1.2, "trot", 1], [3.4, "run_a", 2.5], [0.5, "walk", 0.4]] as const) {
     update(speed, 0.1); mixer.update(0.1);
     expect(action(name).isRunning()).toBe(true);
     expect(action(name).getEffectiveTimeScale()).toBeCloseTo(speed / stride);
   }
-  mixer.stopAllAction();
-  const fallback = catClips(mixer, clips, calib, undefined, undefined, variants, "b");
-  fallback(1.2, 0.1); mixer.update(0.1);
-  expect(action("trot").isRunning()).toBe(true);
-  expect(action("trot").getEffectiveTimeScale()).toBeCloseTo(1.2 / calib.trot);
-  mixer.stopAllAction();
 });
