@@ -190,7 +190,7 @@ describe("virtual station module asset URLs", () => {
         expect(compressed[3]! & 8).toBe(0); // no original filename
       }
     } finally { fs.rmSync(dist, { recursive: true, force: true }); }
-  });
+  }, 30_000); // level-9 gzip of cat.glb (A/B gait clips) runs past 5 s on CI runners (#1375)
 
   it("publishes a declared uriMobile variant, and refuses it when it is missing", () => {
     const root = valid(tree());
