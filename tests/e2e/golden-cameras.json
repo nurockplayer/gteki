@@ -30,7 +30,7 @@
       "station": "ikebukuro",
       "kind": "node",
       "node": "g_jr_s",
-      "headingDeg": 167,
+      "headingDeg": 347,
       "expect": "Ikebukuro passage and station features at g_jr_s are visible."
     },
     {
