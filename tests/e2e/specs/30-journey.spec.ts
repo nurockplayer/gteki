@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { expect, test, type Page } from "@playwright/test";
 import { ARTIFACTS, hooks, imageStats, routeWaypoints, stationData, PROBE_SCRIPT } from "../lib/gteki.ts";
 import { screenshotFlatRatio } from "../lib/screenshot-flat.ts";
+import type { StationScene } from "../../../packages/scene-api/src/index.ts";
 
 const reelMode = process.env.JOURNEY_MODE === "next" ? "next" : "default";
 
@@ -409,7 +410,24 @@ test("guided walk @phone", async ({ page }, info) => {
   const rides = samples.filter(s => s.camera.lock >= 0.99 && s.ride && s.ride.leftM >= 6);
   const cats = rides.filter(s => s.ride.cat);
   const j7 = { rideCount: rides.length, farEndY: median(rides.map(s => s.ride.farEndY)), catHeight: median(cats.map(s => s.ride.cat.y1 - s.ride.cat.y0)), feetY: median(cats.map(s => s.ride.cat.y1)), catX: median(cats.map(s => s.ride.cat.x)), count: escalators.length, lockMin: locks.length ? Math.min(...locks) : null, lockMedian: median(locks), axisDegMax: axes.length ? Math.max(...axes) : null, axisDegMedian: median(axes), lockBelow099: escalators.filter(s => s.camera.lock < 0.99).map(s => s.index) };
-  const j11 = { ambience: null, escalatorActive: null, trainActive: null };
+  const audioRecords = samples.map(s => s.audio?.station as ReturnType<NonNullable<StationScene["audioInfo"]>> | null | undefined);
+  const ambienceByZone: Record<string, NonNullable<NonNullable<(typeof audioRecords)[number]>["ambience"]>[]> = {};
+  for (const record of audioRecords) {
+    if (!record?.ambience) continue;
+    const controls = ambienceByZone[record.zone] ??= [];
+    if (!controls.some(value => JSON.stringify(value) === JSON.stringify(record.ambience))) controls.push(record.ambience);
+  }
+  const zoneControls = Object.values(ambienceByZone);
+  const trains = audioRecords.flatMap(record => record?.train ? [record.train] : []);
+  const trainDistances = trains.flatMap(train => train.listenerDistance === null ? [] : [train.listenerDistance]);
+  const j11 = {
+    ambience: {
+      byZone: ambienceByZone,
+      differsAcrossZones: zoneControls.length < 2 ? null : zoneControls.some((controls, i) => zoneControls.slice(i + 1).some(other => controls.some(a => other.some(b => JSON.stringify(a) !== JSON.stringify(b))))),
+    },
+    escalatorActive: null,
+    trainActive: trains.length ? { share: trains.filter(train => train.gain > 0).length / samples.length, minListenerDistance: trainDistances.length ? Math.min(...trainDistances) : null } : null,
+  };
   const j14 = () => ({ consoleErrors: [...consoleErrors], pageErrors: [...pageErrors], failedRequests: [...failedRequests] });
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));

@@ -29,6 +29,9 @@ export function createZoneAcoustics(context: AudioContext, destination: AudioNod
   input.connect(lowpass).connect(convolver).connect(wet).connect(destination);
   return {
     input,
+    info() {
+      return { wetGain: wet.gain.value, wetLowpassHz: lowpass.frequency.value };
+    },
     setZone(zone: AcousticZone) {
       wet.gain.setTargetAtTime(ZONE_ACOUSTICS[zone].wet, context.currentTime, 1.2);
       lowpass.frequency.setTargetAtTime(ZONE_ACOUSTICS[zone].wetLowpassHz, context.currentTime, 1.2);

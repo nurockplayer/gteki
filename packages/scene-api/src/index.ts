@@ -115,6 +115,13 @@ export interface StationScene {
   generatedMeshEnvMap?: THREE.Texture;
   /** Host calls this when the walker's zone changes. */
   setAcousticZone?(zone: AcousticZone): void;
+  /** Current station audio controls; renderer-space positions, phase in cycle seconds. */
+  audioInfo?(): {
+    zone: AcousticZone;
+    ambience: { bedGain: number; murmurGain: number; wetGain: number; wetLowpassHz: number; streetGain: number } | null;
+    escalator: null;
+    train: { phase: number | null; gain: number; cutoffHz: number; sourcePosition: { x: number; y: number; z: number }; listenerDistance: number | null } | null;
+  };
   /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
   /**
