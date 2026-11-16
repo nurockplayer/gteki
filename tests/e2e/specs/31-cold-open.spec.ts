@@ -64,7 +64,8 @@ async function ready(page: Page, url: string, info: TestInfo) {
   await waitBootLift(page, info);
 }
 
-test("cold open starts a route and guide @phone", async ({ page }, info) => {
+for (const url of ["/", "/?next=1", "/?open=world"])
+test(`${url}: cold open starts a route and guide @phone`, async ({ page }, info) => {
   await page.setViewportSize(info.project.name === "phone-chromium" ? { width: 390, height: 844 } : { width: 1280, height: 800 });
   await page.addInitScript(() => {
     (window as any).__panelSeen = false;
@@ -73,7 +74,8 @@ test("cold open starts a route and guide @phone", async ({ page }, info) => {
       if (panel && getComputedStyle(panel).display !== "none" && (window as any).__gteki?.phase() !== "ready") (window as any).__panelSeen = true;
     }).observe(document, { subtree: true, childList: true, attributes: true });
   });
-  await ready(page, "/?open=world", info);
+  await ready(page, url, info);
+  expect(await page.locator("html").getAttribute("data-cold-open")).toBe("1");
   await settleFrames(page, "cold open");
   await expect(page.locator(".cold-open")).toBeVisible();
   expect(await page.evaluate(() => (window as any).__panelSeen)).toBe(false);
@@ -100,7 +102,9 @@ test("cold open starts a route and guide @phone", async ({ page }, info) => {
   await expect(page.locator(".cold-open")).toBeHidden();
 });
 
-test("search opens the destination field @phone", async ({ page }, info) => {
+
+for (const url of ["/", "/?next=1"])
+test(`${url}: search opens the destination field @phone`, async ({ page }, info) => {
   await page.addInitScript(() => {
     const attach = setInterval(() => {
       const g = (window as any).__gteki;
@@ -117,7 +121,7 @@ test("search opens the destination field @phone", async ({ page }, info) => {
       hold();
     }, 50);
   });
-  await ready(page, "/?next=1", info);
+  await ready(page, url, info);
   try {
     await page.locator(".cold-open-search").click({ timeout: 60_000 });
     await expect(page.locator(".panel")).toBeVisible();
@@ -129,17 +133,22 @@ test("search opens the destination field @phone", async ({ page }, info) => {
   }
 });
 
+
 test("other stations and deep links retain their state @phone", async ({ page }, info) => {
-  for (const url of ["/?open=world&station=ikebukuro"]) {
+  for (const url of ["/?open=search", "/?station=ikebukuro", "/?open=world&station=ikebukuro"]) {
     await ready(page, url, info);
     expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("overview");
     await expect(page.locator(".panel")).toBeVisible();
     await expect(page.locator(".cold-open")).toBeHidden();
+    await expect(page.locator("#cold-open-poster")).toBeHidden();
+    expect(await page.evaluate(() => performance.getEntriesByType("resource").some(r => r.name.includes("cold-open/poster-")))).toBe(false);
   }
-  for (const flag of ["&open=world"]) {
+  for (const flag of ["", "&open=world"]) {
     await ready(page, `/?station=shinjuku&from=poi:gate:1&to=poi:platform:oedo${flag}`, info);
     expect(await page.evaluate(() => (window as any).__gteki.route()?.ok)).toBe(true);
     expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("overview");
     await expect(page.locator(".cold-open")).toBeHidden();
+    await expect(page.locator("#cold-open-poster")).toBeHidden();
+    expect(await page.evaluate(() => performance.getEntriesByType("resource").some(r => r.name.includes("cold-open/poster-")))).toBe(false);
   }
 });
