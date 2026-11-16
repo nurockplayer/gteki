@@ -4890,7 +4890,7 @@
         },
         {
           "phase": 0.325,
-          "name": "extended flight hero",
+          "name": "reach control",
           "root": {
             "height_offset_m": -0.020000000000000004,
             "pitch_rad": -0.017453292519943295
@@ -6100,7 +6100,7 @@
         },
         {
           "phase": 0.4,
-          "name": "fore touchdown",
+          "name": "extended reach hero",
           "root": {
             "height_offset_m": -0.022250000000000006,
             "pitch_rad": -0.014835298641951801
@@ -15235,16 +15235,16 @@
           0.23
         ],
         "hind_R": [
-          0.02,
-          0.25
+          0.11,
+          0.34
         ],
         "fore_R": [
-          0.4,
-          0.65
+          0.3,
+          0.55
         ],
         "fore_L": [
-          0.53,
-          0.78
+          0.55,
+          0.8
         ]
       },
       "interpolation": "periodic cubic Hermite; angles unwrapped; tangents in value/phase",
@@ -36702,7 +36702,7 @@
         },
         {
           "phase": 0.45,
-          "name": "extended flight hero",
+          "name": "reach control",
           "root": {
             "height_offset_m": -0.014203709442913985,
             "pitch_rad": -0.017453292519943295
@@ -38792,7 +38792,7 @@
         },
         {
           "phase": 0.58,
-          "name": "fore touchdown",
+          "name": "extended reach hero",
           "root": {
             "height_offset_m": -0.014,
             "pitch_rad": -0.014835298641951801

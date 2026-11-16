@@ -1033,7 +1033,12 @@ def paw_angle_for(leg, phase, gait):
 
 
 def locomotion_pose(clip, t):
-    gait = GAITS[clip]
+    gait = GAITS[clip] if clip not in ("start", "stop") else dict(
+        GAITS["walk"], offset=kit.GAITS["walk"]["offset"],
+        travel=GAITS["trot"]["travel"] * .13 / .15)
+    # Transitions retain their shipped walk endpoint; only the shared cycle changes.
+    if clip in ("start", "stop"):
+        clip = "walk"
     p = (t * FPS / CLIPS[clip]["frames"]) % 1.0
     theta = (gait["hip"] - gait["chest"]) / (SHOULDER_LEVER - HIP_LEVER)
     root_z = -gait["hip"] - HIP_LEVER * theta
@@ -1204,10 +1209,10 @@ def frame_pose(arm, clip, frame, sit):
     elif clip in GAITS:
         pose = locomotion_pose(clip, t)
     elif clip == "start":
-        pose = blend_pose(idle_pose(0.0), locomotion_pose("walk", 0.0),
+        pose = blend_pose(idle_pose(0.0), locomotion_pose(clip, 0.0),
                           smoothstep(frame / CLIPS[clip]["frames"]))
     elif clip == "stop":
-        pose = blend_pose(locomotion_pose("walk", 0.0), idle_pose(0.0),
+        pose = blend_pose(locomotion_pose(clip, 0.0), idle_pose(0.0),
                           smoothstep(frame / CLIPS[clip]["frames"]))
     elif clip in ("turn_l", "turn_r"):
         pose = turn_pose(-1.0 if clip == "turn_l" else 1.0, t)
@@ -1285,7 +1290,7 @@ def variant_grid_checks(checker, arm, body, name, action, samples):
     duration = gait["cycle_s"]
     arm.animation_data.action = action
     if gait["gait"] == "run":
-        hero = .325 if name == "run_a" else .45
+        hero = .4 if name == "run_a" else .45
         bend, phase, leg = max((m[k]["knee_deg"], p, k) for p, m in samples
                                if abs(math.remainder(p-hero, 1)) <= .035+1e-8
                                for k in m if k.startswith("hind"))
@@ -1699,6 +1704,8 @@ def legacy_clip_checks(checker, path):
         return result
     old_bin, new_bin = glb_binary(baseline), glb_binary(path)
     for name in CLIP_ORDER:
+        if name in ("walk", "turn_l", "turn_r"):
+            continue  # #1389 deliberately changes these shared gait channels.
         a, b = channels(old, old_bin, name), channels(new, new_bin, name)
         equal = a.keys() == b.keys()
         for key in a.keys() & b.keys():
@@ -1716,7 +1723,9 @@ def legacy_clip_checks(checker, path):
     def calib(doc):
         return next(n["extras"]["gteki_cat"]["calib"] for n in doc["nodes"]
                     if n.get("extras", {}).get("gteki_cat"))
-    checker.check(calib(old) == calib(new), "legacy calib unchanged")
+    checker.check({k: v for k, v in calib(old).items() if k != "walk"}
+                  == {k: v for k, v in calib(new).items() if k != "walk"},
+                  "legacy calib unchanged except retuned walk")
 
 
 def exported_skin_checks(checker, path):
@@ -2081,7 +2090,29 @@ def hermite_channel(gait, phase, path, angle=False):
 def authored_pose(name, seconds):
     gait = AUTHORED_GAITS[name]
     phase = (seconds / gait["cycle_s"]) % 1.0
-    sample = lambda *path, angle=False: hermite_channel(gait, phase, path, angle)
+    def sample(*path, angle=False):
+        curve_phase = phase
+        if name == "run_a":
+            if path[0] == "legs":
+                # Map each stance and recovery independently: pair gaps changed by different
+                # amounts. All leg controls follow the same map as their paw target.
+                old_start, old_end = {"hind_L": (0, .23), "hind_R": (.02, .25),
+                                      "fore_R": (.40, .65), "fore_L": (.53, .78)}[path[1]]
+                start, end = gait["contacts"][path[1]]
+                elapsed = (phase-start) % 1.0
+                if elapsed <= end-start:
+                    curve_phase = old_start + elapsed/(end-start)*(old_end-old_start)
+                else:
+                    curve_phase = old_end + (elapsed-(end-start))/(1-(end-start))*(1-(old_end-old_start))
+            else:
+                # The old first flight becomes a fore reach; the gathered flight stays aerial.
+                points = [(0, 0), (.23, .23), (.4, .325), (.475, .4),
+                          (.67, .65), (.8, .78), (.89, .87), (1, 1)]
+                for (a, x), (b, y) in zip(points, points[1:]):
+                    if a <= phase <= b:
+                        curve_phase = x + (phase-a)/(b-a)*(y-x)
+                        break
+        return hermite_channel(gait, curve_phase, path, angle)
     root = {key: sample("root", key, angle=key == "pitch_rad")
             for key in gait["poses"][0]["root"]}
     flight = gait.get("flight_root")
@@ -2317,7 +2348,7 @@ def round4_measurements(arm, body, records):
         row("R1", residual <= 2 and sweep_error <= 10,
             f"sweep error {sweep_error:.4f} mm; stance residual {residual:.3f} mm; cadence {gait['cadence_hz']:.6f} Hz")
         if run:
-            hero = .325 if name == "run_a" else .45
+            hero = .4 if name == "run_a" else .45
             _, hp, hm, positions = min(samples, key=lambda s: abs(s[0]-hero))
             angles, splits = [], []
             for leg in LEGS:
@@ -2472,7 +2503,7 @@ def round4_measurements(arm, body, records):
                 reversal = max(0.0, a[2]-b[2] if not run and i < peak else b[2]-a[2])
                 shape = max(shape, (reversal, a[1], k))
         if run:
-            hero = .325 if name == 'run_a' else .45
+            hero = .4 if name == 'run_a' else .45
             hero_sample = min(samples, key=lambda s: abs(s[0]-hero))
             hold = (0.0, 0.0, '')
             fore = (0.0, 0.0, '')
@@ -2564,7 +2595,7 @@ def authored_tuning_measurements(arm, body):
         worst = 0.0
         phases = {i/240 for i in range(240)} | {i/128 for i in range(128)} | {i/12 for i in range(12)} | {k["phase"] for k in gait["poses"]}
         if run:
-            hero = .325 if name == "run_a" else .45
+            hero = .4 if name == "run_a" else .45
             phases |= {hero-.035, hero+.035}
         phases |= {p % 1 for pair in gait["contacts"].values() for p in pair}
         for phase in sorted(phases):
@@ -2627,7 +2658,7 @@ def authored_tuning_measurements(arm, body):
                 failures.append(f"{name} {leg}: contact-boundary bend outside R3")
         if run:
             import bpy
-            hero_phase = .325 if name == "run_a" else .45
+            hero_phase = .4 if name == "run_a" else .45
             pose = authored_pose(name, hero_phase*gait["cycle_s"])
             metrics = apply_authored_pose(arm, pose)
             mesh = bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
@@ -2815,7 +2846,7 @@ def render_contact_sheets(directory, arm, body):
                    "", "## Deformation / AD inspection", "",
                    "Inspect chest and belly at gathered poses, shoulder seams at maximum scapula swing/slide, and wrists at maximum fold.",
                    "These are centroid pivots and the existing smoothed skin. Visible collapse requires the AD's sheet judgment; no automated visual PASS is claimed.",
-                   "A's second suspension and 25 mm stylised root lift deliberately depart from Muybridge's single extended suspension.",
+                   "A now has one gathered flight; the former first-flight torso pose is retimed to a fore reach at phase 0.40.",
                    "Stance targets use nominal speed times contact duration, with exact linear evaluation during contact. Dense clip baking remains PR 2."])
     report.extend(["", "## Acceptance failures / lead decision", "", *(failures or ["None."])])
     directory.joinpath("report.md").write_text("\n".join(report) + "\n")
@@ -2982,6 +3013,8 @@ def main():
     GAITS = {name: dict(gait) for name, gait in kit.GAITS.items()}
     # This rig's fore chain is short, so the stock run stride swings the leading forepaw too far
     # forward; a shorter, lower stride keeps it under the shoulder.
+    GAITS["walk"].update(travel=0.07, offset={
+        "hind_L": 0.00, "fore_L": 0.79, "hind_R": 0.50, "fore_R": 0.29})
     GAITS["run"].update(travel=0.14, lift=0.052)
     for gait in GAITS.values():
         gait["travel"] *= ratio
