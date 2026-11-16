@@ -4,6 +4,7 @@ import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
+import { pixelRatioCap } from "../explorer/pixelRatio.ts";
 import { castAll } from "../explorer/raycast.ts";
 import { prepareRayTrees } from "../explorer/meshBvh.ts";
 import { avatarGlbUrl, avatarKind, catGait } from "../explorer/avatarSelection.ts";
@@ -184,7 +185,10 @@ export class App {
         const poi = this.s.loaded?.bundle.pois.find((p) => p.id === id);
         if (poi) this.setDestination(poi);
       },
-    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params), catGait: catGait(params), previewNext: params.get("next") === "1" });
+    }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params), catGait: catGait(params), maxPixelRatio: pixelRatioCap(params), previewNext: params.get("next") === "1" });
+    // A hidden or back-forward-cached page gives its WebGL memory back; a restored one reloads (#1392).
+    addEventListener("pagehide", () => { this.explorer.renderer.dispose(); this.explorer.renderer.forceContextLoss(); });
+    addEventListener("pageshow", (e) => { if (e.persisted) location.reload(); });
     this.root.classList.toggle("next", this.explorer.previewNext);
     // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
     // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
@@ -1598,7 +1602,7 @@ export class App {
     if (run !== this.arrivalPlacementRun || !this.root.classList.contains("arrival") || this.explorer.currentMode !== "guide") return;
     const card = this.ui.hud.querySelector<HTMLElement>(".hud-instruction");
     const cat = this.explorer.catScreenBox();
-    const key = card && cat ? [innerWidth, innerHeight, cat.left, cat.right, cat.top, cat.bottom, card.offsetWidth, card.offsetHeight].join(",") : "";
+    const key = card && cat ? [innerWidth, innerHeight, cat.left, cat.right, cat.top, cat.bottom, card.offsetWidth, card.offsetHeight, this.ui.hud.offsetHeight].join(",") : "";
     if (card && cat && key !== this.arrivalPlacementKey) {
       this.arrivalPlacementKey = key;
       const previousLeft = this.root.classList.contains("arrival-left");

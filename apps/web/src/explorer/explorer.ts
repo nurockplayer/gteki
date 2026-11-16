@@ -75,6 +75,7 @@ export interface ExplorerOptions {
   catGait?: CatGaitChoice;
   /** Preview channel (`?next=1`): turns on v1.0 journey changes that are not the default yet (docs/release/journey.md). */
   previewNext?: boolean;
+  maxPixelRatio?: number;
 }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
@@ -412,6 +413,7 @@ export class Explorer {
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private openingState: "waiting" | "active" | "ended" = "waiting";
   private openingOrigin: string | null = null;
+  private cameraOpeningHold = false;
   private openingElapsed = 0;
   private openingRelease: { position: THREE.Vector3; quaternion: THREE.Quaternion; fov: number } | null = null;
   private arrivalState: "waiting" | "active" | "ended" = "waiting";
@@ -525,7 +527,7 @@ export class Explorer {
     }
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     // High-tier DPR 2 measured 33 ms on M2 Pro (#42); the 1.5 cap measured 16.7 ms median.
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, options.maxPixelRatio ?? 1.5));
     // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
     this.renderer.toneMapping = THREE.AgXToneMapping;
     this.renderer.toneMappingExposure = resolveLighting().toneMappingExposure;
@@ -554,6 +556,11 @@ export class Explorer {
 
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
+    this.audioUnlock = () => {
+      if (this.ensureAudio()) void this.audio!.context.resume();
+      this.removeAudioUnlock();
+    };
+    for (const type of AUDIO_UNLOCK_EVENTS) window.addEventListener(type, this.audioUnlock, { capture: true });
     this.renderer.setAnimationLoop(() => this.frame());
   }
 
@@ -848,6 +855,7 @@ export class Explorer {
       this.openingRelease = { position: this.camera.position.clone(), quaternion: this.camera.quaternion.clone(), fov: this.camera.fov };
       this.openingElapsed = 0;
       this.openingState = openingShotState(this.openingState, true, this.openingOrigin, true, false);
+      this.setCameraFocus(this.cameraFocus, this.cameraSignFocus);
     } else {
       if (!OPENING_SHOTS[origin]) return;
       this.openingOrigin = origin;
@@ -1417,7 +1425,7 @@ export class Explorer {
     const manager = new THREE.LoadingManager();
     manager.setURLModifier(fencedUrlResolver(station.assetUrls, refused));
     const fenceError = (err: unknown) => refused.length ? new Error(`blocked asset request outside station folder: ${refused.join(", ")}`) : err;
-    const audioBus = this.ensureAudio() ? this.newStationAudioBus() : null;
+    const audioBus = this.audio ? this.newStationAudioBus() : null;
     const ctx: SceneContext = {
       THREE,
       bundle,
@@ -1468,6 +1476,7 @@ export class Explorer {
       return false;
     }
     this.stationScene = built;
+    if (this.audio) this.startStationAudio();
     if (this.catAvatar) {
       built?.setCameraNearFade?.(CAT_NPC_FADE.startM, CAT_NPC_FADE.endM);
       // The crowd's distance fade must reach GTAO's depth/normal buffers too (high tier only).
@@ -1674,7 +1683,8 @@ export class Explorer {
     this.wallProps = undefined;
     this.avatarRig?.setHold?.(null);
     this.publishInteraction(this.interactionController.state);
-    this.avatarRig?.cancelPendingLoad();
+    // The first open reuses the avatar already loading from the constructor.
+    if (this.station) this.avatarRig?.cancelPendingLoad();
     this.street.restore(this.scene);
     this.street.attach(null);
     this.streetY = null;
@@ -2913,6 +2923,7 @@ export class Explorer {
   startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = [], routeNodes: readonly string[] = [], destination: string | null = null): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
+    this.ensureAudio();
     this.setOpeningShot(null);
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
@@ -3520,10 +3531,12 @@ export class Explorer {
   private setCameraFocus(p: THREE.Vector3 | null, sign: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null): void {
     const changed = (a: THREE.Vector3 | null | undefined, b: THREE.Vector3 | null) =>
       a == null || b == null ? (a ?? null) !== b : a.distanceToSquared(b) > 0.05 * 0.05;
-    if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign) return;
+    const opening = this.openingState === "active";
+    if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign && this.cameraOpeningHold === opening) return;
+    this.cameraOpeningHold = opening;
     this.cameraFocus = p ? (this.cameraFocus ?? new THREE.Vector3()).copy(p) : null;
     this.cameraSignFocus = sign;
-    this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus);
+    this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus, opening ? { camera: this.camera, floorY: this.pos.y } : null);
   }
 
   private cameraFacingCatAnchor() {
@@ -3801,14 +3814,15 @@ export class Explorer {
     } catch {
       return false;
     }
-    // Browsers keep audio suspended until a user gesture.
-    const unlock = () => {
-      void this.audio?.context.resume();
-      this.removeAudioUnlock();
-    };
-    this.audioUnlock = unlock;
-    for (const type of AUDIO_UNLOCK_EVENTS) window.addEventListener(type, unlock, { capture: true });
+    this.startStationAudio();
     return true;
+  }
+
+  private startStationAudio(): void {
+    if (!this.audio || !this.stationScene?.startAudio) return;
+    const destination = this.stationAudio ?? this.newStationAudioBus();
+    this.stationScene.startAudio({ context: this.audio.context, destination, isMuted: () => this.muted });
+    this.stationScene.setAcousticZone?.(this.zone);
   }
 
   private removeAudioUnlock(): void {

@@ -75,6 +75,8 @@ export interface InteractableSpec {
 }
 
 export interface StationScene {
+  /** Construct station sound when the host first enables audio; idempotent. */
+  startAudio?(audio: NonNullable<SceneContext["audio"]>): void;
   root: THREE.Object3D;
   interactables?: InteractableSpec[];
   /** Surfaces the walker can stand on (raycast from above). Empty = no free walking. */
@@ -127,7 +129,7 @@ export interface StationScene {
   /** Fades scene-owned people out near the camera: fully gone inside startM, untouched beyond endM. 0, 0 turns it off. */
   setCameraNearFade?(startM: number, endM: number): void;
   /** Hides crowd bodies between the rendered camera and this renderer-space focus; null disables it. */
-  setCameraFocus?(p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null): void;
+  setCameraFocus?(p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null, opening?: { camera: THREE.Camera; floorY: number } | null): void;
   /**
    * Resolves once presentation content the scene loads in the background (after the first frame) is in place.
    * Renderers need not wait for it; hosts that export a snapshot instead of rendering await it first. Never rejects.
