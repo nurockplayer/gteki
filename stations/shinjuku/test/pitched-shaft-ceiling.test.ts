@@ -157,6 +157,10 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
           return pointInRings(p, r.rings) && clearance >= 2.5 - 0.00002 && clearance <= 5.2 + 0.00002;
         }).sort((a, b) => soffitHeight(a, p) - soffitHeight(b, p))[0]!;
         expect(roof, tag).toBeDefined();
+        expect(pointInRings(p, roof.rings), tag).toBe(true);
+        // Regular strips retain the existing 0.15 m centre fit across flight/landing seams.
+        const mountingTolerance = index === 1 && f.section < 0 ? 0.15002 : 0.00002;
+        expect(Math.abs(soffitHeight(roof, p) - p.z - 0.065), tag).toBeLessThan(mountingTolerance);
         const clearance = soffitHeight(roof, p) - f.surfaceZ(p);
         clearances.push(clearance);
         expect(clearance, tag).toBeGreaterThanOrEqual(2.5 - 0.00002);
@@ -209,17 +213,20 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     expect(checked).toBeGreaterThan(0);
   });
 
-  it("covers transformed casing endpoints and corners with the actual roof section (#1391)", () => {
+  it("covers all 147 preview-roof casings at endpoints and corners in the actual section (#1391)", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
     const failures: string[] = [];
+    let checked = 0;
     for (let i = 0; i < mesh.count; i++) {
       const f = fixture(mesh, i);
+      if (f.section < 0) continue;
+      checked++;
       // BoxGeometry casing: 0.25 wide, 0.045 high, 1.04 long, translated +0.035 Y.
       const samples = [-0.5, 0.5].map((z) => f.at(0, 0, z));
       samples.push(...[-0.125, 0.125].flatMap((x) => [-0.52, 0.52].map((z) => f.at(x, 0.0575, z))));
       for (const [sample, p] of samples.entries()) {
         // Street-mouth sections share an ID. At a seam use the section covering this XY.
-        const sections = f.section < 0 ? regularRoofs : layout.shaftCeilingPreview!.roofs.filter((r) => r.spaceId === f.roof.spaceId);
+        const sections = layout.shaftCeilingPreview!.roofs.filter((r) => r.spaceId === f.roof.spaceId);
         const roofs = sections.filter((r) => pointInRings(p, r.rings)).filter((r) => {
           const clearance = soffitHeight(r, p) - f.surfaceZ(p);
           return clearance >= 2.5 - 0.00002 && clearance <= 5.2 + 0.00002;
@@ -233,6 +240,7 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
           (roofs[0] ? `${roofs[0].spaceId} gap ${(soffitHeight(roofs[0], p) - p.z).toFixed(4)}` : "no covering own-surface roof"));
       }
     }
+    expect(checked).toBe(147);
     expect(failures).toEqual([]);
   });
 
