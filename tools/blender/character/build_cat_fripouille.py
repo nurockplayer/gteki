@@ -2450,13 +2450,13 @@ def round4_measurements(arm, body, records):
                 h = (hero-b)%1
                 if k.startswith('hind'):
                     before = [(t,q['legs'][k]['target_m']) for t,p,q in flight if t <= h]
-                    arc_error = max(arc_error, *(max(0,y[1]-x[1],x[2]-y[2])*1000 for (_,x),(_,y) in zip(before,before[1:])))
+                    arc_error = max([arc_error, *(max(0,y[1]-x[1],x[2]-y[2])*1000 for (_,x),(_,y) in zip(before,before[1:]))])
                     lo,hi = (.62,.75) if name=='run_a' else (.8405,.9945)
                     centre = gait['stance_targets'][k]['centre_y_m']
                     under_errors.append(min(abs(q['legs'][k]['target_m'][1]-centre)*1000 for t,p,q in flight if lo <= p <= hi))
                 else:
                     after = [(t,q['legs'][k]['target_m']) for t,p,q in flight if t >= h]
-                    arc_error = max(arc_error, *(max(0,y[1]-x[1],y[2]-x[2])*1000 for (_,x),(_,y) in zip(after,after[1:])))
+                    arc_error = max([arc_error, *(max(0,y[1]-x[1],y[2]-x[2])*1000 for (_,x),(_,y) in zip(after,after[1:]))])
                     folded.append(max(q['legs'][k]['target_m'][2]*1000 for t,p,q in flight if (.85 <= p <= .95 if name=='run_a' else .03 <= p <= .22)))
             row('R9',speed <= limit+.001 and hy <= -200+.001 and hz >= 50-.001 and hb <= 60.001 and fy >= 240-.001 and fb <= 70.001 and arc_error <= .001 and max(under_errors) <= 20 and min(folded) >= 60-.001,
                 f"airborne step {speed:.3f} <= {limit:.3f} mm; arc reversal {arc_error:.4f} mm; under-hip error {max(under_errors):.3f} mm; gathered fore Z {min(folded):.3f} mm; at fore touchdown hind Y/Z/bend {hy:.2f}/{hz:.2f} mm/{hb:.2f} deg; at hind lift fore Y/bend {fy:.2f} mm/{fb:.2f} deg")
@@ -3099,12 +3099,11 @@ def main():
     AUTHORED_GAITS = load_authored_gaits()
     CONTACT_VERTICES = authored_contact_vertices(body, arm)
     chest_penetration_info(body, arm, before_chest, chest_region)
-    if args.sheets:
+    if args.sheet_only:
         render_contact_sheets(args.sheets, arm, body)
-        if args.sheet_only:
-            if checker.failures:
-                fail("; ".join(checker.failures))
-            return
+        if checker.failures:
+            fail("; ".join(checker.failures))
+        return
 
     pelvis = pelvis_indices(body)
     sit_pitch = SIT_PITCH
@@ -3156,6 +3155,8 @@ def main():
     write_variant_calibration(out, exported_speeds)
     report_exported_leg_steps(out)
     triangles, size = glb_checks(checker, out, exported_speeds, variant_speeds)
+    if args.sheets:
+        render_contact_sheets(args.sheets, arm, body)
     exported_skin_checks(checker, out)
 
     if args.preview:
