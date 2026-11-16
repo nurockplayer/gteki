@@ -579,8 +579,24 @@ def close_rest_seams(body):
     print(f"S2 split {count} rest-closed T/edge junctions before S1 weight unification")
 
 
-def unify_coincident_weights(body):
-    """S1/S2: share seam blends and snap the <=0.6 mm open tail-root rims."""
+# #1398/#1379: four diagnosed rim pairs, in Blender rest coordinates.
+# glTF positions are converted back from the exporter's (x, z, -y) frame.
+# Positions from retained pre-repair/#1388 GLB; IDs are diagnostic POSITION IDs only.
+# Diagnosis: /Volumes/KIOXIA/scratch/diag-1398/diag.md (2026-11-17 JST).
+TAIL_ROOT_RIM_PAIRS = (
+    ((-.00009994633728638291, -.14972640573978424, .20530235767364502),  # 136/1012
+     (-.00009956116991816089, -.14970208704471588, .2050303965806961)),
+    ((.0117791211232543, -.1492316722869873, .20801036059856415),  # 135/1013
+     (.011890286579728127, -.1492195874452591, .20795495808124542)),
+    ((-.011536755599081516, -.1492476463317871, .2079559862613678),  # 603/669
+     (-.012089086696505547, -.149209663271904, .20795579254627228)),
+    ((-.011650774627923965, -.14154016971588135, .258190393447876),  # 388/393
+     (-.011211786419153214, -.141691654920578, .25845763087272644)),
+)
+
+
+def unify_coincident_weights(body, tail_root_pairs=()):
+    """S1/S2: share seam blends and snap only the diagnosed tail-root rims."""
     from itertools import combinations
     from mathutils.kdtree import KDTree
     vertices = body.data.vertices
@@ -618,19 +634,16 @@ def unify_coincident_weights(body):
         for _, i, _ in tree.find_range(v.co, .0001):
             if any(g.group in proximal and g.weight > 0 for j in (v.index, i) for g in vertices[j].groups):
                 join([v.index, i])
-    uses = {}
-    for polygon in body.data.polygons:
-        for edge in polygon.edge_keys:
-            uses[edge] = uses.get(edge, 0) + 1
-    boundary = {i for edge,count in uses.items() if count == 1 for i in edge}
-    tail = body.vertex_groups["tail_01"].index
-    tail_vertices = {v.index for v in vertices if any(g.group == tail and g.weight > 0 for g in v.groups)}
     tail_pairs = []
-    for i in sorted(boundary):
-        for _,j,_ in tree.find_range(vertices[i].co, .0006):
-            if j > i and j in boundary and (i in tail_vertices or j in tail_vertices):
-                join([i,j])
-                tail_pairs.append((i,j))
+    for pair in tail_root_pairs:
+        indices = []
+        for position in pair:
+            matches = [i for _,i,_ in tree.find_range(position, .00001)]
+            if not matches:
+                fail(f"tail-root diagnosed vertex missing within 0.01 mm: {position}")
+            indices.extend(matches)
+        join(indices)
+        tail_pairs.append(indices)
     # Splitting can leave a crossing inside the 0.01 mm rest tolerance.
     # A common blend on its local endpoints makes the entire crossing affine.
     for a,b,t,c,d,u in closed_rest_seams(body):
@@ -644,7 +657,7 @@ def unify_coincident_weights(body):
     for v in vertices:
         buckets.setdefault(root(v.index),[]).append(v.index)
     snapped = []
-    for key in sorted({root(a) for a,b in tail_pairs}):
+    for key in sorted({root(indices[0]) for indices in tail_pairs}):
         indices = buckets[key]
         rest = [vertices[i].co.copy() for i in indices]
         mean = sum(rest, rest[0]*0)/len(rest)
@@ -3089,7 +3102,7 @@ def main():
     bpy.ops.object.vertex_group_normalize_all(group_select_mode="ALL", lock_active=False)
 
     close_rest_seams(body)
-    seam_before, seam_after, snapped = unify_coincident_weights(body)
+    seam_before, seam_after, snapped = unify_coincident_weights(body, TAIL_ROOT_RIM_PAIRS)
     before_chest = [{g.group:g.weight for g in v.groups} for v in body.data.vertices]
     chest_region = chest_weights(body, arm)
     _, seam_after, _ = unify_coincident_weights(body)
