@@ -133,7 +133,7 @@ function crowdVector(T: typeof THREE, enuToRenderer: (point: { x: number; y: num
  * same reason as sceneLifecycle: the closures keep only the audio nodes and the train-audio sampler, never the
  * build layout or the built station (#968). Conditions and order are unchanged.
  */
-function stationAudio(ctx: Parameters<BuildScene>[0], crowd: Crowd | null, trainAudio: BuiltStation["trainAudio"]) {
+function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters<BuildScene>[0], crowd: Crowd | null, trainAudio: BuiltStation["trainAudio"]) {
   let acoustics: ReturnType<typeof createZoneAcoustics> | null = null;
   let ambience: ReturnType<typeof createAmbience> | null = null;
   let streetAmbience: ReturnType<typeof createStreetAmbience> | null = null;
@@ -144,9 +144,9 @@ function stationAudio(ctx: Parameters<BuildScene>[0], crowd: Crowd | null, train
     acoustics = createZoneAcoustics(audio.context, audio.destination);
     ambience = createAmbience(audio.context, acoustics.input);
     streetAmbience = createStreetAmbience(audio.context, acoustics.input);
-    const graphNodes = ctx.bundle.nodes;
+    const graphNodes = bundle.nodes;
     const siteAt = (n: (typeof graphNodes)[number]): V3 => {
-      const [x, y, z] = ctx.enuToRenderer({ x: n.position.x, y: n.position.y, z: n.position.z ?? n.renderZ ?? 0 });
+      const [x, y, z] = enuToRenderer({ x: n.position.x, y: n.position.y, z: n.position.z ?? n.renderZ ?? 0 });
       return { x, y, z };
     };
     stationSound = createStationSound({
@@ -162,7 +162,7 @@ function stationAudio(ctx: Parameters<BuildScene>[0], crowd: Crowd | null, train
     });
     trainSound = createTrainSound({ context: audio.context, destination: acoustics.input, isMuted: audio.isMuted, chimeAt: stationSound.chimeAt });
   };
-  if (ctx.audio) startAudio(ctx.audio);
+  if (initialAudio) startAudio(initialAudio);
   let zone: AcousticZone = "passage";
   let trainAudioElapsed = 0.25;
   return {
