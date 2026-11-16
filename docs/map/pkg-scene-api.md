@@ -34,6 +34,7 @@ The contract between a station's scene module (the station's gteki/scene.ts, exp
 
 ## Pitfalls
 - Roles come only from a glTF node's authored name and extras (commits e62e61f6 and e6636efd), on web and Godot alike. A mesh name guessed from its geometry is not a role.
+- `StationScene.cameraGateAisles` carries asset-local JR cabinet bounds and inverse rendered instance transforms from Ikebukuro kit assembly. Explorer uses it only for the squeezed gate-aisle overhead camera and geometric release (#1378); it supplies no walker or camera raycast targets.
 - `cameraBlockers` stop only the follow camera. They never block walking and never count as ground.
 - `settled()` resolves once background content is in place and never rejects. Snapshot exports await it.
 - `releaseCaches` runs when the explorer leaves a station. Do not rely on it between reopens of the same station.

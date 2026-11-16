@@ -17,7 +17,7 @@
 // a gate node simply shows no array).
 import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import type { SceneContext } from "@gteki/scene-api";
+import type { CameraGateAisle, SceneContext } from "@gteki/scene-api";
 type ThreeNS = typeof THREE_NS;
 
 export interface KitPiece {
@@ -289,7 +289,7 @@ export interface LoadedKit {
   /** The representative gate arrays that will be built (empty when the piece did not load or lacks the label). */
   gates: readonly GatePlacement[];
   /** Build the instanced rails and gate arrays. `env` lights them (the scene's own PMREM environment). */
-  build(THREE: ThreeNS, env: THREE_NS.Texture, toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3): { group: THREE_NS.Group; stats: KitStats };
+  build(THREE: ThreeNS, env: THREE_NS.Texture, toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3): { group: THREE_NS.Group; stats: KitStats; cameraGateAisles: CameraGateAisle[] };
   dispose(): void;
 }
 
@@ -332,6 +332,7 @@ export async function loadKit(
   }
 
   let gates: GatePlacement[] = [];
+  const cabinets: THREE_NS.Box3[] = [];
   let gateMerged: { geometry: THREE_NS.BufferGeometry; material: THREE_NS.Material }[] = [];
   const gate = Object.entries(kit.pieces).find(([, p]) => p.use === GATE_ARRAY_USE);
   if (gate && graph) {
@@ -339,6 +340,14 @@ export async function loadKit(
     if (wanted.length) {
       const gateParts = await fetchParts(gate[0]);
       if (gateParts.length) {
+        const gltf = gltfs[gltfs.length - 1]!;
+        const inverse = new THREE.Matrix4().copy((gltf.scene.children[0] ?? gltf.scene).matrixWorld).invert();
+        gltf.scene.traverse((object) => {
+          const mesh = object as THREE_NS.Mesh;
+          if (!mesh.isMesh || !/^COL_cabinet_/.test(mesh.name)) return;
+          mesh.geometry.computeBoundingBox();
+          cabinets.push(mesh.geometry.boundingBox!.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse, mesh.matrixWorld)));
+        });
         gateMerged = mergeByMaterial(THREE, gateParts);
         for (const m of gateMerged) owned.push(m.geometry);
         gates = gateMerged.length ? wanted : [];
@@ -353,13 +362,14 @@ export async function loadKit(
     gates,
     build(THREE, env, toRenderer) {
       const group = new THREE.Group();
+      const cameraGateAisles: CameraGateAisle[] = [];
       group.name = "ikebukuro_kit";
       group.userData = { gteki_role: "kit" };
       const stats: KitStats = {
         modules: placements.length, tiles: 0, drawCallsAllTiles: 0, trianglesAllTiles: 0, trianglesWorstTile: 0,
         gateArrays: gates.length, gateDrawCallsAll: 0, gateTriangles: 0,
       };
-      if (!placements.length && !gates.length) return { group, stats };
+      if (!placements.length && !gates.length) return { group, stats, cameraGateAisles };
       const origin = toRenderer(0, 0, 0);
       const lit = new Map<THREE_NS.Material, THREE_NS.Material>();
       const litOf = (src: THREE_NS.Material) => {
@@ -402,6 +412,11 @@ export async function loadKit(
               s.set(w.sx, 1, 1);
               base.compose(w.centre, q, s).multiply(part.matrix);
               im.setMatrixAt(i, base);
+              if (part === gateMerged[0] && cabinets.length) {
+                const envelope = new THREE.Box3();
+                for (const box of cabinets) envelope.union(box);
+                cameraGateAisles.push({ node: gates[wi]!.node, worldToLocal: new THREE.Matrix4().fromArray(new Float32Array(base.elements)).invert(), cabinets, envelope });
+              }
             });
             im.instanceMatrix.needsUpdate = true;
             im.computeBoundingSphere();
@@ -445,6 +460,11 @@ export async function loadKit(
               s.set(1, 1, 1);
               base.compose(w.centre, q, s).multiply(w.shift);
               im.setMatrixAt(i, base);
+              if (part === gateMerged[0] && cabinets.length) {
+                const envelope = new THREE.Box3();
+                for (const box of cabinets) envelope.union(box);
+                cameraGateAisles.push({ node: gates[wi]!.node, worldToLocal: new THREE.Matrix4().fromArray(new Float32Array(base.elements)).invert(), cabinets, envelope });
+              }
             });
             im.instanceMatrix.needsUpdate = true;
             im.computeBoundingSphere();
@@ -455,7 +475,7 @@ export async function loadKit(
         }
         group.add(gg);
       }
-      return { group, stats };
+      return { group, stats, cameraGateAisles };
     },
     dispose() {
       for (const o of owned) o.dispose();

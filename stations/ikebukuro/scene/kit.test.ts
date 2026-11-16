@@ -706,3 +706,31 @@ describe("the walk graph and the walker's world do not depend on the kit", () =>
     // a verified-edge count here would only go stale as the route lane verifies more edges.
   });
 });
+
+describe("camera-only JR gate metadata (#1378)", () => {
+  it("uses the rendered instance transforms and asset cabinet bounds, without adding collision roles", async () => {
+    const gltf = fakeKit();
+    const cabinet = new THREE.Mesh(new THREE.BoxGeometry(.236, .92, 1.3));
+    cabinet.name = "COL_cabinet_0-colonly";
+    cabinet.position.set(-.82, .46, -.95);
+    gltf.scene.children[0]!.add(cabinet);
+    const loaded = await loadKit(THREE, host([`kit/high/${GATE}.glb`], async () => gltf), kit, [], false, graph);
+    const built = loaded.build(THREE, new THREE.Texture(), toRenderer);
+    expect(built.cameraGateAisles.map((g) => g.node).sort()).toEqual([...GATE_NODES].sort());
+    built.group.traverse((object) => {
+      expect(["collider", "walkable", "camera_blocker"]).not.toContain(object.userData.gteki_role);
+      const mesh = object as THREE.InstancedMesh;
+      if (!mesh.isInstancedMesh) return;
+      for (let i = 0; i < mesh.count; i++) {
+        const metadata = built.cameraGateAisles.find((g) => g.node === mesh.userData.gteki_nodes[i])!;
+        const matrix = new THREE.Matrix4();
+        mesh.getMatrixAt(i, matrix);
+        expect(metadata.worldToLocal.elements).toEqual(matrix.invert().elements);
+        expect(metadata.cabinets).toHaveLength(1);
+        expect(metadata.cabinets[0]!.getCenter(new THREE.Vector3()).toArray()).toEqual([-.82, .46, -.95]);
+      }
+    });
+    expect(fences.marks).toHaveLength(80);
+    loaded.dispose();
+  });
+});

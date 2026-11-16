@@ -74,6 +74,14 @@ export interface InteractableSpec {
   once?: boolean;
 }
 
+/** Gate-local camera metadata; never walker ground or collision targets. Bounds are asset-local. */
+export interface CameraGateAisle {
+  node: string;
+  worldToLocal: THREE.Matrix4;
+  cabinets: readonly THREE.Box3[];
+  envelope: THREE.Box3;
+}
+
 export interface StationScene {
   /** Construct station sound when the host first enables audio; idempotent. */
   startAudio?(audio: NonNullable<SceneContext["audio"]>): void;
@@ -89,6 +97,7 @@ export interface StationScene {
    * block walking or count as ground.
    */
   cameraBlockers?: THREE.Object3D[];
+  cameraGateAisles?: readonly CameraGateAisle[];
   walls?: WallSegment[];
   spawnPoints?: SpawnPoint[];
   /** Fog/background/lighting preferences; the explorer applies sane defaults otherwise. */
