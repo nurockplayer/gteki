@@ -1,8 +1,8 @@
 name: E2E smoke
 
 on:
-  # No path filter on PRs: this will become a required check, and a path-filtered required
-  # check never reports on PRs outside its paths, leaving them blocked. Non-required for now.
+  # Docs-only PRs skip browser jobs via changes; no paths: filter, so checks still report
+  # on every PR and cannot leave a future required check pending outside its paths.
   pull_request:
   workflow_dispatch:
 
@@ -12,9 +12,33 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          code=true
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if files=$(gh pr diff ${{ github.event.pull_request.number }} --name-only); then
+              if [[ -n "$files" ]] && ! grep -qv '^docs/' <<< "$files"; then
+                code=false
+              fi
+            fi
+          fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
   e2e-smoke:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     name: e2e-smoke
     runs-on: ubuntu-latest
     timeout-minutes: 75  # 2026-11-16: 53 min with cold open at 25 min (#1376)
@@ -102,6 +126,8 @@ jobs:
           if-no-files-found: ignore
 
   golden-cameras:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     name: golden-cameras (${{ matrix.station }})
     runs-on: ubuntu-latest
     timeout-minutes: 40
@@ -192,6 +218,8 @@ jobs:
           if-no-files-found: ignore
 
   journey:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     name: journey (shinjuku) (${{ matrix.project }}${{ matrix.mode == 'next' && ', next' || '' }})
     runs-on: ubuntu-latest
     timeout-minutes: 38
@@ -250,6 +278,8 @@ jobs:
 
   # WebKit replay guard for the stale stairwell recipes in #1012 / #1028.
   e2e-smoke-webkit:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     name: e2e-smoke-webkit
     runs-on: ubuntu-latest
     timeout-minutes: 8  # measured 1m39s
