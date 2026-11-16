@@ -728,7 +728,7 @@ describe("camera-only JR gate metadata (#1378)", () => {
         mesh.getMatrixAt(i, matrix);
         expect(metadata.worldToLocal.elements).toEqual(matrix.invert().elements);
         expect(metadata.cabinets).toHaveLength(1);
-        expect(metadata.cabinets[0]!.getCenter(new THREE.Vector3()).toArray()).toEqual([-.82, .46, -.95]);
+        expect(metadata.cabinets[0]!.getCenter(new THREE.Vector3()).distanceTo(new THREE.Vector3(-.82, .46, -.95))).toBeLessThan(1e-12);
       }
     });
     expect(fences.marks).toHaveLength(80);

@@ -803,7 +803,8 @@ describe("Ikebukuro JR gate camera (#1378)", () => {
       const exits = (frames: typeof after) => frames.filter((f) => f.probes.some((p) => Math.abs(p.x) > 1 || Math.abs(p.y) > 1 || Math.abs(p.z) > 1)).length;
       metrics.push({ heading, walking, beforeIntrusions: before.filter((f) => f.inside).length,
         afterIntrusions: after.filter((f) => f.inside).length, beforeFrameExits: exits(before), afterFrameExits: exits(after),
-        beforeLowY: Math.min(...before.map((f) => f.probes[0]!.y)), maxRaiseDeg: Math.max(...after.map((f) => THREE.MathUtils.radToDeg(f.raise))) });
+        beforeLowY: Math.min(...before.map((f) => f.probes[0]!.y)), afterLowY: Math.min(...after.map((f) => f.probes[0]!.y)),
+        afterExits: after.flatMap((f, frame) => f.probes.some((p) => Math.abs(p.y) > 1) ? [{ frame, raise: f.raise, camera: f.camera, probes: f.probes }] : []), maxRaiseDeg: Math.max(...after.map((f) => THREE.MathUtils.radToDeg(f.raise))) });
       checks.push({ heading, before, after, exits: exits(after) });
     }
     console.log("#1378 CPU before/after (2026-11-17 JST):", JSON.stringify(metrics));

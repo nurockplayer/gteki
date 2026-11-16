@@ -359,7 +359,7 @@ export function cameraGateConstraint(aisles: readonly CameraGateAisle[], feet: T
       return !expanded.containsPoint(start) && (!hit || hit.distanceTo(start) > start.distanceTo(end));
     });
   });
-  return { clearPosition, clearBoom };
+  return { clearPosition, clearBoom, clearCandidate: (back: THREE.Vector3, distance: number) => clearPosition(pivot.clone().addScaledVector(back, distance)) };
 }
 
 /**
@@ -438,7 +438,7 @@ export function solveRaisedBoom(
       const raise = THREE.MathUtils.degToRad(degrees);
       const direction = raisedBack(base.back, raise, scratch);
       const distance = followDistance(wanted, cast(direction));
-      if (!gate.clearBoom(direction, distance)) continue;
+      if (!gate.clearCandidate(direction, distance)) continue;
       if (distance > bestDistance) { target = raise; bestDistance = distance; }
       if (distance >= Math.min(FOLLOW.comfortDistance, wanted)) break;
     }
