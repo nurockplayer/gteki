@@ -75,6 +75,8 @@ export interface InteractableSpec {
 }
 
 export interface StationScene {
+  /** Construct station sound when the host first enables audio; idempotent. */
+  startAudio?(audio: NonNullable<SceneContext["audio"]>): void;
   root: THREE.Object3D;
   interactables?: InteractableSpec[];
   /** Surfaces the walker can stand on (raycast from above). Empty = no free walking. */
