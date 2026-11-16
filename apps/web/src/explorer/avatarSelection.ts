@@ -28,10 +28,14 @@ export function avatarGlbUrl(params: URLSearchParams, pageUrl: string): string |
 /** Which protagonist a page asks for; the cat is the default. */
 export type AvatarKind = "human" | "cat";
 export type CatGait = "a" | "b";
+export type CatGaitChoice = Partial<Record<"trot" | "run", CatGait>>;
 
-export function catGait(params: URLSearchParams): CatGait | undefined {
+/** Defaults to legacy trot and run A; preview gait letters select both clips, while legacy selects neither. */
+export function catGait(params: URLSearchParams): CatGaitChoice | undefined {
   const gait = params.get("catGait");
-  return params.get("next") === "1" && (gait === "a" || gait === "b") ? gait : undefined;
+  if (gait === "legacy") return undefined;
+  if (params.get("next") === "1" && (gait === "a" || gait === "b")) return { trot: gait, run: gait };
+  return { run: "a" };
 }
 
 /** #854 scripted cat, picked by gteki-lead on 2026-11-06; a placeholder until the Owner sets breed and coat. */
@@ -57,7 +61,7 @@ export interface AvatarSelection extends AvatarRig {
 }
 
 /** The human rig is shown while loading and on GLB failure; cat mode (the default) starts empty instead. */
-export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; catGait?: CatGait; onCatFallback?: () => void }): AvatarSelection {
+export function createAvatarRig(opts: { quality: "low" | "high"; glbUrl?: string; loader?: AvatarGlbLoader; kind?: AvatarKind; catGait?: CatGaitChoice; onCatFallback?: () => void }): AvatarSelection {
   const cat = opts.kind === "cat";
   let current = cat ? emptyRig() : createAvatar({ quality: opts.quality });
   let generation = 0;
