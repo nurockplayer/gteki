@@ -73,17 +73,18 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1238/#1243 (2026-11-16 JST): stair insets and roof parenting (#1238.1 split out); physical lists unchanged.
 // #1321 (2026-11-17 JST): ten procedural stair/landing camera targets; kit on/off parity passed before refreshing lists only.
 // #1391 (2026-11-17 JST): owned-roof linear-light placements/metadata only; 107 other meshes and all lists unchanged.
+// #1434 (2026-11-17 JST): nosing goldenRole metadata changes nodes/lists digests; geometry and list counts unchanged.
 const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "ecfa0f8989f3d5af64dbc42ecb3a338fb68c18d286d45cef985073b02471b9d1",
     "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
-    "nodesDigest": "7e8250acdf61dbfab45dcadbcb6d74a65aae5989136afcb7486f517781b13e98",
+    "nodesDigest": "89c9a2aee9c888cc2f1c7bbf1b0b0783e4c4b688598ddd8350ab9747d2a2930a",
     "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
     "meshes": 108,
     "bytes": 17299194
   },
   "lists": {
-    "listsDigest": "9a21249194648a0de23451d8762bc7da09c884884cd129eb0db6f05158bd4a7d",
+    "listsDigest": "85b9cf529984bc1be24054a73025e69f22f756417f3c8155d066a4d8970e9943",
     "counts": {
       "walkable": 442,
       "colliders": 2,
