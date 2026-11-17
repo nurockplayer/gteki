@@ -7,7 +7,7 @@ import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { centroid, cutWallsByVoids, pointInRings, roomFloorFill, soffitHeight, STREET_PAD, RUN_WALL_OFFSET, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { centroid, cutWallsByVoids, pointInRings, roomFloorFill, soffitHeight, stairShaftGroups, STREET_PAD, RUN_WALL_OFFSET, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, escalatorStepTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
 import { prepareLayout } from "./build-cache.ts";
 import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
@@ -2060,19 +2060,28 @@ function buildUndergroundLighting(
   track: <T extends { dispose(): void }>(x: T) => T,
   extraRoofs: Soffit[] = [],
 ) {
-  type Fixture = { a: XYZ; b: XYZ; ground: XYZ; upright: boolean };
+  type Fixture = { a: XYZ; b: XYZ; ground: XYZ; upright: boolean; edgeId: string; sample: number; roof: Omit<Soffit, "kind"> };
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
     ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
-  const ceilingAt = (p: XYZ): { z: number; floorId: string; shared?: Soffit } | null => {
-    let best: { z: number; floorId: string } | null = null;
-    const shared = layout.shaftCeilingPreview?.roofs.find((s) => pointInRings(p, s.rings));
-    if (shared) return { z: soffitHeight(shared, p), floorId: shared.floorId, shared };
+  const shafts = stairShaftGroups(layout.runs);
+  const runEdges = new Set(layout.runs.map((r) => r.edgeId));
+  const ceilingAt = (p: XYZ, edgeId?: string, floorId?: string): { z: number; floorId: string; roof: Omit<Soffit, "kind">; shared?: Soffit } | null => {
+    let best: { z: number; floorId: string; roof: Omit<Soffit, "kind">; shared?: Soffit } | null = null;
+    for (const s of layout.shaftCeilingPreview?.roofs ?? []) {
+      const ownsShaft = shafts[Number(s.spaceId.split(":")[1])]?.some((r) => r.edgeId === edgeId);
+      if (!ownsShaft && (runEdges.has(edgeId!) || s.floorId !== floorId)) continue;
+      const z = soffitHeight(s, p);
+      if (z < p.z + 2.5 || z > p.z + 5.2 || (best && best.z <= z) || !pointInRings(p, s.rings)) continue;
+      best = { z, floorId: s.floorId, roof: s, shared: s };
+    }
+    if (best) return best;
+    // Shared landing soffits can span floor labels; geometry and physical clearance own them.
     for (const s of roofs) {
       const z = soffitHeight(s, p);
       if (z < p.z + 2.5 || z > p.z + 5.2 || (best && best.z <= z) || !pointInRings(p, s.rings)) continue;
-      best = { z, floorId: s.floorId };
+      best = { z, floorId: s.floorId, roof: s };
     }
     return best;
   };
@@ -2089,7 +2098,7 @@ function buildUndergroundLighting(
       const t0 = (i + 0.18) / count, t1 = (i + 0.82) / count;
       const at = (t: number): XYZ => ({ x: a.position.x + (b.position.x - a.position.x) * t, y: a.position.y + (b.position.y - a.position.y) * t, z: za + (zb - za) * t });
       const p = at(t0), q = at(t1), m = at((t0 + t1) / 2);
-      const rm = ceilingAt(m);
+      const rm = ceilingAt(m, e.id, a.floorId);
       let p2 = p, q2 = q, upright = false;
       if (rm?.shared && (rm.shared.slope?.x || rm.shared.slope?.y)) {
         upright = true;
@@ -2110,7 +2119,14 @@ function buildUndergroundLighting(
         q2 = { x: m.x + ux / n * half, y: m.y + uy / n * half, z: m.z };
         if (!pointInRings(p2, rm.shared.rings) || !pointInRings(q2, rm.shared.rings)) continue;
       }
-      const rp = ceilingAt(p2), rq = ceilingAt(q2);
+      // Rotation changes XY along a sloping walkway: project each endpoint onto its source edge.
+      const surfaceZ = (p: XY) => {
+        const dx = b.position.x - a.position.x, dy = b.position.y - a.position.y;
+        const t = ((p.x - a.position.x) * dx + (p.y - a.position.y) * dy) / (dx * dx + dy * dy);
+        return za + (zb - za) * t;
+      };
+      const rp = ceilingAt({ ...p2, z: surfaceZ(p2) }, e.id, a.floorId);
+      const rq = ceilingAt({ ...q2, z: surfaceZ(q2) }, e.id, a.floorId);
       if (!rp || !rq || !rm || Math.abs(rm.z - (rp.z + rq.z) / 2) > 0.15) continue;
       // Undirected duplicate links must not double the fixtures.
       const key = `${m.x.toFixed(1)},${m.y.toFixed(1)},${rm.z.toFixed(1)}`;
@@ -2139,7 +2155,7 @@ function buildUndergroundLighting(
       if (placed.some(overlaps)) continue;
       placed.push(candidate);
       const fixtures = batches.get(rm.floorId) ?? [];
-      fixtures.push({ ...candidate, ground: m, upright });
+      fixtures.push({ ...candidate, ground: m, upright, edgeId: e.id, sample: i, roof: rm.roof });
       batches.set(rm.floorId, fixtures);
     }
   }
@@ -2165,6 +2181,8 @@ function buildUndergroundLighting(
     const strips = new THREE.InstancedMesh(box, material, fixtures.length);
     strips.name = "linear-light:underground";
     strips.userData.floorPools = fixtures.map((f) => f.ground);
+    strips.userData.mounts = fixtures.map(({ edgeId, sample, roof }) => ({ edgeId, sample, roof,
+      section: layout.shaftCeilingPreview?.roofs.findIndex((s) => s === roof) ?? -1 }));
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), center = new THREE.Vector3(), scale = new THREE.Vector3();
     const up = new THREE.Vector3(0, 1, 0), xAxis = new THREE.Vector3(), yAxis = new THREE.Vector3(), zAxis = new THREE.Vector3();
     for (const [i, f] of fixtures.entries()) {
@@ -2226,7 +2244,7 @@ function buildUndergroundLighting(
     if (n) anchors.push({ ...n.position, z: lv.z });
   }
   // An anchor with no ceiling over it gets no light, so it does not take one of the 8.
-  for (const [p, roof] of anchors.flatMap((p) => { const roof = ceilingAt(p); return roof ? [[p, roof] as const] : []; }).slice(0, 8)) {
+  for (const [p, roof] of anchors.flatMap((p) => { const roof = ceilingAt(p, undefined, layout.levels.reduce((a, b) => Math.abs(a.z - p.z) < Math.abs(b.z - p.z) ? a : b).floorId); return roof ? [[p, roof] as const] : []; }).slice(0, 8)) {
     const lv = layout.levels.find((l) => l.floorId === roof.floorId)!;
     const light = new THREE.PointLight(lv.label === "B1" || lv.label === "B5" ? "#fff0dc" : "#e0efff", 3.5, 12, 2);
     light.position.copy(v3({ ...p, z: roof.z - 0.22 }));

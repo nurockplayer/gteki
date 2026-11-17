@@ -60,7 +60,8 @@ describe("station geometry lifetime", () => {
     // J7 (2026-11-13 JST): remove 31 overlapping linear lights.
     // #1169 (2026-11-14 JST): align the shaft stripe UV datum; positions and counts are unchanged.
     // #1238/#1243 (2026-11-16 JST): inset stair render surfaces and reparent preview roofs.
-    expect(result.geometryHash).toBe("6fc750c6405e8645e5c3ecb2400d87e0a1447525499d40ccf6c6c8c485159b2c");
+    // #1391 (2026-11-17 JST): owned-roof linear lights; all other meshes unchanged.
+    expect(result.geometryHash).toBe("da2860196b38438c72ab2dfd8bf61b8e82de419faab37d7155547db3dcdcc9a9");
   }, 60_000);
 
   // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the
