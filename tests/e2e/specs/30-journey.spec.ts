@@ -231,7 +231,7 @@ test("guided walk @phone", async ({ page }, info) => {
   expect(timeBand).toBe("morning");
   await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
   expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
-  const destinationPoiLabel = reelMode === "next" ? await page.locator(".poi-label.cat-platform.selected").textContent() : null;
+  const destinationPoiLabel = reelMode === "next" ? await page.evaluate(() => document.querySelector(".poi-label.cat-platform.selected")?.textContent ?? null) : null;
   const route = await hooks.route(page);
   const steps = route.steps as { fromNodeId: string; toNodeId: string; edgeId: string; reversed: boolean; mode: string }[];
   const wps = routeWaypoints("shinjuku", steps), { graph } = stationData("shinjuku");
