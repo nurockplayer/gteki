@@ -575,12 +575,27 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       steps: [{ id: "look", seconds: 1.2 }, { id: "sit", seconds: 1.5 }, { id: "react", seconds: 2.0 }], once: false },
   ];
 
+  // #1435: this stair's raised nosing support puts the boom pivot above the adjacent
+  // street wall's foot. Keep only its camera pivot on the original ramp datum.
+  const cameraRun = layout.runs.find((r) => r.edgeId === "e:0564105d1e914395848a2b09c12368c5");
   const scene: StationScene = {
     root: built.root,
     interactables,
     walkable,
     colliders,
     cameraBlockers,
+    cameraPivotGroundAt: (p) => {
+      if (!cameraRun) return null;
+      const lo = cameraRun.a.z < cameraRun.b.z ? cameraRun.a : cameraRun.b;
+      const hi = lo === cameraRun.a ? cameraRun.b : cameraRun.a;
+      const { L, tread, walkZ } = stairProfile(lo, hi);
+      const dx = (hi.x - lo.x) / L, dy = (hi.y - lo.y) / L;
+      const x = p.x - lo.x, y = -p.z - lo.y;
+      const along = x * dx + y * dy;
+      if (along < -tread || along > L || Math.abs(x * dy - y * dx) > cameraRun.width / 2 ||
+        Math.abs(p.y - walkZ(along)) > 0.02) return null;
+      return Math.min(p.y, lo.z + (hi.z - lo.z) * Math.max(0, along) / L);
+    },
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },

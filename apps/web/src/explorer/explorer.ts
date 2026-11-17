@@ -3675,6 +3675,8 @@ export class Explorer {
     const pose = this.catAvatar
       ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(lift, (shot.height - (head.y - this.pos.y)) / shot.distance + Math.sin(pitch), weight) : lift, framing.drop)
       : followPose(head, yaw, pitch, shoulder);
+    const pivotGround = this.stationScene?.cameraPivotGroundAt?.(this.pos);
+    if (pivotGround != null) pose.pivot.y += pivotGround - this.pos.y;
     if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
     let wantedDistance = distance;
