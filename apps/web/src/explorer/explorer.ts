@@ -3700,6 +3700,11 @@ export class Explorer {
         catCentre = this.catWorldBox().getCenter(new THREE.Vector3());
       }
     }
+    const cast = (b: THREE.Vector3, length = wantedDistance) => {
+      this.ray.set(pose.pivot, b);
+      this.ray.far = length + FOLLOW.clearance;
+      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+    };
     // Rotate only as far as the descending tread constraint needs, retaining the D2 boom length.
     const clearTreads = (direction: THREE.Vector3, length: number) => {
       if (!catCentre) return direction;
@@ -3718,7 +3723,11 @@ export class Explorer {
         if (angleAt(mid) < stairAngle) low = mid;
         else high = mid;
       }
-      return direction.set(x * Math.cos(high), Math.sin(high), z * Math.cos(high));
+      const raised = new THREE.Vector3(x * Math.cos(high), Math.sin(high), z * Math.cos(high));
+      // Free-walk treads must not pull the raised lens into a nosing or ceiling.
+      // Keep the body-solve direction when the raised boom cannot retain its length.
+      if (walkDescent && !stairsOn && followDistance(length, cast(raised, length)) < length) return direction;
+      return direction.copy(raised);
     };
     const nominalElevation = Math.asin(back.y);
     back = clearTreads(back.clone(), wantedDistance);
@@ -3730,11 +3739,6 @@ export class Explorer {
       : undefined;
     let gateHeld = false;
     if (!this.cameraTargets.length) this.boomRaise = 0;
-    const cast = (b: THREE.Vector3, length = wantedDistance) => {
-      this.ray.set(pose.pivot, b);
-      this.ray.far = length + FOLLOW.clearance;
-      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
-    };
     if (this.cameraTargets.length) {
       // The descent aim persists across short landings between flights. Free walk needs
       // the same lens-to-body check there even when its pivot-to-camera ray is clear.
