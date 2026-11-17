@@ -208,6 +208,26 @@ describe("Explorer wall fallback and QA controls", () => {
     expect(state.boomActual).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
   });
 
+  it("damps a wall-clearing raise when a band still caps the boom at 0.5 m", () => {
+    const state = cameraStand();
+    const pose = followPose(new THREE.Vector3(0, 1.62, 0), state.yaw, state.pitch);
+    const band = new THREE.Mesh(new THREE.SphereGeometry(0.8, 64, 48), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    band.position.copy(pose.pivot);
+    band.userData.stairwellBandFaceStart = 0;
+    band.updateMatrixWorld(true);
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(10, 2.07, 0.2), new THREE.MeshBasicMaterial());
+    lip.position.set(0, 2.07 / 2, 1.0);
+    lip.updateMatrixWorld(true);
+    state.camera.position.copy(pose.pivot).addScaledVector(pose.back, 0.5);
+    state.boomActual = 0.5;
+    setTargets(state, [band, lip]);
+    const lerp = vi.spyOn(state.camera.position, "lerp");
+    place(state);
+    expect(state.boomRaise).toBeGreaterThan(0);
+    expect(state.boomActual).toBeCloseTo(0.5, 2);
+    expect(lerp.mock.lastCall![1]).toBeCloseTo(1 - Math.exp(-10 / 60), 12);
+  });
+
   it("limits fade recovery when a raised boom clears a squeeze in one frame", () => {
     const state = cameraStand();
     setTargets(state, [pocket()]);

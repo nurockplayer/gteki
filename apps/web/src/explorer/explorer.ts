@@ -3804,7 +3804,7 @@ export class Explorer {
       // would recreate the same obstruction even though the target boom has already cleared it.
       // In free walk, an increasing relative raise can still lower the absolute elevation.
       const raisesElevation = this.mode !== "walk" || solved.back.y > this.camera.position.clone().sub(pose.pivot).normalize().y;
-      raisedClear = raisesElevation && !solved.bodyDriven && solved.raise > this.boomRaise && followDistance(wantedDistance, cast(solved.back).filter((h) => !h.stairwellBand)) >= Math.min(FOLLOW.comfortDistance, wantedDistance);
+      raisedClear = raisesElevation && !solved.bodyDriven && solved.raise > this.boomRaise && followDistance(wantedDistance, cast(solved.back)) >= Math.min(FOLLOW.comfortDistance, wantedDistance);
       back = solved.back;
       dist = solved.distance;
       this.boomRaise = solved.raise;

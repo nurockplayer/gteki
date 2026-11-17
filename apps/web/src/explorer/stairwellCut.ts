@@ -453,7 +453,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
     geometry.computeVertexNormals();
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = "greybox-stairwell-glass";
-    mesh.userData = { greybox: true, approximate: true, stairwellBandFaceStart: 0 };
+    mesh.userData = { greybox: true, approximate: true };
     finish.add(mesh); colliders.push(mesh);
   }
   const railM = walls.reduce((sum, w) => sum + Math.hypot(w.bx - w.ax, w.bz - w.az), 0);
@@ -681,7 +681,7 @@ function colorMesh(name: string, positions: number[], colors: number[], envMap: 
     : new THREE.MeshLambertMaterial({ color: 0xffffff, vertexColors: true, side: THREE.DoubleSide });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.name = name;
-  mesh.userData = { greybox: true, approximate: true, stairwellBandFaceStart: 0 };
+  mesh.userData = { greybox: true, approximate: true };
   return mesh;
 }
 
