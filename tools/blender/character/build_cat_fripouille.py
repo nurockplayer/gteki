@@ -3018,7 +3018,8 @@ def render_contact_sheets(directory, arm, body):
     kit.reset_pose(arm)
     bpy.context.view_layer.update()
     print(f"SHEETS {directory}: 12 PNGs and report.md; {len(failures)} acceptance failure(s)")
-    return failures
+    if failures:
+        fail("authored sheets: " + "; ".join(failures))
 
 
 # --------------------------------------------------------------------------------------------
@@ -3202,7 +3203,7 @@ def main():
     CONTACT_VERTICES = authored_contact_vertices(body, arm)
     chest_penetration_info(body, arm, before_chest, chest_region)
     if args.sheets:
-        checker.failures.extend(render_contact_sheets(args.sheets, arm, body))
+        render_contact_sheets(args.sheets, arm, body)
         if args.sheet_only:
             if checker.failures:
                 fail("; ".join(checker.failures))
