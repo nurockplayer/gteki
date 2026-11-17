@@ -131,13 +131,13 @@ export function escalatorPose(feet: THREE.Vector3, axis: THREE.Vector3, shoulder
 export const CAT_RAISE_AIM = { start: 0.17, end: 0.35, feetNdc: 0.85, feetNdcPortrait: 0.6 } as const;
 
 /** Lowers `target` so the cat at `catPos` stays in frame from `cameraPos`, by how far the boom is raised. */
-export function aimAtRaisedCat(target: THREE.Vector3, cameraPos: THREE.Vector3, catPos: THREE.Vector3, raise: number, fovDeg: number, aspect: number): void {
+export function aimAtRaisedCat(target: THREE.Vector3, cameraPos: THREE.Vector3, catPos: THREE.Vector3, raise: number, fovDeg: number, aspect: number, feetNdc: number = aspect < 1 ? CAT_RAISE_AIM.feetNdcPortrait : CAT_RAISE_AIM.feetNdc): void {
   const t = Math.min(1, Math.max(0, (raise - CAT_RAISE_AIM.start) / (CAT_RAISE_AIM.end - CAT_RAISE_AIM.start)));
   if (t === 0) return;
   const ahead = Math.hypot(target.x - cameraPos.x, target.z - cameraPos.z);
   const elevation = Math.atan2(target.y - cameraPos.y, ahead);
   const feet = Math.atan2(catPos.y - cameraPos.y, Math.hypot(catPos.x - cameraPos.x, catPos.z - cameraPos.z));
-  const highest = feet + Math.atan((aspect < 1 ? CAT_RAISE_AIM.feetNdcPortrait : CAT_RAISE_AIM.feetNdc) * Math.tan(THREE.MathUtils.degToRad(fovDeg) / 2));
+  const highest = feet + Math.atan(feetNdc * Math.tan(THREE.MathUtils.degToRad(fovDeg) / 2));
   if (elevation <= highest) return;
   target.y = cameraPos.y + ahead * Math.tan(elevation + (highest - elevation) * t * t * (3 - 2 * t));
 }
