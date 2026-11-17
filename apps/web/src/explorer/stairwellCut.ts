@@ -281,6 +281,7 @@ function rectPlanes(rect: StairwellRect, upperY: number): Plane[] {
 }
 
 const horizontal = (normal: THREE.Vector3): boolean => Math.abs(normal.y) > 0.9;
+const stairModel = (mesh: THREE.Object3D): boolean => mesh.userData.gteki_role === "stairs_ramps" || mesh.userData.goldenRole === "stairs_ramps";
 
 function rectCorners(rect: StairwellRect, height: number, from = -rect.halfLength, to = rect.halfLength): THREE.Vector3[] {
   return [[from, -1], [to, -1], [to, 1], [from, 1]].map(([l, w]) => rect.center.clone()
@@ -308,8 +309,8 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       const corners = [...rectCorners(rect, rect.center.y - Math.abs(rect.rise) / 2 + WALK_CLEAR_M), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal,
-        // A stair model is never cut, even where another flight passes above the footprint.
-        rejectsMesh: (mesh) => mesh.userData.gteki_role === "stairs_ramps",
+        // Stair models tagged by either role field are never cut, even where another flight passes above the footprint.
+        rejectsMesh: stairModel,
         admits: (piece, mesh, triangle) => !onWalkingSurface(piece, triangle, well),
       });
       // The upper slab opens only where the flight runs less than HOLE_DEPTH_M under it; deeper, the floor carries on.
@@ -333,7 +334,7 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
         accepts: (normal) => horizontal(normal) || Math.abs(normal.y) < VERTICAL_NORMAL_M,
         // A collision proxy (the merged ceiling caps) is cut by its own slab levels, as an untagged mesh is, so it opens
         // with the visible ceiling it stands in for; other tagged roles are never band slabs.
-        rejectsMesh: (mesh) => { const role = mesh.userData.gteki_role; return role !== undefined && role !== "collider" && !SLAB_ROLES.has(role); },
+        rejectsMesh: (mesh) => { if (stairModel(mesh)) return true; const role = mesh.userData.gteki_role; return role !== undefined && role !== "collider" && !SLAB_ROLES.has(role); },
         admits: (piece, mesh, triangle) => {
           const role = mesh.userData.gteki_role;
           if (onWalkingSurface(piece, triangle, well)) return false;
