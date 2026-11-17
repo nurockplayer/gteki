@@ -140,6 +140,7 @@ approachFov	function	apps/web/src/explorer/followCamera.ts
 arrivalShotState	function	apps/web/src/explorer/followCamera.ts
 avatarFade	function	apps/web/src/explorer/followCamera.ts
 boomSqueezed	function	apps/web/src/explorer/followCamera.ts
+cameraGateConstraint	function	apps/web/src/explorer/followCamera.ts
 catShoulder	function	apps/web/src/explorer/followCamera.ts
 clampDistance	function	apps/web/src/explorer/followCamera.ts
 constrainedPitch	function	apps/web/src/explorer/followCamera.ts
@@ -445,6 +446,7 @@ footingLevel	function	apps/web/src/explorer/streetBackdrop.ts
 isOutdoors	function	apps/web/src/explorer/streetBackdrop.ts
 roleOf	function	apps/web/src/explorer/streetBackdrop.ts
 stationDrawsGround	function	apps/web/src/explorer/streetBackdrop.ts
+gateCameraReplay	function	apps/web/src/explorer/test-fixtures/gateCameraReplay.ts
 BLOOM_HEADROOM	const	apps/web/src/explorer/toneComp.ts
 CompensateOptions	interface	apps/web/src/explorer/toneComp.ts
 GradeParams	interface	apps/web/src/explorer/toneComp.ts
@@ -908,6 +910,7 @@ assembleSnapPath	function	packages/navigation/src/snap-path.ts
 snapJoinKey	function	packages/navigation/src/snap-path.ts
 AcousticZone	type	packages/scene-api/src/index.ts
 BuildScene	type	packages/scene-api/src/index.ts
+CameraGateAisle	interface	packages/scene-api/src/index.ts
 IdentityBoardTag	interface	packages/scene-api/src/index.ts
 InteractableSpec	interface	packages/scene-api/src/index.ts
 NavmeshPaths	interface	packages/scene-api/src/index.ts
@@ -1332,6 +1335,7 @@ catArrivalRise	function	stations/shinjuku/app/src/spawn-view.ts
 followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts
 spawnView	function	stations/shinjuku/app/src/spawn-view.ts
 loadShinjukuBundle	function	stations/shinjuku/data/bundle.ts
+createEscalatorSound	function	stations/shinjuku/gteki/escalator-sound.ts
 crowdEdges	function	stations/shinjuku/gteki/explorer-crowd.ts
 assembleScene	const	stations/shinjuku/gteki/scene.ts
 buildScene	const	stations/shinjuku/gteki/scene.ts

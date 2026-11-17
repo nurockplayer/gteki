@@ -459,6 +459,12 @@ describe("default cat stair framing", () => {
       }
       const pivot = new THREE.Vector3(0.2 * Math.min(1, aspect), 0.42, 0);
       expect(state.camera.position.distanceTo(pivot)).toBeCloseTo(aspect >= 1 ? 2.25 : 2.4, 3);
+      if (aspect >= 1 && grade >= 0.5) {
+        state.camera.updateMatrixWorld(true);
+        const feet = (1 - state.pos.clone().project(state.camera).y) / 2;
+        expect(feet).toBeGreaterThanOrEqual(0.80);
+        expect(feet).toBeLessThanOrEqual(0.86);
+      }
     });
 
   it.each([1.6, 0.7])("leaves a QA-pinned stair distance unscaled at aspect %s", (aspect) => {

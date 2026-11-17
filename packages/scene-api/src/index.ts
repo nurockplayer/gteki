@@ -74,6 +74,14 @@ export interface InteractableSpec {
   once?: boolean;
 }
 
+/** Gate-local camera metadata; never walker ground or collision targets. Bounds are asset-local. */
+export interface CameraGateAisle {
+  node: string;
+  worldToLocal: THREE.Matrix4;
+  cabinets: readonly THREE.Box3[];
+  envelope: THREE.Box3;
+}
+
 export interface StationScene {
   /** Construct station sound when the host first enables audio; idempotent. */
   startAudio?(audio: NonNullable<SceneContext["audio"]>): void;
@@ -89,6 +97,7 @@ export interface StationScene {
    * block walking or count as ground.
    */
   cameraBlockers?: THREE.Object3D[];
+  cameraGateAisles?: readonly CameraGateAisle[];
   walls?: WallSegment[];
   spawnPoints?: SpawnPoint[];
   /** Fog/background/lighting preferences; the explorer applies sane defaults otherwise. */
@@ -121,7 +130,7 @@ export interface StationScene {
   audioInfo?(): {
     zone: AcousticZone;
     ambience: { bedGain: number; murmurGain: number; wetGain: number; wetLowpassHz: number; streetGain: number } | null;
-    escalator: null;
+    escalator: { gain: number; nearestDistance: number | null; runs: number } | null;
     train: { phase: number | null; gain: number; cutoffHz: number; sourcePosition: { x: number; y: number; z: number }; listenerDistance: number | null } | null;
   };
   /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
