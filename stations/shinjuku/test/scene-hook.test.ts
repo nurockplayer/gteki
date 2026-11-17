@@ -1,5 +1,5 @@
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
-import { castAll } from "../../../apps/web/src/explorer/raycast.ts";
+import { castAll, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { seeThroughMeshes, type StationScene } from "@gteki/scene-api";
@@ -47,8 +47,25 @@ describe("shared-explorer scene hook: camera caps", () => {
   });
 
   it("makes the drawn street paving and kerbs camera-only blockers", () => {
-    const names = (scene.cameraBlockers ?? []).filter((o) => !scene.colliders?.includes(o)).map((o) => o.name).sort();
+    const names = (scene.cameraBlockers ?? []).filter((o) => !scene.colliders?.includes(o) && !o.userData.gtekiCameraTargetOnly).map((o) => o.name).sort();
     expect(names).toEqual(["surface-ground", "surface-stone"]);
+  });
+
+  it("uses visible stair treads, nosing and landing floors as ordinary camera targets only", () => {
+    const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers);
+    const surfaces = targets.camera.filter((o) => o.userData.gtekiCameraTargetOnly) as THREE.Mesh[];
+    const materials = surfaces.map((m) => (m.material as THREE.Material).name);
+    expect(materials).toContain("mat.stair");
+    expect(materials).toContain("mat.nosing");
+    expect(materials.some((name) => name.startsWith("mat.floor"))).toBe(true);
+    expect(materials).not.toContain("mat.steel");
+    for (const m of surfaces) {
+      expect(targets.blockers.has(m)).toBe(false);
+      expect(targets.ground).not.toContain(m);
+      expect(targets.collider).not.toContain(m);
+      expect(targets.sky).not.toContain(m);
+      expect(m.visible).toBe(true);
+    }
   });
 
   it("caps the follow camera above underground nodes (except lift shafts and exit stairs open to the sky)", () => {
@@ -127,7 +144,7 @@ describe("shared-explorer scene hook: camera caps", () => {
 
   it("never blocks the walker's horizontal rays along any graph edge", () => {
     const ray = new THREE.Raycaster();
-    const caps = scene.cameraBlockers!;
+    const caps = scene.cameraBlockers!.filter((o) => !o.userData.gtekiCameraTargetOnly);
     const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
     const hits: string[] = [];
     for (const e of bundle.edges) {

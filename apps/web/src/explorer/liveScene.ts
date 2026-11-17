@@ -86,7 +86,7 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
     return instances.filter(({ owner }) => sourceSet.has(owner)).map(({ copy }) => copy);
   };
   const groundCopies = copiesOf(originalTargets.ground), colliderCopies = copiesOf(originalTargets.collider);
-  const blockerCopies = copiesOf([...originalTargets.blockers]);
+  const blockerCopies = copiesOf([...originalTargets.blockers, ...originalTargets.camera.filter((o) => o.userData.gtekiCameraTargetOnly)]);
   const sceneGroundTargets = [...new Set([...retain(originalTargets.ground), ...groundCopies])];
   const sceneColliderTargets = new Set([...retain(originalTargets.collider), ...colliderCopies]);
   const liveWalkable = [...new Set([...retain(walkable), ...groundCopies])];

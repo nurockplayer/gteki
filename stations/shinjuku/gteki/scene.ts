@@ -436,6 +436,20 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     if (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry") m.userData.gteki_role = "sign";
     else if (m.name === "surface-ground" || m.name === "surface-stone") { Object.defineProperty(m.userData, "gteki_source", { value: "procedural", writable: true, configurable: true }); cameraBlockers.push(m); }
   });
+  // Keep references to the rendered meshes: portal/stairwell cuts replace their geometry in place.
+  // These surfaces constrain the ordinary boom, without the roof blocker's below-minimum squeeze.
+  const stairEnds = layout.runs.filter((r) => r.mode === "stairs").flatMap((r) => [r.a, r.b]).map((p) => toRenderer(p.x, p.y, p.z));
+  built.root.traverseVisible((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || Array.isArray(m.material) || !m.material.visible) return;
+    const stair = m.material.name === "mat.stair" || m.material.name === "mat.nosing";
+    const floor = m.name === "walkable" && m.material.name.startsWith("mat.floor");
+    const bounds = floor ? new T.Box3().setFromObject(m).expandByScalar(0.35) : null;
+    const landing = bounds && stairEnds.some((p) => bounds.containsPoint(p));
+    if (!stair && !landing) return;
+    m.userData.gtekiCameraTargetOnly = true;
+    cameraBlockers.push(m);
+  });
   // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
   // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as
   // the lane app (app/src/main.ts), applied to the station's own materials only.
