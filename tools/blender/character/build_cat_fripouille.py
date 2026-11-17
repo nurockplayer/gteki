@@ -1108,10 +1108,16 @@ def locomotion_pose(clip, t):
     for leg in LEGS:
         phase = p + gait["offset"][leg["key"]]
         y, z = foot_path(leg["front"], phase, gait, OFF_EPS[leg["key"]])
-        if clip == "walk" and leg["front"]:
-            # Keep the fore swing lower than the hind at the upright body height.
-            rest_z = REST_DISTAL[True][1] + OFF_EPS[leg["key"]]
-            z = rest_z + (z - rest_z) * 0.75
+        if clip == "walk":
+            # Lift clear promptly after toe-off instead of sliding through a low swing edge.
+            swing = (phase % 1.0 - gait["duty"]) / (1.0 - gait["duty"])
+            if swing >= 0.0:
+                z = (REST_DISTAL[leg["front"]][1] + OFF_EPS[leg["key"]]
+                     + gait["lift"] * math.sin(math.pi * swing))
+            if leg["front"]:
+                # Keep the fore swing lower than the hind at the upright body height.
+                rest_z = REST_DISTAL[True][1] + OFF_EPS[leg["key"]]
+                z = rest_z + (z - rest_z) * 0.75
         targets[leg["key"]] = (REST_TARGET[leg["key"]][0], y, z)
         paw[leg["key"]] = paw_angle_for(leg, phase, gait)
     return dict(root=(0.0, 0.0, root_z + bob), fk=fk, targets=targets, paw=paw)
@@ -1265,13 +1271,18 @@ def frame_pose(arm, clip, frame, sit):
 def bake_clip(arm, clip, sit):
     import bpy
     frames = list(range(0, CLIPS[clip]["frames"] + 1, CLIPS[clip]["sample"]))
+    if clip == "walk":
+        # Preserve each contact boundary rather than interpolating across stance and swing.
+        frames = sorted(set(frames + [CLIPS[clip]["frames"] * ((phase - offset) % 1.0)
+                        for offset in GAITS[clip]["offset"].values()
+                        for phase in (0.0, GAITS[clip]["duty"])]))
     action = bpy.data.actions.new(clip)
     action.use_fake_user = True
     if arm.animation_data is None:
         arm.animation_data_create()
     arm.animation_data.action = action
     for frame in frames:
-        bpy.context.scene.frame_set(frame)
+        bpy.context.scene.frame_set(int(frame), subframe=frame % 1)
         frame_pose(arm, clip, frame, sit)
         for bone in arm.pose.bones:
             bone.keyframe_insert("location", frame=frame, group=bone.name)
