@@ -241,6 +241,8 @@ export class Explorer {
   /** prefers-reduced-motion: the follow camera and orbit damping cut instead of gliding, and decorative route motion stops. */
   private reducedMotion = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
+  coldOpenStreet = false;
+  coldOpenStreetEnding = false;
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
   private readonly probeNormalMatrix = new THREE.Matrix3();
@@ -3536,7 +3538,12 @@ export class Explorer {
     // Single-sided winding varies across source polygons: only the tilt matters.
     const footing = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
     // The surface actually underfoot, not the walker's smoothed height, decides which tread this is.
-    p.level = footing && atStreetTop(hit ? hit.point : this.pos, this.streetTops, true);
+    if (this.coldOpenStreet || this.coldOpenStreetEnding) {
+      p.level = atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
+      if (!this.coldOpenStreet && !p.level) this.coldOpenStreetEnding = false;
+    } else {
+      p.level = footing && atStreetTop(hit ? hit.point : this.pos, this.streetTops, true);
+    }
   }
 
   /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */
