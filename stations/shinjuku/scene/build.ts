@@ -23,6 +23,7 @@ import { OEDO_MAGENTA } from "./palette.ts";
 import { buildIdentityBoards } from "./identity.ts";
 import type { TimeBand } from "../../ikebukuro/scene/time-band.ts";
 import { stableHypot } from "./stable-hypot.ts";
+import { stairProfile } from "./stairProfile.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -1020,13 +1021,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
           // flat stair link (landing) — draw as floor strip
           stairGeos.push(boxAlong(v3({ ...lo, z: lo.z - 0.05 }), v3({ ...hi, z: hi.z - 0.05 }), r.width, 0.1));
         } else {
-          const steps = Math.max(2, Math.round(dz / 0.165));
-          const rise = dz / steps;
-          const run = L / steps;
+          const { steps, rise, tread: run, treadTop } = stairProfile(lo, hi);
           for (let i = 0; i < steps; i++) {
             const cx = lo.x + u.x * run * (i + 0.5);
             const cy = lo.y + u.y * run * (i + 0.5);
-            const top = lo.z + rise * (i + 1);
+            const top = treadTop(i);
             const box = new THREE.BoxGeometry(run + 0.02, rise + 0.18, r.width + 2 * RUN_WALL_OFFSET - 0.01);
             box.rotateY(yaw);
             box.translate(cx, top - (rise + 0.18) / 2, -cy);

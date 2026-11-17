@@ -16,6 +16,7 @@ import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
 import { fetchLayoutBake } from "../scene/layout-bake.ts";
 import { clearLayoutCache } from "../scene/build-cache.ts";
+import { stairProfile } from "../scene/stairProfile.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
@@ -297,6 +298,23 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   for (const p of layout.linkStrips) addProxy(slabGeometry(p.rings, p.z, 1));
   for (const p of layout.streetPads) addProxy(slabGeometry(p.rings, p.z, 1));
   for (const r of layout.runs) {
+    const lo = r.a.z <= r.b.z ? r.a : r.b;
+    const hi = r.a.z <= r.b.z ? r.b : r.a;
+    if (r.mode === "stairs" && hi.z - lo.z >= 0.05) {
+      const { L, tread, walkZ } = stairProfile(lo, hi);
+      const ux = (hi.x - lo.x) / L, uy = (hi.y - lo.y) / L;
+      const nx = -uy * r.width / 2, ny = ux * r.width / 2;
+      const v = [-tread, 0, L - tread, L].flatMap((s) => {
+        const x = lo.x + ux * s, y = lo.y + uy * s, z = walkZ(s);
+        return [x + nx, z, -(y + ny), x - nx, z, -(y - ny)];
+      });
+      const g = new T.BufferGeometry();
+      g.setAttribute("position", new T.Float32BufferAttribute(v, 3));
+      g.setIndex([0, 1, 3, 0, 3, 2, 2, 3, 5, 2, 5, 4, 4, 5, 7, 4, 7, 6]);
+      g.computeVertexNormals();
+      addProxy(g);
+      continue;
+    }
     // Ramp quad along the stair/escalator run (renderer frame: x, z, -y).
     const dx = r.b.x - r.a.x;
     const dy = r.b.y - r.a.y;
