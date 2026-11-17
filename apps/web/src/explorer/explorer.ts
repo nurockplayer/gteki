@@ -37,7 +37,7 @@ import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZone, type ZoneAnchor } from "./zones.ts";
-import { CAT_RAISE_AIM, OPENING_SHOTS, openingShotState, ARRIVAL_SHOTS, ESCALATOR_SHOT, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, type CameraHold, type SlopeState } from "./followCamera.ts";
+import { CAT_RAISE_AIM, OPENING_SHOTS, openingShotState, ARRIVAL_SHOTS, ESCALATOR_SHOT, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, steerYaw, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -391,6 +391,7 @@ export class Explorer {
   private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
+  private guideYawRate = 0; // rad/s
   private pitch = -0.12;
   private camDistance: number = FOLLOW.defaultDistance;
   private stairsFraming = { progress: 0, weight: 0 };
@@ -2117,6 +2118,7 @@ export class Explorer {
     console.info("[identity-framing]", JSON.stringify({ boardsTotal: this.identityBoards.length, notInScene, notVisible, boards: boardRecords, aspect: round(this.camera.aspect), ndcFree: { x0: round(ndcFree.x0), x1: round(ndcFree.x1), y0: round(ndcFree.y0), y1: round(ndcFree.y1) }, tried, catRig: !!this.catAvatar, framed: !!look, view: { w, h }, free, occluders: this.occluderRects() }));
     if (!look) return false;
     this.yaw = look.yaw;
+    this.guideYawRate = 0;
     this.pitch = look.pitch;
     // The framed look lands as a snap on the next frame: the camera and slope must not pan from the old pose.
     this.teleported = true;
@@ -2141,6 +2143,7 @@ export class Explorer {
     }
     this.teleported = true;
     this.yaw = (-headingDeg * Math.PI) / 180;
+    this.guideYawRate = 0;
     // The avatar appears at the new spot facing the new heading (no run blend from the old one).
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
@@ -2164,6 +2167,7 @@ export class Explorer {
     const afterPlace = performance.now();
     if (placed) {
       this.yaw = -THREE.MathUtils.degToRad(headingDeg);
+      this.guideYawRate = 0;
       this.bodyYaw = this.yaw;
       this.placeCamera(0, true);
     }
@@ -2944,6 +2948,7 @@ export class Explorer {
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
+    this.guideYawRate = 0;
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
@@ -2973,6 +2978,7 @@ export class Explorer {
     this.pos.set(p.x, p.y, p.z);
     this.teleported = true;
     if (p.tx || p.tz) this.yaw = Math.atan2(-p.tx, -p.tz);
+    this.guideYawRate = 0;
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
   }
@@ -3426,6 +3432,7 @@ export class Explorer {
     const wasArrival = this.arrivalState === "active";
     this.arrivalState = arrivalShotState(this.arrivalState, this.previewNext, this.arrivalDestination, false, input);
     if (wasArrival && input) {
+      this.guideYawRate = 0;
       const direction = this.camera.getWorldDirection(new THREE.Vector3());
       this.yaw = Math.atan2(-direction.x, -direction.z);
       this.pitch = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
@@ -3450,10 +3457,15 @@ export class Explorer {
     const holdDt = Math.min(dt, this.guideIdentityHoldS);
     const steeringDt = holdDt > 0 && this.trackGuideIdentity(p, holdDt) ? dt - holdDt : dt;
     this.guideIdentityHoldS = Math.max(0, this.guideIdentityHoldS - dt);
-    if (p.tx || p.tz) {
+    if (this.previewNext && (p.tx || p.tz)) {
+      const next = steerYaw(this.yaw, this.guideYawRate, Math.atan2(-p.tx, -p.tz), steeringDt);
+      this.yaw = next.yaw;
+      this.guideYawRate = next.rate;
+    } else if (p.tx || p.tz) {
       const targetYaw = Math.atan2(-p.tx, -p.tz);
       this.yaw += angleDelta(this.yaw, targetYaw) * Math.min(1, steeringDt * 4);
     }
+    if (look.dx) this.guideYawRate = 0;
     this.yaw -= look.dx * 0.0042;
     const previousArrival = this.arrivalState;
     this.arrivalState = arrivalShotState(this.arrivalState, this.previewNext, this.arrivalDestination, g.s >= total && !g.holding, input);
@@ -3479,6 +3491,7 @@ export class Explorer {
       this.guideIdentityHoldS = 0;
       return false;
     }
+    this.guideYawRate = 0;
     const k = this.reducedMotion ? 1 : Math.min(1, dt * 4);
     this.yaw += angleDelta(this.yaw, targetYaw) * k;
     this.pitch = THREE.MathUtils.clamp(this.pitch + (bearingPitch + this.guideIdentityOffset.pitch - this.pitch) * k, LOOK_PITCH.min, LOOK_PITCH.max);
