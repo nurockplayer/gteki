@@ -1680,7 +1680,8 @@ def planted_speeds(arm, actions, durations=None):
                     planted = (phase - touchdown) % 1.0 < toe_off - touchdown
                 elif clip == "walk":
                     phase = (frame / (duration * FPS) + GAITS["walk"]["offset"][leg["key"]]) % 1.0
-                    planted = phase < GAITS["walk"]["duty"]
+                    # Contact-edge interpolation eases into/out of stance; measure its linear interior.
+                    planted = 0.04 < phase < GAITS["walk"]["duty"] - 0.04
                 else:
                     planted = point.z < rest[name] + 0.01
                 if planted:
