@@ -1,3 +1,4 @@
+import type { CameraGateAisle } from "@gteki/scene-api";
 import * as THREE from "three";
 
 /**
@@ -330,6 +331,39 @@ export function raisedBack(back: THREE.Vector3, raise: number, out: THREE.Vector
   return out.set((back.x / flat) * cos, Math.sin(elevation), (back.z / flat) * cos);
 }
 
+/** Local gate envelope test, including a sphere enclosing the camera and all near-plane corners. */
+export function cameraGateConstraint(aisles: readonly CameraGateAisle[], feet: THREE.Vector3, position: THREE.Vector3, nominal: THREE.Vector3, pivot: THREE.Vector3, near: number, fov: number, aspect: number) {
+  const radius = near * Math.hypot(1, Math.tan(THREE.MathUtils.degToRad(fov) / 2) * Math.hypot(1, aspect));
+  const local = new THREE.Vector3();
+  const gates = aisles.filter((gate) => {
+    local.copy(feet).applyMatrix4(gate.worldToLocal);
+    if (local.y < -0.1 || local.y > gate.envelope.max.y) return false;
+    const inside = () => local.x >= gate.envelope.min.x - radius && local.x <= gate.envelope.max.x + radius
+      && local.z >= gate.envelope.min.z - radius && local.z <= gate.envelope.max.z + radius;
+    if (inside()) return true;
+    local.copy(position).applyMatrix4(gate.worldToLocal);
+    if (inside()) return true;
+    local.copy(nominal).applyMatrix4(gate.worldToLocal);
+    return inside();
+  });
+  if (!gates.length) return undefined;
+  const clearPosition = (point: THREE.Vector3) => gates.every((gate) => {
+    local.copy(point).applyMatrix4(gate.worldToLocal);
+    return gate.cabinets.every((box) => box.distanceToPoint(local) > radius);
+  });
+  const clearBoom = (back: THREE.Vector3, distance: number) => gates.every((gate) => {
+    const start = pivot.clone().applyMatrix4(gate.worldToLocal);
+    const end = pivot.clone().addScaledVector(back, distance).applyMatrix4(gate.worldToLocal);
+    const ray = new THREE.Ray(start, end.clone().sub(start).normalize());
+    return gate.cabinets.every((box) => {
+      const expanded = box.clone().expandByScalar(radius);
+      const hit = ray.intersectBox(expanded, new THREE.Vector3());
+      return !expanded.containsPoint(start) && (!hit || hit.distanceTo(start) > start.distanceTo(end));
+    });
+  });
+  return { clearPosition, clearBoom, clearCandidate: (back: THREE.Vector3, distance: number) => clearPosition(pivot.clone().addScaledVector(back, distance)) };
+}
+
 /**
  * How far to raise the boom (radians above nominal, 0 = leave it) when it would be shortened below
  * `FOLLOW.comfortDistance`. `current` is the distance the unraised `back` already gets. Raised booms are tried
@@ -383,6 +417,7 @@ export function solveRaisedBoom(
   snap = false,
   bodyHidden?: (back: THREE.Vector3, distance: number) => boolean,
   bodyHold?: { seconds: number; target: number },
+  gate?: ReturnType<typeof cameraGateConstraint>,
 ): { back: THREE.Vector3; distance: number; raise: number; bodyDriven: boolean } {
   const base = followBoom(wanted, back, cast);
   const scratch = new THREE.Vector3();
@@ -395,6 +430,22 @@ export function solveRaisedBoom(
     return hidden;
   });
   let target = constrainedPitch(wanted, base.back, base.distance, cast, scratch, checkBody);
+  let gateHeld = false;
+  if (gate && (!gate.clearCandidate(base.back, base.distance)
+    || ((base.distance < Math.min(FOLLOW.comfortDistance, wanted) || currentRaise > 0)
+      && !gate.clearBoom(base.back, wanted)))) {
+    gateHeld = true;
+    target = Math.max(target, currentRaise, FOLLOW.maxRaise);
+    let bestDistance = -1;
+    for (let degrees = THREE.MathUtils.radToDeg(target); degrees <= 75 + 1e-6; degrees += 5) {
+      const raise = THREE.MathUtils.degToRad(degrees);
+      const direction = raisedBack(base.back, raise, scratch);
+      const distance = followDistance(wanted, cast(direction));
+      if (!gate.clearCandidate(direction, distance)) continue;
+      if (distance > bestDistance) { target = raise; bestDistance = distance; }
+      if (distance >= Math.min(FOLLOW.comfortDistance, wanted)) break;
+    }
+  }
   bodyDriven &&= target > 0;
   if (bodyHold) {
     if (snap) bodyHold.seconds = bodyHold.target = 0;
@@ -411,7 +462,7 @@ export function solveRaisedBoom(
       bodyHold.seconds = bodyHold.target = 0;
     }
   }
-  let raise = easeRaise(currentRaise, target, dt, snap);
+  let raise = easeRaise(currentRaise, target, dt, snap || gateHeld);
   if (bodyDriven && !snap) {
     const step = FOLLOW.bodyRaiseSpeed * Math.max(0, dt);
     raise = Math.max(currentRaise - step, Math.min(target, currentRaise + step));
