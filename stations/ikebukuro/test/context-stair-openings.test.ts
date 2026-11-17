@@ -7,10 +7,89 @@ import type { StationBundle } from "@gteki/schema";
 import { stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
 import { CONTEXT_GLB, cutContextStairOpenings } from "../scene/context.ts";
 
-it("leaves zero context triangles in every street-exit stair opening in both shipped tiers", async () => {
+type StairwellRect = ReturnType<typeof stairwellWells>[number]["rects"][number];
+
+function readBundle(): StationBundle {
   const base = new URL("../gteki/", import.meta.url);
   const read = (name: string) => JSON.parse(fs.readFileSync(new URL(name, base), "utf8"));
-  const bundle = { ...read("station.json"), ...read("graph.json") } as StationBundle;
+  return { ...read("station.json"), ...read("graph.json") } as StationBundle;
+}
+
+function areaInsideBox(triangle: THREE.Triangle, rect: StairwellRect, lowerY: number, upperY: number): number {
+  let polygon = [triangle.a.clone(), triangle.b.clone(), triangle.c.clone()];
+  const planes = [
+    (p: THREE.Vector3) => p.x + rect.halfLength,
+    (p: THREE.Vector3) => rect.halfLength - p.x,
+    (p: THREE.Vector3) => p.y - lowerY,
+    (p: THREE.Vector3) => upperY - p.y,
+    (p: THREE.Vector3) => p.z + rect.halfWidth,
+    (p: THREE.Vector3) => rect.halfWidth - p.z,
+  ];
+  for (const signed of planes) {
+    const clipped: THREE.Vector3[] = [];
+    for (let i = 0; i < polygon.length; i++) {
+      const a = polygon[(i + polygon.length - 1) % polygon.length]!, b = polygon[i]!;
+      const da = signed(a), db = signed(b), aInside = da >= -1e-8, bInside = db >= -1e-8;
+      if (aInside !== bInside) clipped.push(a.clone().lerp(b, da / (da - db)));
+      if (bInside) clipped.push(b);
+    }
+    polygon = clipped;
+    if (polygon.length < 3) return 0;
+  }
+  let area = 0;
+  for (let i = 1; i + 1 < polygon.length; i++) area += polygon[i]!.clone().sub(polygon[0]!).cross(polygon[i + 1]!.clone().sub(polygon[0]!)).length() / 2;
+  return area;
+}
+
+it("clips only opening portions of crossing context triangles and preserves outside geometry", () => {
+  const bundle = readBundle();
+  const streetFloors = new Set(bundle.floors.filter(f => f.ordinal === 0 && !f.intermediate).map(f => f.id));
+  const exits = new Set(bundle.nodes.filter(n => n.kind === "exit" && streetFloors.has(n.floorId)).map(n => n.id));
+  const edge = bundle.edges.find(e => (e.mode === "stairs" || e.mode === "escalator") && (exits.has(e.from) || exits.has(e.to)))!;
+  const endpoints = new Set([edge.from, edge.to]);
+  const nodes = bundle.nodes.filter(n => endpoints.has(n.id));
+  const floorIds = new Set(nodes.map(n => n.floorId));
+  const singleEdgeBundle = { ...bundle, edges: [edge], nodes, floors: bundle.floors.filter(f => floorIds.has(f.id)) } as StationBundle;
+  const well = stairwellWells(singleEdgeBundle, e => !e.closed)[0]!;
+  const rect = well.rects[0]!;
+  const y = (well.lowerY + well.upperY) / 2;
+  const point = (along: number, across: number) => new THREE.Vector3(
+    rect.center.x + rect.along.x * along + rect.across.x * across,
+    y,
+    rect.center.z + rect.along.z * along + rect.across.z * across,
+  );
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute([
+    ...point(-rect.halfLength - 2, -rect.halfWidth - 2).toArray(),
+    ...point(0, 0).toArray(),
+    ...point(rect.halfLength + 2, -rect.halfWidth - 2).toArray(),
+  ], 3));
+  geometry.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0], 3));
+  geometry.addGroup(0, 3, 1);
+  const root = new THREE.Group(), mesh = new THREE.Mesh(geometry, [new THREE.MeshBasicMaterial(), new THREE.MeshBasicMaterial()]);
+  root.add(mesh);
+  expect(cutContextStairOpenings(THREE, root, singleEdgeBundle)).toBe(1);
+  expect(mesh.geometry.getAttribute("position").count).toBeGreaterThan(3);
+  expect(mesh.geometry.groups).toEqual([{ start: 0, count: mesh.geometry.getAttribute("position").count, materialIndex: 1 }]);
+  let retainedArea = 0, openingArea = 0;
+  const positions = mesh.geometry.getAttribute("position");
+  for (let i = 0; i < positions.count; i += 3) {
+    const triangle = new THREE.Triangle().setFromAttributeAndIndices(positions, i, i + 1, i + 2);
+    retainedArea += triangle.getArea();
+    const local = triangle.clone();
+    for (const v of [local.a, local.b, local.c]) {
+      const delta = v.clone().sub(rect.center);
+      v.set(delta.dot(rect.along), v.y, delta.dot(rect.across));
+    }
+    openingArea += areaInsideBox(local, rect, well.lowerY, well.upperY);
+  }
+  expect(retainedArea).toBeGreaterThan(0);
+  expect(openingArea).toBeLessThan(1e-8);
+});
+
+it("leaves zero context surface area in every street-exit stair opening in both shipped tiers", async () => {
+  const bundle = readBundle();
+  const base = new URL("../gteki/", import.meta.url);
   const streets = new Set(bundle.floors.filter(f => f.ordinal === 0 && !f.intermediate).map(f => f.id));
   const exits = bundle.nodes.filter(n => n.kind === "exit" && streets.has(n.floorId));
   const ids = new Set(exits.map(n => n.id));
@@ -25,27 +104,34 @@ it("leaves zero context triangles in every street-exit stair opening in both shi
     expect(cutContextStairOpenings(THREE, gltf.scene, bundle)).toBeGreaterThan(0);
     const triangle = new THREE.Triangle(), local = new THREE.Triangle();
     for (const well of wells) {
-      let intrusions = 0;
-      for (const [mesh] of originals) {
+      let intrusions = 0, maxArea = 0;
+      for (const [mesh, original] of originals) {
         const positions = mesh.geometry.getAttribute("position"), index = mesh.geometry.index;
         for (let i = 0; i < (index?.count ?? positions.count); i += 3) {
           [triangle.a, triangle.b, triangle.c].forEach((v, k) => v.fromBufferAttribute(positions, index ? index.getX(i + k) : i + k).applyMatrix4(mesh.matrixWorld));
-          if (well.rects.some(rect => {
+          const overlap = well.rects.reduce((max, rect) => {
             [local.a, local.b, local.c].forEach((v, k) => {
               const point = [triangle.a, triangle.b, triangle.c][k]!, delta = point.clone().sub(rect.center);
               v.set(delta.dot(rect.along), point.y, delta.dot(rect.across));
             });
-            return new THREE.Box3(new THREE.Vector3(-rect.halfLength, well.lowerY, -rect.halfWidth), new THREE.Vector3(rect.halfLength, well.upperY, rect.halfWidth)).intersectsTriangle(local);
-          })) intrusions++;
+            return Math.max(max, areaInsideBox(local, rect, well.lowerY, well.upperY));
+          }, 0);
+          maxArea = Math.max(maxArea, overlap);
+          if (overlap > 1e-4) intrusions++;
+        }
+        if (mesh.geometry !== original) {
+          for (const [name, attribute] of Object.entries(original.attributes)) {
+            const clipped = mesh.geometry.getAttribute(name);
+            expect(clipped.itemSize, `${uri}: ${name} item size`).toBe(attribute.itemSize);
+            expect(Array.from(clipped.array as ArrayLike<number>).every(Number.isFinite), `${uri}: ${name} finite values`).toBe(true);
+          }
         }
       }
-      expect(intrusions, `${uri}: ${well.edgeId}`).toBe(0);
-      console.log(`${uri}: ${well.edgeId}: 0 context triangles`);
+      expect(intrusions, `${uri}: ${well.edgeId}, max overlap area ${maxArea} m²`).toBe(0);
+      console.log(`${uri}: ${well.edgeId}: no measurable context area inside opening (<1e-4 m²)`);
     }
     for (const [mesh, original] of originals) {
       if (mesh.geometry === original) continue;
-      // Retained vertices and all their attributes stay byte-identical; only triangle indices change.
-      for (const name of Object.keys(original.attributes)) expect(mesh.geometry.getAttribute(name).array).toEqual(original.getAttribute(name).array);
       mesh.geometry.dispose();
     }
     for (const geometry of originals.values()) geometry.dispose();
