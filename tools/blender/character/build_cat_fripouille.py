@@ -1108,6 +1108,16 @@ def locomotion_pose(clip, t):
     for leg in LEGS:
         phase = p + gait["offset"][leg["key"]]
         y, z = foot_path(leg["front"], phase, gait, OFF_EPS[leg["key"]])
+        if clip == "walk":
+            # Lift clear promptly after toe-off instead of sliding through a low swing edge.
+            swing = (phase % 1.0 - gait["duty"]) / (1.0 - gait["duty"])
+            if swing >= 0.0:
+                z = (REST_DISTAL[leg["front"]][1] + OFF_EPS[leg["key"]]
+                     + gait["lift"] * math.sin(math.pi * swing))
+            if leg["front"]:
+                # Keep the fore swing lower than the hind at the upright body height.
+                rest_z = REST_DISTAL[True][1] + OFF_EPS[leg["key"]]
+                z = rest_z + (z - rest_z) * 0.75
         targets[leg["key"]] = (REST_TARGET[leg["key"]][0], y, z)
         paw[leg["key"]] = paw_angle_for(leg, phase, gait)
     return dict(root=(0.0, 0.0, root_z + bob), fk=fk, targets=targets, paw=paw)
@@ -1158,7 +1168,8 @@ def turn_pose(sign, t):
         "head": (-0.02 * math.sin(math.tau * 2.0 * t / cycle), 0.0, sign * math.radians(12.0)),
     }
     fk.update(tail_fk((0.0, 0.0, -sign * 0.25)))
-    return dict(root=(0.0, 0.0, -gait["hip"] * 0.5), fk=fk, targets=targets, paw=paw,
+    # Retain the accepted turn height while the straight walk uses its own body pitch.
+    return dict(root=(0.0, 0.0, -kit.GAITS["walk"]["hip"] * 0.5), fk=fk, targets=targets, paw=paw,
                 paw_yaw=paw_yaw, yaw=sign * TURN_YAW * t / cycle)
 
 
@@ -1260,13 +1271,18 @@ def frame_pose(arm, clip, frame, sit):
 def bake_clip(arm, clip, sit):
     import bpy
     frames = list(range(0, CLIPS[clip]["frames"] + 1, CLIPS[clip]["sample"]))
+    if clip == "walk":
+        # Preserve each contact boundary rather than interpolating across stance and swing.
+        frames = sorted(set(frames + [CLIPS[clip]["frames"] * ((phase - offset) % 1.0)
+                        for offset in GAITS[clip]["offset"].values()
+                        for phase in (0.0, GAITS[clip]["duty"])]))
     action = bpy.data.actions.new(clip)
     action.use_fake_user = True
     if arm.animation_data is None:
         arm.animation_data_create()
     arm.animation_data.action = action
     for frame in frames:
-        bpy.context.scene.frame_set(frame)
+        bpy.context.scene.frame_set(int(frame), subframe=frame % 1)
         frame_pose(arm, clip, frame, sit)
         for bone in arm.pose.bones:
             bone.keyframe_insert("location", frame=frame, group=bone.name)
@@ -1674,6 +1690,10 @@ def planted_speeds(arm, actions, durations=None):
                     phase = (frame / (gait["cycle_s"] * FPS)) % 1.0
                     touchdown, toe_off = gait["contacts"][leg["key"]]
                     planted = (phase - touchdown) % 1.0 < toe_off - touchdown
+                elif clip == "walk":
+                    phase = (frame / (duration * FPS) + GAITS["walk"]["offset"][leg["key"]]) % 1.0
+                    # Contact-edge interpolation eases into/out of stance; measure its linear interior.
+                    planted = 0.04 < phase < GAITS["walk"]["duty"] - 0.04
                 else:
                     planted = point.z < rest[name] + 0.01
                 if planted:
@@ -1739,11 +1759,15 @@ def legacy_clip_checks(checker, path):
         return result
     old_bin, new_bin = glb_binary(baseline), glb_binary(path)
     for name in CLIP_ORDER:
+        if name in ("walk", "turn_l", "turn_r"):
+            continue  # #1389 deliberately changes these shared gait channels.
         a, b = channels(old, old_bin, name), channels(new, new_bin, name)
         equal = a.keys() == b.keys()
         for key in a.keys() & b.keys():
             equal &= a[key][0] == b[key][0]
             for index,(left, right) in enumerate(zip(a[key][1:], b[key][1:])):
+                if name in ("start", "stop") and index == 1:
+                    continue  # #1389 connects these values to the retuned walk endpoint.
                 tolerance = 1e-4 if name == "sit" and key[1] == "rotation" and index == 1 else 1e-5
                 equal &= len(left) == len(right) and all(
                     abs(x-y) <= tolerance for xs, ys in zip(left, right) for x, y in zip(xs, ys))
@@ -1752,11 +1776,16 @@ def legacy_clip_checks(checker, path):
                     difference = max(abs(x-y) for xs,ys in zip(left,right) for x,y in zip(xs,ys))
                     print(f"INFO legacy sit {key[0]} rotation: max quaternion component difference {difference:.9f} <= 0.000100000")
         rule = "1e-4 for rotations; 1e-5 for all times/translations" if name == "sit" else "1e-5"
-        checker.check(equal, f"legacy {name} sampler times/values unchanged within {rule}")
+        if name in ("start", "stop"):
+            checker.check(equal, f"legacy {name} sampler channels/times/interpolation unchanged; walk-connected values retuned")
+        else:
+            checker.check(equal, f"legacy {name} sampler times/values unchanged within {rule}")
     def calib(doc):
         return next(n["extras"]["gteki_cat"]["calib"] for n in doc["nodes"]
                     if n.get("extras", {}).get("gteki_cat"))
-    checker.check(calib(old) == calib(new), "legacy calib unchanged")
+    checker.check({k: v for k, v in calib(old).items() if k != "walk"}
+                  == {k: v for k, v in calib(new).items() if k != "walk"},
+                  "legacy calib unchanged except retuned walk")
 
 
 def exported_skin_checks(checker, path, snapped):
@@ -3035,6 +3064,8 @@ def main():
     GAITS = {name: dict(gait) for name, gait in kit.GAITS.items()}
     # This rig's fore chain is short, so the stock run stride swings the leading forepaw too far
     # forward; a shorter, lower stride keeps it under the shoulder.
+    GAITS["walk"].update(travel=0.09, offset={
+        "hind_L": 0.00, "fore_L": 0.79, "hind_R": 0.50, "fore_R": 0.29})
     GAITS["run"].update(travel=0.14, lift=0.052)
     for gait in GAITS.values():
         gait["travel"] *= ratio
