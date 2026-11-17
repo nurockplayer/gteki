@@ -1033,12 +1033,7 @@ def paw_angle_for(leg, phase, gait):
 
 
 def locomotion_pose(clip, t):
-    gait = GAITS[clip] if clip not in ("start", "stop") else dict(
-        GAITS["walk"], offset=kit.GAITS["walk"]["offset"],
-        travel=GAITS["trot"]["travel"] * .13 / .15)
-    # Transitions retain their shipped walk endpoint; only the shared cycle changes.
-    if clip in ("start", "stop"):
-        clip = "walk"
+    gait = GAITS[clip]
     p = (t * FPS / CLIPS[clip]["frames"]) % 1.0
     theta = (gait["hip"] - gait["chest"]) / (SHOULDER_LEVER - HIP_LEVER)
     root_z = -gait["hip"] - HIP_LEVER * theta
@@ -1209,10 +1204,10 @@ def frame_pose(arm, clip, frame, sit):
     elif clip in GAITS:
         pose = locomotion_pose(clip, t)
     elif clip == "start":
-        pose = blend_pose(idle_pose(0.0), locomotion_pose(clip, 0.0),
+        pose = blend_pose(idle_pose(0.0), locomotion_pose("walk", 0.0),
                           smoothstep(frame / CLIPS[clip]["frames"]))
     elif clip == "stop":
-        pose = blend_pose(locomotion_pose(clip, 0.0), idle_pose(0.0),
+        pose = blend_pose(locomotion_pose("walk", 0.0), idle_pose(0.0),
                           smoothstep(frame / CLIPS[clip]["frames"]))
     elif clip in ("turn_l", "turn_r"):
         pose = turn_pose(-1.0 if clip == "turn_l" else 1.0, t)
@@ -1711,6 +1706,8 @@ def legacy_clip_checks(checker, path):
         for key in a.keys() & b.keys():
             equal &= a[key][0] == b[key][0]
             for index,(left, right) in enumerate(zip(a[key][1:], b[key][1:])):
+                if name in ("start", "stop") and index == 1:
+                    continue  # #1389 connects these values to the retuned walk endpoint.
                 tolerance = 1e-4 if name == "sit" and key[1] == "rotation" and index == 1 else 1e-5
                 equal &= len(left) == len(right) and all(
                     abs(x-y) <= tolerance for xs, ys in zip(left, right) for x, y in zip(xs, ys))
@@ -1719,7 +1716,10 @@ def legacy_clip_checks(checker, path):
                     difference = max(abs(x-y) for xs,ys in zip(left,right) for x,y in zip(xs,ys))
                     print(f"INFO legacy sit {key[0]} rotation: max quaternion component difference {difference:.9f} <= 0.000100000")
         rule = "1e-4 for rotations; 1e-5 for all times/translations" if name == "sit" else "1e-5"
-        checker.check(equal, f"legacy {name} sampler times/values unchanged within {rule}")
+        if name in ("start", "stop"):
+            checker.check(equal, f"legacy {name} sampler channels/times/interpolation unchanged; walk-connected values retuned")
+        else:
+            checker.check(equal, f"legacy {name} sampler times/values unchanged within {rule}")
     def calib(doc):
         return next(n["extras"]["gteki_cat"]["calib"] for n in doc["nodes"]
                     if n.get("extras", {}).get("gteki_cat"))
