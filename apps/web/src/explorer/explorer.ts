@@ -3722,7 +3722,10 @@ export class Explorer {
       return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
     };
     if (this.cameraTargets.length) {
-      const checkBody = this.catAvatar && this.escalatorWeight === 0 && (this.previewNext || stairsOn)
+      // The descent aim persists across short landings between flights. Free walk needs
+      // the same lens-to-body check there even when its pivot-to-camera ray is clear.
+      const walkDescent = this.mode === "walk" && !this.firstPerson && this.descentDrop > 0;
+      const checkBody = this.catAvatar && this.escalatorWeight === 0 && (this.previewNext || stairsOn || walkDescent)
         && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
       const cameraPoint = new THREE.Vector3();
       const direction = new THREE.Vector3();
