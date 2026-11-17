@@ -3743,11 +3743,6 @@ export class Explorer {
       const cameraPoint = new THREE.Vector3();
       const direction = new THREE.Vector3();
       const point = new THREE.Vector3();
-      const hindPaws = checkBody ? ["hindpaw_L", "hindpaw_R"].flatMap((name) => {
-        const paw = this.avatar.getObjectByName(name);
-        // The camera precedes the avatar update; translate the last animated pose to today's feet.
-        return paw ? [paw.getWorldPosition(new THREE.Vector3()).sub(this.avatar.position).add(this.pos)] : [];
-      }) : [];
       const bodyHidden = checkBody ? (b: THREE.Vector3, distance: number) => {
         cameraPoint.copy(pose.pivot).addScaledVector(b, distance);
         let blocked = 0;
@@ -3759,13 +3754,7 @@ export class Explorer {
           this.ray.far = cameraPoint.distanceTo(point) - 0.05;
           if (castCamera(this.ray, this.cameraTargets, cameraSides).length && ++blocked >= 2) return true;
         }
-        // Both hidden hind paws contribute one additional probe to the existing two-hit rule.
-        return blocked > 0 && hindPaws.length === 2 && hindPaws.every((paw) => {
-          direction.subVectors(paw, cameraPoint);
-          this.ray.set(cameraPoint, direction.normalize());
-          this.ray.far = cameraPoint.distanceTo(paw) - 0.05;
-          return castCamera(this.ray, this.cameraTargets, cameraSides).length > 0;
-        });
+        return false;
       } : undefined;
       const solved = solveRaisedBoom(wantedDistance, back, cast, this.boomRaise, dt, snap || this.reducedMotion, bodyHidden, checkBody ? this.bodyRaiseHold : undefined, gate);
       gateHeld = !!gate && solved.raise > 0;
