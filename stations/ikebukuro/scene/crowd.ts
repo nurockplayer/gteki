@@ -894,8 +894,10 @@ export function buildCrowd(
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
   let cameraFocus: THREE_NS.Vector3 | null = null;
+  let avatarPosition: THREE_NS.Vector3 | null = null;
   let openingZone: { camera: THREE_NS.Camera; floorY: number } | null = null;
   const openingFades = new Float32Array(count).fill(1);
+  const openingHeld = new Uint8Array(count);
   let cameraSignFocus: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null;
   const projected = new THREE.Vector3();
   const focusSegment = new THREE.Vector3(), focusBody = new THREE.Vector3();
@@ -1318,7 +1320,12 @@ export function buildCrowd(
           }
         }
       }
-      // Reuse the near-fade dither for a half-second return after leaving any opening zone.
+      if (openingHeld[i]) {
+        focusBody.set(pos.x, floorY + 0.9 * L.sh, pos.z);
+        if (!avatarPosition || focusBody.distanceToSquared(avatarPosition) < 9) excluded = true;
+        else openingHeld[i] = 0;
+      }
+      // Reuse the near-fade dither for a half-second return after leaving any opening zone/hold.
       const fade = excluded ? 0 : Math.min(1, openingFades[i]! + dt / 0.5);
       if (fade !== openingFades[i]) {
         openingFades[i] = fade;
@@ -1352,18 +1359,23 @@ export function buildCrowd(
   return {
     group,
     update,
-    setCameraFocus(x: number | null, y = 0, z = 0, sign: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null, opening: { camera: THREE_NS.Camera; floorY: number } | null = null) {
+    setCameraFocus(x: number | null, y = 0, z = 0, sign: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null, opening: { camera: THREE_NS.Camera; floorY: number } | null = null, avatar?: { x: number; y: number; z: number } | null) {
+      const released = openingZone !== null && opening === null;
+      if (released) {
+        for (let i = 0; i < count; i++) openingHeld[i] = openingFades[i]! < 1 ? 1 : 0;
+      }
       if (x === null) cameraFocus = null;
       else (cameraFocus ??= new THREE.Vector3()).set(x, y, z);
       cameraSignFocus = sign;
+      avatarPosition = avatar ? (avatarPosition ?? new THREE.Vector3()).copy(avatar) : null;
       openingZone = opening;
       if (opening) {
         // Apply before the first render too: the usual camera callback is one frame behind.
         opening.camera.updateMatrixWorld(true);
         cam.setFromMatrixPosition(opening.camera.matrixWorld);
         frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(opening.camera.projectionMatrix, opening.camera.matrixWorldInverse));
-        update(0, clock);
       }
+      if (opening || released) update(0, clock);
     },
     setCameraNearFade(startM: number, endM: number) { nearFade.value.set(startM, endM); },
     /** Pedestrians within 8 m of the last rendered camera (for ambience). */
