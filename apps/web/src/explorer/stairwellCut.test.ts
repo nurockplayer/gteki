@@ -896,6 +896,24 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("keeps a goldenRole-only stair model unchanged in the well and slab band", () => {
+    const s = scene();
+    const geometry = new THREE.BufferGeometry().setFromPoints([
+      // A horizontal face in the well's headroom above the flight.
+      new THREE.Vector3(2, 2.7, -0.9), new THREE.Vector3(4, 2.7, -0.9), new THREE.Vector3(4, 2.7, 0.9),
+      // A slab-band face extending outside the footprint so it qualifies as a slab level.
+      new THREE.Vector3(-1, 3.8, -2), new THREE.Vector3(11, 3.8, -2), new THREE.Vector3(11, 3.8, 2),
+    ]);
+    const stairs = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    stairs.userData.goldenRole = "stairs_ramps";
+    s.root.add(stairs); s.root.updateMatrixWorld(true);
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    expect(stairs.geometry).toBe(geometry);
+    expect(down(stairs, 3.5, 3).some(hit => Math.abs(hit.point.y - 2.7) < 1e-6)).toBe(true);
+    expect(down(stairs, 9, 5).some(hit => Math.abs(hit.point.y - 3.8) < 1e-6)).toBe(true);
+    result.dispose();
+  });
+
   it("keeps a sloped ceiling 3.5 m above the walking surface, and cuts a ceiling only inside the 2.1 m headroom", () => {
     const s = scene();
     // Sloped with the flight from x = 2 to 10, always 3.5 m above the walking surface (y = 0.4 x).
