@@ -117,7 +117,7 @@
       "kind": "node",
       "node": "n:20014f524ee643c18b80575cf3064334",
       "headingDeg": 272,
-      "pitch": 0.15,
+      "pitch": 0.5,
       "expect": "The passage and overhead sign 2d2bc35b are visible.",
       "features": [
         {
