@@ -2182,7 +2182,7 @@ function buildUndergroundLighting(
     strips.name = "linear-light:underground";
     strips.userData.floorPools = fixtures.map((f) => f.ground);
     strips.userData.mounts = fixtures.map(({ edgeId, sample, roof }) => ({ edgeId, sample, roof,
-      section: layout.shaftCeilingPreview?.roofs.indexOf(roof) ?? -1 }));
+      section: layout.shaftCeilingPreview?.roofs.findIndex((s) => s === roof) ?? -1 }));
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), center = new THREE.Vector3(), scale = new THREE.Vector3();
     const up = new THREE.Vector3(0, 1, 0), xAxis = new THREE.Vector3(), yAxis = new THREE.Vector3(), zAxis = new THREE.Vector3();
     for (const [i, f] of fixtures.entries()) {
