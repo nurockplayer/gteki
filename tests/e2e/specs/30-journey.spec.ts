@@ -343,35 +343,34 @@ test("guided walk @phone", async ({ page }, info) => {
           expect(openMenu.y).toBeGreaterThanOrEqual(openMore.y + openMore.height);
         }
       }
-      await page.evaluate(() => (window as any).__gteki.holdFrames(true));
-      try {
-        await page.evaluate(() => (window as any).__gteki.goldenFrame());
-        const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
-        fs.writeFileSync(path.join(out, "arrival-menu.png"), png);
-        if (reelMode === "next") {
-          const arrivalMenu = await menu.locator("button").evaluateAll(buttons => {
-            const rgba = (value: string) => value.match(/[\d.]+/g)!.map(Number);
-            const luminance = (rgb: number[]) => rgb.reduce((sum, channel, i) => {
-              const s = channel / 255;
-              return sum + [0.2126, 0.7152, 0.0722][i]! * (s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4);
-            }, 0);
-            return buttons.map(button => {
-              const style = getComputedStyle(button), fill = rgba(style.backgroundColor), text = rgba(style.color);
-              // Composite the translucent fill over white: the brightest possible backdrop.
-              const bg = fill.slice(0, 3).map(c => c * (fill[3] ?? 1) + 255 * (1 - (fill[3] ?? 1)));
-              const fg = text.slice(0, 3).map((c, i) => c * (text[3] ?? 1) + bg[i]! * (1 - (text[3] ?? 1)));
-              const a = luminance(fg), b = luminance(bg);
-              return { text: button.textContent, color: style.color, fill: style.backgroundColor, contrastRatio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
-            });
+      // The guided reel already holds automatic scene frames; only its outer finally releases them.
+      // Keep DOM rAF/actionability live without restarting SwiftShader rendering between menu captures.
+      await page.evaluate(() => (window as any).__gteki.goldenFrame());
+      const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
+      fs.writeFileSync(path.join(out, "arrival-menu.png"), png);
+      if (reelMode === "next") {
+        const arrivalMenu = await menu.locator("button").evaluateAll(buttons => {
+          const rgba = (value: string) => value.match(/[\d.]+/g)!.map(Number);
+          const luminance = (rgb: number[]) => rgb.reduce((sum, channel, i) => {
+            const s = channel / 255;
+            return sum + [0.2126, 0.7152, 0.0722][i]! * (s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4);
+          }, 0);
+          return buttons.map(button => {
+            const style = getComputedStyle(button), fill = rgba(style.backgroundColor), text = rgba(style.color);
+            // Composite the translucent fill over white: the brightest possible backdrop.
+            const bg = fill.slice(0, 3).map(c => c * (fill[3] ?? 1) + 255 * (1 - (fill[3] ?? 1)));
+            const fg = text.slice(0, 3).map((c, i) => c * (text[3] ?? 1) + bg[i]! * (1 - (text[3] ?? 1)));
+            const a = luminance(fg), b = luminance(bg);
+            return { text: button.textContent, color: style.color, fill: style.backgroundColor, contrastRatio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
           });
-          // The selected platform label is the destination's; it may be absent at cold open, so read it here.
-          const destinationLabels = page.locator(".poi-label.cat-platform.selected");
-          const destinationPoiLabelCount = await destinationLabels.count();
-          const destinationPoiLabelVisible = (await destinationLabels.evaluateAll(els => els.map(el => (el as HTMLElement).checkVisibility()))).some(Boolean);
-          Object.assign(samples.find(s => s.arrival)!, { destinationPoiLabelCount, destinationPoiLabelVisible, arrivalMenu });
-          console.log(`[journey] ${info.project.name} arrival destinationPoiLabelCount=${destinationPoiLabelCount} destinationPoiLabelVisible=${destinationPoiLabelVisible} pills=${JSON.stringify(arrivalMenu)}`);
-        }
-      } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
+        });
+        // The selected platform label is the destination's; it may be absent at cold open, so read it here.
+        const destinationLabels = page.locator(".poi-label.cat-platform.selected");
+        const destinationPoiLabelCount = await destinationLabels.count();
+        const destinationPoiLabelVisible = (await destinationLabels.evaluateAll(els => els.map(el => (el as HTMLElement).checkVisibility()))).some(Boolean);
+        Object.assign(samples.find(s => s.arrival)!, { destinationPoiLabelCount, destinationPoiLabelVisible, arrivalMenu });
+        console.log(`[journey] ${info.project.name} arrival destinationPoiLabelCount=${destinationPoiLabelCount} destinationPoiLabelVisible=${destinationPoiLabelVisible} pills=${JSON.stringify(arrivalMenu)}`);
+      }
       await expect(menu.locator(".guide-prev")).toBeVisible();
       await expect(menu.getByRole("button", { name: /^(End guide|ガイド終了)$/ })).toBeVisible();
       await expect.poll(() => page.evaluate(() => {
