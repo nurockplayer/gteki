@@ -20,6 +20,7 @@ import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
 import { createTrainSound } from "./train-sound.ts";
+import { createEscalatorSound } from "./escalator-sound.ts";
 import { crowdEdges } from "./explorer-crowd.ts";
 import { buildCrowd } from "../../ikebukuro/scene/crowd.ts";
 import { createAmbience } from "../../ikebukuro/scene/ambience.ts";
@@ -133,12 +134,13 @@ function crowdVector(T: typeof THREE, enuToRenderer: (point: { x: number; y: num
  * same reason as sceneLifecycle: the closures keep only the audio nodes and the train-audio sampler, never the
  * build layout or the built station (#968). Conditions and order are unchanged.
  */
-function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters<BuildScene>[0], crowd: Crowd | null, trainAudio: BuiltStation["trainAudio"]) {
+function stationAudio({ bundle, enuToRenderer, audio: initialAudio, previewNext }: Parameters<BuildScene>[0], crowd: Crowd | null, trainAudio: BuiltStation["trainAudio"], escalatorRuns: { a: V3; b: V3 }[]) {
   let acoustics: ReturnType<typeof createZoneAcoustics> | null = null;
   let ambience: ReturnType<typeof createAmbience> | null = null;
   let streetAmbience: ReturnType<typeof createStreetAmbience> | null = null;
   let stationSound: ReturnType<typeof createStationSound> | null = null;
   let trainSound: ReturnType<typeof createTrainSound> | null = null;
+  let escalatorSound: ReturnType<typeof createEscalatorSound> | null = null;
   const startAudio: NonNullable<StationScene["startAudio"]> = (audio) => {
     if (acoustics) return;
     acoustics = createZoneAcoustics(audio.context, audio.destination);
@@ -161,6 +163,7 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters
       },
     });
     trainSound = createTrainSound({ context: audio.context, destination: acoustics.input, isMuted: audio.isMuted, chimeAt: stationSound.chimeAt });
+    if (previewNext) escalatorSound = createEscalatorSound({ context: audio.context, destination: acoustics.input, runs: escalatorRuns, isMuted: audio.isMuted });
   };
   if (initialAudio) startAudio(initialAudio);
   let zone: AcousticZone = "passage";
@@ -169,7 +172,7 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters
     audioInfo: (): ReturnType<NonNullable<StationScene["audioInfo"]>> => ({
       zone,
       ambience: acoustics && ambience && streetAmbience ? { ...acoustics.info(), ...ambience.info(), ...streetAmbience.info() } : null,
-      escalator: null,
+      escalator: escalatorSound?.info() ?? null,
       train: trainSound?.info() ?? null,
     }),
     startAudio,
@@ -181,9 +184,11 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters
       if (trainSound && camera && trainAudioElapsed >= 0.25) {
         trainAudioElapsed = 0;
         trainSound.update(trainAudio(), camera.position);
+        escalatorSound?.update(camera.position);
       }
     },
     disposeAudio: () => {
+      escalatorSound?.dispose();
       trainSound?.dispose();
       stationSound?.dispose();
       ambience?.dispose();
@@ -529,7 +534,10 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   }
   markScene("shops-placement");
 
-  const audio = stationAudio(ctx, crowd, built.trainAudio);
+  const audio = stationAudio(ctx, crowd, built.trainAudio, ctx.previewNext ? built.escalators.map(({ run }) => ({
+    a: { x: run.a.x, y: run.a.z, z: -run.a.y },
+    b: { x: run.b.x, y: run.b.z, z: -run.b.y },
+  })) : []);
 
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
     const n = nodes.get(id);

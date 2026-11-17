@@ -484,7 +484,7 @@ test("guided walk @phone", async ({ page }, info) => {
       byZone: ambienceByZone,
       differsAcrossZones: zoneControls.length < 2 ? null : zoneControls.some((controls, i) => zoneControls.slice(i + 1).some(other => controls.some(a => other.some(b => JSON.stringify(a) !== JSON.stringify(b))))),
     },
-    escalatorActive: null,
+    escalatorActive: audioRecords.flatMap(record => record?.escalator ? [record.escalator] : []).at(-1) ?? null,
     trainActive: trains.length ? { share: trains.filter(train => train.gain > 0).length / samples.length, minListenerDistance: trainDistances.length ? Math.min(...trainDistances) : null } : null,
   };
   const j14 = () => ({ consoleErrors: [...consoleErrors], pageErrors: [...pageErrors], failedRequests: [...failedRequests] });
