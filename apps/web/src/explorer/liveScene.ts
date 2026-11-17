@@ -83,10 +83,16 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
   const retain = (objects: readonly THREE.Object3D[]) => objects.filter(object => !fullyHidden.has(object as THREE.InstancedMesh));
   const copiesOf = (sources: readonly THREE.Object3D[]) => {
     const sourceSet = new Set(sources);
-    return instances.filter(({ owner }) => sourceSet.has(owner)).map(({ copy }) => copy);
+    return instances.filter(({ owner }) => sourceSet.has(owner)).map(({ owner, copy }) => {
+      if (owner.userData.gtekiCameraTargetOnly) Object.defineProperties(copy.userData, {
+        gtekiCameraTargetOnly: { value: true, configurable: true },
+        gteki_source: { value: owner.userData.gteki_source, writable: true, configurable: true },
+      });
+      return copy;
+    });
   };
   const groundCopies = copiesOf(originalTargets.ground), colliderCopies = copiesOf(originalTargets.collider);
-  const blockerCopies = copiesOf([...originalTargets.blockers]);
+  const blockerCopies = copiesOf([...originalTargets.blockers, ...originalTargets.camera.filter((o) => o.userData.gtekiCameraTargetOnly)]);
   const sceneGroundTargets = [...new Set([...retain(originalTargets.ground), ...groundCopies])];
   const sceneColliderTargets = new Set([...retain(originalTargets.collider), ...colliderCopies]);
   const liveWalkable = [...new Set([...retain(walkable), ...groundCopies])];

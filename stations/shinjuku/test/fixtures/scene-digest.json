@@ -467,10 +467,30 @@
    "cameraBlockers": [
     "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3",
     "e3055c3693daa1e4c1dc69ce0e02dce2d0469b93411cc1931320325cea76b768",
-    "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a"
+    "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a",
+    "ee09a2324ce16f349ccef0dc60fab2ed5c1c748cf5991ea604781253be04f5f0",
+    "3b35e8ddb0d9dc643963b57ecfaaef95cd78ade6f7ba1d86dd0103f0e191f54f",
+    "3a75bea6501af166e9beda724c54e2c859b5117df108afa62de704a6fa568d7e",
+    "792903bb878435e7dd369b30a82de808b342abc2d14c4f940bad66a31885626d",
+    "8564b4180e1ece541c81755a9f1359f22e41cce77944e42a4bb888ad3561ed29",
+    "788fd79284ca265b5c8e4ed4d18603641a2083b4d950041458526312c188add8",
+    "77ac2bac28e5f348007b792c74dd11dfd380082ac9a9c23371e999b5f2a36405",
+    "9ab2e5b31456f1730d3c76a7dd489faa2f00de6ac6c629b1689a13ad6881243c",
+    "5c4bcba6a88b68ee38e32afe35f3b8d0e081bb3eaa5ea3c3ed4926496cba57b9",
+    "062934c0f89a24fa9e86d50e68cea2a98b79af6d62d15894d4386ccd16e7aaa1"
    ],
    "cameraBlockerIsCollider": [
     true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
     false,
     false
    ],
@@ -1650,10 +1670,30 @@
    "cameraBlockers": [
     "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3",
     "e3055c3693daa1e4c1dc69ce0e02dce2d0469b93411cc1931320325cea76b768",
-    "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a"
+    "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a",
+    "ee09a2324ce16f349ccef0dc60fab2ed5c1c748cf5991ea604781253be04f5f0",
+    "3b35e8ddb0d9dc643963b57ecfaaef95cd78ade6f7ba1d86dd0103f0e191f54f",
+    "3a75bea6501af166e9beda724c54e2c859b5117df108afa62de704a6fa568d7e",
+    "792903bb878435e7dd369b30a82de808b342abc2d14c4f940bad66a31885626d",
+    "8564b4180e1ece541c81755a9f1359f22e41cce77944e42a4bb888ad3561ed29",
+    "788fd79284ca265b5c8e4ed4d18603641a2083b4d950041458526312c188add8",
+    "77ac2bac28e5f348007b792c74dd11dfd380082ac9a9c23371e999b5f2a36405",
+    "9ab2e5b31456f1730d3c76a7dd489faa2f00de6ac6c629b1689a13ad6881243c",
+    "5c4bcba6a88b68ee38e32afe35f3b8d0e081bb3eaa5ea3c3ed4926496cba57b9",
+    "062934c0f89a24fa9e86d50e68cea2a98b79af6d62d15894d4386ccd16e7aaa1"
    ],
    "cameraBlockerIsCollider": [
     true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
     false,
     false
    ],
