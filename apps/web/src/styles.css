@@ -600,6 +600,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .app.arrival[data-mode="guide"] .arrival-menu { display: flex; flex-wrap: wrap; justify-content: end; gap: 6px; width: max-content; max-width: calc(100vw - 32px); }
 .app.arrival.arrival-left[data-mode="guide"] .arrival-menu { justify-content: start; }
 .app.arrival[data-mode="guide"] .arrival-menu[hidden] { display: none; }
+.app.next.arrival[data-mode="guide"] .arrival-menu button { background: var(--glass-strong); }
 @media (max-width: 480px) {
   .app.arrival[data-mode="guide"] .arrival-controls.menu-open { display: contents; }
   .app.arrival[data-mode="guide"] .arrival-controls.menu-open .guide-more { grid-column: 2; }

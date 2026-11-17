@@ -2678,7 +2678,8 @@ export class Explorer {
     const focusY = this.mode === "overview" ? null : this.pos.y;
     for (const l of labels) {
       const distance = this.labelAt.setFromMatrixPosition(l.obj.matrixWorld).distanceTo(cam.position);
-      const state = l.identityHidden ? "hidden" : labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected, overview: this.mode === "overview" });
+      const arrivalDestination = this.previewNext && this.mode === "guide" && this.arrivalBeaconTime !== null && l.poiId === this.arrivalDestination;
+      const state = l.identityHidden || arrivalDestination ? "hidden" : labelState({ occluded: l.occluded, distance, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected, overview: this.mode === "overview" });
       if (state === l.state) continue;
       l.state = state;
       l.obj.element.classList.toggle("occluded", state === "faded");
