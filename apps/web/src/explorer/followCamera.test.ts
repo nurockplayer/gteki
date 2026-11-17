@@ -1,6 +1,52 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW_CAT_NEXT, ESCALATOR_SHOT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { GUIDE_YAW, steerYaw, FOLLOW_CAT_NEXT, ESCALATOR_SHOT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+
+describe("guided yaw easing (#1331)", () => {
+  const degrees = (radians: number) => radians * 180 / Math.PI;
+
+  it.each([100, 120])("eases a %s degree corner within the frame and settling limits", (turn) => {
+    for (const hz of [60, 30, 20]) {
+      const dt = 1 / hz;
+      const target = turn * Math.PI / 180;
+      let state = { yaw: 0, rate: 0 };
+      let peak = 0;
+      let first = 0;
+      let overshoot = 0;
+      let errorAtDeadline = 0;
+      for (let frame = 1; frame <= 3 * hz; frame++) {
+        const next = steerYaw(state.yaw, state.rate, target, dt);
+        const move = Math.abs(degrees(next.yaw - state.yaw));
+        peak = Math.max(peak, move);
+        if (frame === 1) first = move;
+        overshoot = Math.max(overshoot, degrees(next.yaw - target));
+        expect(move).toBeLessThanOrEqual(180 * dt + 1e-9);
+        expect(Math.abs(next.rate)).toBeLessThanOrEqual(GUIDE_YAW.maxRate);
+        state = next;
+        if (frame === Math.round(1.4 * hz)) errorAtDeadline = Math.abs(degrees(target - state.yaw));
+      }
+      if (hz === 60) expect(first).toBeLessThan(1);
+      expect(errorAtDeadline).toBeLessThanOrEqual(2);
+      expect(overshoot).toBeLessThanOrEqual(2);
+      console.info(JSON.stringify({ turn, hz, first, peak, errorAt1_4s: errorAtDeadline, overshoot }));
+    }
+  });
+
+  it("takes the short way across the +/-pi boundary", () => {
+    for (const sign of [1, -1]) {
+      const start = sign * 179 * Math.PI / 180;
+      const target = -start;
+      let state = { yaw: start, rate: 0 };
+      for (let frame = 0; frame < 84; frame++) {
+        const next = steerYaw(state.yaw, state.rate, target, 1 / 60);
+        expect(sign * (next.yaw - state.yaw)).toBeGreaterThanOrEqual(0);
+        state = next;
+      }
+      expect(Math.abs(degrees(state.yaw - start))).toBeLessThanOrEqual(2);
+      expect(Math.abs(degrees(Math.atan2(Math.sin(target - state.yaw), Math.cos(target - state.yaw))))).toBeLessThan(0.1);
+    }
+  });
+});
 
 describe("follow camera", () => {
   it("scales the cat shoulder for portrait aspect", () => {
