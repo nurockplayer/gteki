@@ -110,7 +110,7 @@ export interface ExplorerEvents {
 }
 
 const EYE = WALKER_BODY.eyeM;
-const STAIR_POSE = { lift: 0.218, desktop: { distance: 2.25, lens: 55 }, phone: { distance: 2.4, lens: 65 } } as const;
+const STAIR_POSE = { lift: 0.218, desktop: { distance: 2.25, lens: 55, feetNdc: 0.66 }, phone: { distance: 2.4, lens: 65 } } as const;
 const RADIUS = WALKER_BODY.radiusM;
 const WALK = WALKER_SPEED.walkMps;
 const RUN = WALKER_SPEED.runMps;
@@ -3766,7 +3766,8 @@ export class Explorer {
     }
     if (this.catAvatar) {
       aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise, this.camera.fov, this.camera.aspect);
-      if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect);
+      if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect,
+        this.camera.aspect >= 1 ? STAIR_POSE.desktop.feetNdc : undefined);
       const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
       const elevation = Math.atan2(pose.target.y - this.camera.position.y, ahead);
       const resetAim = snap || this.reducedMotion || pinned || this.mode !== "guide" || this.previewNext;
