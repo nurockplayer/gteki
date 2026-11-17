@@ -1141,6 +1141,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     if (riserMesh) riserMesh.userData.goldenRole = "stairs_ramps";
     add(trussGeos, mat.escTruss);
     const nosingMesh = add(nosingGeos, mat.nosing);
+    if (nosingMesh) nosingMesh.userData.goldenRole = "stairs_ramps";
     if (nosingMesh) ledger?.bind("stair-nosing", nosingMesh, nosingGeos);
     add(sideGeos, mat.wall);
     const balustradeMesh = add(balustradeGeos, mat.glass);
