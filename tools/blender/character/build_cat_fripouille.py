@@ -25,6 +25,7 @@ Usage (Blender 5.2, headless, from the repository root):
       --src assets/library/source/cat-fripouille --out apps/web/public/avatars [--preview <dir>]
     --src      the checked-in source directory (scene.gltf, scene.bin, textures/, license.txt)
     --out      directory for cat.glb
+    --baseline  comparison GLB; default: a temporary copy of origin/main's cat.glb, read before building
     --preview  render bind poses and clip phases into this directory (outside the repository)
     --sheets   render authored A/B side/rear rows and report.md into this directory
     --sheet-only  build the rig and sheets, then exit before clip baking/export
@@ -35,8 +36,11 @@ is Y-up, feet at y = 0 and faces -Z, as avatarGlb.ts and the human GLB expect.
 """
 
 import argparse
+import hashlib
 import math
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -1742,9 +1746,8 @@ def write_variant_calibration(path, measured):
                      + struct.pack("<II", len(binary), 0x004E4942) + binary)
 
 
-def legacy_clip_checks(checker, path):
+def legacy_clip_checks(checker, path, baseline):
     """Compare named channels, rather than accessor/node indices, to the shipped asset."""
-    baseline = Path(__file__).resolve().parents[3] / "apps/web/public/avatars/cat.glb"
     old, new = kit.glb_json(baseline), kit.glb_json(path)
     widths = {"SCALAR": 1, "VEC3": 3, "VEC4": 4}
     def channels(doc, binary, name):
@@ -1788,7 +1791,7 @@ def legacy_clip_checks(checker, path):
                   "legacy calib unchanged except retuned walk")
 
 
-def exported_skin_checks(checker, path, snapped):
+def exported_skin_checks(checker, path, snapped, baseline):
     """Measure actual exported LBS at every baked sample, against today's shipped skin."""
     import numpy as np
     from mathutils import Matrix, Quaternion, Vector
@@ -1840,7 +1843,6 @@ def exported_skin_checks(checker, path, snapped):
             return np.sum(np.einsum('vsij,vj->vsi',matrices[joints],points)*weights[:,:,None],axis=1)[:,:3]
         return doc,positions,joints,weights,animations,evaluate
 
-    baseline = Path(__file__).resolve().parents[3] / "apps/web/public/avatars/cat.glb"
     old, rest, _, _, _, old_skin = load(baseline)
     new, positions, joints, weights, animations, skin = load(path)
     tree = KDTree(len(rest))
@@ -1894,6 +1896,9 @@ def exported_skin_checks(checker, path, snapped):
                           f"S1 {region} {name} worst pair {pair} t={when:.6f} s: {worst*1000:.6f} mm <= 0.1 mm")
         if name in CLIP_ORDER:
             print(f"INFO legacy {name}: max skinned-vertex displacement {displacement*1000:.3f} mm vs shipped cat.glb")
+        if name in ("idle", "sit", "trot", "run"):
+            checker.check(displacement <= .0015,
+                          f"legacy {name} max skinned-vertex displacement {displacement*1000:.3f} mm <= 1.5 mm")
 
 
 def report_exported_leg_steps(path):
@@ -1927,7 +1932,7 @@ def linear_to_srgb(value):
     return 12.92 * value if value <= 0.0031308 else 1.055 * value ** (1.0 / 2.4) - 0.055
 
 
-def glb_checks(checker, path, exported_speeds, variant_speeds):
+def glb_checks(checker, path, exported_speeds, variant_speeds, baseline):
     doc = kit.glb_json(path)
     meshes = doc.get("meshes", [])
     checker.check(len(meshes) == 1, f"GLB has one mesh ({len(meshes)})")
@@ -1958,7 +1963,7 @@ def glb_checks(checker, path, exported_speeds, variant_speeds):
                                                  for i, t in enumerate(times)),
                           f"{name} sampler {index}: 33 uniform times ending at {duration:.6f} s")
             checker.check(sampler.get("interpolation") == "LINEAR", f"{name} sampler {index}: LINEAR")
-    legacy_clip_checks(checker, path)
+    legacy_clip_checks(checker, path, baseline)
     node_names = {node.get("name") for node in doc.get("nodes", [])}
     for required in ("root", "neck", "head", "ear_L", "ear_R", "tail_01", "tail_02", "tail_03", "tail_04"):
         checker.check(required in node_names, f"GLB node {required}")
@@ -2841,6 +2846,15 @@ def render_contact_sheets(directory, arm, body):
             head_pitches.append(arm.pose.bones["head"].matrix.to_euler("XYZ").x)
             paw_data = kit.evaluated_paw_points(body, groups)
             clearances = [paw_data[paw_group(leg)][1]*1000 for leg in LEGS]
+            for leg, v in zip(LEGS, clearances):
+                leg_key = leg["key"]
+                interior = all(abs((phase-boundary+.5) % 1.0-.5) >= .01-1e-9
+                               for boundary in gait["contacts"][leg_key])
+                support = supporting(gait, leg_key, phase) and interior
+                if v < -5.0 or (support and v > 5.0):
+                    failures.append(f"{name} phase {phase:.3f} {leg_key}: "
+                                    f"{'support' if support else 'swing'} paw clearance {v:.2f} mm "
+                                    f"outside {'[-5.0, +5.0] mm' if support else '>= -5.0 mm'}")
             mesh = bpy.data.meshes.new_from_object(body.evaluated_get(bpy.context.evaluated_depsgraph_get()))
             if any(abs(phase-p) < 1e-8 for p in gait.get("sheet_phases", [k["phase"] for k in gait["poses"]])):
                 rows[name].append((key, mesh, {leg["key"]: arm.pose.bones[paw_group(leg)].head.copy() for leg in LEGS}))
@@ -2873,6 +2887,7 @@ def render_contact_sheets(directory, arm, body):
         support_notes.extend(["", f"### {name} support intervals", ""])
         support_notes.extend(f"- {start:.2f}–{end:.2f}: {', '.join(legs) or 'flight'}" for start, end, legs in support_intervals(gait))
         envelopes.append(f"- {name}: head origin travel at keys {(max(head_heights)-min(head_heights))*1000:.3f} mm; head pitch excursion {math.degrees(max(head_pitches)-min(head_pitches)):.3f}°.")
+    report.extend(["", "Paw clearance rule: support at least 0.01 phase from either contact boundary (modulo 1): -5.0 to +5.0 mm; swing or near a boundary: >= -5.0 mm."])
     report.extend(["", "## Body measurements", "", *envelopes, *support_notes])
     # Check the B hero interval against the actual skin, not only the hero key.
     hero_min = float("inf")
@@ -2911,6 +2926,18 @@ def render_contact_sheets(directory, arm, body):
 
     ink, grid_ink, support_ink = material((.04,.06,.08)), material((.57,.61,.65)), material((.02,.32,.10))
 
+    def overlay_mesh(obj, mat):
+        curve = obj.data
+        mesh = bpy.data.meshes.new_from_object(obj.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+        overlay = bpy.data.objects.new(obj.name + "_mesh", mesh)
+        scene.collection.objects.link(overlay)
+        overlay.matrix_world = obj.matrix_world.copy()
+        make_colour_attribute(overlay, {}, mat.diffuse_color[:3])
+        bpy.data.objects.remove(obj, do_unlink=True)
+        bpy.data.curves.remove(curve)
+        temporary.append(overlay)
+        return overlay
+
     def line(points, radius, mat):
         curve = bpy.data.curves.new("sheet_line", "CURVE")
         curve.dimensions, curve.bevel_depth, curve.bevel_resolution = "3D", radius, 0
@@ -2921,8 +2948,7 @@ def render_contact_sheets(directory, arm, body):
         obj = bpy.data.objects.new("sheet_line", curve)
         scene.collection.objects.link(obj)
         obj.data.materials.append(mat)
-        temporary.append(obj)
-        return obj
+        return overlay_mesh(obj, mat)
 
     for name, snapshots in rows.items():
         for view in (("side", "rear", "side_cycle", "rear_cycle") if name.startswith("run_") else ("side", "rear", "side_cycle")):
@@ -2972,7 +2998,7 @@ def render_contact_sheets(directory, arm, body):
                 text.location = offset-direction*.32+Vector((0,0,-.035))
                 text.rotation_euler = camera.rotation_euler
                 text.data.materials.append(ink)
-                temporary.append(text)
+                overlay_mesh(text, ink)
             scene.render.filepath = str(directory/f"{name}_{view}.png")
             bpy.ops.render.render(write_still=True)
             for obj in temporary:
@@ -2981,6 +3007,8 @@ def render_contact_sheets(directory, arm, body):
                 if data.users == 0 and data not in [row[1] for row in snapshots]:
                     if isinstance(data, bpy.types.Curve):
                         bpy.data.curves.remove(data)
+                    elif isinstance(data, bpy.types.Mesh):
+                        bpy.data.meshes.remove(data)
             temporary.clear()
     for snapshots in [*rows.values(), *cycle_rows.values()]:
         for _key, mesh, _paws in snapshots:
@@ -2990,8 +3018,7 @@ def render_contact_sheets(directory, arm, body):
     kit.reset_pose(arm)
     bpy.context.view_layer.update()
     print(f"SHEETS {directory}: 12 PNGs and report.md; {len(failures)} acceptance failure(s)")
-    if failures:
-        fail("authored sheets: " + "; ".join(failures))
+    return failures
 
 
 # --------------------------------------------------------------------------------------------
@@ -3002,6 +3029,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--src", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--baseline", type=Path, default=None)
     parser.add_argument("--preview", type=Path, default=None)
     parser.add_argument("--sheets", type=Path, default=None)
     parser.add_argument("--sheet-only", action="store_true")
@@ -3009,6 +3037,29 @@ def main():
 
     if args.sheet_only and args.sheets is None:
         parser.error("--sheet-only requires --sheets <dir>")
+
+    repo_root = Path(__file__).resolve().parents[3]
+    baseline = args.baseline
+    if baseline is None:
+        source = "origin/main:apps/web/public/avatars/cat.glb"
+        try:
+            blob = subprocess.run(["git", "-C", str(repo_root), "show", source],
+                                  check=True, capture_output=True).stdout
+        except (OSError, subprocess.CalledProcessError) as error:
+            fail(f"cannot read baseline {source} with git: {error}")
+        if not blob:
+            fail(f"baseline {source} is empty")
+        baseline_temp = tempfile.NamedTemporaryFile(prefix=".cat-baseline-", suffix=".glb", dir=repo_root)
+        baseline_temp.write(blob)
+        baseline_temp.flush()
+        baseline = Path(baseline_temp.name)
+    else:
+        source = str(baseline)
+        try:
+            blob = baseline.read_bytes()
+        except OSError as error:
+            fail(f"cannot read baseline {baseline}: {error}")
+    print(f"INFO baseline: {source} {hashlib.sha256(blob).hexdigest()[:12]}")
 
     import bpy
     from mathutils import Matrix, Vector
@@ -3151,7 +3202,7 @@ def main():
     CONTACT_VERTICES = authored_contact_vertices(body, arm)
     chest_penetration_info(body, arm, before_chest, chest_region)
     if args.sheets:
-        render_contact_sheets(args.sheets, arm, body)
+        checker.failures.extend(render_contact_sheets(args.sheets, arm, body))
         if args.sheet_only:
             if checker.failures:
                 fail("; ".join(checker.failures))
@@ -3206,8 +3257,8 @@ def main():
         **{name: CLIPS[name]["frames"] / FPS for name in ("walk", "trot", "run")}, **durations})
     write_variant_calibration(out, exported_speeds)
     report_exported_leg_steps(out)
-    triangles, size = glb_checks(checker, out, exported_speeds, variant_speeds)
-    exported_skin_checks(checker, out, snapped)
+    triangles, size = glb_checks(checker, out, exported_speeds, variant_speeds, baseline)
+    exported_skin_checks(checker, out, snapped, baseline)
 
     if args.preview:
         render_previews(args.preview, arm)
