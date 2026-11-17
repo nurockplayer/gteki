@@ -3533,6 +3533,8 @@ export class Explorer {
   }
 
   private setCameraFocus(p: THREE.Vector3 | null, sign: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null): void {
+    // After the cold open, crowd returns measure from the cat, not the camera's 5 m look-ahead.
+    if (p && this.catAvatar && this.openingState === "ended") p = this.catWorldBox().getCenter(new THREE.Vector3());
     const changed = (a: THREE.Vector3 | null | undefined, b: THREE.Vector3 | null) =>
       a == null || b == null ? (a ?? null) !== b : a.distanceToSquared(b) > 0.05 * 0.05;
     const opening = this.openingState === "active";

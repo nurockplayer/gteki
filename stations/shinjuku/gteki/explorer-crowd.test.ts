@@ -100,6 +100,69 @@ describe("cold-open crowd exclusion (#1373)", () => {
   const path = [{ id: "opening", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 40, y: 0, z: 0 }] }];
   const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
 
+  it.each([56, 150])("holds only excluded/returning walkers near the moving cat after release (%i tier, #1406)", (count) => {
+    for (const state of ["excluded", "returning", "visible"] as const) {
+      const crowd = buildCrowd(THREE, path, toRenderer, count, new THREE.Texture());
+      // The same seeded first walker in the low mesh exposes its body transform without pose offsets.
+      const reference = buildCrowd(THREE, path, toRenderer, 56, new THREE.Texture());
+      try {
+        const people = (crowd.group.children as THREE.InstancedMesh[]).find(m => m.name === "crowd_low" || m.name === "crowd_torso")!;
+        const referencePeople = reference.group.children[0] as THREE.InstancedMesh;
+        const matrix = new THREE.Matrix4();
+        const centre = new THREE.Vector3(), cat = new THREE.Vector3();
+        const followWalker = (distance: number) => {
+          referencePeople.getMatrixAt(0, matrix);
+          centre.set(0, 0.9, 0).applyMatrix4(matrix);
+          cat.copy(centre).add(new THREE.Vector3(0, 0, -distance));
+        };
+        followWalker(1);
+        const camera = new THREE.PerspectiveCamera(70, 1.5, 0.05, 100);
+        camera.position.copy(centre).add(new THREE.Vector3(4, 0, 0));
+        if (state === "visible") camera.position.copy(centre).add(new THREE.Vector3(6, 0, 4));
+        camera.lookAt(cat);
+        const opening = { camera, floorY: 0 };
+        crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening);
+        const fade = () => people.geometry.getAttribute("openingFade").getX(0);
+        expect(fade()).toBe(state === "visible" ? 1 : 0);
+        if (state === "returning") {
+          camera.position.copy(centre).add(new THREE.Vector3(6, 0, 4));
+          camera.lookAt(cat);
+          crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening);
+          reference.update(0.1, 0.1);
+          crowd.update(0.1, 0.1);
+          expect(fade()).toBeGreaterThan(0);
+          expect(fade()).toBeLessThan(1);
+          followWalker(1);
+        }
+        crowd.setCameraFocus(cat.x, cat.y, cat.z);
+        const assertHeld = () => {
+          people.getMatrixAt(0, matrix);
+          expect(matrix.determinant() === 0).toBe(state !== "visible");
+          expect(fade()).toBe(state === "visible" ? 1 : 0);
+        };
+        assertHeld();
+        // Keep their relative distance fixed for >3 s while both actually move.
+        for (let frame = 1; frame <= 32; frame++) {
+          reference.update(0.1, frame * 0.1);
+          followWalker(frame === 32 ? 2.99 : 1);
+          crowd.setCameraFocus(cat.x, cat.y, cat.z);
+          crowd.update(0.1, frame * 0.1);
+          assertHeld();
+        }
+        // Beyond 3 m the held walker uses the existing half-second dither, with no new delay.
+        for (let frame = 1; frame <= 5; frame++) {
+          reference.update(0.1, 3.2 + frame * 0.1);
+          followWalker(3.01);
+          crowd.setCameraFocus(cat.x, cat.y, cat.z);
+          crowd.update(0.1, 3.2 + frame * 0.1);
+          people.getMatrixAt(0, matrix);
+          expect(matrix.determinant()).not.toBe(0);
+          expect(fade()).toBeCloseTo(state === "visible" ? 1 : frame / 5);
+        }
+      } finally { crowd.dispose(); reference.dispose(); }
+    }
+  });
+
   it.each([56, 150])("excludes the three opening zones and keeps a walker 7 m ahead visible (%i tier)", (count) => {
     for (const zone of ["near", "segment", "half-sunk", "stairs"] as const) {
       const crowd = buildCrowd(THREE, path, toRenderer, count, new THREE.Texture());
