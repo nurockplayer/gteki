@@ -213,6 +213,16 @@ interface PoiLabel {
   identityOffsetY: number;
 }
 
+export function clearWalkElevation(low: number, high: number, clear: (elevation: number) => boolean): number {
+  if (clear(high)) return high;
+  for (let i = 0; i < 24; i++) {
+    const mid = (low + high) / 2;
+    if (clear(mid)) low = mid;
+    else high = mid;
+  }
+  return low;
+}
+
 export class Explorer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
@@ -3536,7 +3546,9 @@ export class Explorer {
     // Single-sided winding varies across source polygons: only the tilt matters.
     const footing = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
     // The surface actually underfoot, not the walker's smoothed height, decides which tread this is.
-    p.level = atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
+    // The published street node remains an arrival point; stepping into its stair support/taper hides pavement.
+    const stairEntry = hit?.object.userData.gtekiStairWalkSupport && !this.streetTops.some((top) => top.distanceToSquared(this.pos) < 1e-6);
+    p.level = !stairEntry && atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
   }
 
   /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */
@@ -3680,6 +3692,8 @@ export class Explorer {
     const pose = this.catAvatar
       ? followPose(head, yaw, pitch, shoulder, shot ? THREE.MathUtils.lerp(lift, (shot.height - (head.y - this.pos.y)) / shot.distance + Math.sin(pitch), weight) : lift, framing.drop)
       : followPose(head, yaw, pitch, shoulder);
+    const pivotGround = this.stationScene?.cameraPivotGroundAt?.(this.pos);
+    if (pivotGround != null) pose.pivot.y += pivotGround - this.pos.y;
     if (this.descentDrop > 0) pose.target.y -= this.descentDrop;
     let back = pose.back;
     let wantedDistance = distance;
@@ -3741,10 +3755,16 @@ export class Explorer {
         if (angleAt(mid) < stairAngle) low = mid;
         else high = mid;
       }
-      const raised = new THREE.Vector3(x * Math.cos(high), Math.sin(high), z * Math.cos(high));
-      // Free-walk treads must not pull the raised lens into a nosing or ceiling.
-      // Keep the body-solve direction when the raised boom cannot retain its length.
-      if (walkDescent && !stairsOn && followDistance(length, cast(raised, length)) < length) return direction;
+      const atElevation = (angle: number) => new THREE.Vector3(x * Math.cos(angle), Math.sin(angle), z * Math.cos(angle));
+      if (walkDescent && !stairsOn) {
+        if (this.previewNext && followDistance(length, cast(atElevation(high), length)) < length) return direction;
+        const base = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
+        if (!this.previewNext) {
+          const clear = (angle: number) => followDistance(length, cast(atElevation(angle), length)) >= length;
+          high = clearWalkElevation(base, high, clear);
+        }
+      }
+      const raised = atElevation(high);
       return direction.copy(raised);
     };
     const nominalElevation = Math.asin(back.y);
@@ -3782,7 +3802,9 @@ export class Explorer {
       gateHeld = !!gate && solved.raise > 0;
       // A lip-clearing raise also needs to move the camera now; interpolating from below the slab
       // would recreate the same obstruction even though the target boom has already cleared it.
-      raisedClear = !solved.bodyDriven && solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
+      // In free walk, an increasing relative raise can still lower the absolute elevation.
+      const raisesElevation = this.mode !== "walk" || solved.back.y > this.camera.position.clone().sub(pose.pivot).normalize().y;
+      raisedClear = raisesElevation && !solved.bodyDriven && solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
       back = solved.back;
       dist = solved.distance;
       this.boomRaise = solved.raise;

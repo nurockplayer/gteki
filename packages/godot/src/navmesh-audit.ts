@@ -80,6 +80,12 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
       start=ends.end; offset=i+1;
     }
     if (!appendWalking(start,to,refs.slice(offset))) return null;
+    // Detour's straight path uses polygon heights; retain the snapped detail-mesh
+    // heights at its endpoints (the two can differ beside a stair landing).
+    if (result.length) {
+      if (distance(a.point,from)<=0.01) result[0]!.point.y = a.point.y;
+      if (distance(b.point,to)<=0.01) result.at(-1)!.point.y = b.point.y;
+    }
     if (!result.length || distance(result[0]!.point,from)>0.01 || distance(result.at(-1)!.point,to)>0.01) return null;
     return result;
   } finally { corridor.polys.destroy(); }
@@ -136,12 +142,14 @@ export function auditGatePath(nav: NavMesh, query: NavMeshQuery, from: V3, to: V
 
 /** Snap a path's vertices to the floor height floorAt reports. Between two vertices the floor is sampled every 0.25 m of
  * plan length; where the straight line leaves it by more than 0.05 m, the path is split at the worst sample, at floor
- * height, and both halves are checked again (#669 r2: a ramp foot between vertices). */
-export function floorSnapPath<P extends { x: number; y: number; z: number }>(points: readonly P[], floorAt: (p: P) => number): P[] {
+ * height, and both halves are checked again (#669 r2: a ramp foot between vertices). Modelled stairs and their walks
+ * use 0.01 m samples and a 0.002 m split threshold so landing tapers survive centimetre serialization. */
+export function floorSnapPath<P extends { x: number; y: number; z: number }>(points: readonly P[], floorAt: (p: P) => number, precise = false): P[] {
   const dense: P[] = [];
   const refine = (a: P, b: P, depth: number) => {
-    const span = Math.hypot(b.x-a.x, b.y-a.y), steps = Math.min(64, Math.ceil(span / 0.25));
-    let worst: P | null = null, worstOff = 0.05;
+    // The nosing/landing slope changes must remain within 1 cm after centimetre serialization.
+    const span = Math.hypot(b.x-a.x, b.y-a.y), steps = Math.min(precise ? 1024 : 64, Math.ceil(span / (precise ? 0.01 : 0.25)));
+    let worst: P | null = null, worstOff = precise ? 0.002 : 0.05;
     for (let i = 1; i < steps; i++) {
       const t = i / steps, q = { ...a, x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:a.z+(b.z-a.z)*t }, floorZ = floorAt(q);
       if (Math.abs(floorZ - q.z) > worstOff) { worstOff = Math.abs(floorZ - q.z); worst = { ...q, z:floorZ }; }
@@ -224,6 +232,9 @@ async function main() {
   const bridgeFloorGeometry=new THREE.BufferGeometry(); bridgeFloorGeometry.setAttribute("position",new THREE.Float32BufferAttribute(provenance.bridgeFloorTriangles ?? [],3));
   const bridgeFloor=new THREE.Mesh(bridgeFloorGeometry,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); bridgeFloor.userData.greybox=true; bridgeFloor.updateMatrixWorld(true);
   const probe={...originalProbe,ground:[...originalProbe.ground,...(bridgeGaps && bridgeFloorGeometry.getAttribute("position").count ? [bridgeFloor] : [])]};
+  const modelledStairs = station === "shinjuku" ? new Set<string>(scene.root.userData.modelledStairEdges ?? []) : new Set<string>();
+  // Match Explorer.groundAt's actual walkable targets, excluding the bake-only greybox floor mesh.
+  const walkerProbe = { ...probe, ground: grey?.targets.ground ?? sceneProbe(scene).ground };
   const nodes = new Map(bundle.nodes.map(n => [n.id, n])), floors = new Map(bundle.floors.map(f => [f.id, f]));
   const edges = new Map(bundle.edges.map(e => [e.id, e]));
   const attached = new Set<number>(provenance.attachedLinkIds ?? []);
@@ -615,10 +626,11 @@ async function main() {
       // Commit the vertices at the scene's floor height (navmesh detail heights can sit above it), rounded as written, then
       // audit exactly that polyline with the route audit's samples: one that leaves the floor or meets a wall is not
       // committed, and the gate fails on it (#669 r2). An edge no audited route walks is checked here too.
-      const floorAt = (p: PolylinePoint) => { const d: SampleDetail[] = []; auditPolyline(probe, [p], { alreadySampled:true, detail:d, cache:auditCache }); return d[0]?.floorZ ?? p.z; };
+      const walkerGround = edge.mode === "stairs" && modelledStairs.has(edge.id);
+      const floorAt = (p: PolylinePoint) => { const d: SampleDetail[] = []; auditPolyline(walkerGround ? walkerProbe : probe, [p], { alreadySampled:true, detail:d, cache:auditCache, walkerGround }); return d[0]?.floorZ ?? p.z; };
       const canonical=assembleSnapPath([entry.points],()=>null,canonicalSnap).points;
       if(!canonical) { navPathsRejected.push(`${edge.id}:${reversed ? "reverse":"forward"}`); continue; }
-      const dense = floorSnapPath(canonical, floorAt);
+      const dense = floorSnapPath(canonical, floorAt, walkerGround || (station === "shinjuku" && edge.mode === "walk"));
       const points = dense.map(p => [round2(p.x), round2(p.y), round2(p.z)]);
       const committed = dense.map((p,i) => ({ ...p, x:points[i]![0]!, y:points[i]![1]!, z:points[i]![2]! }));
       const samples = resampleAudit(committed) as PolylinePoint[], details: SampleDetail[] = [];

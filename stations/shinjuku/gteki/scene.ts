@@ -16,6 +16,7 @@ import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
 import { fetchLayoutBake } from "../scene/layout-bake.ts";
 import { clearLayoutCache } from "../scene/build-cache.ts";
+import { stairProfile } from "../scene/stairProfile.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
@@ -74,6 +75,21 @@ function addOverheadRoofQueries(T: typeof THREE, cap: THREE.Mesh, root: THREE.Ob
 }
 
 /** Camera that renders the station, reported to the street layer (see the probe in buildScene). */
+// Defined outside assembleScene so the returned scene keeps only this run's points, not the build scope (#968).
+function rampCameraPivot(run: { a: V3; b: V3; width: number } | undefined) {
+  if (!run) return () => null;
+  const lo = { ...(run.a.z < run.b.z ? run.a : run.b) }, hi = { ...(run.a.z < run.b.z ? run.b : run.a) }, half = run.width / 2;
+  const { L, tread, walkZ } = stairProfile(lo, hi);
+  const dx = (hi.x - lo.x) / L, dy = (hi.y - lo.y) / L;
+  return (p: V3): number | null => {
+    const x = p.x - lo.x, y = -p.z - lo.y;
+    const along = x * dx + y * dy;
+    if (along < -tread || along > L || Math.abs(x * dy - y * dx) > half ||
+      Math.abs(p.y - walkZ(along)) > 0.02) return null;
+    return Math.min(p.y, lo.z + (hi.z - lo.z) * Math.max(0, along) / L);
+  };
+}
+
 function viewerTracker(setViewer: ((pos: { x: number; y: number; z: number }) => void) | undefined) {
   let camera: THREE.Camera | null = null;
   const report = (cam: THREE.Camera) => setViewer?.({ x: cam.position.x, y: -cam.position.z, z: cam.position.y });
@@ -291,12 +307,30 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     m.userData.gteki_role = "walkable";
     proxies.add(m);
     walkable.push(m);
+    return m;
   };
   for (const lv of layout.levels) for (const s of lv.slabs) addProxy(slabGeometry(s.rings, s.z, 1));
   for (const p of layout.pads) addProxy(slabGeometry(p.rings, p.z, 1));
   for (const p of layout.linkStrips) addProxy(slabGeometry(p.rings, p.z, 1));
   for (const p of layout.streetPads) addProxy(slabGeometry(p.rings, p.z, 1));
   for (const r of layout.runs) {
+    const lo = r.a.z <= r.b.z ? r.a : r.b;
+    const hi = r.a.z <= r.b.z ? r.b : r.a;
+    if (r.mode === "stairs" && hi.z - lo.z >= 0.05) {
+      const { L, tread, walkZ } = stairProfile(lo, hi);
+      const ux = (hi.x - lo.x) / L, uy = (hi.y - lo.y) / L;
+      const nx = -uy * r.width / 2, ny = ux * r.width / 2;
+      const v = [-tread, 0, L - tread, L].flatMap((s) => {
+        const x = lo.x + ux * s, y = lo.y + uy * s, z = walkZ(s);
+        return [x + nx, z, -(y + ny), x - nx, z, -(y - ny)];
+      });
+      const g = new T.BufferGeometry();
+      g.setAttribute("position", new T.Float32BufferAttribute(v, 3));
+      g.setIndex([0, 1, 3, 0, 3, 2, 2, 3, 5, 2, 5, 4, 4, 5, 7, 4, 7, 6]);
+      g.computeVertexNormals();
+      addProxy(g).userData.gtekiStairWalkSupport = true;
+      continue;
+    }
     // Ramp quad along the stair/escalator run (renderer frame: x, z, -y).
     const dx = r.b.x - r.a.x;
     const dy = r.b.y - r.a.y;
@@ -556,12 +590,16 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       steps: [{ id: "look", seconds: 1.2 }, { id: "sit", seconds: 1.5 }, { id: "react", seconds: 2.0 }], once: false },
   ];
 
+  // #1435: this stair's raised nosing support puts the boom pivot above the adjacent
+  // street wall's foot. Keep only its camera pivot on the original ramp datum.
+  const cameraRun = layout.runs.find((r) => r.edgeId === "e:0564105d1e914395848a2b09c12368c5");
   const scene: StationScene = {
     root: built.root,
     interactables,
     walkable,
     colliders,
     cameraBlockers,
+    cameraPivotGroundAt: rampCameraPivot(cameraRun),
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },

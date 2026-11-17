@@ -77,7 +77,7 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
 
   /**
    * Explorer.placeCamera at snap (the steady state): every camera target is two-sided (`cameraSides`), the shoulder probe,
-   * followPose, solveRaisedBoom, then the actual-direction recast bounded by approachBoom, exactly as the explorer does.
+   * followPose, the station's camera pivot datum, solveRaisedBoom, then the actual-direction recast bounded by approachBoom.
    */
   function settle(t: ReturnType<typeof explorerTargets>, ray: THREE.Raycaster, head: THREE.Vector3, yaw: number, pitch: number) {
     const sides = new Set(t.camera);
@@ -89,6 +89,9 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, yaw, pitch, shoulder);
+    const foot = head.clone().add(new THREE.Vector3(0, -WALKER_BODY.eyeM, 0));
+    const pivotGround = scene.cameraPivotGroundAt?.(foot);
+    if (pivotGround != null) pose.pivot.y += pivotGround - foot.y;
     const cast = (b: THREE.Vector3, length: number = FOLLOW.defaultDistance) => {
       ray.set(pose.pivot, b); ray.far = length + FOLLOW.clearance;
       return castCamera(ray, t.camera, sides).map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) }));
