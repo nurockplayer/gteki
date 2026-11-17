@@ -115,9 +115,9 @@
       "id": "sj-sign-2d2bc35b",
       "station": "shinjuku",
       "kind": "node",
-      "node": "n:20014f524ee643c18b80575cf3064334",
-      "headingDeg": 272,
-      "pitch": 0.5,
+      "node": "n:1452afaefe044bc98bdd66b7a746842c",
+      "headingDeg": 90,
+      "pitch": 0.3,
       "expect": "The passage and overhead sign 2d2bc35b are visible.",
       "features": [
         {
