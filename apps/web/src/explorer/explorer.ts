@@ -428,6 +428,7 @@ export class Explorer {
   private guideAllStops: { s: number; index: number }[] = [];
   private guideIdentityHoldS = 0;
   private cameraFocus: THREE.Vector3 | null = null;
+  private cameraAvatar: THREE.Vector3 | null = null;
   private cameraSignFocus: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null;
   private guideSigns: { s: number; anchor: THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number } }[] = [];
   /** The framed board's name centre, and the framed look's offset from that board's bearing: the hold keeps the board in view. */
@@ -1765,6 +1766,7 @@ export class Explorer {
     this.identityBoards = [];
     this.identityPlaced = false;
     this.cameraFocus = null;
+    this.cameraAvatar = null;
     this.cameraSignFocus = null;
     this.guideSigns = [];
     this.identityLabelsDirty = true;
@@ -3546,14 +3548,16 @@ export class Explorer {
   }
 
   private setCameraFocus(p: THREE.Vector3 | null, sign: (THREE.Vector3 & { halfWidthX: number; halfWidthZ: number; halfHeight: number }) | null = null): void {
+    const avatar = this.catAvatar ? this.catWorldBox().getCenter(new THREE.Vector3()) : null;
     const changed = (a: THREE.Vector3 | null | undefined, b: THREE.Vector3 | null) =>
       a == null || b == null ? (a ?? null) !== b : a.distanceToSquared(b) > 0.05 * 0.05;
     const opening = this.openingState === "active";
-    if (!changed(this.cameraFocus, p) && this.cameraSignFocus === sign && this.cameraOpeningHold === opening) return;
+    if (!changed(this.cameraFocus, p) && !changed(this.cameraAvatar, avatar) && this.cameraSignFocus === sign && this.cameraOpeningHold === opening) return;
     this.cameraOpeningHold = opening;
     this.cameraFocus = p ? (this.cameraFocus ?? new THREE.Vector3()).copy(p) : null;
     this.cameraSignFocus = sign;
-    this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus, opening ? { camera: this.camera, floorY: this.pos.y } : null);
+    this.cameraAvatar = avatar;
+    this.stationScene?.setCameraFocus?.(this.cameraFocus, this.cameraSignFocus, opening ? { camera: this.camera, floorY: this.pos.y } : null, avatar);
   }
 
   private cameraFacingCatAnchor() {
