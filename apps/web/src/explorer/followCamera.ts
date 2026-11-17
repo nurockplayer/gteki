@@ -431,8 +431,9 @@ export function solveRaisedBoom(
   });
   let target = constrainedPitch(wanted, base.back, base.distance, cast, scratch, checkBody);
   let gateHeld = false;
-  if (gate && (base.distance < Math.min(FOLLOW.comfortDistance, wanted) || currentRaise > 0)
-    && !gate.clearBoom(base.back, wanted)) {
+  if (gate && (!gate.clearCandidate(base.back, base.distance)
+    || ((base.distance < Math.min(FOLLOW.comfortDistance, wanted) || currentRaise > 0)
+      && !gate.clearBoom(base.back, wanted)))) {
     gateHeld = true;
     target = Math.max(target, currentRaise, FOLLOW.maxRaise);
     let bestDistance = -1;

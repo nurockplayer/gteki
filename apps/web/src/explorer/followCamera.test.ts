@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW_CAT_NEXT, ESCALATOR_SHOT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW_CAT_NEXT, ESCALATOR_SHOT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("scales the cat shoulder for portrait aspect", () => {
@@ -818,6 +818,22 @@ describe("Ikebukuro JR gate camera (#1378)", () => {
     expect(fence, "authored fence remains in the camera targets").toBeDefined();
     expect(metrics[0]!.beforeIntrusions).toBe(56);
     expect(metrics[0]!.beforeFrameExits).toBe(5);
+    // Cabinet geometry must trigger avoidance even when ordinary casts keep the full boom.
+    const aisle = replay.built.cameraGateAisles.find((g) => g.node === "g_jr_s")!;
+    const localToWorld = aisle.worldToLocal.clone().invert();
+    const nominal = aisle.cabinets[0]!.getCenter(new THREE.Vector3()).applyMatrix4(localToWorld);
+    const back = new THREE.Vector3(0, 0, 1).transformDirection(localToWorld);
+    const wanted = 2.4;
+    const pivot = nominal.clone().addScaledVector(back, -wanted);
+    const feet = pivot.clone().applyMatrix4(aisle.worldToLocal);
+    feet.y = 0;
+    feet.applyMatrix4(localToWorld);
+    const gate = cameraGateConstraint([aisle], feet, pivot, nominal, pivot, .05, 60, 1024 / 640)!;
+    expect(followDistance(wanted, [])).toBe(wanted);
+    expect(gate.clearCandidate(back, wanted), "nominal full-length boom enters the loaded cabinet").toBe(false);
+    const solved = solveRaisedBoom(wanted, back, () => [], 0, 1 / 60, false, undefined, undefined, gate);
+    expect(solved.raise, "cabinet independently triggers a raise").toBeGreaterThan(0);
+    expect(gate.clearCandidate(solved.back, solved.distance), "raised full-length boom clears the cabinet").toBe(true);
     replay.kit.dispose();
   }, 120_000);
 });
