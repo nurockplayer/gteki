@@ -231,7 +231,6 @@ test("guided walk @phone", async ({ page }, info) => {
   expect(timeBand).toBe("morning");
   await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
   expect(await page.evaluate(() => (window as any).__gteki.routeEndpoints())).toMatchObject({ from: "poi:exit:1", to: "poi:platform:oedo" });
-  const destinationPoiLabel = reelMode === "next" ? await page.evaluate(() => document.querySelector(".poi-label.cat-platform.selected")?.textContent ?? null) : null;
   const route = await hooks.route(page);
   const steps = route.steps as { fromNodeId: string; toNodeId: string; edgeId: string; reversed: boolean; mode: string }[];
   const wps = routeWaypoints("shinjuku", steps), { graph } = stationData("shinjuku");
@@ -365,9 +364,12 @@ test("guided walk @phone", async ({ page }, info) => {
               return { text: button.textContent, color: style.color, fill: style.backgroundColor, contrastRatio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
             });
           });
-          const destinationPoiLabelVisible = await page.getByRole("button", { name: destinationPoiLabel!, exact: true }).isVisible();
-          Object.assign(samples.find(s => s.arrival)!, { destinationPoiLabelVisible, arrivalMenu });
-          console.log(`[journey] ${info.project.name} arrival destinationPoiLabelVisible=${destinationPoiLabelVisible} pills=${JSON.stringify(arrivalMenu)}`);
+          // The selected platform label is the destination's; it may be absent at cold open, so read it here.
+          const destinationLabels = page.locator(".poi-label.cat-platform.selected");
+          const destinationPoiLabelCount = await destinationLabels.count();
+          const destinationPoiLabelVisible = (await destinationLabels.evaluateAll(els => els.map(el => (el as HTMLElement).checkVisibility()))).some(Boolean);
+          Object.assign(samples.find(s => s.arrival)!, { destinationPoiLabelCount, destinationPoiLabelVisible, arrivalMenu });
+          console.log(`[journey] ${info.project.name} arrival destinationPoiLabelCount=${destinationPoiLabelCount} destinationPoiLabelVisible=${destinationPoiLabelVisible} pills=${JSON.stringify(arrivalMenu)}`);
         }
       } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
       await expect(menu.locator(".guide-prev")).toBeVisible();
