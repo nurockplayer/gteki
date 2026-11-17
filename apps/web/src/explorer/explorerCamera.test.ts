@@ -6,6 +6,7 @@ import { FOLLOW_CAT_NEXT, escalatorPose, FOLLOW, NO_SLOPE, SLOPE, descentAimDrop
 import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
 import { samplePolyline } from "./walker.ts";
 import type { IdentityBoard } from "./identityBoards.ts";
+import { explorerTargets } from "./raycast.ts";
 
 /** Exercise the real camera wiring with CPU raycasts; no renderer or browser is constructed. */
 function cameraStand() {
@@ -50,6 +51,27 @@ const pocket = () => {
 };
 
 describe("Explorer follow camera wiring", () => {
+  it("keeps modelled stair supports underfoot while the visible stairs block the camera", () => {
+    const support = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ visible: false }));
+    support.userData.gtekiStairWalkSupport = true;
+    support.userData.gteki_role = "walkable";
+    const floor = new THREE.Mesh(support.geometry, support.material);
+    const stairs = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 10), new THREE.MeshBasicMaterial());
+    stairs.position.y = -0.1;
+    stairs.userData.gtekiCameraTargetOnly = true;
+    stairs.updateMatrixWorld(true);
+    const targets = explorerTargets([support, floor], [], [stairs, support]);
+    expect(targets.ground).toContain(support);
+    expect(targets.sky).toContain(support);
+    expect(targets.camera).toEqual([floor, stairs]);
+    expect(targets.blockers.has(support)).toBe(false);
+    expect(support.userData.gteki_role).toBe("walkable");
+    const state = cameraStand();
+    state.cameraTargets = targets.camera;
+    state.cameraSides = new Set(targets.camera);
+    place(state, true);
+    expect(state.camera.position.y).toBeGreaterThanOrEqual(0);
+  });
   it.each(["flat", "stairs", "default escalator", "next escalator"])("checks body casts on %s", (mode) => {
     const state = Object.assign(cameraStand(), { catAvatar: true, previewNext: mode === "next escalator", escalatorProgress: mode === "next escalator" ? 1 : 0 });
     if (mode === "stairs" || mode === "default escalator") {

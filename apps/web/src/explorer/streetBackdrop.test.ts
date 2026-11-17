@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
+import { Explorer } from "./explorer.ts";
 import { StreetBackdrop, atStreetTop, STREET_RESCAN_S, STREET_SURFACE_FLAG, collectStreetSurfaces, footingLevel, isOutdoors, roleOf, stationDrawsGround } from "./streetBackdrop.ts";
 
 describe("street backdrop", () => {
@@ -58,6 +59,26 @@ describe("street backdrop", () => {
 });
 
 describe("level footing", () => {
+  it("suppresses pavement on a tagged stair support, including its flat entry taper", () => {
+    const support = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
+    support.userData.gteki_role = "walkable";
+    support.updateMatrixWorld(true);
+    const state = {
+      pos: new THREE.Vector3(), streetY: 0, streetTops: [new THREE.Vector3()],
+      streetProbe: { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: true, level: true },
+      ray: new THREE.Raycaster(), skyTargets: [support], groundTargets: [support],
+      probeOrigin: new THREE.Vector3(), probeUp: new THREE.Vector3(0, 1, 0), probeDown: new THREE.Vector3(0, -1, 0),
+      probeNormal: new THREE.Vector3(), probeNormalMatrix: new THREE.Matrix3(),
+    };
+    const probe = () => (Explorer.prototype as unknown as { updateStreetProbe(this: typeof state, dt: number): void }).updateStreetProbe.call(state, 1 / 60);
+    probe();
+    expect(state.streetProbe.level).toBe(true);
+    support.userData.gtekiStairWalkSupport = true;
+    state.streetProbe.at.x = Infinity;
+    probe();
+    expect(state.streetProbe.level).toBe(false);
+    expect(support.userData.gteki_role).toBe("walkable");
+  });
   it("is level on flat floor and not on a stair, a ramp or a tilted face", () => {
     expect(footingLevel("floor", 1, false)).toBe(true);
     expect(footingLevel("stairs_ramps", 1, true)).toBe(false);

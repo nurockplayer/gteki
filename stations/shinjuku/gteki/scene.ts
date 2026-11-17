@@ -292,6 +292,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     m.userData.gteki_role = "walkable";
     proxies.add(m);
     walkable.push(m);
+    return m;
   };
   for (const lv of layout.levels) for (const s of lv.slabs) addProxy(slabGeometry(s.rings, s.z, 1));
   for (const p of layout.pads) addProxy(slabGeometry(p.rings, p.z, 1));
@@ -312,7 +313,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       g.setAttribute("position", new T.Float32BufferAttribute(v, 3));
       g.setIndex([0, 1, 3, 0, 3, 2, 2, 3, 5, 2, 5, 4, 4, 5, 7, 4, 7, 6]);
       g.computeVertexNormals();
-      addProxy(g);
+      addProxy(g).userData.gtekiStairWalkSupport = true;
       continue;
     }
     // Ramp quad along the stair/escalator run (renderer frame: x, z, -y).
