@@ -57,7 +57,7 @@ describe("street backdrop", () => {
     probe.coldOpenStreetEnding = true;
     rescan();
     expect(probe.streetProbe.level).toBe(true);
-    pos.x = 20;
+    pos.x = 50; // Beyond the 40 m level-floor radius, including the no-hit fallback.
     rescan();
     expect(probe.streetProbe.level).toBe(false);
     expect(probe.coldOpenStreetEnding).toBe(false);
