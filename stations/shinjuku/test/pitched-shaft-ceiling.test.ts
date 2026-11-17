@@ -4,8 +4,8 @@ import type { StationScene } from "@gteki/scene-api";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { assembleScene, planBundle } from "../gteki/scene.ts";
 import { prepareLayout } from "../scene/build-cache.ts";
-import { cladWallGeometry } from "../scene/build.ts";
-import { pointInRings, soffitHeight, type Layout, type Plan, type Soffit, type XYZ } from "../scene/layout.ts";
+import { cladWallGeometry, escalatorShellGeometry } from "../scene/build.ts";
+import { pointInRings, soffitHeight, stairShaftGroups, type Layout, type Plan, type Soffit, type XYZ } from "../scene/layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 import { exactHash, plainHash, withCanvasStub } from "./helpers/scene-digest.ts";
 import { digestSceneLists } from "./helpers/station-digest.ts";
@@ -59,13 +59,16 @@ function producer(hit: THREE.Intersection | undefined, layout: Layout) {
 }
 
 describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
-  let off: StationScene, on: StationScene, layout: Layout, oldLayout: Layout;
+  let off: StationScene, on: StationScene, layout: Layout, oldLayout: Layout, regularRoofs: Omit<Soffit, "kind">[];
   beforeAll(() => {
     const ctx = { THREE, bundle, quality: "low" as const };
     off = withCanvasStub(() => assembleScene(ctx as never, undefined, undefined, { pitchedCeilings: false }));
     oldLayout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true, pitchedCeilings: false }).layout;
     on = withCanvasStub(() => assembleScene(ctx as never));
     layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
+    regularRoofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
+      ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)),
+      ...layout.shaftFinishes, ...escalatorShellGeometry(layout, planBundle(bundle)).finishes];
   }, 600_000);
   afterAll(() => { off?.dispose(); on?.dispose(); });
 
@@ -115,22 +118,73 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     } finally { on.afterRender!(); }
   });
 
-  it("retains underground strips in each shared preview roof", () => {
+  const sourceNodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+  const sourceEdges = new Map(bundle.edges.map((e) => [e.id, e]));
+  const fixture = (mesh: THREE.InstancedMesh, i: number) => {
+    const mount = mesh.userData.mounts[i] as { edgeId: string; sample: number; roof: Omit<Soffit, "kind">; section: number };
+    const edge = sourceEdges.get(mount.edgeId)!;
+    const a = sourceNodes.get(edge.from)!, b = sourceNodes.get(edge.to)!;
+    const za = layout.nodeZ.get(a.id)!, zb = layout.nodeZ.get(b.id)!;
+    const surfaceZ = (p: { x: number; y: number }) => {
+      const dx = b.position.x - a.position.x, dy = b.position.y - a.position.y;
+      const t = ((p.x - a.position.x) * dx + (p.y - a.position.y) * dy) / (dx * dx + dy * dy);
+      return za + (zb - za) * t;
+    };
+    const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
+    const at = (x: number, y: number, z: number): XYZ => {
+      const p = new THREE.Vector3(x, y, z).applyMatrix4(matrix);
+      return { x: p.x, y: -p.z, z: p.y };
+    };
+    return { ...mount, edge, surfaceZ, at };
+  };
+
+  it("counts only fixtures mounted to their chosen roof section above their own surface (#1391)", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
-    // Captured from origin/main 4724fc44, in preview-roof order (2026-11-14 JST).
-    const before = [4, 2, 0, 0, 0, 3, 40, 34, 4, 37, 34, 14];
-    const counts = layout.shaftCeilingPreview!.roofs.map((roof, index) => {
-      let count = 0;
-      for (let i = 0; i < mesh.count; i++) {
-        const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
-        const center = new THREE.Vector3().setFromMatrixPosition(matrix);
-        if (pointInRings({ x: center.x, y: -center.z }, roof.rings)) count++;
+    // Corrected own-roof minima, not XY overlap counts (2026-11-17 JST).
+    const minima = [4, 2, 0, 0, 0, 3, 27, 27, 4, 33, 33, 14];
+    const roofs = layout.shaftCeilingPreview!.roofs;
+    const shafts = stairShaftGroups(layout.runs);
+    const counts = roofs.map(() => 0);
+    const clearances: number[] = [], heights: number[] = [];
+    for (let i = 0; i < mesh.count; i++) {
+      const f = fixture(mesh, i), tag = `${f.edgeId}@${f.sample} fixture ${i}`;
+      const samples = [-0.5, 0, 0.5].map((z) => f.at(0, 0, z));
+      heights.push(samples[1]!.z);
+      for (const [index, p] of samples.entries()) {
+        // A regular strip may cross flight/landing sections; do not extend its centre plane.
+        const roof = index === 1 || f.section >= 0 ? f.roof : regularRoofs.filter((r) => {
+          const clearance = soffitHeight(r, p) - f.surfaceZ(p);
+          return pointInRings(p, r.rings) && clearance >= 2.5 - 0.00002 && clearance <= 5.2 + 0.00002;
+        }).sort((a, b) => soffitHeight(a, p) - soffitHeight(b, p))[0]!;
+        expect(roof, tag).toBeDefined();
+        expect(pointInRings(p, roof.rings), tag).toBe(true);
+        // Regular strips retain the existing 0.15 m centre fit across flight/landing seams.
+        const mountingTolerance = index === 1 && f.section < 0 ? 0.15002 : 0.00002;
+        expect(Math.abs(soffitHeight(roof, p) - p.z - 0.065), tag).toBeLessThan(mountingTolerance);
+        const clearance = soffitHeight(roof, p) - f.surfaceZ(p);
+        clearances.push(clearance);
+        expect(clearance, tag).toBeGreaterThanOrEqual(2.5 - 0.00002);
+        expect(clearance, tag).toBeLessThanOrEqual(5.2 + 0.00002);
       }
-      return { roof: roof.spaceId, index, before: before[index]!, after: count };
-    });
-    console.log("2026-11-14 JST J7 strip counts", JSON.stringify(counts));
-    expect(counts).toHaveLength(before.length);
-    for (const { roof, index, before, after } of counts) expect(after, `${roof} section ${index}`).toBeGreaterThanOrEqual(before);
+      if (f.section < 0) continue;
+      const roof = roofs[f.section]!;
+      expect(plainHash(f.roof), tag).toBe(plainHash(roof));
+      const ownShaft = shafts[Number(roof.spaceId.split(":")[1])]!.some((r) => r.edgeId === f.edgeId);
+      const ownFlat = !layout.runs.some((r) => r.edgeId === f.edgeId) && sourceNodes.get(f.edge.from)!.floorId === roof.floorId;
+      expect(ownShaft || ownFlat, tag).toBe(true);
+      for (const p of samples) {
+        expect(pointInRings(p, roof.rings), tag).toBe(true);
+        expect(Math.abs(soffitHeight(roof, p) - p.z - 0.065), tag).toBeLessThan(0.00002);
+      }
+      counts[f.section] = counts[f.section]! + 1;
+    }
+    const totals = [mesh.count, heights.filter((z) => z > -19 && z < -5).length,
+      heights.filter((z) => z > -39 && z < -21).length];
+    console.log("2026-11-17 JST own-roof counts", JSON.stringify(counts), "totals", totals,
+      "out-of-band", clearances.filter((z) => z < 2.5 || z > 5.2).length);
+    expect(totals).toEqual([490, 105, 82]);
+    expect(counts).toHaveLength(minima.length);
+    for (const [section, minimum] of minima.entries()) expect(counts[section], `${roofs[section]!.spaceId} section ${section}`).toBeGreaterThanOrEqual(minimum);
   });
 
   it("keeps flag-off strip count and rounded matrices identical to main", () => {
@@ -147,9 +201,8 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     let checked = 0;
     for (let i = 0; i < mesh.count; i++) {
       const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
-      const center = new THREE.Vector3().setFromMatrixPosition(matrix);
-      const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings({ x: center.x, y: -center.z }, s.rings) &&
-        Math.abs(soffitHeight(s, { x: center.x, y: -center.z }) - center.y - 0.065) < 0.01);
+      const { section } = fixture(mesh, i);
+      const roof = layout.shaftCeilingPreview!.roofs[section];
       if (!roof || !(roof.slope?.x || roof.slope?.y)) continue;
       matrix.premultiply(mesh.matrixWorld);
       const up = new THREE.Vector3(0, 1, 0).transformDirection(matrix);
@@ -160,29 +213,35 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     expect(checked).toBeGreaterThan(0);
   });
 
-  it("aligns shared-roof strips with the pitch and keeps both ends below its plane", () => {
+  it("covers all 147 preview-roof casings at endpoints and corners in the actual section (#1391)", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
+    const failures: string[] = [];
+    let checked = 0;
     for (let i = 0; i < mesh.count; i++) {
-      const matrix = new THREE.Matrix4(); mesh.getMatrixAt(i, matrix);
-      const center = new THREE.Vector3().setFromMatrixPosition(matrix);
-      const roof = layout.shaftCeilingPreview!.roofs.find((s) => pointInRings({ x: center.x, y: -center.z }, s.rings) &&
-        Math.abs(soffitHeight(s, { x: center.x, y: -center.z }) - center.y - 0.065) < 0.01);
-      if (!roof) continue;
-      const ends = [-0.5, 0.5].map((z) => {
-        const p = new THREE.Vector3(0, 0, z).applyMatrix4(matrix);
-        return { x: p.x, y: -p.z, z: p.y };
-      });
-      const [a, b] = ends as [typeof ends[number], typeof ends[number]];
-      const dx = b.x - a.x, dy = b.y - a.y, slope = roof.slope!;
-      const cosine = Math.abs(dx * slope.x + dy * slope.y) / (Math.hypot(dx, dy) * Math.hypot(slope.x, slope.y));
-      expect(cosine, `${roof.spaceId} fixture ${i}`).toBeGreaterThanOrEqual(Math.cos(Math.PI / 180));
-      for (const p of ends) {
-        expect(pointInRings(p, roof.rings), `${roof.spaceId} fixture ${i} endpoint`).toBe(true);
-        const gap = soffitHeight(roof, p) - p.z;
-        expect(gap).toBeGreaterThanOrEqual(0);
-        expect(gap).toBeLessThanOrEqual(0.08);
+      const f = fixture(mesh, i);
+      if (f.section < 0) continue;
+      checked++;
+      // BoxGeometry casing: 0.25 wide, 0.045 high, 1.04 long, translated +0.035 Y.
+      const samples = [-0.5, 0.5].map((z) => f.at(0, 0, z));
+      samples.push(...[-0.125, 0.125].flatMap((x) => [-0.52, 0.52].map((z) => f.at(x, 0.0575, z))));
+      for (const [sample, p] of samples.entries()) {
+        // Street-mouth sections share an ID. At a seam use the section covering this XY.
+        const sections = layout.shaftCeilingPreview!.roofs.filter((r) => r.spaceId === f.roof.spaceId);
+        const roofs = sections.filter((r) => pointInRings(p, r.rings)).filter((r) => {
+          const clearance = soffitHeight(r, p) - f.surfaceZ(p);
+          return clearance >= 2.5 - 0.00002 && clearance <= 5.2 + 0.00002;
+        }).sort((a, b) => soffitHeight(a, p) - soffitHeight(b, p));
+        const valid = roofs.slice(0, 1).some((roof) => {
+          const underside = soffitHeight(roof, p), gap = underside - p.z;
+          const clearance = underside - f.surfaceZ(p);
+          return gap >= -0.01 && gap <= 0.065 + 0.01 && clearance >= 2.5 - 0.00002 && clearance <= 5.2 + 0.00002;
+        });
+        if (!valid) failures.push(`${i} ${f.edgeId}@${f.sample} ${f.roof.spaceId} section ${f.section} sample ${sample}: ` +
+          (roofs[0] ? `${roofs[0].spaceId} gap ${(soffitHeight(roofs[0], p) - p.z).toFixed(4)}` : "no covering own-surface roof"));
       }
     }
+    expect(checked).toBe(147);
+    expect(failures).toEqual([]);
   });
 
   it("keeps the flight stripe continuous with the B3 landing sleeve", () => {
