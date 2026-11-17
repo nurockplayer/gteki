@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
+import { Explorer } from "./explorer.ts";
 import { StreetBackdrop, atStreetTop, STREET_RESCAN_S, STREET_SURFACE_FLAG, collectStreetSurfaces, footingLevel, isOutdoors, roleOf, stationDrawsGround } from "./streetBackdrop.ts";
 
 describe("street backdrop", () => {
@@ -8,6 +9,32 @@ describe("street backdrop", () => {
     expect(isOutdoors(31.3, 32.5, true)).toBe(false); // under a canopy or ceiling
     expect(isOutdoors(27.9, 32.5, false)).toBe(false); // deep open stairwell
     expect(isOutdoors(31.3, null, false)).toBe(false); // no street floor
+  });
+
+  it("keeps pavement down on stair-top teleport but raises it immediately on level street", () => {
+    const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera();
+    const pos = new THREE.Vector3(0, 32.646, 0);
+    const surface = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2));
+    surface.position.copy(pos);
+    surface.updateMatrixWorld(true);
+    const probe = Object.assign(Object.create(Explorer.prototype), {
+      pos, streetY: 32.5, streetTops: [pos.clone()],
+      streetProbe: { at: new THREE.Vector3(Infinity, 0, 0), level: true, outdoors: false, wait: 0 },
+      skyTargets: [surface], groundTargets: [surface], ray: new THREE.Raycaster(),
+      probeOrigin: new THREE.Vector3(), probeUp: new THREE.Vector3(0, 1, 0),
+      probeDown: new THREE.Vector3(0, -1, 0), probeNormal: new THREE.Vector3(), probeNormalMatrix: new THREE.Matrix3(),
+    });
+    const backdrop = new StreetBackdrop();
+    for (const [role, expected] of [["stairs_ramps", false], ["floor", true]] as const) {
+      surface.userData.gteki_role = role;
+      probe.streetProbe.at.set(Infinity, 0, 0);
+      probe.updateStreetProbe(1 / 60);
+      backdrop.update(scene, camera, pos, probe.streetProbe.outdoors, 1 / 60, probe.streetProbe.level, true);
+      expect(probe.streetProbe.outdoors).toBe(true);
+      expect(backdrop.group.getObjectByName("street-backdrop-ground")!.visible).toBe(expected);
+    }
+    backdrop.dispose();
+    surface.geometry.dispose();
   });
 
   it("blends the station fog to haze outdoors and restores the exact fog object underground", () => {

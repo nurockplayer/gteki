@@ -3536,7 +3536,7 @@ export class Explorer {
     // Single-sided winding varies across source polygons: only the tilt matters.
     const footing = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
     // The surface actually underfoot, not the walker's smoothed height, decides which tread this is.
-    p.level = atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
+    p.level = footing && atStreetTop(hit ? hit.point : this.pos, this.streetTops, true);
   }
 
   /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */

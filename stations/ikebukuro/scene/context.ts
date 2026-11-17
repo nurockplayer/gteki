@@ -2,6 +2,8 @@
 // (`gis context-glb`), visual only. Truth stays in gteki/*.json; nothing here adds a route, a walkable surface
 // or a collider. Uses ctx.THREE so it shares the explorer's three instance.
 import type * as THREE_NS from "three";
+import type { StationBundle } from "@gteki/schema";
+import { stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
 
 type ThreeNS = typeof THREE_NS;
 
@@ -267,4 +269,50 @@ export function createContextBlockers(THREE: ThreeNS, centers: readonly THREE_NS
       material.dispose();
     },
   };
+}
+
+/** Keep visual context out of the station's street-exit stair footprints, down to the lower floor. */
+export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D, bundle: StationBundle): number {
+  const streetFloors = new Set(bundle.floors.filter(f => f.ordinal === 0 && !f.intermediate).map(f => f.id));
+  const exits = new Set(bundle.nodes.filter(n => n.kind === "exit" && streetFloors.has(n.floorId)).map(n => n.id));
+  const openings = stairwellWells(bundle, e => !e.closed && (exits.has(e.from) || exits.has(e.to))).flatMap(well => well.rects.map(rect => {
+    const matrix = new THREE.Matrix4().set(
+      rect.along.x, 0, rect.along.z, -rect.center.dot(rect.along),
+      0, 1, 0, 0,
+      rect.across.x, 0, rect.across.z, -rect.center.dot(rect.across),
+      0, 0, 0, 1,
+    );
+    const box = new THREE.Box3(
+      new THREE.Vector3(-rect.halfLength, well.lowerY, -rect.halfWidth),
+      new THREE.Vector3(rect.halfLength, well.upperY, rect.halfWidth),
+    );
+    return { matrix, box };
+  }));
+  root.updateMatrixWorld(true);
+  const triangle = new THREE.Triangle(), local = new THREE.Triangle();
+  let removed = 0;
+  root.traverse(o => {
+    const mesh = o as THREE_NS.Mesh;
+    if (!mesh.isMesh) return;
+    const geometry = mesh.geometry, positions = geometry.getAttribute("position"), index = geometry.index;
+    const kept: number[] = [];
+    let dropped = 0;
+    for (let i = 0; i < (index?.count ?? positions.count); i += 3) {
+      const vertices = [index ? index.getX(i) : i, index ? index.getX(i + 1) : i + 1, index ? index.getX(i + 2) : i + 2];
+      [triangle.a, triangle.b, triangle.c].forEach((v, k) => v.fromBufferAttribute(positions, vertices[k]!).applyMatrix4(mesh.matrixWorld));
+      const intrudes = openings.some(({ matrix, box }) => {
+        local.a.copy(triangle.a).applyMatrix4(matrix);
+        local.b.copy(triangle.b).applyMatrix4(matrix);
+        local.c.copy(triangle.c).applyMatrix4(matrix);
+        return box.intersectsTriangle(local);
+      });
+      if (intrudes) dropped++;
+      else kept.push(...vertices);
+    }
+    if (!dropped) return; // Leave untouched geometry and its buffers byte-identical.
+    mesh.geometry = geometry.clone();
+    mesh.geometry.setIndex(kept);
+    removed += dropped;
+  });
+  return removed;
 }
