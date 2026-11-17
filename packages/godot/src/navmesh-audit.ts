@@ -136,12 +136,14 @@ export function auditGatePath(nav: NavMesh, query: NavMeshQuery, from: V3, to: V
 
 /** Snap a path's vertices to the floor height floorAt reports. Between two vertices the floor is sampled every 0.25 m of
  * plan length; where the straight line leaves it by more than 0.05 m, the path is split at the worst sample, at floor
- * height, and both halves are checked again (#669 r2: a ramp foot between vertices). */
-export function floorSnapPath<P extends { x: number; y: number; z: number }>(points: readonly P[], floorAt: (p: P) => number): P[] {
+ * height, and both halves are checked again (#669 r2: a ramp foot between vertices). Modelled walker-ground stairs
+ * use 0.01 m samples and a 0.002 m split threshold so landing tapers survive centimetre serialization. */
+export function floorSnapPath<P extends { x: number; y: number; z: number }>(points: readonly P[], floorAt: (p: P) => number, walkerGround = false): P[] {
   const dense: P[] = [];
   const refine = (a: P, b: P, depth: number) => {
-    const span = Math.hypot(b.x-a.x, b.y-a.y), steps = Math.min(64, Math.ceil(span / 0.25));
-    let worst: P | null = null, worstOff = 0.05;
+    // The nosing/landing slope changes must remain within 1 cm after centimetre serialization.
+    const span = Math.hypot(b.x-a.x, b.y-a.y), steps = Math.min(walkerGround ? 1024 : 64, Math.ceil(span / (walkerGround ? 0.01 : 0.25)));
+    let worst: P | null = null, worstOff = walkerGround ? 0.002 : 0.05;
     for (let i = 1; i < steps; i++) {
       const t = i / steps, q = { ...a, x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, z:a.z+(b.z-a.z)*t }, floorZ = floorAt(q);
       if (Math.abs(floorZ - q.z) > worstOff) { worstOff = Math.abs(floorZ - q.z); worst = { ...q, z:floorZ }; }
@@ -622,7 +624,7 @@ async function main() {
       const floorAt = (p: PolylinePoint) => { const d: SampleDetail[] = []; auditPolyline(walkerGround ? walkerProbe : probe, [p], { alreadySampled:true, detail:d, cache:auditCache, walkerGround }); return d[0]?.floorZ ?? p.z; };
       const canonical=assembleSnapPath([entry.points],()=>null,canonicalSnap).points;
       if(!canonical) { navPathsRejected.push(`${edge.id}:${reversed ? "reverse":"forward"}`); continue; }
-      const dense = floorSnapPath(canonical, floorAt);
+      const dense = floorSnapPath(canonical, floorAt, walkerGround);
       const points = dense.map(p => [round2(p.x), round2(p.y), round2(p.z)]);
       const committed = dense.map((p,i) => ({ ...p, x:points[i]![0]!, y:points[i]![1]!, z:points[i]![2]! }));
       const samples = resampleAudit(committed) as PolylinePoint[], details: SampleDetail[] = [];
