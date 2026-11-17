@@ -1108,9 +1108,10 @@ def locomotion_pose(clip, t):
     for leg in LEGS:
         phase = p + gait["offset"][leg["key"]]
         y, z = foot_path(leg["front"], phase, gait, OFF_EPS[leg["key"]])
-        if clip == "walk":
-            # Centre the longer stance sweep under this rig's upper leg origins.
-            y -= 0.022 if leg["front"] else 0.018
+        if clip == "walk" and leg["front"]:
+            # Keep the fore swing lower than the hind at the upright body height.
+            rest_z = REST_DISTAL[True][1] + OFF_EPS[leg["key"]]
+            z = rest_z + (z - rest_z) * 0.75
         targets[leg["key"]] = (REST_TARGET[leg["key"]][0], y, z)
         paw[leg["key"]] = paw_angle_for(leg, phase, gait)
     return dict(root=(0.0, 0.0, root_z + bob), fk=fk, targets=targets, paw=paw)
@@ -1161,7 +1162,7 @@ def turn_pose(sign, t):
         "head": (-0.02 * math.sin(math.tau * 2.0 * t / cycle), 0.0, sign * math.radians(12.0)),
     }
     fk.update(tail_fk((0.0, 0.0, -sign * 0.25)))
-    # Retain the accepted turn pose while the straight walk uses a lower body stance.
+    # Retain the accepted turn height while the straight walk uses its own body pitch.
     return dict(root=(0.0, 0.0, -kit.GAITS["walk"]["hip"] * 0.5), fk=fk, targets=targets, paw=paw,
                 paw_yaw=paw_yaw, yaw=sign * TURN_YAW * t / cycle)
 
@@ -3052,7 +3053,7 @@ def main():
     GAITS = {name: dict(gait) for name, gait in kit.GAITS.items()}
     # This rig's fore chain is short, so the stock run stride swings the leading forepaw too far
     # forward; a shorter, lower stride keeps it under the shoulder.
-    GAITS["walk"].update(travel=0.19, chest=0.045, hip=0.045, offset={
+    GAITS["walk"].update(travel=0.09, offset={
         "hind_L": 0.00, "fore_L": 0.79, "hind_R": 0.50, "fore_R": 0.29})
     GAITS["run"].update(travel=0.14, lift=0.052)
     for gait in GAITS.values():
