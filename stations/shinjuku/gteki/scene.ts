@@ -262,8 +262,11 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     if (nosing) {
       const material = new T.MeshBasicMaterial({ visible: false, side: (nosing.material as THREE.Material).side });
       material.name = "mat.nosing";
-      nosingProxy = new T.Mesh(nosing.geometry.clone(), material);
+      // Match the procedural batch's one identity instance after installTightCulling.
+      nosingProxy = new T.InstancedMesh(nosing.geometry.clone(), material, 1);
+      (nosingProxy as THREE.InstancedMesh).setMatrixAt(0, new T.Matrix4());
       nosingProxy.name = nosing.name;
+      nosingProxy.userData = { ...nosing.userData, tightCulling: true };
     }
     return kit.apply(c);
   } };
