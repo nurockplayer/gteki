@@ -130,6 +130,7 @@ FOLLOW_CAT	const	apps/web/src/explorer/followCamera.ts
 FOLLOW_CAT_NEXT	const	apps/web/src/explorer/followCamera.ts
 FOV	const	apps/web/src/explorer/followCamera.ts
 FollowPose	interface	apps/web/src/explorer/followCamera.ts
+GUIDE_YAW	const	apps/web/src/explorer/followCamera.ts
 NO_SLOPE	const	apps/web/src/explorer/followCamera.ts
 OPENING_SHOTS	const	apps/web/src/explorer/followCamera.ts
 SLOPE	const	apps/web/src/explorer/followCamera.ts
@@ -158,6 +159,7 @@ openingShotState	function	apps/web/src/explorer/followCamera.ts
 patchCameraHold	function	apps/web/src/explorer/followCamera.ts
 raisedBack	function	apps/web/src/explorer/followCamera.ts
 solveRaisedBoom	function	apps/web/src/explorer/followCamera.ts
+steerYaw	function	apps/web/src/explorer/followCamera.ts
 stepAvatarFade	function	apps/web/src/explorer/followCamera.ts
 stepEscalatorLock	function	apps/web/src/explorer/followCamera.ts
 stepSlope	function	apps/web/src/explorer/followCamera.ts

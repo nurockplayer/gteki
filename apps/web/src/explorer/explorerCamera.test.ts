@@ -19,7 +19,7 @@ function cameraStand() {
   const state = {
     stairsFraming: { progress: 0, weight: 0 }, stairsLens: false, previewNext: false, escalatorProgress: 0, escalatorWeight: 0, escalatorAxis: new THREE.Vector3(0, 0, -1),
     pos, avatar, camera, slope: { ...NO_SLOPE }, slopeY: 0, firstPerson: false, mode: "walk",
-    yaw: 0, pitch: -0.12, camDistance: FOLLOW.defaultDistance as number, boomRaise: 0, bodyRaiseHold: { seconds: 0, target: 0 },
+    yaw: 0, guideYawRate: 0, pitch: -0.12, camDistance: FOLLOW.defaultDistance as number, boomRaise: 0, bodyRaiseHold: { seconds: 0, target: 0 },
     cameraTargets: [] as THREE.Object3D[], cameraSides: new Set<THREE.Object3D>(), blockerTargets: new Set<THREE.Object3D>(),
     ray: new THREE.Raycaster(), reducedMotion: false, squeezed: false,
     setFov: vi.fn(), avatarRig: { root: new THREE.Group(), setFade: vi.fn() },
@@ -669,6 +669,30 @@ describe("Explorer guide stair lens", () => {
   });
 });
 
+
+describe("guide yaw preview", () => {
+  it.each([false, true])("keeps default steering and eases only with next=%s", (next) => {
+    const target = 100 * Math.PI / 180;
+    const state = Object.assign(cameraStand(), {
+      previewNext: next, mode: "guide", arrivalState: "waiting", arrivalDestination: null,
+      guideIdentityHoldS: 0, tier: "walk", events: {},
+      guide: { pts: [new THREE.Vector3(), new THREE.Vector3(-10 * Math.sin(target), 0, -10 * Math.cos(target))], cum: [0, 10], steps: [0, 0], s: 0, paused: true, holding: false, stops: [], spans: [] },
+      input: { consumeLook: vi.fn(() => ({ dx: 0, dy: 0, zoom: 0 })), move: () => ({ x: 0, y: 0 }) },
+    });
+    const step = () => (Explorer.prototype as any).stepGuide.call(state, 1 / 60);
+    step();
+    if (next) {
+      expect(state.yaw).toBeGreaterThan(0);
+      expect(state.yaw).toBeLessThan(Math.PI / 180);
+      expect(state.guideYawRate).toBeGreaterThan(0);
+      state.input.consumeLook.mockReturnValueOnce({ dx: 1, dy: 0, zoom: 0 });
+      step();
+      expect(state.guideYawRate).toBe(0);
+    } else {
+      expect(state.yaw).toBeCloseTo(target * (4 / 60), 12);
+    }
+  });
+});
 
 describe("guide arrival shot", () => {
   it.each([["active", false], ["ended", false], ["active", true]] as const)("releases and re-arms a %s shot after seeking back (immediate return: %s)", (initial, immediate) => {

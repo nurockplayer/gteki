@@ -1,5 +1,6 @@
 import type { CameraGateAisle } from "@gteki/scene-api";
 import * as THREE from "three";
+import { angleDelta } from "./walker.ts";
 
 /**
  * Third-person follow framing for low-ceilinged interiors: the camera trails just above and behind the
@@ -233,6 +234,24 @@ export function descentAimDrop(s: SlopeState): number {
 export function approachFov(current: number, target: number, dt: number): number {
   const next = target + (current - target) * Math.exp(-Math.max(0, dt) / FOV.settle);
   return Math.abs(next - target) < 0.01 ? target : next;
+}
+
+/** Guided yaw damping (1/s) and speed limit (rad/s), previewed behind ?next=1 for #1331. */
+export const GUIDE_YAW = { omega: 5, maxRate: (165 * Math.PI) / 180 } as const;
+
+/** Exact critically damped angular chase, with capped velocity and frame displacement. */
+export function steerYaw(yaw: number, rate: number, targetYaw: number, dt: number): { yaw: number; rate: number } {
+  const t = Math.max(0, dt);
+  const delta = angleDelta(yaw, targetYaw);
+  const c = rate - GUIDE_YAW.omega * delta;
+  const decay = Math.exp(-GUIDE_YAW.omega * t);
+  const move = delta + (-delta + c * t) * decay;
+  const nextRate = (rate - GUIDE_YAW.omega * c * t) * decay;
+  const limit = GUIDE_YAW.maxRate;
+  return {
+    yaw: yaw + Math.max(-limit * t, Math.min(limit * t, move)),
+    rate: Math.max(-limit, Math.min(limit, nextRate)),
+  };
 }
 
 export interface FollowPose {
