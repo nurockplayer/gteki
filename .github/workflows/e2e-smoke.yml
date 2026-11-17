@@ -222,7 +222,7 @@ jobs:
     if: needs.changes.outputs.code == 'true'
     name: journey (shinjuku) (${{ matrix.project }}${{ matrix.mode == 'next' && ', next' || '' }})
     runs-on: ubuntu-latest
-    timeout-minutes: 38
+    timeout-minutes: 50  # 2026-11-17: was 38; see Run journey
     strategy:
       fail-fast: false
       matrix:
@@ -246,7 +246,7 @@ jobs:
           pnpm install --ignore-workspace --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
       - name: Run journey
-        timeout-minutes: 32
+        timeout-minutes: 44  # 2026-11-17: phone next passed its arrival checks then hit 32 min on #1422 and #1408
         working-directory: tests/e2e
         env:
           CI: "1"
