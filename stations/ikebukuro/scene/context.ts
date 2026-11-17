@@ -386,10 +386,10 @@ export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D,
     clipped.setIndex(null);
     for (const [name, attr] of attributes) {
       const values = output.get(name)!;
-      const ArrayType = attr.array.constructor as new (values: number[]) => ArrayLike<number>;
-      const replacement = new THREE.BufferAttribute(new ArrayType(values) as any, attr.itemSize, attr.normalized);
+      // Attribute getters already decode normalized/interleaved source values.
+      const replacement = new THREE.BufferAttribute(new Float32Array(values), attr.itemSize, false);
       replacement.name = attr.name;
-      replacement.setUsage(attr.usage);
+      replacement.setUsage(THREE.StaticDrawUsage);
       clipped.setAttribute(name, replacement);
     }
     clipped.clearGroups();

@@ -59,18 +59,38 @@ it("clips only opening portions of crossing context triangles and preserves outs
     rect.center.z + rect.along.z * along + rect.across.z * across,
   );
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute([
-    ...point(-rect.halfLength - 2, -rect.halfWidth - 2).toArray(),
-    ...point(0, 0).toArray(),
-    ...point(rect.halfLength + 2, -rect.halfWidth - 2).toArray(),
-  ], 3));
-  geometry.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0], 3));
+  const points = [point(-rect.halfLength - 2, -rect.halfWidth - 2), point(0, 0), point(rect.halfLength + 2, -rect.halfWidth - 2)];
+  const interleaved = new THREE.InterleavedBuffer(new Float32Array(points.flatMap((p, i) => [...p.toArray(), i / 3, 1 - i / 3])), 5);
+  geometry.setAttribute("position", new THREE.InterleavedBufferAttribute(interleaved, 3, 0));
+  geometry.setAttribute("uv", new THREE.InterleavedBufferAttribute(interleaved, 2, 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(new Int16Array([8192, 16384, -24576, 8192, 16384, -24576, 8192, 16384, -24576]), 3, true));
+  geometry.getAttribute("normal").name = "quantized-normal";
   geometry.addGroup(0, 3, 1);
   const root = new THREE.Group(), mesh = new THREE.Mesh(geometry, [new THREE.MeshBasicMaterial(), new THREE.MeshBasicMaterial()]);
   root.add(mesh);
   expect(cutContextStairOpenings(THREE, root, singleEdgeBundle)).toBe(1);
   expect(mesh.geometry.getAttribute("position").count).toBeGreaterThan(3);
   expect(mesh.geometry.groups).toEqual([{ start: 0, count: mesh.geometry.getAttribute("position").count, materialIndex: 1 }]);
+  const clippedPositions = mesh.geometry.getAttribute("position");
+  for (const [name, source] of Object.entries(geometry.attributes)) {
+    const clipped = mesh.geometry.getAttribute(name) as THREE.BufferAttribute;
+    expect(clipped).toBeInstanceOf(THREE.BufferAttribute);
+    expect(clipped.array).toBeInstanceOf(Float32Array);
+    expect(clipped.normalized).toBe(false);
+    expect(clipped.usage).toBe(THREE.StaticDrawUsage);
+    expect(clipped.count).toBe(clippedPositions.count);
+    expect(clipped.name).toBe(source.name);
+    // The two outside vertices must retain their decoded source values.
+    for (const sourceIndex of [0, 2]) {
+      const sourcePosition = new THREE.Vector3().fromBufferAttribute(geometry.getAttribute("position"), sourceIndex);
+      const clippedIndex = Array.from({ length: clippedPositions.count }, (_, i) => i)
+        .find(i => new THREE.Vector3().fromBufferAttribute(clippedPositions, i).equals(sourcePosition));
+      expect(clippedIndex).toBeDefined();
+      for (let component = 0; component < source.itemSize; component++) {
+        expect(clipped.getComponent(clippedIndex!, component)).toBeCloseTo(source.getComponent(sourceIndex, component), 6);
+      }
+    }
+  }
   let retainedArea = 0, openingArea = 0;
   const positions = mesh.geometry.getAttribute("position");
   for (let i = 0; i < positions.count; i += 3) {
