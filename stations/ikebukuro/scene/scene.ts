@@ -585,7 +585,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     m.envMapIntensity = ENV_INTENSITY[role] ?? 0.2;
   }
 
-  root.add(kit.build(THREE, env, toRenderer).group);
+  const builtKit = kit.build(THREE, env, toRenderer);
+  root.add(builtKit.group);
   root.add(columnKit.build(THREE, env, toRenderer).group);
   root.add(shopKit.build(THREE, env, toRenderer).group);
   // Surveyed stair/escalator dressing is visual only. Load after the attached scene's first frame, one GLB at a time.
@@ -712,6 +713,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     walkable: walkTiles,
     colliders: colliderTiles,
     cameraBlockers: contextBlockers.meshes,
+    cameraGateAisles: builtKit.cameraGateAisles,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
     // With a lightmap the hemisphere is only 0.06 and scene.environment is null, so the explorer's generated
