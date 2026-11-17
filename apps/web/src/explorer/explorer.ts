@@ -225,6 +225,8 @@ export class Explorer {
   private slope: SlopeState = NO_SLOPE;
   /** Extra downward aim while descending; the boom and ordinary pose stay unchanged. */
   private descentDrop = 0;
+  /** Last measured free-walk descent angle, retained across its short landings. */
+  private walkStairAngle = 0;
   private escalatorProgress = 0;
   private escalatorWeight = 0;
   private escalatorAxis = new THREE.Vector3(0, 0, -1);
@@ -3674,6 +3676,8 @@ export class Explorer {
       back.normalize();
       pose.target.lerp(ride.target, this.escalatorWeight);
     }
+    const walkDescent = this.mode === "walk" && !this.firstPerson && this.descentDrop > 0;
+    if (!walkDescent || resetSlope) this.walkStairAngle = 0;
     let stairAngle = 0;
     let catCentre: THREE.Vector3 | undefined;
     if (stairsOn) {
@@ -3689,6 +3693,21 @@ export class Explorer {
         break;
       }
     }
+    if (walkDescent && !this.previewNext && this.catAvatar && this.escalatorWeight === 0 && !pinned) {
+      const run = Math.hypot(this.pos.x - this.lastAvatarPos.x, this.pos.z - this.lastAvatarPos.z);
+      if (dt > 0 && run > 0 && this.slope.velocity < -SLOPE.exit) {
+        this.walkStairAngle = Math.atan2(-this.slope.velocity * dt, run) + THREE.MathUtils.degToRad(8);
+      }
+      if (this.walkStairAngle > 0) {
+        stairAngle = this.walkStairAngle;
+        catCentre = this.catWorldBox().getCenter(new THREE.Vector3());
+      }
+    }
+    const cast = (b: THREE.Vector3, length = wantedDistance) => {
+      this.ray.set(pose.pivot, b);
+      this.ray.far = length + FOLLOW.clearance;
+      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+    };
     // Rotate only as far as the descending tread constraint needs, retaining the D2 boom length.
     const clearTreads = (direction: THREE.Vector3, length: number) => {
       if (!catCentre) return direction;
@@ -3707,7 +3726,11 @@ export class Explorer {
         if (angleAt(mid) < stairAngle) low = mid;
         else high = mid;
       }
-      return direction.set(x * Math.cos(high), Math.sin(high), z * Math.cos(high));
+      const raised = new THREE.Vector3(x * Math.cos(high), Math.sin(high), z * Math.cos(high));
+      // Free-walk treads must not pull the raised lens into a nosing or ceiling.
+      // Keep the body-solve direction when the raised boom cannot retain its length.
+      if (walkDescent && !stairsOn && followDistance(length, cast(raised, length)) < length) return direction;
+      return direction.copy(raised);
     };
     const nominalElevation = Math.asin(back.y);
     back = clearTreads(back.clone(), wantedDistance);
@@ -3719,13 +3742,10 @@ export class Explorer {
       : undefined;
     let gateHeld = false;
     if (!this.cameraTargets.length) this.boomRaise = 0;
-    const cast = (b: THREE.Vector3, length = wantedDistance) => {
-      this.ray.set(pose.pivot, b);
-      this.ray.far = length + FOLLOW.clearance;
-      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
-    };
     if (this.cameraTargets.length) {
-      const checkBody = this.catAvatar && this.escalatorWeight === 0 && (this.previewNext || stairsOn)
+      // The descent aim persists across short landings between flights. Free walk needs
+      // the same lens-to-body check there even when its pivot-to-camera ray is clear.
+      const checkBody = this.catAvatar && this.escalatorWeight === 0 && (this.previewNext || stairsOn || walkDescent)
         && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
       const cameraPoint = new THREE.Vector3();
       const direction = new THREE.Vector3();
