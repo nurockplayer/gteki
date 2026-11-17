@@ -20,6 +20,7 @@ import plan from "../data/plan.json" with { type: "json" };
 import { loadShopKit, type LoadedShopKit, type Opening, type Shop } from "../../ikebukuro/scene/kit_shops.ts";
 import type { KitManifest } from "../../ikebukuro/scene/kit.ts";
 import { createTrainSound } from "./train-sound.ts";
+import { createEscalatorSound } from "./escalator-sound.ts";
 import { crowdEdges } from "./explorer-crowd.ts";
 import { buildCrowd } from "../../ikebukuro/scene/crowd.ts";
 import { createAmbience } from "../../ikebukuro/scene/ambience.ts";
@@ -133,12 +134,13 @@ function crowdVector(T: typeof THREE, enuToRenderer: (point: { x: number; y: num
  * same reason as sceneLifecycle: the closures keep only the audio nodes and the train-audio sampler, never the
  * build layout or the built station (#968). Conditions and order are unchanged.
  */
-function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters<BuildScene>[0], crowd: Crowd | null, trainAudio: BuiltStation["trainAudio"]) {
+function stationAudio({ bundle, enuToRenderer, audio: initialAudio, previewNext }: Parameters<BuildScene>[0], crowd: Crowd | null, trainAudio: BuiltStation["trainAudio"], escalatorRuns: { a: V3; b: V3 }[]) {
   let acoustics: ReturnType<typeof createZoneAcoustics> | null = null;
   let ambience: ReturnType<typeof createAmbience> | null = null;
   let streetAmbience: ReturnType<typeof createStreetAmbience> | null = null;
   let stationSound: ReturnType<typeof createStationSound> | null = null;
   let trainSound: ReturnType<typeof createTrainSound> | null = null;
+  let escalatorSound: ReturnType<typeof createEscalatorSound> | null = null;
   const startAudio: NonNullable<StationScene["startAudio"]> = (audio) => {
     if (acoustics) return;
     acoustics = createZoneAcoustics(audio.context, audio.destination);
@@ -161,6 +163,7 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters
       },
     });
     trainSound = createTrainSound({ context: audio.context, destination: acoustics.input, isMuted: audio.isMuted, chimeAt: stationSound.chimeAt });
+    if (previewNext) escalatorSound = createEscalatorSound({ context: audio.context, destination: acoustics.input, runs: escalatorRuns, isMuted: audio.isMuted });
   };
   if (initialAudio) startAudio(initialAudio);
   let zone: AcousticZone = "passage";
@@ -169,7 +172,7 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters
     audioInfo: (): ReturnType<NonNullable<StationScene["audioInfo"]>> => ({
       zone,
       ambience: acoustics && ambience && streetAmbience ? { ...acoustics.info(), ...ambience.info(), ...streetAmbience.info() } : null,
-      escalator: null,
+      escalator: escalatorSound?.info() ?? null,
       train: trainSound?.info() ?? null,
     }),
     startAudio,
@@ -181,9 +184,11 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio }: Parameters
       if (trainSound && camera && trainAudioElapsed >= 0.25) {
         trainAudioElapsed = 0;
         trainSound.update(trainAudio(), camera.position);
+        escalatorSound?.update(camera.position);
       }
     },
     disposeAudio: () => {
+      escalatorSound?.dispose();
       trainSound?.dispose();
       stationSound?.dispose();
       ambience?.dispose();
@@ -255,7 +260,22 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
   const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
-  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, layoutBakeText: options.layoutBakeText, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
+  // The kit may remove nosing triangles. Retain that procedural placeholder for camera queries.
+  let nosingProxy: THREE.Mesh | undefined;
+  const cameraKit: KitSwap | undefined = kit && { apply: (c) => {
+    const nosing = c.root.children.find((o) => (o as THREE.Mesh).isMesh && ((o as THREE.Mesh).material as THREE.Material).name === "mat.nosing") as THREE.Mesh | undefined;
+    if (nosing) {
+      const material = new T.MeshBasicMaterial({ visible: false, side: (nosing.material as THREE.Material).side });
+      material.name = "mat.nosing";
+      // Match the procedural batch's one identity instance after installTightCulling.
+      nosingProxy = new T.InstancedMesh(nosing.geometry.clone(), material, 1);
+      (nosingProxy as THREE.InstancedMesh).setMatrixAt(0, new T.Matrix4());
+      nosingProxy.name = nosing.name;
+      nosingProxy.userData = { ...nosing.userData, tightCulling: true };
+    }
+    return kit.apply(c);
+  } };
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, layoutBakeText: options.layoutBakeText, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(cameraKit ? { kit: cameraKit } : {}) });
   installLightPreset(built.root, parseLightPreset(typeof location === "undefined" ? "" : location.search));
   const { layout } = built;
 
@@ -296,6 +316,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     addProxy(g);
   }
   built.root.add(proxies);
+  if (nosingProxy) proxies.add(nosingProxy);
   markScene("collision-proxies");
 
   // Neutral decorative wall props (#858 item 12): one merged mesh, one draw. They are at most
@@ -436,6 +457,30 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     if (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry") m.userData.gteki_role = "sign";
     else if (m.name === "surface-ground" || m.name === "surface-stone") { Object.defineProperty(m.userData, "gteki_source", { value: "procedural", writable: true, configurable: true }); cameraBlockers.push(m); }
   });
+  // Keep references to the rendered meshes: portal/stairwell cuts replace their geometry in place.
+  // These surfaces constrain the ordinary boom, without the roof blocker's below-minimum squeeze.
+  const stairEnds = layout.runs.filter((r) => r.mode === "stairs").flatMap((r) => [r.a, r.b]).map((p) => toRenderer(p.x, p.y, p.z));
+  let nosingTarget = nosingProxy;
+  const addCameraTarget = (m: THREE.Mesh) => {
+    Object.defineProperties(m.userData, {
+      gtekiCameraTargetOnly: { value: true, configurable: true },
+      gteki_source: { value: "procedural", writable: true, configurable: true },
+    });
+    cameraBlockers.push(m);
+  };
+  built.root.traverseVisible((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || Array.isArray(m.material) || !m.material.visible) return;
+    for (let parent = m.parent; parent; parent = parent.parent) if (parent.name === "kit-swap" || parent.name === "kit-fallback") return;
+    if (m.material.name === "mat.nosing") { nosingTarget ??= m; return; }
+    const stair = m.material.name === "mat.stair";
+    const floor = m.name === "walkable" && m.material.name.startsWith("mat.floor");
+    const bounds = floor ? new T.Box3().setFromObject(m).expandByScalar(0.35) : null;
+    const landing = bounds && stairEnds.some((p) => bounds.containsPoint(p));
+    if (!stair && !landing) return;
+    addCameraTarget(m);
+  });
+  if (nosingTarget) addCameraTarget(nosingTarget);
   // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
   // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as
   // the lane app (app/src/main.ts), applied to the station's own materials only.
@@ -489,7 +534,10 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   }
   markScene("shops-placement");
 
-  const audio = stationAudio(ctx, crowd, built.trainAudio);
+  const audio = stationAudio(ctx, crowd, built.trainAudio, ctx.previewNext ? built.escalators.map(({ run }) => ({
+    a: { x: run.a.x, y: run.a.z, z: -run.a.y },
+    b: { x: run.b.x, y: run.b.z, z: -run.b.y },
+  })) : []);
 
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
     const n = nodes.get(id);
@@ -526,7 +574,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       setCameraNearFade: crowd.setCameraNearFade.bind(crowd),
       setCameraFocus: (p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null, opening?: { camera: THREE.Camera; floorY: number } | null) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening),
     } : {}),
-    ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
+    ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(nosingProxy ? [nosingProxy.geometry, nosingProxy.material as THREE.Material] : []), ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
   markScene("assemble-end");
   return scene;

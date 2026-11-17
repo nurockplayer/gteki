@@ -348,6 +348,29 @@ test("guided walk @phone", async ({ page }, info) => {
         await page.evaluate(() => (window as any).__gteki.goldenFrame());
         const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
         fs.writeFileSync(path.join(out, "arrival-menu.png"), png);
+        if (reelMode === "next") {
+          const arrivalMenu = await menu.locator("button").evaluateAll(buttons => {
+            const rgba = (value: string) => value.match(/[\d.]+/g)!.map(Number);
+            const luminance = (rgb: number[]) => rgb.reduce((sum, channel, i) => {
+              const s = channel / 255;
+              return sum + [0.2126, 0.7152, 0.0722][i]! * (s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4);
+            }, 0);
+            return buttons.map(button => {
+              const style = getComputedStyle(button), fill = rgba(style.backgroundColor), text = rgba(style.color);
+              // Composite the translucent fill over white: the brightest possible backdrop.
+              const bg = fill.slice(0, 3).map(c => c * (fill[3] ?? 1) + 255 * (1 - (fill[3] ?? 1)));
+              const fg = text.slice(0, 3).map((c, i) => c * (text[3] ?? 1) + bg[i]! * (1 - (text[3] ?? 1)));
+              const a = luminance(fg), b = luminance(bg);
+              return { text: button.textContent, color: style.color, fill: style.backgroundColor, contrastRatio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+            });
+          });
+          // The selected platform label is the destination's; it may be absent at cold open, so read it here.
+          const destinationLabels = page.locator(".poi-label.cat-platform.selected");
+          const destinationPoiLabelCount = await destinationLabels.count();
+          const destinationPoiLabelVisible = (await destinationLabels.evaluateAll(els => els.map(el => (el as HTMLElement).checkVisibility()))).some(Boolean);
+          Object.assign(samples.find(s => s.arrival)!, { destinationPoiLabelCount, destinationPoiLabelVisible, arrivalMenu });
+          console.log(`[journey] ${info.project.name} arrival destinationPoiLabelCount=${destinationPoiLabelCount} destinationPoiLabelVisible=${destinationPoiLabelVisible} pills=${JSON.stringify(arrivalMenu)}`);
+        }
       } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
       await expect(menu.locator(".guide-prev")).toBeVisible();
       await expect(menu.getByRole("button", { name: /^(End guide|ガイド終了)$/ })).toBeVisible();
@@ -484,7 +507,7 @@ test("guided walk @phone", async ({ page }, info) => {
       byZone: ambienceByZone,
       differsAcrossZones: zoneControls.length < 2 ? null : zoneControls.some((controls, i) => zoneControls.slice(i + 1).some(other => controls.some(a => other.some(b => JSON.stringify(a) !== JSON.stringify(b))))),
     },
-    escalatorActive: null,
+    escalatorActive: audioRecords.flatMap(record => record?.escalator ? [record.escalator] : []).at(-1) ?? null,
     trainActive: trains.length ? { share: trains.filter(train => train.gain > 0).length / samples.length, minListenerDistance: trainDistances.length ? Math.min(...trainDistances) : null } : null,
   };
   const j14 = () => ({ consoleErrors: [...consoleErrors], pageErrors: [...pageErrors], failedRequests: [...failedRequests] });
@@ -522,6 +545,9 @@ test("guided walk @phone", async ({ page }, info) => {
   if (reelMode === "next" && arrived) {
     const sample = samples.find((s) => s.arrival)!;
     const frame = sample.arrivalFrame;
+    expect.soft(sample.destinationPoiLabelVisible, "destination POI label hidden behind arrival card").toBe(false);
+    expect.soft(sample.arrivalMenu.length, "arrival menu pills measured").toBeGreaterThan(0);
+    for (const pill of sample.arrivalMenu) expect.soft(pill.contrastRatio, `${pill.text} text/fill contrast over white`).toBeGreaterThanOrEqual(4.5);
     expect.soft(frame.shot, "authored arrival shot").toBe(true);
     expect.soft(frame.boardRect, "name board in frame").not.toBeNull();
     if (frame.boardRect) {
