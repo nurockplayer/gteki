@@ -213,6 +213,16 @@ interface PoiLabel {
   identityOffsetY: number;
 }
 
+export function clearWalkElevation(low: number, high: number, clear: (elevation: number) => boolean): number {
+  if (clear(high)) return high;
+  for (let i = 0; i < 24; i++) {
+    const mid = (low + high) / 2;
+    if (clear(mid)) low = mid;
+    else high = mid;
+  }
+  return low;
+}
+
 export class Explorer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
@@ -3726,10 +3736,16 @@ export class Explorer {
         if (angleAt(mid) < stairAngle) low = mid;
         else high = mid;
       }
-      const raised = new THREE.Vector3(x * Math.cos(high), Math.sin(high), z * Math.cos(high));
-      // Free-walk treads must not pull the raised lens into a nosing or ceiling.
-      // Keep the body-solve direction when the raised boom cannot retain its length.
-      if (walkDescent && !stairsOn && followDistance(length, cast(raised, length)) < length) return direction;
+      const atElevation = (angle: number) => new THREE.Vector3(x * Math.cos(angle), Math.sin(angle), z * Math.cos(angle));
+      if (walkDescent && !stairsOn) {
+        if (this.previewNext && followDistance(length, cast(atElevation(high), length)) < length) return direction;
+        const base = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
+        if (!this.previewNext) {
+          const clear = (angle: number) => followDistance(length, cast(atElevation(angle), length)) >= length;
+          high = clearWalkElevation(base, high, clear);
+        }
+      }
+      const raised = atElevation(high);
       return direction.copy(raised);
     };
     const nominalElevation = Math.asin(back.y);

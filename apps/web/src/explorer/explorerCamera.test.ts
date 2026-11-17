@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
-import { Explorer } from "./explorer.ts";
+import { clearWalkElevation, Explorer } from "./explorer.ts";
 import { FOLLOW_CAT_NEXT, escalatorPose, FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
 import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
 import { samplePolyline } from "./walker.ts";
@@ -51,6 +51,21 @@ const pocket = () => {
 };
 
 describe("Explorer follow camera wiring", () => {
+  it("chooses the highest full-length free-walk elevation before a blocker", () => {
+    const obstacle = new THREE.Mesh(new THREE.BoxGeometry(2, 0.7, 0.2), new THREE.MeshBasicMaterial());
+    obstacle.position.set(0, 0.6, 1);
+    obstacle.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 2.4);
+    const clear = (angle: number) => {
+      ray.set(new THREE.Vector3(), new THREE.Vector3(0, Math.sin(angle), Math.cos(angle)));
+      return ray.intersectObject(obstacle).length === 0;
+    };
+    const elevation = clearWalkElevation(0, 0.6, clear);
+    expect(elevation).toBeGreaterThan(0);
+    expect(elevation).toBeLessThan(0.6);
+    expect(clear(elevation)).toBe(true);
+    expect(clear(elevation + 1e-5)).toBe(false);
+  });
   it("keeps modelled stair supports underfoot while the visible stairs block the camera", () => {
     const support = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ visible: false }));
     support.userData.gtekiStairWalkSupport = true;
