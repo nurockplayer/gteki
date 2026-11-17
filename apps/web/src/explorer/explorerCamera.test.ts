@@ -100,7 +100,8 @@ describe("Explorer follow camera wiring", () => {
     setTargets(state, [target]);
     const casts = vi.spyOn(state.ray, "set");
     place(state);
-    expect(casts).toHaveBeenCalledTimes(mode === "stairs" ? 6 : 3);
+    // The final boom collision cast retains bands omitted from pitch selection.
+    expect(casts).toHaveBeenCalledTimes(mode === "stairs" ? 7 : 4);
     if (mode === "next escalator") expect(state.escalatorWeight).toBeGreaterThan(0);
   });
   it.each([false, true].flatMap((floor) => [
@@ -475,7 +476,8 @@ describe("default cat stair framing", () => {
     setTargets(state, [floor]);
     const casts = vi.spyOn(state.ray, "set");
     place(state, true);
-    expect(casts).toHaveBeenCalledTimes(3);
+    // Includes the final boom collision cast, with no default body-clearance casts.
+    expect(casts).toHaveBeenCalledTimes(4);
     expect(state.camera.position.x).toBeCloseTo(0.2, 10);
     expect(state.camera.position.y).toBeCloseTo(0.705948529, 8);
     expect(state.camera.position.z).toBeCloseTo(2.382904412, 8);
