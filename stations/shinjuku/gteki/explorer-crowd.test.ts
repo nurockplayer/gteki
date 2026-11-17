@@ -121,20 +121,21 @@ describe("cold-open crowd exclusion (#1373)", () => {
         if (state === "visible") camera.position.copy(centre).add(new THREE.Vector3(6, 0, 4));
         camera.lookAt(cat);
         const opening = { camera, floorY: 0 };
-        crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening);
+        crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening, cat);
         const fade = () => people.geometry.getAttribute("openingFade").getX(0);
         expect(fade()).toBe(state === "visible" ? 1 : 0);
         if (state === "returning") {
           camera.position.copy(centre).add(new THREE.Vector3(6, 0, 4));
           camera.lookAt(cat);
-          crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening);
+          crowd.setCameraFocus(cat.x, cat.y, cat.z, null, opening, cat);
           reference.update(0.1, 0.1);
           crowd.update(0.1, 0.1);
           expect(fade()).toBeGreaterThan(0);
           expect(fade()).toBeLessThan(1);
           followWalker(1);
         }
-        crowd.setCameraFocus(cat.x, cat.y, cat.z);
+        const focus = centre.clone().add(new THREE.Vector3(10, 0, 10));
+        crowd.setCameraFocus(focus.x, focus.y, focus.z, null, null, cat);
         const assertHeld = () => {
           people.getMatrixAt(0, matrix);
           expect(matrix.determinant() === 0).toBe(state !== "visible");
@@ -142,10 +143,11 @@ describe("cold-open crowd exclusion (#1373)", () => {
         };
         assertHeld();
         // Keep their relative distance fixed for >3 s while both actually move.
+        // A missing avatar on the first frame must also keep excluded walkers held.
         for (let frame = 1; frame <= 32; frame++) {
           reference.update(0.1, frame * 0.1);
           followWalker(frame === 32 ? 2.99 : 1);
-          crowd.setCameraFocus(cat.x, cat.y, cat.z);
+          crowd.setCameraFocus(focus.x, focus.y, focus.z, null, null, frame === 1 ? null : cat);
           crowd.update(0.1, frame * 0.1);
           assertHeld();
         }
@@ -153,7 +155,7 @@ describe("cold-open crowd exclusion (#1373)", () => {
         for (let frame = 1; frame <= 5; frame++) {
           reference.update(0.1, 3.2 + frame * 0.1);
           followWalker(3.01);
-          crowd.setCameraFocus(cat.x, cat.y, cat.z);
+          crowd.setCameraFocus(focus.x, focus.y, focus.z, null, null, cat);
           crowd.update(0.1, 3.2 + frame * 0.1);
           people.getMatrixAt(0, matrix);
           expect(matrix.determinant()).not.toBe(0);
@@ -161,6 +163,33 @@ describe("cold-open crowd exclusion (#1373)", () => {
         }
       } finally { crowd.dispose(); reference.dispose(); }
     }
+  });
+
+  it.each([56, 150])("keeps blocksFocus on the camera-to-focus line independently of the avatar (%i tier)", (count) => {
+    const crowd = buildCrowd(THREE, path, toRenderer, count, new THREE.Texture());
+    try {
+      const people = (crowd.group.children as THREE.InstancedMesh[]).find(m => m.name === "crowd_low" || m.name === "crowd_torso")!;
+      const matrix = new THREE.Matrix4();
+      people.getMatrixAt(0, matrix);
+      const x = matrix.elements[12]!, z = matrix.elements[14]!;
+      const camera = new THREE.PerspectiveCamera(70, 1.5, 0.05, 100);
+      camera.position.set(x, 0.9, z + 7);
+      camera.lookAt(x, 0.9, z);
+      const away = new THREE.Vector3(x + 10, 0.9, z + 7);
+      crowd.setCameraFocus(away.x, away.y, away.z, null, { camera, floorY: 0 }, away);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).not.toBe(0);
+      // The focus line crosses the walker; the distant avatar must not replace it.
+      crowd.setCameraFocus(x, 0.9, z - 2, null, null, away);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).toBe(0);
+      expect(people.geometry.getAttribute("openingFade").getX(0)).toBe(1);
+      // Conversely, an avatar behind the walker must not become a focus-line occluder.
+      crowd.setCameraFocus(away.x, away.y, away.z, null, null, new THREE.Vector3(x, 0.9, z - 2));
+      crowd.update(0, 0);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).not.toBe(0);
+    } finally { crowd.dispose(); }
   });
 
   it.each([56, 150])("excludes the three opening zones and keeps a walker 7 m ahead visible (%i tier)", (count) => {
@@ -188,7 +217,7 @@ describe("cold-open crowd exclusion (#1373)", () => {
         crowd.update(0, 0);
         people.getMatrixAt(0, matrix);
         expect(matrix.determinant() === 0, zone).toBe(zone !== "stairs");
-        crowd.setCameraFocus(null);
+        crowd.setCameraFocus(null, 0, 0, null, null, new THREE.Vector3(x + 10, 0.9, z));
         crowd.update(0.5, 0.5);
         people.getMatrixAt(0, matrix);
         expect(matrix.determinant(), `${zone} after hold`).not.toBe(0);

@@ -572,7 +572,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     ...(built.afterRender ? { afterRender: built.afterRender } : {}),
     ...(crowd ? {
       setCameraNearFade: crowd.setCameraNearFade.bind(crowd),
-      setCameraFocus: (p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null, opening?: { camera: THREE.Camera; floorY: number } | null) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening),
+      setCameraFocus: (p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null, opening?: { camera: THREE.Camera; floorY: number } | null, avatar?: { x: number; y: number; z: number } | null) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening, avatar),
     } : {}),
     ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(nosingProxy ? [nosingProxy.geometry, nosingProxy.material as THREE.Material] : []), ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
