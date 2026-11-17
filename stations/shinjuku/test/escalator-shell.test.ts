@@ -318,7 +318,7 @@ describe("#49 render-only escalator enclosure", () => {
   it("keeps walking colliders and walls byte-identical, with rendered roof caps camera-only", () => {
     expect(scene.walkable).toHaveLength(442);
     expect(scene.colliders).toHaveLength(2);
-    expect(scene.cameraBlockers).toHaveLength(3);
+    expect(scene.cameraBlockers).toHaveLength(13);
     // #645 step 2c: lift-door clearances split two restricted boundaries (+2 walls), then the
     // shaft-geometry cut removes 24 join:/return: pieces that lay inside a stop square.
     expect(scene.walls).toHaveLength(14886);

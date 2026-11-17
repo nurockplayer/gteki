@@ -79,7 +79,8 @@ export function explorerTargets(walkable: readonly THREE.Object3D[], colliders: 
   const blockers = castTargets(cameraBlockers, [...walkable, ...colliders]);
   // A mesh listed both as a wall and as a camera blocker is tested once.
   const camera = [...new Set([...sky, ...blockers])];
-  return { ground, collider, sky, camera, blockers: new Set(blockers) };
+  // Ordinary camera-only surfaces reuse this list but retain the normal boom minimum.
+  return { ground, collider, sky, camera, blockers: new Set(blockers.filter((o) => !o.userData.gtekiCameraTargetOnly)) };
 }
 
 /**
