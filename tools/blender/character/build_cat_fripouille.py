@@ -579,8 +579,24 @@ def close_rest_seams(body):
     print(f"S2 split {count} rest-closed T/edge junctions before S1 weight unification")
 
 
-def unify_coincident_weights(body):
-    """S1/S2: duplicates, junctions and <=0.1 mm shoulder/hip pairs share blends."""
+# #1398/#1379: four diagnosed rim pairs, in Blender rest coordinates.
+# glTF positions are converted back from the exporter's (x, z, -y) frame.
+# Positions from retained pre-repair/#1388 GLB; IDs are diagnostic POSITION IDs only.
+# Diagnosis: /Volumes/KIOXIA/scratch/diag-1398/diag.md (2026-11-17 JST).
+TAIL_ROOT_RIM_PAIRS = (
+    ((-.00009994633728638291, -.14972640573978424, .20530235767364502),  # 136/1012
+     (-.00009956116991816089, -.14970208704471588, .2050303965806961)),
+    ((.0117791211232543, -.1492316722869873, .20801036059856415),  # 135/1013
+     (.011890286579728127, -.1492195874452591, .20795495808124542)),
+    ((-.011536755599081516, -.1492476463317871, .2079559862613678),  # 603/669
+     (-.012089086696505547, -.149209663271904, .20795579254627228)),
+    ((-.011650774627923965, -.14154016971588135, .258190393447876),  # 388/393
+     (-.011211786419153214, -.141691654920578, .25845763087272644)),
+)
+
+
+def unify_coincident_weights(body, tail_root_pairs=()):
+    """S1/S2: share seam blends and snap only the diagnosed tail-root rims."""
     from itertools import combinations
     from mathutils.kdtree import KDTree
     vertices = body.data.vertices
@@ -618,6 +634,16 @@ def unify_coincident_weights(body):
         for _, i, _ in tree.find_range(v.co, .0001):
             if any(g.group in proximal and g.weight > 0 for j in (v.index, i) for g in vertices[j].groups):
                 join([v.index, i])
+    tail_pairs = []
+    for pair in tail_root_pairs:
+        indices = []
+        for position in pair:
+            matches = [i for _,i,_ in tree.find_range(position, .00001)]
+            if not matches:
+                fail(f"tail-root diagnosed vertex missing within 0.01 mm: {position}")
+            indices.extend(matches)
+        join(indices)
+        tail_pairs.append(indices)
     # Splitting can leave a crossing inside the 0.01 mm rest tolerance.
     # A common blend on its local endpoints makes the entire crossing affine.
     for a,b,t,c,d,u in closed_rest_seams(body):
@@ -630,6 +656,20 @@ def unify_coincident_weights(body):
     buckets = {}
     for v in vertices:
         buckets.setdefault(root(v.index),[]).append(v.index)
+    snapped = []
+    for key in sorted({root(indices[0]) for indices in tail_pairs}):
+        indices = buckets[key]
+        rest = [vertices[i].co.copy() for i in indices]
+        mean = sum(rest, rest[0]*0)/len(rest)
+        moves = [(p-mean).length*1000 for p in rest]
+        for i in indices:
+            vertices[i].co = mean
+        if max(moves) > 1e-6:
+            snapped.append((indices, rest, mean.copy()))
+    if snapped:
+        print("INFO S1 tail-root snapped groups: " + "; ".join(
+            f"ids={indices} rest_m={tuple(mean)} moves_mm={[round((p-mean).length*1000,6) for p in rest]}"
+            for indices,rest,mean in snapped))
     changed = 0
     for indices in buckets.values():
         if len(indices) < 2:
@@ -647,7 +687,7 @@ def unify_coincident_weights(body):
     after = mismatches()
     print(f"S1 coincident pairs differing by > 1e-4: {before} before, {after} after")
     print(f"INFO S1 shoulder/hip 0.1 mm unifier: {changed} groups changed")
-    return before,after
+    return before,after,snapped
 
 
 def chest_weights(body, arm):
@@ -1728,7 +1768,7 @@ def legacy_clip_checks(checker, path):
                   "legacy calib unchanged except retuned walk")
 
 
-def exported_skin_checks(checker, path):
+def exported_skin_checks(checker, path, snapped):
     """Measure actual exported LBS at every baked sample, against today's shipped skin."""
     import numpy as np
     from mathutils import Matrix, Quaternion, Vector
@@ -1788,8 +1828,14 @@ def exported_skin_checks(checker, path):
         tree.insert(p,i)
     tree.balance()
     matches = [tree.find(p) for p in positions]
-    checker.check(len(rest) == len(positions) and max(m[2] for m in matches) <= 1e-6,
-                  "skin-only rest geometry unchanged within 0.001 mm")
+    snap_positions = [np.array((p.x,p.z,-p.y)) for _,_,p in snapped]
+    snapped_indices = {i for i,p in enumerate(positions)
+                       if any(np.linalg.norm(p-q) <= 1e-6 for q in snap_positions)}
+    max_move = max(((p-mean).length for _,points,mean in snapped for p in points),default=0)
+    checker.check(max_move <= .0003+1e-8 and all(
+        m[2] <= (.0003+1e-8 if i in snapped_indices else 1e-6) for i,m in enumerate(matches)),
+        f"tail-root snapped rest move {max_move*1000:.6f} mm <= 0.3 mm; every other vertex unchanged within 0.001 mm")
+    checker.check(len(rest) == len(positions), "rest vertex count unchanged")
     correspondence = [m[1] for m in matches]
     tree = KDTree(len(positions))
     for i,p in enumerate(positions):
@@ -1800,25 +1846,32 @@ def exported_skin_checks(checker, path):
     affected = [any(j in proximal and w > 0 for j,w in zip(js,ws)) for js,ws in zip(joints,weights)]
     pairs = [(i,j) for i,p in enumerate(positions) for _,j,_ in tree.find_range(p,.0001)
              if j > i and (affected[i] or affected[j])]
+    tail_pairs = []
+    for p in snap_positions:
+        indices = [i for _,i,_ in tree.find_range(p,1e-6)]
+        checker.check(len(indices) >= 2, f"tail-root exported snapped group at {tuple(p)}: {indices}")
+        tail_pairs.extend((a,b) for a in indices for b in indices if b > a)
     checker.check(bool(pairs),f"S1 shoulder/hip rest pairs <= 0.1 mm: {len(pairs)}")
     print("| Seam clip | Pairs | Worst pair | t (s) | Max separation (mm) |")
     print("| --- | ---: | --- | ---: | ---: |")
     for name,channels in animations.items():
         times = sorted({float(t) for _,ts,_ in channels for t in ts})
-        worst,when,pair = 0.0,0.0,(0,0)
+        results = {"shoulder/hip": (0.0,0.0,pairs[0]), "tail-root": (0.0,0.0,tail_pairs[0])}
         displacement = 0.0
         for t in times:
             points = skin(name,t)
-            if pairs:
-                distances = np.linalg.norm(points[[a for a,b in pairs]]-points[[b for a,b in pairs]],axis=1)
+            for region,region_pairs in (("shoulder/hip",pairs),("tail-root",tail_pairs)):
+                distances = np.linalg.norm(points[[a for a,b in region_pairs]]-points[[b for a,b in region_pairs]],axis=1)
                 index = int(np.argmax(distances))
-                if distances[index] > worst:
-                    worst,when,pair = float(distances[index]),t,pairs[index]
+                if distances[index] > results[region][0]:
+                    results[region] = float(distances[index]),t,region_pairs[index]
             if name in CLIP_ORDER:
                 displacement = max(displacement,float(np.max(np.linalg.norm(points-old_skin(name,t)[correspondence],axis=1))))
-        print(f"| {name} | {len(pairs)} | {pair[0]}/{pair[1]} | {when:.6f} | {worst*1000:.6f} |")
-        checker.check(worst <= .0001+1e-8,
-                      f"S1 {name} worst pair {pair} t={when:.6f} s: {worst*1000:.6f} mm <= 0.1 mm")
+        for region,region_pairs in (("shoulder/hip",pairs),("tail-root",tail_pairs)):
+            worst,when,pair = results[region]
+            print(f"| {region} {name} | {len(region_pairs)} | {pair[0]}/{pair[1]} | {when:.6f} | {worst*1000:.6f} |")
+            checker.check(worst <= .0001+1e-8,
+                          f"S1 {region} {name} worst pair {pair} t={when:.6f} s: {worst*1000:.6f} mm <= 0.1 mm")
         if name in CLIP_ORDER:
             print(f"INFO legacy {name}: max skinned-vertex displacement {displacement*1000:.3f} mm vs shipped cat.glb")
 
@@ -3060,10 +3113,10 @@ def main():
     bpy.ops.object.vertex_group_normalize_all(group_select_mode="ALL", lock_active=False)
 
     close_rest_seams(body)
-    seam_before, seam_after = unify_coincident_weights(body)
+    seam_before, seam_after, snapped = unify_coincident_weights(body, TAIL_ROOT_RIM_PAIRS)
     before_chest = [{g.group:g.weight for g in v.groups} for v in body.data.vertices]
     chest_region = chest_weights(body, arm)
-    _, seam_after = unify_coincident_weights(body)
+    _, seam_after, _ = unify_coincident_weights(body)
     body["coincident_weight_pairs_before"] = seam_before
     body["coincident_weight_pairs_after"] = seam_after
     checker.check(seam_after == 0, f"S1 coincident weight mismatches: {seam_after}")
@@ -3134,7 +3187,8 @@ def main():
     write_variant_calibration(out, exported_speeds)
     report_exported_leg_steps(out)
     triangles, size = glb_checks(checker, out, exported_speeds, variant_speeds)
-    exported_skin_checks(checker, out)
+    exported_skin_checks(checker, out, snapped)
+
     if args.preview:
         render_previews(args.preview, arm)
 

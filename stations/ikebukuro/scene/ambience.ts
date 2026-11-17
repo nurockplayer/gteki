@@ -103,6 +103,9 @@ export function createAmbience(ctx: AudioContext, destination: AudioNode) {
   }
 
   return {
+    info() {
+      return { bedGain: bedGain.gain.value, murmurGain: murGain.gain.value };
+    },
     update(input: AmbienceInput) {
       // each walker ~1.8 steps/s; distant ones are masked by the bed
       rate = Math.min(14, input.nearby * 1.8);

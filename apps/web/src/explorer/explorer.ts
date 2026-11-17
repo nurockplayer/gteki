@@ -46,7 +46,7 @@ import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
 import { releaseSceneTextures } from "./releaseTextures.ts";
 import { STREET, STREET_SURFACE_FLAG, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
-import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection, type CatGait } from "./avatarSelection.ts";
+import { CAT_AVATAR_HEIGHT_M, createAvatarRig, type AvatarKind, type AvatarSelection, type CatGaitChoice } from "./avatarSelection.ts";
 import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from "./avatarMotion.ts";
 import { catTapHit } from "./catMeow.ts";
 import { advancePaws, pawSurface, playCatMeow, playPawStep } from "./catSound.ts";
@@ -72,7 +72,7 @@ export interface ExplorerOptions {
   avatarGlbUrl?: string;
   /** Cat protagonist (#854 stage 1): proportions and follow-camera framing change; the human stays default. */
   avatarKind?: AvatarKind;
-  catGait?: CatGait;
+  catGait?: CatGaitChoice;
   /** Preview channel (`?next=1`): turns on v1.0 journey changes that are not the default yet (docs/release/journey.md). */
   previewNext?: boolean;
   maxPixelRatio?: number;
@@ -3854,8 +3854,8 @@ export class Explorer {
     if (this.audio) this.audio.master.gain.setTargetAtTime(muted ? 0 : 1, this.audio.context.currentTime, 0.05);
   }
 
-  audioInfo(): { available: boolean; state: string | null; muted: boolean; stationBus: boolean } {
-    return { available: this.audio !== null, state: this.audio?.context.state ?? null, muted: this.muted, stationBus: this.stationAudio !== null };
+  audioInfo(): { available: boolean; state: string | null; muted: boolean; stationBus: boolean; station: ReturnType<NonNullable<StationScene["audioInfo"]>> | null } {
+    return { available: this.audio !== null, state: this.audio?.context.state ?? null, muted: this.muted, stationBus: this.stationAudio !== null, station: this.stationScene?.audioInfo?.() ?? null };
   }
 
   dispose(): void {
