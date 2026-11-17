@@ -75,6 +75,21 @@ function addOverheadRoofQueries(T: typeof THREE, cap: THREE.Mesh, root: THREE.Ob
 }
 
 /** Camera that renders the station, reported to the street layer (see the probe in buildScene). */
+// Defined outside assembleScene so the returned scene keeps only this run's points, not the build scope (#968).
+function rampCameraPivot(run: { a: V3; b: V3; width: number } | undefined) {
+  if (!run) return () => null;
+  const lo = { ...(run.a.z < run.b.z ? run.a : run.b) }, hi = { ...(run.a.z < run.b.z ? run.b : run.a) }, half = run.width / 2;
+  const { L, tread, walkZ } = stairProfile(lo, hi);
+  const dx = (hi.x - lo.x) / L, dy = (hi.y - lo.y) / L;
+  return (p: V3): number | null => {
+    const x = p.x - lo.x, y = -p.z - lo.y;
+    const along = x * dx + y * dy;
+    if (along < -tread || along > L || Math.abs(x * dy - y * dx) > half ||
+      Math.abs(p.y - walkZ(along)) > 0.02) return null;
+    return Math.min(p.y, lo.z + (hi.z - lo.z) * Math.max(0, along) / L);
+  };
+}
+
 function viewerTracker(setViewer: ((pos: { x: number; y: number; z: number }) => void) | undefined) {
   let camera: THREE.Camera | null = null;
   const report = (cam: THREE.Camera) => setViewer?.({ x: cam.position.x, y: -cam.position.z, z: cam.position.y });
@@ -584,18 +599,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     walkable,
     colliders,
     cameraBlockers,
-    cameraPivotGroundAt: (p) => {
-      if (!cameraRun) return null;
-      const lo = cameraRun.a.z < cameraRun.b.z ? cameraRun.a : cameraRun.b;
-      const hi = lo === cameraRun.a ? cameraRun.b : cameraRun.a;
-      const { L, tread, walkZ } = stairProfile(lo, hi);
-      const dx = (hi.x - lo.x) / L, dy = (hi.y - lo.y) / L;
-      const x = p.x - lo.x, y = -p.z - lo.y;
-      const along = x * dx + y * dy;
-      if (along < -tread || along > L || Math.abs(x * dy - y * dx) > cameraRun.width / 2 ||
-        Math.abs(p.y - walkZ(along)) > 0.02) return null;
-      return Math.min(p.y, lo.z + (hi.z - lo.z) * Math.max(0, along) / L);
-    },
+    cameraPivotGroundAt: rampCameraPivot(cameraRun),
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
