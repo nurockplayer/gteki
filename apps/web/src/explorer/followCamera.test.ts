@@ -407,6 +407,20 @@ describe("constrainedPitch", () => {
     }
   });
 
+  it("pulls in at stairwell bands without raising, while a wall behind still raises", () => {
+    const band = { distance: 0.8, cameraOnly: false, stairwellBand: true };
+    const onlyBand = solveRaisedBoom(wanted, back0, () => [band], 0, 1 / 60);
+    expect(onlyBand.raise).toBe(0);
+    expect(onlyBand.back.distanceTo(back0)).toBeLessThan(1e-12);
+    expect(onlyBand.distance).toBeCloseTo(0.8 - FOLLOW.clearance);
+    const wall = (b: THREE.Vector3) => b.y < 0.4 ? [{ distance: 1.0, cameraOnly: false }] : [];
+    const withoutBand = solveRaisedBoom(wanted, back0, wall, 0, 1 / 60);
+    const withBand = solveRaisedBoom(wanted, back0, (b) => [band, ...wall(b)], 0, 1 / 60);
+    expect(withoutBand.raise).toBeGreaterThan(0);
+    expect(withBand.raise).toBe(withoutBand.raise);
+    expect(withBand.distance).toBeCloseTo(0.8 - FOLLOW.clearance);
+  });
+
   it("leaves an open boom alone and casts no extra rays", () => {
     let n = 0;
     const cast = (): Hit[] => (n++, []);

@@ -2101,7 +2101,7 @@ export class Explorer {
             this.ray.set(pivot, back);
             this.ray.near = 0;
             this.ray.far = framing.distance + FOLLOW.clearance;
-            return castCamera(this.ray, this.cameraTargets, this.cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+            return castCamera(this.ray, this.cameraTargets, this.cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object), stairwellBand: h.faceIndex != null && h.faceIndex >= h.object.userData.stairwellBandFaceStart }));
           };
           const solved = solveRaisedBoom(framing.distance, cameraPos.clone().sub(pivot).normalize(), cast, 0, 0, true);
           if (solved.distance < FOLLOW.comfortDistance) return false;
@@ -3725,7 +3725,7 @@ export class Explorer {
     if (walkDescent && !this.previewNext && this.catAvatar && this.escalatorWeight === 0 && !pinned) {
       const run = Math.hypot(this.pos.x - this.lastAvatarPos.x, this.pos.z - this.lastAvatarPos.z);
       if (dt > 0 && run > 0 && this.slope.velocity < -SLOPE.exit) {
-        this.walkStairAngle = Math.atan2(-this.slope.velocity * dt, run) + THREE.MathUtils.degToRad(8);
+        this.walkStairAngle = Math.atan2(-this.slope.velocity * dt, Math.max(run, WALKER_SPEED.walkMps * dt)) + THREE.MathUtils.degToRad(8);
       }
       if (this.walkStairAngle > 0) {
         stairAngle = this.walkStairAngle;
@@ -3735,7 +3735,7 @@ export class Explorer {
     const cast = (b: THREE.Vector3, length = wantedDistance) => {
       this.ray.set(pose.pivot, b);
       this.ray.far = length + FOLLOW.clearance;
-      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object), stairwellBand: h.faceIndex != null && h.faceIndex >= h.object.userData.stairwellBandFaceStart }));
     };
     // Rotate only as far as the descending tread constraint needs, retaining the D2 boom length.
     const clearTreads = (direction: THREE.Vector3, length: number) => {
@@ -3804,7 +3804,7 @@ export class Explorer {
       // would recreate the same obstruction even though the target boom has already cleared it.
       // In free walk, an increasing relative raise can still lower the absolute elevation.
       const raisesElevation = this.mode !== "walk" || solved.back.y > this.camera.position.clone().sub(pose.pivot).normalize().y;
-      raisedClear = raisesElevation && !solved.bodyDriven && solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
+      raisedClear = raisesElevation && !solved.bodyDriven && solved.raise > this.boomRaise && followDistance(wantedDistance, cast(solved.back).filter((h) => !h.stairwellBand)) >= Math.min(FOLLOW.comfortDistance, wantedDistance);
       back = solved.back;
       dist = solved.distance;
       this.boomRaise = solved.raise;

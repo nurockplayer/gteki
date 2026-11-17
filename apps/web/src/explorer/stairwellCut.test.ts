@@ -431,6 +431,7 @@ describe("stairwell cuts", () => {
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
     const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
     expect(result.cameraBlockers).toEqual([band]);
+    expect(band.userData.stairwellBandFaceStart).toBe(0);
     expect((band.material as THREE.Material).type).toBe("MeshBasicMaterial");
     result.dispose();
   });
@@ -447,6 +448,7 @@ describe("stairwell cuts", () => {
     const before = shellGeometry.getAttribute("position").count;
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high", greyboxRoot });
     expect(result.bandTriangles).toBeGreaterThan(0);
+    expect(shell.userData.stairwellBandFaceStart).toBe(before / 3);
     expect(shellGeometry.getAttribute("position").count).toBe(before + result.bandTriangles * 3);
     expect(greyboxRoot.children).toHaveLength(1);
     expect(result.finish?.children.map((child) => child.name)).not.toContain("greybox-stairwell-band");

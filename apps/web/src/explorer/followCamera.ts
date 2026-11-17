@@ -430,7 +430,7 @@ export function easeRaise(current: number, target: number, dt: number, snap = fa
 export function solveRaisedBoom(
   wanted: number,
   back: THREE.Vector3,
-  cast: (back: THREE.Vector3) => readonly { distance: number; cameraOnly: boolean }[],
+  cast: (back: THREE.Vector3) => readonly { distance: number; cameraOnly: boolean; stairwellBand?: boolean }[],
   currentRaise: number,
   dt: number,
   snap = false,
@@ -438,7 +438,9 @@ export function solveRaisedBoom(
   bodyHold?: { seconds: number; target: number },
   gate?: ReturnType<typeof cameraGateConstraint>,
 ): { back: THREE.Vector3; distance: number; raise: number; bodyDriven: boolean } {
-  const base = followBoom(wanted, back, cast);
+  // Bands still shorten the final boom, but cannot initiate or snap a pitch raise.
+  const raiseCast = (b: THREE.Vector3) => cast(b).filter((hit) => !hit.stairwellBand);
+  const base = followBoom(wanted, back, raiseCast);
   const scratch = new THREE.Vector3();
   let baseHidden = false;
   let bodyDriven = false;
@@ -448,7 +450,7 @@ export function solveRaisedBoom(
     if (b === base.back) baseHidden = hidden;
     return hidden;
   });
-  let target = constrainedPitch(wanted, base.back, base.distance, cast, scratch, checkBody);
+  let target = constrainedPitch(wanted, base.back, base.distance, raiseCast, scratch, checkBody);
   let gateHeld = false;
   if (gate && (!gate.clearCandidate(base.back, base.distance)
     || ((base.distance < Math.min(FOLLOW.comfortDistance, wanted) || currentRaise > 0)
@@ -459,7 +461,7 @@ export function solveRaisedBoom(
     for (let degrees = THREE.MathUtils.radToDeg(target); degrees <= 75 + 1e-6; degrees += 5) {
       const raise = THREE.MathUtils.degToRad(degrees);
       const direction = raisedBack(base.back, raise, scratch);
-      const distance = followDistance(wanted, cast(direction));
+      const distance = followDistance(wanted, raiseCast(direction));
       if (!gate.clearCandidate(direction, distance)) continue;
       if (distance > bestDistance) { target = raise; bestDistance = distance; }
       if (distance >= Math.min(FOLLOW.comfortDistance, wanted)) break;
@@ -487,17 +489,17 @@ export function solveRaisedBoom(
     raise = Math.max(currentRaise - step, Math.min(target, currentRaise + step));
   }
   let raised = raisedBack(base.back, raise, new THREE.Vector3());
-  let distance = raise > 0 ? followDistance(wanted, cast(raised)) : base.distance;
+  let distance = raise > 0 ? followDistance(wanted, raiseCast(raised)) : base.distance;
   if (!snap && !bodyDriven && target > raise && distance < Math.min(FOLLOW.comfortDistance, wanted)) {
     const solved = raisedBack(base.back, target, scratch);
-    const clear = followDistance(wanted, cast(solved));
+    const clear = followDistance(wanted, raiseCast(solved));
     if (clear >= distance + FOLLOW.raiseGain) {
       raise = target;
       raised = solved.clone();
       distance = clear;
     }
   }
-  return { back: raised, distance, raise, bodyDriven };
+  return { back: raised, distance: followDistance(wanted, cast(raised)), raise, bodyDriven };
 }
 
 /**
