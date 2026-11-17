@@ -59,7 +59,7 @@ function producer(hit: THREE.Intersection | undefined, layout: Layout) {
 }
 
 describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
-  let off: StationScene, on: StationScene, layout: Layout, oldLayout: Layout, regularRoofs: Soffit[];
+  let off: StationScene, on: StationScene, layout: Layout, oldLayout: Layout, regularRoofs: Omit<Soffit, "kind">[];
   beforeAll(() => {
     const ctx = { THREE, bundle, quality: "low" as const };
     off = withCanvasStub(() => assembleScene(ctx as never, undefined, undefined, { pitchedCeilings: false }));
@@ -121,7 +121,7 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   const sourceNodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const sourceEdges = new Map(bundle.edges.map((e) => [e.id, e]));
   const fixture = (mesh: THREE.InstancedMesh, i: number) => {
-    const mount = mesh.userData.mounts[i] as { edgeId: string; sample: number; roof: Soffit; section: number };
+    const mount = mesh.userData.mounts[i] as { edgeId: string; sample: number; roof: Omit<Soffit, "kind">; section: number };
     const edge = sourceEdges.get(mount.edgeId)!;
     const a = sourceNodes.get(edge.from)!, b = sourceNodes.get(edge.to)!;
     const za = layout.nodeZ.get(a.id)!, zb = layout.nodeZ.get(b.id)!;

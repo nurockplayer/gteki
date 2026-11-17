@@ -2060,15 +2060,15 @@ function buildUndergroundLighting(
   track: <T extends { dispose(): void }>(x: T) => T,
   extraRoofs: Soffit[] = [],
 ) {
-  type Fixture = { a: XYZ; b: XYZ; ground: XYZ; upright: boolean; edgeId: string; sample: number; roof: Soffit };
+  type Fixture = { a: XYZ; b: XYZ; ground: XYZ; upright: boolean; edgeId: string; sample: number; roof: Omit<Soffit, "kind"> };
   const batches = new Map<string, Fixture[]>();
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))),
     ...layout.soffits.filter((s) => !/^shaft-(roof|invert|collar):/.test(s.spaceId)), ...layout.shaftFinishes, ...extraRoofs];
   const shafts = stairShaftGroups(layout.runs);
   const runEdges = new Set(layout.runs.map((r) => r.edgeId));
-  const ceilingAt = (p: XYZ, edgeId?: string, floorId?: string): { z: number; floorId: string; roof: Soffit; shared?: Soffit } | null => {
-    let best: { z: number; floorId: string; roof: Soffit; shared?: Soffit } | null = null;
+  const ceilingAt = (p: XYZ, edgeId?: string, floorId?: string): { z: number; floorId: string; roof: Omit<Soffit, "kind">; shared?: Soffit } | null => {
+    let best: { z: number; floorId: string; roof: Omit<Soffit, "kind">; shared?: Soffit } | null = null;
     for (const s of layout.shaftCeilingPreview?.roofs ?? []) {
       const ownsShaft = shafts[Number(s.spaceId.split(":")[1])]?.some((r) => r.edgeId === edgeId);
       if (!ownsShaft && (runEdges.has(edgeId!) || s.floorId !== floorId)) continue;
