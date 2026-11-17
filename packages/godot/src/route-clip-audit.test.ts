@@ -40,6 +40,19 @@ describe("route clip audit", () => {
   it("checks against the walkable nearest the drawn height, under a mezzanine too", () => {
     expect(violations(auditPolyline(probe, line([-7, 0, 0], [-5, 0, 0])))).toBe(0);
   });
+  it("matches the walker's reachable highest ground without selecting a higher floor", () => {
+    const lower = new THREE.Mesh(new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
+    const stair = new THREE.Mesh(new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2).translate(0, 0.18, 0), new THREE.MeshBasicMaterial());
+    const upper = new THREE.Mesh(new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2).translate(0, 0.8, 0), new THREE.MeshBasicMaterial());
+    const surfaces = { ground: [lower, stair, upper], collider: [], walls: [] };
+    const cache = { floor: new Map<string, number | null>(), wall: new Map() };
+    const closest: import("./route-clip-audit.ts").SampleDetail[] = [], walker: typeof closest = [];
+    auditPolyline(surfaces, line([0, 0, 0]), { alreadySampled: true, detail: closest, cache });
+    auditPolyline(surfaces, line([0, 0, 0]), { alreadySampled: true, detail: walker, cache, walkerGround: true });
+    expect(closest[0]!.floorZ).toBeCloseTo(0);
+    expect(walker[0]!.floorZ).toBeCloseTo(0.18);
+    lower.geometry.dispose(); stair.geometry.dispose(); upper.geometry.dispose();
+  });
   it("counts samples above the floor tolerance", () => {
     const a = auditPolyline(probe, line([-8, 0, 1], [-2, 0, 1]));
     expect(a.offFloor).toBe(a.samples);

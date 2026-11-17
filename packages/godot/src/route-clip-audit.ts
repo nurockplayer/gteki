@@ -18,7 +18,7 @@ import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.j
 import { enuToRenderer } from "@gteki/geo";
 import { createRouter, DEFAULT_PROFILE, nodeDisplayZ, routeBetween, routePolyline, type PolylinePoint, type RouteResult } from "@gteki/navigation";
 import { parseStationFiles, type Edge, type StationBundle } from "@gteki/schema";
-import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule, type WallSegment } from "@gteki/scene-api";
+import { WALKER_BODY, glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule, type WallSegment } from "@gteki/scene-api";
 import { headlessGltfTextures, headlessThree, installHeadlessDom, newShimUsage, stubRenderer } from "./headless-dom.ts";
 import { settleScene } from "./export-scene.ts";
 import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
@@ -174,7 +174,7 @@ const ray = new THREE.Raycaster();
 const down = new THREE.Vector3(0, -1, 0);
 
 /** Audit one drawn polyline against the scene. */
-export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[], opts: { skipInteriorFloor?: boolean; detail?: SampleDetail[]; alreadySampled?: boolean; cache?: AuditCache } = {}):
+export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[], opts: { skipInteriorFloor?: boolean; detail?: SampleDetail[]; alreadySampled?: boolean; cache?: AuditCache; walkerGround?: boolean } = {}):
   Pick<EdgeAudit, "samples" | "offFloor" | "noFloor" | "maxAbsDzM" | "wallHits" | "worst"> {
   const samples = opts.alreadySampled ? points : resampleAudit(points);
   let offFloor = 0, noFloor = 0, maxAbsDzM = 0, wallHits = 0, worst = "";
@@ -184,12 +184,15 @@ export function auditPolyline(probe: SceneProbe, points: readonly PolylinePoint[
     const countFloor = !(opts.skipInteriorFloor && interior);
     let floor: SampleDetail["floor"] = "ok", floorZ: number | undefined;
     if (countFloor || opts.detail) {
-      const key = `${s.x},${s.y},${s.z}`;
+      const key = `${opts.walkerGround ? "walker," : ""}${s.x},${s.y},${s.z}`;
       let height = opts.cache?.floor.get(key);
       if (height === undefined) {
-        const [x, y, z] = enuToRenderer({ x: s.x, y: s.y, z: s.z + PROBE_M });
-        ray.set(new THREE.Vector3(x, y, z), down); ray.far = 2 * PROBE_M;
-        const hit = castAll(ray, probe.ground).sort((a, b) => Math.abs(s.z - a.point.y) - Math.abs(s.z - b.point.y))[0];
+        const up = opts.walkerGround ? WALKER_BODY.stepUpM + 0.05 : PROBE_M;
+        const [x, y, z] = enuToRenderer({ x: s.x, y: s.y, z: s.z + up });
+        ray.set(new THREE.Vector3(x, y, z), down);
+        ray.far = opts.walkerGround ? WALKER_BODY.stepUpM + WALKER_BODY.stepDownM + 0.1 : 2 * PROBE_M;
+        const hits = castAll(ray, probe.ground);
+        const hit = opts.walkerGround ? hits[0] : hits.sort((a, b) => Math.abs(s.z - a.point.y) - Math.abs(s.z - b.point.y))[0];
         height = hit?.point.y ?? null;
         opts.cache?.floor.set(key, height);
       }

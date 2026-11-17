@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
-import { Explorer } from "./explorer.ts";
+import { clearWalkElevation, Explorer } from "./explorer.ts";
 import { FOLLOW_CAT_NEXT, escalatorPose, FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
 import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
 import { samplePolyline } from "./walker.ts";
 import type { IdentityBoard } from "./identityBoards.ts";
+import { explorerTargets } from "./raycast.ts";
 
 /** Exercise the real camera wiring with CPU raycasts; no renderer or browser is constructed. */
 function cameraStand() {
@@ -50,6 +51,42 @@ const pocket = () => {
 };
 
 describe("Explorer follow camera wiring", () => {
+  it("chooses the highest full-length free-walk elevation before a blocker", () => {
+    const obstacle = new THREE.Mesh(new THREE.BoxGeometry(2, 0.7, 0.2), new THREE.MeshBasicMaterial());
+    obstacle.position.set(0, 0.6, 1);
+    obstacle.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 2.4);
+    const clear = (angle: number) => {
+      ray.set(new THREE.Vector3(), new THREE.Vector3(0, Math.sin(angle), Math.cos(angle)));
+      return ray.intersectObject(obstacle).length === 0;
+    };
+    const elevation = clearWalkElevation(0, 0.6, clear);
+    expect(elevation).toBeGreaterThan(0);
+    expect(elevation).toBeLessThan(0.6);
+    expect(clear(elevation)).toBe(true);
+    expect(clear(elevation + 1e-5)).toBe(false);
+  });
+  it("keeps modelled stair supports underfoot while the visible stairs block the camera", () => {
+    const support = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ visible: false }));
+    support.userData.gtekiStairWalkSupport = true;
+    support.userData.gteki_role = "walkable";
+    const floor = new THREE.Mesh(support.geometry, support.material);
+    const stairs = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 10), new THREE.MeshBasicMaterial());
+    stairs.position.y = -0.1;
+    stairs.userData.gtekiCameraTargetOnly = true;
+    stairs.updateMatrixWorld(true);
+    const targets = explorerTargets([support, floor], [], [stairs, support]);
+    expect(targets.ground).toContain(support);
+    expect(targets.sky).toContain(support);
+    expect(targets.camera).toEqual([floor, stairs]);
+    expect(targets.blockers.has(support)).toBe(false);
+    expect(support.userData.gteki_role).toBe("walkable");
+    const state = cameraStand();
+    state.cameraTargets = targets.camera;
+    state.cameraSides = new Set(targets.camera);
+    place(state, true);
+    expect(state.camera.position.y).toBeGreaterThanOrEqual(0);
+  });
   it.each(["flat", "stairs", "default escalator", "next escalator"])("checks body casts on %s", (mode) => {
     const state = Object.assign(cameraStand(), { catAvatar: true, previewNext: mode === "next escalator", escalatorProgress: mode === "next escalator" ? 1 : 0 });
     if (mode === "stairs" || mode === "default escalator") {
