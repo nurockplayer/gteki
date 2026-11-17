@@ -224,6 +224,9 @@ async function main() {
   const bridgeFloorGeometry=new THREE.BufferGeometry(); bridgeFloorGeometry.setAttribute("position",new THREE.Float32BufferAttribute(provenance.bridgeFloorTriangles ?? [],3));
   const bridgeFloor=new THREE.Mesh(bridgeFloorGeometry,new THREE.MeshBasicMaterial({side:THREE.DoubleSide})); bridgeFloor.userData.greybox=true; bridgeFloor.updateMatrixWorld(true);
   const probe={...originalProbe,ground:[...originalProbe.ground,...(bridgeGaps && bridgeFloorGeometry.getAttribute("position").count ? [bridgeFloor] : [])]};
+  const modelledStairs = station === "shinjuku" ? new Set<string>(scene.root.userData.modelledStairEdges ?? []) : new Set<string>();
+  // Match Explorer.groundAt's actual walkable targets, excluding the bake-only greybox floor mesh.
+  const walkerProbe = { ...probe, ground: grey?.targets.ground ?? sceneProbe(scene).ground };
   const nodes = new Map(bundle.nodes.map(n => [n.id, n])), floors = new Map(bundle.floors.map(f => [f.id, f]));
   const edges = new Map(bundle.edges.map(e => [e.id, e]));
   const attached = new Set<number>(provenance.attachedLinkIds ?? []);
@@ -615,7 +618,8 @@ async function main() {
       // Commit the vertices at the scene's floor height (navmesh detail heights can sit above it), rounded as written, then
       // audit exactly that polyline with the route audit's samples: one that leaves the floor or meets a wall is not
       // committed, and the gate fails on it (#669 r2). An edge no audited route walks is checked here too.
-      const floorAt = (p: PolylinePoint) => { const d: SampleDetail[] = []; auditPolyline(probe, [p], { alreadySampled:true, detail:d, cache:auditCache }); return d[0]?.floorZ ?? p.z; };
+      const walkerGround = edge.mode === "stairs" && modelledStairs.has(edge.id);
+      const floorAt = (p: PolylinePoint) => { const d: SampleDetail[] = []; auditPolyline(walkerGround ? walkerProbe : probe, [p], { alreadySampled:true, detail:d, cache:auditCache, walkerGround }); return d[0]?.floorZ ?? p.z; };
       const canonical=assembleSnapPath([entry.points],()=>null,canonicalSnap).points;
       if(!canonical) { navPathsRejected.push(`${edge.id}:${reversed ? "reverse":"forward"}`); continue; }
       const dense = floorSnapPath(canonical, floorAt);
