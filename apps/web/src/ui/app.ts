@@ -202,6 +202,11 @@ export class App {
     updateTopbarBottom();
     if (typeof ResizeObserver !== "undefined") new ResizeObserver(updateTopbarBottom).observe(this.ui.topbar);
     window.addEventListener("resize", updateTopbarBottom);
+    const brand = this.ui.topbar.querySelector(".brand")!;
+    const updateBrandRight = () => this.root.style.setProperty("--brand-right", `${Math.ceil(brand.getBoundingClientRect().right)}px`);
+    updateBrandRight();
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(updateBrandRight).observe(brand);
+    window.addEventListener("resize", updateBrandRight);
     // On a phone the open route sheet is a bottom occluder of the same kind (#385).
     this.explorer.setSheet(this.ui.sheet);
     this.explorer.setGuideTier(readGuideTier());
