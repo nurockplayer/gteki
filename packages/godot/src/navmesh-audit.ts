@@ -80,6 +80,12 @@ export function queryPathWithLinks(nav: NavMesh, query: NavMeshQuery, from: V3, 
       start=ends.end; offset=i+1;
     }
     if (!appendWalking(start,to,refs.slice(offset))) return null;
+    // Detour's straight path uses polygon heights; retain the snapped detail-mesh
+    // heights at its endpoints (the two can differ beside a stair landing).
+    if (result.length) {
+      if (distance(a.point,from)<=0.01) result[0]!.point.y = a.point.y;
+      if (distance(b.point,to)<=0.01) result.at(-1)!.point.y = b.point.y;
+    }
     if (!result.length || distance(result[0]!.point,from)>0.01 || distance(result.at(-1)!.point,to)>0.01) return null;
     return result;
   } finally { corridor.polys.destroy(); }
