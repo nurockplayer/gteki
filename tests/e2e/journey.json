@@ -10,22 +10,6 @@
   "known": [
     {
       "project": "desktop-chromium",
-      "metric": "voidRatio",
-      "from": 21,
-      "to": 21,
-      "row": "J5",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "desktop-chromium",
-      "metric": "nearClip",
-      "from": 2,
-      "to": 2,
-      "row": "J5",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "desktop-chromium",
       "metric": "nearClip",
       "from": 10,
       "to": 19,
@@ -41,38 +25,6 @@
       "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
     },
     {
-      "project": "desktop-chromium",
-      "metric": "catVisible",
-      "from": 20,
-      "to": 22,
-      "row": "J6",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "desktop-chromium",
-      "metric": "catVisible",
-      "from": 36,
-      "to": 37,
-      "row": "J6",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "phone-chromium",
-      "metric": "voidRatio",
-      "from": 21,
-      "to": 21,
-      "row": "J5",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "phone-chromium",
-      "metric": "nearClip",
-      "from": 2,
-      "to": 2,
-      "row": "J5",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
       "project": "phone-chromium",
       "metric": "nearClip",
       "from": 10,
@@ -82,33 +34,9 @@
     },
     {
       "project": "phone-chromium",
-      "metric": "nearClip",
-      "from": 19,
-      "to": 19,
-      "row": "J5",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "phone-chromium",
       "metric": "catVisible",
       "from": 0,
       "to": 3,
-      "row": "J6",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "phone-chromium",
-      "metric": "catVisible",
-      "from": 10,
-      "to": 20,
-      "row": "J6",
-      "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
-    },
-    {
-      "project": "phone-chromium",
-      "metric": "catVisible",
-      "from": 36,
-      "to": 37,
       "row": "J6",
       "note": "Observed in CI reel run 43139826239, 2026-11-12 JST"
     }
