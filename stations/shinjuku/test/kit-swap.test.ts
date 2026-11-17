@@ -71,6 +71,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // J7 pitched shaft ceilings default-on (2026-11-13 JST): +12 pitched roof meshes; physical lists unchanged.
 // #1169 (2026-11-14 JST): shaft stripe UV alignment changes the station geometry digest.
 // #1238/#1243 (2026-11-16 JST): stair insets and roof parenting (#1238.1 split out); physical lists unchanged.
+// #1321 (2026-11-17 JST): ten procedural stair/landing camera targets; kit on/off parity passed before refreshing lists only.
 const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "3579a771518bf7cb68426cd8b67d8cb6a9165ec8b1fed747ee8f375ff877ce58",
@@ -81,11 +82,11 @@ const MAIN_BASELINE = {
     "bytes": 17299194
   },
   "lists": {
-    "listsDigest": "d89bd3909b3065da8f13c0e7a600fc93ec4366c5a720ea281d6e4d1005cfc738",
+    "listsDigest": "9a21249194648a0de23451d8762bc7da09c884884cd129eb0db6f05158bd4a7d",
     "counts": {
       "walkable": 442,
       "colliders": 2,
-      "cameraBlockers": 3,
+      "cameraBlockers": 13,
       "walls": 14886
     }
   }
