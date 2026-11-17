@@ -3783,7 +3783,9 @@ export class Explorer {
       gateHeld = !!gate && solved.raise > 0;
       // A lip-clearing raise also needs to move the camera now; interpolating from below the slab
       // would recreate the same obstruction even though the target boom has already cleared it.
-      raisedClear = !solved.bodyDriven && solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
+      // In free walk, an increasing relative raise can still lower the absolute elevation.
+      const raisesElevation = this.mode !== "walk" || solved.back.y > this.camera.position.clone().sub(pose.pivot).normalize().y;
+      raisedClear = raisesElevation && !solved.bodyDriven && solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, wantedDistance);
       back = solved.back;
       dist = solved.distance;
       this.boomRaise = solved.raise;
