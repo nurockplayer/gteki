@@ -255,7 +255,19 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
   const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());
-  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, layoutBakeText: options.layoutBakeText, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(kit ? { kit } : {}) });
+  // The kit may remove nosing triangles. Retain that procedural placeholder for camera queries.
+  let nosingProxy: THREE.Mesh | undefined;
+  const cameraKit: KitSwap | undefined = kit && { apply: (c) => {
+    const nosing = c.root.children.find((o) => (o as THREE.Mesh).isMesh && ((o as THREE.Mesh).material as THREE.Material).name === "mat.nosing") as THREE.Mesh | undefined;
+    if (nosing) {
+      const material = new T.MeshBasicMaterial({ visible: false, side: (nosing.material as THREE.Material).side });
+      material.name = "mat.nosing";
+      nosingProxy = new T.Mesh(nosing.geometry.clone(), material);
+      nosingProxy.name = nosing.name;
+    }
+    return kit.apply(c);
+  } };
+  const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, layoutBakeText: options.layoutBakeText, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(cameraKit ? { kit: cameraKit } : {}) });
   installLightPreset(built.root, parseLightPreset(typeof location === "undefined" ? "" : location.search));
   const { layout } = built;
 
@@ -296,6 +308,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     addProxy(g);
   }
   built.root.add(proxies);
+  if (nosingProxy) proxies.add(nosingProxy);
   markScene("collision-proxies");
 
   // Neutral decorative wall props (#858 item 12): one merged mesh, one draw. They are at most
@@ -439,17 +452,27 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // Keep references to the rendered meshes: portal/stairwell cuts replace their geometry in place.
   // These surfaces constrain the ordinary boom, without the roof blocker's below-minimum squeeze.
   const stairEnds = layout.runs.filter((r) => r.mode === "stairs").flatMap((r) => [r.a, r.b]).map((p) => toRenderer(p.x, p.y, p.z));
+  let nosingTarget = nosingProxy;
+  const addCameraTarget = (m: THREE.Mesh) => {
+    Object.defineProperties(m.userData, {
+      gtekiCameraTargetOnly: { value: true, configurable: true },
+      gteki_source: { value: "procedural", writable: true, configurable: true },
+    });
+    cameraBlockers.push(m);
+  };
   built.root.traverseVisible((o) => {
     const m = o as THREE.Mesh;
     if (!m.isMesh || Array.isArray(m.material) || !m.material.visible) return;
-    const stair = m.material.name === "mat.stair" || m.material.name === "mat.nosing";
+    for (let parent = m.parent; parent; parent = parent.parent) if (parent.name === "kit-swap" || parent.name === "kit-fallback") return;
+    if (m.material.name === "mat.nosing") { nosingTarget ??= m; return; }
+    const stair = m.material.name === "mat.stair";
     const floor = m.name === "walkable" && m.material.name.startsWith("mat.floor");
     const bounds = floor ? new T.Box3().setFromObject(m).expandByScalar(0.35) : null;
     const landing = bounds && stairEnds.some((p) => bounds.containsPoint(p));
     if (!stair && !landing) return;
-    m.userData.gtekiCameraTargetOnly = true;
-    cameraBlockers.push(m);
+    addCameraTarget(m);
   });
+  if (nosingTarget) addCameraTarget(nosingTarget);
   // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
   // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as
   // the lane app (app/src/main.ts), applied to the station's own materials only.
@@ -540,7 +563,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       setCameraNearFade: crowd.setCameraNearFade.bind(crowd),
       setCameraFocus: (p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null, opening?: { camera: THREE.Camera; floorY: number } | null) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening),
     } : {}),
-    ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
+    ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(nosingProxy ? [nosingProxy.geometry, nosingProxy.material as THREE.Material] : []), ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
   markScene("assemble-end");
   return scene;
