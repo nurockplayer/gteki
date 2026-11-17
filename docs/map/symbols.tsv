@@ -1332,6 +1332,7 @@ catArrivalRise	function	stations/shinjuku/app/src/spawn-view.ts
 followCameraEnvironment	function	stations/shinjuku/app/src/spawn-view.ts
 spawnView	function	stations/shinjuku/app/src/spawn-view.ts
 loadShinjukuBundle	function	stations/shinjuku/data/bundle.ts
+createEscalatorSound	function	stations/shinjuku/gteki/escalator-sound.ts
 crowdEdges	function	stations/shinjuku/gteki/explorer-crowd.ts
 assembleScene	const	stations/shinjuku/gteki/scene.ts
 buildScene	const	stations/shinjuku/gteki/scene.ts
