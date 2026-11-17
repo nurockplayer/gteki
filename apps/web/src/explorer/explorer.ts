@@ -3519,7 +3519,9 @@ export class Explorer {
     // Single-sided winding varies across source polygons: only the tilt matters.
     const footing = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
     // The surface actually underfoot, not the walker's smoothed height, decides which tread this is.
-    p.level = !hit?.object.userData.gtekiStairWalkSupport && atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
+    // The published street node remains an arrival point; stepping into its stair support/taper hides pavement.
+    const stairEntry = hit?.object.userData.gtekiStairWalkSupport && !this.streetTops.some((top) => top.distanceToSquared(this.pos) < 1e-6);
+    p.level = !stairEntry && atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
   }
 
   /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */

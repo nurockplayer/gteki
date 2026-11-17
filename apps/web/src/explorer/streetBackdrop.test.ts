@@ -64,7 +64,7 @@ describe("level footing", () => {
     support.userData.gteki_role = "walkable";
     support.updateMatrixWorld(true);
     const state = {
-      pos: new THREE.Vector3(), streetY: 0, streetTops: [new THREE.Vector3()],
+      pos: new THREE.Vector3(0.2, 0, 0), streetY: 0, streetTops: [new THREE.Vector3()],
       streetProbe: { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: true, level: true },
       ray: new THREE.Raycaster(), skyTargets: [support], groundTargets: [support],
       probeOrigin: new THREE.Vector3(), probeUp: new THREE.Vector3(0, 1, 0), probeDown: new THREE.Vector3(0, -1, 0),
@@ -77,6 +77,10 @@ describe("level footing", () => {
     state.streetProbe.at.x = Infinity;
     probe();
     expect(state.streetProbe.level).toBe(false);
+    state.pos.set(0, 0, 0);
+    state.streetProbe.at.x = Infinity;
+    probe();
+    expect(state.streetProbe.level).toBe(true);
     expect(support.userData.gteki_role).toBe("walkable");
   });
   it("is level on flat floor and not on a stair, a ramp or a tilted face", () => {
