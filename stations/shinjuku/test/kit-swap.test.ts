@@ -72,11 +72,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1169 (2026-11-14 JST): shaft stripe UV alignment changes the station geometry digest.
 // #1238/#1243 (2026-11-16 JST): stair insets and roof parenting (#1238.1 split out); physical lists unchanged.
 // #1321 (2026-11-17 JST): ten procedural stair/landing camera targets; kit on/off parity passed before refreshing lists only.
+// #1391 (2026-11-17 JST): owned-roof linear-light placements/metadata only; 107 other meshes and all lists unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "3579a771518bf7cb68426cd8b67d8cb6a9165ec8b1fed747ee8f375ff877ce58",
+    "geometryDigest": "ecfa0f8989f3d5af64dbc42ecb3a338fb68c18d286d45cef985073b02471b9d1",
     "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
-    "nodesDigest": "a720c05832031a57e2b09bad9aea99241e80b6ea21f215b37aa171bf3a82ba57",
+    "nodesDigest": "7e8250acdf61dbfab45dcadbcb6d74a65aae5989136afcb7486f517781b13e98",
     "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
     "meshes": 108,
     "bytes": 17299194
