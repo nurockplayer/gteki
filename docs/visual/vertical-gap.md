@@ -73,7 +73,7 @@ Post-processing is not a top gap: AgX, environment light, bloom threshold and GT
 
 ## Two-station expansion plan (2026-10-28 17:40 JST)
 
-Ordered by play-view gain per effort. "Heavy" means Blender or WebGL QA in the weekday 03:00–15:00 JST window.
+Ordered by play-view gain per effort. "Heavy" means Blender or WebGL QA through `orb-test --heavy`, which starts while the Owner is away from home (owner-presence) or after 45 min idle.
 
 ### Shinjuku
 1. **Batch 4: slice polish (lead, S, no heavy work except the evidence shots). In progress on `claude/vertical-batch4`.**

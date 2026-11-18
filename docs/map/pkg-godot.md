@@ -41,7 +41,7 @@ The Godot client (`packages/godot`, project `project.godot`) loads both stations
 ## Tests CI runs
 - Root-test (CI): `pnpm typecheck` then `pnpm vitest run --maxWorkers=2`. That covers only the TypeScript tests in `packages/godot/src/` (`data-bridge.test.ts`, `export-scene-materials.test.ts`, `export-scene-settle.test.ts`, `headless-gltf-textures.test.ts`, `scene-roles.test.ts`), because `vitest.config.ts` includes every package's src folder.
 - Not in CI: the GDScript suites in `packages/godot/tests/` (10 files) and the `run-*.sh` scripts. No workflow in `.github/workflows` mentions Godot.
-- Local GDScript runs: `bash packages/godot/run-scenes.sh`, `bash packages/godot/run-guide.sh`, `bash packages/godot/run-proof.sh`. GPU work on the host, weekdays 03:00-15:00 JST, uses `orb-test --heavy --host -- bash packages/godot/run-scenes.sh`. The README's older form is `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh`.
+- Local GDScript runs: `bash packages/godot/run-scenes.sh`, `bash packages/godot/run-guide.sh`, `bash packages/godot/run-proof.sh`. GPU work on the host (heavy: starts while owner-presence reports the Owner away from home, or after 45 min idle) uses `orb-test --heavy --host -- bash packages/godot/run-scenes.sh`. The README's older form is `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh`.
 
 ## Pitfalls
 - The bridge needs `pnpm install` first. Each route call blocks for 1 to 3 s.
