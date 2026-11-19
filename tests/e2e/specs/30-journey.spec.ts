@@ -458,6 +458,12 @@ test("guided walk @phone", async ({ page }, info) => {
       }
     }
     j12.push(await frameTimes("end"));
+    // Finish the arrival controls before resuming continuous SwiftShader rendering.
+    if (arrived) {
+      await page.locator(".arrival-controls .guide-more").click();
+      await page.locator(".arrival-menu").getByRole("button", { name: /^(End guide|ガイド終了)$/ }).click();
+      await expect.poll(() => hooks.mode(page)).toBe("walk");
+    }
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   for (const sample of samples) expect(sample.legend, `badge visible at sample ${sample.index}`).toBe(true);
   for (const sample of samples.filter(s => !s.arrival)) {
@@ -570,11 +576,6 @@ test("guided walk @phone", async ({ page }, info) => {
   }
   expect(arrived, "guide arrived within 260 simulated seconds").toBe(true);
   expect(samples.length, "at least 30 samples").toBeGreaterThanOrEqual(30);
-  if (arrived) {
-    await page.locator(".arrival-controls .guide-more").click();
-    await page.locator(".arrival-menu").getByRole("button", { name: /^(End guide|ガイド終了)$/ }).click();
-    await expect.poll(() => hooks.mode(page)).toBe("walk");
-  }
   journey.j14 = j14();
   fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify(journey, null, 2));
   const summaryPath = path.join(out, "summary.md");
