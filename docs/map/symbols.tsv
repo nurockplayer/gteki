@@ -694,6 +694,7 @@ gteki:field:ingest	script	package.json
 gteki:fonts:subset	script	package.json
 gteki:intake	script	package.json
 gteki:map:gen	script	package.json
+gteki:measure:gpu-fps	script	package.json
 gteki:test	script	package.json
 gteki:test:heavy	script	package.json
 gteki:test:heavy:box	script	package.json
