@@ -3708,7 +3708,7 @@ export class Explorer {
     const walkStairs = this.mode === "walk" && !this.firstPerson && !this.previewNext && this.catAvatar && this.escalatorWeight === 0 && !pinned;
     if (!walkStairs || resetSlope) this.walkStairAngle = 0;
     const walkDescent = walkStairs && (this.descentDrop > 0 || this.walkStairAngle > 0);
-    const walkCatBox = walkDescent ? this.catWorldBox() : undefined;
+    const walkCatBox = walkStairs ? this.catWorldBox().translate(this.pos.clone().sub(this.lastAvatarPos)) : undefined;
     let stairAngle = 0;
     let catCentre: THREE.Vector3 | undefined;
     if (stairsOn) {
@@ -3733,7 +3733,7 @@ export class Explorer {
       // Releasing the keys retains the last flight constraint; level travel releases it.
       if (this.walkStairAngle > 0) {
         stairAngle = this.walkStairAngle;
-        catCentre = this.catWorldBox().getCenter(new THREE.Vector3());
+        catCentre = walkCatBox!.getCenter(new THREE.Vector3());
       }
     }
     const cast = (b: THREE.Vector3, length = wantedDistance) => {
@@ -3881,7 +3881,13 @@ export class Explorer {
       // Retain the local aim through release after all positions have left the gate footprint.
       const aimRaise = this.gateAimHeld ? Math.max(this.boomRaise, Math.asin(this.camera.position.clone().sub(pose.pivot).normalize().y) - Math.asin(pose.back.y)) : this.boomRaise;
       // Keep the feet correction complete while a local gate raise is releasing.
-      aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.gateAimHeld || walkStairs ? Math.max(aimRaise, CAT_RAISE_AIM.end) : aimRaise, this.camera.fov, this.camera.aspect);
+      // Frame the nearest feet corner, which is lower in the image than the avatar origin.
+      const feet = walkCatBox ? new THREE.Vector3(
+        this.camera.position.x > this.pos.x ? walkCatBox.max.x : walkCatBox.min.x,
+        walkCatBox.min.y,
+        this.camera.position.z > this.pos.z ? walkCatBox.max.z : walkCatBox.min.z,
+      ) : this.pos;
+      aimAtRaisedCat(pose.target, this.camera.position, feet, this.gateAimHeld || walkStairs ? Math.max(aimRaise, CAT_RAISE_AIM.end) : aimRaise, this.camera.fov, this.camera.aspect);
       if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect,
         this.camera.aspect >= 1 ? STAIR_POSE.desktop.feetNdc : undefined);
       const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
