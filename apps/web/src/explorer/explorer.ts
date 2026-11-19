@@ -2474,6 +2474,29 @@ export class Explorer {
     return box;
   }
 
+  private catVisibilitySamples(): THREE.Vector3[] {
+    this.avatar.updateWorldMatrix(true, true);
+    const directions: THREE.Vector3[] = [];
+    for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) directions.push(new THREE.Vector3(x, y, z));
+    const samples = directions.map(() => new THREE.Vector3());
+    const scores = directions.map(() => -Infinity);
+    const vertex = new THREE.Vector3();
+    this.avatarRig!.root.traverseVisible((object) => {
+      const mesh = object as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      for (let i = 0; i < mesh.geometry.attributes.position!.count; i++) {
+        // getVertexPosition includes the mesh's current morph and skeletal pose.
+        mesh.getVertexPosition(i, vertex).applyMatrix4(mesh.matrixWorld);
+        for (let j = 0; j < directions.length; j++) {
+          const score = vertex.dot(directions[j]!);
+          if (score > scores[j]!) { scores[j] = score; samples[j]!.copy(vertex); }
+        }
+      }
+    });
+    const movement = this.pos.clone().sub(this.lastAvatarPos);
+    return samples.map((sample) => sample.add(movement));
+  }
+
   catScreenBox(): { left: number; right: number; top: number; bottom: number } | null {
     const box = this.catWorldBox();
     this.camera.updateWorldMatrix(true, false);
@@ -3709,6 +3732,7 @@ export class Explorer {
     if (!walkStairs || resetSlope) this.walkStairAngle = 0;
     const walkDescent = walkStairs && (this.descentDrop > 0 || this.walkStairAngle > 0);
     const walkCatBox = walkStairs ? this.catWorldBox().translate(this.pos.clone().sub(this.lastAvatarPos)) : undefined;
+    const walkCatSamples = walkDescent ? this.catVisibilitySamples() : undefined;
     let stairAngle = 0;
     let catCentre: THREE.Vector3 | undefined;
     if (stairsOn) {
@@ -3792,9 +3816,8 @@ export class Explorer {
       const bodyHidden = checkBody ? (b: THREE.Vector3, distance: number) => {
         cameraPoint.copy(pose.pivot).addScaledVector(b, distance);
         if (walkDescent) {
-          const box = walkCatBox!;
-          for (const x of [0.1, 0.9]) for (const y of [0.1, 0.9]) for (const z of [0.1, 0.9]) {
-            point.set(THREE.MathUtils.lerp(box.min.x, box.max.x, x), THREE.MathUtils.lerp(box.min.y, box.max.y, y), THREE.MathUtils.lerp(box.min.z, box.max.z, z));
+          for (const sample of walkCatSamples!) {
+            point.copy(sample);
             direction.subVectors(point, cameraPoint);
             this.ray.set(cameraPoint, direction.normalize());
             this.ray.far = cameraPoint.distanceTo(point) - 0.05;

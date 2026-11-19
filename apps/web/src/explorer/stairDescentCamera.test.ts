@@ -97,14 +97,27 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
   }
 
   const ray = new T.Raycaster();
+  function catVertices(e: any) {
+    e.avatar.updateWorldMatrix(true,true);
+    const vertices: T.Vector3[]=[];
+    e.avatarRig.root.traverseVisible((object: T.Object3D) => {
+      const mesh=object as T.Mesh;
+      if (!mesh.isMesh) return;
+      for(let i=0;i<mesh.geometry.attributes.position!.count;i++) vertices.push(mesh.getVertexPosition(i,new T.Vector3()).applyMatrix4(mesh.matrixWorld));
+    });
+    return vertices;
+  }
   function measure(e: any) {
     e.camera.updateMatrixWorld(true);
     const box = e.catWorldBox();
     const projected: T.Vector3[] = [];
     let blocked = 0;
     const blockedHits: any[]=[];
-    for (const x of [0.1, 0.9]) for (const y of [0.1, 0.9]) for (const z of [0.1, 0.9]) {
-      const point = new T.Vector3(T.MathUtils.lerp(box.min.x,box.max.x,x),T.MathUtils.lerp(box.min.y,box.max.y,y),T.MathUtils.lerp(box.min.z,box.max.z,z));
+    const vertices=catVertices(e);
+    expect(vertices.length).toBeGreaterThan(0);
+    for (const x of [-1, 1]) for (const y of [-1, 1]) for (const z of [-1, 1]) {
+      const direction=new T.Vector3(x,y,z);
+      const point=vertices.reduce((best,vertex)=>vertex.dot(direction)>best.dot(direction)?vertex:best);
       ray.set(e.camera.position,point.clone().sub(e.camera.position).normalize());
       ray.far=e.camera.position.distanceTo(point)-0.05;
       const hit=castCamera(ray,e.cameraTargets,e.cameraSides)[0];
@@ -151,6 +164,21 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
           }
           const {relative,...pose}=previous;
           poses.push({walked,z:e.pos.y,...pose});
+          if(poses.length===2) {
+            let minimum=Infinity;
+            let witness: any;
+            for(const vertex of catVertices(e)) {
+              ray.set(vertex.clone().add(new T.Vector3(0,0.5,0)),new T.Vector3(0,-1,0));
+              ray.far=1;
+              const hit=castAll(ray,e.groundTargets)[0];
+              if(hit && vertex.y-hit.point.y<minimum) {
+                minimum=vertex.y-hit.point.y;
+                witness={vertex:vertex.toArray(),tread:hit.point.toArray(),mesh:hit.object.name,parent:hit.object.parent?.name};
+              }
+            }
+            console.info('1433 grounding',JSON.stringify({viewport:`${w}x${h}`,minimumClearance:minimum,witness,poses,maxMove,maxPitch,maxBoom,maxFlightBoom,cropped}));
+            expect(minimum,'posed cat mesh penetrates tread; grounding requires a separate issue').toBeGreaterThanOrEqual(-0.0001);
+          }
           expect.soft(pose.top).toBeGreaterThanOrEqual(0);
           expect.soft(pose.bottom).toBeLessThanOrEqual(1);
           expect.soft(pose.left).toBeGreaterThanOrEqual(0);
