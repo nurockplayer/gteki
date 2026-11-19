@@ -35,7 +35,7 @@ Standalone Lane F Playwright harness (@gteki/e2e, @playwright/test 1.64.1). It i
 - In tests/e2e: `pnpm install --ignore-workspace --frozen-lockfile`, then `pnpm exec playwright install --with-deps chromium`.
 - In tests/e2e with GTEKI_ROOT set to the workspace and GTEKI_GUIDE_FLOW_ONLY=1: `pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off` (10 min cap).
 - On failure only: upload artifacts for 7 days.
-Local runs of the full suite need a real GPU for 05 and the visual specs. Run them through orb-test (`orb-test --heavy --host -- <command>` for GPU work).
+Local runs of the full suite need a real GPU for 05 and the visual specs. Run them through tachi-run (`tachi-run --heavy --host -- <command>` for GPU work).
 
 ## Specs (23 files in specs/; 01 and 03 run in CI)
 - 01-smoke — each station opens at phone width, renders its scene and states its limits; switching stations drops the previous state. (CI)

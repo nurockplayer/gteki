@@ -61,8 +61,8 @@ No generator lives here. After a receipt lands, regenerate and test as in [[data
 ```sh
 pnpm --filter @gteki/station-shinjuku import:e27 && pnpm --filter ./stations/shinjuku bake:surface
 pnpm exec tsx stations/ikebukuro/pipeline/import_field_receipt.ts docs/research/field/receipts/<date>-ikebukuro.json
-orb-test --memory 3g -- pnpm vitest run stations/shinjuku/test/field-receipts.test.ts stations/shinjuku
-orb-test -- pnpm vitest run stations/ikebukuro/pipeline/import_field_receipt.test.ts apps/web/src/search-stations.test.ts
+tachi-run --memory 3g -- pnpm vitest run stations/shinjuku/test/field-receipts.test.ts stations/shinjuku
+tachi-run -- pnpm vitest run stations/ikebukuro/pipeline/import_field_receipt.test.ts apps/web/src/search-stations.test.ts
 ```
 
 ## Pitfalls

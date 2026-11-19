@@ -33,7 +33,7 @@ The data contract for stations. gteki.station/0.1 is the schema version string (
 
 ## Tests CI runs
 - `pnpm typecheck` then `pnpm vitest run --maxWorkers=2` (root-test, the full set). Schema tests are the *.test.ts files in `packages/schema/src`; `contract.test.ts` is the largest.
-- One area locally: `pnpm vitest run packages/schema/src`, but run the full command above through `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- One area locally: `pnpm vitest run packages/schema/src`, but run the full command above through `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 
 ## Pitfalls
 - A missing tri-state field is an error, not an implicit null or false. Stations must state UNKNOWN explicitly.

@@ -42,7 +42,7 @@ Fail-closed rules: an edge is usable only if `verification` is `verified` (or `s
 
 ## Tests CI runs
 - `pnpm typecheck` then `pnpm vitest run --maxWorkers=2` (root-test, the full set). Navigation tests are the *.test.ts files in `packages/navigation/src`.
-- One area locally: `pnpm vitest run packages/navigation/src`, but run the full command above through `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- One area locally: `pnpm vitest run packages/navigation/src`, but run the full command above through `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 
 ## Pitfalls
 - An edge is silently excluded unless its `verification` is `verified`. `geometry_only` and `unverified` never route.
