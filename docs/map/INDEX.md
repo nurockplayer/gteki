@@ -16,7 +16,7 @@ Read this first, then open the note for your area, then open exactly the files a
 One line per area: what it owns · where it lives · its note. "no note yet" means the owning lead hasn't written one.
 
 ### Repo root
-- Worker rules: what Codex and other workers read first (map first, brief scope, orb-test, times with zone, no checkout in the shared clone, no big files) · `AGENTS.md` · no note (the file is the rules)
+- Worker rules: what Codex and other workers read first (map first, brief scope, tachi-run, times with zone, no checkout in the shared clone, no big files) · `AGENTS.md` · no note (the file is the rules)
 - Private preview deployment: local-only deployment of the private overlay to the Pages `private` branch · `scripts/deploy-private.sh`
 
 ### App (`apps/web`)
@@ -75,7 +75,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - Licensing: `REUSE.toml`, `LICENSES/`, `NOTICE`
 
 ## Common commands
-- Full root CI locally: `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`
+- Full root CI locally: `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`
 - GIS CI: in `tools/gis/`, `pnpm typecheck` and `pnpm test`
 - Dev server: `pnpm dev`. Build: `pnpm build`
 - Regenerate symbols: `pnpm map:gen`

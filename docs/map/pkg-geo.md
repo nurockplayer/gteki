@@ -27,7 +27,7 @@ Converts between WGS84 latitude, longitude and height, and each station's local 
 
 ## Tests CI runs
 - `pnpm typecheck` then `pnpm vitest run --maxWorkers=2` (root-test, the full set). The package's test is `packages/geo/src/geo.test.ts`.
-- One area locally: `pnpm vitest run packages/geo/src`, but run the full command above through `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- One area locally: `pnpm vitest run packages/geo/src`, but run the full command above through `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 
 ## Pitfalls
 - `z` is height above the origin's height, not an ellipsoid height. `StationFrame.toGeodetic` solves for the tangent-plane offset that keeps the origin height, in at most six iterations.

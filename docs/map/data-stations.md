@@ -52,7 +52,7 @@ POIs from research (lines, stores, shops) are added by the generators from contr
 
 ## Tests CI runs and regenerating data
 
-Run from the worktree root. Tests always go through `orb-test` (OrbStack container, worktree copied to /w); never on the host.
+Run from the worktree root. Tests always go through `tachi-run` (OrbStack container, worktree copied to /w); never on the host.
 
 ```sh
 # Shinjuku regenerate (needs raw data)
@@ -65,14 +65,14 @@ pnpm --filter ./stations/shinjuku bake:surface -- --check
 pnpm exec tsx stations/ikebukuro/pipeline/import_field_receipt.ts docs/research/field/receipts/<date>-ikebukuro.json
 
 # Station tests in a container (Shinjuku needs 3g; 2g OOMs)
-orb-test --memory 3g -- pnpm vitest run stations/shinjuku
-orb-test -- pnpm vitest run stations/ikebukuro apps/web/src/search-stations.test.ts
+tachi-run --memory 3g -- pnpm vitest run stations/shinjuku
+tachi-run -- pnpm vitest run stations/ikebukuro apps/web/src/search-stations.test.ts
 
 # Full root set, as CI runs it (heavy: queues for the host-wide lock)
-orb-test --heavy -- sh -c 'pnpm typecheck && pnpm vitest run --maxWorkers=2'
+tachi-run --heavy -- sh -c 'pnpm typecheck && pnpm vitest run --maxWorkers=2'
 ```
 
-**Raw data in orb-test.** The container has no ~/Developer/gteki-raw. For a raw-dependent run, copy the raw dir into the worktree (e.g. .review/raw), pass `--env GTEKI_RAW_SHINJUKU=/w/.review/raw`, and **delete .review afterwards** (one-off data rule). .review must never be committed. Ikebukuro's frame check uses `GTEKI_UBLD_ENU=<build/ubld_enu.json>` the same way; without it that block is skipped.
+**Raw data in tachi-run.** The container has no ~/Developer/gteki-raw. For a raw-dependent run, copy the raw dir into the worktree (e.g. .review/raw), pass `--env GTEKI_RAW_SHINJUKU=/w/.review/raw`, and **delete .review afterwards** (one-off data rule). .review must never be committed. Ikebukuro's frame check uses `GTEKI_UBLD_ENU=<build/ubld_enu.json>` the same way; without it that block is skipped.
 
 ## Pitfalls
 

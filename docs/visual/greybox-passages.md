@@ -72,7 +72,7 @@ Greybox geometry is built at runtime from the graph that is already loaded, and 
 - **Audit:** `route-clip-audit` gains a mode that counts greybox floor as floor. With the private build, all routed edges should audit clean apart from class C seams that the greybox now covers.
 - **Real game screenshots, before and after,** at desktop 1280×800 and phone 390×844:
   - the 西武池袋本店 routes, plus the Shinjuku S03 area (the 3 #623 edges);
-  - through `orb-test --heavy --host`, only while the Owner is away.
+  - through `tachi-run --heavy --host`, only while the Owner is away.
 - ★ Numeric check, via a QA hook along the route polyline (every 0.5 m), in the Owner's two scenarios: samples with no floor under the walker = 0, vertical moves without a connector = 0, dark-pixel share at guide stops close to 0.
 - HUD legend chip shows 「示意，非實測」 while a greybox is in view.
 

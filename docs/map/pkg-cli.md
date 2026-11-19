@@ -26,7 +26,7 @@ Two command-line scripts on top of [[pkg-navigation]], [[pkg-schema]] and [[pkg-
 
 ## Tests CI runs
 - `pnpm typecheck` then `pnpm vitest run --maxWorkers=2` (root-test, the full set). Root vitest picks up the *.test.ts files in `packages/cli/src`.
-- One area locally: `pnpm vitest run packages/cli/src`, but run the full command above through `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- One area locally: `pnpm vitest run packages/cli/src`, but run the full command above through `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 - The package's own `test` script is `vitest run`. Use the root command for CI parity.
 
 ## Pitfalls

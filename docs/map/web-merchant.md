@@ -39,7 +39,7 @@ A second Vite page, `apps/web/merchant.html`, lets a shop describe itself for a 
 ## Tests CI runs
 - Root test job: `pnpm typecheck`, then `pnpm vitest run --maxWorkers=2`. Picks up the tests in apps/web/src/merchant (form-state, labels, submission) and `apps/web/src/ui/app.merchant.test.ts` (the wiring test for the card and the form).
 - Local, one area only: `pnpm vitest run apps/web/src/merchant`. Run the full CI command first.
-- Through the container: `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- Through the container: `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 - The merchant page is built by `pnpm build` (two inputs in `apps/web/vite.config.ts`).
 
 ## Pitfalls

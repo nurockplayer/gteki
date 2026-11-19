@@ -59,10 +59,10 @@ pnpm --dir tools/gis gis check-poi-literals       # literal-leak guard (needs GT
 pnpm --dir tools/gis gis rights-report            # regenerates docs/gis/rights/README.md
 
 # Tests, as CI runs them (gis-test.yml, only on tools/gis/** changes; Node 26)
-orb-test -- sh -c 'cd tools/gis && pnpm install --frozen-lockfile && pnpm typecheck && pnpm test'
+tachi-run -- sh -c 'cd tools/gis && pnpm install --frozen-lockfile && pnpm typecheck && pnpm test'
 ```
 
-`test:real` (`GTEKI_GIS_REAL=1`) needs the full store and is not run in CI; for a cached replay set `GTEKI_GIS_OFFLINE=1` (README "Reproduce the complete real run"). The store is not in orb-test containers: pass it with `--env GTEKI_GIS_STORE=...` from a copy inside the worktree, and delete the copy afterwards.
+`test:real` (`GTEKI_GIS_REAL=1`) needs the full store and is not run in CI; for a cached replay set `GTEKI_GIS_OFFLINE=1` (README "Reproduce the complete real run"). The store is not in tachi-run containers: pass it with `--env GTEKI_GIS_STORE=...` from a copy inside the worktree, and delete the copy afterwards.
 
 ## Pitfalls
 
@@ -72,7 +72,7 @@ orb-test -- sh -c 'cd tools/gis && pnpm install --frozen-lockfile && pnpm typech
 - S03's `v5_nav` frame is verified **only** for `v5_nav`; Path GeoJSON stays UNKNOWN local. Don't reuse the affines elsewhere.
 - Lifting the S03 HOLD alone does not route anything; every edge still carries Check B.
 - Tests that pinned receipt SHAs were removed (#543); compare counts, not hashes.
-- Never mount hand-made Docker volumes for tools/gis/node_modules (10-26 cleanup); use orb-test.
+- Never mount hand-made Docker volumes for tools/gis/node_modules (10-26 cleanup); use tachi-run.
 - MLIT R2 indoor Shinjuku is login-gated: GAP, no GET.
 
 ## Related PRs and issues

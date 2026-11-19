@@ -47,7 +47,7 @@ From tools/gis (gis-test.yml, Node 26; PRs with no path filter, push to main on 
 - `pnpm install --frozen-lockfile`
 - `pnpm typecheck`
 - `pnpm test`
-Local equivalent through the host rule: `orb-test --heavy -- sh -c "cd tools/gis && pnpm install --frozen-lockfile && pnpm typecheck && pnpm test"`.
+Local equivalent through the host rule: `tachi-run --heavy -- sh -c "cd tools/gis && pnpm install --frozen-lockfile && pnpm typecheck && pnpm test"`.
 Not in CI: `pnpm test:real` (GTEKI_GIS_REAL=1, reads the multi-GB external store, single worker). Run commands one at a time; concurrent pnpm invocations relinked node_modules.
 
 ## Pitfalls

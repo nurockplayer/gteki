@@ -28,7 +28,7 @@ Name, alias and description search over one station's POIs, built once per bundl
 
 ## Tests CI runs
 - `pnpm typecheck` then `pnpm vitest run --maxWorkers=2` (root-test, the full set). Search tests are the *.test.ts files in `packages/search/src`.
-- One area locally: `pnpm vitest run packages/search/src`, but run the full command above through `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- One area locally: `pnpm vitest run packages/search/src`, but run the full command above through `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 
 ## Pitfalls
 - Tenant hits are never routing targets. The store POI is the target, and its `connectorNodeIds` decide routability.
