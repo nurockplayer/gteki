@@ -3894,7 +3894,9 @@ export class Explorer {
         offset.set(offset.x / flat * Math.cos(elevation), Math.sin(elevation), offset.z / flat * Math.cos(elevation));
       }
       const hits = this.cameraTargets.length ? cast(offset, Math.max(length, wantedDistance)) : [];
-      const target = Math.min(length, dist, followDistance(wantedDistance, hits));
+      let target = Math.min(length, dist, followDistance(wantedDistance, hits));
+      // A cleared stair lip must restore boom length at the same pace as contraction.
+      if (walkDescent && !snap && !this.reducedMotion) target = Math.min(target, previousDistance + FOLLOW.contractSpeed * dt);
       const actual = approachBoom(previousDistance, target, hits[0]?.distance ?? null, this.camera.near, dt, snap || this.reducedMotion);
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }

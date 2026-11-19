@@ -96,6 +96,15 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
     return e.pos.distanceTo(before);
   }
 
+  // Station ground targets include invisible walking ramps; inspect the rendered surfaces themselves.
+  const renderedGround: T.Object3D[]=[];
+  world.traverseVisible((object) => {
+    const mesh=object as T.Mesh;
+    if(!mesh.isMesh) return;
+    const materials=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+    if(materials.some((material)=>material.visible)) renderedGround.push(mesh);
+  });
+  prepareRayTrees(renderedGround);
   const ray = new T.Raycaster();
   function catVertices(e: any) {
     e.avatar.updateWorldMatrix(true,true);
@@ -170,14 +179,15 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
             for(const vertex of catVertices(e)) {
               ray.set(vertex.clone().add(new T.Vector3(0,0.5,0)),new T.Vector3(0,-1,0));
               ray.far=1;
-              const hit=castAll(ray,e.groundTargets)[0];
+              const hit=castAll(ray,renderedGround)[0];
               if(hit && vertex.y-hit.point.y<minimum) {
                 minimum=vertex.y-hit.point.y;
                 witness={vertex:vertex.toArray(),tread:hit.point.toArray(),mesh:hit.object.name,parent:hit.object.parent?.name};
               }
             }
             console.info('1433 grounding',JSON.stringify({viewport:`${w}x${h}`,minimumClearance:minimum,witness,poses,maxMove,maxPitch,maxBoom,maxFlightBoom,cropped}));
-            expect(minimum,'posed cat mesh penetrates tread; grounding requires a separate issue').toBeGreaterThanOrEqual(-0.0001);
+            expect(witness,'no rendered surface found below the posed cat').toBeDefined();
+            expect(minimum,'posed cat mesh penetrates rendered tread; grounding requires a separate issue').toBeGreaterThanOrEqual(-0.0001);
           }
           expect.soft(pose.top).toBeGreaterThanOrEqual(0);
           expect.soft(pose.bottom).toBeLessThanOrEqual(1);
