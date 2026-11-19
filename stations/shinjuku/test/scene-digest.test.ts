@@ -42,6 +42,7 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * wall/cladding hashes. Floors, fences, camera blockers, props and spawn remain unchanged.
  * #1169 (2026-11-14 JST): shaft stripe UV datums change the wall visual hash only.
  * #1238/#1243 (2026-11-16 JST): stair insets change visual sets (#1238.1 split out); physical fields unchanged.
+ * #1468 (2026-11-20 JST): close the 0.091 m B3 return slit; only wall cladding visuals change.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
