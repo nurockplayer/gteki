@@ -3708,6 +3708,7 @@ export class Explorer {
     const walkStairs = this.mode === "walk" && !this.firstPerson && !this.previewNext && this.catAvatar && this.escalatorWeight === 0 && !pinned;
     if (!walkStairs || resetSlope) this.walkStairAngle = 0;
     const walkDescent = walkStairs && (this.descentDrop > 0 || this.walkStairAngle > 0);
+    const walkCatBox = walkDescent ? this.catWorldBox() : undefined;
     let stairAngle = 0;
     let catCentre: THREE.Vector3 | undefined;
     if (stairsOn) {
@@ -3791,7 +3792,7 @@ export class Explorer {
       const bodyHidden = checkBody ? (b: THREE.Vector3, distance: number) => {
         cameraPoint.copy(pose.pivot).addScaledVector(b, distance);
         if (walkDescent) {
-          const box = this.catWorldBox();
+          const box = walkCatBox!;
           for (const x of [0.1, 0.9]) for (const y of [0.1, 0.9]) for (const z of [0.1, 0.9]) {
             point.set(THREE.MathUtils.lerp(box.min.x, box.max.x, x), THREE.MathUtils.lerp(box.min.y, box.max.y, y), THREE.MathUtils.lerp(box.min.z, box.max.z, z));
             direction.subVectors(point, cameraPoint);
@@ -3847,8 +3848,26 @@ export class Explorer {
       if (walkDescent && !snap && !this.reducedMotion) {
         // Ease changes to the tread/body solve in the cat's frame before the final safety cast.
         const step = THREE.MathUtils.degToRad(120) * dt;
-        const elevation = THREE.MathUtils.clamp(Math.asin(offset.y), previousElevation - step, previousElevation + step);
+        let elevation = THREE.MathUtils.clamp(Math.asin(offset.y), previousElevation - step, previousElevation + step);
         const flat = Math.hypot(offset.x, offset.z);
+        // Do not lift the feet out of frame while the view is still tilting down.
+        const box = walkCatBox!;
+        const feet = new THREE.Vector3(offset.x > 0 ? box.max.x : box.min.x, box.min.y, offset.z > 0 ? box.max.z : box.min.z);
+        const look = Math.asin(this.camera.getWorldDirection(new THREE.Vector3()).y) - THREE.MathUtils.degToRad(55) * dt;
+        const margin = Math.atan(0.85 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2));
+        const visible = (angle: number) => {
+          const camera = pose.pivot.clone().add(new THREE.Vector3(offset.x / flat * Math.cos(angle), Math.sin(angle), offset.z / flat * Math.cos(angle)).multiplyScalar(length));
+          return Math.atan2(camera.y - feet.y, Math.hypot(camera.x - feet.x, camera.z - feet.z)) <= margin - look;
+        };
+        if (!visible(elevation)) {
+          let low = -Math.PI / 2, high = elevation;
+          for (let i = 0; i < 24; i++) {
+            const mid = (low + high) / 2;
+            if (visible(mid)) low = mid;
+            else high = mid;
+          }
+          elevation = Math.max(previousElevation - step, low);
+        }
         offset.set(offset.x / flat * Math.cos(elevation), Math.sin(elevation), offset.z / flat * Math.cos(elevation));
       }
       const hits = this.cameraTargets.length ? cast(offset, Math.max(length, wantedDistance)) : [];
@@ -3862,7 +3881,7 @@ export class Explorer {
       // Retain the local aim through release after all positions have left the gate footprint.
       const aimRaise = this.gateAimHeld ? Math.max(this.boomRaise, Math.asin(this.camera.position.clone().sub(pose.pivot).normalize().y) - Math.asin(pose.back.y)) : this.boomRaise;
       // Keep the feet correction complete while a local gate raise is releasing.
-      aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.gateAimHeld ? Math.max(aimRaise, CAT_RAISE_AIM.end) : aimRaise, this.camera.fov, this.camera.aspect);
+      aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.gateAimHeld || walkStairs ? Math.max(aimRaise, CAT_RAISE_AIM.end) : aimRaise, this.camera.fov, this.camera.aspect);
       if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect,
         this.camera.aspect >= 1 ? STAIR_POSE.desktop.feetNdc : undefined);
       const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);

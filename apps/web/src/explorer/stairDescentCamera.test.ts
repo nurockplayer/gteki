@@ -4,6 +4,7 @@ import { it, expect } from 'vitest';
 import fs from 'node:fs';
 import * as T from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { loadShinjukuBundle } from '../../../../stations/shinjuku/data/bundle.ts';
 import { assembleScene } from '../../../../stations/shinjuku/gteki/scene.ts';
@@ -48,7 +49,6 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
   prepareRayTrees(targets.camera);
   const catBytes=fs.readFileSync('apps/web/public/avatars/cat.glb');
   const gltf:any=await new Promise((ok,fail)=>new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).parse(catBytes.buffer.slice(catBytes.byteOffset,catBytes.byteOffset+catBytes.byteLength),'',ok,fail));
-  const avatarRig=await loadGlbAvatar('scratch',{quality:'low',cat:true,heightM:.345,loader:{loadAsync:async()=>gltf}});
   const exit=bundle.pois.find(p=>p.id==='poi:exit:1')!,dest=bundle.pois.find(p=>p.id==='poi:platform:oedo')!;
   const route:any=routeBetween(router,{kind:'poi',poi:exit},dest,DEFAULT_PROFILE);expect(route.ok).toBe(true);
   const nav=JSON.parse(fs.readFileSync('stations/shinjuku/navmesh-paths.json','utf8'));
@@ -61,7 +61,8 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
   const pos=R({...node.position,z:nodeDisplayZ(node,bundle.floors.find(f=>f.id===node.floorId)).z});
   const initialGroundRay=new T.Raycaster(pos.clone().add(new T.Vector3(0,1.5,0)),new T.Vector3(0,-1,0),0,4);
   const initialGround=castAll(initialGroundRay,targets.ground)[0];expect(initialGround).toBeDefined();pos.y=initialGround.point.y;
-  function stand(aspect:number,mode:string,next:boolean){
+  async function stand(aspect:number,mode:string,next:boolean){
+    const avatarRig=await loadGlbAvatar('scratch',{quality:'low',cat:true,heightM:.345,loader:{loadAsync:async()=>({...gltf,scene:clone(gltf.scene)})}});
     const avatar=new T.Group();avatar.add(avatarRig.root);
     const e:any=Object.assign(Object.create(Explorer.prototype),{
       stationScene:scene,
@@ -101,11 +102,13 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
     const box = e.catWorldBox();
     const projected: T.Vector3[] = [];
     let blocked = 0;
+    const blockedHits: any[]=[];
     for (const x of [0.1, 0.9]) for (const y of [0.1, 0.9]) for (const z of [0.1, 0.9]) {
       const point = new T.Vector3(T.MathUtils.lerp(box.min.x,box.max.x,x),T.MathUtils.lerp(box.min.y,box.max.y,y),T.MathUtils.lerp(box.min.z,box.max.z,z));
       ray.set(e.camera.position,point.clone().sub(e.camera.position).normalize());
       ray.far=e.camera.position.distanceTo(point)-0.05;
-      if (castCamera(ray,e.cameraTargets,e.cameraSides).length) blocked++;
+      const hit=castCamera(ray,e.cameraTargets,e.cameraSides)[0];
+      if (hit) { blocked++; blockedHits.push({mesh:hit.object.name,parent:hit.object.parent?.name,point:point.toArray(),hit:hit.point.toArray()}); }
     }
     for (const x of [box.min.x,box.max.x]) for (const y of [box.min.y,box.max.y]) for (const z of [box.min.z,box.max.z]) projected.push(new T.Vector3(x,y,z).project(e.camera));
     const direction=e.camera.getWorldDirection(new T.Vector3());
@@ -113,12 +116,12 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
       height:e.camera.position.y-e.pos.y, pitch:T.MathUtils.radToDeg(Math.asin(-direction.y)),
       top:(1-Math.max(...projected.map(p=>p.y)))/2, bottom:(1-Math.min(...projected.map(p=>p.y)))/2,
       left:(1+Math.min(...projected.map(p=>p.x)))/2, right:(1+Math.max(...projected.map(p=>p.x)))/2,
-      blocked, boom:e.boomActual, relative:e.camera.position.clone().sub(e.pos),
+      blocked, blockedHits, boom:e.boomActual, relative:e.camera.position.clone().sub(e.pos),
     };
   }
   for (const [w,h] of [[960,600],[412,839]]) {
     for (const stops of [false,true]) {
-      const e=stand(w/h,'walk',false);
+      const e=await stand(w/h,'walk',false);
       e.placeCamera(1/60,true);
       let previous=measure(e), maxMove=0, maxPitch=0, maxBoom=0;
       const poses: any[]=[];
@@ -166,7 +169,7 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
     }
     // Record the accepted guide path to compare with main in the before/after replay.
     for(const next of [false,true]) {
-      const e=stand(w/h,'guide',next);
+      const e=await stand(w/h,'guide',next);
       e.placeCamera(1/60,true);
       const frames=[];
       for(let frame=0;frame<1200;frame++) {
