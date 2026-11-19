@@ -123,9 +123,11 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
       let previous=measure(e), maxMove=0, maxPitch=0, maxBoom=0;
       const poses: any[]=[];
       let cropped=0, maxFlightBoom=0;
+      const events: any[]=[];
       for (let walked=1;walked<=810;walked++) {
         tick(e);
         const current=measure(e);
+        if(current.relative.distanceTo(previous.relative) > 0.15 || Math.abs(current.boom-previous.boom)>0.03 || current.bottom>1) events.push({walked,z:e.pos.y,height:current.height,pitch:current.pitch,bottom:current.bottom,boom:current.boom,move:current.relative.distanceTo(previous.relative)});
         maxMove=Math.max(maxMove,current.relative.distanceTo(previous.relative));
         maxPitch=Math.max(maxPitch,Math.abs(current.pitch-previous.pitch));
         maxBoom=Math.max(maxBoom,Math.abs(current.boom-previous.boom));
@@ -154,7 +156,7 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
           e.moving=true;
         }
       }
-      console.info('1433 metrics',JSON.stringify({viewport:`${w}x${h}`,stops,maxMove,maxPitch,maxBoom,maxFlightBoom,cropped,poses}));
+      console.info('1433 metrics',JSON.stringify({viewport:`${w}x${h}`,stops,maxMove,maxPitch,maxBoom,maxFlightBoom,cropped,poses,events}));
       expect.soft(poses.length).toBe(stops ? 2 : 0);
       expect.soft(cropped).toBe(0);
       expect.soft(maxFlightBoom).toBeLessThanOrEqual(0.03);

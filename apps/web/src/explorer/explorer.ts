@@ -3660,7 +3660,7 @@ export class Explorer {
     const stairPose = this.camera.aspect < 1 ? STAIR_POSE.phone : STAIR_POSE.desktop;
     const distance = (shot ? THREE.MathUtils.lerp(this.arrivalStart.distance, shot.distance, weight) : this.camDistance)
       * THREE.MathUtils.lerp(1, stairPose.distance / FOLLOW_CAT.distance, stairsWeight);
-    const lens = () => this.stairsLens ? stairPose.lens : followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect);
+    const lens = () => this.stairsLens ? stairPose.lens : followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed || (this.mode === "walk" && this.walkStairAngle > 0), this.previewNext, this.camera.aspect);
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
     const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));
@@ -3727,7 +3727,7 @@ export class Explorer {
       const run = Math.hypot(this.pos.x - this.lastAvatarPos.x, this.pos.z - this.lastAvatarPos.z);
       if (dt > 0 && run > 0 && this.slope.velocity < -SLOPE.exit) {
         const angle = Math.atan2(-this.slope.velocity * dt, Math.max(run, WALKER_SPEED.walkMps * dt)) + THREE.MathUtils.degToRad(8);
-        this.walkStairAngle = easeRaise(this.walkStairAngle, angle, dt, snap || this.reducedMotion);
+        this.walkStairAngle = angle;
       } else if (run > 0 && this.descentDrop === 0) this.walkStairAngle = easeRaise(this.walkStairAngle, 0, dt, snap || this.reducedMotion);
       // Releasing the keys retains the last flight constraint; level travel releases it.
       if (this.walkStairAngle > 0) {
@@ -3790,6 +3790,17 @@ export class Explorer {
       const point = new THREE.Vector3();
       const bodyHidden = checkBody ? (b: THREE.Vector3, distance: number) => {
         cameraPoint.copy(pose.pivot).addScaledVector(b, distance);
+        if (walkDescent) {
+          const box = this.catWorldBox();
+          for (const x of [0.1, 0.9]) for (const y of [0.1, 0.9]) for (const z of [0.1, 0.9]) {
+            point.set(THREE.MathUtils.lerp(box.min.x, box.max.x, x), THREE.MathUtils.lerp(box.min.y, box.max.y, y), THREE.MathUtils.lerp(box.min.z, box.max.z, z));
+            direction.subVectors(point, cameraPoint);
+            this.ray.set(cameraPoint, direction.normalize());
+            this.ray.far = cameraPoint.distanceTo(point) - 0.05;
+            if (castCamera(this.ray, this.cameraTargets, cameraSides).length) return true;
+          }
+          return false;
+        }
         let blocked = 0;
         for (let i = 0; i < 3; i++) {
           if (i === 2) point.copy(head);
@@ -3835,7 +3846,7 @@ export class Explorer {
       clearTreads(offset, length);
       if (walkDescent && !snap && !this.reducedMotion) {
         // Ease changes to the tread/body solve in the cat's frame before the final safety cast.
-        const step = THREE.MathUtils.degToRad(45) * dt;
+        const step = THREE.MathUtils.degToRad(120) * dt;
         const elevation = THREE.MathUtils.clamp(Math.asin(offset.y), previousElevation - step, previousElevation + step);
         const flat = Math.hypot(offset.x, offset.z);
         offset.set(offset.x / flat * Math.cos(elevation), Math.sin(elevation), offset.z / flat * Math.cos(elevation));
@@ -3859,7 +3870,7 @@ export class Explorer {
       const resetAim = snap || this.reducedMotion || pinned || (this.mode !== "guide" && !walkDescent) || this.previewNext;
       if (walkDescent && !resetAim) {
         const previous = Math.asin(this.camera.getWorldDirection(new THREE.Vector3()).y);
-        const step = THREE.MathUtils.degToRad(45) * dt;
+        const step = THREE.MathUtils.degToRad(55) * dt;
         const eased = THREE.MathUtils.clamp(elevation, previous - step, previous + step);
         pose.target.y = this.camera.position.y + ahead * Math.tan(eased);
       } else if (stairRaise > 0 || resetAim) this.stairAimElevation = stairRaise > 0 ? elevation : undefined;
