@@ -10,7 +10,7 @@ esac; done
 [[ $smoke == 0 || $suite == test ]] || exit 2
 out=.qa/bench-613; ((smoke)) && out=.qa/bench-613-smoke
 mkdir -p "$out"
-# orb-test stops the VM after each run, so the next variant must start it before asking Docker about the image.
+# tachi-run stops the VM after each run, so the next variant must start it before asking Docker about the image.
 for _ in 1 2 3 4 5 6; do docker info >/dev/null 2>&1 && break; orbctl start >/dev/null 2>&1; sleep 10; done
 digest=$(docker image inspect "gteki-bench:$variant" --format '{{.Id}}')
 for ((rep=1; rep<=reps; rep++)); do
@@ -24,10 +24,10 @@ for ((rep=1; rep<=reps; rep++)); do
   if ! awk 'NR > 2 && NF {v=$NF; multiplier=1; if (v ~ /K$/) multiplier=1000; if (v ~ /M$/) multiplier=1000000; if (++n > 1 && (v+0)*multiplier > 2000) bad=1} END {exit (n < 3 || bad)}' <<< "$vm"; then echo 'memory pressure gate: swapouts above 2000 pages or unavailable' >&2; exit 3; fi
   concurrent=0
   # Capture first: grep -q closing the pipe early would fail it under pipefail.
-  status=$(orb-test --status --porcelain 2>/dev/null || true)
+  status=$(tachi-run --status --porcelain 2>/dev/null || true)
   if [[ ${BENCH_CONCURRENT_HEAVY:-} =~ ^[01]$ ]]; then concurrent=$BENCH_CONCURRENT_HEAVY; elif grep -q $'^running\t' <<< "$status"; then concurrent=1; fi
   opts=(); ((heavy)) && opts+=(--heavy)
-  orb-test "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" --env "BENCH_FILES=${BENCH_FILES:-}" --env "BENCH_WALL_S=${BENCH_WALL_S:-}" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" "${attempt_arg[@]}" \
+  tachi-run "${opts[@]}" --image "gteki-bench:$variant" --memory "$memory" --cpus "$cpus" --out "$out" --env "BENCH_IMAGE_DIGEST=$digest" --env "BENCH_CONCURRENT_HEAVY=$concurrent" --env "BENCH_MEMORY=$memory" --env "BENCH_CPUS=$cpus" --env "BENCH_SMOKE=$smoke" --env "BENCH_FILES=${BENCH_FILES:-}" --env "BENCH_WALL_S=${BENCH_WALL_S:-}" -- bash tools/bench/node-mem-run.sh --suite "$suite" --rep "$rep" --variant "$variant" --out "/w/$out" "${attempt_arg[@]}" \
     || { code=$?; echo "rep $rep of $variant/$suite failed (exit $code); continuing" >&2; failed=$code; }
 done
 exit "${failed:-0}"

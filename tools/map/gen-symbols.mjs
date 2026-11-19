@@ -20,7 +20,7 @@ function compare(a, b) {
 }
 
 function walkFiles(root, pathspecs) {
-  // Fallback for checkouts without .git (orb-test copies the worktree without it).
+  // Fallback for checkouts without .git (tachi-run copies the worktree without it).
   const files = [];
   const visit = (relDir) => {
     for (const entry of fs.readdirSync(path.join(root, relDir), { withFileTypes: true })) {

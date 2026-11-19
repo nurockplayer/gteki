@@ -61,7 +61,7 @@ updated: 2026-10-26 JST
 ## Tests CI runs
 - Root test job: `pnpm typecheck`, then `pnpm vitest run --maxWorkers=2`. Vitest picks up every the tests in apps/web/src/ui.
 - Local, one area only: `pnpm vitest run apps/web/src/ui`. Run the full CI command first.
-- Through the container: `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- Through the container: `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 - e2e-smoke runs the browser flow in `tests/e2e`. The spec list is in [[e2e]].
 
 ## Pitfalls

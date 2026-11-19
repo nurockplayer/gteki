@@ -3,6 +3,7 @@ import * as THREE from "three";
 import clipping, { type Polygon, type MultiPolygon } from "polygon-clipping";
 import { WALKER_BODY, type WallSegment } from "@gteki/scene-api";
 import type { StationBundle } from "@gteki/schema";
+import { stairProfile } from "../scene/stairProfile.ts";
 import {
   pointInRings,
   type Layout,
@@ -311,6 +312,34 @@ function labels(grid: Map<string, number[]>, layout: Layout, plan: Plan) {
       streetPads: [],
     } as Layout),
   ]);
+  // #1432 (2026-11-17 JST): only modelled stairs and their one-tread lower
+  // landing taper admit the nosing surface above the independent linear profile.
+  const stairEnvelopes = new Map<string, { profile: number; rise: number }[]>();
+  for (const run of layout.runs) {
+    const lo = run.a.z <= run.b.z ? run.a : run.b;
+    const hi = run.a.z <= run.b.z ? run.b : run.a;
+    if (run.mode !== "stairs" || hi.z - lo.z < 0.05) continue;
+    const { L, tread, rise } = stairProfile(lo, hi);
+    const ux = (hi.x - lo.x) / L, uy = (hi.y - lo.y) / L;
+    const nx = -uy * run.width / 2, ny = ux * run.width / 2;
+    const start = { x: lo.x - ux * tread, y: lo.y - uy * tread };
+    const profile = (p: XY) => lo.z + (hi.z - lo.z) * Math.max(0, Math.min(1,
+      ((p.x - lo.x) * ux + (p.y - lo.y) * uy) / L,
+    ));
+    patchCells({
+      rings: [[
+        { x: start.x + nx, y: start.y + ny },
+        { x: start.x - nx, y: start.y - ny },
+        { x: hi.x - nx, y: hi.y - ny },
+        { x: hi.x + nx, y: hi.y + ny },
+      ]],
+      height: profile,
+    }, (ix, iy, z) => {
+      const key = `${ix},${iy}`, list = stairEnvelopes.get(key) ?? [];
+      list.push({ profile: z, rise });
+      stairEnvelopes.set(key, list);
+    });
+  }
   const fare = new Map<
     string,
     { z: number; paid: string[]; free: string[]; mapped: boolean }[]
@@ -351,7 +380,10 @@ function labels(grid: Map<string, number[]>, layout: Layout, plan: Plan) {
         paid: f?.paid ?? [],
         free: f?.free ?? [],
         mapped:
-          !!f || (mapped.get(key) ?? []).some((h) => Math.abs(h - z) < 0.02),
+          !!f || (mapped.get(key) ?? []).some((h) => Math.abs(h - z) < 0.02) ||
+          (stairEnvelopes.get(key) ?? []).some(({ profile, rise }) =>
+            z >= profile - 0.02 && z <= profile + rise + 0.02,
+          ),
         level,
       });
     }

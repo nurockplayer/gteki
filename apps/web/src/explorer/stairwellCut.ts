@@ -437,7 +437,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
       // Basic, not Lambert: a station with baked lighting has no lights in the scene, so Lambert renders black.
       const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 0x8a8c88, side: THREE.DoubleSide }));
       mesh.name = "greybox-stairwell-band";
-      mesh.userData = { greybox: true, approximate: true };
+      mesh.userData = { greybox: true, approximate: true, stairwellBandFaceStart: 0 };
       finish.add(mesh); cameraBlockers.push(mesh);
       bandTriangles = bands.length / 9;
     }
@@ -713,6 +713,8 @@ function appendShellQuads(mesh: THREE.Mesh, positions: number[], shade: [number,
       nextNormals[i + k] = Math.round(n.x * 127); nextNormals[i + k + 1] = Math.round(n.y * 127); nextNormals[i + k + 2] = Math.round(n.z * 127);
     }
   }
+  // The shell is non-indexed; appended band faces stop the boom without asking it to rise.
+  mesh.userData.stairwellBandFaceStart = position.count / 3;
   geometry.setAttribute("position", new THREE.BufferAttribute(nextPositions, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(nextColors, 3, true));
   geometry.setAttribute("normal", new THREE.Int8BufferAttribute(nextNormals, 3, true));

@@ -114,6 +114,7 @@ ExplorerEvents	interface	apps/web/src/explorer/explorer.ts
 ExplorerMode	type	apps/web/src/explorer/explorer.ts
 ExplorerOptions	interface	apps/web/src/explorer/explorer.ts
 ExplorerPose	interface	apps/web/src/explorer/explorer.ts
+clearWalkElevation	function	apps/web/src/explorer/explorer.ts
 fetchGlb	function	apps/web/src/explorer/fetchGlb.ts
 FLOOR_REFLECTION_DEFAULTS	const	apps/web/src/explorer/floorReflectionPass.ts
 FloorReflectionPass	class	apps/web/src/explorer/floorReflectionPass.ts
@@ -1593,6 +1594,7 @@ shaftGrade	function	stations/shinjuku/scene/lightPreset.ts
 OEDO_MAGENTA	const	stations/shinjuku/scene/palette.ts
 stationSpawn	function	stations/shinjuku/scene/spawn.ts
 stableHypot	function	stations/shinjuku/scene/stable-hypot.ts
+stairProfile	function	stations/shinjuku/scene/stairProfile.ts
 BakedSurface	interface	stations/shinjuku/scene/surface-bake.ts
 BakedSurfaceModule	interface	stations/shinjuku/scene/surface-bake.ts
 BakedSurfaceValues	type	stations/shinjuku/scene/surface-bake.ts

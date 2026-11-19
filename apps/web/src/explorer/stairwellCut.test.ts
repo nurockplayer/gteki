@@ -5,6 +5,7 @@ import type { Edge } from "@gteki/schema";
 import { cutStairwells, stairwellWells, wellsSha256, wellRails, type StairwellWell } from "./stairwellCut.ts";
 import { decodeRecipe, encodeRecipe, RECIPE_VERSION, type CutRecipe, type MeshRecord } from "./cutRecipe.ts";
 import { resolveWalls } from "./walker.ts";
+import { FOLLOW, followDistance, solveRaisedBoom } from "./followCamera.ts";
 
 const bundle = (mode: Edge["mode"] = "stairs") => createSyntheticBundle([syntheticEdge("start-upper", "start", "upper", { mode, lengthM: 10.77 })]);
 const flight = (geometry: { x: number; y: number; z: number }[]) =>
@@ -107,6 +108,31 @@ describe("stairwell cuts", () => {
     // Below the upper floor there is no rail.
     expect(resolveWalls(5, 1.2, 0.3, 0, body, result.walls).z).toBeCloseTo(1.2);
     expect(result.finishTriangles + result.bandTriangles).toBeLessThan(2000);
+    result.dispose();
+  });
+
+  it.each(["rail", "glass"])("raises the boom over a generated stairwell %s", (kind) => {
+    const { result } = cut();
+    const mesh = result.finish!.getObjectByName(`greybox-stairwell-${kind}`) as THREE.Mesh;
+    mesh.updateMatrixWorld(true);
+    const edge = result.walls[0]!;
+    const normal = new THREE.Vector3(edge.bz - edge.az, 0, edge.ax - edge.bx).normalize();
+    const pivot = new THREE.Vector3((edge.ax + edge.bx) / 2, kind === "rail" ? 5.03 : 4.83, (edge.az + edge.bz) / 2)
+      .addScaledVector(normal, -0.5);
+    const back = normal.clone().setY(0.14).normalize();
+    const ray = new THREE.Raycaster(pivot, back, 0, FOLLOW.defaultDistance);
+    const cast = (direction: THREE.Vector3) => {
+      ray.set(pivot, direction);
+      return ray.intersectObject(mesh).map((hit) => ({
+        distance: hit.distance, cameraOnly: false,
+        stairwellBand: hit.faceIndex != null && hit.faceIndex >= hit.object.userData.stairwellBandFaceStart,
+      }));
+    };
+    expect(followDistance(FOLLOW.defaultDistance, cast(back))).toBeLessThan(FOLLOW.comfortDistance);
+    const solved = solveRaisedBoom(FOLLOW.defaultDistance, back, cast, 0, 1 / 60);
+    expect(solved.raise).toBeGreaterThan(0);
+    expect(solved.distance).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
+    expect(mesh.userData.stairwellBandFaceStart).toBeUndefined();
     result.dispose();
   });
 
@@ -431,6 +457,7 @@ describe("stairwell cuts", () => {
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
     const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
     expect(result.cameraBlockers).toEqual([band]);
+    expect(band.userData.stairwellBandFaceStart).toBe(0);
     expect((band.material as THREE.Material).type).toBe("MeshBasicMaterial");
     result.dispose();
   });
@@ -447,6 +474,7 @@ describe("stairwell cuts", () => {
     const before = shellGeometry.getAttribute("position").count;
     const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high", greyboxRoot });
     expect(result.bandTriangles).toBeGreaterThan(0);
+    expect(shell.userData.stairwellBandFaceStart).toBe(before / 3);
     expect(shellGeometry.getAttribute("position").count).toBe(before + result.bandTriangles * 3);
     expect(greyboxRoot.children).toHaveLength(1);
     expect(result.finish?.children.map((child) => child.name)).not.toContain("greybox-stairwell-band");

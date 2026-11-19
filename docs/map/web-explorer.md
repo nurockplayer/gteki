@@ -81,7 +81,7 @@ Ikebukuro JR gates (#1378): `followCamera.ts:cameraGateConstraint()` uses camera
 ## Tests CI runs
 - Root test job, from `.github/workflows/root-test.yml`: `pnpm install --frozen-lockfile`, then `pnpm typecheck` and `pnpm vitest run --maxWorkers=2`. Vitest picks up `apps/web/src` tests.
 - Local, one area only: `pnpm vitest run apps/web/src/explorer`. Run the full CI command first.
-- Locally, through the container: `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- Locally, through the container: `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 - e2e-smoke (`.github/workflows/e2e-smoke.yml`, triggered on every pull request): `pnpm build`, then in `tests/e2e`: `pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off`.
 - QA hook tests: `apps/web/src/explorer/explorerQa.test.ts` covers the QA hooks; `apps/web/src/explorer/rayBvh.heavy.test.ts` is a heavy ray test, check whether the root vitest run includes it before relying on it.
 

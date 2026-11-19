@@ -30,7 +30,7 @@ The contract between a station's scene module (the station's gteki/scene.ts, exp
 
 ## Tests CI runs
 - `pnpm typecheck` then `pnpm vitest run --maxWorkers=2` (root-test, the full set). The package's own test is `packages/scene-api/src/roles.test.ts`.
-- One area locally: `pnpm vitest run packages/scene-api/src`, but run the full command above through `orb-test --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
+- One area locally: `pnpm vitest run packages/scene-api/src`, but run the full command above through `tachi-run --heavy -- sh -c "pnpm typecheck && pnpm vitest run --maxWorkers=2"`.
 
 ## Pitfalls
 - Roles come only from a glTF node's authored name and extras (commits e62e61f6 and e6636efd), on web and Godot alike. A mesh name guessed from its geometry is not a role.

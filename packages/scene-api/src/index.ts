@@ -98,6 +98,8 @@ export interface StationScene {
    */
   cameraBlockers?: THREE.Object3D[];
   cameraGateAisles?: readonly CameraGateAisle[];
+  /** Camera pivot datum on a stair support; never changes the walker's visible height. */
+  cameraPivotGroundAt?(position: { x: number; y: number; z: number }): number | null;
   walls?: WallSegment[];
   spawnPoints?: SpawnPoint[];
   /** Fog/background/lighting preferences; the explorer applies sane defaults otherwise. */

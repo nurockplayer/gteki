@@ -74,6 +74,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1321 (2026-11-17 JST): ten procedural stair/landing camera targets; kit on/off parity passed before refreshing lists only.
 // #1391 (2026-11-17 JST): owned-roof linear-light placements/metadata only; 107 other meshes and all lists unchanged.
 // #1434 (2026-11-17 JST): nosing goldenRole metadata changes nodes/lists digests; geometry and list counts unchanged.
+// #1432 (2026-11-17 JST): nosing-line stair walk proxies change the lists digest; list counts unchanged.
 const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "ecfa0f8989f3d5af64dbc42ecb3a338fb68c18d286d45cef985073b02471b9d1",
@@ -84,7 +85,7 @@ const MAIN_BASELINE = {
     "bytes": 17299194
   },
   "lists": {
-    "listsDigest": "85b9cf529984bc1be24054a73025e69f22f756417f3c8155d066a4d8970e9943",
+    "listsDigest": "a3fce78f5b087586d3468fe720fc486d005fb215b79023aa70898a32b20be91d",
     "counts": {
       "walkable": 442,
       "colliders": 2,
@@ -870,7 +871,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(report.totals.draws).toBeLessThanOrEqual(KIT_BUDGET.maxDraws);
     });
 
-    // Its apply path builds a whole station scene, 4.9 s solo through orb-test (2 CPUs, 2026-11-02 05:31 JST) and over
+    // Its apply path builds a whole station scene, 4.9 s solo through tachi-run (2 CPUs, 2026-11-02 05:31 JST) and over
     // 5 s beside kit-bundle.test.ts.
     it("the real kit 0.1.0 places mobile gates and lifts; available dressing pieces fit no Shinjuku run", () => {
       const mobile = parseKitManifest(library("mobile/manifest.json"), "mobile");
@@ -931,7 +932,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       };
 
       // Each run builds a whole station scene and digests it: 9.7 s on origin/main and 9.9 s on this branch through
-      // orb-test (2 CPUs, 2026-11-02 05:18-05:22 JST), over vitest's 5 s default. Not the extra placements.
+      // tachi-run (2 CPUs, 2026-11-02 05:18-05:22 JST), over vitest's 5 s default. Not the extra placements.
       it("an error while building the kit meshes logs 'kit swap off', returns no report and leaves the scene exactly as flag-off", () => {
         const stub = stubProvider();
         let n = 0;
@@ -942,7 +943,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         scene.dispose();
       }, 30_000);
 
-      // Same full scene build and digest per run: 7.7 s on origin/main and 9.2 s on this branch through orb-test
+      // Same full scene build and digest per run: 7.7 s on origin/main and 9.2 s on this branch through tachi-run
       // (2 CPUs, 2026-11-02 05:18-05:22 JST), over vitest's 5 s default. Not the extra placements.
       it("an error while hiding placeholders cannot leave a partial hide: the first group is prepared but never committed", () => {
         const { scene, result, out } = run(stubProvider(), (c) => ({
@@ -960,7 +961,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         scene.dispose();
       }, 30_000);
 
-      // Also a full scene build and digest: 8.4 s on origin/main and 8.5 s on this branch through orb-test (2 CPUs,
+      // Also a full scene build and digest: 8.4 s on origin/main and 8.5 s on this branch through tachi-run (2 CPUs,
       // 2026-11-02 05:18-05:22 JST), over vitest's 5 s default.
       it("a failed batch removes the entire affected pieces from shared batches and keeps their placeholders", () => {
         const stub = stubProvider();
@@ -996,7 +997,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
           expect(placeholders(off.root) - placeholders(scene.root)).toBe(Object.values(result!.hidden).reduce((n, count) => n + count, 0));
         } finally { consoleError.mockRestore(); scene.dispose(); }
       }, 30_000);
-      // Same full scene build and digest: 5.3 s on origin/main and 6.7 s on this branch through orb-test (2 CPUs,
+      // Same full scene build and digest: 5.3 s on origin/main and 6.7 s on this branch through tachi-run (2 CPUs,
       // 2026-11-02 05:18-05:22 JST), over vitest's 5 s default.
       it("a placement that draws nothing keeps its placeholder: no triangles are hidden for it, and it is reported", () => {
         const stub = stubProvider();

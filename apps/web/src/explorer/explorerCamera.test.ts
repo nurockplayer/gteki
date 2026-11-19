@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { describe, expect, it, vi } from "vitest";
 import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
-import { Explorer } from "./explorer.ts";
+import { clearWalkElevation, Explorer } from "./explorer.ts";
 import { FOLLOW_CAT_NEXT, escalatorPose, FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
 import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
 import { samplePolyline } from "./walker.ts";
 import type { IdentityBoard } from "./identityBoards.ts";
+import { explorerTargets } from "./raycast.ts";
 
 /** Exercise the real camera wiring with CPU raycasts; no renderer or browser is constructed. */
 function cameraStand() {
@@ -50,6 +51,42 @@ const pocket = () => {
 };
 
 describe("Explorer follow camera wiring", () => {
+  it("chooses the highest full-length free-walk elevation before a blocker", () => {
+    const obstacle = new THREE.Mesh(new THREE.BoxGeometry(2, 0.7, 0.2), new THREE.MeshBasicMaterial());
+    obstacle.position.set(0, 0.6, 1);
+    obstacle.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 2.4);
+    const clear = (angle: number) => {
+      ray.set(new THREE.Vector3(), new THREE.Vector3(0, Math.sin(angle), Math.cos(angle)));
+      return ray.intersectObject(obstacle).length === 0;
+    };
+    const elevation = clearWalkElevation(0, 0.6, clear);
+    expect(elevation).toBeGreaterThan(0);
+    expect(elevation).toBeLessThan(0.6);
+    expect(clear(elevation)).toBe(true);
+    expect(clear(elevation + 1e-5)).toBe(false);
+  });
+  it("keeps modelled stair supports underfoot while the visible stairs block the camera", () => {
+    const support = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ visible: false }));
+    support.userData.gtekiStairWalkSupport = true;
+    support.userData.gteki_role = "walkable";
+    const floor = new THREE.Mesh(support.geometry, support.material);
+    const stairs = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 10), new THREE.MeshBasicMaterial());
+    stairs.position.y = -0.1;
+    stairs.userData.gtekiCameraTargetOnly = true;
+    stairs.updateMatrixWorld(true);
+    const targets = explorerTargets([support, floor], [], [stairs, support]);
+    expect(targets.ground).toContain(support);
+    expect(targets.sky).toContain(support);
+    expect(targets.camera).toEqual([floor, stairs]);
+    expect(targets.blockers.has(support)).toBe(false);
+    expect(support.userData.gteki_role).toBe("walkable");
+    const state = cameraStand();
+    state.cameraTargets = targets.camera;
+    state.cameraSides = new Set(targets.camera);
+    place(state, true);
+    expect(state.camera.position.y).toBeGreaterThanOrEqual(0);
+  });
   it.each(["flat", "stairs", "default escalator", "next escalator"])("checks body casts on %s", (mode) => {
     const state = Object.assign(cameraStand(), { catAvatar: true, previewNext: mode === "next escalator", escalatorProgress: mode === "next escalator" ? 1 : 0 });
     if (mode === "stairs" || mode === "default escalator") {
@@ -63,7 +100,8 @@ describe("Explorer follow camera wiring", () => {
     setTargets(state, [target]);
     const casts = vi.spyOn(state.ray, "set");
     place(state);
-    expect(casts).toHaveBeenCalledTimes(mode === "stairs" ? 6 : 3);
+    // The final boom collision cast retains bands omitted from pitch selection.
+    expect(casts).toHaveBeenCalledTimes(mode === "stairs" ? 7 : 4);
     if (mode === "next escalator") expect(state.escalatorWeight).toBeGreaterThan(0);
   });
   it.each([false, true].flatMap((floor) => [
@@ -168,6 +206,26 @@ describe("Explorer wall fallback and QA controls", () => {
     expect(state.boomRaise).toBeGreaterThan(0);
     expect(state.camera.position.y).toBeGreaterThan(1.97);
     expect(state.boomActual).toBeGreaterThanOrEqual(FOLLOW.comfortDistance);
+  });
+
+  it("damps a wall-clearing raise when a band still caps the boom at 0.5 m", () => {
+    const state = cameraStand();
+    const pose = followPose(new THREE.Vector3(0, 1.62, 0), state.yaw, state.pitch);
+    const band = new THREE.Mesh(new THREE.SphereGeometry(0.8, 64, 48), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    band.position.copy(pose.pivot);
+    band.userData.stairwellBandFaceStart = 0;
+    band.updateMatrixWorld(true);
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(10, 2.07, 0.2), new THREE.MeshBasicMaterial());
+    lip.position.set(0, 2.07 / 2, 1.0);
+    lip.updateMatrixWorld(true);
+    state.camera.position.copy(pose.pivot).addScaledVector(pose.back, 0.5);
+    state.boomActual = 0.5;
+    setTargets(state, [band, lip]);
+    const lerp = vi.spyOn(state.camera.position, "lerp");
+    place(state);
+    expect(state.boomRaise).toBeGreaterThan(0);
+    expect(state.boomActual).toBeCloseTo(0.5, 2);
+    expect(lerp.mock.lastCall![1]).toBeCloseTo(1 - Math.exp(-10 / 60), 12);
   });
 
   it("limits fade recovery when a raised boom clears a squeeze in one frame", () => {
@@ -438,7 +496,8 @@ describe("default cat stair framing", () => {
     setTargets(state, [floor]);
     const casts = vi.spyOn(state.ray, "set");
     place(state, true);
-    expect(casts).toHaveBeenCalledTimes(3);
+    // Includes the final boom collision cast, with no default body-clearance casts.
+    expect(casts).toHaveBeenCalledTimes(4);
     expect(state.camera.position.x).toBeCloseTo(0.2, 10);
     expect(state.camera.position.y).toBeCloseTo(0.705948529, 8);
     expect(state.camera.position.z).toBeCloseTo(2.382904412, 8);

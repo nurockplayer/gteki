@@ -1029,7 +1029,11 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       const floorBatch = batches.get(floorKey) ?? []; floorBatch.push(pad.part); batches.set(floorKey, floorBatch);
     }
     const support = [...parts.filter((p) => p.role === "walkable"), ...pads.map((pad) => pad.part)], walls = parts.filter((p) => p.role === "collider");
-    if (support.length) walkable.push(meshFor(support, physicalMaterial));
+    if (support.length) {
+      const mesh = meshFor(support, physicalMaterial);
+      if (suppress) mesh.userData.gtekiStairWalkSupport = true;
+      walkable.push(mesh);
+    }
     if (walls.length) colliders.push(meshFor(walls, physicalMaterial));
   }
   // Lift shafts (#645 step 2b, #648): each shaft is its own model with a stop square per stop and a 0.9 m door footprint

@@ -49,6 +49,15 @@ it("suppresses only modelled stair visuals while preserving physical geometry", 
   expect(hidden.stats.visualSuppressed).toBe(1);
 });
 
+it("tags only supports for modelled stair edges", () => {
+  const station = { ...bundle, nodes: [...bundle.nodes, ...bundle.nodes.map((n) => ({ ...n, id: n.id + "2", position: { ...n.position, y: n.position.y + 20 } }))],
+    edges: [...bundle.edges, { ...bundle.edges[0]!, id: "other", from: "a2", to: "b2" }] } as StationBundle;
+  const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false, visuallyModelled: new Set(["e"]) }, "high");
+  expect(result.walkable.find((o) => o.userData.edgeId === "e")?.userData.gtekiStairWalkSupport).toBe(true);
+  expect(result.walkable.find((o) => o.userData.edgeId === "other")?.userData.gtekiStairWalkSupport).toBeUndefined();
+  expect(result.colliders.every((o) => !o.userData.gtekiStairWalkSupport)).toBe(true);
+});
+
 it("builds a lift scene gap as a shaft, not a stair or escalator (#645 step 2b)", () => {
   const station = { ...bundle, edges: [{ ...bundle.edges[0]!, mode: "elevator", attributes: { sceneGap: true } }] } as StationBundle;
   const result = buildConnectors(station, () => true, { hasFloor: () => false, nearMesh: () => false }, "high");

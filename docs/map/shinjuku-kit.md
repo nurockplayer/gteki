@@ -5,6 +5,7 @@ updated: 2026-11-03 JST
 ---
 # Shinjuku vertical kit
 
+- `stations/shinjuku/scene/stairProfile.ts` shares visible tread dimensions and the nosing-line walk surface between the scene builder and stair proxies. Updated 2026-11-17 JST.
 - `stations/shinjuku/scene/kit/swap.ts` collects anchors, plans resident placements, builds batches and atomically removes the replaced static finishes.
 - `stations/shinjuku/scene/kit/place.ts` keeps the 3 MB geometry / 8 MB texture guards station-wide; vertical triangles and draws are admitted at runtime.
 - `stations/shinjuku/scene/kit/lod.ts` groups vertical runs by 96 m horizontal spatial cell (a bounded 2×2 merge of 48 m cells). Kit meshes retain floor/material batches; fallback finishes share their original materials across floors. Within each cell, kit and procedural finish groups are complementary. Enter at 24 m from the three-dimensional run bounds, leave at 32 m; nearest cells spend the 60k triangle / 30 draw budget first.

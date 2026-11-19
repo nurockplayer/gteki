@@ -41,7 +41,7 @@ jobs:
     if: needs.changes.outputs.code == 'true'
     name: e2e-smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 75  # 2026-11-16: 53 min with cold open at 25 min (#1376)
+    timeout-minutes: 90  # 2026-11-17: cold open alone reached 35 min (15/16 passed) on #1408, #1422, #1438; was 75 (#1376)
     steps:
       - uses: actions/checkout@v4
 
@@ -81,7 +81,7 @@ jobs:
         run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off --grep-invert "station switching"
 
       - name: Cold open (desktop + phone)
-        timeout-minutes: 35
+        timeout-minutes: 48  # 2026-11-17: 15 of 16 tests passed in 35 min on #1438 (single tests 0.7–5.5 min)
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
@@ -222,7 +222,7 @@ jobs:
     if: needs.changes.outputs.code == 'true'
     name: journey (shinjuku) (${{ matrix.project }}${{ matrix.mode == 'next' && ', next' || '' }})
     runs-on: ubuntu-latest
-    timeout-minutes: 38
+    timeout-minutes: 50  # 2026-11-17: was 38; see Run journey
     strategy:
       fail-fast: false
       matrix:
@@ -246,7 +246,7 @@ jobs:
           pnpm install --ignore-workspace --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
       - name: Run journey
-        timeout-minutes: 32
+        timeout-minutes: 44  # 2026-11-17: phone next passed its arrival checks then hit 32 min on #1422 and #1408
         working-directory: tests/e2e
         env:
           CI: "1"

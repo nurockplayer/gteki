@@ -56,7 +56,7 @@ describe("docs/map references", () => {
 });
 
 describe("docs/map/symbols.tsv", () => {
-  // Parsing every source file can pass the 5 s default on one CPU (orb-test).
+  // Parsing every source file can pass the 5 s default on one CPU (tachi-run).
   it("matches the generator output", () => {
     const actual = fs.readFileSync(path.join(mapDir, "symbols.tsv"), "utf8");
     expect(generateSymbols(repoRoot), "docs/map/symbols.tsv is stale; run pnpm map:gen").toBe(actual);

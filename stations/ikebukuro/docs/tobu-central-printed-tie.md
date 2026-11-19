@@ -44,7 +44,7 @@ does not change and no catalog regeneration is needed.
 
 ## Matrix result
 
-`orb-test -- pnpm coverage:matrix` passed at 2026-11-03 21:12 JST; last
+`tachi-run -- pnpm coverage:matrix` passed at 2026-11-03 21:12 JST; last
 application line: `Coverage generated in 3.40 s.` The 東武東上線 output is
 `search y; route y; step-free 0/46` (previously `route n; step-free 0/0`).
 Counts remain 5 gates + 5 platforms + 1 lifts + 1 escalators + 1 toilets;

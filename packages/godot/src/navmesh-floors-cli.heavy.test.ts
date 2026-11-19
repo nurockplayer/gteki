@@ -1,4 +1,4 @@
-/** Slow public scene builds use the existing *.heavy.test.ts convention; run in a light orb-test container. */
+/** Slow public scene builds use the existing *.heavy.test.ts convention; run in a light tachi-run container. */
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
