@@ -12,7 +12,7 @@ import { ARTIFACTS, hooks, openStation } from "../lib/gteki.ts";
  * shot at each quarter and the avatar height recorded, so a walk/collision regression shows as a stuck or a height
  * jump. Evidence, not a golden: compare two runs (before/after) side by side.
  *
- * Not in CI; skipped unless GTEKI_VERTICAL=1. Needs a real GPU (run through `orb-test --heavy --host`), against a
+ * Not in CI; skipped unless GTEKI_VERTICAL=1. Needs a real GPU (run through `tachi-run --heavy --host`), against a
  * built checkout (GTEKI_ROOT, `pnpm build` first). From tests/e2e:
  *   GTEKI_VERTICAL=1 GTEKI_ROOT=<checkout> GTEKI_VERTICAL_LABEL=before pnpm exec playwright test specs/21-vertical-shots.spec.ts --project=desktop-chromium --project=phone-chromium
  * Desktop runs at 1280x800 (high tier), phone at 390x844 (Pixel 7, low tier).
