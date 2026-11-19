@@ -18,9 +18,8 @@ import { buildLiveScene } from '../../../../apps/web/src/explorer/liveScene.ts';
 import { cutPortals } from '../../../../apps/web/src/explorer/portalCut.ts';
 import { explorerTargets, castAll, castCamera } from '../../../../apps/web/src/explorer/raycast.ts';
 import { prepareRayTrees } from '../../../../apps/web/src/explorer/meshBvh.ts';
-import { cumulativeLengths, wallToRenderer, samplePolyline, angleDelta } from '../../../../apps/web/src/explorer/walker.ts';
+import { cumulativeLengths, wallToRenderer, samplePolyline } from '../../../../apps/web/src/explorer/walker.ts';
 import { guidePaceSpans } from '../../../../apps/web/src/explorer/guidePace.ts';
-import { WALKER_BODY, WALKER_SPEED } from '@gteki/scene-api';
 import { NO_SLOPE } from '../../../../apps/web/src/explorer/followCamera.ts';
 import { avatarMotion, CAT_TURN_RATE, stepCatBodyPitch } from '../../../../apps/web/src/explorer/avatarMotion.ts';
 
@@ -123,14 +122,19 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
       e.placeCamera(1/60,true);
       let previous=measure(e), maxMove=0, maxPitch=0, maxBoom=0;
       const poses: any[]=[];
+      let cropped=0, maxFlightBoom=0;
       for (let walked=1;walked<=810;walked++) {
         tick(e);
         const current=measure(e);
         maxMove=Math.max(maxMove,current.relative.distanceTo(previous.relative));
         maxPitch=Math.max(maxPitch,Math.abs(current.pitch-previous.pitch));
         maxBoom=Math.max(maxBoom,Math.abs(current.boom-previous.boom));
+        if(e.slope.velocity < -0.12) {
+          maxFlightBoom=Math.max(maxFlightBoom,Math.abs(current.boom-previous.boom));
+          if(current.top<0 || current.bottom>1 || current.left<0 || current.right>1) cropped++;
+        }
         previous=current;
-        if (stops && (walked===354 || walked===620)) {
+        if (stops && poses.length < 2 && e.pos.y <= [-3.73,-6.52][poses.length]!) {
           e.moving=false;
           for(let idle=0;idle<180;idle++) {
             tick(e);
@@ -150,7 +154,10 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
           e.moving=true;
         }
       }
-      console.info('1433 metrics',JSON.stringify({viewport:`${w}x${h}`,stops,maxMove,maxPitch,maxBoom,poses}));
+      console.info('1433 metrics',JSON.stringify({viewport:`${w}x${h}`,stops,maxMove,maxPitch,maxBoom,maxFlightBoom,cropped,poses}));
+      expect.soft(poses.length).toBe(stops ? 2 : 0);
+      expect.soft(cropped).toBe(0);
+      expect.soft(maxFlightBoom).toBeLessThanOrEqual(0.03);
       expect.soft(maxMove).toBeLessThanOrEqual(0.15);
       expect.soft(maxBoom).toBeLessThanOrEqual(0.15);
       expect.soft(maxPitch).toBeLessThanOrEqual(1);
@@ -168,4 +175,4 @@ it('keeps the exit-1 cat visible through descent, stops and restarts without cam
       console.info('1433 guide',JSON.stringify({viewport:`${w}x${h}`,next,sha256:createHash('sha256').update(JSON.stringify(frames)).digest('hex')}));
     }
   }
-},120000);
+},300000);
