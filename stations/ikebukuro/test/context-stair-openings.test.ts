@@ -125,6 +125,8 @@ it("leaves zero context surface area in every street-exit stair opening in both 
     const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
     const probes = [[170, 180], [170.7, 179], [169, 179.1], [170.5, 181.1]];
     for (const id of ["e_low__x35", "se_j__x42", "se_j__x43"]) {
+      const exit = bundle.nodes.find(node => node.id === bundle.edges.find(edge => edge.id === id)!.to)!;
+      probes.push([exit.position.x, -exit.position.y]);
       const rect = wells.find(well => well.edgeId === id)!.rects.at(-1)!;
       for (const fraction of [-0.8, 0, 0.8]) probes.push([
         rect.center.x + rect.along.x * rect.halfLength * fraction,

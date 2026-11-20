@@ -277,10 +277,11 @@ export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D,
   const exits = new Set(bundle.nodes.filter(n => n.kind === "exit" && streetFloors.has(n.floorId)).map(n => n.id));
   const openings = stairwellWells(bundle, e => !e.closed && (exits.has(e.from) || exits.has(e.to))).flatMap(well => well.rects.map(rect => {
     // x39's switchback well extends beyond the sampled navigation centreline.
-    const margin = well.edgeId === "s39_f__x39" ? 1 : 0;
+    const roadLid = ["e_low__x35", "se_j__x42", "se_j__x43"].includes(well.edgeId);
+    const margin = well.edgeId === "s39_f__x39" ? 2 : roadLid ? 0.2 : 0;
     const halfLength = rect.halfLength + margin, halfWidth = rect.halfWidth + margin;
     // These stair tops sit below the context road, so the cut must reach street height.
-    const upperY = ["e_low__x35", "se_j__x42", "se_j__x43"].includes(well.edgeId)
+    const upperY = roadLid
       ? Math.max(well.upperY, streetRenderY(bundle.floors)! + 0.05) : well.upperY;
     const along = (p: THREE_NS.Vector3) => (p.x - rect.center.x) * rect.along.x + (p.z - rect.center.z) * rect.along.z;
     const across = (p: THREE_NS.Vector3) => (p.x - rect.center.x) * rect.across.x + (p.z - rect.center.z) * rect.across.z;
