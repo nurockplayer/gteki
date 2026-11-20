@@ -25,7 +25,7 @@ it.each(["low", "high"] as const)("animates every escalator slice with one low-t
   try {
     const meshes: THREE.InstancedMesh[] = [];
     station.root.traverse(o => { if (o instanceof THREE.InstancedMesh && o.name.startsWith("escalator-steps:")) meshes.push(o); });
-    const counts = station.escalators.map(({ run }) => Math.ceil(Math.hypot(Math.hypot(run.b.x - run.a.x, run.b.y - run.a.y) || 1, run.b.z - run.a.z) / 0.4));
+    const counts = station.escalators.map(({ run }) => Math.ceil(Math.hypot(Math.hypot(run.b.x - run.a.x, run.b.y - run.a.y) || 1, run.b.z - run.a.z) / 0.4) + 2);
     expect(station.escalators.length).toBeGreaterThan(1);
     expect(station.escalators.some(esc => esc.speed !== 0)).toBe(true);
     expect(meshes).toHaveLength(quality === "low" ? 1 : station.escalators.length);
@@ -69,14 +69,48 @@ it.each(["low", "high"] as const)("animates every escalator slice with one low-t
       esc.steps.getMatrixAt((range.offset ?? 0) + 1, matrix);
       const position = new THREE.Vector3().setFromMatrixPosition(matrix);
       const phase = ((0.2 * esc.speed % 0.4) + 0.4) % 0.4;
-      const f = (0.4 + phase) / range.L3;
+      const f = phase / range.L3;
       expect(position.x).toBeCloseTo(range.lo.x + (range.hi.x - range.lo.x) * f, 4);
-      expect(position.y).toBeCloseTo(range.lo.z + (range.hi.z - range.lo.z) * f - 0.03, 4);
+      expect(position.y).toBeCloseTo(range.lo.z, 4);
       expect(position.z).toBeCloseTo(-(range.lo.y + (range.hi.y - range.lo.y) * f), 4);
       if (esc.speed !== 0) expect(matrix.equals(before[i]!)).toBe(false);
       const scale = new THREE.Vector3().setFromMatrixScale(matrix);
       if (quality === "high") expect(scale.toArray().map(v => Math.round(v * 1e5) / 1e5)).toEqual([1, 1, 1]);
       else expect(scale.distanceTo(range.scale)).toBeLessThan(1e-6);
+    }
+    const camera = new THREE.PerspectiveCamera(120, 1, 0.1, 10000);
+    camera.position.set(0, 1000, 0);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld(true);
+    const scene = quality === "low" ? sceneWithSteps(station) : null;
+    const cycleSeconds = Math.max(...counts) * 0.4 / 0.5;
+    const matrix = new THREE.Matrix4();
+    const position = new THREE.Vector3();
+    const scale = new THREE.Vector3();
+    for (let sample = 0; sample <= 64; sample++) {
+      station.update(0, sample * cycleSeconds / 64);
+      if (scene) scene.onBeforeRender(rendererAt(sample + 2), scene, camera, null as never, null as never, null as never);
+      for (const esc of station.escalators) {
+        const range = quality === "low" ? esc.steps.userData.ranges[esc.run.edgeId] : esc.steps.userData;
+        const dx = range.hi.x - range.lo.x, dy = range.hi.y - range.lo.y;
+        const length = Math.hypot(dx, dy);
+        const halfDepth = 0.4 * length / range.L3 / 2;
+        let bottom = 0, top = 0;
+        for (let i = 0; i < range.count; i++) {
+          esc.steps.getMatrixAt((range.offset ?? 0) + i, matrix);
+          position.setFromMatrixPosition(matrix);
+          scale.setFromMatrixScale(matrix);
+          const along = ((position.x - range.lo.x) * dx + (-position.z - range.lo.y) * dy) / length;
+          expect(position.y).toBeLessThanOrEqual(range.hi.z + 1e-4);
+          if (along <= 0.8) { expect(position.y).toBeCloseTo(range.lo.z, 4); bottom++; }
+          if (along >= length - 0.8) { expect(position.y).toBeCloseTo(range.hi.z, 4); top++; }
+          if (scale.x === 0) expect(along < -halfDepth + 1e-4 || along > length + halfDepth - 1e-4).toBe(true);
+          if (along >= 0 && along <= length) expect(scale.x).toBeGreaterThan(0);
+        }
+        expect(bottom).toBeGreaterThanOrEqual(2);
+        expect(top).toBeGreaterThanOrEqual(2);
+        expect(esc.speed).toBe(0.5 * (esc.run.travel === 0 ? 0 : (esc.run.a.z <= esc.run.b.z ? 1 : -1) * esc.run.travel));
+      }
     }
   } finally { station.dispose(); }
 }, 120_000);
@@ -126,10 +160,10 @@ it("packs only camera-visible low-tier runs, animates the packed slice and keeps
     const after = new THREE.Matrix4();
     mesh.getMatrixAt(1, after);
     const phase = ((0.2 * first.speed % 0.4) + 0.4) % 0.4;
-    const f = (0.4 + phase) / firstRange.L3;
+    const f = phase / firstRange.L3;
     const position = new THREE.Vector3().setFromMatrixPosition(after);
     expect(position.x).toBeCloseTo(firstRange.lo.x + (firstRange.hi.x - firstRange.lo.x) * f, 4);
-    expect(position.y).toBeCloseTo(firstRange.lo.z + (firstRange.hi.z - firstRange.lo.z) * f - 0.03, 4);
+    expect(position.y).toBeCloseTo(firstRange.lo.z, 4);
     expect(position.z).toBeCloseTo(-(firstRange.lo.y + (firstRange.hi.y - firstRange.lo.y) * f), 4);
     expect(first.speed).not.toBe(0);
     expect(after.equals(before)).toBe(false);

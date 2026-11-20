@@ -24,6 +24,7 @@ import { buildIdentityBoards } from "./identity.ts";
 import type { TimeBand } from "../../ikebukuro/scene/time-band.ts";
 import { stableHypot } from "./stable-hypot.ts";
 import { stairProfile } from "./stairProfile.ts";
+import { ESCALATOR_FLAT_STEPS, ESCALATOR_STEP_DEPTH_M } from "./kit/config.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -966,7 +967,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     root.add(mesh);
   }
   const escalators: BuiltStation["escalators"] = [];
-  const stepCount = (r: Run) => Math.ceil(stableHypot(stableHypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1, r.b.z - r.a.z) / 0.4);
+  const stepCount = (r: Run) => Math.ceil(stableHypot(stableHypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1, r.b.z - r.a.z) / 0.4) + 2;
   const lowStepSizes = opts.quality === "low" ? layout.runs.filter(r => r.mode === "escalator").map(r => {
     const L = stableHypot(r.b.x - r.a.x, r.b.y - r.a.y) || 1;
     const rise = Math.abs(r.b.z - r.a.z);
@@ -1052,11 +1053,24 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         // Truss top sits 0.25 m under the incline, below the step profile's lowest point (about 0.17 m).
         // Darker under the skirt and steps, open towards the bottom.
         const inclineAt = (p: THREE.Vector3) => lo.z + dz * THREE.MathUtils.clamp(((p.x - lo.x) * dx + (-p.z - lo.y) * dy) / (L * L), 0, 1);
-        trussGeos.push(contactShade(boxAlong(v3({ ...lo, z: lo.z - 0.7 }), v3({ ...hi, z: hi.z - 0.7 }), r.width + 0.3, 0.9), (p) => (inclineAt(p) - 0.25 - p.y) / 0.9, 0.6));
+        const flat = ESCALATOR_FLAT_STEPS * ESCALATOR_STEP_DEPTH_M;
+        const lower = { x: lo.x + u.x * flat, y: lo.y + u.y * flat, z: lo.z };
+        const upper = { x: hi.x - u.x * flat, y: hi.y - u.y * flat, z: hi.z };
+        for (const [a, b] of [[lo, lower], [lower, upper], [upper, hi]]) {
+          trussGeos.push(contactShade(boxAlong(v3({ ...a!, z: a!.z - 0.7 }), v3({ ...b!, z: b!.z - 0.7 }), r.width + 0.3, 0.9), (p) => (inclineAt(p) - 0.25 - p.y) / 0.9, 0.6));
+        }
+        // Landing plates cover the whole tread before it wraps, including runs without kit dressing.
+        for (const [end, direction] of [[lo, -1], [hi, 1]] as const) {
+          const plate = new THREE.BoxGeometry(ESCALATOR_STEP_DEPTH_M, 0.04, r.width - 0.08);
+          plate.rotateY(yaw);
+          plate.translate(end.x + u.x * direction * ESCALATOR_STEP_DEPTH_M / 2, end.z - 0.018,
+            -(end.y + u.y * direction * ESCALATOR_STEP_DEPTH_M / 2));
+          steelGeos.push(plate);
+        }
         // animated steps: a level tread and the riser under its downhill edge, so the run reads as steps, not a ramp
         const L3 = stableHypot(L, dz);
         const stepLen = 0.4;
-        const count = Math.ceil(L3 / stepLen);
+        const count = Math.ceil(L3 / stepLen) + 2;
         const scale = new THREE.Vector3(stepLen * (L / L3), stepLen * (dz / L3), r.width - 0.1);
         const steps = sharedSteps ?? new THREE.InstancedMesh(track(escalatorStepGeometry(scale.x, scale.y, scale.z)), mat.escStep, count);
         // Animated every frame: dynamic usage also tells the explorer's cuts to leave these instances alone.
@@ -1344,8 +1358,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const kitSwap = opts.kit && ledger
     ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track }) ?? undefined
     : undefined;
-  // Runs whose balustrade the kit replaced; only these get the kit comb plates.
-  const combed = new Set(kitSwap?.placed.filter((p) => p.replaces === "escalator-balustrade").map((p) => p.anchorKey));
   addWallBackFaces(root, mat.wall, track);
   // #744: level-B6 draws its repeat batches once per material. Merge before the floor light pools
   // bake `uv1` into every floor mesh, so the merged floor keeps its AO coordinates.
@@ -1654,17 +1666,20 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const { lo, hi, yaw, count, L3, stepLen, scale = tmpS } = (esc.steps.userData.ranges?.[esc.run.edgeId] ?? esc.steps.userData) as {
       lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number; scale?: THREE.Vector3;
     };
-    const trim = combed.has(esc.run.edgeId) && (!kitSwap?.lod || kitSwap.lod.active.has(esc.run.edgeId)) ? stepLen / 2 : 0;
+    const length = stableHypot(hi.x - lo.x, hi.y - lo.y) || 1;
+    const flat = ESCALATOR_FLAT_STEPS * ESCALATOR_STEP_DEPTH_M;
+    const halfDepth = stepLen * length / L3 / 2;
     tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
-    const phase = freezeStepPhase ? 0 : (((t * esc.speed) % stepLen) + stepLen) % stepLen;
+    const cycle = count * stepLen;
+    const phase = freezeStepPhase ? 0 : ((t * esc.speed % cycle) + cycle) % cycle;
     for (let i = 0; i < count; i++) {
-      let s = i * stepLen + phase;
-      if (s > L3) s -= L3;
+      const s = (i * stepLen + phase) % cycle - stepLen;
       const f = s / L3;
-      tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * f - 0.03, -(lo.y + (hi.y - lo.y) * f));
-      // On a kit run, a step within half a step of either comb would poke a sliver past it: hide it there.
-      // Procedural runs have no comb, so hiding would open a gap at the landing instead.
-      tmpM.compose(tmpP, tmpQ, s < trim || s > L3 - trim ? zeroS : scale);
+      const along = f * length;
+      const height = THREE.MathUtils.clamp((along - flat) / (length - 2 * flat), 0, 1);
+      tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * height, -(lo.y + (hi.y - lo.y) * f));
+      // Hide only after the entire tread is beneath a landing plate, never in the visible band.
+      tmpM.compose(tmpP, tmpQ, along < -halfDepth || along > length + halfDepth ? zeroS : scale);
       esc.steps.setMatrixAt(offset + i, tmpM);
     }
     return count;
