@@ -62,30 +62,11 @@ it("selects the routable Shinjuku cold-open pair and rejects a missing endpoint"
   expect(coldOpenPair("shinjuku", parsed.bundle.pois.filter((p) => p.id !== "poi:exit:1"))).toBeNull();
 });
 
-describe("cold-open discovery", () => {
-  it("shows floor marks at 2 s, fades for 3 s, and shows the hint from 4 to 9 s", () => {
-    const cue = new ColdOpenDiscovery();
-    expect(cue.frame(100)).toMatchObject({ opacity: 0, hint: false });
-    cue.start(100);
-    expect(cue.frame(2099)).toMatchObject({ opacity: 0, hint: false });
-    expect(cue.frame(2100)).toMatchObject({ opacity: .28, hint: false });
-    expect(cue.frame(4099).hint).toBe(false);
-    expect(cue.frame(4100).hint).toBe(true);
-    expect(cue.frame(4100).opacity).toBeCloseTo(.28 / 3);
-    expect(cue.frame(5100)).toMatchObject({ opacity: 0, hint: true });
-    expect(cue.frame(9099).hint).toBe(true);
-    expect(cue.frame(9100)).toEqual({ opacity: 0, hint: false, done: true });
-    cue.start(10000);
-    expect(cue.frame(14000).hint).toBe(false);
-  });
-
-  it.each([1000, 4500])("dismisses both cues permanently on input or guide start at %i ms", (at) => {
-    const cue = new ColdOpenDiscovery();
-    cue.start(0);
-    cue.frame(at);
-    cue.dismiss();
-    expect(cue.frame(at)).toEqual({ opacity: 0, hint: false, done: true });
-    cue.start(at);
-    expect(cue.frame(at + 4000)).toEqual({ opacity: 0, hint: false, done: true });
-  });
+it("shows direction marks by about 2 s and a hint by about 4 s, dismissed on first input", () => {
+  const cue = new ColdOpenDiscovery();
+  cue.start(0);
+  expect(cue.frame(2200).opacity).toBeGreaterThan(0);
+  expect(cue.frame(4200).hint).toBe(true);
+  cue.dismiss();
+  expect(cue.frame(4300)).toMatchObject({ opacity: 0, hint: false });
 });

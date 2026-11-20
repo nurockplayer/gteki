@@ -43,55 +43,68 @@ async function overlay(page: Page): Promise<Overlay> {
   });
 }
 
-test("guided-walk discovery frames (J3) @phone", async ({ page }, info) => {
-  test.setTimeout(180_000);
-  const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
-  const cdp = await page.context().newCDPSession(page);
-  const clockStart = new Date();
-  await page.clock.install({ time: clockStart });
-  await page.clock.pauseAt(new Date(clockStart.getTime() + 1000));
-  await page.addInitScript(PROBE_SCRIPT);
-  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning", { waitUntil: "commit" });
-  // Advance startup frames while assets load, then keep the short cue windows frozen for capture.
-  await expect.poll(async () => {
-    await page.clock.runFor(50);
-    return page.evaluate(() => performance.getEntriesByName("boot-lift").length > 0);
-  }, { timeout: 120_000 }).toBe(true);
-  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
-  const captures = [];
-  for (const seconds of [3, 5]) {
-    const elapsed = await page.evaluate(() => performance.now() - performance.getEntriesByName("boot-lift")[0]!.startTime);
-    await page.clock.fastForward(seconds * 1000 - elapsed);
-    await page.clock.runFor(20);
-    const state = await page.evaluate(() => {
-      const g = (window as any).__gteki;
-      const marks = g.scanProbe().explorer.scene.getObjectByName("cold-open-direction-marks");
-      g.goldenFrame();
-      return {
-        elapsedMs: performance.now() - performance.getEntriesByName("boot-lift")[0]!.startTime,
-        directionMarksVisible: marks.visible, opacity: marks.material.opacity,
-        hintVisible: !document.querySelector<HTMLElement>(".cold-open-hint")!.hidden,
+test("guided-walk discovery frames and explicit-only CTA (J3) @phone", async ({ page }, info) => {
+  test.setTimeout(360_000);
+  for (const lang of ["ja", "en"]) {
+    const out = path.join(outDir(info.project.name), lang); fs.mkdirSync(out, { recursive: true });
+    const cdp = await page.context().newCDPSession(page);
+    const clockStart = new Date();
+    await page.clock.install({ time: clockStart });
+    await page.clock.pauseAt(new Date(clockStart.getTime() + 1000));
+    await page.addInitScript(() => {
+      const mark = performance.mark.bind(performance);
+      performance.mark = (name, options) => {
+        if (name === "boot-lift") (window as any).__discoveryStartedAt = performance.now();
+        return mark(name, options);
       };
     });
-    expect(state.directionMarksVisible).toBe(seconds === 3);
-    expect(state.hintVisible).toBe(seconds === 5);
-    const file = `discovery-${seconds}s.png`;
-    const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
-    fs.writeFileSync(path.join(out, file), Buffer.from(png.data, "base64"));
-    captures.push({ file, ...state });
+    await page.addInitScript(PROBE_SCRIPT);
+    await page.goto(`/?qaTimeBand=morning&lang=${lang}${reelMode === "next" ? "&next=1" : ""}`, { waitUntil: "commit" });
+    // Skip repeated GPU frames during loading; keep the real DOM cue callbacks running.
+    await expect.poll(async () => {
+      await page.clock.fastForward(1000);
+      return page.evaluate(() => {
+        (window as any).__gteki?.holdFrames(true);
+        return (window as any).__discoveryStartedAt !== undefined;
+      });
+    }, { timeout: 120_000 }).toBe(true);
+    const captures = [];
+    for (const seconds of [3, 5]) {
+      const elapsed = await page.evaluate(() => performance.now() - (window as any).__discoveryStartedAt);
+      await page.clock.fastForward(seconds * 1000 - elapsed);
+      await page.clock.runFor(20);
+      const state = await page.evaluate(() => {
+        const g = (window as any).__gteki;
+        const marks = g.scanProbe().explorer.scene.getObjectByName("cold-open-direction-marks");
+        g.goldenFrame();
+        return {
+          elapsedMs: performance.now() - (window as any).__discoveryStartedAt,
+          directionMarksVisible: marks.visible, opacity: marks.material.opacity,
+          hintVisible: !document.querySelector<HTMLElement>(".cold-open-hint")!.hidden,
+        };
+      });
+      expect(state.directionMarksVisible).toBe(seconds === 3);
+      expect(state.hintVisible).toBe(seconds === 5);
+      const file = `discovery-${seconds}s.png`;
+      const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+      fs.writeFileSync(path.join(out, file), Buffer.from(png.data, "base64"));
+      const coverage = await overlay(page);
+      const primaryCount = await page.locator("button.primary:visible").count();
+      captures.push({ file, ...state, ...coverage, primaryCount });
+      expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? 30 : 20);
+      expect(primaryCount).toBe(1);
+    }
+    const box = (await page.locator(".cold-open .primary").boundingBox())!;
+    const record = { lang, touchTargetHeight: box.height, clock: "browser time held at each capture", captures };
+    fs.writeFileSync(path.join(out, "discovery-j3.json"), JSON.stringify(record, null, 2));
+    console.log(`J3 hint shown: ${info.project.name} ${JSON.stringify(record)}`);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    if (info.project.name.startsWith("phone")) expect(box.x).toBeGreaterThanOrEqual(page.viewportSize()!.width * .45);
+    await page.clock.fastForward(10_000);
+    expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("walk");
+    await page.clock.uninstall();
+    await cdp.detach();
   }
-  const coverage = await overlay(page);
-  const primary = page.locator(".cold-open .primary");
-  const box = (await primary.boundingBox())!;
-  const primaryCount = await page.locator("button.primary:visible").count();
-  const record = { ...coverage, primaryCount, touchTargetHeight: box.height, clock: "browser time held at each capture", captures };
-  fs.writeFileSync(path.join(out, "discovery-j3.json"), JSON.stringify(record, null, 2));
-  console.log(`J3 hint shown: ${info.project.name} ${JSON.stringify(record)}`);
-  expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? 30 : 20);
-  expect(primaryCount).toBe(1);
-  expect(box.height).toBeGreaterThanOrEqual(44);
-  if (info.project.name.startsWith("phone")) expect(box.x).toBeGreaterThanOrEqual(page.viewportSize()!.width * .45);
-  expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("walk");
 });
 
 test("cold open @phone", async ({ page, browserName }, info) => {
