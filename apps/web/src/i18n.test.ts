@@ -22,7 +22,7 @@ describe("i18n", () => {
     const app = new App(root);
     const explorer = {
       currentMode: "walk", firstPersonOn: false, graphOverlayOn: false, audioMuted: true,
-      getPose: () => null, clearRoute() {}, refitOverview() {}, frameAll: vi.fn(),
+      getPose: () => null, clearRoute() {}, refitOverview() {}, setCreditLine() {}, frameAll: vi.fn(),
       toggleFirstPerson() { return this.firstPersonOn = !this.firstPersonOn; },
       setGraphOverlay(on: boolean) { this.graphOverlayOn = on; },
       setMuted(muted: boolean) { this.audioMuted = muted; },
