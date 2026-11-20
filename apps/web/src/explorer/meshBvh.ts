@@ -86,9 +86,14 @@ const computeIntersections = (THREE.Mesh.prototype as unknown as { _computeInter
  * A plain static mesh the tree can stand in for: three's own Mesh.raycast and vertex positions (no skinning,
  * instancing, batching or morphing), whole triangles only (draw range, groups and buffer in steps of 3).
  */
+function nativeInstances(object: THREE.Object3D): object is THREE.InstancedMesh {
+  const mesh = object as THREE.InstancedMesh;
+  return mesh.isInstancedMesh === true && mesh.raycast === THREE.InstancedMesh.prototype.raycast && mesh.morphTexture === null;
+}
+
 function treeable(object: THREE.Object3D): object is THREE.Mesh {
   const mesh = object as THREE.Mesh;
-  if (mesh.isMesh !== true || mesh.raycast !== THREE.Mesh.prototype.raycast || mesh.getVertexPosition !== THREE.Mesh.prototype.getVertexPosition) return false;
+  if (mesh.isMesh !== true || (mesh.raycast !== THREE.Mesh.prototype.raycast && !nativeInstances(mesh)) || mesh.getVertexPosition !== THREE.Mesh.prototype.getVertexPosition) return false;
   const geometry = mesh.geometry;
   if (!geometry?.getAttribute("position") || geometry.morphAttributes.position?.length) return false;
   const whole = (n: number) => n === Infinity || n % 3 === 0;
@@ -103,6 +108,9 @@ export function prepareRayTrees(objects: readonly THREE.Object3D[]): { trees: nu
   const trees = new Set<TriangleBvh>();
   for (const object of objects) {
     if (!treeable(object)) continue;
+    // Native InstancedMesh does not build this per-instance broad phase. Its
+    // geometry-local box stays valid as the instance matrices move.
+    if (nativeInstances(object) && object.geometry.boundingBox === null) object.geometry.computeBoundingBox();
     cacheBvh(object.geometry);
     trees.add(currentBvh(object.geometry)!);
   }
@@ -119,6 +127,28 @@ const sphereHitAt = new THREE.Vector3();
 const linear = new THREE.Matrix3();
 const step = new THREE.Vector3();
 const candidates: number[] = [];
+const instanceMesh = new THREE.Mesh();
+const instanceMatrix = new THREE.Matrix4();
+
+/** Three's instance loop, with each live instance using the shared geometry tree. */
+function raycastInstances(object: THREE.InstancedMesh, raycaster: THREE.Raycaster, intersects: THREE.Intersection[]): void {
+  if (object.material === undefined) return;
+  if (object.boundingSphere === null) object.computeBoundingSphere();
+  sphere.copy(object.boundingSphere!).applyMatrix4(object.matrixWorld);
+  if (!raycaster.ray.intersectsSphere(sphere)) return;
+  instanceMesh.geometry = object.geometry;
+  instanceMesh.material = object.material;
+  for (let instanceId = 0; instanceId < object.count; instanceId++) {
+    object.getMatrixAt(instanceId, instanceMatrix);
+    instanceMesh.matrixWorld.multiplyMatrices(object.matrixWorld, instanceMatrix);
+    const start = intersects.length;
+    raycastObject(instanceMesh, raycaster, intersects);
+    for (let i = start; i < intersects.length; i++) {
+      intersects[i]!.instanceId = instanceId;
+      intersects[i]!.object = object;
+    }
+  }
+}
 
 /** Below this, three's loop over every triangle is cheaper than asking a tree. */
 const SMALL_MESH_TRIANGLES = 32;
@@ -138,8 +168,12 @@ export function raycastObject(object: THREE.Object3D, raycaster: THREE.Raycaster
     const overhead = object.userData.gtekiOverheadRaycast;
     if (typeof overhead === "function") overhead(raycaster, intersects);
   }
+  if (nativeInstances(object)) {
+    raycastInstances(object, raycaster, intersects);
+    return;
+  }
   const mesh = object as THREE.Mesh;
-  // Anything with its own raycast (instanced, batched, skinned, sprites, lines) runs it unchanged.
+  // Custom, deforming, batched, skinned, sprite and line raycasts run unchanged.
   if (mesh.isMesh !== true || mesh.raycast !== THREE.Mesh.prototype.raycast) {
     object.raycast(raycaster, intersects);
     return;
