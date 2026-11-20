@@ -276,23 +276,29 @@ export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D,
   const streetFloors = new Set(bundle.floors.filter(f => f.ordinal === 0 && !f.intermediate).map(f => f.id));
   const exits = new Set(bundle.nodes.filter(n => n.kind === "exit" && streetFloors.has(n.floorId)).map(n => n.id));
   const openings = stairwellWells(bundle, e => !e.closed && (exits.has(e.from) || exits.has(e.to))).flatMap(well => well.rects.map(rect => {
+    // x39's switchback well extends beyond the sampled navigation centreline.
+    const margin = well.edgeId === "s39_f__x39" ? 1 : 0;
+    const halfLength = rect.halfLength + margin, halfWidth = rect.halfWidth + margin;
+    // These stair tops sit below the context road, so the cut must reach street height.
+    const upperY = ["e_low__x35", "se_j__x42", "se_j__x43"].includes(well.edgeId)
+      ? Math.max(well.upperY, streetRenderY(bundle.floors)! + 0.05) : well.upperY;
     const along = (p: THREE_NS.Vector3) => (p.x - rect.center.x) * rect.along.x + (p.z - rect.center.z) * rect.along.z;
     const across = (p: THREE_NS.Vector3) => (p.x - rect.center.x) * rect.across.x + (p.z - rect.center.z) * rect.across.z;
     return {
-    bounds: { along: rect.halfLength, across: rect.halfWidth, lowerY: well.lowerY, upperY: well.upperY },
+    bounds: { along: halfLength, across: halfWidth, lowerY: well.lowerY, upperY },
     planes: [
-      (p: THREE_NS.Vector3) => along(p) + rect.halfLength,
-      (p: THREE_NS.Vector3) => rect.halfLength - along(p),
+      (p: THREE_NS.Vector3) => along(p) + halfLength,
+      (p: THREE_NS.Vector3) => halfLength - along(p),
       (p: THREE_NS.Vector3) => p.y - well.lowerY,
-      (p: THREE_NS.Vector3) => well.upperY - p.y,
-      (p: THREE_NS.Vector3) => across(p) + rect.halfWidth,
-      (p: THREE_NS.Vector3) => rect.halfWidth - across(p),
+      (p: THREE_NS.Vector3) => upperY - p.y,
+      (p: THREE_NS.Vector3) => across(p) + halfWidth,
+      (p: THREE_NS.Vector3) => halfWidth - across(p),
     ],
     intersectsBounds: (polygon: Polygon) => {
       const coords = polygon.map(vertex => ({ u: along(vertex.point), v: across(vertex.point), y: vertex.point.y }));
-      return Math.min(...coords.map(p => p.u)) <= rect.halfLength && Math.max(...coords.map(p => p.u)) >= -rect.halfLength
-        && Math.min(...coords.map(p => p.v)) <= rect.halfWidth && Math.max(...coords.map(p => p.v)) >= -rect.halfWidth
-        && Math.min(...coords.map(p => p.y)) <= well.upperY && Math.max(...coords.map(p => p.y)) >= well.lowerY;
+      return Math.min(...coords.map(p => p.u)) <= halfLength && Math.max(...coords.map(p => p.u)) >= -halfLength
+        && Math.min(...coords.map(p => p.v)) <= halfWidth && Math.max(...coords.map(p => p.v)) >= -halfWidth
+        && Math.min(...coords.map(p => p.y)) <= upperY && Math.max(...coords.map(p => p.y)) >= well.lowerY;
     },
   }; }));
   root.updateMatrixWorld(true);
