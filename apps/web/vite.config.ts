@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 import { defineConfig } from "vite";
 import { gtekiStations } from "./stations-plugin.ts";
 import { threeAliases } from "./three-alias.ts";
@@ -14,6 +15,7 @@ const roots = [path.join(repo, "stations"), ...extraRoots];
 const overlay = process.env.GTEKI_PRIVATE_OVERLAY ? path.resolve(process.env.GTEKI_PRIVATE_OVERLAY) : null;
 
 export default defineConfig({
+  define: { __BUILD_SHA__: JSON.stringify(execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim()) },
   base: "./",
   plugins: [gtekiStations(roots, { overlay }), fieldOffline(), fieldPrivate(overlay)],
   resolve: {

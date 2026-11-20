@@ -1,0 +1,8 @@
+{
+  "name": "gteki",
+  "pages_build_output_dir": "deploy/cloudflare-pages/dist",
+  "compatibility_date": "2026-11-21",
+  "kv_namespaces": [
+    { "binding": "FEEDBACK", "id": "00000000000000000000000000000000" }
+  ]
+}

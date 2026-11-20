@@ -72,6 +72,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - Assets and visual: `docs/assets/`, `docs/visual/`, `assets/`
 - CI: `.github/workflows/root-test.yml` (typecheck + root vitest, the merge gate together with `test`), `.github/workflows/gis-test.yml`, `.github/workflows/e2e-smoke.yml`, `.github/workflows/reuse.yml`, `.github/workflows/deploy-pages.yml`
 - Deploy: `deploy/cloudflare-pages/`
+- Player feedback (J14): menu form, automatic game snapshot, Pages Function/KV and local triage command · `apps/web/src/ui/feedback.ts`, `functions/api/feedback.ts`, `tools/feedback/list.mjs` · setup: `deploy/cloudflare-pages/feedback.md`
 - Licensing: `REUSE.toml`, `LICENSES/`, `NOTICE`
 
 ## Common commands

@@ -518,9 +518,11 @@ HOURS_MAX_AGE_DAYS	const	apps/web/src/hours.ts
 HOURS_STALE_DAYS	const	apps/web/src/hours.ts
 hoursStale	function	apps/web/src/hours.ts
 printedHours	function	apps/web/src/hours.ts
+FeedbackLang	type	apps/web/src/i18n.ts
 Lang	type	apps/web/src/i18n.ts
 Strings	type	apps/web/src/i18n.ts
 coverageText	function	apps/web/src/i18n.ts
+feedbackStrings	function	apps/web/src/i18n.ts
 initialLang	function	apps/web/src/i18n.ts
 pick	function	apps/web/src/i18n.ts
 strings	function	apps/web/src/i18n.ts
@@ -602,6 +604,8 @@ pushRecent	function	apps/web/src/ui/emptySuggestions.ts
 readRecent	function	apps/web/src/ui/emptySuggestions.ts
 writeRecent	function	apps/web/src/ui/emptySuggestions.ts
 escalatorEtaSuffix	function	apps/web/src/ui/escalatorEta.ts
+buildFeedbackPayload	function	apps/web/src/ui/feedback.ts
+openFeedback	function	apps/web/src/ui/feedback.ts
 DEMO_PAIRS	const	apps/web/src/ui/firstRun.ts
 FIRST_RUN_KEY	const	apps/web/src/ui/firstRun.ts
 coldOpenPair	function	apps/web/src/ui/firstRun.ts
