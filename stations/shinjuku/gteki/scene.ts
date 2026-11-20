@@ -32,6 +32,7 @@ import shopKitManifest from "../scene/shop_kit.json" with { type: "json" };
 import shopBays from "../scene/shop_bays.json" with { type: "json" };
 import shopPlacements from "../scene/shop_placements.json" with { type: "json" };
 import wallPropPlacements from "../scene/wall-props.ts";
+import sliceShop from "../scene/slice-shop.json" with { type: "json" };
 
 const markScene = (name: string) => { if (typeof performance !== "undefined") performance.mark(`gteki:scene:${name}`); };
 
@@ -242,8 +243,8 @@ export const buildScene: BuildScene = (ctx) => {
   const request = kitSwapRequested(typeof location === "undefined" ? undefined : location.search);
   const swap = request.enabled ? prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}), ...(request.roles ? { roles: request.roles } : {}) }) : Promise.resolve(null);
   const shops = loadShopKit(ctx.THREE, ctx, shopKitManifest as KitManifest,
-    [...shopPlacements.shops, ...(ctx.privateShops?.shops ?? [])] as Shop[],
-    [...shopBays.openings, ...(ctx.privateShops?.openings ?? [])] as Opening[], ctx.quality === "low")
+    [...shopPlacements.shops, sliceShop.shop, ...(ctx.privateShops?.shops ?? [])] as Shop[],
+    [...shopBays.openings, sliceShop.opening, ...(ctx.privateShops?.openings ?? [])] as Opening[], ctx.quality === "low")
     .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; })
     .finally(() => markScene("shops"));
   const markedSwap = swap.finally(() => markScene("kit"));
@@ -584,7 +585,25 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   // The interactive wall prop (#858 item 12): decorative, never a POI.
   const vending = wallPropPlacements.find((p) => p.interaction)!;
   const anchor = toRenderer(vending.wall[0] + vending.n[0] * (vending.d + 0.6), vending.wall[1] + vending.n[1] * (vending.d + 0.6), vending.z);
+  // A wooden leaf lights up in the closed display during the short shop reaction.
+  const leaf = new T.Shape();
+  leaf.moveTo(0, -0.16); leaf.quadraticCurveTo(-0.25, 0.02, 0, 0.22);
+  leaf.quadraticCurveTo(0.25, 0.02, 0, -0.16);
+  const leafGeometry = new T.ShapeGeometry(leaf, 6);
+  const leafMaterial = new T.MeshBasicMaterial({ color: "#c9ad76", side: T.DoubleSide });
+  const reaction = new T.Mesh(leafGeometry, leafMaterial);
+  const normal = sliceShop.opening.normal_deg * Math.PI / 180;
+  reaction.position.copy(toRenderer(sliceShop.opening.centre[0]! + Math.cos(normal) * 0.18,
+    sliceShop.opening.centre[1]! + Math.sin(normal) * 0.18, sliceShop.opening.base_z + 1.2));
+  reaction.rotation.y = (sliceShop.opening.normal_deg + 90) * Math.PI / 180;
+  reaction.visible = false;
+  reaction.userData.gtekiInteractionId = sliceShop.shop.id;
+  built.root.add(reaction);
+  const shopAnchor = toRenderer(sliceShop.stand.x, sliceShop.stand.y, sliceShop.stand.z);
   const interactables = [
+    { id: sliceShop.shop.id, kind: "shop", layer: "fictional" as const, simulated: true as const,
+      anchor: { x: shopAnchor.x, y: shopAnchor.y, z: shopAnchor.z }, radiusM: 0.9,
+      steps: sliceShop.steps, reward: sliceShop.reward, once: sliceShop.once },
     { id: vending.interaction!, kind: "vending", layer: "fictional" as const, simulated: true as const,
       anchor: { x: anchor.x, y: anchor.y, z: anchor.z }, radiusM: 0.9,
       steps: [{ id: "look", seconds: 1.2 }, { id: "sit", seconds: 1.5 }, { id: "react", seconds: 2.0 }], once: false },
@@ -612,7 +631,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       setCameraNearFade: crowd.setCameraNearFade.bind(crowd),
       setCameraFocus: (p: { x: number; y: number; z: number } | null, sign?: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null, opening?: { camera: THREE.Camera; floorY: number } | null, avatar?: { x: number; y: number; z: number } | null) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening, avatar),
     } : {}),
-    ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, ...(nosingProxy ? [nosingProxy.geometry, nosingProxy.material as THREE.Material] : []), ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
+    ...sceneLifecycle(sequence(built.update, stepWallProps), built.dispose, viewer.refresh, crowd, [...walkable, ...colliders, probe, wallProps], [proxyMat, probeMat, leafGeometry, leafMaterial, ...(nosingProxy ? [nosingProxy.geometry, nosingProxy.material as THREE.Material] : []), ...(shopKit ? [shopKit] : []), wallProps.material as THREE.Material], envTarget, audio.stepAudio, audio.disposeAudio),
   };
   markScene("assemble-end");
   return scene;
