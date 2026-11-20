@@ -47,41 +47,44 @@ test("guided-walk discovery frames (J3) @phone", async ({ page }, info) => {
   test.setTimeout(180_000);
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
   const cdp = await page.context().newCDPSession(page);
-  let liftAt = Infinity, frameNumber = 0;
-  const frames = new Map<number, { frameNumber: number; elapsedMs: number; data: string }>();
-  cdp.on("Page.screencastFrame", ({ data, metadata, sessionId }) => {
-    frameNumber++;
-    const elapsedMs = metadata.timestamp! * 1000 - liftAt;
-    for (const seconds of [3, 5]) {
-      const delta = Math.abs(elapsedMs - seconds * 1000);
-      if (delta <= 750 && delta < Math.abs((frames.get(seconds)?.elapsedMs ?? Infinity) - seconds * 1000)) {
-        frames.set(seconds, { frameNumber, elapsedMs, data });
-      }
-    }
-    void cdp.send("Page.screencastFrameAck", { sessionId });
-  });
-  await cdp.send("Page.startScreencast", { format: "png", everyNthFrame: 1 });
+  const clockStart = new Date();
+  await page.clock.install({ time: clockStart });
+  await page.clock.pauseAt(new Date(clockStart.getTime() + 1000));
   await page.addInitScript(PROBE_SCRIPT);
-  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning");
-  await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
-  liftAt = await page.evaluate(() => performance.timeOrigin + performance.getEntriesByName("boot-lift")[0]!.startTime);
-  await page.waitForFunction(() => performance.now() - performance.getEntriesByName("boot-lift")[0]!.startTime >= 5000);
-  await expect(page.locator(".cold-open-hint")).toBeVisible();
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning", { waitUntil: "commit" });
+  // Advance startup frames while assets load, then keep the short cue windows frozen for capture.
+  await expect.poll(async () => {
+    await page.clock.runFor(50);
+    return page.evaluate(() => performance.getEntriesByName("boot-lift").length > 0);
+  }, { timeout: 120_000 }).toBe(true);
+  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
+  const captures = [];
+  for (const seconds of [3, 5]) {
+    const elapsed = await page.evaluate(() => performance.now() - performance.getEntriesByName("boot-lift")[0]!.startTime);
+    await page.clock.fastForward(seconds * 1000 - elapsed);
+    await page.clock.runFor(20);
+    const state = await page.evaluate(() => {
+      const g = (window as any).__gteki;
+      const marks = g.scanProbe().explorer.scene.getObjectByName("cold-open-direction-marks");
+      g.goldenFrame();
+      return {
+        elapsedMs: performance.now() - performance.getEntriesByName("boot-lift")[0]!.startTime,
+        directionMarksVisible: marks.visible, opacity: marks.material.opacity,
+        hintVisible: !document.querySelector<HTMLElement>(".cold-open-hint")!.hidden,
+      };
+    });
+    expect(state.directionMarksVisible).toBe(seconds === 3);
+    expect(state.hintVisible).toBe(seconds === 5);
+    const file = `discovery-${seconds}s.png`;
+    const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+    fs.writeFileSync(path.join(out, file), Buffer.from(png.data, "base64"));
+    captures.push({ file, ...state });
+  }
   const coverage = await overlay(page);
   const primary = page.locator(".cold-open .primary");
   const box = (await primary.boundingBox())!;
   const primaryCount = await page.locator("button.primary:visible").count();
-  const sampledAtMs = await page.evaluate(() => performance.now() - performance.getEntriesByName("boot-lift")[0]!.startTime);
-  await page.waitForFunction(() => performance.now() - performance.getEntriesByName("boot-lift")[0]!.startTime >= 6000);
-  await cdp.send("Page.stopScreencast");
-  const captures = [3, 5].map(seconds => {
-    const frame = frames.get(seconds);
-    expect(frame, `A rendered frame within 750 ms of ${seconds} s`).toBeDefined();
-    const file = `discovery-${seconds}s.png`;
-    fs.writeFileSync(path.join(out, file), Buffer.from(frame!.data, "base64"));
-    return { file, frameNumber: frame!.frameNumber, elapsedMs: frame!.elapsedMs };
-  });
-  const record = { ...coverage, primaryCount, touchTargetHeight: box.height, sampledAtMs, captures };
+  const record = { ...coverage, primaryCount, touchTargetHeight: box.height, clock: "browser time held at each capture", captures };
   fs.writeFileSync(path.join(out, "discovery-j3.json"), JSON.stringify(record, null, 2));
   console.log(`J3 hint shown: ${info.project.name} ${JSON.stringify(record)}`);
   expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? 30 : 20);
