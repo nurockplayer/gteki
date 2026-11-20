@@ -915,10 +915,10 @@ snapJoinKey	function	packages/navigation/src/snap-path.ts
 AcousticZone	type	packages/scene-api/src/index.ts
 BuildScene	type	packages/scene-api/src/index.ts
 CameraGateAisle	interface	packages/scene-api/src/index.ts
+ESCALATOR_MPS	const	packages/scene-api/src/index.ts
 IdentityBoardTag	interface	packages/scene-api/src/index.ts
 InteractableSpec	interface	packages/scene-api/src/index.ts
 NavmeshPaths	interface	packages/scene-api/src/index.ts
-ESCALATOR_MPS	const	packages/scene-api/src/index.ts
 SCENE_API_VERSION	const	packages/scene-api/src/index.ts
 SceneContext	interface	packages/scene-api/src/index.ts
 SpawnPoint	interface	packages/scene-api/src/index.ts
