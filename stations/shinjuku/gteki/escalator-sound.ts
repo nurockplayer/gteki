@@ -55,7 +55,7 @@ export function createEscalatorSound({ context, destination, runs, recorded, isM
   let disposed = false;
   return {
     // Nominal motor + mechanical gain per run, before spatial attenuation and modulation.
-    info: () => ({ gain: entries.length ? master.gain.value * (0.027 + 0.033) : 0, nearestDistance, runs: entries.length }),
+    info: () => ({ gain: entries.length ? master.gain.value * (recorded ? 0.65 : 0.027 + 0.033) : 0, nearestDistance, runs: entries.length }),
     update(listener: V3) {
       if (disposed) return;
       master.gain.value = isMuted() ? 0 : 1;
