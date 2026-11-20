@@ -68,7 +68,7 @@ it.each(["low", "high"] as const)("animates every escalator slice with one low-t
       const matrix = new THREE.Matrix4();
       esc.steps.getMatrixAt((range.offset ?? 0) + 1, matrix);
       const position = new THREE.Vector3().setFromMatrixPosition(matrix);
-      const phase = ((0.2 * esc.speed % 0.4) + 0.4) % 0.4;
+      const phase = 0.2 * esc.speed;
       const f = phase / range.L3;
       expect(position.x).toBeCloseTo(range.lo.x + (range.hi.x - range.lo.x) * f, 4);
       expect(position.y).toBeCloseTo(range.lo.z, 4);
@@ -159,7 +159,7 @@ it("packs only camera-visible low-tier runs, animates the packed slice and keeps
     render();
     const after = new THREE.Matrix4();
     mesh.getMatrixAt(1, after);
-    const phase = ((0.2 * first.speed % 0.4) + 0.4) % 0.4;
+    const phase = 0.2 * first.speed;
     const f = phase / firstRange.L3;
     const position = new THREE.Vector3().setFromMatrixPosition(after);
     expect(position.x).toBeCloseTo(firstRange.lo.x + (firstRange.hi.x - firstRange.lo.x) * f, 4);
