@@ -3741,6 +3741,17 @@ export class Explorer {
         break;
       }
     }
+    if (this.station?.key === "shinjuku" && this.mode === "guide" && this.guide && onStairs
+      && this.catAvatar && this.escalatorWeight === 0 && !pinned && guideOnEscalator(this.guide.s, this.guide.spans)) {
+      const g = this.guide;
+      const ride = escalatorSpanAt(g.s, g.spans)!;
+      const behind = samplePolyline(g.pts, g.cum, Math.max(ride.fromS, g.s - this.camDistance * 2));
+      behind.y = guideEscalatorHeight(behind, g.pts, g.steps);
+      if (behind.y > this.pos.y) {
+        stairAngle = Math.atan2(behind.y - this.pos.y, Math.hypot(behind.x - this.pos.x, behind.z - this.pos.z)) + THREE.MathUtils.degToRad(8);
+        catCentre = this.catWorldBox().getCenter(new THREE.Vector3());
+      }
+    }
     if (walkDescent && !this.previewNext && this.catAvatar && this.escalatorWeight === 0 && !pinned) {
       const run = Math.hypot(this.pos.x - this.lastAvatarPos.x, this.pos.z - this.lastAvatarPos.z);
       if (dt > 0 && run > 0 && this.slope.velocity < -SLOPE.exit) {

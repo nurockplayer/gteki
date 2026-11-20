@@ -20,6 +20,7 @@ import { compact } from "./ledger.ts";
 import { combRunM, materialKey } from "./place.ts";
 import { ESCALATOR_FLAT_M, escalatorHeight } from "@gteki/scene-api";
 import { FLOOR_LIFT_M } from "./config.ts";
+import { stableHypot } from "../stable-hypot.ts";
 import type { KitAssetProvider, KitManifest, KitPlacement, RunAnchor } from "./types.ts";
 
 export interface BatchResult {
@@ -127,7 +128,7 @@ export function batchKitPlacements(args: {
       geo.applyMatrix4(src.matrixWorld);
       if (p.role === "escalator" && args.runs) {
         const run = args.runs.find(r => r.key === p.anchorKey)!;
-        const length = Math.hypot(run.hi.x - run.lo.x, run.hi.y - run.lo.y);
+        const length = stableHypot(run.hi.x - run.lo.x, run.hi.y - run.lo.y);
         const sourceLength = combRunM(asset.params)!;
         const sourceRise = Number(asset.params.rise_mm) / 1000;
         const ux = -Math.sin(p.yaw), uz = -Math.cos(p.yaw);

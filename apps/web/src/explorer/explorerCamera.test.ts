@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
 import { clearWalkElevation, Explorer } from "./explorer.ts";
 import { FOLLOW_CAT_NEXT, escalatorPose, FOLLOW, NO_SLOPE, SLOPE, descentAimDrop, followPose, type CameraHold } from "./followCamera.ts";
-import { guidePaceSpans, type PaceSpan } from "./guidePace.ts";
+import { guideEscalatorHeight, guidePaceSpans, type PaceSpan } from "./guidePace.ts";
 import { samplePolyline } from "./walker.ts";
 import type { IdentityBoard } from "./identityBoards.ts";
 import { explorerTargets } from "./raycast.ts";
@@ -449,6 +449,33 @@ describe("Explorer descending framing", () => {
 });
 
 describe("default cat stair framing", () => {
+  it.each([1.6, 412 / 839])("keeps the camera and cat sightline above the eased Shinjuku treads at aspect %s", (aspect) => {
+    // Journey frames 024-029: the second descending escalator, e:ac906cd95e89401b9b11858e02f20895.
+    const pts = [new THREE.Vector3(-31.93, -23.74, -151.94), new THREE.Vector3(-22.07, -42.87, -117.78)];
+    const steps = [-1, 0], total = pts[0]!.distanceTo(pts[1]!);
+    const state = Object.assign(cameraStand(), { catAvatar: true, mode: "guide", camDistance: 2.4, pitch: 0,
+      station: { key: "shinjuku" }, firstEscalatorStep: -1 });
+    state.camera.aspect = aspect;
+    state.yaw = Math.atan2(-(pts[1]!.x - pts[0]!.x), -(pts[1]!.z - pts[0]!.z));
+    state.guide = { s: 0, spans: [{ fromS: 0, toS: total, mode: "escalator", maxMps: 0.75, scales: true }] };
+    Object.assign(state.guide, { pts, cum: [0, total], steps });
+    for (const f of [0.067, 0.142, 0.217, 0.292, 0.367, 0.442]) {
+      state.guide.s = f * total;
+      const point = samplePolyline(pts, [0, total], state.guide.s);
+      point.y = guideEscalatorHeight(point, pts, steps);
+      state.pos.set(point.x, point.y, point.z);
+      state.avatar.position.copy(state.pos).y += 0.25;
+      state.avatar.updateMatrixWorld(true);
+      place(state, true);
+      const centre = state.pos.clone().add(new THREE.Vector3(0, 0.25, 0));
+      for (let i = 0; i <= 20; i++) {
+        const sight = centre.clone().lerp(state.camera.position, i / 20);
+        const treadY = guideEscalatorHeight({ ...sight, segment: 0 }, pts, steps);
+        expect(sight.y - treadY).toBeGreaterThan(state.camera.near);
+      }
+    }
+  });
+
   it.each([1.6, 0.7])("keeps stair framing across a 1.5 m landing at aspect %s", (aspect) => {
     const state = Object.assign(cameraStand(), { catAvatar: true, mode: "guide", camDistance: 2.4, pitch: 0 });
     state.camera.aspect = aspect;
