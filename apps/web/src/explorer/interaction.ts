@@ -21,12 +21,14 @@ export class InteractionController {
   private elapsed = 0;
   private phase: InteractionState["phase"] = "idle";
   private interrupted = false;
+  private approachId: string | null = null;
 
   constructor(private specs: InteractableSpec[]) {}
 
   /** A station (re)load: new interactables, nothing in reach or in progress; items and completed ids stay for the session. */
   setSpecs(specs: InteractableSpec[]): void {
     this.specs = specs;
+    this.approachId = null;
     this.near = undefined;
     this.active = undefined;
     this.index = 0;
@@ -48,7 +50,8 @@ export class InteractionController {
   }
 
   start(): InteractionState {
-    if (!this.near || this.active || (this.near.once && this.completed.has(this.near.id))) return this.state;
+    if (!this.near || this.active || (this.near.autoStart && this.approachId === this.near.id) || (this.near.once && this.completed.has(this.near.id))) return this.state;
+    this.approachId = this.near.id;
     this.active = this.near;
     this.index = 0;
     this.elapsed = 0;
@@ -58,9 +61,12 @@ export class InteractionController {
   }
 
   update(dt: number, input: { position: { x: number; y: number; z: number }; moving: boolean; mode: string }): InteractionState {
-    this.near = input.mode === "walk" ? this.specs.find((spec) =>
-      Math.hypot(spec.anchor.x - input.position.x, spec.anchor.y - input.position.y, spec.anchor.z - input.position.z) <= spec.radiusM,
-    ) : undefined;
+    this.near = input.mode === "walk" ? this.specs
+      .map((spec) => ({ spec, distance: Math.hypot(spec.anchor.x - input.position.x, spec.anchor.y - input.position.y, spec.anchor.z - input.position.z) }))
+      .filter(({ spec, distance }) => distance <= spec.radiusM)
+      .sort((a, b) => a.distance - b.distance)[0]?.spec : undefined;
+    if (this.near?.id !== this.approachId) this.approachId = null;
+    if (this.near?.autoStart && !input.moving && !this.active) this.start();
     if (this.active && (input.moving || input.mode !== "walk")) {
       this.active = undefined;
       this.phase = "idle";

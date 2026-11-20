@@ -72,6 +72,8 @@ export interface InteractableSpec {
   steps: { id: string; seconds: number }[];
   reward?: string;
   once?: boolean;
+  /** Start on stopping within reach, once until the next approach. */
+  autoStart?: boolean;
 }
 
 /** Gate-local camera metadata; never walker ground or collision targets. Bounds are asset-local. */
