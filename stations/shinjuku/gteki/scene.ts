@@ -5,6 +5,7 @@
  */
 import { WALKER_BODY, buildWallProps, wallPropDrawRanges, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
+import { fencedUrlResolver } from "../../../apps/web/src/explorer/assetFence.ts";
 import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -150,6 +151,44 @@ function crowdVector(T: typeof THREE, enuToRenderer: (point: { x: number; y: num
  * same reason as sceneLifecycle: the closures keep only the audio nodes and the train-audio sampler, never the
  * build layout or the built station (#968). Conditions and order are unchanged.
  */
+// Blend the tail into the head, then loop after that head overlap (250 ms).
+function recordingLoop(context: AudioContext, buffer: AudioBuffer, start = 0, end = buffer.duration) {
+  const first = Math.round(start * buffer.sampleRate), last = Math.round(end * buffer.sampleRate);
+  const fade = Math.round(0.25 * buffer.sampleRate), length = last - first - fade;
+  const loop = context.createBuffer(buffer.numberOfChannels, length, buffer.sampleRate);
+  for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+    const input = buffer.getChannelData(channel), output = loop.getChannelData(channel);
+    output.set(input.subarray(first + fade, last));
+    for (let i = 0; i < fade; i++) {
+      const mix = (i + 1) / fade, at = length - fade + i;
+      output[at] = output[at]! * (1 - mix) + input[first + i]! * mix;
+    }
+  }
+  return loop;
+}
+
+async function stationRecordings(context: AudioContext) {
+  const urls = [
+    new URL("../../../assets/audio/youtube-cc/shinjuku-street-walk-tokyolife.opus", import.meta.url).href,
+    new URL("../../../assets/audio/youtube-cc/tokyo-station-shinkansen-concourse.opus", import.meta.url).href,
+    new URL("../../../assets/audio/youtube-cc/ic-gate-hatchonawate.opus", import.meta.url).href,
+    new URL("../../../assets/audio/youtube-cc/escalator-montreal-metro.opus", import.meta.url).href,
+    new URL("../../../assets/audio/youtube-cc/subway-platform-white-noise.opus", import.meta.url).href,
+    new URL("../../../assets/audio/youtube-cc/oedo-ushigome-yanagicho.opus", import.meta.url).href,
+  ];
+  const resolve = fencedUrlResolver(new Map(urls.map((url) => [url, url])));
+  const buffers = await Promise.all(urls.map(async (url) => {
+    const response = await fetch(resolve(url));
+    if (!response.ok) throw new Error(`J11 audio load failed: ${response.status} ${url}`);
+    return context.decodeAudioData(await response.arrayBuffer());
+  }));
+  return {
+    street: recordingLoop(context, buffers[0]!), concourse: recordingLoop(context, buffers[1]!),
+    gate: buffers[2]!, escalator: recordingLoop(context, buffers[3]!, 22, 52),
+    platform: recordingLoop(context, buffers[4]!), train: buffers[5]!,
+  };
+}
+
 function stationAudio({ bundle, enuToRenderer, audio: initialAudio, previewNext }: Parameters<BuildScene>[0], crowd: Crowd | null, trainAudio: BuiltStation["trainAudio"], escalatorRuns: { a: V3; b: V3 }[]) {
   let acoustics: ReturnType<typeof createZoneAcoustics> | null = null;
   let ambience: ReturnType<typeof createAmbience> | null = null;
@@ -157,11 +196,16 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio, previewNext 
   let stationSound: ReturnType<typeof createStationSound> | null = null;
   let trainSound: ReturnType<typeof createTrainSound> | null = null;
   let escalatorSound: ReturnType<typeof createEscalatorSound> | null = null;
+  let disposed = false;
+  let zone: AcousticZone = "passage";
   const startAudio: NonNullable<StationScene["startAudio"]> = (audio) => {
     if (acoustics) return;
     acoustics = createZoneAcoustics(audio.context, audio.destination);
-    ambience = createAmbience(audio.context, acoustics.input);
-    streetAmbience = createStreetAmbience(audio.context, acoustics.input);
+    const initialize = (recorded?: Awaited<ReturnType<typeof stationRecordings>>) => {
+    if (disposed) return;
+    ambience = createAmbience(audio.context, acoustics!.input, recorded);
+    streetAmbience = createStreetAmbience(audio.context, acoustics!.input, recorded?.street);
+    streetAmbience.setZone(zone);
     const graphNodes = bundle.nodes;
     const siteAt = (n: (typeof graphNodes)[number]): V3 => {
       const [x, y, z] = enuToRenderer({ x: n.position.x, y: n.position.y, z: n.position.z ?? n.renderZ ?? 0 });
@@ -169,20 +213,23 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio, previewNext 
     };
     stationSound = createStationSound({
       context: audio.context,
-      destination: acoustics.input,
+      destination: acoustics!.input,
       isMuted: audio.isMuted,
       stationNameJa: "新宿",
+      ...(recorded ? { gateBuffer: recorded.gate, speech: null } : {}),
       sites: {
         gates: graphNodes.filter((n) => n.kind === "ticket_gate").map(siteAt),
         announce: graphNodes.filter((n) => n.kind === "ticket_gate" || n.kind === "escalator_end").map(siteAt),
         chime: [],
       },
     });
-    trainSound = createTrainSound({ context: audio.context, destination: acoustics.input, isMuted: audio.isMuted, chimeAt: stationSound.chimeAt });
-    if (previewNext) escalatorSound = createEscalatorSound({ context: audio.context, destination: acoustics.input, runs: escalatorRuns, isMuted: audio.isMuted });
+    trainSound = createTrainSound({ context: audio.context, destination: acoustics!.input, isMuted: audio.isMuted, chimeAt: stationSound.chimeAt, recorded: recorded?.train });
+    if (previewNext) escalatorSound = createEscalatorSound({ context: audio.context, destination: acoustics!.input, runs: escalatorRuns, isMuted: audio.isMuted, recorded: recorded?.escalator });
+    };
+    if (previewNext) void stationRecordings(audio.context).then(initialize).catch((error: unknown) => { console.error("J11 station audio failed", error); });
+    else initialize();
   };
   if (initialAudio) startAudio(initialAudio);
-  let zone: AcousticZone = "passage";
   let trainAudioElapsed = 0.25;
   return {
     audioInfo: (): ReturnType<NonNullable<StationScene["audioInfo"]>> => ({
@@ -193,7 +240,7 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio, previewNext 
     }),
     startAudio,
     stepAudio: (dt: number, camera?: THREE.Camera) => {
-      ambience?.update({ nearby: crowd?.nearby() ?? 6, openness: ZONE_ACOUSTICS[zone].openness });
+      ambience?.update({ nearby: crowd?.nearby() ?? 6, zone, openness: ZONE_ACOUSTICS[zone].openness });
       streetAmbience?.update();
       stationSound?.update(dt, camera);
       trainAudioElapsed += dt;
@@ -204,6 +251,7 @@ function stationAudio({ bundle, enuToRenderer, audio: initialAudio, previewNext 
       }
     },
     disposeAudio: () => {
+      disposed = true;
       escalatorSound?.dispose();
       trainSound?.dispose();
       stationSound?.dispose();

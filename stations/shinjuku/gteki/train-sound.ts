@@ -19,7 +19,7 @@ export function rumbleLevel(tt: number): number {
 }
 export function rumbleCutoffHz(tt: number): number { return 180 + rumbleLevel(tt) * 1800; }
 
-export function createTrainSound({ context, destination, chimeAt, isMuted = () => false }: { context: AudioContext; destination: AudioNode; chimeAt: (at: V3) => void; isMuted?: () => boolean }) {
+export function createTrainSound({ context, destination, chimeAt, recorded, isMuted = () => false }: { context: AudioContext; destination: AudioNode; chimeAt: (at: V3) => void; recorded?: AudioBuffer; isMuted?: () => boolean }) {
   const buffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
   const data = buffer.getChannelData(0);
   let last = 0;
@@ -35,7 +35,17 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
   let listenerPosition: V3 | null = null;
   let disposed = false;
   function position(p: PannerNode, at: V3) { if (p.positionX) { p.positionX.value = at.x; p.positionY.value = at.y; p.positionZ.value = at.z; } else p.setPosition(at.x, at.y, at.z); }
+  const arrivals = new Set<AudioBufferSourceNode>();
   function oneShot(cue: Cue, at: V3) {
+    if (recorded) {
+      if (cue !== "approach") return;
+      const pan = context.createPanner(); pan.panningModel = "equalpower"; pan.refDistance = 3;
+      position(pan, at); pan.connect(destination);
+      const arrival = context.createBufferSource(); arrival.buffer = recorded;
+      arrival.connect(pan); arrivals.add(arrival); arrival.start();
+      arrival.onended = () => { arrival.disconnect(); pan.disconnect(); arrivals.delete(arrival); };
+      return;
+    }
     if (cue === "approach") { chimeAt(at); return; }
     const pan = context.createPanner(); pan.panningModel = "equalpower"; pan.distanceModel = "inverse"; pan.refDistance = 3; position(pan, at); pan.connect(destination);
     const now = context.currentTime;
@@ -65,7 +75,10 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
       if (disposed) return;
       let nearest: Track | undefined; let distance = Infinity;
       tracks.forEach((track, i) => {
-        if (prev[i] !== undefined) for (const cue of trainSoundCues(prev[i]!, track.tt, track.headway)) {
+        const gap = prev[i] === undefined ? 0 : (track.tt - prev[i]! + track.headway) % track.headway;
+        const approachGap = (track.headway - 22 - (prev[i] ?? track.tt) + track.headway) % track.headway;
+        const cues: Cue[] = recorded ? (gap > 0 && gap <= 2 && approachGap > 0 && approachGap <= gap ? ["approach"] : []) : trainSoundCues(prev[i] ?? track.tt, track.tt, track.headway);
+        for (const cue of cues) {
           const offset = cue === "brake" && track.pos ? { x: track.pos.x - track.stop.x, y: track.pos.y - track.stop.y, z: track.pos.z - track.stop.z } : { x: 0, y: 0, z: 0 };
           const [a, b] = track.stopEnds;
           const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
@@ -83,9 +96,9 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
         position(panner, nearest.pos);
         sourcePosition = { x: nearest.pos.x, y: nearest.pos.y, z: nearest.pos.z };
       }
-      gain.gain.setTargetAtTime(nearest ? rumbleLevel(nearest.tt) : 0, context.currentTime, 0.1);
+      gain.gain.setTargetAtTime(!recorded && nearest ? rumbleLevel(nearest.tt) : 0, context.currentTime, 0.1);
       filter.frequency.setTargetAtTime(nearest ? rumbleCutoffHz(nearest.tt) : 180, context.currentTime, 0.1);
     },
-    dispose() { if (disposed) return; disposed = true; source.stop(); source.disconnect(); filter.disconnect(); gain.disconnect(); panner.disconnect(); },
+    dispose() { if (disposed) return; disposed = true; for (const arrival of arrivals) arrival.stop(); source.stop(); source.disconnect(); filter.disconnect(); gain.disconnect(); panner.disconnect(); },
   };
 }

@@ -14,10 +14,21 @@ export function streetLevel(zone: AcousticZone): number {
   }
 }
 
-export function createStreetAmbience(ctx: AudioContext, destination: AudioNode) {
+export function createStreetAmbience(ctx: AudioContext, destination: AudioNode, recorded?: AudioBuffer) {
   const master = ctx.createGain();
   master.gain.value = 0; // silent indoors; setZone fades it toward the zone level
   master.connect(destination);
+
+  if (recorded) {
+    const source = ctx.createBufferSource(); source.buffer = recorded; source.loop = true;
+    source.connect(master); source.start();
+    return {
+      info: () => ({ streetGain: master.gain.value }),
+      setZone(zone: AcousticZone) { master.gain.setTargetAtTime(streetLevel(zone) * 0.65, ctx.currentTime, 1.5); },
+      update() {},
+      dispose() { source.stop(); source.disconnect(); master.disconnect(); },
+    };
+  }
 
   // Traffic: looped brown noise, low-passed into the rumble of a street, swelling like passing cars.
   const bed = ctx.createBufferSource();
