@@ -13,7 +13,12 @@ downloaded. Freesound/Wikimedia sources are collected separately and are not dup
   `Creative Commons Attribution license (reuse allowed)` (the watch page shows
   「クリエイティブ・コモンズ著作権表示必須ライセンス（再利用を許可する）」). YouTube's help page
   links that option to CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/. The field
-  itself names no version.
+  itself names no version. `REUSE.toml` records this as `LicenseRef-YouTube-CC-BY-4.0`
+  (pointer: `LICENSES/LicenseRef-YouTube-CC-BY-4.0.txt`), because third-party files keep their own
+  terms rather than resolving to the repository's CC-BY-4.0 grant.
+- Rights ruling (lead, 2026-11-21 JST): segments marked UNKNOWN-melody / UNKNOWN-voice are
+  audition-only and may not ship until a separate rights check. The uploader's CC BY covers the
+  video upload; it does not cover third-party melodies or recorded announcements inside it.
 - Changes made to every file: one segment cut from the source's audio track, re-encoded to Opus
   96 kbps stereo 48 kHz. Nothing else was applied (no noise reduction, EQ or level matching).
 - Licence obligation: attribution to the channel, the video title and the licence link, plus an
@@ -155,7 +160,8 @@ trimmed to 0:20–2:20, re-encoded to Opus.
   sound, doors and running noise.
 - **Melody and voice rights**: departure melodies (発車メロディ), door chimes and recorded
   announcements can be separate works from the video. Every file whose segment may contain them is
-  marked UNKNOWN-melody / UNKNOWN-voice above; those need a rights call before shipping.
+  marked UNKNOWN-melody / UNKNOWN-voice above; per the lead's 2026-11-21 JST ruling those are
+  audition-only and may not ship until a separate rights check.
 - **Source quality**: `odakyu-shinjuku-departure` and `monorail-gate-chiba` hit 0 dBFS in the source
   (TP +1.1 / +0.6 dBFS); `takanawa-gateway-platform` is very quiet (TP -11.9 dBFS). No processing
   was applied beyond the trim and the Opus encode.

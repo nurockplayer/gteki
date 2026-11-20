@@ -1,0 +1,24 @@
+YouTube Creative Commons Attribution licence option (reuse allowed)
+
+YouTube help, "Creative Commons" (the CC option links the Attribution 4.0 licence):
+  https://support.google.com/youtube/answer/2797468
+  Snapshot SHA-256 f2e7932fb3d9fa432c063ef90f46592ba8706655c45c97021d9644e9a2d49837
+  (fetched 2026-11-21 02:20 JST from the public page, no sign-in; the page is dynamic,
+  so the hash is of that one response)
+Licence deed: https://creativecommons.org/licenses/by/4.0/
+  Snapshot SHA-256 2c31f90b734f0e2dd5dc017737eb2094e133be99a188396659c9cdb3bd3d0625
+  (fetched 2026-11-21 02:20 JST). Full text: LICENSES/CC-BY-4.0.txt.
+
+Stands for assets/audio/youtube-cc/*.opus (J11): segments cut from YouTube videos whose
+metadata licence field reads, verbatim, "Creative Commons Attribution license (reuse allowed)".
+Per-file title, channel, URL, upload date, segment and change note: assets/audio/youtube-cc/SOURCES.md.
+The field names no version; this pointer records CC BY 4.0 because that is the licence YouTube's
+help page links.
+
+Scope limit: the CC BY declaration covers the video upload only. Departure melodies, door chimes
+and recorded announcements inside it can be separate works; segments that may contain them are
+marked UNKNOWN-melody / UNKNOWN-voice in SOURCES.md and are audition-only until a separate rights
+check. Not relicensed under the repository's grants.
+
+Pointer only: terms as published by the licensor. GTEki does not author or paraphrase the official
+wording.
