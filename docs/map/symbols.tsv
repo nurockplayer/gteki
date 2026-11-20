@@ -602,6 +602,7 @@ pushRecent	function	apps/web/src/ui/emptySuggestions.ts
 readRecent	function	apps/web/src/ui/emptySuggestions.ts
 writeRecent	function	apps/web/src/ui/emptySuggestions.ts
 escalatorEtaSuffix	function	apps/web/src/ui/escalatorEta.ts
+ColdOpenDiscovery	class	apps/web/src/ui/firstRun.ts
 DEMO_PAIRS	const	apps/web/src/ui/firstRun.ts
 FIRST_RUN_KEY	const	apps/web/src/ui/firstRun.ts
 coldOpenPair	function	apps/web/src/ui/firstRun.ts
