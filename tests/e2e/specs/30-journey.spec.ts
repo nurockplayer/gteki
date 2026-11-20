@@ -593,32 +593,36 @@ test("simulated shop stop from the guided walk @phone", async ({ page }, info) =
   const records: Record<string, unknown>[] = [];
   const feature = { name: "shopfront", match: { namePrefix: "kit_shop" }, minPixels: 20 };
   const capture = async (name: string) => {
-    await page.evaluate(() => (window as any).__gteki.goldenFrame());
+    // Restore the displayed frame after probing without advancing the guide camera.
+    await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.render(0));
     await page.screenshot({ path: path.join(out, `${name}.png`), timeout: 60_000 });
     const probe = await page.evaluate(feature => (window as any).__gteki.goldenProbe(false, [feature]), feature);
     const metrics = await sceneMetrics(page), coverage = await overlay(page);
-    records.push({ name, probe, ...metrics, ...coverage });
+    records.push({ index: records.length, name, probe, ...metrics, ...coverage });
     expect(probe.features[0].pixels).toBeGreaterThanOrEqual(feature.minPixels);
     expect(probe.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
     expect(metrics.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
-    expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop);
+    // J5 walking budgets apply to guide frames; the stopped interaction prompt is recorded for art review.
+    if (name === "first-sight" || name === "approach") {
+      expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop);
+    }
   };
   try {
     await page.locator(".cold-open .primary").click();
     await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.setGuidePaused(true));
-    let first: number | undefined, best = { distance: 0, pixels: 0 };
+    let first: number | undefined, approach: number | undefined;
     // The exit stairs reach B1 here. Every sample retains the production guide camera.
     for (let distance = 14; distance <= 28; distance += 2) {
       await page.evaluate(distance => { const g = (window as any).__gteki; g.seekGuide(distance); g.simulate(0.1); g.goldenFrame(); }, distance);
       const probe = await page.evaluate(feature => (window as any).__gteki.goldenProbe(false, [feature]), feature);
       const pixels = probe.features[0].pixels;
-      if (pixels >= feature.minPixels && first === undefined) { first = distance; await capture("first-sight"); }
-      if (pixels > best.pixels) best = { distance, pixels };
+      if (pixels >= feature.minPixels) {
+        if (first === undefined) { first = distance; await capture("first-sight"); }
+        else { approach = distance; await capture("approach"); break; }
+      }
     }
     expect(first, "shop visible from the actual guided walk").toBeDefined();
-    expect(best.pixels).toBeGreaterThanOrEqual(feature.minPixels);
-    await page.evaluate(distance => { const g = (window as any).__gteki; g.seekGuide(distance); g.simulate(0.1); }, best.distance);
-    await capture("approach");
+    expect(approach, "shop visible farther along the actual guided walk").toBeDefined();
     const spec = await page.evaluate(() => (window as any).__gteki.interactables().specs.find((s: any) => s.id === "sim-sjk-komorebi"));
     expect(spec).toMatchObject({ kind: "shop", simulated: true, reward: "wooden-leaf" });
     const walk = await page.evaluate(anchor => {
@@ -659,8 +663,8 @@ test("simulated shop stop from the guided walk @phone", async ({ page }, info) =
     await expect(prompt.locator("button")).toBeDisabled();
     expect((await page.evaluate(() => (window as any).__gteki.interaction())).items).toContain("wooden-leaf");
     expect(await hooks.route(page)).toEqual(route);
-    await page.screenshot({ path: path.join(out, "completed.png"), timeout: 60_000 });
-    records.push({ firstSightDistanceM: first, approachDistanceM: best.distance, costs });
+    await capture("completed");
+    records.push({ firstSightDistanceM: first, approachDistanceM: approach, costs });
   } finally {
     fs.writeFileSync(path.join(out, "evidence.json"), JSON.stringify(records, null, 2));
     await page.evaluate(() => (window as any).__gteki.holdFrames(false));
