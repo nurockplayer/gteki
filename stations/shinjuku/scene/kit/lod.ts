@@ -26,7 +26,7 @@ export function batchDistanceKit(
   const active = new Set<string>();
   let staticTriangles = 0, staticDraws = 0;
   for (const [key, placed] of clusters) {
-    const batch = batchKitPlacements({ ...args, placed });
+    const batch = batchKitPlacements({ ...args, placed, runs: anchors.runs });
     // Small cluster bounds already cull tightly. Keep plain meshes so explorer cuts do not create
     // an extracted copy alongside a zero-scaled one-instance draw for each LOD finish.
     if (key !== "static") for (const mesh of batch.meshes) mesh.userData.kitLod = true;

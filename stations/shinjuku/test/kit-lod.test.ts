@@ -27,14 +27,17 @@ describe("kit distance LOD", () => {
   const setup = (budget = KIT_BUDGET) => {
     const owned: { dispose(): void }[] = [];
     const track = <T extends { dispose(): void }>(v: T): T => { owned.push(v); return v; };
-    const manifest = parseKitManifest(stubManifestJson(), "mobile");
+    const manifest = parseKitManifest(stubManifestJson({ extra: [stubAsset("stub_escalator", "dressing", "linear", {
+      materials: ["stub_palette", "gteki_line_accent"],
+      params: { rise_mm: 5000, run_mm: 8400 },
+    })] }), "mobile");
     const ledger = new PlaceholderLedger(track);
     const anchors: KitAnchors = { runs: [], gates: [], lifts: [], toilets: [], exits: [] };
     // Two nearby runs share a cluster across floor labels, while a third is 100 m away.
     const placed: KitPlacement[] = [0, 4, 100].map((x, i) => {
       const floorId = i === 1 ? "B2" : "B1";
       anchors.runs.push({ role: "escalator", key: String(i), floorId, lo: { x, y: 0, z: 0 }, hi: { x, y: 10, z: 5 }, width: 1, dir: { x: 0, y: 1 } });
-      return { role: "escalator", anchorKey: String(i), floorId, position: [x, 0, 0], yaw: 0, assetId: "stub_lift_portal", rank: 1, replaces: "escalator-balustrade" };
+      return { role: "escalator", anchorKey: String(i), floorId, position: [x, 0, 0], yaw: 0, assetId: "stub_escalator", rank: 1, replaces: "escalator-balustrade" };
     });
     const geos = placed.map((p) => track(ledger.tag("escalator-balustrade", p.anchorKey, new THREE.BoxGeometry().translate(...p.position))));
     const original = new THREE.Mesh(track(mergeGeometries(geos, false)!), track(new THREE.MeshBasicMaterial()));

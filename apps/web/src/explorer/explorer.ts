@@ -31,7 +31,7 @@ import { bodyBlock, hitNormal, pushOut, slideAlong, type BodyBlock, type CastFn 
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, hasClippedPortals, portalWallNormal } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, escalatorSpanAt, guideOnEscalator, guideOnStairs, guideStairCamera, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, guideEscalatorHeight, escalatorSpanAt, guideOnEscalator, guideOnStairs, guideStairCamera, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx, qaPostFxSettings } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
@@ -2961,6 +2961,7 @@ export class Explorer {
       return sign && pointIndex >= 0 ? [{ s: cum[pointIndex]!, anchor: Object.assign(sign.getWorldPosition(new THREE.Vector3()), { halfWidthX: sign.userData.signHalfWidthX as number, halfWidthZ: sign.userData.signHalfWidthZ as number, halfHeight: sign.userData.signHalfHeight as number }) }] : [];
     });
     const first = samplePolyline(pts, this.guide.cum, fromS);
+    if (this.station?.key === "shinjuku" && guideOnEscalator(fromS, paceSpans)) first.y = guideEscalatorHeight(first, pts, this.guide.steps);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
@@ -2991,6 +2992,7 @@ export class Explorer {
       if (this.arrivalState === "active") this.arrivalState = "ended";
     }
     const p = samplePolyline(g.pts, g.cum, g.s);
+    if (this.station?.key === "shinjuku" && guideOnEscalator(g.s, g.spans)) p.y = guideEscalatorHeight(p, g.pts, g.steps);
     this.pos.set(p.x, p.y, p.z);
     this.teleported = true;
     if (p.tx || p.tz) this.yaw = Math.atan2(-p.tx, -p.tz);
@@ -3468,6 +3470,7 @@ export class Explorer {
     const stopped = g.paused ? null : advanceGuide(g, pacedDistance(g.s, dt, this.tier, g.spans), total);
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
+    if (this.station?.key === "shinjuku" && guideOnEscalator(g.s, g.spans)) p.y = guideEscalatorHeight(p, g.pts, g.steps);
     this.pos.set(p.x, p.y, p.z);
     // During the hold the look follows the framed board instead of the route; the rest of the frame steers as usual.
     const holdDt = Math.min(dt, this.guideIdentityHoldS);

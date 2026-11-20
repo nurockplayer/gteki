@@ -24,7 +24,8 @@ import { buildIdentityBoards } from "./identity.ts";
 import type { TimeBand } from "../../ikebukuro/scene/time-band.ts";
 import { stableHypot } from "./stable-hypot.ts";
 import { stairProfile } from "./stairProfile.ts";
-import { ESCALATOR_FLAT_STEPS, ESCALATOR_STEP_DEPTH_M } from "./kit/config.ts";
+import { ESCALATOR_STEP_DEPTH_M } from "./kit/config.ts";
+import { escalatorHeight, escalatorBreaks } from "@gteki/scene-api";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -1052,12 +1053,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         // escalator truss + balustrades
         // Truss top sits 0.25 m under the incline, below the step profile's lowest point (about 0.17 m).
         // Darker under the skirt and steps, open towards the bottom.
-        const inclineAt = (p: THREE.Vector3) => lo.z + dz * THREE.MathUtils.clamp(((p.x - lo.x) * dx + (-p.z - lo.y) * dy) / (L * L), 0, 1);
-        const flat = ESCALATOR_FLAT_STEPS * ESCALATOR_STEP_DEPTH_M;
-        const lower = { x: lo.x + u.x * flat, y: lo.y + u.y * flat, z: lo.z };
-        const upper = { x: hi.x - u.x * flat, y: hi.y - u.y * flat, z: hi.z };
-        for (const [a, b] of [[lo, lower], [lower, upper], [upper, hi]]) {
-          trussGeos.push(contactShade(boxAlong(v3({ ...a!, z: a!.z - 0.7 }), v3({ ...b!, z: b!.z - 0.7 }), r.width + 0.3, 0.9), (p) => (inclineAt(p) - 0.25 - p.y) / 0.9, 0.6));
+        const inclineAt = (p: THREE.Vector3) => lo.z + escalatorHeight(((p.x - lo.x) * dx + (-p.z - lo.y) * dy) / L, L, dz);
+        const profile = escalatorBreaks(L).map(along => ({
+          x: lo.x + u.x * along, y: lo.y + u.y * along, z: lo.z + escalatorHeight(along, L, dz),
+        }));
+        for (let i = 1; i < profile.length; i++) {
+          const a = profile[i - 1]!, b = profile[i]!;
+          trussGeos.push(contactShade(boxAlong(v3({ ...a, z: a.z - 0.7 }), v3({ ...b, z: b.z - 0.7 }), r.width + 0.3, 0.9), (p) => (inclineAt(p) - 0.25 - p.y) / 0.9, 0.6));
         }
         // Landing plates cover the whole tread before it wraps, including runs without kit dressing.
         for (const [end, direction] of [[lo, -1], [hi, 1]] as const) {
@@ -1105,13 +1107,28 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     // Draw exactly the retained collision pieces: a cross-link opens both the visible
     // balustrade and its collider, including the handrail and escalator skirt.
     const runsById = new Map(layout.runs.map((r) => [r.edgeId, r]));
-    for (const w of layout.runWalls) {
-      const r = runsById.get(w.runEdgeId!)!;
+    for (const wall of layout.runWalls) {
+      const r = runsById.get(wall.runEdgeId!)!;
+      const lo = r.a.z <= r.b.z ? r.a : r.b, hi = r.a.z <= r.b.z ? r.b : r.a;
+      const length = stableHypot(hi.x - lo.x, hi.y - lo.y);
+      const along = (p: XY) => ((p.x - lo.x) * (hi.x - lo.x) + (p.y - lo.y) * (hi.y - lo.y)) / length;
+      const start = along(wall.a), end = along(wall.b);
+      const splits = r.mode === "escalator" ? escalatorBreaks(length)
+        .map(s => (s - start) / (end - start)).filter(t => t > 0 && t < 1).sort((a, b) => a - b) : [];
+      const at = (t: number) => ({ x: wall.a.x + (wall.b.x - wall.a.x) * t, y: wall.a.y + (wall.b.y - wall.a.y) * t });
+      const cuts = [0, ...splits, 1];
+      for (let i = 1; i < cuts.length; i++) {
+      const w = { ...wall, a: at(cuts[i - 1]!), b: at(cuts[i]!) };
       const d = { x: r.b.x - r.a.x, y: r.b.y - r.a.y };
       const l2 = d.x * d.x + d.y * d.y;
-      const zAt = (p: XY) => r.a.z + (r.b.z - r.a.z) * ((p.x - r.a.x) * d.x + (p.y - r.a.y) * d.y) / l2;
+      const zAt = (p: XY) => r.mode === "escalator" ? lo.z + escalatorHeight(along(p), length, hi.z - lo.z)
+        : r.a.z + (r.b.z - r.a.z) * ((p.x - r.a.x) * d.x + (p.y - r.a.y) * d.y) / l2;
       const za = zAt(w.a), zb = zAt(w.b);
       const panel = runPanel(w, r);
+      if (r.mode === "escalator") {
+        panel.surfaceBase = { a: za, b: zb };
+        panel.profile = { bottomA: za - 0.12, bottomB: zb - 0.12, topA: za + 0.9, topB: zb + 0.9 };
+      }
       if (r.mode === "stairs") {
         panel.profile!.bottomA = za + 0.15;
         panel.profile!.bottomB = zb + 0.15;
@@ -1139,6 +1156,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         const rail = boxAlong(v3({ ...w.a, z: za + 0.88 }), v3({ ...w.b, z: zb + 0.88 }), 0.025, 0.025);
         steelGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, rail) : rail);
       }
+    }
     }
     const add = (geos: THREE.BufferGeometry[], m: THREE.Material, name?: string) => {
       const geo = merged(geos);
@@ -1667,7 +1685,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       lo: XYZ; hi: XYZ; yaw: number; count: number; L3: number; stepLen: number; scale?: THREE.Vector3;
     };
     const length = stableHypot(hi.x - lo.x, hi.y - lo.y) || 1;
-    const flat = ESCALATOR_FLAT_STEPS * ESCALATOR_STEP_DEPTH_M;
     const halfDepth = stepLen * length / L3 / 2;
     tmpQ.setFromEuler(new THREE.Euler(0, yaw, 0, "YXZ"));
     const cycle = count * stepLen;
@@ -1676,8 +1693,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const s = (i * stepLen + phase) % cycle - stepLen;
       const f = s / L3;
       const along = f * length;
-      const height = THREE.MathUtils.clamp((along - flat) / (length - 2 * flat), 0, 1);
-      tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + (hi.z - lo.z) * height, -(lo.y + (hi.y - lo.y) * f));
+      tmpP.set(lo.x + (hi.x - lo.x) * f, lo.z + escalatorHeight(along, length, hi.z - lo.z), -(lo.y + (hi.y - lo.y) * f));
       // Hide only after the entire tread is beneath a landing plate, never in the visible band.
       tmpM.compose(tmpP, tmpQ, along < -halfDepth || along > length + halfDepth ? zeroS : scale);
       esc.steps.setMatrixAt(offset + i, tmpM);

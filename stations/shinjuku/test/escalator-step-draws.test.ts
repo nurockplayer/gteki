@@ -1,3 +1,4 @@
+import { ESCALATOR_FLAT_M, escalatorHeight } from "@gteki/scene-api";
 import { readFileSync } from "node:fs";
 import { expect, it, vi } from "vitest";
 import * as THREE from "three";
@@ -5,6 +6,10 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, installLowTierSteps } from "../scene/build.ts";
 import type { Plan } from "../scene/layout.ts";
+import { batchKitPlacements } from "../scene/kit/batch.ts";
+import type { KitManifest, KitPlacement, RunAnchor } from "../scene/kit/types.ts";
+import { parseKitManifest } from "../scene/kit/manifest.ts";
+import { stubAsset, stubManifestJson } from "./helpers/kit-stub.ts";
 import { withCanvasStub } from "./helpers/scene-digest.ts";
 
 /** The scene hook reads only renderer.info.render.frame: one pack per renderer frame. */
@@ -101,6 +106,7 @@ it.each(["low", "high"] as const)("animates every escalator slice with one low-t
           position.setFromMatrixPosition(matrix);
           scale.setFromMatrixScale(matrix);
           const along = ((position.x - range.lo.x) * dx + (-position.z - range.lo.y) * dy) / length;
+          expect(position.y).toBeCloseTo(range.lo.z + escalatorHeight(along, length, range.hi.z - range.lo.z), 4);
           expect(position.y).toBeLessThanOrEqual(range.hi.z + 1e-4);
           if (along <= 0.8) { expect(position.y).toBeCloseTo(range.lo.z, 4); bottom++; }
           if (along >= length - 0.8) { expect(position.y).toBeCloseTo(range.hi.z, 4); top++; }
@@ -210,3 +216,28 @@ it("the standalone app installs the same low-tier scene hook (#822)", () => {
     expect(mesh.count).toBeLessThan(mesh.instanceMatrix.count);
   } finally { station.dispose(); }
 }, 120_000);
+
+it("fits kit rails to the same landing profile at the exact run endpoints", () => {
+  const manifest: KitManifest = parseKitManifest(stubManifestJson({ extra: [stubAsset("rail", "dressing", "linear", {
+    params: { rise_mm: 4000, run_mm: 8400 },
+  })] }), "mobile");
+  const run: RunAnchor = { role: "escalator", key: "run", floorId: "f", lo: { x: 0, y: 0, z: 0 },
+    hi: { x: 0, y: 10.1, z: 4.05 }, width: 1, dir: { x: 0, y: 1 } };
+  const placement: KitPlacement = { role: "escalator", anchorKey: "run", assetId: "rail", floorId: "f",
+    rank: 1, position: [0, 0.003, 0], yaw: 0, replaces: "escalator-balustrade" };
+  const along = [0.4, ESCALATOR_FLAT_M, 5, 9.2, 9.6];
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(along.flatMap(s => [0, escalatorHeight(s, 10, 4) + 0.9, -s]), 3));
+  geometry.setIndex([0, 1, 2, 2, 3, 4]);
+  const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial()); mesh.name = "VIS_rail";
+  const owned: { dispose(): void }[] = [];
+  const batch = batchKitPlacements({ placed: [placement], runs: [run], manifest,
+    provider: { instantiate: () => { const root = new THREE.Group(); root.add(mesh); return root; } },
+    tint: [], track: v => { owned.push(v); return v; } });
+  try {
+    const positions = batch.meshes[0]!.geometry.getAttribute("position");
+    for (let i = 0; i < positions.count; i++) {
+      expect(positions.getY(i)).toBeCloseTo(escalatorHeight(-positions.getZ(i), 10.1, 4.05) + 0.9, 4);
+    }
+  } finally { owned.forEach(v => v.dispose()); geometry.dispose(); mesh.material.dispose(); }
+});
