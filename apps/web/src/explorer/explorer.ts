@@ -3844,6 +3844,7 @@ export class Explorer {
           ascendingBand = true;
         }
       }
+      ascendingBand ||= !!cast(back)[0]?.stairwellBand;
     }
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
