@@ -89,7 +89,12 @@ test("guided-walk discovery frames and explicit-only CTA (J3) @phone", async ({ 
       const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
       fs.writeFileSync(path.join(out, file), Buffer.from(png.data, "base64"));
       const coverage = await overlay(page);
-      const primaryCount = await page.locator("button.primary:visible").count();
+      const primaryCount = await page.locator("button.primary:visible").evaluateAll((buttons) => buttons.filter((button) => {
+        for (let el: Element | null = button; el; el = el.parentElement) {
+          if (Number(getComputedStyle(el).opacity) === 0) return false;
+        }
+        return true;
+      }).length);
       captures.push({ file, ...state, ...coverage, primaryCount });
       expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? 30 : 20);
       expect(primaryCount).toBe(1);
