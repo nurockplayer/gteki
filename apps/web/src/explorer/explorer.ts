@@ -3876,7 +3876,21 @@ export class Explorer {
       const aimRaise = this.gateAimHeld ? Math.max(this.boomRaise, Math.asin(this.camera.position.clone().sub(pose.pivot).normalize().y) - Math.asin(pose.back.y)) : this.boomRaise;
       // Keep the feet correction complete while a local gate raise is releasing.
       aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.gateAimHeld ? Math.max(aimRaise, CAT_RAISE_AIM.end) : aimRaise, this.camera.fov, this.camera.aspect);
-      if (ascendingBand) aimAtRaisedCat(pose.target, this.camera.position, this.pos, CAT_RAISE_AIM.end, this.camera.fov, this.camera.aspect);
+      if (ascendingBand || (this.slope.velocity > SLOPE.exit && this.camera.position.distanceTo(pose.pivot) < wantedDistance)) {
+        // A contracted boom must retain the nearest feet-box corners, not just
+        // the floor point beneath the cat's centre, through the boom's release.
+        const box = this.catWorldBox();
+        const aim = pose.target.clone().sub(this.camera.position);
+        const ahead = Math.hypot(aim.x, aim.z);
+        const feetNdc = this.camera.aspect < 1 ? CAT_RAISE_AIM.feetNdcPortrait : CAT_RAISE_AIM.feetNdc;
+        const margin = Math.atan(feetNdc * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2));
+        let highest = Infinity;
+        for (const x of [box.min.x, box.max.x]) for (const z of [box.min.z, box.max.z]) {
+          const forward = ((x - this.camera.position.x) * aim.x + (z - this.camera.position.z) * aim.z) / ahead;
+          highest = Math.min(highest, Math.atan2(box.min.y - this.camera.position.y, forward) + margin);
+        }
+        pose.target.y = Math.min(pose.target.y, this.camera.position.y + ahead * Math.tan(highest));
+      }
       if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect,
         this.camera.aspect >= 1 ? STAIR_POSE.desktop.feetNdc : undefined);
       const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
