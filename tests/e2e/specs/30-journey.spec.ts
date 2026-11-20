@@ -45,20 +45,20 @@ async function overlay(page: Page): Promise<Overlay> {
 
 test("guided-walk discovery frames and explicit-only CTA (J3) @phone", async ({ page }, info) => {
   test.setTimeout(360_000);
+  const clockStart = new Date();
+  await page.clock.install({ time: clockStart });
+  await page.clock.pauseAt(new Date(clockStart.getTime() + 1000));
+  await page.addInitScript(() => {
+    const mark = performance.mark.bind(performance);
+    performance.mark = (name, options) => {
+      if (name === "boot-lift") (window as any).__discoveryStartedAt = performance.now();
+      return mark(name, options);
+    };
+  });
+  await page.addInitScript(PROBE_SCRIPT);
   for (const lang of ["ja", "en"]) {
     const out = path.join(outDir(info.project.name), lang); fs.mkdirSync(out, { recursive: true });
     const cdp = await page.context().newCDPSession(page);
-    const clockStart = new Date();
-    await page.clock.install({ time: clockStart });
-    await page.clock.pauseAt(new Date(clockStart.getTime() + 1000));
-    await page.addInitScript(() => {
-      const mark = performance.mark.bind(performance);
-      performance.mark = (name, options) => {
-        if (name === "boot-lift") (window as any).__discoveryStartedAt = performance.now();
-        return mark(name, options);
-      };
-    });
-    await page.addInitScript(PROBE_SCRIPT);
     await page.goto(`/?qaTimeBand=morning&lang=${lang}${reelMode === "next" ? "&next=1" : ""}`, { waitUntil: "commit" });
     // Skip repeated GPU frames during loading; keep the real DOM cue callbacks running.
     await expect.poll(async () => {
@@ -102,7 +102,6 @@ test("guided-walk discovery frames and explicit-only CTA (J3) @phone", async ({ 
     if (info.project.name.startsWith("phone")) expect(box.x).toBeGreaterThanOrEqual(page.viewportSize()!.width * .45);
     await page.clock.fastForward(10_000);
     expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("walk");
-    await page.clock.uninstall();
     await cdp.detach();
   }
 });
