@@ -1,6 +1,7 @@
 import type { Instruction, PolylinePoint, RouteStep } from "@gteki/navigation";
 import type { EdgeMode } from "@gteki/schema";
 import { instructionPoints } from "@gteki/navigation";
+import { ESCALATOR_MPS } from "@gteki/scene-api";
 
 /** Guide speed tiers the HUD cycles through (m/s): walking pace, the avatar's run, and a fast-forward for long routes. */
 export const GUIDE_TIERS = [
@@ -23,7 +24,7 @@ export const MIN_GUIDE_MPS = 0.2;
 export const FAST_CONNECTOR_SCALE = 2;
 
 /** Believable top speeds (m/s along the path) on connectors; other modes are uncapped. */
-export const CONNECTOR_MPS: Partial<Record<EdgeMode, number>> = { stairs: 0.9, escalator: 0.75, elevator: 1.5, gate: 1.6 };
+export const CONNECTOR_MPS: Partial<Record<EdgeMode, number>> = { stairs: 0.9, escalator: ESCALATOR_MPS, elevator: 1.5, gate: 1.6 };
 
 /** A stretch [fromS, toS) of the polyline where the guide may not go faster than `maxMps`; `scales` caps stretch on the fast tier. */
 export interface PaceSpan {
@@ -70,7 +71,7 @@ export function guidePaceSpans(polyline: readonly PolylinePoint[], steps: readon
   for (let i = 1; i < polyline.length; i++) {
     const mode = steps[polyline[i]!.stepIndex]?.mode;
     const cap = mode === undefined ? undefined : CONNECTOR_MPS[mode];
-    if (cap !== undefined && cum[i]! > cum[i - 1]!) spans.push({ fromS: cum[i - 1]!, toS: cum[i]!, maxMps: cap, scales: true, mode });
+    if (cap !== undefined && cum[i]! > cum[i - 1]!) spans.push({ fromS: cum[i - 1]!, toS: cum[i]!, maxMps: cap, scales: mode !== "escalator", mode });
   }
   for (const ins of instructions) {
     if (ins.kind === "wait") continue;
@@ -79,6 +80,21 @@ export function guidePaceSpans(polyline: readonly PolylinePoint[], steps: readon
     const fromS = cum[polyline.indexOf(pts[0]!)]!;
     const toS = cum[polyline.indexOf(pts[pts.length - 1]!)]!;
     if (toS > fromS) spans.push({ fromS, toS, maxMps: (toS - fromS) / MIN_INSTRUCTION_S, scales: false });
+  }
+  // Ease down/up on the landing, leaving the entire ride at the step band's speed.
+  // Short constant-speed slices use the same exact integration as every other pace cap.
+  const rides = spans.filter((sp) => sp.mode === "escalator");
+  for (const ride of rides) {
+    for (const boarding of [true, false]) {
+      const edge = boarding ? ride.fromS : ride.toS;
+      if (rides.some((other) => other !== ride && (boarding ? other.toS : other.fromS) === edge)) continue;
+      for (let i = 0; i < 40; i++) {
+        const near = i * 0.05, far = (i + 1) * 0.05;
+        const fromS = Math.max(0, boarding ? edge - far : edge + near);
+        const toS = Math.min(cum.at(-1)!, boarding ? edge - near : edge + far);
+        if (toS > fromS) spans.push({ fromS, toS, maxMps: ESCALATOR_MPS + (GUIDE_TIERS[2].mps - ESCALATOR_MPS) * ((near + far) / 4) ** 2, scales: false });
+      }
+    }
   }
   return spans;
 }
@@ -105,6 +121,7 @@ export function escalatorSpanAt(s: number, spans: readonly PaceSpan[], leadM = 0
 
 /** The guide's speed (m/s) at distance `s`: the tier's, capped by every span containing `s`, never below MIN_GUIDE_MPS. */
 export function guideSpeedAt(s: number, tier: GuideTierId, spans: readonly PaceSpan[]): number {
+  if (guideOnEscalator(s, spans)) return ESCALATOR_MPS;
   let mps = guideTierSpeed(tier);
   for (const sp of spans) {
     if (s < sp.fromS || s >= sp.toS) continue;

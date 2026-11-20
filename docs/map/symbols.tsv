@@ -918,6 +918,7 @@ CameraGateAisle	interface	packages/scene-api/src/index.ts
 IdentityBoardTag	interface	packages/scene-api/src/index.ts
 InteractableSpec	interface	packages/scene-api/src/index.ts
 NavmeshPaths	interface	packages/scene-api/src/index.ts
+ESCALATOR_MPS	const	packages/scene-api/src/index.ts
 SCENE_API_VERSION	const	packages/scene-api/src/index.ts
 SceneContext	interface	packages/scene-api/src/index.ts
 SpawnPoint	interface	packages/scene-api/src/index.ts
