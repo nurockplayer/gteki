@@ -3632,6 +3632,7 @@ export class Explorer {
     const pinned = this.qaCamera.yaw !== undefined || this.qaCamera.pitch !== undefined || this.qaCamera.distance !== undefined;
     const stairCamera = this.mode === "guide" && this.guide !== null && guideStairCamera(this.guide.s, this.guide.spans, this.camDistance);
     const stairsOn = !this.previewNext && !!this.catAvatar && !this.firstPerson && stairCamera && !this.catRidingEscalator() && !pinned;
+    const stairClearanceOn = stairsOn || (this.previewNext && !!this.catAvatar && !this.firstPerson && stairCamera && !this.catRidingEscalator() && !pinned);
     this.stairsFraming = stepEscalatorLock(this.stairsFraming.progress, stairsOn, dt, snap || this.reducedMotion);
     const stairsWeight = stairsOn ? this.stairsFraming.weight : 0;
     const resetSlope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump;
@@ -3725,7 +3726,7 @@ export class Explorer {
     if (!walkDescent || resetSlope) this.walkStairAngle = 0;
     let stairAngle = 0;
     let catCentre: THREE.Vector3 | undefined;
-    if (stairsOn) {
+    if (stairClearanceOn) {
       const g = this.guide!;
       const { segment } = samplePolyline(g.pts, g.cum, g.s);
       // Short landings retain the last descending axis of this stair run.
@@ -3738,7 +3739,7 @@ export class Explorer {
         break;
       }
     }
-    if (walkDescent && !this.previewNext && this.catAvatar && this.escalatorWeight === 0 && !pinned) {
+    if (walkDescent && this.catAvatar && this.escalatorWeight === 0 && !pinned) {
       const run = Math.hypot(this.pos.x - this.lastAvatarPos.x, this.pos.z - this.lastAvatarPos.z);
       if (dt > 0 && run > 0 && this.slope.velocity < -SLOPE.exit) {
         this.walkStairAngle = Math.atan2(-this.slope.velocity * dt, Math.max(run, WALKER_SPEED.walkMps * dt)) + THREE.MathUtils.degToRad(8);
@@ -3772,13 +3773,10 @@ export class Explorer {
         else high = mid;
       }
       const atElevation = (angle: number) => new THREE.Vector3(x * Math.cos(angle), Math.sin(angle), z * Math.cos(angle));
-      if (walkDescent && !stairsOn) {
-        if (this.previewNext && followDistance(length, cast(atElevation(high), length)) < length) return direction;
+      if (walkDescent && !stairClearanceOn) {
         const base = Math.asin(THREE.MathUtils.clamp(direction.y, -1, 1));
-        if (!this.previewNext) {
-          const clear = (angle: number) => followDistance(length, cast(atElevation(angle), length)) >= length;
-          high = clearWalkElevation(base, high, clear);
-        }
+        const clear = (angle: number) => followDistance(length, cast(atElevation(angle), length)) >= length;
+        high = clearWalkElevation(base, high, clear);
       }
       const raised = atElevation(high);
       return direction.copy(raised);
@@ -3859,7 +3857,7 @@ export class Explorer {
         this.camera.aspect >= 1 ? STAIR_POSE.desktop.feetNdc : undefined);
       const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
       const elevation = Math.atan2(pose.target.y - this.camera.position.y, ahead);
-      const resetAim = snap || this.reducedMotion || pinned || this.mode !== "guide" || this.previewNext;
+      const resetAim = snap || this.reducedMotion || pinned || this.mode !== "guide";
       if (stairRaise > 0 || resetAim) this.stairAimElevation = stairRaise > 0 ? elevation : undefined;
       else if (this.stairAimElevation !== undefined) {
         const eased = easeRaise(this.stairAimElevation, elevation, dt);
