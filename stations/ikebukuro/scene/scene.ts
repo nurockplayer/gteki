@@ -19,7 +19,7 @@ import { createAmbience } from "./ambience.ts";
 import { createStreetAmbience } from "./street-ambience.ts";
 import { createZoneAcoustics, ZONE_ACOUSTICS } from "./zone-acoustics.ts";
 import { createStationSound } from "./station-sound.ts";
-import { CONTEXT_GLB, CONTEXT_ROAD_COLOR, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
+import { CONTEXT_GLB, CONTEXT_ROAD_COLOR, contextVisibleAt, cutContextStairOpenings, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import { loadN02Overlay } from "./n02_overlay.ts";
 import crowdLanes from "./crowd_lanes.json";
 import finishManifest from "./finishes.json";
@@ -519,6 +519,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     (loaded) => {
       const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
+      cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
       dressContext(loaded.scene, material, roadMaterial);
       if (disposed) {
         loaded.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());

@@ -251,6 +251,8 @@ export class Explorer {
   /** prefers-reduced-motion: the follow camera and orbit damping cut instead of gliding, and decorative route motion stops. */
   private reducedMotion = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
+  coldOpenStreet = false;
+  coldOpenStreetEnding = false;
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
   private readonly probeNormalMatrix = new THREE.Matrix3();
@@ -3552,7 +3554,12 @@ export class Explorer {
     // The surface actually underfoot, not the walker's smoothed height, decides which tread this is.
     // The published street node remains an arrival point; stepping into its stair support/taper hides pavement.
     const stairEntry = hit?.object.userData.gtekiStairWalkSupport && !this.streetTops.some((top) => top.distanceToSquared(this.pos) < 1e-6);
-    p.level = !stairEntry && atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
+    if (this.coldOpenStreet || this.coldOpenStreetEnding) {
+      p.level = !stairEntry && atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
+      if (!this.coldOpenStreet && !p.level) this.coldOpenStreetEnding = false;
+    } else {
+      p.level = !stairEntry && footing && atStreetTop(hit ? hit.point : this.pos, this.streetTops, true);
+    }
   }
 
   /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */

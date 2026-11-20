@@ -1077,6 +1077,7 @@ ContextBlockers	interface	stations/ikebukuro/scene/context.ts
 contextVisibleAt	function	stations/ikebukuro/scene/context.ts
 createContextBlockers	function	stations/ikebukuro/scene/context.ts
 createContextMaterial	function	stations/ikebukuro/scene/context.ts
+cutContextStairOpenings	function	stations/ikebukuro/scene/context.ts
 dressContext	function	stations/ikebukuro/scene/context.ts
 streetRenderY	function	stations/ikebukuro/scene/context.ts
 trackCamera	function	stations/ikebukuro/scene/context.ts

@@ -186,6 +186,7 @@ export class App {
         if (poi) this.setDestination(poi);
       },
     }, { avatarGlbUrl: avatarGlbUrl(params, location.href), avatarKind: avatarKind(params), catGait: catGait(params), maxPixelRatio: pixelRatioCap(params), previewNext: params.get("next") === "1" });
+    this.explorer.coldOpenStreet = this.coldOpen;
     // A hidden or back-forward-cached page gives its WebGL memory back; a restored one reloads (#1392).
     addEventListener("pagehide", () => { this.explorer.renderer.dispose(); this.explorer.renderer.forceContextLoss(); });
     addEventListener("pageshow", (e) => { if (e.persisted) location.reload(); });
@@ -488,6 +489,7 @@ export class App {
     const generation = ++this.openGeneration;
     const current = () => generation === this.openGeneration;
     this.explorer.cancelPendingLoad(entry.key);
+    if (!this.coldOpen) this.explorer.coldOpenStreetEnding = false;
     this.s.entry = entry;
     this.ui.stationSelect.value = entry.key;
     // Drop the previous station's services now, not after the await: nothing may search or route
@@ -574,6 +576,8 @@ export class App {
     this.removeBootCard();
     if (!this.coldOpen) return;
     this.coldOpen = false;
+    this.explorer.coldOpenStreet = false;
+    this.explorer.coldOpenStreetEnding = true;
     this.root.classList.remove("cold-opening");
     const card = this.root.querySelector<HTMLElement>(".cold-open");
     if (card) card.hidden = true;
