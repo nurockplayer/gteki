@@ -61,7 +61,8 @@ describe("station geometry lifetime", () => {
     // #1169 (2026-11-14 JST): align the shaft stripe UV datum; positions and counts are unchanged.
     // #1238/#1243 (2026-11-16 JST): inset stair render surfaces and reparent preview roofs.
     // #1391 (2026-11-17 JST): owned-roof linear lights; all other meshes unchanged.
-    expect(result.geometryHash).toBe("cbf53ba9c5cd5b40639b69b429026771f1ccaf9c8d2dbce8231ab0d3770f8d51");
+    // #1486 (2026-11-21 JST): use root-test's Linux x64 measurement, as for the kit digest.
+    expect(result.geometryHash).toBe("5cd58cb0edf80ceeee65a50bb7acdd079ddd2fb682d7765609005dc4140dd6c0");
   }, 60_000);
 
   // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the
