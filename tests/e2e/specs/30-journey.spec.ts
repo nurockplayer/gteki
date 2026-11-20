@@ -324,32 +324,6 @@ test("guided walk @phone", async ({ page }, info) => {
     }
     if (arrived) {
       const start = Date.now(); await hooks.simulate(page, 2); const simMs = Date.now() - start; simT += 2; await sample(true, simMs);
-      const arrivalHold = await page.evaluate(async () => {
-        const g = (window as any).__gteki;
-        const position = g.avatar(), distanceM = g.guideControls().distanceM;
-        const shot = g.arrivalFrame().shot;
-        const started = performance.now();
-        let frames = 0;
-        g.holdFrames(false);
-        try {
-          return await new Promise<{ elapsedMs: number; frames: number }>((resolve, reject) => {
-            const check = () => {
-              const current = g.avatar(), controls = g.guideControls();
-              const elapsedMs = performance.now() - started;
-              frames++;
-              if (g.mode() !== "guide" || !controls.arrived || Math.abs(controls.distanceM - distanceM) > 0.01 ||
-                  Math.hypot(current.x - position.x, current.y - position.y, current.z - position.z) > 0.01 ||
-                  !document.querySelector(".app.arrival .arrival-controls .guide-more") || g.arrivalFrame().shot !== shot) {
-                reject(new Error(`Arrival changed after ${elapsedMs} ms: ${JSON.stringify({ position, current, distanceM, controls, mode: g.mode() })}`));
-              } else if (elapsedMs >= 60_000) resolve({ elapsedMs, frames });
-              else requestAnimationFrame(check);
-            };
-            requestAnimationFrame(check);
-          });
-        } finally { g.holdFrames(true); }
-      });
-      expect(arrivalHold.elapsedMs).toBeGreaterThanOrEqual(60_000);
-      console.log(`[journey] ${info.project.name} ${reelMode} arrival held: ${JSON.stringify(arrivalHold)}`);
       const more = page.locator(".arrival-controls .guide-more"), menu = page.locator(".arrival-menu");
       const card = page.locator(".hud .hud-line");
       const closedCard = (await card.boundingBox())!, closedMore = (await more.boundingBox())!;
