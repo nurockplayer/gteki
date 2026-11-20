@@ -35,3 +35,25 @@ export function coldOpenPair(stationKey: string, pois: readonly Poi[]): { from: 
   const to = pois.find((poi) => poi.id === "poi:platform:oedo");
   return from?.connectorNodeIds.length && to?.connectorNodeIds.length ? { from, to } : null;
 }
+
+/** One cold-open invitation per page load, timed from the interactive frame. */
+export class ColdOpenDiscovery {
+  private startedAt: number | null = null;
+  private dismissed = false;
+
+  start(now: number): void {
+    if (this.startedAt === null) this.startedAt = now;
+  }
+
+  dismiss(): void { this.dismissed = true; }
+
+  frame(now: number): { opacity: number; hint: boolean; done: boolean } {
+    const elapsed = this.startedAt === null ? -1 : now - this.startedAt;
+    const done = this.dismissed || elapsed >= 9000;
+    return {
+      opacity: !done && elapsed >= 2000 && elapsed < 5000 ? .28 * (5000 - elapsed) / 3000 : 0,
+      hint: !done && elapsed >= 4000,
+      done,
+    };
+  }
+}

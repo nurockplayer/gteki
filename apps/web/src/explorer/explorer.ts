@@ -102,6 +102,7 @@ export interface ExplorerEvents {
   onInteraction?(state: InteractionState): void;
   onMode?(mode: ExplorerMode): void;
   onWalkStart?(): void;
+  onWalkInput?(): void;
   onGreyboxLegend?(visible: boolean): void;
   onGuideProgress?(p: { s: number; total: number; stepIndex: number; done: boolean }): void;
   /** The guide stopped (and paused) at `stops[index]` given to startGuide. */
@@ -564,7 +565,7 @@ export class Explorer {
     // Any user orbit, pan or zoom ends automatic refitting on resize.
     this.orbit.addEventListener("start", () => { this.framed = null; this.framedPts = null; });
 
-    this.input = new Input(this.renderer.domElement, host);
+    this.input = new Input(this.renderer.domElement, host, () => this.events.onWalkInput?.());
     this.envProbe.visible = false;
     this.scene.add(this.world, this.overlays, this.avatar, this.street.group, this.envProbe);
     this.overlays.add(this.routeGroup, this.poiGroup);
@@ -1693,8 +1694,45 @@ export class Explorer {
     return await manifestScene(assets, ctx);
   }
 
+  private discoveryMarks: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial> | null = null;
+
+  /** Small floor chevrons follow the already computed guide route; no downloaded asset. */
+  setDiscoveryMarks(polyline: readonly PolylinePoint[] | null): void {
+    if (this.discoveryMarks) {
+      this.discoveryMarks.removeFromParent();
+      this.discoveryMarks.geometry.dispose();
+      this.discoveryMarks.material.dispose();
+      this.discoveryMarks = null;
+    }
+    if (!polyline) return;
+    const points = polyline.map(p => R(p.x, p.y, p.z));
+    const lengths = cumulativeLengths(points);
+    const vertices: number[] = [];
+    for (let distance = .8; distance < Math.min(9, lengths.at(-1)!); distance += 1) {
+      const p = samplePolyline(points, lengths, distance);
+      // Two narrow wings form a forward-pointing chevron on the route's floor.
+      for (const [side, forward] of [[-.24, -.16], [0, .16], [0, .04], [0, .16], [.24, -.16], [0, .04]]) {
+        vertices.push(p.x + p.tx * forward! - p.tz * side!, p.y + .035, p.z + p.tz * forward! + p.tx * side!);
+      }
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+    const material = new THREE.MeshBasicMaterial({ color: 0xffe4ac, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
+    this.discoveryMarks = new THREE.Mesh(geometry, material);
+    this.discoveryMarks.name = "cold-open-direction-marks";
+    this.discoveryMarks.visible = false;
+    this.world.add(this.discoveryMarks);
+  }
+
+  setDiscoveryOpacity(opacity: number): void {
+    if (!this.discoveryMarks) return;
+    this.discoveryMarks.material.opacity = opacity;
+    this.discoveryMarks.visible = opacity > 0;
+  }
+
   /** `leaving`: the explorer is switching to a different station (or disposing), so the previous station's GPU textures are freed. */
   private clearStation(leaving = false): void {
+    this.setDiscoveryMarks(null);
     this.interactionController.setSpecs([]);
     this.interactionSnapshot = "";
     this.interactionVisuals = undefined;

@@ -39,7 +39,7 @@ import { Minimap } from "./minimap.ts";
 import { PanelFold } from "./panelFold.ts";
 import { InteractionPrompt } from "./interactionPrompt.ts";
 import { emptySuggestions, exampleQueries, pushRecent, readRecent, writeRecent } from "./emptySuggestions.ts";
-import { coldOpenPair, demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
+import { ColdOpenDiscovery, coldOpenPair, demoPair, markFirstRunDone, shouldShowFirstRun } from "./firstRun.ts";
 import { escalatorArrow, guideCardText } from "./guideCard.ts";
 import { escalatorEtaSuffix } from "./escalatorEta.ts";
 import { bootProgress, FrameReadiness, type BootStage } from "./bootCard.ts";
@@ -150,6 +150,7 @@ export class App {
   private readonly directories = new Map<string, { bundle: StationBundle; search: SearchIndex } | null>();
   private panelExpanded = false;
   private coldOpen = false;
+  private readonly discovery = new ColdOpenDiscovery();
   private bootValue = 0;
   private bootWalkAt: number | null = null;
   private bootFrames = new FrameReadiness();
@@ -176,6 +177,7 @@ export class App {
     this.layout();
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
+      onWalkInput: () => this.dismissDiscovery(),
       onWalkStart: () => this.panelFold.fold(true),
       onInteraction: (state) => this.interactionPrompt.render(state),
       onGreyboxLegend: (visible) => { this.ui.greyboxLegend.hidden = !visible; },
@@ -327,7 +329,9 @@ export class App {
     const title = el("div", "cold-open-title");
     const guide = el("button", "primary");
     const search = el("button", "cold-open-search");
-    cold.append(title, guide, search);
+    const hint = el("div", "cold-open-hint");
+    hint.hidden = true;
+    cold.append(title, hint, guide, search);
     cold.hidden = true;
     this.root.classList.toggle("cold-opening", this.coldOpen);
     guide.addEventListener("click", () => { this.dismissColdOpen(); this.startGuide(); });
@@ -358,6 +362,7 @@ export class App {
         if (phase === "graph" || phase === "scene" || phase === "composer" || phase === "ready") this.setBootStage(phase);
         if (this.bootWalkAt !== null && previous && this.bootFrames.push(now - previous, now - this.bootWalkAt)) {
           performance.mark("boot-lift");
+          this.startDiscovery(now);
           this.setBootStage("settled");
           this.root.querySelector<HTMLElement>(".cold-open")!.hidden = false;
           boot.classList.add("lifting");
@@ -400,6 +405,7 @@ export class App {
     if (cold) {
       cold.querySelector<HTMLElement>(".cold-open-title")!.textContent = t.coldOpen.title;
       cold.querySelector<HTMLElement>(".primary")!.textContent = t.coldOpen.guide;
+      cold.querySelector<HTMLElement>(".cold-open-hint")!.textContent = t.coldOpen.hint;
       cold.querySelector<HTMLElement>(".cold-open-search")!.textContent = t.coldOpen.search;
     }
     document.documentElement.lang = this.s.lang;
@@ -571,7 +577,28 @@ export class App {
     }
   }
 
+  private startDiscovery(now: number): void {
+    this.discovery.start(now);
+    this.explorer.setDiscoveryMarks(this.s.polyline);
+    const hint = this.root.querySelector<HTMLElement>(".cold-open-hint")!;
+    const frame = (at: number) => {
+      const cue = this.discovery.frame(at);
+      hint.hidden = !cue.hint;
+      this.explorer.setDiscoveryOpacity(cue.opacity);
+      if (cue.done) this.explorer.setDiscoveryMarks(null);
+      else requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+
+  private dismissDiscovery(): void {
+    this.discovery.dismiss();
+    this.root.querySelector<HTMLElement>(".cold-open-hint")!.hidden = true;
+    this.explorer.setDiscoveryMarks(null);
+  }
+
   private dismissColdOpen(): void {
+    this.dismissDiscovery();
     this.explorer.setOpeningShot(null);
     this.removeBootCard();
     if (!this.coldOpen) return;
@@ -1419,6 +1446,7 @@ export class App {
 
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
+    if (mode === "guide") this.dismissDiscovery();
     if (mode !== "guide") { this.root.classList.remove("arrival", "arrival-left", "arrival-bottom"); this.explorer.setArrivalBeacon(false); }
     this.syncTopMenu();
     if (mode !== "guide") {

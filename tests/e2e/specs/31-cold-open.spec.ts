@@ -102,7 +102,9 @@ test("release hygiene (J14) @phone", async ({ page }, info) => {
   recordJ14(info, { credits: { visibleLinks: links.length, links }, language: { before, after } });
   expect.soft(links.length).toBeGreaterThanOrEqual(1);
   expect([before.lang, after.lang].sort()).toEqual(["en", "ja"]);
-  expect(after.primary).not.toBe(before.primary);
+  for (const value of [before, after]) {
+    expect(value.primary).toBe(value.lang === "ja" ? "ホームまで自動で歩く" : "Take a guided walk");
+  }
   await expect(page.locator("html")).toHaveAttribute("lang", before.lang!);
   await expect(primary).toHaveText(before.primary);
 });

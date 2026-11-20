@@ -43,6 +43,36 @@ async function overlay(page: Page): Promise<Overlay> {
   });
 }
 
+test("guided-walk discovery frames (J3) @phone", async ({ page }, info) => {
+  test.setTimeout(180_000);
+  const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });
+  await page.addInitScript(PROBE_SCRIPT);
+  await page.goto("/?qaTimeBand=morning");
+  await expect(page.locator(".cold-open .primary")).toBeVisible({ timeout: 120_000 });
+  for (const seconds of [3, 5]) {
+    await page.waitForFunction((seconds) => {
+      const lift = performance.getEntriesByName("boot-lift")[0];
+      return lift && performance.now() - lift.startTime >= seconds * 1000;
+    }, seconds);
+    await page.screenshot({ path: path.join(out, `discovery-${seconds}s.png`), timeout: 60_000 });
+    if (seconds === 5) {
+      await expect(page.locator(".cold-open-hint")).toBeVisible();
+      const coverage = await overlay(page);
+      const primary = page.locator(".cold-open .primary");
+      const box = (await primary.boundingBox())!;
+      const primaryCount = await page.locator("button.primary:visible").count();
+      const record = { ...coverage, primaryCount, touchTargetHeight: box.height };
+      fs.writeFileSync(path.join(out, "discovery-j3.json"), JSON.stringify(record, null, 2));
+      console.log(`J3 hint shown: ${info.project.name} ${JSON.stringify(record)}`);
+      expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? 30 : 20);
+      expect(primaryCount).toBe(1);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+      if (info.project.name.startsWith("phone")) expect(box.x).toBeGreaterThanOrEqual(page.viewportSize()!.width * .45);
+    }
+  }
+  expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("walk");
+});
+
 test("cold open @phone", async ({ page, browserName }, info) => {
   test.setTimeout(180_000);
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });

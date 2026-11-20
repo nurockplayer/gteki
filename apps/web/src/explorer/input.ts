@@ -18,7 +18,7 @@ export class Input {
   private readonly knobEl: HTMLDivElement;
   private readonly off: (() => void)[] = [];
 
-  constructor(private readonly surface: HTMLElement, host: HTMLElement) {
+  constructor(private readonly surface: HTMLElement, host: HTMLElement, private readonly onActivity: () => void = () => {}) {
     this.stickEl = document.createElement("div");
     this.stickEl.className = "joystick";
     this.knobEl = document.createElement("div");
@@ -33,6 +33,7 @@ export class Input {
     on(window, "keydown", (e: KeyboardEvent) => {
       if (!takesWalkKey(e.target as HTMLElement | null, e.code)) return;
       this.keys.add(e.code);
+      if (this.enabled && /^(Key[WASD]|Arrow(Up|Down|Left|Right))$/.test(e.code)) this.onActivity();
     });
     // Focus moving into a key-owning element (Tab to a button, say) must not leave a held key stuck.
     on(window, "focusin", (e: FocusEvent) => { if (isKeyOwner(e.target as HTMLElement | null)) this.keys.clear(); });
@@ -40,6 +41,7 @@ export class Input {
     on(window, "blur", () => this.keys.clear());
     on(surface, "pointerdown", (e: PointerEvent) => {
       if (!this.enabled) return;
+      if (e.pointerType === "touch") this.onActivity();
       const rect = surface.getBoundingClientRect();
       if (e.pointerType === "touch" && e.clientX - rect.left < rect.width * 0.45 && !this.stick) {
         this.stick = { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: e.clientX, y: e.clientY, at: performance.now() };
@@ -58,6 +60,7 @@ export class Input {
         const v = this.stickVector();
         this.knobEl.style.transform = `translate(${v.x * 36}px, ${-v.y * 36}px)`;
       } else if (this.drag?.id === e.pointerId) {
+        if (e.clientX !== this.drag.x || e.clientY !== this.drag.y) this.onActivity();
         this.look.dx += e.clientX - this.drag.x;
         this.look.dy += e.clientY - this.drag.y;
         this.drag.x = e.clientX;
