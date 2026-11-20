@@ -653,7 +653,7 @@ test("simulated shop stop from the guided walk @phone", async ({ page }, info) =
       });
       g.goldenFrame();
       const idle = { ...e.renderer.info.render };
-      g.interact(); g.simulate(1.3); g.goldenFrame();
+      e.interact(); g.simulate(1.3); g.goldenFrame();
       return { addedTriangles, idle, reacting: { ...e.renderer.info.render }, shopKit: e.stationScene.root.userData.shopKit };
     });
     expect((await page.evaluate(() => (window as any).__gteki.interaction())).step).toBe("react");
