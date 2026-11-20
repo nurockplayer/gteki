@@ -495,3 +495,10 @@ path = "docs/visual/live/*.jpg"
 precedence = "override"
 SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# J11 YouTube CC recordings retain their source terms; see SOURCES.md.
+[[annotations]]
+path = "assets/audio/youtube-cc/*.opus"
+precedence = "override"
+SPDX-FileCopyrightText = "YouTube channel authors credited in assets/audio/youtube-cc/SOURCES.md; modified by GTEki contributors (trimmed and re-encoded)"
+SPDX-License-Identifier = "LicenseRef-YouTube-CC-BY-4.0"

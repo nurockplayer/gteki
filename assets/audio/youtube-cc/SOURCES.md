@@ -1,0 +1,9 @@
+# J11 selected recordings
+
+These files are cut from the clips in PR #1497; the windows below are relative to those clips. Each was re-encoded to Opus and loudness adjusted. The YouTube Creative Commons Attribution licence field names no version; YouTube links its option to CC BY 4.0. The files retain their own terms under LicenseRef-YouTube-CC-BY-4.0.
+
+- `shinjuku-street-walk-tokyolife.opus`, 5–25 s, -23.1 LUFS: "SHINJUKU TOKYO 4K - Summer Walking Tour in Japan" by Tokyo Life, YouTube, https://www.youtube.com/watch?v=F43l35P_Fr4, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) — trimmed from 10:00–11:30 and again to 5–25 s, re-encoded and loudness adjusted.
+- `tokyo-station-shinkansen-concourse.opus`, 90–120 s, -22.7 LUFS: "東京駅新幹線ゲート付近の環境音｜フリー音素材" by Hybrid Ambience, YouTube, https://www.youtube.com/watch?v=sY0hsSFVYtM, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) — trimmed from 3:30–5:30 and again to 90–120 s, re-encoded and loudness adjusted.
+- `escalator-montreal-metro.opus`, 8–100 s, -22.9 LUFS: "Sounds of an Escalator" by NazmusLabs, YouTube, https://www.youtube.com/watch?v=vyn0eDOOTOM, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) — trimmed from 0:00–1:40 and again to 8–100 s, re-encoded and loudness adjusted.
+- `subway-platform-white-noise.opus`, 60–90 s, -23.0 LUFS: "[15min][ world noise No.1] japanese subway train's white noise" by girafferrz, YouTube, https://www.youtube.com/watch?v=1k_GjpDYLjQ, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) — trimmed from 1:00–3:00 and again to 60–90 s, re-encoded and loudness adjusted.
+- `oedo-ushigome-yanagicho.opus`, 35–71 s, -23.0 LUFS: "【No Copyright】 Toei Subway Ōedo Line 12-000 series Train, Ushigome-Yanagicho" by Tama Reco / 多摩レコ, YouTube, https://www.youtube.com/watch?v=-Z2e8lPcix0, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/) — trimmed from 0:00–1:54 and again to 35–71 s, re-encoded and loudness adjusted.
