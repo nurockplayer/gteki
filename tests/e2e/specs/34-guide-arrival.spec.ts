@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.use({ trace: "off", video: "off", screenshot: "off" });
+test.use({ trace: "off", video: "off", screenshot: "off", userAgent: undefined });
 
 test("natural guided arrival stays at the platform @phone", async ({ page }, info) => {
   test.setTimeout(1_800_000);
