@@ -76,9 +76,10 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1434 (2026-11-17 JST): nosing goldenRole metadata changes nodes/lists digests; geometry and list counts unchanged.
 // #1432 (2026-11-17 JST): nosing-line stair walk proxies change the lists digest; list counts unchanged.
 // #1486 (2026-11-21 JST): flat landing runs and the shared eased escalator profile change geometry, nodes and bytes; physical lists unchanged.
+// Root-test's Linux x64 output is authoritative for the geometry digest (2026-11-21 JST).
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "1c586f5dbcee184cac8a38d052a97c8ab7dcfd3f4fb2d342d443055c7e99addc",
+    "geometryDigest": "8c389a22d728a0b526bdb597889ae8720cbc60b1962684104b018e5079f65245",
     "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
     "nodesDigest": "f1da2d82b4e1da741ffcb18fd74a6f83448e08bd3914880b09def1ef9ce53aa1",
     "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
