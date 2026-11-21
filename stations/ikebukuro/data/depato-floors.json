@@ -48,6 +48,214 @@
             {
               "en": "ITOHAN",
               "ja": "いとはん"
+            },
+            {
+              "en": "UMENOHANA",
+              "ja": "梅の花"
+            },
+            {
+              "en": "EBISU DAIKOKU",
+              "ja": "ゑびすDaikoku"
+            },
+            {
+              "en": "OJIMA",
+              "ja": "尾島"
+            },
+            {
+              "en": "ORGANIC HOUSE",
+              "ja": "オーガニックハウス"
+            },
+            {
+              "en": "KAISEKIRYORI AOYAMA",
+              "ja": "懐石料理 青山"
+            },
+            {
+              "en": "KAKIYASU DINING",
+              "ja": "柿安ダイニング"
+            },
+            {
+              "en": "CRACLU",
+              "ja": "かにとまぐろのクラクラ"
+            },
+            {
+              "en": "GANGNAM GIMBAP",
+              "ja": "カンナムキンパ"
+            },
+            {
+              "en": "KICHIJOJI SATOU",
+              "ja": "吉祥寺 さとう"
+            },
+            {
+              "en": "KICHIJOJI TSUKADASUISAN",
+              "ja": "吉祥寺 塚田水産"
+            },
+            {
+              "en": "Kitchen ABC",
+              "ja": "キッチンABC"
+            },
+            {
+              "en": "KYOKASUDUKE UOKYU",
+              "ja": "京粕漬 魚久"
+            },
+            {
+              "en": "GINZA TEN-ICHI",
+              "ja": "銀座天一"
+            },
+            {
+              "en": "KUSHIJU",
+              "ja": "串重"
+            },
+            {
+              "en": "KUDANSHITA SUSHIMASA SHUNHAKKAI",
+              "ja": "九段下 寿司政 旬八海"
+            },
+            {
+              "en": "KEI-LIN",
+              "ja": "桂林"
+            },
+            {
+              "en": "KOBE CROQUETTE",
+              "ja": "神戸コロッケ"
+            },
+            {
+              "en": "SAIGON",
+              "ja": "サイゴン"
+            },
+            {
+              "en": "SHINJUKU TAKANO (SALAD)",
+              "ja": "新宿高野（サラダ）"
+            },
+            {
+              "en": "JIRAIYA",
+              "ja": "地雷也"
+            },
+            {
+              "en": "SEIYO GINZA",
+              "ja": "西洋銀座"
+            },
+            {
+              "en": "SOZAI IINA",
+              "ja": "創菜いい菜"
+            },
+            {
+              "en": "TAGOSAKU",
+              "ja": "たごさく"
+            },
+            {
+              "en": "CHANGTAIFU",
+              "ja": "張大夫"
+            },
+            {
+              "en": "CHANROI",
+              "ja": "チャンロイ"
+            },
+            {
+              "en": "TSUKIJI SUZUTOMI",
+              "ja": "つきじ鈴富"
+            },
+            {
+              "en": "TSUKIJI MIYAGAWA HONTEN",
+              "ja": "つきじ宮川本廛"
+            },
+            {
+              "en": "TSUBAME GRILL DELI",
+              "ja": "つばめグリルDELI"
+            },
+            {
+              "en": "TSUBOYA",
+              "ja": "壺屋"
+            },
+            {
+              "en": "TORIICHI SHOUTEN",
+              "ja": "鳥市商店"
+            },
+            {
+              "en": "TORISANWA",
+              "ja": "鶏三和"
+            },
+            {
+              "en": "TONKATSU MAISEN",
+              "ja": "とんかつ まい泉"
+            },
+            {
+              "en": "NAKAO",
+              "ja": "なかお"
+            },
+            {
+              "en": "NADAMAN CHUBO",
+              "ja": "なだ万厨房"
+            },
+            {
+              "en": "NATO'S",
+              "ja": "ナトス"
+            },
+            {
+              "en": "NANIWA　KOICHIAN",
+              "ja": "浪花　古市庵"
+            },
+            {
+              "en": "NIHONBASHI TAIMEIKEN",
+              "ja": "日本橋たいめいけん"
+            },
+            {
+              "en": "NINGYOCHO IMAHAN",
+              "ja": "人形町今半"
+            },
+            {
+              "en": "HAOCHAOZU",
+              "ja": "好餃子"
+            },
+            {
+              "en": "PAOPAO",
+              "ja": "PAOPAO"
+            },
+            {
+              "en": "FUMIYA",
+              "ja": "冨美家"
+            },
+            {
+              "en": "PORTAR IL MARE VIA",
+              "ja": "ポルタ イルマーレ ヴィア"
+            },
+            {
+              "en": "MASUGO",
+              "ja": "桝俉"
+            },
+            {
+              "en": "MATSUOKA",
+              "ja": "まつおか"
+            },
+            {
+              "en": "MR.CHICKEN KEIHANTEN",
+              "ja": "MR.CHICKEN鶏飯店"
+            },
+            {
+              "en": "MEAT YAZAWA",
+              "ja": "ミート矢澤"
+            },
+            {
+              "en": "MAISON DE STEAK STORY",
+              "ja": "メゾン・ド・ステーキストーリー"
+            },
+            {
+              "en": "MORIYASU",
+              "ja": "肉匠もりやす［仮設売場］"
+            },
+            {
+              "en": "YUGO",
+              "ja": "融合"
+            },
+            {
+              "en": "YUNOTANI TAWARADAIMYO",
+              "ja": "ゆのたに俵大名"
+            },
+            {
+              "en": "YONG YANG",
+              "ja": "ヨンヤン"
+            },
+            {
+              "en": "ROMANTEI",
+              "ja": "魯鰻亭"
             }
           ],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
@@ -93,6 +301,402 @@
             {
               "en": "adachiotoemon",
               "ja": "足立音衛門"
+            },
+            {
+              "en": "ATELIER de GODIVA",
+              "ja": "アトリエ ドゥ ゴディバ"
+            },
+            {
+              "en": "ARAIEN HONTEN",
+              "ja": "新井園本店"
+            },
+            {
+              "en": "HENRI CHARPENTIER",
+              "ja": "アンリ・シャルパンティエ"
+            },
+            {
+              "en": "IPPODO TEA",
+              "ja": "一保堂茶舗"
+            },
+            {
+              "en": "ITO EN, LTD.",
+              "ja": "伊藤園"
+            },
+            {
+              "en": "ÉCHIRÉ PÂTISSERIE AU BEURRE",
+              "ja": "エシレ・パティスリー オ ブール"
+            },
+            {
+              "en": "R. L WAFFLE CAKE",
+              "ja": "エール・エル ワッフルケーキ"
+            },
+            {
+              "en": "OGURASANSOU",
+              "ja": "小倉山荘"
+            },
+            {
+              "en": "OBUSEDO",
+              "ja": "小布施堂"
+            },
+            {
+              "en": "AUDREY",
+              "ja": "オードリー"
+            },
+            {
+              "en": "KAKITANE KITCHEN",
+              "ja": "かきたねキッチン"
+            },
+            {
+              "en": "KAKIYASU HONTEN",
+              "ja": "柿安本店"
+            },
+            {
+              "en": "KASHO SEIKAIN",
+              "ja": "菓匠 清閑院"
+            },
+            {
+              "en": "KANOU SHOUJUAN",
+              "ja": "叶 匠壽庵"
+            },
+            {
+              "en": "GAZTA",
+              "ja": "ガスタ"
+            },
+            {
+              "en": "GATEAU FESTA HARADA",
+              "ja": "ガトーフェスタ ハラダ"
+            },
+            {
+              "en": "KIMURAYA-SOUHONTEN",
+              "ja": "木村屋総本店"
+            },
+            {
+              "en": "CARAMEL TOKYO WARAKUBENIYA",
+              "ja": "キャラメル トーキョー ワラクベニヤ"
+            },
+            {
+              "en": "TSURUYA YOSHINOBU",
+              "ja": "京菓匠 鶴屋𠮷信"
+            },
+            {
+              "en": "KYO GION NINIGI",
+              "ja": "京衹をん ににぎ"
+            },
+            {
+              "en": "KIYOKEN",
+              "ja": "崎陽軒"
+            },
+            {
+              "en": "KINSHOBAI",
+              "ja": "錦松梅"
+            },
+            {
+              "en": "GIFT SALON",
+              "ja": "ギフトサロン"
+            },
+            {
+              "en": "GINZA AKEBONO",
+              "ja": "銀座あけぼの"
+            },
+            {
+              "en": "GINZA-KAISHIN",
+              "ja": "銀座貝新"
+            },
+            {
+              "en": "GINZA NISHIKAWA",
+              "ja": "銀座に志かわ"
+            },
+            {
+              "en": "KURAKICHI",
+              "ja": "KURAKICHI（くら吉）"
+            },
+            {
+              "en": "QUOLOFUNE",
+              "ja": "黒船"
+            },
+            {
+              "en": "GRAMERCY NEWYORK",
+              "ja": "グラマシーニューヨーク"
+            },
+            {
+              "en": "KEISHINDO",
+              "ja": "桂新堂"
+            },
+            {
+              "en": "INCENSE BUTSUGU",
+              "ja": "香 仏具"
+            },
+            {
+              "en": "KOBE GOGYOFUKU",
+              "ja": "KOBE 伍魚福"
+            },
+            {
+              "en": "GODIVA BAKERY",
+              "ja": "GODIVA Bakery ゴディパン"
+            },
+            {
+              "en": "SABLE MICHELLE",
+              "ja": "サブレミシェル"
+            },
+            {
+              "en": "The Royal Bake",
+              "ja": "ザ・ロイヤル ベイク"
+            },
+            {
+              "en": "CHEZ SHIBATA",
+              "ja": "シェ・シバタ"
+            },
+            {
+              "en": "SUGAR BUTTER TREE",
+              "ja": "シュガーバターの木"
+            },
+            {
+              "en": "SHUNKASHUNKA KYORAKUDO",
+              "ja": "旬果瞬菓 共楽堂"
+            },
+            {
+              "en": "LOCAL SWEETS UNOHANAGAKI",
+              "ja": "諸国銘菓「卯花墻」"
+            },
+            {
+              "en": "LOCAL SPECIALTY AJIKOJI",
+              "ja": "諸国名産「味小路」"
+            },
+            {
+              "en": "SHINJYUKU TAKANO",
+              "ja": "新宿高野"
+            },
+            {
+              "en": "C CUBE",
+              "ja": "シーキューブ"
+            },
+            {
+              "en": "CC's Cookie",
+              "ja": "CC's Cookie"
+            },
+            {
+              "en": "ROKUMEIKAN",
+              "ja": "西洋菓子 鹿鳴館"
+            },
+            {
+              "en": "SEBASTIEN BOUILLET",
+              "ja": "セバスチャン・ブイエ"
+            },
+            {
+              "en": "GALETTE DU SOLEIL",
+              "ja": "太陽のガレット"
+            },
+            {
+              "en": "TANEYA",
+              "ja": "たねや"
+            },
+            {
+              "en": "TSURUYA HACHIMAN",
+              "ja": "鶴屋八幡"
+            },
+            {
+              "en": "DI CLASSE",
+              "ja": "ディ クラッセ"
+            },
+            {
+              "en": "DEMEL",
+              "ja": "デメル"
+            },
+            {
+              "en": "TOKYO TULIP ROSE",
+              "ja": "TOKYOチューリップローズ"
+            },
+            {
+              "en": "TOSHIMAYA",
+              "ja": "豊島屋"
+            },
+            {
+              "en": "TOP'S",
+              "ja": "トップス"
+            },
+            {
+              "en": "TORAYA",
+              "ja": "とらや"
+            },
+            {
+              "en": "DONQ",
+              "ja": "ドンク"
+            },
+            {
+              "en": "NIIGATA KASHIMAYA",
+              "ja": "新潟 加島屋"
+            },
+            {
+              "en": "NIHOMBASHI SEMBIKIYA",
+              "ja": "日本橋 千疋屋総本店"
+            },
+            {
+              "en": "nenrinya",
+              "ja": "ねんりん家"
+            },
+            {
+              "en": "HANAICHIE",
+              "ja": "花一会"
+            },
+            {
+              "en": "BUTTER STATE's",
+              "ja": "バターステイツ by銀のぶどう"
+            },
+            {
+              "en": "VANISTA",
+              "ja": "バニスタ"
+            },
+            {
+              "en": "PARIS BUTTER CHOCOLAT",
+              "ja": "パリバターショコラ"
+            },
+            {
+              "en": "HIBIYA KADAN",
+              "ja": "日比谷花壇"
+            },
+            {
+              "en": "PIERRE MARCOLINI",
+              "ja": "ピエール マルコリーニ"
+            },
+            {
+              "en": "PIERRE HERMÉ PARIS",
+              "ja": "ピエール・エルメ・パリ"
+            },
+            {
+              "en": "FORTNUM & MASON",
+              "ja": "フォートナム・アンド・メイソン"
+            },
+            {
+              "en": "Fukusaya",
+              "ja": "福砂屋"
+            },
+            {
+              "en": "FUJIYA GINZA",
+              "ja": "不二家 銀座"
+            },
+            {
+              "en": "FUNABASHIYA",
+              "ja": "船橋屋"
+            },
+            {
+              "en": "FUNAWA",
+              "ja": "舟和"
+            },
+            {
+              "en": "FUMUROYA",
+              "ja": "不室屋"
+            },
+            {
+              "en": "FRUITS PEAKS",
+              "ja": "フルーツピークス"
+            },
+            {
+              "en": "FOUCHER",
+              "ja": "フーシェ"
+            },
+            {
+              "en": "BENOIT NIHANT",
+              "ja": "ブノワ・ニアン"
+            },
+            {
+              "en": "BUNMEIDO",
+              "ja": "文明堂"
+            },
+            {
+              "en": "BOUL'MICH",
+              "ja": "ブールミッシュ"
+            },
+            {
+              "en": "PRESS BUTTER SAND",
+              "ja": "プレスバターサンド"
+            },
+            {
+              "en": "BEL AMER",
+              "ja": "ベル アメール"
+            },
+            {
+              "en": "BELLE PLAGE",
+              "ja": "ベルプラージュ"
+            },
+            {
+              "en": "BERNE",
+              "ja": "ベルン"
+            },
+            {
+              "en": "BENTO STATION",
+              "ja": "BENTO ステーション"
+            },
+            {
+              "en": "HON TAKASAGOYA",
+              "ja": "本髙砂屋"
+            },
+            {
+              "en": "BONCHAPERAI",
+              "ja": "ボンシャペリー"
+            },
+            {
+              "en": "MARIAGE FRÈRES",
+              "ja": "マリアージュ フレール"
+            },
+            {
+              "en": "Mini One",
+              "ja": "ミニワン"
+            },
+            {
+              "en": "MAISON KAYSER",
+              "ja": "メゾンカイザー"
+            },
+            {
+              "en": "MAISON D'AHNI SHIROKANE",
+              "ja": "メゾン・ダーニ シロカネ"
+            },
+            {
+              "en": "Mary Chocolate",
+              "ja": "メリーチョコレート"
+            },
+            {
+              "en": "MORIHACHI",
+              "ja": "森八"
+            },
+            {
+              "en": "MOROZOFF",
+              "ja": "モロゾフ"
+            },
+            {
+              "en": "MON LOIRE",
+              "ja": "モンロワール"
+            },
+            {
+              "en": "Juchheim",
+              "ja": "ユーハイム"
+            },
+            {
+              "en": "YOKU MOKU",
+              "ja": "ヨックモック"
+            },
+            {
+              "en": "LA MAISON DU CHOCOLAT",
+              "ja": "ラ・メゾン・デュ・ショコラ"
+            },
+            {
+              "en": "RIVIÈRE",
+              "ja": "リビエール"
+            },
+            {
+              "en": "Ryoguchiya Korekiyo",
+              "ja": "両口屋是清"
+            },
+            {
+              "en": "RING BELL BOUTIQUE",
+              "ja": "リンベルブティック"
+            },
+            {
+              "en": "LE PATISSIER TAKAGI",
+              "ja": "ル パティシエ タカギ"
+            },
+            {
+              "en": "LENÔTRE",
+              "ja": "ルノートル"
             }
           ],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
