@@ -3048,6 +3048,25 @@
   }
  ],
  "dataFiles": [
+   {
+     "id": "depato-floors",
+     "path": "data/depato-floors.json",
+     "sourceIds": [
+       "sogo-seibu-ikebukuro-floorguide-2026-10"
+     ],
+     "modified": true,
+     "derivation": "Names, floor labels and categories only from the official floor guide, read 2026-11-22 JST. Owner-requested B1/1F pilot seed; no copied art or map."
+   },
+   {
+     "id": "depato-footprint",
+     "path": "data/depato-footprint.json",
+     "sourceIds": [
+       "plateau-13116-bldg-53394576",
+       "plateau-13116-bldg-53394577"
+     ],
+     "modified": true,
+     "derivation": "Southern wing of the connected station/store building: context low GLB ctx_bldg_t01_00 ground ring at TP 32.2 m, clipped at x=0 and renderer z=70/180 as authored partitions. PLATEAU vertices retained; not a surveyed interior plan."
+   },
   {
    "id": "stairwell-cut-high",
    "path": "scene/stairwell-cut.high.b64.txt",

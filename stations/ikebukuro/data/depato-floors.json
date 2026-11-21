@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "stores": [{
+    "id": "seibu-ikebukuro",
+    "name": {"ja": "西武池袋本店", "en": "Seibu Ikebukuro"},
+    "building": null,
+    "floors": [
+      {
+        "level": "B1", "category": "food-hall",
+        "label": {"ja": "スイーツ＆ギフト", "en": "Sweets & gifts"},
+        "tenants": [
+          {"ja": "赤坂柿山", "en": "AKASAKA KAKIYAMA"},
+          {"ja": "赤坂松葉屋", "en": "AKASAKA MATSUBAYA"},
+          {"ja": "浅草今半", "en": "ASAKUSA IMAHAN"}
+        ],
+        "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide", "read": "2026-11-22"
+      },
+      {
+        "level": "1F", "category": "cosmetics",
+        "label": {"ja": "ブティック・フレグランス", "en": "Boutiques & fragrance"},
+        "tenants": [
+          {"ja": "アクア ディ パルマ", "en": "ACQUA DI PARMA"},
+          {"ja": "ジョー マローン ロンドン", "en": "JO MALONE LONDON"},
+          {"ja": "ディプティック", "en": "DIPTYQUE"}
+        ],
+        "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide", "read": "2026-11-22"
+      }
+    ]
+  }]
+}
