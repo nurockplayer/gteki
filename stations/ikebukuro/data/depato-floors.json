@@ -3465,8 +3465,105 @@
             "ja": "アルタ",
             "en": "ALTA"
           },
-          "tenants": [],
-          "source": "https://sunshinecity.jp/information/floor_map/",
+          "tenants": [
+            {
+              "ja": "【11/20 リニューアルオープン】archives",
+              "en": "【11/20 リニューアルオープン】archives"
+            },
+            {
+              "ja": "1丁目1番地",
+              "en": "1丁目1番地"
+            },
+            {
+              "ja": "【11/20 Newオープン！】WEGO TOKYO",
+              "en": "【11/20 Newオープン！】WEGO TOKYO"
+            },
+            {
+              "ja": "aimerfeel",
+              "en": "aimerfeel"
+            },
+            {
+              "ja": "OZZONESTE",
+              "en": "OZZONESTE"
+            },
+            {
+              "ja": "GRAPEFRUIT MOON",
+              "en": "GRAPEFRUIT MOON"
+            },
+            {
+              "ja": "サンキューマート",
+              "en": "サンキューマート"
+            },
+            {
+              "ja": "3びきの子ねこ",
+              "en": "3びきの子ねこ"
+            },
+            {
+              "ja": "Shunkai",
+              "en": "Shunkai"
+            },
+            {
+              "ja": "Giraffe larch",
+              "en": "Giraffe larch"
+            },
+            {
+              "ja": "【11/20 リニューアルオープン】チュチュアンナ",
+              "en": "【11/20 リニューアルオープン】チュチュアンナ"
+            },
+            {
+              "ja": "Honeys",
+              "en": "Honeys"
+            },
+            {
+              "ja": "【11/20 Newオープン！】ホテラバ",
+              "en": "【11/20 Newオープン！】ホテラバ"
+            },
+            {
+              "ja": "【11/20 Newオープン！】LAKOLE",
+              "en": "【11/20 Newオープン！】LAKOLE"
+            },
+            {
+              "ja": "LUPIS",
+              "en": "LUPIS"
+            },
+            {
+              "ja": "【11/20 Newオープン！】ルルティ",
+              "en": "【11/20 Newオープン！】ルルティ"
+            },
+            {
+              "ja": "壱角家",
+              "en": "壱角家"
+            },
+            {
+              "ja": "Caffé ITALIAN TOMATO",
+              "en": "Caffé ITALIAN TOMATO"
+            },
+            {
+              "ja": "釜揚げうどん　丸亀製麺",
+              "en": "釜揚げうどん　丸亀製麺"
+            },
+            {
+              "ja": "喫茶店ピノキオ",
+              "en": "喫茶店ピノキオ"
+            },
+            {
+              "ja": "サーティワン　アイスクリーム",
+              "en": "サーティワン　アイスクリーム"
+            },
+            {
+              "ja": "蕎麦いまゐ",
+              "en": "蕎麦いまゐ"
+            },
+            {
+              "ja": "マクドナルド",
+              "en": "マクドナルド"
+            },
+            {
+              "ja": "洋麺屋　五右衛門",
+              "en": "洋麺屋　五右衛門"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
           "read": "2026-11-22"
         },
         {
@@ -3477,8 +3574,77 @@
             "ja": "アルタ",
             "en": "ALTA"
           },
-          "tenants": [],
-          "source": "https://sunshinecity.jp/information/floor_map/",
+          "tenants": [
+            {
+              "ja": "AENA",
+              "en": "AENA"
+            },
+            {
+              "ja": "WEGO",
+              "en": "WEGO"
+            },
+            {
+              "ja": "GAANO",
+              "en": "GAANO"
+            },
+            {
+              "ja": "ガチャガチャの森",
+              "en": "ガチャガチャの森"
+            },
+            {
+              "ja": "クロックス",
+              "en": "クロックス"
+            },
+            {
+              "ja": "JINS",
+              "en": "JINS"
+            },
+            {
+              "ja": "Seria",
+              "en": "Seria"
+            },
+            {
+              "ja": "東峰フォト",
+              "en": "東峰フォト"
+            },
+            {
+              "ja": "ほぐしや本舗RiRAKU　Full",
+              "en": "ほぐしや本舗RiRAKU　Full"
+            },
+            {
+              "ja": "保険見直し本舗/ドコモSMTBネット銀行",
+              "en": "保険見直し本舗/ドコモSMTBネット銀行"
+            },
+            {
+              "ja": "むにゅぐるみパティオ",
+              "en": "むにゅぐるみパティオ"
+            },
+            {
+              "ja": "苺スイーツ専門店「ストロベリータイガー」",
+              "en": "苺スイーツ専門店「ストロベリータイガー」"
+            },
+            {
+              "ja": "一〇八抹茶茶廊",
+              "en": "一〇八抹茶茶廊"
+            },
+            {
+              "ja": "カルディコーヒーファーム",
+              "en": "カルディコーヒーファーム"
+            },
+            {
+              "ja": "JACK IN THE DONUTS",
+              "en": "JACK IN THE DONUTS"
+            },
+            {
+              "ja": "不二家 Peko chan House",
+              "en": "不二家 Peko chan House"
+            },
+            {
+              "ja": "マリオンクレープ",
+              "en": "マリオンクレープ"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
           "read": "2026-11-22"
         },
         {
@@ -3530,6 +3696,18 @@
           "read": "2026-11-22"
         },
         {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "ショールーム",
+            "en": "Showroom"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
           "level": "9F",
           "order": 9,
           "category": "other",
@@ -3551,6 +3729,18 @@
           },
           "tenants": [],
           "source": "https://sunshinecity.jp/aquarium/information/faq.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "RF",
+          "order": 100,
+          "category": "rooftop",
+          "label": {
+            "ja": "ギャラリー プラネタリア",
+            "en": "Gallery Planetaria"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
           "read": "2026-11-22"
         }
       ]
