@@ -1,0 +1,39 @@
+{
+  "recordedAt": "2026-11-22 JST",
+  "sourceId": "plateau-13116-tran-53394577",
+  "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+  "basis": "Centroids of existing acquired PLATEAU LOD3 road polygons, outside the shipped context window; camera evidence only, no road geometry added to scene.",
+  "pose": {
+    "point": [
+      478.00129063394013,
+      30.45775,
+      29.085608732487845
+    ],
+    "horizontalSignDistanceM": 100.833903352879,
+    "facadeDistanceM": 80.81157557699737,
+    "eye": [
+      478.00129063394013,
+      32.05775,
+      29.085608732487845
+    ],
+    "eyeHeightM": 1.6,
+    "captureOnly": true
+  },
+  "pavementPose": {
+    "point": [
+      498.4127107940815,
+      39.3815,
+      14.713816400686145
+    ],
+    "horizontalSignDistanceM": 80.5007572419319,
+    "facadeDistanceM": 60.40015541685602,
+    "eye": [
+      498.4127107940815,
+      40.981500000000004,
+      14.713816400686145
+    ],
+    "eyeHeightM": 1.6,
+    "captureOnly": true
+  },
+  "pavementBasis": "Nearest clear, nongrazing sampled source-road centroid within the 60–150 m sign-offset source selection, with compatible context camera elevation."
+}

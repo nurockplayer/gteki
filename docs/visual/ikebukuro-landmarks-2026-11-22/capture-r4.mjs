@@ -4,6 +4,7 @@ import {spawn} from 'node:child_process';
 const repo='/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro';
 const root=repo+'/docs/visual/ikebukuro-landmarks-2026-11-22/r6';
 await fs.mkdir(root,{recursive:true});
+const sunshineRoad=JSON.parse(await fs.readFile(repo+'/docs/visual/ikebukuro-landmarks-2026-11-22/r6-sunshine-road-pose.json','utf8'));
 const server=spawn('node',[repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
 process.once('exit',()=>server.kill());
 await new Promise((resolve,reject)=>{server.stdout.on('data',c=>{if(c.toString().includes('Local:'))resolve()});server.once('error',reject);server.once('exit',c=>reject(new Error('Capture server exited: '+c)))});
@@ -46,7 +47,7 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
   });
   for(const store of ['seibu','tobu','lumine','esola','parco','pparco','sunshine'])for(const kind of ['walk','look',...(store==='sunshine'?['east-exit']:[])]){
    const key=`${device}-${store}-${kind}`;
-   const result=await page.evaluate(({store,kind,flag,pose})=>{
+   const result=await page.evaluate(({store,kind,flag,pose,sunshineRoad})=>{
     const {e,T,meshes,roads,pavement}=window.__depato,layer=e.scene.getObjectByName('landmarks-next'),sign=layer?.getObjectByName('landmark-sign:'+store),mesh=layer?.getObjectByName('ctx_bldg_landmark_'+store);
     const aim=new T.Vector3(...(pose?.aim??sign.getWorldPosition(new T.Vector3()).toArray())),normal=new T.Vector3(...(pose?.normal??new T.Vector3(0,0,1).applyQuaternion(sign.quaternion).toArray()));
     const signWidth=pose?.signWidth??sign.geometry.parameters.width,signHeight=pose?.signHeight??sign.geometry.parameters.height,tangent=new T.Vector3(normal.z,0,-normal.x);
@@ -57,6 +58,10 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
      return {target:aim.clone(),fov};
     };
     let chosen=pose;
+    if(!chosen&&store==='sunshine'&&kind!=='east-exit'){
+     const c=kind==='look'?sunshineRoad.pose:sunshineRoad.pavementPose,eye=new T.Vector3(...c.eye),f=frameTarget(eye);
+     chosen={...c,target:f.target.toArray(),fov:f.fov,road:sunshineRoad.sourceId,clearSign:clear(eye),sourceSha256:sunshineRoad.sourceSha256};
+    }
     if(!chosen&&kind==='look'){
      const candidates=[];
      for(const distance of [80,100,120,150,60])for(const angle of [0,-.3,.3,-.6,.6,-.9,.9,-1.2,1.2]){
@@ -104,7 +109,7 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
     }
     const wayfinding=e.minimapSigns.map(s=>({s,distance:s.face.centre.distanceTo(e.camera.position)})).sort((a,b)=>a.distance-b.distance).map(({s,distance})=>{if(s.corners.some(c=>sample(c)===null))return null;const centre=s.face.centre;if(new T.Raycaster(e.camera.position,centre.clone().sub(e.camera.position).normalize(),0,distance-.05).intersectObjects(meshes.filter(m=>m!==s.mesh),false).length)return null;const values=[];for(let u=.1;u<1;u+=.1)for(let v=.1;v<1;v+=.1){const p=s.corners[0].clone().lerp(s.corners[1],u).lerp(s.corners[2].clone().lerp(s.corners[3],u),v),value=sample(p);if(value!==null)values.push(value)}return {mesh:s.mesh.name,centre:centre.toArray(),distanceM:distance,meanLuminance:avg(values)}}).find(Boolean)??null;
     return {pose:chosen,metrics,draws,wayfinding,signDistanceM:e.camera.position.distanceTo(aim),actualAnchor:sign?.position.toArray()??null,flag,store,kind,viewport:[innerWidth,innerHeight],shellHidden:true,capturedAtUTC:new Date().toISOString()};
-   },{store,kind,flag,pose:flag==='off'?poses[key]:null});
+   },{store,kind,flag,pose:flag==='off'?poses[key]:null,sunshineRoad});
    if(flag==='next')poses[key]=result.pose;
    if(result.metrics.signMeanLuminance!==null){
     if(!result.wayfinding){result.wayfinding=await reference.evaluate(distance=>{
