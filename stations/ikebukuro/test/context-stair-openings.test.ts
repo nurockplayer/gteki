@@ -122,6 +122,22 @@ it("leaves zero context surface area in every street-exit stair opening in both 
     const originals = new Map<THREE.Mesh, THREE.BufferGeometry>();
     gltf.scene.traverse(o => { if ((o as THREE.Mesh).isMesh) originals.set(o as THREE.Mesh, (o as THREE.Mesh).geometry); });
     expect(cutContextStairOpenings(THREE, gltf.scene, bundle)).toBeGreaterThan(0);
+    const ray = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0));
+    const probes = [[170, 180], [170.7, 179], [169, 179.1], [170.5, 181.1]];
+    for (const id of ["e_low__x35", "se_j__x42", "se_j__x43"]) {
+      const exit = bundle.nodes.find(node => node.id === bundle.edges.find(edge => edge.id === id)!.to)!;
+      probes.push([exit.position.x, -exit.position.y]);
+      const rect = wells.find(well => well.edgeId === id)!.rects.at(-1)!;
+      for (const fraction of [-0.8, 0, 0.8]) probes.push([
+        rect.center.x + rect.along.x * rect.halfLength * fraction,
+        rect.center.z + rect.along.z * rect.halfLength * fraction,
+      ]);
+    }
+    for (const [x, z] of probes) {
+      ray.set(new THREE.Vector3(x, 33, z), new THREE.Vector3(0, -1, 0));
+      ray.far = 7;
+      expect(ray.intersectObjects([...originals.keys()], false), `${uri}: context lid at ${x}, ${z}`).toHaveLength(0);
+    }
     const triangle = new THREE.Triangle(), local = new THREE.Triangle();
     for (const well of wells) {
       let intrusions = 0, maxArea = 0;
