@@ -3774,7 +3774,7 @@
             "en": "Post office and observatory elevator"
           },
           "tenants": [],
-          "source": "https://sunshinecity.jp/information/floor_map/",
+          "source": "https://sunshinecity.jp/shop/shop_list/",
           "read": "2026-11-22"
         },
         {
@@ -3785,8 +3785,13 @@
             "ja": "オフィスロビー",
             "en": "Office lobby"
           },
-          "tenants": [],
-          "source": "https://sunshinecity.jp/information/floor_map/",
+          "tenants": [
+            {
+              "ja": "イー・エー・グラン",
+              "en": "イー・エー・グラン"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
           "read": "2026-11-22"
         },
         {
@@ -3802,6 +3807,42 @@
           "read": "2026-11-22"
         },
         {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "ファミマ!!",
+            "en": "Famima!!"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "都民共済プラザ",
+            "en": "Tomin Kyosai Plaza"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "other",
+          "label": {
+            "ja": "クリニック",
+            "en": "Clinics"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
           "level": "8F",
           "order": 8,
           "category": "other",
@@ -3811,6 +3852,18 @@
           },
           "tenants": [],
           "source": "https://sunshinecity.jp/observatory/shop/shop_list/page/4/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "36F",
+          "order": 36,
+          "category": "other",
+          "label": {
+            "ja": "都民共済",
+            "en": "Tomin Kyosai"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
           "read": "2026-11-22"
         },
         {
