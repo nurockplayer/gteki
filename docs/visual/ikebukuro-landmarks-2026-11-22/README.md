@@ -65,3 +65,19 @@ Current operation/access checked 2026-11-22 JST against [Sunshine access](https:
 | Sunshine City | [Access](https://sunshinecity.jp/information/access_train.html): 「池袋駅（35番出口）から徒歩約8分」 | Route to x35; no station-side door. |
 
 No surveyed coordinates have been supplied. Existing candidate shop openings near the south gate are approximately 13 m from the walk graph; wall-safe route geometry and compliant placement are still unresolved. The old x15 Lumine/Esola images are substitutes and do not establish the nearest modeled street-top frames. No additional door frames are claimed.
+
+## Revised routing scope, 2026-11-22 JST
+
+All routes below are provisional nearest modeled exits, chosen by horizontal geometric distance from each modeled street exit to the projected PLATEAU landmark geometry. They do not identify official entrances. No station-side door is established: an official connection within the model with a confident wall-safe reachable tie has not been established.
+
+| Store | Nearest modeled exit | Frame status |
+|---|---|---|
+| Seibu | x38 (tied with x37 at 0 m) | Existing x38 frames |
+| Tobu | x18 | x18 frames missing; existing frames use x17 |
+| Lumine | x37 | x37 frames missing; existing frames use x15 |
+| Esola | x15 | Existing x15 frames |
+| PARCO | x22 | Existing x22 frames |
+| P'PARCO | x22 | Existing x22 frames |
+| Sunshine City | x35 | Existing x35 frames |
+
+No door frames are required under the revised scope because no doors were placed. The missing x18 and x37 frames remain required. The model contains only part of the station and does not establish the official entrance connection.
