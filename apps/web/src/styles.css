@@ -601,6 +601,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .app.arrival.arrival-left[data-mode="guide"] .arrival-menu { justify-content: start; }
 .app.arrival[data-mode="guide"] .arrival-menu[hidden] { display: none; }
 .app.next.arrival[data-mode="guide"] .arrival-menu button { background: var(--glass-strong); }
+.app:not(.next).arrival[data-mode="guide"] .arrival-controls.menu-open button { background: var(--glass-strong); }
 @media (min-width: 481px) {
   /* Measure the menu in the HUD without moving the toggle or arrival card. */
   .app.arrival[data-mode="guide"] .arrival-controls.menu-open { display: contents; }
