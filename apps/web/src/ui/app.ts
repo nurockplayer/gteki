@@ -256,6 +256,7 @@ export class App {
       this.layoutText();
       this.interactionPrompt.refresh();
       this.refreshAll();
+      this.renderHud();
     });
     this.ui.coverageBtn.addEventListener("click", () => this.openCoverage());
     this.ui.railBtn.hidden = true;
