@@ -84,6 +84,8 @@ Rejected:
 
 This follows the truth rule: incidental objects may be artistic, station facts may not. B proposed ticket machines, vending machines and a generic exit sign; A forbade them.
 
+Amended by D15 (2026-11-21): one or two labelled simulated shops (模擬店) are allowed on the slice under the conditions listed there. Everything else rejected above stays rejected.
+
 Check: the props live in a dressing layer with no POI, graph or search entries; truth review in the PR.
 
 ### D4 (2026-11-11) Glass: cheap rim, not transmission
@@ -323,6 +325,33 @@ Provisional until the Owner sees the walk video.
 ![Default at 1d1c0f3a from behind: start, trot → run, run A, run → trot, stop](live/2026-11-17-cat-default-rear-seq.jpg)
 
 Provisional until the Owner sees the walk video.
+
+### D15 (2026-11-21 01:3x JST) Narrow D3 exception: one or two labelled simulated shops on the slice
+**Owner ruling, 2026-11-21 01:3x JST** (chat with gteki-lead; board `shops-d3-exception`): shops are a goal again. The current Shinjuku slice gets one or two clearly labelled simulated shops (模擬店). They do not route anywhere and add no new connector, and they sit on qualified existing walls. The next slice is a real shopping-street route, with real names on original generic shopfronts under R1; Ikebukuro breadth is unfrozen. Source: the shop diagnosis (`/Volumes/KIOXIA/scratch/diag-shops/report.md`, option A).
+
+The exception covers only this. D3's truth rule still holds: nothing on the slice may state a station fact that we can't back with evidence.
+
+**What a slice shop may be:**
+- At most two shops, each a different category. Both use original, generic shopfront art and an invented generic name. No real merchant names or logos, and no imitation of a real brand's look. Real names wait for the next slice and R1.
+- The 模擬店 label is readable at the stand point on desktop and on phone, as part of the sign or fascia. The shop's interaction prompt says it too (`模擬店（実在の店舗ではありません）`, as for the existing shops).
+- It is shallow. A glazed, closed front with a lit display, a counter or shelves goes no more than about 1.5 m deep. There is no open door, no corridor and no dark interior that looks like a way through. The door piece may be used only shut.
+- It goes on an existing same-floor wall off the walk line. A wall qualifies when the slice-placement inventory (diagnosis plan row 0) qualifies it. Nothing goes on escalator shafts or platform walls, or in the flow on the walk line, and the walk and fare geometry stay as they are.
+- It is a place to look at or visit, not a destination: no route-graph edge or connector, and no offer as a route target.
+
+**How it must look:**
+- It follows the style guide's material families. A shop's fascia is its own family: matte or satin panel with an inset sign.
+- The colour is warm and muted. Magenta (#E8318A family) is the line colour, so a fascia never uses it.
+- The station's signs stay the brightest things in frame. The shop's light, sign included, stays below the wayfinding signs (emissive ≤ about 1.0 against their 1.5). It may leave a warm pool on the floor in front, a decal or analytic pool as for the troffers.
+- It never covers or competes with a wayfinding sign, the magenta band or the cat in any walk frame. The hero frames H1–H4 don't change: no shop shows in them unless I accept it as an addition to the frame.
+
+**Check:**
+- Art acceptance on each shop PR, with walk frames on desktop and phone: first sight, approach, the stand point and the interaction. A PR without those frames is not judged.
+- The golden cameras and journey reel show no new breakage.
+- Truth review in the PR: no real name, no connector, the label present.
+
+Rejected: B (only surveyed real shops on the exact route) adds nothing on current evidence. Unlabelled fictional shops are rejected because they would read as station facts. C (a shopping-street route) goes to the next slice; it doesn't replace the two stops here.
+
+Provisional until the Owner sees the shops in a walk video.
 
 ## Current weaknesses (from the 2026-11-09 GPU shots; both proposals agree)
 

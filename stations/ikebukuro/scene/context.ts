@@ -2,6 +2,8 @@
 // (`gis context-glb`), visual only. Truth stays in gteki/*.json; nothing here adds a route, a walkable surface
 // or a collider. Uses ctx.THREE so it shares the explorer's three instance.
 import type * as THREE_NS from "three";
+import type { StationBundle } from "@gteki/schema";
+import { stairwellWells } from "../../../apps/web/src/explorer/stairwellCut.ts";
 
 type ThreeNS = typeof THREE_NS;
 
@@ -267,4 +269,132 @@ export function createContextBlockers(THREE: ThreeNS, centers: readonly THREE_NS
       material.dispose();
     },
   };
+}
+
+/** Keep visual context out of the station's street-exit stair footprints, down to the lower floor. */
+export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D, bundle: StationBundle): number {
+  const streetFloors = new Set(bundle.floors.filter(f => f.ordinal === 0 && !f.intermediate).map(f => f.id));
+  const exits = new Set(bundle.nodes.filter(n => n.kind === "exit" && streetFloors.has(n.floorId)).map(n => n.id));
+  const openings = stairwellWells(bundle, e => !e.closed && (exits.has(e.from) || exits.has(e.to))).flatMap(well => well.rects.map(rect => {
+    const along = (p: THREE_NS.Vector3) => (p.x - rect.center.x) * rect.along.x + (p.z - rect.center.z) * rect.along.z;
+    const across = (p: THREE_NS.Vector3) => (p.x - rect.center.x) * rect.across.x + (p.z - rect.center.z) * rect.across.z;
+    return {
+    bounds: { along: rect.halfLength, across: rect.halfWidth, lowerY: well.lowerY, upperY: well.upperY },
+    planes: [
+      (p: THREE_NS.Vector3) => along(p) + rect.halfLength,
+      (p: THREE_NS.Vector3) => rect.halfLength - along(p),
+      (p: THREE_NS.Vector3) => p.y - well.lowerY,
+      (p: THREE_NS.Vector3) => well.upperY - p.y,
+      (p: THREE_NS.Vector3) => across(p) + rect.halfWidth,
+      (p: THREE_NS.Vector3) => rect.halfWidth - across(p),
+    ],
+    intersectsBounds: (polygon: Polygon) => {
+      const coords = polygon.map(vertex => ({ u: along(vertex.point), v: across(vertex.point), y: vertex.point.y }));
+      return Math.min(...coords.map(p => p.u)) <= rect.halfLength && Math.max(...coords.map(p => p.u)) >= -rect.halfLength
+        && Math.min(...coords.map(p => p.v)) <= rect.halfWidth && Math.max(...coords.map(p => p.v)) >= -rect.halfWidth
+        && Math.min(...coords.map(p => p.y)) <= well.upperY && Math.max(...coords.map(p => p.y)) >= well.lowerY;
+    },
+  }; }));
+  root.updateMatrixWorld(true);
+  type Vertex = { point: THREE_NS.Vector3; attrs: number[][] };
+  type Polygon = Vertex[];
+  const interpolate = (a: Vertex, b: Vertex, t: number): Vertex => ({
+    point: a.point.clone().lerp(b.point, t),
+    attrs: a.attrs.map((values, i) => values.map((value, c) => value + (b.attrs[i]![c]! - value) * t)),
+  });
+  const clipSide = (polygon: Polygon, signed: (p: THREE_NS.Vector3) => number, side: 1 | -1): Polygon => {
+    const result: Polygon = [];
+    for (let i = 0; i < polygon.length; i++) {
+      const a = polygon[(i + polygon.length - 1) % polygon.length]!;
+      const b = polygon[i]!;
+      const da = signed(a.point) * side, db = signed(b.point) * side;
+      const aInside = da >= -1e-8, bInside = db >= -1e-8;
+      if (aInside !== bInside) result.push(interpolate(a, b, da / (da - db)));
+      if (bInside) result.push(b);
+    }
+    return result;
+  };
+  const subtractOpening = (polygon: Polygon, planes: ((p: THREE_NS.Vector3) => number)[]): Polygon[] => {
+    let inside: Polygon[] = [polygon];
+    const outside: Polygon[] = [];
+    for (const plane of planes) {
+      const next: Polygon[] = [];
+      for (const part of inside) {
+        const out = clipSide(part, plane, -1);
+        if (out.length >= 3) outside.push(out);
+        const inn = clipSide(part, plane, 1);
+        if (inn.length >= 3) next.push(inn);
+      }
+      inside = next;
+      if (!inside.length) break;
+    }
+    return outside;
+  };
+  let cutTriangles = 0;
+  root.traverse(o => {
+    const mesh = o as THREE_NS.Mesh;
+    if (!mesh.isMesh) return;
+    const geometry = mesh.geometry, index = geometry.index;
+    const attributes = Object.entries(geometry.attributes);
+    const output = new Map(attributes.map(([name]) => [name, [] as number[]]));
+    const groups: { start: number; count: number; materialIndex: number }[] = [];
+    let vertexCount = 0;
+    let meshCutTriangles = 0;
+    const readVertex = (vertexIndex: number): Vertex => ({
+      point: new THREE.Vector3().fromBufferAttribute(geometry.getAttribute("position"), vertexIndex).applyMatrix4(mesh.matrixWorld),
+      attrs: attributes.map(([, attr]) => Array.from({ length: attr.itemSize }, (_, component) => {
+        switch (component) {
+          case 0: return attr.getX(vertexIndex);
+          case 1: return attr.getY(vertexIndex);
+          case 2: return attr.getZ(vertexIndex);
+          case 3: return attr.getW(vertexIndex);
+          default: return 0;
+        }
+      })),
+    });
+    const count = index?.count ?? geometry.getAttribute("position").count;
+    for (let i = 0; i < count; i += 3) {
+      const sourceIndices = [0, 1, 2].map(k => index ? index.getX(i + k) : i + k);
+      const source = sourceIndices.map(readVertex);
+      let parts: Polygon[] = [source];
+      for (const opening of openings) {
+        parts = parts.flatMap(part => opening.intersectsBounds(part) ? subtractOpening(part, opening.planes) : [part]);
+        if (!parts.length) break;
+      }
+      const unchanged = parts.length === 1 && parts[0]!.length === 3 && parts[0]!.every((v, k) => v === source[k]);
+      if (!unchanged) meshCutTriangles++;
+      const materialIndex = geometry.groups.find(group => i >= group.start && i < group.start + group.count)?.materialIndex ?? 0;
+      let added = 0;
+      for (const part of parts) {
+        for (let k = 1; k + 1 < part.length; k++) {
+          for (const vertex of [part[0]!, part[k]!, part[k + 1]!]) {
+            vertex.attrs.forEach((values, attrIndex) => output.get(attributes[attrIndex]![0])!.push(...values));
+            added++;
+          }
+        }
+      }
+      if (added) {
+        const previous = groups.at(-1);
+        if (previous?.materialIndex === materialIndex && previous.start + previous.count === vertexCount) previous.count += added;
+        else groups.push({ start: vertexCount, count: added, materialIndex });
+        vertexCount += added;
+      }
+    }
+    if (!meshCutTriangles) return;
+    cutTriangles += meshCutTriangles;
+    const clipped = geometry.clone();
+    clipped.setIndex(null);
+    for (const [name, attr] of attributes) {
+      const values = output.get(name)!;
+      // Attribute getters already decode normalized/interleaved source values.
+      const replacement = new THREE.BufferAttribute(new Float32Array(values), attr.itemSize, false);
+      replacement.name = attr.name;
+      replacement.setUsage(THREE.StaticDrawUsage);
+      clipped.setAttribute(name, replacement);
+    }
+    clipped.clearGroups();
+    for (const group of groups) clipped.addGroup(group.start, group.count, group.materialIndex);
+    mesh.geometry = clipped;
+  });
+  return cutTriangles;
 }

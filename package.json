@@ -7,6 +7,7 @@
     "fonts:subset": "node tools/fonts/subset-sign-font.mjs",
     "field:ingest": "tsx tools/field-ingest/ingest.ts",
     "map:gen": "node tools/map/gen-symbols.mjs",
+    "measure:gpu-fps": "pnpm build && pnpm --dir tests/e2e exec playwright test --config=playwright.gpu-fps.config.ts",
     "data:age": "tsx tools/data-age/report.ts",
     "coverage:matrix": "node --import tsx/esm tools/coverage-matrix/report.ts",
     "bake:stairwells": "tsx packages/godot/src/stairwell-bake.ts --station shinjuku",
