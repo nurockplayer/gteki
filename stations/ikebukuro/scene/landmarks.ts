@@ -11,7 +11,7 @@ const stores = [
   { id: "lumine", ja: "ルミネ池袋", en: "LUMINE IKEBUKURO", facade: "F2_warmGrey", exit: "x4f", target: [-188.284558, 109.5, 91.911307], signEye: [-280.877992, 109.5, 54.142855], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "esola", ja: "エソラ池袋", en: "ESOLA IKEBUKURO", facade: "F4_darkBronze", exit: "x4f", target: [-172.897339, 61.5, -3.413457], signEye: [-272.400798, 61.5, 6.53951], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "parco", ja: "パルコ", en: "PARCO", facade: "F3_coolGrey", exit: "x22", target: [89.228704, 68.418999, -156.361062], signEye: [-2.081387, 68.418999, -197.134427], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
-  { id: "pparco", ja: "P'パルコ", en: "P'PARCO", facade: "F3_coolGrey", exit: "x22", target: [90, 70, -225], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "pparco", ja: "P'パルコ", en: "P'PARCO", facade: "F3_coolGrey", exit: "x22", target: [90.660534, 50.748502, -244.366749], signEye: [-0.958270, 50.748502, -284.291649], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [610, 268, 25], cap: LANDMARK_SIGN.maxJaLetterSunshine60M / 2 },
 ] as const;
 

@@ -2,7 +2,7 @@
 import fs from 'node:fs/promises';
 import {spawn} from 'node:child_process';
 const repo='/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro';
-const root=repo+'/docs/visual/ikebukuro-landmarks-2026-11-22/r5';
+const root=repo+'/docs/visual/ikebukuro-landmarks-2026-11-22/r6';
 await fs.mkdir(root,{recursive:true});
 const server=spawn('node',[repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
 process.once('exit',()=>server.kill());
@@ -36,13 +36,10 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
    const style=document.createElement('style');style.textContent='#app > :not(.viewport), .gteki-labels {visibility:hidden!important}';document.head.append(style);
    const meshes=[],roads=[];e.scene.traverse(o=>{let visible=true;for(let p=o;p;p=p.parent)visible&&=p.visible;if(o.isMesh&&visible&&!o.name.startsWith('landmark-sign:'))meshes.push(o);if(o.isMesh&&o.name.startsWith('ctx_road_'))roads.push(o)});
    const pavement=[];
-   for(const m of e.walkable){const p=m.geometry?.attributes.position,idx=m.geometry?.index;if(!p)continue;
+   for(const m of roads){const p=m.geometry.attributes.position,idx=m.geometry.index;
     for(let i=0;i<(idx?.count??p.count);i+=3){const v=[0,1,2].map(j=>new T.Vector3().fromBufferAttribute(p,idx?idx.getX(i+j):i+j).applyMatrix4(m.matrixWorld));
-     if(Math.max(...v.map(p=>p.y))>34.5||Math.min(...v.map(p=>p.y))<31.2||Math.abs(v[1].clone().sub(v[0]).cross(v[2].clone().sub(v[0])).normalize().y)<.99)continue;
-     const point=v[0].add(v[1]).add(v[2]).multiplyScalar(1/3),road=new T.Raycaster(new T.Vector3(point.x,60,point.z),new T.Vector3(0,-1,0),0,40).intersectObjects(roads,false)[0];
-     if(!road||Math.abs(road.point.y-point.y)>1)continue;
-     if(new T.Raycaster(point.clone().add(new T.Vector3(0,.4,0)),new T.Vector3(0,1,0),0,5).intersectObjects(meshes,false).length)continue;
-     pavement.push(point);
+     if(Math.abs(v[1].clone().sub(v[0]).cross(v[2].clone().sub(v[0])).normalize().y)<.9)continue;
+     pavement.push({triangle:new T.Triangle(...v),road:m.name});
     }
    }
    window.__depato={e,T,meshes,roads,pavement};
@@ -54,7 +51,11 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
     const aim=new T.Vector3(...(pose?.aim??sign.getWorldPosition(new T.Vector3()).toArray())),normal=new T.Vector3(...(pose?.normal??new T.Vector3(0,0,1).applyQuaternion(sign.quaternion).toArray()));
     const signWidth=pose?.signWidth??sign.geometry.parameters.width,signHeight=pose?.signHeight??sign.geometry.parameters.height,tangent=new T.Vector3(normal.z,0,-normal.x);
     const clear=eye=>[-.5,0,.5].every(u=>[-.5,.5].every(v=>{const target=aim.clone().addScaledVector(tangent,signWidth*u);target.y+=signHeight*v;return !new T.Raycaster(eye,target.clone().sub(eye).normalize(),0,eye.distanceTo(target)-.02).intersectObjects(meshes,false).length}));
-    const frameTarget=(eye,distance)=>{const top=Math.atan2(aim.y+signHeight/2-eye.y,distance),bottom=Math.atan2(32.5-eye.y,distance),target=aim.clone();target.y=eye.y+distance*Math.tan((top+bottom)/2);return {target,fov:Math.max(45,(top-bottom)*180/Math.PI+10)}};
+    const frameTarget=(eye)=>{
+     const distance=eye.distanceTo(aim),horizontal=Math.hypot(eye.x-aim.x,eye.z-aim.z),capM=signHeight*.45;
+     const fov=2*Math.atan(capM*horizontal/distance*innerHeight/(2*distance*(innerWidth<500?20:26)))*180/Math.PI;
+     return {target:aim.clone(),fov};
+    };
     let chosen=pose;
     if(!chosen&&kind==='look'){
      const candidates=[];
@@ -64,21 +65,33 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
       if(clear(eye))candidates.push({eye,distance,road:road.object.name});
      }
      if(!candidates.length)throw new Error('No clear public-road look camera: '+store);
-     const c=candidates[0],f=frameTarget(c.eye,c.distance);chosen={eye:c.eye.toArray(),target:f.target.toArray(),fov:f.fov,facadeDistanceM:c.distance,road:c.road,clearSign:true,eyeHeightM:1.6};
+     const c=candidates[0],f=frameTarget(c.eye);chosen={eye:c.eye.toArray(),target:f.target.toArray(),fov:f.fov,facadeDistanceM:c.distance,road:c.road,clearSign:true,eyeHeightM:1.6,captureOnly:e.groundAt(c.eye.x,c.eye.y,c.eye.z,4)===null};
     }else if(!chosen){
-     let candidates=pavement.map(p=>({point:p,distance:Math.hypot(p.x-aim.x,p.z-aim.z),clear:clear(p.clone().add(new T.Vector3(0,1.6,0)))}));
-     if(kind==='east-exit'){const n=e.station.bundle.nodes.find(n=>n.id==='x35');candidates=[{point:new T.Vector3(n.position.x,n.position.z,-n.position.y),clear:false}];}
-     const box=new T.Box3().setFromObject(mesh);candidates.sort((a,b)=>box.distanceToPoint(new T.Vector3(a.point.x,box.min.y,a.point.z))-box.distanceToPoint(new T.Vector3(b.point.x,box.min.y,b.point.z))||a.distance-b.distance);
-     const c=candidates[0];if(!c)throw new Error('No modeled walkable public pavement: '+store);
-     const heading=-Math.atan2(c.point.x-aim.x,c.point.z-aim.z)*180/Math.PI;
-     if(!e.walkFrom({x:c.point.x,y:-c.point.z,z:c.point.y},heading))throw new Error('walkFrom failed: '+store);
-     const f=frameTarget(e.pos.clone().add(new T.Vector3(0,1.6,0)),Math.hypot(e.pos.x-aim.x,e.pos.z-aim.z));
-     e.setCamera({yaw:Math.atan2(e.pos.x-aim.x,e.pos.z-aim.z),pitch:-Math.atan2(f.target.y-e.pos.y-1.6,Math.hypot(e.pos.x-aim.x,e.pos.z-aim.z)),distance:2.25});e.goldenFrame();
-     const eye=e.camera.position.clone();chosen={eye:eye.toArray(),target:f.target.toArray(),fov:Math.max(55,f.fov),avatar:e.pos.toArray(),clearSign:clear(eye),sampledPavementCount:pavement.length,clearPavementCount:candidates.filter(c=>c.clear).length,unseenReason:clear(eye)?null:'No full-sign sightline at the nearest modeled public-pavement point; limited station walkable coverage is retained.'};
+     const box=new T.Box3().setFromObject(mesh);
+     let candidates=pavement.flatMap(({triangle,road})=>{
+      const centre=triangle.getMidpoint(new T.Vector3()),near=triangle.closestPointToPoint(new T.Vector3(aim.x,centre.y,aim.z),new T.Vector3());
+      return [near,centre].map(point=>({point,road,distance:Math.hypot(point.x-aim.x,point.z-aim.z),facadeDistanceM:box.distanceToPoint(new T.Vector3(point.x,box.min.y,point.z))}));
+     }).filter(c=>c.distance<1000);
+     candidates.sort((a,b)=>a.facadeDistanceM-b.facadeDistanceM||a.distance-b.distance);
+     if(kind==='east-exit'){
+      const n=e.station.bundle.nodes.find(n=>n.id==='x35'),point=new T.Vector3(n.position.x,n.position.z,-n.position.y);
+      candidates=[{point,road:'modeled east exit x35'}];
+     }
+     const c=candidates.find(c=>clear(c.point.clone().add(new T.Vector3(0,1.6,0))));
+     if(!c)throw new Error('No full-sign public-road pavement pose: '+store+'/'+kind);
+     const eye=c.point.clone().add(new T.Vector3(0,1.6,0)),f=frameTarget(eye);
+     chosen={eye:eye.toArray(),target:f.target.toArray(),fov:f.fov,road:c.road,facadeDistanceM:c.facadeDistanceM,clearSign:true,eyeHeightM:1.6,captureOnly:e.groundAt(c.point.x,c.point.y+1.5,c.point.z,4)===null,pavementSamples:candidates.length};
     }
     Object.assign(chosen,{aim:aim.toArray(),normal:normal.toArray(),signWidth,signHeight});
-    if(chosen.avatar){e.walkFrom({x:chosen.avatar[0],y:-chosen.avatar[2],z:chosen.avatar[1]},0);e.goldenFrame();}
-    e.camera.position.fromArray(chosen.eye);e.camera.fov=chosen.fov;e.camera.lookAt(new T.Vector3(...chosen.target));e.camera.updateProjectionMatrix();e.camera.updateMatrixWorld(true);e.stationScene.update?.(0,0,e.camera);
+    e.setMode('walk');
+    e.pos.set(chosen.eye[0],chosen.eye[1]-1.6,chosen.eye[2]);
+    e.yaw=Math.atan2(e.pos.x-aim.x,e.pos.z-aim.z);e.goldenFrame();
+    e.camera.position.fromArray(chosen.eye);e.camera.fov=chosen.fov;e.camera.lookAt(new T.Vector3(...chosen.target));e.camera.updateProjectionMatrix();e.camera.updateMatrixWorld(true);
+    // Fit the full sign in either viewport; next/off share the resulting pose.
+    const corners=[-.5,.5].flatMap(u=>[-.5,.5].map(v=>aim.clone().addScaledVector(tangent,signWidth*u).add(new T.Vector3(0,signHeight*v,0)).project(e.camera)));
+    const scale=Math.max(...corners.flatMap(p=>[Math.abs(p.x),Math.abs(p.y)]))/.85;
+    if(scale>1){e.camera.fov=2*Math.atan(Math.tan(e.camera.fov*Math.PI/360)*scale)*180/Math.PI;e.camera.updateProjectionMatrix();}
+    chosen.fov=e.camera.fov;e.stationScene.update?.(0,0,e.camera);
     const draws={},callbacks=[];if(layer)for(const o of layer.children){const old=o.onBeforeRender;callbacks.push([o,old]);o.onBeforeRender=function(...args){draws[o.name]=(draws[o.name]??0)+1;old.apply(this,args)}}
     e.render(0);for(const [o,old]of callbacks)o.onBeforeRender=old;
     const gl=e.renderer.getContext(),w=gl.drawingBufferWidth,h=gl.drawingBufferHeight,rect=e.renderer.domElement.getBoundingClientRect(),pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
@@ -109,3 +122,4 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
  }
 }
 console.log(`Captured ${frames.length} frames; timestamps labelled UTC in frames.json`);
+await server.kill();
