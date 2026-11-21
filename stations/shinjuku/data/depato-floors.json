@@ -2108,6 +2108,15 @@
           "read": "2026-11-22"
         }
       ]
+    },
+    {
+      "id": "takashimaya-shinjuku",
+      "name": {
+        "ja": "新宿髙島屋",
+        "en": "Shinjuku Takashimaya"
+      },
+      "building": null,
+      "floors": []
     }
   ]
 }
