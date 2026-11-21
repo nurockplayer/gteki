@@ -23,6 +23,7 @@ const page = task.page('p1');
 await page.cdp('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 await page.goto('http://127.0.0.1:5281/?station=shinjuku&next=1&qaCrowd=off&qaTimeBand=morning&qaEscalatorPhase=0');
 await page.waitForFunction(() => window.__gteki?.phase() === 'ready', undefined, { timeout: 180000 });
+await page.waitForSelector('.boot-card', { state: 'hidden', timeout: 30000 });
 await page.evaluate(async () => { await document.fonts.ready; window.__gteki.holdFrames(true); });
 const proof = [];
 for (const store of ${JSON.stringify(stores)}) {
@@ -38,7 +39,7 @@ for (const store of ${JSON.stringify(stores)}) {
     const corners = [0, 1, 2, 3].map(vertex);
     const center = corners.reduce((v, p) => v.add(p), e.camera.position.clone().set(0, 0, 0)).multiplyScalar(.25);
     const facing = e.camera.position.clone().fromBufferAttribute(normal, offset).transformDirection(sign.matrixWorld);
-    e.mode = 'walk'; e.world.visible = true;
+    e.setMode('walk'); e.world.visible = true;
     e.camera.position.copy(center).addScaledVector(facing, 100).setY(1.6);
     e.camera.lookAt(center.clone().setY(Math.max(2, center.y / 2)));
     e.camera.updateMatrixWorld();
