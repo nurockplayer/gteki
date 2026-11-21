@@ -3849,7 +3849,8 @@ export class Explorer {
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
-    this.setFov(shot ? THREE.MathUtils.lerp(lens(), shot.fov, weight) : lens(), lensSnap, dt);
+    const phoneAscent = this.catAvatar && this.camera.aspect < 1 && (ascendingBand || (this.slope.velocity > SLOPE.exit && this.camera.position.distanceTo(pose.pivot) < wantedDistance));
+    this.setFov(phoneAscent ? 90 : shot ? THREE.MathUtils.lerp(lens(), shot.fov, weight) : lens(), lensSnap, dt);
     // Use the last frame's actual boom, measured against its own pivot. Measuring the old
     // camera against the new pivot would rate-limit the walker's movement as contraction.
     const previousDistance = this.boomActual;
@@ -3876,7 +3877,7 @@ export class Explorer {
       const aimRaise = this.gateAimHeld ? Math.max(this.boomRaise, Math.asin(this.camera.position.clone().sub(pose.pivot).normalize().y) - Math.asin(pose.back.y)) : this.boomRaise;
       // Keep the feet correction complete while a local gate raise is releasing.
       aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.gateAimHeld ? Math.max(aimRaise, CAT_RAISE_AIM.end) : aimRaise, this.camera.fov, this.camera.aspect);
-      if (ascendingBand || (this.slope.velocity > SLOPE.exit && this.camera.position.distanceTo(pose.pivot) < wantedDistance)) {
+      if (!phoneAscent && (ascendingBand || (this.slope.velocity > SLOPE.exit && this.camera.position.distanceTo(pose.pivot) < wantedDistance))) {
         // A contracted boom must retain the nearest feet-box corners, not just
         // the floor point beneath the cat's centre, through the boom's release.
         const box = this.catWorldBox();
