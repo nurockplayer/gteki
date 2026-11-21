@@ -1192,12 +1192,358 @@
       "building": null,
       "floors": [
         {
+          "level": "B2",
+          "order": -2,
+          "category": "other",
+          "label": {
+            "ja": "レディス・メンズファッション・レディスファッション・フレグランス・ジュエリー・アクセサリー",
+            "en": "Shops and services"
+          },
+          "tenants": [
+            {
+              "ja": "BEAMS",
+              "en": "BEAMS"
+            },
+            {
+              "ja": "FREAK'S STORE WOMEN'S",
+              "en": "FREAK'S STORE WOMEN'S"
+            },
+            {
+              "ja": "オニツカタイガールミネエスト新宿2",
+              "en": "オニツカタイガールミネエスト新宿2"
+            },
+            {
+              "ja": "NICE WEATHER SHINJUKU",
+              "en": "NICE WEATHER SHINJUKU"
+            },
+            {
+              "ja": "HYSTERIC GLAMOUR",
+              "en": "HYSTERIC GLAMOUR"
+            },
+            {
+              "ja": "SHOLAYERED",
+              "en": "SHOLAYERED"
+            },
+            {
+              "ja": "DIESEL",
+              "en": "DIESEL"
+            },
+            {
+              "ja": "SLOBE IENA",
+              "en": "SLOBE IENA"
+            },
+            {
+              "ja": "ete",
+              "en": "ete"
+            },
+            {
+              "ja": "FREAK’S STORE MEN'S + ANDY FREAK’S STORE",
+              "en": "FREAK’S STORE MEN'S + ANDY FREAK’S STORE"
+            },
+            {
+              "ja": "Uby SPICK&SPAN",
+              "en": "Uby SPICK&SPAN"
+            },
+            {
+              "ja": "Biople",
+              "en": "Biople"
+            },
+            {
+              "ja": "TLIP",
+              "en": "TLIP"
+            },
+            {
+              "ja": "CANAL JEAN",
+              "en": "CANAL JEAN"
+            },
+            {
+              "ja": "Make↗Kitchen",
+              "en": "Make↗Kitchen"
+            },
+            {
+              "ja": "LE TALON",
+              "en": "LE TALON"
+            },
+            {
+              "ja": "BEAUTY＆YOUTH UNITED ARROWS",
+              "en": "BEAUTY＆YOUTH UNITED ARROWS"
+            },
+            {
+              "ja": "IL BISONTE",
+              "en": "IL BISONTE"
+            },
+            {
+              "ja": "OVERRIDE",
+              "en": "OVERRIDE"
+            },
+            {
+              "ja": "Happy Socks",
+              "en": "Happy Socks"
+            },
+            {
+              "ja": "destination Tokyo",
+              "en": "destination Tokyo"
+            },
+            {
+              "ja": "SORIN",
+              "en": "SORIN"
+            },
+            {
+              "ja": "atmos pink",
+              "en": "atmos pink"
+            },
+            {
+              "ja": "BAG ‘n’ NOUN",
+              "en": "BAG ‘n’ NOUN"
+            },
+            {
+              "ja": "ROSE BUD",
+              "en": "ROSE BUD"
+            },
+            {
+              "ja": "gelato pique",
+              "en": "gelato pique"
+            },
+            {
+              "ja": "ReFa",
+              "en": "ReFa"
+            },
+            {
+              "ja": "GOLDY",
+              "en": "GOLDY"
+            },
+            {
+              "ja": "JILL by JILL STUART",
+              "en": "JILL by JILL STUART"
+            },
+            {
+              "ja": "HARBS",
+              "en": "HARBS"
+            },
+            {
+              "ja": "@cosmeSTORE",
+              "en": "@cosmeSTORE"
+            }
+          ],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=b2f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "food-hall",
+          "label": {
+            "ja": "ギフト・アート・カフェ・バッグ・文具",
+            "en": "Food, sweets and shops"
+          },
+          "tenants": [
+            {
+              "ja": "NANATEA&Tsutsumi",
+              "en": "NANATEA&Tsutsumi"
+            },
+            {
+              "ja": "ビア＆カフェ ベルク",
+              "en": "ビア＆カフェ ベルク"
+            },
+            {
+              "ja": "PORTER STAND",
+              "en": "PORTER STAND"
+            },
+            {
+              "ja": "TULLY'S COFFEE",
+              "en": "TULLY'S COFFEE"
+            },
+            {
+              "ja": "HMV&BOOKS SPOT SHINJUKU",
+              "en": "HMV&BOOKS SPOT SHINJUKU"
+            },
+            {
+              "ja": "信州そば本陣",
+              "en": "信州そば本陣"
+            },
+            {
+              "ja": "PRESS BUTTER SAND",
+              "en": "PRESS BUTTER SAND"
+            },
+            {
+              "ja": "CA4LA",
+              "en": "CA4LA"
+            },
+            {
+              "ja": "SHIRO",
+              "en": "SHIRO"
+            },
+            {
+              "ja": "Sea Room lynn",
+              "en": "Sea Room lynn"
+            },
+            {
+              "ja": "M me eme",
+              "en": "M me eme"
+            },
+            {
+              "ja": "ペンスタ",
+              "en": "ペンスタ"
+            },
+            {
+              "ja": "CALNAMUR",
+              "en": "CALNAMUR"
+            },
+            {
+              "ja": "MERCURYDUO",
+              "en": "MERCURYDUO"
+            },
+            {
+              "ja": "pium",
+              "en": "pium"
+            },
+            {
+              "ja": "アクロトーキョー。",
+              "en": "アクロトーキョー。"
+            },
+            {
+              "ja": "SELVE",
+              "en": "SELVE"
+            },
+            {
+              "ja": "PAUL ＆ JOE",
+              "en": "PAUL ＆ JOE"
+            },
+            {
+              "ja": "Aiam",
+              "en": "Aiam"
+            },
+            {
+              "ja": "Ungrid",
+              "en": "Ungrid"
+            },
+            {
+              "ja": "バターのいとこ",
+              "en": "バターのいとこ"
+            },
+            {
+              "ja": "MOUSSY",
+              "en": "MOUSSY"
+            },
+            {
+              "ja": "GRVR",
+              "en": "GRVR"
+            },
+            {
+              "ja": "SLY",
+              "en": "SLY"
+            },
+            {
+              "ja": "rienda",
+              "en": "rienda"
+            },
+            {
+              "ja": "LEJA",
+              "en": "LEJA"
+            },
+            {
+              "ja": "EDITAL",
+              "en": "EDITAL"
+            },
+            {
+              "ja": "RAVIJOUR",
+              "en": "RAVIJOUR"
+            },
+            {
+              "ja": "NARS",
+              "en": "NARS"
+            },
+            {
+              "ja": "ROYAL PARTY",
+              "en": "ROYAL PARTY"
+            },
+            {
+              "ja": "MURUA",
+              "en": "MURUA"
+            },
+            {
+              "ja": "EMODA",
+              "en": "EMODA"
+            },
+            {
+              "ja": "Roine by LIP SERVICE",
+              "en": "Roine by LIP SERVICE"
+            },
+            {
+              "ja": "ANDMARY",
+              "en": "ANDMARY"
+            },
+            {
+              "ja": "M･A･C",
+              "en": "M･A･C"
+            },
+            {
+              "ja": "ACLENT",
+              "en": "ACLENT"
+            },
+            {
+              "ja": "SPIRALGIRL",
+              "en": "SPIRALGIRL"
+            },
+            {
+              "ja": "DIANA",
+              "en": "DIANA"
+            },
+            {
+              "ja": "LAGUA GEM",
+              "en": "LAGUA GEM"
+            },
+            {
+              "ja": "GYDA",
+              "en": "GYDA"
+            },
+            {
+              "ja": "春水堂",
+              "en": "春水堂"
+            },
+            {
+              "ja": "Rosé Muse",
+              "en": "Rosé Muse"
+            },
+            {
+              "ja": "Darich",
+              "en": "Darich"
+            },
+            {
+              "ja": "hince",
+              "en": "hince"
+            },
+            {
+              "ja": "CHARLES & KEITH",
+              "en": "CHARLES & KEITH"
+            },
+            {
+              "ja": "フルーツクチュールTAKANO",
+              "en": "フルーツクチュールTAKANO"
+            },
+            {
+              "ja": "EVRIS",
+              "en": "EVRIS"
+            },
+            {
+              "ja": "fwee Agit",
+              "en": "fwee Agit"
+            },
+            {
+              "ja": "RESEXXY",
+              "en": "RESEXXY"
+            }
+          ],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=b1f",
+          "read": "2026-11-22"
+        },
+        {
           "level": "1F",
           "order": 1,
           "category": "other",
           "label": {
-            "ja": "スイーツ・ファッション・カフェ",
-            "en": "Sweets, fashion and cafes"
+            "ja": "スイーツ・レディスファッション・カフェ・韓国ブランド",
+            "en": "Shops and services"
           },
           "tenants": [
             {
@@ -1249,7 +1595,103 @@
               "en": "Onitsuka Tiger"
             }
           ],
-          "source": "https://www.lumine.ne.jp/est/floorguide/",
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=1f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "レディスファッション・カフェ・ファッション雑貨・ジュエリー・アクセサリー",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=2f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "ランジェリー・インテリア・生活雑貨・レディスファッション・コンタクトレンズ",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=3f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "インテリア・生活雑貨・レディスファッション・ヘアケア,ボディケア,ハンドケア,ドライフラワー・ジュエリー・アクセサリー",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=4f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "玩具・ホビー雑貨・メンズファッション・スニーカー、アパレル・アイウェア",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=5f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "レディス・メンズファッション・ジュエリー・アクセサリー・メンズファッション・バッグ",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=6f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "other",
+          "label": {
+            "ja": "パンケーキレストラン・レストラン・だし茶漬け・うどん・スイーツ",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=7f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "other",
+          "label": {
+            "ja": "ラーメン・クレープ・ハワイアンダイナー・ティーカフェ",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=8f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "R",
+          "order": 100,
+          "category": "rooftop",
+          "label": {
+            "ja": "ショップ・サービス",
+            "en": "Rooftop"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=99f",
           "read": "2026-11-22"
         }
       ]
