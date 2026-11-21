@@ -2973,8 +2973,297 @@
             "ja": "専門店街・飲食",
             "en": "Shops and dining"
           },
-          "tenants": [],
-          "source": "https://sunshinecity.jp/information/floor_map/",
+          "tenants": [
+            {
+              "ja": "earth music&ecology",
+              "en": "earth music&ecology"
+            },
+            {
+              "ja": "@cosme STORE",
+              "en": "@cosme STORE"
+            },
+            {
+              "ja": "Amatone Accesso’rio",
+              "en": "Amatone Accesso’rio"
+            },
+            {
+              "ja": "INGNI",
+              "en": "INGNI"
+            },
+            {
+              "ja": "MUS",
+              "en": "MUS"
+            },
+            {
+              "ja": "OLIVE des OLIVE",
+              "en": "OLIVE des OLIVE"
+            },
+            {
+              "ja": "空想街雑貨店",
+              "en": "空想街雑貨店"
+            },
+            {
+              "ja": "靴下屋",
+              "en": "靴下屋"
+            },
+            {
+              "ja": "グラニフ",
+              "en": "グラニフ"
+            },
+            {
+              "ja": "clear",
+              "en": "clear"
+            },
+            {
+              "ja": "コクミンドラッグ",
+              "en": "コクミンドラッグ"
+            },
+            {
+              "ja": "THE KISS",
+              "en": "THE KISS"
+            },
+            {
+              "ja": "Samantha Thavasa",
+              "en": "Samantha Thavasa"
+            },
+            {
+              "ja": "SM2 ehka sopo",
+              "en": "SM2 ehka sopo"
+            },
+            {
+              "ja": "San-ai Resort northerly",
+              "en": "San-ai Resort northerly"
+            },
+            {
+              "ja": "サンシャイン60内郵便局",
+              "en": "サンシャイン60内郵便局"
+            },
+            {
+              "ja": "Sanrio vivitix",
+              "en": "Sanrio vivitix"
+            },
+            {
+              "ja": "cs T&P",
+              "en": "cs T&P"
+            },
+            {
+              "ja": "シークレットハニー",
+              "en": "シークレットハニー"
+            },
+            {
+              "ja": "ジブリがいっぱい　どんぐり共和国",
+              "en": "ジブリがいっぱい　どんぐり共和国"
+            },
+            {
+              "ja": "スーパースポーツヴィクトリア/ヴィクトリアゴルフ",
+              "en": "スーパースポーツヴィクトリア/ヴィクトリアゴルフ"
+            },
+            {
+              "ja": "すこんぶ",
+              "en": "すこんぶ"
+            },
+            {
+              "ja": "SpRay/Libby ＆Rose",
+              "en": "SpRay/Libby ＆Rose"
+            },
+            {
+              "ja": "3COINS",
+              "en": "3COINS"
+            },
+            {
+              "ja": "Zoff",
+              "en": "Zoff"
+            },
+            {
+              "ja": "WA ORiental TRaffic",
+              "en": "WA ORiental TRaffic"
+            },
+            {
+              "ja": "TOWER RECORDS SHIBUYA  SUNSHINE CITY ALPA BRANCH",
+              "en": "TOWER RECORDS SHIBUYA  SUNSHINE CITY ALPA BRANCH"
+            },
+            {
+              "ja": "【10/9～11/24 期間限定オープン】Disney store",
+              "en": "【10/9～11/24 期間限定オープン】Disney store"
+            },
+            {
+              "ja": "デリカベンダーステーション",
+              "en": "デリカベンダーステーション"
+            },
+            {
+              "ja": "トーマスステーション池袋",
+              "en": "トーマスステーション池袋"
+            },
+            {
+              "ja": "niko and ...",
+              "en": "niko and ..."
+            },
+            {
+              "ja": "P2",
+              "en": "P2"
+            },
+            {
+              "ja": "ピロースタンド",
+              "en": "ピロースタンド"
+            },
+            {
+              "ja": "ファミリーマート　サンシャインシティアルパB1店",
+              "en": "ファミリーマート　サンシャインシティアルパB1店"
+            },
+            {
+              "ja": "F i.n.t",
+              "en": "F i.n.t"
+            },
+            {
+              "ja": "プラザ",
+              "en": "プラザ"
+            },
+            {
+              "ja": "PAGEBOY",
+              "en": "PAGEBOY"
+            },
+            {
+              "ja": "Heather",
+              "en": "Heather"
+            },
+            {
+              "ja": "ほけんの窓口",
+              "en": "ほけんの窓口"
+            },
+            {
+              "ja": "MARVEL STORE by SMALL PLANET",
+              "en": "MARVEL STORE by SMALL PLANET"
+            },
+            {
+              "ja": "MAJESTIC LEGON",
+              "en": "MAJESTIC LEGON"
+            },
+            {
+              "ja": "マリークワント",
+              "en": "マリークワント"
+            },
+            {
+              "ja": "mysty woman",
+              "en": "mysty woman"
+            },
+            {
+              "ja": "MEGA BLUE BIRD",
+              "en": "MEGA BLUE BIRD"
+            },
+            {
+              "ja": "Maison de FLEUR",
+              "en": "Maison de FLEUR"
+            },
+            {
+              "ja": "Lattice",
+              "en": "Lattice"
+            },
+            {
+              "ja": "リサマリ",
+              "en": "リサマリ"
+            },
+            {
+              "ja": "Luce Brillante",
+              "en": "Luce Brillante"
+            },
+            {
+              "ja": "LUDIC　PARK",
+              "en": "LUDIC　PARK"
+            },
+            {
+              "ja": "Rolife",
+              "en": "Rolife"
+            },
+            {
+              "ja": "LOWRYS FARM",
+              "en": "LOWRYS FARM"
+            },
+            {
+              "ja": "ROJITA",
+              "en": "ROJITA"
+            },
+            {
+              "ja": "RODEO CROWNS WIDE BOWL",
+              "en": "RODEO CROWNS WIDE BOWL"
+            },
+            {
+              "ja": "one way",
+              "en": "one way"
+            },
+            {
+              "ja": "いちご飴と幸せな僕",
+              "en": "いちご飴と幸せな僕"
+            },
+            {
+              "ja": "一久庵",
+              "en": "一久庵"
+            },
+            {
+              "ja": "おだしもん",
+              "en": "おだしもん"
+            },
+            {
+              "ja": "カレーハウスCoCo壱番屋",
+              "en": "カレーハウスCoCo壱番屋"
+            },
+            {
+              "ja": "KUA`AINA",
+              "en": "KUA`AINA"
+            },
+            {
+              "ja": "珈琲所　コメダ珈琲店",
+              "en": "珈琲所　コメダ珈琲店"
+            },
+            {
+              "ja": "KOI Thé",
+              "en": "KOI Thé"
+            },
+            {
+              "ja": "ゴディバ",
+              "en": "ゴディバ"
+            },
+            {
+              "ja": "SANRIO CAFE",
+              "en": "SANRIO CAFE"
+            },
+            {
+              "ja": "ジェリコ堂",
+              "en": "ジェリコ堂"
+            },
+            {
+              "ja": "中華そば　青葉",
+              "en": "中華そば　青葉"
+            },
+            {
+              "ja": "ディッパーダン プラス",
+              "en": "ディッパーダン プラス"
+            },
+            {
+              "ja": "天丼　てんや",
+              "en": "天丼　てんや"
+            },
+            {
+              "ja": "東京だし茶漬け　こめから",
+              "en": "東京だし茶漬け　こめから"
+            },
+            {
+              "ja": "mipig cafe",
+              "en": "mipig cafe"
+            },
+            {
+              "ja": "まめものとたい焼き",
+              "en": "まめものとたい焼き"
+            },
+            {
+              "ja": "山下本気うどん",
+              "en": "山下本気うどん"
+            },
+            {
+              "ja": "LA VIGNE AKIKO",
+              "en": "LA VIGNE AKIKO"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
           "read": "2026-11-22"
         },
         {
@@ -2985,8 +3274,153 @@
             "ja": "専門店街",
             "en": "Shops"
           },
-          "tenants": [],
-          "source": "https://sunshinecity.jp/information/floor_map/",
+          "tenants": [
+            {
+              "ja": "axes femme",
+              "en": "axes femme"
+            },
+            {
+              "ja": "AZUL BY MOUSSY",
+              "en": "AZUL BY MOUSSY"
+            },
+            {
+              "ja": "ウサギオンラインストア",
+              "en": "ウサギオンラインストア"
+            },
+            {
+              "ja": "ABC-MART",
+              "en": "ABC-MART"
+            },
+            {
+              "ja": "きもの　やまと",
+              "en": "きもの　やまと"
+            },
+            {
+              "ja": "Green Parks topic",
+              "en": "Green Parks topic"
+            },
+            {
+              "ja": "GLOBAL WORK",
+              "en": "GLOBAL WORK"
+            },
+            {
+              "ja": "SAC’S BAR",
+              "en": "SAC’S BAR"
+            },
+            {
+              "ja": "セサミストリートマーケット",
+              "en": "セサミストリートマーケット"
+            },
+            {
+              "ja": "CIAOPANIC TYPY",
+              "en": "CIAOPANIC TYPY"
+            },
+            {
+              "ja": "東京シャツ",
+              "en": "東京シャツ"
+            },
+            {
+              "ja": "ハンドメイドガーデンズ",
+              "en": "ハンドメイドガーデンズ"
+            },
+            {
+              "ja": "Biople",
+              "en": "Biople"
+            },
+            {
+              "ja": "petit main",
+              "en": "petit main"
+            },
+            {
+              "ja": "Flying Tiger Copenhagen",
+              "en": "Flying Tiger Copenhagen"
+            },
+            {
+              "ja": "【10/1～ 期間限定オープン！】Flower Miffy",
+              "en": "【10/1～ 期間限定オープン！】Flower Miffy"
+            },
+            {
+              "ja": "【11/20 リニューアルオープン】Francfranc",
+              "en": "【11/20 リニューアルオープン】Francfranc"
+            },
+            {
+              "ja": "Marché de Bleuet plus",
+              "en": "Marché de Bleuet plus"
+            },
+            {
+              "ja": "無印良品",
+              "en": "無印良品"
+            },
+            {
+              "ja": "Re-J＆SUPURE",
+              "en": "Re-J＆SUPURE"
+            },
+            {
+              "ja": "ロフト",
+              "en": "ロフト"
+            },
+            {
+              "ja": "Vinos Yamazaki Wine+ist",
+              "en": "Vinos Yamazaki Wine+ist"
+            },
+            {
+              "ja": "果汁工房 果琳",
+              "en": "果汁工房 果琳"
+            },
+            {
+              "ja": "クリスプサラダワークス",
+              "en": "クリスプサラダワークス"
+            },
+            {
+              "ja": "creperie kenny's cafe",
+              "en": "creperie kenny's cafe"
+            },
+            {
+              "ja": "SUBWAY",
+              "en": "SUBWAY"
+            },
+            {
+              "ja": "gelato pique cafe",
+              "en": "gelato pique cafe"
+            },
+            {
+              "ja": "スターバックス コーヒー",
+              "en": "スターバックス コーヒー"
+            },
+            {
+              "ja": "成城石井",
+              "en": "成城石井"
+            },
+            {
+              "ja": "セサミストリートマーケット",
+              "en": "セサミストリートマーケット"
+            },
+            {
+              "ja": "TULLY'S COFFEE",
+              "en": "TULLY'S COFFEE"
+            },
+            {
+              "ja": "茶鍋カフェ・カグラザカ サリョウ",
+              "en": "茶鍋カフェ・カグラザカ サリョウ"
+            },
+            {
+              "ja": "ネオ屋台村（南入口前広場）",
+              "en": "ネオ屋台村（南入口前広場）"
+            },
+            {
+              "ja": "MAISON KAYSER",
+              "en": "MAISON KAYSER"
+            },
+            {
+              "ja": "LUPICIA",
+              "en": "LUPICIA"
+            },
+            {
+              "ja": "わくわく広場",
+              "en": "わくわく広場"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
           "read": "2026-11-22"
         },
         {
