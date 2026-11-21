@@ -19,8 +19,8 @@ details{margin-top:10px;font-size:.9rem}summary{cursor:pointer}.decision{backgro
 </style>
 </head>
 <body><main>
-<header><small>GT-Eki · one plan, every acceptance criterion</small><h1>{{title}}</h1><p>Deployed commit <strong>{{sha}}</strong><br>Built {{builtAt}}</p><p class="progress">{{progress}} criteria PASS</p><nav aria-label="Workstreams">{{nav}}</nav></header>
-<p class="rule">PASS needs a judge, a date and at least one evidence link. A merged PR or green CI alone is never PASS.</p>
+<header><small>{{state}} · one plan, every acceptance criterion</small><h1>{{title}}</h1><p>Deployed commit <strong>{{sha}}</strong><br>Built {{builtAt}}</p><p class="progress">{{progress}} criteria PASS</p><nav aria-label="Workstreams">{{nav}}</nav></header>
+<p class="rule">PASS needs a judge, a verification date, a verified SHA and at least one evidence link. A merged PR or green CI alone is never PASS.</p>
 {{decisions}}
 {{streams}}
 <footer><p>Edit <a href="https://github.com/nurockplayer/gteki/blob/main/docs/release/plan.yaml">plan.yaml</a> via a PR. This page and the journey document are generated from that source.</p></footer>
