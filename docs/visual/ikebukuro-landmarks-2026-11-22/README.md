@@ -81,3 +81,12 @@ All routes below are provisional nearest modeled exits, chosen by horizontal geo
 | Sunshine City | x35 | Existing x35 frames |
 
 No door frames are required under the revised scope because no doors were placed. The missing x18 and x37 frames remain required. The model contains only part of the station and does not establish the official entrance connection.
+
+### Revised nearest-exit captures, 2026-11-22 JST
+
+The x18 and x37 poses replace the earlier x17 and x15 substitutes. Lumine's x37 camera is obstructed by the stair enclosure; the frame does not establish landmark visibility or visual acceptance. Pose and camera metadata are in `captures.json`.
+
+| Store | Desktop next | Phone next | Desktop default | Phone default |
+|---|---|---|---|---|
+| Tobu, x18 | [next](desktop-tobu-next-nearest.png) | [next](phone-tobu-next-nearest.png) | [default](desktop-tobu-default-nearest.png) | [default](phone-tobu-default-nearest.png) |
+| Lumine, x37 | [next](desktop-lumine-next-nearest.png) | [next](phone-lumine-next-nearest.png) | [default](desktop-lumine-default-nearest.png) | [default](phone-lumine-default-nearest.png) |

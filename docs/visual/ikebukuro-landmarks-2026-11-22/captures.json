@@ -279,5 +279,226 @@
         "mode": "walk"
       }
     }
-  ]
+  ],
+  "revisedNearestCaptures": {
+    "captured": "2026-11-22 JST",
+    "captures": [
+      {
+        "size": "desktop",
+        "flag": "next",
+        "store": "tobu",
+        "node": "x18",
+        "heading": 182,
+        "p": {
+          "placed": true,
+          "placeMs": 28.099999964237213,
+          "turnMs": 6.800000011920929
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 55,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.25,
+          "boomActual": 2.250000000000012,
+          "raise": 0,
+          "pitch": 0.5,
+          "yaw": -3.1764992386296798,
+          "avatarFade": 1,
+          "reflections": true,
+          "mode": "walk"
+        },
+        "path": "desktop-tobu-next-nearest.png"
+      },
+      {
+        "size": "desktop",
+        "flag": "next",
+        "store": "lumine",
+        "node": "x37",
+        "heading": 241,
+        "p": {
+          "placed": true,
+          "placeMs": 7.099999964237213,
+          "turnMs": 7.700000047683716
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 55,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.25,
+          "boomActual": 0.5806598892486758,
+          "raise": 0.8726646259971649,
+          "pitch": 0.5,
+          "yaw": -4.2062434973063345,
+          "avatarFade": 0.25997034183923706,
+          "reflections": true,
+          "mode": "walk"
+        },
+        "path": "desktop-lumine-next-nearest.png"
+      },
+      {
+        "size": "desktop",
+        "flag": "default",
+        "store": "tobu",
+        "node": "x18",
+        "heading": 182,
+        "p": {
+          "placed": true,
+          "placeMs": 20.399999976158142,
+          "turnMs": 2.900000035762787
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.25,
+          "boomActual": 2.249999999999996,
+          "raise": 0,
+          "pitch": 0.5,
+          "yaw": -3.1764992386296798,
+          "avatarFade": 1,
+          "reflections": true,
+          "mode": "walk"
+        },
+        "path": "desktop-tobu-default-nearest.png"
+      },
+      {
+        "size": "desktop",
+        "flag": "default",
+        "store": "lumine",
+        "node": "x37",
+        "heading": 241,
+        "p": {
+          "placed": true,
+          "placeMs": 6.699999988079071,
+          "turnMs": 6.199999988079071
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 60,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.25,
+          "boomActual": 0.49438512352130765,
+          "raise": 0,
+          "pitch": 0.5,
+          "yaw": -4.2062434973063345,
+          "avatarFade": 0.25,
+          "reflections": true,
+          "mode": "walk"
+        },
+        "path": "desktop-lumine-default-nearest.png"
+      },
+      {
+        "size": "phone",
+        "flag": "next",
+        "store": "tobu",
+        "node": "x18",
+        "heading": 182,
+        "p": {
+          "placed": true,
+          "placeMs": 14.100000023841858,
+          "turnMs": 5.5
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 65,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.25,
+          "boomActual": 2.250000000000012,
+          "raise": 0,
+          "pitch": 0.5,
+          "yaw": -3.1764992386296798,
+          "avatarFade": 1,
+          "reflections": false,
+          "mode": "walk"
+        },
+        "path": "phone-tobu-next-nearest.png"
+      },
+      {
+        "size": "phone",
+        "flag": "next",
+        "store": "lumine",
+        "node": "x37",
+        "heading": 241,
+        "p": {
+          "placed": true,
+          "placeMs": 6.800000011920929,
+          "turnMs": 3.300000011920929
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 65,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.25,
+          "boomActual": 2.2500000000000027,
+          "raise": 0.17453292519943295,
+          "pitch": 0.5,
+          "yaw": -4.2062434973063345,
+          "avatarFade": 1,
+          "reflections": false,
+          "mode": "walk"
+        },
+        "path": "phone-lumine-next-nearest.png"
+      },
+      {
+        "size": "phone",
+        "flag": "default",
+        "store": "tobu",
+        "node": "x18",
+        "heading": 182,
+        "p": {
+          "placed": true,
+          "placeMs": 15,
+          "turnMs": 2.699999988079071
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.25,
+          "boomActual": 2.249999999999996,
+          "raise": 0,
+          "pitch": 0.5,
+          "yaw": -3.1764992386296798,
+          "avatarFade": 1,
+          "reflections": false,
+          "mode": "walk"
+        },
+        "path": "phone-tobu-default-nearest.png"
+      },
+      {
+        "size": "phone",
+        "flag": "default",
+        "store": "lumine",
+        "node": "x37",
+        "heading": 241,
+        "p": {
+          "placed": true,
+          "placeMs": 5.200000047683716,
+          "turnMs": 1.899999976158142
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.25,
+          "boomActual": 2.2499999999999987,
+          "raise": 0.17453292519943295,
+          "pitch": 0.5,
+          "yaw": -4.2062434973063345,
+          "avatarFade": 1,
+          "reflections": false,
+          "mode": "walk"
+        },
+        "path": "phone-lumine-default-nearest.png"
+      }
+    ]
+  }
 }
