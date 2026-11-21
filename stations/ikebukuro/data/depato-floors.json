@@ -51,7 +51,8 @@
             }
           ],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
-          "read": "2026-11-22"
+          "read": "2026-11-22",
+          "order": -2
         },
         {
           "level": "B1",
@@ -95,7 +96,8 @@
             }
           ],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
-          "read": "2026-11-22"
+          "read": "2026-11-22",
+          "order": -1
         },
         {
           "level": "1F",
@@ -163,7 +165,8 @@
             }
           ],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
-          "read": "2026-11-22"
+          "read": "2026-11-22",
+          "order": 1
         },
         {
           "level": "2F",
@@ -174,7 +177,8 @@
           },
           "tenants": [],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
-          "read": "2026-11-22"
+          "read": "2026-11-22",
+          "order": 2
         },
         {
           "level": "3F",
@@ -185,7 +189,8 @@
           },
           "tenants": [],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
-          "read": "2026-11-22"
+          "read": "2026-11-22",
+          "order": 3
         },
         {
           "level": "4F",
@@ -196,7 +201,8 @@
           },
           "tenants": [],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
-          "read": "2026-11-22"
+          "read": "2026-11-22",
+          "order": 4
         },
         {
           "level": "5F",
@@ -207,7 +213,8 @@
           },
           "tenants": [],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
-          "read": "2026-11-22"
+          "read": "2026-11-22",
+          "order": 5
         },
         {
           "level": "6F",
@@ -218,7 +225,8 @@
           },
           "tenants": [],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
-          "read": "2026-11-22"
+          "read": "2026-11-22",
+          "order": 6
         },
         {
           "level": "7F",
@@ -229,6 +237,385 @@
           },
           "tenants": [],
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": 7
+        }
+      ]
+    },
+    {
+      "id": "tobu-ikebukuro",
+      "name": {
+        "ja": "東武百貨店 池袋店",
+        "en": "Tobu Department Store Ikebukuro"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B2",
+          "order": -2,
+          "category": "food-hall",
+          "label": {
+            "ja": "生鮮・惣菜・グロサリー",
+            "en": "Fresh food, delicatessen and groceries"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "food-hall",
+          "label": {
+            "ja": "和洋菓子・酒・惣菜",
+            "en": "Sweets, liquor and delicatessen"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "accessories",
+          "label": {
+            "ja": "アクセサリー・婦人服・ブティック",
+            "en": "Accessories, women’s fashion and boutiques"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "cosmetics",
+          "label": {
+            "ja": "化粧品・婦人服・婦人靴",
+            "en": "Cosmetics, women’s fashion and shoes"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "womens",
+          "label": {
+            "ja": "婦人服・婦人肌着",
+            "en": "Women’s clothing and lingerie"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "womens",
+          "label": {
+            "ja": "婦人服・きもの・家電",
+            "en": "Women’s clothing, kimono and appliances"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "mens",
+          "label": {
+            "ja": "紳士服・モンベル",
+            "en": "Men’s clothing and Mont-bell"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "living",
+          "label": {
+            "ja": "家庭用品・美術・宝飾・時計",
+            "en": "Homeware, art, jewelry and watches"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "kids",
+          "label": {
+            "ja": "子供服・玩具・スポーツ・書籍",
+            "en": "Children, toys, sports and books"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "womens",
+          "label": {
+            "ja": "催事場・婦人服・屋上",
+            "en": "Event hall, women’s clothing and rooftop"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "womens",
+          "label": {
+            "ja": "ユニクロ レディース",
+            "en": "UNIQLO women"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "10F",
+          "order": 10,
+          "category": "mens",
+          "label": {
+            "ja": "ユニクロ メンズ・キッズ",
+            "en": "UNIQLO men and children"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "11F",
+          "order": 11,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "12F",
+          "order": 12,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "13F",
+          "order": 13,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "14F",
+          "order": 14,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "15F",
+          "order": 15,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "esola-ikebukuro",
+      "name": {
+        "ja": "エソラ池袋",
+        "en": "Esola Ikebukuro"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "ファッション・雑貨・食品",
+            "en": "Fashion, goods and food"
+          },
+          "tenants": [
+            {
+              "ja": "Timberland",
+              "en": "Timberland"
+            },
+            {
+              "ja": "プリンに恋して",
+              "en": "プリンに恋して"
+            },
+            {
+              "ja": "Détour à Bleuet",
+              "en": "Détour à Bleuet"
+            },
+            {
+              "ja": "MS・Style",
+              "en": "MS・Style"
+            },
+            {
+              "ja": "atelier haruka",
+              "en": "atelier haruka"
+            },
+            {
+              "ja": "NATURAL LAWSON",
+              "en": "NATURAL LAWSON"
+            },
+            {
+              "ja": "FLEURISTE BON MARCHE",
+              "en": "FLEURISTE BON MARCHE"
+            }
+          ],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "ファッション・カフェ",
+            "en": "Fashion and cafes"
+          },
+          "tenants": [
+            {
+              "ja": "インナービューティサロン エステプロ・ラボ",
+              "en": "インナービューティサロン エステプロ・ラボ"
+            },
+            {
+              "ja": "豆乳専科",
+              "en": "豆乳専科"
+            },
+            {
+              "ja": "BEARDSLEY",
+              "en": "BEARDSLEY"
+            },
+            {
+              "ja": "Meet Fresh鮮芋仙",
+              "en": "Meet Fresh鮮芋仙"
+            }
+          ],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "ファッション・書籍",
+            "en": "Fashion and books"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "音楽・書籍",
+            "en": "Music and books"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "メガネ・カフェ",
+            "en": "Eyewear and cafe"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "美容・サービス",
+            "en": "Beauty and services"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン",
+            "en": "Restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン",
+            "en": "Restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン・シェアオフィス",
+            "en": "Restaurants and shared office"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
           "read": "2026-11-22"
         }
       ]
