@@ -2974,6 +2974,112 @@
           "read": "2026-11-22"
         }
       ]
+    },
+    {
+      "id": "sunshine-city-60",
+      "name": {
+        "ja": "サンシャイン60",
+        "en": "Sunshine 60"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B2",
+          "order": -2,
+          "category": "other",
+          "label": {
+            "ja": "パーキングフロント",
+            "en": "Parking front"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "郵便局・展望台エレベーター",
+            "en": "Post office and observatory elevator"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "オフィスロビー",
+            "en": "Office lobby"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "ハローワーク",
+            "en": "Hello Work"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "other",
+          "label": {
+            "ja": "旅工房",
+            "en": "Tabikobo"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/observatory/shop/shop_list/page/4/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "58F",
+          "order": 58,
+          "category": "restaurants",
+          "label": {
+            "ja": "スカイレストラン",
+            "en": "Sky restaurants"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "59F",
+          "order": 59,
+          "category": "restaurants",
+          "label": {
+            "ja": "スカイレストラン",
+            "en": "Sky restaurants"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "60F",
+          "order": 60,
+          "category": "other",
+          "label": {
+            "ja": "展望台",
+            "en": "Observatory"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        }
+      ]
     }
   ]
 }
