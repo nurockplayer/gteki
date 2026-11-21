@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{title}}</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#202c32;background:#f3f4f0;line-height:1.6}
+*{box-sizing:border-box}body{margin:0}main{max-width:1240px;margin:auto;padding:24px 20px 60px}
+h1,h2,h3{line-height:1.25}h1{font-size:2rem;margin:8px 0}h2{font-size:1.5rem}h3{font-size:1.1rem}
+a{color:#145b77;text-underline-offset:3px}p,li,td,th{overflow-wrap:anywhere}small{display:block;color:#52626b;font-size:.85rem}
+header{border-top:5px solid #266b69;padding:18px 0}.progress{font-size:1.5rem;font-weight:700}.rule{border-left:4px solid #266b69;padding:10px 16px;background:#e5eeea}
+section{margin-top:36px;scroll-margin-top:16px}.goal{font-size:1.1rem}.phases{padding-left:24px}.phases [aria-current]{color:#174f47}
+table{width:100%;border-collapse:collapse;background:white;table-layout:fixed}caption{text-align:left;font-weight:700;padding:12px 0}th,td{vertical-align:top;text-align:left;padding:12px;border-bottom:1px solid #dce1de}thead{background:#e5eeea}thead th:first-child{width:10%}thead th:nth-child(2){width:32%}thead th:nth-child(3){width:15%}thead th:nth-child(4){width:18%}thead th:nth-child(5){width:25%}
+ul{padding-left:20px}td ul{margin:0}li+li{margin-top:8px}.requirement{white-space:pre-line}.status{display:inline-block;font-size:.8rem;border:1px solid #87969b;border-radius:4px;padding:2px 7px}.pass{color:#16523b;background:#e7f5ed}.fail{color:#9c2929;background:#fff0ed}.review,.blocked{color:#714700;background:#fff4d9}
+details{margin-top:10px;font-size:.9rem}summary{cursor:pointer}.decision{background:white;border:1px solid #c9d4cd;border-radius:8px;padding:16px;margin:12px 0}.note{font-size:.95rem}
+@media(max-width:700px){main{padding:16px 16px 40px}h1{font-size:1.7rem}h2{font-size:1.3rem}table,tbody,tr,td,th{display:block;width:100%}thead{display:none}tr{border:1px solid #ced8d1;border-radius:8px;margin-bottom:16px;overflow:hidden}tbody th{background:#e5eeea;font-size:1.05rem}td{border-bottom:0;padding:8px 12px}td::before{content:attr(data-label);display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#52626b}td:last-child{padding-bottom:16px}}
+</style>
+</head>
+<body><main>
+<header><small>GT-Eki · one plan, every acceptance criterion</small><h1>{{title}}</h1><p>Deployed commit <strong>{{sha}}</strong><br>Built {{builtAt}}</p><p class="progress">{{progress}} criteria PASS</p><nav aria-label="Workstreams">{{nav}}</nav></header>
+<p class="rule">PASS needs a judge, a date and at least one evidence link. A merged PR or green CI alone is never PASS.</p>
+{{decisions}}
+{{streams}}
+<footer><p>Edit <a href="https://github.com/nurockplayer/gteki/blob/main/docs/release/plan.yaml">plan.yaml</a> via a PR. This page and the journey document are generated from that source.</p></footer>
+</main></body></html>

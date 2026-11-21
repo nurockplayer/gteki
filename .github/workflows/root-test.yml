@@ -50,6 +50,9 @@ jobs:
       # tools/private-overlay tests import the S03 seam builder from tools/gis, a separate pnpm project.
       - run: pnpm --dir tools/gis install --frozen-lockfile
 
+      - name: Plan schema and generated journey
+        run: pnpm plan:check
+
       - run: pnpm typecheck
 
       # The station packages carry their own tsconfigs; the root typecheck does not reach them.
