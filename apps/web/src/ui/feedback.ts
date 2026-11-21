@@ -40,6 +40,7 @@ export function buildFeedbackPayload(message: string, language: FeedbackLang, ex
 
 export function openFeedback(language: FeedbackLang, capture: (message: string) => ReturnType<typeof buildFeedbackPayload>): void {
   const t = feedbackStrings(language);
+  const unavailable = language === "ja" ? "この環境では意見を送信できません。" : language === "zh" ? "此環境無法送出意見回饋。" : "Feedback is unavailable in this environment.";
   const dialog = document.createElement("dialog");
   dialog.className = "feedback-dialog";
   dialog.lang = language;
@@ -83,6 +84,11 @@ export function openFeedback(language: FeedbackLang, capture: (message: string) 
     status.textContent = t.sending;
     try {
       const response = await fetch("/api/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...capture(message.value.trim()), turnstileToken: token }) });
+      if (response.status === 503 && await response.text() === "Verification unavailable") {
+        status.textContent = unavailable;
+        token = "";
+        return;
+      }
       if (!response.ok) throw new Error(`Feedback returned ${response.status}`);
       status.textContent = t.sent;
       message.disabled = true;
@@ -106,7 +112,7 @@ export function openFeedback(language: FeedbackLang, capture: (message: string) 
   });
   document.body.append(dialog);
   dialog.showModal();
-  if (!__TURNSTILE_SITEKEY__) { status.textContent = t.error; return; }
+  if (!__TURNSTILE_SITEKEY__) { status.textContent = unavailable; return; }
   void loadTurnstile().then((loaded) => {
     if (!dialog.isConnected) return;
     api = loaded;
@@ -114,7 +120,7 @@ export function openFeedback(language: FeedbackLang, capture: (message: string) 
       sitekey: __TURNSTILE_SITEKEY__, action: "feedback", language: language === "zh" ? "zh-tw" : language, size: "flexible",
       callback: (value) => { token = value; updateSend(); },
       "expired-callback": () => { token = ""; updateSend(); },
-      "error-callback": () => { token = ""; updateSend(); status.textContent = t.error; },
+      "error-callback": () => { token = ""; updateSend(); status.textContent = unavailable; },
     });
   }).catch(() => { status.textContent = t.error; });
 }

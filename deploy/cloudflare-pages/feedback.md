@@ -24,48 +24,19 @@ There is no public read endpoint. The ja/en/zh form notices use the review's
 section 3 disclosure sentences; a privacy-details link needs an owner-supplied
 destination and is not invented here.
 
-## Owner setup (not performed by the worker)
+## Cloudflare setup
 
-1. Create the namespace using authorized Cloudflare credentials:
+As confirmed by the owner on 2026-11-21 JST, the Pages project `gteki` uses
+compatibility date `2026-10-20`, no flags, and had no other bindings or variables
+in production or preview. `wrangler.jsonc` binds `FEEDBACK` to the
+`gteki-feedback` KV namespace `2d3dfce144e044eeb0243067f070d4f3`.
 
-   ```sh
-   pnpm dlx wrangler@4.131.1 kv namespace create gteki-feedback
-   ```
-
-2. Before deploying, reconcile the root `wrangler.jsonc` against the existing
-   Pages project's dashboard configuration. It currently sets exactly:
-   `name: gteki`, `pages_build_output_dir: deploy/cloudflare-pages/dist`,
-   `compatibility_date: 2026-11-21`, and one KV binding `FEEDBACK` with a zero
-   placeholder ID. It defines no vars, secrets, other bindings, compatibility
-   flags or preview overrides. Adding this file makes it authoritative: compare
-   current production **and preview** bindings/vars, compatibility date/flags,
-   and build output settings; carry all required existing settings forward
-   before applying it. Replace only the placeholder with the created namespace
-   ID after reconciliation; ensure `FEEDBACK` binds to that namespace in the
-   intended Pages environments. No production settings were read or changed by
-   this worker. See [Cloudflare's Pages configuration reference](https://developers.cloudflare.com/pages/functions/wrangler-configuration/).
-
-3. Create a managed Turnstile widget allowing `gteki.pages.dev` and only the
-   exact preview/custom hostnames that will receive feedback. Do not add local
-   domains to the production widget. Set its public sitekey as the GitHub
-   `production` environment variable `VITE_TURNSTILE_SITEKEY`, used by the
-   existing Actions build (this site is built in Actions, not the Pages
-   dashboard). For example:
-
-   ```sh
-   gh variable set VITE_TURNSTILE_SITEKEY --env production --body '<public-sitekey>'
-   ```
-
-4. Add the widget's private secret only to Pages runtime as `TURNSTILE_SECRET`,
-   including the intended preview environment if used:
-
-   ```sh
-   pnpm dlx wrangler@4.131.1 pages secret put TURNSTILE_SECRET --project-name gteki
-   ```
-
-   Never put this secret in Vite, GitHub's public build variables, or Git.
-   Missing sitekey disables Send; missing/invalid secret rejects submissions.
-   Keep the PR draft until setup is reconciled; do not deploy the placeholder.
+The managed Turnstile widget permits `gteki.pages.dev` only. Its public sitekey
+`0x4AAAAAAGLit66Rhdh-jRti` is the GitHub `production` environment variable
+`VITE_TURNSTILE_SITEKEY` used by the production build. The private
+`TURNSTILE_SECRET` is set in the Pages production environment and takes effect
+on the next deploy. Preview has no secret and cannot accept feedback; the form
+shows that feedback is unavailable. Do not put the secret in Vite or Git.
 
 ## Local/CI use
 
