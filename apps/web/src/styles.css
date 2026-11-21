@@ -602,11 +602,12 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .app.arrival[data-mode="guide"] .arrival-menu[hidden] { display: none; }
 .app.next.arrival[data-mode="guide"] .arrival-menu button { background: var(--glass-strong); }
 @media (min-width: 481px) {
-  /* Keep the toggle under the pointer when its menu opens. */
-  .app.arrival[data-mode="guide"] .arrival-controls { position: relative; }
-  .app.arrival[data-mode="guide"] .arrival-menu { position: absolute; top: calc(100% + 6px); right: 0; }
-  .app.arrival.arrival-left[data-mode="guide"] .arrival-menu { left: 0; right: auto; }
-  .app.arrival.arrival-bottom[data-mode="guide"] .arrival-menu { top: auto; bottom: calc(100% + 6px); }
+  /* Measure the menu in the HUD without moving the toggle or arrival card. */
+  .app.arrival[data-mode="guide"] .arrival-controls.menu-open { display: contents; }
+  .app.arrival[data-mode="guide"] .arrival-controls.menu-open .guide-more { grid-column: 1; margin: 6px; }
+  .app.arrival[data-mode="guide"] .arrival-menu { grid-column: 1; justify-self: end; }
+  .app.arrival.arrival-left[data-mode="guide"] .arrival-menu { justify-self: start; }
+  .app.arrival.arrival-bottom[data-mode="guide"] .arrival-menu { grid-row: 1; }
 }
 @media (max-width: 480px) {
   .app.arrival[data-mode="guide"] .arrival-controls.menu-open { display: contents; }
