@@ -27257,7 +27257,8 @@
     }
    ],
    "files": [
-    "assets/ikebukuro_context_high.glb"
+    "assets/ikebukuro_context_high.glb",
+    "assets/ikebukuro_landmarks_next.glb"
    ]
   }
  ],
