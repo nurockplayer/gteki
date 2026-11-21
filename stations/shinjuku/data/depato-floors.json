@@ -852,8 +852,8 @@
           "order": -2,
           "category": "food-hall",
           "label": {
-            "ja": "食品・スイーツ・レストラン",
-            "en": "Food, sweets and restaurants"
+            "ja": "スコーン＆ミルクティー・サラダ・レストラン・屋台風の本格タイ料理",
+            "en": "Food, sweets and shops"
           },
           "tenants": [
             {
@@ -929,64 +929,185 @@
           "read": "2026-11-22"
         },
         {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "レディス・メンズファッション・リラクゼーション・レディスファッション・コスメショップ",
+            "en": "Shops and services"
+          },
+          "tenants": [
+            {
+              "ja": "EDITION",
+              "en": "EDITION"
+            },
+            {
+              "ja": "ラフィネ",
+              "en": "ラフィネ"
+            },
+            {
+              "ja": "martinique Le Conte",
+              "en": "martinique Le Conte"
+            },
+            {
+              "ja": "OSAJI",
+              "en": "OSAJI"
+            },
+            {
+              "ja": "KO-GU",
+              "en": "KO-GU"
+            },
+            {
+              "ja": "UNITED ARROWS（ウィメンズ）",
+              "en": "UNITED ARROWS（ウィメンズ）"
+            },
+            {
+              "ja": "warmth",
+              "en": "warmth"
+            },
+            {
+              "ja": "TOMORROWLAND（ウィメンズ）",
+              "en": "TOMORROWLAND（ウィメンズ）"
+            }
+          ],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=b1f",
+          "read": "2026-11-22"
+        },
+        {
           "level": "1F",
           "order": 1,
           "category": "other",
           "label": {
-            "ja": "スイーツ・ファッション・食品",
-            "en": "Sweets, fashion and food"
+            "ja": "カフェ・時計・レディス・メンズファッション・フレグランス",
+            "en": "Shops and services"
           },
           "tenants": [
             {
-              "ja": "フルラージュアン",
-              "en": "フルラージュアン"
+              "ja": "猿田彦珈琲",
+              "en": "猿田彦珈琲"
             },
             {
-              "ja": "リンツ ショコラ ブティック",
-              "en": "リンツ ショコラ ブティック"
+              "ja": "HIROB",
+              "en": "HIROB"
             },
             {
-              "ja": "Now on Cheese♪",
-              "en": "Now on Cheese♪"
+              "ja": "Barbour",
+              "en": "Barbour"
             },
             {
-              "ja": "LADURÉE",
-              "en": "LADURÉE"
+              "ja": "The PERFUME OIL FACTORY",
+              "en": "The PERFUME OIL FACTORY"
             },
             {
-              "ja": "ポロ ラルフローレン",
-              "en": "ポロ ラルフローレン"
+              "ja": "TOMORROWLAND（メンズ）",
+              "en": "TOMORROWLAND（メンズ）"
             },
             {
-              "ja": "TODAY'S SPECIAL",
-              "en": "TODAY'S SPECIAL"
+              "ja": "UNITED ARROWS（メンズ）",
+              "en": "UNITED ARROWS（メンズ）"
             },
             {
-              "ja": "L’OCCITANE",
-              "en": "L’OCCITANE"
-            },
-            {
-              "ja": "MARIAGE FRÈRES",
-              "en": "MARIAGE FRÈRES"
-            },
-            {
-              "ja": "DEAN & DELUCA",
-              "en": "DEAN & DELUCA"
-            },
-            {
-              "ja": "MR.waffle",
-              "en": "MR.waffle"
-            },
-            {
-              "ja": "Soup Stock Tokyo",
-              "en": "Soup Stock Tokyo"
-            },
-            {
-              "ja": "RF1",
-              "en": "RF1"
+              "ja": "TruffleBAKERY",
+              "en": "TruffleBAKERY"
             }
           ],
-          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=1f",
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=1f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "その他・サービス・レディスファッション・ヴィンテージのバッグ、アクセサリーとオリジナルジュエリー・コスメショップ",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=2f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "レディスファッション・レディス・メンズファッション・ジュエリー・アクセサリー・シューズ",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=3f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "レディスファッション・コスメショップ・バッグ・ジュエリー・アクセサリー",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=4f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "レディスファッション・ファッションリフォーム・シューズ・コスメショップ",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=5f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "カフェ・インテリア・生活雑貨・アイウェア・ステーショナリー",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=6f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン・欧風料理・インドネシア料理、アジア料理、エスニック料理・和食",
+            "en": "Restaurants and cafes"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=7f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "other",
+          "label": {
+            "ja": "スマートフォン・タブレット修理・ビューティーサロン・リラクゼーション・ドレスレンタル",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=8f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "R",
+          "order": 100,
+          "category": "rooftop",
+          "label": {
+            "ja": "ショップ・サービス",
+            "en": "Rooftop"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=99f",
           "read": "2026-11-22"
         }
       ]
