@@ -3061,7 +3061,8 @@
      "id": "depato-footprint",
      "path": "data/depato-footprint.json",
      "sourceIds": [
-       "plateau-13116-bldg-53394576"
+       "plateau-13116-bldg-53394576",
+       "plateau-13116-bldg-53394577"
      ],
      "modified": true,
      "derivation": "Southern wing of the connected station/store building: context low GLB ctx_bldg_t01_00 ground ring at TP 32.2 m, clipped at x=0 and renderer z=70/180 as authored partitions. PLATEAU vertices retained; not a surveyed interior plan."
