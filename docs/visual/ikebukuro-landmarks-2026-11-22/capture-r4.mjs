@@ -50,7 +50,7 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
     const {e,T,meshes,roads,pavement}=window.__depato,layer=e.scene.getObjectByName('landmarks-next'),sign=layer?.getObjectByName('landmark-sign:'+store),mesh=layer?.getObjectByName('ctx_bldg_landmark_'+store);
     const aim=new T.Vector3(...(pose?.aim??sign.getWorldPosition(new T.Vector3()).toArray())),normal=new T.Vector3(...(pose?.normal??new T.Vector3(0,0,1).applyQuaternion(sign.quaternion).toArray()));
     const signWidth=pose?.signWidth??sign.geometry.parameters.width,signHeight=pose?.signHeight??sign.geometry.parameters.height,tangent=new T.Vector3(normal.z,0,-normal.x);
-    const clear=eye=>[-.5,0,.5].every(u=>[-.5,.5].every(v=>{const target=aim.clone().addScaledVector(tangent,signWidth*u);target.y+=signHeight*v;return !new T.Raycaster(eye,target.clone().sub(eye).normalize(),0,eye.distanceTo(target)-.02).intersectObjects(meshes,false).length}));
+    const clear=eye=>normal.dot(eye.clone().sub(aim).normalize())>=.25&&[-.5,0,.5].every(u=>[-.5,.5].every(v=>{const target=aim.clone().addScaledVector(tangent,signWidth*u);target.y+=signHeight*v;return !new T.Raycaster(eye,target.clone().sub(eye).normalize(),0,eye.distanceTo(target)-.02).intersectObjects(meshes,false).length}));
     const frameTarget=(eye)=>{
      const distance=eye.distanceTo(aim),horizontal=Math.hypot(eye.x-aim.x,eye.z-aim.z),capM=signHeight*.45;
      const fov=2*Math.atan(capM*horizontal/distance*innerHeight/(2*distance*(innerWidth<500?20:26)))*180/Math.PI;
@@ -83,15 +83,14 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
      chosen={eye:eye.toArray(),target:f.target.toArray(),fov:f.fov,road:c.road,facadeDistanceM:c.facadeDistanceM,clearSign:true,eyeHeightM:1.6,captureOnly:e.groundAt(c.point.x,c.point.y+1.5,c.point.z,4)===null,pavementSamples:candidates.length};
     }
     Object.assign(chosen,{aim:aim.toArray(),normal:normal.toArray(),signWidth,signHeight});
-    e.setMode('walk');
-    e.pos.set(chosen.eye[0],chosen.eye[1]-1.6,chosen.eye[2]);
-    e.yaw=Math.atan2(e.pos.x-aim.x,e.pos.z-aim.z);e.goldenFrame();
+    // The walker stays at x38; these cameras do not extend gameplay walk coverage.
     e.camera.position.fromArray(chosen.eye);e.camera.fov=chosen.fov;e.camera.lookAt(new T.Vector3(...chosen.target));e.camera.updateProjectionMatrix();e.camera.updateMatrixWorld(true);
     // Fit the full sign in either viewport; next/off share the resulting pose.
     const corners=[-.5,.5].flatMap(u=>[-.5,.5].map(v=>aim.clone().addScaledVector(tangent,signWidth*u).add(new T.Vector3(0,signHeight*v,0)).project(e.camera)));
     const scale=Math.max(...corners.flatMap(p=>[Math.abs(p.x),Math.abs(p.y)]))/.85;
     if(scale>1){e.camera.fov=2*Math.atan(Math.tan(e.camera.fov*Math.PI/360)*scale)*180/Math.PI;e.camera.updateProjectionMatrix();}
-    chosen.fov=e.camera.fov;e.stationScene.update?.(0,0,e.camera);
+    chosen.fov=e.camera.fov;
+    e.render(0);e.stationScene.update?.(0,0,e.camera);
     const draws={},callbacks=[];if(layer)for(const o of layer.children){const old=o.onBeforeRender;callbacks.push([o,old]);o.onBeforeRender=function(...args){draws[o.name]=(draws[o.name]??0)+1;old.apply(this,args)}}
     e.render(0);for(const [o,old]of callbacks)o.onBeforeRender=old;
     const gl=e.renderer.getContext(),w=gl.drawingBufferWidth,h=gl.drawingBufferHeight,rect=e.renderer.domElement.getBoundingClientRect(),pixels=new Uint8Array(w*h*4);gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
