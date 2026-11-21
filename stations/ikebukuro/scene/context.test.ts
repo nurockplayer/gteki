@@ -328,7 +328,7 @@ describe("station.json: street-context asset, sources and attribution", () => {
     expect(a.floorIds).toEqual(["street"]);
     expect(a.sourceIds).toEqual(SOURCE_IDS);
     expect(a.uri).toBe(CONTEXT_GLB.low);
-    expect(a.files).toEqual([CONTEXT_GLB.high]);
+    expect(a.files).toEqual([CONTEXT_GLB.high, "assets/ikebukuro_landmarks_next.glb"]);
     for (const f of [a.uri, ...(a.files ?? [])]) expect(fs.existsSync(GTEKI + f), f).toBe(true);
     expect(a.derivation).toContain("--merge tiles:380");
     expect(a.derivation).toContain(DECISION);

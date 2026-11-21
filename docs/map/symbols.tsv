@@ -1222,6 +1222,17 @@ SignFramePlacement	interface	stations/ikebukuro/scene/kit_signs.ts
 SignFrameStats	interface	stations/ikebukuro/scene/kit_signs.ts
 loadSignKit	function	stations/ikebukuro/scene/kit_signs.ts
 signFramePlacements	function	stations/ikebukuro/scene/kit_signs.ts
+LANDMARK_FACADE	const	stations/ikebukuro/scene/landmark-style.ts
+LANDMARK_FLOOR_JOINT_M	const	stations/ikebukuro/scene/landmark-style.ts
+LANDMARK_GLASS_ROUGHNESS	const	stations/ikebukuro/scene/landmark-style.ts
+LANDMARK_MAX_DRAW_CALLS	const	stations/ikebukuro/scene/landmark-style.ts
+LANDMARK_MAX_TEXTURE_PX	const	stations/ikebukuro/scene/landmark-style.ts
+LANDMARK_PIER_SPACING_M	const	stations/ikebukuro/scene/landmark-style.ts
+LANDMARK_SIGN	const	stations/ikebukuro/scene/landmark-style.ts
+LANDMARK_STREET_BAND	const	stations/ikebukuro/scene/landmark-style.ts
+LandmarkFacade	type	stations/ikebukuro/scene/landmark-style.ts
+addLandmarks	function	stations/ikebukuro/scene/landmarks.ts
+removeLandmarkContext	function	stations/ikebukuro/scene/landmarks.ts
 ENV_INTENSITY	const	stations/ikebukuro/scene/materials.ts
 LIGHTMAP_BALANCE	const	stations/ikebukuro/scene/materials.ts
 StationMaterials	interface	stations/ikebukuro/scene/materials.ts
