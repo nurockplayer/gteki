@@ -13,7 +13,7 @@ The desktop viewport is 1440×900; the phone viewport is 390×844. Both use the 
 | ルミネ池袋 | bldg_fb241b42-14ae-4785-bb97-134d2714d3a3 (south partition) | 76 | shop-ikb-lumine → g_jr_s (gate only) | ルミネ池袋 / LUMINE IKEBUKURO | x15* |
 | エソラ池袋 | bldg_24c06550-4a51-4a0e-9fa0-1401ebd17b32 | 76 | shop-ikb-esola — no connector | エソラ池袋 / ESOLA IKEBUKURO | x15* |
 | 池袋パルコ 本館 | bldg_b42ec24e-73aa-4359-893c-3c1662d7d8b2 (north partition) | 76 | shop-ikb-parco — no connector | パルコ / PARCO | x22 |
-| P’PARCO | bldg_e4d518a9-7b83-49f1-8970-af38da31ecb8 | 76 | shop-ikb-pparco — no connector | P'パルコ / P'PARCO | x22 |
+| P’PARCO | bldg_e4d518a9-7b83-49f1-8970-af38da31ecb8 | 76 | shop-ikb-pparco → x22 (provisional street exit) | P'パルコ / P'PARCO | x22 |
 | サンシャインシティ | bldg_ac8d4b0e-6f5b-4caf-b9c8-9af3a82685ac + bldg_cdf8cbf9-0191-4792-ba8b-e63090cddedd | 77 | landmark-sunshine-city → x35 | サンシャイン60 / SUNSHINE 60 | x35 |
 
 The Sunshine group retains both source feature meshes, including the Sunshine 60, Alpa, World Import Mart, Bunka Kaikan and Prince Hotel massing. Its search result describes east exit 35 / Sunshine 60 Street and explicitly ends at the station exit. The group is not a walkable street extension.
@@ -51,3 +51,17 @@ Source geometry is unchanged PLATEAU LOD2, using the station's existing source 7
 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成。 Rendered frames also contain original GTEki work. See the repository PLATEAU attribution and REUSE annotations. No facade photos, map tiles, logos or wordmark artwork are used.
 
 Current operation/access checked 2026-11-22 JST against [Sunshine access](https://sunshinecity.jp/information/access_train.html), [Sunshine floor map](https://sunshinecity.jp/information/floor_map/), [PARCO access](https://ikebukuro.parco.jp/info/?gcd=access), [Esola](https://www.metropro-sc.jp/esola-ikebukuro/), [Lumine access](https://www.lumine.ne.jp/ikebukuro/access/), [Tobu access](https://www.tobu-dept.jp/ikebukuro/access/) and [Seibu access](https://www.sogo-seibu.jp/ikebukuro/access/). These establish operation and access descriptions, not surveyed door coordinates. Google Maps place positions were consulted to identify Esola, Lumine and P'PARCO in existing geometry; source terms classification **UNKNOWN**. No imagery or map geometry was copied.
+
+## Follow-up source evidence, 2026-11-22 JST
+
+| Store | Official source and access statement | Current treatment |
+|---|---|---|
+| Seibu | [Access](https://www.sogo-seibu.jp/ikebukuro/access): 「池袋駅 東口直結」 | Door and door routing not yet placed. |
+| Tobu | [Access](https://www.tobu-dept.jp/ikebukuro/access/): 「池袋駅西口 直結」 | Door and door routing not yet placed. |
+| Lumine | [Access](https://www.lumine.ne.jp/ikebukuro/access/): 「JR池袋駅南改札、正面右手よりすぐ」 | Door and door routing not yet placed. |
+| Esola | [Access](https://www.metropro-sc.jp/esola-ikebukuro/shop/page.jsp?id=2): 「有楽町線 南通路西改札から徒歩15秒」 | Door and door routing not yet placed. |
+| PARCO main | [PARCO](https://www.parco.co.jp/parcomi/ikebukuro/media/01/): 「駅コンコース(東口・チェリーロード)に面した」 | Door and door routing not yet placed. |
+| P’PARCO | [Access](https://ikebukuro.parco.jp/info/?gcd=access); [PARCO east-exit area](https://www.parco.co.jp/pdf/jp/store/storage/cname_20211026130032.pdf): 「池袋駅東口（北）方面」 | Provisional street-exit tie x22; no station-side door established. |
+| Sunshine City | [Access](https://sunshinecity.jp/information/access_train.html): 「池袋駅（35番出口）から徒歩約8分」 | Route to x35; no station-side door. |
+
+No surveyed coordinates have been supplied. Existing candidate shop openings near the south gate are approximately 13 m from the walk graph; wall-safe route geometry and compliant placement are still unresolved. The old x15 Lumine/Esola images are substitutes and do not establish the nearest modeled street-top frames. No additional door frames are claimed.

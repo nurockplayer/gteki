@@ -22960,23 +22960,25 @@
    ],
    "floorId": null,
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "x22"
+   ],
    "paid": null,
    "evidence": {
     "sourceIds": [
      "parco-ikebukuro-floorguide-2026-11"
     ],
-    "method": "Separate P'PARCO building named in the existing official floor labels and current official access page. Facts-only (OD-34); entrance not surveyed.",
+    "method": "Provisional station-exit routing tie to x22 (east exit); P'PARCO is a separate building, not a surveyed station-side entrance. Official PARCO access: https://ikebukuro.parco.jp/info/?gcd=access; official PARCO source identifies the east-exit area: https://www.parco.co.jp/pdf/jp/store/storage/cname_20211026130032.pdf, 「池袋駅東口（北）方面」. Facts only; move this tie after survey.",
     "checkedDate": "2026-11-22"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "本館とは別棟のP'PARCO。既存フロアガイドのP'PARCO各階の店舗をこの建物にまとめています。店舗入口の位置は未確認のため、検索のみです。"
+     "text": "本館とは別棟のP'PARCO。既存フロアガイドのP'PARCO各階の店舗をこの建物にまとめています。暫定案内は池袋駅東口の出口22で終わります。店舗入口の位置は未確認です。"
     },
     {
      "lang": "en",
-     "text": "P'PARCO is separate from the main building. Tenant rows with P'PARCO floor labels belong here. The store entrance has no verified connector; search only."
+     "text": "P'PARCO is separate from the main building. Tenant rows with P'PARCO floor labels belong here. The provisional route ends at station east exit 22; the store entrance is not surveyed."
     }
    ]
   }
