@@ -564,6 +564,7 @@ describe("default cat stair framing", () => {
     const state = Object.assign(cameraStand(), { catAvatar: true, mode: mode === "free walk" ? "walk" : "guide", previewNext: next, camDistance: next ? 2.25 : 2.4, pitch: 0 });
     const spanMode = mode === "escalator" ? "escalator" : mode === "previewNext" ? "stairs" : "walk";
     state.guide = { s: 1, spans: [{ fromS: 0, toS: 10, maxMps: 0.9, scales: true, mode: spanMode }] };
+    Object.assign(state.guide, { pts: [new THREE.Vector3(), new THREE.Vector3(0, 0, -10)], cum: [0, 10] });
     for (let i = 0; i < 120; i++) place(state);
     const pose = followPose(new THREE.Vector3(0, 0.42, 0), 0, 0, 0.2, next ? 0.218 : 0.12, 0);
     expect(state.camera.position.distanceTo(pose.pivot.clone().addScaledVector(pose.back, next ? 2.25 : 2.4))).toBeLessThan(0.001);
