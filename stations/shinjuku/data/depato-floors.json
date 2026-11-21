@@ -2,6 +2,126 @@
   "version": 1,
   "stores": [
     {
+      "id": "isetan-shinjuku-main",
+      "name": {
+        "ja": "伊勢丹新宿店 本館",
+        "en": "Isetan Shinjuku Main Building"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B2",
+          "category": "cosmetics",
+          "label": {
+            "ja": "イセタン ビューティー アポセカリー",
+            "en": "Isetan Beauty Apothecary"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "category": "food-hall",
+          "label": {
+            "ja": "食料品",
+            "en": "Food hall"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "category": "cosmetics",
+          "label": {
+            "ja": "雑貨・化粧品・ジュエリー",
+            "en": "Accessories, cosmetics and jewelry"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "category": "womens",
+          "label": {
+            "ja": "婦人服・婦人靴・化粧品",
+            "en": "Women’s clothing, shoes and cosmetics"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "category": "womens",
+          "label": {
+            "ja": "婦人服・婦人肌着",
+            "en": "Women’s clothing and lingerie"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "category": "womens",
+          "label": {
+            "ja": "婦人服・ジュエリー",
+            "en": "Women’s clothing and jewelry"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "category": "living",
+          "label": {
+            "ja": "リビング・ウォッチ",
+            "en": "Living and watches"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "category": "kids",
+          "label": {
+            "ja": "ベビー・子供服雑貨・ギフト・美術",
+            "en": "Baby, children, gifts and art"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街・呉服・メガネ",
+            "en": "Restaurants, kimono and eyewear"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "RF",
+          "category": "rooftop",
+          "label": {
+            "ja": "アイ・ガーデン",
+            "en": "I Garden"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
       "id": "isetan-shinjuku-mens",
       "name": {
         "ja": "伊勢丹新宿店 メンズ館",
@@ -178,6 +298,148 @@
           },
           "tenants": [],
           "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "odakyu-shinjuku",
+      "name": {
+        "ja": "小田急百貨店 新宿店",
+        "en": "Odakyu Department Store Shinjuku"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B3",
+          "category": "restaurants",
+          "label": {
+            "ja": "食堂酒場 ハル★チカ",
+            "en": "Haru Chika restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B2",
+          "category": "food-hall",
+          "label": {
+            "ja": "食料品",
+            "en": "Food hall"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "category": "sweets",
+          "label": {
+            "ja": "化粧品・和洋菓子",
+            "en": "Cosmetics and sweets"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "category": "accessories",
+          "label": {
+            "ja": "インターナショナルブティック・時計・アクセサリー",
+            "en": "International boutiques, watches and accessories"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "category": "other",
+          "label": {
+            "ja": "ハンドバッグ・生活雑貨・ビックカメラ",
+            "en": "Handbags, lifestyle goods and Bic Camera"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "category": "other",
+          "label": {
+            "ja": "ビックカメラ",
+            "en": "Bic Camera"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "category": "other",
+          "label": {
+            "ja": "ビックカメラ",
+            "en": "Bic Camera"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "category": "other",
+          "label": {
+            "ja": "ビックカメラ",
+            "en": "Bic Camera"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "category": "other",
+          "label": {
+            "ja": "ビックカメラ",
+            "en": "Bic Camera"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "category": "accessories",
+          "label": {
+            "ja": "宝飾・メガネ・ビューティー＆サービス",
+            "en": "Jewelry, eyewear, beauty and services"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "category": "restaurants",
+          "label": {
+            "ja": "ハルクレストラン街",
+            "en": "Halc restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "RF",
+          "category": "rooftop",
+          "label": {
+            "ja": "有賀園ゴルフスクール 練習場",
+            "en": "Arigaen golf school practice area"
+          },
+          "tenants": [],
+          "source": "https://www.odakyu-dept.co.jp/shinjuku/floorguide/",
           "read": "2026-11-22"
         }
       ]
