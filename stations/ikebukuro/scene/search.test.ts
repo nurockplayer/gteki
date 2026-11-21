@@ -110,7 +110,7 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "東上線 エレベーター", top1: "tobu-tj-lift-1" },
   ],
   "Tobu Tojo gates": [
-    { q: "東武", top: TOBU },
+    { q: "東武", top: ["shop-ikb-tobudept", "tobu-central-gate-2"] },
     { q: "東上線", top: TOBU },
     { q: "Tobu Tojo", top: TOBU },
     { q: "とうぶとうじょうせん", top: TOBU },

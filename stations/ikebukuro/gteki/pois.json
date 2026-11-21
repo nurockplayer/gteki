@@ -18828,13 +18828,13 @@
     "sourceIds": [
      "tobu-dept-ikebukuro-2026-10"
     ],
-    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.tobu-dept.jp/ikebukuro/, read 2026-11-10 19:13 JST Provisional nearest modeled exit: x18, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established.",
+    "method": "Provisional nearest modeled exit: x18, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. AREA_ONLY. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.tobu-dept.jp/ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-24"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "池袋駅西口 直結。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 18 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
+     "text": "池袋駅西口 直結。位置・入口は未確認。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 18 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
     },
     {
      "lang": "en",
@@ -22029,7 +22029,7 @@
      "lumine-ikebukuro-floorguide-2026-10",
      "lumine-ikebukuro-access-2026-10"
     ],
-    "method": "printed store-entrance tie: the store's access page prints 「JR池袋駅南改札、正面右手よりすぐ」; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to (facts only). STATION_TIE: the store's own entrance is not verified (field item FC-MER-01). The floor range is the floor guide's, UNVERIFIED. The store's own entrance and the floors inside are not surveyed; alias source https://www.lumine.ne.jp/ikebukuro/, read 2026-11-10 19:13 JST Provisional nearest modeled exit: x37, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established.",
+    "method": "Provisional nearest modeled exit: x37, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. STATION_TIE. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): printed store-entrance tie: the store's access page prints 「JR池袋駅南改札、正面右手よりすぐ」; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to (facts only). STATION_TIE: the store's own entrance is not verified (field item FC-MER-01). The floor range is the floor guide's, UNVERIFIED. The store's own entrance and the floors inside are not surveyed; alias source https://www.lumine.ne.jp/ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-25"
    },
    "notes": [
@@ -22039,7 +22039,7 @@
     },
     {
      "lang": "en",
-     "text": "「JR池袋駅南改札、正面右手よりすぐ」 (the store's access page wording: straight ahead and immediately to the right of the JR South Gate). Floors printed: B1–10F (floor guide). Current status unknown. Provisional route to nearest modeled exit 37, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
+     "text": "「JR池袋駅南改札、正面右手よりすぐ」 (the store's access page wording: straight ahead and immediately to the right of the JR South Gate).  Floors printed: B1–10F (floor guide). Current status unknown. Provisional route to nearest modeled exit 37, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ]
   },
@@ -22108,17 +22108,17 @@
     "sourceIds": [
      "esola-ikebukuro-floorguide-2026-10"
     ],
-    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.metropro-sc.jp/esola-ikebukuro/, read 2026-11-10 19:13 JST Provisional nearest modeled exit: x15, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established.",
+    "method": "Provisional nearest modeled exit: x15, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. AREA_ONLY. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.metropro-sc.jp/esola-ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-24"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "運営: 株式会社メトロプロパティーズ。掲載フロア: B1～8F（出典のフロアガイドに掲載のフロア）。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 15 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
+     "text": "運営: 株式会社メトロプロパティーズ。掲載フロア: B1～8F（出典のフロアガイドに掲載のフロア）。位置・入口は未確認。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 15 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
     },
     {
      "lang": "en",
-     "text": "Operator: 株式会社メトロプロパティーズ. Floors: B1–8F as printed in the source floor guide. Current status unknown. Provisional route to nearest modeled exit 15, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
+     "text": "Operator: 株式会社メトロプロパティーズ. Floors: B1–8F as printed in the source floor guide. Location and entrance not verified . Current status unknown. Provisional route to nearest modeled exit 15, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ],
    "hours": {
@@ -22149,17 +22149,17 @@
     "sourceIds": [
      "jcsc-ikebukuro-parco-facility-2021-10"
     ],
-    "method": "facts-only facility record (OD-34 class, S13), UNVERIFIED, AREA_ONLY Provisional nearest modeled exit: x22, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established.",
+    "method": "Provisional nearest modeled exit: x22, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. AREA_ONLY. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): facts-only facility record (OD-34 class, S13), UNVERIFIED, AREA_ONLY",
     "checkedDate": "2026-10-25"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "池袋パルコは地下2階〜地上8階（日本ショッピングセンター協会の＜SC概要＞の表記。資料の名称は「池袋パルコ」で、本館・別館の区別は書かれていない。ページに印刷された日付はなく、URL の日付トークンは 20211029）。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 22 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
+     "text": "池袋パルコは地下2階〜地上8階（日本ショッピングセンター協会の＜SC概要＞の表記。資料の名称は「池袋パルコ」で、本館・別館の区別は書かれていない。ページに印刷された日付はなく、URL の日付トークンは 20211029）。位置・入口は未確認。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 22 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
     },
     {
      "lang": "en",
-     "text": "池袋パルコ spans B2–8F (Japan Council of Shopping Centers ＜SC概要＞; the source names it 池袋パルコ, does not split 本館 / 別館, and prints no date — 20211029 is a URL token). Current status unknown. Provisional route to nearest modeled exit 22, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
+     "text": "池袋パルコ spans B2–8F (Japan Council of Shopping Centers ＜SC概要＞; the source names it 池袋パルコ, does not split 本館 / 別館, and prints no date — 20211029 is a URL token). Location and entrance not verified . Current status unknown. Provisional route to nearest modeled exit 22, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ]
   },
@@ -22184,7 +22184,7 @@
      "jcsc-ikebukuro-links-open-sc",
      "sogo-seibu-ikebukuro-access-2026-10"
     ],
-    "method": "facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED, printed station-level tie: the store's access page prints 「南改札口から徒歩すぐ」 under JR; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to. STATION_TIE: the store's own entrance is not verified (field item V1). Store record: facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED Provisional nearest modeled exit: x38, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established.",
+    "method": "Provisional nearest modeled exit: x38, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. STATION_TIE. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED, printed station-level tie: the store's access page prints 「南改札口から徒歩すぐ」 under JR; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to. STATION_TIE: the store's own entrance is not verified (field item V1). Store record: facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED",
     "checkedDate": "2026-10-26"
    },
    "notes": [
@@ -22194,7 +22194,7 @@
     },
     {
      "lang": "en",
-     "text": "Printed as 西武池袋本店, a key tenant of LINKS IKEBUKURO (東京都豊島区南池袋1-28-1; the row prints the complex's opening date, 2026-06-30; note 8), in the Japan Council of Shopping Centers 2026 opening-SC list. That date is the complex's, not the store's own opening date. Floors are not printed in that source. Location and entrance not verified. Current status unknown. 「南改札口から徒歩すぐ」 (the store's access page, under JR: a short walk from the South Gate). Provisional route to nearest modeled exit 38, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
+     "text": "Printed as 西武池袋本店, a key tenant of LINKS IKEBUKURO (東京都豊島区南池袋1-28-1; the row prints the complex's opening date, 2026-06-30; note 8), in the Japan Council of Shopping Centers 2026 opening-SC list. That date is the complex's, not the store's own opening date. Floors are not printed in that source. Location and entrance not verified. Current status unknown. 「南改札口から徒歩すぐ」 (the store's access page, under JR: a short walk from the South Gate).  Provisional route to nearest modeled exit 38, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ],
    "hours": {
@@ -22924,7 +22924,7 @@
      "sunshine-city-en-access-2026-11",
      "sunshine-city-access-2026-11"
     ],
-    "method": "Official access page specifies Ikebukuro exit 35. Route ends at that station exit, not the remote building; facts only, Owner request 2026-11-22 JST. Provisional nearest modeled exit: x35, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established.",
+    "method": "Provisional nearest modeled exit: x35, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): Official access page specifies Ikebukuro exit 35. Route ends at that station exit, not the remote building; facts only, Owner request 2026-11-22 JST.",
     "checkedDate": "2026-11-22"
    },
    "notes": [
@@ -22934,7 +22934,7 @@
     },
     {
      "lang": "en",
-     "text": "East side: exit 35, toward Sunshine 60 Street. The official access guide gives about eight minutes on foot. Provisional route to nearest modeled exit 35, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
+     "text": "East side: exit 35, toward Sunshine 60 Street. The official access guide gives about eight minutes on foot.  Provisional route to nearest modeled exit 35, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ]
   },
@@ -22976,7 +22976,7 @@
      "parco-ikebukuro-en-2016",
      "parco-ikebukuro-floorguide-2026-11"
     ],
-    "method": "Provisional station-exit routing tie to x22 (east exit); P'PARCO is a separate building, not a surveyed station-side entrance. Official PARCO access: https://ikebukuro.parco.jp/info/?gcd=access; official PARCO source identifies the east-exit area: https://www.parco.co.jp/pdf/jp/store/storage/cname_20211026130032.pdf, 「池袋駅東口（北）方面」. Facts only; move this tie after survey. Provisional nearest modeled exit: x22, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established.",
+    "method": "Provisional nearest modeled exit: x22, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): Provisional station-exit routing tie to x22 (east exit); P'PARCO is a separate building, not a surveyed station-side entrance. Official PARCO access: https://ikebukuro.parco.jp/info/?gcd=access; official PARCO source identifies the east-exit area: https://www.parco.co.jp/pdf/jp/store/storage/cname_20211026130032.pdf, 「池袋駅東口（北）方面」. Facts only; move this tie after survey.",
     "checkedDate": "2026-11-22"
    },
    "notes": [
@@ -22986,7 +22986,7 @@
     },
     {
      "lang": "en",
-     "text": "P'PARCO is separate from the main building. Tenant rows with P'PARCO floor labels belong here. Provisional route to nearest modeled exit 22, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
+     "text": "P'PARCO is separate from the main building. Tenant rows with P'PARCO floor labels belong here.  Provisional route to nearest modeled exit 22, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ]
   }
