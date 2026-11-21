@@ -34,6 +34,7 @@ const chromiumLaunch = { args: gpuArgs, executablePath: chromiumExecutable };
 
 export default defineConfig({
   testDir: "./specs",
+  testIgnore: "**/32-gpu-fps.spec.ts", // Dedicated headed host measurement, not the regular/CI suite.
   outputDir: "./artifacts/test-results",
   snapshotPathTemplate: "{testDir}/__goldens__/{testFileName}/{arg}{ext}",
   timeout: 240_000,

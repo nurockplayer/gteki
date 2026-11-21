@@ -251,6 +251,8 @@ export class Explorer {
   /** prefers-reduced-motion: the follow camera and orbit damping cut instead of gliding, and decorative route motion stops. */
   private reducedMotion = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
+  coldOpenStreet = false;
+  coldOpenStreetEnding = false;
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
   private readonly probeNormalMatrix = new THREE.Matrix3();
@@ -402,6 +404,7 @@ export class Explorer {
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
   private guideYawRate = 0; // rad/s
+  private firstEscalatorStep = -1;
   private pitch = -0.12;
   private camDistance: number = FOLLOW.defaultDistance;
   private stairsFraming = { progress: 0, weight: 0 };
@@ -2948,6 +2951,9 @@ export class Explorer {
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
     this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
+    // J5: only the first Shinjuku ride gets the authored axis shot in default mode.
+    this.firstEscalatorStep = this.station?.key === "shinjuku" ? routeNodes.findIndex((id, i) =>
+      id === "n:e4365ef27b14448eb770343c8a024f80" && routeNodes[i + 1] === "n:ea71c5f746934d0a934c43782d861da5") : -1;
     this.guideAllStops = stops.slice();
     this.guideSigns = routeNodes.flatMap((id, index) => {
       const sign = this.stationScene?.root.getObjectByName(`sign:${id}`);
@@ -3548,7 +3554,12 @@ export class Explorer {
     // The surface actually underfoot, not the walker's smoothed height, decides which tread this is.
     // The published street node remains an arrival point; stepping into its stair support/taper hides pavement.
     const stairEntry = hit?.object.userData.gtekiStairWalkSupport && !this.streetTops.some((top) => top.distanceToSquared(this.pos) < 1e-6);
-    p.level = !stairEntry && atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
+    if (this.coldOpenStreet || this.coldOpenStreetEnding) {
+      p.level = !stairEntry && atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
+      if (!this.coldOpenStreet && !p.level) this.coldOpenStreetEnding = false;
+    } else {
+      p.level = !stairEntry && footing && atStreetTop(hit ? hit.point : this.pos, this.streetTops, true);
+    }
   }
 
   /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */
@@ -3629,7 +3640,9 @@ export class Explorer {
     this.slopeY = this.pos.y;
     this.descentDrop = this.firstPerson ? 0 : easeRaise(this.descentDrop, descentAimDrop(this.slope), dt, snap || this.reducedMotion);
     const span = this.mode === "guide" && this.guide ? escalatorSpanAt(this.guide.s, this.guide.spans, ESCALATOR_SHOT.leadM) : undefined;
-    const lockOn = this.previewNext && this.catAvatar && !this.firstPerson && !!span
+    const firstRide = !!span && this.firstEscalatorStep >= 0 && this.guide!.steps[
+      samplePolyline(this.guide!.pts, this.guide!.cum, span.fromS + 0.01).segment + 1] === this.firstEscalatorStep;
+    const lockOn = (this.previewNext || firstRide) && this.catAvatar && !this.firstPerson && !!span
       && this.qaCamera.yaw === undefined && this.qaCamera.pitch === undefined && this.qaCamera.distance === undefined;
     const lockSnap = snap || this.reducedMotion;
     if (lockOn) {
@@ -3660,7 +3673,10 @@ export class Explorer {
     const stairPose = this.camera.aspect < 1 ? STAIR_POSE.phone : STAIR_POSE.desktop;
     const distance = (shot ? THREE.MathUtils.lerp(this.arrivalStart.distance, shot.distance, weight) : this.camDistance)
       * THREE.MathUtils.lerp(1, stairPose.distance / FOLLOW_CAT.distance, stairsWeight);
-    const lens = () => this.stairsLens ? stairPose.lens : followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect);
+    const lens = () => {
+      const base = this.stairsLens ? stairPose.lens : followLens(this.mode, this.firstPerson, this.slope.on || this.squeezed, this.previewNext, this.camera.aspect);
+      return this.previewNext ? base : THREE.MathUtils.lerp(base, followLens(this.mode, this.firstPerson, false, true, this.camera.aspect), this.escalatorWeight);
+    };
     const eye = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const head = this.followHead();
     const dir = new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch));

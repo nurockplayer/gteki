@@ -63,6 +63,7 @@ Local runs of the full suite need a real GPU for 05 and the visual specs. Run th
 - 20-recognition — #342 Q5 recognition-proxy captures (OCR, proxy table).
 - 21-vertical-shots — vertical transport before/after: Shinjuku escalator bank and Exit 1 stairs at fixed cameras, both tiers, plus a walk down and up the bank (`docs/visual/vertical-gap.md`).
 - 30-journey — Shinjuku cold open and guided-walk reel, with per-sample metrics and contact sheets.
+- 32-gpu-fps — `pnpm measure:gpu-fps` builds production and runs the default morning journey in headed GPU Chromium via `tests/e2e/playwright.gpu-fps.config.ts`: desktop 960×600 and phone 412×839, both scale 2, phone touch/mobile with CDP 4× CPU throttling. Raw rAF deltas, route distances/steps, median/p5 fps, worst sliding 1 s window and below-target stretches go to `tests/e2e/artifacts/gpu-fps/{desktop,phone}.{json,md}`. Run through `job-run --id gpu-fps-j12 --artifact tests/e2e/artifacts/gpu-fps -- tachi-run --heavy --host -- pnpm measure:gpu-fps` after installing root and standalone e2e dependencies. Phone is a Mac GPU stand-in, not phone hardware; J12 scoring stays with the lead.
 - journey (shinjuku) CI job — runs the reel on desktop and phone Chromium and uploads it on every PR.
 - walkscan — opt-in GPU route-wide player-view floor scan, with ray measurements and contact sheets (#1032).
 

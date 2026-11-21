@@ -25,6 +25,7 @@ function expectSame(got: THREE.Intersection[], want: THREE.Intersection[]): void
     expect(got[i]!.object).toBe(want[i]!.object);
     expect(got[i]!.distance).toBe(want[i]!.distance);
     expect(got[i]!.faceIndex).toBe(want[i]!.faceIndex);
+    expect(got[i]!.instanceId).toBe(want[i]!.instanceId);
     expect(got[i]!.face?.materialIndex).toBe(want[i]!.face?.materialIndex);
     expect(got[i]!.point.toArray()).toEqual(want[i]!.point.toArray());
   }
@@ -239,7 +240,7 @@ describe("BVH ray tests match three's brute-force Mesh.raycast", () => {
     check(strided, () => { strided.geometry.getIndex()!.itemSize = 2; }, new THREE.Vector3(-3.8, -3.2, 5));
   });
 
-  it("deforming, instanced and partial-triangle meshes keep three's own raycast", () => {
+  it("deforming and partial-triangle meshes keep three's own raycast", () => {
     const skinGeometry = new THREE.BoxGeometry(1, 1, 1, 4, 4, 4);
     const vertices = skinGeometry.getAttribute("position").count;
     skinGeometry.setAttribute("skinIndex", new THREE.Uint16BufferAttribute(new Uint16Array(vertices * 4), 4));
@@ -251,19 +252,43 @@ describe("BVH ray tests match three's brute-force Mesh.raycast", () => {
     morphed.updateMorphTargets();
     morphed.morphTargetInfluences![0] = 0.5;
     morphed.position.x = 2;
-    const instanced = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1, 4, 4, 4), new THREE.MeshBasicMaterial(), 2);
-    instanced.setMatrixAt(1, new THREE.Matrix4().makeTranslation(0, 2, 0));
-    instanced.position.x = -2;
     const partial = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1, 4, 4, 4), new THREE.MeshBasicMaterial());
     partial.geometry.setDrawRange(1, 200);
     partial.position.z = 2;
-    for (const m of [skinned, morphed, instanced, partial]) cacheBvh(m.geometry);
-    const targets = prepared(skinned, morphed, instanced, partial);
+    for (const m of [skinned, morphed, partial]) cacheBvh(m.geometry);
+    const targets = prepared(skinned, morphed, partial);
     expect(prepareRayTrees(targets).trees).toBe(0);
     const spy = vi.spyOn(TriangleBvh.prototype, "rayCandidates");
     const box = new THREE.Box3();
     for (const m of targets) box.expandByObject(m);
     expect(compareRays(targets, box, 1500, 7)).toBeGreaterThan(100);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("instanced hits retain identity, sides, ranges and live transforms while sharing one tree", () => {
+    const geometry = new THREE.BoxGeometry(2, 2, 2, 6, 6, 6);
+    const materials = geometry.groups.map((_, i) => new THREE.MeshBasicMaterial({ side: [THREE.FrontSide, THREE.BackSide, THREE.DoubleSide][i % 3] }));
+    const mesh = new THREE.InstancedMesh(geometry, materials, 3);
+    mesh.position.set(1, 2, -1);
+    mesh.rotation.set(0.3, 0.5, -0.2);
+    mesh.scale.set(1.5, 0.7, 2);
+    mesh.setMatrixAt(1, new THREE.Matrix4().makeTranslation(3, 0, 0));
+    mesh.setMatrixAt(2, new THREE.Matrix4().makeScale(0.7, 2, 1));
+    const targets = prepared(mesh);
+    expect(prepareRayTrees(targets).trees).toBe(1);
+    const spy = vi.spyOn(TriangleBvh.prototype, "rayCandidates");
+    expect(compareRays(targets, new THREE.Box3().setFromObject(mesh), 1000, 73)).toBeGreaterThan(100);
+    expect(spy).toHaveBeenCalled();
+    // Matrix writes are visible immediately, even before the upload version changes.
+    mesh.setMatrixAt(1, new THREE.Matrix4().makeTranslation(-2, 1, 0));
+    mesh.count = 2;
+    mesh.computeBoundingSphere();
+    geometry.setDrawRange(30, 900);
+    expect(compareRays(targets, new THREE.Box3().setFromObject(mesh), 1000, 74)).toBeGreaterThan(30);
+    const native = mesh.raycast;
+    mesh.raycast = function (ray, hits) { native.call(this, ray, hits); };
+    spy.mockClear();
+    compareRays(targets, new THREE.Box3().setFromObject(mesh), 100, 75);
     expect(spy).not.toHaveBeenCalled();
   });
 
