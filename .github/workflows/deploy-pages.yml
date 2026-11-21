@@ -38,6 +38,8 @@ jobs:
           node-version: 24
 
       - name: Build
+        env:
+          VITE_TURNSTILE_SITEKEY: ${{ vars.VITE_TURNSTILE_SITEKEY }}
         run: deploy/cloudflare-pages/build.sh
 
       - name: Deploy
