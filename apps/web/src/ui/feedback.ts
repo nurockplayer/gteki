@@ -8,7 +8,6 @@ declare const __BUILD_SHA__: string;
 declare const __TURNSTILE_SITEKEY__: string;
 
 interface Turnstile {
-  ready(callback: () => void): void;
   render(container: HTMLElement, options: { sitekey: string; action: string; language: string; size: string; callback: (token: string) => void; "expired-callback": () => void; "error-callback": () => void }): string;
   reset(id: string): void;
   remove(id: string): void;
@@ -21,7 +20,7 @@ function loadTurnstile(): Promise<Turnstile> {
     script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
     script.onload = () => {
       const api = (window as unknown as { turnstile: Turnstile }).turnstile;
-      api.ready(() => resolve(api));
+      resolve(api);
     };
     script.onerror = () => reject(new Error("Turnstile could not load"));
     document.head.append(script);
