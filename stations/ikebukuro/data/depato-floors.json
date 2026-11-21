@@ -2144,6 +2144,18 @@
           "tenants": [],
           "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
           "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン",
+            "en": "Restaurant"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/gourmet/",
+          "read": "2026-11-22"
         }
       ]
     },
