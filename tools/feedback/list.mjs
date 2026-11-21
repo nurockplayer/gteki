@@ -13,7 +13,7 @@ async function api(resource) {
   return response.json();
 }
 await mkdir(out, { recursive: true });
-const rows = [`# New feedback since ${since} (UTC)`, ""];
+const rows = [`# New feedback since ${since} (UTC)`, "", "Reports expire in KV 90 days after submission. Delete local exports by the same deadline.", ""];
 let cursor = "";
 let count = 0;
 do {

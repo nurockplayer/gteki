@@ -15,7 +15,10 @@ const roots = [path.join(repo, "stations"), ...extraRoots];
 const overlay = process.env.GTEKI_PRIVATE_OVERLAY ? path.resolve(process.env.GTEKI_PRIVATE_OVERLAY) : null;
 
 export default defineConfig({
-  define: { __BUILD_SHA__: JSON.stringify(execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim()) },
+  define: {
+    __BUILD_SHA__: JSON.stringify(execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim()),
+    __TURNSTILE_SITEKEY__: JSON.stringify(process.env.VITE_TURNSTILE_SITEKEY ?? ""),
+  },
   base: "./",
   plugins: [gtekiStations(roots, { overlay }), fieldOffline(), fieldPrivate(overlay)],
   resolve: {

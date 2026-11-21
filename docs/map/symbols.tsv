@@ -606,6 +606,7 @@ writeRecent	function	apps/web/src/ui/emptySuggestions.ts
 escalatorEtaSuffix	function	apps/web/src/ui/escalatorEta.ts
 buildFeedbackPayload	function	apps/web/src/ui/feedback.ts
 openFeedback	function	apps/web/src/ui/feedback.ts
+feedbackUrl	function	apps/web/src/ui/feedbackUrl.ts
 DEMO_PAIRS	const	apps/web/src/ui/firstRun.ts
 FIRST_RUN_KEY	const	apps/web/src/ui/firstRun.ts
 coldOpenPair	function	apps/web/src/ui/firstRun.ts
