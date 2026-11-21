@@ -524,7 +524,7 @@ function makeGeometry(THREE: typeof THREE_NS, low: boolean) {
 export function buildStandingFigure(THREE: typeof THREE_NS, low: boolean) {
   const geometry = makeGeometry(THREE, low), group = new THREE.Group();
   group.name = "j10-landing-figure";
-  const material = new THREE.MeshBasicMaterial({ color: "#242629" });
+  const material = new THREE.MeshBasicMaterial({ color: "#010203" });
   const used = new Set<THREE_NS.BufferGeometry>();
   const add = (g: THREE_NS.BufferGeometry, x: number, y: number, z = 0, scale = 1) => {
     const mesh = new THREE.Mesh(g, material); mesh.position.set(x, y, z); mesh.scale.setScalar(scale);

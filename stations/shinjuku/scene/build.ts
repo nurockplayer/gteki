@@ -2127,8 +2127,8 @@ function installStonePools(layout: Layout, root: THREE.Group, materials: THREE.M
         #endif
         stoneWorld = (modelMatrix * stonePosition).xyz;`);
       shader.fragmentShader = `uniform sampler2D stoneFixtures; varying vec3 stoneWorld;\n${shader.fragmentShader}`.replace("#include <colorspace_fragment>", `#include <colorspace_fragment>
-        float stoneLevel = 0.0, stoneDistance = 1e6;
-        ${levels.map((lv, i) => `if (abs(stoneWorld.y - ${lv.z.toFixed(5)}) < stoneDistance) { stoneDistance = abs(stoneWorld.y - ${lv.z.toFixed(5)}); stoneLevel = ${i.toFixed(1)}; }`).join("\n")}
+        float stoneLevel = 0.0, stoneDistance = 1e6, stoneGap = 0.90, stoneStrength = 0.60;
+        ${levels.map((lv, i) => `if (abs(stoneWorld.y - ${lv.z.toFixed(5)}) < stoneDistance) { stoneDistance = abs(stoneWorld.y - ${lv.z.toFixed(5)}); stoneLevel = ${i.toFixed(1)}; stoneGap = ${lv.floorId === "toei-nwd-m0_5" ? "0.99" : "0.90"}; stoneStrength = ${lv.floorId === "toei-nwd-m6" ? "1.20" : "0.60"}; }`).join("\n")}
         vec2 stoneUV = clamp((vec2(stoneWorld.x, -stoneWorld.z) - vec2(${(min.x - 4).toFixed(5)}, ${(min.y - 4).toFixed(5)})) / vec2(${dx.toFixed(5)}, ${dy.toFixed(5)}), 0.0, 0.999);
         vec2 stoneCell = vec2(mod(stoneLevel, 3.0), floor(stoneLevel / 3.0));
         vec4 fixture = texture2D(stoneFixtures, (stoneCell * vec2(${cellX}.0, ${cellY}.0) + floor(stoneUV * vec2(${cellX}.0, ${cellY}.0)) + 0.5) / 512.0);
@@ -2137,7 +2137,7 @@ function installStonePools(layout: Layout, root: THREE.Group, materials: THREE.M
         vec2 ellipse = vec2(dot(delta, axis) / (fixture.w + 0.45), dot(delta, vec2(-axis.y, axis.x)) / 1.3);
         float pool = exp(-2.4 * dot(ellipse, ellipse));
         // Display-space modulation preserves separation under preset B's bright landing grade.
-        gl_FragColor.rgb = min(vec3(0.98), gl_FragColor.rgb * (0.90 + 0.60 * pool));`);
+        gl_FragColor.rgb = min(vec3(0.98), gl_FragColor.rgb * (stoneGap + stoneStrength * pool));`);
     };
     material.customProgramCacheKey = () => "shinjuku-stone-pools-v1";
     material.needsUpdate = true;
