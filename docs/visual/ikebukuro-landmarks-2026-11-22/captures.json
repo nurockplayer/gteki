@@ -1,0 +1,283 @@
+{
+  "captured": "2026-11-22 JST",
+  "sceneCommit": "d86fdf64",
+  "query": "station=ikebukuro&qaTimeBand=morning; next captures add next=1",
+  "desktopViewport": [
+    1440,
+    900
+  ],
+  "phoneViewport": [
+    390,
+    844
+  ],
+  "desktopPoses": [
+    {
+      "store": "seibu",
+      "node": "x38",
+      "headingDeg": 90,
+      "camera": {
+        "lock": 0,
+        "fov": 55,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 2.2499999999999996,
+        "raise": 0.8726646259971649,
+        "pitch": 0.5,
+        "yaw": -1.5707963267948966,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "tobu",
+      "node": "x17",
+      "headingDeg": 182,
+      "camera": {
+        "lock": 0,
+        "fov": 55,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 0.1594774435398971,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": -3.1764992386296798,
+        "avatarFade": 0.25,
+        "reflections": true,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "lumine",
+      "node": "x15",
+      "headingDeg": 188,
+      "camera": {
+        "lock": 0,
+        "fov": 55,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 2.0095424831088167,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": -3.2812189937493397,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "esola",
+      "node": "x15",
+      "headingDeg": 194,
+      "camera": {
+        "lock": 0,
+        "fov": 55,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 2.2500000000000036,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": -3.385938748868999,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "parco",
+      "node": "x22",
+      "headingDeg": 0,
+      "camera": {
+        "lock": 0,
+        "fov": 55,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 1.9031926863682556,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": 0,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "pparco",
+      "node": "x22",
+      "headingDeg": 5,
+      "camera": {
+        "lock": 0,
+        "fov": 55,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 1.9031926863682356,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": -0.08726646259971647,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "sunshine",
+      "node": "x35",
+      "headingDeg": 95.4,
+      "camera": {
+        "lock": 0,
+        "fov": 55,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 2.2500000000000067,
+        "raise": 0.6981317007977318,
+        "pitch": 0.5,
+        "yaw": -1.6650441064025905,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      }
+    }
+  ],
+  "phonePoses": [
+    {
+      "store": "seibu",
+      "node": "x38",
+      "headingDeg": 90,
+      "camera": {
+        "lock": 0,
+        "fov": 65,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 2.2499999999999996,
+        "raise": 0.8726646259971649,
+        "pitch": 0.5,
+        "yaw": -1.5707963267948966,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "tobu",
+      "node": "x17",
+      "headingDeg": 182,
+      "camera": {
+        "lock": 0,
+        "fov": 65,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 0.12230139105671953,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": -3.1764992386296798,
+        "avatarFade": 0.25,
+        "reflections": false,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "lumine",
+      "node": "x15",
+      "headingDeg": 188,
+      "camera": {
+        "lock": 0,
+        "fov": 65,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 2.2499999999999987,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": -3.2812189937493397,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "esola",
+      "node": "x15",
+      "headingDeg": 194,
+      "camera": {
+        "lock": 0,
+        "fov": 65,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 2.2500000000000036,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": -3.385938748868999,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "parco",
+      "node": "x22",
+      "headingDeg": 0,
+      "camera": {
+        "lock": 0,
+        "fov": 65,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 1.9031926863682398,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": 0,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "pparco",
+      "node": "x22",
+      "headingDeg": 5,
+      "camera": {
+        "lock": 0,
+        "fov": 65,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 1.9031926863682356,
+        "raise": 0,
+        "pitch": 0.5,
+        "yaw": -0.08726646259971647,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      }
+    },
+    {
+      "store": "sunshine",
+      "node": "x35",
+      "headingDeg": 95.4,
+      "camera": {
+        "lock": 0,
+        "fov": 65,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.25,
+        "boomActual": 2.2500000000000067,
+        "raise": 0.6981317007977318,
+        "pitch": 0.5,
+        "yaw": -1.6650441064025905,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      }
+    }
+  ]
+}
