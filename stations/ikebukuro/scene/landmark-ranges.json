@@ -1,6 +1,11 @@
 {
   "low": [
     {
+      "mesh": "ctx_bldg_t01_01",
+      "start": 36,
+      "count": 156
+    },
+    {
       "mesh": "ctx_bldg_t00_01",
       "start": 1488,
       "count": 24
@@ -17,6 +22,11 @@
     }
   ],
   "high": [
+    {
+      "mesh": "ctx_bldg_t01_01",
+      "start": 36,
+      "count": 1070
+    },
     {
       "mesh": "ctx_bldg_t00_01",
       "start": 12687,

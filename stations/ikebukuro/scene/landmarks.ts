@@ -11,6 +11,7 @@ const stores = [
   { id: "lumine", ja: "ルミネ池袋", en: "LUMINE IKEBUKURO", facade: "F2_warmGrey", exit: "x4f", target: [-150, 72, 100], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "esola", ja: "エソラ池袋", en: "ESOLA IKEBUKURO", facade: "F4_darkBronze", exit: "x4f", target: [-150, 74, -5], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "parco", ja: "パルコ", en: "PARCO", facade: "F3_coolGrey", exit: "x22", target: [80, 65, -120], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "pparco", ja: "P'パルコ", en: "P'PARCO", facade: "F3_coolGrey", exit: "x22", target: [90, 70, -225], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [610, 268, 25], cap: LANDMARK_SIGN.maxJaLetterSunshine60M / 2 },
 ] as const;
 

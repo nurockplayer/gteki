@@ -22930,6 +22930,55 @@
      "text": "East side: exit 35, toward Sunshine 60 Street. The official access guide gives about eight minutes on foot. The game route ends at Ikebukuro exit 35; the street walk to the complex is not modelled."
     }
    ]
+  },
+  {
+   "id": "shop-ikb-pparco",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "池袋パルコ P'PARCO"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro P'PARCO"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "P'PARCO"
+    },
+    {
+     "lang": "ja",
+     "text": "P’PARCO"
+    },
+    {
+     "lang": "ja",
+     "text": "ピーダッシュパルコ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "parco-ikebukuro-floorguide-2026-11"
+    ],
+    "method": "Separate P'PARCO building named in the existing official floor labels and current official access page. Facts-only (OD-34); entrance not surveyed.",
+    "checkedDate": "2026-11-22"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "本館とは別棟のP'PARCO。既存フロアガイドのP'PARCO各階の店舗をこの建物にまとめています。店舗入口の位置は未確認のため、検索のみです。"
+    },
+    {
+     "lang": "en",
+     "text": "P'PARCO is separate from the main building. Tenant rows with P'PARCO floor labels belong here. The store entrance has no verified connector; search only."
+    }
+   ]
   }
  ]
 }

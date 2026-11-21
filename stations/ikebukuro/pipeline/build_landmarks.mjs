@@ -24,9 +24,10 @@ const far = await io.read(skylinePath);
 const output = new Document(), scene = output.createScene('landmarks-next'), buffer = output.createBuffer();
 const east = 'bldg_b42ec24e-73aa-4359-893c-3c1662d7d8b2';
 const west = 'bldg_fb241b42-14ae-4785-bb97-134d2714d3a3';
+const pparco = 'bldg_e4d518a9-7b83-49f1-8970-af38da31ecb8';
 const esola = 'bldg_24c06550-4a51-4a0e-9fa0-1401ebd17b32';
 const sunshine = ['bldg_ac8d4b0e-6f5b-4caf-b9c8-9af3a82685ac', 'bldg_cdf8cbf9-0191-4792-ba8b-e63090cddedd'];
-const groups = new Map(['seibu', 'parco', 'tobu', 'lumine', 'esola', 'sunshine'].map(id => [id, []]));
+const groups = new Map(['seibu', 'parco', 'pparco', 'tobu', 'lumine', 'esola', 'sunshine'].map(id => [id, []]));
 function extract(doc, row, classify) {
   const node = doc.getRoot().listNodes().find(n => n.getName() === row.mesh);
   const primitive = node.getMesh().listPrimitives()[0], positions = primitive.getAttribute('POSITION'), indices = primitive.getIndices();
@@ -40,8 +41,8 @@ function extract(doc, row, classify) {
     groups.get(classify(triangle)).push(...triangle);
   }
 }
-const nearRows = high.feature_table.rows.filter(r => [east, west, esola].includes(r[0]));
-for (const r of nearRows) extract(near, {mesh:r[3],tri_start:r[4],tri_count:r[5]}, tri => r[0] === esola ? 'esola' : r[0] === east ? (-(tri[2]+tri[5]+tri[8])/3 > 65 ? 'parco' : 'seibu') : (-(tri[2]+tri[5]+tri[8])/3 < -70 ? 'lumine' : 'tobu'));
+const nearRows = high.feature_table.rows.filter(r => [east, west, esola, pparco].includes(r[0]));
+for (const r of nearRows) extract(near, {mesh:r[3],tri_start:r[4],tri_count:r[5]}, tri => r[0] === pparco ? 'pparco' : r[0] === esola ? 'esola' : r[0] === east ? (-(tri[2]+tri[5]+tri[8])/3 > 65 ? 'parco' : 'seibu') : (-(tri[2]+tri[5]+tri[8])/3 < -70 ? 'lumine' : 'tobu'));
 for (const r of skyline.per_feature.filter(r => sunshine.includes(r.gml_id))) extract(far, r, () => 'sunshine');
 const bounds = {};
 for (const [id, vertices] of groups) {
@@ -54,8 +55,8 @@ for (const [id, vertices] of groups) {
 }
 const path = join(root, 'stations/ikebukuro/gteki/assets/ikebukuro_landmarks_next.glb');
 await io.write(path, output);
-const ranges = receipt => receipt.feature_table.rows.filter(r => [east,west,esola].includes(r[0])).map(r => ({mesh:r[3],start:r[4],count:r[5]}));
+const ranges = receipt => receipt.feature_table.rows.filter(r => [east,west,esola,pparco].includes(r[0])).map(r => ({mesh:r[3],start:r[4],count:r[5]}));
 await writeFile(join(root,'stations/ikebukuro/scene/landmark-ranges.json'), JSON.stringify({low:ranges(low),high:ranges(high)}, null, 2)+'\n');
-const receipt = { recordedAt:'2026-11-22 JST', sourceIds:[...high.sources.filter(s=>s.kind==='bldg').map(s=>({id:s.source_id,sha256:s.source_sha256})),{id:acquisition.source_id,sha256:acquisition.sha256}], sourceAcquisition:'docs/gis/acquisitions/plateau-13116-bldg-53394577.json', acquisition:'Reused existing acquired PLATEAU source; no new download', frame:high.frame.frame_id, heightBasis:'Published EPSG:6697 TP heights, unchanged', lod:'LOD2', selectedBuildings:{east,west,esola,sunshine}, split:'Shared east feature: north of ENU N=65 m PARCO, remainder Seibu. Shared west feature: south of N=-70 m Lumine, remainder Tobu. Triangle-centroid material partition only; no geometry moved.', bounds, attribution:high.attribution_text, license:'CC BY 4.0', output:'stations/ikebukuro/gteki/assets/ikebukuro_landmarks_next.glb', outputSha256:createHash('sha256').update(await readFile(path)).digest('hex'), navigationUse:'NOT_FOR_ROUTING' };
+const receipt = { recordedAt:'2026-11-22 JST', sourceIds:[...high.sources.filter(s=>s.kind==='bldg').map(s=>({id:s.source_id,sha256:s.source_sha256})),{id:acquisition.source_id,sha256:acquisition.sha256}], sourceAcquisition:'docs/gis/acquisitions/plateau-13116-bldg-53394577.json', acquisition:'Reused existing acquired PLATEAU source; no new download', frame:high.frame.frame_id, heightBasis:'Published EPSG:6697 TP heights, unchanged', lod:'LOD2', selectedBuildings:{east,west,esola,pparco,sunshine}, split:'Shared east feature: north of ENU N=65 m PARCO, remainder Seibu. Shared west feature: south of N=-70 m Lumine, remainder Tobu. Triangle-centroid material partition only; no geometry moved.', bounds, attribution:high.attribution_text, license:'CC BY 4.0', output:'stations/ikebukuro/gteki/assets/ikebukuro_landmarks_next.glb', outputSha256:createHash('sha256').update(await readFile(path)).digest('hex'), navigationUse:'NOT_FOR_ROUTING' };
 await writeFile(join(root,'docs/gis/context/ikebukuro-landmarks-next.json'),JSON.stringify(receipt,null,2)+'\n');
 console.log(JSON.stringify({output:path,bounds}));

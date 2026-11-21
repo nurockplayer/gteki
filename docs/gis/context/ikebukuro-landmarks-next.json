@@ -23,6 +23,7 @@
     "east": "bldg_b42ec24e-73aa-4359-893c-3c1662d7d8b2",
     "west": "bldg_fb241b42-14ae-4785-bb97-134d2714d3a3",
     "esola": "bldg_24c06550-4a51-4a0e-9fa0-1401ebd17b32",
+    "pparco": "bldg_e4d518a9-7b83-49f1-8970-af38da31ecb8",
     "sunshine": [
       "bldg_ac8d4b0e-6f5b-4caf-b9c8-9af3a82685ac",
       "bldg_cdf8cbf9-0191-4792-ba8b-e63090cddedd"
@@ -55,6 +56,19 @@
         -63.34164810180664
       ],
       "triangles": 2911
+    },
+    "pparco": {
+      "min": [
+        70.66454315185547,
+        28.739999771118164,
+        -260.3871765136719
+      ],
+      "max": [
+        101.56178283691406,
+        80.5,
+        -190.42068481445312
+      ],
+      "triangles": 1070
     },
     "tobu": {
       "min": [
@@ -112,6 +126,6 @@
   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
   "license": "CC BY 4.0",
   "output": "stations/ikebukuro/gteki/assets/ikebukuro_landmarks_next.glb",
-  "outputSha256": "1794531e05bafce5f88e454d09a66a1bc446ae5b298f2271fb845cc2093cec26",
+  "outputSha256": "f4c2f574e23deab7025a58b88d0f99cf3784c1b352c16d7c5a9eb8044734b765",
   "navigationUse": "NOT_FOR_ROUTING"
 }
