@@ -298,6 +298,22 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
     vi.unstubAllGlobals();
   });
 
+  it("closes the J5 B3 slit through the existing front-sided cladding", () => {
+    const level = station.root.getObjectByName("level-B3")!;
+    station.root.updateMatrixWorld(true);
+    const camera = new THREE.PerspectiveCamera(50, 1.6, 0.05, 2000);
+    camera.position.set(-55.856671733943244, -23.034051470515763, -160.09117037717292);
+    camera.lookAt(camera.position.clone().add(new THREE.Vector3(0.36592117004190466, -0.038702152746567936, 0.9298407609305719)));
+    camera.updateMatrixWorld(true);
+    const ray = new THREE.Raycaster();
+    // Desktop's diagnosed mask spans x=205..208, y=0..117 at 320x200.
+    for (const x of [205, 206, 207, 208]) for (const y of [0, 20, 70, 110, 117]) {
+      ray.setFromCamera(new THREE.Vector2((x + 0.5) / 160 - 1, 1 - (y + 0.5) / 100), camera);
+      ray.far = 8;
+      expect(ray.intersectObject(level).length, `${x},${y}`).toBeGreaterThan(0);
+    }
+  });
+
   it("keeps the lift interior hood out of exterior canopy views", () => {
     const hoods: THREE.InstancedMesh[] = [];
     station.root.traverse((o) => { if (o.name === "elevator-interior-hood") hoods.push(o as THREE.InstancedMesh); });
