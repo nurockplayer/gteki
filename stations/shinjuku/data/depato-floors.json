@@ -665,8 +665,93 @@
             "ja": "雑貨・化粧品・ジュエリー",
             "en": "Accessories, cosmetics and jewelry"
           },
-          "tenants": [],
-          "source": "https://www.mistore.jp/store/shinjuku/shops.html",
+          "tenants": [
+            {
+              "ja": "アイアム",
+              "en": "Aíam"
+            },
+            {
+              "ja": "アルビオン",
+              "en": "ALBION"
+            },
+            {
+              "ja": "イヴ・サンローラン",
+              "en": "YVES SAINT LAURENT"
+            },
+            {
+              "ja": "エスケーツー",
+              "en": "SK-Ⅱ"
+            },
+            {
+              "ja": "エスティ ローダー (総合カウンター)",
+              "en": "ESTEE LAUDER"
+            },
+            {
+              "ja": "エルメス・イン・カラー",
+              "en": "エルメス インカラーズ"
+            },
+            {
+              "ja": "キールズ",
+              "en": "KIEHL'S"
+            },
+            {
+              "ja": "クラランス",
+              "en": "CLARINS"
+            },
+            {
+              "ja": "クリード",
+              "en": "CREED"
+            },
+            {
+              "ja": "クレ・ド・ポー ボーテ",
+              "en": "clé de peau BEAUTÉ"
+            },
+            {
+              "ja": "ジバンシイ",
+              "en": "GIVENCHY"
+            },
+            {
+              "ja": "シャネル",
+              "en": "CHANEL"
+            },
+            {
+              "ja": "ディオール (総合カウンター)",
+              "en": "DIOR"
+            },
+            {
+              "ja": "ディプティック",
+              "en": "Diptyque"
+            },
+            {
+              "ja": "トム フォード ビューティ",
+              "en": "TOM FORD BEAUTY"
+            },
+            {
+              "ja": "バイレード",
+              "en": "BYREDO"
+            },
+            {
+              "ja": "プラダ ビューティ",
+              "en": "PRADA BEAUTY"
+            },
+            {
+              "ja": "ポーラ",
+              "en": "POLA"
+            },
+            {
+              "ja": "メイクアップフォーエバー",
+              "en": "MAKE UP FOR EVER"
+            },
+            {
+              "ja": "ランコム",
+              "en": "LANCÔME"
+            },
+            {
+              "ja": "ルラボ",
+              "en": "LE LABO"
+            }
+          ],
+          "source": "https://www.mistore.jp/store/shinjuku/shops/beauty/beauty/shopnews_list/beautynews_069.html",
           "read": "2026-11-22",
           "order": 1
         },
