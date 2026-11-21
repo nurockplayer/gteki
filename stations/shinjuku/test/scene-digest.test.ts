@@ -42,6 +42,7 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * wall/cladding hashes. Floors, fences, camera blockers, props and spawn remain unchanged.
  * #1169 (2026-11-14 JST): shaft stripe UV datums change the wall visual hash only.
  * #1238/#1243 (2026-11-16 JST): stair insets change visual sets (#1238.1 split out); physical fields unchanged.
+ * 2026-11-21 JST: add the hidden 10-triangle shop leaf in both tiers; physical fields unchanged.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
@@ -115,11 +116,12 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
   }, 120_000);
 
   it("derives the street layer itself when the baked table is not used, with the same result", () => {
-    // The scene hook adds the merged wall-props mesh (#858 item 12) on top of the station root;
-    // buildStation has none, so drop that group from the hook-built fixture before comparing.
+    // The scene hook adds wall props and the shop reaction on top of the station root;
+    // buildStation has neither, so drop them from the hook-built fixture before comparing.
     const WALL_PROPS_VISUAL = '["MeshBasicMaterial","","ffffff",null,null,1,false,0,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false';
     const stationVisual = { ...base.scene.low.visual };
     delete stationVisual[WALL_PROPS_VISUAL];
+    delete stationVisual['["MeshBasicMaterial","","c9ad76",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=false#order=0#instanced=false'];
     for (const useBakedSurface of [true, false]) {
       const built = withCanvasStub(() => buildStation(bundle, plan, { quality: "low", useBakedSurface }));
       // The flag is set where the seed is chosen: the table was really used, or really not.

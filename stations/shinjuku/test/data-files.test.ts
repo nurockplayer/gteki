@@ -63,6 +63,7 @@ const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
   "scene/stairwell-cut.low.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/shop_bays.json": { script: "tools/shop-bays.ts", sources: () => [NWD, MAP] },
   "scene/shop_placements.json": { script: "scene/shop_placements.json", sources: () => ["gteki-kit-0-1-0"] },
+  "scene/slice-shop.json": { script: "scene/slice-shop.json", sources: () => ["gteki-kit-0-1-0", NWD, MAP] },
   "scene/shop_kit.json": { script: "scene/shop_kit.json", sources: () => ["gteki-kit-0-1-0"] },
   "data/plan.json": { script: "tools/import-e27.ts", sources: () => [NWD, MAP] },
   "data/layout-bake-key.json": { script: "tools/bake-layout.ts", sources: () => [] },

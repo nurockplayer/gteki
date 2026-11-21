@@ -75,14 +75,15 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1391 (2026-11-17 JST): owned-roof linear-light placements/metadata only; 107 other meshes and all lists unchanged.
 // #1434 (2026-11-17 JST): nosing goldenRole metadata changes nodes/lists digests; geometry and list counts unchanged.
 // #1432 (2026-11-17 JST): nosing-line stair walk proxies change the lists digest; list counts unchanged.
+// 2026-11-21 JST: simulated shop adds one hidden 10-triangle leaf reaction; physical lists unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "ecfa0f8989f3d5af64dbc42ecb3a338fb68c18d286d45cef985073b02471b9d1",
-    "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
-    "nodesDigest": "89c9a2aee9c888cc2f1c7bbf1b0b0783e4c4b688598ddd8350ab9747d2a2930a",
-    "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
-    "meshes": 108,
-    "bytes": 17299194
+    "geometryDigest": "88cc89c98ca43bd534d7cf47c847fbcd06cb8f2983b9c2240f0676706fffaa89",
+    "appearanceDigest": "e61e3b948b24dac481574bdb1471d6267727735873cc85bddd4d64c4a1d06f6a",
+    "nodesDigest": "ba51952d350dbd650165d23c1f7a5784e30d041e11015a37fe5a95724fdd66a7",
+    "texturesDigest": "7d3e11d1624053172ceec4ec9786d098970a582cfa4f20b03ccdfce2ca3fd5ed",
+    "meshes": 109,
+    "bytes": 17299638
   },
   "lists": {
     "listsDigest": "a3fce78f5b087586d3468fe720fc486d005fb215b79023aa70898a32b20be91d",
