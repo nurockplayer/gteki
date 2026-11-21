@@ -6,11 +6,11 @@ import { LANDMARK_FACADE, LANDMARK_FLOOR_JOINT_M, LANDMARK_PIER_SPACING_M, LANDM
 import ranges from "./landmark-ranges.json";
 
 const stores = [
-  { id: "seibu", ja: "西武", en: "SEIBU", facade: "F1_stoneBeige", exit: "x38", target: [70, 62, 60], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "seibu", ja: "西武", en: "SEIBU", facade: "F1_stoneBeige", exit: "x38", target: [52.681024, 59.151001, 83.112809], signEye: [152.262733, 59.151001, 92.249721], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "tobu", ja: "東武", en: "TOBU", facade: "F2_warmGrey", exit: "x17", target: [-110, 81, -75], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
-  { id: "lumine", ja: "ルミネ池袋", en: "LUMINE IKEBUKURO", facade: "F2_warmGrey", exit: "x4f", target: [-150, 72, 100], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
-  { id: "esola", ja: "エソラ池袋", en: "ESOLA IKEBUKURO", facade: "F4_darkBronze", exit: "x4f", target: [-150, 74, -5], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
-  { id: "parco", ja: "パルコ", en: "PARCO", facade: "F3_coolGrey", exit: "x22", target: [80, 65, -120], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "lumine", ja: "ルミネ池袋", en: "LUMINE IKEBUKURO", facade: "F2_warmGrey", exit: "x4f", target: [-188.284558, 109.5, 91.911307], signEye: [-280.877992, 109.5, 54.142855], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "esola", ja: "エソラ池袋", en: "ESOLA IKEBUKURO", facade: "F4_darkBronze", exit: "x4f", target: [-172.897339, 61.5, -3.413457], signEye: [-272.400798, 61.5, 6.53951], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "parco", ja: "パルコ", en: "PARCO", facade: "F3_coolGrey", exit: "x22", target: [89.228704, 68.418999, -156.361062], signEye: [-2.081387, 68.418999, -197.134427], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "pparco", ja: "P'パルコ", en: "P'PARCO", facade: "F3_coolGrey", exit: "x22", target: [90, 70, -225], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [610, 268, 25], cap: LANDMARK_SIGN.maxJaLetterSunshine60M / 2 },
 ] as const;
@@ -88,10 +88,10 @@ outgoingLight = mix(outgoingLight, streetColor, street);
       shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(${bronze.toArray().join(",")}), diffuseColor.rgb, diffuseColor.a);\ndiffuseColor.a = 1.0;`);
     };
     materials.push(signMaterial);
-    // Locate the actual PLATEAU face at the top-floor band, rather than floating a billboard over its roof.
+    // The r5 mounts raycast from public-street-facing exterior points, not from inside the station mass.
     const target = new THREE.Vector3(...store.target);
     const exit = ctx.bundle.nodes.find(n => n.id === store.exit)!;
-    const eye = new THREE.Vector3(exit.position.x, target.y, -exit.position.y);
+    const eye = "signEye" in store ? new THREE.Vector3(...store.signEye) : new THREE.Vector3(exit.position.x, target.y, -exit.position.y);
     const ray = new THREE.Raycaster(eye, target.clone().sub(eye).normalize());
     mesh.updateMatrixWorld(true);
     const hit = ray.intersectObject(mesh)[0];
