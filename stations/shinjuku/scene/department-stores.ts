@@ -106,7 +106,7 @@ export function buildDepartmentStores(track: <T extends { dispose(): void }>(res
     }
     const usedFaces = new Set<Face>();
     stores.forEach((s, row) => s.signs.forEach(({ edge, along }) => {
-      const a = vector([...ring[edge]!, 0]), b = vector([...ring[edge + 1]!, 0]), target = a.clone().lerp(b, along);
+      const a = vector([...ring[edge]!, 0]), b = vector([...ring[(edge + 1) % ring.length]!, 0]), target = a.clone().lerp(b, along);
       const candidates = surfaces.filter(f => f.kind === "wall" && f.rings[0]!.length === 4 && !usedFaces.has(f)).map(source => ({ ...facePlane(source), source })).filter(f => Math.abs(f.normal.y) < .01).map(f => {
         const xs = f.rings[0]!.map(p => p.x), ys = f.rings[0]!.map(p => p.y);
         const left = Math.min(...xs), right = Math.max(...xs), bottom = Math.min(...ys), top = Math.max(...ys);

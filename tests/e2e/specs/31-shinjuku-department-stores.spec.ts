@@ -24,11 +24,13 @@ test("Shinjuku department stores: nearest-exit frames @phone", async ({ page }, 
   fs.mkdirSync(out, { recursive: true });
   const exits = pois.filter((p: any) => /^poi:exit:[1-4]$/.test(p.id)).map((p: any) => ({ poi: p.id, node: graph.nodes.find((n: any) => n.id === p.connectorNodeIds[0]) }));
   const rows = [];
+  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   for (const store of data.stores) {
     const building = data.buildings.find((b: any) => b.id === store.buildingId);
     const ring = building.rings[0].slice(0, -1);
     const center = { x: ring.reduce((s: number, p: number[]) => s + p[0], 0) / ring.length, y: ring.reduce((s: number, p: number[]) => s + p[1], 0) / ring.length };
-    const nearest = exits.find(e => e.node.id === pois.find((p: any) => p.id === store.poiId).connectorNodeIds[0])!;
+    const exitNumber = store.poiId === "shop-sjk-newoman" ? 3 : store.poiId === "shop-sjk-takashimaya" ? 4 : 1;
+    const nearest = exits.find(e => e.poi === `poi:exit:${exitNumber}`)!;
     const headingDeg = Math.atan2(center.x - nearest.node.position.x, center.y - nearest.node.position.y) * 180 / Math.PI;
     const pose = await page.evaluate(({ node, headingDeg }) => {
       const qa = (window as any).__gteki;
@@ -39,9 +41,9 @@ test("Shinjuku department stores: nearest-exit frames @phone", async ({ page }, 
     }, { node: nearest.node.id, headingDeg });
     expect(pose.placed, `${store.poiId}: nearest exit must be walkable`).toBe(true);
     const image = `${store.poiId.replace("shop-sjk-", "")}-${next ? "next" : "off"}.png`;
-    await page.screenshot({ path: path.join(out, image), timeout: 120_000 });
+    await page.screenshot({ path: path.join(out, image) });
     rows.push({ store: store.poiId, image, next, exit: nearest.poi, node: nearest.node.id, headingDeg, pose,
-      entrance: { connectorNodeIds: pois.find((p: any) => p.id === store.poiId).connectorNodeIds, status: "Provisional nearest modeled exit; not a store entrance, station model is partial" } });
+      entrance: { exit: nearest.poi, status: "Provisional nearest modeled exit; not a store entrance, station model is partial" } });
   }
   fs.writeFileSync(path.join(out, "frames.json"), JSON.stringify({ capturedAt: new Date().toISOString(), viewport: page.viewportSize(), rows }, null, 2));
 });
