@@ -35,8 +35,8 @@ test("J10 material package A paired frames and patch measurements", async ({ bro
         const name = `${device}-${camera.id}-${next ? "next" : "off"}`;
         const png = await page.screenshot({ path: path.join(out, `${name}.png`), timeout: 60_000, animations: "disabled" });
         const figurePoints = camera.id.startsWith("slice-11") ? await page.evaluate(() =>
-          (window as any).__gteki.projectEnu([{x:-24.2,y:113.7,z:-42.87},{x:-23.6,y:113.7,z:-41.1}])) : null;
-        const metrics = await page.evaluate(async ({ b64, id, figurePoints }) => {
+          (window as any).__gteki.projectEnu([{x:-19.9,y:114.2,z:-42.87},{x:-19.3,y:114.2,z:-41.1}])) : null;
+        const metrics = await page.evaluate(async ({ b64, id, figurePoints, next, device }) => {
           const image = new Image(); image.src = `data:image/png;base64,${b64}`; await image.decode();
           const canvas = document.createElement("canvas"); canvas.width = image.width; canvas.height = image.height;
           const ctx = canvas.getContext("2d")!; ctx.drawImage(image, 0, 0);
@@ -59,9 +59,12 @@ test("J10 material package A paired frames and patch measurements", async ({ bro
             Math.abs(figurePoints[0].x-figurePoints[1].x)/canvas.width,
             Math.abs(figurePoints[0].y-figurePoints[1].y)/canvas.height] : null;
           const figure = figureRect && figureRect[0]>=0 && figureRect[1]>=0 && figureRect[0]+figureRect[2]<1 && figureRect[1]+figureRect[3]<1 ? patch(figureRect) : null;
-          return { figure, floor:patch([.17,.64,.22,.20]), opening:id.startsWith("slice-01")?patch([.04,.12,.28,.32]):null,
-            landing:id.startsWith("slice-11")?patch([.12,.51,.33,.23]):null };
-        }, { b64: png.toString("base64"), id: camera.id, figurePoints });
+          const floorRect = id.startsWith("slice-11")
+            ? (device === "phone" ? (next ? [.20,.53,.30,.13] : [.20,.35,.30,.15]) : [.40,.56,.17,.14])
+            : [.17,.64,.22,.20];
+          return { figure, floor:patch(floorRect), opening:id.startsWith("slice-01")?patch([.04,.12,.28,.32]):null,
+            landing:id.startsWith("slice-11")?patch(floorRect):null };
+        }, { b64: png.toString("base64"), id: camera.id, figurePoints, next, device });
         captures[`${camera.id}-${next}`] = { png, metrics };
         fs.writeFileSync(path.join(out, `${name}.json`), JSON.stringify(metrics,null,2));
         await page.evaluate(() => (window as any).__gteki.holdFrames(false));

@@ -535,7 +535,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       for (const m of [(o as THREE.Mesh).material].flat()) {
         if (m instanceof T.MeshStandardMaterial && !m.envMap) {
           m.envMap = tex;
-          m.envMapIntensity = ctx.previewNext && low && (/^mat.floor/.test(m.name) || m.opacity === .12) ? 0 : 0.55;
+          m.envMapIntensity = ctx.previewNext && low && m.opacity === .12 ? 0 : 0.55;
           m.needsUpdate = true;
         }
       }
@@ -552,7 +552,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   if (crowd) built.root.add(crowd.group);
   if (ctx.previewNext) {
     const figure = buildStandingFigure(T, low);
-    figure.group.position.set(-23.9, -42.87, -113.7);
+    figure.group.position.set(-19.6, -42.87, -114.2);
     figure.group.rotation.y = Math.PI * .9;
     built.root.add(figure.group);
     const disposeBuilt = built.dispose;
