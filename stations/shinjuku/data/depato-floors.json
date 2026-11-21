@@ -1264,6 +1264,42 @@
           "tenants": [],
           "source": "https://www.newoman.jp/shinjuku/floorguide/?area=area01nman01&floor=7f",
           "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "food-hall",
+          "label": {
+            "ja": "フードホール",
+            "en": "Food hall"
+          },
+          "tenants": [],
+          "source": "https://www.newoman.jp/shinjuku/floorguide/?area=area02nman01&floor=103f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "food-hall",
+          "label": {
+            "ja": "エキソト",
+            "en": "Outside ticket gates"
+          },
+          "tenants": [],
+          "source": "https://www.newoman.jp/shinjuku/floorguide/?area=area02nman01&floor=101f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "food-hall",
+          "label": {
+            "ja": "エキナカ",
+            "en": "Inside ticket gates"
+          },
+          "tenants": [],
+          "source": "https://www.newoman.jp/shinjuku/floorguide/?area=area02nman01&floor=100f",
+          "read": "2026-11-22"
         }
       ]
     },
