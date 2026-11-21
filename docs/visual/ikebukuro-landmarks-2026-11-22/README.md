@@ -1,5 +1,7 @@
 # Ikebukuro landmark captures
 
+Latest evidence (2026-11-22 JST): [completed r6 captures, r7 inspection, all 60 per-frame measurements and capture-only pose labels](r6/README.md). The older sections below are historical.
+
 Captured 2026-11-22 JST from scene/data commit `d86fdf64`. These are work-in-progress evidence for a draft PR, not an acceptance PASS.
 
 The desktop viewport is 1440×900; the phone viewport is 390×844. Both use the walk camera, morning lighting, pitch 0.5 rad and requested boom 2.25 m. Each default frame uses the corresponding next frame's graph node and heading. `captures.json` records camera values. The default page contains no landmark layer; CI golden comparison has not run.
