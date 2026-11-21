@@ -25,7 +25,7 @@ export function requiredGlyphs(root = repoRoot) {
   add(JOYO_KANJI); // Base set; the station scan below adds whatever else the text uses.
   // 伊 and 國 are printed by #503's Tobu brand directory. Neither is in the 常用漢字表, and the station
   // scan below cannot see them until that data merges, so carry them here; the scan then covers them too.
-  add("伊國");
+  add("伊國髙");
   const visitJson = (value) => {
     if (typeof value === "string") add(value);
     else if (Array.isArray(value)) value.forEach(visitJson);

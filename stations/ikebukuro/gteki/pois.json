@@ -22867,6 +22867,69 @@
      "text": "JR Ikebukuro Station, 1F, East Exit side, outside the JR gates. Exact position unverified; no guided route."
     }
    ]
+  },
+  {
+   "id": "landmark-sunshine-city",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "サンシャインシティ"
+    },
+    {
+     "lang": "en",
+     "text": "Sunshine City"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "サンシャイン60"
+    },
+    {
+     "lang": "ja",
+     "text": "専門店街アルパ"
+    },
+    {
+     "lang": "ja",
+     "text": "ワールドインポートマート"
+    },
+    {
+     "lang": "ja",
+     "text": "文化会館"
+    },
+    {
+     "lang": "ja",
+     "text": "サンシャインシティプリンスホテル"
+    },
+    {
+     "lang": "en",
+     "text": "Sunshine 60"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x35"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "sunshine-city-access-2026-11"
+    ],
+    "method": "Official access page specifies Ikebukuro exit 35. Route ends at that station exit, not the remote building; facts only, Owner request 2026-11-22 JST.",
+    "checkedDate": "2026-11-22"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東口・35番出口からサンシャイン60通り方面へ。公式案内は徒歩約8分。案内ルートは池袋駅35番出口までです。建物までの街路はこのゲームにありません。"
+    },
+    {
+     "lang": "en",
+     "text": "East side: exit 35, toward Sunshine 60 Street. The official access guide gives about eight minutes on foot. The game route ends at Ikebukuro exit 35; the street walk to the complex is not modelled."
+    }
+   ]
   }
  ]
 }

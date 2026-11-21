@@ -1,0 +1,36 @@
+{
+  "low": [
+    {
+      "mesh": "ctx_bldg_t00_01",
+      "start": 1488,
+      "count": 24
+    },
+    {
+      "mesh": "ctx_bldg_t00_01",
+      "start": 3048,
+      "count": 252
+    },
+    {
+      "mesh": "ctx_bldg_t01_00",
+      "start": 400,
+      "count": 304
+    }
+  ],
+  "high": [
+    {
+      "mesh": "ctx_bldg_t00_01",
+      "start": 12687,
+      "count": 1056
+    },
+    {
+      "mesh": "ctx_bldg_t00_01",
+      "start": 26931,
+      "count": 11218
+    },
+    {
+      "mesh": "ctx_bldg_t01_00",
+      "start": 4892,
+      "count": 19787
+    }
+  ]
+}

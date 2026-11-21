@@ -1,0 +1,117 @@
+{
+  "recordedAt": "2026-11-22 JST",
+  "sourceIds": [
+    {
+      "id": "plateau-13116-bldg-53394576",
+      "sha256": "29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873"
+    },
+    {
+      "id": "plateau-13116-bldg-53394577",
+      "sha256": "96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37"
+    },
+    {
+      "id": "plateau-13116-bldg-53394577",
+      "sha256": "96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37"
+    }
+  ],
+  "sourceAcquisition": "docs/gis/acquisitions/plateau-13116-bldg-53394577.json",
+  "acquisition": "Reused existing acquired PLATEAU source; no new download",
+  "frame": "ikebukuro-station-enu-v0",
+  "heightBasis": "Published EPSG:6697 TP heights, unchanged",
+  "lod": "LOD2",
+  "selectedBuildings": {
+    "east": "bldg_b42ec24e-73aa-4359-893c-3c1662d7d8b2",
+    "west": "bldg_fb241b42-14ae-4785-bb97-134d2714d3a3",
+    "esola": "bldg_24c06550-4a51-4a0e-9fa0-1401ebd17b32",
+    "sunshine": [
+      "bldg_ac8d4b0e-6f5b-4caf-b9c8-9af3a82685ac",
+      "bldg_cdf8cbf9-0191-4792-ba8b-e63090cddedd"
+    ]
+  },
+  "split": "Shared east feature: north of ENU N=65 m PARCO, remainder Seibu. Shared west feature: south of N=-70 m Lumine, remainder Tobu. Triangle-centroid material partition only; no geometry moved.",
+  "bounds": {
+    "seibu": {
+      "min": [
+        -56.51409149169922,
+        27.95800018310547,
+        -81.48038482666016
+      ],
+      "max": [
+        84.73504638671875,
+        89.0469970703125,
+        295.1205139160156
+      ],
+      "triangles": 16876
+    },
+    "parco": {
+      "min": [
+        52.60888671875,
+        32.2130012512207,
+        -171.2845458984375
+      ],
+      "max": [
+        114.78042602539062,
+        77.00700378417969,
+        -63.34164810180664
+      ],
+      "triangles": 2911
+    },
+    "tobu": {
+      "min": [
+        -216.40103149414062,
+        31.281999588012695,
+        -169.94989013671875
+      ],
+      "max": [
+        -25.893104553222656,
+        110.177001953125,
+        96.02629089355469
+      ],
+      "triangles": 8981
+    },
+    "lumine": {
+      "min": [
+        -216.40103149414062,
+        31.281999588012695,
+        40.956787109375
+      ],
+      "max": [
+        -106.07325744628906,
+        136.38400268554688,
+        146.83316040039062
+      ],
+      "triangles": 2237
+    },
+    "esola": {
+      "min": [
+        -173.89193725585938,
+        32.58000183105469,
+        -17.925947189331055
+      ],
+      "max": [
+        -132.8250732421875,
+        79.59400177001953,
+        7.116867542266846
+      ],
+      "triangles": 1056
+    },
+    "sunshine": {
+      "min": [
+        558.8128662109375,
+        26.21299934387207,
+        -35.35635757446289
+      ],
+      "max": [
+        891.3655395507812,
+        286.5710144042969,
+        213.53048706054688
+      ],
+      "triangles": 17219
+    }
+  },
+  "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+  "license": "CC BY 4.0",
+  "output": "stations/ikebukuro/gteki/assets/ikebukuro_landmarks_next.glb",
+  "outputSha256": "1794531e05bafce5f88e454d09a66a1bc446ae5b298f2271fb845cc2093cec26",
+  "navigationUse": "NOT_FOR_ROUTING"
+}
