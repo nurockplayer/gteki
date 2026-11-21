@@ -30,9 +30,9 @@ export class InteractionPrompt {
     this.status.textContent = visible ? simulated : state.interrupted ? t.interactionInterrupted : "";
     if (visible && state.interrupted) this.status.textContent += ` · ${t.interactionInterrupted}`;
     const hasBag = state.items.includes("paper-bag");
-    this.item.textContent = hasBag ? t.interactionBag : "";
-    // Only the shop hands out the paper bag; a vending interaction ends with nothing held.
-    const announcement = state.interrupted ? t.interactionInterrupted : state.phase === "done" && hasBag ? t.interactionBag : "";
+    const held = [hasBag ? t.interactionBag : "", state.items.includes("cafe-cup") ? t.interactionCup : "", state.items.includes("bookmark") ? t.interactionBookmark : ""].filter(Boolean).join(" · ");
+    this.item.textContent = held;
+    const announcement = state.interrupted ? t.interactionInterrupted : state.phase === "done" ? held : "";
     if (announcement && announcement !== this.lastAnnouncement) this.announce(announcement);
     this.lastAnnouncement = announcement;
   }
