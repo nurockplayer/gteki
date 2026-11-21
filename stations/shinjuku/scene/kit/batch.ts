@@ -17,8 +17,11 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { TINT_BASE_COMPENSATION, type TintSlot } from "./config.ts";
 import { compact } from "./ledger.ts";
-import { materialKey } from "./place.ts";
-import type { KitAssetProvider, KitManifest, KitPlacement } from "./types.ts";
+import { combRunM, materialKey } from "./place.ts";
+import { ESCALATOR_FLAT_M, escalatorHeight } from "@gteki/scene-api";
+import { FLOOR_LIFT_M } from "./config.ts";
+import { stableHypot } from "../stable-hypot.ts";
+import type { KitAssetProvider, KitManifest, KitPlacement, RunAnchor } from "./types.ts";
 
 export interface BatchResult {
   group: THREE.Group;
@@ -75,6 +78,7 @@ function packGeometry(geo: THREE.BufferGeometry): void {
 
 export function batchKitPlacements(args: {
   placed: readonly KitPlacement[];
+  runs?: readonly RunAnchor[];
   manifest: KitManifest;
   provider: KitAssetProvider;
   tint: readonly TintSlot[];
@@ -122,6 +126,24 @@ export function batchKitPlacements(args: {
     const add = (src: THREE.Mesh, geo: THREE.BufferGeometry, material: THREE.Material) => {
       const key = materialKey(typeof material.userData?.gteki_name === "string" ? (material.userData.gteki_name as string) : material.name);
       geo.applyMatrix4(src.matrixWorld);
+      if (p.role === "escalator" && args.runs) {
+        const run = args.runs.find(r => r.key === p.anchorKey)!;
+        const length = stableHypot(run.hi.x - run.lo.x, run.hi.y - run.lo.y);
+        const sourceLength = combRunM(asset.params)!;
+        const sourceRise = Number(asset.params.rise_mm) / 1000;
+        const ux = -Math.sin(p.yaw), uz = -Math.cos(p.yaw);
+        const position = geo.getAttribute("position");
+        for (let i = 0; i < position.count; i++) {
+          const along = (position.getX(i) - p.position[0]) * ux + (position.getZ(i) - p.position[2]) * uz;
+          const fitted = along < ESCALATOR_FLAT_M ? along : along > sourceLength - ESCALATOR_FLAT_M
+            ? length - (sourceLength - along)
+            : ESCALATOR_FLAT_M + (along - ESCALATOR_FLAT_M) * (length - 2 * ESCALATOR_FLAT_M) / (sourceLength - 2 * ESCALATOR_FLAT_M);
+          position.setXYZ(i, position.getX(i) + ux * (fitted - along),
+            position.getY(i) - FLOOR_LIFT_M + escalatorHeight(fitted, length, run.hi.z - run.lo.z) - escalatorHeight(along, sourceLength, sourceRise),
+            position.getZ(i) + uz * (fitted - along));
+        }
+        geo.computeVertexNormals();
+      }
       if (!geo.index) geo.setIndex([...Array(geo.attributes.position!.count).keys()]);
       if (!geo.attributes.normal) geo.computeVertexNormals();
       if (!geo.attributes.uv) geo.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position!.count * 2), 2));

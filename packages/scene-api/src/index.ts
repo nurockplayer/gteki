@@ -359,3 +359,5 @@ export function seeThroughMeshes(root: THREE.Object3D): THREE.Object3D[] {
 }
 export * from "./liftShaft.ts";
 export * from "./wallProps.ts";
+
+export { ESCALATOR_FLAT_M, escalatorHeight, escalatorBreaks } from "./escalatorProfile.ts";

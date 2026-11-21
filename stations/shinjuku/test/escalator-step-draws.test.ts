@@ -1,3 +1,4 @@
+import { ESCALATOR_FLAT_M, escalatorHeight } from "@gteki/scene-api";
 import { readFileSync } from "node:fs";
 import { expect, it, vi } from "vitest";
 import * as THREE from "three";
@@ -5,6 +6,10 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, installLowTierSteps } from "../scene/build.ts";
 import type { Plan } from "../scene/layout.ts";
+import { batchKitPlacements } from "../scene/kit/batch.ts";
+import type { KitManifest, KitPlacement, RunAnchor } from "../scene/kit/types.ts";
+import { parseKitManifest } from "../scene/kit/manifest.ts";
+import { stubAsset, stubManifestJson } from "./helpers/kit-stub.ts";
 import { withCanvasStub } from "./helpers/scene-digest.ts";
 
 /** The scene hook reads only renderer.info.render.frame: one pack per renderer frame. */
@@ -25,7 +30,7 @@ it.each(["low", "high"] as const)("animates every escalator slice with one low-t
   try {
     const meshes: THREE.InstancedMesh[] = [];
     station.root.traverse(o => { if (o instanceof THREE.InstancedMesh && o.name.startsWith("escalator-steps:")) meshes.push(o); });
-    const counts = station.escalators.map(({ run }) => Math.ceil(Math.hypot(Math.hypot(run.b.x - run.a.x, run.b.y - run.a.y) || 1, run.b.z - run.a.z) / 0.4));
+    const counts = station.escalators.map(({ run }) => Math.ceil(Math.hypot(Math.hypot(run.b.x - run.a.x, run.b.y - run.a.y) || 1, run.b.z - run.a.z) / 0.4) + 2);
     expect(station.escalators.length).toBeGreaterThan(1);
     expect(station.escalators.some(esc => esc.speed !== 0)).toBe(true);
     expect(meshes).toHaveLength(quality === "low" ? 1 : station.escalators.length);
@@ -68,15 +73,50 @@ it.each(["low", "high"] as const)("animates every escalator slice with one low-t
       const matrix = new THREE.Matrix4();
       esc.steps.getMatrixAt((range.offset ?? 0) + 1, matrix);
       const position = new THREE.Vector3().setFromMatrixPosition(matrix);
-      const phase = ((0.2 * esc.speed % 0.4) + 0.4) % 0.4;
-      const f = (0.4 + phase) / range.L3;
+      const phase = 0.2 * esc.speed;
+      const f = phase / range.L3;
       expect(position.x).toBeCloseTo(range.lo.x + (range.hi.x - range.lo.x) * f, 4);
-      expect(position.y).toBeCloseTo(range.lo.z + (range.hi.z - range.lo.z) * f - 0.03, 4);
+      expect(position.y).toBeCloseTo(range.lo.z, 4);
       expect(position.z).toBeCloseTo(-(range.lo.y + (range.hi.y - range.lo.y) * f), 4);
       if (esc.speed !== 0) expect(matrix.equals(before[i]!)).toBe(false);
       const scale = new THREE.Vector3().setFromMatrixScale(matrix);
       if (quality === "high") expect(scale.toArray().map(v => Math.round(v * 1e5) / 1e5)).toEqual([1, 1, 1]);
       else expect(scale.distanceTo(range.scale)).toBeLessThan(1e-6);
+    }
+    const camera = new THREE.PerspectiveCamera(120, 1, 0.1, 10000);
+    camera.position.set(0, 1000, 0);
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld(true);
+    const scene = quality === "low" ? sceneWithSteps(station) : null;
+    const cycleSeconds = Math.max(...counts) * 0.4 / 0.5;
+    const matrix = new THREE.Matrix4();
+    const position = new THREE.Vector3();
+    const scale = new THREE.Vector3();
+    for (let sample = 0; sample <= 64; sample++) {
+      station.update(0, sample * cycleSeconds / 64);
+      if (scene) scene.onBeforeRender(rendererAt(sample + 2), scene, camera, null as never, null as never, null as never);
+      for (const esc of station.escalators) {
+        const range = quality === "low" ? esc.steps.userData.ranges[esc.run.edgeId] : esc.steps.userData;
+        const dx = range.hi.x - range.lo.x, dy = range.hi.y - range.lo.y;
+        const length = Math.hypot(dx, dy);
+        const halfDepth = 0.4 * length / range.L3 / 2;
+        let bottom = 0, top = 0;
+        for (let i = 0; i < range.count; i++) {
+          esc.steps.getMatrixAt((range.offset ?? 0) + i, matrix);
+          position.setFromMatrixPosition(matrix);
+          scale.setFromMatrixScale(matrix);
+          const along = ((position.x - range.lo.x) * dx + (-position.z - range.lo.y) * dy) / length;
+          expect(position.y).toBeCloseTo(range.lo.z + escalatorHeight(along, length, range.hi.z - range.lo.z), 4);
+          expect(position.y).toBeLessThanOrEqual(range.hi.z + 1e-4);
+          if (along <= 0.8) { expect(position.y).toBeCloseTo(range.lo.z, 4); bottom++; }
+          if (along >= length - 0.8) { expect(position.y).toBeCloseTo(range.hi.z, 4); top++; }
+          if (scale.x === 0) expect(along < -halfDepth + 1e-4 || along > length + halfDepth - 1e-4).toBe(true);
+          if (along >= 0 && along <= length) expect(scale.x).toBeGreaterThan(0);
+        }
+        expect(bottom).toBeGreaterThanOrEqual(2);
+        expect(top).toBeGreaterThanOrEqual(2);
+        expect(esc.speed).toBe(0.5 * (esc.run.travel === 0 ? 0 : (esc.run.a.z <= esc.run.b.z ? 1 : -1) * esc.run.travel));
+      }
     }
   } finally { station.dispose(); }
 }, 120_000);
@@ -125,11 +165,11 @@ it("packs only camera-visible low-tier runs, animates the packed slice and keeps
     render();
     const after = new THREE.Matrix4();
     mesh.getMatrixAt(1, after);
-    const phase = ((0.2 * first.speed % 0.4) + 0.4) % 0.4;
-    const f = (0.4 + phase) / firstRange.L3;
+    const phase = 0.2 * first.speed;
+    const f = phase / firstRange.L3;
     const position = new THREE.Vector3().setFromMatrixPosition(after);
     expect(position.x).toBeCloseTo(firstRange.lo.x + (firstRange.hi.x - firstRange.lo.x) * f, 4);
-    expect(position.y).toBeCloseTo(firstRange.lo.z + (firstRange.hi.z - firstRange.lo.z) * f - 0.03, 4);
+    expect(position.y).toBeCloseTo(firstRange.lo.z, 4);
     expect(position.z).toBeCloseTo(-(firstRange.lo.y + (firstRange.hi.y - firstRange.lo.y) * f), 4);
     expect(first.speed).not.toBe(0);
     expect(after.equals(before)).toBe(false);
@@ -176,3 +216,28 @@ it("the standalone app installs the same low-tier scene hook (#822)", () => {
     expect(mesh.count).toBeLessThan(mesh.instanceMatrix.count);
   } finally { station.dispose(); }
 }, 120_000);
+
+it("fits kit rails to the same landing profile at the exact run endpoints", () => {
+  const manifest: KitManifest = parseKitManifest(stubManifestJson({ extra: [stubAsset("rail", "dressing", "linear", {
+    params: { rise_mm: 4000, run_mm: 8400 },
+  })] }), "mobile");
+  const run: RunAnchor = { role: "escalator", key: "run", floorId: "f", lo: { x: 0, y: 0, z: 0 },
+    hi: { x: 0, y: 10.1, z: 4.05 }, width: 1, dir: { x: 0, y: 1 } };
+  const placement: KitPlacement = { role: "escalator", anchorKey: "run", assetId: "rail", floorId: "f",
+    rank: 1, position: [0, 0.003, 0], yaw: 0, replaces: "escalator-balustrade" };
+  const along = [0.4, ESCALATOR_FLAT_M, 5, 9.2, 9.6];
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(along.flatMap(s => [0, escalatorHeight(s, 10, 4) + 0.9, -s]), 3));
+  geometry.setIndex([0, 1, 2, 2, 3, 4]);
+  const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial()); mesh.name = "VIS_rail";
+  const owned: { dispose(): void }[] = [];
+  const batch = batchKitPlacements({ placed: [placement], runs: [run], manifest,
+    provider: { instantiate: () => { const root = new THREE.Group(); root.add(mesh); return root; } },
+    tint: [], track: v => { owned.push(v); return v; } });
+  try {
+    const positions = batch.meshes[0]!.geometry.getAttribute("position");
+    for (let i = 0; i < positions.count; i++) {
+      expect(positions.getY(i)).toBeCloseTo(escalatorHeight(-positions.getZ(i), 10.1, 4.05) + 0.9, 4);
+    }
+  } finally { owned.forEach(v => v.dispose()); geometry.dispose(); mesh.material.dispose(); }
+});

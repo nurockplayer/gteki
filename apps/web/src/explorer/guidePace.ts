@@ -1,3 +1,4 @@
+import { escalatorHeight } from "@gteki/scene-api";
 import type { Instruction, PolylinePoint, RouteStep } from "@gteki/navigation";
 import type { EdgeMode } from "@gteki/schema";
 import { instructionPoints } from "@gteki/navigation";
@@ -157,4 +158,14 @@ export function paceReadout(totalM: number, tier: GuideTierId, spans: readonly P
   const pace = effectivePace(totalM, tier, spans).toFixed(1);
   const top = guideTierSpeed(tier).toFixed(1);
   return { pace, top, approx: pace !== top };
+}
+
+/** Ride elevation over the whole route step, including any intermediate polyline samples. Speed stays in route distance. */
+export function guideEscalatorHeight(p: { x: number; z: number; segment: number }, points: readonly { x: number; y: number; z: number }[], steps: readonly number[]): number {
+  const step = steps[p.segment + 1]!;
+  const a = points[Math.max(0, steps.indexOf(step) - 1)]!, b = points[steps.lastIndexOf(step)]!;
+  const lo = a.y <= b.y ? a : b, hi = a.y <= b.y ? b : a;
+  const length = Math.hypot(hi.x - lo.x, hi.z - lo.z);
+  const along = ((p.x - lo.x) * (hi.x - lo.x) + (p.z - lo.z) * (hi.z - lo.z)) / length;
+  return lo.y + escalatorHeight(along, length, hi.y - lo.y);
 }
