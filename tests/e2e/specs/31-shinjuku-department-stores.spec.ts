@@ -8,7 +8,7 @@ import { ARTIFACTS } from "../lib/gteki.ts";
 test.use({ trace: "off", video: "off", screenshot: "off" });
 
 // Art-direction evidence, not a visual acceptance verdict. Keep the visitor's UI in frame.
-test("Shinjuku department stores: nearest-exit frames", async ({ page }, info) => {
+test("Shinjuku department stores: nearest-exit frames @phone", async ({ page }, info) => {
   test.setTimeout(600_000);
   const root = process.env.GTEKI_ROOT!;
   const read = (file: string) => JSON.parse(fs.readFileSync(path.join(root, "stations/shinjuku", file), "utf8"));
@@ -24,12 +24,11 @@ test("Shinjuku department stores: nearest-exit frames", async ({ page }, info) =
   fs.mkdirSync(out, { recursive: true });
   const exits = pois.filter((p: any) => /^poi:exit:[1-4]$/.test(p.id)).map((p: any) => ({ poi: p.id, node: graph.nodes.find((n: any) => n.id === p.connectorNodeIds[0]) }));
   const rows = [];
-  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   for (const store of data.stores) {
     const building = data.buildings.find((b: any) => b.id === store.buildingId);
     const ring = building.rings[0].slice(0, -1);
     const center = { x: ring.reduce((s: number, p: number[]) => s + p[0], 0) / ring.length, y: ring.reduce((s: number, p: number[]) => s + p[1], 0) / ring.length };
-    const nearest = [...exits].sort((a, b) => Math.hypot(a.node.position.x - center.x, a.node.position.y - center.y) - Math.hypot(b.node.position.x - center.x, b.node.position.y - center.y))[0]!;
+    const nearest = exits.find(e => e.node.id === pois.find((p: any) => p.id === store.poiId).connectorNodeIds[0])!;
     const headingDeg = Math.atan2(center.x - nearest.node.position.x, center.y - nearest.node.position.y) * 180 / Math.PI;
     const pose = await page.evaluate(({ node, headingDeg }) => {
       const qa = (window as any).__gteki;
@@ -40,9 +39,9 @@ test("Shinjuku department stores: nearest-exit frames", async ({ page }, info) =
     }, { node: nearest.node.id, headingDeg });
     expect(pose.placed, `${store.poiId}: nearest exit must be walkable`).toBe(true);
     const image = `${store.poiId.replace("shop-sjk-", "")}-${next ? "next" : "off"}.png`;
-    await page.screenshot({ path: path.join(out, image) });
+    await page.screenshot({ path: path.join(out, image), timeout: 120_000 });
     rows.push({ store: store.poiId, image, next, exit: nearest.poi, node: nearest.node.id, headingDeg, pose,
-      entrance: { connectorNodeIds: pois.find((p: any) => p.id === store.poiId).connectorNodeIds, status: "BLOCKED: existing POI has no entrance position or connector; no door pose invented" } });
+      entrance: { connectorNodeIds: pois.find((p: any) => p.id === store.poiId).connectorNodeIds, status: "Provisional nearest modeled exit; not a store entrance, station model is partial" } });
   }
   fs.writeFileSync(path.join(out, "frames.json"), JSON.stringify({ capturedAt: new Date().toISOString(), viewport: page.viewportSize(), rows }, null, 2));
 });

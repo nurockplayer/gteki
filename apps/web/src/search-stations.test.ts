@@ -180,7 +180,12 @@ describe("core search on the real Shinjuku POIs (docs/stations/shinjuku/search-e
     expect(ids(s.filter((h) => h.poi.category === "shop")), q).toEqual([...shops].sort());
     for (const h of s) {
       // Neither an S03 name, a WP4 line name nor a merchant listing is ever routable.
-      expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
+      if (["shop-sjk-odakyudept", "shop-sjk-keio"].includes(h.poi.id)) {
+        expect(h.routable).toBe(true);
+        expect(h.poi.notes?.find(d => d.lang === "en")?.text).toContain("nearest modeled exit");
+      } else {
+        expect(h.poi.connectorNodeIds, h.poi.id).toEqual([]);
+      }
       if (h.poi.category === "shop") {
         // Only the recorded listing may appear, and it cites its own single directory source.
         expect(shops, `${q}: unexpected shop hit ${h.poi.id}`).toContain(h.poi.id);

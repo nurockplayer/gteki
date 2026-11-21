@@ -1517,7 +1517,7 @@ const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPA
 
 // Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
 // source and rights gate as assets; each derivation names the script that writes the file.
-const departmentStores = JSON.parse(readFileSync(join(HERE, "../data/department-stores.json"), "utf8")) as { stores: { poiId: string }[] };
+const departmentStores = JSON.parse(readFileSync(join(HERE, "../data/department-stores.json"), "utf8")) as { stores: { poiId: string; buildingId: string }[]; buildings: { id: string; rings: number[][][] }[] };
 const departmentStoreSources = [...new Set(["plateau-13104-shinjuku-ku-2025", ...departmentStores.stores.flatMap(s => pois.find(p => p.id === s.poiId)!.evidence.sourceIds)])].sort();
 const dataFiles: DataFile[] = [
   {
@@ -1675,6 +1675,27 @@ const bundle: StationBundle = {
 // CLOSED team_field observations add a store or gate connector; nothing else may (see the merchant guard above).
 const fieldApplied = applyFieldReceipts(pois, sources, new Set(nodes.map((n) => n.id)), loadReceipts(join(HERE, "../../../docs/research/field/receipts"), "shinjuku"), nodes);
 if (fieldApplied.length) console.log(`field receipts: applied #533 items ${fieldApplied.join(", ")}`);
+
+// Lead ruling 2026-11-22 JST: a provisional destination is the nearest modeled street exit,
+// measured to the PLATEAU footprint, not a claim about the store entrance.
+const streetExits = pois.filter(p => /^poi:exit:[1-4]$/.test(p.id));
+for (const store of departmentStores.stores) {
+  const poi = pois.find(p => p.id === store.poiId)!;
+  const ring = departmentStores.buildings.find(b => b.id === store.buildingId)!.rings[0]!;
+  const distance = (x: number, y: number) => Math.min(...ring.slice(1).map((b, i) => {
+    const a = ring[i]!, dx = b[0]! - a[0]!, dy = b[1]! - a[1]!;
+    const t = Math.max(0, Math.min(1, ((x - a[0]!) * dx + (y - a[1]!) * dy) / (dx * dx + dy * dy)));
+    return Math.hypot(x - a[0]! - t * dx, y - a[1]! - t * dy);
+  }));
+  const exit = [...streetExits].sort((a, b) => distance(a.displayPosition!.x, a.displayPosition!.y) - distance(b.displayPosition!.x, b.displayPosition!.y))[0]!;
+  poi.connectorNodeIds = [...exit.connectorNodeIds];
+  poi.notes = poi.notes?.map(note => ({ ...note, text: note.text
+    .replace("位置・入口は未確認（検索のみ。案内ルートなし）。", "店舗入口は未確認。暫定案内は駅の一部のみをモデル化した最寄りのモデル内出口までです。")
+    .replace("Location and entrance not verified (search only, no route).", "Store entrance unverified. The provisional route ends at the nearest modeled exit because only part of the station is modeled.") }));
+  poi.evidence.method = poi.evidence.method.replace(", SEARCH_ONLY", "");
+  poi.evidence.method += `; provisional nearest modeled exit ${exit.id}, geometric distance to PLATEAU footprint; station model is partial (2026-11-22 JST)`;
+}
+
 
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
