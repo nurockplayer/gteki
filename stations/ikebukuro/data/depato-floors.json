@@ -2868,6 +2868,112 @@
           "read": "2026-11-22"
         }
       ]
+    },
+    {
+      "id": "sunshine-city-world-import-mart",
+      "name": {
+        "ja": "サンシャインシティ ワールドインポートマート",
+        "en": "Sunshine City World Import Mart"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "アルタ",
+            "en": "ALTA"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "アルタ",
+            "en": "ALTA"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "ナンジャタウン",
+            "en": "NAMJATOWN"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "ガシャポンのデパート・一番くじ公式ショップ",
+            "en": "Gashapon and Ichiban Kuji shops"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "展示ホールA",
+            "en": "Exhibition Hall A"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "パスポートセンター・会議室",
+            "en": "Passport center and conference rooms"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "other",
+          "label": {
+            "ja": "さくらルーム",
+            "en": "Sakura Room"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "10F",
+          "order": 10,
+          "category": "other",
+          "label": {
+            "ja": "サンシャイン水族館",
+            "en": "Sunshine Aquarium"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/aquarium/information/faq.html",
+          "read": "2026-11-22"
+        }
+      ]
     }
   ]
 }
