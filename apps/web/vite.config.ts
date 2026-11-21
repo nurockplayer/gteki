@@ -16,7 +16,7 @@ const overlay = process.env.GTEKI_PRIVATE_OVERLAY ? path.resolve(process.env.GTE
 
 export default defineConfig({
   define: {
-    __BUILD_SHA__: JSON.stringify(execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim()),
+    __BUILD_SHA__: JSON.stringify(process.env.CF_PAGES_COMMIT_SHA ?? process.env.GITHUB_SHA ?? execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim()),
     __TURNSTILE_SITEKEY__: JSON.stringify(process.env.VITE_TURNSTILE_SITEKEY ?? ""),
   },
   base: "./",
