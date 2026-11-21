@@ -1691,6 +1691,42 @@
    "retrievedAt": "2026-11-21T17:42:50.006284+00:00",
    "datasetDate": null,
    "notes": "Owner request 2026-11-22 JST; OD-34 facts-only precedent. Official page read 2026-11-22 JST: Ikebukuro exit 35, about eight minutes. https://sunshinecity.jp/information/floor_map/ describes the five-building complex."
+  },
+  {
+   "id": "sunshine-city-en-access-2026-11",
+   "title": "Sunshine City English access",
+   "publisher": "株式会社サンシャインシティ",
+   "url": "https://sunshinecity.jp/en/information/access.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
+   "attribution": "Official English place name; facts only, no imagery reproduced",
+   "modified": false,
+   "retrievedAt": "2026-11-21T17:42:50.006284+00:00",
+   "datasetDate": null,
+   "notes": "Official English name consulted 2026-11-22 JST; facts only under OD-34."
+  },
+  {
+   "id": "parco-ikebukuro-en-2016",
+   "title": "PARCO annual report 2016 (English)",
+   "publisher": "株式会社パルコ",
+   "url": "https://www.parco.co.jp/pdf/en/library/ar2016.pdf",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
+   "attribution": "Official English place name; facts only, no imagery reproduced",
+   "modified": false,
+   "retrievedAt": "2026-11-21T17:42:50.006284+00:00",
+   "datasetDate": null,
+   "notes": "Official English name consulted 2026-11-22 JST; facts only under OD-34."
   }
  ],
  "floors": [

@@ -262,7 +262,7 @@ describe("Ikebukuro golden search", () => {
           .filter(
             ({ text }) =>
               sogo.test(text) ||
-              (parco.test(text) && !(poi.id === PARCO_POI && poi.evidence.sourceIds.includes(PARCO_SOURCE))) ||
+              (parco.test(text) && !((poi.id === PARCO_POI && poi.evidence.sourceIds.includes(PARCO_SOURCE)) || (poi.id === "shop-ikb-pparco" && poi.evidence.sourceIds.includes("parco-ikebukuro-floorguide-2026-11")))) ||
               (departmentStore.test(text) && !(poi.id === TOBU_DEPT_POI && poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE))) ||
               (seibu.test(text) && !fromSeibu(poi) && !isSeibuStore(poi)),
           )

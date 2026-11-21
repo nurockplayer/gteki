@@ -22915,6 +22915,7 @@
    "paid": false,
    "evidence": {
     "sourceIds": [
+     "sunshine-city-en-access-2026-11",
      "sunshine-city-access-2026-11"
     ],
     "method": "Official access page specifies Ikebukuro exit 35. Route ends at that station exit, not the remote building; facts only, Owner request 2026-11-22 JST.",
@@ -22966,6 +22967,7 @@
    "paid": null,
    "evidence": {
     "sourceIds": [
+     "parco-ikebukuro-en-2016",
      "parco-ikebukuro-floorguide-2026-11"
     ],
     "method": "Provisional station-exit routing tie to x22 (east exit); P'PARCO is a separate building, not a surveyed station-side entrance. Official PARCO access: https://ikebukuro.parco.jp/info/?gcd=access; official PARCO source identifies the east-exit area: https://www.parco.co.jp/pdf/jp/store/storage/cname_20211026130032.pdf, 「池袋駅東口（北）方面」. Facts only; move this tie after survey.",

@@ -59,6 +59,7 @@ const stairwellSources = (): string[] => [
 ];
 
 const EXPECTED: Record<string, { script: string; sources: () => string[]; authored?: boolean }> = {
+  "scene/landmark-ranges.json": { script: "pipeline/build_landmarks.mjs", sources: () => ["plateau-13116-bldg-53394576"] },
   "scene/stairwell-cut.high.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/stairwell-cut.low.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/underfloor_backing.json": { script: "Hand-transcribed", sources: () => [PLATEAU] },
