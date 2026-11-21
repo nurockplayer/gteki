@@ -20,6 +20,8 @@ test("Shinjuku department stores: nearest-exit frames @phone", async ({ page }, 
   await page.goto(`/?station=shinjuku&qaCrowd=off&qaTimeBand=morning&qaEscalatorPhase=0${next ? "&next=1" : ""}`);
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000, polling: 250 });
   await expect(page.locator(".boot-card")).toBeHidden({ timeout: 30_000 });
+  await page.evaluate(() => document.fonts.ready);
+  const cdp = await page.context().newCDPSession(page);
   const out = path.join(ARTIFACTS, "journey", info.project.name, "department-stores");
   fs.mkdirSync(out, { recursive: true });
   const exits = pois.filter((p: any) => /^poi:exit:[1-4]$/.test(p.id)).map((p: any) => ({ poi: p.id, node: graph.nodes.find((n: any) => n.id === p.connectorNodeIds[0]) }));
@@ -41,7 +43,8 @@ test("Shinjuku department stores: nearest-exit frames @phone", async ({ page }, 
     }, { node: nearest.node.id, headingDeg });
     expect(pose.placed, `${store.poiId}: nearest exit must be walkable`).toBe(true);
     const image = `${store.poiId.replace("shop-sjk-", "")}-${next ? "next" : "off"}.png`;
-    await page.screenshot({ path: path.join(out, image) });
+    const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+    fs.writeFileSync(path.join(out, image), Buffer.from(png.data, "base64"));
     rows.push({ store: store.poiId, image, next, exit: nearest.poi, node: nearest.node.id, headingDeg, pose,
       entrance: { exit: nearest.poi, status: "Provisional nearest modeled exit; not a store entrance, station model is partial" } });
   }
