@@ -22,7 +22,9 @@
     "build:private": "sh tools/private-overlay/run.sh build",
     "deploy:private": "bash scripts/deploy-private.sh",
     "dev:private": "sh tools/private-overlay/run.sh dev",
-    "intake": "tsx tools/merchant-intake/intake.ts"
+    "intake": "tsx tools/merchant-intake/intake.ts",
+    "plan:build": "node tools/plan/build.mjs",
+    "plan:check": "node tools/plan/build.mjs --check"
   },
   "devDependencies": {
     "@babel/parser": "7.28.5",
@@ -33,6 +35,7 @@
     "subset-font": "2.5.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
-    "vitest": "^5.0.5"
+    "vitest": "^5.0.5",
+    "yaml": "2.8.2"
   }
 }
