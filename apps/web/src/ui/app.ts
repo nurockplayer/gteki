@@ -1,3 +1,4 @@
+import stationAudioSources from "../../../../assets/audio/youtube-cc/SOURCES.md?raw";
 import { createRouter, describeRoute, destinationNodeIds, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
 import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle, Tenant } from "@gteki/schema";
@@ -2000,6 +2001,11 @@ export class App {
         const rights = entryRightsLabels(g.sources, this.t).filter((label) => label !== this.t.rightsOwnerOverride);
         if (rights.length) li.append(el("span", "muted", ` · ${rights.join(" / ")}`));
         src.append(li);
+      }
+      if (this.explorer.previewNext && this.s.entry?.key === "shinjuku") {
+        for (const line of stationAudioSources.split("\n").filter((line) => line.startsWith("- `"))) {
+          src.append(el("li", undefined, line.slice(line.indexOf(': "') + 2)));
+        }
       }
       d.append(src);
       // Third-party 3D model credits (#854): the upstream credit line verbatim with source, author and licence links.

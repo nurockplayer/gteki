@@ -28,6 +28,7 @@ export interface StationSoundOptions {
   sites: { gates: V3[]; announce: V3[]; chime: V3[] };
   /** Default: the Web Speech adapter. `null` disables announcements. */
   speech?: SpeechPort | null;
+  gateBuffer?: AudioBuffer;
   random?: () => number;
 }
 
@@ -119,7 +120,7 @@ export function createStationSound(opts: StationSoundOptions): StationSound {
   let speakingAt: V3 | null = null;
   let spokeAtTime = 0;
   let utterance = 0;
-  const activeTaps = new Set<OscillatorNode>();
+  const activeTaps = new Set<AudioScheduledSourceNode>();
 
   function setParam(param: AudioParam, value: number): void {
     try { param.setTargetAtTime(value, context.currentTime, 0.025); } catch { param.value = value; }
@@ -200,6 +201,12 @@ export function createStationSound(opts: StationSoundOptions): StationSound {
   function playGate(pattern: GatePattern, at: V3): void {
     const panner = pannerAt(at);
     const now = context.currentTime;
+    if (opts.gateBuffer) {
+      const source = context.createBufferSource(); source.buffer = opts.gateBuffer;
+      source.connect(panner); activeTaps.add(source); source.start(now);
+      source.onended = () => { source.disconnect(); panner.disconnect(); activeTaps.delete(source); };
+      return;
+    }
     let remaining = pattern.taps.length;
     for (const offset of pattern.taps) {
       const { osc, gain } = tone(now + offset, pattern.frequency, pattern.duration, panner, 0.12, false);
