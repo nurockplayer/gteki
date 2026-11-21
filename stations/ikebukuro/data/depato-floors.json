@@ -2810,6 +2810,64 @@
           "read": "2026-11-22"
         }
       ]
+    },
+    {
+      "id": "sunshine-city-alpa",
+      "name": {
+        "ja": "サンシャインシティ 専門店街アルパ",
+        "en": "Sunshine City ALPA"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "専門店街・飲食",
+            "en": "Shops and dining"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "専門店街",
+            "en": "Shops"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "専門店街",
+            "en": "Shops"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街",
+            "en": "Restaurants"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        }
+      ]
     }
   ]
 }
