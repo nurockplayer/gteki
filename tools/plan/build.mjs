@@ -69,16 +69,23 @@ function render(plan, sha, builtAt) {
   return fs.readFileSync(path.join(root,'tools/plan/page.html'),'utf8').replace(/\{\{(\w+)\}\}/g,(_,key)=>values[key]);
 }
 
+export function renderJourney(currentJourney, criteria) {
+  const start = currentJourney.indexOf('| # | When |');
+  requireField(start >= 0, 'Journey table not found');
+  const match = currentJourney.slice(start).match(/^(?:\|[^\n]*(?:\n|$))+/);
+  requireField(match, 'Journey table not found');
+  const cell = value => String(value ?? '').replace(/\s*\n\s*/g, ' ').replaceAll('|', '\\|');
+  const table = ['| # | When | What the player gets | Judged by | Status | 2026-11-14, reel at 15ef23e8 (desktop / phone) |', '|---|---|---|---|---|---|', ...criteria.map(r => `| ${[r.id, r.context, r.requirement, r.judge, r.status, r.status_detail].map(cell).join(' | ')} |`)].join('\n');
+  const ending = match[0].endsWith('\n') ? '\n' : '';
+  return currentJourney.slice(0, start) + table + ending + currentJourney.slice(start + match[0].length);
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const plan = validatePlan(parse(fs.readFileSync(path.join(root,'docs/release/plan.yaml'),'utf8')));
   const release = plan.workstreams.find(s => s.id === 'RELEASE');
   const journeyFile = path.join(root,'docs/release/journey.md');
   const currentJourney = fs.readFileSync(journeyFile,'utf8');
-  const start = currentJourney.indexOf('| # | When |');
-  const end = currentJourney.indexOf('\n\n', start);
-  requireField(start >= 0 && end > start, 'Journey table not found');
-  const table = ['| # | When | What the player gets | Judged by | 2026-11-14, reel at 15ef23e8 (desktop / phone) |','|---|---|---|---|---|',...release.criteria.map(r=>`| ${[r.id,r.context,r.requirement,r.judge,r.status_detail].join(' | ')} |`)].join('\n');
-  const journey = currentJourney.slice(0,start) + table + currentJourney.slice(end);
+  const journey = renderJourney(currentJourney, release.criteria);
   if (process.argv.includes('--check')) {
     requireField(fs.readFileSync(journeyFile,'utf8') === journey, 'journey.md is out of date; run pnpm plan:build and commit it');
     console.log('Plan schema and journey freshness OK');
