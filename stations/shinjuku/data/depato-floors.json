@@ -3956,7 +3956,254 @@
         "en": "Shinjuku Takashimaya"
       },
       "building": null,
-      "floors": []
+      "floors": [
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "food-hall",
+          "label": {
+            "ja": "食料品〈グルメスクエア〉 / 南館連絡通路",
+            "en": "食料品〈グルメスクエア〉 / 南館連絡通路"
+          },
+          "tenants": [
+            {
+              "ja": "魚久",
+              "en": "魚久"
+            },
+            {
+              "ja": "雲月",
+              "en": "雲月"
+            },
+            {
+              "ja": "ルロワ",
+              "en": "ルロワ"
+            },
+            {
+              "ja": "ロイスダール",
+              "en": "ロイスダール"
+            },
+            {
+              "ja": "両口屋是清",
+              "en": "両口屋是清"
+            },
+            {
+              "ja": "柳桜園茶舗",
+              "en": "柳桜園茶舗"
+            },
+            {
+              "ja": "パティシェリア",
+              "en": "パティシェリア"
+            },
+            {
+              "ja": "味百選",
+              "en": "味百選"
+            },
+            {
+              "ja": "銘菓百選",
+              "en": "銘菓百選"
+            },
+            {
+              "ja": "フォション",
+              "en": "フォション"
+            },
+            {
+              "ja": "ペック",
+              "en": "ペック"
+            },
+            {
+              "ja": "ダルマイヤー",
+              "en": "ダルマイヤー"
+            }
+          ],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_b1.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "cosmetics",
+          "label": {
+            "ja": "婦人雑貨／化粧品〈フレグランス〉",
+            "en": "婦人雑貨／化粧品〈フレグランス〉"
+          },
+          "tenants": [
+            {
+              "ja": "ゴトウ花店",
+              "en": "ゴトウ花店"
+            },
+            {
+              "ja": "ランコム",
+              "en": "ランコム"
+            },
+            {
+              "ja": "ラトリエ デ パルファム フレグランス",
+              "en": "ラトリエ デ パルファム フレグランス"
+            },
+            {
+              "ja": "ラ・プレリー",
+              "en": "ラ・プレリー"
+            }
+          ],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_01.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "accessories",
+          "label": {
+            "ja": "アクセサリー／婦人靴／ハンドバッグ／化粧品 / 南館連絡通路",
+            "en": "アクセサリー／婦人靴／ハンドバッグ／化粧品 / 南館連絡通路"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_02.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "womens",
+          "label": {
+            "ja": "インターナショナルブティックス",
+            "en": "インターナショナルブティックス"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_03.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "womens",
+          "label": {
+            "ja": "オム・メゾン（紳士服・婦人服） / 〈インターナショナル デザイナーズ〉 / ファム・メゾン（婦人服） / 〈インターナショナル デザイナーズ〉 / 宝飾・時計 メンバーズサロン",
+            "en": "オム・メゾン（紳士服・婦人服） / 〈インターナショナル デザイナーズ〉 / ファム・メゾン（婦人服） / 〈インターナショナル デザイナーズ〉 / 宝飾・時計 メンバーズサロン"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_04.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "mens",
+          "label": {
+            "ja": "オム・メゾン（紳士服） / 〈オーダーメードサロン〉〈フォーマルサロン〉〈旅行用品〉 / ファム・メゾン（婦人服） / 〈カラーフォーマル〉〈ブラックフォーマル〉〈ランジェリーサロン〉 / ATM 南館連絡通路",
+            "en": "オム・メゾン（紳士服） / 〈オーダーメードサロン〉〈フォーマルサロン〉〈旅行用品〉 / ファム・メゾン（婦人服） / 〈カラーフォーマル〉〈ブラックフォーマル〉〈ランジェリーサロン〉 / ATM 南館連絡通路"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_05.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "womens",
+          "label": {
+            "ja": "オム・メゾン（紳士服・紳士雑貨） / ファム・メゾン（婦人服） / 〈大きなサイズのユアサイズ〉〈小さなサイズのパールサイズ〉 / 学校制服",
+            "en": "オム・メゾン（紳士服・紳士雑貨） / ファム・メゾン（婦人服） / 〈大きなサイズのユアサイズ〉〈小さなサイズのパールサイズ〉 / 学校制服"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_06.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "womens",
+          "label": {
+            "ja": "オム・メゾン（紳士服） / ファム・メゾン（婦人服） / 海外発送・宅急便",
+            "en": "オム・メゾン（紳士服） / ファム・メゾン（婦人服） / 海外発送・宅急便"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_07.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "mens",
+          "label": {
+            "ja": "オム・メゾン（紳士服） / スポーツ・メゾン（スポーツ／アウトドア）",
+            "en": "オム・メゾン（紳士服） / スポーツ・メゾン（スポーツ／アウトドア）"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_08.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "kids",
+          "label": {
+            "ja": "ゴルフ・メゾン（ゴルフウェア・ゴルフ用品）／ベビー・こども服／学童文具／おもちゃ / 赤ちゃん休憩室／新宿高島屋キッズクラブカウンター",
+            "en": "ゴルフ・メゾン（ゴルフウェア・ゴルフ用品）／ベビー・こども服／学童文具／おもちゃ / 赤ちゃん休憩室／新宿高島屋キッズクラブカウンター"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_09.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "10F",
+          "order": 10,
+          "category": "living",
+          "label": {
+            "ja": "リビング・インテリア／美術画廊／ギフトサロン / タカシマヤ カードカウンター／商品券／友の会／購買会／タカシマヤポイントカードカウンター／タイムズスクエア歯科クリニック／JTB",
+            "en": "リビング・インテリア／美術画廊／ギフトサロン / タカシマヤ カードカウンター／商品券／友の会／購買会／タカシマヤポイントカードカウンター／タイムズスクエア歯科クリニック／JTB"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_10.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "11F",
+          "order": 11,
+          "category": "other",
+          "label": {
+            "ja": "催会場／メガネ・補聴器／呉服サロン／ジャパニーズ クラフト ショップ／免税カウンター / 眼科診療所／ノジマ",
+            "en": "催会場／メガネ・補聴器／呉服サロン／ジャパニーズ クラフト ショップ／免税カウンター / 眼科診療所／ノジマ"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_11.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "12F",
+          "order": 12,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストランズ パーク",
+            "en": "レストランズ パーク"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_12.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "13F",
+          "order": 13,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストランズ パーク",
+            "en": "レストランズ パーク"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_13.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "14F",
+          "order": 14,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストランズ パーク",
+            "en": "レストランズ パーク"
+          },
+          "tenants": [],
+          "source": "https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_14.html",
+          "read": "2026-11-22"
+        }
+      ]
     }
   ]
 }
