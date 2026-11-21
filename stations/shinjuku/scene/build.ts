@@ -890,7 +890,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // ---- underground fixtures, kept in a separate helper for the surface lane's hook
   // The escalator shell soffits are roofs too: without them the inclines get no fixtures (vertical gap #5).
   const shell = escalatorShellGeometry(layout, bundle);
-  buildUndergroundLighting(bundle, layout, levelGroups, root, track, shell.finishes);
+  buildUndergroundLighting(bundle, layout, levelGroups, root, track, shell.finishes, opts.previewNext);
   if (preview) for (const roof of preview.roofs) {
     const m = new THREE.Mesh(track(soffitGeometry(roof)), mat.ceiling);
     m.name = roof.spaceId;
@@ -2124,6 +2124,7 @@ function buildUndergroundLighting(
   root: THREE.Group,
   track: <T extends { dispose(): void }>(x: T) => T,
   extraRoofs: Soffit[] = [],
+  previewNext = false,
 ) {
   type Fixture = { a: XYZ; b: XYZ; ground: XYZ; upright: boolean; edgeId: string; sample: number; roof: Omit<Soffit, "kind"> };
   const batches = new Map<string, Fixture[]>();
@@ -2246,7 +2247,7 @@ function buildUndergroundLighting(
     const strips = new THREE.InstancedMesh(box, material, fixtures.length);
     strips.name = "linear-light:underground";
     strips.userData.floorPools = fixtures.map((f) => f.ground);
-    strips.userData.poolFixtures = fixtures.map(({ a, b, ground }) => ({ a, b, ground }));
+    if (previewNext) strips.userData.poolFixtures = fixtures.map(({ a, b, ground }) => ({ a, b, ground }));
     strips.userData.mounts = fixtures.map(({ edgeId, sample, roof }) => ({ edgeId, sample, roof,
       section: layout.shaftCeilingPreview?.roofs.findIndex((s) => s === roof) ?? -1 }));
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), center = new THREE.Vector3(), scale = new THREE.Vector3();

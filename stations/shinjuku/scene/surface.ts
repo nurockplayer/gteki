@@ -117,8 +117,8 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     };
     mouthGlass.customProgramCacheKey = () => "j10-mouth-glass";
   }
-  const mouth = opts.bundle.nodes.find(n => n.id === "n:a06f3d191885497bac197b666c4daef9")!.position;
-  const atMouth = (p: XY) => next && stableHypot(p.x - mouth.x, p.y - mouth.y) < 14;
+  const mouth = next ? opts.bundle.nodes.find(n => n.id === "n:a06f3d191885497bac197b666c4daef9")!.position : null;
+  const atMouth = (p: XY) => next && stableHypot(p.x - mouth!.x, p.y - mouth!.y) < 14;
   mats.glass.transparent = true; mats.glass.opacity = .38; mats.glass.depthWrite = false;
   const batches = new Map<string, { material: THREE.Material; geometries: THREE.BufferGeometry[] }>();
   const add = (key: string, geometry: THREE.BufferGeometry, material: THREE.Material) => {

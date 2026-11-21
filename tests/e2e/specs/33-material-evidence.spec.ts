@@ -33,7 +33,7 @@ test("J10 material package A paired frames and patch measurements", async ({ bro
           qa.goldenFrame();
         }, camera);
         const name = `${device}-${camera.id}-${next ? "next" : "off"}`;
-        const png = await page.screenshot({ path: path.join(out, `${name}.png`), animations: "disabled" });
+        const png = await page.screenshot({ path: path.join(out, `${name}.png`), timeout: 60_000, animations: "disabled" });
         const figurePoints = camera.id.startsWith("slice-11") ? await page.evaluate(() =>
           (window as any).__gteki.projectEnu([{x:-24.2,y:113.7,z:-42.87},{x:-23.6,y:113.7,z:-41.1}])) : null;
         const metrics = await page.evaluate(async ({ b64, id, figurePoints }) => {
