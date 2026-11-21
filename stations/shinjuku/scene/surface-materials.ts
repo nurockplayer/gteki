@@ -49,7 +49,7 @@ export function facadeTexture(style: number) {
 }
 
 /** Per-material sun, reflection and distance haze: never changes underground lights/fog. */
-export function daylight(color: string, map: THREE.Texture | null = null, reflection = 0, glow = false) {
+export function daylight(color: string, map: THREE.Texture | null = null, reflection = 0, glow = false, previewNext = false) {
   const m = new THREE.MeshBasicMaterial({ color, map, side: THREE.DoubleSide, fog: false });
   m.onBeforeCompile = (s) => {
     s.uniforms.surfaceSun = { value: sun }; s.uniforms.surfaceHorizon = { value: skyHorizon };
@@ -73,10 +73,11 @@ export function daylight(color: string, map: THREE.Texture | null = null, reflec
       float glassMask = smoothstep(.005,.055,diffuseColor.b-diffuseColor.r);
       outgoingLight = mix(outgoingLight,reflected,glassMask*${reflection.toFixed(2)}*(.4+.6*pow(1.-abs(dot(v,n)),3.)));` : ""}
       float haze = smoothstep(170., 370., distance(cameraPosition.xz, surfaceWorld.xz));
-      outgoingLight = mix(outgoingLight, surfaceHorizon, haze * .96);
+      outgoingLight = mix(outgoingLight, surfaceHorizon, haze * ${previewNext ? "0.0" : ".96"});
+      ${previewNext ? "outgoingLight *= vec3(.72,.65,.54);" : ""}
       #include <opaque_fragment>`);
   };
-  m.customProgramCacheKey = () => `surface-daylight-${reflection}-${glow}`;
+  m.customProgramCacheKey = () => `surface-daylight-${reflection}-${glow}${previewNext ? "-next" : ""}`;
   return m;
 }
 export function skyMaterial() {

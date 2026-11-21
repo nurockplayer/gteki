@@ -711,9 +711,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const headway = HEADWAY[opts.timeBand ?? "midday"];
 
   // ---- materials
-  const concourseTiles = tileTextures({ base: "#817c71", grout: "#56534d", n: 4, seed: 11, speckle: 0.13 });
-  const paidTiles = tileTextures({ base: "#76776f", grout: "#4c4f49", n: 4, seed: 23, speckle: 0.12 });
-  const platformTiles = tileTextures({ base: "#777b7a", grout: "#484d4c", n: 4, seed: 37, speckle: 0.13 });
+  const stone = opts.previewNext ? { base: "#8e8c87", grout: "#807e7a", speckle: 0.05, stone: true } : {};
+  const concourseTiles = tileTextures({ base: "#817c71", grout: "#56534d", n: 4, seed: 11, speckle: 0.13, ...stone });
+  const paidTiles = tileTextures({ base: "#76776f", grout: "#4c4f49", n: 4, seed: 23, speckle: 0.12, ...stone });
+  const platformTiles = tileTextures({ base: "#777b7a", grout: "#484d4c", n: 4, seed: 37, speckle: 0.13, ...stone });
   const wallMaps = wallTexture(OEDO_MAGENTA), ceilingMaps = ceilingTexture();
   markScene("build-textures-generated");
   if (opts.quality === "low") {
@@ -740,6 +741,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     lightHousing: track(new THREE.MeshStandardMaterial({ color: "#9a9ea2", roughness: 0.35, metalness: 0.6 })),
     tactile: track(new THREE.MeshStandardMaterial({ map: track(tactileTexture()), roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -2 })),
     steel: track(new THREE.MeshStandardMaterial({ color: "#aab2b5", roughness: 0.58, metalness: 0.6, envMapIntensity: 0.22, side: THREE.DoubleSide })),
+    mouthSteel: track(new THREE.MeshStandardMaterial({ color: "#62696b", roughness: 0.32, metalness: 1 })),
+    mouthGlass: track(new THREE.MeshStandardMaterial({ color: "#a8b6b8", roughness: .3, metalness: .08, transparent: true, opacity: .12, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true })),
     darkSteel: track(new THREE.MeshStandardMaterial({ color: "#3b3f44", roughness: 0.45, metalness: 0.6 })),
     rubber: track(new THREE.MeshStandardMaterial({ color: "#121314", roughness: 0.55 })),
     // Tinted reflective glass without a transmission scene pass (also coherent on low quality).
@@ -773,6 +776,22 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform]) {
     m.map!.repeat.set(1, 1);
   }
+
+  if (opts.previewNext) for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform]) {
+    m.roughness = 1; // roughnessMap carries 0.30–0.40, rather than multiplying it twice.
+    m.bumpScale = 0.002;
+    m.envMapIntensity = 0.55;
+
+  }
+
+  if (opts.previewNext && opts.quality === "high") {
+    mat.mouthGlass.onBeforeCompile = shader => {
+      shader.fragmentShader = shader.fragmentShader.replace("#include <opaque_fragment>", `diffuseColor.a += pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 3.0) * 0.5;
+#include <opaque_fragment>`);
+    };
+    mat.mouthGlass.customProgramCacheKey = () => "j10-mouth-guard-glass";
+  }
+  const mouthPanels: THREE.BufferGeometry[] = [], mouthRails: THREE.BufferGeometry[] = [];
 
   const levelGroups = new Map<string, THREE.Group>();
   const propWalls: WallSeg[] = [];
@@ -882,7 +901,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // ---- underground fixtures, kept in a separate helper for the surface lane's hook
   // The escalator shell soffits are roofs too: without them the inclines get no fixtures (vertical gap #5).
   const shell = escalatorShellGeometry(layout, bundle);
-  buildUndergroundLighting(bundle, layout, levelGroups, root, track, shell.finishes);
+  buildUndergroundLighting(bundle, layout, levelGroups, root, track, shell.finishes, opts.previewNext);
   if (preview) for (const roof of preview.roofs) {
     const m = new THREE.Mesh(track(soffitGeometry(roof)), mat.ceiling);
     m.name = roof.spaceId;
@@ -1105,11 +1124,21 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       // The escalator's procedural balustrade panel, handrail and top rail are one placeholder group, hidden per run
       // when the kit piece that replaces them is placed; stairs keep their side walls and pipes.
       const panelGeo = enclosureWallGeometry(panel);
-      if (r.mode === "stairs") sideGeos.push(panelGeo);
+      const mouthGuard = opts.previewNext && r.mode === "stairs" && Math.max(r.a.z, r.b.z) > -0.5
+        && [r.a, r.b].some(p => stableHypot(p.x + 59.9, p.y - 211.96) < 4);
+      if (mouthGuard) mouthPanels.push(panelGeo);
+      else if (r.mode === "stairs") sideGeos.push(panelGeo);
       else balustradeGeos.push(ledger ? ledger.tag("escalator-balustrade", r.edgeId, panelGeo) : panelGeo);
       const a = v3({ ...w.a, z: za + 0.96 }), b = v3({ ...w.b, z: zb + 0.96 });
       if (r.mode === "stairs") {
-        handGeos.push(cylAlong(a, b, 0.026));
+        if (mouthGuard) {
+          mouthRails.push(cylAlong(a, b, .0225));
+          const count = Math.ceil(stableHypot(w.b.x-w.a.x,w.b.y-w.a.y)/1.5);
+          for (let i=0;i<=count;i++) {
+            const t=i/count, p={x:w.a.x+(w.b.x-w.a.x)*t,y:w.a.y+(w.b.y-w.a.y)*t};
+            mouthRails.push(cylAlong(v3({...p,z:zAt(p)}),v3({...p,z:zAt(p)+.96}),.0225));
+          }
+        } else handGeos.push(cylAlong(a, b, 0.026));
         // Keep the dark stringer 5 mm inside the side-wall plane to avoid depth fighting.
         const length = Math.sqrt(l2), nx = -d.y / length, ny = d.x / length;
         const side = Math.sign((w.a.x - r.a.x) * nx + (w.a.y - r.a.y) * ny);
@@ -1334,6 +1363,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
   }
 
+  if (opts.previewNext) for (const [geos, material] of [[mouthPanels,mat.mouthGlass],[mouthRails,mat.mouthSteel]] as const) {
+    const geometry = merged(geos);
+    if (geometry) root.add(new THREE.Mesh(track(geometry),material));
+  }
+
   // ---- collision world (also supplies the app's normal spawn for identity placement)
   const world = new WalkWorld(layout);
   world.addWalls(propWalls);
@@ -1351,6 +1385,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // bake `uv1` into every floor mesh, so the merged floor keeps its AO coordinates.
   mergeStaticLevelMeshes(root, "level-B6", track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
+  if (opts.previewNext) installStonePools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track, opts.quality === "low");
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
   // skirts, fare/access fence rails and posts, lift-portal door finishes and level trim: ~50k triangles in all,
   // of which the portals are only ~650 (#72). The batch used to inherit the name "elevator-portal:finish".
@@ -2051,6 +2086,64 @@ function bakeFloorLightPools(
   });
 }
 
+/** A nearest-fixture field makes each floor fragment evaluate one ellipse, independent of fixture count. */
+function installStonePools(layout: Layout, root: THREE.Group, materials: THREE.MeshStandardMaterial[], track: <T extends { dispose(): void }>(x: T) => T, low: boolean) {
+  const fixtures: { a: XYZ; b: XYZ; ground: XYZ }[] = [];
+  root.traverse(o => { if (o.userData.poolFixtures) fixtures.push(...o.userData.poolFixtures); });
+  const levels = layout.levels, cols = 3, rows = Math.ceil(levels.length / cols), size = 512;
+  const cellX = Math.floor(size / cols), cellY = Math.floor(size / rows);
+  const { min, max } = layout.bounds, dx = max.x - min.x + 8, dy = max.y - min.y + 8;
+  const data = new Float32Array(size * size * 4);
+  for (const [i, lv] of levels.entries()) {
+    const candidates = fixtures.filter(f => Math.abs(f.ground.z - lv.z) < 2.4);
+    for (let y = 0; y < cellY; y++) for (let x = 0; x < cellX; x++) {
+      const wx = min.x - 4 + (x + 0.5) / cellX * dx, wy = min.y - 4 + (y + 0.5) / cellY * dy;
+      let best = Infinity;
+      const offset = (((Math.floor(i / cols) * cellY + y) * size) + (i % cols) * cellX + x) * 4;
+      data[offset] = 1e6;
+      for (const f of candidates) {
+        const angle = Math.atan2(f.b.y - f.a.y, f.b.x - f.a.x), ux = Math.cos(angle), uy = Math.sin(angle);
+        const along = (wx - f.ground.x) * ux + (wy - f.ground.y) * uy;
+        const across = -(wx - f.ground.x) * uy + (wy - f.ground.y) * ux;
+        const half = stableHypot(f.b.x - f.a.x, f.b.y - f.a.y) * 0.5;
+        const d = (along / (half + 0.45)) ** 2 + (across / 1.3) ** 2;
+        if (d < best) { best = d; data.set([f.ground.x, f.ground.y, angle, half], offset); }
+      }
+    }
+  }
+  const field = track(new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.FloatType));
+  field.needsUpdate = true;
+  for (const material of materials) {
+    const previous = material.onBeforeCompile;
+    material.onBeforeCompile = (shader, renderer) => {
+      previous.call(material, shader, renderer);
+      shader.uniforms.stoneFixtures = { value: field };
+      // Keep the environment's diffuse illumination on low tier; disable only its reflection.
+      if (low) shader.fragmentShader = shader.fragmentShader.replace("#include <lights_fragment_end>", "#include <lights_fragment_end>\nreflectedLight.indirectSpecular = vec3(0.0);");
+      shader.vertexShader = `varying vec3 stoneWorld;\n${shader.vertexShader}`.replace("#include <project_vertex>", `#include <project_vertex>
+        vec4 stonePosition = vec4(transformed, 1.0);
+        #ifdef USE_INSTANCING
+          stonePosition = instanceMatrix * stonePosition;
+        #endif
+        stoneWorld = (modelMatrix * stonePosition).xyz;`);
+      shader.fragmentShader = `uniform sampler2D stoneFixtures; varying vec3 stoneWorld;\n${shader.fragmentShader}`.replace("#include <colorspace_fragment>", `#include <colorspace_fragment>
+        float stoneLevel = 0.0, stoneDistance = 1e6;
+        ${levels.map((lv, i) => `if (abs(stoneWorld.y - ${lv.z.toFixed(5)}) < stoneDistance) { stoneDistance = abs(stoneWorld.y - ${lv.z.toFixed(5)}); stoneLevel = ${i.toFixed(1)}; }`).join("\n")}
+        vec2 stoneUV = clamp((vec2(stoneWorld.x, -stoneWorld.z) - vec2(${(min.x - 4).toFixed(5)}, ${(min.y - 4).toFixed(5)})) / vec2(${dx.toFixed(5)}, ${dy.toFixed(5)}), 0.0, 0.999);
+        vec2 stoneCell = vec2(mod(stoneLevel, 3.0), floor(stoneLevel / 3.0));
+        vec4 fixture = texture2D(stoneFixtures, (stoneCell * vec2(${cellX}.0, ${cellY}.0) + floor(stoneUV * vec2(${cellX}.0, ${cellY}.0)) + 0.5) / 512.0);
+        vec2 delta = vec2(stoneWorld.x, -stoneWorld.z) - fixture.xy;
+        vec2 axis = vec2(cos(fixture.z), sin(fixture.z));
+        vec2 ellipse = vec2(dot(delta, axis) / (fixture.w + 0.45), dot(delta, vec2(-axis.y, axis.x)) / 1.3);
+        float pool = exp(-2.4 * dot(ellipse, ellipse));
+        // Display-space modulation preserves separation under preset B's bright landing grade.
+        gl_FragColor.rgb = min(vec3(0.98), gl_FragColor.rgb * (0.90 + 0.60 * pool));`);
+    };
+    material.customProgramCacheKey = () => "shinjuku-stone-pools-v1";
+    material.needsUpdate = true;
+  }
+}
+
 /** Instanced linear luminaires follow both the corridor axes and the roof pitch of each run. */
 function buildUndergroundLighting(
   bundle: StationBundle,
@@ -2059,6 +2152,7 @@ function buildUndergroundLighting(
   root: THREE.Group,
   track: <T extends { dispose(): void }>(x: T) => T,
   extraRoofs: Soffit[] = [],
+  previewNext = false,
 ) {
   type Fixture = { a: XYZ; b: XYZ; ground: XYZ; upright: boolean; edgeId: string; sample: number; roof: Omit<Soffit, "kind"> };
   const batches = new Map<string, Fixture[]>();
@@ -2181,6 +2275,7 @@ function buildUndergroundLighting(
     const strips = new THREE.InstancedMesh(box, material, fixtures.length);
     strips.name = "linear-light:underground";
     strips.userData.floorPools = fixtures.map((f) => f.ground);
+    if (previewNext) strips.userData.poolFixtures = fixtures.map(({ a, b, ground }) => ({ a, b, ground }));
     strips.userData.mounts = fixtures.map(({ edgeId, sample, roof }) => ({ edgeId, sample, roof,
       section: layout.shaftCeilingPreview?.roofs.findIndex((s) => s === roof) ?? -1 }));
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), center = new THREE.Vector3(), scale = new THREE.Vector3();

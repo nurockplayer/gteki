@@ -130,7 +130,7 @@ jobs:
     if: needs.changes.outputs.code == 'true'
     name: golden-cameras (${{ matrix.station }})
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -159,6 +159,13 @@ jobs:
           GTEKI_ROOT: ${{ github.workspace }}
           GTEKI_GOLDEN_STATION: ${{ matrix.station }}
         run: pnpm exec playwright test specs/29-golden-shots.spec.ts --project=desktop-chromium --trace=off
+      - name: Capture J10 material evidence
+        if: matrix.station == 'shinjuku'
+        timeout-minutes: 20
+        working-directory: tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/33-material-evidence.spec.ts --project=desktop-chromium --trace=off
       - name: Upload golden shots
         if: always()
         uses: actions/upload-artifact@v4

@@ -176,6 +176,7 @@ export class StreetBackdrop {
   private readonly ground: THREE.Mesh<THREE.CircleGeometry, THREE.MeshBasicMaterial>;
   private readonly fog = new THREE.Fog(0x000000, 1, 2);
   private saved: { fog: THREE.Scene["fog"] } | null = null;
+  private previewNext = false;
   private blend = 0;
   private groundBlend = 0;
   private root: THREE.Object3D | null = null;
@@ -223,7 +224,11 @@ export class StreetBackdrop {
    * plane fades in (so a surface arriving mid-fade cancels it before it shows). The visibility of the known
    * ones is re-read every frame.
    */
-  attach(root: THREE.Object3D | null): void {
+  attach(root: THREE.Object3D | null, previewNext = false): void {
+    this.previewNext = previewNext;
+    this.sky.material.uniforms.uHorizon!.value.copy(previewNext ? new THREE.Color(0xbeb3a0) : STREET.haze);
+    this.sky.material.uniforms.uZenith!.value.set(previewNext ? 0xaeb2ad : 0x6f95bd);
+    this.ground.material.color.setRGB(previewNext ? .68 : .62, .62, previewNext ? .50 : .62);
     this.root = root;
     this.surfaces = collectStreetSurfaces(root);
     this.sinceScan = 0;
@@ -271,7 +276,7 @@ export class StreetBackdrop {
     this.fog.color.copy(fogColor);
     this.fog.near = near;
     this.fog.far = far;
-    scene.fog = this.fog;
+    scene.fog = this.previewNext ? base : this.fog;
     this.group.visible = true;
     this.sky.position.copy(camera.position);
     this.sky.material.uniforms.uOpacity!.value = b;

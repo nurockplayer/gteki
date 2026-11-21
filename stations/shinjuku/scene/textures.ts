@@ -72,8 +72,8 @@ function finish(c: HTMLCanvasElement, repeat: number, aniso = 8, color = true) {
 }
 
 /** Large-format porcelain tiles (grid of `n`×`n` per texture), subtle speckle + per-tile tone. */
-export function tileTextures(opts: { base: string; grout: string; n: number; seed: number; speckle?: number }) {
-  const S = 1024;
+export function tileTextures(opts: { base: string; grout: string; n: number; seed: number; speckle?: number; stone?: boolean }) {
+  const S = opts.stone ? 512 : 1024;
   const [c, g] = canvas(S, S);
   const [rc, rg] = canvas(S, S);
   const [bc, bg] = canvas(S, S);
@@ -88,7 +88,7 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
       const col = base.clone().multiplyScalar(k);
       g.fillStyle = `#${col.getHexString()}`;
       g.fillRect(i * cell, j * cell, cell, cell);
-      const rough = 172 + r() * 26;
+      const rough = opts.stone ? 77 + r() * 25 : 172 + r() * 26;
       rg.fillStyle = `rgb(${rough},${rough},${rough})`;
       rg.fillRect(i * cell, j * cell, cell, cell);
     }
