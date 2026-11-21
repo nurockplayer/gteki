@@ -74,7 +74,7 @@ function beam(a: THREE.Vector3, b: THREE.Vector3, width: number, depth: number) 
  * keeps the whole scope it was defined in reachable, and this scope holds the street polygons, building
  * footprints and every source geometry (#72). The survivors are created in buildSurface, whose scope
  * holds nothing else. */
-export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
+export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high"; previewNext?: boolean }) {
   const { root, resources, visibility } = assembleSurface(surface, layout, opts);
   const dome = root.getObjectByName("surface-sky")!;
   dome.onBeforeRender = (_renderer, _scene, camera) => { dome.position.copy(camera.position); dome.updateMatrixWorld(); };
@@ -85,18 +85,19 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   const update = (_dt: number, _t: number) => { root.visible = root.userData.suppressed !== true && viewer !== null && surfaceVisibleIn(visibility, viewer); };
   return { root, update, setViewer(p: XYZ) { viewer = { ...p }; update(0, 0); }, dispose() { if (disposed) return; disposed = true; for (const r of resources) r.dispose(); resources.clear(); root.clear(); } };
 }
-function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
+function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high"; previewNext?: boolean }) {
   const root = new THREE.Group(); root.name = "surface-render-only"; root.visible = false;
   root.userData.attribution = surface.attribution;
   const resources = new Set<{ dispose(): void }>();
   const track = <T extends { dispose(): void }>(r: T) => (resources.add(r), r);
+  const next = opts.previewNext === true;
   const mats = {
     ground: track(daylight("#f2eee5", track(pavingTexture()))), asphalt: track(daylight("#ffffff",track(pavingTexture(true)))),
     stone: track(daylight("#b7b8b2")), steel: track(daylight("#aebcc2",null,.25)),
     glass: track(daylight("#8aafb9",null,.8)), roof: track(daylight("#899493")),
     paint: track(daylight("#dfdfd2")), tactile: track(daylight("#c7a64c")),
     leaf: track(daylight("#60754b")),
-    facades: Array.from({length:5},(_,i)=>{const m=track(daylight("#ffffff",track(facadeTexture(i)),i===0?.65:.24));m.vertexColors=true;return m;}),
+    facades: Array.from({length:5},(_,i)=>{const m=track(daylight("#ffffff",track(facadeTexture(i)),i===0?.65:.24,false,next));m.vertexColors=true;return m;}),
   };
   if (opts.quality === "low") for (const material of mats.facades) {
     const source = material.map!.image as HTMLCanvasElement;
@@ -106,6 +107,18 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     canvas.getContext("2d", { willReadFrequently: true })!.drawImage(source, 0, 0, canvas.width, canvas.height);
     material.map!.image = canvas;
   }
+  const mouthGlass = track(new THREE.MeshStandardMaterial({ color: "#a8b6b8", roughness: .3, metalness: .08, transparent: true, opacity: .12, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, envMapIntensity: opts.quality === "low" ? 0 : .35 }));
+  const mouthSteel = track(new THREE.MeshStandardMaterial({ color: "#62696b", roughness: .32, metalness: 1 }));
+  if (next && opts.quality === "high") {
+    mouthGlass.onBeforeCompile = shader => {
+      shader.fragmentShader = shader.fragmentShader.replace("#include <opaque_fragment>", `
+        diffuseColor.a += pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 3.0) * 0.5;
+        #include <opaque_fragment>`);
+    };
+    mouthGlass.customProgramCacheKey = () => "j10-mouth-glass";
+  }
+  const mouth = opts.bundle.nodes.find(n => n.id === "n:a06f3d191885497bac197b666c4daef9")!.position;
+  const atMouth = (p: XY) => next && stableHypot(p.x - mouth.x, p.y - mouth.y) < 14;
   mats.glass.transparent = true; mats.glass.opacity = .38; mats.glass.depthWrite = false;
   const batches = new Map<string, { material: THREE.Material; geometries: THREE.BufferGeometry[] }>();
   const add = (key: string, geometry: THREE.BufferGeometry, material: THREE.Material) => {
@@ -126,6 +139,16 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     add("stone",flat(strip(a,b,.13),.11),mats.stone);
   }
   for(const w of surfacePadWalls(layout,opts.bundle)){
+    if (atMouth({ x: (w.a.x + w.b.x) / 2, y: (w.a.y + w.b.y) / 2 })) {
+      add("mouth-steel",beam(pos(w.a,1.04),pos(w.b,1.04),.045,.045),mouthSteel);
+      add("mouth-glass",quad(w.a,w.b,.08,1.015),mouthGlass);
+      const count=Math.max(1,Math.ceil(stableHypot(w.b.x-w.a.x,w.b.y-w.a.y)/1.5));
+      for(let i=0;i<=count;i++) {
+        const p={x:w.a.x+(w.b.x-w.a.x)*i/count,y:w.a.y+(w.b.y-w.a.y)*i/count};
+        add("mouth-steel",beam(pos(p,0),pos(p,1.08),.045,.045),mouthSteel);
+      }
+      continue;
+    }
     add("steel",beam(pos(w.a,1.04),pos(w.b,1.04),.042,.042),mats.steel);
     add("steel",beam(pos(w.a,.48),pos(w.b,.48),.028,.028),mats.steel);
     const count=Math.max(1,Math.ceil(stableHypot(w.b.x-w.a.x,w.b.y-w.a.y)/1.5));
@@ -159,7 +182,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     ctx.fillStyle=OEDO_MAGENTA;ctx.fillRect(38,y+74,184,184);
     ctx.fillStyle="#ffffff";ctx.font="600 80px 'GTEki Sign JP',sans-serif";ctx.fillText("E27",53,y+193);
     const at=(along:number,across:number,z:number)=>new THREE.Vector3(e.center.x+e.u.x*along-e.u.y*across,z,-(e.center.y+e.u.y*along+e.u.x*across));
-    add("glass",glazingSheet(e.center,e.u,e.halfWidth,e.halfLength,3.08),mats.glass);
+    add(atMouth(e.center)?"mouth-glass":"glass",glazingSheet(e.center,e.u,e.halfWidth,e.halfLength,3.08),atMouth(e.center)?mouthGlass:mats.glass);
     for(const side of [-1,1]){
       add("steel",beam(at(-e.halfLength,side*e.halfWidth,2.99),at(e.halfLength,side*e.halfWidth,2.99),.075,.09),mats.steel);
       add("steel",beam(at(side*e.halfLength,-e.halfWidth,2.99),at(side*e.halfLength,e.halfWidth,2.99),.075,.09),mats.steel);
@@ -257,7 +280,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
       if(!g.attributes.uv)g.setAttribute("uv",new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position!.count*2),2));
     }
     const merged=mergeGeometries(gs,false)!;gs.forEach(g=>g.dispose());
-    const mesh=new THREE.Mesh(track(merged),batch.material);mesh.name=`surface-${name}`;root.add(mesh);
+    const mesh=new THREE.Mesh(track(merged),next && name === "steel" ? mouthSteel : batch.material);mesh.name=`surface-${name}`;root.add(mesh);
   }
   const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;root.add(dome);
   root.userData.drawCallBudget=batches.size+4;root.userData.buildingParts=buildings.length;

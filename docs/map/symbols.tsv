@@ -1096,6 +1096,7 @@ QUEUE_GAP_M	const	stations/ikebukuro/scene/crowd.ts
 QUEUE_MAX	const	stations/ikebukuro/scene/crowd.ts
 QUEUE_STOP_M	const	stations/ikebukuro/scene/crowd.ts
 buildCrowd	function	stations/ikebukuro/scene/crowd.ts
+buildStandingFigure	function	stations/ikebukuro/scene/crowd.ts
 transformLowCrowdVertex	function	stations/ikebukuro/scene/crowd.ts
 AccessFences	interface	stations/ikebukuro/scene/fences.ts
 buildAccessFences	function	stations/ikebukuro/scene/fences.ts

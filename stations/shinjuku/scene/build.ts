@@ -711,9 +711,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const headway = HEADWAY[opts.timeBand ?? "midday"];
 
   // ---- materials
-  const concourseTiles = tileTextures({ base: "#817c71", grout: "#56534d", n: 4, seed: 11, speckle: 0.13 });
-  const paidTiles = tileTextures({ base: "#76776f", grout: "#4c4f49", n: 4, seed: 23, speckle: 0.12 });
-  const platformTiles = tileTextures({ base: "#777b7a", grout: "#484d4c", n: 4, seed: 37, speckle: 0.13 });
+  const stone = opts.previewNext ? { base: "#8e8c87", grout: "#807e7a", speckle: 0.05, stone: true } : {};
+  const concourseTiles = tileTextures({ base: "#817c71", grout: "#56534d", n: 4, seed: 11, speckle: 0.13, ...stone });
+  const paidTiles = tileTextures({ base: "#76776f", grout: "#4c4f49", n: 4, seed: 23, speckle: 0.12, ...stone });
+  const platformTiles = tileTextures({ base: "#777b7a", grout: "#484d4c", n: 4, seed: 37, speckle: 0.13, ...stone });
   const wallMaps = wallTexture(OEDO_MAGENTA), ceilingMaps = ceilingTexture();
   markScene("build-textures-generated");
   if (opts.quality === "low") {
@@ -772,6 +773,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform, mat.wall, mat.ceiling]) guardBumpNormals(m);
   for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform]) {
     m.map!.repeat.set(1, 1);
+  }
+
+  if (opts.previewNext) for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform]) {
+    m.roughness = 1; // roughnessMap carries 0.30–0.40, rather than multiplying it twice.
+    m.bumpScale = 0.002;
+    m.envMapIntensity = opts.quality === "low" ? 0 : 0.55;
+    if (opts.quality === "low") m.envMap = null;
   }
 
   const levelGroups = new Map<string, THREE.Group>();
@@ -1351,6 +1359,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // bake `uv1` into every floor mesh, so the merged floor keeps its AO coordinates.
   mergeStaticLevelMeshes(root, "level-B6", track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
+  if (opts.previewNext) installStonePools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
   // skirts, fare/access fence rails and posts, lift-portal door finishes and level trim: ~50k triangles in all,
   // of which the portals are only ~650 (#72). The batch used to inherit the name "elevator-portal:finish".
@@ -2051,6 +2060,62 @@ function bakeFloorLightPools(
   });
 }
 
+/** A nearest-fixture field makes each floor fragment evaluate one ellipse, independent of fixture count. */
+function installStonePools(layout: Layout, root: THREE.Group, materials: THREE.MeshStandardMaterial[], track: <T extends { dispose(): void }>(x: T) => T) {
+  const fixtures: { a: XYZ; b: XYZ; ground: XYZ }[] = [];
+  root.traverse(o => { if (o.userData.poolFixtures) fixtures.push(...o.userData.poolFixtures); });
+  const levels = layout.levels, cols = 3, rows = Math.ceil(levels.length / cols), size = 512;
+  const cellX = Math.floor(size / cols), cellY = Math.floor(size / rows);
+  const { min, max } = layout.bounds, dx = max.x - min.x + 8, dy = max.y - min.y + 8;
+  const data = new Float32Array(size * size * 4);
+  for (const [i, lv] of levels.entries()) {
+    const candidates = fixtures.filter(f => Math.abs(f.ground.z - lv.z) < 2.4);
+    for (let y = 0; y < cellY; y++) for (let x = 0; x < cellX; x++) {
+      const wx = min.x - 4 + (x + 0.5) / cellX * dx, wy = min.y - 4 + (y + 0.5) / cellY * dy;
+      let best = Infinity;
+      const offset = (((Math.floor(i / cols) * cellY + y) * size) + (i % cols) * cellX + x) * 4;
+      data[offset] = 1e6;
+      for (const f of candidates) {
+        const angle = Math.atan2(f.b.y - f.a.y, f.b.x - f.a.x), ux = Math.cos(angle), uy = Math.sin(angle);
+        const along = (wx - f.ground.x) * ux + (wy - f.ground.y) * uy;
+        const across = -(wx - f.ground.x) * uy + (wy - f.ground.y) * ux;
+        const half = stableHypot(f.b.x - f.a.x, f.b.y - f.a.y) * 0.5;
+        const d = (along / (half + 0.45)) ** 2 + (across / 1.3) ** 2;
+        if (d < best) { best = d; data.set([f.ground.x, f.ground.y, angle, half], offset); }
+      }
+    }
+  }
+  const field = track(new THREE.DataTexture(data, size, size, THREE.RGBAFormat, THREE.FloatType));
+  field.needsUpdate = true;
+  for (const material of materials) {
+    const previous = material.onBeforeCompile;
+    material.onBeforeCompile = (shader, renderer) => {
+      previous.call(material, shader, renderer);
+      shader.uniforms.stoneFixtures = { value: field };
+      shader.vertexShader = `varying vec3 stoneWorld;\n${shader.vertexShader}`.replace("#include <project_vertex>", `#include <project_vertex>
+        vec4 stonePosition = vec4(transformed, 1.0);
+        #ifdef USE_INSTANCING
+          stonePosition = instanceMatrix * stonePosition;
+        #endif
+        stoneWorld = (modelMatrix * stonePosition).xyz;`);
+      shader.fragmentShader = `uniform sampler2D stoneFixtures; varying vec3 stoneWorld;\n${shader.fragmentShader}`.replace("#include <colorspace_fragment>", `#include <colorspace_fragment>
+        float stoneLevel = 0.0, stoneDistance = 1e6;
+        ${levels.map((lv, i) => `if (abs(stoneWorld.y - ${lv.z.toFixed(5)}) < stoneDistance) { stoneDistance = abs(stoneWorld.y - ${lv.z.toFixed(5)}); stoneLevel = ${i.toFixed(1)}; }`).join("\n")}
+        vec2 stoneUV = clamp((vec2(stoneWorld.x, -stoneWorld.z) - vec2(${(min.x - 4).toFixed(5)}, ${(min.y - 4).toFixed(5)})) / vec2(${dx.toFixed(5)}, ${dy.toFixed(5)}), 0.0, 0.999);
+        vec2 stoneCell = vec2(mod(stoneLevel, 3.0), floor(stoneLevel / 3.0));
+        vec4 fixture = texture2D(stoneFixtures, (stoneCell * vec2(${cellX}.0, ${cellY}.0) + floor(stoneUV * vec2(${cellX}.0, ${cellY}.0)) + 0.5) / 512.0);
+        vec2 delta = vec2(stoneWorld.x, -stoneWorld.z) - fixture.xy;
+        vec2 axis = vec2(cos(fixture.z), sin(fixture.z));
+        vec2 ellipse = vec2(dot(delta, axis) / (fixture.w + 0.45), dot(delta, vec2(-axis.y, axis.x)) / 1.3);
+        float pool = exp(-2.4 * dot(ellipse, ellipse));
+        // Display-space modulation preserves separation under preset B's bright landing grade.
+        gl_FragColor.rgb = min(vec3(0.98), gl_FragColor.rgb * (0.82 + 0.58 * pool));`);
+    };
+    material.customProgramCacheKey = () => "shinjuku-stone-pools-v1";
+    material.needsUpdate = true;
+  }
+}
+
 /** Instanced linear luminaires follow both the corridor axes and the roof pitch of each run. */
 function buildUndergroundLighting(
   bundle: StationBundle,
@@ -2181,6 +2246,7 @@ function buildUndergroundLighting(
     const strips = new THREE.InstancedMesh(box, material, fixtures.length);
     strips.name = "linear-light:underground";
     strips.userData.floorPools = fixtures.map((f) => f.ground);
+    strips.userData.poolFixtures = fixtures.map(({ a, b, ground }) => ({ a, b, ground }));
     strips.userData.mounts = fixtures.map(({ edgeId, sample, roof }) => ({ edgeId, sample, roof,
       section: layout.shaftCeilingPreview?.roofs.findIndex((s) => s === roof) ?? -1 }));
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), center = new THREE.Vector3(), scale = new THREE.Vector3();
