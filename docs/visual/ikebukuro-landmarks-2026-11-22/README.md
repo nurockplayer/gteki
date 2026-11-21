@@ -90,3 +90,23 @@ The x18 and x37 poses replace the earlier x17 and x15 substitutes. Lumine's x37 
 |---|---|---|---|---|
 | Tobu, x18 | [next](desktop-tobu-next-nearest.png) | [next](phone-tobu-next-nearest.png) | [default](desktop-tobu-default-nearest.png) | [default](phone-tobu-default-nearest.png) |
 | Lumine, x37 | [next](desktop-lumine-next-nearest.png) | [next](phone-lumine-next-nearest.png) | [default](desktop-lumine-default-nearest.png) | [default](phone-lumine-default-nearest.png) |
+
+## AD capture correction, 2026-11-22 JST
+
+The r4 attempt is rejected as visual evidence. Its 15 desktop next frames were inspected: several names are hidden by source geometry, so neither projected cap heights nor sampled pixels establish rendered lettering contrast. No replacement frame is submitted for art-direction acceptance. Earlier frame tables remain historical and do not satisfy the r4 spec.
+
+[Draw readback and camera diagnosis](r4-diagnosis.json) records two facade callbacks and two sign callbacks for every store during its displayed composer render. This proves render submission, not visible pixels. The eye-level centre-sightline sweep samples 360 cameras per store: distances 60, 80, 100, 120 and 150 m, each at 72 azimuths. It includes the store itself among occluders, unlike the first capture recipe.
+
+| Store | Facade / sign render callbacks | Clear sampled look cameras |
+|---|---|---|
+| Seibu | 2 / 2 | 0 / 360 |
+| Tobu | 2 / 2 | 55 / 360 |
+| Lumine | 2 / 2 | 0 / 360 |
+| Esola | 2 / 2 | 0 / 360 |
+| PARCO | 2 / 2 | 0 / 360 |
+| P’PARCO | 2 / 2 | 32 / 360 |
+| Sunshine | 2 / 2 | 107 / 360 |
+
+At an 80 m offset along the sign normal, Seibu and PARCO hit their own facade before their signs; Lumine hits Tobu; Esola hits existing context. This sampled search does not prove that every continuous camera location is blocked. It does establish why the attempted normal-facing frames fail. The sign anchors currently originate from horizontal rays starting at station exits, which can lie inside the connected source building rather than outside its facade.
+
+The capture recipe now counts self-occlusion and starts its own Vite server, addressing the server termination that interrupted the flag-off pass. It has not been rerun: changing four sign anchors requires the lead’s scope decision. Phone, flag-off, valid look/walk frames and rendered sign-to-wayfinding ratios remain outstanding. No graph or store data was changed in this follow-up.

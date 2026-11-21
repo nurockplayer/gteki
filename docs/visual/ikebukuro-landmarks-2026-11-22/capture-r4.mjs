@@ -1,6 +1,15 @@
 // Ego-browser stdin script. Run through job-run; captured times are ISO UTC.
 // Server: pnpm dev --port 5192 --strictPort
 import fs from 'node:fs/promises';
+import {spawn} from 'node:child_process';
+const repo = '/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro';
+const server = spawn('node', [repo + '/apps/web/node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5192', '--strictPort'], {cwd: repo + '/apps/web', stdio: ['ignore', 'pipe', 'inherit']});
+process.once('exit', () => server.kill());
+await new Promise((resolve, reject) => {
+  server.stdout.on('data', chunk => {if (chunk.toString().includes('Local:')) resolve();});
+  server.once('error', reject);
+  server.once('exit', code => reject(new Error('Capture server exited: ' + code)));
+});
 const root = '/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro/docs/visual/ikebukuro-landmarks-2026-11-22/r4';
 const task = await taskSpace(32);
 const page = task.page('p1');
@@ -36,8 +45,9 @@ for (const [device, width, height] of [['desktop', 1440, 900], ['phone', 390, 84
           const visible = point => {
             const ray = new T.Raycaster(point, aim.clone().sub(point).normalize(), 0, point.distanceTo(aim) - 0.2);
             const blockers = [];
-            e.scene.traverse(o => {if (o.isMesh && o.visible && !o.name.startsWith('landmark-sign:') && !o.name.includes('avatar')) blockers.push(o);});
-            return ray.intersectObjects(blockers, false).every(h => h.object === mesh);
+            e.scene.traverse(o => {let shown = true; for (let parent = o; parent; parent = parent.parent) shown &&= parent.visible;
+            if (o.isMesh && shown && !o.name.startsWith('landmark-sign:') && !o.name.includes('avatar')) blockers.push(o);});
+            return ray.intersectObjects(blockers, false).length === 0;
           };
           if (!pose && kind === 'look') {
             // Eye stays 1.6 m above the PLATEAU pavement datum. Turn along the
@@ -48,7 +58,8 @@ for (const [device, width, height] of [['desktop', 1440, 900], ['phone', 390, 84
               const eye = aim.clone().addScaledVector(direction, distance); eye.y = 34.1;
               options.push({eye, distance, clear: visible(eye)});
             }
-            const c = options.find(o => o.clear) ?? options[0];
+            const c = options.find(o => o.clear);
+            if (!c) throw new Error(`No unobstructed look camera in sampled facade sector: ${store}; see r4-diagnosis.json`);
             const target = aim.clone(); target.y = (aim.y + 32.5) / 2;
             const vertical = Math.abs(Math.atan2(aim.y - c.eye.y, c.distance) - Math.atan2(32.5 - c.eye.y, c.distance));
             chosen = {eye:c.eye.toArray(), target:target.toArray(), aim:aim.toArray(), normal:normal.toArray(), facadeDistanceM:c.distance, clearRay:c.clear, fov:Math.max(55, vertical * 180 / Math.PI + 16)};
