@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "stores": [
+    {
+      "id": "isetan-shinjuku-mens",
+      "name": {
+        "ja": "伊勢丹新宿店 メンズ館",
+        "en": "Isetan Shinjuku Men’s Building"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B1",
+          "category": "mens",
+          "label": {
+            "ja": "紳士靴・バッグ・肌着",
+            "en": "Men’s shoes, bags and underwear"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "category": "cosmetics",
+          "label": {
+            "ja": "コスメティクス・フレグランス・革小物",
+            "en": "Cosmetics, fragrances and leather goods"
+          },
+          "tenants": [
+            {
+              "ja": "Aesop",
+              "en": "Aesop"
+            },
+            {
+              "ja": "ARTISTIC&CO.",
+              "en": "ARTISTIC&CO."
+            },
+            {
+              "ja": "Berluti",
+              "en": "Berluti"
+            },
+            {
+              "ja": "FREDERIC MALLE",
+              "en": "FREDERIC MALLE"
+            },
+            {
+              "ja": "GUCCI",
+              "en": "GUCCI"
+            },
+            {
+              "ja": "LONE ONES",
+              "en": "LONE ONES"
+            },
+            {
+              "ja": "Maison Margiela",
+              "en": "Maison Margiela"
+            },
+            {
+              "ja": "M・A・R・S",
+              "en": "M・A・R・S"
+            },
+            {
+              "ja": "MONTBLANC",
+              "en": "MONTBLANC"
+            },
+            {
+              "ja": "Paul Smith",
+              "en": "Paul Smith"
+            },
+            {
+              "ja": "PRADA",
+              "en": "PRADA"
+            },
+            {
+              "ja": "TaroWashimi",
+              "en": "TaroWashimi"
+            },
+            {
+              "ja": "THOM BROWNE",
+              "en": "THOM BROWNE"
+            },
+            {
+              "ja": "TOD'S",
+              "en": "TOD'S"
+            },
+            {
+              "ja": "VALMONT",
+              "en": "VALMONT"
+            }
+          ],
+          "source": "https://www.mistore.jp/store/shinjuku/shops/men/mens_info.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "category": "mens",
+          "label": {
+            "ja": "メンズデザイナーズ",
+            "en": "Men’s designers"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "category": "mens",
+          "label": {
+            "ja": "メンズデザイナーズ",
+            "en": "Men’s designers"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "category": "mens",
+          "label": {
+            "ja": "メンズラグジュアリー",
+            "en": "Men’s luxury"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "category": "mens",
+          "label": {
+            "ja": "メンズテーラードクロージング",
+            "en": "Men’s tailored clothing"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "category": "mens",
+          "label": {
+            "ja": "メンズクリエーターズ",
+            "en": "Men’s creators"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "category": "mens",
+          "label": {
+            "ja": "メンズオーセンティック＆コンテンポラリー",
+            "en": "Men’s authentic and contemporary"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "category": "living",
+          "label": {
+            "ja": "イセタンメンズ レジデンス",
+            "en": "Isetan Men’s Residence"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "RF",
+          "category": "rooftop",
+          "label": {
+            "ja": "ゴルフガーデン",
+            "en": "Golf garden"
+          },
+          "tenants": [],
+          "source": "https://www.mistore.jp/store/shinjuku/shops_mens.html/1000/index.html",
+          "read": "2026-11-22"
+        }
+      ]
+    }
+  ]
+}

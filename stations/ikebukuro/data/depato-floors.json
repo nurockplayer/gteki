@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "stores": [
+    {
+      "id": "seibu-ikebukuro",
+      "name": {
+        "ja": "西武池袋本店",
+        "en": "Seibu Ikebukuro"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B2",
+          "category": "food-hall",
+          "label": {
+            "ja": "デパチカ（惣菜）",
+            "en": "Food hall (prepared foods)"
+          },
+          "tenants": [
+            {
+              "en": "I.T.O.",
+              "ja": "I.T.O."
+            },
+            {
+              "en": "AJISAKI",
+              "ja": "味咲き"
+            },
+            {
+              "en": "AJANTA",
+              "ja": "アジャンタ"
+            },
+            {
+              "en": "AVANCER",
+              "ja": "アヴァンセ"
+            },
+            {
+              "en": "RF1",
+              "ja": "RF1"
+            },
+            {
+              "en": "ISHINGO",
+              "ja": "維新號"
+            },
+            {
+              "en": "ICHIJYUSHUNSAI NIHONBASHI DASHIBA",
+              "ja": "一汁旬菜 日本橋だし場"
+            },
+            {
+              "en": "ITOHAN",
+              "ja": "いとはん"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "category": "sweets",
+          "label": {
+            "ja": "デパチカ（スイーツ＆ギフト）",
+            "en": "Food hall (sweets and gifts)"
+          },
+          "tenants": [
+            {
+              "en": "AKASAKA KAKIYAMA",
+              "ja": "赤坂柿山"
+            },
+            {
+              "en": "AKASAKA MATSUBAYA",
+              "ja": "赤坂松葉屋"
+            },
+            {
+              "en": "AGEMOCHI COCORO",
+              "ja": "あげもちCocoro"
+            },
+            {
+              "en": "ASAKUSA IMAHAN",
+              "ja": "浅草今半"
+            },
+            {
+              "en": "ASAKUSA UMEZONO",
+              "ja": "浅草梅園"
+            },
+            {
+              "en": "ASAKUSA MANGANDO",
+              "ja": "浅草満願堂"
+            },
+            {
+              "en": "AZABU KARINTO",
+              "ja": "麻布かりんと"
+            },
+            {
+              "en": "adachiotoemon",
+              "ja": "足立音衛門"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "category": "cosmetics",
+          "label": {
+            "ja": "インターナショナルブティック／フレグランス",
+            "en": "International boutiques and fragrance"
+          },
+          "tenants": [
+            {
+              "en": "ACQUA DI PARMA",
+              "ja": "アクア ディ パルマ"
+            },
+            {
+              "en": "OFFICINE UNIVERSELLE BULY",
+              "ja": "オフィシーヌ・ユニヴェルセル・ビュリー"
+            },
+            {
+              "en": "Guerlain Maison de Parfums",
+              "ja": "ゲラン メゾン ド パルファン"
+            },
+            {
+              "en": "COMME des GARCONS POCKET",
+              "ja": "コム デ ギャルソン ポケット"
+            },
+            {
+              "en": "THE ROW",
+              "ja": "ザ・ロウ"
+            },
+            {
+              "en": "JO MALONE LONDON",
+              "ja": "ジョー マローン ロンドン"
+            },
+            {
+              "en": "DIOR HAUTE PARFUMERIE",
+              "ja": "ディオール  オート パフューマリー"
+            },
+            {
+              "en": "DIOR（WOMEN）",
+              "ja": "ディオール（レディース）"
+            },
+            {
+              "en": "DIPTYQUE",
+              "ja": "ディプティック"
+            },
+            {
+              "en": "BYREDO",
+              "ja": "バイレード"
+            },
+            {
+              "en": "BVLGARI",
+              "ja": "ブルガリ"
+            },
+            {
+              "en": "Maison Margiela Fragrances",
+              "ja": "メゾン マルジェラ フレグランス"
+            },
+            {
+              "en": "LOUIS VUITTON",
+              "ja": "ルイ・ヴィトン"
+            },
+            {
+              "en": "LOEWE PERFUMES",
+              "ja": "ロエベ パルファム"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "category": "other",
+          "label": {
+            "ja": "インターナショナルブティック",
+            "en": "International boutiques"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "category": "cosmetics",
+          "label": {
+            "ja": "コスメティックス",
+            "en": "Cosmetics"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "category": "other",
+          "label": {
+            "ja": "インターナショナルブティック",
+            "en": "International boutiques"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "category": "accessories",
+          "label": {
+            "ja": "ジュエリー／ウォッチ／クリスタル",
+            "en": "Jewelry, watches and crystal"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "category": "other",
+          "label": {
+            "ja": "インターナショナルブティック",
+            "en": "International boutiques"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "category": "other",
+          "label": {
+            "ja": "ファッション＆グッズ",
+            "en": "Fashion and goods"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22"
+        }
+      ]
+    }
+  ]
+}
