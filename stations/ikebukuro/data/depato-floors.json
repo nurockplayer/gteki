@@ -843,6 +843,152 @@
           "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
           "read": "2026-11-22",
           "order": 7
+        },
+        {
+          "level": "B2",
+          "order": -2,
+          "category": "other",
+          "label": {
+            "ja": "別館・書籍館 駐車場",
+            "en": "Annex and bookstore parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "別館 三省堂書店・カフェ",
+            "en": "Annex bookstore and cafe"
+          },
+          "tenants": [
+            {
+              "ja": "三省堂書店",
+              "en": "BOOKS SANSEIDO"
+            },
+            {
+              "ja": "イー・エー・グラン",
+              "en": "e.a.gran"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "living",
+          "label": {
+            "ja": "別館 無印良品・駐車場",
+            "en": "Annex MUJI and parking"
+          },
+          "tenants": [
+            {
+              "ja": "無印良品",
+              "en": "MUJI"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "living",
+          "label": {
+            "ja": "別館 無印良品・薬局・駐車場",
+            "en": "Annex MUJI, pharmacy and parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "別館 駐車場",
+            "en": "Annex parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "別館 駐車場",
+            "en": "Annex parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "別館 駐車場",
+            "en": "Annex parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "別館 駐車場",
+            "en": "Annex parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "other",
+          "label": {
+            "ja": "別館 池袋コミュニティ・カレッジ",
+            "en": "Annex Ikebukuro Community College"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "other",
+          "label": {
+            "ja": "別館 池袋コミュニティ・カレッジ",
+            "en": "Annex Ikebukuro Community College"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "RF",
+          "order": 100,
+          "category": "rooftop",
+          "label": {
+            "ja": "別館 屋上テニスコート",
+            "en": "Annex rooftop tennis courts"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
         }
       ]
     },
