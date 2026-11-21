@@ -24,7 +24,8 @@ const referenceInfo=await reference.evaluate(async()=>{
  window.__depatoReference={e,T,calibration,w,h};
  return {station:'shinjuku',poi:poi.id,node:node.id,sourceMesh:s.mesh.name,sourceFaceCentre:s.face.centre.toArray(),widthM:w,heightM:h,method:'Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged.'};
 });
-const frames=[],poses={};
+const {frames}=JSON.parse(await fs.readFile(root+'/frames.json','utf8'));
+const poses=Object.fromEntries(frames.filter(f=>f.flag==='next').map(f=>[f.file.replace(/-next\.png$/,''),f.pose]));
 for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
  await page.cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
  for(const flag of ['next','off']){
@@ -47,6 +48,7 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
   });
   for(const store of ['seibu','tobu','lumine','esola','parco','pparco','sunshine'])for(const kind of ['walk','look',...(store==='sunshine'?['east-exit']:[])]){
    const key=`${device}-${store}-${kind}`;
+   if(frames.some(f=>f.file===`${key}-${flag}.png`))continue;
    const result=await page.evaluate(({store,kind,flag,pose,sunshineRoad})=>{
     const {e,T,meshes,roads,pavement}=window.__depato,layer=e.scene.getObjectByName('landmarks-next'),sign=layer?.getObjectByName('landmark-sign:'+store),mesh=layer?.getObjectByName('ctx_bldg_landmark_'+store);
     const aim=new T.Vector3(...(pose?.aim??sign.getWorldPosition(new T.Vector3()).toArray())),normal=new T.Vector3(...(pose?.normal??new T.Vector3(0,0,1).applyQuaternion(sign.quaternion).toArray()));
@@ -80,12 +82,12 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
      candidates.sort((a,b)=>a.facadeDistanceM-b.facadeDistanceM||a.distance-b.distance);
      if(kind==='east-exit'){
       const n=e.station.bundle.nodes.find(n=>n.id==='x35'),point=new T.Vector3(n.position.x,n.position.z,-n.position.y);
-      candidates=[{point,road:'modeled east exit x35'}];
+      candidates=pavement.flatMap(({triangle,road})=>[triangle.closestPointToPoint(point,new T.Vector3()),triangle.getMidpoint(new T.Vector3())].map(p=>({point:p,road,exitOffsetM:p.distanceTo(point)}))).sort((a,b)=>a.exitOffsetM-b.exitOffsetM);
      }
      const c=candidates.find(c=>clear(c.point.clone().add(new T.Vector3(0,1.6,0))));
      if(!c)throw new Error('No full-sign public-road pavement pose: '+store+'/'+kind);
      const eye=c.point.clone().add(new T.Vector3(0,1.6,0)),f=frameTarget(eye);
-     chosen={eye:eye.toArray(),target:f.target.toArray(),fov:f.fov,road:c.road,facadeDistanceM:c.facadeDistanceM,clearSign:true,eyeHeightM:1.6,captureOnly:e.groundAt(c.point.x,c.point.y+1.5,c.point.z,4)===null,pavementSamples:candidates.length};
+     chosen={eye:eye.toArray(),target:f.target.toArray(),fov:f.fov,road:c.road,facadeDistanceM:c.facadeDistanceM,clearSign:true,eyeHeightM:1.6,captureOnly:e.groundAt(c.point.x,c.point.y+1.5,c.point.z,4)===null,pavementSamples:candidates.length,...(kind==='east-exit'?{exitNode:'x35',exitOffsetM:c.exitOffsetM}:{} )};
     }
     Object.assign(chosen,{aim:aim.toArray(),normal:normal.toArray(),signWidth,signHeight});
     // The walker stays at x38; these cameras do not extend gameplay walk coverage.
