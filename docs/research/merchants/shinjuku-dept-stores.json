@@ -531,6 +531,10 @@
         {
           "lang": "en",
           "text": "Keio"
+        },
+        {
+          "lang": "ja",
+          "text": "京王百貨店 新宿店"
         }
       ],
       "floorId": null,
@@ -541,7 +545,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-exit-list-2026-10"
         ],
-        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY; alias source https://www.keionet.com/info/shinjuku/, read 2026-11-10 19:13 JST",
+        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY; alias source https://www.keionet.com/info/shinjuku/, read 2026-11-10 19:13 JST; facts-only search aliases authorised by Owner department-store acceptance list (2026-11-22 JST)",
         "checkedDate": "2026-10-26"
       },
       "notes": [
@@ -568,6 +572,22 @@
         {
           "lang": "en",
           "text": "Takashimaya Times Square"
+        },
+        {
+          "lang": "ja",
+          "text": "新宿髙島屋"
+        },
+        {
+          "lang": "ja",
+          "text": "髙島屋"
+        },
+        {
+          "lang": "ja",
+          "text": "新宿高島屋"
+        },
+        {
+          "lang": "ja",
+          "text": "タカシマヤタイムズスクエア"
         }
       ],
       "floorId": null,
@@ -578,7 +598,7 @@
         "sourceIds": [
           "tokyometro-shinjuku-exit-list-2026-10"
         ],
-        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY",
+        "method": "facts-only station exit list (OD-34), UNVERIFIED, SEARCH_ONLY; facts-only search aliases authorised by Owner department-store acceptance list (2026-11-22 JST)",
         "checkedDate": "2026-10-26"
       },
       "notes": [

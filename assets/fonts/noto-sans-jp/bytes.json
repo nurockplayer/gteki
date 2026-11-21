@@ -1,31 +1,31 @@
 {
-  "glyphCount": 2709,
+  "glyphCount": 2710,
   "sourceBytes": 9590732,
   "full": {
-    "bytes": 768328,
-    "gzipBytes": 767885,
-    "brotliBytes": 768333,
-    "sha256": "3d3914ed33443ba0c2e509524fc8827e9d3ce4c58214722eb52f690e448c28f7"
+    "bytes": 768468,
+    "gzipBytes": 767933,
+    "brotliBytes": 768473,
+    "sha256": "d919e5535e3d3052d371ece602d20009b3fd0a37a026531da41986cac00f0470"
   },
   "mobileStatic700": {
-    "bytes": 441800,
-    "gzipBytes": 441953,
-    "brotliBytes": 441805,
-    "sha256": "e10200f0834649d03737113966f50eea9c8362eca6916f209b42b0867ccf4990"
+    "bytes": 442060,
+    "gzipBytes": 442213,
+    "brotliBytes": 442065,
+    "sha256": "88b6706217171894d2fe21495d352d3be115566ef9236121694a4eabb748a60e"
   },
   "mobileStatic600": {
-    "bytes": 436348,
-    "gzipBytes": 436501,
-    "brotliBytes": 436353,
-    "sha256": "28c01c230f805b258f9a6e49115095c51f2daf50c32c86dc63d218802e34a737"
+    "bytes": 436952,
+    "gzipBytes": 437045,
+    "brotliBytes": 436957,
+    "sha256": "167f398b51719c1cb9c839223e8f40f143f0ef7cddb9426ca22fc1e3de45cc3c"
   },
   "mobileStatic800": {
-    "bytes": 441920,
-    "gzipBytes": 442063,
-    "brotliBytes": 441925,
-    "sha256": "c2ede35c0efeab61b4e538bee8680f171be55a46f936b58c1ace5fafa18d1202"
+    "bytes": 441964,
+    "gzipBytes": 442082,
+    "brotliBytes": 441969,
+    "sha256": "ab84e68129b03e6439fbdb16fa8109f61ca34dd92038e9454183a6836ef25fad"
   },
-  "mobilePairBytes": 878268,
+  "mobilePairBytes": 878916,
   "unsupportedCodePoints": [],
   "loadedByBothTiers": "GTEkiSignJP-subset.woff2"
 }

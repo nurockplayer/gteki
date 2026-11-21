@@ -1517,7 +1517,14 @@ const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPA
 
 // Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
 // source and rights gate as assets; each derivation names the script that writes the file.
+const departmentStores = JSON.parse(readFileSync(join(HERE, "../data/department-stores.json"), "utf8")) as { stores: { poiId: string }[] };
 const dataFiles: DataFile[] = [
+  {
+    id: "department-stores", path: "data/department-stores.json",
+    sourceIds: [...new Set(["plateau-13104-shinjuku-ku-2025", ...departmentStores.stores.flatMap(s => pois.find(p => p.id === s.poiId)!.evidence.sourceIds)])].sort(),
+    modified: true,
+    derivation: "tools/import-department-stores.ts: pinned PLATEAU LOD2 walls/roofs and LOD1 footprints, bases flattened to street level; facts-only names from the existing department-store POIs. Render-only, no entrance or routing claims (2026-11-22 JST).",
+  },
   { id: "shop-bays", path: "scene/shop_bays.json", sourceIds: [SRC_NWD, SRC_MAP].sort(), modified: true, derivation: "tools/shop-bays.ts: illustrative bays derived from the scene layout, visual only." },
   { id: "shop-placements", path: "scene/shop_placements.json", sourceIds: ["gteki-kit-0-1-0"], modified: true, derivation: "scene/shop_placements.json: original illustrative shop categories, visual only." },
   { id: "shop-kit", path: "scene/shop_kit.json", sourceIds: ["gteki-kit-0-1-0"], modified: true, derivation: "scene/shop_kit.json: shopfront piece specification copied from the GTEki kit." },

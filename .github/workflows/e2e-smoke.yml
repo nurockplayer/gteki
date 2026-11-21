@@ -253,6 +253,15 @@ jobs:
           JOURNEY_MODE: ${{ matrix.mode }}
           GTEKI_ROOT: ${{ github.workspace }}
         run: pnpm exec playwright test specs/30-journey.spec.ts --project=${{ matrix.project }} --trace=off
+      - name: Capture Shinjuku department stores
+        if: always()
+        timeout-minutes: 12
+        working-directory: tests/e2e
+        env:
+          CI: "1"
+          JOURNEY_MODE: ${{ matrix.mode }}
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/31-shinjuku-department-stores.spec.ts --project=${{ matrix.project }} --trace=off
       - name: Append journey summary
         if: always()
         run: |
