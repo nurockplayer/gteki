@@ -1253,6 +1253,157 @@
           "read": "2026-11-22"
         }
       ]
+    },
+    {
+      "id": "lumine-2-shinjuku",
+      "name": {
+        "ja": "ルミネ2",
+        "en": "Lumine 2 Shinjuku"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "フラワー・スイーツ・レディス・メンズファッション・ライフスタイルストア",
+            "en": "Shops and services"
+          },
+          "tenants": [
+            {
+              "ja": "フルラージュアン",
+              "en": "フルラージュアン"
+            },
+            {
+              "ja": "リンツ ショコラ ブティック",
+              "en": "リンツ ショコラ ブティック"
+            },
+            {
+              "ja": "Now on Cheese♪",
+              "en": "Now on Cheese♪"
+            },
+            {
+              "ja": "LADURÉE",
+              "en": "LADURÉE"
+            },
+            {
+              "ja": "ポロ ラルフローレン",
+              "en": "ポロ ラルフローレン"
+            },
+            {
+              "ja": "TODAY'S SPECIAL",
+              "en": "TODAY'S SPECIAL"
+            },
+            {
+              "ja": "L'OCCITANE",
+              "en": "L'OCCITANE"
+            },
+            {
+              "ja": "MARIAGE FRÈRES",
+              "en": "MARIAGE FRÈRES"
+            },
+            {
+              "ja": "DEAN & DELUCA",
+              "en": "DEAN & DELUCA"
+            },
+            {
+              "ja": "MR.waffle",
+              "en": "MR.waffle"
+            },
+            {
+              "ja": "Soup Stock Tokyo",
+              "en": "Soup Stock Tokyo"
+            },
+            {
+              "ja": "RF1【コンコースショップ】",
+              "en": "RF1【コンコースショップ】"
+            },
+            {
+              "ja": "成城石井【コンコースショップ】",
+              "en": "成城石井【コンコースショップ】"
+            },
+            {
+              "ja": "KINOKUNIYA entrée【コンコースショップ】",
+              "en": "KINOKUNIYA entrée【コンコースショップ】"
+            }
+          ],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=1f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "ニューヨークスタイルの朝食レストラン・レディスファッション・ジュエリー・アクセサリー・インテリア・生活雑貨",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=2f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "レディス・メンズファッション・メンズファッション・バッグ・アフターヌーンティー",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=3f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "アイウェア・メンズファッション・レディス・メンズファッション・ファッション雑貨",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=4f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "シューズ・インテリア・生活雑貨・レディス・メンズファッション・フルーツタルト",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=5f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "コスメショップ・インテリア・生活雑貨・スキンケア、メイクアップ",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=6f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "other",
+          "label": {
+            "ja": "劇場・その他・サービス",
+            "en": "Shops and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=7f",
+          "read": "2026-11-22"
+        }
+      ]
     }
   ]
 }
