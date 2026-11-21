@@ -38,6 +38,7 @@ export function validatePlan(plan) {
     for (const row of stream.criteria) {
       unique(row.id);
       requireField(text(row.requirement) && statuses.includes(row.status), `${row.id}: requirement and valid status required`);
+      if (stream.id === 'RELEASE') requireField(text(row.status_text) && row.status_text.toUpperCase().startsWith(row.status), `${row.id}: journey status_text must agree with status`);
       requireField(Array.isArray(row.evidence) && row.evidence.every(e => text(e.label) && link(e.url)), `${row.id}: evidence must contain labelled HTTPS links`);
       requireField(row.date == null || date(row.date), `${row.id}: date needs a timezone`);
       requireField(row.evidence.every(e => e.date == null || date(e.date)), `${row.id}: evidence dates need a timezone`);
