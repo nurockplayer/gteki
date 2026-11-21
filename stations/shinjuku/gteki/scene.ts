@@ -552,6 +552,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
   if (crowd) built.root.add(crowd.group);
   if (ctx.previewNext) {
     const figure = buildStandingFigure(T, low);
+    figure.group.scale.set(1.2, 1, 1.2);
     figure.group.position.set(-19.6, -42.87, -114.2);
     figure.group.rotation.y = Math.PI * .9;
     built.root.add(figure.group);
