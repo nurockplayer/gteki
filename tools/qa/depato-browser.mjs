@@ -2,11 +2,11 @@
 // SPDX-FileCopyrightText: GTEki contributors
 // Injected into ego-browser nodejs by depato-capture.mjs; settings is supplied there.
 const fs = await import('node:fs/promises');
-const entry = (await listTaskSpaces()).find(s => s.id === 47);
+const entry = (await listTaskSpaces()).find(s => s.id === 65);
 const task = !entry ? await taskSpace('Shinjuku department-store r8 captures')
-  : entry.ownership === 'user' ? await claimTaskSpace(47)
-  : entry.ownership === 'agentDelegatedToUser' ? await takeOverTaskSpace(47)
-  : await taskSpace(47);
+  : entry.ownership === 'user' ? await claimTaskSpace(65)
+  : entry.ownership === 'agentDelegatedToUser' ? await takeOverTaskSpace(65)
+  : await taskSpace(65);
 console.log({ taskSpaceId: task.spaceId });
 await fs.writeFile(settings.output + '/browser-space.json', JSON.stringify({ spaceId: task.spaceId }));
 const page = (await task.pages())[0] ?? await task.adopt((await task.tabs())[0].page);
@@ -58,7 +58,9 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
         const letters = [], band = [], all = [], jaRows = [];
         for (let y = box.y0; y < box.y1; y++) for (let x = box.x0; x < box.x1; x++) {
           const i = (y * id.w + x) * 4, [r, g, b] = id.pixels.slice(i, i + 3), value = luminance(shown.pixels, i);
-          if (!atlas ? r > 245 && g > 245 && b > 245 : Math.max(r, g, b) > 220 && Math.min(r, g, b) < 25) {
+          // Mipmapped glyph/band boundaries mix the identification primaries;
+          // their sum stays 255 even when no single channel exceeds 220.
+          if (!atlas ? r > 245 && g > 245 && b > 245 : r + g + b > 230 && r + g + b < 280 && Math.min(r, g, b) < 25) {
             all.push(value);
             if (atlas && r > 220 && g < 25 && b < 25) { letters.push(value); jaRows.push(y); }
             if (atlas && b > 220 && r < 25 && g < 25) band.push(value);
@@ -78,8 +80,9 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
         return e.ray.intersectObject(ground, false).length > 0;
       };
       const apply = pose => { e.camera.position.fromArray(pose.camera); e.camera.lookAt(point(pose.target)); e.camera.updateMatrixWorld(); render(); };
+      const searches = new Map();
       window.__depato = {
-        capture(store, kind, saved) {
+        capture(store, kind, saved, step) {
           const group = e.scene.getObjectByName('department-store:' + store.buildingId);
           if (!group) { if (!saved) throw new Error(store.poiId + ': missing next store'); apply(saved); return { ...saved, metrics: { contrast: null, jaCapPx: 0, reason: 'Landmark sign absent with flag off' }, drawProof: { present: false } }; }
           const sign = group.children.find(m => m.name.endsWith(':sign'));
@@ -87,13 +90,13 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
           const offset = siblings.slice(0, siblingIndex).reduce((n, s) => n + s.signs.length, 0) * 4;
           const ja = 512 / (store.ja.length + 1), top = siblings.slice(0, siblingIndex).reduce((n, s) => n + 512 * 4.5 / ((s.ja.length + 1) * (4.5 / 1.85)), 0);
           const atlas = { ja, top };
-          let best, nearestCheckedM = null;
+          const key = store.poiId + ':' + kind;
+          let { best, nearestCheckedM = null } = searches.get(key) ?? {};
           const accepted = candidate => candidate?.metrics.fullSignInFrame && candidate.metrics.letterPixels >= 8 && candidate.metrics.coverage > .95;
           // 2026-11-22 JST: r8 permits the nearest checked pavement/road pose when
           // no unobstructed 25–60 m walk view exists. Search distances in order.
-          const standard = kind === 'walk' ? [25, 30, 35, 40, 45, 50, 55] : [75, 100, 125];
-          const exception = Array.from({ length: 40 }, (_, i) => 5 + i * 5);
-          search: for (const exceptional of [false, true]) for (const distance of exceptional ? exception : standard) for (let index = 0; index < store.signs.length; index++) {
+          const { exceptional, distance } = step;
+          search: for (let index = 0; index < store.signs.length; index++) {
             const face = panel(sign, offset + index * 4), tangent = face.corners[1].clone().sub(face.corners[0]).normalize();
             for (const angle of [0, -15, 15, -30, 30, -45, 45, -60, 60, -75, 75]) {
               const radians = angle * Math.PI / 180;
@@ -113,6 +116,8 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
               if (accepted(candidate)) { best = candidate; break search; }
             }
           }
+          searches.set(key, { best, nearestCheckedM });
+          if (!accepted(best) && !step.last) return { searching: true };
           if (!best) throw new Error(store.poiId + ': no outside-building eye-level pose within 200 m');
           best.accepted = accepted(best);
           best.nearestCheckedM = nearestCheckedM;
@@ -146,7 +151,15 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
     }, settings);
     for (const store of settings.stores) for (const kind of ['walk', 'look']) {
       const saved = next ? null : plans.find(p => p.store === store.poiId && p.kind === kind);
-      const row = await page.evaluate(({ store, kind, saved }) => window.__depato.capture(store, kind, saved), { store, kind, saved });
+      const steps = [
+        ...(kind === 'walk' ? [25, 30, 35, 40, 45, 50, 55] : [75, 100, 125]).map(distance => ({ distance, exceptional: false })),
+        ...Array.from({ length: 40 }, (_, i) => ({ distance: 5 + i * 5, exceptional: true, last: i === 39 })),
+      ];
+      let row;
+      for (const step of steps) {
+        row = await page.evaluate(({ store, kind, saved, step }) => window.__depato.capture(store, kind, saved, step), { store, kind, saved, step });
+        if (!row.searching) break;
+      }
       if (next) plans.push({ ...row, store: store.poiId, kind });
       const filename = `${viewport.name}-${store.poiId.replace('shop-sjk-', '')}-${kind}-${next ? 'next' : 'off'}.png`;
       await page.screenshot({ path: settings.output + '/' + filename });
