@@ -82,9 +82,23 @@ outgoingLight = mix(outgoingLight, streetColor, street);
     g.fillText(store.en, canvas.width/2, 100);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
+    const minifiedSign = store.id === "lumine" || store.id === "sunshine";
+    if (minifiedSign) texture.anisotropy = 16;
     textures.push(texture);
-    const signMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: LANDMARK_SIGN.bandRoughness, emissiveMap: texture, emissive: new THREE.Color(0xffffff), emissiveIntensity: LANDMARK_SIGN.letterEmissive[0], fog: material.fog, side: THREE.DoubleSide });
+    const signMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: LANDMARK_SIGN.bandRoughness, emissiveMap: texture, emissive: new THREE.Color(0xffffff), emissiveIntensity: LANDMARK_SIGN.letterEmissive[minifiedSign ? 1 : 0], fog: material.fog, side: THREE.DoubleSide, polygonOffset: store.id === "sunshine", polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
     signMaterial.onBeforeCompile = shader => {
+      if (minifiedSign) {
+        // Use coverage once: filtered transparent RGB already contains the letter's alpha.
+        // Sunshine's grazing walk view needs coverage contrast after mipmap minification.
+        const letters = new THREE.Color(LANDMARK_SIGN.letters);
+        shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
+float landmarkCoverage = texture2D(map, vMapUv).a;
+${store.id === "sunshine" ? "landmarkCoverage = smoothstep(0.05, 0.2, landmarkCoverage);" : ""}
+diffuseColor.rgb = mix(vec3(${bronze.toArray().join(",")}), vec3(${letters.toArray().join(",")}), landmarkCoverage);
+diffuseColor.a = 1.0;`);
+        shader.fragmentShader = shader.fragmentShader.replace("#include <emissivemap_fragment>", `totalEmissiveRadiance = vec3(${letters.toArray().join(",")}) * ${LANDMARK_SIGN.letterEmissive[1]} * landmarkCoverage + vec3(${bronze.toArray().join(",")}) * 0.35 * (1.0 - landmarkCoverage);`);
+        return;
+      }
       shader.fragmentShader = shader.fragmentShader.replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(${bronze.toArray().join(",")}) * 0.35 * (1.0 - texture2D(map, vMapUv).a);`);
       shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(${bronze.toArray().join(",")}), diffuseColor.rgb, diffuseColor.a);\ndiffuseColor.a = 1.0;`);
     };
