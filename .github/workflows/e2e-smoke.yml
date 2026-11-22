@@ -60,6 +60,8 @@ jobs:
 
       # The harness never builds product code: it serves this built apps/web via vite preview.
       - run: pnpm build
+        env:
+          VITE_TURNSTILE_SITEKEY: 1x00000000000000000000AA
 
       # The harness is not a workspace member, so it installs on its own.
       - name: Install Playwright harness
