@@ -12,7 +12,7 @@ const stores = [
   { id: "esola", ja: "エソラ池袋", en: "ESOLA IKEBUKURO", facade: "F4_darkBronze", exit: "x4f", target: [-172.897339, 61.5, -3.413457], signEye: [-272.400798, 61.5, 6.53951], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "parco", ja: "パルコ", en: "PARCO", facade: "F3_coolGrey", exit: "x22", target: [89.228704, 68.418999, -156.361062], signEye: [-2.081387, 68.418999, -197.134427], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "pparco", ja: "P'パルコ", en: "P'PARCO", facade: "F3_coolGrey", exit: "x22", target: [90.660534, 50.748502, -244.366749], signEye: [-0.958270, 50.748502, -284.291649], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
-  { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [610, 260, 25], cap: LANDMARK_SIGN.maxJaLetterSunshine60M / 2 },
+  { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [581.674744, 253, 12.689152], signEye: [498.531567, 253, -42.873534], cap: LANDMARK_SIGN.maxJaLetterSunshine60M / 2 },
 ] as const;
 
 /** Remove only the source features replaced by the LOD2 landmark meshes, before stair cuts change triangle indices. */

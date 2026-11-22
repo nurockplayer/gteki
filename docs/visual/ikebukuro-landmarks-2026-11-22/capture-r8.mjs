@@ -44,6 +44,8 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
      if(store==='sunshine')candidates=sourceRoad.points.map(c=>({point:new T.Vector3(...c.point),road:sourceRoad.sourceId,sourceSha256:sourceRoad.sourceSha256}));
      else{
       const desired=[25,45,60].map(d=>aim.clone().addScaledVector(normal,d));
+      // A barycentric ctx_road_t01_01 sample clears Parco's neighbour; normal-only samples miss it.
+      if(store==='parco')desired.push(new T.Vector3(93.536956,32.230625,-201.178255));
       candidates=pavement.flatMap(({triangle,road})=>[triangle.getMidpoint(new T.Vector3()),...desired.map(p=>triangle.closestPointToPoint(p,new T.Vector3()))].map(point=>({point,road})));
      }
      candidates=candidates.map(c=>({...c,horizontalSignDistanceM:Math.hypot(c.point.x-aim.x,c.point.z-aim.z)})).filter(c=>c.horizontalSignDistanceM>=25&&c.horizontalSignDistanceM<=60);
@@ -53,9 +55,10 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
      const eye=c.point.clone().add(new T.Vector3(0,1.6,0)),target=new T.Vector3(aim.x,eye.y+c.horizontalSignDistanceM*Math.tan(15*Math.PI/180),aim.z);
      chosen={eye:eye.toArray(),target:target.toArray(),fov:60,road:c.road,sourceSha256:c.sourceSha256,horizontalSignDistanceM:c.horizontalSignDistanceM,eyeHeightM:1.6,captureOnly:true,clearSign:true};
     }else if(!chosen){
-     const eye=new T.Vector3(...oldPose.eye);
+     // The inset Sunshine sign needs this adjacent public-road centroid to clear the foreground.
+     const eye=kind==='east-exit'?new T.Vector3(144.95953369140625,32.85900014241536,2.7981765270233154):new T.Vector3(...oldPose.eye);
      if(!clear(eye))throw new Error('Retained look/east-exit eye no longer sees the full sign: '+store+'/'+kind);
-     chosen={...oldPose,target:aim.toArray(),fov:oldPose.fov,clearSign:true};
+     chosen={...oldPose,eye:eye.toArray(),target:aim.toArray(),fov:oldPose.fov,clearSign:true,...(kind==='east-exit'?{exitOffsetM:23.137466465736164}:{})};
     }
     Object.assign(chosen,{aim:aim.toArray(),normal:normal.toArray(),signWidth,signHeight});
     e.camera.position.fromArray(chosen.eye);e.camera.lookAt(new T.Vector3(...chosen.target));e.camera.fov=chosen.fov;e.camera.updateProjectionMatrix();e.camera.updateMatrixWorld(true);
