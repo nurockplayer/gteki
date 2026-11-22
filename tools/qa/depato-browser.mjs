@@ -58,9 +58,7 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
         const letters = [], band = [], all = [], jaRows = [];
         for (let y = box.y0; y < box.y1; y++) for (let x = box.x0; x < box.x1; x++) {
           const i = (y * id.w + x) * 4, [r, g, b] = id.pixels.slice(i, i + 3), value = luminance(shown.pixels, i);
-          // Mipmapped glyph/band boundaries mix the identification primaries;
-          // their sum stays 255 even when no single channel exceeds 220.
-          if (!atlas ? r > 245 && g > 245 && b > 245 : r + g + b > 230 && r + g + b < 280 && Math.min(r, g, b) < 25) {
+          if (!atlas ? r > 245 && g > 245 && b > 245 : Math.max(r, g, b) > 220 && Math.min(r, g, b) < 25) {
             all.push(value);
             if (atlas && r > 220 && g < 25 && b < 25) { letters.push(value); jaRows.push(y); }
             if (atlas && b > 220 && r < 25 && g < 25) band.push(value);
@@ -68,8 +66,17 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
         }
         const letterY = mean(letters), bandY = mean(band);
         const expectedArea = Math.abs(projected.reduce((sum, p, i) => { const q = projected[[1, 3, 0, 2][i]]; return sum + p.x * q.y - q.x * p.y; }, 0)) * id.w * id.h / 8;
+        // 2026-11-22 JST: visibility uses a solid panel mask, independent of
+        // texture mipmaps and the separate glyph mask used for letter contrast.
+        const solid = new Basic({ color: 0xff00ff, fog: false, toneMapped: false, side: old.side });
+        mesh.material = solid; e.renderer.render(e.scene, e.camera); const whole = read(); mesh.material = old; solid.dispose();
+        const panelValues = [];
+        for (let y = box.y0; y < box.y1; y++) for (let x = box.x0; x < box.x1; x++) {
+          const i = (y * whole.w + x) * 4;
+          if (whole.pixels[i] > 245 && whole.pixels[i + 1] < 10 && whole.pixels[i + 2] > 245) panelValues.push(luminance(shown.pixels, i));
+        }
         e.renderer.render(e.scene, e.camera);
-        return { contrast: letters.length && band.length ? (letterY + .05) / (bandY + .05) : null, letterY, bandY, meanY: mean(all), jaCapPx: jaRows.length ? Math.max(...jaRows) - Math.min(...jaRows) + 1 : 0, letterPixels: letters.length, signPixels: all.length, coverage: expectedArea ? all.length / expectedArea : 0, fullSignInFrame: projected.every(p => Math.abs(p.x) < .95 && Math.abs(p.y) < .9 && p.z < 1), projected: projected.map(p => p.toArray()) };
+        return { contrast: letters.length && band.length ? (letterY + .05) / (bandY + .05) : null, letterY, bandY, meanY: mean(panelValues), jaCapPx: jaRows.length ? Math.max(...jaRows) - Math.min(...jaRows) + 1 : 0, letterPixels: letters.length, signPixels: panelValues.length, coverage: expectedArea ? panelValues.length / expectedArea : 0, fullSignInFrame: projected.every(p => Math.abs(p.x) < .95 && Math.abs(p.y) < .9 && p.z < 1), projected: projected.map(p => p.toArray()) };
       };
       const inside = (p, ring) => { let yes = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const a = ring[i], b = ring[j]; if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) yes = !yes; } return yes; };
       const outsideBuildings = position => !footprints.some(rings => inside([position.x, -position.z], rings[0]) && !rings.slice(1).some(r => inside([position.x, -position.z], r)));
