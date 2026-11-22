@@ -310,7 +310,7 @@ test("guided walk @phone", async ({ page }, info) => {
       }
     }
     const identity = arrival ? await page.evaluate(() => (window as any).__gteki.identity().find((item: any) => item.id === "identity:platform:poi:platform:oedo") ?? null) : undefined;
-    const arrivalFrame = arrival && reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
+    const arrivalFrame = arrival ? await page.evaluate(() => (window as any).__gteki.arrivalFrame()) : undefined;
     const ride = reelMode === "next" ? await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.rideFrame()) : undefined;
     samples.push({ ...(reelMode === "next" ? { ride } : {}), ...(arrival ? { identity, arrivalFrame } : {}), ...(boxes ? { boxes } : {}), index, simT, simMs, shotMs, sceneMs, probeMs, imageMs, s: guide.s, floorId: from.floorId, mode: step.mode, avatar: await hooks.avatar(page), camera: await page.evaluate(() => (window as any).__gteki.camera()), audio: await page.evaluate(() => (window as any).__gteki.audio()), arrival, voidRatio: probe.voidRatio, nearBlack: image.nearBlack, flatRatio: flat.value, ...cov, catVisible: m.catVisible, catOccluder: m.catOccluder, catOccluderMeshes: m.catOccluderMeshes, nearClip: m.nearClip, nearClipMeshes: m.nearClipMeshes, axisDeg });
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
@@ -348,7 +348,7 @@ test("guided walk @phone", async ({ page }, info) => {
       await page.evaluate(() => (window as any).__gteki.goldenFrame());
       const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
       fs.writeFileSync(path.join(out, "arrival-menu.png"), png);
-      if (reelMode === "next") {
+      {
         const arrivalMenu = await menu.locator("button").evaluateAll(buttons => {
           const rgba = (value: string) => value.match(/[\d.]+/g)!.map(Number);
           const luminance = (rgb: number[]) => rgb.reduce((sum, channel, i) => {
@@ -447,7 +447,10 @@ test("guided walk @phone", async ({ page }, info) => {
           }
         }
       }
-      if (reelMode === "next") {
+      {
+        await page.locator("canvas").first().dispatchEvent("wheel", { deltaY: 1 });
+        await hooks.simulate(page, 0.05);
+        expect(await page.evaluate(() => (window as any).__gteki.arrivalFrame().shot)).toBe(false);
         await more.click();
         await menu.locator(".guide-prev").click();
         expect(await page.evaluate(() => (window as any).__gteki.arrivalFrame().shot)).toBe(false);
@@ -547,7 +550,7 @@ test("guided walk @phone", async ({ page }, info) => {
     fs.writeFileSync(path.join(out, `sheet-${String(start / 12 + 1).padStart(2, "0")}.jpg`), Buffer.from(jpg!, "base64"));
   }
   fs.appendFileSync(path.join(out, "summary.md"), `; sheetsMs=${Date.now() - sheetsStart}; wallMs=${Date.now() - wallStart}\n`);
-  if (reelMode === "next" && arrived) {
+  if (arrived) {
     const sample = samples.find((s) => s.arrival)!;
     const frame = sample.arrivalFrame;
     expect.soft(sample.destinationPoiLabelVisible, "destination POI label hidden behind arrival card").toBe(false);
