@@ -1,6 +1,6 @@
 // r8 art-direction correction, 2026-11-22 JST. Run through job-run; timestamps are UTC.
-import fs from 'node:fs/promises';
-import {spawn} from 'node:child_process';
+const fs=await import('node:fs/promises');
+const {spawn}=await import('node:child_process');
 const repo='/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro';
 const evidence=repo+'/docs/visual/ikebukuro-landmarks-2026-11-22',root=evidence+'/r8';
 await fs.mkdir(root,{recursive:true});
