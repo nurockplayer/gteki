@@ -9,7 +9,8 @@ const sourceRoad=JSON.parse(await fs.readFile(evidence+'/r8-road-candidates.json
 const server=spawn('nice',['-n','15','node',repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
 process.once('exit',()=>server.kill());
 await new Promise((resolve,reject)=>{server.stdout.on('data',c=>{if(c.toString().includes('Local:'))resolve()});server.once('error',reject);server.once('exit',c=>reject(new Error('Capture server exited: '+c)))});
-const task=await taskSpace(44),page=task.page('p1'),frames=[],poses={};
+const task=await taskSpace(44),page=task.page('p1'),frames=JSON.parse(await fs.readFile(root+'/frames.json','utf8')).frames;
+const poses=Object.fromEntries(frames.filter(f=>f.flag==='next').map(f=>[f.file.replace(/-next\.png$/,''),f.pose]));
 for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
  await page.cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
  for(const flag of ['next','off']){
@@ -31,6 +32,7 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
   });
   for(const store of ['seibu','tobu','lumine','esola','parco','pparco','sunshine'])for(const kind of ['walk','look',...(store==='sunshine'?['east-exit']:[])]){
    const key=`${device}-${store}-${kind}`,old=previous.frames.find(f=>f.file===`${key}-next.png`);
+   if(frames.some(f=>f.file===`${key}-${flag}.png`))continue;
    const result=await page.evaluate(({store,kind,flag,pose,oldPose,sourceRoad})=>{
     const {e,T,meshes,pavement}=window.__depato,layer=e.scene.getObjectByName('landmarks-next'),sign=layer?.getObjectByName('landmark-sign:'+store),mesh=layer?.getObjectByName('ctx_bldg_landmark_'+store);
     const aim=new T.Vector3(...(pose?.aim??sign.getWorldPosition(new T.Vector3()).toArray())),normal=new T.Vector3(...(pose?.normal??new T.Vector3(0,0,1).applyQuaternion(sign.quaternion).toArray()));
