@@ -12,7 +12,7 @@ const stores = [
   { id: "esola", ja: "エソラ池袋", en: "ESOLA IKEBUKURO", facade: "F4_darkBronze", exit: "x4f", target: [-172.897339, 61.5, -3.413457], signEye: [-272.400798, 61.5, 6.53951], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "parco", ja: "パルコ", en: "PARCO", facade: "F3_coolGrey", exit: "x22", target: [89.228704, 68.418999, -156.361062], signEye: [-2.081387, 68.418999, -197.134427], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "pparco", ja: "P'パルコ", en: "P'PARCO", facade: "F3_coolGrey", exit: "x22", target: [90.660534, 50.748502, -244.366749], signEye: [-0.958270, 50.748502, -284.291649], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
-  { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [610, 268, 25], cap: LANDMARK_SIGN.maxJaLetterSunshine60M / 2 },
+  { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [610, 260, 25], cap: LANDMARK_SIGN.maxJaLetterSunshine60M / 2 },
 ] as const;
 
 /** Remove only the source features replaced by the LOD2 landmark meshes, before stair cuts change triangle indices. */
@@ -44,9 +44,9 @@ export async function addLandmarks(ctx: SceneContext, parent: Three.Object3D): P
     mesh.geometry.computeVertexNormals();
     const material = createContextMaterial(THREE, { color: new THREE.Color(LANDMARK_FACADE[store.facade]).getHex() });
     material.name = `landmark-facade:${store.id}`;
-    // Sunshine's source geometry is 560–890 m away. The existing camera far plane is 2000 m;
-    // its own daylight material must bypass the 240 m street haze to preserve the skyline.
-    material.fog = store.id !== "sunshine";
+    // Preview landmarks retain their authored value separation beyond the station street haze.
+    // Only these materials bypass fog; the station fog and exposure are unchanged.
+    material.fog = false;
     const daylight = material.onBeforeCompile;
     const bronze = new THREE.Color(LANDMARK_SIGN.band), glow = new THREE.Color(LANDMARK_STREET_BAND.glow);
     material.onBeforeCompile = (shader, renderer) => {
@@ -85,6 +85,7 @@ outgoingLight = mix(outgoingLight, streetColor, street);
     textures.push(texture);
     const signMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: LANDMARK_SIGN.bandRoughness, emissiveMap: texture, emissive: new THREE.Color(0xffffff), emissiveIntensity: LANDMARK_SIGN.letterEmissive[0], fog: material.fog, side: THREE.DoubleSide });
     signMaterial.onBeforeCompile = shader => {
+      shader.fragmentShader = shader.fragmentShader.replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(${bronze.toArray().join(",")}) * 0.35 * (1.0 - texture2D(map, vMapUv).a);`);
       shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(${bronze.toArray().join(",")}), diffuseColor.rgb, diffuseColor.a);\ndiffuseColor.a = 1.0;`);
     };
     materials.push(signMaterial);
