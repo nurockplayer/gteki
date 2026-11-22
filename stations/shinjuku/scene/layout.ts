@@ -946,6 +946,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const corners = group.flatMap((r) => [r.a, r.b].flatMap((p) => [across(p) - r.width / 2 - wallMargin, across(p) + r.width / 2 + wallMargin]));
     const stations = group.flatMap((r) => [r.a, r.b].map(along));
     const minS = Math.min(...stations) - 0.25, maxS = Math.max(...stations) + 0.25;
+    const collarHalfLength = 0.85;
     const minN = Math.min(...corners), maxN = Math.max(...corners);
     const at = (s: number, c: number): XY => ({ x: lo.x + u.x * s + n.x * c, y: lo.y + u.y * s + n.y * c });
     // One rectangular hull spans intermediate landings and parallel lanes without interior walls.
@@ -957,6 +958,12 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       const pitch = (r: Run, l: number) => Math.atan2(Math.abs(r.b.z - r.a.z), l);
       return angle <= Math.PI / 180 && Math.abs(pitch(a, la) - pitch(b, lb)) <= Math.PI / 180;
     }));
+    // The mouth collars are flat landing finishes. Keep their stripe level, then
+    // interpolate continuously along the flight between the two inner collar edges.
+    const stripeStart = Math.max(...group.map((r) => along(ends(r)[0]))) + collarHalfLength;
+    const stripeEnd = Math.min(...group.map((r) => along(ends(r)[1]))) - collarHalfLength;
+    const wallSurface = parallel ? (p: XY) => lo.z + (hi.z - lo.z) *
+      Math.max(0, Math.min(1, (along(p) - stripeStart) / (stripeEnd - stripeStart))) : base;
     if (pitchedCeilings && parallel) {
       // The maximum endpoint offset bounds every affine flight roof, including
       // transverse pitch differences. Never lower any existing flight ceiling.
@@ -1047,7 +1054,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         z: lo.z + Math.min(...offsets) - 0.3 };
       shaftHulls.push(invert);
       for (const panel of cropUndergroundRoof(invert, streetUnderside)) layout.soffits.push(...clearSoffit(panel, passages, 0.025, 2.1));
-      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => Math.min(base(p) + rise, streetSurface) : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined, base);
+      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => Math.min(base(p) + rise, streetSurface) : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined, wallSurface);
     }
     // Raised short collars bridge the clearance cut at the tangent change between an
     // inclined shaft and a flat hall. Without this step, two individually safe cut roofs
@@ -1066,7 +1073,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       if (z + collarClearance >= -0.5) continue;
       const L = Math.sqrt(l2), u = { x: d.x / L, y: d.y / L };
       const collars = union(mouths.map(({ p, width }) => {
-        return [passageRing({ x: p.x - u.x * 0.85, y: p.y - u.y * 0.85 }, { x: p.x + u.x * 0.85, y: p.y + u.y * 0.85 }, width / 2 + wallMargin)];
+        return [passageRing({ x: p.x - u.x * collarHalfLength, y: p.y - u.y * collarHalfLength }, { x: p.x + u.x * collarHalfLength, y: p.y + u.y * collarHalfLength }, width / 2 + wallMargin)];
       }));
       for (const [i, rings] of collars.entries()) {
         // The collar is the higher of the two roof surfaces. Keep its raised panel only
