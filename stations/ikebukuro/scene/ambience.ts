@@ -1,3 +1,4 @@
+import type { AcousticZone } from "@gteki/scene-api";
 // Procedural station ambience (WebAudio only, no recordings, so no licensing questions):
 // an HVAC/concourse bed, a distant crowd murmur and footsteps whose density follows the
 // number of pedestrians near the listener. Chimes and announcements now live in
@@ -6,6 +7,7 @@
 export interface AmbienceInput {
   /** Pedestrians within ~8 m of the listener. */
   nearby: number;
+  zone?: AcousticZone;
   /** 0..1 openness of the space around the listener (wide hall = 1). */
   openness: number;
 }
@@ -27,7 +29,23 @@ export function noiseBuffer(ctx: AudioContext, seconds: number, brown: boolean) 
   return buf;
 }
 
-export function createAmbience(ctx: AudioContext, destination: AudioNode) {
+export function createAmbience(ctx: AudioContext, destination: AudioNode, recorded?: { concourse: AudioBuffer; platform: AudioBuffer }) {
+  if (recorded) {
+    const layers = [recorded.concourse, recorded.platform].map((buffer) => {
+      const source = ctx.createBufferSource(); source.buffer = buffer; source.loop = true;
+      const gain = ctx.createGain(); gain.gain.value = 0;
+      source.connect(gain).connect(destination); source.start();
+      return { source, gain };
+    });
+    return {
+      info: () => ({ bedGain: layers[0]!.gain.gain.value, murmurGain: 0 }),
+      update(input: AmbienceInput) {
+        layers[0]!.gain.gain.setTargetAtTime(input.zone === "concourse" || input.zone === "passage" ? 0.65 : 0, ctx.currentTime, 0.8);
+        layers[1]!.gain.gain.setTargetAtTime(input.zone === "platform" ? 0.65 : 0, ctx.currentTime, 0.8);
+      },
+      dispose() { for (const { source, gain } of layers) { source.stop(); source.disconnect(); gain.disconnect(); } },
+    };
+  }
   const master = ctx.createGain();
   master.gain.value = 0;
   master.connect(destination);

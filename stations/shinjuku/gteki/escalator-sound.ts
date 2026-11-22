@@ -2,8 +2,8 @@
 import type { V3 } from "../../ikebukuro/scene/station-sound.ts";
 
 /** Run endpoints and listener positions are in the renderer frame (Y up). */
-export function createEscalatorSound({ context, destination, runs, isMuted = () => false }: {
-  context: AudioContext; destination: AudioNode; runs: { a: V3; b: V3 }[]; isMuted?: () => boolean;
+export function createEscalatorSound({ context, destination, runs, recorded, isMuted = () => false }: {
+  context: AudioContext; destination: AudioNode; recorded?: AudioBuffer; runs: { a: V3; b: V3 }[]; isMuted?: () => boolean;
 }) {
   const buffer = context.createBuffer(1, context.sampleRate * 4, context.sampleRate);
   const data = buffer.getChannelData(0);
@@ -29,6 +29,12 @@ export function createEscalatorSound({ context, destination, runs, isMuted = () 
     panner.positionY.value = (a.y + b.y) / 2;
     panner.positionZ.value = (a.z + b.z) / 2;
     panner.connect(master);
+    if (recorded) {
+      const source = context.createBufferSource(); source.buffer = recorded; source.loop = true;
+      const gain = context.createGain(); gain.gain.value = 0.65;
+      source.connect(gain).connect(panner); source.start(); sources.push(source); nodes.push(source, gain, panner);
+      return { a, b, panner };
+    }
     const motor = context.createGain(); motor.gain.value = 0.027; motor.connect(panner);
     for (const frequency of [62, 117]) {
       const tone = context.createOscillator(); tone.type = "sine"; tone.frequency.value = frequency;
@@ -49,7 +55,7 @@ export function createEscalatorSound({ context, destination, runs, isMuted = () 
   let disposed = false;
   return {
     // Nominal motor + mechanical gain per run, before spatial attenuation and modulation.
-    info: () => ({ gain: entries.length ? master.gain.value * (0.027 + 0.033) : 0, nearestDistance, runs: entries.length }),
+    info: () => ({ gain: entries.length ? master.gain.value * (recorded ? 0.65 : 0.027 + 0.033) : 0, nearestDistance, runs: entries.length }),
     update(listener: V3) {
       if (disposed) return;
       master.gain.value = isMuted() ? 0 : 1;
