@@ -1,6 +1,8 @@
 # Shinjuku department stores — 2026-11-22 JST
 
-Status: INCOMPLETE; PR #1511 stays draft.
+Status (2026-11-22 JST): R8 capture set complete; PR #1511 stays draft. CI and lead visual acceptance remain pending.
+
+[R8: all 88 inspected images, per-frame measurements, exceptions and failures](r8/README.md). Isetan Main and Odakyu look facade/sky ratios now pass 0.8 in desktop and phone. Four other next-frame contrast measurements remain below 3:1; see the R8 table. The R6/R7 notes below describe historical runs, not the current capture status.
 
 `r6/` preserves the eleven desktop diagnostic frames and per-store draw proof. Every source building submitted its facade, street and sign mesh once. Eight names are occluded or outside the image, so those images cannot yield a target-letter contrast. The three visible names have a core-ink contrast proxy in the manifest: sign-quad rendered luminance P99/P10, with the WCAG 0.05 offset. This proxy is distinguished from r7's glyph-mask mean.
 
