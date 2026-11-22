@@ -530,7 +530,7 @@ export class Explorer {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
     this.previewNext = options.previewNext === true;
     this.catAvatar = options.avatarKind === "cat";
-    if (this.catAvatar) { const framing = nextCamera ? FOLLOW_CAT_NEXT : FOLLOW_CAT; this.camDistance = framing.distance; this.pitch = framing.pitch; }
+    if (this.catAvatar) { const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT; this.camDistance = framing.distance; this.pitch = framing.pitch; }
     // Mesh callbacks run after Three uploads instance matrices: the station packs its shared low-tier step
     // batch from this scene hook instead (StationScene.beforeRender; the standalone app installs it too).
     if (this.quality === "low") {
@@ -2089,7 +2089,7 @@ export class Explorer {
     const toNdc = (r: ViewRect) => ({ x0: 2 * r.x / w - 1, x1: 2 * (r.x + r.w) / w - 1, y0: 1 - 2 * (r.y + r.h) / h, y1: 1 - 2 * r.y / h });
     let ndcFree = toNdc(free), tried = 0;
     // The cat's low boom meets the floor on a look-up, so only its framing checks the walker and the settled boom.
-    const framing = nextCamera ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
+    const framing = this.previewNext ? FOLLOW_CAT_NEXT : FOLLOW_CAT;
     const lens = this.previewNext && !this.firstPerson ? followLens("walk", false, false, true, this.camera.aspect) : FOV.follow;
     let rig: FramingRig | undefined;
     if (this.catAvatar) {
