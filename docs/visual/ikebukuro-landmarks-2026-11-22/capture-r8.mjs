@@ -1,4 +1,5 @@
 // r8 art-direction correction, 2026-11-22 JST. Run through job-run; timestamps are UTC.
+{
 const fs=await import('node:fs/promises');
 const {spawn}=await import('node:child_process');
 const repo='/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro';
@@ -7,7 +8,7 @@ await fs.mkdir(root,{recursive:true});
 const previous=JSON.parse(await fs.readFile(evidence+'/r6/frames.json','utf8'));
 const sourceRoad=JSON.parse(await fs.readFile(evidence+'/r8-road-candidates.json','utf8'));
 const server=spawn('nice',['-n','15','node',repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
-process.once('exit',()=>server.kill());
+try{
 await new Promise((resolve,reject)=>{server.stdout.on('data',c=>{if(c.toString().includes('Local:'))resolve()});server.once('error',reject);server.once('exit',c=>reject(new Error('Capture server exited: '+c)))});
 const task=await taskSpace(44),page=task.page('p1'),frames=JSON.parse(await fs.readFile(root+'/frames.json','utf8')).frames;
 const poses=Object.fromEntries(frames.filter(f=>f.flag==='next').map(f=>[f.file.replace(/-next\.png$/,''),f.pose]));
@@ -82,30 +83,52 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
      if(kind==='look'){
       // Pair a visible upper-facade pixel with the nearest unobstructed sky pixel on its row.
       // Rays distinguish real facade/sky from foreground buildings and the sign itself.
-      const p=mesh.geometry.attributes.position,idx=mesh.geometry.index,facade=[],sky=[],pairs=[];
-      for(let i=0;i<(idx?.count??p.count)&&pairs.length<12;i+=3){
+      const p=mesh.geometry.attributes.position,idx=mesh.geometry.index,probes=[];
+      for(let i=0;i<(idx?.count??p.count);i+=3){
        const vs=[0,1,2].map(j=>new T.Vector3().fromBufferAttribute(p,idx?idx.getX(i+j):i+j).applyMatrix4(mesh.matrixWorld));
        const n=vs[1].clone().sub(vs[0]).cross(vs[2].clone().sub(vs[0])).normalize(),point=vs[0].clone().add(vs[1]).add(vs[2]).multiplyScalar(1/3);
        if(Math.abs(n.y)>.2||point.y<aim.y-12)continue;
        const q=point.clone().project(e.camera);if(Math.abs(q.x)>.95||Math.abs(q.y)>.9)continue;
-       const ray=new T.Raycaster();ray.setFromCamera(new T.Vector2(q.x,q.y),e.camera);const first=ray.intersectObjects([...meshes,sign],false)[0];
-       if(first?.object!==mesh)continue;
-       const x=(q.x+1)*w/2,y=(q.y+1)*h/2;
-       let found;
-       for(let offset=8;offset<w/2&&!found;offset+=8)for(const side of [-1,1]){
-        const sx=x+offset*side;if(sx<0||sx>=w)continue;
-        ray.setFromCamera(new T.Vector2(sx/w*2-1,q.y),e.camera);
-        const hit=ray.intersectObjects([...meshes,sign],false)[0];
-        if(!hit||(hit.object.parent?.name==='street-backdrop'&&hit.object.geometry.type==='SphereGeometry')){found={x:sx,y};break;}
-       }
-       if(found){facade.push(pixel(x,y));sky.push(pixel(found.x,found.y));pairs.push({facade:[x,h-y],sky:[found.x,h-y]});}
+       probes.push({qx:q.x,qy:q.y,x:(q.x+1)*w/2,y:(q.y+1)*h/2});
       }
-      if(!pairs.length)throw new Error('No visible facade/adjacent sky measurement pair: '+store);
-      metrics.facadeVsSky=avg(facade)/avg(sky);metrics.facadeMeanLuminance=avg(facade);metrics.skyMeanLuminance=avg(sky);metrics.facadeSkySamplePairs=pairs;
+      window.__facadeMeasure={probes,next:0,probe:null,mesh,objects:[...meshes,sign],pixel,w,h,facade:[],sky:[],pairs:[],store};
      }
     }
     return {pose:chosen,metrics,signDistanceM:e.camera.position.distanceTo(aim),actualAnchor:sign?.position.toArray()??null,landmarkCount:layer?.children.length??0,flag,store,kind,viewport:[innerWidth,innerHeight],capturedAtUTC:new Date().toISOString()};
    },{store,kind,flag,pose:flag==='off'?poses[key]:null,oldPose:old.pose,sourceRoad});
+   if(flag==='next'&&kind==='look'){
+    let measurement;
+    do{
+     measurement=await page.evaluate(()=>{
+      const {T,e}=window.__depato,m=window.__facadeMeasure,ray=new T.Raycaster();let rays=0;
+      // Bound ray work per call; a single facade row may need many sky probes.
+      while(m.pairs.length<12&&(m.probe||m.next<m.probes.length)&&rays<8){
+       if(!m.probe){
+        const p=m.probes[m.next++];ray.setFromCamera(new T.Vector2(p.qx,p.qy),e.camera);rays++;
+        if(ray.intersectObjects(m.objects,false)[0]?.object!==m.mesh)continue;
+        m.probe={...p,offset:8,side:-1};
+       }
+       if(rays>=8)break;
+       const p=m.probe,sx=p.x+p.offset*p.side;
+       if(p.side===-1)p.side=1;else{p.side=-1;p.offset+=8;}
+       if(sx>=0&&sx<m.w){
+        ray.setFromCamera(new T.Vector2(sx/m.w*2-1,p.qy),e.camera);rays++;
+        const hit=ray.intersectObjects(m.objects,false)[0];
+        if(!hit||(hit.object.parent?.name==='street-backdrop'&&hit.object.geometry.type==='SphereGeometry')){
+         m.facade.push(m.pixel(p.x,p.y));m.sky.push(m.pixel(sx,p.y));m.pairs.push({facade:[p.x,m.h-p.y],sky:[sx,m.h-p.y]});m.probe=null;
+        }
+       }
+       if(m.probe&&p.offset>=m.w/2)m.probe=null;
+      }
+      const done=m.pairs.length>=12||(!m.probe&&m.next>=m.probes.length);
+      if(!done)return {done:false};
+      if(!m.pairs.length)throw new Error('No visible facade/adjacent sky measurement pair: '+m.store);
+      const avg=a=>a.reduce((s,v)=>s+v,0)/a.length;
+      return {done:true,metrics:{facadeVsSky:avg(m.facade)/avg(m.sky),facadeMeanLuminance:avg(m.facade),skyMeanLuminance:avg(m.sky),facadeSkySamplePairs:m.pairs}};
+     });
+    }while(!measurement.done);
+    Object.assign(result.metrics,measurement.metrics);
+   }
    if(flag==='next')poses[key]=result.pose;
    const file=`${key}-${flag}.png`;await page.screenshot({path:`${root}/${file}`});frames.push({file,...result});await fs.writeFile(root+'/frames.json',JSON.stringify({recordedAt:'2026-11-22 JST',frames},null,2)+'\n');
    console.log(`${file}: pitch=${result.pose.pitchDeg.toFixed(2)}, horizontal=${result.pose.horizontalSignDistanceM}, contrast=${result.metrics.letterContrast}, facade/sky=${result.metrics.facadeVsSky}`);
@@ -113,4 +136,5 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
  }
 }
 console.log(`Captured ${frames.length} frames; timestamps labelled UTC in frames.json`);
-server.kill();
+}finally{server.kill();}
+}
