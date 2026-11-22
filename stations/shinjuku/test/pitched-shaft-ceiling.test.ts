@@ -244,28 +244,6 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     expect(failures).toEqual([]);
   });
 
-  it("keeps the cut mouth panels level with the B3 landing stripe (#1525)", () => {
-    const corner = { x: -47.88399540831238, y: 166.38398726353313 };
-    const walls = [...layout.levels.find((lv) => lv.label === "B3")!.walls,
-      ...layout.cornerFills.filter((w) => w.level === "B3")];
-    const touches = (p: { x: number; y: number }) => Math.hypot(p.x - corner.x, p.y - corner.y) < 0.0001;
-    const pitched = walls.find((w) => w.finish === "shaft" && touches(w.b) && w.profile &&
-      Math.abs(w.profile.bottomA - w.profile.bottomB) > 0.01)!;
-    const flat = walls.find((w) => w.finish === "shaft" && touches(w.a) && w.surfaceBase &&
-      Math.abs(w.surfaceBase.a + 23.74) < 0.001 && Math.abs(w.surfaceBase.b + 23.74) < 0.001 &&
-      Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y) > 1)!;
-    expect(pitched).toBeDefined();
-    expect(flat).toBeDefined();
-    const datum = (wall: typeof pitched) => {
-      const geometry = cladWallGeometry([wall])!;
-      const p = geometry.attributes.position!, uv = geometry.attributes.uv!;
-      for (let i = 0; i < p.count; i++) expect(p.getY(i) - uv.getY(i) * 3.2).toBeCloseTo(-23.74, 4);
-      const result = p.getY(0) - uv.getY(0) * 3.2;
-      geometry.dispose();
-      return result;
-    };
-    expect(Math.abs(datum(pitched) - datum(flat))).toBeLessThanOrEqual(0.03);
-  });
 
   it("does not overlap underground linear lights at similar heights", () => {
     const mesh = on.root.getObjectByName("linear-light:underground") as THREE.InstancedMesh;
@@ -360,4 +338,28 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
     expect(offFailures, "forcing the flag off must falsify the plane oracle").toBeGreaterThan(0);
     expect(failures.slice(0, 20), `${failures.length} failed rays`).toEqual([]);
   }, 120_000);
+});
+
+it("keeps the cut mouth panels level with the B3 landing stripe (#1525)", () => {
+  const layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
+  const corner = { x: -47.88399540831238, y: 166.38398726353313 };
+  const walls = [...layout.levels.find((lv) => lv.label === "B3")!.walls,
+    ...layout.cornerFills.filter((w) => w.level === "B3")];
+  const touches = (p: { x: number; y: number }) => Math.hypot(p.x - corner.x, p.y - corner.y) < 0.0001;
+  const pitched = walls.find((w) => w.finish === "shaft" && touches(w.b) && w.profile &&
+    Math.abs(w.profile.bottomA - w.profile.bottomB) > 0.01)!;
+  const flat = walls.find((w) => w.finish === "shaft" && touches(w.a) && w.surfaceBase &&
+    Math.abs(w.surfaceBase.a + 23.74) < 0.001 && Math.abs(w.surfaceBase.b + 23.74) < 0.001 &&
+    Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y) > 1)!;
+  expect(pitched).toBeDefined();
+  expect(flat).toBeDefined();
+  const datum = (wall: typeof pitched) => {
+    const geometry = cladWallGeometry([wall])!;
+    const p = geometry.attributes.position!, uv = geometry.attributes.uv!;
+    for (let i = 0; i < p.count; i++) expect(p.getY(i) - uv.getY(i) * 3.2).toBeCloseTo(-23.74, 4);
+    const result = p.getY(0) - uv.getY(0) * 3.2;
+    geometry.dispose();
+    return result;
+  };
+  expect(Math.abs(datum(pitched) - datum(flat))).toBeLessThanOrEqual(0.03);
 });
