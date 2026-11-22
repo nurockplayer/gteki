@@ -3,7 +3,7 @@
 // Injected into ego-browser nodejs by depato-capture.mjs; settings is supplied there.
 const fs = await import('node:fs/promises');
 const entry = (await listTaskSpaces()).find(s => s.id === 65);
-const task = !entry ? await taskSpace('Shinjuku department-store r8 captures')
+const task = !entry ? await taskSpace('Shinjuku department-store r9 captures')
   : entry.ownership === 'user' ? await claimTaskSpace(65)
   : entry.ownership === 'agentDelegatedToUser' ? await takeOverTaskSpace(65)
   : await taskSpace(65);
@@ -99,11 +99,16 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
           const atlas = { ja, top };
           const key = store.poiId + ':' + kind;
           let { best, nearestCheckedM = null } = searches.get(key) ?? {};
+          if (saved) {
+            apply(saved);
+            best = { ...saved, metrics: measure(sign, panel(sign, offset + saved.signFace * 4), atlas) };
+            nearestCheckedM = saved.nearestCheckedM;
+          }
           const accepted = candidate => candidate?.metrics.fullSignInFrame && candidate.metrics.letterPixels >= 8 && candidate.metrics.coverage > .95;
           // 2026-11-22 JST: r8 permits the nearest checked pavement/road pose when
           // no unobstructed 25–60 m walk view exists. Search distances in order.
           const { exceptional, distance } = step;
-          search: for (let index = 0; index < store.signs.length; index++) {
+          if (!saved) search: for (let index = 0; index < store.signs.length; index++) {
             const face = panel(sign, offset + index * 4), tangent = face.corners[1].clone().sub(face.corners[0]).normalize();
             for (const angle of [0, -15, 15, -30, 30, -45, 45, -60, 60, -75, 75]) {
               const radians = angle * Math.PI / 180;
@@ -156,8 +161,10 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
         },
       };
     }, settings);
-    for (const store of settings.stores) for (const kind of ['walk', 'look']) {
-      const saved = next ? null : plans.find(p => p.store === store.poiId && p.kind === kind);
+    for (const frame of settings.frames.filter(row => row.viewport.name === viewport.name)) {
+      const store = settings.stores.find(store => store.poiId === frame.store), kind = frame.kind;
+      const { store: storeId, kind: frameKind, next: frameNext, viewport: frameViewport, image, inspection, ...pose } = frame;
+      const saved = next ? pose : plans.find(p => p.store === store.poiId && p.kind === kind);
       const steps = [
         ...(kind === 'walk' ? [25, 30, 35, 40, 45, 50, 55] : [75, 100, 125]).map(distance => ({ distance, exceptional: false })),
         ...Array.from({ length: 40 }, (_, i) => ({ distance: 5 + i * 5, exceptional: true, last: i === 39 })),
@@ -176,4 +183,4 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
     }
   }
 }
-console.log('2026-11-22 JST: completed all desktop/phone next/off captures');
+console.log('2026-11-22 JST: completed four affected next frames and their off pairs');

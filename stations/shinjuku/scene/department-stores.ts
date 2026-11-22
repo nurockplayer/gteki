@@ -93,7 +93,10 @@ export function buildDepartmentStores(track: <T extends { dispose(): void }>(res
     const street = track(new THREE.MeshStandardMaterial({ map: atlas, emissiveMap: atlas,
       emissive: LANDMARK_STREET_BAND.glow, emissiveIntensity: LANDMARK_STREET_BAND.maxEmissive,
       roughness: LANDMARK_GLASS_ROUGHNESS, side: THREE.DoubleSide, fog: false }));
-    const sign = track(new THREE.MeshStandardMaterial({ map: atlas, emissiveMap: atlas,
+    // 2026-11-22 JST: these sun-facing bands need diffuse atlas contrast without specular glare.
+    const sign = track(["shop-sjk-keio", "shop-sjk-odakyudept", "shop-sjk-lumine2"].includes(store.poiId)
+      ? new THREE.MeshBasicMaterial({ map: atlas, side: THREE.FrontSide, fog: false })
+      : new THREE.MeshStandardMaterial({ map: atlas, emissiveMap: atlas,
       emissive: LANDMARK_SIGN.letters, emissiveIntensity: LANDMARK_SIGN.letterEmissive[0],
       roughness: LANDMARK_SIGN.bandRoughness, side: THREE.FrontSide, fog: false }));
     const surfaces = building.surfaces as Face[];
