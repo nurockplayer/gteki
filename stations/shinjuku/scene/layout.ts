@@ -984,7 +984,21 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     }
     // Landings, lateral shoulders and end overhangs take the nearest adjoining
     // endpoint's flat plane. Equal-height serial mouths therefore share one datum.
-    const shoulders = polygonClipping.difference(clipPoly(envelope[0]!), ...strips.map(clipPoly)).map(xyRings);
+    let shoulders = polygonClipping.difference(clipPoly(envelope[0]!), ...strips.map(clipPoly)).map(xyRings);
+    const localMouths = group.some((r) => r.edgeId === "e:ac906cd95e89401b9b11858e02f20895");
+    if (localMouths) {
+      // Between shaft 24's lanes the infill follows the flights. Extending the
+      // upper landing's flat underside down half the shaft leaves hanging sheets.
+      const inclined = shoulders.flatMap((rings) => affineMask(rings, (p) => along(p) - Math.min(...stations)))
+        .flatMap((rings) => affineMask(rings, (p) => Math.max(...stations) - along(p)));
+      for (const [i, rings] of inclined.entries()) for (const kind of ["roof", "invert"] as const) {
+        addFinish({ spaceId: `shaft-${kind}:${si}:shoulder:${i}`, floorId: lv.floorId,
+          kind: kind === "roof" ? "shaft" : "slab", rings, origin: lo, slope,
+          z: lo.z + (kind === "roof" ? rise : Math.min(...offsets) - 0.3), fare: null, category: "ceiling" });
+      }
+      shoulders = shoulders.flatMap((rings) => [...affineMask(rings, (p) => Math.min(...stations) - along(p)),
+        ...affineMask(rings, (p) => along(p) - Math.max(...stations))]);
+    }
     const mouths = [...new Map(group.flatMap((r) => [r.a, r.b]).map((p) => [`${p.x},${p.y}`, p])).values()];
     for (const [mi, mouth] of mouths.entries()) {
       let panels = shoulders;
@@ -1110,7 +1124,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     // rather than continuing a high sheet out above the adjoining low hall.
     const ceilingHeights = mouths.map((p) => Math.min(layout.levels.find((level) => Math.abs(level.z - p.z) < 0.1)?.ceilingZ ?? p.z + 3.2, streetUnderside));
     for (const s of [Math.min(...stations), Math.max(...stations)]) {
-      if (group.some((r) => r.edgeId === "e:ac906cd95e89401b9b11858e02f20895")) {
+      if (localMouths) {
         // Shaft 24's mouths meet their local landing, not the opposite landing
         // 19 m below/above it. Close only the roof and slab thickness steps.
         const mouth = mouths.reduce((a, b) => Math.abs(along(a) - s) < Math.abs(along(b) - s) ? a : b);
