@@ -573,10 +573,16 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .app[data-mode="guide"] .topbar .tagline, .app[data-mode="guide"] .topbar .station-select { display: none; }
 .app[data-mode="guide"] .top-actions { margin-left: auto; align-items: center; }
 .app[data-mode="guide"] .top-actions > button, .app[data-mode="guide"] .top-more-button { padding: 2px 6px; font-size: 12px; }
-.app[data-mode="guide"] .top-more { position: relative; display: block; }
-.app[data-mode="guide"] .top-more .lang { position: absolute; right: 0; top: 28px; }
-.app[data-mode="guide"] .top-more-button { cursor: pointer; list-style: none; }
-.app:not([data-mode="guide"]) .top-more { display: none; }
+.top-more { position: relative; }
+.top-more-button { cursor: pointer; list-style: none; padding: 4px 10px; }
+.top-more-items { position: absolute; right: 0; top: 100%; display: flex; flex-direction: column; gap: 6px; padding: 8px; min-width: 130px; background: var(--glass-strong); border: 1px solid var(--line); border-radius: 8px; }
+.top-more-items button { white-space: nowrap; }
+.feedback-dialog { box-sizing: border-box; width: min(420px, calc(100vw - 24px)); max-height: 85dvh; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; background: var(--glass-strong); color: var(--text); }
+.feedback-dialog::backdrop { background: #0008; }
+.feedback-dialog h2 { margin-top: 0; }
+.feedback-dialog p { font-size: 14px; }
+.feedback-dialog textarea { display: block; box-sizing: border-box; width: 100%; margin-top: 8px; font: inherit; font-size: 16px; }
+.feedback-dialog button { min-height: 44px; margin-right: 8px; }
 .app[data-mode="guide"] .minimap-map { transition: width 300ms, height 300ms; }
 .app.escalator[data-mode="guide"] .minimap { --minimap-size: 80px; }
 .app.escalator[data-mode="guide"] .minimap-map { width: 80px; }
