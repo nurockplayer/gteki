@@ -10,7 +10,7 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
   await page.cdp('Emulation.setDeviceMetricsOverride', { width: viewport.width, height: viewport.height, deviceScaleFactor: 1, mobile: viewport.mobile });
   const plans = [];
   for (const next of [true, false]) {
-    await page.goto('http://127.0.0.1:5281/?station=shinjuku&qaCrowd=off&qaTimeBand=morning&qaEscalatorPhase=0' + (next ? '&next=1' : ''));
+    await page.goto('http://127.0.0.1:5287/?station=shinjuku&qaCrowd=off&qaTimeBand=morning&qaEscalatorPhase=0' + (next ? '&next=1' : ''));
     await page.waitForFunction(() => window.__gteki?.phase() === 'ready', undefined, { timeout: 180000 });
     await page.waitForSelector('.boot-card', { state: 'hidden', timeout: 30000 });
     await page.evaluate(async () => { await document.fonts.ready; window.__gteki.holdFrames(true); });
