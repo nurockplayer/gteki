@@ -466,8 +466,8 @@ test("guided walk @phone", async ({ page }, info) => {
       await expect.poll(() => hooks.mode(page)).toBe("walk");
       cuesBefore = await page.evaluate(() => (window as any).__gteki.audio()?.station?.train?.cues ?? null);
       cuesAfter = cuesBefore;
-      while (cuesBefore !== null && cuesAfter === cuesBefore && waitedS < 210) {
-        await hooks.simulate(page, 5); waitedS += 5;
+      if (cuesBefore !== null) {
+        await hooks.simulate(page, 210); waitedS = 210;
         cuesAfter = await page.evaluate(() => (window as any).__gteki.audio()?.station?.train?.cues ?? null);
       }
     }

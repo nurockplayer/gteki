@@ -133,7 +133,7 @@ export interface StationScene {
     zone: AcousticZone;
     ambience: { bedGain: number; murmurGain: number; wetGain: number; wetLowpassHz: number; streetGain: number } | null;
     escalator: { gain: number; nearestDistance: number | null; runs: number } | null;
-    train: { phase: number | null; cues: number; gain: number; cutoffHz: number; sourcePosition: { x: number; y: number; z: number }; listenerDistance: number | null } | null;
+    train: { phase: number | null; gain: number; cutoffHz: number; sourcePosition: { x: number; y: number; z: number }; listenerDistance: number | null } | null;
   };
   /** Per-frame hook, before the camera is stepped; `camera` (optional) holds the previous frame's pose, e.g. for distance culling. */
   update?(dtSeconds: number, elapsedSeconds: number, camera?: THREE.Camera): void;
