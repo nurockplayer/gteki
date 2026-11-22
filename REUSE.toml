@@ -55,6 +55,13 @@ precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
 
+# J9 arrival evidence from CI (2026-11-22 JST), including the CC-BY cat model.
+[[annotations]]
+path = "docs/qa/reports/2026-11-22-j9-arrival/*.png"
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors; guillaume bolis (cat model)"
+SPDX-License-Identifier = "CC-BY-4.0"
+
 # #339 soft-stylized silhouette sample: hand-built from Blender primitives with no body generator and
 # no downloaded mesh, so the whole mesh, rig, weights and clips are original work (CC-BY-4.0) under the
 # repo licence. The sidecar records the hash and the build script.

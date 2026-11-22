@@ -90,9 +90,9 @@ export function openingShotState(state: "waiting" | "active" | "ended", next: bo
 }
 
 /** One shot per guide, cancelled by the first visitor input. */
-export function arrivalShotState(state: "waiting" | "active" | "ended", next: boolean, destination: string | null, done: boolean, input: boolean): "waiting" | "active" | "ended" {
+export function arrivalShotState(state: "waiting" | "active" | "ended", destination: string | null, done: boolean, input: boolean): "waiting" | "active" | "ended" {
   if (state === "active" && input) return "ended";
-  if (state === "waiting" && next && destination && ARRIVAL_SHOTS[destination] && done && !input) return "active";
+  if (state === "waiting" && destination && ARRIVAL_SHOTS[destination] && done && !input) return "active";
   return state;
 }
 
