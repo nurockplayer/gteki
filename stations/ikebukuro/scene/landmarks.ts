@@ -86,6 +86,7 @@ outgoingLight = mix(outgoingLight, streetColor, street);
     if (minifiedSign) texture.anisotropy = 16;
     textures.push(texture);
     const signMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: LANDMARK_SIGN.bandRoughness, emissiveMap: texture, emissive: new THREE.Color(0xffffff), emissiveIntensity: LANDMARK_SIGN.letterEmissive[minifiedSign ? 1 : 0], fog: material.fog, side: THREE.DoubleSide, polygonOffset: store.id === "sunshine", polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+    signMaterial.customProgramCacheKey = () => `landmark-sign:${minifiedSign ? store.id : "standard"}`;
     signMaterial.onBeforeCompile = shader => {
       if (minifiedSign) {
         // Use coverage once: filtered transparent RGB already contains the letter's alpha.
