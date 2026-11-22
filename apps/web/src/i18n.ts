@@ -7,6 +7,7 @@ export type Lang = "ja" | "en";
 
 const STRINGS = {
   ja: {
+    feedback: { title: "フィードバック", message: "内容（1000文字まで）", detail: "送信すると、ゲームの状態・端末情報・ゲーム画面の画像が送られます。個人情報は入力しないでください。報告内容は開発者のみが確認し、ゲームの改善に利用します。90日以内に自動削除します。迷惑送信防止のため、IPアドレスを一時的に処理する場合があります。", send: "送信", close: "閉じる", sending: "送信中…", sent: "送信しました。ありがとうございます！", error: "送信できませんでした。もう一度お試しください。", rate: "少し待ってから、もう一度送信してください。" },
     interactionStart: "のぞく", interactionReceived: "もらいました",
     interactionSimulated: "模擬店（実在の店舗ではありません）", interactionSimulatedVending: "模擬の自動販売機（実在の設備ではありません）",
     interactionInterrupted: "中断しました", interactionBag: "持ち物：紙袋",
@@ -271,6 +272,7 @@ const STRINGS = {
     language: "English",
   },
   en: {
+    feedback: { title: "Feedback", message: "Message (up to 1000 characters)", detail: "Your feedback will include game state, device details, and a game screenshot. Please do not include personal information. Reports are accessible only to the developer, are used to investigate and improve the game, and are automatically deleted within 90 days. Your IP may be processed temporarily to prevent spam.", send: "Send", close: "Close", sending: "Sending…", sent: "Sent. Thank you!", error: "Could not send. Please try again.", rate: "Please wait a minute before sending again." },
     interactionStart: "Look inside", interactionReceived: "Already received",
     interactionSimulated: "Simulated shop (not a real store)", interactionSimulatedVending: "Simulated vending machine (not a real one)",
     interactionInterrupted: "Interrupted", interactionBag: "Held: paper bag",
@@ -527,6 +529,14 @@ const STRINGS = {
 };
 
 export type Strings = (typeof STRINGS)["ja"];
+
+export type FeedbackLang = Lang | "zh";
+
+export function feedbackStrings(lang: FeedbackLang): Strings["feedback"] {
+  return lang === "zh"
+    ? { title: "意見回饋", message: "內容（最多1000字）", detail: "送出時會附上遊戲狀態、裝置資訊及遊戲畫面截圖。請勿提供個人資料。回報內容僅供開發者檢視，用於調查問題與改善遊戲，並於90天內自動刪除。為防止垃圾訊息，系統可能暫時處理 IP 位址。", send: "送出", close: "關閉", sending: "傳送中…", sent: "已送出，謝謝！", error: "傳送失敗，請再試一次。", rate: "請等候一分鐘後再傳送。" }
+    : STRINGS[lang].feedback;
+}
 
 export function strings(lang: Lang): Strings {
   return STRINGS[lang] as Strings;
