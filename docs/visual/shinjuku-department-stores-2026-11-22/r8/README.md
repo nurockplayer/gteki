@@ -1,5 +1,7 @@
 # Shinjuku department-store R8 captures — 2026-11-22 JST
 
+2026-11-22 JST: [R9 replaces the four contrast-failure views and their off pairs](../r9/README.md). This R8 table preserves the original measurements.
+
 Captured from `2e7bbed4c1cd4e087f9c4ced0662529d7995c1a9`, 2026-11-22 19:42–19:43 JST. All 88 images were inspected: eleven stores × desktop/phone × walk/look × next/off. PR #1511 stays draft. This is a complete capture set, with the contrast failures below retained for the lead.
 
 All 44 next frames show the whole sign; their `accepted` field means only that the pose has the whole panel in frame, at least eight glyph pixels, and more than 95% unoccluded panel coverage. It is not a contrast or overall visual-acceptance verdict. All 44 off frames omit the landmark layer and reuse the corresponding next camera; contrast, cap height, facade/sky and sign/reference are N/A when that layer is absent. Some unflagged views expose only the existing ground/sky; no claim is made that the baseline supplies equivalent store masses.
