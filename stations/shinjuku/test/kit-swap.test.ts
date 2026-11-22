@@ -79,7 +79,7 @@ const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "68559f50c729793df947e0d257161db8db65537ab56bcd9c0bf7384bb68b5d69",
     "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
-    "nodesDigest": "4703a53ec4b29acbd4a7b206069453d179b7243bb05d27eae9e710f030536574",
+    "nodesDigest": "89c9a2aee9c888cc2f1c7bbf1b0b0783e4c4b688598ddd8350ab9747d2a2930a",
     "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
     "meshes": 108,
     "bytes": 17314874
