@@ -963,7 +963,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const stripeStart = Math.max(...group.map((r) => along(ends(r)[0]))) + collarHalfLength;
     const stripeEnd = Math.min(...group.map((r) => along(ends(r)[1]))) - collarHalfLength;
     const wallSurface = parallel ? (p: XY) => lo.z + (hi.z - lo.z) *
-      Math.max(0, Math.min(1, (along(p) - stripeStart) / (stripeEnd - stripeStart))) : base;
+      Math.max(0, Math.min(1, (along(p) - stripeStart) / (stripeEnd - stripeStart))) :
+      (p: XY) => bottom(p) - 0.18;
     if (pitchedCeilings && parallel) {
       // The maximum endpoint offset bounds every affine flight roof, including
       // transverse pitch differences. Never lower any existing flight ceiling.
@@ -1108,7 +1109,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
           }
           shaftRoofCuts.push({ prefix: `shaft-roof:${si}:`, rings: panel });
           shaftVoids.push({ rings: panel, bottom: () => z - 0.18, top: () => z + collarClearance, ceilingTop: () => z + collarClearance });
-          enclose(lv, panel, () => z - 0.18, () => z + collarClearance, "shaft", false, undefined, undefined, () => z);
+          enclose(lv, panel, () => z - 0.18, () => z + collarClearance, "shaft", false, undefined, undefined,
+            () => group[0]!.mode === "stairs" ? z - 0.18 : z);
         }
       }
     }
