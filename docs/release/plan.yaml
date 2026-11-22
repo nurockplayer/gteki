@@ -82,10 +82,10 @@ workstreams:
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
       - id: J5
         requirement: No void, no black holes, the camera never inside geometry
-        judge: "script: every 2.5 m with the guide camera"
+        judge: "script: every 4 s with the guide camera"
         status: FAIL
         context: whole walk
-        status_detail: "FAIL: 1 / 2 of 39 samples. Near clip on the first escalator at 48 s (0.13, desktop) and at 68 s and 76 s (0.20, phone); void ≤ 0.15%"
+        status_detail: "FAIL: desktop 1 / 38, phone 0 / 38 (run 44940000006, main b99e7f0b equivalent). Near clip 0 since #1479; desktop void 0.0085 at 88 s (B3 wall slit, draft PR #1478)."
         evidence:
           - label: Original journey judgement
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
@@ -160,7 +160,7 @@ workstreams:
         judge: "script: audio state; person"
         status: NOT JUDGED
         context: whole walk
-        status_detail: not judged (the reel records no audio state)
+        status_detail: "not judged (each journey.json sample records audio context state, muted state, zone, ambience gains, escalator layer and train rumble; the spec writes report-only `j11`. No per-part pass/fail yet; escalator layer is next-only and train one-shots are not recorded.)"
       - id: J12
         requirement: "It holds frame rate: ≥ 50 fps desktop (M2), ≥ 30 fps on a mid-range phone"
         judge: GPU measurement
