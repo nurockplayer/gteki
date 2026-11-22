@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import data from "../data/department-stores.json";
+import { inside } from "./surface-street.ts";
 import {
   LANDMARK_FACADE, LANDMARK_FLOOR_JOINT_M, LANDMARK_PIER_SPACING_M,
   LANDMARK_GLASS_ROUGHNESS, LANDMARK_STREET_BAND, LANDMARK_SIGN,
@@ -107,11 +108,20 @@ export function buildDepartmentStores(track: <T extends { dispose(): void }>(res
     const usedFaces = new Set<Face>();
     stores.forEach((s, row) => s.signs.forEach(({ edge, along }) => {
       const a = vector([...ring[edge]!, 0]), b = vector([...ring[(edge + 1) % ring.length]!, 0]), target = a.clone().lerp(b, along);
-      const candidates = surfaces.filter(f => f.kind === "wall" && f.rings[0]!.length === 4 && !usedFaces.has(f)).map(source => ({ ...facePlane(source), source })).filter(f => Math.abs(f.normal.y) < .01).map(f => {
-        const xs = f.rings[0]!.map(p => p.x), ys = f.rings[0]!.map(p => p.y);
-        const left = Math.min(...xs), right = Math.max(...xs), bottom = Math.min(...ys), top = Math.max(...ys);
-        return { ...f, width: right - left, height: top - bottom, left, right, bottom, top };
-      }).filter(f => f.width >= s.ja.length && f.height >= LANDMARK_FLOOR_JOINT_M).sort((f, g) => {
+      // Use the real wall's span across the first-floor name band, below every roof.
+      const candidates = surfaces.filter(f => f.kind === "wall" && !usedFaces.has(f)).map(source => ({ ...facePlane(source), source })).filter(f => Math.abs(f.normal.y) < .01).map(f => {
+        const bottom = (LANDMARK_FLOOR_JOINT_M - f.origin.y) / f.v.y;
+        const top = (2 * LANDMARK_FLOOR_JOINT_M - f.origin.y) / f.v.y;
+        const spans = [bottom, (bottom + top) / 2, top].map(y => {
+          const xs = f.rings[0]!.flatMap((a, i, ring) => {
+            const b = ring[(i + 1) % ring.length]!;
+            return (a.y > y) !== (b.y > y) ? [a.x + (b.x - a.x) * (y - a.y) / (b.y - a.y)] : [];
+          });
+          return { left: Math.min(...xs), right: Math.max(...xs) };
+        });
+        const left = Math.max(...spans.map(p => p.left)), right = Math.min(...spans.map(p => p.right));
+        return { ...f, width: right - left, left, right, bottom, top };
+      }).filter(f => f.width >= s.ja.length).sort((f, g) => {
         const distance = (p: typeof f) => p.origin.clone().addScaledVector(p.u, (p.left + p.right) / 2).setY(0).distanceTo(target);
         return distance(f) - distance(g);
       });
@@ -119,8 +129,11 @@ export function buildDepartmentStores(track: <T extends { dispose(): void }>(res
       usedFaces.add(face.source);
       const width = Math.min(face.width * .9, widths[row]!);
       const height = LANDMARK_FLOOR_JOINT_M * width / widths[row]!;
-      // Face winding in the source fixes the outward normal; the band stays on its wall.
-      const center = face.origin.clone().addScaledVector(face.u, (face.left + face.right) / 2).addScaledVector(face.v, face.top - height / 2).addScaledVector(face.normal, .04);
+      const center = face.origin.clone().addScaledVector(face.u, (face.left + face.right) / 2).setY(LANDMARK_FLOOR_JOINT_M + height / 2);
+      // PLATEAU wall winding varies; the sign must face out of the footprint.
+      const probe = center.clone().addScaledVector(face.normal, .2);
+      if (inside({ x: probe.x, y: -probe.z }, [building.rings])) { face.normal.negate(); face.u.negate(); }
+      center.addScaledVector(face.normal, .04);
       signParts.push(panel(center, face.u, face.v, width, height, rows[row]!.top / canvas.height, rows[row]!.bottom / canvas.height));
     }));
     for (const [name, parts, material] of [["facade", facadeParts, facade], ["street", streetParts, street], ["sign", signParts, sign]] as const) {
