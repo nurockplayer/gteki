@@ -4,6 +4,8 @@ The lead approved P'PARCO's previously captured clear public-road eye at **74.86
 
 The remaining 50 captures will resume from the preserved 10 frames. Full-set visual inspection, complete PR measurements and final-head CI confirmation follow completion of the capture job. PR #1512 stays draft.
 
+Job `depato-ikebukuro-capture-r10` exited 1 at 2026-11-22 19:17:41 JST: `Error: task space not found: 44`. No new frame was saved. The capture script now creates a named capture space when the former space no longer exists; `depato-ikebukuro-capture-r10b` resumes the same saved frames.
+
 ## Historical r9 result — 2026-11-22 JST
 
 Capture source commit: `cb2afa72`; scene code remains `d638a9a6`. The first nine r8 frames are preserved. Job `depato-ikebukuro-capture-r9b` added `desktop-parco-look-next.png`, bringing the set to **10/60 frames**. It ran 2026-11-22 09:22:24–09:23:23 JST and exited 1 at P'PARCO walk. The bounded facade measurements got past the previous browser timeout.
