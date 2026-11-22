@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: GTEki contributors
 // Injected into ego-browser nodejs by depato-capture.mjs; settings is supplied there.
 const fs = await import('node:fs/promises');
-const task = await taskSpace('Shinjuku department stores r7');
+const task = await taskSpace(47);
 console.log({ taskSpaceId: task.spaceId });
 const page = task.page('p1');
 const rows = [];
@@ -44,7 +44,7 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
             const letter = im.data[i] > 150, y = Math.floor(i / 4 / canvas.width), ja = y < atlas.top + atlas.ja * 1.10 && y >= atlas.top;
             im.data[i] = letter && ja ? 255 : 0; im.data[i + 1] = letter && !ja ? 255 : 0; im.data[i + 2] = letter ? 0 : 255;
           }
-          ctx.putImageData(im, 0, 0); texture = old.map.clone(); texture.image = canvas; texture.needsUpdate = true;
+          ctx.putImageData(im, 0, 0); texture = old.map.clone(); texture.source = new old.map.source.constructor(canvas); texture.needsUpdate = true;
         }
         const mask = new Basic({ color: 0xffffff, map: texture ?? null, fog: false, toneMapped: false, side: old.side });
         mesh.material = mask; e.renderer.render(e.scene, e.camera); const id = read(); mesh.material = old; mask.dispose(); texture?.dispose();
