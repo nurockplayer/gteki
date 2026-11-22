@@ -1,4 +1,10 @@
-# Partial r9 captures — 2026-11-22 JST
+# r10 capture continuation — 2026-11-22 JST
+
+The lead approved P'PARCO's previously captured clear public-road eye at **74.86 m**, leaving the sign in place. No public pavement point within 25–60 m faces the sign; the nearest sampled front-facing point is 70.05 m. This frame is a distance exception. If another store has no qualifying pose, capture uses the nearest clear sampled public-pavement pose and records its distance and exception in frames.json. Product code remains unchanged.
+
+The remaining 50 captures will resume from the preserved 10 frames. Full-set visual inspection, complete PR measurements and final-head CI confirmation follow completion of the capture job. PR #1512 stays draft.
+
+## Historical r9 result — 2026-11-22 JST
 
 Capture source commit: `cb2afa72`; scene code remains `d638a9a6`. The first nine r8 frames are preserved. Job `depato-ikebukuro-capture-r9b` added `desktop-parco-look-next.png`, bringing the set to **10/60 frames**. It ran 2026-11-22 09:22:24–09:23:23 JST and exited 1 at P'PARCO walk. The bounded facade measurements got past the previous browser timeout.
 

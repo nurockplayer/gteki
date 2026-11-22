@@ -1,4 +1,4 @@
-// r8 art-direction correction, 2026-11-22 JST. Run through job-run; timestamps are UTC.
+// r10 approved capture distance exceptions, 2026-11-22 JST. Run through job-run; timestamps are UTC.
 {
 const fs=await import('node:fs/promises');
 const {spawn}=await import('node:child_process');
@@ -51,12 +51,24 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
       if(store==='parco')desired.push(new T.Vector3(93.536956,32.230625,-201.178255));
       candidates=pavement.flatMap(({triangle,road})=>[triangle.getMidpoint(new T.Vector3()),...desired.map(p=>triangle.closestPointToPoint(p,new T.Vector3()))].map(point=>({point,road})));
      }
-     candidates=candidates.map(c=>({...c,horizontalSignDistanceM:Math.hypot(c.point.x-aim.x,c.point.z-aim.z)})).filter(c=>c.horizontalSignDistanceM>=25&&c.horizontalSignDistanceM<=60);
-     candidates.sort((a,b)=>b.horizontalSignDistanceM-a.horizontalSignDistanceM);
-     const c=candidates.find(c=>clear(c.point.clone().add(new T.Vector3(0,1.6,0))));
-     if(!c)throw new Error('No full-sign public pavement pose at 25–60 m: '+store);
+     candidates=candidates.map(c=>({...c,horizontalSignDistanceM:Math.hypot(c.point.x-aim.x,c.point.z-aim.z)}));
+     const inBand=candidates.filter(c=>c.horizontalSignDistanceM>=25&&c.horizontalSignDistanceM<=60).sort((a,b)=>b.horizontalSignDistanceM-a.horizontalSignDistanceM);
+     let c=inBand.find(c=>clear(c.point.clone().add(new T.Vector3(0,1.6,0)))),distanceException;
+     if(!c){
+      if(store==='pparco'){
+       const point=new T.Vector3(...oldPose.eye).add(new T.Vector3(0,-1.6,0));
+       c={point,road:oldPose.road,horizontalSignDistanceM:Math.hypot(point.x-aim.x,point.z-aim.z)};
+       if(!clear(new T.Vector3(...oldPose.eye)))throw new Error('Approved PPARCO pose no longer sees the full sign');
+       distanceException='Approved 74.86 m pose: no public pavement point within 25–60 m faces the sign; nearest sampled front-facing point is 70.05 m (2026-11-22 JST).';
+      }else{
+       candidates.sort((a,b)=>a.horizontalSignDistanceM-b.horizontalSignDistanceM);
+       c=candidates.find(c=>clear(c.point.clone().add(new T.Vector3(0,1.6,0))));
+       if(!c)throw new Error('No clear public pavement pose: '+store);
+       distanceException='Nearest clear sampled public-pavement pose; no qualifying full-sign pose within 25–60 m (approved rule, 2026-11-22 JST).';
+      }
+     }
      const eye=c.point.clone().add(new T.Vector3(0,1.6,0)),target=new T.Vector3(aim.x,eye.y+c.horizontalSignDistanceM*Math.tan(15*Math.PI/180),aim.z);
-     chosen={eye:eye.toArray(),target:target.toArray(),fov:60,road:c.road,sourceSha256:c.sourceSha256,horizontalSignDistanceM:c.horizontalSignDistanceM,eyeHeightM:1.6,captureOnly:true,clearSign:true};
+     chosen={eye:eye.toArray(),target:target.toArray(),fov:60,road:c.road,sourceSha256:c.sourceSha256,horizontalSignDistanceM:c.horizontalSignDistanceM,eyeHeightM:1.6,captureOnly:true,clearSign:true,...(distanceException?{distanceException}:{})};
     }else if(!chosen){
      // The inset Sunshine sign needs this adjacent public-road centroid to clear the foreground.
      const eye=kind==='east-exit'?new T.Vector3(144.95953369140625,32.85900014241536,2.7981765270233154):new T.Vector3(...oldPose.eye);
