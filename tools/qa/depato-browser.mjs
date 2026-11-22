@@ -2,9 +2,14 @@
 // SPDX-FileCopyrightText: GTEki contributors
 // Injected into ego-browser nodejs by depato-capture.mjs; settings is supplied there.
 const fs = await import('node:fs/promises');
-const task = await taskSpace(47);
+const entry = (await listTaskSpaces()).find(s => s.id === 47);
+const task = !entry ? await taskSpace('Shinjuku department-store r8 captures')
+  : entry.ownership === 'user' ? await claimTaskSpace(47)
+  : entry.ownership === 'agentDelegatedToUser' ? await takeOverTaskSpace(47)
+  : await taskSpace(47);
 console.log({ taskSpaceId: task.spaceId });
-const page = task.page('p1');
+await fs.writeFile(settings.output + '/browser-space.json', JSON.stringify({ spaceId: task.spaceId }));
+const page = (await task.pages())[0] ?? await task.adopt((await task.tabs())[0].page);
 const rows = [];
 for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'desktop' }, { width: 390, height: 844, mobile: true, name: 'phone' }]) {
   await page.cdp('Emulation.setDeviceMetricsOverride', { width: viewport.width, height: viewport.height, deviceScaleFactor: 1, mobile: viewport.mobile });
@@ -14,7 +19,7 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
     await page.waitForFunction(() => window.__gteki?.phase() === 'ready', undefined, { timeout: 180000 });
     await page.waitForSelector('.boot-card', { state: 'hidden', timeout: 30000 });
     await page.evaluate(async () => { await document.fonts.ready; window.__gteki.holdFrames(true); });
-    await page.evaluate(({ stores, buildings, footprints, exit1 }) => {
+    await page.evaluate(({ stores, buildings, footprints, roads, exit1 }) => {
       const qa = window.__gteki, e = qa.scanProbe().explorer;
       e.setMode('walk');
       e.camera.fov = 50;
@@ -65,8 +70,9 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
         return { contrast: letters.length && band.length ? (letterY + .05) / (bandY + .05) : null, letterY, bandY, meanY: mean(all), jaCapPx: jaRows.length ? Math.max(...jaRows) - Math.min(...jaRows) + 1 : 0, letterPixels: letters.length, signPixels: all.length, coverage: expectedArea ? all.length / expectedArea : 0, fullSignInFrame: projected.every(p => Math.abs(p.x) < .95 && Math.abs(p.y) < .9 && p.z < 1), projected: projected.map(p => p.toArray()) };
       };
       const inside = (p, ring) => { let yes = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const a = ring[i], b = ring[j]; if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) yes = !yes; } return yes; };
+      const outsideBuildings = position => !footprints.some(rings => inside([position.x, -position.z], rings[0]) && !rings.slice(1).some(r => inside([position.x, -position.z], r)));
       const pavement = position => {
-        if (footprints.some(rings => inside([position.x, -position.z], rings[0]) && !rings.slice(1).some(r => inside([position.x, -position.z], r)))) return false;
+        if (!outsideBuildings(position)) return false;
         const ground = e.scene.getObjectByName('surface-ground');
         e.ray.set(position.clone().setY(2), vector().set(0, -1, 0)); e.ray.near = 0; e.ray.far = 3;
         return e.ray.intersectObject(ground, false).length > 0;
@@ -81,25 +87,36 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
           const offset = siblings.slice(0, siblingIndex).reduce((n, s) => n + s.signs.length, 0) * 4;
           const ja = 512 / (store.ja.length + 1), top = siblings.slice(0, siblingIndex).reduce((n, s) => n + 512 * 4.5 / ((s.ja.length + 1) * (4.5 / 1.85)), 0);
           const atlas = { ja, top };
-          let best;
-          for (let index = 0; index < store.signs.length; index++) {
+          let best, nearestCheckedM = null;
+          const accepted = candidate => candidate?.metrics.fullSignInFrame && candidate.metrics.letterPixels >= 8 && candidate.metrics.coverage > .95;
+          // 2026-11-22 JST: r8 permits the nearest checked pavement/road pose when
+          // no unobstructed 25–60 m walk view exists. Search distances in order.
+          const standard = kind === 'walk' ? [25, 30, 35, 40, 45, 50, 55] : [75, 100, 125];
+          const exception = Array.from({ length: 40 }, (_, i) => 5 + i * 5);
+          search: for (const exceptional of [false, true]) for (const distance of exceptional ? exception : standard) for (let index = 0; index < store.signs.length; index++) {
             const face = panel(sign, offset + index * 4), tangent = face.corners[1].clone().sub(face.corners[0]).normalize();
-            poses: for (const distance of kind === 'walk' ? [45, 30, 55] : [100, 75, 125]) for (const lateral of [0, -20, 20]) {
-              const camera = face.center.clone().addScaledVector(face.normal, distance).addScaledVector(tangent, lateral).setY(1.6);
-              if (!pavement(camera)) continue;
+            for (const angle of [0, -15, 15, -30, 30, -45, 45, -60, 60, -75, 75]) {
+              const radians = angle * Math.PI / 180;
+              const camera = face.center.clone().addScaledVector(face.normal, distance * Math.cos(radians)).addScaledVector(tangent, distance * Math.sin(radians)).setY(1.6);
+              const onPavement = pavement(camera);
+              const onRoad = outsideBuildings(camera) && roads.some(rings => inside([camera.x, -camera.z], rings[0]) && !rings.slice(1).some(r => inside([camera.x, -camera.z], r)));
+              if (exceptional ? !onPavement && !onRoad : !onPavement) continue;
               const target = face.center.clone(); if (kind === 'look') target.y /= 2;
               const pitch = Math.atan2(target.y - 1.6, Math.hypot(target.x - camera.x, target.z - camera.z)) * 180 / Math.PI;
               const distanceM = camera.distanceTo(face.center);
-              if (kind === 'walk' && (pitch > 15 || distanceM > 60)) continue;
-              const pose = { camera: camera.toArray(), target: target.toArray(), pitchDeg: pitch, distanceM, signFace: index, signCenter: face.center.toArray(), signCorners: face.corners.map(p => p.toArray()), pavement: true, eyeHeightM: 1.6 };
+              if (kind === 'walk' && (Math.abs(pitch) > 15 || (!exceptional && distanceM > 60))) continue;
+              nearestCheckedM = Math.min(nearestCheckedM ?? Infinity, distanceM);
+              const pose = { camera: camera.toArray(), target: target.toArray(), pitchDeg: pitch, distanceM, signFace: index, signCenter: face.center.toArray(), signCorners: face.corners.map(p => p.toArray()), pavement: onPavement, poseSurface: onPavement ? 'public pavement' : 'capture-only road', exception: exceptional, eyeHeightM: 1.6 };
               apply(pose); const metrics = measure(sign, face, atlas);
               const candidate = { ...pose, metrics };
               if (!best || metrics.signPixels > best.metrics.signPixels) best = candidate;
-              if (metrics.fullSignInFrame && metrics.letterPixels >= 8 && metrics.coverage > .7) { best = candidate; break poses; }
+              if (accepted(candidate)) { best = candidate; break search; }
             }
-            if (best?.metrics.fullSignInFrame && best.metrics.letterPixels >= 8 && best.metrics.coverage > .7) break;
           }
-          if (!best) throw new Error(store.poiId + ': no ' + kind + ' pavement pose');
+          if (!best) throw new Error(store.poiId + ': no outside-building eye-level pose within 200 m');
+          best.accepted = accepted(best);
+          best.nearestCheckedM = nearestCheckedM;
+          if (!best.accepted) best.reason = 'No whole unobstructed sign in the checked pavement/road poses; diagnostic frame only';
           apply(best);
           const callbacks = group.children.map(mesh => { const old = mesh.onAfterRender; mesh.onAfterRender = () => { calls[mesh.name] = (calls[mesh.name] ?? 0) + 1; }; return [mesh, old]; });
           const calls = {}; e.renderer.render(e.scene, e.camera); for (const [mesh, old] of callbacks) mesh.onAfterRender = old;
@@ -139,4 +156,4 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
     }
   }
 }
-await task.finish({ keep: [] });
+console.log('2026-11-22 JST: completed all desktop/phone next/off captures');

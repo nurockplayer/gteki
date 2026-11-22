@@ -88,6 +88,8 @@ export function buildDepartmentStores(track: <T extends { dispose(): void }>(res
       roughness: store.upper === "glazed" ? LANDMARK_GLASS_ROUGHNESS : .8,
       bumpMap: joints, bumpScale: .08, fog: false,
     }));
+    // 2026-11-22 JST: keep the two bright stone landmarks below the look-frame sky.
+    if (store.poiId === "shop-sjk-isetan-honkan" || store.poiId === "shop-sjk-odakyudept") facade.color.multiplyScalar(.5);
     const street = track(new THREE.MeshStandardMaterial({ map: atlas, emissiveMap: atlas,
       emissive: LANDMARK_STREET_BAND.glow, emissiveIntensity: LANDMARK_STREET_BAND.maxEmissive,
       roughness: LANDMARK_GLASS_ROUGHNESS, side: THREE.DoubleSide, fog: false }));
