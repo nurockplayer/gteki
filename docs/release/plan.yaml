@@ -158,9 +158,9 @@ workstreams:
       - id: J11
         requirement: "It sounds like one: ambience that changes with depth, escalator, distant train"
         judge: "script: audio state; person"
-        status: NOT JUDGED
+        status: FAIL
         context: whole walk
-        status_detail: "not judged (each journey.json sample records audio context state, muted state, zone, ambience gains, escalator layer and train rumble; the spec writes report-only `j11`. No per-part pass/fail yet; escalator layer is next-only and train one-shots are not recorded.)"
+        status_detail: "FAIL by script on default (PR #1523, CI journey run 45021058123): desktop and phone depth pass, escalator FAIL, train pass. All three parts pass in `?next=1` on desktop and phone. The script part passes in next; default fails only on the escalator layer, which remains behind `?next=1` pending art director acceptance of #1500. Person judgement is still outstanding."
       - id: J12
         requirement: "It holds frame rate: ≥ 50 fps desktop (M2), ≥ 30 fps on a mid-range phone"
         judge: GPU measurement
