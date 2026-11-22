@@ -604,6 +604,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 @media (max-width: 480px) {
   .app.arrival[data-mode="guide"] .arrival-controls.menu-open { display: contents; }
   .app.arrival[data-mode="guide"] .arrival-controls.menu-open .guide-more { grid-column: 2; background: var(--glass-strong); }
+  .app.arrival.arrival-bottom[data-mode="guide"] .arrival-controls.menu-open .guide-more { background: #0e141e; transition: border-color 0.15s, transform 0.08s; }
   .app.arrival[data-mode="guide"] .arrival-controls.menu-open .arrival-menu { grid-column: 1 / -1; justify-self: end; }
   .app.arrival.arrival-bottom[data-mode="guide"] .arrival-controls.menu-open .arrival-menu { grid-row: 1; }
   .app.arrival.arrival-left[data-mode="guide"] .arrival-controls.menu-open .arrival-menu { justify-self: start; }
