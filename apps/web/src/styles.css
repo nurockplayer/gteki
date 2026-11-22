@@ -535,11 +535,16 @@ button.on { border-color: var(--accent); color: var(--accent); }
 
 .cold-open { position: absolute; z-index: 5; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom) + var(--credit-extra)); display: grid; gap: 6px; padding: 10px; border-radius: 12px; background: var(--glass-strong); border: 1px solid var(--line); }
 .cold-open[hidden] { display: none; }
+.cold-open .primary { min-height: 44px; }
+.cold-open-hint { position: absolute; bottom: calc(100% + 8px); right: 0; padding: 6px 8px; border-radius: 8px; background: var(--glass-strong); font-size: 11px; white-space: nowrap; }
+.cold-open-hint[hidden] { display: none; }
 .cold-open-title { font-size: 13px; font-weight: 700; }
 .cold-open-search { border: 0; background: transparent; padding: 4px; }
 .cold-opening .hud, .cold-opening .panel-entry, .cold-opening .minimap, .cold-opening .hint { display: none !important; }
 @media (max-width: 600px) {
-  .cold-open { left: 50%; transform: translateX(-50%); white-space: nowrap; }
+  .cold-open { left: auto; right: max(12px, env(safe-area-inset-right)); width: calc(55vw - 24px); box-sizing: border-box; }
+  .cold-open .primary { font-size: 13px; padding-inline: 4px; }
+  .cold-open-title { font-size: 11px; }
   /* Match the badge bottom, then clear its line, padding and the 8 px gap. */
   html[data-cold-open="1"] .cold-opening .cold-open { bottom: calc(max(var(--hud-clear, 0px), 10px + env(safe-area-inset-bottom) + var(--credit-extra) + var(--hud-height, 0px) + 4px) + 40px); }
 }

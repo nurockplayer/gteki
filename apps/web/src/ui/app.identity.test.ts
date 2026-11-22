@@ -10,7 +10,7 @@ vi.mock("../registry.ts", () => ({ listStations: vi.fn(), PRIVATE_BUILD: false, 
 import { App } from "./app.ts";
 
 type Harness = {
-  explorer: { currentMode: string; sceneError: null; cancelPendingLoad: () => void; setRouteQuiet: () => void; setArrivalBeacon: () => void; loadStation: (s: LoadedStation) => Promise<boolean>; getPose: () => null };
+  explorer: { currentMode: string; sceneError: null; cancelPendingLoad: () => void; setRouteQuiet: () => void; setArrivalBeacon: () => void; setDiscoveryMarks: () => void; loadStation: (s: LoadedStation) => Promise<boolean>; getPose: () => null };
   identityView: StationIdentityView;
   ui: { sheet: HTMLElement };
   openStation: (e: StationEntry) => Promise<void>;
@@ -44,10 +44,11 @@ function app() {
   const instance = new App(root);
   apps.push(instance);
   const a = instance as unknown as Harness;
-  a.explorer = { currentMode: "overview", sceneError: null, cancelPendingLoad: vi.fn(), setRouteQuiet: vi.fn(), setArrivalBeacon: vi.fn(), loadStation: vi.fn(async () => true), getPose: () => null };
+  a.explorer = { currentMode: "overview", sceneError: null, cancelPendingLoad: vi.fn(), setRouteQuiet: vi.fn(), setArrivalBeacon: vi.fn(), setDiscoveryMarks: vi.fn(), loadStation: vi.fn(async () => true), getPose: () => null };
   for (const name of ["renderCredit", "renderSpawnChips", "renderHud", "updateUrl"] as const) vi.spyOn(a, name).mockImplementation(() => {});
   vi.spyOn(a, "refreshAll").mockImplementation(() => a.renderIdentity());
-  root.append(a.identityView.card, a.identityView.overview, a.ui.sheet);
+  const hint = document.createElement("div"); hint.className = "cold-open-hint";
+  root.append(a.identityView.card, a.identityView.overview, a.ui.sheet, hint);
   return { a, root };
 }
 afterEach(() => { disposeApps(); vi.restoreAllMocks(); document.body.replaceChildren(); vi.useRealTimers(); });

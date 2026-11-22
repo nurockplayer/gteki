@@ -43,6 +43,74 @@ async function overlay(page: Page): Promise<Overlay> {
   });
 }
 
+test("guided-walk discovery frames and explicit-only CTA (J3) @phone", async ({ page }, info) => {
+  test.setTimeout(360_000);
+  const clockStart = new Date();
+  await page.clock.install({ time: clockStart });
+  await page.clock.pauseAt(new Date(clockStart.getTime() + 1000));
+  await page.addInitScript(() => {
+    const mark = performance.mark.bind(performance);
+    performance.mark = (name, options) => {
+      if (name === "boot-lift") (window as any).__discoveryStartedAt = performance.now();
+      return mark(name, options);
+    };
+  });
+  await page.addInitScript(PROBE_SCRIPT);
+  for (const lang of ["ja", "en"]) {
+    const out = path.join(outDir(info.project.name), lang); fs.mkdirSync(out, { recursive: true });
+    const cdp = await page.context().newCDPSession(page);
+    await page.goto(`/?qaTimeBand=morning&lang=${lang}${reelMode === "next" ? "&next=1" : ""}`, { waitUntil: "commit" });
+    // Skip repeated GPU frames during loading; keep the real DOM cue callbacks running.
+    await expect.poll(async () => {
+      await page.clock.fastForward(1000);
+      return page.evaluate(() => {
+        (window as any).__gteki?.holdFrames(true);
+        return (window as any).__discoveryStartedAt !== undefined;
+      });
+    }, { timeout: 120_000 }).toBe(true);
+    const captures = [];
+    for (const seconds of [3, 5]) {
+      const elapsed = await page.evaluate(() => performance.now() - (window as any).__discoveryStartedAt);
+      await page.clock.fastForward(seconds * 1000 - elapsed);
+      await page.clock.runFor(20);
+      const state = await page.evaluate(() => {
+        const g = (window as any).__gteki;
+        const marks = g.scanProbe().explorer.scene.getObjectByName("cold-open-direction-marks");
+        g.goldenFrame();
+        return {
+          elapsedMs: performance.now() - (window as any).__discoveryStartedAt,
+          directionMarksVisible: marks.visible, opacity: marks.material.opacity,
+          hintVisible: !document.querySelector<HTMLElement>(".cold-open-hint")!.hidden,
+        };
+      });
+      expect(state.directionMarksVisible).toBe(seconds === 3);
+      expect(state.hintVisible).toBe(seconds === 5);
+      const file = `discovery-${seconds}s.png`;
+      const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+      fs.writeFileSync(path.join(out, file), Buffer.from(png.data, "base64"));
+      const coverage = await overlay(page);
+      const primaryCount = await page.locator("button.primary:visible").evaluateAll((buttons) => buttons.filter((button) => {
+        for (let el: Element | null = button; el; el = el.parentElement) {
+          if (Number(getComputedStyle(el).opacity) === 0) return false;
+        }
+        return true;
+      }).length);
+      captures.push({ file, ...state, ...coverage, primaryCount });
+      expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? 30 : 20);
+      expect(primaryCount).toBe(1);
+    }
+    const box = (await page.locator(".cold-open .primary").boundingBox())!;
+    const record = { lang, touchTargetHeight: box.height, clock: "browser time held at each capture", captures };
+    fs.writeFileSync(path.join(out, "discovery-j3.json"), JSON.stringify(record, null, 2));
+    console.log(`J3 hint shown: ${info.project.name} ${JSON.stringify(record)}`);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    if (info.project.name.startsWith("phone")) expect(box.x).toBeGreaterThanOrEqual(page.viewportSize()!.width * .45);
+    await page.clock.fastForward(10_000);
+    expect(await page.evaluate(() => (window as any).__gteki.mode())).toBe("walk");
+    await cdp.detach();
+  }
+});
+
 test("cold open @phone", async ({ page, browserName }, info) => {
   test.setTimeout(180_000);
   const out = outDir(info.project.name); fs.mkdirSync(out, { recursive: true });

@@ -14,6 +14,11 @@ function paths(o: unknown, prefix = ""): string[] {
 }
 
 describe("i18n", () => {
+  it("names the cold-open guided walk and its hint in ja and en", () => {
+    expect(strings("ja").coldOpen).toMatchObject({ guide: "ホームまで自動で歩く", hint: "押すと猫がホームまで案内します" });
+    expect(strings("en").coldOpen).toMatchObject({ guide: "Take a guided walk", hint: "Tap and the cat walks you to the platform" });
+  });
+
   it.each(["en", "ja"] as const)("updates HUD buttons loaded in %s after a runtime language switch", (lang) => {
     vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
     history.replaceState(null, "", `?lang=${lang}`);
