@@ -75,11 +75,12 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1391 (2026-11-17 JST): owned-roof linear-light placements/metadata only; 107 other meshes and all lists unchanged.
 // #1434 (2026-11-17 JST): nosing goldenRole metadata changes nodes/lists digests; geometry and list counts unchanged.
 // #1432 (2026-11-17 JST): nosing-line stair walk proxies change the lists digest; list counts unchanged.
+// J9 (2026-11-22 JST): promote platform-edge probe metadata; only nodesDigest changes.
 const MAIN_BASELINE = {
   "station": {
     "geometryDigest": "ecfa0f8989f3d5af64dbc42ecb3a338fb68c18d286d45cef985073b02471b9d1",
     "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
-    "nodesDigest": "89c9a2aee9c888cc2f1c7bbf1b0b0783e4c4b688598ddd8350ab9747d2a2930a",
+    "nodesDigest": "433fc60aff9579d3365782e9df8317fc16b8f3efa99600c36d205341853f4e86",
     "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
     "meshes": 108,
     "bytes": 17299194

@@ -767,7 +767,7 @@ describe("guide arrival shot", () => {
     place(state, true);
     expect(state.setFov.mock.lastCall?.[0]).toBe(50);
   });
-  it.each([false, true])("starts once only with next=%s and ends on input", (next) => {
+  it.each([false, true])("starts once with next=%s and ends on input", (next) => {
     const state = Object.assign(cameraStand(), {
       previewNext: next, mode: "guide", arrivalState: "waiting", arrivalDestination: "poi:platform:oedo", arrivalElapsed: 0,
       guideIdentityHoldS: 0, tier: "walk", events: {},
@@ -776,15 +776,13 @@ describe("guide arrival shot", () => {
     });
     const step = () => (Explorer.prototype as any).stepGuide.call(state, 1 / 60);
     step();
-    expect(state.arrivalState).toBe(next ? "active" : "waiting");
-    if (next) {
-      state.input.consumeLook.mockReturnValueOnce({ dx: 1, dy: 0, zoom: 0 });
-      step();
-      expect(state.arrivalState).toBe("ended");
-      for (let i = 0; i < 75; i++) place(state);
-      expect(state.arrivalState).toBe("ended");
-      step();
-      expect(state.arrivalState).toBe("ended");
-    }
+    expect(state.arrivalState).toBe("active");
+    state.input.consumeLook.mockReturnValueOnce({ dx: 1, dy: 0, zoom: 0 });
+    step();
+    expect(state.arrivalState).toBe("ended");
+    for (let i = 0; i < 75; i++) place(state);
+    expect(state.arrivalState).toBe("ended");
+    step();
+    expect(state.arrivalState).toBe("ended");
   });
 });
