@@ -6,7 +6,7 @@ const repo='/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro';
 const evidence=repo+'/docs/visual/ikebukuro-landmarks-2026-11-22',root=evidence+'/r8';
 await fs.mkdir(root,{recursive:true});
 const previous=JSON.parse(await fs.readFile(evidence+'/r6/frames.json','utf8'));
-const sourceRoad=JSON.parse(await fs.readFile(evidence+'/r8-road-candidates.json','utf8'));
+const sourceRoad=JSON.parse(await fs.readFile(evidence+'/r10-sunshine-road-candidates.json','utf8'));
 const server=spawn('nice',['-n','15','node',repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
 try{
 await new Promise((resolve,reject)=>{server.stdout.on('data',c=>{if(c.toString().includes('Local:'))resolve()});server.once('error',reject);server.once('exit',c=>reject(new Error('Capture server exited: '+c)))});

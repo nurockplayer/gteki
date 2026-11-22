@@ -6,6 +6,10 @@ The remaining 50 captures will resume from the preserved 10 frames. Full-set vis
 
 Job `depato-ikebukuro-capture-r10` exited 1 at 2026-11-22 19:17:41 JST: `Error: task space not found: 44`. No new frame was saved. The capture script now creates a named capture space when the former space no longer exists; `depato-ikebukuro-capture-r10b` resumes the same saved frames.
 
+Job `depato-ikebukuro-capture-r10b` added both desktop P'PARCO next frames, bringing the set to **12/60**, then exited 1 at 2026-11-22 19:18:48 JST: `No clear public pavement pose: sunshine`. The prior Sunshine candidate file contained only 25–60 m samples, so could not supply a distance exception.
+
+The same acquired source tile was SHA256-verified and sampled over 25–150 m from the current Sunshine sign, yielding 3,914 LOD3 road-polygon centroid samples. The nearest clear sample passing the existing full-sign, non-grazing sightline check is **65.86 m** away; no sampled pose within 25–60 m qualifies. This is an approved-rule distance exception, with the pose recorded in [r10-sunshine-pose.json](../r10-sunshine-pose.json) and the broader samples in [r10-sunshine-road-candidates.json](../r10-sunshine-road-candidates.json). Job `depato-ikebukuro-capture-r10c` resumes the remaining **48 frames**. Source coordinates retain TP heights and use the station's GRS80 ENU transform. No road geometry or product code is changed.
+
 ## Historical r9 result — 2026-11-22 JST
 
 Capture source commit: `cb2afa72`; scene code remains `d638a9a6`. The first nine r8 frames are preserved. Job `depato-ikebukuro-capture-r9b` added `desktop-parco-look-next.png`, bringing the set to **10/60 frames**. It ran 2026-11-22 09:22:24–09:23:23 JST and exited 1 at P'PARCO walk. The bounded facade measurements got past the previous browser timeout.
