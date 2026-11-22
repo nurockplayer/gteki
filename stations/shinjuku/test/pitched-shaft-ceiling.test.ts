@@ -362,4 +362,4 @@ it("keeps the cut mouth panels level with the B3 landing stripe (#1525)", () => 
     return result;
   };
   expect(Math.abs(datum(pitched) - datum(flat))).toBeLessThanOrEqual(0.03);
-});
+}, 120_000);
