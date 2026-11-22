@@ -35,7 +35,9 @@ Rows are in playhead order: the time a first-time visitor reaches them. "Script"
 | J13 | always | Truth kept: "approximate, not surveyed" visible, data scope one tap away, nothing invented (D3) | person: truth review | PASS | PASS: the "Approximate, not surveyed" badge is on screen in 39 of 39 samples on desktop and on phone. The exception of the last reading (desktop at 152 s, the arrival data note pushed the badge off screen) is closed by the quiet arrival HUD (#1269) |
 | J14 | always | Release hygiene: no console errors, a message when WebGL is unavailable, credits, ja and en | script | PASS | PASS by script (2026-11-17 04:3x JST, #1381): console 0 errors, 0 page errors, 0 failed requests on desktop and phone (E2E smoke runs 43828853051 and 43832908173); credits 110 visible links on desktop and on phone; the primary action reads "Walk to the platform" (en) and "ホームまで歩く" (ja) after the language switch; without WebGL the page shows "GTEki failed to start: Error: THREE.WebGLRenderer: Error creating WebGL context." (the generic startup message counts, decision on #1380; a localized wording is a later flagged change). Records: spec 31 `j14` in E2E smoke run 43837590010 (commit 6026a706), quoted in PR #1381 |
 
-Pass count 2026-11-22 23:40 JST: **9 / 14** (default: J1, J2, J3, J4, J6, J8, J12, J13 and J14). J2 passes since #1371: live desktop cold-load ready median 3.37 s (≤ 5 s), phone 4.2 / 4.5 s (≤ 8 s); raw results /Volumes/KIOXIA/scratch/diag-1370/live-after-1371/.
+Pass count 2026-11-22 23:40 JST: **9 / 14** (default: J1, J2, J3, J4, J6, J8, J12, J13 and J14). J12 passes since #1506; J11 re-scored NOT JUDGED → FAIL by script (#1523, default escalator layer only).
+
+Pass count 2026-11-17 07:37 JST: **8 / 14** (default: J1, J2, J3, J4, J6, J8, J13 and J14). J2 passes since #1371: live desktop cold-load ready median 3.37 s (≤ 5 s), phone 4.2 / 4.5 s (≤ 8 s); raw results /Volumes/KIOXIA/scratch/diag-1370/live-after-1371/.
 
 Pass count 2026-11-17 04:3x JST: **7 / 14** (default: J1, J3, J4, J6, J8, J13 and J14). J14 passes since #1381 recorded credits, ja / en and the message without WebGL.
 
