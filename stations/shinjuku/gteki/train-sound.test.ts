@@ -19,9 +19,10 @@ it("chimes at the stop and skips far or muted doors", () => {
   const stop = { x: 0, y: 0, z: 0 }; const track = { tt: 107.75, headway: 120, stop, stopEnds: [stop, stop] as [{ x: number; y: number; z: number }, { x: number; y: number; z: number }], pos: null as { x: number; y: number; z: number } | null };
   sound.update([track], stop); track.tt = 108; sound.update([track], stop);
   expect(chimes).toEqual([stop]);
+  expect(sound.info().cues).toBe(1);
   track.tt = 15.75; sound.update([track], stop); track.tt = 16; sound.update([track], { x: 41, y: 0, z: 0 });
   track.tt = 34.75; sound.update([track], stop); muted = true; track.tt = 35; sound.update([track], stop);
-  expect(tones).toHaveLength(0); sound.dispose();
+  expect(tones).toHaveLength(0); expect(sound.info().cues).toBe(1); sound.dispose();
 });
 
 it("places cues beside the outer cars and braking beside the moving train", () => {
