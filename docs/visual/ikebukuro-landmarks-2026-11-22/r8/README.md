@@ -1,14 +1,12 @@
-# Partial r8 captures — 2026-11-22 JST
+# Partial r9 captures — 2026-11-22 JST
 
-Capture source commit: `d638a9a6c0135ebca4825f5e09091e1fa5bf02a9`.
-Job `depato-ikebukuro-capture-r8b` ran 2026-11-22 09:11:32–09:12:39 JST and exited 1.
-Only **9 of 60 frames** completed: desktop next views through Parco walk. No phone, off, P'PARCO or Sunshine frame completed. These PNGs and raw [frames.json](frames.json) preserve the failed job's partial output; they have not been visually inspected in this follow-up.
+Capture source commit: `cb2afa72`; scene code remains `d638a9a6`. The first nine r8 frames are preserved. Job `depato-ikebukuro-capture-r9b` added `desktop-parco-look-next.png`, bringing the set to **10/60 frames**. It ran 2026-11-22 09:22:24–09:23:23 JST and exited 1 at P'PARCO walk. The bounded facade measurements got past the previous browser timeout.
 
-The Parco replacement pose completed at 45.02 m horizontal sign distance, pitch 15°. All four completed look-frame measurements meet contrast ≥3:1 and facade/sky ≤0.8. The remaining look frames and the full 60-frame set are incomplete, so this is not visual acceptance.
+These PNGs and [frames.json](frames.json) preserve the partial output. They have not been visually inspected in this follow-up; no complete visual acceptance is claimed. No phone, off, P'PARCO or Sunshine frame completed. All five completed look measurements meet contrast ≥3:1 and facade/sky ≤0.8.
 
 ## Measurements
 
-Distances below are horizontal sign distances for walk frames. Facade/sky is the measured luminance ratio for look frames. Capture timestamps in frames.json are ISO UTC.
+Distances are horizontal sign distances for walk frames. Facade/sky is a luminance ratio for look frames. Raw capture timestamps are ISO UTC in frames.json.
 
 | Frame | Pitch ° | Horizontal m | Letter contrast | Facade/sky | Pose label |
 |---|---:|---:|---:|---:|---|
@@ -21,29 +19,30 @@ Distances below are horizontal sign distances for walk frames. Facade/sky is the
 | [desktop-esola-walk-next.png](desktop-esola-walk-next.png) | 15.00 | 59.52 | 5.487 | n/a | capture-only pose (outside walk coverage) |
 | [desktop-esola-look-next.png](desktop-esola-look-next.png) | 19.35 | n/a | 5.837 | 0.112 | capture-only pose (outside walk coverage) |
 | [desktop-parco-walk-next.png](desktop-parco-walk-next.png) | 15.00 | 45.02 | 4.649 | n/a | capture-only pose (outside walk coverage) |
+| [desktop-parco-look-next.png](desktop-parco-look-next.png) | 16.05 | n/a | 7.952 | 0.564 | capture-only pose (outside walk coverage) |
 
 ## Command and result
 
-`job-run --id depato-ikebukuro-capture-r8b --artifact docs/visual/ikebukuro-landmarks-2026-11-22/r8 -- sh -c 'nice -n 15 ego-browser nodejs < docs/visual/ikebukuro-landmarks-2026-11-22/capture-r8.mjs'`
+`job-run --id depato-ikebukuro-capture-r9b --artifact docs/visual/ikebukuro-landmarks-2026-11-22/r8 -- sh -c 'nice -n 15 ego-browser nodejs --session ikb-capture-r9 --timeout-ms 600000 < docs/visual/ikebukuro-landmarks-2026-11-22/capture-r8.mjs'`
 
-Last result line: `ego's nodejs process exited with code 1.`
+Exit 1. Error: `No full-sign public pavement pose at 25–60 m: pparco`.
 
-Error:
+## P'PARCO distance decision
 
-```text
-PageEvaluationTimeoutError: page.evaluate exceeded its 14000ms page-execution safety limit. The current JavaScript execution was stopped and the Page is ready for another command, but work scheduled earlier may still produce late side effects.
-```
+A denser check sampled 2,291 distinct road points within 25–60 m in the shipped scene. All were behind the sign plane; the greatest facing dot product was −0.329. The four nearest-to-front samples tested were occluded by P'PARCO's own mesh at all six sign corner/edge probes.
 
-The timeout happened after `desktop-parco-walk-next.png` was saved and before `desktop-parco-look-next.png` completed. An earlier broad diagnostic evaluation hit the same execution limit; this is the second occurrence. The repeat-failure rule stops this capture path; no replacement job or alternate execution mechanism was started.
+The already acquired PLATEAU LOD3 road polygons were also checked outside the shipped window. Tile `plateau-13116-tran-53394576` (SHA256 `6cc53f9c3ddfa90423ae1ae5c5741ceb004be2ddd6580b533644c449a7d068f7`) supplied no qualifying front-facing centroid or sampled boundary point in the 25–60 m range; its nearest sampled front-facing road point was 70.05 m away. Tile `plateau-13116-tran-53394577` (SHA256 `052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2`) supplied no sampled front-facing boundary point in that range even with the facing threshold reduced to positive. Source hashes were verified; coordinates use the station's GRS80 ENU transform with TP heights preserved. No road geometry was added.
 
-## CI
-
-A single GitHub status snapshot at code commit `d638a9a6` (2026-11-22 JST) showed `changes` successful, CodeRabbit skipped and the remaining checks queued. No workflow was dispatched and no CI wait was started. Historical CI7 does not validate this source commit or the subsequent evidence commit.
+The previously captured full-sign P'PARCO public-road pose is **74.86 m** horizontally from the sign. The lead must choose a P'PARCO distance exception using that pose or authorize moving the sign to meet 25–60 m. Recommendation: the distance exception preserves the requested capture/docs-only scope. No distance exception or product change was applied.
 
 ## Assumptions
 
-The evidence diff exceeds 300 lines because frames.json preserves nine raw camera/pixel measurement records. This follow-up changes no scene or capture code.
+The diff exceeds 300 lines because frames.json preserves the additional raw camera/pixel record. Product and capture code are unchanged in this follow-up. PR #1512 stays draft until art-director acceptance.
+
+## Follow-ups
+
+After the distance decision: capture the remaining 50 frames, inspect the full set, publish all per-frame contrasts and look-frame facade/sky ratios, and confirm CI on the final pushed head.
 
 ## Blocked
 
-The 60-frame capture fails at the browser's 14-second page-evaluation limit. The broad diagnostic and the replacement capture both hit this limit. The lead must resolve the execution limit before the remaining 51 captures, visual inspection and complete measurement publication can resume.
+No qualifying P'PARCO 25–60 m public-road pose was found. Shipped-road and acquired-source samples were checked without moving the sign. The lead must authorize a distance exception or a sign relocation before the complete capture can resume.
