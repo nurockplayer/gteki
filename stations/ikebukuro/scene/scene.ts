@@ -735,7 +735,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
         // Preview cuts can leave the old floor probe undrawn. Use the supplied camera independently
         // of that probe; desktop normal/depth passes also have no fog, so read the host scene here.
         let host: THREE_NS.Object3D=root;while(host.parent)host=host.parent;
-        setContext(camera ? contextVisibleAt(camera.position.y, streetY, (host as THREE_NS.Scene).fog != null)
+        setContext(ctx.previewNext && camera ? contextVisibleAt(camera.position.y, streetY, (host as THREE_NS.Scene).fog != null)
           : seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
       }
       const full = propMarkers.some((o) => o.visible);
