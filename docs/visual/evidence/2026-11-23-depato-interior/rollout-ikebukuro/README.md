@@ -28,7 +28,7 @@ Known B1 station-approach elevations anchor each store. Store floor heights are 
 
 2026-11-24 JST: the previous capture passed at source `86d715dc`, evidence `7486feb1`; AD rejected it at PR #1541 comment 7106005335. This correction preserves station sign faces and barriers, drops the Tobu B1 tie, aligns the doorway assemblies to their wall normals, uses larger Tobu name-board atlas slots, and activates the existing street context at the 1F exit portals. Existing B2 counters, escalators, PARCO tenant boards/people, footprints and the five store skips are retained.
 
-AD correction capture run 1 was interrupted by the host GPU availability gate (2026-11-24 01:17 JST). It records the same rollout pose names on desktop 1440×900 and phone 390×844, with Tobu's entrance poses at the usable 1F doorway. PARCO's entrance camera is seven metres back, level. Additional `B1-tie-skipped` frames show Tobu's closed B1 approach. 西武 adds `entrance-before`, `food-hall-aisle`, `escalator-boarding`, and `street-door-inside` on both devices. `receipt.json` binds frames to the source HEAD and records routes, expected Tobu station-route skip, collision walks, shader errors and street context state. Receipt timestamps use UTC (`Z`). PR #1541 stays draft for the lead/AD.
+AD correction capture run 2 completed at 2026-11-24 01:38 JST; see the final result below. It records the same rollout pose names on desktop 1440×900 and phone 390×844, with Tobu's entrance poses at the usable 1F doorway. PARCO's entrance camera is seven metres back, level. Additional `B1-tie-skipped` frames show Tobu's closed B1 approach. 西武 adds `entrance-before`, `food-hall-aisle`, `escalator-boarding`, and `street-door-inside` on both devices. `receipt.json` binds frames to the source HEAD and records routes, expected Tobu station-route skip, collision walks, shader errors and street context state. Receipt timestamps use UTC (`Z`). PR #1541 stays draft for the lead/AD.
 
 ## AD correction run 1 result — 2026-11-24 JST
 
@@ -46,7 +46,7 @@ Seven new desktop Tobu frames were saved and are committed:
 
 All recorded Tobu collision-walk legs completed; all seven frames have zero shader errors. Street context is visible at the 1F doorway. Pixels with max RGB channel ≤ 16 in the desktop Tobu street-door-inside frame: **0.008179%**, below the AD's 0.1% full-frame limit. No AD verdict is claimed.
 
-`receipt.json` is the partial run-1 receipt. All other PNGs remain from source `86d715dc`; desktop/phone PARCO, phone Tobu, 西武's eight requested frames, and matching flag-off frames still need a completed capture. Two of the three permitted capture runs remain, subject to the Owner-away GPU gate opening.
+The run-1 partial receipt was superseded by the run-2 receipt, which retains the seven desktop Tobu frames and their source head.
 
 Test command: `job-run --id depato-ad1541-capture-1 --artifact docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/receipt.json -- tachi-run --heavy --host --est 15m -- sh -c 'pnpm vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1 && nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs'`.
 
@@ -56,3 +56,17 @@ The diff exceeds 300 lines because it includes the two source footprint polygons
 
 Credits: GTEki contributors; 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成. Cat: guillaume bolis, CC BY 4.0, modified by GTEki contributors; see NOTICE. Composite screenshots follow REUSE.toml: CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy. Tenant names are factual text; fronts have no logos, wordmarks, brand colours or product photos.
 
+
+## AD correction run 2 result — 2026-11-24 JST
+
+`job-run --id depato-ad1541-capture-2 --artifact docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/receipt.json -- tachi-run --heavy --host --est 15m -- nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs` → exit 0, failures `[]`. Runtime source `f5c1092d6e79f446fbe11f2b555474ac2c53c50a`; seven preserved desktop Tobu frames use `742ddb0b4549d82e1ae11ee71b8a3ee89aa30d19`, with per-frame source heads recorded in the receipt. Only evidence and capture-script commits separate these sources. All recorded collision walks completed.
+
+Changed frames use prefixes `desktop-` and `phone-`:
+
+- `ikebukuro-parco-`: `entrance-outside`, `first-interior`, `food-hall-aisle`, `escalator`, `street-door-inside`, `street-door-outside`, `flag-off`, `flag-off-street`.
+- `tobu-ikebukuro-`: the same eight poses plus `B1-tie-skipped`; seven desktop poses were preserved from run 1, and desktop flag-off poses were recaptured in run 2.
+- `seibu-ikebukuro-`: `entrance-before`, `food-hall-aisle`, `escalator-boarding`, `street-door-inside`.
+
+Full-frame pixels with max RGB channel ≤ 16 for `street-door-inside`: Tobu desktop 0.00818%, phone 0%; PARCO desktop 0.00710%, phone 0%. Each is below 0.1%. These measurements do not replace AD review.
+
+The two requested specs passed at 2026-11-24 01:16 JST: `Tests 35 passed (35)`. Final-head CI will be watched after this evidence commit. The existing `navmesh-paths.json` fetch warning appeared during capture.
