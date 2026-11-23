@@ -42,11 +42,15 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   const volume = (left: number, right: number, front: number, back: number, low: number, high: number): CutRegion => ({
     key: {}, bounds: new THREE.Box3(new THREE.Vector3(left, low, front), new THREE.Vector3(right, high, back)), clip: null,
+    rejectsMesh: mesh => {
+      for (let o: import("three").Object3D | null = mesh; o; o = o.parent)
+        if (["sign", "barriers"].includes(o.userData.gteki_role ?? o.name)) return true;
+      return false;
+    },
     planes: [p => p.x-left, p => right-p.x, p => p.z-front, p => back-p.z, p => p.y-low, p => high-p.y], accepts: () => true,
   });
   const room = volume(0,54,69.9,180,27.6,36.1);
   const entrance = volume(13,17,60,72,27.6,30.8);
-  entrance.rejectsMesh = mesh => mesh.parent?.userData.gteki_role === "sign";
   const streetDoors=layout.input.entrances.filter(e=>ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!.inOut==="outside").map(e=>{
     const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,p=ctx.enuToRenderer({...outside.position,z:outside.position.z!});
     const front=Math.abs(e.point[1]-layout.bounds.front)<0.1,y=layout.height(e.level);
@@ -69,8 +73,10 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   });
   const rolloutDoors=layouts.slice(1).flatMap(p=>p.input.entrances.map(e=>{
     const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,a=ctx.enuToRenderer({...outside.position,z:outside.position.z!}),y=p.height(e.level);
-    return volume(Math.min(a[0],e.point[0])-2.1,Math.max(a[0],e.point[0])+2.1,
+    const cut=volume(Math.min(a[0],e.point[0])-2.1,Math.max(a[0],e.point[0])+2.1,
       Math.min(a[2],e.point[1])-2.1,Math.max(a[2],e.point[1])+2.1,y-0.1,y+4.1);
+    if(outside.inOut === "outside") cut.accepts = normal => Math.abs(normal.y) < 0.5;
+    return cut;
   }));
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
@@ -81,7 +87,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   await scene.settled?.();
   scene.root.updateMatrixWorld(true);
   cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance, ...rolloutRooms, ...rolloutDoors], resources);
-  await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p=>p.floors.flatMap(f=>[f.label.ja,...f.tenants.map(t=>t.ja)])).join(""));
+  await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p=>[p.input.store.name.ja,p.input.store.name.en,...p.floors.flatMap(f=>[f.label.ja,f.label.en,...f.tenants.flatMap(t=>[t.ja,t.en])])]).join(""));
   const interiors = layouts.map(p=>buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
   let avatar: {x:number;y:number;z:number}|null=null;
   const focus = scene.setCameraFocus;

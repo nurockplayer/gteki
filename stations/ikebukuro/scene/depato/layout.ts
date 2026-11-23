@@ -85,6 +85,7 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     previousLower = lower;
     for (const [i, entrance] of entrances.filter(e => e.level === floor.level).entries()) {
       const door = node(floor.level, `door${i}`, ...entrance.point);
+      if (floor.level === "1F") door.kind = "exit";
       const front = Math.abs(entrance.point[1] - plan.bounds.front) < 0.1;
       const inward = entrance.inward ?? (front ? [0,1] : [-1,0]);
       const inside = node(floor.level, `inside${i}`, entrance.point[0] + inward[0]! * 2, entrance.point[1] + inward[1]! * 2);

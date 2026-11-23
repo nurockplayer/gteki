@@ -223,18 +223,6 @@
       },
       "entrances": [
         {
-          "level": "B1",
-          "point": [
-            -65,
-            -82
-          ],
-          "outsideNode": "c_w",
-          "inward": [
-            -1.0,
-            0.0
-          ]
-        },
-        {
           "level": "1F",
           "point": [
             -118.509,
@@ -253,7 +241,14 @@
           -124.50228439815906,
           -19.71620055887445
         ]
-      }
+      },
+      "skippedEntrances": [
+        {
+          "level": "B1",
+          "outsideNode": "c_w",
+          "reason": "No alternative verified Tobu entrance exists in the committed POI data. The generated c_w tie crosses the station unverified-access barrier, which is retained. Enter from the 1F street doorway and use the internal escalators to B2."
+        }
+      ]
     },
     {
       "id": "ikebukuro-parco",

@@ -124,28 +124,29 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     boards.push({ja:directoryJa,en:directoryEn});
     const fontPx=boards.length>100?9:18, rowHeight=fontPx*40/18;
     const canvas=typeof document!=="undefined"?document.createElement("canvas"):null;
-    const slots:{x:number;y:number;width:number}[]=[];
+    const slots:{x:number;y:number;width:number;height:number}[]=[];
     let atlas:T.CanvasTexture|null=null;
     if(canvas){
       canvas.width=canvas.height=1024;const paint=canvas.getContext("2d")!;
       paint.fillStyle="#EFE9DD";paint.fillRect(0,0,1024,1024);paint.textAlign="center";
       const storeRows=levels.map((_,i)=>levels.slice(0,i).reduce((n,l)=>n+l.floor.tenants.length+1,0));
-      let x=0,y=0;
+      let x=0,y=0,lineHeight=0;
       boards.forEach((b,i)=>{
-        paint.font=`600 ${fontPx}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
-        paint.font=`600 ${fontPx*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
+        const nameBoard=storeRows.includes(i), px=nameBoard&&boards.length>100?36:fontPx, height=nameBoard&&boards.length>100?80:rowHeight;
+        paint.font=`600 ${px}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
+        paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
         const width=Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
-        if(x+width>1024){x=0;y+=rowHeight;}
-        if(y+rowHeight>1024)throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
-        slots.push({x,y,width});const door=storeRows.includes(i);
-        paint.fillStyle=door?LANDMARK_SIGN.band:"#EFE9DD";paint.fillRect(x,y,width,rowHeight);paint.fillStyle=door?LANDMARK_SIGN.letters:LANDMARK_SIGN.band;
-        paint.font=`600 ${fontPx}px "GTEki Sign JP"`;paint.fillText(b.ja,x+width/2,y+rowHeight/2,width-rowHeight*0.3);
-        paint.font=`600 ${fontPx*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;paint.fillText(b.en,x+width/2,y+rowHeight*0.825,width-rowHeight*0.3);
+        if(x+width>1024){x=0;y+=lineHeight;lineHeight=0;}
+        if(y+height>1024)throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
+        slots.push({x,y,width,height});lineHeight=Math.max(lineHeight,height);const door=nameBoard;
+        paint.fillStyle=door?LANDMARK_SIGN.band:"#EFE9DD";paint.fillRect(x,y,width,height);paint.fillStyle=door?LANDMARK_SIGN.letters:LANDMARK_SIGN.band;
+        paint.font=`600 ${px}px "GTEki Sign JP"`;paint.fillText(b.ja,x+width/2,y+height/2,width-rowHeight*0.3);
+        paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;paint.fillText(b.en,x+width/2,y+height*0.825,width-rowHeight*0.3);
         x+=width;
       });
       atlas=new THREE.CanvasTexture(canvas);atlas.colorSpace=THREE.SRGBColorSpace;textures.push(atlas);
     }
-    const boardMaterial=basic("#ffffff");boardMaterial.map=atlas;
+    const boardMaterial=basic("#ffffff");boardMaterial.map=atlas;boardMaterial.side=THREE.FrontSide;
     const instance=(group:T.Group,g:T.BufferGeometry,m:T.Material,positions:{x:number;y:number;z:number;scale?:[number,number,number]}[])=>{
       retain(g);const mesh=new THREE.InstancedMesh(g,m,positions.length),matrix=new THREE.Matrix4();
       positions.forEach((p,i)=>{matrix.compose(new THREE.Vector3(p.x,p.y,p.z),new THREE.Quaternion(),new THREE.Vector3(...(p.scale??[1,1,1])));mesh.setMatrixAt(i,matrix);});mesh.computeBoundingSphere();group.add(mesh);return mesh;
@@ -206,13 +207,13 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       }
       const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
         const slot=slots[row]!, labelHeight=height*0.6;
-        const labelWidth=slot.width/rowHeight*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
+        const labelWidth=slot.width/slot.height*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
         for(const face of [0,1,-1]){
           const text=face!==0;
           const g=new THREE.PlaneGeometry(text?labelWidth*scale:width,text?labelHeight*scale:height).toNonIndexed(),uv=g.getAttribute("uv");
           for(let i=0;i<uv.count;i++){
             uv.setX(i,(slot.x+(text?uv.getX(i)*slot.width:1))/1024);
-            uv.setY(i,1-(slot.y+(text?(1-uv.getY(i))*rowHeight:1))/1024);
+            uv.setY(i,1-(slot.y+(text?(1-uv.getY(i))*slot.height:1))/1024);
           }
           g.rotateY(yaw+(face<0?Math.PI:0));g.translate(x+Math.sin(yaw)*face*0.002,y,z+Math.cos(yaw)*face*0.002);signs.push(g);
         }
@@ -235,7 +236,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       }
       for(const e of plan.input.entrances.filter(e=>e.level===l.floor.level)){
         if(e.inward){
-          const [nx,nz]=e.inward,yaw=Math.atan2(-nx,nz),tx=nz,tz=-nx;
+          const [nx,nz]=e.inward,yaw=Math.atan2(nx,nz),tx=nz,tz=-nx;
           board(e.point[0],l.y+2.45,e.point[1],label,yaw,3.8,0.6);
           frames.push(cube(e.point[0],l.y+2.76,e.point[1],4,0.12,0.3,yaw));
           for(const side of [-1,1]){
