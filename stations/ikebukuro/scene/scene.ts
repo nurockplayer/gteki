@@ -686,20 +686,39 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     part(0.30, 0.38, 0.16, 0, 0.765, 0.08, 0xf4ead6);
     part(0.31, 0.08, 0.17, 0, 0.815, 0.08, 0x1f5a45);
     } else if (visit.reward === "cafe-cup") {
-      part(0.30, 0.25, 0.12, 0, 1.05, 0.08, 0xf4ead6);
-      part(0.10, 0.15, 0.06, 0.20, 1.05, 0.08, 0xc69d72);
-      part(0.03, 0.20, 0.03, -0.06, 1.32, 0.08, 0xf4ead6);
-      part(0.03, 0.15, 0.03, 0.06, 1.35, 0.08, 0xf4ead6);
+      // A round cup, dark coffee rim and open handle keep the silhouette legible at cat scale.
+      for (const [top, bottom, height, y, color] of [
+        [0.12, 0.09, 0.20, 0.28, 0xf4ead6],
+        [0.126, 0.126, 0.025, 0.385, 0xc69d72],
+        [0.105, 0.105, 0.008, 0.402, 0x493324],
+        [0.111, 0.106, 0.035, 0.28, 0x1f5a45],
+      ]) {
+        const cup = new THREE.CylinderGeometry(top, bottom, height, 16);
+        cup.translate(0.30, y, 0.04);
+        const c = new THREE.Color(color);
+        const colors = new Float32Array(cup.getAttribute("position").count * 3);
+        for (let i = 0; i < colors.length; i += 3) { colors[i] = c.r; colors[i + 1] = c.g; colors[i + 2] = c.b; }
+        cup.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+        parts.push(cup);
+      }
+      part(0.09, 0.025, 0.045, 0.435, 0.34, 0.04, 0xf4ead6);
+      part(0.09, 0.025, 0.045, 0.435, 0.23, 0.04, 0xf4ead6);
+      part(0.025, 0.135, 0.045, 0.48, 0.285, 0.04, 0xf4ead6);
+      part(0.018, 0.10, 0.018, 0.27, 0.48, 0.04, 0xf4ead6);
+      part(0.018, 0.07, 0.018, 0.34, 0.465, 0.04, 0xf4ead6);
     } else {
-      part(0.42, 0.30, 0.06, 0, 1.10, 0.08, 0xf4ead6);
-      part(0.03, 0.30, 0.08, 0, 1.10, 0.09, 0x3f5f8f);
-      part(0.06, 0.22, 0.02, 0.11, 1.01, 0.13, 0xd4a04b);
+      part(0.10, 0.34, 0.018, 0.30, 0.30, 0.04, 0xf4ead6);
+      part(0.06, 0.012, 0.006, 0.30, 0.18, 0.052, 0x1f5a45);
+      part(0.035, 0.12, 0.012, 0.30, 0.45, 0.057, 0xad3c43);
     }
     const geometry = mergeGeometries(parts)!;
     parts.forEach((part) => part.dispose());
     const material = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide });
     const reaction = new THREE.Mesh(geometry, material);
     reaction.position.copy(windowPos).add(new THREE.Vector3(nx * 0.16, 0, -ny * 0.16));
+    if (visit.reward !== "paper-bag") {
+      reaction.position.copy(anchor).add(new THREE.Vector3(-nx * 0.6, 0, ny * 0.6));
+    }
     reaction.rotation.y = Math.atan2(nx, -ny);
     reaction.visible = false;
     reaction.userData.gtekiInteractionId = shop.id;
