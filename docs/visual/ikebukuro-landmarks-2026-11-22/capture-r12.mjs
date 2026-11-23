@@ -15,7 +15,7 @@ const sourceRoad=JSON.parse(await fs.readFile(evidence+'/r10-sunshine-road-candi
 const server=spawn('nice',['-n','15','/Users/tachikoma/.local/share/fnm/aliases/default/bin/node',repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
 try{
 await new Promise((resolve,reject)=>{server.stdout.on('data',c=>{if(c.toString().includes('Local:'))resolve()});server.once('error',reject);server.once('exit',c=>reject(new Error('Capture server exited: '+c)))});
-const task=await taskSpace('Ikebukuro package A-I r12'),page=task.page('p1'),frames=[];
+const task=await taskSpace(50),page=task.page('p1'),frames=[];
 const poses=Object.fromEntries(previous.frames.filter(f=>f.flag==='next').map(f=>[f.file.replace(/-next\.png$/,''),f.pose]));
 for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
  await page.cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
@@ -25,7 +25,7 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
   await page.evaluate(()=>window.__gteki.setView({node:'x38',headingDeg:90}));
   await page.waitForFunction(()=>Boolean(window.__gteki.scanProbe().explorer.scene.getObjectByName('street-context')),undefined,{timeout:60000});
   await page.evaluate(async()=>{
-   const e=window.__gteki.scanProbe().explorer,T=await import('/node_modules/.vite/deps/three.js');window.__gteki.holdFrames(true);
+   const e=window.__gteki.scanProbe().explorer,T=await import('/node_modules/three/build/three.module.js');window.__gteki.holdFrames(true);
    const style=document.createElement('style');style.textContent='#app > :not(.viewport), .gteki-labels {visibility:hidden!important}';document.head.append(style);
    const meshes=[];e.scene.traverse(o=>{let visible=true;for(let p=o;p;p=p.parent)visible&&=p.visible;if(o.isMesh&&visible&&!o.name.startsWith('landmark-sign:'))meshes.push(o)});
    window.__depato={e,T,meshes,pavement:[]};

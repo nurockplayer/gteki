@@ -17,3 +17,7 @@ Frames and their source SHAs will be recorded in `frames.json` and `walks.json` 
 Capture-only job `depato-ikb-ai-r12b` acquired heavy lock #1611, then exited before creating a browser task: `Error: Capture server exited: 127`. The embedded Ego runtime has PATH `/usr/bin:/bin:/usr/sbin:/sbin`, which cannot resolve the fnm `node` executable. This worktree also has no host `node_modules` or `apps/web/node_modules/vite/bin/vite.js`; the successful tests installed dependencies only in their isolated container.
 
 The driver now uses `/Users/tachikoma/.local/share/fnm/aliases/default/bin/node` for Vite. Job `depato-ikb-ai-r12c` first runs `pnpm install --frozen-lockfile` through `tachi-run --heavy --host --cpu`, then runs the same GPU-gated capture command with the legal 600000 ms timeout. Product code and the passing 33-test result are unchanged. Capture frames, measurements and walks remain pending.
+
+## Module URL correction — 2026-11-24 JST
+
+Job `depato-ikb-ai-r12c` completed `pnpm install --frozen-lockfile` with pnpm 12.11.2 and started Vite successfully, then failed at the old optimized-cache import URL `/node_modules/.vite/deps/three.js`. The driver now imports the installed package's `/node_modules/three/build/three.module.js` and reuses its existing task space 50. The capture retry is `depato-ikb-ai-r12d`; product code and the passing 33-test result remain unchanged. No frames or walk results were produced by r12c.
