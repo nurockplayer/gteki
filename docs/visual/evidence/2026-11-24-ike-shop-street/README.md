@@ -32,3 +32,11 @@ The brief's K<4 exception applies: two independent walls qualify, so two new cat
 ## Follow-ups
 
 Art-director acceptance of the desktop/phone walk frames and labels. CI must pass both stations' unchanged golden cameras before the review gate.
+
+## Validation — 2026-11-24 01:29 JST
+
+`tachi-run -- pnpm exec vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1` — `Tests 34 passed (34)`.
+
+`tachi-run -- pnpm exec vitest run stations/ikebukuro/scene/interactables.test.ts --maxWorkers=1` — `Tests 1 passed (1)`.
+
+The first GPU capture exited before browser launch because the shared TypeScript package exposes no `ModuleKind.CommonJS`. The capture now reads the authored JavaScript array literal directly, without the unavailable compiler API. CI round 1 found stale Ikebukuro stairwell bakes; regenerate the two artifacts using the existing generator before retrying capture.
