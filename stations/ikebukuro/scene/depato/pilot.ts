@@ -33,7 +33,8 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     planes: [p => p.x-left, p => right-p.x, p => p.z-front, p => back-p.z, p => p.y-low, p => high-p.y], accepts: () => true,
   });
   const room = volume(0,54,69.9,180,27.6,35.7);
-  const entrance = volume(7,18,60,72,27.6,30.8);
+  const entrance = volume(13,17,60,72,27.6,30.8);
+  entrance.rejectsMesh = mesh => mesh.parent?.userData.gteki_role === "sign";
   const streetDoor = volume(46,58,120.4,124.6,32.21,35.5);
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
