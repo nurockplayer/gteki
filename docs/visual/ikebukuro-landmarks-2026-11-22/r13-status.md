@@ -25,3 +25,9 @@ Larger Sunshine lettering remains under the existing 6 m style maximum and on it
 ## Launcher correction — 2026-11-24 JST
 
 Job `depato-ikb-ai-r13` exited 2 before browser startup, 2026-11-24 06:27:30–06:29:02 JST. Exact error: `error: invalid --timeout-ms value "1500000": use 1 to 600000`. Main's frozen offline installation succeeded. No frames or walks were produced, so the two capture runs have not begun. The launcher now executes main and candidate scripts sequentially with the supported 600000 ms limit and reuses the prepared snapshot directory. Product code is unchanged; the passing two-spec result remains applicable.
+
+## First capture result and final capture — 2026-11-24 JST
+
+Origin/main baseline completed on desktop and phone at 936bfe0f; x18 outward/return and x22 return reproduce the prior PR's exact stuck positions. Opened [breakage #1545](https://github.com/nurockplayer/gteki/issues/1545) with raw poses, coordinates and both-device receipts. Per lead routing, these inherited failures no longer block this PR. Partial candidate receipts are retained in r13/. Desktop Seibu walk contrast is 7.179.
+
+The first capture then stopped because the 6 m Sunshine rectangle was not fully backed by its facade. Final product size is 5 m centred 2 m lower, still in the upper facade band; direct source-GLB checks confirm all six rectangle support samples hit the original facade. No footprint, height or station camera change. r14 is the final authorized capture run; it uses heading 94.2 degrees at x35 and measures actual highest roof vertices instead of the whole complex's bounding-box corners at artificial roof height. The focused two-spec command runs before r14 and its log is saved alongside the evidence.
