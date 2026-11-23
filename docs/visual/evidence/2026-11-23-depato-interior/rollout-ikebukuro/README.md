@@ -1,5 +1,11 @@
 # Ikebukuro interior rollout
 
+## Package E correction — 2026-11-24 JST
+
+Tobu's rollout adapter selects the first 40 tenant names per floor (40/40/37 on B2/B1/1F) for the shared 1024px atlas; the full source directory is unchanged. PARCO counter placements reserve the existing `n_h__n_c` segment bounds with 0.5m walker clearance. Both visual counters and persistent colliders use the filtered placements. The shared interior kit is unchanged; Tobu's B1 tie remains skipped and its barrier remains.
+
+The next capture replaces every previous frame, including desktop Tobu, and records `sourceHead` on each frame. It repeats the 32 rollout frames plus two Tobu barrier frames and eight Seibu frames at desktop 1440×900 and phone 390×844. The north-passage proof walks `n_h` to `n_c` with PARCO detail loaded, then repeats with the real streaming focus held at Seibu to keep PARCO detail unloaded while retaining its persistent colliders. Each proof records actual load state before and after walking. `capture.mjs` measures full-frame max-RGB ≤16 pixels in both rollout stores' `street-door-inside` frames and rejects values over 0.1%. Matching flag-off poses remain included. Capture results are pending; older results below refer only to their recorded source heads.
+
 2026-11-23 JST. Journey row: none (Owner request 2026-11-22).
 
 Behind `?station=ikebukuro&next=1`, 東武百貨店 池袋店 and 池袋パルコ share the accepted 西武 kit, with B2/B1/1F and tenant names from `stations/ikebukuro/data/depato-floors.json`. Store-name search targets the lowest food/sweets floor, B2. PARCO enters from B1 at `n_h`. Tobu enters from its 1F street door and reaches B2 by the internal escalators; the generated B1 `c_w` tie is skipped because it crosses the station unverified-access barrier and no alternative verified doorway exists in the committed data. Tobu no longer advertises a route from the station network. The capture records every collision-walk leg.
