@@ -692,7 +692,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
         [0.126, 0.126, 0.025, 0.385, 0xc69d72],
         [0.105, 0.105, 0.008, 0.402, 0x493324],
         [0.111, 0.106, 0.035, 0.28, 0x1f5a45],
-      ]) {
+      ] as const) {
         const cup = new THREE.CylinderGeometry(top, bottom, height, 16);
         cup.translate(0.30, y, 0.04);
         const c = new THREE.Color(color);
