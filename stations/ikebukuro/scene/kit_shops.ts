@@ -519,7 +519,8 @@ export async function loadShopKit(
       }
 
       if (placements.length) {
-        const displays = ["cafe", "bakery", "sweets", "deli", "pharmacy", "books", "fashion", "homeware", "department", "none", "simulated-homeware"];
+        const displays = ["cafe", "bakery", "sweets", "deli", "pharmacy", "books", "fashion", "homeware", "department", "none"];
+        if (shops.some(shop => shop.kind === "placeholder" && shop.sign.ja.includes("模擬店"))) displays.push("simulated-homeware");
         const boardDisplays = ["cafe", "bakery", "deli", "sweets"];
         const boardStart = displays.length * 2;
         const cell = low ? 128 : 512, cols = 4, rows = Math.ceil((boardStart + boardDisplays.length) / cols);
@@ -574,10 +575,10 @@ export async function loadShopKit(
               // The fictional front stays below station wayfinding brightness. Its glass-level
               // label remains readable when the fascia is behind the station selector.
               rect(0, 0, 512, 512, "rgba(0,0,0,0.40)");
-              rect(120, 175, 272, 86, "#493f32");
+              rect(24, 175, 202, 86, "#493f32");
               g.fillStyle = "#e7ddc7"; g.textAlign = "center"; g.textBaseline = "middle";
-              g.font = '700 66px "GTEki Sign JP", sans-serif';
-              g.fillText("模擬店", 256, 218);
+              g.font = `700 54px ${FONT}`;
+              g.fillText("模擬店", 125, 218);
             }
           }
           g.restore();
