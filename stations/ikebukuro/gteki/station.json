@@ -3052,10 +3052,10 @@
      "id": "depato-rollout",
      "path": "data/depato-rollout.json",
      "sourceIds": [
+       "parco-ikebukuro-floorguide-2026-11",
        "plateau-13116-bldg-53394576",
        "plateau-13116-bldg-53394577",
-       "tobu-dept-ikebukuro-2026-10-B2F",
-       "parco-ikebukuro-floorguide-2026-11"
+       "tobu-dept-ikebukuro-2026-10-B2F"
      ],
      "modified": true,
      "derivation": "2026-11-23 JST: PLATEAU context LOD1 bottom-face boundaries, phase-1 building identities and shared-wing partitions; authored preview circulation and doorway placement. Floor labels and tenant names select the official depato-floors data. Unknown store floor intervals use 4.5 m from the station B1 approach height. Not a surveyed interior plan."
@@ -3089,12 +3089,14 @@
        "ikefukuro-location-references-2026-10",
        "lumine-ikebukuro-access-2026-10",
        "osm-ikebukuro-station-refs-2026-10",
+       "parco-ikebukuro-floorguide-2026-11",
        "plateau-13116-bldg-53394576",
        "plateau-13116-bldg-53394577",
        "plateau-13116-tran-53394576",
        "plateau-13116-tran-53394577",
        "plateau-ubld-13116",
        "sogo-seibu-ikebukuro-floorguide-2026-10",
+       "tobu-dept-ikebukuro-2026-10-B2F",
        "tokyometro-ikebukuro-yardmap-2026-03",
        "toshima-terminal-sign-guideline-draft-v1.3",
        "toshima-underground-guide-2022"
@@ -3112,12 +3114,14 @@
        "ikefukuro-location-references-2026-10",
        "lumine-ikebukuro-access-2026-10",
        "osm-ikebukuro-station-refs-2026-10",
+       "parco-ikebukuro-floorguide-2026-11",
        "plateau-13116-bldg-53394576",
        "plateau-13116-bldg-53394577",
        "plateau-13116-tran-53394576",
        "plateau-13116-tran-53394577",
        "plateau-ubld-13116",
        "sogo-seibu-ikebukuro-floorguide-2026-10",
+       "tobu-dept-ikebukuro-2026-10-B2F",
        "tokyometro-ikebukuro-yardmap-2026-03",
        "toshima-terminal-sign-guideline-draft-v1.3",
        "toshima-underground-guide-2022"

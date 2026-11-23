@@ -2,8 +2,6 @@
 const fs=await import('node:fs/promises');
 const repo='/Users/tachikoma/Developer/gteki-wt/depato-rollout-ikebukuro';
 const base=repo+'/docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro';
-const {execFileSync}=await import('node:child_process');
-const runtimeHead=execFileSync('rtk',['git','-C',repo,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
 const config=JSON.parse(await fs.readFile(repo+'/stations/ikebukuro/data/depato-rollout.json','utf8'));
 const task=await taskSpace('depato-rollout-ikebukuro');
 const page=(await task.pages())[0]??await task.adopt((await task.tabs())[0].page);

@@ -28,7 +28,7 @@ Known B1 station-approach elevations anchor each store. Store floor heights are 
 
 Capture has not run yet. It writes desktop 1440×900 and phone 390×844 frames for each included store: entrance outside, first interior, B2 aisle, escalator, street door inside/outside, and matching flag-off views at both entrances. `receipt.json` records the runtime commit, route/search results, collision walks, loaded interior count and shader failures. Flag-off street views match the evidence pose only because the preview street nodes are absent from the default graph.
 
-Test: none (scene; CI root-test, golden cameras and journey jobs are the check). CI and capture results will be appended after the detached jobs return. The PR stays draft for the art director.
+Test: none (scene; CI root-test, golden cameras and journey jobs are the check). CI and capture results will be appended after the detached jobs return. The PR is ready for the lead/review gate; art-director acceptance remains pending (resume instruction, 2026-11-23 JST).
 
 The diff exceeds 300 lines because it includes the two source footprint polygons and reproducible desktop/phone capture scripts.
 
@@ -39,3 +39,11 @@ Credits: GTEki contributors; 出典：国土交通省 Project PLATEAU（3D都市
 `tachi-run --heavy --host --est 15m -- nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs` → exit 1: `ERR_MODULE_NOT_FOUND` for this worktree's missing Vite dependency. No frames or receipt were produced. Next capture installs the pinned dependencies with `pnpm install --frozen-lockfile` inside the heavy job.
 
 `rtk gh pr checks 1541 --watch` → Passed: 3; Failed: 13. Root typecheck reported TS2352 for JSON arrays cast as `DepatoInput`; build jobs rejected the undeclared `data/depato-rollout.json`. The resume narrows the casts to coordinate tuples and declares the data file with existing source IDs. Results remain pending for round 2.
+
+## Round 2 result and correction — 2026-11-23 JST
+
+Capture installed pinned dependencies, then exited 1 before scene load: `Error: spawnSync rtk ENOENT` inside Ego's Node runtime, which does not inherit the shell environment. The launcher now resolves HEAD through `rtk git` on the host and embeds it into the browser script. No frames or receipt were produced.
+
+CI summary: Passed: 15; Failed: 1. Root tests: 2 files failed, 306 passed, 1 skipped; 4 tests failed, 4061 passed, 8 skipped. The four failures require matching source/generated dataFiles declarations and adding the two rollout source IDs to the stairwell provenance union. This correction synchronizes those declarations and includes the rollout file in the existing manifest test.
+
+Round 3 command: `tachi-run --heavy --host --est 15m -- sh -c 'pnpm vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1 && node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs'`. Results pending detached handoff. No full suite or CI watch is run by this resume.
