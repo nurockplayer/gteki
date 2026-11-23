@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Instruction, PolylinePoint } from "@gteki/navigation";
-import { DEFAULT_GUIDE_TIER, GUIDE_TIERS, MIN_GUIDE_MPS, effectivePace, escalatorSpanAt, guideOnEscalator, guideOnStairs, guidePaceSpans, guideSpeedAt, guideStairCamera, guideTierSpeed, isGuideTier, MIN_INSTRUCTION_S, nextGuideTier, paceReadout, pacedDistance, pacedDuration, polylineLengthM, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, guideEscalatorHeight, GUIDE_TIERS, MIN_GUIDE_MPS, effectivePace, escalatorSpanAt, guideOnEscalator, guideOnStairs, guidePaceSpans, guideSpeedAt, guideStairCamera, guideTierSpeed, isGuideTier, MIN_INSTRUCTION_S, nextGuideTier, paceReadout, pacedDistance, pacedDuration, polylineLengthM, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { strings } from "../i18n.ts";
 
 const pt = (x: number, stepIndex: number): PolylinePoint => ({ x, y: 0, z: 0, zKnown: true, stepIndex, floorId: "f" });
@@ -305,4 +305,14 @@ describe("speed button labels", () => {
     expect(texts).toEqual(["Walk ≈0.8 m/s", "Run ≈0.9 m/s", "Fast ≈1.7 m/s"]);
     expect(new Set((["walk", "run", "fast"] as const).map((tier) => label("en", tier).aria)).size).toBe(3);
   });
+});
+
+it("keeps ride height on the tread profile at both landings", () => {
+  const points = [{ x: 0, y: 0, z: 0 }, { x: 5, y: 2, z: 0 }, { x: 10, y: 4, z: 0 }];
+  const steps = [-1, 0, 0];
+  for (const reverse of [false, true]) {
+    const route = reverse ? [...points].reverse() : points;
+    expect(guideEscalatorHeight({ x: 0.4, z: 0, segment: reverse ? 1 : 0 }, route, steps)).toBe(0);
+    expect(guideEscalatorHeight({ x: 9.6, z: 0, segment: reverse ? 0 : 1 }, route, steps)).toBe(4);
+  }
 });

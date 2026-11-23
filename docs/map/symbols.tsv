@@ -240,6 +240,7 @@ MIN_INSTRUCTION_S	const	apps/web/src/explorer/guidePace.ts
 PaceSpan	interface	apps/web/src/explorer/guidePace.ts
 effectivePace	function	apps/web/src/explorer/guidePace.ts
 escalatorSpanAt	function	apps/web/src/explorer/guidePace.ts
+guideEscalatorHeight	function	apps/web/src/explorer/guidePace.ts
 guideOnEscalator	function	apps/web/src/explorer/guidePace.ts
 guideOnStairs	function	apps/web/src/explorer/guidePace.ts
 guidePaceSpans	function	apps/web/src/explorer/guidePace.ts
@@ -919,6 +920,9 @@ createRouter	function	packages/navigation/src/router.ts
 createRouterForTest	function	packages/navigation/src/router.ts
 assembleSnapPath	function	packages/navigation/src/snap-path.ts
 snapJoinKey	function	packages/navigation/src/snap-path.ts
+ESCALATOR_FLAT_M	const	packages/scene-api/src/escalatorProfile.ts
+escalatorBreaks	function	packages/scene-api/src/escalatorProfile.ts
+escalatorHeight	function	packages/scene-api/src/escalatorProfile.ts
 AcousticZone	type	packages/scene-api/src/index.ts
 BuildScene	type	packages/scene-api/src/index.ts
 CameraGateAisle	interface	packages/scene-api/src/index.ts
