@@ -534,7 +534,7 @@ export class App {
     const names = this.identityView.showCard(entry.identity, entry.label, this.s.lang);
     this.ui.live.announce(`${names.ja} ${names.kana} ${names.en} · ${this.t.loading}`);
     try {
-      const loaded = await entry.load();
+      const loaded = await entry.load(this.explorer.previewNext);
       if (!current()) { this.removeBootCard(); return; }
       this.setBootStage("data");
       this.identityView.showCard(loaded.bundle.station.identity, entry.label, this.s.lang);
