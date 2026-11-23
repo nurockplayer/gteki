@@ -1,30 +1,3908 @@
 {
   "version": 1,
-  "stores": [{
-    "id": "seibu-ikebukuro",
-    "name": {"ja": "西武池袋本店", "en": "Seibu Ikebukuro"},
-    "building": null,
-    "floors": [
-      {
-        "level": "B1", "category": "food-hall",
-        "label": {"ja": "スイーツ＆ギフト", "en": "Sweets & gifts"},
-        "tenants": [
-          {"ja": "赤坂柿山", "en": "AKASAKA KAKIYAMA"},
-          {"ja": "赤坂松葉屋", "en": "AKASAKA MATSUBAYA"},
-          {"ja": "浅草今半", "en": "ASAKUSA IMAHAN"}
-        ],
-        "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide", "read": "2026-11-22"
+  "stores": [
+    {
+      "id": "seibu-ikebukuro",
+      "name": {
+        "ja": "西武池袋本店",
+        "en": "Seibu Ikebukuro"
       },
-      {
-        "level": "1F", "category": "cosmetics",
-        "label": {"ja": "ブティック・フレグランス", "en": "Boutiques & fragrance"},
-        "tenants": [
-          {"ja": "アクア ディ パルマ", "en": "ACQUA DI PARMA"},
-          {"ja": "ジョー マローン ロンドン", "en": "JO MALONE LONDON"},
-          {"ja": "ディプティック", "en": "DIPTYQUE"}
-        ],
-        "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide", "read": "2026-11-22"
-      }
-    ]
-  }]
+      "building": null,
+      "floors": [
+        {
+          "level": "B2",
+          "category": "food-hall",
+          "label": {
+            "ja": "デパチカ（惣菜）",
+            "en": "Food hall (prepared foods)"
+          },
+          "tenants": [
+            {
+              "en": "I.T.O.",
+              "ja": "I.T.O."
+            },
+            {
+              "en": "AJISAKI",
+              "ja": "味咲き"
+            },
+            {
+              "en": "AJANTA",
+              "ja": "アジャンタ"
+            },
+            {
+              "en": "AVANCER",
+              "ja": "アヴァンセ"
+            },
+            {
+              "en": "RF1",
+              "ja": "RF1"
+            },
+            {
+              "en": "ISHINGO",
+              "ja": "維新號"
+            },
+            {
+              "en": "ICHIJYUSHUNSAI NIHONBASHI DASHIBA",
+              "ja": "一汁旬菜 日本橋だし場"
+            },
+            {
+              "en": "ITOHAN",
+              "ja": "いとはん"
+            },
+            {
+              "en": "UMENOHANA",
+              "ja": "梅の花"
+            },
+            {
+              "en": "EBISU DAIKOKU",
+              "ja": "ゑびすDaikoku"
+            },
+            {
+              "en": "OJIMA",
+              "ja": "尾島"
+            },
+            {
+              "en": "ORGANIC HOUSE",
+              "ja": "オーガニックハウス"
+            },
+            {
+              "en": "KAISEKIRYORI AOYAMA",
+              "ja": "懐石料理 青山"
+            },
+            {
+              "en": "KAKIYASU DINING",
+              "ja": "柿安ダイニング"
+            },
+            {
+              "en": "CRACLU",
+              "ja": "かにとまぐろのクラクラ"
+            },
+            {
+              "en": "GANGNAM GIMBAP",
+              "ja": "カンナムキンパ"
+            },
+            {
+              "en": "KICHIJOJI SATOU",
+              "ja": "吉祥寺 さとう"
+            },
+            {
+              "en": "KICHIJOJI TSUKADASUISAN",
+              "ja": "吉祥寺 塚田水産"
+            },
+            {
+              "en": "Kitchen ABC",
+              "ja": "キッチンABC"
+            },
+            {
+              "en": "KYOKASUDUKE UOKYU",
+              "ja": "京粕漬 魚久"
+            },
+            {
+              "en": "GINZA TEN-ICHI",
+              "ja": "銀座天一"
+            },
+            {
+              "en": "KUSHIJU",
+              "ja": "串重"
+            },
+            {
+              "en": "KUDANSHITA SUSHIMASA SHUNHAKKAI",
+              "ja": "九段下 寿司政 旬八海"
+            },
+            {
+              "en": "KEI-LIN",
+              "ja": "桂林"
+            },
+            {
+              "en": "KOBE CROQUETTE",
+              "ja": "神戸コロッケ"
+            },
+            {
+              "en": "SAIGON",
+              "ja": "サイゴン"
+            },
+            {
+              "en": "SHINJUKU TAKANO (SALAD)",
+              "ja": "新宿高野（サラダ）"
+            },
+            {
+              "en": "JIRAIYA",
+              "ja": "地雷也"
+            },
+            {
+              "en": "SEIYO GINZA",
+              "ja": "西洋銀座"
+            },
+            {
+              "en": "SOZAI IINA",
+              "ja": "創菜いい菜"
+            },
+            {
+              "en": "TAGOSAKU",
+              "ja": "たごさく"
+            },
+            {
+              "en": "CHANGTAIFU",
+              "ja": "張大夫"
+            },
+            {
+              "en": "CHANROI",
+              "ja": "チャンロイ"
+            },
+            {
+              "en": "TSUKIJI SUZUTOMI",
+              "ja": "つきじ鈴富"
+            },
+            {
+              "en": "TSUKIJI MIYAGAWA HONTEN",
+              "ja": "つきじ宮川本廛"
+            },
+            {
+              "en": "TSUBAME GRILL DELI",
+              "ja": "つばめグリルDELI"
+            },
+            {
+              "en": "TSUBOYA",
+              "ja": "壺屋"
+            },
+            {
+              "en": "TORIICHI SHOUTEN",
+              "ja": "鳥市商店"
+            },
+            {
+              "en": "TORISANWA",
+              "ja": "鶏三和"
+            },
+            {
+              "en": "TONKATSU MAISEN",
+              "ja": "とんかつ まい泉"
+            },
+            {
+              "en": "NAKAO",
+              "ja": "なかお"
+            },
+            {
+              "en": "NADAMAN CHUBO",
+              "ja": "なだ万厨房"
+            },
+            {
+              "en": "NATO'S",
+              "ja": "ナトス"
+            },
+            {
+              "en": "NANIWA　KOICHIAN",
+              "ja": "浪花　古市庵"
+            },
+            {
+              "en": "NIHONBASHI TAIMEIKEN",
+              "ja": "日本橋たいめいけん"
+            },
+            {
+              "en": "NINGYOCHO IMAHAN",
+              "ja": "人形町今半"
+            },
+            {
+              "en": "HAOCHAOZU",
+              "ja": "好餃子"
+            },
+            {
+              "en": "PAOPAO",
+              "ja": "PAOPAO"
+            },
+            {
+              "en": "FUMIYA",
+              "ja": "冨美家"
+            },
+            {
+              "en": "PORTAR IL MARE VIA",
+              "ja": "ポルタ イルマーレ ヴィア"
+            },
+            {
+              "en": "MASUGO",
+              "ja": "桝俉"
+            },
+            {
+              "en": "MATSUOKA",
+              "ja": "まつおか"
+            },
+            {
+              "en": "MR.CHICKEN KEIHANTEN",
+              "ja": "MR.CHICKEN鶏飯店"
+            },
+            {
+              "en": "MEAT YAZAWA",
+              "ja": "ミート矢澤"
+            },
+            {
+              "en": "MAISON DE STEAK STORY",
+              "ja": "メゾン・ド・ステーキストーリー"
+            },
+            {
+              "en": "MORIYASU",
+              "ja": "肉匠もりやす［仮設売場］"
+            },
+            {
+              "en": "YUGO",
+              "ja": "融合"
+            },
+            {
+              "en": "YUNOTANI TAWARADAIMYO",
+              "ja": "ゆのたに俵大名"
+            },
+            {
+              "en": "YONG YANG",
+              "ja": "ヨンヤン"
+            },
+            {
+              "en": "ROMANTEI",
+              "ja": "魯鰻亭"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": -2
+        },
+        {
+          "level": "B1",
+          "category": "sweets",
+          "label": {
+            "ja": "デパチカ（スイーツ＆ギフト）",
+            "en": "Food hall (sweets and gifts)"
+          },
+          "tenants": [
+            {
+              "en": "AKASAKA KAKIYAMA",
+              "ja": "赤坂柿山"
+            },
+            {
+              "en": "AKASAKA MATSUBAYA",
+              "ja": "赤坂松葉屋"
+            },
+            {
+              "en": "AGEMOCHI COCORO",
+              "ja": "あげもちCocoro"
+            },
+            {
+              "en": "ASAKUSA IMAHAN",
+              "ja": "浅草今半"
+            },
+            {
+              "en": "ASAKUSA UMEZONO",
+              "ja": "浅草梅園"
+            },
+            {
+              "en": "ASAKUSA MANGANDO",
+              "ja": "浅草満願堂"
+            },
+            {
+              "en": "AZABU KARINTO",
+              "ja": "麻布かりんと"
+            },
+            {
+              "en": "adachiotoemon",
+              "ja": "足立音衛門"
+            },
+            {
+              "en": "ATELIER de GODIVA",
+              "ja": "アトリエ ドゥ ゴディバ"
+            },
+            {
+              "en": "ARAIEN HONTEN",
+              "ja": "新井園本店"
+            },
+            {
+              "en": "HENRI CHARPENTIER",
+              "ja": "アンリ・シャルパンティエ"
+            },
+            {
+              "en": "IPPODO TEA",
+              "ja": "一保堂茶舗"
+            },
+            {
+              "en": "ITO EN, LTD.",
+              "ja": "伊藤園"
+            },
+            {
+              "en": "ÉCHIRÉ PÂTISSERIE AU BEURRE",
+              "ja": "エシレ・パティスリー オ ブール"
+            },
+            {
+              "en": "R. L WAFFLE CAKE",
+              "ja": "エール・エル ワッフルケーキ"
+            },
+            {
+              "en": "OGURASANSOU",
+              "ja": "小倉山荘"
+            },
+            {
+              "en": "OBUSEDO",
+              "ja": "小布施堂"
+            },
+            {
+              "en": "AUDREY",
+              "ja": "オードリー"
+            },
+            {
+              "en": "KAKITANE KITCHEN",
+              "ja": "かきたねキッチン"
+            },
+            {
+              "en": "KAKIYASU HONTEN",
+              "ja": "柿安本店"
+            },
+            {
+              "en": "KASHO SEIKAIN",
+              "ja": "菓匠 清閑院"
+            },
+            {
+              "en": "KANOU SHOUJUAN",
+              "ja": "叶 匠壽庵"
+            },
+            {
+              "en": "GAZTA",
+              "ja": "ガスタ"
+            },
+            {
+              "en": "GATEAU FESTA HARADA",
+              "ja": "ガトーフェスタ ハラダ"
+            },
+            {
+              "en": "KIMURAYA-SOUHONTEN",
+              "ja": "木村屋総本店"
+            },
+            {
+              "en": "CARAMEL TOKYO WARAKUBENIYA",
+              "ja": "キャラメル トーキョー ワラクベニヤ"
+            },
+            {
+              "en": "TSURUYA YOSHINOBU",
+              "ja": "京菓匠 鶴屋𠮷信"
+            },
+            {
+              "en": "KYO GION NINIGI",
+              "ja": "京衹をん ににぎ"
+            },
+            {
+              "en": "KIYOKEN",
+              "ja": "崎陽軒"
+            },
+            {
+              "en": "KINSHOBAI",
+              "ja": "錦松梅"
+            },
+            {
+              "en": "GIFT SALON",
+              "ja": "ギフトサロン"
+            },
+            {
+              "en": "GINZA AKEBONO",
+              "ja": "銀座あけぼの"
+            },
+            {
+              "en": "GINZA-KAISHIN",
+              "ja": "銀座貝新"
+            },
+            {
+              "en": "GINZA NISHIKAWA",
+              "ja": "銀座に志かわ"
+            },
+            {
+              "en": "KURAKICHI",
+              "ja": "KURAKICHI（くら吉）"
+            },
+            {
+              "en": "QUOLOFUNE",
+              "ja": "黒船"
+            },
+            {
+              "en": "GRAMERCY NEWYORK",
+              "ja": "グラマシーニューヨーク"
+            },
+            {
+              "en": "KEISHINDO",
+              "ja": "桂新堂"
+            },
+            {
+              "en": "INCENSE BUTSUGU",
+              "ja": "香 仏具"
+            },
+            {
+              "en": "KOBE GOGYOFUKU",
+              "ja": "KOBE 伍魚福"
+            },
+            {
+              "en": "GODIVA BAKERY",
+              "ja": "GODIVA Bakery ゴディパン"
+            },
+            {
+              "en": "SABLE MICHELLE",
+              "ja": "サブレミシェル"
+            },
+            {
+              "en": "The Royal Bake",
+              "ja": "ザ・ロイヤル ベイク"
+            },
+            {
+              "en": "CHEZ SHIBATA",
+              "ja": "シェ・シバタ"
+            },
+            {
+              "en": "SUGAR BUTTER TREE",
+              "ja": "シュガーバターの木"
+            },
+            {
+              "en": "SHUNKASHUNKA KYORAKUDO",
+              "ja": "旬果瞬菓 共楽堂"
+            },
+            {
+              "en": "LOCAL SWEETS UNOHANAGAKI",
+              "ja": "諸国銘菓「卯花墻」"
+            },
+            {
+              "en": "LOCAL SPECIALTY AJIKOJI",
+              "ja": "諸国名産「味小路」"
+            },
+            {
+              "en": "SHINJYUKU TAKANO",
+              "ja": "新宿高野"
+            },
+            {
+              "en": "C CUBE",
+              "ja": "シーキューブ"
+            },
+            {
+              "en": "CC's Cookie",
+              "ja": "CC's Cookie"
+            },
+            {
+              "en": "ROKUMEIKAN",
+              "ja": "西洋菓子 鹿鳴館"
+            },
+            {
+              "en": "SEBASTIEN BOUILLET",
+              "ja": "セバスチャン・ブイエ"
+            },
+            {
+              "en": "GALETTE DU SOLEIL",
+              "ja": "太陽のガレット"
+            },
+            {
+              "en": "TANEYA",
+              "ja": "たねや"
+            },
+            {
+              "en": "TSURUYA HACHIMAN",
+              "ja": "鶴屋八幡"
+            },
+            {
+              "en": "DI CLASSE",
+              "ja": "ディ クラッセ"
+            },
+            {
+              "en": "DEMEL",
+              "ja": "デメル"
+            },
+            {
+              "en": "TOKYO TULIP ROSE",
+              "ja": "TOKYOチューリップローズ"
+            },
+            {
+              "en": "TOSHIMAYA",
+              "ja": "豊島屋"
+            },
+            {
+              "en": "TOP'S",
+              "ja": "トップス"
+            },
+            {
+              "en": "TORAYA",
+              "ja": "とらや"
+            },
+            {
+              "en": "DONQ",
+              "ja": "ドンク"
+            },
+            {
+              "en": "NIIGATA KASHIMAYA",
+              "ja": "新潟 加島屋"
+            },
+            {
+              "en": "NIHOMBASHI SEMBIKIYA",
+              "ja": "日本橋 千疋屋総本店"
+            },
+            {
+              "en": "nenrinya",
+              "ja": "ねんりん家"
+            },
+            {
+              "en": "HANAICHIE",
+              "ja": "花一会"
+            },
+            {
+              "en": "BUTTER STATE's",
+              "ja": "バターステイツ by銀のぶどう"
+            },
+            {
+              "en": "VANISTA",
+              "ja": "バニスタ"
+            },
+            {
+              "en": "PARIS BUTTER CHOCOLAT",
+              "ja": "パリバターショコラ"
+            },
+            {
+              "en": "HIBIYA KADAN",
+              "ja": "日比谷花壇"
+            },
+            {
+              "en": "PIERRE MARCOLINI",
+              "ja": "ピエール マルコリーニ"
+            },
+            {
+              "en": "PIERRE HERMÉ PARIS",
+              "ja": "ピエール・エルメ・パリ"
+            },
+            {
+              "en": "FORTNUM & MASON",
+              "ja": "フォートナム・アンド・メイソン"
+            },
+            {
+              "en": "Fukusaya",
+              "ja": "福砂屋"
+            },
+            {
+              "en": "FUJIYA GINZA",
+              "ja": "不二家 銀座"
+            },
+            {
+              "en": "FUNABASHIYA",
+              "ja": "船橋屋"
+            },
+            {
+              "en": "FUNAWA",
+              "ja": "舟和"
+            },
+            {
+              "en": "FUMUROYA",
+              "ja": "不室屋"
+            },
+            {
+              "en": "FRUITS PEAKS",
+              "ja": "フルーツピークス"
+            },
+            {
+              "en": "FOUCHER",
+              "ja": "フーシェ"
+            },
+            {
+              "en": "BENOIT NIHANT",
+              "ja": "ブノワ・ニアン"
+            },
+            {
+              "en": "BUNMEIDO",
+              "ja": "文明堂"
+            },
+            {
+              "en": "BOUL'MICH",
+              "ja": "ブールミッシュ"
+            },
+            {
+              "en": "PRESS BUTTER SAND",
+              "ja": "プレスバターサンド"
+            },
+            {
+              "en": "BEL AMER",
+              "ja": "ベル アメール"
+            },
+            {
+              "en": "BELLE PLAGE",
+              "ja": "ベルプラージュ"
+            },
+            {
+              "en": "BERNE",
+              "ja": "ベルン"
+            },
+            {
+              "en": "BENTO STATION",
+              "ja": "BENTO ステーション"
+            },
+            {
+              "en": "HON TAKASAGOYA",
+              "ja": "本髙砂屋"
+            },
+            {
+              "en": "BONCHAPERAI",
+              "ja": "ボンシャペリー"
+            },
+            {
+              "en": "MARIAGE FRÈRES",
+              "ja": "マリアージュ フレール"
+            },
+            {
+              "en": "Mini One",
+              "ja": "ミニワン"
+            },
+            {
+              "en": "MAISON KAYSER",
+              "ja": "メゾンカイザー"
+            },
+            {
+              "en": "MAISON D'AHNI SHIROKANE",
+              "ja": "メゾン・ダーニ シロカネ"
+            },
+            {
+              "en": "Mary Chocolate",
+              "ja": "メリーチョコレート"
+            },
+            {
+              "en": "MORIHACHI",
+              "ja": "森八"
+            },
+            {
+              "en": "MOROZOFF",
+              "ja": "モロゾフ"
+            },
+            {
+              "en": "MON LOIRE",
+              "ja": "モンロワール"
+            },
+            {
+              "en": "Juchheim",
+              "ja": "ユーハイム"
+            },
+            {
+              "en": "YOKU MOKU",
+              "ja": "ヨックモック"
+            },
+            {
+              "en": "LA MAISON DU CHOCOLAT",
+              "ja": "ラ・メゾン・デュ・ショコラ"
+            },
+            {
+              "en": "RIVIÈRE",
+              "ja": "リビエール"
+            },
+            {
+              "en": "Ryoguchiya Korekiyo",
+              "ja": "両口屋是清"
+            },
+            {
+              "en": "RING BELL BOUTIQUE",
+              "ja": "リンベルブティック"
+            },
+            {
+              "en": "LE PATISSIER TAKAGI",
+              "ja": "ル パティシエ タカギ"
+            },
+            {
+              "en": "LENÔTRE",
+              "ja": "ルノートル"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": -1
+        },
+        {
+          "level": "1F",
+          "category": "cosmetics",
+          "label": {
+            "ja": "インターナショナルブティック／フレグランス",
+            "en": "International boutiques and fragrance"
+          },
+          "tenants": [
+            {
+              "en": "ACQUA DI PARMA",
+              "ja": "アクア ディ パルマ"
+            },
+            {
+              "en": "OFFICINE UNIVERSELLE BULY",
+              "ja": "オフィシーヌ・ユニヴェルセル・ビュリー"
+            },
+            {
+              "en": "Guerlain Maison de Parfums",
+              "ja": "ゲラン メゾン ド パルファン"
+            },
+            {
+              "en": "COMME des GARCONS POCKET",
+              "ja": "コム デ ギャルソン ポケット"
+            },
+            {
+              "en": "THE ROW",
+              "ja": "ザ・ロウ"
+            },
+            {
+              "en": "JO MALONE LONDON",
+              "ja": "ジョー マローン ロンドン"
+            },
+            {
+              "en": "DIOR HAUTE PARFUMERIE",
+              "ja": "ディオール  オート パフューマリー"
+            },
+            {
+              "en": "DIOR（WOMEN）",
+              "ja": "ディオール（レディース）"
+            },
+            {
+              "en": "DIPTYQUE",
+              "ja": "ディプティック"
+            },
+            {
+              "en": "BYREDO",
+              "ja": "バイレード"
+            },
+            {
+              "en": "BVLGARI",
+              "ja": "ブルガリ"
+            },
+            {
+              "en": "Maison Margiela Fragrances",
+              "ja": "メゾン マルジェラ フレグランス"
+            },
+            {
+              "en": "LOUIS VUITTON",
+              "ja": "ルイ・ヴィトン"
+            },
+            {
+              "en": "LOEWE PERFUMES",
+              "ja": "ロエベ パルファム"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": 1
+        },
+        {
+          "level": "2F",
+          "category": "other",
+          "label": {
+            "ja": "インターナショナルブティック",
+            "en": "International boutiques"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": 2
+        },
+        {
+          "level": "3F",
+          "category": "cosmetics",
+          "label": {
+            "ja": "コスメティックス",
+            "en": "Cosmetics"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": 3
+        },
+        {
+          "level": "4F",
+          "category": "other",
+          "label": {
+            "ja": "インターナショナルブティック",
+            "en": "International boutiques"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": 4
+        },
+        {
+          "level": "5F",
+          "category": "accessories",
+          "label": {
+            "ja": "ジュエリー／ウォッチ／クリスタル",
+            "en": "Jewelry, watches and crystal"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": 5
+        },
+        {
+          "level": "6F",
+          "category": "other",
+          "label": {
+            "ja": "インターナショナルブティック",
+            "en": "International boutiques"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": 6
+        },
+        {
+          "level": "7F",
+          "category": "other",
+          "label": {
+            "ja": "ファッション＆グッズ",
+            "en": "Fashion and goods"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide",
+          "read": "2026-11-22",
+          "order": 7
+        },
+        {
+          "level": "B2",
+          "order": -2,
+          "category": "other",
+          "label": {
+            "ja": "別館・書籍館 駐車場",
+            "en": "Annex and bookstore parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "別館 三省堂書店・カフェ",
+            "en": "Annex bookstore and cafe"
+          },
+          "tenants": [
+            {
+              "ja": "三省堂書店",
+              "en": "BOOKS SANSEIDO"
+            },
+            {
+              "ja": "イー・エー・グラン",
+              "en": "e.a.gran"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "living",
+          "label": {
+            "ja": "別館 無印良品・駐車場",
+            "en": "Annex MUJI and parking"
+          },
+          "tenants": [
+            {
+              "ja": "無印良品",
+              "en": "MUJI"
+            }
+          ],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "living",
+          "label": {
+            "ja": "別館 無印良品・薬局・駐車場",
+            "en": "Annex MUJI, pharmacy and parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "別館 駐車場",
+            "en": "Annex parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "別館 駐車場",
+            "en": "Annex parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "別館 駐車場",
+            "en": "Annex parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "別館 駐車場",
+            "en": "Annex parking"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "other",
+          "label": {
+            "ja": "別館 池袋コミュニティ・カレッジ",
+            "en": "Annex Ikebukuro Community College"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "other",
+          "label": {
+            "ja": "別館 池袋コミュニティ・カレッジ",
+            "en": "Annex Ikebukuro Community College"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "RF",
+          "order": 100,
+          "category": "rooftop",
+          "label": {
+            "ja": "別館 屋上テニスコート",
+            "en": "Annex rooftop tennis courts"
+          },
+          "tenants": [],
+          "source": "https://www.sogo-seibu.jp/ikebukuro/floor-guide/annex-bookstore",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "tobu-ikebukuro",
+      "name": {
+        "ja": "東武百貨店 池袋店",
+        "en": "Tobu Department Store Ikebukuro"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B2",
+          "order": -2,
+          "category": "food-hall",
+          "label": {
+            "ja": "生鮮・惣菜・グロサリー",
+            "en": "Fresh food, delicatessen and groceries"
+          },
+          "tenants": [
+            {
+              "ja": "麻布あさひ",
+              "en": "麻布あさひ"
+            },
+            {
+              "ja": "RF1",
+              "en": "RF1"
+            },
+            {
+              "ja": "アントニオズデリ",
+              "en": "アントニオズデリ"
+            },
+            {
+              "ja": "愛国製茶",
+              "en": "愛国製茶"
+            },
+            {
+              "ja": "浅草今半",
+              "en": "浅草今半"
+            },
+            {
+              "ja": "味の十字屋",
+              "en": "味の十字屋"
+            },
+            {
+              "ja": "麻布茶房ジェラートショップ",
+              "en": "麻布茶房ジェラートショップ"
+            },
+            {
+              "ja": "あおばだんご本舗",
+              "en": "あおばだんご本舗"
+            },
+            {
+              "ja": "赤坂ふきぬき",
+              "en": "赤坂ふきぬき"
+            },
+            {
+              "ja": "イーションプルミエ",
+              "en": "イーションプルミエ"
+            },
+            {
+              "ja": "伊藤園",
+              "en": "伊藤園"
+            },
+            {
+              "ja": "いとはん",
+              "en": "いとはん"
+            },
+            {
+              "ja": "いずみ乃",
+              "en": "いずみ乃"
+            },
+            {
+              "ja": "いなりすし専門店 豆狸",
+              "en": "いなりすし専門店 豆狸"
+            },
+            {
+              "ja": "梅善",
+              "en": "梅善"
+            },
+            {
+              "ja": "魚力",
+              "en": "魚力"
+            },
+            {
+              "ja": "京粕漬　魚久",
+              "en": "京粕漬　魚久"
+            },
+            {
+              "ja": "うなぎ 日本一",
+              "en": "うなぎ 日本一"
+            },
+            {
+              "ja": "江戸の鶏処 今井屋本店",
+              "en": "江戸の鶏処 今井屋本店"
+            },
+            {
+              "ja": "おむすび一番",
+              "en": "おむすび一番"
+            },
+            {
+              "ja": "大川水産",
+              "en": "大川水産"
+            },
+            {
+              "ja": "お弁当 うな富士",
+              "en": "お弁当 うな富士"
+            },
+            {
+              "ja": "おいしいもの選べる便",
+              "en": "おいしいもの選べる便"
+            },
+            {
+              "ja": "おすし屋さんのポークたまごおにぎり",
+              "en": "おすし屋さんのポークたまごおにぎり"
+            },
+            {
+              "ja": "おこわ米八",
+              "en": "おこわ米八"
+            },
+            {
+              "ja": "柿安牛めし",
+              "en": "柿安牛めし"
+            },
+            {
+              "ja": "柿安",
+              "en": "柿安"
+            },
+            {
+              "ja": "加島屋",
+              "en": "加島屋"
+            },
+            {
+              "ja": "かげん",
+              "en": "かげん"
+            },
+            {
+              "ja": "カンナムビビンバ",
+              "en": "カンナムビビンバ"
+            },
+            {
+              "ja": "日本橋 天丼 天むす 金子半之助",
+              "en": "日本橋 天丼 天むす 金子半之助"
+            },
+            {
+              "ja": "柿安ダイニング",
+              "en": "柿安ダイニング"
+            },
+            {
+              "ja": "神田明神下みやび",
+              "en": "神田明神下みやび"
+            },
+            {
+              "ja": "沈菜館",
+              "en": "沈菜館"
+            },
+            {
+              "ja": "キャピタルコーヒー",
+              "en": "キャピタルコーヒー"
+            },
+            {
+              "ja": "九州屋",
+              "en": "九州屋"
+            },
+            {
+              "ja": "崎陽軒",
+              "en": "崎陽軒"
+            },
+            {
+              "ja": "錦松梅",
+              "en": "錦松梅"
+            },
+            {
+              "ja": "銀座木村家",
+              "en": "銀座木村家"
+            },
+            {
+              "ja": "紀ノ国屋",
+              "en": "紀ノ国屋"
+            },
+            {
+              "ja": "キーコーヒー",
+              "en": "キーコーヒー"
+            },
+            {
+              "ja": "北野エース",
+              "en": "北野エース"
+            },
+            {
+              "ja": "銀座天一",
+              "en": "銀座天一"
+            },
+            {
+              "ja": "京つけもの 西利",
+              "en": "京つけもの 西利"
+            },
+            {
+              "ja": "京都 八百一",
+              "en": "京都 八百一"
+            },
+            {
+              "ja": "グリーン・グルメ",
+              "en": "グリーン・グルメ"
+            },
+            {
+              "ja": "串重 / アヴァンセ",
+              "en": "串重 / アヴァンセ"
+            },
+            {
+              "ja": "くらすわベーカリー",
+              "en": "くらすわベーカリー"
+            },
+            {
+              "ja": "桂林",
+              "en": "桂林"
+            },
+            {
+              "ja": "古市庵",
+              "en": "古市庵"
+            },
+            {
+              "ja": "神戸コロッケ",
+              "en": "神戸コロッケ"
+            },
+            {
+              "ja": "御座候",
+              "en": "御座候"
+            },
+            {
+              "ja": "ごはん屋さんの一粒一魂",
+              "en": "ごはん屋さんの一粒一魂"
+            },
+            {
+              "ja": "魚道楽",
+              "en": "魚道楽"
+            },
+            {
+              "ja": "妻家房",
+              "en": "妻家房"
+            },
+            {
+              "ja": "サイボク",
+              "en": "サイボク"
+            },
+            {
+              "ja": "栄屋",
+              "en": "栄屋"
+            },
+            {
+              "ja": "サラダカフェ",
+              "en": "サラダカフェ"
+            },
+            {
+              "ja": "サンマルコ",
+              "en": "サンマルコ"
+            },
+            {
+              "ja": "サダマツ ジュース＆スイーツ",
+              "en": "サダマツ ジュース＆スイーツ"
+            },
+            {
+              "ja": "魚の北辰",
+              "en": "魚の北辰"
+            },
+            {
+              "ja": "The Roast！",
+              "en": "The Roast！"
+            },
+            {
+              "ja": "叙々苑",
+              "en": "叙々苑"
+            },
+            {
+              "ja": "上海富春小籠包",
+              "en": "上海富春小籠包"
+            },
+            {
+              "ja": "秀徳",
+              "en": "秀徳"
+            },
+            {
+              "ja": "柴又丸仁",
+              "en": "柴又丸仁"
+            },
+            {
+              "ja": "鈴波",
+              "en": "鈴波"
+            },
+            {
+              "ja": "鈴木水産",
+              "en": "鈴木水産"
+            },
+            {
+              "ja": "千駄木腰塚",
+              "en": "千駄木腰塚"
+            },
+            {
+              "ja": "SOU.Dining",
+              "en": "SOU.Dining"
+            },
+            {
+              "ja": "多々楽達屋",
+              "en": "多々楽達屋"
+            },
+            {
+              "ja": "チーズ王国",
+              "en": "チーズ王国"
+            },
+            {
+              "ja": "佃の佃煮",
+              "en": "佃の佃煮"
+            },
+            {
+              "ja": "築地 魚弁",
+              "en": "築地 魚弁"
+            },
+            {
+              "ja": "富澤商店",
+              "en": "富澤商店"
+            },
+            {
+              "ja": "とんかつ大吉",
+              "en": "とんかつ大吉"
+            },
+            {
+              "ja": "東京吉兆",
+              "en": "東京吉兆"
+            },
+            {
+              "ja": "とんかつ まい泉",
+              "en": "とんかつ まい泉"
+            },
+            {
+              "ja": "なだ万厨房",
+              "en": "なだ万厨房"
+            },
+            {
+              "ja": "日本製茶",
+              "en": "日本製茶"
+            },
+            {
+              "ja": "ニュー・クイック",
+              "en": "ニュー・クイック"
+            },
+            {
+              "ja": "にんべん",
+              "en": "にんべん"
+            },
+            {
+              "ja": "人形町今半",
+              "en": "人形町今半"
+            },
+            {
+              "ja": "日本ばし大増",
+              "en": "日本ばし大増"
+            },
+            {
+              "ja": "ねり伝",
+              "en": "ねり伝"
+            },
+            {
+              "ja": "好餃子",
+              "en": "好餃子"
+            },
+            {
+              "ja": "パオパオ",
+              "en": "パオパオ"
+            },
+            {
+              "ja": "パン・リゾッタ",
+              "en": "パン・リゾッタ"
+            },
+            {
+              "ja": "韓美膳ＤＥＬＩ",
+              "en": "韓美膳ＤＥＬＩ"
+            },
+            {
+              "ja": "発酵kitchen リッチクリームコロッケ東京",
+              "en": "発酵kitchen リッチクリームコロッケ東京"
+            },
+            {
+              "ja": "ビオセボン",
+              "en": "ビオセボン"
+            },
+            {
+              "ja": "ベーグル＆ベーグル",
+              "en": "ベーグル＆ベーグル"
+            },
+            {
+              "ja": "ベジテリア",
+              "en": "ベジテリア"
+            },
+            {
+              "ja": "北辰鮨",
+              "en": "北辰鮨"
+            },
+            {
+              "ja": "ポンパドウル",
+              "en": "ポンパドウル"
+            },
+            {
+              "ja": "まつおか",
+              "en": "まつおか"
+            },
+            {
+              "ja": "丸福珈琲店",
+              "en": "丸福珈琲店"
+            },
+            {
+              "ja": "麻婆ラボ",
+              "en": "麻婆ラボ"
+            },
+            {
+              "ja": "三崎豊魚",
+              "en": "三崎豊魚"
+            },
+            {
+              "ja": "美濃吉",
+              "en": "美濃吉"
+            },
+            {
+              "ja": "みはし",
+              "en": "みはし"
+            },
+            {
+              "ja": "京鳥",
+              "en": "京鳥"
+            },
+            {
+              "ja": "三崎まぐろ問屋 金印",
+              "en": "三崎まぐろ問屋 金印"
+            },
+            {
+              "ja": "大和屋守口漬總本家",
+              "en": "大和屋守口漬總本家"
+            },
+            {
+              "ja": "山本海苔店",
+              "en": "山本海苔店"
+            },
+            {
+              "ja": "焼鳥 日本一",
+              "en": "焼鳥 日本一"
+            },
+            {
+              "ja": "融合 (ASIAN FOOD MARKET)",
+              "en": "融合 (ASIAN FOOD MARKET)"
+            },
+            {
+              "ja": "リカーショップ",
+              "en": "リカーショップ"
+            }
+          ],
+          "source": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/B2F",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "food-hall",
+          "label": {
+            "ja": "和洋菓子・酒・惣菜",
+            "en": "Sweets, liquor and delicatessen"
+          },
+          "tenants": [
+            {
+              "ja": "アンリ・シャルパンティエ",
+              "en": "アンリ・シャルパンティエ"
+            },
+            {
+              "ja": "アンジェリーナ",
+              "en": "アンジェリーナ"
+            },
+            {
+              "ja": "ア・ラ・カンパーニュ",
+              "en": "ア・ラ・カンパーニュ"
+            },
+            {
+              "ja": "AND THE FRIET",
+              "en": "AND THE FRIET"
+            },
+            {
+              "ja": "アンテノール",
+              "en": "アンテノール"
+            },
+            {
+              "ja": "麻布かりんと",
+              "en": "麻布かりんと"
+            },
+            {
+              "ja": "赤坂柿山",
+              "en": "赤坂柿山"
+            },
+            {
+              "ja": "一保堂茶舗",
+              "en": "一保堂茶舗"
+            },
+            {
+              "ja": "銀座ウエスト",
+              "en": "銀座ウエスト"
+            },
+            {
+              "ja": "魚力海鮮寿司",
+              "en": "魚力海鮮寿司"
+            },
+            {
+              "ja": "ヴィタメール",
+              "en": "ヴィタメール"
+            },
+            {
+              "ja": "ヴィヨン池袋東武店",
+              "en": "ヴィヨン池袋東武店"
+            },
+            {
+              "ja": "オッジ",
+              "en": "オッジ"
+            },
+            {
+              "ja": "菓匠 花見",
+              "en": "菓匠 花見"
+            },
+            {
+              "ja": "ガトー・ド・ボワイヤージュ",
+              "en": "ガトー・ド・ボワイヤージュ"
+            },
+            {
+              "ja": "金沢和音",
+              "en": "金沢和音"
+            },
+            {
+              "ja": "叶 匠寿庵",
+              "en": "叶 匠寿庵"
+            },
+            {
+              "ja": "がんこ職人",
+              "en": "がんこ職人"
+            },
+            {
+              "ja": "カフェ オウザン",
+              "en": "カフェ オウザン"
+            },
+            {
+              "ja": "茅乃舎",
+              "en": "茅乃舎"
+            },
+            {
+              "ja": "薫るバター サブリナ",
+              "en": "薫るバター サブリナ"
+            },
+            {
+              "ja": "きりのさか by 中央軒煎餅",
+              "en": "きりのさか by 中央軒煎餅"
+            },
+            {
+              "ja": "銀座あけぼの",
+              "en": "銀座あけぼの"
+            },
+            {
+              "ja": "京都・宇治 式部郷",
+              "en": "京都・宇治 式部郷"
+            },
+            {
+              "ja": "銀座鈴屋",
+              "en": "銀座鈴屋"
+            },
+            {
+              "ja": "京橋千疋屋",
+              "en": "京橋千疋屋"
+            },
+            {
+              "ja": "クラブハリエ",
+              "en": "クラブハリエ"
+            },
+            {
+              "ja": "グラマシーニューヨーク",
+              "en": "グラマシーニューヨーク"
+            },
+            {
+              "ja": "グッドモーニングバンコク",
+              "en": "グッドモーニングバンコク"
+            },
+            {
+              "ja": "ケーニヒスクローネ",
+              "en": "ケーニヒスクローネ"
+            },
+            {
+              "ja": "京菓子處 鼓月",
+              "en": "京菓子處 鼓月"
+            },
+            {
+              "ja": "ゴディバ",
+              "en": "ゴディバ"
+            },
+            {
+              "ja": "コロンバン",
+              "en": "コロンバン"
+            },
+            {
+              "ja": "シーキューブ",
+              "en": "シーキューブ"
+            },
+            {
+              "ja": "松月堂",
+              "en": "松月堂"
+            },
+            {
+              "ja": "資生堂パーラー",
+              "en": "資生堂パーラー"
+            },
+            {
+              "ja": "Gバターズ",
+              "en": "Gバターズ"
+            },
+            {
+              "ja": "スイーツイベントスペース",
+              "en": "スイーツイベントスペース"
+            },
+            {
+              "ja": "セゾンファクトリー",
+              "en": "セゾンファクトリー"
+            },
+            {
+              "ja": "仙太郎",
+              "en": "仙太郎"
+            },
+            {
+              "ja": "宗家 源吉兆庵",
+              "en": "宗家 源吉兆庵"
+            },
+            {
+              "ja": "ダロワイヨ",
+              "en": "ダロワイヨ"
+            },
+            {
+              "ja": "ダロワイヨ レ マカロン",
+              "en": "ダロワイヨ レ マカロン"
+            },
+            {
+              "ja": "立喰い寿し すしつね",
+              "en": "立喰い寿し すしつね"
+            },
+            {
+              "ja": "タルティン フラワーチョコレート",
+              "en": "タルティン フラワーチョコレート"
+            },
+            {
+              "ja": "チーズガーデン",
+              "en": "チーズガーデン"
+            },
+            {
+              "ja": "デメル",
+              "en": "デメル"
+            },
+            {
+              "ja": "TEA MARIA",
+              "en": "TEA MARIA"
+            },
+            {
+              "ja": "トップス",
+              "en": "トップス"
+            },
+            {
+              "ja": "虎屋ういろ",
+              "en": "虎屋ういろ"
+            },
+            {
+              "ja": "とらや",
+              "en": "とらや"
+            },
+            {
+              "ja": "東京ひよ子",
+              "en": "東京ひよ子"
+            },
+            {
+              "ja": "ニコデリ",
+              "en": "ニコデリ"
+            },
+            {
+              "ja": "ニューヨークパーフェクトチーズ",
+              "en": "ニューヨークパーフェクトチーズ"
+            },
+            {
+              "ja": "ネスプレッソ ブティック",
+              "en": "ネスプレッソ ブティック"
+            },
+            {
+              "ja": "パステル",
+              "en": "パステル"
+            },
+            {
+              "ja": "坂角総本舖",
+              "en": "坂角総本舖"
+            },
+            {
+              "ja": "バルマルシェ コダマ ミートデリカテッセン",
+              "en": "バルマルシェ コダマ ミートデリカテッセン"
+            },
+            {
+              "ja": "バニラージュ",
+              "en": "バニラージュ"
+            },
+            {
+              "ja": "花園万頭×東京花万",
+              "en": "花園万頭×東京花万"
+            },
+            {
+              "ja": "ビスキュイテリエ ブルトンヌ",
+              "en": "ビスキュイテリエ ブルトンヌ"
+            },
+            {
+              "ja": "福砂屋",
+              "en": "福砂屋"
+            },
+            {
+              "ja": "船橋屋",
+              "en": "船橋屋"
+            },
+            {
+              "ja": "文明堂東京",
+              "en": "文明堂東京"
+            },
+            {
+              "ja": "ブール アンジュ",
+              "en": "ブール アンジュ"
+            },
+            {
+              "ja": "富士見堂",
+              "en": "富士見堂"
+            },
+            {
+              "ja": "フルーツショップ青木",
+              "en": "フルーツショップ青木"
+            },
+            {
+              "ja": "ベルン",
+              "en": "ベルン"
+            },
+            {
+              "ja": "豆源",
+              "en": "豆源"
+            },
+            {
+              "ja": "MINISOF",
+              "en": "MINISOF"
+            },
+            {
+              "ja": "蜜匠 CoCo Amendoro",
+              "en": "蜜匠 CoCo Amendoro"
+            },
+            {
+              "ja": "メリーチョコレート",
+              "en": "メリーチョコレート"
+            },
+            {
+              "ja": "モロゾフ",
+              "en": "モロゾフ"
+            },
+            {
+              "ja": "パティスリー モンシェール",
+              "en": "パティスリー モンシェール"
+            },
+            {
+              "ja": "モンロワール",
+              "en": "モンロワール"
+            },
+            {
+              "ja": "ユーハイム",
+              "en": "ユーハイム"
+            },
+            {
+              "ja": "ヨックモック",
+              "en": "ヨックモック"
+            },
+            {
+              "ja": "ラベイユ",
+              "en": "ラベイユ"
+            },
+            {
+              "ja": "両口屋是清",
+              "en": "両口屋是清"
+            },
+            {
+              "ja": "LE BIHAN",
+              "en": "LE BIHAN"
+            },
+            {
+              "ja": "ロイスダール",
+              "en": "ロイスダール"
+            },
+            {
+              "ja": "LONDON BAKE GALLERY",
+              "en": "LONDON BAKE GALLERY"
+            },
+            {
+              "ja": "和洋酒",
+              "en": "和洋酒"
+            },
+            {
+              "ja": "ワッフルパレット",
+              "en": "ワッフルパレット"
+            },
+            {
+              "ja": "ワインショップ・エノテカ",
+              "en": "ワインショップ・エノテカ"
+            }
+          ],
+          "source": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/B1F",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "accessories",
+          "label": {
+            "ja": "アクセサリー・婦人服・ブティック",
+            "en": "Accessories, women’s fashion and boutiques"
+          },
+          "tenants": [
+            {
+              "ja": "アガット",
+              "en": "アガット"
+            },
+            {
+              "ja": "アクセサリー（婦人）",
+              "en": "アクセサリー（婦人）"
+            },
+            {
+              "ja": "アフリカダイヤモンド",
+              "en": "アフリカダイヤモンド"
+            },
+            {
+              "ja": "雨傘",
+              "en": "雨傘"
+            },
+            {
+              "ja": "ANNA SUI",
+              "en": "ANNA SUI"
+            },
+            {
+              "ja": "アークテリクス",
+              "en": "アークテリクス"
+            },
+            {
+              "ja": "イベントスペース",
+              "en": "イベントスペース"
+            },
+            {
+              "ja": "ヴァンドーム ブティック",
+              "en": "ヴァンドーム ブティック"
+            },
+            {
+              "ja": "ヴァンドーム青山",
+              "en": "ヴァンドーム青山"
+            },
+            {
+              "ja": "グロッセ",
+              "en": "グロッセ"
+            },
+            {
+              "ja": "グロッセ・グラッセ",
+              "en": "グロッセ・グラッセ"
+            },
+            {
+              "ja": "GLOBAL GALLERY",
+              "en": "GLOBAL GALLERY"
+            },
+            {
+              "ja": "コンプレックス ビズ",
+              "en": "コンプレックス ビズ"
+            },
+            {
+              "ja": "Conteje",
+              "en": "Conteje"
+            },
+            {
+              "ja": "サンリオショップ",
+              "en": "サンリオショップ"
+            },
+            {
+              "ja": "サロモン",
+              "en": "サロモン"
+            },
+            {
+              "ja": "スカーフ",
+              "en": "スカーフ"
+            },
+            {
+              "ja": "スタージュエリー",
+              "en": "スタージュエリー"
+            },
+            {
+              "ja": "スワロフスキー",
+              "en": "スワロフスキー"
+            },
+            {
+              "ja": "ティファニー",
+              "en": "ティファニー"
+            },
+            {
+              "ja": "テイクアップ",
+              "en": "テイクアップ"
+            },
+            {
+              "ja": "ディー・スタイル フラワーズ",
+              "en": "ディー・スタイル フラワーズ"
+            },
+            {
+              "ja": "デサント",
+              "en": "デサント"
+            },
+            {
+              "ja": "ハンカチ",
+              "en": "ハンカチ"
+            },
+            {
+              "ja": "パンドラ",
+              "en": "パンドラ"
+            },
+            {
+              "ja": "ハイネット",
+              "en": "ハイネット"
+            },
+            {
+              "ja": "BIBI",
+              "en": "BIBI"
+            },
+            {
+              "ja": "festaria bijou SOPHIA",
+              "en": "festaria bijou SOPHIA"
+            },
+            {
+              "ja": "フォルム",
+              "en": "フォルム"
+            },
+            {
+              "ja": "婦人靴下",
+              "en": "婦人靴下"
+            },
+            {
+              "ja": "婦人手袋",
+              "en": "婦人手袋"
+            },
+            {
+              "ja": "婦人ベルト",
+              "en": "婦人ベルト"
+            },
+            {
+              "ja": "婦人帽子",
+              "en": "婦人帽子"
+            },
+            {
+              "ja": "マックスマーラ",
+              "en": "マックスマーラ"
+            },
+            {
+              "ja": "マキシ",
+              "en": "マキシ"
+            },
+            {
+              "ja": "４℃",
+              "en": "４℃"
+            },
+            {
+              "ja": "ランバン オン ブルー",
+              "en": "ランバン オン ブルー"
+            }
+          ],
+          "source": "https://www.tobu-dept.jp/ikebukuro/floormap/detail/1F",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "cosmetics",
+          "label": {
+            "ja": "化粧品・婦人服・婦人靴",
+            "en": "Cosmetics, women’s fashion and shoes"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "womens",
+          "label": {
+            "ja": "婦人服・婦人肌着",
+            "en": "Women’s clothing and lingerie"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "womens",
+          "label": {
+            "ja": "婦人服・きもの・家電",
+            "en": "Women’s clothing, kimono and appliances"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "mens",
+          "label": {
+            "ja": "紳士服・モンベル",
+            "en": "Men’s clothing and Mont-bell"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "living",
+          "label": {
+            "ja": "家庭用品・美術・宝飾・時計",
+            "en": "Homeware, art, jewelry and watches"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "kids",
+          "label": {
+            "ja": "子供服・玩具・スポーツ・書籍",
+            "en": "Children, toys, sports and books"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "womens",
+          "label": {
+            "ja": "催事場・婦人服・屋上",
+            "en": "Event hall, women’s clothing and rooftop"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "womens",
+          "label": {
+            "ja": "ユニクロ レディース",
+            "en": "UNIQLO women"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "10F",
+          "order": 10,
+          "category": "mens",
+          "label": {
+            "ja": "ユニクロ メンズ・キッズ",
+            "en": "UNIQLO men and children"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "11F",
+          "order": 11,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "12F",
+          "order": 12,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "13F",
+          "order": 13,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "14F",
+          "order": 14,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "15F",
+          "order": 15,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街 スパイス",
+            "en": "Spice restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.tobu-dept.jp/ikebukuro/tnb/language/english.html",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "esola-ikebukuro",
+      "name": {
+        "ja": "エソラ池袋",
+        "en": "Esola Ikebukuro"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "ファッション・雑貨・食品",
+            "en": "Fashion, goods and food"
+          },
+          "tenants": [
+            {
+              "ja": "Timberland",
+              "en": "Timberland"
+            },
+            {
+              "ja": "プリンに恋して",
+              "en": "プリンに恋して"
+            },
+            {
+              "ja": "Détour à Bleuet",
+              "en": "Détour à Bleuet"
+            },
+            {
+              "ja": "MS・Style",
+              "en": "MS・Style"
+            },
+            {
+              "ja": "atelier haruka",
+              "en": "atelier haruka"
+            },
+            {
+              "ja": "NATURAL LAWSON",
+              "en": "NATURAL LAWSON"
+            },
+            {
+              "ja": "FLEURISTE BON MARCHE",
+              "en": "FLEURISTE BON MARCHE"
+            }
+          ],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "ファッション・カフェ",
+            "en": "Fashion and cafes"
+          },
+          "tenants": [
+            {
+              "ja": "インナービューティサロン エステプロ・ラボ",
+              "en": "インナービューティサロン エステプロ・ラボ"
+            },
+            {
+              "ja": "豆乳専科",
+              "en": "豆乳専科"
+            },
+            {
+              "ja": "BEARDSLEY",
+              "en": "BEARDSLEY"
+            },
+            {
+              "ja": "Meet Fresh鮮芋仙",
+              "en": "Meet Fresh鮮芋仙"
+            }
+          ],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "ファッション・書籍",
+            "en": "Fashion and books"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "音楽・書籍",
+            "en": "Music and books"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "メガネ・カフェ",
+            "en": "Eyewear and cafe"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "美容・サービス",
+            "en": "Beauty and services"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン",
+            "en": "Restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン",
+            "en": "Restaurants"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン・シェアオフィス",
+            "en": "Restaurants and shared office"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/index.jsp?bf=8",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン",
+            "en": "Restaurant"
+          },
+          "tenants": [],
+          "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/gourmet/",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "lumine-ikebukuro",
+      "name": {
+        "ja": "ルミネ池袋",
+        "en": "Lumine Ikebukuro"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "womens",
+          "label": {
+            "ja": "レディスファッション・コスメショップ・フレグランス・ファッション雑貨",
+            "en": "Women’s fashion and cosmetics"
+          },
+          "tenants": [
+            {
+              "ja": "ATELIER Spick ＆ Span",
+              "en": "ATELIER Spick ＆ Span"
+            },
+            {
+              "ja": "IÉNA",
+              "en": "IÉNA"
+            },
+            {
+              "ja": "UNITED ARROWS WOMEN‘S STORE",
+              "en": "UNITED ARROWS WOMEN‘S STORE"
+            },
+            {
+              "ja": "SNIDEL",
+              "en": "SNIDEL"
+            },
+            {
+              "ja": "MARKS&WEB",
+              "en": "MARKS&WEB"
+            },
+            {
+              "ja": "SHIRO",
+              "en": "SHIRO"
+            },
+            {
+              "ja": "JO MALONE LONDON",
+              "en": "JO MALONE LONDON"
+            },
+            {
+              "ja": "Cosme Kitchen",
+              "en": "Cosme Kitchen"
+            },
+            {
+              "ja": "Maison Margiela Fragrances",
+              "en": "Maison Margiela Fragrances"
+            },
+            {
+              "ja": "ENSEMBLE",
+              "en": "ENSEMBLE"
+            },
+            {
+              "ja": "gelato pique",
+              "en": "gelato pique"
+            },
+            {
+              "ja": "Aesop",
+              "en": "Aesop"
+            },
+            {
+              "ja": "Whim Gazette",
+              "en": "Whim Gazette"
+            },
+            {
+              "ja": "HIROB",
+              "en": "HIROB"
+            },
+            {
+              "ja": "OSAJI",
+              "en": "OSAJI"
+            },
+            {
+              "ja": "Dior BACKSTAGE STUDIO",
+              "en": "Dior BACKSTAGE STUDIO"
+            },
+            {
+              "ja": "SABON",
+              "en": "SABON"
+            },
+            {
+              "ja": "Aoyama Flower Market",
+              "en": "Aoyama Flower Market"
+            }
+          ],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=b1f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "クレープリー・カフェ・フレッシュケーキ・ファッション雑貨",
+            "en": "Cafes and fashion"
+          },
+          "tenants": [
+            {
+              "ja": "gelato pique cafe creperie",
+              "en": "gelato pique cafe creperie"
+            },
+            {
+              "ja": "TULLY’S COFFEE",
+              "en": "TULLY’S COFFEE"
+            },
+            {
+              "ja": "HARBS",
+              "en": "HARBS"
+            },
+            {
+              "ja": "IL BISONTE",
+              "en": "IL BISONTE"
+            },
+            {
+              "ja": "Mila Owen",
+              "en": "Mila Owen"
+            },
+            {
+              "ja": "TOMORROWLAND",
+              "en": "TOMORROWLAND"
+            },
+            {
+              "ja": "BEAMS",
+              "en": "BEAMS"
+            },
+            {
+              "ja": "ete",
+              "en": "ete"
+            }
+          ],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=1f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "womens",
+          "label": {
+            "ja": "レディスファッション・シューズ・古着・コスメショップ",
+            "en": "Women’s fashion and shoes"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=2f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "womens",
+          "label": {
+            "ja": "ルームウェア，ボディケア，インナー，補正・レディスファッション・コスメショップ・水着",
+            "en": "Women’s fashion and lingerie"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=3f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "womens",
+          "label": {
+            "ja": "レディスファッション・ジュエリー・アクセサリー・ファッション雑貨・シューズ",
+            "en": "Women’s fashion and accessories"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=4f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "living",
+          "label": {
+            "ja": "インテリア・生活雑貨・レディスファッション・タルト・ジュエリー・アクセサリー",
+            "en": "Lifestyle goods and fashion"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=5f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "レディス・メンズファッション・ギフト・インテリア・コスメ・バッグ・書籍",
+            "en": "Fashion, gifts and books"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=6f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "living",
+          "label": {
+            "ja": "インテリア・生活雑貨・インナーウェア・ルームウェア・コスメショップ・コーヒー豆・輸入食品",
+            "en": "Lifestyle goods and cosmetics"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=7f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "restaurants",
+          "label": {
+            "ja": "定食＆カフェ・欧風レストラン・韓国料理・ドリア専門店",
+            "en": "Restaurants and cafes"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=8f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "restaurants",
+          "label": {
+            "ja": "自然食バイキング・しゃぶしゃぶ食べ放題・カフェ・クラフトドイツビール＆モダンドイツ料理",
+            "en": "Restaurants and cafes"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=9f",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "10F",
+          "order": 10,
+          "category": "other",
+          "label": {
+            "ja": "整体・骨盤調整・ネイルサロン・旅行代理店・iPhone修理",
+            "en": "Beauty and services"
+          },
+          "tenants": [],
+          "source": "https://www.lumine.ne.jp/ikebukuro/floorguide/?area=area01store01&floor=10f",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "ikebukuro-parco",
+      "name": {
+        "ja": "池袋パルコ",
+        "en": "Ikebukuro PARCO"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B2",
+          "order": -2,
+          "category": "sweets",
+          "label": {
+            "ja": "本館 ポップカルチャー・コスメ・スイーツ",
+            "en": "Main building: Pop culture, cosmetics and sweets"
+          },
+          "tenants": [
+            {
+              "ja": "ちいかわらんど",
+              "en": "ちいかわらんど"
+            },
+            {
+              "ja": "CAPCOM STORE IKEBUKURO",
+              "en": "CAPCOM STORE IKEBUKURO"
+            },
+            {
+              "ja": "POMME d 'AMOUR TOKYO",
+              "en": "POMME d 'AMOUR TOKYO"
+            },
+            {
+              "ja": "JUMP SHOP",
+              "en": "JUMP SHOP"
+            },
+            {
+              "ja": "ULTRAMAN STORE",
+              "en": "ULTRAMAN STORE"
+            },
+            {
+              "ja": "AINZ＆TULPE",
+              "en": "AINZ＆TULPE"
+            }
+          ],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=b2f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "womens",
+          "label": {
+            "ja": "本館 ファッション・コスメ・カフェ",
+            "en": "Main building: Fashion, cosmetics and cafe"
+          },
+          "tenants": [
+            {
+              "ja": "GELATO PIQUE LIMITED CONCEPT STORE",
+              "en": "GELATO PIQUE LIMITED CONCEPT STORE"
+            },
+            {
+              "ja": "SNIDEL",
+              "en": "SNIDEL"
+            },
+            {
+              "ja": "LILY BROWN",
+              "en": "LILY BROWN"
+            },
+            {
+              "ja": "gelato pique",
+              "en": "gelato pique"
+            },
+            {
+              "ja": "FURFUR",
+              "en": "FURFUR"
+            },
+            {
+              "ja": "Twelve Agenda",
+              "en": "Twelve Agenda"
+            },
+            {
+              "ja": "emmi",
+              "en": "emmi"
+            },
+            {
+              "ja": "FRAY I.D",
+              "en": "FRAY I.D"
+            },
+            {
+              "ja": "Samantha Vega",
+              "en": "Samantha Vega"
+            },
+            {
+              "ja": "Jouete",
+              "en": "Jouete"
+            },
+            {
+              "ja": "Cosme Kitchen",
+              "en": "Cosme Kitchen"
+            },
+            {
+              "ja": "HARBS",
+              "en": "HARBS"
+            },
+            {
+              "ja": "agete",
+              "en": "agete"
+            },
+            {
+              "ja": "ANEMONE",
+              "en": "ANEMONE"
+            },
+            {
+              "ja": "U NOSE SHOP",
+              "en": "U NOSE SHOP"
+            },
+            {
+              "ja": "DIANA",
+              "en": "DIANA"
+            }
+          ],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=b1f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "accessories",
+          "label": {
+            "ja": "本館 ファッション雑貨",
+            "en": "Main building: Fashion goods"
+          },
+          "tenants": [
+            {
+              "ja": "CASETiFY STUDiO",
+              "en": "CASETiFY STUDiO"
+            },
+            {
+              "ja": "POTR",
+              "en": "POTR"
+            },
+            {
+              "ja": "Ground Y",
+              "en": "Ground Y"
+            },
+            {
+              "ja": "Aíam",
+              "en": "Aíam"
+            },
+            {
+              "ja": "JTB",
+              "en": "JTB"
+            }
+          ],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=1f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "M2F",
+          "order": 1.5,
+          "category": "living",
+          "label": {
+            "ja": "本館 トラベル・ライフスタイル",
+            "en": "Main building: Travel and lifestyle"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=m2f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "本館 レディス・メンズ",
+            "en": "Main building: Women’s and men’s"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=2f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "本館 レディス・メンズ",
+            "en": "Main building: Women’s and men’s"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=3f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "本館 レディス・メンズ",
+            "en": "Main building: Women’s and men’s"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=4f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "living",
+          "label": {
+            "ja": "本館 ファッション・生活雑貨",
+            "en": "Main building: Fashion and lifestyle goods"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=5f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "本館 キャラクター・生活雑貨",
+            "en": "Main building: Character and lifestyle goods"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=6f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "restaurants",
+          "label": {
+            "ja": "本館 レストラン・ギャラリー",
+            "en": "Main building: Restaurants and gallery"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=7f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "restaurants",
+          "label": {
+            "ja": "本館 レストラン",
+            "en": "Main building: Restaurants"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=8f&ft=type1",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B2",
+          "order": -2,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO まんだらけ",
+            "en": "P’PARCO: Mandarake"
+          },
+          "tenants": [
+            {
+              "ja": "まんだらけ那由多",
+              "en": "まんだらけ那由多"
+            }
+          ],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=b2f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO セカンドストリート",
+            "en": "P’PARCO: 2nd STREET"
+          },
+          "tenants": [
+            {
+              "ja": "2nd STREET",
+              "en": "2nd STREET"
+            }
+          ],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=b1f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO メンズ・レディスファッション",
+            "en": "P’PARCO: Men’s and women’s fashion"
+          },
+          "tenants": [
+            {
+              "ja": "New Balance",
+              "en": "New Balance"
+            },
+            {
+              "ja": "RED WING SHOE STORE",
+              "en": "RED WING SHOE STORE"
+            },
+            {
+              "ja": "Candy Stripper",
+              "en": "Candy Stripper"
+            },
+            {
+              "ja": "atmos pink",
+              "en": "atmos pink"
+            },
+            {
+              "ja": "AVALANCHE GOLD&JEWELRY",
+              "en": "AVALANCHE GOLD&JEWELRY"
+            }
+          ],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=1f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO ファッション・バラエティ",
+            "en": "P’PARCO: Fashion and variety"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=2f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO 雑貨・バラエティ",
+            "en": "P’PARCO: Goods and variety"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=3f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO ファッション・バラエティ",
+            "en": "P’PARCO: Fashion and variety"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=4f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO セリア",
+            "en": "P’PARCO: Seria"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=5f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO タワーレコード",
+            "en": "P’PARCO: Tower Records"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=6f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO 石橋楽器",
+            "en": "P’PARCO: Ishibashi Music"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=7f&ft=type2",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "other",
+          "label": {
+            "ja": "P’PARCO ムラサキスポーツ",
+            "en": "P’PARCO: Murasaki Sports"
+          },
+          "tenants": [],
+          "source": "https://ikebukuro.parco.jp/floor/detail/?f=8f&ft=type2",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "sunshine-city-alpa",
+      "name": {
+        "ja": "サンシャインシティ 専門店街アルパ",
+        "en": "Sunshine City ALPA"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "専門店街・飲食",
+            "en": "Shops and dining"
+          },
+          "tenants": [
+            {
+              "ja": "earth music&ecology",
+              "en": "earth music&ecology"
+            },
+            {
+              "ja": "@cosme STORE",
+              "en": "@cosme STORE"
+            },
+            {
+              "ja": "Amatone Accesso’rio",
+              "en": "Amatone Accesso’rio"
+            },
+            {
+              "ja": "INGNI",
+              "en": "INGNI"
+            },
+            {
+              "ja": "MUS",
+              "en": "MUS"
+            },
+            {
+              "ja": "OLIVE des OLIVE",
+              "en": "OLIVE des OLIVE"
+            },
+            {
+              "ja": "空想街雑貨店",
+              "en": "空想街雑貨店"
+            },
+            {
+              "ja": "靴下屋",
+              "en": "靴下屋"
+            },
+            {
+              "ja": "グラニフ",
+              "en": "グラニフ"
+            },
+            {
+              "ja": "clear",
+              "en": "clear"
+            },
+            {
+              "ja": "コクミンドラッグ",
+              "en": "コクミンドラッグ"
+            },
+            {
+              "ja": "THE KISS",
+              "en": "THE KISS"
+            },
+            {
+              "ja": "Samantha Thavasa",
+              "en": "Samantha Thavasa"
+            },
+            {
+              "ja": "SM2 ehka sopo",
+              "en": "SM2 ehka sopo"
+            },
+            {
+              "ja": "San-ai Resort northerly",
+              "en": "San-ai Resort northerly"
+            },
+            {
+              "ja": "サンシャイン60内郵便局",
+              "en": "サンシャイン60内郵便局"
+            },
+            {
+              "ja": "Sanrio vivitix",
+              "en": "Sanrio vivitix"
+            },
+            {
+              "ja": "cs T&P",
+              "en": "cs T&P"
+            },
+            {
+              "ja": "シークレットハニー",
+              "en": "シークレットハニー"
+            },
+            {
+              "ja": "ジブリがいっぱい　どんぐり共和国",
+              "en": "ジブリがいっぱい　どんぐり共和国"
+            },
+            {
+              "ja": "スーパースポーツヴィクトリア/ヴィクトリアゴルフ",
+              "en": "スーパースポーツヴィクトリア/ヴィクトリアゴルフ"
+            },
+            {
+              "ja": "すこんぶ",
+              "en": "すこんぶ"
+            },
+            {
+              "ja": "SpRay/Libby ＆Rose",
+              "en": "SpRay/Libby ＆Rose"
+            },
+            {
+              "ja": "3COINS",
+              "en": "3COINS"
+            },
+            {
+              "ja": "Zoff",
+              "en": "Zoff"
+            },
+            {
+              "ja": "WA ORiental TRaffic",
+              "en": "WA ORiental TRaffic"
+            },
+            {
+              "ja": "TOWER RECORDS SHIBUYA  SUNSHINE CITY ALPA BRANCH",
+              "en": "TOWER RECORDS SHIBUYA  SUNSHINE CITY ALPA BRANCH"
+            },
+            {
+              "ja": "【10/9～11/24 期間限定オープン】Disney store",
+              "en": "【10/9～11/24 期間限定オープン】Disney store"
+            },
+            {
+              "ja": "デリカベンダーステーション",
+              "en": "デリカベンダーステーション"
+            },
+            {
+              "ja": "トーマスステーション池袋",
+              "en": "トーマスステーション池袋"
+            },
+            {
+              "ja": "niko and ...",
+              "en": "niko and ..."
+            },
+            {
+              "ja": "P2",
+              "en": "P2"
+            },
+            {
+              "ja": "ピロースタンド",
+              "en": "ピロースタンド"
+            },
+            {
+              "ja": "ファミリーマート　サンシャインシティアルパB1店",
+              "en": "ファミリーマート　サンシャインシティアルパB1店"
+            },
+            {
+              "ja": "F i.n.t",
+              "en": "F i.n.t"
+            },
+            {
+              "ja": "プラザ",
+              "en": "プラザ"
+            },
+            {
+              "ja": "PAGEBOY",
+              "en": "PAGEBOY"
+            },
+            {
+              "ja": "Heather",
+              "en": "Heather"
+            },
+            {
+              "ja": "ほけんの窓口",
+              "en": "ほけんの窓口"
+            },
+            {
+              "ja": "MARVEL STORE by SMALL PLANET",
+              "en": "MARVEL STORE by SMALL PLANET"
+            },
+            {
+              "ja": "MAJESTIC LEGON",
+              "en": "MAJESTIC LEGON"
+            },
+            {
+              "ja": "マリークワント",
+              "en": "マリークワント"
+            },
+            {
+              "ja": "mysty woman",
+              "en": "mysty woman"
+            },
+            {
+              "ja": "MEGA BLUE BIRD",
+              "en": "MEGA BLUE BIRD"
+            },
+            {
+              "ja": "Maison de FLEUR",
+              "en": "Maison de FLEUR"
+            },
+            {
+              "ja": "Lattice",
+              "en": "Lattice"
+            },
+            {
+              "ja": "リサマリ",
+              "en": "リサマリ"
+            },
+            {
+              "ja": "Luce Brillante",
+              "en": "Luce Brillante"
+            },
+            {
+              "ja": "LUDIC　PARK",
+              "en": "LUDIC　PARK"
+            },
+            {
+              "ja": "Rolife",
+              "en": "Rolife"
+            },
+            {
+              "ja": "LOWRYS FARM",
+              "en": "LOWRYS FARM"
+            },
+            {
+              "ja": "ROJITA",
+              "en": "ROJITA"
+            },
+            {
+              "ja": "RODEO CROWNS WIDE BOWL",
+              "en": "RODEO CROWNS WIDE BOWL"
+            },
+            {
+              "ja": "one way",
+              "en": "one way"
+            },
+            {
+              "ja": "いちご飴と幸せな僕",
+              "en": "いちご飴と幸せな僕"
+            },
+            {
+              "ja": "一久庵",
+              "en": "一久庵"
+            },
+            {
+              "ja": "おだしもん",
+              "en": "おだしもん"
+            },
+            {
+              "ja": "カレーハウスCoCo壱番屋",
+              "en": "カレーハウスCoCo壱番屋"
+            },
+            {
+              "ja": "KUA`AINA",
+              "en": "KUA`AINA"
+            },
+            {
+              "ja": "珈琲所　コメダ珈琲店",
+              "en": "珈琲所　コメダ珈琲店"
+            },
+            {
+              "ja": "KOI Thé",
+              "en": "KOI Thé"
+            },
+            {
+              "ja": "ゴディバ",
+              "en": "ゴディバ"
+            },
+            {
+              "ja": "SANRIO CAFE",
+              "en": "SANRIO CAFE"
+            },
+            {
+              "ja": "ジェリコ堂",
+              "en": "ジェリコ堂"
+            },
+            {
+              "ja": "中華そば　青葉",
+              "en": "中華そば　青葉"
+            },
+            {
+              "ja": "ディッパーダン プラス",
+              "en": "ディッパーダン プラス"
+            },
+            {
+              "ja": "天丼　てんや",
+              "en": "天丼　てんや"
+            },
+            {
+              "ja": "東京だし茶漬け　こめから",
+              "en": "東京だし茶漬け　こめから"
+            },
+            {
+              "ja": "mipig cafe",
+              "en": "mipig cafe"
+            },
+            {
+              "ja": "まめものとたい焼き",
+              "en": "まめものとたい焼き"
+            },
+            {
+              "ja": "山下本気うどん",
+              "en": "山下本気うどん"
+            },
+            {
+              "ja": "LA VIGNE AKIKO",
+              "en": "LA VIGNE AKIKO"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "専門店街",
+            "en": "Shops"
+          },
+          "tenants": [
+            {
+              "ja": "axes femme",
+              "en": "axes femme"
+            },
+            {
+              "ja": "AZUL BY MOUSSY",
+              "en": "AZUL BY MOUSSY"
+            },
+            {
+              "ja": "ウサギオンラインストア",
+              "en": "ウサギオンラインストア"
+            },
+            {
+              "ja": "ABC-MART",
+              "en": "ABC-MART"
+            },
+            {
+              "ja": "きもの　やまと",
+              "en": "きもの　やまと"
+            },
+            {
+              "ja": "Green Parks topic",
+              "en": "Green Parks topic"
+            },
+            {
+              "ja": "GLOBAL WORK",
+              "en": "GLOBAL WORK"
+            },
+            {
+              "ja": "SAC’S BAR",
+              "en": "SAC’S BAR"
+            },
+            {
+              "ja": "セサミストリートマーケット",
+              "en": "セサミストリートマーケット"
+            },
+            {
+              "ja": "CIAOPANIC TYPY",
+              "en": "CIAOPANIC TYPY"
+            },
+            {
+              "ja": "東京シャツ",
+              "en": "東京シャツ"
+            },
+            {
+              "ja": "ハンドメイドガーデンズ",
+              "en": "ハンドメイドガーデンズ"
+            },
+            {
+              "ja": "Biople",
+              "en": "Biople"
+            },
+            {
+              "ja": "petit main",
+              "en": "petit main"
+            },
+            {
+              "ja": "Flying Tiger Copenhagen",
+              "en": "Flying Tiger Copenhagen"
+            },
+            {
+              "ja": "【10/1～ 期間限定オープン！】Flower Miffy",
+              "en": "【10/1～ 期間限定オープン！】Flower Miffy"
+            },
+            {
+              "ja": "【11/20 リニューアルオープン】Francfranc",
+              "en": "【11/20 リニューアルオープン】Francfranc"
+            },
+            {
+              "ja": "Marché de Bleuet plus",
+              "en": "Marché de Bleuet plus"
+            },
+            {
+              "ja": "無印良品",
+              "en": "無印良品"
+            },
+            {
+              "ja": "Re-J＆SUPURE",
+              "en": "Re-J＆SUPURE"
+            },
+            {
+              "ja": "ロフト",
+              "en": "ロフト"
+            },
+            {
+              "ja": "Vinos Yamazaki Wine+ist",
+              "en": "Vinos Yamazaki Wine+ist"
+            },
+            {
+              "ja": "果汁工房 果琳",
+              "en": "果汁工房 果琳"
+            },
+            {
+              "ja": "クリスプサラダワークス",
+              "en": "クリスプサラダワークス"
+            },
+            {
+              "ja": "creperie kenny's cafe",
+              "en": "creperie kenny's cafe"
+            },
+            {
+              "ja": "SUBWAY",
+              "en": "SUBWAY"
+            },
+            {
+              "ja": "gelato pique cafe",
+              "en": "gelato pique cafe"
+            },
+            {
+              "ja": "スターバックス コーヒー",
+              "en": "スターバックス コーヒー"
+            },
+            {
+              "ja": "成城石井",
+              "en": "成城石井"
+            },
+            {
+              "ja": "セサミストリートマーケット",
+              "en": "セサミストリートマーケット"
+            },
+            {
+              "ja": "TULLY'S COFFEE",
+              "en": "TULLY'S COFFEE"
+            },
+            {
+              "ja": "茶鍋カフェ・カグラザカ サリョウ",
+              "en": "茶鍋カフェ・カグラザカ サリョウ"
+            },
+            {
+              "ja": "ネオ屋台村（南入口前広場）",
+              "en": "ネオ屋台村（南入口前広場）"
+            },
+            {
+              "ja": "MAISON KAYSER",
+              "en": "MAISON KAYSER"
+            },
+            {
+              "ja": "LUPICIA",
+              "en": "LUPICIA"
+            },
+            {
+              "ja": "わくわく広場",
+              "en": "わくわく広場"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "専門店街",
+            "en": "Shops"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "restaurants",
+          "label": {
+            "ja": "レストラン街",
+            "en": "Restaurants"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "sunshine-city-world-import-mart",
+      "name": {
+        "ja": "サンシャインシティ ワールドインポートマート",
+        "en": "Sunshine City World Import Mart"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "アルタ",
+            "en": "ALTA"
+          },
+          "tenants": [
+            {
+              "ja": "【11/20 リニューアルオープン】archives",
+              "en": "【11/20 リニューアルオープン】archives"
+            },
+            {
+              "ja": "1丁目1番地",
+              "en": "1丁目1番地"
+            },
+            {
+              "ja": "【11/20 Newオープン！】WEGO TOKYO",
+              "en": "【11/20 Newオープン！】WEGO TOKYO"
+            },
+            {
+              "ja": "aimerfeel",
+              "en": "aimerfeel"
+            },
+            {
+              "ja": "OZZONESTE",
+              "en": "OZZONESTE"
+            },
+            {
+              "ja": "GRAPEFRUIT MOON",
+              "en": "GRAPEFRUIT MOON"
+            },
+            {
+              "ja": "サンキューマート",
+              "en": "サンキューマート"
+            },
+            {
+              "ja": "3びきの子ねこ",
+              "en": "3びきの子ねこ"
+            },
+            {
+              "ja": "Shunkai",
+              "en": "Shunkai"
+            },
+            {
+              "ja": "Giraffe larch",
+              "en": "Giraffe larch"
+            },
+            {
+              "ja": "【11/20 リニューアルオープン】チュチュアンナ",
+              "en": "【11/20 リニューアルオープン】チュチュアンナ"
+            },
+            {
+              "ja": "Honeys",
+              "en": "Honeys"
+            },
+            {
+              "ja": "【11/20 Newオープン！】ホテラバ",
+              "en": "【11/20 Newオープン！】ホテラバ"
+            },
+            {
+              "ja": "【11/20 Newオープン！】LAKOLE",
+              "en": "【11/20 Newオープン！】LAKOLE"
+            },
+            {
+              "ja": "LUPIS",
+              "en": "LUPIS"
+            },
+            {
+              "ja": "【11/20 Newオープン！】ルルティ",
+              "en": "【11/20 Newオープン！】ルルティ"
+            },
+            {
+              "ja": "壱角家",
+              "en": "壱角家"
+            },
+            {
+              "ja": "Caffé ITALIAN TOMATO",
+              "en": "Caffé ITALIAN TOMATO"
+            },
+            {
+              "ja": "釜揚げうどん　丸亀製麺",
+              "en": "釜揚げうどん　丸亀製麺"
+            },
+            {
+              "ja": "喫茶店ピノキオ",
+              "en": "喫茶店ピノキオ"
+            },
+            {
+              "ja": "サーティワン　アイスクリーム",
+              "en": "サーティワン　アイスクリーム"
+            },
+            {
+              "ja": "蕎麦いまゐ",
+              "en": "蕎麦いまゐ"
+            },
+            {
+              "ja": "マクドナルド",
+              "en": "マクドナルド"
+            },
+            {
+              "ja": "洋麺屋　五右衛門",
+              "en": "洋麺屋　五右衛門"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "アルタ",
+            "en": "ALTA"
+          },
+          "tenants": [
+            {
+              "ja": "AENA",
+              "en": "AENA"
+            },
+            {
+              "ja": "WEGO",
+              "en": "WEGO"
+            },
+            {
+              "ja": "GAANO",
+              "en": "GAANO"
+            },
+            {
+              "ja": "ガチャガチャの森",
+              "en": "ガチャガチャの森"
+            },
+            {
+              "ja": "クロックス",
+              "en": "クロックス"
+            },
+            {
+              "ja": "JINS",
+              "en": "JINS"
+            },
+            {
+              "ja": "Seria",
+              "en": "Seria"
+            },
+            {
+              "ja": "東峰フォト",
+              "en": "東峰フォト"
+            },
+            {
+              "ja": "ほぐしや本舗RiRAKU　Full",
+              "en": "ほぐしや本舗RiRAKU　Full"
+            },
+            {
+              "ja": "保険見直し本舗/ドコモSMTBネット銀行",
+              "en": "保険見直し本舗/ドコモSMTBネット銀行"
+            },
+            {
+              "ja": "むにゅぐるみパティオ",
+              "en": "むにゅぐるみパティオ"
+            },
+            {
+              "ja": "苺スイーツ専門店「ストロベリータイガー」",
+              "en": "苺スイーツ専門店「ストロベリータイガー」"
+            },
+            {
+              "ja": "一〇八抹茶茶廊",
+              "en": "一〇八抹茶茶廊"
+            },
+            {
+              "ja": "カルディコーヒーファーム",
+              "en": "カルディコーヒーファーム"
+            },
+            {
+              "ja": "JACK IN THE DONUTS",
+              "en": "JACK IN THE DONUTS"
+            },
+            {
+              "ja": "不二家 Peko chan House",
+              "en": "不二家 Peko chan House"
+            },
+            {
+              "ja": "マリオンクレープ",
+              "en": "マリオンクレープ"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "2F",
+          "order": 2,
+          "category": "other",
+          "label": {
+            "ja": "ナンジャタウン",
+            "en": "NAMJATOWN"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "ガシャポンのデパート・一番くじ公式ショップ",
+            "en": "Gashapon and Ichiban Kuji shops"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "展示ホールA",
+            "en": "Exhibition Hall A"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "パスポートセンター・会議室",
+            "en": "Passport center and conference rooms"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "6F",
+          "order": 6,
+          "category": "other",
+          "label": {
+            "ja": "ショールーム",
+            "en": "Showroom"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "9F",
+          "order": 9,
+          "category": "other",
+          "label": {
+            "ja": "さくらルーム",
+            "en": "Sakura Room"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "10F",
+          "order": 10,
+          "category": "other",
+          "label": {
+            "ja": "サンシャイン水族館",
+            "en": "Sunshine Aquarium"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/aquarium/information/faq.html",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "RF",
+          "order": 100,
+          "category": "rooftop",
+          "label": {
+            "ja": "ギャラリー プラネタリア",
+            "en": "Gallery Planetaria"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        }
+      ]
+    },
+    {
+      "id": "sunshine-city-60",
+      "name": {
+        "ja": "サンシャイン60",
+        "en": "Sunshine 60"
+      },
+      "building": null,
+      "floors": [
+        {
+          "level": "B2",
+          "order": -2,
+          "category": "other",
+          "label": {
+            "ja": "パーキングフロント",
+            "en": "Parking front"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "B1",
+          "order": -1,
+          "category": "other",
+          "label": {
+            "ja": "郵便局・展望台エレベーター",
+            "en": "Post office and observatory elevator"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "1F",
+          "order": 1,
+          "category": "other",
+          "label": {
+            "ja": "オフィスロビー",
+            "en": "Office lobby"
+          },
+          "tenants": [
+            {
+              "ja": "イー・エー・グラン",
+              "en": "イー・エー・グラン"
+            }
+          ],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "3F",
+          "order": 3,
+          "category": "other",
+          "label": {
+            "ja": "ハローワーク",
+            "en": "Hello Work"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "4F",
+          "order": 4,
+          "category": "other",
+          "label": {
+            "ja": "ファミマ!!",
+            "en": "Famima!!"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "5F",
+          "order": 5,
+          "category": "other",
+          "label": {
+            "ja": "都民共済プラザ",
+            "en": "Tomin Kyosai Plaza"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "7F",
+          "order": 7,
+          "category": "other",
+          "label": {
+            "ja": "クリニック",
+            "en": "Clinics"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "8F",
+          "order": 8,
+          "category": "other",
+          "label": {
+            "ja": "旅工房",
+            "en": "Tabikobo"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/observatory/shop/shop_list/page/4/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "36F",
+          "order": 36,
+          "category": "other",
+          "label": {
+            "ja": "都民共済",
+            "en": "Tomin Kyosai"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/shop/shop_list/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "58F",
+          "order": 58,
+          "category": "restaurants",
+          "label": {
+            "ja": "スカイレストラン",
+            "en": "Sky restaurants"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "59F",
+          "order": 59,
+          "category": "restaurants",
+          "label": {
+            "ja": "スカイレストラン",
+            "en": "Sky restaurants"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        },
+        {
+          "level": "60F",
+          "order": 60,
+          "category": "other",
+          "label": {
+            "ja": "展望台",
+            "en": "Observatory"
+          },
+          "tenants": [],
+          "source": "https://sunshinecity.jp/information/floor_map/",
+          "read": "2026-11-22"
+        }
+      ]
+    }
+  ]
 }

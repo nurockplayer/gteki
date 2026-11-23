@@ -10,8 +10,9 @@ import { buildDepatoInterior } from "./interior.ts";
 // station building, clipped at z=70/180 and x=0 (authored internal partitions).
 // Source vertices are unchanged; this is a footprint, not a copied store floor plan.
 const footprint = footprintData.footprint as PlanPoint[];
+const store = floorData.stores.find(s => s.id === "seibu-ikebukuro")!;
 const plan = () => depatoLayout({
-  store: { ...floorData.stores[0]!, floors: floorData.stores[0]!.floors.filter(f => ["B1", "1F"].includes(f.level)) },
+  store: { ...store, floors: store.floors.filter((f,i,all) => ["B1", "1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) },
   footprint, elevations: { "1F": 32.2 },
   poiId: "shop-ikb-seibu-honten", sourceId: "sogo-seibu-ikebukuro-floorguide-2026-10",
   entrances: [{ level: "B1", point: [15,70], outsideNode: "sp_e" }, { level: "1F", point: [49.365,122.5], outsideNode: "depato-seibu-street" }],
