@@ -9,6 +9,8 @@ import { LANDMARK_FACADE, LANDMARK_STREET_BAND, LANDMARK_SIGN } from "../landmar
 /** AD 2026-11-22 JST: one neutral retail kit, baked pools, no scene lights. */
 export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMap?: T.Texture) {
   const THREE = ctx.THREE, root = new THREE.Group(); root.name = `depato-interior:${plan.input.store.id}`;
+  const depthTwins:{mesh:T.Mesh;twin:T.Material;original:T.Material}[]=[];
+  root.userData.gteki_gtao_depth_twins=depthTwins;
   const walkable: T.Mesh[] = [], colliders: T.Mesh[] = [], cameraBlockers: T.Mesh[] = [];
   const physicalGeometry: T.BufferGeometry[] = [];
   const collisionMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
@@ -107,11 +109,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     // Allowed interim baked gradient: same 4.4 m tile as the downlight grid, no runtime pool lights.
     const pixels=new Uint8Array(64*64*4);
     for(let z=0;z<64;z++)for(let x=0;x<64;x++){
-      const pool=Math.exp(-((x-32)**2+(z-32)**2)/170), value=0.46+0.54*pool;
-      const at=(z*64+x)*4;pixels.set([255*value,241*value,222*value,255],at);
+      const pool=Math.exp(-((x-32)**2+(z-32)**2)/170), value=0.88+0.12*pool;
+      const at=(z*64+x)*4;pixels.set([255*value,252*value,246*value,255],at);
     }
     const pool=new THREE.DataTexture(pixels,64,64);pool.colorSpace=THREE.SRGBColorSpace;pool.wrapS=pool.wrapT=THREE.RepeatWrapping;pool.repeat.set(1/4.4,1/4.4);pool.offset.set(0.5,0.5);pool.needsUpdate=true;textures.push(pool);
-    const counterMat=standard("#795a40",0.35,0.12), glassMat=glass(), bronze=standard(LANDMARK_FACADE.F4_darkBronze,0.5,0.12), glow=basic(LANDMARK_STREET_BAND.glow);
+    const counterMat=basic("#e6ddcd"), glassMat=glass(), bronze=standard(LANDMARK_FACADE.F4_darkBronze,0.5,0.12), glow=basic(LANDMARK_STREET_BAND.glow);
     const boards=levels.flatMap(l=>[{ja:`${plan.input.store.name.ja} ${l.floor.level}`,en:l.floor.label.en},...l.floor.tenants]);
     const directoryJa=plan.floors.map(f=>`${f.level} ${f.label.ja}`).join(" / ");
     const directoryEn=plan.floors.map(f=>`${f.level} ${f.label.en}`).join(" / ");
@@ -143,19 +145,23 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       retain(g);const mesh=new THREE.InstancedMesh(g,m,positions.length),matrix=new THREE.Matrix4();
       positions.forEach((p,i)=>{matrix.compose(new THREE.Vector3(p.x,p.y,p.z),new THREE.Quaternion(),new THREE.Vector3(...(p.scale??[1,1,1])));mesh.setMatrixAt(i,matrix);});mesh.computeBoundingSphere();group.add(mesh);return mesh;
     };
+    const matteNormal=new THREE.MeshNormalMaterial({side:THREE.DoubleSide,blending:THREE.NoBlending,transparent:true,opacity:0});
+    matteNormal.allowOverride=false;
+    materials.push(matteNormal);
+    const matte=(mesh:T.Mesh)=>{depthTwins.push({mesh,twin:matteNormal,original:mesh.material as T.Material});return mesh;};
     let label=0;
     for(const l of levels){
       const group=new THREE.Group(), landing=new THREE.Group();groups.push(group);landingGroups.push(landing);root.add(group,landing);
-      const fm=basic("#bcad94");fm.map=pool;
+      const fm=basic("#d6cfc2");fm.map=pool;
       const shell=[l.ceilingG.clone(),l.wallG.clone()];
-      shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#ece7dd":"#9daaa7");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
+      shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#fff2dc":"#b5a58f");if(i===0)c.multiplyScalar(1.4);g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
       const shellG=retain(mergeGeometries(shell));shell.forEach(g=>g.dispose());const shellMat=basic("#ffffff");shellMat.vertexColors=true;
       shellMat.fog=false; // The station's 90 m fog must not turn the aisle end walls black.
       // Both store shells remain visible through the well and behind the landing camera.
-      const floorMesh=new THREE.Mesh(l.floorG,fm),shellMesh=new THREE.Mesh(shellG,shellMat);
+      const floorMesh=matte(new THREE.Mesh(l.floorG,fm)),shellMesh=new THREE.Mesh(shellG,shellMat);
       floorMesh.name=`retail-floor-${l.floor.level}`;shellMesh.name=`retail-shell-${l.floor.level}`;
       root.add(floorMesh,shellMesh);
-      const pad=cube(plan.aisleX,l.y-0.035,plan.stair.to+1,5,0.07,2);retain(pad);landing.add(new THREE.Mesh(pad,fm));
+      const pad=cube(plan.aisleX,l.y-0.035,plan.stair.to+1,5,0.07,2);retain(pad);landing.add(matte(new THREE.Mesh(pad,fm)));
       const discs:{x:number;y:number;z:number}[]=[];
       for(let z=Math.ceil(plan.bounds.front/4.4)*4.4;z<plan.bounds.back;z+=4.4)for(let x=Math.ceil(plan.bounds.left/4.4)*4.4;x<plan.bounds.right;x+=4.4){
         if(plan.contains([x,z]) && !(Math.abs(x-plan.stair.x)<2.3 && z>plan.stair.from && z<plan.stair.to))discs.push({x,y:l.y+l.clear-0.025,z});
@@ -165,9 +171,21 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
       const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
       // Repeated shallow bays and a warm cove frame the main aisle without runtime lights.
-      for(const d of discs){
-        if(plan.contains([d.x-2.2,d.z]) && plan.contains([d.x+2.2,d.z]))bays.push(cube(d.x,l.y+l.clear-0.12,d.z-2.2,4.4,0.24,0.1));
-        if(plan.contains([d.x,d.z-2.2]) && plan.contains([d.x,d.z+2.2]))bays.push(cube(d.x-2.2,l.y+l.clear-0.12,d.z,0.1,0.24,4.4));
+      for(const axis of [0,1] as const){
+        const cross=axis===0?1:0, lo=axis===0?plan.bounds.front:plan.bounds.left, hi=axis===0?plan.bounds.back:plan.bounds.right;
+        for(let v=Math.ceil(lo/4.4)*4.4-2.2;v<hi;v+=4.4){
+          if(v<=lo)continue;
+          const ends=plan.input.footprint.flatMap((a,i)=>{
+            const b=plan.input.footprint[(i+1)%plan.input.footprint.length]!;
+            return (a[cross]<=v&&b[cross]>v)||(b[cross]<=v&&a[cross]>v)?[a[axis]+(b[axis]-a[axis])*(v-a[cross])/(b[cross]-a[cross])]:[];
+          }).sort((a,b)=>a-b);
+          for(let i=0;i<ends.length;i+=2){
+            const from=ends[i]!,to=ends[i+1]!, cut=axis===0?[plan.stair.x-plan.stair.width/2,plan.stair.x+plan.stair.width/2]:[plan.stair.from,plan.stair.to];
+            const overWell=axis===0?v>plan.stair.from&&v<plan.stair.to:Math.abs(v-plan.stair.x)<plan.stair.width/2;
+            const spans=l.index+1<levels.length&&overWell?[[from,Math.min(to,cut[0]!)],[Math.max(from,cut[1]!),to]]:[[from,to]];
+            for(const [a,b] of spans)if(b!>a!)bays.push(cube(axis===0?(a!+b!)/2:v,l.y+l.clear-0.08,axis===0?v:(a!+b!)/2,axis===0?b!-a!:0.1,0.16,axis===0?0.1:b!-a!));
+          }
+        }
       }
       for(const side of [-1,1])for(const [from,to] of [[plan.bounds.front+0.5,plan.stair.from],[plan.stair.to,plan.bounds.back-0.5]]){
         bays.push(cube(plan.aisleX+side*1.6,l.y+l.clear-0.18,(from!+to!)/2,0.18,0.36,to!-from!));
@@ -192,7 +210,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         if(l.food){
           glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
           detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
-          lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
+          lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
           for(let j=0;j<10;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*0.37});
         }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,2.8));
         board(x-side*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
@@ -219,7 +237,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       }
       board(plan.aisleX,l.y+l.clear-0.48,plan.stair.to+5,label,0,3.4,0.45);
       if(l.index>0)for(const side of [-1,1])glassPieces.push(cube(plan.aisleX+side*2.13,l.y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from));
-      if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,basic("#8d9997")));}
+      if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,basic("#e5d9c4")));}
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
       // Station whole-body people use short, narrow counter-side paths, away from circulation.
       const lanes:Record<string,Lane>={};
@@ -255,9 +273,9 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       group.add(finishMesh,new THREE.Mesh(glassG,glassMat));
     }
     bridges.forEach((g,i)=>groups[levels.findIndex(l=>l.floor.level===plan.input.entrances[i]!.level)]!.add(new THREE.Mesh(g,basic("#bdb5a7"))));
-    root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.3,0.24],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
+    root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.85,0.85],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
-  const unload=()=>{crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
+  const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
   return {root,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
     update(camera:T.Camera,dt=0,elapsed=0){
       const cameraP=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cameraP.x,y:cameraP.y-2,z:cameraP.z};

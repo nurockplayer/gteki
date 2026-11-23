@@ -732,9 +732,11 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       stationSound?.update(dt, camera);
       if (context && cameraTrack) {
         const seen = cameraTrack.read();
-        // The desktop normal/depth pass has no fog; read the host scene between renders.
+        // Preview cuts can leave the old floor probe undrawn. Use the supplied camera independently
+        // of that probe; desktop normal/depth passes also have no fog, so read the host scene here.
         let host: THREE_NS.Object3D=root;while(host.parent)host=host.parent;
-        setContext(seen !== null && contextVisibleAt(camera?.position.y ?? seen.y, streetY, camera ? (host as THREE_NS.Scene).fog != null : seen.fogged));
+        setContext(camera ? contextVisibleAt(camera.position.y, streetY, (host as THREE_NS.Scene).fog != null)
+          : seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
       }
       const full = propMarkers.some((o) => o.visible);
       if (full !== propFull) {

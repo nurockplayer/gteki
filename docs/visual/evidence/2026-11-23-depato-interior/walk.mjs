@@ -1,7 +1,7 @@
 // 2026-11-23 JST. Run against pnpm dev -- --host 127.0.0.1 --port 5286.
 // nice -n 15 ego-browser nodejs < docs/visual/evidence/2026-11-23-depato-interior/walk.mjs
 const fs=await import('node:fs/promises');
-const base='/tmp/gteki-depato-1534';
+const base='/tmp/gteki-depato-1539-ad';
 await fs.mkdir(base+'/frames',{recursive:true});
 const entry=(await listTaskSpaces()).find(s=>s.name==='depato-interior-1534');
 const task=!entry?await taskSpace('depato-interior-1534'):entry.ownership==='user'?await claimTaskSpace(entry.id):entry.ownership==='agentDelegatedToUser'?await takeOverTaskSpace(entry.id):await taskSpace(entry.id);
@@ -16,6 +16,7 @@ const frame=async(profile,name,yaw)=>{
     const g=window.__gteki,e=g.scanProbe().explorer,root=e.scene.getObjectByName('depato-interior:seibu-ikebukuro');
     return {shaderErrors:e.renderer.info.programs.filter(p=>p.diagnostics?.runnable===false).map(p=>p.diagnostics.fragmentShader.log),visibleFloorGroups:root?.children.map(o=>o.visible),avatar:g.avatar(),camera:g.camera(),scene:g.sceneInfo(),depato:root?.userData.depato,render:e.renderer.info.render,
       landingClearanceM:e.camera.position.y-e.pos.y,
+      streetContextVisible:e.scene.getObjectByName("street-context")?.visible??false,
       wellPixels:(()=>{
         const boxes=innerWidth>1000?[[654,683,748,713],[706,732,747,739]]:[[187,565,217,603]];
         e.scene.updateMatrixWorld(true);
