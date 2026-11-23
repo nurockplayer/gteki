@@ -41,7 +41,7 @@ function areaInsideBox(triangle: THREE.Triangle, rect: StairwellRect, lowerY: nu
   return area;
 }
 
-it("clips only opening portions of crossing context triangles and preserves outside geometry", () => {
+it("clips only opening portions of crossing context triangles and preserves outside geometry", async () => {
   const bundle = readBundle();
   const streetFloors = new Set(bundle.floors.filter(f => f.ordinal === 0 && !f.intermediate).map(f => f.id));
   const exits = new Set(bundle.nodes.filter(n => n.kind === "exit" && streetFloors.has(n.floorId)).map(n => n.id));
@@ -68,7 +68,7 @@ it("clips only opening portions of crossing context triangles and preserves outs
   geometry.addGroup(0, 3, 1);
   const root = new THREE.Group(), mesh = new THREE.Mesh(geometry, [new THREE.MeshBasicMaterial(), new THREE.MeshBasicMaterial()]);
   root.add(mesh);
-  expect(cutContextStairOpenings(THREE, root, singleEdgeBundle)).toBe(1);
+  expect(await cutContextStairOpenings(THREE, root, singleEdgeBundle)).toBe(1);
   expect(mesh.geometry.getAttribute("position").count).toBeGreaterThan(3);
   expect(mesh.geometry.groups).toEqual([{ start: 0, count: mesh.geometry.getAttribute("position").count, materialIndex: 1 }]);
   const clippedPositions = mesh.geometry.getAttribute("position");
@@ -121,7 +121,7 @@ it("leaves zero context surface area in every street-exit stair opening in both 
     const gltf = await new GLTFLoader().register(glbPrimitivePlugin).parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), "");
     const originals = new Map<THREE.Mesh, THREE.BufferGeometry>();
     gltf.scene.traverse(o => { if ((o as THREE.Mesh).isMesh) originals.set(o as THREE.Mesh, (o as THREE.Mesh).geometry); });
-    expect(cutContextStairOpenings(THREE, gltf.scene, bundle)).toBeGreaterThan(0);
+    expect(await cutContextStairOpenings(THREE, gltf.scene, bundle)).toBeGreaterThan(0);
     const triangle = new THREE.Triangle(), local = new THREE.Triangle();
     for (const well of wells) {
       let intrusions = 0, maxArea = 0;
