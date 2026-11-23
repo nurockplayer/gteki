@@ -217,7 +217,8 @@ async function sceneMetrics(page: Page) {
 }
 
 test("guided walk @phone", async ({ page }, info) => {
-  test.setTimeout(1_800_000);
+  // Leave post-arrival captures headroom inside the workflow's 44-minute step (#1450).
+  test.setTimeout(2_400_000);
   const wallStart = Date.now();
   const consoleErrors = new Set<string>(), pageErrors = new Set<string>(), failedRequests = new Set<string>();
   page.on("console", message => { if (message.type() === "error" && consoleErrors.size < 20) consoleErrors.add(message.text()); });
@@ -258,6 +259,10 @@ test("guided walk @phone", async ({ page }, info) => {
       };
       requestAnimationFrame(frame);
     });
+    // The last render is only submitted when the measurement resolves. Wait for GPU
+    // completion and DOM frames before Playwright checks button stability (#1452).
+    e.renderer.getContext().finish();
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     deltas.sort((a, b) => a - b);
     const mid = Math.floor(deltas.length / 2);
     return { at, frames: deltas.length, medianMs: deltas.length ? (deltas.length % 2 ? deltas[mid]! : (deltas[mid - 1]! + deltas[mid]!) / 2) : null, p95Ms: deltas.length ? deltas[Math.ceil(deltas.length * 0.95) - 1]! : null };
