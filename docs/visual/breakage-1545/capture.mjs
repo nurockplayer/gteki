@@ -6,7 +6,7 @@ const sourceSha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encodi
 const graph = JSON.parse(await fs.readFile(repo + '/stations/ikebukuro/gteki/graph.json', 'utf8'));
 const root = repo + '/.cache/breakage-1545/' + sourceSha;
 await fs.mkdir(root, { recursive: true });
-const server = spawn('nice', ['-n', '15', process.execPath, repo + '/apps/web/node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5195', '--strictPort'], {
+const server = spawn('nice', ['-n', '15', '/Users/tachikoma/.local/share/fnm/aliases/default/bin/node', repo + '/apps/web/node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5195', '--strictPort'], {
   cwd: repo + '/apps/web', env: { ...process.env, GITHUB_SHA: sourceSha }, stdio: ['ignore', 'pipe', 'inherit'],
 });
 let task;
@@ -44,7 +44,15 @@ try {
               const t = Math.max(0, Math.min(1, ((at.x - w.ax) * dx + (at.z - w.az) * dz) / (dx * dx + dz * dz)));
               return Math.hypot(at.x - w.ax - t * dx, at.z - w.az - t * dz) < 0.8 && w.yMin < at.y + 1 && w.yMax > at.y + 0.3;
             });
-            return { ...result, target: p, avatar: h.avatar(), camera: e.camera.position.toArray(), walls };
+            const probe = at.clone();
+            const direction = at.clone().set(p.x - at.x, 0, -p.y - at.z).normalize();
+            const hits = [];
+            if (!result.done) for (const height of [0.3, 0.8]) {
+              e.ray.set(probe.clone().add(probe.clone().set(0, height, 0)), direction);
+              e.ray.far = 0.8;
+              hits.push(...e.ray.intersectObjects(e.colliderTargets, true).slice(0, 4).map(h => ({ height, distance: h.distance, point: h.point.toArray(), name: h.object.name, data: h.object.userData })));
+            }
+            return { ...result, target: p, avatar: h.avatar(), camera: e.camera.position.toArray(), walls, hits };
           }, p));
           legs.push({ direction, done: placed && steps.every(s => s.done), steps });
           await page.screenshot({ path: `${root}/${device}-${flag}-${exit}-${direction}.png` });
