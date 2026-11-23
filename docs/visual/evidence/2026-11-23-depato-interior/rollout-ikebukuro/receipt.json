@@ -1,8 +1,8 @@
 {
-  "runtimeHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
-  "capturedAt": "2026-11-23T20:42:20.791Z",
+  "runtimeHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+  "capturedAt": "2026-11-23T20:47:52.753Z",
   "timeZone": "UTC",
-  "spaceId": 46,
+  "spaceId": 48,
   "profiles": [
     {
       "device": {
@@ -16,7 +16,7 @@
         {
           "name": "entrance-outside",
           "file": "desktop-tobu-ikebukuro-entrance-outside.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -124.50228439815906,
             "y": 19.71620055887445,
@@ -44,7 +44,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 27.299999997019768,
+              "buildMs": 25.599999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -55,7 +55,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.2000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -73,7 +73,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 174.29999999701977,
+                "cutMs": 176.20000000298023,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -96,30 +96,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 31.9
+              "buildMs": 35.9
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 9408,
-              "attach": 3,
-              "sceneRayTrees": 64,
-              "greybox": 30,
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 557,
-              "stairwellCut": 185,
+              "liveScene": 560,
+              "stairwellCut": 186,
               "cutTargets": 0,
-              "connectors": 372,
+              "connectors": 373,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 1,
-              "rayTrees": 32,
-              "signsShadowsAo": 98,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
               "navmeshPaths": 0,
-              "composer": 6,
-              "startAt": 449,
-              "total": 10206
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
             },
             "bakedAo": {
               "materials": 84,
@@ -174,7 +174,7 @@
         {
           "name": "first-interior",
           "file": "desktop-tobu-ikebukuro-first-interior.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -116.8258859648498,
             "y": 20.07970034304946,
@@ -202,7 +202,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 27.299999997019768,
+              "buildMs": 25.599999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -213,7 +213,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.2000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -231,7 +231,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 174.29999999701977,
+                "cutMs": 176.20000000298023,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -254,30 +254,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 31.9
+              "buildMs": 35.9
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 9408,
-              "attach": 3,
-              "sceneRayTrees": 64,
-              "greybox": 30,
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 557,
-              "stairwellCut": 185,
+              "liveScene": 560,
+              "stairwellCut": 186,
               "cutTargets": 0,
-              "connectors": 372,
+              "connectors": 373,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 1,
-              "rayTrees": 32,
-              "signsShadowsAo": 98,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
               "navmeshPaths": 0,
-              "composer": 6,
-              "startAt": 449,
-              "total": 10206
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
             },
             "bakedAo": {
               "materials": 84,
@@ -332,7 +332,7 @@
         {
           "name": "food-hall-aisle",
           "file": "desktop-tobu-ikebukuro-food-hall-aisle.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -99.85120948887585,
             "y": 126.26827940704707,
@@ -360,7 +360,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 27.299999997019768,
+              "buildMs": 25.599999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -371,7 +371,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.2000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -389,7 +389,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 174.29999999701977,
+                "cutMs": 176.20000000298023,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -412,30 +412,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 31.9
+              "buildMs": 35.9
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 9408,
-              "attach": 3,
-              "sceneRayTrees": 64,
-              "greybox": 30,
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 557,
-              "stairwellCut": 185,
+              "liveScene": 560,
+              "stairwellCut": 186,
               "cutTargets": 0,
-              "connectors": 372,
+              "connectors": 373,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 1,
-              "rayTrees": 32,
-              "signsShadowsAo": 98,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
               "navmeshPaths": 0,
-              "composer": 6,
-              "startAt": 449,
-              "total": 10206
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
             },
             "bakedAo": {
               "materials": 84,
@@ -490,7 +490,7 @@
         {
           "name": "escalator",
           "file": "desktop-tobu-ikebukuro-escalator.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -100.82670908806284,
             "y": 140.7137234724537,
@@ -518,7 +518,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 27.299999997019768,
+              "buildMs": 25.599999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -529,7 +529,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.2000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -547,7 +547,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 174.29999999701977,
+                "cutMs": 176.20000000298023,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -570,30 +570,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 31.9
+              "buildMs": 35.9
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 9408,
-              "attach": 3,
-              "sceneRayTrees": 64,
-              "greybox": 30,
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 557,
-              "stairwellCut": 185,
+              "liveScene": 560,
+              "stairwellCut": 186,
               "cutTargets": 0,
-              "connectors": 372,
+              "connectors": 373,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 1,
-              "rayTrees": 32,
-              "signsShadowsAo": 98,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
               "navmeshPaths": 0,
-              "composer": 6,
-              "startAt": 449,
-              "total": 10206
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
             },
             "bakedAo": {
               "materials": 84,
@@ -648,7 +648,7 @@
         {
           "name": "street-door-inside",
           "file": "desktop-tobu-ikebukuro-street-door-inside.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -115.20800389287427,
             "y": 20.15039380143787,
@@ -676,7 +676,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 27.299999997019768,
+              "buildMs": 25.599999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -687,7 +687,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.2000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -705,7 +705,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 174.29999999701977,
+                "cutMs": 176.20000000298023,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -728,30 +728,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 31.9
+              "buildMs": 35.9
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 9408,
-              "attach": 3,
-              "sceneRayTrees": 64,
-              "greybox": 30,
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 557,
-              "stairwellCut": 185,
+              "liveScene": 560,
+              "stairwellCut": 186,
               "cutTargets": 0,
-              "connectors": 372,
+              "connectors": 373,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 1,
-              "rayTrees": 32,
-              "signsShadowsAo": 98,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
               "navmeshPaths": 0,
-              "composer": 6,
-              "startAt": 449,
-              "total": 10206
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
             },
             "bakedAo": {
               "materials": 84,
@@ -778,12 +778,12 @@
             "coreLightsOn": 0,
             "environment": null,
             "environmentIntensity": null,
-            "exposure": 0.8887688811957973,
+            "exposure": 0.8891604341352347,
             "zone": "outdoor",
             "overlayToneResidual": null,
             "street": {
               "active": true,
-              "opacity": 0.737
+              "opacity": 0.739
             },
             "shadows": {
               "following": false,
@@ -801,12 +801,13 @@
           "loaded": [
             "depato-interior:tobu-ikebukuro"
           ],
-          "shaderErrors": []
+          "shaderErrors": [],
+          "blackPixelPct": 0.010185185185185186
         },
         {
           "name": "street-door-outside",
           "file": "desktop-tobu-ikebukuro-street-door-outside.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -124.188210027684,
             "y": 19.73087291239823,
@@ -834,7 +835,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 27.299999997019768,
+              "buildMs": 25.599999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -845,7 +846,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.2000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -863,7 +864,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 174.29999999701977,
+                "cutMs": 176.20000000298023,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -886,30 +887,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 31.9
+              "buildMs": 35.9
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 9408,
-              "attach": 3,
-              "sceneRayTrees": 64,
-              "greybox": 30,
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 557,
-              "stairwellCut": 185,
+              "liveScene": 560,
+              "stairwellCut": 186,
               "cutTargets": 0,
-              "connectors": 372,
+              "connectors": 373,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 1,
-              "rayTrees": 32,
-              "signsShadowsAo": 98,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
               "navmeshPaths": 0,
-              "composer": 6,
-              "startAt": 449,
-              "total": 10206
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
             },
             "bakedAo": {
               "materials": 84,
@@ -936,7 +937,7 @@
             "coreLightsOn": 0,
             "environment": null,
             "environmentIntensity": null,
-            "exposure": 1.1486725778060103,
+            "exposure": 1.1486663686924483,
             "zone": "outdoor",
             "overlayToneResidual": null,
             "street": {
@@ -964,7 +965,7 @@
         {
           "name": "B1-tie-skipped",
           "file": "desktop-tobu-ikebukuro-B1-tie-skipped.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -60,
             "y": 82,
@@ -992,7 +993,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 27.299999997019768,
+              "buildMs": 25.599999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -1003,7 +1004,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.2000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -1021,7 +1022,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 174.29999999701977,
+                "cutMs": 176.20000000298023,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -1044,30 +1045,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 31.9
+              "buildMs": 35.9
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 9408,
-              "attach": 3,
-              "sceneRayTrees": 64,
-              "greybox": 30,
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 557,
-              "stairwellCut": 185,
+              "liveScene": 560,
+              "stairwellCut": 186,
               "cutTargets": 0,
-              "connectors": 372,
+              "connectors": 373,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 1,
-              "rayTrees": 32,
-              "signsShadowsAo": 98,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
               "navmeshPaths": 0,
-              "composer": 6,
-              "startAt": 449,
-              "total": 10206
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
             },
             "bakedAo": {
               "materials": 84,
@@ -1120,7 +1121,7 @@
         {
           "name": "flag-off",
           "file": "desktop-tobu-ikebukuro-flag-off.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -60,
             "y": 82,
@@ -1148,7 +1149,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 12.799999997019768,
+              "buildMs": 10.899999991059303,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -1159,7 +1160,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 2.4000000059604645,
+                "cutMs": 2.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -1177,7 +1178,7 @@
                 "skippedMeshes": 16,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 46.8999999910593,
+                "cutMs": 47.5,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -1200,30 +1201,30 @@
               "trees": 66,
               "triangles": 117295,
               "bytes": 6162832,
-              "buildMs": 39.4
+              "buildMs": 37.5
             },
             "loadTimings": {
-              "graph": 5,
-              "scene": 752,
+              "graph": 3,
+              "scene": 840,
               "attach": 1,
-              "sceneRayTrees": 33,
-              "greybox": 13,
-              "greyboxSegments": 1,
+              "sceneRayTrees": 32,
+              "greybox": 11,
+              "greyboxSegments": 2,
               "portalCut": 3,
               "stairwellRecipe": 0,
-              "liveScene": 385,
-              "stairwellCut": 59,
+              "liveScene": 340,
+              "stairwellCut": 60,
               "cutTargets": 0,
-              "connectors": 326,
+              "connectors": 280,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
-              "rayTrees": 39,
-              "signsShadowsAo": 48,
+              "rayTrees": 38,
+              "signsShadowsAo": 44,
               "navmeshPaths": 0,
-              "composer": 4,
-              "startAt": 1038,
-              "total": 1285
+              "composer": 5,
+              "startAt": 706,
+              "total": 1318
             },
             "bakedAo": {
               "materials": 37,
@@ -1276,7 +1277,7 @@
         {
           "name": "flag-off-street",
           "file": "desktop-tobu-ikebukuro-flag-off-street.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -124.188210027684,
             "y": 19.73087291239823,
@@ -1304,7 +1305,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 12.799999997019768,
+              "buildMs": 10.899999991059303,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -1315,7 +1316,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 2.4000000059604645,
+                "cutMs": 2.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -1333,7 +1334,7 @@
                 "skippedMeshes": 16,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 46.8999999910593,
+                "cutMs": 47.5,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -1356,30 +1357,30 @@
               "trees": 66,
               "triangles": 117295,
               "bytes": 6162832,
-              "buildMs": 39.4
+              "buildMs": 37.5
             },
             "loadTimings": {
-              "graph": 5,
-              "scene": 752,
+              "graph": 3,
+              "scene": 840,
               "attach": 1,
-              "sceneRayTrees": 33,
-              "greybox": 13,
-              "greyboxSegments": 1,
+              "sceneRayTrees": 32,
+              "greybox": 11,
+              "greyboxSegments": 2,
               "portalCut": 3,
               "stairwellRecipe": 0,
-              "liveScene": 385,
-              "stairwellCut": 59,
+              "liveScene": 340,
+              "stairwellCut": 60,
               "cutTargets": 0,
-              "connectors": 326,
+              "connectors": 280,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
-              "rayTrees": 39,
-              "signsShadowsAo": 48,
+              "rayTrees": 38,
+              "signsShadowsAo": 44,
               "navmeshPaths": 0,
-              "composer": 4,
-              "startAt": 1038,
-              "total": 1285
+              "composer": 5,
+              "startAt": 706,
+              "total": 1318
             },
             "bakedAo": {
               "materials": 37,
@@ -1885,9 +1886,1000 @@
       "store": "ikebukuro-parco",
       "frames": [
         {
+          "name": "entrance-outside",
+          "file": "desktop-ikebukuro-parco-entrance-outside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 60.61292579667243,
+            "y": 115.7432543184391,
+            "z": 28.45
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 0.5,
+            "boomActual": 0.4999999999999985,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9734851198546728,
+            "avatarFade": 0.25,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 27.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.5,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 171.40000000596046,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              0,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.5,
+              24,
+              -124,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 36.5
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9589,
+              "attach": 3,
+              "sceneRayTrees": 61,
+              "greybox": 30,
+              "greyboxSegments": 2,
+              "portalCut": 2,
+              "stairwellRecipe": 0,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 1188,
+              "total": 10406
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              60.08509766073709,
+              28.97649874916022,
+              -115.75070249555381
+            ],
+            "cameraDirection": [
+              0.9198374523783888,
+              -0.019400235806426976,
+              0.391819718815542
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": 40.9,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "first-interior",
+          "file": "desktop-ikebukuro-parco-first-interior.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 68.56712466076212,
+            "y": 112.31472489810633,
+            "z": 28.450000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.7999999999999958,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9734851198546728,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 27.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.5,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 171.40000000596046,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              0,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.2,
+              24,
+              -123.7,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 36.5
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9589,
+              "attach": 3,
+              "sceneRayTrees": 61,
+              "greybox": 30,
+              "greyboxSegments": 2,
+              "portalCut": 2,
+              "stairwellRecipe": 0,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 1188,
+              "total": 10406
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              66.87072797790752,
+              29.253396259916247,
+              -112.8199438479665
+            ],
+            "cameraDirection": [
+              0.9185339266475038,
+              -0.0566352124058558,
+              0.39126446083596944
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": 40.9,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "food-hall-aisle",
+          "file": "desktop-ikebukuro-parco-food-hall-aisle.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 89.16185203960116,
+            "y": 107.29828196638316,
+            "z": 23.950000762940746
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.7999999999999983,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 2.8415926535897933,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 27.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.5,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 171.40000000596046,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              0,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.4,
+              24,
+              -123.9,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 36.5
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9589,
+              "attach": 3,
+              "sceneRayTrees": 61,
+              "greybox": 30,
+              "greyboxSegments": 2,
+              "portalCut": 2,
+              "stairwellRecipe": 0,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 1188,
+              "total": 10406
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              89.49051463397608,
+              24.75339625991754,
+              -109.03753145738686
+            ],
+            "cameraDirection": [
+              -0.29504587848016817,
+              -0.05663521240585586,
+              0.953803115064954
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": 40.9,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "escalator",
+          "file": "desktop-ikebukuro-parco-escalator.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 88.17309902878978,
+            "y": 121.71355727931977,
+            "z": 23.950000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 27.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.5,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 171.40000000596046,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              0,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.5,
+              24,
+              -124,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 36.5
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9589,
+              "attach": 3,
+              "sceneRayTrees": 61,
+              "greybox": 30,
+              "greyboxSegments": 2,
+              "portalCut": 2,
+              "stairwellRecipe": 0,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 1188,
+              "total": 10406
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              87.97309902878978,
+              24.753396259916247,
+              -123.47225221958028
+            ],
+            "cameraDirection": [
+              0,
+              -0.0566352124058558,
+              0.9983949382462551
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": 40.9,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "street-door-inside",
+          "file": "desktop-ikebukuro-parco-street-door-inside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 99.98732051487386,
+            "y": 114.14505801963496,
+            "z": 32.950000762939446
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9681149734689154,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 27.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.5,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 171.40000000596046,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              0,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [
+              -70.1,
+              24,
+              -123.6,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 36.5
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9589,
+              "attach": 3,
+              "sceneRayTrees": 61,
+              "greybox": 30,
+              "greyboxSegments": 2,
+              "portalCut": 2,
+              "stairwellRecipe": 0,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 1188,
+              "total": 10406
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              98.28823520602741,
+              33.75339625991624,
+              -114.64115982991193
+            ],
+            "cameraDirection": [
+              0.9206218194530451,
+              -0.056635212405855194,
+              0.38632618117687645
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.9366975559475182,
+            "zone": "outdoor",
+            "overlayToneResidual": 40.9,
+            "street": {
+              "active": true,
+              "opacity": 0.901
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": [],
+          "blackPixelPct": 0.008256172839506172
+        },
+        {
+          "name": "street-door-outside",
+          "file": "desktop-ikebukuro-parco-street-door-outside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
+            "z": 32.950000762939446
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.173477680120878,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 27.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.5,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 171.40000000596046,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              0,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [
+              -70.5,
+              24,
+              -124,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 36.5
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9589,
+              "attach": 3,
+              "sceneRayTrees": 61,
+              "greybox": 30,
+              "greyboxSegments": 2,
+              "portalCut": 2,
+              "stairwellRecipe": 0,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 1188,
+              "total": 10406
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              110.03080486799335,
+              33.75339625991624,
+              -110.30364537328323
+            ],
+            "cameraDirection": [
+              -0.9206218194530449,
+              -0.05663521240585519,
+              -0.38632618117687656
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": 40.9,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
           "name": "flag-off",
           "file": "desktop-ikebukuro-parco-flag-off.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 66,
             "y": 113,
@@ -1915,7 +2907,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 12.799999997019768,
+              "buildMs": 10.899999991059303,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -1926,7 +2918,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 2.4000000059604645,
+                "cutMs": 2.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -1944,7 +2936,7 @@
                 "skippedMeshes": 16,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 46.8999999910593,
+                "cutMs": 47.5,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -1967,30 +2959,30 @@
               "trees": 66,
               "triangles": 117295,
               "bytes": 6162832,
-              "buildMs": 39.4
+              "buildMs": 37.5
             },
             "loadTimings": {
-              "graph": 5,
-              "scene": 752,
+              "graph": 3,
+              "scene": 840,
               "attach": 1,
-              "sceneRayTrees": 33,
-              "greybox": 13,
-              "greyboxSegments": 1,
+              "sceneRayTrees": 32,
+              "greybox": 11,
+              "greyboxSegments": 2,
               "portalCut": 3,
               "stairwellRecipe": 0,
-              "liveScene": 385,
-              "stairwellCut": 59,
+              "liveScene": 340,
+              "stairwellCut": 60,
               "cutTargets": 0,
-              "connectors": 326,
+              "connectors": 280,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
-              "rayTrees": 39,
-              "signsShadowsAo": 48,
+              "rayTrees": 38,
+              "signsShadowsAo": 44,
               "navmeshPaths": 0,
-              "composer": 4,
-              "startAt": 1038,
-              "total": 1285
+              "composer": 5,
+              "startAt": 706,
+              "total": 1318
             },
             "bakedAo": {
               "materials": 37,
@@ -2039,9 +3031,502 @@
           "streetContextVisible": false,
           "loaded": [],
           "shaderErrors": []
+        },
+        {
+          "name": "flag-off-street",
+          "file": "desktop-ikebukuro-parco-flag-off-street.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
+            "z": 32.950000762939446
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999972,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.173477680120878,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 0,
+              "landingPads": 0,
+              "lengthM": 0,
+              "portals": 0,
+              "meshes": 0,
+              "triangles": 524,
+              "buildMs": 10.899999991059303,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 2.7000000029802322,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 25,
+                "cutTriangles": 512,
+                "skippedMeshes": 16,
+                "railM": 278.10635328985836,
+                "cutMeshes": 13,
+                "cutMs": 47.5,
+                "skippedWells": 0,
+                "recipe": "replayed"
+              }
+            },
+            "world": [
+              -623.7,
+              25.5,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 28,
+            "colliders": 36,
+            "cameraBlockers": 21,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 66,
+              "triangles": 117295,
+              "bytes": 6162832,
+              "buildMs": 37.5
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 840,
+              "attach": 1,
+              "sceneRayTrees": 32,
+              "greybox": 11,
+              "greyboxSegments": 2,
+              "portalCut": 3,
+              "stairwellRecipe": 0,
+              "liveScene": 340,
+              "stairwellCut": 60,
+              "cutTargets": 0,
+              "connectors": 280,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 0,
+              "rayTrees": 38,
+              "signsShadowsAo": 44,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 706,
+              "total": 1318
+            },
+            "bakedAo": {
+              "materials": 37,
+              "scaled": 37,
+              "disabled": 0,
+              "textureBytes": 51729737
+            },
+            "assets": [],
+            "camera": [
+              110.60638957692768,
+              33.65594929242368,
+              -110.06210923124554
+            ],
+            "cameraDirection": [
+              -0.9214110028875487,
+              -0.03870215274656735,
+              -0.38665735106233656
+            ],
+            "fov": 50,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [],
+          "shaderErrors": []
         }
       ],
-      "legs": [],
+      "legs": [
+        {
+          "name": "enter-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 49
+          },
+          "avatar": {
+            "x": 68.56712466076212,
+            "y": 112.31472489810633,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 333
+          },
+          "avatar": {
+            "x": 84.66183546023869,
+            "y": 112.21824028158657,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 216
+          },
+          "avatar": {
+            "x": 84.98911993558934,
+            "y": 122.65310898570503,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 77
+          },
+          "avatar": {
+            "x": 88.69694500786689,
+            "y": 122.97378952949973,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 42
+          },
+          "avatar": {
+            "x": 89.7849519746803,
+            "y": 121.2599806602949,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 259
+          },
+          "avatar": {
+            "x": 89.9456019872167,
+            "y": 108.74267819458966,
+            "z": 23.950937700050996
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": 89.16185203960116,
+            "y": 107.29828196638316,
+            "z": 23.950000762940746
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 80
+          },
+          "avatar": {
+            "x": 85.30507815109534,
+            "y": 107.02186509994672,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": 85.00612878904788,
+            "y": 122.67901136862989,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": 88.6676555514489,
+            "y": 122.97328937663501,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 28
+          },
+          "avatar": {
+            "x": 88.17309902878978,
+            "y": 121.71355727931977,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 291
+          },
+          "avatar": {
+            "x": 88.02151980042031,
+            "y": 108.72486031230333,
+            "z": 28.44925975601914
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": 88.83236819885819,
+            "y": 107.29550055381152,
+            "z": 28.45000076293843
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 73
+          },
+          "avatar": {
+            "x": 85.31447702848311,
+            "y": 107.02424822753343,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": 85.00627516813158,
+            "y": 122.68121509897125,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": 88.66796187167817,
+            "y": 122.97349623563693,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 28
+          },
+          "avatar": {
+            "x": 88.1732492062461,
+            "y": 121.71382544937094,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 269
+          },
+          "avatar": {
+            "x": 88.05289488395407,
+            "y": 108.712715844872,
+            "z": 32.94937069074717
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": 88.848141033387,
+            "y": 107.2746170978253,
+            "z": 32.950000762938586
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 77
+          },
+          "avatar": {
+            "x": 85.31523436814001,
+            "y": 106.10441486212883,
+            "z": 32.950000762939446
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 152
+          },
+          "avatar": {
+            "x": 92.66122298187707,
+            "y": 106.00460304937509,
+            "z": 32.950000762939446
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 162
+          },
+          "avatar": {
+            "x": 92.98616918584655,
+            "y": 113.82785748499977,
+            "z": 32.950000762939446
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 145
+          },
+          "avatar": {
+            "x": 99.98732051487386,
+            "y": 114.14505801963496,
+            "z": 32.950000762939446
+          }
+        },
+        {
+          "name": "leave-to-street",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 186
+          },
+          "avatar": {
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
+            "z": 32.950000762939446
+          }
+        }
+      ],
       "search": {
         "query": "池袋パルコ",
         "hits": [
@@ -2056,7 +3541,7 @@
           "hours": "warn_unknown",
           "at": {
             "weekday": "tue",
-            "minutes": 343.85471666666666
+            "minutes": 349.3802166666667
           },
           "today": "2026-11-24",
           "timeZone": "Asia/Tokyo"
@@ -2321,7 +3806,7 @@
         {
           "detail": "loaded",
           "streamingFocus": "avatar",
-          "before": false,
+          "before": true,
           "after": true,
           "walk": {
             "done": true,
@@ -2332,6 +3817,23 @@
           "avatar": {
             "x": 71.22490229252465,
             "y": 116.30638915069095,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "detail": "unloaded",
+          "streamingFocus": "seibu-held",
+          "before": false,
+          "after": false,
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 123
+          },
+          "avatar": {
+            "x": 71.23196958808596,
+            "y": 116.31959144566262,
             "z": 28.450000762939453
           }
         }
@@ -2349,7 +3851,7 @@
         {
           "name": "entrance-outside",
           "file": "phone-tobu-ikebukuro-entrance-outside.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -124.50228439815906,
             "y": 19.71620055887445,
@@ -2377,7 +3879,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.100000008940697,
+              "buildMs": 30.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -2388,7 +3890,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.29999999701976776,
+                "cutMs": 0.19999998807907104,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -2406,7 +3908,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 150.90000000596046,
+                "cutMs": 158.79999999701977,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -2429,30 +3931,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 33.7
+              "buildMs": 35.3
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2860,
-              "attach": 62,
-              "sceneRayTrees": 47,
-              "greybox": 26,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 644,
-              "stairwellCut": 164,
+              "liveScene": 553,
+              "stairwellCut": 172,
               "cutTargets": 0,
-              "connectors": 480,
+              "connectors": 381,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 4,
-              "rayTrees": 34,
-              "signsShadowsAo": 48,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
               "navmeshPaths": 0,
               "composer": 2,
-              "startAt": 312,
-              "total": 3733
+              "startAt": 365,
+              "total": 3671
             },
             "bakedAo": {
               "materials": 15,
@@ -2507,7 +4009,7 @@
         {
           "name": "first-interior",
           "file": "phone-tobu-ikebukuro-first-interior.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -116.8258859648498,
             "y": 20.07970034304946,
@@ -2535,7 +4037,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.100000008940697,
+              "buildMs": 30.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -2546,7 +4048,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.29999999701976776,
+                "cutMs": 0.19999998807907104,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -2564,7 +4066,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 150.90000000596046,
+                "cutMs": 158.79999999701977,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -2587,30 +4089,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 33.7
+              "buildMs": 35.3
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2860,
-              "attach": 62,
-              "sceneRayTrees": 47,
-              "greybox": 26,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 644,
-              "stairwellCut": 164,
+              "liveScene": 553,
+              "stairwellCut": 172,
               "cutTargets": 0,
-              "connectors": 480,
+              "connectors": 381,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 4,
-              "rayTrees": 34,
-              "signsShadowsAo": 48,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
               "navmeshPaths": 0,
               "composer": 2,
-              "startAt": 312,
-              "total": 3733
+              "startAt": 365,
+              "total": 3671
             },
             "bakedAo": {
               "materials": 15,
@@ -2665,7 +4167,7 @@
         {
           "name": "food-hall-aisle",
           "file": "phone-tobu-ikebukuro-food-hall-aisle.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -99.85120948887585,
             "y": 126.26827940704707,
@@ -2693,7 +4195,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.100000008940697,
+              "buildMs": 30.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -2704,7 +4206,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.29999999701976776,
+                "cutMs": 0.19999998807907104,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -2722,7 +4224,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 150.90000000596046,
+                "cutMs": 158.79999999701977,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -2745,30 +4247,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 33.7
+              "buildMs": 35.3
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2860,
-              "attach": 62,
-              "sceneRayTrees": 47,
-              "greybox": 26,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 644,
-              "stairwellCut": 164,
+              "liveScene": 553,
+              "stairwellCut": 172,
               "cutTargets": 0,
-              "connectors": 480,
+              "connectors": 381,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 4,
-              "rayTrees": 34,
-              "signsShadowsAo": 48,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
               "navmeshPaths": 0,
               "composer": 2,
-              "startAt": 312,
-              "total": 3733
+              "startAt": 365,
+              "total": 3671
             },
             "bakedAo": {
               "materials": 15,
@@ -2823,7 +4325,7 @@
         {
           "name": "escalator",
           "file": "phone-tobu-ikebukuro-escalator.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -100.82670908806284,
             "y": 140.7137234724537,
@@ -2851,7 +4353,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.100000008940697,
+              "buildMs": 30.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -2862,7 +4364,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.29999999701976776,
+                "cutMs": 0.19999998807907104,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -2880,7 +4382,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 150.90000000596046,
+                "cutMs": 158.79999999701977,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -2903,30 +4405,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 33.7
+              "buildMs": 35.3
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2860,
-              "attach": 62,
-              "sceneRayTrees": 47,
-              "greybox": 26,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 644,
-              "stairwellCut": 164,
+              "liveScene": 553,
+              "stairwellCut": 172,
               "cutTargets": 0,
-              "connectors": 480,
+              "connectors": 381,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 4,
-              "rayTrees": 34,
-              "signsShadowsAo": 48,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
               "navmeshPaths": 0,
               "composer": 2,
-              "startAt": 312,
-              "total": 3733
+              "startAt": 365,
+              "total": 3671
             },
             "bakedAo": {
               "materials": 15,
@@ -2981,7 +4483,7 @@
         {
           "name": "street-door-inside",
           "file": "phone-tobu-ikebukuro-street-door-inside.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -115.20800389287427,
             "y": 20.15039380143787,
@@ -3009,7 +4511,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.100000008940697,
+              "buildMs": 30.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -3020,7 +4522,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.29999999701976776,
+                "cutMs": 0.19999998807907104,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -3038,7 +4540,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 150.90000000596046,
+                "cutMs": 158.79999999701977,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -3061,30 +4563,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 33.7
+              "buildMs": 35.3
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2860,
-              "attach": 62,
-              "sceneRayTrees": 47,
-              "greybox": 26,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 644,
-              "stairwellCut": 164,
+              "liveScene": 553,
+              "stairwellCut": 172,
               "cutTargets": 0,
-              "connectors": 480,
+              "connectors": 381,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 4,
-              "rayTrees": 34,
-              "signsShadowsAo": 48,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
               "navmeshPaths": 0,
               "composer": 2,
-              "startAt": 312,
-              "total": 3733
+              "startAt": 365,
+              "total": 3671
             },
             "bakedAo": {
               "materials": 15,
@@ -3111,12 +4613,12 @@
             "coreLightsOn": 0,
             "environment": null,
             "environmentIntensity": null,
-            "exposure": 0.8875906922261407,
+            "exposure": 0.8871529787199184,
             "zone": "outdoor",
             "overlayToneResidual": null,
             "street": {
               "active": true,
-              "opacity": 0.731
+              "opacity": 0.729
             },
             "shadows": {
               "following": false,
@@ -3134,12 +4636,13 @@
           "loaded": [
             "depato-interior:tobu-ikebukuro"
           ],
-          "shaderErrors": []
+          "shaderErrors": [],
+          "blackPixelPct": 0
         },
         {
           "name": "street-door-outside",
           "file": "phone-tobu-ikebukuro-street-door-outside.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -124.188210027684,
             "y": 19.73087291239823,
@@ -3167,7 +4670,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.100000008940697,
+              "buildMs": 30.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -3178,7 +4681,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.29999999701976776,
+                "cutMs": 0.19999998807907104,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -3196,7 +4699,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 150.90000000596046,
+                "cutMs": 158.79999999701977,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -3219,30 +4722,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 33.7
+              "buildMs": 35.3
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2860,
-              "attach": 62,
-              "sceneRayTrees": 47,
-              "greybox": 26,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 644,
-              "stairwellCut": 164,
+              "liveScene": 553,
+              "stairwellCut": 172,
               "cutTargets": 0,
-              "connectors": 480,
+              "connectors": 381,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 4,
-              "rayTrees": 34,
-              "signsShadowsAo": 48,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
               "navmeshPaths": 0,
               "composer": 2,
-              "startAt": 312,
-              "total": 3733
+              "startAt": 365,
+              "total": 3671
             },
             "bakedAo": {
               "materials": 15,
@@ -3269,7 +4772,7 @@
             "coreLightsOn": 0,
             "environment": null,
             "environmentIntensity": null,
-            "exposure": 1.14864756654624,
+            "exposure": 1.1486305550275628,
             "zone": "outdoor",
             "overlayToneResidual": null,
             "street": {
@@ -3297,7 +4800,7 @@
         {
           "name": "B1-tie-skipped",
           "file": "phone-tobu-ikebukuro-B1-tie-skipped.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -60,
             "y": 82,
@@ -3325,7 +4828,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.100000008940697,
+              "buildMs": 30.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -3336,7 +4839,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.29999999701976776,
+                "cutMs": 0.19999998807907104,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -3354,7 +4857,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 150.90000000596046,
+                "cutMs": 158.79999999701977,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -3377,30 +4880,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 33.7
+              "buildMs": 35.3
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2860,
-              "attach": 62,
-              "sceneRayTrees": 47,
-              "greybox": 26,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 644,
-              "stairwellCut": 164,
+              "liveScene": 553,
+              "stairwellCut": 172,
               "cutTargets": 0,
-              "connectors": 480,
+              "connectors": 381,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 4,
-              "rayTrees": 34,
-              "signsShadowsAo": 48,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
               "navmeshPaths": 0,
               "composer": 2,
-              "startAt": 312,
-              "total": 3733
+              "startAt": 365,
+              "total": 3671
             },
             "bakedAo": {
               "materials": 15,
@@ -3453,7 +4956,7 @@
         {
           "name": "flag-off",
           "file": "phone-tobu-ikebukuro-flag-off.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -60,
             "y": 82,
@@ -3481,7 +4984,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 11,
+              "buildMs": 11.699999988079071,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -3492,7 +4995,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.7999999970197678,
+                "cutMs": 0.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -3510,7 +5013,7 @@
                 "skippedMeshes": 2,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 53.6000000089407,
+                "cutMs": 53,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -3533,30 +5036,30 @@
               "trees": 65,
               "triangles": 117139,
               "bytes": 6154612,
-              "buildMs": 37.2
+              "buildMs": 36.6
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 597,
-              "attach": 33,
-              "sceneRayTrees": 46,
-              "greybox": 11,
-              "greyboxSegments": 1,
+              "graph": 6,
+              "scene": 799,
+              "attach": 37,
+              "sceneRayTrees": 33,
+              "greybox": 12,
+              "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 334,
-              "stairwellCut": 66,
+              "liveScene": 332,
+              "stairwellCut": 64,
               "cutTargets": 0,
-              "connectors": 269,
+              "connectors": 267,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
               "rayTrees": 37,
-              "signsShadowsAo": 37,
+              "signsShadowsAo": 43,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 584,
-              "total": 1104
+              "composer": 2,
+              "startAt": 909,
+              "total": 1304
             },
             "bakedAo": {
               "materials": 4,
@@ -3609,7 +5112,7 @@
         {
           "name": "flag-off-street",
           "file": "phone-tobu-ikebukuro-flag-off-street.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": -124.188210027684,
             "y": 19.73087291239823,
@@ -3621,7 +5124,7 @@
             "far": 2000,
             "slopeOn": false,
             "boomWanted": 2.4,
-            "boomActual": 2.399999999999995,
+            "boomActual": 2.399999999999981,
             "raise": 0,
             "pitch": 0,
             "yaw": -1.5234787649616013,
@@ -3637,7 +5140,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 11,
+              "buildMs": 11.699999988079071,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -3648,7 +5151,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.7999999970197678,
+                "cutMs": 0.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -3666,7 +5169,7 @@
                 "skippedMeshes": 2,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 53.6000000089407,
+                "cutMs": 53,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -3689,30 +5192,30 @@
               "trees": 65,
               "triangles": 117139,
               "bytes": 6154612,
-              "buildMs": 37.2
+              "buildMs": 36.6
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 597,
-              "attach": 33,
-              "sceneRayTrees": 46,
-              "greybox": 11,
-              "greyboxSegments": 1,
+              "graph": 6,
+              "scene": 799,
+              "attach": 37,
+              "sceneRayTrees": 33,
+              "greybox": 12,
+              "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 334,
-              "stairwellCut": 66,
+              "liveScene": 332,
+              "stairwellCut": 64,
               "cutTargets": 0,
-              "connectors": 269,
+              "connectors": 267,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
               "rayTrees": 37,
-              "signsShadowsAo": 37,
+              "signsShadowsAo": 43,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 584,
-              "total": 1104
+              "composer": 2,
+              "startAt": 909,
+              "total": 1304
             },
             "bakedAo": {
               "materials": 4,
@@ -3722,14 +5225,14 @@
             },
             "assets": [],
             "camera": [
-              -126.5640760154369,
+              -126.56407601543688,
               33.11594837689634,
               -19.525848133404068
             ],
             "cameraDirection": [
               0.9981323626207173,
-              -0.0387021527465674,
-              -0.04726446933973194
+              -0.03870215274656748,
+              -0.047264469339732273
             ],
             "fov": 50,
             "far": 2000,
@@ -4218,9 +5721,1000 @@
       "store": "ikebukuro-parco",
       "frames": [
         {
+          "name": "entrance-outside",
+          "file": "phone-ikebukuro-parco-entrance-outside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 60.61292579667243,
+            "y": 115.7432543184391,
+            "z": 28.45
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 0.5,
+            "boomActual": 0.4999999999999985,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9734851198546728,
+            "avatarFade": 0.25,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 29.099999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.4000000059604645,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 148.5,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              22.8,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.3,
+              24,
+              -123.8,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 34.1
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 531,
+              "stairwellCut": 161,
+              "cutTargets": 0,
+              "connectors": 370,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              60.12725871221208,
+              28.97649874916022,
+              -115.84967993930164
+            ],
+            "cameraDirection": [
+              0.9198374523783888,
+              -0.019400235806426976,
+              0.391819718815542
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "first-interior",
+          "file": "phone-ikebukuro-parco-first-interior.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 68.56712466076212,
+            "y": 112.31472489810633,
+            "z": 28.450000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.7999999999999958,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9734851198546728,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 29.099999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.4000000059604645,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 148.5,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              22.8,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.4,
+              24,
+              -123.9,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 34.1
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 531,
+              "stairwellCut": 161,
+              "cutTargets": 0,
+              "connectors": 370,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              66.91288902938251,
+              29.253396259916247,
+              -112.91892129171433
+            ],
+            "cameraDirection": [
+              0.9185339266475038,
+              -0.0566352124058558,
+              0.39126446083596944
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "food-hall-aisle",
+          "file": "phone-ikebukuro-parco-food-hall-aisle.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 89.16185203960116,
+            "y": 107.29828196638316,
+            "z": 23.950000762940746
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.7999999999999983,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 2.8415926535897933,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 29.099999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.4000000059604645,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 148.5,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              22.8,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.1,
+              24,
+              -123.6,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 34.1
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 531,
+              "stairwellCut": 161,
+              "cutTargets": 0,
+              "connectors": 370,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              89.59329254062608,
+              24.75339625991754,
+              -109.00573852520102
+            ],
+            "cameraDirection": [
+              -0.29504587848016817,
+              -0.05663521240585586,
+              0.953803115064954
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "escalator",
+          "file": "phone-ikebukuro-parco-escalator.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 88.17309902878978,
+            "y": 121.71355727931977,
+            "z": 23.950000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 29.099999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.4000000059604645,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 148.5,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              22.8,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.3,
+              24,
+              -123.8,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 34.1
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 531,
+              "stairwellCut": 161,
+              "cutTargets": 0,
+              "connectors": 370,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              88.0806819671784,
+              24.753396259916247,
+              -123.47225221958028
+            ],
+            "cameraDirection": [
+              0,
+              -0.0566352124058558,
+              0.9983949382462551
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "street-door-inside",
+          "file": "phone-ikebukuro-parco-street-door-inside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 99.98732051487386,
+            "y": 114.14505801963496,
+            "z": 32.950000762939446
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9681149734689154,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 29.099999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.4000000059604645,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 148.5,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.8,
+              -658.4,
+              691,
+              93.4,
+              629.3
+            ],
+            "route": [
+              -70.1,
+              24,
+              -123.6,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 34.1
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 531,
+              "stairwellCut": 161,
+              "cutTargets": 0,
+              "connectors": 370,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              98.3298641287666,
+              33.75339625991624,
+              -114.74036225641403
+            ],
+            "cameraDirection": [
+              0.9206218194530451,
+              -0.056635212405855194,
+              0.38632618117687645
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.9339965419543986,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 0.894
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": [],
+          "blackPixelPct": 0
+        },
+        {
+          "name": "street-door-outside",
+          "file": "phone-ikebukuro-parco-street-door-outside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
+            "z": 32.950000762939446
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.173477680120878,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 29.099999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.4000000059604645,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 148.5,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.8,
+              -658.4,
+              691,
+              93.4,
+              629.3
+            ],
+            "route": [
+              -70.5,
+              24,
+              -124,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 34.1
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 531,
+              "stairwellCut": 161,
+              "cutTargets": 0,
+              "connectors": 370,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              109.98917594525416,
+              33.75339625991624,
+              -110.20444294678113
+            ],
+            "cameraDirection": [
+              -0.9206218194530449,
+              -0.05663521240585519,
+              -0.38632618117687656
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
           "name": "flag-off",
           "file": "phone-ikebukuro-parco-flag-off.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 66,
             "y": 113,
@@ -4248,7 +6742,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 11,
+              "buildMs": 11.699999988079071,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -4259,7 +6753,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.7999999970197678,
+                "cutMs": 0.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -4277,7 +6771,7 @@
                 "skippedMeshes": 2,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 53.6000000089407,
+                "cutMs": 53,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -4300,30 +6794,30 @@
               "trees": 65,
               "triangles": 117139,
               "bytes": 6154612,
-              "buildMs": 37.2
+              "buildMs": 36.6
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 597,
-              "attach": 33,
-              "sceneRayTrees": 46,
-              "greybox": 11,
-              "greyboxSegments": 1,
+              "graph": 6,
+              "scene": 799,
+              "attach": 37,
+              "sceneRayTrees": 33,
+              "greybox": 12,
+              "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 334,
-              "stairwellCut": 66,
+              "liveScene": 332,
+              "stairwellCut": 64,
               "cutTargets": 0,
-              "connectors": 269,
+              "connectors": 267,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
               "rayTrees": 37,
-              "signsShadowsAo": 37,
+              "signsShadowsAo": 43,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 584,
-              "total": 1104
+              "composer": 2,
+              "startAt": 909,
+              "total": 1304
             },
             "bakedAo": {
               "materials": 4,
@@ -4372,9 +6866,502 @@
           "streetContextVisible": false,
           "loaded": [],
           "shaderErrors": []
+        },
+        {
+          "name": "flag-off-street",
+          "file": "phone-ikebukuro-parco-flag-off-street.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
+            "z": 32.950000762939446
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999972,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.173477680120878,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 0,
+              "landingPads": 0,
+              "lengthM": 0,
+              "portals": 0,
+              "meshes": 0,
+              "triangles": 524,
+              "buildMs": 11.699999988079071,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.7000000029802322,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 25,
+                "cutTriangles": 512,
+                "skippedMeshes": 2,
+                "railM": 278.10635328985836,
+                "cutMeshes": 13,
+                "cutMs": 53,
+                "skippedWells": 0,
+                "recipe": "replayed"
+              }
+            },
+            "world": [
+              -623.7,
+              25.5,
+              -658.4,
+              691,
+              93.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 28,
+            "colliders": 35,
+            "cameraBlockers": 21,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 65,
+              "triangles": 117139,
+              "bytes": 6154612,
+              "buildMs": 36.6
+            },
+            "loadTimings": {
+              "graph": 6,
+              "scene": 799,
+              "attach": 37,
+              "sceneRayTrees": 33,
+              "greybox": 12,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 332,
+              "stairwellCut": 64,
+              "cutTargets": 0,
+              "connectors": 267,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 0,
+              "rayTrees": 37,
+              "signsShadowsAo": 43,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 909,
+              "total": 1304
+            },
+            "bakedAo": {
+              "materials": 4,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 1398100
+            },
+            "assets": [],
+            "camera": [
+              110.56476065418849,
+              33.65594929242368,
+              -109.96290680474344
+            ],
+            "cameraDirection": [
+              -0.9214110028875487,
+              -0.03870215274656735,
+              -0.38665735106233656
+            ],
+            "fov": 50,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [],
+          "shaderErrors": []
         }
       ],
-      "legs": [],
+      "legs": [
+        {
+          "name": "enter-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 49
+          },
+          "avatar": {
+            "x": 68.56712466076212,
+            "y": 112.31472489810633,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 333
+          },
+          "avatar": {
+            "x": 84.66183546023869,
+            "y": 112.21824028158657,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 216
+          },
+          "avatar": {
+            "x": 84.98911993558934,
+            "y": 122.65310898570503,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 77
+          },
+          "avatar": {
+            "x": 88.69694500786689,
+            "y": 122.97378952949973,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 42
+          },
+          "avatar": {
+            "x": 89.7849519746803,
+            "y": 121.2599806602949,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 259
+          },
+          "avatar": {
+            "x": 89.9456019872167,
+            "y": 108.74267819458966,
+            "z": 23.950937700050996
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": 89.16185203960116,
+            "y": 107.29828196638316,
+            "z": 23.950000762940746
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 80
+          },
+          "avatar": {
+            "x": 85.30507815109534,
+            "y": 107.02186509994672,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": 85.00612878904788,
+            "y": 122.67901136862989,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": 88.6676555514489,
+            "y": 122.97328937663501,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 28
+          },
+          "avatar": {
+            "x": 88.17309902878978,
+            "y": 121.71355727931977,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 291
+          },
+          "avatar": {
+            "x": 88.02151980042031,
+            "y": 108.72486031230333,
+            "z": 28.44925975601914
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": 88.83236819885819,
+            "y": 107.29550055381152,
+            "z": 28.45000076293843
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 73
+          },
+          "avatar": {
+            "x": 85.31447702848311,
+            "y": 107.02424822753343,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": 85.00627516813158,
+            "y": 122.68121509897125,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": 88.66796187167817,
+            "y": 122.97349623563693,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 28
+          },
+          "avatar": {
+            "x": 88.1732492062461,
+            "y": 121.71382544937094,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 269
+          },
+          "avatar": {
+            "x": 88.05289488395407,
+            "y": 108.712715844872,
+            "z": 32.94937069074717
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": 88.848141033387,
+            "y": 107.2746170978253,
+            "z": 32.950000762938586
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 77
+          },
+          "avatar": {
+            "x": 85.31523436814001,
+            "y": 106.10441486212883,
+            "z": 32.950000762939446
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 152
+          },
+          "avatar": {
+            "x": 92.66122298187707,
+            "y": 106.00460304937509,
+            "z": 32.950000762939446
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 162
+          },
+          "avatar": {
+            "x": 92.98616918584655,
+            "y": 113.82785748499977,
+            "z": 32.950000762939446
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 145
+          },
+          "avatar": {
+            "x": 99.98732051487386,
+            "y": 114.14505801963496,
+            "z": 32.950000762939446
+          }
+        },
+        {
+          "name": "leave-to-street",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 186
+          },
+          "avatar": {
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
+            "z": 32.950000762939446
+          }
+        }
+      ],
       "search": {
         "query": "池袋パルコ",
         "hits": [
@@ -4389,7 +7376,7 @@
           "hours": "warn_unknown",
           "at": {
             "weekday": "tue",
-            "minutes": 345.53636666666665
+            "minutes": 351.51351666666665
           },
           "today": "2026-11-24",
           "timeZone": "Asia/Tokyo"
@@ -4654,7 +7641,7 @@
         {
           "detail": "loaded",
           "streamingFocus": "avatar",
-          "before": false,
+          "before": true,
           "after": true,
           "walk": {
             "done": true,
@@ -4665,6 +7652,23 @@
           "avatar": {
             "x": 71.22490229252465,
             "y": 116.30638915069095,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "detail": "unloaded",
+          "streamingFocus": "seibu-held",
+          "before": false,
+          "after": false,
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 123
+          },
+          "avatar": {
+            "x": 71.23196958808596,
+            "y": 116.31959144566262,
             "z": 28.450000762939453
           }
         }
@@ -4684,7 +7688,7 @@
         {
           "name": "entrance-before",
           "file": "desktop-seibu-ikebukuro-entrance-before.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 14.724786020676026,
             "y": -65.83487161240558,
@@ -4695,8 +7699,8 @@
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
             "raise": 0,
             "pitch": 0,
             "yaw": -3.141592653589793,
@@ -4712,7 +7716,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 26,
+              "buildMs": 27.400000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -4723,7 +7727,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.5,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -4741,7 +7745,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 169.5,
+                "cutMs": 171.40000000596046,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -4755,9 +7759,9 @@
               183.1
             ],
             "route": [
-              -70.3,
+              -70.2,
               24,
-              -123.8,
+              -123.7,
               90.5,
               29.8,
               49.1
@@ -4771,30 +7775,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 35
+              "buildMs": 36.5
             },
             "loadTimings": {
               "graph": 5,
-              "scene": 9585,
+              "scene": 9589,
               "attach": 3,
-              "sceneRayTrees": 67,
-              "greybox": 28,
+              "sceneRayTrees": 61,
+              "greybox": 30,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 2,
               "stairwellRecipe": 0,
-              "liveScene": 565,
-              "stairwellCut": 179,
-              "cutTargets": 1,
-              "connectors": 385,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 2,
-              "rayTrees": 35,
-              "signsShadowsAo": 96,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
               "navmeshPaths": 0,
               "composer": 5,
-              "startAt": 658,
-              "total": 10394
+              "startAt": 1188,
+              "total": 10406
             },
             "bakedAo": {
               "materials": 84,
@@ -4805,13 +7809,13 @@
             "assets": [],
             "camera": [
               14.524786020676027,
-              28.479325207397512,
-              63.63650293707994
+              28.383476333153315,
+              64.07617667214507
             ],
             "cameraDirection": [
               0,
-              -0.06642974156314917,
-              0.9977911051096082
+              -0.0566352124058558,
+              0.9983949382462551
             ],
             "fov": 55,
             "far": 2000,
@@ -4849,7 +7853,7 @@
         {
           "name": "food-hall-aisle",
           "file": "desktop-seibu-ikebukuro-food-hall-aisle.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 26.89777814958358,
             "y": -128.16087516834313,
@@ -4860,8 +7864,8 @@
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2499999999999947,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000012,
             "raise": 0,
             "pitch": 0,
             "yaw": 2.8815926535897933,
@@ -4877,7 +7881,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 26,
+              "buildMs": 27.400000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -4888,7 +7892,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.5,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -4906,7 +7910,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 169.5,
+                "cutMs": 171.40000000596046,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -4920,9 +7924,9 @@
               183.1
             ],
             "route": [
-              -70.5,
+              -70.2,
               24,
-              -124,
+              -123.7,
               90.5,
               29.8,
               49.1
@@ -4936,30 +7940,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 35
+              "buildMs": 36.5
             },
             "loadTimings": {
               "graph": 5,
-              "scene": 9585,
+              "scene": 9589,
               "attach": 3,
-              "sceneRayTrees": 67,
-              "greybox": 28,
+              "sceneRayTrees": 61,
+              "greybox": 30,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 2,
               "stairwellRecipe": 0,
-              "liveScene": 565,
-              "stairwellCut": 179,
-              "cutTargets": 1,
-              "connectors": 385,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 2,
-              "rayTrees": 35,
-              "signsShadowsAo": 96,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
               "navmeshPaths": 0,
               "composer": 5,
-              "startAt": 658,
-              "total": 10394
+              "startAt": 1188,
+              "total": 10406
             },
             "bakedAo": {
               "materials": 84,
@@ -4969,14 +7973,14 @@
             },
             "assets": [],
             "camera": [
-              27.269657986271817,
-              28.599245134160444,
-              125.98497760188516
+              27.156626419808788,
+              28.503396259916247,
+              126.40987389310106
             ],
             "cameraDirection": [
-              -0.2565126879746613,
-              -0.06642974156314911,
-              0.9642553242496861
+              -0.256667921730681,
+              -0.056635212405855714,
+              0.9648388625414073
             ],
             "fov": 55,
             "far": 2000,
@@ -5014,7 +8018,7 @@
         {
           "name": "escalator-boarding",
           "file": "desktop-seibu-ikebukuro-escalator-boarding.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 26.07760032595968,
             "y": -95.28847214201934,
@@ -5025,8 +8029,8 @@
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
             "raise": 0,
             "pitch": 0,
             "yaw": -3.141592653589793,
@@ -5042,7 +8046,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 26,
+              "buildMs": 27.400000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -5053,7 +8057,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.5,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -5071,7 +8075,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 169.5,
+                "cutMs": 171.40000000596046,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -5085,9 +8089,9 @@
               183.1
             ],
             "route": [
-              -70.4,
+              -70.2,
               24,
-              -123.9,
+              -123.7,
               90.5,
               29.8,
               49.1
@@ -5101,30 +8105,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 35
+              "buildMs": 36.5
             },
             "loadTimings": {
               "graph": 5,
-              "scene": 9585,
+              "scene": 9589,
               "attach": 3,
-              "sceneRayTrees": 67,
-              "greybox": 28,
+              "sceneRayTrees": 61,
+              "greybox": 30,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 2,
               "stairwellRecipe": 0,
-              "liveScene": 565,
-              "stairwellCut": 179,
-              "cutTargets": 1,
-              "connectors": 385,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 2,
-              "rayTrees": 35,
-              "signsShadowsAo": 96,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
               "navmeshPaths": 0,
               "composer": 5,
-              "startAt": 658,
-              "total": 10394
+              "startAt": 1188,
+              "total": 10406
             },
             "bakedAo": {
               "materials": 84,
@@ -5135,13 +8139,13 @@
             "assets": [],
             "camera": [
               25.87760032595968,
-              28.599245134160444,
-              93.0901034666937
+              28.503396259916247,
+              93.52977720175883
             ],
             "cameraDirection": [
               0,
-              -0.06642974156314917,
-              0.9977911051096082
+              -0.0566352124058558,
+              0.9983949382462551
             ],
             "fov": 55,
             "far": 2000,
@@ -5179,7 +8183,7 @@
         {
           "name": "street-door-inside",
           "file": "desktop-seibu-ikebukuro-street-door-inside.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 45.0516899515247,
             "y": -122.49538566211626,
@@ -5190,8 +8194,8 @@
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.250000000000001,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000007,
             "raise": 0,
             "pitch": 0,
             "yaw": -1.5707963267948966,
@@ -5207,7 +8211,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 26,
+              "buildMs": 27.400000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -5218,7 +8222,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1.0999999940395355,
+                "cutMs": 1.5,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -5236,7 +8240,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 169.5,
+                "cutMs": 171.40000000596046,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -5250,9 +8254,9 @@
               629.3
             ],
             "route": [
-              -70.3,
+              -70.2,
               24,
-              -123.8,
+              -123.7,
               90.5,
               29.8,
               49.1
@@ -5266,30 +8270,30 @@
               "trees": 1664,
               "triangles": 177100,
               "bytes": 9292024,
-              "buildMs": 35
+              "buildMs": 36.5
             },
             "loadTimings": {
               "graph": 5,
-              "scene": 9585,
+              "scene": 9589,
               "attach": 3,
-              "sceneRayTrees": 67,
-              "greybox": 28,
+              "sceneRayTrees": 61,
+              "greybox": 30,
               "greyboxSegments": 2,
-              "portalCut": 1,
+              "portalCut": 2,
               "stairwellRecipe": 0,
-              "liveScene": 565,
-              "stairwellCut": 179,
-              "cutTargets": 1,
-              "connectors": 385,
+              "liveScene": 573,
+              "stairwellCut": 183,
+              "cutTargets": 0,
+              "connectors": 390,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 2,
-              "rayTrees": 35,
-              "signsShadowsAo": 96,
+              "rayTrees": 37,
+              "signsShadowsAo": 98,
               "navmeshPaths": 0,
               "composer": 5,
-              "startAt": 658,
-              "total": 10394
+              "startAt": 1188,
+              "total": 10406
             },
             "bakedAo": {
               "materials": 84,
@@ -5299,14 +8303,14 @@
             },
             "assets": [],
             "camera": [
-              42.85332127619906,
-              33.09924513416044,
+              43.29299501126419,
+              33.003396259916244,
               122.69538566211627
             ],
             "cameraDirection": [
-              0.9977911051096083,
-              -0.06642974156314865,
-              -1.1102230246251565e-16
+              0.9983949382462554,
+              -0.05663521240585528,
+              0
             ],
             "fov": 55,
             "far": 2000,
@@ -5595,7 +8599,7 @@
         {
           "name": "entrance-before",
           "file": "phone-seibu-ikebukuro-entrance-before.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 14.724786020676026,
             "y": -65.83487161240558,
@@ -5606,8 +8610,8 @@
             "fov": 65,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
             "raise": 0,
             "pitch": 0,
             "yaw": -3.141592653589793,
@@ -5623,7 +8627,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.900000005960464,
+              "buildMs": 29.099999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -5634,7 +8638,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.3999999910593033,
+                "cutMs": 0.4000000059604645,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -5652,7 +8656,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 155.29999999701977,
+                "cutMs": 148.5,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -5666,9 +8670,9 @@
               183.1
             ],
             "route": [
-              -70.3,
+              -70.4,
               24,
-              -123.8,
+              -123.9,
               90.5,
               29.8,
               49.1
@@ -5682,30 +8686,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 36
+              "buildMs": 34.1
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 2886,
-              "attach": 43,
-              "sceneRayTrees": 51,
-              "greybox": 28,
-              "greyboxSegments": 3,
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 541,
-              "stairwellCut": 165,
+              "liveScene": 531,
+              "stairwellCut": 161,
               "cutTargets": 0,
-              "connectors": 375,
+              "connectors": 370,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 2,
-              "rayTrees": 36,
-              "signsShadowsAo": 50,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 723,
-              "total": 3646
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
             },
             "bakedAo": {
               "materials": 15,
@@ -5716,13 +8720,13 @@
             "assets": [],
             "camera": [
               14.632368959064651,
-              28.479325207397512,
-              63.63650293707994
+              28.383476333153315,
+              64.07617667214507
             ],
             "cameraDirection": [
               0,
-              -0.06642974156314917,
-              0.9977911051096082
+              -0.0566352124058558,
+              0.9983949382462551
             ],
             "fov": 65,
             "far": 2000,
@@ -5760,7 +8764,7 @@
         {
           "name": "food-hall-aisle",
           "file": "phone-seibu-ikebukuro-food-hall-aisle.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 26.89777814958358,
             "y": -128.16087516834313,
@@ -5771,8 +8775,8 @@
             "fov": 65,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2499999999999947,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000012,
             "raise": 0,
             "pitch": 0,
             "yaw": 2.8815926535897933,
@@ -5788,7 +8792,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.900000005960464,
+              "buildMs": 29.099999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -5799,7 +8803,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.3999999910593033,
+                "cutMs": 0.4000000059604645,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -5817,7 +8821,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 155.29999999701977,
+                "cutMs": 148.5,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -5831,9 +8835,9 @@
               183.1
             ],
             "route": [
-              -70.4,
+              -70.1,
               24,
-              -123.9,
+              -123.6,
               90.5,
               29.8,
               49.1
@@ -5847,30 +8851,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 36
+              "buildMs": 34.1
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 2886,
-              "attach": 43,
-              "sceneRayTrees": 51,
-              "greybox": 28,
-              "greyboxSegments": 3,
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 541,
-              "stairwellCut": 165,
+              "liveScene": 531,
+              "stairwellCut": 161,
               "cutTargets": 0,
-              "connectors": 375,
+              "connectors": 370,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 2,
-              "rayTrees": 36,
-              "signsShadowsAo": 50,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 723,
-              "total": 3646
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
             },
             "bakedAo": {
               "materials": 15,
@@ -5880,14 +8884,14 @@
             },
             "assets": [],
             "camera": [
-              27.37362505974885,
-              28.599245134160444,
-              126.01263508306027
+              27.26059349328582,
+              28.503396259916247,
+              126.43753137427618
             ],
             "cameraDirection": [
-              -0.2565126879746613,
-              -0.06642974156314911,
-              0.9642553242496861
+              -0.256667921730681,
+              -0.056635212405855714,
+              0.9648388625414073
             ],
             "fov": 65,
             "far": 2000,
@@ -5925,7 +8929,7 @@
         {
           "name": "escalator-boarding",
           "file": "phone-seibu-ikebukuro-escalator-boarding.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 26.07760032595968,
             "y": -95.28847214201934,
@@ -5936,8 +8940,8 @@
             "fov": 65,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
             "raise": 0,
             "pitch": 0,
             "yaw": -3.141592653589793,
@@ -5953,7 +8957,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.900000005960464,
+              "buildMs": 29.099999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -5964,7 +8968,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.3999999910593033,
+                "cutMs": 0.4000000059604645,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -5982,7 +8986,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 155.29999999701977,
+                "cutMs": 148.5,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -5996,9 +9000,9 @@
               183.1
             ],
             "route": [
-              -70.5,
+              -70.2,
               24,
-              -124,
+              -123.7,
               90.5,
               29.8,
               49.1
@@ -6012,30 +9016,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 36
+              "buildMs": 34.1
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 2886,
-              "attach": 43,
-              "sceneRayTrees": 51,
-              "greybox": 28,
-              "greyboxSegments": 3,
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 541,
-              "stairwellCut": 165,
+              "liveScene": 531,
+              "stairwellCut": 161,
               "cutTargets": 0,
-              "connectors": 375,
+              "connectors": 370,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 2,
-              "rayTrees": 36,
-              "signsShadowsAo": 50,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 723,
-              "total": 3646
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
             },
             "bakedAo": {
               "materials": 15,
@@ -6046,13 +9050,13 @@
             "assets": [],
             "camera": [
               25.985183264348304,
-              28.599245134160444,
-              93.0901034666937
+              28.503396259916247,
+              93.52977720175883
             ],
             "cameraDirection": [
               0,
-              -0.06642974156314917,
-              0.9977911051096082
+              -0.0566352124058558,
+              0.9983949382462551
             ],
             "fov": 65,
             "far": 2000,
@@ -6090,7 +9094,7 @@
         {
           "name": "street-door-inside",
           "file": "phone-seibu-ikebukuro-street-door-inside.png",
-          "sourceHead": "8a71bdc4c69ff0d3013fc68cd2f8edf404ba9cb2",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 45.0516899515247,
             "y": -122.49538566211626,
@@ -6101,8 +9105,8 @@
             "fov": 65,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.250000000000001,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000007,
             "raise": 0,
             "pitch": 0,
             "yaw": -1.5707963267948966,
@@ -6118,7 +9122,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 24.900000005960464,
+              "buildMs": 29.099999994039536,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -6129,7 +9133,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.3999999910593033,
+                "cutMs": 0.4000000059604645,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -6147,7 +9151,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 37,
-                "cutMs": 155.29999999701977,
+                "cutMs": 148.5,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -6177,30 +9181,30 @@
               "trees": 1663,
               "triangles": 147039,
               "bytes": 7670652,
-              "buildMs": 36
+              "buildMs": 34.1
             },
             "loadTimings": {
-              "graph": 4,
-              "scene": 2886,
-              "attach": 43,
-              "sceneRayTrees": 51,
-              "greybox": 28,
-              "greyboxSegments": 3,
+              "graph": 3,
+              "scene": 2868,
+              "attach": 58,
+              "sceneRayTrees": 47,
+              "greybox": 32,
+              "greyboxSegments": 2,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 541,
-              "stairwellCut": 165,
+              "liveScene": 531,
+              "stairwellCut": 161,
               "cutTargets": 0,
-              "connectors": 375,
+              "connectors": 370,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 2,
-              "rayTrees": 36,
-              "signsShadowsAo": 50,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 45,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 723,
-              "total": 3646
+              "composer": 2,
+              "startAt": 564,
+              "total": 3624
             },
             "bakedAo": {
               "materials": 15,
@@ -6210,14 +9214,14 @@
             },
             "assets": [],
             "camera": [
-              42.85332127619906,
-              33.09924513416044,
+              43.29299501126419,
+              33.003396259916244,
               122.58780272372763
             ],
             "cameraDirection": [
-              0.9977911051096083,
-              -0.06642974156314865,
-              -1.1102230246251565e-16
+              0.9983949382462554,
+              -0.05663521240585528,
+              0
             ],
             "fov": 65,
             "far": 2000,
@@ -6517,8 +9521,5 @@
       "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
     }
   ],
-  "failures": [
-    "desktop ikebukuro-parco: Error: North passage: {\"detail\":\"loaded\",\"streamingFocus\":\"avatar\",\"before\":false,\"after\":true,\"walk\":{\"done\":true,\"stuck\":false,\"timedOut\":false,\"steps\":136},\"avatar\":{\"x\":71.22490229252465,\"y\":116.30638915069095,\"z\":28.450000762939453}}\n    at file:////[eval2]:78:112",
-    "phone ikebukuro-parco: Error: North passage: {\"detail\":\"loaded\",\"streamingFocus\":\"avatar\",\"before\":false,\"after\":true,\"walk\":{\"done\":true,\"stuck\":false,\"timedOut\":false,\"steps\":136},\"avatar\":{\"x\":71.22490229252465,\"y\":116.30638915069095,\"z\":28.450000762939453}}\n    at file:////[eval2]:78:112"
-  ]
+  "failures": []
 }
