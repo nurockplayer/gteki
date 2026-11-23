@@ -21,3 +21,7 @@ On resume, commit frames and compare baseline failures. If main reproduces them,
 ## Assumptions — 2026-11-24 JST
 
 Larger Sunshine lettering remains under the existing 6 m style maximum and on its current facade. x35 permits a normal player look-up through the follow-camera controls. Captures do not change the product camera or station fog/exposure. The diff exceeds 300 lines because merging main brings its existing changes and the capture driver records both sources.
+
+## Launcher correction — 2026-11-24 JST
+
+Job `depato-ikb-ai-r13` exited 2 before browser startup, 2026-11-24 06:27:30–06:29:02 JST. Exact error: `error: invalid --timeout-ms value "1500000": use 1 to 600000`. Main's frozen offline installation succeeded. No frames or walks were produced, so the two capture runs have not begun. The launcher now executes main and candidate scripts sequentially with the supported 600000 ms limit and reuses the prepared snapshot directory. Product code is unchanged; the passing two-spec result remains applicable.
