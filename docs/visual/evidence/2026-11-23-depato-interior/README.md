@@ -1,4 +1,6 @@
-# Department-store interior acceptance frames
+# Original rejected department-store interior frames
+
+2026-11-23 JST: superseded by the [fixed blocker frames, measurements and replay](fixed/README.md). The following records the original rejected candidate.
 
 2026-11-23 JST. Runtime candidate: `88577bacf15d2cfc09f87e39622499f74daa8025`. Capture timestamps in `receipt.json` use UTC (`Z`). Desktop 1440×900 and phone 390×844, DPR 1, existing walk camera, `?station=ikebukuro&next=1`; flag-off frames omit `next`. The existing minimap is collapsed through its UI. Search was exercised before capture; guidance/search are closed for the walk frames. No scene objects or lighting were changed by capture.
 
