@@ -14,15 +14,17 @@ The capture writes the PNGs here and `receipt.json`, binding every frame to its 
 
 ## Results
 
-2026-11-24 05:40 JST: job `depato-kit-1534-validation` exited 0. All 26 frames in [receipt.json](receipt.json) bind individually to runtime SHA `2e6a2a3d55235f58d606579ba1c8dc0b4dd7af4f`; this follow-up adds evidence only. Capture began 2026-11-24 05:39:06 JST (`2026-11-23T20:39:06.869Z` in the UTC receipt).
+2026-11-24 05:54 JST: job `depato-kit-1534-acceptance` exited 0. All 26 frames in [receipt.json](receipt.json) bind individually to runtime SHA `c34777040638485178dc9adc0379084989876a4c`; this follow-up adds evidence only. The 24 additional `*-upper-guide.png` frames render the authored upper-aisle edge with the approximate guide material reported in AD comment 7106005972.
 
 - Desktop 1440×900 and phone 390×844: 13 frames each, failures `[]`, zero shader errors; every original collision-walk leg and supplementary B1 leg completed, and searches/routes passed.
 - Phone maximum: **39,868 visible kit triangles**, **17 mesh draws** including both shells and the visible escalators, **1024×1024 name atlas**. All recorded phone frames meet the requested budgets. These are conservative whole-visible-kit counts without frustum culling, rather than total station-renderer counts.
 - Desktop maximum: 220,020 visible kit triangles and 17 mesh draws. The 60k triangle limit is the phone budget.
-- Required test command: `tachi-run -- pnpm exec vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1` → **2 files passed; 34 tests passed**, duration 3.29 s. Last log line: `tachi-run: end 2026-11-24 03:23 JST`.
+- Required test command: `tachi-run -- pnpm exec vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1` → **2 files passed; 34 tests passed**, duration 5.24 s. Last log line: `tachi-run: end 2026-11-24 05:49 JST`.
 - The Vite server and capture task space were closed. Existing missing `stations/ikebukuro/navmesh-paths.json` and multiple-Three.js warnings appeared; they did not fail the capture.
 
-Rendered luminance ratios, directory readability, slab/ribbon appearance, matching flag-off image comparison, foreground GPU FPS and real-device/Owner acceptance remain for the lead and art director; completed walk/capture checks do not certify them.
+The [acceptance measurement tables](measurements.md) record linear-sRGB door/concourse luminance, zero clipping in both door/concourse sample regions, store-sign/wayfinding ratios, rendered handrail luminance and slab occlusion at each of the 26 poses. All pass. Every sample box, projected sign polygon and upper-guide raycast is preserved in the receipt. Reproduce with `nice -n 15 python3 docs/visual/evidence/2026-11-24-depato-kit-1534/measure.py` after capture. Approximate guide bands on department-store preview routes now respect scene depth, allowing the slab to hide the guide above; flag-off routes retain their existing material behaviour.
+
+The PR records the final-head CI result and its base/head golden-diff artifact for flag-off verification. Foreground GPU FPS and real-device/Owner acceptance remain with the lead and art director.
 
 | Pose | Desktop | Phone |
 | --- | --- | --- |
