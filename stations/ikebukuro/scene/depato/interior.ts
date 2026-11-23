@@ -17,13 +17,19 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     if (support) mesh.userData.gtekiStairWalkSupport = true;
     physicalGeometry.push(g); target.push(mesh);
   };
-  const shape = (y: number, hole: boolean) => {
+  const shape = (y: number, hole: boolean, ceiling = false) => {
     const s = new THREE.Shape(plan.input.footprint.map(([x,z]) => new THREE.Vector2(x,-z)));
     if (hole) {
       const { x, from, to, width } = plan.stair;
       s.holes.push(new THREE.Path([[x-width/2,-from],[x+width/2,-from],[x+width/2,-to],[x-width/2,-to]].map(([x,z]) => new THREE.Vector2(x!,z!))));
     }
-    const g = new THREE.ShapeGeometry(s).toNonIndexed(); g.rotateX(-Math.PI/2); g.translate(0,y,0); return g;
+    const g = new THREE.ShapeGeometry(s).toNonIndexed(); g.rotateX(-Math.PI/2); g.translate(0,y,0);
+    if(ceiling){
+      // GTAO's front-face depth pass must see the underside, just like the main render.
+      g.setIndex(Array.from({length:g.getAttribute("position").count},(_,i)=>i%3===0?i:i%3===1?i+1:i-1));
+      const down=g.toNonIndexed();g.dispose();down.computeVertexNormals();return down;
+    }
+    return g;
   };
   const cube = (x:number,y:number,z:number,w:number,h:number,d:number,yaw=0) => {
     const g = new THREE.BoxGeometry(w,h,d).toNonIndexed(); g.rotateY(yaw); g.translate(x,y,z); return g;
@@ -50,7 +56,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   const levels=plan.floors.map((floor,index)=>{
     const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets", clear=food?3.1:3.8;
     const wallHeight=index+1<plan.floors.length?plan.height(plan.floors[index+1]!.level)-y:clear;
-    const floorG=shape(y,index>0), ceilingG=shape(y+clear,index+1<plan.floors.length), wallG=walls(floor.level,y,wallHeight);
+    const floorG=shape(y,index>0), ceilingG=shape(y+clear,index+1<plan.floors.length,true), wallG=walls(floor.level,y,wallHeight);
     physical(floorG.clone(),walkable); physical(ceilingG.clone(),colliders); physical(wallG.clone(),colliders);
     if(index>0)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
     for(const [x,z] of plan.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
@@ -142,6 +148,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const shell=[l.ceilingG.clone(),l.wallG.clone()];
       shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#ded3c2":"#d2c6b4");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
       const shellG=retain(mergeGeometries(shell));shell.forEach(g=>g.dispose());const shellMat=basic("#ffffff");shellMat.vertexColors=true;
+      shellMat.fog=false; // The station's 90 m fog must not turn the aisle end walls black.
       // Both store shells remain visible through the well and behind the landing camera.
       root.add(new THREE.Mesh(l.floorG,fm),new THREE.Mesh(shellG,shellMat));
       const pad=cube(plan.aisleX,l.y-0.035,plan.stair.to+1,5,0.07,2);retain(pad);landing.add(new THREE.Mesh(pad,fm));

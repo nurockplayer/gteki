@@ -3,8 +3,8 @@
 const fs=await import('node:fs/promises');
 const base='/tmp/gteki-depato-walk';
 await fs.mkdir(base+'/frames',{recursive:true});
-const entry=(await listTaskSpaces()).find(s=>s.id===4);
-const task=!entry?await taskSpace('depato-interior-1510'):entry.ownership==='user'?await claimTaskSpace(4):entry.ownership==='agentDelegatedToUser'?await takeOverTaskSpace(4):await taskSpace(4);
+const entry=(await listTaskSpaces()).find(s=>s.name==='depato-interior-1510');
+const task=!entry?await taskSpace('depato-interior-1510'):entry.ownership==='user'?await claimTaskSpace(entry.id):entry.ownership==='agentDelegatedToUser'?await takeOverTaskSpace(entry.id):await taskSpace(entry.id);
 const page=(await task.pages())[0]??await task.adopt((await task.tabs())[0].page);
 console.log({spaceId:task.spaceId});
 const result={measuredAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[],failures:[]};

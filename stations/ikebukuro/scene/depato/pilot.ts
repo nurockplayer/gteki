@@ -41,6 +41,8 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     if (uri.includes("ikebukuro_context_")) { loaded.scene.updateMatrixWorld(true); cutRegions(loaded.scene, [room, streetDoor], resources); }
     return loaded;
   } });
+  // The background catalog adds merged stair nosings; cut them after attachment too.
+  await scene.settled?.();
   scene.root.updateMatrixWorld(true);
   cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance], resources);
   await document.fonts.load('600 32px "GTEki Sign JP"', layout.floors.flatMap(f=>[f.label.ja,...f.tenants.map(t=>t.ja)]).join(""));
