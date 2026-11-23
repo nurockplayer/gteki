@@ -44,6 +44,7 @@ export async function addLandmarks(ctx: SceneContext, parent: Three.Object3D): P
     mesh.geometry.computeVertexNormals();
     const material = createContextMaterial(THREE, { color: new THREE.Color(LANDMARK_FACADE[store.facade]).getHex() });
     material.name = `landmark-facade:${store.id}`;
+    if (store.id === "seibu") material.color.multiplyScalar(0.82);
     // Preview landmarks retain their authored value separation beyond the station street haze.
     // Only these materials bypass fog; the station fog and exposure are unchanged.
     material.fog = false;
@@ -94,7 +95,7 @@ outgoingLight = mix(outgoingLight, streetColor, street);
         const letters = new THREE.Color(LANDMARK_SIGN.letters);
         shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
 float landmarkCoverage = texture2D(map, vMapUv).a;
-${store.id === "sunshine" ? "landmarkCoverage = smoothstep(0.05, 0.2, landmarkCoverage);" : ""}
+${store.id === "sunshine" ? "landmarkCoverage = smoothstep(0.01, 0.08, landmarkCoverage);" : ""}
 diffuseColor.rgb = mix(vec3(${bronze.toArray().join(",")}), vec3(${letters.toArray().join(",")}), landmarkCoverage);
 diffuseColor.a = 1.0;`);
         shader.fragmentShader = shader.fragmentShader.replace("#include <emissivemap_fragment>", `totalEmissiveRadiance = vec3(${letters.toArray().join(",")}) * ${LANDMARK_SIGN.letterEmissive[1]} * landmarkCoverage + vec3(${bronze.toArray().join(",")}) * 0.35 * (1.0 - landmarkCoverage);`);
@@ -121,6 +122,16 @@ diffuseColor.a = 1.0;`);
     sign.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
     loaded.scene.add(sign);
   }
+  // Visual city backing reaches beyond the farthest landmark; it adds no walkable route.
+  const groundMaterial = createContextMaterial(THREE, { color: 0x62635f });
+  groundMaterial.fog = false;
+  materials.push(groundMaterial);
+  const groundGeometry = new THREE.PlaneGeometry(2400, 2400);
+  groundGeometry.rotateX(-Math.PI / 2);
+  groundGeometry.translate(0, 31, 0);
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  ground.name = "ctx_road_landmark_ring";
+  loaded.scene.add(ground);
   parent.add(loaded.scene);
   return () => { loaded.scene.removeFromParent(); loaded.scene.traverse(o => (o as Three.Mesh).geometry?.dispose()); materials.forEach(m=>m.dispose()); textures.forEach(t=>t.dispose()); };
 }

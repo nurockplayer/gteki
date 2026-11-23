@@ -522,9 +522,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
       if (ctx.previewNext) removeLandmarkContext(THREE, loaded.scene, ctx.quality);
-      cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
       dressContext(loaded.scene, material, roadMaterial);
       if (ctx.previewNext) disposeLandmarks = await addLandmarks(ctx, loaded.scene);
+      cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
       if (disposed) {
         disposeLandmarks?.();
         loaded.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
