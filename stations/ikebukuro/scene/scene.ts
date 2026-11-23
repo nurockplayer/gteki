@@ -732,7 +732,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       stationSound?.update(dt, camera);
       if (context && cameraTrack) {
         const seen = cameraTrack.read();
-        setContext(seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
+        setContext(seen !== null && contextVisibleAt(camera?.position.y ?? seen.y, streetY, seen.fogged));
       }
       const full = propMarkers.some((o) => o.visible);
       if (full !== propFull) {

@@ -20,7 +20,7 @@ const frame=async(profile,name,yaw)=>{
         const boxes=innerWidth>1000?[[654,683,748,713],[706,732,747,739]]:[[187,565,217,603]];
         e.scene.updateMatrixWorld(true);
         const meshes=[];root?.traverse(o=>{if(o.isMesh){let p=o;while(p&&p.visible)p=p.parent;if(!p)meshes.push(o);}});
-        return boxes.map(box=>{e.ray.setFromCamera({x:(box[0]+box[2])/innerWidth-1,y:1-(box[1]+box[3])/innerHeight},e.camera);return {box,hits:e.ray.intersectObjects(meshes,false).slice(0,3).map(h=>({name:h.object.name,point:h.point.toArray(),normal:h.face?.normal.toArray()}))};});
+        return boxes.map(box=>{e.ray.near=0;e.ray.far=2000;e.ray.setFromCamera({x:(box[0]+box[2])/innerWidth-1,y:1-(box[1]+box[3])/innerHeight},e.camera);return {box,hits:e.ray.intersectObjects(meshes,false).slice(0,3).map(h=>({name:h.object.name,point:h.point.toArray(),normal:h.face?.normal.toArray()}))};});
       })(),
       wayfinding:g.signFaces(),
       wayfindingPolygon:g.projectEnu((()=>{const nx=0.9863939238321437,nz=0.1643989873053573,f=g.signFaces().find(f=>f.id==='sign-s38_w-sp_e__s38_w-r');return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>({x:15.709329938456975+a*nz*f.widthM/2,y:-65.5393598676684+a*nx*f.widthM/2,z:30.35+b*f.heightM/2}));})()),
