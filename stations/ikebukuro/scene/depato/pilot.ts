@@ -32,8 +32,8 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     key: {}, bounds: new THREE.Box3(new THREE.Vector3(left, low, front), new THREE.Vector3(right, high, back)), clip: null,
     planes: [p => p.x-left, p => right-p.x, p => p.z-front, p => back-p.z, p => p.y-low, p => high-p.y], accepts: () => true,
   });
-  const room = volume(0,54,69.9,180,27.9,35.7);
-  const entrance = volume(7,18,60,72,27.9,30.8);
+  const room = volume(0,54,69.9,180,27.6,35.7);
+  const entrance = volume(7,18,60,72,27.6,30.8);
   const streetDoor = volume(46,58,120.4,124.6,32.21,35.5);
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
