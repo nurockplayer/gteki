@@ -119,6 +119,7 @@ test("whole default guide walk on the host GPU", async ({ page, browser }, info)
   ].join("\n") + "\n";
   fs.writeFileSync(path.join(out, `${info.project.name}.md`), report);
   console.log(report);
+  if (phone) expect(p5Fps, "Shinjuku phone whole-walk p5").toBeGreaterThanOrEqual(50);
 });
 
 const ikebukuroLegs = [
@@ -204,4 +205,8 @@ for (const next of [false, true]) test(`Ikebukuro concourse walk, next=${Number(
   console.log(report);
   expect(measured.outcomes).toHaveLength(ikebukuroLegs.length);
   expect(measured.outcomes.every(o => o.done)).toBe(true);
+  if (phone && !next) {
+    for (const segment of segments.slice(1)) expect(segment.p5Fps, segment.name).toBeGreaterThanOrEqual(30);
+    expect(Math.max(...segments.map(s => s.longestFrameMs)), "Ikebukuro frames after ready").toBeLessThanOrEqual(250);
+  }
 });
