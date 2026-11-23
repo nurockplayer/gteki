@@ -38,6 +38,18 @@ try {
           for (const p of points) steps.push(await page.evaluate(p => {
             const h = window.__gteki, e = h.scanProbe().explorer;
             const result = h.walkPath([{ x: p.x, y: p.z, z: -p.y }], { maxSeconds: 20 });
+            const casts = [], grounds = [];
+            if (!result.done) {
+              const cast = e.colliderCast, ground = e.groundAt;
+              e.colliderCast = function(...args) {
+                const hit = cast.apply(this, args);
+                if (hit && casts.length < 8) casts.push({ origin: args[0].toArray(), direction: args[1].toArray(), far: args[2], distance: hit.distance, normal: hit.normal.toArray(), meshes: this.ray.intersectObjects(this.colliderTargets, true).slice(0, 2).map(h => ({ name: h.object.name, data: h.object.userData, point: h.point.toArray() })) });
+                return hit;
+              };
+              e.groundAt = function(...args) { const hit = ground.apply(this, args); if (grounds.length < 8) grounds.push({ args, hit }); return hit; };
+              try { h.walkPath([{ x: p.x, y: p.z, z: -p.y }], { maxSeconds: 0.1 }); }
+              finally { e.colliderCast = cast; e.groundAt = ground; }
+            }
             const at = e.pos;
             const walls = result.done ? [] : e.walls.filter(w => {
               const dx = w.bx - w.ax, dz = w.bz - w.az;
@@ -52,7 +64,7 @@ try {
               e.ray.far = 0.8;
               hits.push(...e.ray.intersectObjects(e.colliderTargets, true).slice(0, 4).map(h => ({ height, distance: h.distance, point: h.point.toArray(), name: h.object.name, data: h.object.userData })));
             }
-            return { ...result, target: p, avatar: h.avatar(), camera: e.camera.position.toArray(), walls, hits };
+            return { ...result, target: p, avatar: h.avatar(), camera: e.camera.position.toArray(), walls, hits, casts, grounds };
           }, p));
           legs.push({ direction, done: placed && steps.every(s => s.done), steps });
           await page.screenshot({ path: `${root}/${device}-${flag}-${exit}-${direction}.png` });
