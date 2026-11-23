@@ -95,7 +95,8 @@ export async function listStations(): Promise<StationEntry[]> {
         const assetUrls = new Map<string, string>();
         await Promise.all(Object.entries(s.assets).map(async ([uri, url]) => assetUrls.set(uri, await url())));
         const privateRegions = privateBuild && s.privateRegions ? await s.privateRegions() : undefined;
-        const bundle = previewNext && isSceneModule(sceneModule) && sceneModule.previewBundle ? await sceneModule.previewBundle(parsed.bundle) : parsed.bundle;
+        const preview = (sceneModule as (StationSceneModule & { previewBundle?: (bundle: StationBundle) => Promise<StationBundle> }) | null)?.previewBundle;
+        const bundle = previewNext && preview ? await preview(parsed.bundle) : parsed.bundle;
         return { ...(privateRegions ? { privateRegions } : {}), key: s.dir, bundle, issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, sceneImportError, assetUrls };
       },
     });

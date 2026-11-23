@@ -1,4 +1,4 @@
-import type { BuildScene, SceneContext } from "@gteki/scene-api";
+import type { BuildScene, SceneContext, StationScene } from "@gteki/scene-api";
 import type { StationBundle } from "@gteki/schema";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
 import footprintData from "../../data/depato-footprint.json";
@@ -41,11 +41,14 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   } });
   scene.root.updateMatrixWorld(true);
   cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance], resources);
-  const interior = buildDepatoInterior(ctx, layout);
+  await document.fonts.load('600 32px "GTEki Sign JP"', layout.floors.flatMap(f=>[f.label.ja,...f.tenants.map(t=>t.ja)]).join(""));
+  const interior = buildDepatoInterior(ctx, layout, scene.generatedMeshEnvMap);
+  const focus = scene.setCameraFocus;
   scene.root.add(interior.root);
   const update = scene.update, dispose = scene.dispose;
   return { ...scene, walkable: [...scene.walkable, ...interior.walkable], colliders: [...(scene.colliders ?? []), ...interior.colliders],
-    update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if (camera) interior.update(camera); },
+    setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); interior.setAvatar(args[3] ?? null); },
+    update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if (camera) interior.update(camera,elapsed); },
     dispose() { disposePortalCuts(resources); interior.dispose(); dispose(); },
   };
 }

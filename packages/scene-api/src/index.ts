@@ -195,8 +195,6 @@ export type BuildScene = (ctx: SceneContext) => StationScene | Promise<StationSc
 
 export interface StationSceneModule {
   buildScene: BuildScene;
-  /** Optional generated navigation preview, applied before search/router only for ?next=1. */
-  previewBundle?: (bundle: StationBundle) => StationBundle | Promise<StationBundle>;
   /**
    * Called once when the explorer leaves this station for a different one (or the explorer is disposed);
    * never between reopens of the same station. Drop caches kept across opens (parsed geometry, baked
