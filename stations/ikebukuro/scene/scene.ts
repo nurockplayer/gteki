@@ -643,7 +643,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // Batch collision by role/source/side; the explorer prepares each batch's triangle BVH at load.
   const { walkable: walkTiles, colliders: colliderTiles } = tileCollision(THREE, { walkable, colliders });
   const rayTiles = [...walkTiles, ...colliderTiles];
-  // The stand point is 1.6 m toward the passage. Probe the authored floor and nearby
+  // Stand toward the passage; the café needs 2.2 m to stay outside its access fence. Probe the authored floor and nearby
   // collision; if necessary, slide along the window in 0.1 m increments.
   const shopReactions: THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] = [];
   const shopInteractions = interactionData.map((visit) => {
@@ -651,12 +651,13 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     const opening = (shopOpenings as unknown as { openings: Opening[] }).openings.find((o) => o.polygon_ids.some((id) => shop.openings.includes(id)))!;
     const angle = opening.normal_deg * Math.PI / 180;
     const nx = Math.cos(angle), ny = Math.sin(angle);
+    const standOff = visit.reward === "cafe-cup" ? 2.2 : 1.6;
     const groundRay = new THREE.Raycaster(), wallRay = new THREE.Raycaster();
     root.updateMatrixWorld(true);
-    let anchor = toRenderer(opening.centre[0] + nx * 1.6, opening.centre[1] + ny * 1.6, opening.base_z);
+    let anchor = toRenderer(opening.centre[0] + nx * standOff, opening.centre[1] + ny * standOff, opening.base_z);
     for (let i = 0; i <= 40; i++) {
       const offset = i === 0 ? 0 : Math.ceil(i / 2) * 0.1 * (i % 2 ? 1 : -1);
-      const p = toRenderer(opening.centre[0] + nx * 1.6 - ny * offset, opening.centre[1] + ny * 1.6 + nx * offset, opening.base_z);
+      const p = toRenderer(opening.centre[0] + nx * standOff - ny * offset, opening.centre[1] + ny * standOff + nx * offset, opening.base_z);
       groundRay.set(p.clone().add(new THREE.Vector3(0, 1, 0)), new THREE.Vector3(0, -1, 0));
       groundRay.far = 1.5;
       const floor = groundRay.intersectObjects(walkTiles, true)[0];
@@ -717,7 +718,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     const reaction = new THREE.Mesh(geometry, material);
     reaction.position.copy(windowPos).add(new THREE.Vector3(nx * 0.16, 0, -ny * 0.16));
     if (visit.reward !== "paper-bag") {
-      reaction.position.copy(anchor).add(new THREE.Vector3(-nx * 0.6, 0, ny * 0.6));
+      const reach = visit.reward === "cafe-cup" ? 0.2 : 0.6;
+      reaction.position.copy(anchor).add(new THREE.Vector3(-nx * reach, 0, ny * reach));
     }
     reaction.rotation.y = Math.atan2(nx, -ny);
     reaction.visible = false;
