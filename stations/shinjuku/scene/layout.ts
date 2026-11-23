@@ -855,10 +855,13 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       for (const [lo, hi] of bands) {
         extra = extra.flatMap(([a, b]): [number, number][] => b <= lo || a >= hi ? [[a, b]] : [[a, Math.min(b, lo)], [Math.max(a, hi), b]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
       }
+      const surfaceA = surface(p), surfaceB = surface(q);
+      // Legacy structural datums lower pitched finishes by 180 mm; flat end walls do not.
+      const offset = surface === bottom && finish === "shaft" && Math.abs(surfaceA - surfaceB) > 1e-5 ? 0.18 : 0;
       for (const [lo, hi] of extra) {
         const profile = { bottomA: Math.max(lo, bottom(p)), bottomB: Math.max(lo, bottom(q)), topA: Math.min(hi, top(p)), topB: Math.min(hi, top(q)) };
         if (profile.topA <= profile.bottomA || profile.topB <= profile.bottomB) continue;
-        layout.cornerFills.push({ a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: surface(p), b: surface(q) }, level: lv.label });
+        layout.cornerFills.push({ a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: surfaceA - offset, b: surfaceB - offset }, level: lv.label });
       }
       for (const [lo, hi] of bands) {
         const profile = { bottomA: Math.max(lo, bottom(p)), bottomB: Math.max(lo, bottom(q)), topA: Math.min(hi, top(p)), topB: Math.min(hi, top(q)) };
@@ -875,7 +878,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
             continue;
           }
         }
-        const wall: WallSeg = { a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: surface(p), b: surface(q) } };
+        const wall: WallSeg = { a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: surfaceA - offset, b: surfaceB - offset } };
         lv.walls.push(wall);
         // Preserve the original sequential overlap behavior for later pieces.
         if (skipExisting) existing.push(wall);
@@ -964,7 +967,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const stripeEnd = Math.min(...group.map((r) => along(ends(r)[1]))) - collarHalfLength;
     const wallSurface = parallel ? (p: XY) => lo.z + (hi.z - lo.z) *
       Math.max(0, Math.min(1, (along(p) - stripeStart) / (stripeEnd - stripeStart))) :
-      (p: XY) => group[0]!.mode === "stairs" ? bottom(p) - 0.18 : base(p);
+      group[0]!.mode === "stairs" ? bottom : base;
     if (pitchedCeilings && parallel) {
       // The maximum endpoint offset bounds every affine flight roof, including
       // transverse pitch differences. Never lower any existing flight ceiling.

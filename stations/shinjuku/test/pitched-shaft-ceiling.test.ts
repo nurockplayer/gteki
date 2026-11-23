@@ -340,6 +340,27 @@ describe("J7 pitched shaft ceilings (2026-11-12 JST)", () => {
   }, 120_000);
 });
 
+it("keeps exit-1 flat and pitched wall finishes at their main datums (#1525)", () => {
+  const layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
+  const walls = [...layout.levels.flatMap((lv) => lv.walls), ...layout.cornerFills];
+  const cases = [
+    { x: -46.413137128866516, y: 142.46338352372774, a: -6.490184907720127, b: -6.490184907720127 },
+    { x: -54.13680068008687, y: 139.34625760016363, a: -8.329815092279871, b: -8.250785083491312 },
+  ];
+  for (const expected of cases) {
+    const wall = walls.find((w) => Math.hypot(w.a.x - expected.x, w.a.y - expected.y) < 1e-8)!;
+    expect(wall).toBeDefined();
+    const geometry = cladWallGeometry([wall])!;
+    const p = geometry.attributes.position!, uv = geometry.attributes.uv!;
+    const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y;
+    for (let i = 0; i < p.count; i++) {
+      const t = ((p.getX(i) - wall.a.x) * dx + (-p.getZ(i) - wall.a.y) * dy) / (dx * dx + dy * dy);
+      expect(p.getY(i) - uv.getY(i) * 3.2).toBeCloseTo(expected.a + (expected.b - expected.a) * t, 4);
+    }
+    geometry.dispose();
+  }
+});
+
 it("keeps the cut mouth panels level with the B3 landing stripe (#1525)", () => {
   const layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
   const corner = { x: -47.88399540831238, y: 166.38398726353313 };
