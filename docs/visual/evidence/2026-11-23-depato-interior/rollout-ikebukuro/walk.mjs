@@ -6,7 +6,7 @@ const config=JSON.parse(await fs.readFile(repo+'/stations/ikebukuro/data/depato-
 const task=await taskSpace('depato-rollout-ikebukuro');
 const page=(await task.pages())[0]??await task.adopt((await task.tabs())[0].page);
 console.log({spaceId:task.spaceId});
-const result={runtimeHead,capturedAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[],skipped:config.skipped,failures:[]};
+const result={runtimeHead,capturedAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[],seibu:[],skipped:config.skipped,failures:[]};
 const save=()=>fs.writeFile(base+'/receipt.json',JSON.stringify(result,null,2)+'\n');
 const walk=async(profile,name,points)=>{
   const leg=await page.evaluate(points=>{const g=window.__gteki;g.setCamera(null);return {walk:g.walkPath(points,{speed:'walk',dt:1/30,maxSeconds:120}),avatar:g.avatar()};},points);
@@ -71,6 +71,17 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
     }catch(error){result.failures.push(`${device.name} ${store.id}: ${error.stack??error}`);console.log(String(error));}
     await save();
   }
+  const seibu={device,legs:[]};result.seibu.push(seibu);
+  try{
+    await page.evaluate(()=>{const g=window.__gteki;g.setView({node:'sp_e',headingDeg:180});g.setCamera(null);});
+    for(const [name,points] of [
+      ['enter',[{x:15,z:72,y:27.7}]],
+      ['aisle',[{x:22.9055,z:72},{x:22.9055,z:113.5},{x:26.9055,z:113.5},{x:26.9055,z:128.5}]],
+      ['board',[{x:26.9055,z:113.5},{x:22.9055,z:113.5},{x:22.9055,z:94},{x:26.9055,z:94},{x:25.9555,z:95.6}]],
+      ['ride',[{x:25.9555,z:108.6,y:32.2},{x:26.9055,z:110.5,y:32.2}]],
+      ['street',[{x:26.9055,z:113.5},{x:22.9055,z:113.5},{x:22.9055,z:122.5},{x:45.365,z:122.5},{x:53.4,z:122.5,y:32.4}]]
+    ])await walk(seibu,name,points);
+  }catch(error){result.failures.push(`${device.name} seibu: ${error.stack??error}`);console.log(String(error));}
   await page.goto('http://127.0.0.1:5291/?station=ikebukuro');
   await page.waitForFunction(()=>window.__gteki?.phase()==='ready',undefined,{timeout:120000});
   for(const store of config.stores){

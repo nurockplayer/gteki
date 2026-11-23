@@ -218,8 +218,8 @@
       },
       "circulation": {
         "aisleX": -100,
-        "from": -113,
-        "to": -101
+        "from": -140,
+        "to": -128
       },
       "entrances": [
         {
