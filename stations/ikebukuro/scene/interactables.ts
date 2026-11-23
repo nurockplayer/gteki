@@ -21,6 +21,18 @@ const interactables = [{
   reward: "bookmark",
   once: false,
   autoStart: true,
+}, {
+  shopId: "authored-ikb-street-wagashi",
+  steps: [{ id: "look", seconds: 1.2 }, { id: "react", seconds: 1.3 }, { id: "give", seconds: 0.8 }],
+  reward: "sweet-token",
+  once: false,
+  autoStart: true,
+}, {
+  shopId: "authored-ikb-street-stationery",
+  steps: [{ id: "look", seconds: 1.2 }, { id: "react", seconds: 1.3 }, { id: "give", seconds: 0.8 }],
+  reward: "tiny-pencil",
+  once: false,
+  autoStart: true,
 }] satisfies { shopId: string; steps: { id: string; seconds: number }[]; reward: string; once: boolean; autoStart?: boolean }[];
 
 export default interactables;

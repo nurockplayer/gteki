@@ -440,9 +440,10 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
   const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
   // Curated shopfronts (#209): visual only, in the surveyed PLATEAU openings; they never enter the walker's world.
+  const openings = [...shopOpenings.openings, ...shopPlacements.authoredOpenings] as Opening[];
   const shopKit = await loadShopKit(THREE, ctx, kitManifest as KitManifest,
     [...(shopPlacements as unknown as { shops: Shop[] }).shops, ...(ctx.privateShops?.shops ?? [])] as Shop[],
-    [...(shopOpenings as unknown as { openings: Opening[] }).openings, ...(ctx.privateShops?.openings ?? [])] as Opening[], low);
+    [...openings, ...(ctx.privateShops?.openings ?? [])] as Opening[], low);
   // Phones keep the sign frames but not their rods: with rods all 119 frames are ~40k triangles, without ~19k.
   const signKit = await loadSignKit(THREE, ctx, kitManifest as KitManifest, low, { omitPhoneRods: true });
   const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
@@ -648,7 +649,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const shopReactions: THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] = [];
   const shopInteractions = interactionData.map((visit) => {
     const shop = (shopPlacements as unknown as { shops: Shop[] }).shops.find((s) => s.id === visit.shopId)!;
-    const opening = (shopOpenings as unknown as { openings: Opening[] }).openings.find((o) => o.polygon_ids.some((id) => shop.openings.includes(id)))!;
+    const opening = openings.find((o) => o.polygon_ids.some((id) => shop.openings.includes(id)))!;
     const angle = opening.normal_deg * Math.PI / 180;
     const nx = Math.cos(angle), ny = Math.sin(angle);
     const groundRay = new THREE.Raycaster(), wallRay = new THREE.Raycaster();
@@ -690,6 +691,16 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       part(0.10, 0.15, 0.06, 0.20, 1.05, 0.08, 0xc69d72);
       part(0.03, 0.20, 0.03, -0.06, 1.32, 0.08, 0xf4ead6);
       part(0.03, 0.15, 0.03, 0.06, 1.35, 0.08, 0xf4ead6);
+    } else if (visit.reward === "sweet-token") {
+      part(0.48, 0.04, 0.20, 0, 1.02, 0.08, 0xc9a677);
+      part(0.13, 0.12, 0.12, -0.14, 1.10, 0.08, 0xe7c999);
+      part(0.13, 0.12, 0.12, 0, 1.10, 0.08, 0xa8b58c);
+      part(0.13, 0.12, 0.12, 0.14, 1.10, 0.08, 0xc99573);
+    } else if (visit.reward === "tiny-pencil") {
+      part(0.36, 0.04, 0.12, 0, 1.02, 0.08, 0xe2cda7);
+      part(0.05, 0.38, 0.05, -0.10, 1.20, 0.08, 0xcba260);
+      part(0.05, 0.38, 0.05, 0.02, 1.20, 0.08, 0x8b9c83);
+      part(0.05, 0.38, 0.05, 0.14, 1.20, 0.08, 0xad8070);
     } else {
       part(0.42, 0.30, 0.06, 0, 1.10, 0.08, 0xf4ead6);
       part(0.03, 0.30, 0.08, 0, 1.10, 0.09, 0x3f5f8f);
