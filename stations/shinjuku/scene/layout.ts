@@ -894,7 +894,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const extras = [...layout.pads, ...layout.linkStrips].filter((p) => Math.abs(p.z - lv.z) < 0.1);
     const envelope = union([...source.outline, ...extras.map((p) => p.rings)]);
     lv.ceilings = envelope.flatMap((rings, i) => clearSoffit({ spaceId: `ceiling:${lv.floorId}:${i}`, rings, z: lv.ceilingZ, fare: null, category: "ceiling" }, passages));
-    for (const rings of envelope) enclose(lv, rings, () => lv.z - 0.2, () => lv.ceilingZ, "shaft", true, undefined, undefined, () => lv.z);
+    for (const rings of envelope) enclose(lv, rings, () => lv.z - 0.2, () => lv.ceilingZ, "shaft", true);
   }
 
   // The symbolic model spreads switchback landings across non-source elevations. They need
@@ -906,7 +906,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const envelope = union([...layout.pads, ...layout.linkStrips].filter((p) => Math.abs(p.z - z) < 0.1).map((p) => p.rings));
     for (const [i, rings] of envelope.entries()) {
       addRoof({ spaceId: `landing-roof:${z}:${i}`, floorId: lv.floorId, kind: "landing", rings, z: roofZ, fare: null, category: "ceiling" });
-      enclose(lv, rings, () => z - 0.18, () => roofZ, "shaft", false, undefined, undefined, () => z);
+      enclose(lv, rings, () => z - 0.18, () => roofZ, "shaft");
     }
   }
 
@@ -964,7 +964,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const stripeEnd = Math.min(...group.map((r) => along(ends(r)[1]))) - collarHalfLength;
     const wallSurface = parallel ? (p: XY) => lo.z + (hi.z - lo.z) *
       Math.max(0, Math.min(1, (along(p) - stripeStart) / (stripeEnd - stripeStart))) :
-      (p: XY) => bottom(p) - 0.18;
+      (p: XY) => group[0]!.mode === "stairs" ? bottom(p) - 0.18 : base(p);
     if (pitchedCeilings && parallel) {
       // The maximum endpoint offset bounds every affine flight roof, including
       // transverse pitch differences. Never lower any existing flight ceiling.
@@ -1181,7 +1181,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     for (const [i, rings] of panels.entries()) {
       layout.soffits.push({ spaceId: `elevator-cap:${liftIndex}:${i}`, floorId: lv.floorId, kind: "shaft", clearance: top - low, rings, z: top, fare: null, category: "ceiling" });
       const wallStart = lv.walls.length;
-      enclose(lv, rings, () => low - 0.18, () => top, "shaft", false, undefined, undefined, () => low);
+      enclose(lv, rings, () => low - 0.18, () => top, "shaft");
       // The generic lift landing sleeve is an occupied hall, including its following
       // camera volume. Line only the shaft between halls; retain the source portal walls.
       const shaftWalls = lv.walls.splice(wallStart);
