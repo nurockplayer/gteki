@@ -69,6 +69,21 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("does not turn cut slab side-face centroids into hanging edge bands", () => {
+    const s = scene();
+    s.upper.geometry.dispose();
+    s.upper.geometry = new THREE.BoxGeometry(16, 0.4, 1);
+    const result = cutStairwells(s.root, stairwellWells(bundle(), traversable), { tier: "high" });
+    const band = result.finish!.getObjectByName("greybox-stairwell-band") as THREE.Mesh;
+    const positions = band.geometry.getAttribute("position");
+    const levels = new Set<number>();
+    for (let i = 0; i < positions.count; i += 6) {
+      levels.add(Math.round(Math.max(...[0, 1, 2, 3, 4, 5].map(j => positions.getY(i + j))) * 20) / 20);
+    }
+    expect([...levels].sort((a, b) => a - b)).toEqual([2.6, 2.8, 3.6, 4]);
+    result.dispose();
+  });
+
   it("cuts a shared mesh on the CPU and never with a clipping plane", () => {
     const s = scene();
     const geometry = s.ceiling.geometry, material = s.ceiling.material as THREE.Material;
