@@ -49,7 +49,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   };
   const levels=plan.floors.map((floor,index)=>{
     const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets", clear=food?3.1:3.8;
-    const floorG=shape(y,index>0), ceilingG=shape(y+clear,index+1<plan.floors.length), wallG=walls(floor.level,y,clear);
+    const wallHeight=index+1<plan.floors.length?plan.height(plan.floors[index+1]!.level)-y:clear;
+    const floorG=shape(y,index>0), ceilingG=shape(y+clear,index+1<plan.floors.length), wallG=walls(floor.level,y,wallHeight);
     physical(floorG.clone(),walkable); physical(ceilingG.clone(),colliders); physical(wallG.clone(),colliders);
     if(index>0)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
     for(const [x,z] of plan.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
@@ -82,7 +83,6 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   }
   let geometries:T.BufferGeometry[]=[], materials:T.Material[]=[], textures:T.Texture[]=[];
   let groups:T.Group[]=[], landingGroups:T.Group[]=[], flightGroups:T.Group[]=[], loaded=false;
-  let people:{mesh:T.InstancedMesh;floor:number}[]=[];
   let avatar:{x:number;y:number;z:number}|null=null;
   const retain=<G extends T.BufferGeometry>(g:G)=>{geometries.push(g);return g;};
   const basic=(color:string)=>{const m=new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide});materials.push(m);return m;};
@@ -142,7 +142,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const shell=[l.ceilingG.clone(),l.wallG.clone()];
       shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#ded3c2":"#d2c6b4");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
       const shellG=retain(mergeGeometries(shell));shell.forEach(g=>g.dispose());const shellMat=basic("#ffffff");shellMat.vertexColors=true;
-      group.add(new THREE.Mesh(l.floorG,fm),new THREE.Mesh(shellG,shellMat));
+      // Both store shells remain visible through the well and behind the landing camera.
+      root.add(new THREE.Mesh(l.floorG,fm),new THREE.Mesh(shellG,shellMat));
       const pad=cube(plan.aisleX,l.y-0.035,plan.stair.to+1,5,0.07,2);retain(pad);landing.add(new THREE.Mesh(pad,fm));
       const discs:{x:number;y:number;z:number}[]=[];
       for(let z=Math.ceil(plan.bounds.front/2.2)*2.2;z<plan.bounds.back;z+=2.2)for(let x=Math.ceil(plan.bounds.left/2.2)*2.2;x<plan.bounds.right;x+=2.2){
@@ -202,8 +203,6 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if(frames.length){const g=mergeGeometries(frames);retain(g);frames.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,bronze));}
       if(glassPieces.length){const g=mergeGeometries(glassPieces);retain(g);glassPieces.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glassMat));}
       if(signs.length){const g=mergeGeometries(signs);retain(g);signs.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,boardMaterial));}
-      const figures=instance(group,new THREE.CapsuleGeometry(0.5,1,3,6),standard("#59554f",0.8,0.2),Array.from({length:42},()=>({x:0,y:-100,z:0})));
-      people.push({mesh:figures,floor:l.index});
       label+=l.floor.tenants.length+1;
     }
     for(const lower of levels.slice(0,-1)){
@@ -225,9 +224,9 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     bridges.forEach((g,i)=>groups[levels.findIndex(l=>l.floor.level===plan.input.entrances[i]!.level)]!.add(new THREE.Mesh(g,basic("#bdb5a7"))));
     root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.3,0.24],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
-  const unload=()=>{root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];people=[];loaded=false;};
+  const unload=()=>{root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
   return {root,walkable,colliders,setAvatar(p:typeof avatar){avatar=p;},
-    update(camera:T.Camera,elapsed:number){
+    update(camera:T.Camera){
       const cameraP=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cameraP.x,y:cameraP.y-2,z:cameraP.z};
       const near=(plan.contains([p.x,p.z]) && p.y>=levels[0]!.y-1 && p.y<=levels.at(-1)!.y+levels.at(-1)!.clear) || plan.input.entrances.some(e=>Math.hypot(p.x-e.point[0],p.z-e.point[1],p.y-plan.height(e.level))<40);
       if(!near){if(loaded)unload();return;}
@@ -237,19 +236,6 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const riding=p.y>levels[floor]!.y+0.25 && floor+1<levels.length;
       if(riding)landingGroups[floor+1]!.visible=true;
       flightGroups.forEach((g,i)=>g.visible=i===floor || i+1===floor);
-      for(const peopleOnFloor of people){
-        if(peopleOnFloor.floor!==floor)continue;
-        const mesh=peopleOnFloor.mesh,y=levels[floor]!.y,matrix=new THREE.Matrix4(),q=new THREE.Quaternion();
-        for(let person=0;person<6;person++){
-          const staff=person>=4,counter=plan.counters[(person-4)*9];
-          const x=staff?counter![0]+(counter![0]<plan.aisleX?-0.15:0.15):plan.aisleX+1.05;
-          const z=staff?plan.counters[(person-4)*9]![1]:(floor===0?plan.bounds.front+15:plan.stair.to+7)+person*4+Math.sin(elapsed*0.22+person)*2;
-          const gait=staff?0:Math.sin(elapsed*3.5+person*1.7)*0.35;
-          const parts:[[number,number,number],[number,number,number],number][]=[[[0,1.55,0],[0.14,0.14,0.14],0],[[0,1.05,0],[0.23,0.3,0.15],0],[[-0.11,0.45,0],[0.07,0.23,0.07],gait],[[0.11,0.45,0],[0.07,0.23,0.07],-gait],[[-0.27,1,0],[0.055,0.22,0.055],-gait],[[0.27,1,0],[0.055,0.22,0.055],gait],[[0,0.8,0],[0.2,0.08,0.13],0]];
-          parts.forEach(([offset,scale,angle],i)=>{q.setFromAxisAngle(new THREE.Vector3(1,0,0),angle);matrix.compose(new THREE.Vector3(x+offset[0],y+offset[1],z+offset[2]),q,new THREE.Vector3(...scale));mesh.setMatrixAt(person*7+i,matrix);});
-        }
-        mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();
-      }
     },
     dispose(){unload();for(const g of physicalGeometry)g.dispose();for(const l of levels){l.floorG.dispose();l.ceilingG.dispose();l.wallG.dispose();}bridges.forEach(g=>g.dispose());collisionMaterial.dispose();},
   };

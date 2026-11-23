@@ -32,7 +32,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     key: {}, bounds: new THREE.Box3(new THREE.Vector3(left, low, front), new THREE.Vector3(right, high, back)), clip: null,
     planes: [p => p.x-left, p => right-p.x, p => p.z-front, p => back-p.z, p => p.y-low, p => high-p.y], accepts: () => true,
   });
-  const room = volume(0,54,69.9,180,27.6,35.7);
+  const room = volume(0,54,69.9,180,27.6,36.1);
   const entrance = volume(13,17,60,72,27.6,30.8);
   entrance.rejectsMesh = mesh => mesh.parent?.userData.gteki_role === "sign";
   const streetDoor = volume(46,58,120.4,124.6,32.21,35.5);
@@ -50,7 +50,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const update = scene.update, dispose = scene.dispose;
   return { ...scene, walkable: [...scene.walkable, ...interior.walkable], colliders: [...(scene.colliders ?? []), ...interior.colliders],
     setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); interior.setAvatar(args[3] ?? null); },
-    update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if (camera) interior.update(camera,elapsed); },
+    update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if (camera) interior.update(camera); },
     dispose() { disposePortalCuts(resources); interior.dispose(); dispose(); },
   };
 }
