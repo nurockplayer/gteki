@@ -1,0 +1,1268 @@
+{
+  "recorded": "2026-11-24 JST",
+  "runtimeSha": "77a4bc7442d7ddfe9190bef5a5342ed4d9bfb3aa",
+  "profiles": [
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-wagashi",
+      "baseline": true,
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 44,
+      "calls": 32,
+      "triangles": 163828,
+      "pose": {
+        "x": 51.51713500482498,
+        "y": 81.30395026303418,
+        "z": 28.394664857604425
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000012,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.1904610953326173,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "errors": []
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-wagashi",
+      "baseline": false,
+      "idle": {
+        "quality": "high",
+        "shadows": true,
+        "shadowAutoUpdate": true,
+        "programs": 92,
+        "calls": 1,
+        "triangles": 1,
+        "pose": {
+          "x": 51.51713500482498,
+          "y": 81.30395026303418,
+          "z": 28.394664857604425
+        },
+        "state": {
+          "nearId": "authored-ikb-street-wagashi",
+          "nearKind": "shop",
+          "phase": "active",
+          "step": "look",
+          "unavailable": null,
+          "items": [],
+          "interrupted": false
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.4,
+          "boomActual": 2.4000000000000012,
+          "raise": 0,
+          "pitch": 0,
+          "yaw": -2.1904610953326173,
+          "avatarFade": 1,
+          "reflections": true,
+          "mode": "walk"
+        }
+      },
+      "done": {
+        "quality": "high",
+        "shadows": true,
+        "shadowAutoUpdate": true,
+        "programs": 93,
+        "calls": 1,
+        "triangles": 1,
+        "pose": {
+          "x": 51.51713500482498,
+          "y": 81.30395026303418,
+          "z": 28.394664857604425
+        },
+        "state": {
+          "nearId": "authored-ikb-street-wagashi",
+          "nearKind": "shop",
+          "phase": "done",
+          "step": null,
+          "unavailable": null,
+          "items": [
+            "sweet-token"
+          ],
+          "interrupted": false
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.4,
+          "boomActual": 2.4000000000000012,
+          "raise": 0,
+          "pitch": 0,
+          "yaw": -2.1904610953326173,
+          "avatarFade": 1,
+          "reflections": true,
+          "mode": "walk"
+        }
+      },
+      "errors": []
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-wagashi",
+      "baseline": false,
+      "idle": {
+        "quality": "low",
+        "shadows": false,
+        "shadowAutoUpdate": true,
+        "programs": 44,
+        "calls": 32,
+        "triangles": 164748,
+        "pose": {
+          "x": 51.51713500482498,
+          "y": 81.30395026303418,
+          "z": 28.394664857604425
+        },
+        "state": {
+          "nearId": "authored-ikb-street-wagashi",
+          "nearKind": "shop",
+          "phase": "active",
+          "step": "look",
+          "unavailable": null,
+          "items": [],
+          "interrupted": false
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.4,
+          "boomActual": 2.4000000000000012,
+          "raise": 0,
+          "pitch": 0,
+          "yaw": -2.1904610953326173,
+          "avatarFade": 1,
+          "reflections": false,
+          "mode": "walk"
+        }
+      },
+      "done": {
+        "quality": "low",
+        "shadows": false,
+        "shadowAutoUpdate": true,
+        "programs": 45,
+        "calls": 32,
+        "triangles": 164748,
+        "pose": {
+          "x": 51.51713500482498,
+          "y": 81.30395026303418,
+          "z": 28.394664857604425
+        },
+        "state": {
+          "nearId": "authored-ikb-street-wagashi",
+          "nearKind": "shop",
+          "phase": "done",
+          "step": null,
+          "unavailable": null,
+          "items": [
+            "sweet-token"
+          ],
+          "interrupted": false
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.4,
+          "boomActual": 2.4000000000000012,
+          "raise": 0,
+          "pitch": 0,
+          "yaw": -2.1904610953326173,
+          "avatarFade": 1,
+          "reflections": false,
+          "mode": "walk"
+        }
+      },
+      "errors": []
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-stationery",
+      "baseline": true,
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 44,
+      "calls": 29,
+      "triangles": 158550,
+      "pose": {
+        "x": 64.92631614782854,
+        "y": 111.6793804768587,
+        "z": 28.447812260935137
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000004,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.192820074585067,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "errors": []
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-stationery",
+      "baseline": false,
+      "idle": {
+        "quality": "high",
+        "shadows": true,
+        "shadowAutoUpdate": true,
+        "programs": 94,
+        "calls": 1,
+        "triangles": 1,
+        "pose": {
+          "x": 64.92631614782854,
+          "y": 111.6793804768587,
+          "z": 28.447812260935137
+        },
+        "state": {
+          "nearId": "authored-ikb-street-stationery",
+          "nearKind": "shop",
+          "phase": "active",
+          "step": "look",
+          "unavailable": null,
+          "items": [],
+          "interrupted": false
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.4,
+          "boomActual": 2.4000000000000004,
+          "raise": 0,
+          "pitch": 0,
+          "yaw": -2.192820074585067,
+          "avatarFade": 1,
+          "reflections": true,
+          "mode": "walk"
+        }
+      },
+      "done": {
+        "quality": "high",
+        "shadows": true,
+        "shadowAutoUpdate": true,
+        "programs": 95,
+        "calls": 1,
+        "triangles": 1,
+        "pose": {
+          "x": 64.92631614782854,
+          "y": 111.6793804768587,
+          "z": 28.447812260935137
+        },
+        "state": {
+          "nearId": "authored-ikb-street-stationery",
+          "nearKind": "shop",
+          "phase": "done",
+          "step": null,
+          "unavailable": null,
+          "items": [
+            "tiny-pencil"
+          ],
+          "interrupted": false
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.4,
+          "boomActual": 2.4000000000000004,
+          "raise": 0,
+          "pitch": 0,
+          "yaw": -2.192820074585067,
+          "avatarFade": 1,
+          "reflections": true,
+          "mode": "walk"
+        }
+      },
+      "errors": []
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-stationery",
+      "baseline": false,
+      "idle": {
+        "quality": "low",
+        "shadows": false,
+        "shadowAutoUpdate": true,
+        "programs": 44,
+        "calls": 29,
+        "triangles": 159470,
+        "pose": {
+          "x": 64.92631614782854,
+          "y": 111.6793804768587,
+          "z": 28.447812260935137
+        },
+        "state": {
+          "nearId": "authored-ikb-street-stationery",
+          "nearKind": "shop",
+          "phase": "active",
+          "step": "look",
+          "unavailable": null,
+          "items": [],
+          "interrupted": false
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.4,
+          "boomActual": 2.4000000000000004,
+          "raise": 0,
+          "pitch": 0,
+          "yaw": -2.192820074585067,
+          "avatarFade": 1,
+          "reflections": false,
+          "mode": "walk"
+        }
+      },
+      "done": {
+        "quality": "low",
+        "shadows": false,
+        "shadowAutoUpdate": true,
+        "programs": 45,
+        "calls": 29,
+        "triangles": 159470,
+        "pose": {
+          "x": 64.92631614782854,
+          "y": 111.6793804768587,
+          "z": 28.447812260935137
+        },
+        "state": {
+          "nearId": "authored-ikb-street-stationery",
+          "nearKind": "shop",
+          "phase": "done",
+          "step": null,
+          "unavailable": null,
+          "items": [
+            "tiny-pencil"
+          ],
+          "interrupted": false
+        },
+        "camera": {
+          "lock": 0,
+          "fov": 50,
+          "far": 2000,
+          "slopeOn": false,
+          "boomWanted": 2.4,
+          "boomActual": 2.4000000000000004,
+          "raise": 0,
+          "pitch": 0,
+          "yaw": -2.192820074585067,
+          "avatarFade": 1,
+          "reflections": false,
+          "mode": "walk"
+        }
+      },
+      "errors": []
+    }
+  ],
+  "frames": [
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "first-sight",
+      "index": 0,
+      "file": "desktop-wagashi-first-sight.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 92,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 54.4,
+        "y": 86.256,
+        "z": 28.41880699133285
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.3999999999999972,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": 2.8675740230658064,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "のぞく (E)"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "approach",
+      "index": 1,
+      "file": "desktop-wagashi-approach.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 92,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 52.93835303579071,
+        "y": 82.88599021814505,
+        "z": 28.41569635216709
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.400000000000005,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": 3.069048484022378,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "のぞく (E)"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "stand",
+      "index": 2,
+      "file": "desktop-wagashi-stand.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 92,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 51.51713500482498,
+        "y": 81.30395026303418,
+        "z": 28.394664857604425
+      },
+      "state": {
+        "nearId": "authored-ikb-street-wagashi",
+        "nearKind": "shop",
+        "phase": "active",
+        "step": "look",
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000012,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.1904610953326173,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "模擬店（実在の店舗ではありません）"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "reaction",
+      "index": 3,
+      "file": "desktop-wagashi-reaction.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 93,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 51.51713500482498,
+        "y": 81.30395026303418,
+        "z": 28.394664857604425
+      },
+      "state": {
+        "nearId": "authored-ikb-street-wagashi",
+        "nearKind": "shop",
+        "phase": "active",
+        "step": "react",
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000012,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.1904610953326173,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "模擬店（実在の店舗ではありません） · 猫が三色の和菓子をうっとり眺めます。"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "reward",
+      "index": 4,
+      "file": "desktop-wagashi-reward.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 93,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 51.51713500482498,
+        "y": 81.30395026303418,
+        "z": 28.394664857604425
+      },
+      "state": {
+        "nearId": "authored-ikb-street-wagashi",
+        "nearKind": "shop",
+        "phase": "done",
+        "step": null,
+        "unavailable": null,
+        "items": [
+          "sweet-token"
+        ],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000012,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.1904610953326173,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "のぞく (E)\n模擬店（実在の店舗ではありません）\n持ち物：和菓子のかざり"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "first-sight",
+      "index": 0,
+      "file": "phone-wagashi-first-sight.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 43,
+      "calls": 35,
+      "triangles": 173499,
+      "pose": {
+        "x": 54.4,
+        "y": 86.256,
+        "z": 28.41880699133285
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.3999999999999972,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": 2.8675740230658064,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "のぞく"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "approach",
+      "index": 1,
+      "file": "phone-wagashi-approach.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 43,
+      "calls": 30,
+      "triangles": 159661,
+      "pose": {
+        "x": 52.93835303579071,
+        "y": 82.88599021814505,
+        "z": 28.41569635216709
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.400000000000005,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": 3.069048484022378,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "のぞく"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "stand",
+      "index": 2,
+      "file": "phone-wagashi-stand.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 44,
+      "calls": 32,
+      "triangles": 164748,
+      "pose": {
+        "x": 51.51713500482498,
+        "y": 81.30395026303418,
+        "z": 28.394664857604425
+      },
+      "state": {
+        "nearId": "authored-ikb-street-wagashi",
+        "nearKind": "shop",
+        "phase": "active",
+        "step": "look",
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000012,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.1904610953326173,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "模擬店（実在の店舗ではありません）"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "reaction",
+      "index": 3,
+      "file": "phone-wagashi-reaction.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 45,
+      "calls": 33,
+      "triangles": 164796,
+      "pose": {
+        "x": 51.51713500482498,
+        "y": 81.30395026303418,
+        "z": 28.394664857604425
+      },
+      "state": {
+        "nearId": "authored-ikb-street-wagashi",
+        "nearKind": "shop",
+        "phase": "active",
+        "step": "react",
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000012,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.1904610953326173,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "模擬店（実在の店舗ではありません） · 猫が三色の和菓子をうっとり眺めます。"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-wagashi",
+      "stage": "reward",
+      "index": 4,
+      "file": "phone-wagashi-reward.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 45,
+      "calls": 32,
+      "triangles": 164748,
+      "pose": {
+        "x": 51.51713500482498,
+        "y": 81.30395026303418,
+        "z": 28.394664857604425
+      },
+      "state": {
+        "nearId": "authored-ikb-street-wagashi",
+        "nearKind": "shop",
+        "phase": "done",
+        "step": null,
+        "unavailable": null,
+        "items": [
+          "sweet-token"
+        ],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000012,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.1904610953326173,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "のぞく\n模擬店（実在の店舗ではありません）\n持ち物：和菓子のかざり"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "first-sight",
+      "index": 0,
+      "file": "desktop-stationery-first-sight.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 92,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 70,
+        "y": 115.545,
+        "z": 28.450000762939453
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.3999999999999972,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": 2.4625560513737117,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "のぞく (E)"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "approach",
+      "index": 1,
+      "file": "desktop-stationery-approach.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 92,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 66.2891045666274,
+        "y": 113.18394278051672,
+        "z": 28.44998127410331
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.399999999999997,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": 3.0893377761346916,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "のぞく (E)"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "stand",
+      "index": 2,
+      "file": "desktop-stationery-stand.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 94,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 64.92631614782854,
+        "y": 111.6793804768587,
+        "z": 28.447812260935137
+      },
+      "state": {
+        "nearId": "authored-ikb-street-stationery",
+        "nearKind": "shop",
+        "phase": "active",
+        "step": "look",
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000004,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.192820074585067,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "模擬店（実在の店舗ではありません）"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "reaction",
+      "index": 3,
+      "file": "desktop-stationery-reaction.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 95,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 64.92631614782854,
+        "y": 111.6793804768587,
+        "z": 28.447812260935137
+      },
+      "state": {
+        "nearId": "authored-ikb-street-stationery",
+        "nearKind": "shop",
+        "phase": "active",
+        "step": "react",
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000004,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.192820074585067,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "模擬店（実在の店舗ではありません） · 猫が並んだ鉛筆の色をじっと見つめます。"
+    },
+    {
+      "profile": "desktop",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "reward",
+      "index": 4,
+      "file": "desktop-stationery-reward.jpg",
+      "quality": "high",
+      "shadows": true,
+      "shadowAutoUpdate": true,
+      "programs": 95,
+      "calls": 1,
+      "triangles": 1,
+      "pose": {
+        "x": 64.92631614782854,
+        "y": 111.6793804768587,
+        "z": 28.447812260935137
+      },
+      "state": {
+        "nearId": "authored-ikb-street-stationery",
+        "nearKind": "shop",
+        "phase": "done",
+        "step": null,
+        "unavailable": null,
+        "items": [
+          "tiny-pencil"
+        ],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000004,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.192820074585067,
+        "avatarFade": 1,
+        "reflections": true,
+        "mode": "walk"
+      },
+      "prompt": "のぞく (E)\n模擬店（実在の店舗ではありません）\n持ち物：小さな鉛筆"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "first-sight",
+      "index": 0,
+      "file": "phone-stationery-first-sight.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 44,
+      "calls": 44,
+      "triangles": 190457,
+      "pose": {
+        "x": 70,
+        "y": 115.545,
+        "z": 28.450000762939453
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.3999999999999972,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": 2.4625560513737117,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "のぞく"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "approach",
+      "index": 1,
+      "file": "phone-stationery-approach.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 44,
+      "calls": 32,
+      "triangles": 165386,
+      "pose": {
+        "x": 66.2891045666274,
+        "y": 113.18394278051672,
+        "z": 28.44998127410331
+      },
+      "state": {
+        "nearId": null,
+        "nearKind": null,
+        "phase": "idle",
+        "step": null,
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.399999999999997,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": 3.0893377761346916,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "のぞく"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "stand",
+      "index": 2,
+      "file": "phone-stationery-stand.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 44,
+      "calls": 29,
+      "triangles": 159470,
+      "pose": {
+        "x": 64.92631614782854,
+        "y": 111.6793804768587,
+        "z": 28.447812260935137
+      },
+      "state": {
+        "nearId": "authored-ikb-street-stationery",
+        "nearKind": "shop",
+        "phase": "active",
+        "step": "look",
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000004,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.192820074585067,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "模擬店（実在の店舗ではありません）"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "reaction",
+      "index": 3,
+      "file": "phone-stationery-reaction.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 45,
+      "calls": 30,
+      "triangles": 159518,
+      "pose": {
+        "x": 64.92631614782854,
+        "y": 111.6793804768587,
+        "z": 28.447812260935137
+      },
+      "state": {
+        "nearId": "authored-ikb-street-stationery",
+        "nearKind": "shop",
+        "phase": "active",
+        "step": "react",
+        "unavailable": null,
+        "items": [],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000004,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.192820074585067,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "模擬店（実在の店舗ではありません） · 猫が並んだ鉛筆の色をじっと見つめます。"
+    },
+    {
+      "profile": "phone",
+      "shop": "authored-ikb-street-stationery",
+      "stage": "reward",
+      "index": 4,
+      "file": "phone-stationery-reward.jpg",
+      "quality": "low",
+      "shadows": false,
+      "shadowAutoUpdate": true,
+      "programs": 45,
+      "calls": 29,
+      "triangles": 159470,
+      "pose": {
+        "x": 64.92631614782854,
+        "y": 111.6793804768587,
+        "z": 28.447812260935137
+      },
+      "state": {
+        "nearId": "authored-ikb-street-stationery",
+        "nearKind": "shop",
+        "phase": "done",
+        "step": null,
+        "unavailable": null,
+        "items": [
+          "tiny-pencil"
+        ],
+        "interrupted": false
+      },
+      "camera": {
+        "lock": 0,
+        "fov": 50,
+        "far": 2000,
+        "slopeOn": false,
+        "boomWanted": 2.4,
+        "boomActual": 2.4000000000000004,
+        "raise": 0,
+        "pitch": 0,
+        "yaw": -2.192820074585067,
+        "avatarFade": 1,
+        "reflections": false,
+        "mode": "walk"
+      },
+      "prompt": "のぞく\n模擬店（実在の店舗ではありません）\n持ち物：小さな鉛筆"
+    }
+  ],
+  "english": [
+    {
+      "shop": "authored-ikb-street-wagashi",
+      "reaction": "Simulated shop (not a real store) · The cat gazes dreamily at the three-colour sweets.",
+      "reward": "Look inside (E)\nSimulated shop (not a real store)\nHeld: sweet ornament"
+    },
+    {
+      "shop": "authored-ikb-street-stationery",
+      "reaction": "Simulated shop (not a real store) · The cat studies the colours of the neatly lined-up pencils.",
+      "reward": "Look inside (E)\nSimulated shop (not a real store)\nHeld: tiny pencil"
+    }
+  ]
+}
