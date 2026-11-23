@@ -3,7 +3,7 @@
 const fs=await import('node:fs/promises');
 const {spawn,execFileSync}=await import('node:child_process');
 const work='/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro';
-const repo=work+'/node_modules/.cache/depato-main';
+const repo=work+'/.cache/depato-main';
 const root=work+'/docs/visual/ikebukuro-landmarks-2026-11-22/r13-main';
 const sourceSha=execFileSync('git',['rev-parse','origin/main'],{cwd:work,encoding:'utf8'}).trim();
 const graph=JSON.parse(await fs.readFile(repo+'/stations/ikebukuro/gteki/graph.json','utf8')),walks=[];
