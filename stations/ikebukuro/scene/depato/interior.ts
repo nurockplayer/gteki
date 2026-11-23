@@ -159,7 +159,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         const positions=g.getAttribute("position"), normals=g.getAttribute("normal"), colors:number[]=[];
         for(let v=0;v<positions.count;v++){
           // Keep the concourse-facing portal wall at its original station value.
-          const stationSide=i===1 && l.index===0 && positions.getZ(v)<plan.bounds.front && normals.getZ(v)<-0.9;
+          const stationSide=i===1 && positions.getZ(v)<plan.bounds.front && normals.getZ(v)<-0.9;
           const c=new THREE.Color(i===0?"#fff2dc":stationSide?"#9daaa7":"#9e8c72");colors.push(c.r,c.g,c.b);
         }
         g.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));
