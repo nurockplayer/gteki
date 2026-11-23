@@ -1,0 +1,3769 @@
+{
+  "codeCommit": "fa6b37cd86eb01ccffa6cf00747746d5202382e0",
+  "capturedAt": "2026-11-23T11:29:38.215Z",
+  "timeZone": "UTC",
+  "beforeCommit": "bef84dc168e46791cc4973567edb68b847cf1242",
+  "profiles": [
+    {
+      "device": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900,
+        "mobile": false
+      },
+      "legs": [
+        {
+          "name": "four-metres-before",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          }
+        },
+        {
+          "name": "wayfinding-context",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          }
+        },
+        {
+          "name": "return-to-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 14.721407566396442,
+            "y": -65.84078969207712,
+            "z": 27.58014905116965
+          }
+        },
+        {
+          "name": "through-station-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 121
+          },
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          }
+        },
+        {
+          "name": "food-hall-main-aisle",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1389
+          },
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "counter-close",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 52
+          },
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "escalator-board",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 925
+          },
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "ride-to-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 312
+          },
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "wide-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 62
+          },
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "street-door-inside",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 714
+          },
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "through-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 166
+          },
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          }
+        },
+        {
+          "name": "flag-off-same-pose",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          }
+        }
+      ],
+      "additionalLegs": [
+        {
+          "name": "far-end-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1069
+          },
+          "avatar": {
+            "x": 26.9055,
+            "y": -161.66833333334182,
+            "z": 27.700000762939453
+          }
+        }
+      ],
+      "searchHits": [
+        {
+          "query": "西武池袋本店",
+          "text": [
+            "西武池袋本店Seibu Ikebukuro B1"
+          ]
+        },
+        {
+          "query": "デパ地下",
+          "text": [
+            "西武池袋本店Seibu Ikebukuro B1 · “デパ地下”"
+          ]
+        }
+      ],
+      "search": {
+        "from": true,
+        "to": true,
+        "route": {
+          "ok": true,
+          "profile": {
+            "fare": "ticketed",
+            "stepFree": false,
+            "hours": "warn_unknown",
+            "at": {
+              "weekday": "mon",
+              "minutes": 1229.7018
+            },
+            "today": "2026-11-23",
+            "timeZone": "Asia/Tokyo"
+          },
+          "nodeIds": [
+            "g_jr_s",
+            "sp_m",
+            "sp_j",
+            "sp_e",
+            "depato-seibu-ikebukuro-B1-door0",
+            "depato-seibu-ikebukuro-B1-inside0",
+            "depato-seibu-ikebukuro-B1-approach0",
+            "depato-seibu-ikebukuro-B1-aisle"
+          ],
+          "steps": [
+            {
+              "edgeId": "sp_m__g_jr_s",
+              "fromNodeId": "g_jr_s",
+              "toNodeId": "sp_m",
+              "reversed": true,
+              "mode": "walk",
+              "lengthM": 9.7,
+              "fromFloorId": "b1",
+              "toFloorId": "b1"
+            },
+            {
+              "edgeId": "sp_j__sp_m",
+              "fromNodeId": "sp_m",
+              "toNodeId": "sp_j",
+              "reversed": true,
+              "mode": "walk",
+              "lengthM": 64.9,
+              "fromFloorId": "b1",
+              "toFloorId": "b1"
+            },
+            {
+              "edgeId": "sp_j__sp_e",
+              "fromNodeId": "sp_j",
+              "toNodeId": "sp_e",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 27.5,
+              "fromFloorId": "b1",
+              "toFloorId": "b1"
+            },
+            {
+              "edgeId": "sp_e__depato-seibu-ikebukuro-B1-door0",
+              "fromNodeId": "sp_e",
+              "toNodeId": "depato-seibu-ikebukuro-B1-door0",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 8.603162209327452,
+              "fromFloorId": "b1",
+              "toFloorId": "depato-seibu-ikebukuro-B1-floor"
+            },
+            {
+              "edgeId": "depato-seibu-ikebukuro-B1-door0__depato-seibu-ikebukuro-B1-inside0",
+              "fromNodeId": "depato-seibu-ikebukuro-B1-door0",
+              "toNodeId": "depato-seibu-ikebukuro-B1-inside0",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 2,
+              "fromFloorId": "depato-seibu-ikebukuro-B1-floor",
+              "toFloorId": "depato-seibu-ikebukuro-B1-floor"
+            },
+            {
+              "edgeId": "depato-seibu-ikebukuro-B1-inside0__depato-seibu-ikebukuro-B1-approach0",
+              "fromNodeId": "depato-seibu-ikebukuro-B1-inside0",
+              "toNodeId": "depato-seibu-ikebukuro-B1-approach0",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 7.9055,
+              "fromFloorId": "depato-seibu-ikebukuro-B1-floor",
+              "toFloorId": "depato-seibu-ikebukuro-B1-floor"
+            },
+            {
+              "edgeId": "depato-seibu-ikebukuro-B1-approach0__depato-seibu-ikebukuro-B1-aisle",
+              "fromNodeId": "depato-seibu-ikebukuro-B1-approach0",
+              "toNodeId": "depato-seibu-ikebukuro-B1-aisle",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 22,
+              "fromFloorId": "depato-seibu-ikebukuro-B1-floor",
+              "toFloorId": "depato-seibu-ikebukuro-B1-floor"
+            }
+          ],
+          "totalLengthM": 142.60866220932746,
+          "estimatedSeconds": 118.84055184110622,
+          "waitSeconds": 0,
+          "floorChanges": 1,
+          "crossesFareBoundary": false,
+          "unknowns": [
+            {
+              "kind": "hours",
+              "edgeIds": [
+                "sp_m__g_jr_s",
+                "sp_j__sp_m",
+                "sp_j__sp_e",
+                "sp_e__depato-seibu-ikebukuro-B1-door0",
+                "depato-seibu-ikebukuro-B1-door0__depato-seibu-ikebukuro-B1-inside0",
+                "depato-seibu-ikebukuro-B1-inside0__depato-seibu-ikebukuro-B1-approach0",
+                "depato-seibu-ikebukuro-B1-approach0__depato-seibu-ikebukuro-B1-aisle"
+              ]
+            },
+            {
+              "kind": "wheelchair",
+              "edgeIds": [
+                "sp_m__g_jr_s",
+                "sp_j__sp_m",
+                "sp_j__sp_e"
+              ]
+            }
+          ],
+          "sourceIds": [
+            "plateau-ubld-13116",
+            "sogo-seibu-ikebukuro-floorguide-2026-10",
+            "tokyometro-ikebukuro-yardmap-2026-03",
+            "toshima-underground-guide-2022"
+          ],
+          "endpointSourceIds": [
+            "plateau-ubld-13116",
+            "sogo-seibu-ikebukuro-floorguide-2026-10",
+            "toshima-underground-guide-2022"
+          ],
+          "evidenceCheckedDate": "2026-11-22",
+          "oldestSourceDate": "2022-01",
+          "undatedSourceIds": [
+            "sogo-seibu-ikebukuro-floorguide-2026-10"
+          ],
+          "expiredSourceIds": [],
+          "stale": true,
+          "synthetic": false,
+          "timeRestricted": [],
+          "operatorIds": [
+            "public"
+          ]
+        },
+        "endpoints": {
+          "from": "jr-south-gate",
+          "to": "shop-ikb-seibu-honten",
+          "first": {
+            "x": -69.5,
+            "y": -30.5,
+            "z": 27.58,
+            "zKnown": true,
+            "stepIndex": -1,
+            "floorId": "b1",
+            "sceneGap": true
+          }
+        },
+        "aliases": [
+          {
+            "lang": "ja",
+            "text": "デパ地下"
+          },
+          {
+            "lang": "en",
+            "text": "Seibu Ikebukuro food hall"
+          }
+        ]
+      },
+      "frames": [
+        {
+          "name": "entrance-before",
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9431259913772756,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.056101519646848175,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    15.545750664707924,
+                    30.754118956461898,
+                    112.1500015258789
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    15.547867767526911,
+                    30.76058440304246,
+                    112.25000000000001
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    15.560774108205747,
+                    30.799999237060547,
+                    112.85961345986433
+                  ],
+                  "normal": [
+                    0,
+                    -1,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    13.79410056410601,
+                    30.190291856682126,
+                    166.2315943783196
+                  ],
+                  "normal": [
+                    0.07891935673107421,
+                    0,
+                    -0.9968810034969838
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    13.792954891799104,
+                    30.194296551859278,
+                    166.3920034064772
+                  ],
+                  "normal": [
+                    -0.07891935673107421,
+                    0,
+                    0.9968810034969838
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            14.524786020676027,
+            27.63618235582337,
+            63.92612424453245
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "entrance-context",
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.7980250203384978,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -2.5,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.08327527116532707,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    24.065500259399407,
+                    29.539395518699383,
+                    82.63268999575286
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.18549919128418,
+                    29.552652746369215,
+                    82.78642721682736
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    28.625499725341797,
+                    30.04317459526952,
+                    88.47475571237456
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    21.1577781039151,
+                    28.33498797930052,
+                    80
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    21.17799949645996,
+                    28.335953080278838,
+                    80.02747648992415
+                  ],
+                  "normal": [
+                    0.9999999999999999,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.065500259399414,
+                    28.47376405472187,
+                    83.95096422415749
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            7.083636437375672,
+            27.66327519487148,
+            60.876291737385856
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "entrance-inside",
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.0208396328684386,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.041547715021298615,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    15.777478108899345,
+                    30.68971676074159,
+                    116.55000305175781
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    15.779594979008289,
+                    30.69600918604218,
+                    116.6500015258789
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    15.814578855671508,
+                    30.799999237060547,
+                    118.30259904255342
+                  ],
+                  "normal": [
+                    0,
+                    -0.9999999999999999,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    14.096065028376193,
+                    29.985668257343264,
+                    166.25549978046115
+                  ],
+                  "normal": [
+                    0.07891935673107421,
+                    0,
+                    -0.9968810034969838
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    14.094919403627614,
+                    29.989396370839728,
+                    166.41590881238375
+                  ],
+                  "normal": [
+                    -0.07891935673107421,
+                    0,
+                    0.9968810034969838
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            14.785668271540825,
+            27.741548477954677,
+            69.6980635136992
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "food-hall-aisle",
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9426939392174853,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 2.8815926535897933,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.05618243211731766,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    24.18549919128418,
+                    28.578663821777184,
+                    138.62610312103
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.065500259399414,
+                    28.611457870138018,
+                    139.1189545942019
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    17.394741204223692,
+                    30.434484055645783,
+                    166.51664368926149
+                  ],
+                  "normal": [
+                    0.07891935673107421,
+                    0,
+                    -0.9968810034969838
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    24.530864853957127,
+                    28.008244021855745,
+                    136
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.18549919128418,
+                    28.04091882222273,
+                    137.26191521438932
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.065500259399414,
+                    28.052271836049407,
+                    137.7003736201378
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            27.19509396947089,
+            27.75618319505677,
+            126.26529959734432
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "counter",
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.6671876725172436,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.10777780587325125,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    25.155499279499054,
+                    28.035758717003986,
+                    130.53604727102785
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.18549919128418,
+                    28.10475074659673,
+                    130.5565924651396
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.065500259399414,
+                    28.113285766294435,
+                    130.55913411578348
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    25.155499279499054,
+                    27.908461484662155,
+                    130.44525977981436
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.18549919128418,
+                    27.93893044770512,
+                    130.43833059367788
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.065500259399414,
+                    27.94269977006417,
+                    130.43747338248244
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            28.360808141438206,
+            27.807778568812704,
+            130.4681568722983
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "escalator-boarding",
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.942693939217485,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.05618243211731766,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.948289893707347,
+                    27.972576912115223,
+                    96.7268722742669
+                  ],
+                  "normal": [
+                    0,
+                    0.9363291775690445,
+                    -0.3511234415883917
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.948600892908964,
+                    27.973526818741885,
+                    96.74156188964844
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.948918450454496,
+                    27.974496756977356,
+                    96.75656127929688
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.85625232105452,
+                    27.83028266212378,
+                    96.34742075685033
+                  ],
+                  "normal": [
+                    0,
+                    0.9363299614031271,
+                    -0.35112135135707495
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.85611223292982,
+                    27.83077252988371,
+                    96.36703491210938
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.856005104361717,
+                    27.83114714287674,
+                    96.38203430175781
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            25.877442642671333,
+            27.75618319505677,
+            93.38050076221207
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "arrival-1F",
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9398654300395768,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.05671214053358398,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    27.80138093494397,
+                    36,
+                    166.12492488498907
+                  ],
+                  "normal": [
+                    0,
+                    -1,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    26.1562438305124,
+                    33.731882424019346,
+                    167.21025922495608
+                  ],
+                  "normal": [
+                    0.07891935673107422,
+                    0,
+                    -0.9968810034969839
+                  ]
+                },
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    26.155098156111716,
+                    33.73589885840412,
+                    167.37066825294787
+                  ],
+                  "normal": [
+                    -0.07891935673107422,
+                    0,
+                    0.9968810034969839
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            26.577030975141753,
+            32.25671290347304,
+            108.2946922705491
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "wide-1F",
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9426939392174871,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 2.741592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.05618243211731766,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    25.155499279499054,
+                    32.65772662318428,
+                    117.12966368526905
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.41099547568259,
+                    32.7878728812534,
+                    119
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    9.344869315634906,
+                    35.42157325091711,
+                    156.84899786274542
+                  ],
+                  "normal": [
+                    0.07892267723933237,
+                    0,
+                    -0.9968807406191454
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    25.155499279499054,
+                    32.401055508813776,
+                    116.68568216597885
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.15747838822359,
+                    32.463999933892566,
+                    119
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    16.82643902004672,
+                    32.92636305904737,
+                    136
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            27.452535045826416,
+            32.25618319505677,
+            111.35906938074751
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "street-door-inside",
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.942693939217485,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.05618243211731766,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": []
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": []
+            }
+          ],
+          "cameraPosition": [
+            43.143366457441935,
+            32.25618319505677,
+            122.6953860064705
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "street-door-outside",
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000018,
+            "raise": 0.17453292519943295,
+            "pitch": 0.40420154222909066,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.3888291076587507,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    0.07999999821186066,
+                    33.007365135882885,
+                    123.46700192332231
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    -0.07999999821186776,
+                    33.00807178566142,
+                    123.4703823142802
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "retail-floor-1F",
+                  "point": [
+                    39.321385972566084,
+                    32.20000076293945,
+                    122.18548569407689
+                  ],
+                  "normal": [
+                    0,
+                    1,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    0.07999999821186066,
+                    30.818576625335808,
+                    121.90512987026537
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    -0.07999999821186066,
+                    30.81294410620866,
+                    121.90398676765334
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            55.32480559820909,
+            32.76337307016406,
+            122.2998203889799
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "far-end-B1",
+          "avatar": {
+            "x": 26.9055,
+            "y": -161.66833333334182,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9426939392174996,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 0,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.05618243211731411,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    26.1119986871309,
+                    30.79070378478175,
+                    116.6500015258789
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    26.109881582985782,
+                    30.79717020413695,
+                    116.55000305175781
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    26.108955358285492,
+                    30.799999237060547,
+                    116.50625411435391
+                  ],
+                  "normal": [
+                    0,
+                    -1,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    27.53190843231709,
+                    29.2472713511942,
+                    103.87394263915273
+                  ],
+                  "normal": [
+                    0,
+                    0.9363276098588831,
+                    0.3511276221204355
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    27.534485479748994,
+                    29.256282910563787,
+                    103.51312255859375
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    27.534592608317098,
+                    29.256657523556818,
+                    103.49812316894531
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            27.1055,
+            27.756183195056767,
+            163.5766562931084
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "well-from-1F",
+          "avatar": {
+            "x": 26.9055,
+            "y": -110,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": -0.25,
+            "yaw": 0,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 1.394199472070511,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": [
+                {
+                  "name": "retail-floor-1F",
+                  "point": [
+                    27.052609282562116,
+                    32.20000076293945,
+                    109.94888027812837
+                  ],
+                  "normal": [
+                    0,
+                    0.9999999999999999,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-floor-B1",
+                  "point": [
+                    26.88189610038237,
+                    27.700000762939457,
+                    103.23767316485518
+                  ],
+                  "normal": [
+                    0,
+                    1,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": [
+                {
+                  "name": "retail-floor-1F",
+                  "point": [
+                    27.122390319386913,
+                    32.20000076293945,
+                    110.11706732851039
+                  ],
+                  "normal": [
+                    0,
+                    0.9999999999999999,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    27.139350928961058,
+                    30.799999237060547,
+                    108.19802092291441
+                  ],
+                  "normal": [
+                    0,
+                    -0.9999999999999999,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    27.16675057374916,
+                    28.538314930008053,
+                    105.09782634468556
+                  ],
+                  "normal": [
+                    0,
+                    0.9363291775690445,
+                    0.3511234415883917
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            27.1055,
+            33.594200235009964,
+            112.02816059241312
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "flag-off",
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999972,
+            "raise": 0.17453292519943295,
+            "pitch": 0.4277867193525217,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.08783256386266203,
+          "wellPixels": [
+            {
+              "box": [
+                654,
+                683,
+                748,
+                713
+              ],
+              "hits": []
+            },
+            {
+              "box": [
+                706,
+                732,
+                747,
+                739
+              ],
+              "hits": []
+            }
+          ],
+          "cameraPosition": [
+            14.524786020676027,
+            27.667832487568717,
+            63.457969259684724
+          ],
+          "depato": null
+        }
+      ]
+    },
+    {
+      "device": {
+        "name": "phone",
+        "width": 390,
+        "height": 844,
+        "mobile": true
+      },
+      "legs": [
+        {
+          "name": "four-metres-before",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          }
+        },
+        {
+          "name": "wayfinding-context",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          }
+        },
+        {
+          "name": "return-to-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 14.721407566396442,
+            "y": -65.84078969207712,
+            "z": 27.58014905116965
+          }
+        },
+        {
+          "name": "through-station-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 121
+          },
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          }
+        },
+        {
+          "name": "food-hall-main-aisle",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1389
+          },
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "counter-close",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 52
+          },
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "escalator-board",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 925
+          },
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "ride-to-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 312
+          },
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "wide-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 62
+          },
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "street-door-inside",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 714
+          },
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "through-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 166
+          },
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          }
+        },
+        {
+          "name": "flag-off-same-pose",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          }
+        }
+      ],
+      "additionalLegs": [
+        {
+          "name": "far-end-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1069
+          },
+          "avatar": {
+            "x": 26.9055,
+            "y": -161.66833333334182,
+            "z": 27.700000762939453
+          }
+        }
+      ],
+      "searchHits": [
+        {
+          "query": "西武池袋本店",
+          "text": [
+            "西武池袋本店Seibu Ikebukuro B1"
+          ]
+        },
+        {
+          "query": "デパ地下",
+          "text": [
+            "西武池袋本店Seibu Ikebukuro B1 · “デパ地下”"
+          ]
+        }
+      ],
+      "search": {
+        "from": true,
+        "to": true,
+        "route": {
+          "ok": true,
+          "profile": {
+            "fare": "ticketed",
+            "stepFree": false,
+            "hours": "warn_unknown",
+            "at": {
+              "weekday": "mon",
+              "minutes": 1230.0320333333334
+            },
+            "today": "2026-11-23",
+            "timeZone": "Asia/Tokyo"
+          },
+          "nodeIds": [
+            "g_jr_s",
+            "sp_m",
+            "sp_j",
+            "sp_e",
+            "depato-seibu-ikebukuro-B1-door0",
+            "depato-seibu-ikebukuro-B1-inside0",
+            "depato-seibu-ikebukuro-B1-approach0",
+            "depato-seibu-ikebukuro-B1-aisle"
+          ],
+          "steps": [
+            {
+              "edgeId": "sp_m__g_jr_s",
+              "fromNodeId": "g_jr_s",
+              "toNodeId": "sp_m",
+              "reversed": true,
+              "mode": "walk",
+              "lengthM": 9.7,
+              "fromFloorId": "b1",
+              "toFloorId": "b1"
+            },
+            {
+              "edgeId": "sp_j__sp_m",
+              "fromNodeId": "sp_m",
+              "toNodeId": "sp_j",
+              "reversed": true,
+              "mode": "walk",
+              "lengthM": 64.9,
+              "fromFloorId": "b1",
+              "toFloorId": "b1"
+            },
+            {
+              "edgeId": "sp_j__sp_e",
+              "fromNodeId": "sp_j",
+              "toNodeId": "sp_e",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 27.5,
+              "fromFloorId": "b1",
+              "toFloorId": "b1"
+            },
+            {
+              "edgeId": "sp_e__depato-seibu-ikebukuro-B1-door0",
+              "fromNodeId": "sp_e",
+              "toNodeId": "depato-seibu-ikebukuro-B1-door0",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 8.603162209327452,
+              "fromFloorId": "b1",
+              "toFloorId": "depato-seibu-ikebukuro-B1-floor"
+            },
+            {
+              "edgeId": "depato-seibu-ikebukuro-B1-door0__depato-seibu-ikebukuro-B1-inside0",
+              "fromNodeId": "depato-seibu-ikebukuro-B1-door0",
+              "toNodeId": "depato-seibu-ikebukuro-B1-inside0",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 2,
+              "fromFloorId": "depato-seibu-ikebukuro-B1-floor",
+              "toFloorId": "depato-seibu-ikebukuro-B1-floor"
+            },
+            {
+              "edgeId": "depato-seibu-ikebukuro-B1-inside0__depato-seibu-ikebukuro-B1-approach0",
+              "fromNodeId": "depato-seibu-ikebukuro-B1-inside0",
+              "toNodeId": "depato-seibu-ikebukuro-B1-approach0",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 7.9055,
+              "fromFloorId": "depato-seibu-ikebukuro-B1-floor",
+              "toFloorId": "depato-seibu-ikebukuro-B1-floor"
+            },
+            {
+              "edgeId": "depato-seibu-ikebukuro-B1-approach0__depato-seibu-ikebukuro-B1-aisle",
+              "fromNodeId": "depato-seibu-ikebukuro-B1-approach0",
+              "toNodeId": "depato-seibu-ikebukuro-B1-aisle",
+              "reversed": false,
+              "mode": "walk",
+              "lengthM": 22,
+              "fromFloorId": "depato-seibu-ikebukuro-B1-floor",
+              "toFloorId": "depato-seibu-ikebukuro-B1-floor"
+            }
+          ],
+          "totalLengthM": 142.60866220932746,
+          "estimatedSeconds": 118.84055184110622,
+          "waitSeconds": 0,
+          "floorChanges": 1,
+          "crossesFareBoundary": false,
+          "unknowns": [
+            {
+              "kind": "hours",
+              "edgeIds": [
+                "sp_m__g_jr_s",
+                "sp_j__sp_m",
+                "sp_j__sp_e",
+                "sp_e__depato-seibu-ikebukuro-B1-door0",
+                "depato-seibu-ikebukuro-B1-door0__depato-seibu-ikebukuro-B1-inside0",
+                "depato-seibu-ikebukuro-B1-inside0__depato-seibu-ikebukuro-B1-approach0",
+                "depato-seibu-ikebukuro-B1-approach0__depato-seibu-ikebukuro-B1-aisle"
+              ]
+            },
+            {
+              "kind": "wheelchair",
+              "edgeIds": [
+                "sp_m__g_jr_s",
+                "sp_j__sp_m",
+                "sp_j__sp_e"
+              ]
+            }
+          ],
+          "sourceIds": [
+            "plateau-ubld-13116",
+            "sogo-seibu-ikebukuro-floorguide-2026-10",
+            "tokyometro-ikebukuro-yardmap-2026-03",
+            "toshima-underground-guide-2022"
+          ],
+          "endpointSourceIds": [
+            "plateau-ubld-13116",
+            "sogo-seibu-ikebukuro-floorguide-2026-10",
+            "toshima-underground-guide-2022"
+          ],
+          "evidenceCheckedDate": "2026-11-22",
+          "oldestSourceDate": "2022-01",
+          "undatedSourceIds": [
+            "sogo-seibu-ikebukuro-floorguide-2026-10"
+          ],
+          "expiredSourceIds": [],
+          "stale": true,
+          "synthetic": false,
+          "timeRestricted": [],
+          "operatorIds": [
+            "public"
+          ]
+        },
+        "endpoints": {
+          "from": "jr-south-gate",
+          "to": "shop-ikb-seibu-honten",
+          "first": {
+            "x": -69.5,
+            "y": -30.5,
+            "z": 27.58,
+            "zKnown": true,
+            "stepIndex": -1,
+            "floorId": "b1",
+            "sceneGap": true
+          }
+        },
+        "aliases": [
+          {
+            "lang": "ja",
+            "text": "デパ地下"
+          },
+          {
+            "lang": "en",
+            "text": "Seibu Ikebukuro food hall"
+          }
+        ]
+      },
+      "frames": [
+        {
+          "name": "entrance-before",
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000027,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.16505651440655456,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    13.57871076708565,
+                    30.250351650127918,
+                    166.2145427701862
+                  ],
+                  "normal": [
+                    0.07891935673107421,
+                    0,
+                    -0.9968810034969838
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    13.577064085826201,
+                    30.25426685666203,
+                    166.3749121353307
+                  ],
+                  "normal": [
+                    -0.07891935673107421,
+                    0,
+                    0.9968810034969838
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            14.632368959064651,
+            27.745137350583075,
+            63.59936186759267
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "entrance-context",
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.003063377169346,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -2.28,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.19303646255994167,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    17,
+                    28.179040339592706,
+                    69.9432191572403
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    17.156120426996914,
+                    28.185212497560844,
+                    70.08000183105469
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    28.61549949645996,
+                    28.638254416507724,
+                    80.1199725096176
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            6.730413433517757,
+            27.773036386266096,
+            60.94566812210586
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "entrance-inside",
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.16505651440655456,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    13.899382781388018,
+                    30.228113359475696,
+                    166.23992917939816
+                  ],
+                  "normal": [
+                    0.07891935673107421,
+                    0,
+                    -0.9968810034969838
+                  ]
+                },
+                {
+                  "name": "retail-shell-B1",
+                  "point": [
+                    13.897736100128572,
+                    30.232028566009806,
+                    166.40029854454264
+                  ],
+                  "normal": [
+                    -0.07891935673107421,
+                    0,
+                    0.9968810034969838
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            14.89325120992945,
+            27.865057277339933,
+            69.44763983497165
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "food-hall-aisle",
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000006,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 2.8815926535897933,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.16505651440655456,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    24.606274256818335,
+                    28.11896539278021,
+                    136
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.18549919128418,
+                    28.157439301929738,
+                    137.51878939868536
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.065500259399414,
+                    28.168411501524112,
+                    137.95192605655453
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            27.383174402219456,
+            27.865057277346008,
+            125.97676704847261
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "counter",
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.6449087724469562,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.23361832180850328,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    25.155499279499054,
+                    28.055806887127495,
+                    130.54284805955527
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.18549919128418,
+                    28.092822706297763,
+                    130.53288376616123
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.065500259399414,
+                    28.09740194171974,
+                    130.53165108115553
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            28.35743244601225,
+            27.933619084747956,
+            130.5757398106869
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "escalator-boarding",
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.16505651440655456,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.947827637118305,
+                    27.95350040034895,
+                    96.6760008938844
+                  ],
+                  "normal": [
+                    0,
+                    0.9363289162867234,
+                    -0.35112413834045947
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.940505571414107,
+                    27.97090959798438,
+                    97.38909276991798
+                  ],
+                  "normal": [
+                    0,
+                    0.9363291775690445,
+                    -0.3511234415883917
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    25.914146145099224,
+                    28.033582685171968,
+                    99.95622252829713
+                  ],
+                  "normal": [
+                    0,
+                    -0.9363291775690445,
+                    0.3511234415883917
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            25.985025581059958,
+            27.865057277346008,
+            93.05331397716574
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "arrival-1F",
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9946275405351748,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.1939923121579028,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    26.07885515209108,
+                    34.15920678125896,
+                    167.20413265147553
+                  ],
+                  "normal": [
+                    0.07891935673107422,
+                    0,
+                    -0.9968810034969839
+                  ]
+                },
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    26.077208224568736,
+                    34.16400601689624,
+                    167.36450199712434
+                  ],
+                  "normal": [
+                    -0.07891935673107422,
+                    0,
+                    0.9968810034969839
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            26.684613913530377,
+            32.393993075097356,
+            108.21845485139218
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "wide-1F",
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.25,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 2.741592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.165056514406551,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "",
+                  "point": [
+                    25.155499279499054,
+                    32.51951353438429,
+                    116.90151718742392
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    24.242765223378207,
+                    32.57537853189316,
+                    119
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    1
+                  ]
+                },
+                {
+                  "name": "",
+                  "point": [
+                    16.84862367451013,
+                    33.02794595439444,
+                    136
+                  ],
+                  "normal": [
+                    0,
+                    0,
+                    -1
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            27.679038029454436,
+            32.365057277346004,
+            111.09960516481613
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "street-door-inside",
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000003,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.165056514406551,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": []
+            }
+          ],
+          "cameraPosition": [
+            42.816179672395606,
+            32.365057277346004,
+            122.58780306808187
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "street-door-outside",
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000003,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.165056514406551,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    0.07999999821184645,
+                    33.887981052732755,
+                    121.84029326421785
+                  ],
+                  "normal": [
+                    1,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-shell-1F",
+                  "point": [
+                    -0.07999999821187487,
+                    33.89188724161672,
+                    121.83865037565629
+                  ],
+                  "normal": [
+                    -1,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            55.31053126994506,
+            32.53960047691186,
+            122.40740332736853
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "far-end-B1",
+          "avatar": {
+            "x": 26.9055,
+            "y": -161.66833333334182,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 0,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.16505651440655456,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    27.616748065009027,
+                    29.33641135641506,
+                    103.63623841739837
+                  ],
+                  "normal": [
+                    0,
+                    0.9363291775690447,
+                    0.3511234415883917
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    27.624070151150466,
+                    29.35382060264279,
+                    102.92314455099293
+                  ],
+                  "normal": [
+                    0,
+                    0.9363291775690445,
+                    0.3511234415883917
+                  ]
+                },
+                {
+                  "name": "retail-escalators-B1",
+                  "point": [
+                    27.650429577465353,
+                    29.416493689830382,
+                    100.35601479261378
+                  ],
+                  "normal": [
+                    0,
+                    -0.9363291775690445,
+                    -0.3511234415883917
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            26.997917061611375,
+            27.865057277346008,
+            163.90384307815472
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "well-from-1F",
+          "avatar": {
+            "x": 26.9055,
+            "y": -110,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": -0.25,
+            "yaw": 0,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 1.394199472070511,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": [
+                {
+                  "name": "retail-floor-1F",
+                  "point": [
+                    27.025247070010366,
+                    32.20000076293945,
+                    109.75993806509224
+                  ],
+                  "normal": [
+                    0,
+                    0.9999999999999999,
+                    0
+                  ]
+                },
+                {
+                  "name": "retail-floor-B1",
+                  "point": [
+                    27.11345900830125,
+                    27.700000762939457,
+                    102.43888998164574
+                  ],
+                  "normal": [
+                    0,
+                    1,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "cameraPosition": [
+            26.997917061611375,
+            33.594200235009964,
+            112.02816059241312
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              12
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          }
+        },
+        {
+          "name": "flag-off",
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.4,
+            "raise": 0.17453292519943295,
+            "pitch": 0.40185252850322534,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "landingClearanceM": 0.15186942500877265,
+          "wellPixels": [
+            {
+              "box": [
+                187,
+                565,
+                217,
+                603
+              ],
+              "hits": []
+            }
+          ],
+          "cameraPosition": [
+            14.632368959064651,
+            27.731869348714827,
+            63.449896561224776
+          ],
+          "depato": null
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "item4": [
+    {
+      "frame": "desktop-far-end-B1",
+      "before": {
+        "box": [
+          654,
+          683,
+          748,
+          713
+        ],
+        "meanLinearY": 0.41036017471432407,
+        "medianLinearY": 0.46756243324579155,
+        "maxChannelLE16": 31,
+        "pixelCount": 2820
+      },
+      "after": {
+        "box": [
+          654,
+          683,
+          748,
+          713
+        ],
+        "meanLinearY": 0.26658163586137773,
+        "medianLinearY": 0.25929747979608103,
+        "maxChannelLE16": 0,
+        "pixelCount": 2820
+      }
+    },
+    {
+      "frame": "phone-far-end-B1",
+      "before": {
+        "box": [
+          187,
+          565,
+          217,
+          603
+        ],
+        "meanLinearY": 0.07862305692107163,
+        "medianLinearY": 0.011797415141951411,
+        "maxChannelLE16": 0,
+        "pixelCount": 1140
+      },
+      "after": {
+        "box": [
+          187,
+          565,
+          217,
+          603
+        ],
+        "meanLinearY": 0.11149585472099023,
+        "medianLinearY": 0.03399502139013443,
+        "maxChannelLE16": 10,
+        "pixelCount": 1140
+      }
+    },
+    {
+      "frame": "desktop-entrance-inside",
+      "before": {
+        "box": [
+          706,
+          732,
+          747,
+          739
+        ],
+        "meanLinearY": 0.3949685505440528,
+        "medianLinearY": 0.427761968230799,
+        "maxChannelLE16": 6,
+        "pixelCount": 287
+      },
+      "after": {
+        "box": [
+          706,
+          732,
+          747,
+          739
+        ],
+        "meanLinearY": 0.325594733398977,
+        "medianLinearY": 0.33338050059012625,
+        "maxChannelLE16": 0,
+        "pixelCount": 287
+      }
+    }
+  ],
+  "values": [
+    {
+      "surface": "floor",
+      "frame": "desktop-counter",
+      "before": {
+        "box": [
+          80,
+          805,
+          300,
+          855
+        ],
+        "meanLinearY": 0.21467389352286098,
+        "medianLinearY": 0.21449643510398,
+        "maxChannelLE16": 0,
+        "pixelCount": 11000
+      },
+      "after": {
+        "box": [
+          80,
+          805,
+          300,
+          855
+        ],
+        "meanLinearY": 0.07361516804056112,
+        "medianLinearY": 0.07420803281748155,
+        "maxChannelLE16": 0,
+        "pixelCount": 11000
+      }
+    },
+    {
+      "surface": "counter",
+      "frame": "desktop-counter",
+      "before": {
+        "box": [
+          140,
+          675,
+          350,
+          755
+        ],
+        "meanLinearY": 0.2437554880311314,
+        "medianLinearY": 0.24471334513583426,
+        "maxChannelLE16": 0,
+        "pixelCount": 16800
+      },
+      "after": {
+        "box": [
+          140,
+          675,
+          350,
+          755
+        ],
+        "meanLinearY": 0.034639709254877006,
+        "medianLinearY": 0.034406448146453654,
+        "maxChannelLE16": 0,
+        "pixelCount": 16800
+      }
+    },
+    {
+      "surface": "back wall",
+      "frame": "desktop-street-door-inside",
+      "before": {
+        "box": [
+          80,
+          410,
+          250,
+          650
+        ],
+        "meanLinearY": 0.32510658825606953,
+        "medianLinearY": 0.3230038254279045,
+        "maxChannelLE16": 0,
+        "pixelCount": 40800
+      },
+      "after": {
+        "box": [
+          80,
+          410,
+          250,
+          650
+        ],
+        "meanLinearY": 0.25404562274207176,
+        "medianLinearY": 0.25205749193648763,
+        "maxChannelLE16": 0,
+        "pixelCount": 40800
+      }
+    },
+    {
+      "surface": "ceiling",
+      "frame": "desktop-counter",
+      "before": {
+        "box": [
+          50,
+          280,
+          160,
+          430
+        ],
+        "meanLinearY": 0.3308743242341205,
+        "medianLinearY": 0.32691369472820186,
+        "maxChannelLE16": 0,
+        "pixelCount": 16500
+      },
+      "after": {
+        "box": [
+          50,
+          280,
+          160,
+          430
+        ],
+        "meanLinearY": 0.3563811248771589,
+        "medianLinearY": 0.363086157727438,
+        "maxChannelLE16": 0,
+        "pixelCount": 16500
+      }
+    },
+    {
+      "surface": "showcase strip",
+      "frame": "desktop-counter",
+      "before": {
+        "box": [
+          300,
+          525,
+          900,
+          535
+        ],
+        "meanLinearY": 0.27937316255570266,
+        "medianLinearY": 0.26207512532755006,
+        "maxChannelLE16": 0,
+        "pixelCount": 6000
+      },
+      "after": {
+        "box": [
+          300,
+          525,
+          900,
+          535
+        ],
+        "meanLinearY": 0.4800090989307058,
+        "medianLinearY": 0.49340739340199546,
+        "maxChannelLE16": 0,
+        "pixelCount": 6000
+      }
+    }
+  ],
+  "boardWayfinding": [
+    {
+      "device": "desktop",
+      "boardMeanY": 0.06584896529356149,
+      "wayfindingMeanY": 0.13686612328668693,
+      "ratio": 0.4811195328125924
+    },
+    {
+      "device": "phone",
+      "boardMeanY": 0.05893550564009637,
+      "wayfindingMeanY": 0.10455369136183693,
+      "ratio": 0.5636865123789248
+    }
+  ]
+}

@@ -119,4 +119,94 @@ test("whole default guide walk on the host GPU", async ({ page, browser }, info)
   ].join("\n") + "\n";
   fs.writeFileSync(path.join(out, `${info.project.name}.md`), report);
   console.log(report);
+  if (phone) expect(p5Fps, "Shinjuku phone whole-walk p5").toBeGreaterThanOrEqual(50);
+});
+
+const ikebukuroLegs = [
+  { name: "four-metres-before", points: [{x:15,z:66}] },
+  { name: "wayfinding-context", points: [{x:8,z:62}] },
+  { name: "return-to-door", points: [{x:15,z:66}] },
+
+];
+
+for (const next of [false, true]) test(`Ikebukuro concourse walk, next=${Number(next)}, on the host GPU`, async ({ page, browser }, info) => {
+  const phone = info.project.name === "phone";
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: phone ? 4 : 1 });
+  await page.goto(next ? "/?station=ikebukuro&next=1" : "/?station=ikebukuro");
+  await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready", null, { timeout: 120_000 });
+  const environment = await page.evaluate(() => {
+    const g = (window as any).__gteki, e = g.scanProbe().explorer, gl = e.renderer.getContext();
+    const ext = gl.getExtension("WEBGL_debug_renderer_info");
+    if (!ext) throw new Error("GPU measurement requires an unmasked renderer string");
+    const placed = g.setView({node:"sp_e",headingDeg:180});
+    if (!placed.placed) throw new Error("Could not place avatar at sp_e");
+    return { renderer: gl.getParameter(ext.UNMASKED_RENDERER_WEBGL), vendor: gl.getParameter(ext.UNMASKED_VENDOR_WEBGL), tier: g.quality(), viewport: [innerWidth, innerHeight], deviceScaleFactor: devicePixelRatio, drawingBuffer: [gl.drawingBufferWidth, gl.drawingBufferHeight] };
+  });
+  expect(environment.renderer).not.toMatch(/swiftshader|llvmpipe|softpipe|software/i);
+  const startedAt = new Date().toISOString();
+  const result = await page.evaluate((legs) => new Promise((resolve, reject) => {
+    const g = (window as any).__gteki, e = g.scanProbe().explorer;
+    const frames: any[] = [], outcomes: any[] = [];
+    let leg = -1, point = 0, start = 0, previous = 0, legStart = 0, checkpoint = 0;
+    let checkpointPos = e.pos.clone();
+    const frame = (t: number) => {
+      if (document.hidden || g.mode() !== "walk") { e.input.virtualKeys.clear(); reject(new Error("Walk hidden or left walk mode")); return; }
+      if (!start) { start = previous = legStart = checkpoint = t; }
+      else { frames.push({ endMs:t-start, deltaMs:t-previous, leg:leg < 0 ? "standing" : legs[leg].name, position:{x:e.pos.x,y:e.pos.y,z:e.pos.z} }); previous = t; }
+      if (leg < 0) {
+        if (t-start < 10000) { requestAnimationFrame(frame); return; }
+        leg=0; legStart=checkpoint=t; checkpointPos=e.pos.clone();
+      }
+      const targets = legs[leg].points;
+      while (point < targets.length) {
+        const p = targets[point];
+        if (Math.hypot(p.x-e.pos.x,p.z-e.pos.z)>0.35 || (p.y !== undefined && Math.abs(p.y-e.pos.y)>0.6)) break;
+        point++; checkpoint=t; checkpointPos=e.pos.clone();
+      }
+      if (point === targets.length) {
+        outcomes.push({name:legs[leg].name, done:true, position:{x:e.pos.x,y:e.pos.y,z:e.pos.z}});
+        e.input.virtualKeys.clear(); leg++; point=0;
+        if (leg === legs.length) { resolve({frames,outcomes}); return; }
+        legStart=checkpoint=t; checkpointPos=e.pos.clone();
+      } else if (t-legStart >= 120000 || (t-checkpoint >= 1000 && e.pos.distanceTo(checkpointPos)<0.1)) {
+        outcomes.push({name:legs[leg].name, done:false, reason:t-legStart>=120000?"timed out":"stuck", waypoint:point, position:{x:e.pos.x,y:e.pos.y,z:e.pos.z}});
+        e.input.virtualKeys.clear(); resolve({frames,outcomes}); return;
+      } else if (t-checkpoint >= 1000) { checkpoint=t; checkpointPos=e.pos.clone(); }
+      const target=legs[leg].points[point];
+      e.yaw=Math.atan2(-(target.x-e.pos.x),-(target.z-e.pos.z));
+      e.input.virtualKeys.add("KeyW");
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }), ikebukuroLegs);
+  const measured = result as { frames: { endMs: number; deltaMs: number; leg: string }[]; outcomes: { done: boolean }[] };
+  const segments = ["standing", ...ikebukuroLegs.map(l => l.name)].map(name => {
+    const frames = measured.frames.filter(f => f.leg === name);
+    const fps = frames.map(f => 1000 / f.deltaMs).sort((a, b) => a - b);
+    const mid = Math.floor(fps.length / 2);
+    return { name, medianFps: fps.length % 2 ? fps[mid]! : (fps[mid - 1]! + fps[mid]!) / 2,
+      p5Fps: fps[Math.ceil(fps.length * 0.05) - 1]!, longestFrameMs: Math.max(...frames.map(f => f.deltaMs)) };
+  });
+  const stem = `ikebukuro-${info.project.name}-${next ? "on" : "off"}`;
+  fs.mkdirSync(out, { recursive: true });
+  fs.writeFileSync(path.join(out, `${stem}.json`), JSON.stringify({
+    sha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+    profile: info.project.name, browser: browser.version(), cpuThrottle: phone ? 4 : 1,
+    url: page.url(), startedAt, endedAt: new Date().toISOString(), environment, segments, ...measured,
+  }, null, 2));
+  const report = [
+    `Measured ${startedAt} (UTC), ${stem}.`,
+    "| Segment | Median fps | p5 fps | Longest frame ms |",
+    "|---|---:|---:|---:|",
+    ...segments.map(s => `| ${s.name} | ${s.medianFps.toFixed(2)} | ${s.p5Fps.toFixed(2)} | ${s.longestFrameMs.toFixed(2)} |`),
+  ].join("\n") + "\n";
+  fs.writeFileSync(path.join(out, `${stem}.md`), report);
+  console.log(report);
+  expect(measured.outcomes).toHaveLength(ikebukuroLegs.length);
+  expect(measured.outcomes.every(o => o.done)).toBe(true);
+  if (phone && !next) {
+    for (const segment of segments.slice(1)) expect(segment.p5Fps, segment.name).toBeGreaterThanOrEqual(30);
+    expect(Math.max(...segments.map(s => s.longestFrameMs)), "Ikebukuro frames after ready").toBeLessThanOrEqual(250);
+  }
 });

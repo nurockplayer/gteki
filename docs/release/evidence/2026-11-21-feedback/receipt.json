@@ -1,0 +1,44 @@
+{
+  "httpStatus": 201,
+  "recordCount": 1,
+  "expirationTtl": 7776000,
+  "report": {
+    "message": "Fresh phone feedback with Turnstile and a game screenshot.",
+    "url": "http://127.0.0.1:5178/?station=shinjuku&from=poi%3Aexit%3A1&to=poi%3Aplatform%3Aoedo&lang=en&next=1",
+    "language": "en",
+    "station": "shinjuku",
+    "device": {
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "pixelRatio": 1
+      },
+      "touch": {
+        "maxTouchPoints": 5,
+        "coarsePointer": true
+      }
+    },
+    "mode": {
+      "play": "guide",
+      "camera": "guide",
+      "next": true
+    },
+    "pose": {
+      "east": -59.88904105000562,
+      "north": 211.84818156107434,
+      "up": -0.07484342410157498,
+      "headingDeg": 174.40250909331132,
+      "mode": "guide"
+    },
+    "floorId": "toei-nwd-0",
+    "simT": 32.79679999998212,
+    "buildSha": "1cc44a957f6613cdac369e63cf36e4c78d92c27d",
+    "id": "f427220f-5554-460b-afad-c87d6a137cb2",
+    "createdAt": "2026-11-21T10:51:33.768Z",
+    "status": "new"
+  },
+  "screenshotBytes": 21858,
+  "tokenPersisted": false,
+  "ipMarkerCount": 0
+}
