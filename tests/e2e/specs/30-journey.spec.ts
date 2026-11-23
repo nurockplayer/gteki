@@ -217,7 +217,8 @@ async function sceneMetrics(page: Page) {
 }
 
 test("guided walk @phone", async ({ page }, info) => {
-  test.setTimeout(1_800_000);
+  // Leave post-arrival captures headroom inside the workflow's 44-minute step (#1450).
+  test.setTimeout(2_400_000);
   const wallStart = Date.now();
   const consoleErrors = new Set<string>(), pageErrors = new Set<string>(), failedRequests = new Set<string>();
   page.on("console", message => { if (message.type() === "error" && consoleErrors.size < 20) consoleErrors.add(message.text()); });
@@ -258,6 +259,10 @@ test("guided walk @phone", async ({ page }, info) => {
       };
       requestAnimationFrame(frame);
     });
+    // The last render is only submitted when the measurement resolves. Wait for GPU
+    // completion and DOM frames before Playwright checks button stability (#1452).
+    e.renderer.getContext().finish();
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     deltas.sort((a, b) => a - b);
     const mid = Math.floor(deltas.length / 2);
     return { at, frames: deltas.length, medianMs: deltas.length ? (deltas.length % 2 ? deltas[mid]! : (deltas[mid - 1]! + deltas[mid]!) / 2) : null, p95Ms: deltas.length ? deltas[Math.ceil(deltas.length * 0.95) - 1]! : null };
@@ -267,6 +272,7 @@ test("guided walk @phone", async ({ page }, info) => {
   const cdp = await page.context().newCDPSession(page);
   const samples: any[] = [], stepS = Number(process.env.JOURNEY_STEP_S ?? 4);
   let simT = 0, arrived = false;
+  let cuesBefore: number | null = null, cuesAfter: number | null = null, waitedS = 0;
   const sample = async (arrival: boolean, simMs: number) => {
     let phaseStart = Date.now();
     await page.evaluate(() => (window as any).__gteki.goldenFrame());
@@ -463,6 +469,12 @@ test("guided walk @phone", async ({ page }, info) => {
       await page.locator(".arrival-controls .guide-more").click();
       await page.locator(".arrival-menu").getByRole("button", { name: /^(End guide|ガイド終了)$/ }).click();
       await expect.poll(() => hooks.mode(page)).toBe("walk");
+      cuesBefore = await page.evaluate(() => (window as any).__gteki.audio()?.station?.train?.cues ?? null);
+      cuesAfter = cuesBefore;
+      if (cuesBefore !== null) {
+        await hooks.simulate(page, 210); waitedS = 210;
+        cuesAfter = await page.evaluate(() => (window as any).__gteki.audio()?.station?.train?.cues ?? null);
+      }
     }
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   for (const sample of samples) expect(sample.legend, `badge visible at sample ${sample.index}`).toBe(true);
@@ -507,7 +519,23 @@ test("guided walk @phone", async ({ page }, info) => {
   const zoneControls = Object.values(ambienceByZone);
   const trains = audioRecords.flatMap(record => record?.train ? [record.train] : []);
   const trainDistances = trains.flatMap(train => train.listenerDistance === null ? [] : [train.listenerDistance]);
+  const surfaceFloor = samples[0]?.floorId, platformFloor = samples.find(s => s.arrival)?.floorId;
+  const depthBands = [samples.filter(s => s.floorId === surfaceFloor), samples.filter(s => s.floorId !== surfaceFloor && s.floorId !== platformFloor), samples.filter(s => s.floorId === platformFloor)];
+  const signatures = depthBands.map(band => {
+    const counts = new Map<string, number>();
+    for (const sample of band) {
+      const a = sample.audio?.station?.ambience;
+      if (a) { const key = JSON.stringify([a.wetGain.toFixed(2), Math.round(a.wetLowpassHz / 100), a.streetGain.toFixed(2)]); counts.set(key, (counts.get(key) ?? 0) + 1); }
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  });
+  const depth = { status: samples.every(s => s.audio?.state === "running" && !s.audio?.muted) && signatures.every(Boolean) && new Set(signatures).size === 3 ? "pass" : "fail", signatures };
+  const activeEscalators = escalators.filter(s => s.audio?.station?.escalator?.gain > 0 && s.audio.station.escalator.nearestDistance <= 3).length;
+  const escalatorShare = escalators.length ? activeEscalators / escalators.length : 0;
+  const escalator = { status: escalatorShare >= 0.8 ? "pass" : "fail", active: activeEscalators, count: escalators.length, share: escalatorShare };
+  const train = { status: cuesBefore !== null && cuesAfter !== null && cuesAfter > cuesBefore ? "pass" : "fail", waitedS, cuesBefore, cuesAfter };
   const j11 = {
+    check: { status: [depth, escalator, train].every(part => part.status === "pass") ? "pass" : "fail", depth, escalator, train },
     ambience: {
       byZone: ambienceByZone,
       differsAcrossZones: zoneControls.length < 2 ? null : zoneControls.some((controls, i) => zoneControls.slice(i + 1).some(other => controls.some(a => other.some(b => JSON.stringify(a) !== JSON.stringify(b))))),
@@ -522,7 +550,7 @@ test("guided walk @phone", async ({ page }, info) => {
   fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify(journey, null, 2));
   const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
   lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}; rides ${j7.rideCount}; farEndY ${j7.farEndY ?? "none"}; catHeight ${j7.catHeight ?? "none"}; feetY ${j7.feetY ?? "none"}; catX ${j7.catX ?? "none"}`);
-  lines.push(`- J4 (report): ${JSON.stringify(j4)}`, `- J11 (report): ${JSON.stringify(j11)}`, `- J12 (report): ${JSON.stringify(j12)}`, `- J14 (report): ${JSON.stringify(j14())}`);
+  lines.push(`- J4 (report): ${JSON.stringify(j4)}`, `- J11: ${j11.check.status}; depth ${depth.status}; escalator ${escalator.status}; train ${train.status}; ${JSON.stringify(j11)}`, `- J12 (report): ${JSON.stringify(j12)}`, `- J14 (report): ${JSON.stringify(j14())}`);
   const noLegend = samples.filter(s => !s.legend).map(s => s.index);
   lines.push(`- J13 (report): badge on screen in ${samples.length - noLegend.length} / ${samples.length} samples; missing at: ${noLegend.join(", ") || "none"}`);
   const unknownReport = unknown.join(", ") || "none";
