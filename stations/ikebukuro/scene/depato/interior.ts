@@ -114,7 +114,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     }
     const pool=new THREE.DataTexture(pixels,64,64);pool.colorSpace=THREE.SRGBColorSpace;pool.wrapS=pool.wrapT=THREE.RepeatWrapping;pool.repeat.set(1/4.4,1/4.4);pool.offset.set(0.5,0.5);pool.needsUpdate=true;textures.push(pool);
     // Baked entry spill rises from the concourse to the food hall; surface albedos stay warm and light.
-    const entryLight=(m:T.MeshBasicMaterial)=>{
+    const entryLight=(m:T.MeshBasicMaterial,gain=1)=>{
       m.onBeforeCompile=shader=>{
         shader.vertexShader=shader.vertexShader.replace("#include <common>","#include <common>\nvarying float vRetailZ;")
           .replace("#include <project_vertex>",`#include <project_vertex>
@@ -124,11 +124,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
             #endif
             vRetailZ=(modelMatrix*retailPoint).z;`);
         shader.fragmentShader=shader.fragmentShader.replace("#include <common>","#include <common>\nvarying float vRetailZ;")
-          .replace("#include <opaque_fragment>",`outgoingLight *= mix(0.28,1.0,smoothstep(${plan.bounds.front.toFixed(2)},${(plan.bounds.front+45).toFixed(2)},vRetailZ));\n#include <opaque_fragment>`);
+          .replace("#include <opaque_fragment>",`outgoingLight *= ${gain.toFixed(2)} * mix(0.18,1.0,smoothstep(${plan.bounds.front.toFixed(2)},${(plan.bounds.front+45).toFixed(2)},vRetailZ));\n#include <opaque_fragment>`);
       };
       return m;
     };
-    const counterMat=entryLight(basic("#e6ddcd")), glassMat=glass(), bronze=standard(LANDMARK_FACADE.F4_darkBronze,0.5,0.12), glow=basic(LANDMARK_STREET_BAND.glow);
+    const counterMat=entryLight(basic("#e6ddcd"),0.65), glassMat=glass(), bronze=standard(LANDMARK_FACADE.F4_darkBronze,0.5,0.12), glow=basic(LANDMARK_STREET_BAND.glow);
     const boards=levels.flatMap(l=>[{ja:`${plan.input.store.name.ja} ${l.floor.level}`,en:l.floor.label.en},...l.floor.tenants]);
     const directoryJa=plan.floors.map(f=>`${f.level} ${f.label.ja}`).join(" / ");
     const directoryEn=plan.floors.map(f=>`${f.level} ${f.label.en}`).join(" / ");
@@ -252,7 +252,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       }
       board(plan.aisleX,l.y+l.clear-0.48,plan.stair.to+5,label,0,3.4,0.45);
       if(l.index>0)for(const side of [-1,1])glassPieces.push(cube(plan.aisleX+side*2.13,l.y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from));
-      if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,basic("#e5d9c4")));}
+      if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,entryLight(basic("#e5d9c4"))));}
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
       // Station whole-body people use short, narrow counter-side paths, away from circulation.
       const lanes:Record<string,Lane>={};
