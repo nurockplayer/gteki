@@ -230,6 +230,16 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         contents.forEach((_,i)=>foodMesh.setColorAt(i,new THREE.Color(tones[i%4])));
       }
       for(const e of plan.input.entrances.filter(e=>e.level===l.floor.level)){
+        if(e.inward){
+          const [nx,nz]=e.inward,yaw=Math.atan2(-nx,nz),tx=nz,tz=-nx;
+          board(e.point[0],l.y+2.45,e.point[1],label,yaw,3.8,0.6);
+          frames.push(cube(e.point[0],l.y+2.76,e.point[1],4,0.12,0.3,yaw));
+          for(const side of [-1,1]){
+            frames.push(cube(e.point[0]+tx*side*1.85,l.y+1.35,e.point[1]+tz*side*1.85,0.08,2.7,0.3,yaw));
+            glassPieces.push(cube(e.point[0]+nx*0.65+tx*side*1.8,l.y+1.3,e.point[1]+nz*0.65+tz*side*1.8,0.025,2.6,1.3,yaw));
+          }
+          continue;
+        }
         const front=e.point[1]===plan.bounds.front,yaw=front?0:Math.PI/2;
         board(e.point[0],l.y+2.45,e.point[1],label,yaw,3.8,0.6);
         // Identical bronze lintel/reveals on every entrance, inside and outside.
@@ -286,7 +296,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   };
   const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
   return {root,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
-    update(camera:T.Camera,dt=0,elapsed=0){
+    update(camera:T.Camera,dt=0,elapsed=0,active=true){
+      if(!active){if(loaded)unload();return;}
       const cameraP=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cameraP.x,y:cameraP.y-2,z:cameraP.z};
       const near=(plan.contains([p.x,p.z]) && p.y>=levels[0]!.y-1 && p.y<=levels.at(-1)!.y+levels.at(-1)!.clear) || plan.input.entrances.some(e=>Math.hypot(p.x-e.point[0],p.z-e.point[1],p.y-plan.height(e.level))<40);
       if(!near){if(loaded)unload();return;}

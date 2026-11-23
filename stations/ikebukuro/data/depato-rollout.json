@@ -1,0 +1,427 @@
+{
+  "recordedAt": "2026-11-23 JST",
+  "source": "assets/ikebukuro_context_low.glb",
+  "sourceReceipt": "docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-daebc9ca51cbeea3c90a.json",
+  "buildingIdentity": "PR #1512 at 8302307a4c454f11ff131f19ccff191066ce2096, docs/gis/context/ikebukuro-landmarks-next.json",
+  "partitions": "PLATEAU LOD1 bottom-face boundary; PARCO clipped at renderer z=-65, Tobu at z=70 and x=-65 (station-side internal partition). Original outer vertices retained to 1 mm. Floor spacing 4.5 m anchored to station entrance height, not surveyed store heights.",
+  "stores": [
+    {
+      "id": "tobu-ikebukuro",
+      "poiId": "shop-ikb-tobudept",
+      "sourceId": "tobu-ikebukuro-floorguide-2026-10",
+      "building": "bldg_fb241b42-14ae-4785-bb97-134d2714d3a3",
+      "footprint": [
+        [
+          -179.329,
+          37.348
+        ],
+        [
+          -178.081,
+          35.096
+        ],
+        [
+          -157.96,
+          42.882
+        ],
+        [
+          -156.983,
+          40.191
+        ],
+        [
+          -154.062,
+          41.117
+        ],
+        [
+          -152.905,
+          38.576
+        ],
+        [
+          -150.163,
+          39.652
+        ],
+        [
+          -149.036,
+          37.001
+        ],
+        [
+          -146.384,
+          38.117
+        ],
+        [
+          -145.147,
+          35.606
+        ],
+        [
+          -142.276,
+          36.462
+        ],
+        [
+          -141.26,
+          33.591
+        ],
+        [
+          -138.322,
+          34.661
+        ],
+        [
+          -137.271,
+          32.205
+        ],
+        [
+          -135.7,
+          32.854
+        ],
+        [
+          -135.407,
+          32.137
+        ],
+        [
+          -128.731,
+          34.727
+        ],
+        [
+          -119.899,
+          12.848
+        ],
+        [
+          -117.111,
+          9.531
+        ],
+        [
+          -119.585,
+          -42.715
+        ],
+        [
+          -118.712,
+          -42.885
+        ],
+        [
+          -118.977,
+          -46.825
+        ],
+        [
+          -120.027,
+          -46.844
+        ],
+        [
+          -120.415,
+          -52.654
+        ],
+        [
+          -119.574,
+          -52.645
+        ],
+        [
+          -121.914,
+          -109.473
+        ],
+        [
+          -116.77,
+          -121.675
+        ],
+        [
+          -115.84,
+          -121.366
+        ],
+        [
+          -113.613,
+          -124.429
+        ],
+        [
+          -115.334,
+          -125.097
+        ],
+        [
+          -96.638,
+          -169.665
+        ],
+        [
+          -94.001,
+          -168.67
+        ],
+        [
+          -93.546,
+          -169.938
+        ],
+        [
+          -83.541,
+          -165.501
+        ],
+        [
+          -83.9,
+          -164.41
+        ],
+        [
+          -65.0,
+          -156.779
+        ],
+        [
+          -65.0,
+          -47.811
+        ],
+        [
+          -75.19,
+          -23.532
+        ],
+        [
+          -74.671,
+          -23.225
+        ],
+        [
+          -106.073,
+          47.164
+        ],
+        [
+          -103.473,
+          47.956
+        ],
+        [
+          -109.482,
+          70.0
+        ],
+        [
+          -206.072,
+          70.0
+        ],
+        [
+          -193.966,
+          40.957
+        ],
+        [
+          -191.284,
+          42.124
+        ],
+        [
+          -190.077,
+          39.592
+        ],
+        [
+          -187.156,
+          40.458
+        ],
+        [
+          -186.099,
+          37.907
+        ],
+        [
+          -183.147,
+          39.003
+        ],
+        [
+          -182.24,
+          36.202
+        ]
+      ],
+      "elevations": {
+        "1F": 32.41,
+        "B1": 27.91
+      },
+      "circulation": {
+        "aisleX": -100,
+        "from": -113,
+        "to": -101
+      },
+      "entrances": [
+        {
+          "level": "B1",
+          "point": [
+            -65,
+            -82
+          ],
+          "outsideNode": "c_w",
+          "inward": [
+            -1.0,
+            0.0
+          ]
+        },
+        {
+          "level": "1F",
+          "point": [
+            -118.509,
+            -20
+          ],
+          "outsideNode": "depato-tobu-street",
+          "inward": [
+            0.9988807330265103,
+            -0.047299906854258236
+          ]
+        }
+      ],
+      "street": {
+        "id": "depato-tobu-street",
+        "point": [
+          -124.50228439815906,
+          -19.71620055887445
+        ]
+      }
+    },
+    {
+      "id": "ikebukuro-parco",
+      "poiId": "shop-ikb-parco",
+      "sourceId": "jcsc-ikebukuro-parco-facility-2021-10",
+      "building": "bldg_b42ec24e-73aa-4359-893c-3c1662d7d8b2",
+      "footprint": [
+        [
+          49.869,
+          -65.0
+        ],
+        [
+          57.128,
+          -81.48
+        ],
+        [
+          65.032,
+          -78.135
+        ],
+        [
+          64.13,
+          -75.77
+        ],
+        [
+          79.382,
+          -69.94
+        ],
+        [
+          79.753,
+          -70.859
+        ],
+        [
+          77.813,
+          -71.596
+        ],
+        [
+          78.189,
+          -72.586
+        ],
+        [
+          76.38,
+          -73.331
+        ],
+        [
+          77.886,
+          -76.303
+        ],
+        [
+          57.02,
+          -85.681
+        ],
+        [
+          60.875,
+          -94.794
+        ],
+        [
+          59.539,
+          -95.36
+        ],
+        [
+          71.078,
+          -122.449
+        ],
+        [
+          72.579,
+          -121.884
+        ],
+        [
+          73.709,
+          -121.458
+        ],
+        [
+          95.958,
+          -171.285
+        ],
+        [
+          114.78,
+          -163.068
+        ],
+        [
+          103.58,
+          -114.139
+        ],
+        [
+          86.304,
+          -72.97
+        ],
+        [
+          84.64,
+          -74.03
+        ],
+        [
+          82.933,
+          -70.083
+        ],
+        [
+          84.704,
+          -69.243
+        ],
+        [
+          82.908,
+          -65.0
+        ]
+      ],
+      "elevations": {
+        "1F": 32.95,
+        "B1": 28.45
+      },
+      "circulation": {
+        "aisleX": 89,
+        "from": -121,
+        "to": -109
+      },
+      "entrances": [
+        {
+          "level": "B1",
+          "point": [
+            67.053,
+            -113
+          ],
+          "outsideNode": "n_h",
+          "inward": [
+            0.920010600475367,
+            0.39189347406272884
+          ]
+        },
+        {
+          "level": "1F",
+          "point": [
+            103.102,
+            -113
+          ],
+          "outsideNode": "depato-parco-street",
+          "inward": [
+            -0.9221018498653213,
+            -0.3869472554172627
+          ]
+        }
+      ],
+      "street": {
+        "id": "depato-parco-street",
+        "point": [
+          108.63461109919193,
+          -110.67831646749643
+        ]
+      }
+    }
+  ],
+  "skipped": [
+    {
+      "id": "esola-ikebukuro",
+      "reason": "No usable entrance in the current walkable station/context: no entrance tie in the POI, nearest public B1 approach sw_h is separated from the footprint by an unmodelled underground gap."
+    },
+    {
+      "id": "lumine-ikebukuro",
+      "reason": "The existing g_jr_s tie is a station tie, explicitly not a store entrance. Phase-1 south wing has no usable doorway within current walkable coverage; connecting it would require a new unmodelled underground corridor."
+    },
+    {
+      "id": "sunshine-city-alpa",
+      "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
+    },
+    {
+      "id": "sunshine-city-world-import-mart",
+      "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
+    },
+    {
+      "id": "sunshine-city-60",
+      "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
+    }
+  ]
+}
