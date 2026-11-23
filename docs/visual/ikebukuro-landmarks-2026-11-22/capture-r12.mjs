@@ -12,7 +12,7 @@ const previous=JSON.parse(await fs.readFile(evidence+'/r8/frames.json','utf8'));
 const recent=JSON.parse(await fs.readFile(evidence+'/r11/frames.json','utf8'));
 for(const frame of recent.frames){const i=previous.frames.findIndex(f=>f.file===frame.file);if(i>=0)previous.frames[i]=frame;}
 const sourceRoad=JSON.parse(await fs.readFile(evidence+'/r10-sunshine-road-candidates.json','utf8'));
-const server=spawn('nice',['-n','15','node',repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
+const server=spawn('nice',['-n','15','/Users/tachikoma/.local/share/fnm/aliases/default/bin/node',repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
 try{
 await new Promise((resolve,reject)=>{server.stdout.on('data',c=>{if(c.toString().includes('Local:'))resolve()});server.once('error',reject);server.once('exit',c=>reject(new Error('Capture server exited: '+c)))});
 const task=await taskSpace('Ikebukuro package A-I r12'),page=task.page('p1'),frames=[];
