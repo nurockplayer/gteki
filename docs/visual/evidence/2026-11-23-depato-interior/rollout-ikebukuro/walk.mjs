@@ -69,6 +69,8 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
                 scene.setCameraFocus(null,null,null,{x:15,y:27.7,z:70});update(...args);
               };
               g.setView({node:'n_h',headingDeg:180});g.setCamera(null);g.goldenFrame();g.goldenFrame();
+              scene.setCameraFocus(null,null,null,{x:66,y:28.45,z:-113});
+              scene.update(0,0,e.camera);
               const before=loaded(),walk=g.walkPath([{x:71.5,z:-116.5,y:28.45}],{speed:'walk',dt:1/30,maxSeconds:120});
               return {detail,streamingFocus:detail==='unloaded'?'seibu-held':'avatar',before,after:loaded(),walk,avatar:g.avatar()};
             }finally{scene.update=update;g.holdFrames(false);}
