@@ -1,0 +1,1647 @@
+{
+  "capturedAt": "2026-11-23T01:55:22.680Z",
+  "timeZone": "UTC",
+  "codeCommit": "88577bacf15d2cfc09f87e39622499f74daa8025",
+  "performanceCertification": "AD foreground measurement required; two CDP profiles showed approximately 1 Hz scheduling with most time idle, including after focus emulation. No J12 pass claimed.",
+  "measurements": {
+    "desktop": {
+      "boardWayfindingRatio": 0.4233924978034277,
+      "storeBoard": {
+        "pixels": 8840,
+        "meanLinearLuminance": 0.07102335427084225,
+        "clippedAnyChannel255Percent": 0.0,
+        "p005Luminance": 0.02076874086020205,
+        "p01Luminance": 0.022492961333618933,
+        "p50Luminance": 0.034333994691121125,
+        "p05Luminance": 0.027290823787649496,
+        "p95Luminance": 0.3488271203100621
+      },
+      "storeBoardPolygon": [
+        {
+          "x": 770.3059358881967,
+          "y": 580.1726825379548,
+          "behind": false
+        },
+        {
+          "x": 561.8626107640482,
+          "y": 609.903471861012,
+          "behind": false
+        },
+        {
+          "x": 564.2822788247734,
+          "y": 570.9126773264331,
+          "behind": false
+        },
+        {
+          "x": 769.3893297476443,
+          "y": 534.2837866696431,
+          "behind": false
+        }
+      ],
+      "wayfinding": {
+        "pixels": 8046,
+        "meanLinearLuminance": 0.167748258741743,
+        "clippedAnyChannel255Percent": 0.0,
+        "p005Luminance": 0.020155676043156413,
+        "p01Luminance": 0.020710651636834883,
+        "p50Luminance": 0.06081609388029211,
+        "p05Luminance": 0.021649521126816652,
+        "p95Luminance": 0.49986615994695427
+      },
+      "wayfindingPolygon": [
+        {
+          "x": 330.5828025704119,
+          "y": 485.59885774296356,
+          "behind": false
+        },
+        {
+          "x": 509.5713595432502,
+          "y": 525.916574348063,
+          "behind": false
+        },
+        {
+          "x": 513.0425108107606,
+          "y": 485.2671359482386,
+          "behind": false
+        },
+        {
+          "x": 338.07839661866666,
+          "y": 438.9423180603191,
+          "behind": false
+        }
+      ],
+      "streetDoor": {
+        "pixels": 183264,
+        "meanLinearLuminance": 0.37982358796952626,
+        "clippedAnyChannel255Percent": 0.0,
+        "p005Luminance": 0.016488395248315274,
+        "p01Luminance": 0.016488395248315274,
+        "p50Luminance": 0.48402453856407407,
+        "p05Luminance": 0.017304169747359096,
+        "p95Luminance": 0.4898864222354189
+      },
+      "nearestJaCapPx": 21.522062649633554,
+      "letterContrastMaterial": 10.625628349541163,
+      "letterContrastPixelBackgroundMedianToInkCore": 8.419560118921236,
+      "counterLabelPixels": {
+        "pixels": 64896,
+        "meanLinearLuminance": 0.47572014412935126,
+        "clippedAnyChannel255Percent": 0.0,
+        "p005Luminance": 0.017304169747359096,
+        "p01Luminance": 0.025444830153496314,
+        "p50Luminance": 0.5166715034419698,
+        "p05Luminance": 0.29030527760693775,
+        "p95Luminance": 0.535065310379716
+      },
+      "drawCallsPerFloor": [
+        13,
+        13
+      ]
+    },
+    "phone": {
+      "boardWayfindingRatio": 0.35293262318758295,
+      "storeBoard": {
+        "pixels": 5062,
+        "meanLinearLuminance": 0.06281235083290886,
+        "clippedAnyChannel255Percent": 0.0,
+        "p005Luminance": 0.02031504565451181,
+        "p01Luminance": 0.02031504565451181,
+        "p50Luminance": 0.025073422947468865,
+        "p05Luminance": 0.025073422947468865,
+        "p95Luminance": 0.3110982607733215
+      },
+      "storeBoardPolygon": [
+        {
+          "x": 361.0167227255913,
+          "y": 475.0151280757223,
+          "behind": false
+        },
+        {
+          "x": 207.4136226419955,
+          "y": 501.5763596967781,
+          "behind": false
+        },
+        {
+          "x": 207.26974008940678,
+          "y": 472.97306952140434,
+          "behind": false
+        },
+        {
+          "x": 358.608866417303,
+          "y": 439.60843332869047,
+          "behind": false
+        }
+      ],
+      "wayfinding": {
+        "pixels": 4012,
+        "meanLinearLuminance": 0.1779726404025967,
+        "clippedAnyChannel255Percent": 2.1934197407776668,
+        "p005Luminance": 0.014341750825696461,
+        "p01Luminance": 0.017349079971041587,
+        "p50Luminance": 0.019877713910838833,
+        "p05Luminance": 0.017349079971041587,
+        "p95Luminance": 0.7182054851344789
+      },
+      "wayfindingPolygon": [
+        {
+          "x": 32.723845975972324,
+          "y": 426.8361595948841,
+          "behind": false
+        },
+        {
+          "x": 158.51064095148055,
+          "y": 446.4582217681031,
+          "behind": false
+        },
+        {
+          "x": 158.96085536572684,
+          "y": 416.69022732828813,
+          "behind": false
+        },
+        {
+          "x": 34.96930388666425,
+          "y": 393.7230405770114,
+          "behind": false
+        }
+      ],
+      "streetDoor": {
+        "pixels": 96407,
+        "meanLinearLuminance": 0.3543622764989881,
+        "clippedAnyChannel255Percent": 0.0,
+        "p005Luminance": 0.024252304428856054,
+        "p01Luminance": 0.024252304428856054,
+        "p50Luminance": 0.4480300314866867,
+        "p05Luminance": 0.025073422947468865,
+        "p95Luminance": 0.45202412905457795
+      },
+      "nearestJaCapPx": 16.117949998250314,
+      "letterContrastMaterial": 10.625628349541163,
+      "letterContrastPixelBackgroundMedianToInkCore": 7.156392187642853,
+      "counterLabelPixels": {
+        "pixels": 23400,
+        "meanLinearLuminance": 0.4514739157776806,
+        "clippedAnyChannel255Percent": 0.0,
+        "p005Luminance": 0.025073422947468865,
+        "p01Luminance": 0.027130088274824236,
+        "p50Luminance": 0.4872548574808738,
+        "p05Luminance": 0.1679372979795128,
+        "p95Luminance": 0.4872548574808738
+      },
+      "drawCallsPerFloor": [
+        13,
+        13
+      ]
+    }
+  },
+  "failures": [],
+  "profiles": [
+    {
+      "device": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900,
+        "mobile": false
+      },
+      "searchHits": [
+        {
+          "query": "\u897f\u6b66\u6c60\u888b\u672c\u5e97",
+          "text": [
+            "\u897f\u6b66\u6c60\u888b\u672c\u5e97Seibu Ikebukuro B1"
+          ]
+        },
+        {
+          "query": "\u30c7\u30d1\u5730\u4e0b",
+          "text": [
+            "\u897f\u6b66\u6c60\u888b\u672c\u5e97Seibu Ikebukuro B1 \u00b7 \u201c\u30c7\u30d1\u5730\u4e0b\u201d"
+          ]
+        }
+      ],
+      "routeOk": true,
+      "routeEndpoints": {
+        "from": "jr-south-gate",
+        "to": "shop-ikb-seibu-honten",
+        "first": {
+          "x": -69.5,
+          "y": -30.5,
+          "z": 27.58,
+          "zKnown": true,
+          "stepIndex": -1,
+          "floorId": "b1",
+          "sceneGap": true
+        }
+      },
+      "legs": [
+        {
+          "name": "four-metres-before",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          }
+        },
+        {
+          "name": "wayfinding-context",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          }
+        },
+        {
+          "name": "return-to-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 14.721407566396442,
+            "y": -65.84078969207712,
+            "z": 27.58014905116965
+          }
+        },
+        {
+          "name": "through-station-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 121
+          },
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          }
+        },
+        {
+          "name": "food-hall-main-aisle",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1389
+          },
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "counter-close",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 52
+          },
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "escalator-board",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 925
+          },
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "ride-to-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 312
+          },
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "wide-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 62
+          },
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "street-door-inside",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 714
+          },
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "through-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 166
+          },
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          }
+        },
+        {
+          "name": "flag-off-same-pose",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          }
+        }
+      ],
+      "frames": [
+        {
+          "name": "entrance-before",
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9431259913772756,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "09291b693adf7db6c91fcd87623a1cb7d0a753a392b957799cf8b1263eca031d"
+        },
+        {
+          "name": "entrance-context",
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.7980250203384978,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -2.5,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "50f72ee7773cfa3be06259715d076f48084e029bc85a8736bd8b81dfe099fa5f"
+        },
+        {
+          "name": "entrance-inside",
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.0208396328684386,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "9c7cb149cdfbfb8e53f0edcd93918e2c34208435179a408352dab850b1d2021f"
+        },
+        {
+          "name": "food-hall-aisle",
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9426939392174853,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 2.8815926535897933,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "305b2726365dc49874eacebd078048520cfabca1e5c43bdc9cfab74ac55a63a7"
+        },
+        {
+          "name": "counter",
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.6671876725172436,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "92380de7427e0f508bf2b3631b605782886adba94b4d6abdc0aba1aab5724a24"
+        },
+        {
+          "name": "escalator-boarding",
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.942693939217485,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "e91d01d2e30a620e67172005c43994bb646df582f1ca9b47fbedd630dc71b341"
+        },
+        {
+          "name": "arrival-1F",
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000053,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "e0ed71254325e2552aca4466af2f6ac31384a87dc6b6176ee9984319ee157231"
+        },
+        {
+          "name": "wide-1F",
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9426939392174871,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 2.741592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "08f7a217f401a3abd37d415b3485253014f71e86f442a5b26ecee34c8e91f9a9"
+        },
+        {
+          "name": "street-door-inside",
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.942693939217485,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "9068f9e63830c682ba42bce58b60d994354b3f28cec97ce8e674265aaf233bd5"
+        },
+        {
+          "name": "street-door-outside",
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000018,
+            "raise": 0.17453292519943295,
+            "pitch": 0.40420154222909066,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "abcba1f72b2ad174d214573ff83bfeb1c462fc9f793599a15d71999228c755de"
+        },
+        {
+          "name": "flag-off",
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999972,
+            "raise": 0.17453292519943295,
+            "pitch": 0.4277867193525217,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": null,
+          "depato": null,
+          "sha256": "b6430356eadedf714088b3a09545b84c944fd8e9815879d8edab954f0819aa5f"
+        }
+      ]
+    },
+    {
+      "device": {
+        "name": "phone",
+        "width": 390,
+        "height": 844,
+        "mobile": true
+      },
+      "searchHits": [
+        {
+          "query": "\u897f\u6b66\u6c60\u888b\u672c\u5e97",
+          "text": [
+            "\u897f\u6b66\u6c60\u888b\u672c\u5e97Seibu Ikebukuro B1"
+          ]
+        },
+        {
+          "query": "\u30c7\u30d1\u5730\u4e0b",
+          "text": [
+            "\u897f\u6b66\u6c60\u888b\u672c\u5e97Seibu Ikebukuro B1 \u00b7 \u201c\u30c7\u30d1\u5730\u4e0b\u201d"
+          ]
+        }
+      ],
+      "routeOk": true,
+      "routeEndpoints": {
+        "from": "jr-south-gate",
+        "to": "shop-ikb-seibu-honten",
+        "first": {
+          "x": -69.5,
+          "y": -30.5,
+          "z": 27.58,
+          "zKnown": true,
+          "stepIndex": -1,
+          "floorId": "b1",
+          "sceneGap": true
+        }
+      },
+      "legs": [
+        {
+          "name": "four-metres-before",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          }
+        },
+        {
+          "name": "wayfinding-context",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          }
+        },
+        {
+          "name": "return-to-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 14.721407566396442,
+            "y": -65.84078969207712,
+            "z": 27.58014905116965
+          }
+        },
+        {
+          "name": "through-station-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 121
+          },
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          }
+        },
+        {
+          "name": "food-hall-main-aisle",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1389
+          },
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "counter-close",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 52
+          },
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "escalator-board",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 925
+          },
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "ride-to-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 312
+          },
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "wide-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 62
+          },
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "street-door-inside",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 714
+          },
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "through-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 166
+          },
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          }
+        },
+        {
+          "name": "flag-off-same-pose",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          }
+        }
+      ],
+      "frames": [
+        {
+          "name": "entrance-before",
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000027,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "5ae3072794a758f521dbd2a24b2d923f0df034787b8c1aed8c380714a9caafd3"
+        },
+        {
+          "name": "entrance-context",
+          "avatar": {
+            "x": 8.270774097400135,
+            "y": -62.13538704870007,
+            "z": 27.579999923706055
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9593210526244866,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -2.28,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "0bd51e25b232673ffd21fc825c9801e783788dbe272c73e1ceca762da72b776b"
+        },
+        {
+          "name": "entrance-inside",
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "419004fcdad337bf16cea17ca0693a8ab3102f86bff8eae91357d1b11cec12b2"
+        },
+        {
+          "name": "food-hall-aisle",
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000006,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 2.8815926535897933,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "3a5e79918b1b6d244c48e681f5685bfc4681b38aa2e1127835f16ac5b743d61e"
+        },
+        {
+          "name": "counter",
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.6449087724469562,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "b32d13e6afd72628ad087731d303d592e63ff9ff3b82ba71606156c98811b9dc"
+        },
+        {
+          "name": "escalator-boarding",
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            true,
+            false,
+            false,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "56952db39be92206a317f2511b7b39d1443fef18ac7bcd9a316c53ec19d61968"
+        },
+        {
+          "name": "arrival-1F",
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.249999999999996,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "652b3153377b68d0de0aff40ba8ce3f5b5562c7e47119af3d0a765aa1658c48e"
+        },
+        {
+          "name": "wide-1F",
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.25,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 2.741592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "ee8f9a5a31d067f14f612147ad62a733778e57898bf29975b433e3592dad1752"
+        },
+        {
+          "name": "street-door-inside",
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000003,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "2859b77497e33ce6caa873e9f50f75b1c61357abd20784c39bbb48c88b8d86ba"
+        },
+        {
+          "name": "street-door-outside",
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000003,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": [
+            false,
+            false,
+            true,
+            false,
+            true
+          ],
+          "depato": {
+            "atlasPx": 1024,
+            "boardContrast": 10.625628349541163,
+            "floorRoughness": [
+              0.3,
+              0.24
+            ],
+            "clearHeights": [
+              3.1,
+              3.8
+            ],
+            "drawCallsPerFloor": [
+              13,
+              13
+            ],
+            "font": "GTEki Sign JP",
+            "jaCapHeightM": 0.15
+          },
+          "sha256": "ebcd7377b5254386890481ed62ef15e4e0e77e8bef12c3c1368f22fff7468394"
+        },
+        {
+          "name": "flag-off",
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.4,
+            "raise": 0.17453292519943295,
+            "pitch": 0.40185252850322534,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "shaderErrors": [],
+          "visibleFloorGroups": null,
+          "depato": null,
+          "sha256": "b3e9df1d5d5650f2c26e087fbbc506458581dd39210b38198d3a17641200ce3d"
+        }
+      ]
+    }
+  ]
+}
