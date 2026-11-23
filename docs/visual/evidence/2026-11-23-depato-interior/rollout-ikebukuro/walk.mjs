@@ -7,7 +7,10 @@ const entry=(await listTaskSpaces()).find(s=>s.name==='depato-rollout-ikebukuro'
 const task=!entry?await taskSpace('depato-rollout-ikebukuro'):await taskSpace(entry.id);
 const page=(await task.pages())[0]??await task.adopt((await task.tabs())[0].page);
 console.log({spaceId:task.spaceId});
-const result={runtimeHead,capturedAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[],seibu:[],skipped:config.skipped,failures:[]};
+const previous=JSON.parse(await fs.readFile(base+'/receipt.json','utf8'));
+const preserved=previous.profiles.find(p=>p.device.name==='desktop'&&p.store==='tobu-ikebukuro');
+preserved.sourceHead=previous.runtimeHead;
+const result={runtimeHead,capturedAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[preserved],seibu:[],skipped:config.skipped,failures:[]};
 const save=()=>fs.writeFile(base+'/receipt.json',JSON.stringify(result,null,2)+'\n');
 const walk=async(profile,name,points)=>{
   for(const point of points){
@@ -39,6 +42,7 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
   await page.evaluate(async()=>{await window.__gteki.scanProbe().explorer.stationScene.settled?.();});
   console.log({device:device.name,snapshot:(await page.snapshot()).slice(0,400)});
   for(const store of config.stores){
+    if(device.name==='desktop' && store.id==='tobu-ikebukuro')continue;
     const profile={device,store:store.id,frames:[],legs:[]};result.profiles.push(profile);
     try{
       await page.goto('http://127.0.0.1:5291/?station=ikebukuro&next=1&open=search');
