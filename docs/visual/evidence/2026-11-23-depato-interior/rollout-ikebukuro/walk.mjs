@@ -9,9 +9,11 @@ console.log({spaceId:task.spaceId});
 const result={runtimeHead,capturedAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[],seibu:[],skipped:config.skipped,failures:[]};
 const save=()=>fs.writeFile(base+'/receipt.json',JSON.stringify(result,null,2)+'\n');
 const walk=async(profile,name,points)=>{
-  const leg=await page.evaluate(points=>{const g=window.__gteki;g.setCamera(null);return {walk:g.walkPath(points,{speed:'walk',dt:1/30,maxSeconds:120}),avatar:g.avatar()};},points);
-  profile.legs.push({name,...leg});
-  if(!leg.walk.done)throw Error(`${name}: ${JSON.stringify(leg)}`);
+  for(const point of points){
+    const leg=await page.evaluate(point=>{const g=window.__gteki;g.setCamera(null);return {walk:g.walkPath([point],{speed:'walk',dt:1/30,maxSeconds:120}),avatar:g.avatar()};},point);
+    profile.legs.push({name,...leg});
+    if(!leg.walk.done)throw Error(`${name}: ${JSON.stringify(leg)}`);
+  }
 };
 const frame=async(profile,name,yaw)=>{
   await page.evaluate(yaw=>{const g=window.__gteki;g.setCamera({yaw});g.holdFrames(true);g.goldenFrame();g.goldenFrame();g.goldenFrame();},yaw);
