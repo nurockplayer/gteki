@@ -73,6 +73,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   for(const e of plan.input.entrances){
     const n=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!;
     const a=new THREE.Vector3(...ctx.enuToRenderer({...n.position,z:n.position.z!})), b=new THREE.Vector3(e.point[0],plan.height(e.level),e.point[1]);
+    // Overlap the footprint: an entrance point rounded off the sloping edge must not leave a floor crack.
+    b.add(new THREE.Vector3(b.x-a.x,0,b.z-a.z).normalize().multiplyScalar(0.5));
     const normal=new THREE.Vector3(b.z-a.z,0,a.x-b.x).normalize().multiplyScalar(2);
     const corners=[a.clone().add(normal),a.clone().sub(normal),b.clone().sub(normal),b.clone().add(normal)];
     const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute([0,1,2,0,2,3].flatMap(i=>corners[i]!.toArray()),3));g.computeVertexNormals();
@@ -135,9 +137,12 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       fm.onBeforeCompile=shader=>{
         shader.vertexShader="varying vec3 retailPosition;\n"+shader.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nretailPosition = position;");
         shader.fragmentShader="varying vec3 retailPosition;\n"+shader.fragmentShader.replace("#include <map_fragment>",`#include <map_fragment>
- diffuseColor.rgb *= 1.0 + 0.2 * (1.0-smoothstep(2.0,5.0,abs(retailPosition.x-${plan.stair.x}))) * (1.0-smoothstep(7.0,12.0,abs(retailPosition.z-${(plan.stair.from+plan.stair.to)/2})));`);
+ diffuseColor.rgb *= 1.0 + 0.2 * (1.0-smoothstep(2.0,5.0,abs(retailPosition.x-${plan.stair.x.toFixed(4)}))) * (1.0-smoothstep(7.0,12.0,abs(retailPosition.z-${((plan.stair.from+plan.stair.to)/2).toFixed(4)})));`);
       };
-      group.add(new THREE.Mesh(l.floorG,fm),new THREE.Mesh(l.ceilingG,basic("#ded3c2")),new THREE.Mesh(l.wallG,basic("#d2c6b4")));
+      const shell=[l.ceilingG.clone(),l.wallG.clone()];
+      shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#ded3c2":"#d2c6b4");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
+      const shellG=retain(mergeGeometries(shell));shell.forEach(g=>g.dispose());const shellMat=basic("#ffffff");shellMat.vertexColors=true;
+      group.add(new THREE.Mesh(l.floorG,fm),new THREE.Mesh(shellG,shellMat));
       const pad=cube(plan.aisleX,l.y-0.035,plan.stair.to+1,5,0.07,2);retain(pad);landing.add(new THREE.Mesh(pad,fm));
       const discs:{x:number;y:number;z:number}[]=[];
       for(let z=Math.ceil(plan.bounds.front/2.2)*2.2;z<plan.bounds.back;z+=2.2)for(let x=Math.ceil(plan.bounds.left/2.2)*2.2;x<plan.bounds.right;x+=2.2){
@@ -150,13 +155,14 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
         const slot=slots[row]!, labelHeight=height*0.6;
         const labelWidth=slot.width/40*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
-        for(const text of [false,true]){
+        for(const face of [0,1,-1]){
+          const text=face!==0;
           const g=new THREE.PlaneGeometry(text?labelWidth*scale:width,text?labelHeight*scale:height).toNonIndexed(),uv=g.getAttribute("uv");
           for(let i=0;i<uv.count;i++){
             uv.setX(i,(slot.x+(text?uv.getX(i)*slot.width:1))/1024);
             uv.setY(i,1-(slot.y+(text?(1-uv.getY(i))*40:1))/1024);
           }
-          g.rotateY(yaw);g.translate(x+Math.sin(yaw)*(text?0.002:0),y,z+Math.cos(yaw)*(text?0.002:0));signs.push(g);
+          g.rotateY(yaw+(face<0?Math.PI:0));g.translate(x+Math.sin(yaw)*face*0.002,y,z+Math.cos(yaw)*face*0.002);signs.push(g);
         }
       };
       const contents:{x:number;y:number;z:number}[]=[];
@@ -177,6 +183,12 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       for(const e of plan.input.entrances.filter(e=>e.level===l.floor.level)){
         const front=e.point[1]===plan.bounds.front,yaw=front?0:Math.PI/2;
         board(e.point[0],l.y+2.55,e.point[1],label,yaw,3.8,1.0);
+        if(l.floor.level==="1F"){
+          const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,p=ctx.enuToRenderer({...outside.position,z:outside.position.z!});
+          const direction=new THREE.Vector3(p[0]-e.point[0],0,p[2]-e.point[1]).normalize();
+          const sky=retain(new THREE.PlaneGeometry(40,20));sky.rotateY(Math.atan2(direction.x,direction.z)+Math.PI);sky.translate(p[0]+direction.x*12,l.y+7,p[2]+direction.z*12);
+          group.add(new THREE.Mesh(sky,basic("#e3d9c9")));
+        }
         // Bronze double doorway; clear centre remains walkable in either direction.
         for(const side of [-1,1])frames.push(cube(e.point[0]+(front?side*1.85:0),l.y+1.35,e.point[1]+(front?0:side*1.85),front?0.08:0.16,2.7,front?0.16:0.08));
         // Glazed leaves stand open against the jambs, never across the walk line.
@@ -214,7 +226,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.3,0.24],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
   const unload=()=>{root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];people=[];loaded=false;};
-  return {root,walkable,colliders,setAvatar(p:typeof avatar){avatar=p?{...p,y:p.y-0.4}:null;},
+  return {root,walkable,colliders,setAvatar(p:typeof avatar){avatar=p;},
     update(camera:T.Camera,elapsed:number){
       const cameraP=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cameraP.x,y:cameraP.y-2,z:cameraP.z};
       const near=(plan.contains([p.x,p.z]) && p.y>=levels[0]!.y-1 && p.y<=levels.at(-1)!.y+levels.at(-1)!.clear) || plan.input.entrances.some(e=>Math.hypot(p.x-e.point[0],p.z-e.point[1],p.y-plan.height(e.level))<40);
@@ -229,8 +241,9 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         if(peopleOnFloor.floor!==floor)continue;
         const mesh=peopleOnFloor.mesh,y=levels[floor]!.y,matrix=new THREE.Matrix4(),q=new THREE.Quaternion();
         for(let person=0;person<6;person++){
-          const staff=person>=4,x=staff?plan.counters[(person-4)*9]![0]+1:plan.aisleX+1.05;
-          const z=staff?plan.counters[(person-4)*9]![1]:plan.bounds.front+15+person*4+Math.sin(elapsed*0.22+person)*2;
+          const staff=person>=4,counter=plan.counters[(person-4)*9];
+          const x=staff?counter![0]+(counter![0]<plan.aisleX?-0.15:0.15):plan.aisleX+1.05;
+          const z=staff?plan.counters[(person-4)*9]![1]:(floor===0?plan.bounds.front+15:plan.stair.to+7)+person*4+Math.sin(elapsed*0.22+person)*2;
           const gait=staff?0:Math.sin(elapsed*3.5+person*1.7)*0.35;
           const parts:[[number,number,number],[number,number,number],number][]=[[[0,1.55,0],[0.14,0.14,0.14],0],[[0,1.05,0],[0.23,0.3,0.15],0],[[-0.11,0.45,0],[0.07,0.23,0.07],gait],[[0.11,0.45,0],[0.07,0.23,0.07],-gait],[[-0.27,1,0],[0.055,0.22,0.055],-gait],[[0.27,1,0],[0.055,0.22,0.055],gait],[[0,0.8,0],[0.2,0.08,0.13],0]];
           parts.forEach(([offset,scale,angle],i)=>{q.setFromAxisAngle(new THREE.Vector3(1,0,0),angle);matrix.compose(new THREE.Vector3(x+offset[0],y+offset[1],z+offset[2]),q,new THREE.Vector3(...scale));mesh.setMatrixAt(person*7+i,matrix);});
