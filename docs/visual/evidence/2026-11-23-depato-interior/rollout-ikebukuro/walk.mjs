@@ -17,7 +17,7 @@ const walk=async(profile,name,points)=>{
   }
 };
 const frame=async(profile,name,yaw)=>{
-  await page.evaluate(yaw=>{const g=window.__gteki;g.setCamera({yaw,...(name==='entrance-outside'?{pitch:0,distance:0.5}:{})});g.holdFrames(true);g.goldenFrame();g.goldenFrame();g.goldenFrame();},yaw);
+  await page.evaluate(({yaw,name})=>{const g=window.__gteki;g.setCamera({yaw,...(name==='entrance-outside'?{pitch:0,distance:0.5}:{})});g.holdFrames(true);g.goldenFrame();g.goldenFrame();g.goldenFrame();},{yaw,name});
   const state=await page.evaluate(()=>{
     const g=window.__gteki,e=g.scanProbe().explorer;
     return {avatar:g.avatar(),camera:g.camera(),scene:g.sceneInfo(),streetContextVisible:e.scene.getObjectByName("street-context")?.visible??false,loaded:e.scene.children.flatMap(o=>{
