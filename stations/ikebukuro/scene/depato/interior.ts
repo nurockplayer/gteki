@@ -79,6 +79,9 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       for(const part of parts.filter(p=>p.role)) {
         const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(part.position,3)); g.computeVertexNormals();
         physical(g,part.role==="walkable"?walkable:colliders,part.walkableOnly===true);
+        if(part.role==="walkable"){
+          const mesh=walkable.at(-1)!; mesh.userData.gteki_role="escalator"; root.add(mesh);
+        }
       }
       // The shared family supplies steps, skirts, glass and rubber. Yellow nosings are store-neutral.
       return {lower:i,upper:i+1,a,b,parts};

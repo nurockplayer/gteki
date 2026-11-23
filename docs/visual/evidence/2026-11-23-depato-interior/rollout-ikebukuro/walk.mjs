@@ -11,10 +11,7 @@ const save=()=>fs.writeFile(base+'/receipt.json',JSON.stringify(result,null,2)+'
 const walk=async(profile,name,points)=>{
   const leg=await page.evaluate(points=>{const g=window.__gteki;g.setCamera(null);return {walk:g.walkPath(points,{speed:'walk',dt:1/30,maxSeconds:120}),avatar:g.avatar()};},points);
   profile.legs.push({name,...leg});
-  if(!leg.walk.done){
-    const nearby=await page.evaluate(()=>{const {explorer:e,castAll}=window.__gteki.scanProbe();return [[1,0],[-1,0],[0,1],[0,-1]].map(([x,z])=>{const origin=e.pos.clone();origin.y+=0.6;const direction=origin.clone().set(x,0,z);e.ray.set(origin,direction);return castAll(e.ray,e.colliderTargets).filter(h=>h.distance<2).slice(0,3).map(h=>({distance:h.distance,name:h.object.name,role:h.object.userData.gteki_role}));});});
-    throw Error(`${name}: ${JSON.stringify({...leg,nearby})}`);
-  }
+  if(!leg.walk.done)throw Error(`${name}: ${JSON.stringify(leg)}`);
 };
 const frame=async(profile,name,yaw)=>{
   await page.evaluate(yaw=>{const g=window.__gteki;g.setCamera({yaw});g.holdFrames(true);g.goldenFrame();g.goldenFrame();g.goldenFrame();},yaw);
@@ -66,7 +63,8 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
         await walk(profile,`ride-up-${i}`,[{x:x-0.95,z:to+0.6,y:levelY+4.5},{x,z:to+2,y:levelY+4.5}]);
       }
       const doorInside={x:street.point[0]+street.inward[0]*3,z:street.point[1]+street.inward[1]*3};
-      await walk(profile,'1F-street-door',[{x:x-4,z:to+3},{x:x-4,z:doorInside.z},doorInside]);
+      const doorSide=doorInside.x>x?x+4:x-4;
+      await walk(profile,'1F-street-door',[{x:x-4,z:to+3},{x:doorSide,z:to+3},{x:doorSide,z:doorInside.z},doorInside]);
       await frame(profile,'street-door-inside',Math.atan2(street.inward[0],street.inward[1]));
       await walk(profile,'leave-to-street',[{x:store.street.point[0],z:store.street.point[1],y:store.elevations['1F']}]);
       await frame(profile,'street-door-outside',Math.atan2(-street.inward[0],-street.inward[1]));

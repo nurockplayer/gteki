@@ -88,8 +88,14 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
       const front = Math.abs(entrance.point[1] - plan.bounds.front) < 0.1;
       const inward = entrance.inward ?? (front ? [0,1] : [-1,0]);
       const inside = node(floor.level, `inside${i}`, entrance.point[0] + inward[0]! * 2, entrance.point[1] + inward[1]! * 2);
-      const approach = node(floor.level, `approach${i}`, plan.aisleX - 4, inside.position.y * -1);
-      edge(door, inside); edge(inside, approach); edge(approach, aisle);
+      const insideZ = -inside.position.y;
+      const east = inside.position.x > plan.aisleX && insideZ > plan.stair.from - 2 && insideZ < plan.stair.to + 2;
+      const approach = node(floor.level, `approach${i}`, plan.aisleX + (east ? 4 : -4), insideZ);
+      edge(door, inside); edge(inside, approach);
+      if(east){
+        const around = node(floor.level, `around${i}`, plan.aisleX + 4, plan.stair.to + 2);
+        edge(approach, around); edge(around, bypass);
+      }else edge(approach, bypass);
       edge(bundle.nodes.find(n => n.id === entrance.outsideNode)!, door);
     }
   }
