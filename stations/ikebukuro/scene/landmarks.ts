@@ -12,7 +12,7 @@ const stores = [
   { id: "esola", ja: "エソラ池袋", en: "ESOLA IKEBUKURO", facade: "F4_darkBronze", exit: "x4f", target: [-172.897339, 61.5, -3.413457], signEye: [-272.400798, 61.5, 6.53951], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "parco", ja: "パルコ", en: "PARCO", facade: "F3_coolGrey", exit: "x22", target: [89.228704, 68.418999, -156.361062], signEye: [-2.081387, 68.418999, -197.134427], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
   { id: "pparco", ja: "P'パルコ", en: "P'PARCO", facade: "F3_coolGrey", exit: "x22", target: [90.660534, 50.748502, -244.366749], signEye: [-0.958270, 50.748502, -284.291649], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
-  { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [581.674744, 253, 12.689152], signEye: [498.531567, 253, -42.873534], cap: LANDMARK_SIGN.maxJaLetterSunshine60M / 2 },
+  { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [581.674744, 253, 12.689152], signEye: [498.531567, 253, -42.873534], cap: LANDMARK_SIGN.maxJaLetterSunshine60M },
 ] as const;
 
 /** Remove only the source features replaced by the LOD2 landmark meshes, before stair cuts change triangle indices. */
@@ -77,7 +77,7 @@ outgoingLight = mix(outgoingLight, streetColor, street);
     const g = canvas.getContext("2d")!;
     g.fillStyle = LANDMARK_SIGN.letters; g.textAlign = "center"; g.textBaseline = "middle";
     const jaPx = 62;
-    g.font = `600 ${jaPx}px "GTEki Sign JP"`;
+    g.font = `${store.id === "sunshine" ? 800 : 600} ${jaPx}px "GTEki Sign JP"`;
     g.fillText(store.ja, canvas.width/2, 46);
     g.font = `600 ${jaPx * LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;
     g.fillText(store.en, canvas.width/2, 100);
@@ -95,7 +95,7 @@ outgoingLight = mix(outgoingLight, streetColor, street);
         const letters = new THREE.Color(LANDMARK_SIGN.letters);
         shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
 float landmarkCoverage = texture2D(map, vMapUv).a;
-${store.id === "sunshine" ? "landmarkCoverage = smoothstep(0.01, 0.08, landmarkCoverage);" : ""}
+${store.id === "sunshine" ? "landmarkCoverage = smoothstep(0.25, 0.55, landmarkCoverage);" : ""}
 diffuseColor.rgb = mix(vec3(${bronze.toArray().join(",")}), vec3(${letters.toArray().join(",")}), landmarkCoverage);
 diffuseColor.a = 1.0;`);
         shader.fragmentShader = shader.fragmentShader.replace("#include <emissivemap_fragment>", `totalEmissiveRadiance = vec3(${letters.toArray().join(",")}) * ${LANDMARK_SIGN.letterEmissive[1]} * landmarkCoverage + vec3(${bronze.toArray().join(",")}) * 0.35 * (1.0 - landmarkCoverage);`);
