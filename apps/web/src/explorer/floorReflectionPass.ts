@@ -46,7 +46,9 @@ const COMMON = /* glsl */ `
   float floorWeight(vec2 uv, out vec3 p, out vec3 n) {
     float d = texture2D(tDepth, uv).x;
     if (d >= 1.0) return 0.0;
-    n = normalize(texture2D(tNormal, uv).xyz * 2.0 - 1.0);
+    vec4 normalSample = texture2D(tNormal, uv);
+    if (normalSample.a == 0.0) return 0.0; // Matte surfaces retain normals for AO, but do not reflect.
+    n = normalize(normalSample.xyz * 2.0 - 1.0);
     p = viewPos(uv, d);
     return smoothstep(0.9, 0.97, dot(n, uUpView)) * (1.0 - smoothstep(uFadeFar * 0.55, uFadeFar, length(p)));
   }`;
