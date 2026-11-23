@@ -7,10 +7,7 @@ const entry=(await listTaskSpaces()).find(s=>s.name==='depato-rollout-ikebukuro'
 const task=!entry?await taskSpace('depato-rollout-ikebukuro'):await taskSpace(entry.id);
 const page=(await task.pages())[0]??await task.adopt((await task.tabs())[0].page);
 console.log({spaceId:task.spaceId});
-const previous=JSON.parse(await fs.readFile(base+'/receipt.json','utf8'));
-const preserved=previous.profiles.find(p=>p.device.name==='desktop'&&p.store==='tobu-ikebukuro');
-preserved.sourceHead=previous.runtimeHead;
-const result={runtimeHead,capturedAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[preserved],seibu:[],skipped:config.skipped,failures:[]};
+const result={runtimeHead,capturedAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[],seibu:[],skipped:config.skipped,failures:[]};
 const save=()=>fs.writeFile(base+'/receipt.json',JSON.stringify(result,null,2)+'\n');
 const walk=async(profile,name,points)=>{
   for(const point of points){
@@ -30,7 +27,7 @@ const frame=async(profile,name,yaw)=>{
   const file=`${profile.device.name}-${profile.store}-${name}.png`;
   await page.screenshot({path:base+'/'+file});
   await page.evaluate(()=>window.__gteki.holdFrames(false));
-  profile.frames.push({name,file,...state});
+  profile.frames.push({name,file,sourceHead:runtimeHead,...state});
   if(state.loaded.length>1)throw Error('Neighbour interiors simultaneously loaded: '+state.loaded.join(', '));
   if(state.shaderErrors.length)throw Error(state.shaderErrors.join('\n'));
 };
@@ -42,7 +39,6 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
   await page.evaluate(async()=>{await window.__gteki.scanProbe().explorer.stationScene.settled?.();});
   console.log({device:device.name,snapshot:(await page.snapshot()).slice(0,400)});
   for(const store of config.stores){
-    if(device.name==='desktop' && store.id==='tobu-ikebukuro')continue;
     const profile={device,store:store.id,frames:[],legs:[]};result.profiles.push(profile);
     try{
       await page.goto('http://127.0.0.1:5291/?station=ikebukuro&next=1&open=search');
@@ -59,6 +55,28 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
       profile.route=await page.evaluate(({origin,poi})=>{const g=window.__gteki;g.setOrigin(origin);g.setDestination(poi);return g.route();},{origin:'jr-south-gate',poi:store.poiId});
       if(!profile.route?.ok && !store.skippedEntrances)throw Error('Store name route did not succeed');
       if(store.skippedEntrances)profile.stationRouteSkip=store.skippedEntrances;
+      if(store.id==='ikebukuro-parco'){
+        profile.northPassage=[];
+        for(const detail of ['loaded','unloaded']){
+          const proof=await page.evaluate(detail=>{
+            const g=window.__gteki,e=g.scanProbe().explorer,scene=e.stationScene;
+            const loaded=()=>{const root=scene.root.getObjectByName('depato-interior:ikebukuro-parco');return !!root?.children.length;};
+            g.holdFrames(true);
+            const update=scene.update;
+            try{
+              // Hold the real streaming focus at Seibu for the unloaded collision pass.
+              if(detail==='unloaded')scene.update=(...args)=>{
+                scene.setCameraFocus(null,null,null,{x:15,y:27.7,z:70});update(...args);
+              };
+              g.setView({node:'n_h',headingDeg:180});g.setCamera(null);g.goldenFrame();g.goldenFrame();
+              const before=loaded(),walk=g.walkPath([{x:71.5,z:-116.5,y:28.45}],{speed:'walk',dt:1/30,maxSeconds:120});
+              return {detail,streamingFocus:detail==='unloaded'?'seibu-held':'avatar',before,after:loaded(),walk,avatar:g.avatar()};
+            }finally{scene.update=update;g.holdFrames(false);}
+          },detail);
+          profile.northPassage.push(proof);
+          if(!proof.walk.done || proof.before!==(detail==='loaded') || proof.after!==(detail==='loaded'))throw Error('North passage: '+JSON.stringify(proof));
+        }
+      }
       await page.evaluate(node=>{const g=window.__gteki;g.setView({node,headingDeg:180});g.setCamera(null);},first.outsideNode);
       const expanded=await page.evaluate(()=>document.querySelector('.minimap')?.dataset.collapsed==='false');
       if(expanded)await page.click('button.minimap-collapse');

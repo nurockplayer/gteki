@@ -25,10 +25,16 @@ const rolloutPlans = () => rolloutData.stores.map(row => {
   const layout = depatoLayout({ ...row, footprint: row.footprint as PlanPoint[],
     entrances: row.entrances.map(e=>({ ...e, point: e.point as PlanPoint, inward: e.inward as PlanPoint })),
     store: { ...store, floors: store.floors.filter((f,i,all) =>
-      ["B2","B1","1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) } });
+      ["B2","B1","1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i)
+      // Tobu's illustrative counter labels must fit the shared 1024px atlas.
+      .map(f => row.id === "tobu-ikebukuro" ? { ...f, tenants: f.tenants.slice(0,40) } : f) } });
   // Keep accepted counter positions when a station entrance tie is skipped.
   if (row.skippedEntrances) layout.counters = layout.counters.filter(([,z]) =>
     !row.skippedEntrances.some(e => Math.abs(e.point[1]! - z) < 4));
+  // n_h__n_c spans (66,-113)–(71.5,-116.5). Reserve its bounds plus
+  // 0.5m walker clearance and the shared counter's 0.55m/2m half extents.
+  if (row.id === "ikebukuro-parco") layout.counters = layout.counters.filter(([x,z]) =>
+    x < 64.95 || x > 72.55 || z < -119 || z > -110.5);
   return layout;
 });
 
