@@ -63,7 +63,7 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
         await walk(profile,`ride-up-${i}`,[{x:x-0.95,z:to+0.6,y:levelY+4.5},{x,z:to+2,y:levelY+4.5}]);
       }
       const doorInside={x:street.point[0]+street.inward[0]*3,z:street.point[1]+street.inward[1]*3};
-      await walk(profile,'1F-street-door',[{x:x-4,z:to+2},{x:x-4,z:doorInside.z},doorInside]);
+      await walk(profile,'1F-street-door',[{x:x-4,z:to+3},{x:doorInside.x,z:to+3},doorInside]);
       await frame(profile,'street-door-inside',Math.atan2(street.inward[0],street.inward[1]));
       await walk(profile,'leave-to-street',[{x:store.street.point[0],z:store.street.point[1],y:store.elevations['1F']}]);
       await frame(profile,'street-door-outside',Math.atan2(-street.inward[0],-street.inward[1]));

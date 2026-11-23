@@ -1,6 +1,6 @@
 {
-  "runtimeHead": "9f9509a080debb81d176e3bc42f3de965c1a9cc8",
-  "capturedAt": "2026-11-23T14:27:10.897Z",
+  "runtimeHead": "292791d5fdcb77e6724ded063e2511380ea5cab4",
+  "capturedAt": "2026-11-23T14:29:56.354Z",
   "timeZone": "UTC",
   "spaceId": 20,
   "profiles": [
@@ -46,7 +46,289 @@
           "東武百貨店　池袋店Tobu Department Store Ikebukuro B2"
         ]
       },
-      "route": null
+      "route": {
+        "ok": true,
+        "profile": {
+          "fare": "ticketed",
+          "stepFree": false,
+          "hours": "warn_unknown",
+          "at": {
+            "weekday": "mon",
+            "minutes": 1410.3305833333334
+          },
+          "today": "2026-11-23",
+          "timeZone": "Asia/Tokyo"
+        },
+        "nodeIds": [
+          "g_jr_s",
+          "sp_m",
+          "sp_j",
+          "c_s",
+          "c_e1",
+          "c_c",
+          "c_g2",
+          "c_mid",
+          "c_w",
+          "depato-tobu-ikebukuro-B1-door0",
+          "depato-tobu-ikebukuro-B1-inside0",
+          "depato-tobu-ikebukuro-B1-approach0",
+          "depato-tobu-ikebukuro-B1-aisle",
+          "depato-tobu-ikebukuro-B1-lower",
+          "depato-tobu-ikebukuro-B1-down-start",
+          "depato-tobu-ikebukuro-B2-down-end",
+          "depato-tobu-ikebukuro-B2-upper",
+          "depato-tobu-ikebukuro-B2-bypass",
+          "depato-tobu-ikebukuro-B2-aisle"
+        ],
+        "steps": [
+          {
+            "edgeId": "sp_m__g_jr_s",
+            "fromNodeId": "g_jr_s",
+            "toNodeId": "sp_m",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 9.7,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "sp_j__sp_m",
+            "fromNodeId": "sp_m",
+            "toNodeId": "sp_j",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 64.9,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_s__sp_j",
+            "fromNodeId": "sp_j",
+            "toNodeId": "c_s",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 84.2,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_e1__c_s",
+            "fromNodeId": "c_s",
+            "toNodeId": "c_e1",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 13.3,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_c__c_e1",
+            "fromNodeId": "c_e1",
+            "toNodeId": "c_c",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 33.2,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_g2__c_c",
+            "fromNodeId": "c_c",
+            "toNodeId": "c_g2",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 21.3,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_mid__c_g2",
+            "fromNodeId": "c_g2",
+            "toNodeId": "c_mid",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 11.4,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_w__c_mid",
+            "fromNodeId": "c_mid",
+            "toNodeId": "c_w",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 37.3,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_w__depato-tobu-ikebukuro-B1-door0",
+            "fromNodeId": "c_w",
+            "toNodeId": "depato-tobu-ikebukuro-B1-door0",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 5,
+            "fromFloorId": "b1",
+            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B1-door0__depato-tobu-ikebukuro-B1-inside0",
+            "fromNodeId": "depato-tobu-ikebukuro-B1-door0",
+            "toNodeId": "depato-tobu-ikebukuro-B1-inside0",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 2,
+            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B1-inside0__depato-tobu-ikebukuro-B1-approach0",
+            "fromNodeId": "depato-tobu-ikebukuro-B1-inside0",
+            "toNodeId": "depato-tobu-ikebukuro-B1-approach0",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 37,
+            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B1-approach0__depato-tobu-ikebukuro-B1-aisle",
+            "fromNodeId": "depato-tobu-ikebukuro-B1-approach0",
+            "toNodeId": "depato-tobu-ikebukuro-B1-aisle",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 33,
+            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-aisle",
+            "fromNodeId": "depato-tobu-ikebukuro-B1-aisle",
+            "toNodeId": "depato-tobu-ikebukuro-B1-lower",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 4,
+            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-down-start",
+            "fromNodeId": "depato-tobu-ikebukuro-B1-lower",
+            "toNodeId": "depato-tobu-ikebukuro-B1-down-start",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 2.214158982548454,
+            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B1-down-start__depato-tobu-ikebukuro-B2-down-end",
+            "fromNodeId": "depato-tobu-ikebukuro-B1-down-start",
+            "toNodeId": "depato-tobu-ikebukuro-B2-down-end",
+            "reversed": false,
+            "mode": "escalator",
+            "lengthM": 12.816005617976298,
+            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B2-down-end__depato-tobu-ikebukuro-B2-upper",
+            "fromNodeId": "depato-tobu-ikebukuro-B2-down-end",
+            "toNodeId": "depato-tobu-ikebukuro-B2-upper",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 2.214158982548454,
+            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B2-bypass__depato-tobu-ikebukuro-B2-upper",
+            "fromNodeId": "depato-tobu-ikebukuro-B2-upper",
+            "toNodeId": "depato-tobu-ikebukuro-B2-bypass",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 4,
+            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
+          },
+          {
+            "edgeId": "depato-tobu-ikebukuro-B2-aisle__depato-tobu-ikebukuro-B2-bypass",
+            "fromNodeId": "depato-tobu-ikebukuro-B2-bypass",
+            "toNodeId": "depato-tobu-ikebukuro-B2-aisle",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 16,
+            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
+            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
+          }
+        ],
+        "totalLengthM": 393.5443235830732,
+        "estimatedSeconds": 334.36160579488245,
+        "waitSeconds": 0,
+        "floorChanges": 2,
+        "crossesFareBoundary": false,
+        "unknowns": [
+          {
+            "kind": "hours",
+            "edgeIds": [
+              "sp_m__g_jr_s",
+              "sp_j__sp_m",
+              "c_s__sp_j",
+              "c_e1__c_s",
+              "c_c__c_e1",
+              "c_g2__c_c",
+              "c_mid__c_g2",
+              "c_w__c_mid",
+              "c_w__depato-tobu-ikebukuro-B1-door0",
+              "depato-tobu-ikebukuro-B1-door0__depato-tobu-ikebukuro-B1-inside0",
+              "depato-tobu-ikebukuro-B1-inside0__depato-tobu-ikebukuro-B1-approach0",
+              "depato-tobu-ikebukuro-B1-approach0__depato-tobu-ikebukuro-B1-aisle",
+              "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-aisle",
+              "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-down-start",
+              "depato-tobu-ikebukuro-B1-down-start__depato-tobu-ikebukuro-B2-down-end",
+              "depato-tobu-ikebukuro-B2-down-end__depato-tobu-ikebukuro-B2-upper",
+              "depato-tobu-ikebukuro-B2-bypass__depato-tobu-ikebukuro-B2-upper",
+              "depato-tobu-ikebukuro-B2-aisle__depato-tobu-ikebukuro-B2-bypass"
+            ]
+          },
+          {
+            "kind": "wheelchair",
+            "edgeIds": [
+              "sp_m__g_jr_s",
+              "sp_j__sp_m",
+              "c_s__sp_j",
+              "c_e1__c_s",
+              "c_c__c_e1",
+              "c_g2__c_c",
+              "c_mid__c_g2",
+              "c_w__c_mid"
+            ]
+          }
+        ],
+        "sourceIds": [
+          "plateau-ubld-13116",
+          "tobu-dept-ikebukuro-2026-10-B2F",
+          "tokyometro-ikebukuro-yardmap-2026-03",
+          "toshima-underground-guide-2022"
+        ],
+        "endpointSourceIds": [
+          "plateau-ubld-13116",
+          "tobu-dept-ikebukuro-2026-10-B2F",
+          "toshima-underground-guide-2022"
+        ],
+        "evidenceCheckedDate": "2026-11-22",
+        "oldestSourceDate": "2022-01",
+        "undatedSourceIds": [
+          "tobu-dept-ikebukuro-2026-10-B2F"
+        ],
+        "expiredSourceIds": [],
+        "stale": true,
+        "synthetic": false,
+        "timeRestricted": [],
+        "operatorIds": [
+          "public"
+        ]
+      }
     },
     {
       "device": {
@@ -57,6 +339,114 @@
       },
       "store": "ikebukuro-parco",
       "frames": [
+        {
+          "name": "entrance-outside",
+          "file": "desktop-ikebukuro-parco-entrance-outside.png",
+          "avatar": {
+            "x": 65.88062434222547,
+            "y": 112.72477381605111,
+            "z": 28.449323913667367
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.8279237314948653,
+            "raise": 0.6981317007977318,
+            "pitch": 0,
+            "yaw": -1.9734851198546728,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "first-interior",
+          "file": "desktop-ikebukuro-parco-first-interior.png",
+          "avatar": {
+            "x": 68.54774264811574,
+            "y": 112.27314187570514,
+            "z": 28.450000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000001,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9734851198546728,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "food-hall-aisle",
+          "file": "desktop-ikebukuro-parco-food-hall-aisle.png",
+          "avatar": {
+            "x": 89.1617465582228,
+            "y": 107.29802944199326,
+            "z": 23.950000762940746
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000001,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 2.8415926535897933,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "escalator",
+          "file": "desktop-ikebukuro-parco-escalator.png",
+          "avatar": {
+            "x": 88.17309724518813,
+            "y": 121.7135541841472,
+            "z": 23.950000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000018,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "loaded": [
+            "depato-interior:ikebukuro-parco"
+          ],
+          "shaderErrors": []
+        },
         {
           "name": "flag-off",
           "file": "desktop-ikebukuro-parco-flag-off.png",
@@ -83,102 +473,369 @@
           "shaderErrors": []
         }
       ],
-      "legs": [],
+      "legs": [
+        {
+          "name": "enter-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 56
+          },
+          "avatar": {
+            "x": 68.54774264811574,
+            "y": 112.27314187570514,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 962
+          },
+          "avatar": {
+            "x": 89.1617465582228,
+            "y": 107.29802944199326,
+            "z": 23.950000762940746
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 508
+          },
+          "avatar": {
+            "x": 88.17309724518813,
+            "y": 121.7135541841472,
+            "z": 23.950000762939453
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 325
+          },
+          "avatar": {
+            "x": 88.83236943934786,
+            "y": 107.29549792952956,
+            "z": 28.45000076293843
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 501
+          },
+          "avatar": {
+            "x": 88.17324920650063,
+            "y": 121.71382544133066,
+            "z": 28.450000762939453
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 299
+          },
+          "avatar": {
+            "x": 88.83900255345672,
+            "y": 107.29758542511132,
+            "z": 32.95000076293815
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": false,
+            "stuck": true,
+            "timedOut": false,
+            "steps": 274
+          },
+          "avatar": {
+            "x": 86.51274786509285,
+            "y": 113.89362365309648,
+            "z": 32.950000762939446
+          }
+        }
+      ],
       "search": {
         "query": "池袋パルコ",
         "hits": [
           "池袋パルコIkebukuro PARCO B2"
         ]
       },
-      "route": null
-    },
-    {
-      "device": {
-        "name": "phone",
-        "width": 390,
-        "height": 844,
-        "mobile": true
-      },
-      "store": "tobu-ikebukuro",
-      "frames": [
-        {
-          "name": "flag-off",
-          "file": "phone-tobu-ikebukuro-flag-off.png",
-          "avatar": {
-            "x": -60,
-            "y": 82,
-            "z": 27.90999984741211
+      "route": {
+        "ok": true,
+        "profile": {
+          "fare": "ticketed",
+          "stepFree": false,
+          "hours": "warn_unknown",
+          "at": {
+            "weekday": "mon",
+            "minutes": 1410.5343333333333
           },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999977,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.5707963267948966,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
+          "today": "2026-11-23",
+          "timeZone": "Asia/Tokyo"
+        },
+        "nodeIds": [
+          "g_jr_s",
+          "sp_m",
+          "sp_j",
+          "c_s",
+          "c_e1",
+          "c_n",
+          "n_h",
+          "depato-ikebukuro-parco-B1-door0",
+          "depato-ikebukuro-parco-B1-inside0",
+          "depato-ikebukuro-parco-B1-approach0",
+          "depato-ikebukuro-parco-B1-aisle",
+          "depato-ikebukuro-parco-B1-lower",
+          "depato-ikebukuro-parco-B1-down-start",
+          "depato-ikebukuro-parco-B2-down-end",
+          "depato-ikebukuro-parco-B2-upper",
+          "depato-ikebukuro-parco-B2-bypass",
+          "depato-ikebukuro-parco-B2-aisle"
+        ],
+        "steps": [
+          {
+            "edgeId": "sp_m__g_jr_s",
+            "fromNodeId": "g_jr_s",
+            "toNodeId": "sp_m",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 9.7,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
           },
-          "loaded": [],
-          "shaderErrors": []
-        }
-      ],
-      "legs": [],
-      "search": {
-        "query": "東武百貨店　池袋店",
-        "hits": [
-          "東武百貨店　池袋店Tobu Department Store Ikebukuro B2"
+          {
+            "edgeId": "sp_j__sp_m",
+            "fromNodeId": "sp_m",
+            "toNodeId": "sp_j",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 64.9,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_s__sp_j",
+            "fromNodeId": "sp_j",
+            "toNodeId": "c_s",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 84.2,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_e1__c_s",
+            "fromNodeId": "c_s",
+            "toNodeId": "c_e1",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 13.3,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_e1__c_n",
+            "fromNodeId": "c_e1",
+            "toNodeId": "c_n",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 17.8,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "c_n__n_h",
+            "fromNodeId": "c_n",
+            "toNodeId": "n_h",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 75.8,
+            "fromFloorId": "b1",
+            "toFloorId": "b1"
+          },
+          {
+            "edgeId": "n_h__depato-ikebukuro-parco-B1-door0",
+            "fromNodeId": "n_h",
+            "toNodeId": "depato-ikebukuro-parco-B1-door0",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 1.0529999999999973,
+            "fromFloorId": "b1",
+            "toFloorId": "depato-ikebukuro-parco-B1-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B1-door0__depato-ikebukuro-parco-B1-inside0",
+            "fromNodeId": "depato-ikebukuro-parco-B1-door0",
+            "toNodeId": "depato-ikebukuro-parco-B1-inside0",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 1.9999999999999942,
+            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
+            "toFloorId": "depato-ikebukuro-parco-B1-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B1-inside0__depato-ikebukuro-parco-B1-approach0",
+            "fromNodeId": "depato-ikebukuro-parco-B1-inside0",
+            "toNodeId": "depato-ikebukuro-parco-B1-approach0",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 16.106978799049273,
+            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
+            "toFloorId": "depato-ikebukuro-parco-B1-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B1-approach0__depato-ikebukuro-parco-B1-aisle",
+            "fromNodeId": "depato-ikebukuro-parco-B1-approach0",
+            "toNodeId": "depato-ikebukuro-parco-B1-aisle",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 10.783786948125453,
+            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
+            "toFloorId": "depato-ikebukuro-parco-B1-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-aisle",
+            "fromNodeId": "depato-ikebukuro-parco-B1-aisle",
+            "toNodeId": "depato-ikebukuro-parco-B1-lower",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 4,
+            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
+            "toFloorId": "depato-ikebukuro-parco-B1-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-down-start",
+            "fromNodeId": "depato-ikebukuro-parco-B1-lower",
+            "toNodeId": "depato-ikebukuro-parco-B1-down-start",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 2.214158982548454,
+            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
+            "toFloorId": "depato-ikebukuro-parco-B1-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B1-down-start__depato-ikebukuro-parco-B2-down-end",
+            "fromNodeId": "depato-ikebukuro-parco-B1-down-start",
+            "toNodeId": "depato-ikebukuro-parco-B2-down-end",
+            "reversed": false,
+            "mode": "escalator",
+            "lengthM": 12.816005617976295,
+            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
+            "toFloorId": "depato-ikebukuro-parco-B2-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B2-down-end__depato-ikebukuro-parco-B2-upper",
+            "fromNodeId": "depato-ikebukuro-parco-B2-down-end",
+            "toNodeId": "depato-ikebukuro-parco-B2-upper",
+            "reversed": false,
+            "mode": "walk",
+            "lengthM": 2.214158982548454,
+            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
+            "toFloorId": "depato-ikebukuro-parco-B2-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B2-bypass__depato-ikebukuro-parco-B2-upper",
+            "fromNodeId": "depato-ikebukuro-parco-B2-upper",
+            "toNodeId": "depato-ikebukuro-parco-B2-bypass",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 4,
+            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
+            "toFloorId": "depato-ikebukuro-parco-B2-floor"
+          },
+          {
+            "edgeId": "depato-ikebukuro-parco-B2-aisle__depato-ikebukuro-parco-B2-bypass",
+            "fromNodeId": "depato-ikebukuro-parco-B2-bypass",
+            "toNodeId": "depato-ikebukuro-parco-B2-aisle",
+            "reversed": true,
+            "mode": "walk",
+            "lengthM": 16,
+            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
+            "toFloorId": "depato-ikebukuro-parco-B2-floor"
+          }
+        ],
+        "totalLengthM": 336.88808933024796,
+        "estimatedSeconds": 287.1480772508614,
+        "waitSeconds": 0,
+        "floorChanges": 2,
+        "crossesFareBoundary": false,
+        "unknowns": [
+          {
+            "kind": "hours",
+            "edgeIds": [
+              "sp_m__g_jr_s",
+              "sp_j__sp_m",
+              "c_s__sp_j",
+              "c_e1__c_s",
+              "c_e1__c_n",
+              "c_n__n_h",
+              "n_h__depato-ikebukuro-parco-B1-door0",
+              "depato-ikebukuro-parco-B1-door0__depato-ikebukuro-parco-B1-inside0",
+              "depato-ikebukuro-parco-B1-inside0__depato-ikebukuro-parco-B1-approach0",
+              "depato-ikebukuro-parco-B1-approach0__depato-ikebukuro-parco-B1-aisle",
+              "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-aisle",
+              "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-down-start",
+              "depato-ikebukuro-parco-B1-down-start__depato-ikebukuro-parco-B2-down-end",
+              "depato-ikebukuro-parco-B2-down-end__depato-ikebukuro-parco-B2-upper",
+              "depato-ikebukuro-parco-B2-bypass__depato-ikebukuro-parco-B2-upper",
+              "depato-ikebukuro-parco-B2-aisle__depato-ikebukuro-parco-B2-bypass"
+            ]
+          },
+          {
+            "kind": "wheelchair",
+            "edgeIds": [
+              "sp_m__g_jr_s",
+              "sp_j__sp_m",
+              "c_s__sp_j",
+              "c_e1__c_s",
+              "c_e1__c_n",
+              "c_n__n_h"
+            ]
+          }
+        ],
+        "sourceIds": [
+          "parco-ikebukuro-floorguide-2026-11",
+          "plateau-ubld-13116",
+          "tokyometro-ikebukuro-yardmap-2026-03",
+          "toshima-underground-guide-2022"
+        ],
+        "endpointSourceIds": [
+          "parco-ikebukuro-floorguide-2026-11",
+          "plateau-ubld-13116",
+          "toshima-underground-guide-2022"
+        ],
+        "evidenceCheckedDate": "2026-11-22",
+        "oldestSourceDate": "2022-01",
+        "undatedSourceIds": [
+          "parco-ikebukuro-floorguide-2026-11"
+        ],
+        "expiredSourceIds": [],
+        "stale": true,
+        "synthetic": false,
+        "timeRestricted": [],
+        "operatorIds": [
+          "public"
         ]
-      },
-      "route": null
-    },
-    {
-      "device": {
-        "name": "phone",
-        "width": 390,
-        "height": 844,
-        "mobile": true
-      },
-      "store": "ikebukuro-parco",
-      "frames": [
-        {
-          "name": "flag-off",
-          "file": "phone-ikebukuro-parco-flag-off.png",
-          "avatar": {
-            "x": 66,
-            "y": 113,
-            "z": 28.44962318730932
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999972,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [],
-          "shaderErrors": []
-        }
-      ],
-      "legs": [],
-      "search": {
-        "query": "池袋パルコ",
-        "hits": [
-          "池袋パルコIkebukuro PARCO B2"
-        ]
-      },
-      "route": null
+      }
     }
   ],
   "skipped": [
@@ -204,9 +861,7 @@
     }
   ],
   "failures": [
-    "desktop tobu-ikebukuro: Error: Store name route did not succeed\n    at file:////[eval2]:52:35",
-    "desktop ikebukuro-parco: Error: Store name route did not succeed\n    at file:////[eval2]:52:35",
-    "phone tobu-ikebukuro: Error: Store name route did not succeed\n    at file:////[eval2]:52:35",
-    "phone ikebukuro-parco: Error: Store name route did not succeed\n    at file:////[eval2]:52:35"
+    "desktop tobu-ikebukuro: Error: JavaScript evaluation failed at line 0, column 0: Error: Department-store board atlas exceeds 1024px: tobu-ikebukuro\n    at http://127.0.0.1:5291/@fs/Users/tachikoma/Developer/gteki-wt/depato-rollout-ikebukuro/stations/ikebukuro/scene/depato/interior.ts:245:30\n    at Array.forEach (<anonymous>)\n    at load (http://127.0.0.1:5291/@fs/Users/tachikoma/Developer/gteki-wt/depato-rollout-ikebukuro/stations/ikebukuro/scene/depato/interior.ts:235:11)\n    at Object.update (http://127.0.0.1:5291/@fs/Users/tachikoma/Developer/gteki-wt/depato-rollout-ikebukuro/stations/ikebukuro/scene/depato/interior.ts:618:5)\n    at Object.update (http://127.0.0.1:5291/@fs/Users/tachikoma/Developer/gteki-wt/depato-rollout-ikebukuro/stations/ikebukuro/scene/depato/pilot.ts:204:23)\n    at Explorer.step (http://127.0.0.1:5291/src/explorer/explorer.ts:3914:30)\n    at Explorer.frame (http://127.0.0.1:5291/src/explorer/explorer.ts:3816:8)\n    at Explorer.goldenFrame (http://127.0.0.1:5291/src/explorer/explorer.ts:628:8)\n    at Object.goldenFrame (http://127.0.0.1:5291/src/ui/app.ts:2315:37)\n    at <anonymous>:2:124; expression: yaw=>{const g=window.__gteki;g.setCamera({yaw});g.holdFrames(true);g.goldenFrame();g.goldenFrame();g.goldenFrame();}\n    at runtimeValue (file:////[eval1]:9354:15)\n    at evaluateInSession (file:////[eval1]:21128:12)\n    at async file:////[eval1]:20442:24\n    at async file:////[eval1]:17798:28",
+    "desktop ikebukuro-parco: Error: 1F-street-door: {\"walk\":{\"done\":false,\"stuck\":true,\"timedOut\":false,\"steps\":274},\"avatar\":{\"x\":86.51274786509285,\"y\":113.89362365309648,\"z\":32.950000762939446}}\n    at walk (file:////[eval2]:15:27)\n    at async file:////[eval2]:67:7"
   ]
 }

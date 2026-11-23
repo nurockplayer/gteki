@@ -119,6 +119,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const directoryJa=plan.floors.map(f=>`${f.level} ${f.label.ja}`).join(" / ");
     const directoryEn=plan.floors.map(f=>`${f.level} ${f.label.en}`).join(" / ");
     boards.push({ja:directoryJa,en:directoryEn});
+    const fontPx=boards.length>100?9:18, rowHeight=fontPx*40/18;
     const canvas=typeof document!=="undefined"?document.createElement("canvas"):null;
     const slots:{x:number;y:number;width:number}[]=[];
     let atlas:T.CanvasTexture|null=null;
@@ -128,15 +129,15 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const storeRows=levels.map((_,i)=>levels.slice(0,i).reduce((n,l)=>n+l.floor.tenants.length+1,0));
       let x=0,y=0;
       boards.forEach((b,i)=>{
-        paint.font='600 18px "GTEki Sign JP"';const ja=paint.measureText(b.ja).width;
-        paint.font=`600 ${18*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
-        const width=Math.min(1024,Math.ceil(Math.max(ja,en))+12);
-        if(x+width>1024){x=0;y+=40;}
-        if(y+40>1024)throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
+        paint.font=`600 ${fontPx}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
+        paint.font=`600 ${fontPx*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
+        const width=Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
+        if(x+width>1024){x=0;y+=rowHeight;}
+        if(y+rowHeight>1024)throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
         slots.push({x,y,width});const door=storeRows.includes(i);
-        paint.fillStyle=door?LANDMARK_SIGN.band:"#EFE9DD";paint.fillRect(x,y,width,40);paint.fillStyle=door?LANDMARK_SIGN.letters:LANDMARK_SIGN.band;
-        paint.font='600 18px "GTEki Sign JP"';paint.fillText(b.ja,x+width/2,y+20,width-12);
-        paint.font=`600 ${18*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;paint.fillText(b.en,x+width/2,y+33,width-12);
+        paint.fillStyle=door?LANDMARK_SIGN.band:"#EFE9DD";paint.fillRect(x,y,width,rowHeight);paint.fillStyle=door?LANDMARK_SIGN.letters:LANDMARK_SIGN.band;
+        paint.font=`600 ${fontPx}px "GTEki Sign JP"`;paint.fillText(b.ja,x+width/2,y+rowHeight/2,width-rowHeight*0.3);
+        paint.font=`600 ${fontPx*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;paint.fillText(b.en,x+width/2,y+rowHeight*0.825,width-rowHeight*0.3);
         x+=width;
       });
       atlas=new THREE.CanvasTexture(canvas);atlas.colorSpace=THREE.SRGBColorSpace;textures.push(atlas);
@@ -202,13 +203,13 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       }
       const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
         const slot=slots[row]!, labelHeight=height*0.6;
-        const labelWidth=slot.width/40*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
+        const labelWidth=slot.width/rowHeight*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
         for(const face of [0,1,-1]){
           const text=face!==0;
           const g=new THREE.PlaneGeometry(text?labelWidth*scale:width,text?labelHeight*scale:height).toNonIndexed(),uv=g.getAttribute("uv");
           for(let i=0;i<uv.count;i++){
             uv.setX(i,(slot.x+(text?uv.getX(i)*slot.width:1))/1024);
-            uv.setY(i,1-(slot.y+(text?(1-uv.getY(i))*40:1))/1024);
+            uv.setY(i,1-(slot.y+(text?(1-uv.getY(i))*rowHeight:1))/1024);
           }
           g.rotateY(yaw+(face<0?Math.PI:0));g.translate(x+Math.sin(yaw)*face*0.002,y,z+Math.cos(yaw)*face*0.002);signs.push(g);
         }
