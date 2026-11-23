@@ -34,16 +34,17 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
   let sourcePosition: V3 = { x: 0, y: 0, z: 0 };
   let listenerPosition: V3 | null = null;
   let disposed = false;
+  let cues = 0;
   function position(p: PannerNode, at: V3) { if (p.positionX) { p.positionX.value = at.x; p.positionY.value = at.y; p.positionZ.value = at.z; } else p.setPosition(at.x, at.y, at.z); }
   function oneShot(cue: Cue, at: V3) {
-    if (cue === "approach") { chimeAt(at); return; }
+    if (cue === "approach") { chimeAt(at); cues++; return; }
     const pan = context.createPanner(); pan.panningModel = "equalpower"; pan.distanceModel = "inverse"; pan.refDistance = 3; position(pan, at); pan.connect(destination);
     const now = context.currentTime;
     const duration = cue === "brake" ? 1.2 : 0.18;
     const noise = context.createBufferSource(); noise.buffer = buffer;
     const bp = context.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = cue === "brake" ? 900 : 500;
     const g = context.createGain(); g.gain.setValueAtTime(cue === "brake" ? 0.08 : 0.025, now); g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-    noise.connect(bp).connect(g).connect(pan); noise.start(now); noise.stop(now + duration); noise.onended = () => { noise.disconnect(); bp.disconnect(); g.disconnect(); if (cue === "brake") pan.disconnect(); };
+    noise.connect(bp).connect(g).connect(pan); noise.start(now); cues++; noise.stop(now + duration); noise.onended = () => { noise.disconnect(); bp.disconnect(); g.disconnect(); if (cue === "brake") pan.disconnect(); };
     if (cue !== "brake") for (const [i, frequency] of (cue === "doorOpen" ? [520, 660] : [660, 520]).entries()) {
       const osc = context.createOscillator(); const tone = context.createGain(); const start = now + i * 0.16;
       osc.type = "sine"; osc.frequency.setValueAtTime(frequency, start); tone.gain.setValueAtTime(0.05, start); tone.gain.exponentialRampToValueAtTime(0.0001, start + 0.2);
@@ -55,6 +56,7 @@ export function createTrainSound({ context, destination, chimeAt, isMuted = () =
       const at = { x: panner.positionX?.value ?? sourcePosition.x, y: panner.positionY?.value ?? sourcePosition.y, z: panner.positionZ?.value ?? sourcePosition.z };
       return {
         phase,
+        cues,
         gain: gain.gain.value,
         cutoffHz: filter.frequency.value,
         sourcePosition: at,
