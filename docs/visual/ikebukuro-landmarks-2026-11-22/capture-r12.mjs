@@ -3,7 +3,7 @@
 const fs=await import('node:fs/promises');
 const {spawn,execFileSync}=await import('node:child_process');
 const repo='/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro';
-const evidence=repo+'/docs/visual/ikebukuro-landmarks-2026-11-22',root=evidence+'/r12';
+const evidence=repo+'/docs/visual/ikebukuro-landmarks-2026-11-22',root=evidence+'/r12-retry';
 const sourceSha=execFileSync('git',['rev-parse','HEAD'],{cwd:repo,encoding:'utf8'}).trim();
 const graph=JSON.parse(await fs.readFile(repo+'/stations/ikebukuro/gteki/graph.json','utf8'));
 const walks=[];
@@ -15,7 +15,8 @@ const sourceRoad=JSON.parse(await fs.readFile(evidence+'/r10-sunshine-road-candi
 const server=spawn('nice',['-n','15','/Users/tachikoma/.local/share/fnm/aliases/default/bin/node',repo+'/apps/web/node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','5192','--strictPort'],{cwd:repo+'/apps/web',stdio:['ignore','pipe','inherit']});
 try{
 await new Promise((resolve,reject)=>{server.stdout.on('data',c=>{if(c.toString().includes('Local:'))resolve()});server.once('error',reject);server.once('exit',c=>reject(new Error('Capture server exited: '+c)))});
-const task=await taskSpace(50),page=task.page('p1'),frames=[];
+const entry=(await listTaskSpaces()).find(s=>s.id===50);
+const task=entry?await taskSpace(50):await taskSpace('Ikebukuro Package A-I capture retry'),page=task.page('p1'),frames=[];
 const poses=Object.fromEntries(previous.frames.filter(f=>f.flag==='next').map(f=>[f.file.replace(/-next\.png$/,''),f.pose]));
 for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
  await page.cdp('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
@@ -24,6 +25,18 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
   await page.waitForFunction(()=>Boolean(window.__gteki?.scanProbe().explorer.stationScene),undefined,{timeout:60000});
   await page.evaluate(()=>window.__gteki.setView({node:'x38',headingDeg:90}));
   await page.waitForFunction(()=>Boolean(window.__gteki.scanProbe().explorer.scene.getObjectByName('street-context')),undefined,{timeout:60000});
+  if(flag==='next')await page.waitForFunction(()=>Boolean(window.__gteki.scanProbe().explorer.scene.getObjectByName('landmark-sign:sunshine')),undefined,{timeout:60000});
+  await page.evaluate(()=>{window.__gteki.setView({node:'x38',headingDeg:90});window.__gteki.simulate(2)});
+  if(flag==='next'){
+   const budget=await page.evaluate(()=>{
+    const layer=window.__gteki.scanProbe().explorer.scene.getObjectByName('landmarks-next');
+    return ['seibu','tobu','lumine','esola','parco','pparco','sunshine'].map(store=>{
+     const objects=[layer.getObjectByName('ctx_bldg_landmark_'+store),layer.getObjectByName('landmark-sign:'+store)];
+     return {store,draws:objects.reduce((sum,o)=>sum+(Array.isArray(o.material)?o.geometry.groups.length:1),0),textures:objects.flatMap(o=>(Array.isArray(o.material)?o.material:[o.material]).flatMap(m=>m.map?[{width:m.map.image.width,height:m.map.image.height}]:[]))};
+    });
+   });
+   await fs.writeFile(root+'/budget-'+device+'.json',JSON.stringify({sourceSha,device,recordedAtUTC:new Date().toISOString(),sharedGroundDraws:1,stores:budget},null,2)+'\n');
+  }
   await page.evaluate(async()=>{
    const e=window.__gteki.scanProbe().explorer,T=await import('/node_modules/three/build/three.module.js');window.__gteki.holdFrames(true);
    const style=document.createElement('style');style.textContent='#app > :not(.viewport), .gteki-labels {visibility:hidden!important}';document.head.append(style);
@@ -33,18 +46,20 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
   for(const exit of ['x18','x22','x37','x38']){
    const edge=graph.edges.find(e=>e.mode==='stairs'&&(e.from===exit||e.to===exit));
    const start=edge.from===exit?edge.to:edge.from;
-   const path=edge.from===exit?[...edge.geometry].reverse():edge.geometry;
-   const placed=await page.evaluate(node=>window.__gteki.setView({node,headingDeg:0}).placed,start);
+   const connector=await page.evaluate(id=>window.__gteki.scanProbe().explorer.connectorRoutePaths().get(id),edge.id);
+   if(!connector)throw new Error('Missing runtime connector path: '+edge.id);
+   const path=edge.from===exit?[...connector].reverse():connector;
+   const placed=await page.evaluate(node=>{window.__gteki.setCamera(null);return window.__gteki.setView({node,headingDeg:0}).placed},start);
    const legs=[];
-   for(const point of path)legs.push(await page.evaluate(p=>window.__gteki.walkPath([{x:p.x,y:p.z,z:-p.y}],{maxSeconds:20}),point));
-   for(const point of [...path].reverse())legs.push(await page.evaluate(p=>window.__gteki.walkPath([{x:p.x,y:p.z,z:-p.y}],{maxSeconds:20}),point));
+   for(const point of path)legs.push(await page.evaluate(p=>({...window.__gteki.walkPath([{x:p.x,y:p.z,z:-p.y}],{maxSeconds:20}),target:p,avatar:window.__gteki.avatar()}),point));
+   for(const point of [...path].reverse())legs.push(await page.evaluate(p=>({...window.__gteki.walkPath([{x:p.x,y:p.z,z:-p.y}],{maxSeconds:20}),target:p,avatar:window.__gteki.avatar()}),point));
    const file=`${device}-${exit}-return-${flag}.png`;
    await page.screenshot({path:`${root}/${file}`});
-   walks.push({file,sourceSha,device,flag,exit,placed,legs,done:placed&&legs.every(l=>l.done),capturedAtUTC:new Date().toISOString()});
+   walks.push({file,sourceSha,device,flag,exit,edge:edge.id,pathSource:'runtime connectorRoutePaths (ENU)',path,placed,legs,done:placed&&legs.every(l=>l.done),capturedAtUTC:new Date().toISOString()});
    await fs.writeFile(root+'/walks.json',JSON.stringify({sourceSha,walks},null,2)+'\n');
    console.log(`${device} ${flag} ${exit}: done=${walks.at(-1).done}`);
   }
-  await page.evaluate(()=>window.__gteki.setView({node:'x38',headingDeg:90}));
+  await page.evaluate(()=>{window.__gteki.setView({node:'x38',headingDeg:90});window.__gteki.simulate(2)});
   for(const store of ['seibu','pparco','sunshine'])for(const kind of ['walk','look',...(store==='sunshine'?['east-exit']:[])]){
    const key=`${device}-${store}-${kind}`,old=previous.frames.find(f=>f.file===`${key}-next.png`);
    if(frames.some(f=>f.file===`${key}-${flag}.png`))continue;
@@ -52,7 +67,8 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
     const follow=await page.evaluate(()=>{
      const placed=window.__gteki.setView({node:'x35',headingDeg:86}).placed;
      if(!placed)throw new Error('Cannot place cat at exit x35');
-     window.__gteki.simulate(.5);
+     window.__gteki.setCamera({pitch:0});
+     window.__gteki.simulate(3);
      const {e,T}=window.__depato;
      return {eye:e.camera.position.toArray(),target:e.camera.position.clone().add(e.camera.getWorldDirection(new T.Vector3())).toArray(),fov:e.camera.fov,exit:'x35',captureOnly:false};
     });
@@ -130,12 +146,13 @@ for(const [device,width,height] of [['desktop',1440,900],['phone',390,844]]){
       window.__facadeMeasure={probes,next:0,probe:null,mesh,objects:[...meshes,sign],pixel,w,h,facade:[],sky:[],pairs:[],store};
      }
     }
+    const street=window.__gteki.sceneInfo().street;
     const towerTop=store==='sunshine'?new T.Box3().setFromObject(mesh??e.scene.getObjectByName('street-context')).max.y:null;
     const topEdge=store==='sunshine'&&flag==='next'?(()=>{
      const box=new T.Box3().setFromObject(mesh);
      return [box.min.x,box.max.x].flatMap(x=>[box.min.z,box.max.z].map(z=>new T.Vector3(x,towerTop,z).project(e.camera).toArray()));
     })():null;
-    return {pose:chosen,metrics,towerTop,topEdge,signDistanceM:e.camera.position.distanceTo(aim),actualAnchor:sign?.position.toArray()??null,landmarkCount:layer?.children.length??0,flag,store,kind,viewport:[innerWidth,innerHeight],capturedAtUTC:new Date().toISOString()};
+    return {pose:chosen,metrics,street,towerTop,topEdge,signDistanceM:e.camera.position.distanceTo(aim),actualAnchor:sign?.position.toArray()??null,landmarkCount:layer?.children.length??0,flag,store,kind,viewport:[innerWidth,innerHeight],capturedAtUTC:new Date().toISOString()};
    },{store,kind,flag,pose:poses[key],oldPose:old.pose,sourceRoad});
    if(flag==='next'&&kind==='look'){
     let measurement;

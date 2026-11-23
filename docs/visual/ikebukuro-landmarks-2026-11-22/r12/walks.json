@@ -1,0 +1,1445 @@
+{
+  "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+  "walks": [
+    {
+      "file": "desktop-x18-return-next.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "desktop",
+      "flag": "next",
+      "exit": "x18",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 303
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 41
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 26
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 17
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 58
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 29
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 58
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 30
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 18
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 89
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 28
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 22
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 40
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 20
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 182
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 157
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 20
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 44
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 17
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        }
+      ],
+      "done": false,
+      "capturedAtUTC": "2026-11-23T20:56:18.790Z"
+    },
+    {
+      "file": "desktop-x22-return-next.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "desktop",
+      "flag": "next",
+      "exit": "x22",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 61
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 331
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 315
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        }
+      ],
+      "done": false,
+      "capturedAtUTC": "2026-11-23T20:56:25.576Z"
+    },
+    {
+      "file": "desktop-x37-return-next.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "desktop",
+      "flag": "next",
+      "exit": "x37",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 366
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 353
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 325
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 380
+        }
+      ],
+      "done": true,
+      "capturedAtUTC": "2026-11-23T20:56:36.259Z"
+    },
+    {
+      "file": "desktop-x38-return-next.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "desktop",
+      "flag": "next",
+      "exit": "x38",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 172
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 21
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 316
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 288
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 21
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 186
+        }
+      ],
+      "done": true,
+      "capturedAtUTC": "2026-11-23T20:56:43.418Z"
+    },
+    {
+      "file": "desktop-x18-return-off.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "desktop",
+      "flag": "off",
+      "exit": "x18",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 303
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 41
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 26
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 17
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 58
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 29
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 58
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 30
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 18
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 89
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 28
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 22
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 40
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 20
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 182
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 157
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 20
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 44
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 17
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        }
+      ],
+      "done": false,
+      "capturedAtUTC": "2026-11-23T20:57:22.290Z"
+    },
+    {
+      "file": "desktop-x22-return-off.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "desktop",
+      "flag": "off",
+      "exit": "x22",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 61
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 331
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 315
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        }
+      ],
+      "done": false,
+      "capturedAtUTC": "2026-11-23T20:57:30.982Z"
+    },
+    {
+      "file": "desktop-x37-return-off.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "desktop",
+      "flag": "off",
+      "exit": "x37",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 366
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 353
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 325
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 380
+        }
+      ],
+      "done": true,
+      "capturedAtUTC": "2026-11-23T20:57:43.429Z"
+    },
+    {
+      "file": "desktop-x38-return-off.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "desktop",
+      "flag": "off",
+      "exit": "x38",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 172
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 21
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 316
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 288
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 21
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 186
+        }
+      ],
+      "done": true,
+      "capturedAtUTC": "2026-11-23T20:57:51.633Z"
+    },
+    {
+      "file": "phone-x18-return-next.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "phone",
+      "flag": "next",
+      "exit": "x18",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 303
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 41
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 26
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 17
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 58
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 29
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 58
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 30
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 18
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 89
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 28
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 22
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 40
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 20
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 182
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 157
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 20
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 44
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 17
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        }
+      ],
+      "done": false,
+      "capturedAtUTC": "2026-11-23T20:58:16.213Z"
+    },
+    {
+      "file": "phone-x22-return-next.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "phone",
+      "flag": "next",
+      "exit": "x22",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 61
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 331
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 315
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        }
+      ],
+      "done": false,
+      "capturedAtUTC": "2026-11-23T20:58:22.997Z"
+    },
+    {
+      "file": "phone-x37-return-next.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "phone",
+      "flag": "next",
+      "exit": "x37",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 366
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 353
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 325
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 380
+        }
+      ],
+      "done": true,
+      "capturedAtUTC": "2026-11-23T20:58:33.415Z"
+    },
+    {
+      "file": "phone-x38-return-next.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "phone",
+      "flag": "next",
+      "exit": "x38",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 172
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 21
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 316
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 288
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 21
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 186
+        }
+      ],
+      "done": true,
+      "capturedAtUTC": "2026-11-23T20:58:40.763Z"
+    },
+    {
+      "file": "phone-x18-return-off.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "phone",
+      "flag": "off",
+      "exit": "x18",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 303
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 41
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 26
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 17
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 58
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 29
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 58
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 30
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 18
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 89
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 28
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 22
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 40
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 20
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 182
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 157
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 20
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 44
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 17
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 60
+        }
+      ],
+      "done": false,
+      "capturedAtUTC": "2026-11-23T21:03:35.687Z"
+    },
+    {
+      "file": "phone-x22-return-off.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "phone",
+      "flag": "off",
+      "exit": "x22",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 61
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 331
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 315
+        },
+        {
+          "done": false,
+          "stuck": true,
+          "timedOut": false,
+          "steps": 120
+        }
+      ],
+      "done": false,
+      "capturedAtUTC": "2026-11-23T21:03:46.785Z"
+    },
+    {
+      "file": "phone-x37-return-off.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "phone",
+      "flag": "off",
+      "exit": "x37",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 366
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 353
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 325
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 380
+        }
+      ],
+      "done": true,
+      "capturedAtUTC": "2026-11-23T21:04:03.717Z"
+    },
+    {
+      "file": "phone-x38-return-off.png",
+      "sourceSha": "36149fe885ef03bd7230af444f5b0e8ef8f27a09",
+      "device": "phone",
+      "flag": "off",
+      "exit": "x38",
+      "placed": true,
+      "legs": [
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 172
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 21
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 316
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 0
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 288
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 21
+        },
+        {
+          "done": true,
+          "stuck": false,
+          "timedOut": false,
+          "steps": 186
+        }
+      ],
+      "done": true,
+      "capturedAtUTC": "2026-11-23T21:04:15.632Z"
+    }
+  ]
+}
