@@ -182,7 +182,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       }
       for(const e of plan.input.entrances.filter(e=>e.level===l.floor.level)){
         const front=e.point[1]===plan.bounds.front,yaw=front?0:Math.PI/2;
-        board(e.point[0],l.y+2.55,e.point[1],label,yaw,3.8,1.0);
+        board(e.point[0],l.y+2.45,e.point[1],label,yaw,3.8,0.6);
         if(l.floor.level==="1F"){
           const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,p=ctx.enuToRenderer({...outside.position,z:outside.position.z!});
           const direction=new THREE.Vector3(p[0]-e.point[0],0,p[2]-e.point[1]).normalize();
