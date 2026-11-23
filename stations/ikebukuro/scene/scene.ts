@@ -732,7 +732,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       stationSound?.update(dt, camera);
       if (context && cameraTrack) {
         const seen = cameraTrack.read();
-        setContext(seen !== null && contextVisibleAt(camera?.position.y ?? seen.y, streetY, seen.fogged));
+        // The desktop normal/depth pass has no fog; read the host scene between renders.
+        let host: THREE_NS.Object3D=root;while(host.parent)host=host.parent;
+        setContext(seen !== null && contextVisibleAt(camera?.position.y ?? seen.y, streetY, camera ? (host as THREE_NS.Scene).fog != null : seen.fogged));
       }
       const full = propMarkers.some((o) => o.visible);
       if (full !== propFull) {
