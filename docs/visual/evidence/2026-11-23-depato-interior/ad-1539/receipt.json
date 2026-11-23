@@ -1,7 +1,7 @@
 {
-  "codeCommit": "0e585ec",
+  "codeCommit": "105dcadf53d0b53b3c97f553168865121d9f5b0e",
   "timeZone": "UTC",
-  "capturedAt": "2026-11-23T11:51:30.324Z",
+  "capturedAt": "2026-11-23T12:25:07.596Z",
   "beforeCommit": "6efc91c1",
   "profiles": [
     {
@@ -53,7 +53,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -82,7 +82,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -105,30 +105,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -193,7 +193,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 528,
+            "frame": 466,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -3138,7 +3138,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -3167,7 +3167,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -3190,30 +3190,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -3278,7 +3278,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 717,
+            "frame": 655,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -6236,7 +6236,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -6265,7 +6265,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -6288,30 +6288,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -6376,7 +6376,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 879,
+            "frame": 817,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -9321,7 +9321,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -9350,7 +9350,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -9373,30 +9373,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -9461,7 +9461,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 1014,
+            "frame": 952,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -12419,7 +12419,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -12448,7 +12448,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -12471,30 +12471,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -12559,7 +12559,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 1203,
+            "frame": 1141,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -15517,7 +15517,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -15546,7 +15546,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -15569,30 +15569,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -15657,7 +15657,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 1392,
+            "frame": 1303,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -18615,7 +18615,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -18644,7 +18644,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -18667,30 +18667,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -18755,7 +18755,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 1554,
+            "frame": 1519,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -21700,7 +21700,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -21729,7 +21729,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -21752,30 +21752,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -21840,7 +21840,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 1743,
+            "frame": 1708,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -24798,7 +24798,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -24827,7 +24827,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -24850,30 +24850,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -24938,7 +24938,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 1932,
+            "frame": 1870,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -27816,7 +27816,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -27845,7 +27845,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -27868,30 +27868,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -27918,7 +27918,7 @@
             "coreLightsOn": 0,
             "environment": null,
             "environmentIntensity": null,
-            "exposure": 1.1009672294417903,
+            "exposure": 1.1007419801079918,
             "zone": "outdoor",
             "overlayToneResidual": null,
             "street": {
@@ -27956,7 +27956,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 2094,
+            "frame": 2059,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -30901,7 +30901,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -30930,7 +30930,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -30953,30 +30953,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -31041,7 +31041,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 2283,
+            "frame": 2248,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -33999,7 +33999,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 15.100000001490116,
+              "buildMs": 13,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -34028,7 +34028,7 @@
                 "skippedMeshes": 16,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 163.19999999552965,
+                "cutMs": 157.89999999850988,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -34051,30 +34051,30 @@
               "trees": 382,
               "triangles": 142894,
               "bytes": 7518928,
-              "buildMs": 33.5
+              "buildMs": 32.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 9286,
+              "scene": 9051,
               "attach": 1,
-              "sceneRayTrees": 43,
-              "greybox": 16,
+              "sceneRayTrees": 49,
+              "greybox": 15,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 469,
-              "stairwellCut": 171,
+              "liveScene": 457,
+              "stairwellCut": 166,
               "cutTargets": 0,
-              "connectors": 298,
+              "connectors": 291,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 104,
+              "rayTrees": 33,
+              "signsShadowsAo": 100,
               "navmeshPaths": 0,
               "composer": 4,
-              "startAt": 286,
-              "total": 9963
+              "startAt": 205,
+              "total": 9714
             },
             "bakedAo": {
               "materials": 84,
@@ -34139,7 +34139,7 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 2418,
+            "frame": 2410,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -37073,7 +37073,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 11.299999997019768,
+              "buildMs": 9.799999997019768,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -37084,7 +37084,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 2.7000000029802322,
+                "cutMs": 3.0999999940395355,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -37102,7 +37102,7 @@
                 "skippedMeshes": 16,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 45.20000000298023,
+                "cutMs": 57.69999999552965,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -37125,30 +37125,30 @@
               "trees": 66,
               "triangles": 117295,
               "bytes": 6162832,
-              "buildMs": 36.5
+              "buildMs": 36.7
             },
             "loadTimings": {
               "graph": 2,
-              "scene": 641,
+              "scene": 555,
               "attach": 1,
-              "sceneRayTrees": 31,
-              "greybox": 12,
+              "sceneRayTrees": 30,
+              "greybox": 10,
               "greyboxSegments": 1,
               "portalCut": 3,
               "stairwellRecipe": 0,
-              "liveScene": 342,
-              "stairwellCut": 55,
+              "liveScene": 345,
+              "stairwellCut": 69,
               "cutTargets": 0,
-              "connectors": 287,
+              "connectors": 276,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
               "rayTrees": 37,
-              "signsShadowsAo": 46,
+              "signsShadowsAo": 45,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 390,
-              "total": 1118
+              "composer": 4,
+              "startAt": 211,
+              "total": 1034
             },
             "bakedAo": {
               "materials": 37,
@@ -37195,7 +37195,7 @@
             "releasedTextures": null
           },
           "render": {
-            "frame": 211,
+            "frame": 210,
             "calls": 1,
             "triangles": 1,
             "points": 0,
@@ -40228,7 +40228,7 @@
             "hours": "warn_unknown",
             "at": {
               "weekday": "mon",
-              "minutes": 1251.71065
+              "minutes": 1285.3271833333333
             },
             "today": "2026-11-23",
             "timeZone": "Asia/Tokyo"
@@ -40460,7 +40460,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -40489,7 +40489,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -40512,30 +40512,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -40600,9 +40600,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 130,
+            "frame": 128,
             "calls": 51,
-            "triangles": 390358,
+            "triangles": 377590,
             "points": 0,
             "lines": 0
           },
@@ -43496,7 +43496,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -43525,7 +43525,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -43548,30 +43548,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -43636,9 +43636,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 137,
+            "frame": 134,
             "calls": 53,
-            "triangles": 396448,
+            "triangles": 383680,
             "points": 0,
             "lines": 0
           },
@@ -46545,7 +46545,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -46574,7 +46574,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -46597,30 +46597,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -46685,9 +46685,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 143,
+            "frame": 140,
             "calls": 51,
-            "triangles": 390358,
+            "triangles": 377590,
             "points": 0,
             "lines": 0
           },
@@ -49581,7 +49581,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -49610,7 +49610,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -49633,30 +49633,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -49721,9 +49721,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 149,
+            "frame": 145,
             "calls": 41,
-            "triangles": 380259,
+            "triangles": 367491,
             "points": 0,
             "lines": 0
           },
@@ -52630,7 +52630,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -52659,7 +52659,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -52682,30 +52682,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -52770,9 +52770,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 156,
+            "frame": 150,
             "calls": 40,
-            "triangles": 380219,
+            "triangles": 367451,
             "points": 0,
             "lines": 0
           },
@@ -55679,7 +55679,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -55708,7 +55708,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -55731,30 +55731,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -55819,9 +55819,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 163,
+            "frame": 156,
             "calls": 49,
-            "triangles": 390324,
+            "triangles": 377556,
             "points": 0,
             "lines": 0
           },
@@ -58728,7 +58728,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -58757,7 +58757,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -58780,30 +58780,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -58868,9 +58868,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 170,
+            "frame": 163,
             "calls": 52,
-            "triangles": 201903,
+            "triangles": 189135,
             "points": 0,
             "lines": 0
           },
@@ -61764,7 +61764,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -61793,7 +61793,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -61816,30 +61816,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -61904,9 +61904,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 177,
+            "frame": 170,
             "calls": 47,
-            "triangles": 199066,
+            "triangles": 186298,
             "points": 0,
             "lines": 0
           },
@@ -64813,7 +64813,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -64842,7 +64842,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -64865,30 +64865,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -64953,9 +64953,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 183,
+            "frame": 176,
             "calls": 48,
-            "triangles": 201673,
+            "triangles": 188905,
             "points": 0,
             "lines": 0
           },
@@ -67822,7 +67822,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -67851,7 +67851,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -67874,30 +67874,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -67924,7 +67924,7 @@
             "coreLightsOn": 0,
             "environment": null,
             "environmentIntensity": null,
-            "exposure": 1.1002717990954172,
+            "exposure": 1.1002593654908701,
             "zone": "outdoor",
             "overlayToneResidual": null,
             "street": {
@@ -67962,9 +67962,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 189,
+            "frame": 183,
             "calls": 51,
-            "triangles": 209071,
+            "triangles": 196303,
             "points": 0,
             "lines": 0
           },
@@ -70858,7 +70858,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -70887,7 +70887,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -70910,30 +70910,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -70998,9 +70998,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 197,
+            "frame": 190,
             "calls": 67,
-            "triangles": 423380,
+            "triangles": 410612,
             "points": 0,
             "lines": 0
           },
@@ -73907,7 +73907,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 706,
-              "buildMs": 13.699999995529652,
+              "buildMs": 13.199999995529652,
               "overBudget": null,
               "connectors": {
                 "escalator": 2,
@@ -73936,7 +73936,7 @@
                 "skippedMeshes": 2,
                 "railM": 311.7063532898585,
                 "cutMeshes": 25,
-                "cutMs": 363.40000000596046,
+                "cutMs": 142.69999999552965,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -73959,30 +73959,30 @@
               "trees": 381,
               "triangles": 127040,
               "bytes": 6663188,
-              "buildMs": 34.2
+              "buildMs": 33.2
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 2576,
-              "attach": 29,
-              "sceneRayTrees": 48,
-              "greybox": 15,
+              "scene": 2553,
+              "attach": 26,
+              "sceneRayTrees": 32,
+              "greybox": 14,
               "greyboxSegments": 1,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 685,
-              "stairwellCut": 373,
+              "liveScene": 442,
+              "stairwellCut": 150,
               "cutTargets": 0,
-              "connectors": 312,
+              "connectors": 292,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
-              "rayTrees": 34,
-              "signsShadowsAo": 70,
+              "rayTrees": 33,
+              "signsShadowsAo": 49,
               "navmeshPaths": 0,
-              "composer": 3,
-              "startAt": 226,
-              "total": 3464
+              "composer": 2,
+              "startAt": 159,
+              "total": 3155
             },
             "bakedAo": {
               "materials": 15,
@@ -74047,9 +74047,9 @@
             "jaCapHeightM": 0.15
           },
           "render": {
-            "frame": 201,
+            "frame": 194,
             "calls": 70,
-            "triangles": 247807,
+            "triangles": 235039,
             "points": 0,
             "lines": 0
           },
@@ -76932,7 +76932,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 10.399999998509884,
+              "buildMs": 9.600000001490116,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -76943,7 +76943,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.8000000044703484,
+                "cutMs": 0.6999999955296516,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -76961,7 +76961,7 @@
                 "skippedMeshes": 2,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 45.20000000298023,
+                "cutMs": 50.899999998509884,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -76984,30 +76984,30 @@
               "trees": 65,
               "triangles": 117139,
               "bytes": 6154612,
-              "buildMs": 33.1
+              "buildMs": 34.1
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 571,
-              "attach": 27,
-              "sceneRayTrees": 42,
-              "greybox": 11,
+              "graph": 2,
+              "scene": 461,
+              "attach": 25,
+              "sceneRayTrees": 40,
+              "greybox": 10,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 324,
-              "stairwellCut": 57,
+              "liveScene": 317,
+              "stairwellCut": 60,
               "cutTargets": 0,
-              "connectors": 267,
+              "connectors": 256,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
-              "rayTrees": 33,
-              "signsShadowsAo": 39,
+              "rayTrees": 34,
+              "signsShadowsAo": 34,
               "navmeshPaths": 0,
-              "composer": 4,
-              "startAt": 368,
-              "total": 1055
+              "composer": 2,
+              "startAt": 197,
+              "total": 927
             },
             "bakedAo": {
               "materials": 4,
@@ -77054,9 +77054,9 @@
             "releasedTextures": null
           },
           "render": {
-            "frame": 90,
+            "frame": 89,
             "calls": 27,
-            "triangles": 168141,
+            "triangles": 155373,
             "points": 0,
             "lines": 0
           },
@@ -80078,7 +80078,7 @@
             "hours": "warn_unknown",
             "at": {
               "weekday": "mon",
-              "minutes": 1252.2773166666666
+              "minutes": 1285.8573333333334
             },
             "today": "2026-11-23",
             "timeZone": "Asia/Tokyo"
@@ -80277,6 +80277,7 @@
         "pixels": 11000,
         "meanY": 0.073615,
         "allPixelsYLT012Percent": 98.7273,
+        "warmPixelsYLT012Percent": 98.7273,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80292,8 +80293,9 @@
           855
         ],
         "pixels": 11000,
-        "meanY": 0.29429,
+        "meanY": 0.294289,
         "allPixelsYLT012Percent": 0.0,
+        "warmPixelsYLT012Percent": 0.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80315,6 +80317,7 @@
         "pixels": 16800,
         "meanY": 0.03464,
         "allPixelsYLT012Percent": 100.0,
+        "warmPixelsYLT012Percent": 100.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80330,8 +80333,9 @@
           755
         ],
         "pixels": 16800,
-        "meanY": 0.383492,
+        "meanY": 0.29536,
         "allPixelsYLT012Percent": 0.0,
+        "warmPixelsYLT012Percent": 0.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80353,6 +80357,7 @@
         "pixels": 40800,
         "meanY": 0.254046,
         "allPixelsYLT012Percent": 0.0,
+        "warmPixelsYLT012Percent": 0.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80370,6 +80375,7 @@
         "pixels": 40800,
         "meanY": 0.191185,
         "allPixelsYLT012Percent": 0.0,
+        "warmPixelsYLT012Percent": 0.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80391,6 +80397,7 @@
         "pixels": 16500,
         "meanY": 0.356381,
         "allPixelsYLT012Percent": 0.0,
+        "warmPixelsYLT012Percent": 0.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80408,6 +80415,7 @@
         "pixels": 16500,
         "meanY": 0.386798,
         "allPixelsYLT012Percent": 0.0,
+        "warmPixelsYLT012Percent": 0.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80429,6 +80437,7 @@
         "pixels": 6000,
         "meanY": 0.480009,
         "allPixelsYLT012Percent": 0.0,
+        "warmPixelsYLT012Percent": 0.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80444,8 +80453,9 @@
           535
         ],
         "pixels": 6000,
-        "meanY": 0.480099,
+        "meanY": 0.480084,
         "allPixelsYLT012Percent": 0.0,
+        "warmPixelsYLT012Percent": 0.0,
         "maxChannelLE16Percent": 0.0,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80485,6 +80495,7 @@
         "pixels": 183264,
         "meanY": 0.03357,
         "allPixelsYLT012Percent": 91.7518,
+        "warmPixelsYLT012Percent": 16.7829,
         "maxChannelLE16Percent": 71.1896,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80495,9 +80506,10 @@
       "after": {
         "box": null,
         "pixels": 183264,
-        "meanY": 0.1573,
-        "allPixelsYLT012Percent": 34.9136,
-        "maxChannelLE16Percent": 0.1004,
+        "meanY": 0.157307,
+        "allPixelsYLT012Percent": 34.9059,
+        "warmPixelsYLT012Percent": 20.2566,
+        "maxChannelLE16Percent": 0.114,
         "anyChannel255Percent": 0.0,
         "size": [
           1440,
@@ -80534,6 +80546,7 @@
         "pixels": 96407,
         "meanY": 0.150384,
         "allPixelsYLT012Percent": 35.4922,
+        "warmPixelsYLT012Percent": 23.6331,
         "maxChannelLE16Percent": 0.1255,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80544,8 +80557,9 @@
       "after": {
         "box": null,
         "pixels": 96407,
-        "meanY": 0.150383,
-        "allPixelsYLT012Percent": 35.4902,
+        "meanY": 0.150384,
+        "allPixelsYLT012Percent": 35.4922,
+        "warmPixelsYLT012Percent": 23.6331,
         "maxChannelLE16Percent": 0.1255,
         "anyChannel255Percent": 0.0,
         "size": [
@@ -80562,26 +80576,26 @@
         "pixels": 1296000,
         "meanY": 0.222876,
         "allPixelsYLT012Percent": 46.2147,
+        "warmPixelsYLT012Percent": 36.5734,
         "maxChannelLE16Percent": 0.0117,
         "anyChannel255Percent": 0.0,
         "size": [
           1440,
           900
-        ],
-        "warmPixelsYLT012Percent": 36.5734
+        ]
       },
       "after": {
         "box": null,
         "pixels": 1296000,
-        "meanY": 0.3749,
-        "allPixelsYLT012Percent": 10.3181,
-        "maxChannelLE16Percent": 0.0117,
+        "meanY": 0.351535,
+        "allPixelsYLT012Percent": 10.3147,
+        "warmPixelsYLT012Percent": 0.4183,
+        "maxChannelLE16Percent": 0.0114,
         "anyChannel255Percent": 0.0,
         "size": [
           1440,
           900
-        ],
-        "warmPixelsYLT012Percent": 0.4187
+        ]
       }
     },
     "desktop-wide-1F": {
@@ -80590,26 +80604,26 @@
         "pixels": 1296000,
         "meanY": 0.261456,
         "allPixelsYLT012Percent": 35.7162,
+        "warmPixelsYLT012Percent": 26.0748,
         "maxChannelLE16Percent": 0.022,
         "anyChannel255Percent": 0.0,
         "size": [
           1440,
           900
-        ],
-        "warmPixelsYLT012Percent": 26.0748
+        ]
       },
       "after": {
         "box": null,
         "pixels": 1296000,
-        "meanY": 0.383152,
-        "allPixelsYLT012Percent": 10.4955,
-        "maxChannelLE16Percent": 0.0208,
+        "meanY": 0.369114,
+        "allPixelsYLT012Percent": 10.4997,
+        "warmPixelsYLT012Percent": 0.1406,
+        "maxChannelLE16Percent": 0.0199,
         "anyChannel255Percent": 0.0,
         "size": [
           1440,
           900
-        ],
-        "warmPixelsYLT012Percent": 0.141
+        ]
       }
     },
     "desktop-far-end-B1": {
@@ -80618,26 +80632,26 @@
         "pixels": 1296000,
         "meanY": 0.212662,
         "allPixelsYLT012Percent": 51.8002,
+        "warmPixelsYLT012Percent": 41.6754,
         "maxChannelLE16Percent": 0.0046,
         "anyChannel255Percent": 0.0,
         "size": [
           1440,
           900
-        ],
-        "warmPixelsYLT012Percent": 41.6754
+        ]
       },
       "after": {
         "box": null,
         "pixels": 1296000,
-        "meanY": 0.375469,
-        "allPixelsYLT012Percent": 10.6171,
-        "maxChannelLE16Percent": 0.0043,
+        "meanY": 0.347625,
+        "allPixelsYLT012Percent": 10.7009,
+        "warmPixelsYLT012Percent": 0.6654,
+        "maxChannelLE16Percent": 0.0044,
         "anyChannel255Percent": 0.0,
         "size": [
           1440,
           900
-        ],
-        "warmPixelsYLT012Percent": 0.5786
+        ]
       }
     }
   },
@@ -80650,9 +80664,10 @@
         745
       ],
       "pixels": 134780,
-      "meanY": 0.290058,
-      "allPixelsYLT012Percent": 12.0908,
-      "maxChannelLE16Percent": 0.0223,
+      "meanY": 0.205153,
+      "allPixelsYLT012Percent": 16.1953,
+      "warmPixelsYLT012Percent": 4.1438,
+      "maxChannelLE16Percent": 0.0393,
       "anyChannel255Percent": 0.0,
       "size": [
         460,
@@ -80666,10 +80681,23 @@
         1420,
         300
       ],
-      "surface": "existing concourse ceiling and fixtures, outside generated store shell",
-      "meanY": 0.1971812887728815
+      "pixels": 64000,
+      "meanY": 0.197146,
+      "allPixelsYLT012Percent": 47.8297,
+      "warmPixelsYLT012Percent": 47.8297,
+      "maxChannelLE16Percent": 0.0,
+      "anyChannel255Percent": 0.0,
+      "size": [
+        400,
+        160
+      ]
     },
-    "ratio": 1.471021930149246
+    "ratio": 1.0406145699126537,
+    "targetRatio": [
+      1.1,
+      1.3
+    ],
+    "withinTarget": false
   },
   "trim": {
     "box": [
@@ -80681,6 +80709,7 @@
     "pixels": 1600,
     "meanY": 0.017267,
     "allPixelsYLT012Percent": 100.0,
+    "warmPixelsYLT012Percent": 100.0,
     "maxChannelLE16Percent": 0.0,
     "anyChannel255Percent": 0.0,
     "size": [
@@ -80688,13 +80717,6 @@
       20
     ]
   },
-  "latestCaptureAttempt": {
-    "timeZone": "JST",
-    "status": "failed before any frame",
-    "candidate": "36e71bb",
-    "failures": [
-      "desktop: CdpRequestTimeoutError: CDP request timed out: Emulation.setTouchEmulationEnabled",
-      "phone: CdpRequestTimeoutError: CDP request timed out: Emulation.setTouchEmulationEnabled"
-    ]
-  }
+  "captureCommand": "tachi-run --heavy --host --est 30m -- nice -n 15 node /tmp/depato-1534-capture.mjs",
+  "captureJob": "depato-1539-recap-1"
 }
