@@ -4,7 +4,7 @@ import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources 
 import footprintData from "../../data/depato-footprint.json";
 import floorData from "../../data/depato-floors.json";
 import rolloutData from "../../data/depato-rollout.json";
-import { depatoBundle, depatoLayout, type PlanPoint, type DepatoInput } from "./layout.ts";
+import { depatoBundle, depatoLayout, type PlanPoint } from "./layout.ts";
 import { buildDepatoInterior } from "./interior.ts";
 
 // PLATEAU context low GLB, ctx_bldg_t01_00: southern store wing of the connected
@@ -22,8 +22,10 @@ const plan = () => depatoLayout({
 // Instance placement only: the accepted kit materials, lights and proportions are shared.
 const rolloutPlans = () => rolloutData.stores.map(row => {
   const store = floorData.stores.find(s => s.id === row.id)!;
-  return depatoLayout({ ...row, store: { ...store, floors: store.floors.filter((f,i,all) =>
-    ["B2","B1","1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) } } as DepatoInput);
+  return depatoLayout({ ...row, footprint: row.footprint as PlanPoint[],
+    entrances: row.entrances.map(e=>({ ...e, point: e.point as PlanPoint, inward: e.inward as PlanPoint })),
+    store: { ...store, floors: store.floors.filter((f,i,all) =>
+      ["B2","B1","1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) } });
 });
 
 /** Called before the host creates search/router; the flag-off bundle is never modified. */

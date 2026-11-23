@@ -3049,6 +3049,18 @@
  ],
  "dataFiles": [
    {
+     "id": "depato-rollout",
+     "path": "data/depato-rollout.json",
+     "sourceIds": [
+       "plateau-13116-bldg-53394576",
+       "plateau-13116-bldg-53394577",
+       "tobu-dept-ikebukuro-2026-10-B2F",
+       "parco-ikebukuro-floorguide-2026-11"
+     ],
+     "modified": true,
+     "derivation": "2026-11-23 JST: PLATEAU context LOD1 bottom-face boundaries, phase-1 building identities and shared-wing partitions; authored preview circulation and doorway placement. Floor labels and tenant names select the official depato-floors data. Unknown store floor intervals use 4.5 m from the station B1 approach height. Not a surveyed interior plan."
+   },
+   {
      "id": "depato-floors",
      "path": "data/depato-floors.json",
      "sourceIds": [

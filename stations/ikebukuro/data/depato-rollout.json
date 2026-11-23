@@ -8,7 +8,7 @@
     {
       "id": "tobu-ikebukuro",
       "poiId": "shop-ikb-tobudept",
-      "sourceId": "tobu-ikebukuro-floorguide-2026-10",
+      "sourceId": "tobu-dept-ikebukuro-2026-10-B2F",
       "building": "bldg_fb241b42-14ae-4785-bb97-134d2714d3a3",
       "footprint": [
         [
@@ -258,7 +258,7 @@
     {
       "id": "ikebukuro-parco",
       "poiId": "shop-ikb-parco",
-      "sourceId": "jcsc-ikebukuro-parco-facility-2021-10",
+      "sourceId": "parco-ikebukuro-floorguide-2026-11",
       "building": "bldg_b42ec24e-73aa-4359-893c-3c1662d7d8b2",
       "footprint": [
         [

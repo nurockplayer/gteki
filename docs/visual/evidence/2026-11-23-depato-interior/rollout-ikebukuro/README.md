@@ -33,3 +33,9 @@ Test: none (scene; CI root-test, golden cameras and journey jobs are the check).
 The diff exceeds 300 lines because it includes the two source footprint polygons and reproducible desktop/phone capture scripts.
 
 Credits: GTEki contributors; 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成. Cat: guillaume bolis, CC BY 4.0, modified by GTEki contributors; see NOTICE. Composite screenshots follow REUSE.toml: CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy. Tenant names are factual text; fronts have no logos, wordmarks, brand colours or product photos.
+
+## Round 1 result — 2026-11-23 JST
+
+`tachi-run --heavy --host --est 15m -- nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs` → exit 1: `ERR_MODULE_NOT_FOUND` for this worktree's missing Vite dependency. No frames or receipt were produced. Next capture installs the pinned dependencies with `pnpm install --frozen-lockfile` inside the heavy job.
+
+`rtk gh pr checks 1541 --watch` → Passed: 3; Failed: 13. Root typecheck reported TS2352 for JSON arrays cast as `DepatoInput`; build jobs rejected the undeclared `data/depato-rollout.json`. The resume narrows the casts to coordinate tuples and declares the data file with existing source IDs. Results remain pending for round 2.
