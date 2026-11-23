@@ -2437,7 +2437,8 @@ export class Explorer {
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
       this.noModelTexture.repeat.set(1 / 1.6, 1);
-      const gapMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.noModelTexture, color: 0xffb547, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+      // Preview store floors are modelled: their slabs must occlude approximate guide segments above.
+      const gapMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.noModelTexture, color: 0xffb547, transparent: true, opacity: 0.95, depthTest: polyline.some(p => p.floorId.startsWith("depato-")), depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
       for (const run of gaps) {
         const band = new THREE.Mesh(ribbonGeometry(run.map((p) => R(p.x, p.y, p.z)), 0.5, 0.15), gapMat);
         band.renderOrder = 21;

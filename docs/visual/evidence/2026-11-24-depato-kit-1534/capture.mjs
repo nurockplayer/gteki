@@ -20,11 +20,41 @@ const budget = `(()=>{
   });
   return {triangles,draws,atlasPx:root?.userData.depato.atlasPx};
 })()`;
+const probe = () => {
+  const g=window.__gteki,e=g.scanProbe().explorer,root=e.scene.getObjectByName('depato-interior:seibu-ikebukuro');
+  if(!root)return {slabHidesUpperRibbon:true,reason:'flag-off; no preview upper floor'};
+  const nodes=e.station.bundle.nodes;
+  const ids=['depato-seibu-ikebukuro-1F-aisle','depato-seibu-ikebukuro-1F-bypass'];
+  const route=ids.map(id=>{const n=nodes.find(n=>n.id===id);return {...n.position,floorId:n.floorId,zKnown:true,stepIndex:0,sceneGap:true};});
+  // Actual authored upper aisle edge, with the approximate-guide material reported by the AD.
+  e.showRoute(route);
+  g.goldenFrame();g.goldenFrame();g.goldenFrame();
+  const bands=[];e.routeGroup.traverse(o=>{if(o.name==='route-no-model')bands.push(o);});
+  const slab=[root.getObjectByName('retail-floor-1F'),root.getObjectByName('retail-shell-B1')];
+  e.scene.updateMatrixWorld(true);
+  const fromBelow=e.camera.position.y<route[0].z, samples=[];
+  for(let i=0;i<=32;i++){
+    const t=i/32,p=e.camera.position.clone().set(route[0].x,route[0].z+0.15,-(route[0].y+(route[1].y-route[0].y)*t));
+    const screen=p.clone().project(e.camera),delta=p.clone().sub(e.camera.position),distance=delta.length();
+    const inFrame=Math.abs(screen.x)<=1&&Math.abs(screen.y)<=1&&Math.abs(screen.z)<=1;
+    e.ray.near=0;e.ray.far=distance-0.01;e.ray.set(e.camera.position,delta.normalize());
+    const hits=e.ray.intersectObjects(slab,false);
+    samples.push({inFrame,occluded:hits.length>0,occluder:hits[0]?.object.name,pixel:[(screen.x+1)*innerWidth/2,(1-screen.y)*innerHeight/2]});
+  }
+  const depthTest=bands.length>0&&bands.every(b=>b.material.depthTest);
+  const leaks=fromBelow?samples.filter(s=>s.inFrame&&!s.occluded).length:0;
+  return {slabHidesUpperRibbon:depthTest&&leaks===0,fromBelow,depthTest,leaks,route,samples};
+};
+const probeCapture = `const slabProbe=await page.evaluate(${probe.toString()});
+  if(slabProbe.route){await page.screenshot({path:base+'/frames/'+profile+'-'+name+'-upper-guide.png'});await page.evaluate(()=>{const g=window.__gteki;g.scanProbe().explorer.clearRoute();g.goldenFrame();});}
+  `;
 const driver = original
   .replaceAll('/tmp/gteki-depato-1539-ad', base)
   .replaceAll('depato-interior-1534', 'depato-kit-1534')
   .replaceAll('127.0.0.1:5286', '127.0.0.1:5294')
-  .replace('depato:root?.userData.depato,', `kitBudget:${budget},depato:root?.userData.depato,`);
+  .replace('depato:root?.userData.depato,', `kitBudget:${budget},depato:root?.userData.depato,`)
+  .replace('await page.evaluate(()=>window.__gteki.holdFrames(false));if(info.shaderErrors.length)', probeCapture+'await page.evaluate(()=>window.__gteki.holdFrames(false));if(info.shaderErrors.length)')
+  .replace('return {name,...info};','return {name,...info,slabProbe};');
 await mkdir(base, { recursive: true });
 await writeFile(base + '/walk.mjs', driver);
 process.chdir(path.join(repo, 'apps/web'));
@@ -45,6 +75,11 @@ try {
       frame.sourceSha = sourceSha;
       frame.file = `${profile.device.name}-${frame.name}.png`;
       await copyFile(base + '/frames/' + frame.file, path.join(out, frame.file));
+      if(frame.slabProbe.route){
+        frame.slabProbe.file=`${profile.device.name}-${frame.name}-upper-guide.png`;
+        await copyFile(base+'/frames/'+frame.slabProbe.file,path.join(out,frame.slabProbe.file));
+      }
+      if(!frame.slabProbe.slabHidesUpperRibbon)receipt.failures.push(`${frame.file}: upper guide leaks through slab`);
       if (profile.device.name === 'phone' && frame.name !== 'flag-off') {
         const b = frame.kitBudget;
         if (b.triangles > 60000 || b.draws > 30 || b.atlasPx > 1024)
