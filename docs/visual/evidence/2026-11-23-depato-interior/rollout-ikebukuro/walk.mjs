@@ -85,6 +85,10 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
       await frame(profile,'street-door-inside',Math.atan2(street.inward[0],street.inward[1]));
       await walk(profile,'leave-to-street',[{x:store.street.point[0],z:store.street.point[1],y:store.elevations['1F']}]);
       await frame(profile,'street-door-outside',Math.atan2(-street.inward[0],-street.inward[1]));
+      if(store.skippedEntrances){
+        await page.evaluate(()=>{const g=window.__gteki;g.setView({node:'c_w',headingDeg:270});g.setCamera(null);});
+        await frame(profile,'B1-tie-skipped',Math.PI/2);
+      }
     }catch(error){result.failures.push(`${device.name} ${store.id}: ${error.stack??error}`);console.log(String(error));}
     await save();
   }

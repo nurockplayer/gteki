@@ -246,7 +246,11 @@
         {
           "level": "B1",
           "outsideNode": "c_w",
-          "reason": "No alternative verified Tobu entrance exists in the committed POI data. The generated c_w tie crosses the station unverified-access barrier, which is retained. Enter from the 1F street doorway and use the internal escalators to B2."
+          "reason": "No alternative verified Tobu entrance exists in the committed POI data. The generated c_w tie crosses the station unverified-access barrier, which is retained. Enter from the 1F street doorway and use the internal escalators to B2.",
+          "point": [
+            -65,
+            -82
+          ]
         }
       ]
     },

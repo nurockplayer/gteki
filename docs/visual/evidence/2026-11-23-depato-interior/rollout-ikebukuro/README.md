@@ -2,7 +2,7 @@
 
 2026-11-23 JST. Journey row: none (Owner request 2026-11-22).
 
-Behind `?station=ikebukuro&next=1`, 東武百貨店 池袋店 and 池袋パルコ share the accepted 西武 kit, with B2/B1/1F and tenant names from `stations/ikebukuro/data/depato-floors.json`. Store-name search targets the lowest food/sweets floor, B2. The usable station-side entrances are B1: enter from `c_w` / `n_h`, descend to B2, use the paired escalators through B1 to 1F, then leave at the street door. The capture records every collision-walk leg.
+Behind `?station=ikebukuro&next=1`, 東武百貨店 池袋店 and 池袋パルコ share the accepted 西武 kit, with B2/B1/1F and tenant names from `stations/ikebukuro/data/depato-floors.json`. Store-name search targets the lowest food/sweets floor, B2. PARCO enters from B1 at `n_h`. Tobu enters from its 1F street door and reaches B2 by the internal escalators; the generated B1 `c_w` tie is skipped because it crosses the station unverified-access barrier and no alternative verified doorway exists in the committed data. Tobu no longer advertises a route from the station network. The capture records every collision-walk leg.
 
 Only the nearest store can allocate detail; the previous store unloads first, including 西武. Flag-off keeps the original bundle and scene hook. No palette, exposure, light, shell-wall finish or counter finish was retuned. The entrance assembly only rotates to match the new footprint's doorway direction. Existing kit items on #1534 remain for the kit owner.
 
@@ -26,30 +26,13 @@ Known B1 station-approach elevations anchor each store. Store floor heights are 
 
 `job-run --id depato-ikb-rollout-capture-1 --artifact docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/receipt.json -- tachi-run --heavy --host --est 15m -- nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs`
 
-Capture has not run yet. It writes desktop 1440×900 and phone 390×844 frames for each included store: entrance outside, first interior, B2 aisle, escalator, street door inside/outside, and matching flag-off views at both entrances. `receipt.json` records the runtime commit, route/search results, collision walks, loaded interior count and shader failures. Flag-off street views match the evidence pose only because the preview street nodes are absent from the default graph.
+2026-11-24 JST: the previous capture passed at source `86d715dc`, evidence `7486feb1`; AD rejected it at PR #1541 comment 7106005335. This correction preserves station sign faces and barriers, drops the Tobu B1 tie, aligns the doorway assemblies to their wall normals, uses larger Tobu name-board atlas slots, and activates the existing street context at the 1F exit portals. Existing B2 counters, escalators, PARCO tenant boards/people, footprints and the five store skips are retained.
 
-Test: none (scene; CI root-test, golden cameras and journey jobs are the check). CI and capture results will be appended after the detached jobs return. The PR is ready for the lead/review gate; art-director acceptance remains pending (resume instruction, 2026-11-23 JST).
+AD correction capture run 1 is pending. It records the same rollout pose names on desktop 1440×900 and phone 390×844, with Tobu's entrance poses at the usable 1F doorway. PARCO's entrance camera is seven metres back, level. Additional `B1-tie-skipped` frames show Tobu's closed B1 approach. 西武 adds `entrance-before`, `food-hall-aisle`, `escalator-boarding`, and `street-door-inside` on both devices. `receipt.json` binds frames to the source HEAD and records routes, expected Tobu station-route skip, collision walks, shader errors and street context state. Receipt timestamps use UTC (`Z`). PR #1541 stays draft for the lead/AD.
+
+Test: `pnpm vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1`, through tachi-run in the detached capture job.
 
 The diff exceeds 300 lines because it includes the two source footprint polygons and reproducible desktop/phone capture scripts.
 
 Credits: GTEki contributors; 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成. Cat: guillaume bolis, CC BY 4.0, modified by GTEki contributors; see NOTICE. Composite screenshots follow REUSE.toml: CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy. Tenant names are factual text; fronts have no logos, wordmarks, brand colours or product photos.
 
-## Round 1 result — 2026-11-23 JST
-
-`tachi-run --heavy --host --est 15m -- nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs` → exit 1: `ERR_MODULE_NOT_FOUND` for this worktree's missing Vite dependency. No frames or receipt were produced. Next capture installs the pinned dependencies with `pnpm install --frozen-lockfile` inside the heavy job.
-
-`rtk gh pr checks 1541 --watch` → Passed: 3; Failed: 13. Root typecheck reported TS2352 for JSON arrays cast as `DepatoInput`; build jobs rejected the undeclared `data/depato-rollout.json`. The resume narrows the casts to coordinate tuples and declares the data file with existing source IDs. Results remain pending for round 2.
-
-## Round 2 result and correction — 2026-11-23 JST
-
-Capture installed pinned dependencies, then exited 1 before scene load: `Error: spawnSync rtk ENOENT` inside Ego's Node runtime, which does not inherit the shell environment. The launcher now resolves HEAD through `rtk git` on the host and embeds it into the browser script. No frames or receipt were produced.
-
-CI summary: Passed: 15; Failed: 1. Root tests: 2 files failed, 306 passed, 1 skipped; 4 tests failed, 4061 passed, 8 skipped. The four failures require matching source/generated dataFiles declarations and adding the two rollout source IDs to the stairwell provenance union. This correction synchronizes those declarations and includes the rollout file in the existing manifest test.
-
-Round 3 command: `tachi-run --heavy --host --est 15m -- sh -c 'pnpm vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1 && node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs'`. Results pending detached handoff. No full suite or CI watch is run by this resume.
-
-## Round 3 result and correction — 2026-11-23 JST
-
-The two affected specs passed: `Test Files 2 passed (2)`; `Tests 35 passed (35)`. Capture then exited 1: `Store name route did not succeed` for both stores on desktop and phone. Search found each store's B2 destination; the route was null because the capture passed a graph node ID to the POI-only `setOrigin` hook. The correction uses `jr-south-gate`, matching the accepted pilot's routing origin. Walking still starts at each store's B1 approach node.
-
-The committed receipt and four flag-off frames record this failed attempt at runtime HEAD `9f9509a080debb81d176e3bc42f3de965c1a9cc8`; they do not demonstrate the interior journey. Round 4 runs capture only: `tachi-run --heavy --host --est 15m -- nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs`. Result pending detached handoff.
