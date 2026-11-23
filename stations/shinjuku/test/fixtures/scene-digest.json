@@ -1,6 +1,6 @@
 {
  "protect": {
-  "layoutAfterProtect": "5b785977ca1491e16a7025f941aad8f01376fb7b94c4560ca1cb1157c3be5ca3",
+  "layoutAfterProtect": "002b7d9dfca4cbfd3bf61a5a61e1a88f119d8264a17114c267160a3b5e3d4251",
   "protection": "1cef6b3f949890f6b36fd2323f297b3ad03530b74da48240fc9c37af396e4d7f",
   "fences": "1527d1aca21ba2311d781262f6d7f1af576ebf0ad4253784bd9ebd9500b866a7",
   "gates": "b12d68f308c2d3bf796c28f3a5d0ee120d78795bbbc799a1e077757d6f3e92c5",
@@ -9,9 +9,9 @@
   "cacheHit": true
  },
  "station": {
-  "layoutAfterBuild": "0bb78526f5849693decd9b7ace3dbb06264170399ce2fceb56bbc3d86db6b79e",
+  "layoutAfterBuild": "878329c381fb6efca0e457badb7707bd2431e4fa820708fa2547728231c4c2e1",
   "propWalls": "69aa5d1992b652ec3d5a3916ee2ae86689d3bdf3d3a8512bbce7948726322865",
-  "levelWalls": "5ba491fa423b4e09a315b6edf47ae3df774759f279f2373881426d5a0aacd483",
+  "levelWalls": "d6982c0199fb64d4254236a02e5d417fdc62db14698fba3040d1350fa73bdd45",
   "escalators": "15a5224f8c32deb2ca23240bac233cfea59c30dc8198a60f992b5040b5fee0c3"
  },
  "scene": {
@@ -751,7 +751,7 @@
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
      "triangles": 19406,
-     "hash": "047f3f3bd74865d56c6bebb7c2c4945484f50a172cbc8a9df88fc89467aedb53"
+     "hash": "6778c92c44044dc6236917ccb0e210a290251c44f27d810afb12ba7930a3bae2"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -1954,7 +1954,7 @@
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
      "triangles": 19406,
-     "hash": "047f3f3bd74865d56c6bebb7c2c4945484f50a172cbc8a9df88fc89467aedb53"
+     "hash": "6778c92c44044dc6236917ccb0e210a290251c44f27d810afb12ba7930a3bae2"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,

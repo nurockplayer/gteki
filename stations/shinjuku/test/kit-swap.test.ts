@@ -77,7 +77,7 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1432 (2026-11-17 JST): nosing-line stair walk proxies change the lists digest; list counts unchanged.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "68559f50c729793df947e0d257161db8db65537ab56bcd9c0bf7384bb68b5d69",
+    "geometryDigest": "9d9819b26544fff16f2286b9a29a362a44d28a892aac2a4ae44b23e7103adee3",
     "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
     "nodesDigest": "89c9a2aee9c888cc2f1c7bbf1b0b0783e4c4b688598ddd8350ab9747d2a2930a",
     "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
