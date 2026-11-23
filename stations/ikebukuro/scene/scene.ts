@@ -514,7 +514,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   let contextRoadMaterial: THREE_NS.Material | null = null;
   let disposed = false;
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
-  ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
+  const contextReady = ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     async (loaded) => {
       const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
@@ -720,7 +720,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     ...(lightmap ? { generatedMeshEnvMap: env } : {}),
     startAudio,
     setAcousticZone: (next: AcousticZone) => { zone = next; acoustics?.setZone(next); streetAmbience?.setZone(next); },
-    settled: () => catalogKit.settled(),
+    settled: async () => { await catalogKit.settled(); await contextReady; },
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
     setCameraFocus: (p, sign, opening, avatar) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening, avatar),
     update: (dt, elapsed, camera) => {
@@ -732,7 +732,11 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       stationSound?.update(dt, camera);
       if (context && cameraTrack) {
         const seen = cameraTrack.read();
-        setContext(seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
+        // Preview cuts can leave the old floor probe undrawn. Use the supplied camera independently
+        // of that probe; desktop normal/depth passes also have no fog, so read the host scene here.
+        let host: THREE_NS.Object3D=root;while(host.parent)host=host.parent;
+        setContext(ctx.previewNext && camera ? contextVisibleAt(camera.position.y, streetY, (host as THREE_NS.Scene).fog != null)
+          : seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
       }
       const full = propMarkers.some((o) => o.visible);
       if (full !== propFull) {
