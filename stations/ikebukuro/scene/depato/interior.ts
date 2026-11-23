@@ -126,6 +126,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         shader.fragmentShader=shader.fragmentShader.replace("#include <common>","#include <common>\nvarying float vRetailZ;")
           .replace("#include <opaque_fragment>",`outgoingLight *= ${gain.toFixed(2)} * mix(0.18,1.0,smoothstep(${plan.bounds.front.toFixed(2)},${(plan.bounds.front+45).toFixed(2)},vRetailZ));\n#include <opaque_fragment>`);
       };
+      m.customProgramCacheKey=()=>`retail-entry:${plan.bounds.front}:${gain}`;
       return m;
     };
     const counterMat=entryLight(basic("#e6ddcd"),0.65), glassMat=glass(), bronze=standard(LANDMARK_FACADE.F4_darkBronze,0.5,0.12), glow=basic(LANDMARK_STREET_BAND.glow);
