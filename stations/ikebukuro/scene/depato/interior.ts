@@ -2,13 +2,14 @@ import type * as T from "three";
 import type { SceneContext } from "@gteki/scene-api";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { buildEscalator } from "../../../../apps/web/src/explorer/greyboxConnectors.ts";
+import { buildCrowd, type Lane } from "../crowd.ts";
 import type { DepatoLayout } from "./layout.ts";
 import { LANDMARK_FACADE, LANDMARK_STREET_BAND, LANDMARK_SIGN } from "../landmark-style.ts";
 
 /** AD 2026-11-22 JST: one neutral retail kit, baked pools, no scene lights. */
 export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMap?: T.Texture) {
   const THREE = ctx.THREE, root = new THREE.Group(); root.name = `depato-interior:${plan.input.store.id}`;
-  const walkable: T.Mesh[] = [], colliders: T.Mesh[] = [];
+  const walkable: T.Mesh[] = [], colliders: T.Mesh[] = [], cameraBlockers: T.Mesh[] = [];
   const physicalGeometry: T.BufferGeometry[] = [];
   const collisionMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
   const physical = (g: T.BufferGeometry, target: T.Mesh[], support = false) => {
@@ -58,6 +59,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const wallHeight=index+1<plan.floors.length?plan.height(plan.floors[index+1]!.level)-y:clear;
     const floorG=shape(y,index>0), ceilingG=shape(y+clear,index+1<plan.floors.length,true), wallG=walls(floor.level,y,wallHeight);
     physical(floorG.clone(),walkable); physical(ceilingG.clone(),colliders); physical(wallG.clone(),colliders);
+    if(index>0){
+      // The follow boom must clear the upper floor even while its endpoint is over the well.
+      physical(cube(plan.stair.x,y+0.08,(plan.stair.from+plan.stair.to)/2,plan.stair.width,0.16,plan.stair.to-plan.stair.from),cameraBlockers);
+      cameraBlockers.at(-1)!.userData.gtekiCameraTargetOnly=true;
+    }
     if(index>0)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
     for(const [x,z] of plan.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
     return {floor,index,y,food,clear,floorG,ceilingG,wallG};
@@ -90,21 +96,22 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   let geometries:T.BufferGeometry[]=[], materials:T.Material[]=[], textures:T.Texture[]=[];
   let groups:T.Group[]=[], landingGroups:T.Group[]=[], flightGroups:T.Group[]=[], loaded=false;
   let avatar:{x:number;y:number;z:number}|null=null;
+  let crowds:ReturnType<typeof buildCrowd>[]=[];
   const retain=<G extends T.BufferGeometry>(g:G)=>{geometries.push(g);return g;};
-  const basic=(color:string)=>{const m=new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide});materials.push(m);return m;};
+  const basic=(color:string)=>{const m=new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,fog:false});materials.push(m);return m;};
   const standard=(color:string,roughness:number,emissive=0)=>{
-    const m=new THREE.MeshStandardMaterial({color,roughness,envMap,envMapIntensity:0.8,emissive:color,emissiveIntensity:emissive,side:THREE.DoubleSide});materials.push(m);return m;
+    const m=new THREE.MeshStandardMaterial({color,roughness,envMap,envMapIntensity:0.8,emissive:color,emissiveIntensity:emissive,side:THREE.DoubleSide,fog:false});materials.push(m);return m;
   };
   const glass=()=>{const m=standard("#b4c4c0",0.32);m.transparent=true;m.opacity=0.28;m.depthWrite=false;m.metalness=0.08;return m;};
   const load=()=>{
-    // Allowed interim baked gradient: same 2.2 m tile as the downlight grid, no runtime pool lights.
+    // Allowed interim baked gradient: same 4.4 m tile as the downlight grid, no runtime pool lights.
     const pixels=new Uint8Array(64*64*4);
     for(let z=0;z<64;z++)for(let x=0;x<64;x++){
-      const pool=Math.exp(-((x-32)**2+(z-32)**2)/420), value=0.78+0.22*pool;
+      const pool=Math.exp(-((x-32)**2+(z-32)**2)/170), value=0.46+0.54*pool;
       const at=(z*64+x)*4;pixels.set([255*value,241*value,222*value,255],at);
     }
-    const pool=new THREE.DataTexture(pixels,64,64);pool.colorSpace=THREE.SRGBColorSpace;pool.wrapS=pool.wrapT=THREE.RepeatWrapping;pool.repeat.set(1/2.2,1/2.2);pool.needsUpdate=true;textures.push(pool);
-    const counterMat=standard("#eee6d6",0.35,0.12), glassMat=glass(), bronze=standard(LANDMARK_FACADE.F4_darkBronze,0.5,0.12), glow=standard(LANDMARK_STREET_BAND.glow,0.5,0.35);
+    const pool=new THREE.DataTexture(pixels,64,64);pool.colorSpace=THREE.SRGBColorSpace;pool.wrapS=pool.wrapT=THREE.RepeatWrapping;pool.repeat.set(1/4.4,1/4.4);pool.offset.set(0.5,0.5);pool.needsUpdate=true;textures.push(pool);
+    const counterMat=standard("#795a40",0.35,0.12), glassMat=glass(), bronze=standard(LANDMARK_FACADE.F4_darkBronze,0.5,0.12), glow=basic(LANDMARK_STREET_BAND.glow);
     const boards=levels.flatMap(l=>[{ja:`${plan.input.store.name.ja} ${l.floor.level}`,en:l.floor.label.en},...l.floor.tenants]);
     const directoryJa=plan.floors.map(f=>`${f.level} ${f.label.ja}`).join(" / ");
     const directoryEn=plan.floors.map(f=>`${f.level} ${f.label.en}`).join(" / ");
@@ -139,27 +146,33 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     let label=0;
     for(const l of levels){
       const group=new THREE.Group(), landing=new THREE.Group();groups.push(group);landingGroups.push(landing);root.add(group,landing);
-      const fm=standard("#D6CFC2",l.food?0.3:0.24,l.food?0.24:0.32);fm.map=pool;
-      fm.onBeforeCompile=shader=>{
-        shader.vertexShader="varying vec3 retailPosition;\n"+shader.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nretailPosition = position;");
-        shader.fragmentShader="varying vec3 retailPosition;\n"+shader.fragmentShader.replace("#include <map_fragment>",`#include <map_fragment>
- diffuseColor.rgb *= 1.0 + 0.2 * (1.0-smoothstep(2.0,5.0,abs(retailPosition.x-${plan.stair.x.toFixed(4)}))) * (1.0-smoothstep(7.0,12.0,abs(retailPosition.z-${((plan.stair.from+plan.stair.to)/2).toFixed(4)})));`);
-      };
+      const fm=basic("#bcad94");fm.map=pool;
       const shell=[l.ceilingG.clone(),l.wallG.clone()];
-      shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#ded3c2":"#d2c6b4");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
+      shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#ece7dd":"#9daaa7");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
       const shellG=retain(mergeGeometries(shell));shell.forEach(g=>g.dispose());const shellMat=basic("#ffffff");shellMat.vertexColors=true;
       shellMat.fog=false; // The station's 90 m fog must not turn the aisle end walls black.
       // Both store shells remain visible through the well and behind the landing camera.
-      root.add(new THREE.Mesh(l.floorG,fm),new THREE.Mesh(shellG,shellMat));
+      const floorMesh=new THREE.Mesh(l.floorG,fm),shellMesh=new THREE.Mesh(shellG,shellMat);
+      floorMesh.name=`retail-floor-${l.floor.level}`;shellMesh.name=`retail-shell-${l.floor.level}`;
+      root.add(floorMesh,shellMesh);
       const pad=cube(plan.aisleX,l.y-0.035,plan.stair.to+1,5,0.07,2);retain(pad);landing.add(new THREE.Mesh(pad,fm));
       const discs:{x:number;y:number;z:number}[]=[];
-      for(let z=Math.ceil(plan.bounds.front/2.2)*2.2;z<plan.bounds.back;z+=2.2)for(let x=Math.ceil(plan.bounds.left/2.2)*2.2;x<plan.bounds.right;x+=2.2){
+      for(let z=Math.ceil(plan.bounds.front/4.4)*4.4;z<plan.bounds.back;z+=4.4)for(let x=Math.ceil(plan.bounds.left/4.4)*4.4;x<plan.bounds.right;x+=4.4){
         if(plan.contains([x,z]) && !(Math.abs(x-plan.stair.x)<2.3 && z>plan.stair.from && z<plan.stair.to))discs.push({x,y:l.y+l.clear-0.025,z});
       }
-      instance(group,new THREE.CylinderGeometry(0.075,0.075,0.025,8),basic("#f3e6d3"),discs);
+      instance(group,new THREE.CylinderGeometry(0.12,0.12,0.025,8),glow,discs);
       const positions=plan.counters.map(([x,z])=>({x,y:l.y+0.475,z}));
       instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
-      const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[];
+      const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
+      // Repeated shallow bays and a warm cove frame the main aisle without runtime lights.
+      for(const d of discs){
+        if(plan.contains([d.x-2.2,d.z]) && plan.contains([d.x+2.2,d.z]))bays.push(cube(d.x,l.y+l.clear-0.12,d.z-2.2,4.4,0.24,0.1));
+        if(plan.contains([d.x,d.z-2.2]) && plan.contains([d.x,d.z+2.2]))bays.push(cube(d.x-2.2,l.y+l.clear-0.12,d.z,0.1,0.24,4.4));
+      }
+      for(const side of [-1,1])for(const [from,to] of [[plan.bounds.front+0.5,plan.stair.from],[plan.stair.to,plan.bounds.back-0.5]]){
+        bays.push(cube(plan.aisleX+side*1.6,l.y+l.clear-0.18,(from!+to!)/2,0.18,0.36,to!-from!));
+        lit.push(cube(plan.aisleX+side*1.48,l.y+l.clear-0.13,(from!+to!)/2,0.08,0.05,to!-from!));
+      }
       const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
         const slot=slots[row]!, labelHeight=height*0.6;
         const labelWidth=slot.width/40*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
@@ -178,7 +191,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         const side=x<plan.aisleX?-1:1, front=x-side*0.56;
         if(l.food){
           glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
-          detail.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
+          detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
+          lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
           for(let j=0;j<10;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*0.37});
         }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,2.8));
         board(x-side*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
@@ -191,21 +205,31 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       for(const e of plan.input.entrances.filter(e=>e.level===l.floor.level)){
         const front=e.point[1]===plan.bounds.front,yaw=front?0:Math.PI/2;
         board(e.point[0],l.y+2.45,e.point[1],label,yaw,3.8,0.6);
-        if(l.floor.level==="1F"){
-          const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,p=ctx.enuToRenderer({...outside.position,z:outside.position.z!});
-          const direction=new THREE.Vector3(p[0]-e.point[0],0,p[2]-e.point[1]).normalize();
-          const sky=retain(new THREE.PlaneGeometry(40,20));sky.rotateY(Math.atan2(direction.x,direction.z)+Math.PI);sky.translate(p[0]+direction.x*12,l.y+7,p[2]+direction.z*12);
-          group.add(new THREE.Mesh(sky,basic("#e3d9c9")));
-        }
+        // Identical bronze lintel/reveals on every entrance, inside and outside.
+        frames.push(cube(e.point[0],l.y+2.76,e.point[1],front?4:0.3,0.12,front?0.3:4));
         // Bronze double doorway; clear centre remains walkable in either direction.
-        for(const side of [-1,1])frames.push(cube(e.point[0]+(front?side*1.85:0),l.y+1.35,e.point[1]+(front?0:side*1.85),front?0.08:0.16,2.7,front?0.16:0.08));
+        for(const side of [-1,1])frames.push(cube(e.point[0]+(front?side*1.85:0),l.y+1.35,e.point[1]+(front?0:side*1.85),front?0.08:0.3,2.7,front?0.3:0.08));
         // Glazed leaves stand open against the jambs, never across the walk line.
         for(const side of [-1,1])glassPieces.push(cube(e.point[0]+(front?side*1.8:-0.65),l.y+1.3,e.point[1]+(front?0.65:side*1.8),front?0.025:1.3,2.6,front?1.3:0.025));
       }
       // Non-emissive floor directory; underline marks this floor without a colour code.
-      board(plan.aisleX-3,l.y+2.15,plan.stair.from-2,boards.length-1,0,4,0.65);
-      frames.push(cube(plan.aisleX-3,l.y+1.93-l.index*0.06,plan.stair.from-1.99,3.8,0.018,0.018));
+      for(const [z,yaw] of [[plan.stair.from-2,0],[plan.stair.to+2,Math.PI]]){
+        board(plan.aisleX-3,l.y+2.15,z!,boards.length-1,yaw!,4,0.65);
+        frames.push(cube(plan.aisleX-3,l.y+1.93-l.index*0.06,z!+0.01,3.8,0.018,0.018));
+      }
+      board(plan.aisleX,l.y+l.clear-0.48,plan.stair.to+5,label,0,3.4,0.45);
       if(l.index>0)for(const side of [-1,1])glassPieces.push(cube(plan.aisleX+side*2.13,l.y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from));
+      if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,basic("#8d9997")));}
+      if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
+      // Station whole-body people use short, narrow counter-side paths, away from circulation.
+      const lanes:Record<string,Lane>={};
+      const paths=plan.counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
+        const id=`retail-${i}`,side=x<plan.aisleX?-1:1,px=x+side*1.3;
+        lanes[id]={stepM:3,left:[0.2],right:[0.2]};
+        return {id,from:`${id}-a`,to:`${id}-b`,verification:"verified",geometry:[{x:px,y:-z+1.3,z:l.y},{x:px,y:-z-1.3,z:l.y}]};
+      }).filter(p=>p.geometry.every(p=>plan.contains([p.x,-p.y])));
+      const crowd=buildCrowd(THREE,paths,(x,y,z)=>new THREE.Vector3(x,z,-y),8,envMap!,lanes);
+      crowds.push(crowd);group.add(crowd.group);
       if(detail.length){const g=mergeGeometries(detail);retain(g);detail.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,counterMat));}
       if(frames.length){const g=mergeGeometries(frames);retain(g);frames.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,bronze));}
       if(glassPieces.length){const g=mergeGeometries(glassPieces);retain(g);glassPieces.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glassMat));}
@@ -218,28 +242,30 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const solids:T.BufferGeometry[]=[], glasses:T.BufferGeometry[]=[];
       for(const flight of pair)for(const p of flight.parts.filter(p=>!p.walkableOnly)){
         const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(p.position,3));g.setAttribute("normal",new THREE.Float32BufferAttribute(p.normal,3));
-        const colors=p.colour.slice();if(["lampOk","lampNo","light"].includes(p.material)){const c=new THREE.Color("#ddc9a4");for(let i=0;i<colors.length;i+=3)colors.splice(i,3,c.r,c.g,c.b);}
+        const finish={escStep:"#30383c",rubber:"#14191b",escTruss:"#b49e7e",steel:"#889fa4",glass:"#b4ccd1",light:"#ffe0a1",lampOk:"#89a37b",lampNo:"#b27565"}[p.material] ?? "#b49e7e";
+        const c=new THREE.Color(finish),colors=Array.from({length:p.position.length/3},()=>[c.r,c.g,c.b]).flat();
         g.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));(p.material==="glass"?glasses:solids).push(g);
       }
       for(const flight of pair)for(let i=0;i<=30;i++){
         const t=i/30,g=cube(flight.a.x,THREE.MathUtils.lerp(flight.a.y,flight.b.y,t)+0.012,THREE.MathUtils.lerp(flight.a.z,flight.b.z,t),0.98,0.015,0.025);
-        g.deleteAttribute("uv");const color=new THREE.Color("#c8ad52");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[color.r,color.g,color.b]).flat(),3));solids.push(g);
+        g.deleteAttribute("uv");const color=new THREE.Color("#f2c94c");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[color.r,color.g,color.b]).flat(),3));solids.push(g);
       }
       const solid=mergeGeometries(solids),glassG=mergeGeometries(glasses);retain(solid);retain(glassG);solids.forEach(g=>g.dispose());glasses.forEach(g=>g.dispose());
-      const steel=standard("#ffffff",0.4,0.3);steel.vertexColors=true;group.add(new THREE.Mesh(solid,steel),new THREE.Mesh(glassG,glassMat));
+      const steel=basic("#ffffff");steel.vertexColors=true;const finishMesh=new THREE.Mesh(solid,steel);finishMesh.name=`retail-escalators-${lower.floor.level}`;
+      group.add(finishMesh,new THREE.Mesh(glassG,glassMat));
     }
     bridges.forEach((g,i)=>groups[levels.findIndex(l=>l.floor.level===plan.input.entrances[i]!.level)]!.add(new THREE.Mesh(g,basic("#bdb5a7"))));
     root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.3,0.24],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
-  const unload=()=>{root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
-  return {root,walkable,colliders,setAvatar(p:typeof avatar){avatar=p;},
-    update(camera:T.Camera){
+  const unload=()=>{crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
+  return {root,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
+    update(camera:T.Camera,dt=0,elapsed=0){
       const cameraP=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cameraP.x,y:cameraP.y-2,z:cameraP.z};
       const near=(plan.contains([p.x,p.z]) && p.y>=levels[0]!.y-1 && p.y<=levels.at(-1)!.y+levels.at(-1)!.clear) || plan.input.entrances.some(e=>Math.hypot(p.x-e.point[0],p.z-e.point[1],p.y-plan.height(e.level))<40);
       if(!near){if(loaded)unload();return;}
       if(!loaded){loaded=true;load();}
       let floor=0;for(const l of levels)if(l.y<=p.y+0.2)floor=l.index;
-      groups.forEach((g,i)=>g.visible=i===floor);landingGroups.forEach(g=>g.visible=false);
+      groups.forEach((g,i)=>{g.visible=i===floor;if(g.visible)crowds[i]!.update(dt,elapsed);});landingGroups.forEach(g=>g.visible=false);
       const riding=p.y>levels[floor]!.y+0.25 && floor+1<levels.length;
       if(riding)landingGroups[floor+1]!.visible=true;
       flightGroups.forEach((g,i)=>g.visible=i===floor || i+1===floor);

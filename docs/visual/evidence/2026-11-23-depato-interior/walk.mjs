@@ -1,10 +1,10 @@
 // 2026-11-23 JST. Run against pnpm dev -- --host 127.0.0.1 --port 5286.
 // nice -n 15 ego-browser nodejs < docs/visual/evidence/2026-11-23-depato-interior/walk.mjs
 const fs=await import('node:fs/promises');
-const base='/tmp/gteki-depato-walk';
+const base='/tmp/gteki-depato-1534';
 await fs.mkdir(base+'/frames',{recursive:true});
-const entry=(await listTaskSpaces()).find(s=>s.name==='depato-interior-1510');
-const task=!entry?await taskSpace('depato-interior-1510'):entry.ownership==='user'?await claimTaskSpace(entry.id):entry.ownership==='agentDelegatedToUser'?await takeOverTaskSpace(entry.id):await taskSpace(entry.id);
+const entry=(await listTaskSpaces()).find(s=>s.name==='depato-interior-1534');
+const task=!entry?await taskSpace('depato-interior-1534'):entry.ownership==='user'?await claimTaskSpace(entry.id):entry.ownership==='agentDelegatedToUser'?await takeOverTaskSpace(entry.id):await taskSpace(entry.id);
 const page=(await task.pages())[0]??await task.adopt((await task.tabs())[0].page);
 console.log({spaceId:task.spaceId});
 const result={measuredAt:new Date().toISOString(),timeZone:'UTC',spaceId:task.spaceId,profiles:[],failures:[]};
@@ -15,6 +15,13 @@ const frame=async(profile,name,yaw)=>{
   const info=await page.evaluate(()=>{
     const g=window.__gteki,e=g.scanProbe().explorer,root=e.scene.getObjectByName('depato-interior:seibu-ikebukuro');
     return {shaderErrors:e.renderer.info.programs.filter(p=>p.diagnostics?.runnable===false).map(p=>p.diagnostics.fragmentShader.log),visibleFloorGroups:root?.children.map(o=>o.visible),avatar:g.avatar(),camera:g.camera(),scene:g.sceneInfo(),depato:root?.userData.depato,render:e.renderer.info.render,
+      landingClearanceM:e.camera.position.y-e.pos.y,
+      wellPixels:(()=>{
+        const boxes=innerWidth>1000?[[654,683,748,713],[706,732,747,739]]:[[187,565,217,603]];
+        e.scene.updateMatrixWorld(true);
+        const meshes=[];root?.traverse(o=>{if(o.isMesh){let p=o;while(p&&p.visible)p=p.parent;if(!p)meshes.push(o);}});
+        return boxes.map(box=>{e.ray.setFromCamera({x:(box[0]+box[2])/innerWidth-1,y:1-(box[1]+box[3])/innerHeight},e.camera);return {box,hits:e.ray.intersectObjects(meshes,false).slice(0,3).map(h=>({name:h.object.name,point:h.point.toArray(),normal:h.face?.normal.toArray()}))};});
+      })(),
       wayfinding:g.signFaces(),
       wayfindingPolygon:g.projectEnu((()=>{const nx=0.9863939238321437,nz=0.1643989873053573,f=g.signFaces().find(f=>f.id==='sign-s38_w-sp_e__s38_w-r');return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>({x:15.709329938456975+a*nz*f.widthM/2,y:-65.5393598676684+a*nx*f.widthM/2,z:30.35+b*f.heightM/2}));})()),
       boards:g.projectEnu([{x:13.1,y:-70,z:29.85},{x:16.9,y:-70,z:29.85},{x:16.9,y:-70,z:30.45},{x:13.1,y:-70,z:30.45}]),

@@ -35,10 +35,15 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const room = volume(0,54,69.9,180,27.6,36.1);
   const entrance = volume(13,17,60,72,27.6,30.8);
   entrance.rejectsMesh = mesh => mesh.parent?.userData.gteki_role === "sign";
-  const streetDoor = volume(46,58,120.4,124.6,32.21,35.5);
+  const streetDoors=layout.input.entrances.filter(e=>ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!.inOut==="outside").map(e=>{
+    const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,p=ctx.enuToRenderer({...outside.position,z:outside.position.z!});
+    const front=Math.abs(e.point[1]-layout.bounds.front)<0.1,y=layout.height(e.level);
+    return volume(Math.min(e.point[0],p[0])- (front?2.1:0.2),Math.max(e.point[0],p[0])+(front?2.1:3),
+      Math.min(e.point[1],p[2])-(front?0.2:2.1),Math.max(e.point[1],p[2])+(front?3:2.1),y+0.01,y+4.1);
+  });
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
-    if (uri.includes("ikebukuro_context_")) { loaded.scene.updateMatrixWorld(true); cutRegions(loaded.scene, [room, streetDoor], resources); }
+    if (uri.includes("ikebukuro_context_")) { loaded.scene.updateMatrixWorld(true); cutRegions(loaded.scene, [room, ...streetDoors], resources); }
     return loaded;
   } });
   // The background catalog adds merged stair nosings; cut them after attachment too.
@@ -51,8 +56,9 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   scene.root.add(interior.root);
   const update = scene.update, dispose = scene.dispose;
   return { ...scene, walkable: [...scene.walkable, ...interior.walkable], colliders: [...(scene.colliders ?? []), ...interior.colliders],
+    cameraBlockers: [...(scene.cameraBlockers ?? []), ...interior.cameraBlockers],
     setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); interior.setAvatar(args[3] ?? null); },
-    update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if (camera) interior.update(camera); },
+    update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if (camera) interior.update(camera,dt,elapsed); },
     dispose() { disposePortalCuts(resources); interior.dispose(); dispose(); },
   };
 }
