@@ -514,7 +514,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   let contextRoadMaterial: THREE_NS.Material | null = null;
   let disposed = false;
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
-  ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
+  const contextReady = ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     async (loaded) => {
       const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
@@ -720,7 +720,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     ...(lightmap ? { generatedMeshEnvMap: env } : {}),
     startAudio,
     setAcousticZone: (next: AcousticZone) => { zone = next; acoustics?.setZone(next); streetAmbience?.setZone(next); },
-    settled: () => catalogKit.settled(),
+    settled: async () => { await catalogKit.settled(); await contextReady; },
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
     setCameraFocus: (p, sign, opening, avatar) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening, avatar),
     update: (dt, elapsed, camera) => {

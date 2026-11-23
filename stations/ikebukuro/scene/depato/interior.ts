@@ -152,9 +152,9 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     let label=0;
     for(const l of levels){
       const group=new THREE.Group(), landing=new THREE.Group();groups.push(group);landingGroups.push(landing);root.add(group,landing);
-      const fm=basic("#d6cfc2");fm.map=pool;
+      const fm=basic("#d6cfc2");fm.lightMap=pool;fm.lightMapIntensity=1.12;
       const shell=[l.ceilingG.clone(),l.wallG.clone()];
-      shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#fff2dc":"#b5a58f");if(i===0)c.multiplyScalar(1.4);g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
+      shell.forEach((g,i)=>{const c=new THREE.Color(i===0?"#fff2dc":"#9e8c72");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));});
       const shellG=retain(mergeGeometries(shell));shell.forEach(g=>g.dispose());const shellMat=basic("#ffffff");shellMat.vertexColors=true;
       shellMat.fog=false; // The station's 90 m fog must not turn the aisle end walls black.
       // Both store shells remain visible through the well and behind the landing camera.
