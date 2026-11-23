@@ -519,24 +519,26 @@ export async function loadShopKit(
       }
 
       if (placements.length) {
-        const displays = ["cafe", "bakery", "sweets", "deli", "pharmacy", "books", "fashion", "homeware", "department", "none"];
+        const displays = ["cafe", "bakery", "sweets", "deli", "pharmacy", "books", "fashion", "homeware", "department", "none", "simulated-homeware"];
         const boardDisplays = ["cafe", "bakery", "deli", "sweets"];
-        const cell = low ? 128 : 512, cols = 4, rows = 6;
+        const boardStart = displays.length * 2;
+        const cell = low ? 128 : 512, cols = 4, rows = Math.ceil((boardStart + boardDisplays.length) / cols);
         const canvas = document.createElement("canvas"); canvas.width = cols * cell; canvas.height = rows * cell;
         const g = canvas.getContext("2d", { willReadFrequently: true })!;
         const rect = (x: number, y: number, w: number, h: number, colour: string) => { g.fillStyle = colour; g.fillRect(x, y, w, h); };
         const poly = (points: number[], colour: string) => { g.fillStyle = colour; g.beginPath(); g.moveTo(points[0]!, points[1]!); for (let i = 2; i < points.length; i += 2) g.lineTo(points[i]!, points[i + 1]!); g.closePath(); g.fill(); };
-        for (let index = 0; index < 24; index++) {
+        for (let index = 0; index < boardStart + boardDisplays.length; index++) {
           g.save(); g.translate((index % cols) * cell, Math.floor(index / cols) * cell); g.scale(cell / 512, cell / 512);
-          if (index >= 20) {
+          if (index >= boardStart) {
             rect(0, 0, 512, 512, "#6b4d32"); rect(25, 25, 462, 462, "#1e3029");
             g.strokeStyle = "#e9e1c6"; g.lineWidth = 9; g.beginPath();
-            if (index === 20) { g.arc(250, 220, 65, 0, Math.PI); g.moveTo(190, 220); g.lineTo(310, 220); }
-            else if (index === 21) { g.ellipse(250, 230, 100, 55, 0, 0, Math.PI * 2); }
+            if (index === boardStart) { g.arc(250, 220, 65, 0, Math.PI); g.moveTo(190, 220); g.lineTo(310, 220); }
+            else if (index === boardStart + 1) { g.ellipse(250, 230, 100, 55, 0, 0, Math.PI * 2); }
             else { g.arc(250, 220, 85, 0, Math.PI); }
             g.moveTo(100, 340); g.lineTo(410, 340); g.moveTo(150, 390); g.lineTo(370, 390); g.stroke();
           } else {
-            const display = displays[Math.floor(index / 2)]!, variant = index % 2;
+            const simulated = displays[Math.floor(index / 2)] === "simulated-homeware";
+            const display = simulated ? "homeware" : displays[Math.floor(index / 2)]!, variant = index % 2;
             const cool = display === "pharmacy" || display === "department";
             const dim = display === "none";
             rect(0, 0, 512, 512, dim ? "#63594e" : cool ? "#f4f8fb" : "#fff1d8");
@@ -568,6 +570,15 @@ export async function loadShopKit(
             if (display === "fashion") { g.fillStyle = "#c9b7a5"; g.beginPath(); g.arc(270,135,16,0,Math.PI*2); g.fill(); poly([258,153,282,153,293,230,247,230],"#d9c8b6"); for (const x of [170,270,370]) { g.fillStyle="rgba(255,248,216,0.35)"; g.beginPath(); g.ellipse(x,450,55,20,0,0,Math.PI*2); g.fill(); } }
             if (display === "department") { rect(130, 320, 105, 45, "#f8f5ef"); rect(275, 320, 105, 45, "#f8f5ef"); for (let x=150; x<375; x+=25) rect(x,300,10,20,"#d8b6ae"); }
             if (display === "cafe" || display === "department") for (let x = 155 + variant * 25; x < 390; x += 90) { rect(x,50,3,45,"#8f7866"); rect(x-13,92,29,12,"#fff8ce"); }
+            if (simulated) {
+              // The fictional front stays below station wayfinding brightness. Its glass-level
+              // label remains readable when the fascia is behind the station selector.
+              rect(0, 0, 512, 512, "rgba(0,0,0,0.40)");
+              rect(120, 175, 272, 86, "#493f32");
+              g.fillStyle = "#e7ddc7"; g.textAlign = "center"; g.textBaseline = "middle";
+              g.font = '700 66px "GTEki Sign JP", sans-serif';
+              g.fillText("模擬店", 256, 218);
+            }
           }
           g.restore();
         }
@@ -581,7 +592,8 @@ export async function loadShopKit(
         const counts = new Map<string, number>();
         for (const p of placements) {
           const key = `${p.shop}:${p.polygon}`, k = counts.get(key) ?? 0; counts.set(key, k + 1);
-          const display = shops.find((s) => s.id === p.shop)!.display;
+          const shop = shops.find((s) => s.id === p.shop)!;
+          const display = shop.kind === "placeholder" && shop.sign.ja.includes("模擬店") ? "simulated-homeware" : shop.display;
           const index = Math.max(0, displays.indexOf(display)) * 2 + k % 2;
           const rect = INTERIOR_RECTS[pieces[p.piece]!.use];
           if (!rect) continue;
@@ -592,7 +604,7 @@ export async function loadShopKit(
           parts.push({ geometry: geo, material, matrix: new THREE.Matrix4().compose(toRenderer(p.x,p.y,p.z),q,s) });
         }
         for (const board of boards) for (const angle of [-12, 12]) {
-          const geo = new THREE.PlaneGeometry(0.5, 0.9); mapCell(geo, 20 + boardDisplays.indexOf(board.display));
+          const geo = new THREE.PlaneGeometry(0.5, 0.9); mapCell(geo, boardStart + boardDisplays.indexOf(board.display));
           const rotation = new THREE.Quaternion().setFromAxisAngle(up, board.yawDeg * DEG).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), angle * DEG));
           const normal = (board.yawDeg - 90) * DEG, offset = -Math.sin(angle * DEG) * 0.45;
           parts.push({ geometry: geo, material, matrix: new THREE.Matrix4().compose(toRenderer(board.x + Math.cos(normal) * offset,board.y + Math.sin(normal) * offset,board.z + 0.45 * Math.cos(12 * DEG)), rotation, new THREE.Vector3(1,1,1)) });

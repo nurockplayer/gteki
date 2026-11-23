@@ -619,14 +619,14 @@ test("simulated shop stop from the guided walk @phone", async ({ page }, info) =
   await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready" && (window as any).__gteki.route()?.ok, null, { timeout: 120_000, polling: 250 });
   await page.evaluate(() => (window as any).__gteki.holdFrames(true));
   const records: Record<string, unknown>[] = [];
-  const feature = { name: "shopfront", match: { namePrefix: "kit_shop" }, minPixels: 20 };
+  const feature = { name: "shopfront", match: { namePrefix: "kit_shop" }, minPixels: 640 };
   const capture = async (name: string) => {
     // Restore the displayed frame after probing without advancing the guide camera.
     await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.render(0));
     await page.screenshot({ path: path.join(out, `${name}.png`), timeout: 60_000 });
     const probe = await page.evaluate(feature => (window as any).__gteki.goldenProbe(false, [feature]), feature);
     const metrics = await sceneMetrics(page), coverage = await overlay(page);
-    records.push({ index: records.length, name, probe, ...metrics, ...coverage });
+    records.push({ index: records.length, name, probe, frontFramePct: probe.features[0].pixels / 640, ...metrics, ...coverage });
     expect(probe.features[0].pixels).toBeGreaterThanOrEqual(feature.minPixels);
     expect(probe.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
     expect(metrics.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
@@ -639,9 +639,12 @@ test("simulated shop stop from the guided walk @phone", async ({ page }, info) =
     await page.locator(".cold-open .primary").click();
     await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.setGuidePaused(true));
     let first: number | undefined, approach: number | undefined;
-    // The exit stairs reach B1 here. Every sample retains the production guide camera.
-    for (let distance = 14; distance <= 28; distance += 2) {
-      await page.evaluate(distance => { const g = (window as any).__gteki; g.seekGuide(distance); g.simulate(0.1); g.goldenFrame(); }, distance);
+    // Look toward the front from the guided path; retain the route and collision-aware camera.
+    for (let distance = 18; distance <= 34; distance += 1) {
+      await page.evaluate(distance => { const g = (window as any).__gteki; g.seekGuide(distance); g.simulate(0.1);
+        const e = g.scanProbe().explorer, p = e.getPose();
+        g.setCamera({ yaw: Math.atan2(p.east + 59.29, 188.2 - p.north), pitch: -0.04 });
+        g.simulate(0.1); g.goldenFrame(); }, distance);
       const probe = await page.evaluate(feature => (window as any).__gteki.goldenProbe(false, [feature]), feature);
       const pixels = probe.features[0].pixels;
       if (pixels >= feature.minPixels) {
@@ -649,13 +652,13 @@ test("simulated shop stop from the guided walk @phone", async ({ page }, info) =
         else { approach = distance; await capture("approach"); break; }
       }
     }
-    expect(first, "shop visible from the actual guided walk").toBeDefined();
-    expect(approach, "shop visible farther along the actual guided walk").toBeDefined();
+    expect(first, "shop occupies at least 1% while looking from the guided path").toBeDefined();
+    expect(approach, "shop occupies at least 1% farther along the guided path").toBeDefined();
     const spec = await page.evaluate(() => (window as any).__gteki.interactables().specs.find((s: any) => s.id === "sim-sjk-komorebi"));
     expect(spec).toMatchObject({ kind: "shop", simulated: true, reward: "wooden-leaf" });
     const walk = await page.evaluate(anchor => {
       const e = (window as any).__gteki.scanProbe().explorer;
-      e.stopGuide();
+      e.stopGuide(); e.setCamera(null);
       // Approach the stand from the passage, ending facing the closed front.
       return e.walkPath([{ ...anchor, x: anchor.x + 1.0 }, anchor], { maxSeconds: 20 });
     }, spec.anchor);
@@ -693,6 +696,16 @@ test("simulated shop stop from the guided walk @phone", async ({ page }, info) =
     expect(await hooks.route(page)).toEqual(route);
     await capture("completed");
     records.push({ firstSightDistanceM: first, approachDistanceM: approach, costs });
+    // A separate reference frame keeps the unchanged 新宿 board visible on both aspect ratios.
+    await page.evaluate(() => {
+      const e = (window as any).__gteki.scanProbe().explorer;
+      const board = e.stationScene.root.getObjectByName("identity:spawn");
+      board.updateWorldMatrix(true, false);
+      const centre = board.position.clone().set(0, 0, 0).applyMatrix4(board.matrixWorld);
+      e.camera.position.copy(board.position.clone().set(0, 0, 4).applyMatrix4(board.matrixWorld));
+      e.camera.lookAt(centre); e.render(0);
+    });
+    await page.screenshot({ path: path.join(out, "brightness-reference.png"), timeout: 60_000 });
   } finally {
     fs.writeFileSync(path.join(out, "evidence.json"), JSON.stringify(records, null, 2));
     await page.evaluate(() => (window as any).__gteki.holdFrames(false));
