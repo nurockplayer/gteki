@@ -15,12 +15,15 @@ rm -rf "$OUT"
 
 if [ -f package.json ] && node -e 'process.exit(require("./package.json").scripts?.build ? 0 : 1)'; then
   pnpm install --frozen-lockfile
+  pnpm plan:check
   pnpm build
   cp -R apps/web/dist "$OUT"
   if [ -f "$OUT/private-build.txt" ]; then echo "refusing: dist is a private build" >&2; rm -rf "$OUT"; exit 1; fi
 else
   cp -R deploy/cloudflare-pages/placeholder "$OUT"
 fi
+
+pnpm plan:build
 
 git rev-parse HEAD > "$OUT/version.txt"
 echo "Built $(find "$OUT" -type f | wc -l | tr -d ' ') files into $OUT"

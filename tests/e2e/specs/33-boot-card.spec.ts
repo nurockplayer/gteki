@@ -73,9 +73,12 @@ test(`${url}: loading card blocks early taps and lifts to the route @phone`, asy
     const cdp = await page.context().newCDPSession(page);
     const png = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
     fs.writeFileSync(shotPath(info, "boot-lifted.png"), Buffer.from(png.data, "base64"));
+    // Drain the captured frame before input, and keep continuous SwiftShader work paused
+    // until the click has reached the guide (run 44945389493).
+    await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.renderer.getContext().finish());
+    await page.locator(".cold-open .primary").click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gteki.mode())).toBe("guide");
   } finally {
     await page.evaluate(() => (window as any).__gteki.holdFrames(false));
   }
-  await page.locator(".cold-open .primary").click();
-  await expect.poll(() => page.evaluate(() => (window as any).__gteki.mode())).toBe("guide");
 });

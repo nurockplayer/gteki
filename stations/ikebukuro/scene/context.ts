@@ -272,7 +272,7 @@ export function createContextBlockers(THREE: ThreeNS, centers: readonly THREE_NS
 }
 
 /** Keep visual context out of the station's street-exit stair footprints, down to the lower floor. */
-export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D, bundle: StationBundle): number {
+export async function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D, bundle: StationBundle): Promise<number> {
   const streetFloors = new Set(bundle.floors.filter(f => f.ordinal === 0 && !f.intermediate).map(f => f.id));
   const exits = new Set(bundle.nodes.filter(n => n.kind === "exit" && streetFloors.has(n.floorId)).map(n => n.id));
   const openings = stairwellWells(bundle, e => !e.closed && (exits.has(e.from) || exits.has(e.to))).flatMap(well => well.rects.map(rect => {
@@ -331,9 +331,9 @@ export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D,
     return outside;
   };
   let cutTriangles = 0;
-  root.traverse(o => {
-    const mesh = o as THREE_NS.Mesh;
-    if (!mesh.isMesh) return;
+  const meshes: THREE_NS.Mesh[] = [];
+  root.traverse(o => { if ((o as THREE_NS.Mesh).isMesh) meshes.push(o as THREE_NS.Mesh); });
+  for (const mesh of meshes) {
     const geometry = mesh.geometry, index = geometry.index;
     const attributes = Object.entries(geometry.attributes);
     const output = new Map(attributes.map(([name]) => [name, [] as number[]]));
@@ -354,6 +354,8 @@ export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D,
     });
     const count = index?.count ?? geometry.getAttribute("position").count;
     for (let i = 0; i < count; i += 3) {
+      // Context arrives after ready. Leave room for walking/rendering while cutting the full mesh.
+      if (i % (128 * 3) === 0) await new Promise<void>(resolve => setTimeout(resolve, 0));
       const sourceIndices = [0, 1, 2].map(k => index ? index.getX(i + k) : i + k);
       const source = sourceIndices.map(readVertex);
       let parts: Polygon[] = [source];
@@ -380,7 +382,7 @@ export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D,
         vertexCount += added;
       }
     }
-    if (!meshCutTriangles) return;
+    if (!meshCutTriangles) continue;
     cutTriangles += meshCutTriangles;
     const clipped = geometry.clone();
     clipped.setIndex(null);
@@ -395,6 +397,6 @@ export function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Object3D,
     clipped.clearGroups();
     for (const group of groups) clipped.addGroup(group.start, group.count, group.materialIndex);
     mesh.geometry = clipped;
-  });
+  }
   return cutTriangles;
 }

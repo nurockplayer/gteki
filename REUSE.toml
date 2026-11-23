@@ -502,3 +502,15 @@ path = ["docs/visual/ikebukuro-landmarks-2026-11-22/*.png", "docs/visual/ikebuku
 precedence = "override"
 SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy"
+# Department-store pilot: factual names only; generic fronts are original code.
+[[annotations]]
+path = "stations/ikebukuro/data/depato-floors.json"
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only source (そごう・西武); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
+[[annotations]]
+path = "stations/ikebukuro/data/depato-footprint.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy"

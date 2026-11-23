@@ -11,6 +11,25 @@ describe("FadeAwareGTAOPass", () => {
 
   const args = [null, null, null] as unknown as Parameters<GTAOPass["render"]>;
   const makePass = () => new FadeAwareGTAOPass(new THREE.Scene(), new THREE.PerspectiveCamera(), 8, 8);
+  it("uses lazy matte-floor twins while loaded, restores the main material and releases unloaded entries", () => {
+    const root = new THREE.Group(), mesh = new THREE.Mesh(new THREE.PlaneGeometry(), new THREE.MeshBasicMaterial());
+    const original = mesh.material;
+    const twin = new THREE.MeshNormalMaterial({ transparent: true, opacity: 0, blending: THREE.NoBlending });
+    twin.allowOverride = false;
+    const entries: { mesh: THREE.Mesh; twin: THREE.Material; original: THREE.Material }[] = [];
+    root.userData.gteki_gtao_depth_twins = entries;
+    const pass = makePass(), draws: THREE.Material[][] = [];
+    sampleDraws([mesh], draws);
+    pass.setDepthTwins(root);
+    entries.push({ mesh, twin, original });
+    pass.render(...args);
+    expect(draws[0]).toEqual([twin]);
+    expect(mesh.material).toBe(original);
+    entries.length = 0;
+    pass.render(...args);
+    expect(draws[1]).toEqual([original]);
+    pass.dispose(); twin.dispose(); mesh.geometry.dispose(); original.dispose();
+  });
   const makeAvatar = () => {
     const root = new THREE.Group();
     const lit = new THREE.MeshStandardMaterial({ side: THREE.DoubleSide });

@@ -35,6 +35,8 @@ export function requiredGlyphs(root = repoRoot) {
     const dir = path.join(root, "stations", station.name);
     const manifest = path.join(dir, "gteki/station.json");
     if (fs.existsSync(manifest)) visitJson(JSON.parse(fs.readFileSync(manifest, "utf8")));
+    const depato = path.join(dir, "data/depato-floors.json");
+    if (fs.existsSync(depato)) visitJson(JSON.parse(fs.readFileSync(depato, "utf8")));
     const scene = path.join(dir, "scene");
     if (!fs.existsSync(scene)) continue;
     for (const file of fs.readdirSync(scene).sort()) {
