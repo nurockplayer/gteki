@@ -234,5 +234,75 @@
    "accent": "#c98a3d",
    "display": "bakery"
   }
+ ],
+ "authoredOpenings": [
+  {
+   "type": "Door",
+   "opening_id": "authored-ikb-street-wagashi-wall",
+   "polygon_ids": [
+    "authored-ikb-street-wagashi-wall"
+   ],
+   "base_z": 28.389,
+   "height": 2.1,
+   "width": 2.8,
+   "centre": [
+    52.759,
+    80.418,
+    28.389
+   ],
+   "normal_deg": 156.73,
+   "nearest_edge": "c_n__n_h",
+   "edge_distance_m": 0.783
+  },
+  {
+   "type": "Door",
+   "opening_id": "authored-ikb-street-stationery-wall",
+   "polygon_ids": [
+    "authored-ikb-street-stationery-wall"
+   ],
+   "base_z": 28.447,
+   "height": 2.1,
+   "width": 2.8,
+   "centre": [
+    66.164,
+    110.792,
+    28.447
+   ],
+   "normal_deg": 156.72,
+   "nearest_edge": "c_n__n_h",
+   "edge_distance_m": 0.571
+  }
+ ],
+ "authoredShops": [
+  {
+   "id": "authored-ikb-street-wagashi",
+   "kind": "placeholder",
+   "openings": [
+    "authored-ikb-street-wagashi-wall"
+   ],
+   "front": "door_glazing",
+   "sign": {
+    "ja": "ひとくち和菓子 模擬店",
+    "en": "HITOKUCHI SWEETS"
+   },
+   "accent": "#8a6548",
+   "display": "sweets",
+   "position_basis": "GTEki-authored closed front on qualified PLATEAU wall; 2026-11-24 JST inventory, visual only"
+  },
+  {
+   "id": "authored-ikb-street-stationery",
+   "kind": "placeholder",
+   "openings": [
+    "authored-ikb-street-stationery-wall"
+   ],
+   "front": "door_glazing",
+   "sign": {
+    "ja": "こつこつ文具 模擬店",
+    "en": "KOTSUKOTSU STATIONERY"
+   },
+   "accent": "#75664f",
+   "display": "books",
+   "position_basis": "GTEki-authored closed front on qualified PLATEAU wall; 2026-11-24 JST inventory, visual only"
+  }
  ]
 }

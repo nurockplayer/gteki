@@ -175,10 +175,9 @@ function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: [THREE_NS.Vecto
   return geo;
 }
 
-/** Raycast-only copies of `meshes` in world space, bucketed into TILE m squares (by triangle centroid)
- * per face side (and, with `byRole`, per source role), so a ray only scans the tiles its bounding spheres say
- * it can reach. Walkable tiles keep their role (`userData.gteki_role`) so a hit tells a stair tread from floor. */
-const TILE = 8;
+/** Raycast-only world-space batches per face side, source and role. The explorer's triangle BVH
+ * rejects distant triangles without scanning hundreds of tiles for each body/camera ray.
+ * Keep roles (`userData.gteki_role`) so a hit tells a stair tread from floor. */
 function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[], byRole = false): THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] {
   const sides = new Map<number, THREE_NS.MeshBasicMaterial>();
   const buckets = new Map<string, { side: number; role: string; source: string; pos: number[] }>();
@@ -201,7 +200,7 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[], byRole = fals
         v.fromBufferAttribute(src, idx ? idx.getX(i + k) : i + k).applyMatrix4(m.matrixWorld);
         tri[k * 3] = v.x; tri[k * 3 + 1] = v.y; tri[k * 3 + 2] = v.z;
       }
-      const key = `${side}:${source}:${role}:${Math.floor((tri[0]! + tri[3]! + tri[6]!) / 3 / TILE)}:${Math.floor((tri[2]! + tri[5]! + tri[8]!) / 3 / TILE)}`;
+      const key = `${side}:${source}:${role}`;
       let b = buckets.get(key);
       if (!b) buckets.set(key, (b = { side, role, source, pos: [] }));
       b.pos.push(...tri);
@@ -441,9 +440,11 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
   const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
   // Curated shopfronts (#209): visual only, in the surveyed PLATEAU openings; they never enter the walker's world.
+  const shops = [...shopPlacements.shops, ...shopPlacements.authoredShops] as Shop[];
+  const openings = [...shopOpenings.openings, ...shopPlacements.authoredOpenings] as Opening[];
   const shopKit = await loadShopKit(THREE, ctx, kitManifest as KitManifest,
-    [...(shopPlacements as unknown as { shops: Shop[] }).shops, ...(ctx.privateShops?.shops ?? [])] as Shop[],
-    [...(shopOpenings as unknown as { openings: Opening[] }).openings, ...(ctx.privateShops?.openings ?? [])] as Opening[], low);
+    [...shops, ...(ctx.privateShops?.shops ?? [])] as Shop[],
+    [...openings, ...(ctx.privateShops?.openings ?? [])] as Opening[], low);
   // Phones keep the sign frames but not their rods: with rods all 119 frames are ~40k triangles, without ~19k.
   const signKit = await loadSignKit(THREE, ctx, kitManifest as KitManifest, low, { omitPhoneRods: true });
   const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
@@ -515,11 +516,11 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   let contextRoadMaterial: THREE_NS.Material | null = null;
   let disposed = false;
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
-  ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
-    (loaded) => {
+  const contextReady = ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
+    async (loaded) => {
       const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
-      cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
+      await cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
       dressContext(loaded.scene, material, roadMaterial);
       if (disposed) {
         loaded.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
@@ -641,16 +642,15 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     if (p && p.z !== null) spawnPoints.push({ x: p.x, y: p.y, z: p.z, headingDeg: s.headingDeg, nodeId: s.nodeId, label: s.label });
   }
 
-  // The explorer raycasts walkable and colliders several times a frame. Whole-station meshes cost a
-  // full triangle scan per ray; ~8 m tiles let three.js skip every tile out of a short ray's reach.
+  // Batch collision by role/source/side; the explorer prepares each batch's triangle BVH at load.
   const { walkable: walkTiles, colliders: colliderTiles } = tileCollision(THREE, { walkable, colliders });
   const rayTiles = [...walkTiles, ...colliderTiles];
   // The stand point is 1.6 m toward the passage. Probe the authored floor and nearby
   // collision; if necessary, slide along the window in 0.1 m increments.
   const shopReactions: THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] = [];
   const shopInteractions = interactionData.map((visit) => {
-    const shop = (shopPlacements as unknown as { shops: Shop[] }).shops.find((s) => s.id === visit.shopId)!;
-    const opening = (shopOpenings as unknown as { openings: Opening[] }).openings.find((o) => o.polygon_ids.some((id) => shop.openings.includes(id)))!;
+    const shop = shops.find((s) => s.id === visit.shopId)!;
+    const opening = openings.find((o) => o.polygon_ids.some((id) => shop.openings.includes(id)))!;
     const angle = opening.normal_deg * Math.PI / 180;
     const nx = Math.cos(angle), ny = Math.sin(angle);
     const groundRay = new THREE.Raycaster(), wallRay = new THREE.Raycaster();
@@ -692,6 +692,16 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       part(0.10, 0.15, 0.06, 0.20, 1.05, 0.08, 0xc69d72);
       part(0.03, 0.20, 0.03, -0.06, 1.32, 0.08, 0xf4ead6);
       part(0.03, 0.15, 0.03, 0.06, 1.35, 0.08, 0xf4ead6);
+    } else if (visit.reward === "sweet-token") {
+      part(0.48, 0.04, 0.20, 0, 1.02, 0.08, 0xc9a677);
+      part(0.13, 0.12, 0.12, -0.14, 1.10, 0.08, 0xe7c999);
+      part(0.13, 0.12, 0.12, 0, 1.10, 0.08, 0xa8b58c);
+      part(0.13, 0.12, 0.12, 0.14, 1.10, 0.08, 0xc99573);
+    } else if (visit.reward === "tiny-pencil") {
+      part(0.36, 0.04, 0.12, 0, 1.02, 0.08, 0xe2cda7);
+      part(0.05, 0.38, 0.05, -0.10, 1.20, 0.08, 0xcba260);
+      part(0.05, 0.38, 0.05, 0.02, 1.20, 0.08, 0x8b9c83);
+      part(0.05, 0.38, 0.05, 0.14, 1.20, 0.08, 0xad8070);
     } else {
       part(0.42, 0.30, 0.06, 0, 1.10, 0.08, 0xf4ead6);
       part(0.03, 0.30, 0.08, 0, 1.10, 0.09, 0x3f5f8f);
@@ -738,7 +748,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     ...(lightmap ? { generatedMeshEnvMap: env } : {}),
     startAudio,
     setAcousticZone: (next: AcousticZone) => { zone = next; acoustics?.setZone(next); streetAmbience?.setZone(next); },
-    settled: () => catalogKit.settled(),
+    settled: async () => { await catalogKit.settled(); await contextReady; },
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
     setCameraFocus: (p, sign, opening, avatar) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening, avatar),
     update: (dt, elapsed, camera) => {
@@ -750,7 +760,11 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       stationSound?.update(dt, camera);
       if (context && cameraTrack) {
         const seen = cameraTrack.read();
-        setContext(seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
+        // Preview cuts can leave the old floor probe undrawn. Use the supplied camera independently
+        // of that probe; desktop normal/depth passes also have no fog, so read the host scene here.
+        let host: THREE_NS.Object3D=root;while(host.parent)host=host.parent;
+        setContext(ctx.previewNext && camera ? contextVisibleAt(camera.position.y, streetY, (host as THREE_NS.Scene).fog != null)
+          : seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
       }
       const full = propMarkers.some((o) => o.visible);
       if (full !== propFull) {

@@ -1,5 +1,12 @@
 // gteki.scene/0.1 hook discovered by the shared explorer; implementation lives in ../scene/.
-export { buildScene, generatedSignageFromGraph } from "../scene/scene.ts";
+import { buildScene as baseScene } from "../scene/scene.ts";
+import type { BuildScene } from "@gteki/scene-api";
+export { generatedSignageFromGraph } from "../scene/scene.ts";
+export const previewBundle = async (bundle: import("@gteki/schema").StationBundle) =>
+  (await import("../scene/depato/pilot.ts")).previewBundle(bundle);
+export const buildScene: BuildScene = async ctx => ctx.previewNext
+  ? (await import("../scene/depato/pilot.ts")).buildPilotScene(ctx, baseScene)
+  : baseScene(ctx);
 import type { NavmeshPaths } from "@gteki/scene-api";
 
 /** Baked stairwell cut recipe for a tier (#658), bundled as a data URL only when the explorer loads it. */

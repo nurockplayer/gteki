@@ -28,9 +28,12 @@ export class InteractionPrompt {
     this.button.textContent = state.unavailable ? t.interactionReceived : coarse ? t.interactionStart : `${t.interactionStart} (E)`;
     const simulated = state.nearKind === "vending" ? t.interactionSimulatedVending : t.interactionSimulated;
     this.status.textContent = visible ? simulated : state.interrupted ? t.interactionInterrupted : "";
+    const reaction = state.nearId === "authored-ikb-street-wagashi" ? t.interactionSweetReaction
+      : state.nearId === "authored-ikb-street-stationery" ? t.interactionPencilReaction : "";
+    if (state.phase === "active" && (state.step === "react" || state.step === "give") && reaction) this.status.textContent += ` · ${reaction}`;
     if (visible && state.interrupted) this.status.textContent += ` · ${t.interactionInterrupted}`;
     const hasBag = state.items.includes("paper-bag");
-    const held = [hasBag ? t.interactionBag : "", state.items.includes("cafe-cup") ? t.interactionCup : "", state.items.includes("bookmark") ? t.interactionBookmark : ""].filter(Boolean).join(" · ");
+    const held = [hasBag ? t.interactionBag : "", state.items.includes("cafe-cup") ? t.interactionCup : "", state.items.includes("bookmark") ? t.interactionBookmark : "", state.items.includes("sweet-token") ? t.interactionSweet : "", state.items.includes("tiny-pencil") ? t.interactionPencil : ""].filter(Boolean).join(" · ");
     this.item.textContent = held;
     const announcement = state.interrupted ? t.interactionInterrupted : state.phase === "done" ? held : "";
     if (announcement && announcement !== this.lastAnnouncement) this.announce(announcement);

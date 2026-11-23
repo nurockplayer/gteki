@@ -495,3 +495,23 @@ path = "docs/visual/live/*.jpg"
 precedence = "override"
 SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+# Department-store pilot: factual names only; generic fronts are original code.
+[[annotations]]
+path = "stations/ikebukuro/data/depato-floors.json"
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: facts-only source (そごう・西武); compiled by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
+[[annotations]]
+path = "stations/ikebukuro/data/depato-footprint.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy"
+
+# 2026-11-24 JST: Ikebukuro shop-street runtime captures, same PLATEAU attribution as #1503.
+[[annotations]]
+path = "docs/visual/evidence/2026-11-24-ike-shop-street/*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省 Project PLATEAU; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy"

@@ -261,6 +261,7 @@ export class Explorer {
   private readonly probeOrigin = new THREE.Vector3();
   private readonly probeUp = new THREE.Vector3(0, 1, 0);
   private readonly timer = new THREE.Timer();
+  private simT = 0;
   private readonly input: Input;
   private readonly ray = new THREE.Raycaster();
   private readonly qaSignBounds = new THREE.Box3();
@@ -1066,6 +1067,23 @@ export class Explorer {
     if (!this.station) return null;
     const { x, y, z } = this.avatarEnu;
     return { east: x, north: y, up: z, headingDeg: headingFromYaw(this.bodyYaw), mode: this.mode };
+  }
+
+  /** Render and copy in the same task: WebGL's drawing buffer is not preserved between frames. */
+  captureFeedback() {
+    this.render(0);
+    const source = this.renderer.domElement;
+    const canvas = document.createElement("canvas");
+    let scale = Math.min(1, 960 / Math.max(source.width, source.height));
+    let screenshot: string;
+    do {
+      canvas.width = Math.max(1, Math.round(source.width * scale));
+      canvas.height = Math.max(1, Math.round(source.height * scale));
+      canvas.getContext("2d")!.drawImage(source, 0, 0, canvas.width, canvas.height);
+      screenshot = canvas.toDataURL("image/jpeg", 0.65);
+      scale *= 0.8;
+    } while (atob(screenshot.split(",")[1]!).length > 200_000);
+    return { pose: this.getPose(), simT: this.simT, screenshot };
   }
 
   private defaultEnvironment(): void {
@@ -3257,6 +3275,7 @@ export class Explorer {
   }
 
   private step(dt: number, t: number): void {
+    this.simT = t;
     if (this.arrivalBeaconTime !== null) {
       this.arrivalBeaconTime += dt;
       const fade = 1 - Math.max(0, Math.min(1, (this.arrivalBeaconTime - 2) / 0.5));

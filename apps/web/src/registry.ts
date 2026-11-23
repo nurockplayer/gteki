@@ -13,7 +13,7 @@ export interface StationEntry {
   label: string;
   synthetic: boolean;
   identity?: StationIdentity;
-  load(): Promise<LoadedStation>;
+  load(previewNext?: boolean): Promise<LoadedStation>;
   loadDirectory(): Promise<StationBundle>;
 }
 
@@ -78,7 +78,7 @@ export async function listStations(): Promise<StationEntry[]> {
         if (!parsed.ok) throw new StationLoadError(s.dir, parsed.issues);
         return parsed.bundle;
       },
-      async load() {
+      async load(previewNext = false) {
         // The scene module is optional presentation: its failure must never block valid routing data.
         let sceneImportError: string | null = null;
         const scenePromise = s.scene
@@ -95,7 +95,9 @@ export async function listStations(): Promise<StationEntry[]> {
         const assetUrls = new Map<string, string>();
         await Promise.all(Object.entries(s.assets).map(async ([uri, url]) => assetUrls.set(uri, await url())));
         const privateRegions = privateBuild && s.privateRegions ? await s.privateRegions() : undefined;
-        return { ...(privateRegions ? { privateRegions } : {}), key: s.dir, bundle: parsed.bundle, issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, sceneImportError, assetUrls };
+        const preview = (sceneModule as (StationSceneModule & { previewBundle?: (bundle: StationBundle) => Promise<StationBundle> }) | null)?.previewBundle;
+        const bundle = previewNext && preview ? await preview(parsed.bundle) : parsed.bundle;
+        return { ...(privateRegions ? { privateRegions } : {}), key: s.dir, bundle, issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, sceneImportError, assetUrls };
       },
     });
   }
