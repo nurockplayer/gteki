@@ -1,8 +1,8 @@
 {
-  "runtimeHead": "86d715dc6d705676badee11e942974090d571b73",
-  "capturedAt": "2026-11-23T15:10:49.627Z",
+  "runtimeHead": "742ddb0b4549d82e1ae11ee71b8a3ee89aa30d19",
+  "capturedAt": "2026-11-23T16:16:30.365Z",
   "timeZone": "UTC",
-  "spaceId": 34,
+  "spaceId": 35,
   "profiles": [
     {
       "device": {
@@ -17,24 +17,154 @@
           "name": "entrance-outside",
           "file": "desktop-tobu-ikebukuro-entrance-outside.png",
           "avatar": {
-            "x": -60,
-            "y": 82,
-            "z": 27.90999984741211
+            "x": -124.50228439815906,
+            "y": 19.71620055887445,
+            "z": 32.40999984741211
           },
           "camera": {
             "lock": 0,
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
+            "boomWanted": 0.5,
+            "boomActual": 0.49999999999999856,
             "raise": 0,
             "pitch": 0,
-            "yaw": 1.5707963267948966,
-            "avatarFade": 1,
+            "yaw": -1.5234787649616013,
+            "avatarFade": 0.25,
             "reflections": true,
             "mode": "walk"
           },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 38.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.1000000014901161,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 191.29999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.3,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1570,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1667,
+              "triangles": 177136,
+              "bytes": 9293788,
+              "buildMs": 36.1
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 9227,
+              "attach": 3,
+              "sceneRayTrees": 84,
+              "greybox": 41,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 609,
+              "stairwellCut": 203,
+              "cutTargets": 0,
+              "connectors": 405,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 97,
+              "navmeshPaths": 0,
+              "composer": 6,
+              "startAt": 573,
+              "total": 10111
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -124.98080399764861,
+              32.93649859657233,
+              -19.493317160363766
+            ],
+            "cameraDirection": [
+              0.9986927413903894,
+              -0.019400235806426344,
+              -0.04729100490372129
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
           "loaded": [
             "depato-interior:tobu-ikebukuro"
           ],
@@ -44,24 +174,154 @@
           "name": "first-interior",
           "file": "desktop-tobu-ikebukuro-first-interior.png",
           "avatar": {
-            "x": -66.66999999999982,
-            "y": 82,
-            "z": 27.90999984741211
+            "x": -116.8258859648498,
+            "y": 20.07970034304946,
+            "z": 32.40999984741211
           },
           "camera": {
             "lock": 0,
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
             "raise": 0,
             "pitch": 0,
-            "yaw": 1.5707963267948966,
+            "yaw": -1.5234787649616013,
             "avatarFade": 1,
             "reflections": true,
             "mode": "walk"
           },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 38.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.1000000014901161,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 191.29999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.3,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1570,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1667,
+              "triangles": 177136,
+              "bytes": 9293788,
+              "buildMs": 36.1
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 9227,
+              "attach": 3,
+              "sceneRayTrees": 84,
+              "greybox": 41,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 609,
+              "stairwellCut": 203,
+              "cutTargets": 0,
+              "connectors": 405,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 97,
+              "navmeshPaths": 0,
+              "composer": 6,
+              "startAt": 573,
+              "total": 10111
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -118.57315247457639,
+              33.2133953443889,
+              -19.79673808958478
+            ],
+            "cameraDirection": [
+              0.997277467765377,
+              -0.056635212405855236,
+              -0.04722398758281067
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
           "loaded": [
             "depato-interior:tobu-ikebukuro"
           ],
@@ -71,17 +331,17 @@
           "name": "food-hall-aisle",
           "file": "desktop-tobu-ikebukuro-food-hall-aisle.png",
           "avatar": {
-            "x": -99.85042610565867,
-            "y": 126.27007331871184,
-            "z": 23.409999847412926
+            "x": -99.85120948887585,
+            "y": 126.26827940704707,
+            "z": 23.409999847412905
           },
           "camera": {
             "lock": 0,
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.250000000000012,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000094,
             "raise": 0,
             "pitch": 0,
             "yaw": 2.8415926535897933,
@@ -89,6 +349,136 @@
             "reflections": true,
             "mode": "walk"
           },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 38.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.1000000014901161,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 191.29999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -206.1,
+              22.3,
+              -185.4,
+              177.7,
+              36.2,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1570,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1667,
+              "triangles": 177136,
+              "bytes": 9293788,
+              "buildMs": 36.1
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 9227,
+              "attach": 3,
+              "sceneRayTrees": 84,
+              "greybox": 41,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 609,
+              "stairwellCut": 203,
+              "cutTargets": 0,
+              "connectors": 405,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 97,
+              "navmeshPaths": 0,
+              "composer": 6,
+              "startAt": 573,
+              "total": 10111
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -99.52254689450093,
+              24.21339534438969,
+              -128.0075288980508
+            ],
+            "cameraDirection": [
+              -0.29504587848016756,
+              -0.056635212405854174,
+              0.9538031150649542
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
           "loaded": [
             "depato-interior:tobu-ikebukuro"
           ],
@@ -98,8 +488,8 @@
           "name": "escalator",
           "file": "desktop-tobu-ikebukuro-escalator.png",
           "avatar": {
-            "x": -100.82669603835745,
-            "y": 140.71374624632003,
+            "x": -100.82670908806284,
+            "y": 140.7137234724537,
             "z": 23.40999984741211
           },
           "camera": {
@@ -107,8 +497,8 @@
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
             "raise": 0,
             "pitch": 0,
             "yaw": 3.141592653589793,
@@ -116,6 +506,136 @@
             "reflections": true,
             "mode": "walk"
           },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 38.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.1000000014901161,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 191.29999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -206.1,
+              22.3,
+              -185.4,
+              177.7,
+              36.2,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1570,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1667,
+              "triangles": 177136,
+              "bytes": 9293788,
+              "buildMs": 36.1
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 9227,
+              "attach": 3,
+              "sceneRayTrees": 84,
+              "greybox": 41,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 609,
+              "stairwellCut": 203,
+              "cutTargets": 0,
+              "connectors": 405,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 97,
+              "navmeshPaths": 0,
+              "composer": 6,
+              "startAt": 573,
+              "total": 10111
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -101.02670908806284,
+              24.213395344388903,
+              -142.4724184127142
+            ],
+            "cameraDirection": [
+              0,
+              -0.0566352124058558,
+              0.9983949382462551
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
           "loaded": [
             "depato-interior:tobu-ikebukuro"
           ],
@@ -125,8 +645,8 @@
           "name": "street-door-inside",
           "file": "desktop-tobu-ikebukuro-street-door-inside.png",
           "avatar": {
-            "x": -115.20800389280825,
-            "y": 20.150393801517385,
+            "x": -115.20800389287427,
+            "y": 20.15039380143787,
             "z": 32.40999984741211
           },
           "camera": {
@@ -134,8 +654,8 @@
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000027,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
             "raise": 0,
             "pitch": 0,
             "yaw": 1.618113888628192,
@@ -143,6 +663,136 @@
             "reflections": true,
             "mode": "walk"
           },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 38.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.1000000014901161,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 191.29999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.3,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1570,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1667,
+              "triangles": 177136,
+              "bytes": 9293788,
+              "buildMs": 36.1
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 9227,
+              "attach": 3,
+              "sceneRayTrees": 84,
+              "greybox": 41,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 609,
+              "stairwellCut": 203,
+              "cutTargets": 0,
+              "connectors": 405,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 97,
+              "navmeshPaths": 0,
+              "composer": 6,
+              "startAt": 573,
+              "total": 10111
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -113.46073738314769,
+              33.2133953443889,
+              -20.433356054902546
+            ],
+            "cameraDirection": [
+              -0.997277467765377,
+              -0.05663521240585523,
+              0.04722398758281067
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8906559578889798,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 0.746
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
           "loaded": [
             "depato-interior:tobu-ikebukuro"
           ],
@@ -152,8 +802,8 @@
           "name": "street-door-outside",
           "file": "desktop-tobu-ikebukuro-street-door-outside.png",
           "avatar": {
-            "x": -124.18821002761268,
-            "y": 19.73087291240413,
+            "x": -124.188210027684,
+            "y": 19.73087291239823,
             "z": 32.40999984741211
           },
           "camera": {
@@ -161,8 +811,8 @@
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000027,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
             "raise": 0,
             "pitch": 0,
             "yaw": -1.5234787649616013,
@@ -170,14 +820,144 @@
             "reflections": true,
             "mode": "walk"
           },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 38.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.1000000014901161,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 191.29999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.3,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1570,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1667,
+              "triangles": 177136,
+              "bytes": 9293788,
+              "buildMs": 36.1
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 9227,
+              "attach": 3,
+              "sceneRayTrees": 84,
+              "greybox": 41,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 609,
+              "stairwellCut": 203,
+              "cutTargets": 0,
+              "connectors": 405,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 97,
+              "navmeshPaths": 0,
+              "composer": 6,
+              "startAt": 573,
+              "total": 10111
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -125.93547653741058,
+              33.2133953443889,
+              -19.44791065893355
+            ],
+            "cameraDirection": [
+              0.997277467765377,
+              -0.056635212405855236,
+              -0.04722398758281067
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.1486877557209703,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
           "loaded": [
             "depato-interior:tobu-ikebukuro"
           ],
           "shaderErrors": []
         },
         {
-          "name": "flag-off",
-          "file": "desktop-tobu-ikebukuro-flag-off.png",
+          "name": "B1-tie-skipped",
+          "file": "desktop-tobu-ikebukuro-B1-tie-skipped.png",
           "avatar": {
             "x": -60,
             "y": 82,
@@ -185,11 +965,11 @@
           },
           "camera": {
             "lock": 0,
-            "fov": 50,
+            "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999977,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
             "raise": 0,
             "pitch": 0,
             "yaw": 1.5707963267948966,
@@ -197,47 +977,250 @@
             "reflections": true,
             "mode": "walk"
           },
-          "loaded": [],
-          "shaderErrors": []
-        },
-        {
-          "name": "flag-off-street",
-          "file": "desktop-tobu-ikebukuro-flag-off-street.png",
-          "avatar": {
-            "x": -124.18821002761268,
-            "y": 19.73087291240413,
-            "z": 32.40999984741211
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 38.400000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.1000000014901161,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 191.29999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              23.3,
+              -185.4,
+              177.7,
+              35.3,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1570,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1667,
+              "triangles": 177136,
+              "bytes": 9293788,
+              "buildMs": 36.1
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 9227,
+              "attach": 3,
+              "sceneRayTrees": 84,
+              "greybox": 41,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 609,
+              "stairwellCut": 203,
+              "cutTargets": 0,
+              "connectors": 405,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 97,
+              "navmeshPaths": 0,
+              "composer": 6,
+              "startAt": 573,
+              "total": 10111
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -58.24130505973949,
+              28.713395344388903,
+              -82.2
+            ],
+            "cameraDirection": [
+              -0.9983949382462551,
+              -0.0566352124058558,
+              0
+            ],
+            "fov": 55,
             "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.399999999999995,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.5234787649616013,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
           },
+          "streetContextVisible": false,
           "loaded": [],
           "shaderErrors": []
         }
       ],
       "legs": [
         {
-          "name": "enter-B1",
+          "name": "enter-1F",
           "walk": {
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 138
+            "steps": 159
           },
           "avatar": {
-            "x": -66.66999999999982,
-            "y": 82,
+            "x": -116.8258859648498,
+            "y": 20.07970034304946,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-to-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 259
+          },
+          "avatar": {
+            "x": -104.30756107813713,
+            "y": 20.094242528662306,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-to-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 2515
+          },
+          "avatar": {
+            "x": -104.00087750678357,
+            "y": 141.6521889902719,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-to-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": -100.3413465333163,
+            "y": 141.9703254892912,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-to-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 42
+          },
+          "avatar": {
+            "x": -99.22858577910684,
+            "y": 140.2724846534382,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-to-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 260
+          },
+          "avatar": {
+            "x": -99.0542595264213,
+            "y": 127.70702718191234,
+            "z": 27.910585313054412
+          }
+        },
+        {
+          "name": "1F-to-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": -99.85065402666808,
+            "y": 126.26956405389105,
+            "z": 27.90999984741292
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 79
+          },
+          "avatar": {
+            "x": -103.66095512418889,
+            "y": 126.02202619684212,
             "z": 27.90999984741211
           }
         },
@@ -247,25 +1230,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 766
+            "steps": 324
           },
           "avatar": {
-            "x": -103.69333333333213,
-            "y": 82,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 1235
-          },
-          "avatar": {
-            "x": -103.99842008913973,
-            "y": 141.69088700560505,
+            "x": -103.9931779634779,
+            "y": 141.67850178955152,
             "z": 27.90999984741211
           }
         },
@@ -278,8 +1247,8 @@
             "steps": 76
           },
           "avatar": {
-            "x": -100.33601490512413,
-            "y": 141.97402309633082,
+            "x": -100.33169262902524,
+            "y": 141.97329480738762,
             "z": 27.90999984741211
           }
         },
@@ -292,8 +1261,8 @@
             "steps": 42
           },
           "avatar": {
-            "x": -99.22793261229597,
-            "y": 140.2731252062967,
+            "x": -99.2259418936134,
+            "y": 140.27088025413173,
             "z": 27.90999984741211
           }
         },
@@ -306,9 +1275,9 @@
             "steps": 260
           },
           "avatar": {
-            "x": -99.0542524663519,
-            "y": 127.70765878765536,
-            "z": 23.41058886637903
+            "x": -99.05417457558133,
+            "y": 127.70538754196058,
+            "z": 23.4105760990618
           }
         },
         {
@@ -320,9 +1289,9 @@
             "steps": 34
           },
           "avatar": {
-            "x": -99.85042610565867,
-            "y": 126.27007331871184,
-            "z": 23.409999847412926
+            "x": -99.85120948887585,
+            "y": 126.26827940704707,
+            "z": 23.409999847412905
           }
         },
         {
@@ -334,8 +1303,8 @@
             "steps": 79
           },
           "avatar": {
-            "x": -103.6606978042592,
-            "y": 126.0220833445513,
+            "x": -103.6615845991184,
+            "y": 126.0218834580441,
             "z": 23.40999984741211
           }
         },
@@ -348,8 +1317,8 @@
             "steps": 324
           },
           "avatar": {
-            "x": -103.9931738608632,
-            "y": 141.6785535620614,
+            "x": -103.99318794514642,
+            "y": 141.67837218383949,
             "z": 23.40999984741211
           }
         },
@@ -362,8 +1331,8 @@
             "steps": 76
           },
           "avatar": {
-            "x": -100.33168475348374,
-            "y": 141.9732997144025,
+            "x": -100.33171205999088,
+            "y": 141.9732825434429,
             "z": 23.40999984741211
           }
         },
@@ -376,8 +1345,8 @@
             "steps": 28
           },
           "avatar": {
-            "x": -100.82669603835745,
-            "y": 140.71374624632003,
+            "x": -100.82670908806284,
+            "y": 140.7137234724537,
             "z": 23.40999984741211
           }
         },
@@ -390,9 +1359,9 @@
             "steps": 269
           },
           "avatar": {
-            "x": -100.94710454160415,
-            "y": 127.71263714349581,
-            "z": 27.909370581763184
+            "x": -100.94710505505971,
+            "y": 127.71261425353347,
+            "z": 27.909370816270894
           }
         },
         {
@@ -404,8 +1373,8 @@
             "steps": 34
           },
           "avatar": {
-            "x": -100.15183077576518,
-            "y": 126.27455366823693,
+            "x": -100.1518228191875,
+            "y": 126.2745354623155,
             "z": 27.909999847411243
           }
         },
@@ -418,8 +1387,8 @@
             "steps": 73
           },
           "avatar": {
-            "x": -103.67121805299692,
-            "y": 126.02345746362485,
+            "x": -103.67121131516443,
+            "y": 126.02345634032798,
             "z": 27.90999984741211
           }
         },
@@ -432,8 +1401,8 @@
             "steps": 324
           },
           "avatar": {
-            "x": -103.99341763965232,
-            "y": 141.68014253506524,
+            "x": -103.99341747931824,
+            "y": 141.6801412764101,
             "z": 27.90999984741211
           }
         },
@@ -446,8 +1415,8 @@
             "steps": 76
           },
           "avatar": {
-            "x": -100.33181085883287,
-            "y": 141.97342322047908,
+            "x": -100.33181079128373,
+            "y": 141.97342312024153,
             "z": 27.90999984741211
           }
         },
@@ -460,8 +1429,8 @@
             "steps": 28
           },
           "avatar": {
-            "x": -100.8267010357296,
-            "y": 140.71382216303223,
+            "x": -100.82670104233746,
+            "y": 140.71382209193,
             "z": 27.90999984741211
           }
         },
@@ -474,9 +1443,9 @@
             "steps": 269
           },
           "avatar": {
-            "x": -100.94710397287803,
-            "y": 127.71271300866238,
-            "z": 32.409369804404484
+            "x": -100.94710397367668,
+            "y": 127.71271293750664,
+            "z": 32.40936980513356
           }
         },
         {
@@ -488,8 +1457,8 @@
             "steps": 34
           },
           "avatar": {
-            "x": -100.15185755002211,
-            "y": 126.27461441281474,
+            "x": -100.15185752500508,
+            "y": 126.27461435593423,
             "z": 32.40999984741124
           }
         },
@@ -502,8 +1471,8 @@
             "steps": 77
           },
           "avatar": {
-            "x": -103.68476507962347,
-            "y": 125.10441478665555,
+            "x": -103.68476507246437,
+            "y": 125.1044147836884,
             "z": 32.40999984741211
           }
         },
@@ -516,8 +1485,8 @@
             "steps": 0
           },
           "avatar": {
-            "x": -103.68476507962347,
-            "y": 125.10441478665555,
+            "x": -103.68476507246437,
+            "y": 125.1044147836884,
             "z": 32.40999984741211
           }
         },
@@ -530,8 +1499,8 @@
             "steps": 2165
           },
           "avatar": {
-            "x": -103.99903497561533,
-            "y": 20.46322004380499,
+            "x": -103.99903497560223,
+            "y": 20.463220040866904,
             "z": 32.40999984741211
           }
         },
@@ -544,8 +1513,8 @@
             "steps": 232
           },
           "avatar": {
-            "x": -115.20800389280825,
-            "y": 20.150393801517385,
+            "x": -115.20800389287427,
+            "y": 20.15039380143787,
             "z": 32.40999984741211
           }
         },
@@ -558,8 +1527,8 @@
             "steps": 186
           },
           "avatar": {
-            "x": -124.18821002761268,
-            "y": 19.73087291240413,
+            "x": -124.188210027684,
+            "y": 19.73087291239823,
             "z": 32.40999984741211
           }
         }
@@ -571,300 +1540,21 @@
         ]
       },
       "route": {
-        "ok": true,
-        "profile": {
-          "fare": "ticketed",
-          "stepFree": false,
-          "hours": "warn_unknown",
-          "at": {
-            "weekday": "tue",
-            "minutes": 11.215633333333333
-          },
-          "today": "2026-11-24",
-          "timeZone": "Asia/Tokyo"
-        },
-        "nodeIds": [
-          "g_jr_s",
-          "sp_m",
-          "sp_j",
-          "c_s",
-          "c_e1",
-          "c_c",
-          "c_g2",
-          "c_mid",
-          "c_w",
-          "depato-tobu-ikebukuro-B1-door0",
-          "depato-tobu-ikebukuro-B1-inside0",
-          "depato-tobu-ikebukuro-B1-approach0",
-          "depato-tobu-ikebukuro-B1-bypass",
-          "depato-tobu-ikebukuro-B1-aisle",
-          "depato-tobu-ikebukuro-B1-lower",
-          "depato-tobu-ikebukuro-B1-down-start",
-          "depato-tobu-ikebukuro-B2-down-end",
-          "depato-tobu-ikebukuro-B2-upper",
-          "depato-tobu-ikebukuro-B2-bypass",
-          "depato-tobu-ikebukuro-B2-aisle"
-        ],
-        "steps": [
-          {
-            "edgeId": "sp_m__g_jr_s",
-            "fromNodeId": "g_jr_s",
-            "toNodeId": "sp_m",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 9.7,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "sp_j__sp_m",
-            "fromNodeId": "sp_m",
-            "toNodeId": "sp_j",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 64.9,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_s__sp_j",
-            "fromNodeId": "sp_j",
-            "toNodeId": "c_s",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 84.2,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_e1__c_s",
-            "fromNodeId": "c_s",
-            "toNodeId": "c_e1",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 13.3,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_c__c_e1",
-            "fromNodeId": "c_e1",
-            "toNodeId": "c_c",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 33.2,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_g2__c_c",
-            "fromNodeId": "c_c",
-            "toNodeId": "c_g2",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 21.3,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_mid__c_g2",
-            "fromNodeId": "c_g2",
-            "toNodeId": "c_mid",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 11.4,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_w__c_mid",
-            "fromNodeId": "c_mid",
-            "toNodeId": "c_w",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 37.3,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_w__depato-tobu-ikebukuro-B1-door0",
-            "fromNodeId": "c_w",
-            "toNodeId": "depato-tobu-ikebukuro-B1-door0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 5,
-            "fromFloorId": "b1",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-door0__depato-tobu-ikebukuro-B1-inside0",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-door0",
-            "toNodeId": "depato-tobu-ikebukuro-B1-inside0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-inside0__depato-tobu-ikebukuro-B1-approach0",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-inside0",
-            "toNodeId": "depato-tobu-ikebukuro-B1-approach0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 37,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-approach0__depato-tobu-ikebukuro-B1-bypass",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-approach0",
-            "toNodeId": "depato-tobu-ikebukuro-B1-bypass",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 44,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-aisle__depato-tobu-ikebukuro-B1-bypass",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-bypass",
-            "toNodeId": "depato-tobu-ikebukuro-B1-aisle",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 16,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-aisle",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-aisle",
-            "toNodeId": "depato-tobu-ikebukuro-B1-lower",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 4,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-down-start",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-lower",
-            "toNodeId": "depato-tobu-ikebukuro-B1-down-start",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2.214158982548454,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-down-start__depato-tobu-ikebukuro-B2-down-end",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-down-start",
-            "toNodeId": "depato-tobu-ikebukuro-B2-down-end",
-            "reversed": false,
-            "mode": "escalator",
-            "lengthM": 12.816005617976298,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B2-down-end__depato-tobu-ikebukuro-B2-upper",
-            "fromNodeId": "depato-tobu-ikebukuro-B2-down-end",
-            "toNodeId": "depato-tobu-ikebukuro-B2-upper",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2.214158982548454,
-            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B2-bypass__depato-tobu-ikebukuro-B2-upper",
-            "fromNodeId": "depato-tobu-ikebukuro-B2-upper",
-            "toNodeId": "depato-tobu-ikebukuro-B2-bypass",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 4,
-            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B2-aisle__depato-tobu-ikebukuro-B2-bypass",
-            "fromNodeId": "depato-tobu-ikebukuro-B2-bypass",
-            "toNodeId": "depato-tobu-ikebukuro-B2-aisle",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 16,
-            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
-          }
-        ],
-        "totalLengthM": 420.5443235830732,
-        "estimatedSeconds": 356.86160579488245,
-        "waitSeconds": 0,
-        "floorChanges": 2,
-        "crossesFareBoundary": false,
-        "unknowns": [
-          {
-            "kind": "hours",
-            "edgeIds": [
-              "sp_m__g_jr_s",
-              "sp_j__sp_m",
-              "c_s__sp_j",
-              "c_e1__c_s",
-              "c_c__c_e1",
-              "c_g2__c_c",
-              "c_mid__c_g2",
-              "c_w__c_mid",
-              "c_w__depato-tobu-ikebukuro-B1-door0",
-              "depato-tobu-ikebukuro-B1-door0__depato-tobu-ikebukuro-B1-inside0",
-              "depato-tobu-ikebukuro-B1-inside0__depato-tobu-ikebukuro-B1-approach0",
-              "depato-tobu-ikebukuro-B1-approach0__depato-tobu-ikebukuro-B1-bypass",
-              "depato-tobu-ikebukuro-B1-aisle__depato-tobu-ikebukuro-B1-bypass",
-              "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-aisle",
-              "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-down-start",
-              "depato-tobu-ikebukuro-B1-down-start__depato-tobu-ikebukuro-B2-down-end",
-              "depato-tobu-ikebukuro-B2-down-end__depato-tobu-ikebukuro-B2-upper",
-              "depato-tobu-ikebukuro-B2-bypass__depato-tobu-ikebukuro-B2-upper",
-              "depato-tobu-ikebukuro-B2-aisle__depato-tobu-ikebukuro-B2-bypass"
-            ]
-          },
-          {
-            "kind": "wheelchair",
-            "edgeIds": [
-              "sp_m__g_jr_s",
-              "sp_j__sp_m",
-              "c_s__sp_j",
-              "c_e1__c_s",
-              "c_c__c_e1",
-              "c_g2__c_c",
-              "c_mid__c_g2",
-              "c_w__c_mid"
-            ]
-          }
-        ],
-        "sourceIds": [
-          "plateau-ubld-13116",
-          "tobu-dept-ikebukuro-2026-10-B2F",
-          "tokyometro-ikebukuro-yardmap-2026-03",
-          "toshima-underground-guide-2022"
-        ],
-        "endpointSourceIds": [
-          "plateau-ubld-13116",
-          "tobu-dept-ikebukuro-2026-10-B2F",
-          "toshima-underground-guide-2022"
-        ],
-        "evidenceCheckedDate": "2026-11-22",
-        "oldestSourceDate": "2022-01",
-        "undatedSourceIds": [
-          "tobu-dept-ikebukuro-2026-10-B2F"
-        ],
-        "expiredSourceIds": [],
-        "stale": true,
-        "synthetic": false,
-        "timeRestricted": [],
-        "operatorIds": [
-          "public"
-        ]
-      }
+        "ok": false,
+        "reason": "no_path",
+        "message": "No traversable path connects the start to a goal."
+      },
+      "stationRouteSkip": [
+        {
+          "level": "B1",
+          "outsideNode": "c_w",
+          "reason": "No alternative verified Tobu entrance exists in the committed POI data. The generated c_w tie crosses the station unverified-access barrier, which is retained. Enter from the 1F street doorway and use the internal escalators to B2.",
+          "point": [
+            -65,
+            -82
+          ]
+        }
+      ]
     },
     {
       "device": {
@@ -874,3031 +1564,11 @@
         "mobile": false
       },
       "store": "ikebukuro-parco",
-      "frames": [
-        {
-          "name": "entrance-outside",
-          "file": "desktop-ikebukuro-parco-entrance-outside.png",
-          "avatar": {
-            "x": 65.88062434222547,
-            "y": 112.72477381605111,
-            "z": 28.449323913667367
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 55,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 1.8279237314948653,
-            "raise": 0.6981317007977318,
-            "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "first-interior",
-          "file": "desktop-ikebukuro-parco-first-interior.png",
-          "avatar": {
-            "x": 68.54774264811574,
-            "y": 112.27314187570514,
-            "z": 28.450000762939453
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 55,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.250000000000001,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "food-hall-aisle",
-          "file": "desktop-ikebukuro-parco-food-hall-aisle.png",
-          "avatar": {
-            "x": 89.1617465582228,
-            "y": 107.29802944199326,
-            "z": 23.950000762940746
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 55,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.250000000000001,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 2.8415926535897933,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "escalator",
-          "file": "desktop-ikebukuro-parco-escalator.png",
-          "avatar": {
-            "x": 88.17309724518813,
-            "y": 121.7135541841472,
-            "z": 23.950000762939453
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 55,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 3.141592653589793,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "street-door-inside",
-          "file": "desktop-ikebukuro-parco-street-door-inside.png",
-          "avatar": {
-            "x": 99.98732051490761,
-            "y": 114.14505801963679,
-            "z": 32.950000762939446
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 55,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2499999999999982,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.9681149734689154,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "street-door-outside",
-          "file": "desktop-ikebukuro-parco-street-door-outside.png",
-          "avatar": {
-            "x": 108.33171955917537,
-            "y": 110.79974718354934,
-            "z": 32.950000762939446
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 55,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2499999999999982,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.173477680120878,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "flag-off",
-          "file": "desktop-ikebukuro-parco-flag-off.png",
-          "avatar": {
-            "x": 66,
-            "y": 113,
-            "z": 28.44962318730932
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999972,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
-          },
-          "loaded": [],
-          "shaderErrors": []
-        },
-        {
-          "name": "flag-off-street",
-          "file": "desktop-ikebukuro-parco-flag-off-street.png",
-          "avatar": {
-            "x": 108.33171955917537,
-            "y": 110.79974718354934,
-            "z": 32.950000762939446
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999972,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.173477680120878,
-            "avatarFade": 1,
-            "reflections": true,
-            "mode": "walk"
-          },
-          "loaded": [],
-          "shaderErrors": []
-        }
-      ],
-      "legs": [
-        {
-          "name": "enter-B1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 56
-          },
-          "avatar": {
-            "x": 68.54774264811574,
-            "y": 112.27314187570514,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 334
-          },
-          "avatar": {
-            "x": 84.69097933792746,
-            "y": 112.21728233874839,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 216
-          },
-          "avatar": {
-            "x": 84.99005529899497,
-            "y": 122.65299762661843,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 77
-          },
-          "avatar": {
-            "x": 88.69786510629775,
-            "y": 122.97385462069592,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 42
-          },
-          "avatar": {
-            "x": 89.78527690826455,
-            "y": 121.2596680576451,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 259
-          },
-          "avatar": {
-            "x": 89.94561459448948,
-            "y": 108.74236158736844,
-            "z": 23.95093445711132
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": 89.1617465582228,
-            "y": 107.29802944199326,
-            "z": 23.950000762940746
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 80
-          },
-          "avatar": {
-            "x": 85.30495648924122,
-            "y": 107.02183843034392,
-            "z": 23.950000762939453
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 324
-          },
-          "avatar": {
-            "x": 85.0061268001374,
-            "y": 122.6789869835418,
-            "z": 23.950000762939453
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 88.667651788956,
-            "y": 122.97328705835096,
-            "z": 23.950000762939453
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 28
-          },
-          "avatar": {
-            "x": 88.17309724518813,
-            "y": 121.7135541841472,
-            "z": 23.950000762939453
-          }
-        },
-        {
-          "name": "ride-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 291
-          },
-          "avatar": {
-            "x": 88.02152013257273,
-            "y": 108.72485717273848,
-            "z": 28.449259788134103
-          }
-        },
-        {
-          "name": "ride-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": 88.83236943934786,
-            "y": 107.29549792952956,
-            "z": 28.45000076293843
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 73
-          },
-          "avatar": {
-            "x": 85.3144780775967,
-            "y": 107.02424808523371,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 324
-          },
-          "avatar": {
-            "x": 85.00627519220828,
-            "y": 122.68121493649541,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 88.667961883799,
-            "y": 122.97349622293639,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 28
-          },
-          "avatar": {
-            "x": 88.17324920650063,
-            "y": 121.71382544133066,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "ride-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 269
-          },
-          "avatar": {
-            "x": 88.0528948838874,
-            "y": 108.71271583683553,
-            "z": 32.94937069082952
-          }
-        },
-        {
-          "name": "ride-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": 88.84814103622075,
-            "y": 107.27461709139295,
-            "z": 32.950000762938586
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 77
-          },
-          "avatar": {
-            "x": 85.31523436895381,
-            "y": 106.10441486179457,
-            "z": 32.950000762939446
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 152
-          },
-          "avatar": {
-            "x": 92.6612229826952,
-            "y": 106.00460304934973,
-            "z": 32.950000762939446
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 162
-          },
-          "avatar": {
-            "x": 92.9861691858803,
-            "y": 113.82785748500663,
-            "z": 32.950000762939446
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 145
-          },
-          "avatar": {
-            "x": 99.98732051490761,
-            "y": 114.14505801963679,
-            "z": 32.950000762939446
-          }
-        },
-        {
-          "name": "leave-to-street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 186
-          },
-          "avatar": {
-            "x": 108.33171955917537,
-            "y": 110.79974718354934,
-            "z": 32.950000762939446
-          }
-        }
-      ],
-      "search": {
-        "query": "池袋パルコ",
-        "hits": [
-          "池袋パルコIkebukuro PARCO B2"
-        ]
-      },
-      "route": {
-        "ok": true,
-        "profile": {
-          "fare": "ticketed",
-          "stepFree": false,
-          "hours": "warn_unknown",
-          "at": {
-            "weekday": "tue",
-            "minutes": 11.933333333333334
-          },
-          "today": "2026-11-24",
-          "timeZone": "Asia/Tokyo"
-        },
-        "nodeIds": [
-          "g_jr_s",
-          "sp_m",
-          "sp_j",
-          "c_s",
-          "c_e1",
-          "c_n",
-          "n_h",
-          "depato-ikebukuro-parco-B1-door0",
-          "depato-ikebukuro-parco-B1-inside0",
-          "depato-ikebukuro-parco-B1-approach0",
-          "depato-ikebukuro-parco-B1-bypass",
-          "depato-ikebukuro-parco-B1-aisle",
-          "depato-ikebukuro-parco-B1-lower",
-          "depato-ikebukuro-parco-B1-down-start",
-          "depato-ikebukuro-parco-B2-down-end",
-          "depato-ikebukuro-parco-B2-upper",
-          "depato-ikebukuro-parco-B2-bypass",
-          "depato-ikebukuro-parco-B2-aisle"
-        ],
-        "steps": [
-          {
-            "edgeId": "sp_m__g_jr_s",
-            "fromNodeId": "g_jr_s",
-            "toNodeId": "sp_m",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 9.7,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "sp_j__sp_m",
-            "fromNodeId": "sp_m",
-            "toNodeId": "sp_j",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 64.9,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_s__sp_j",
-            "fromNodeId": "sp_j",
-            "toNodeId": "c_s",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 84.2,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_e1__c_s",
-            "fromNodeId": "c_s",
-            "toNodeId": "c_e1",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 13.3,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_e1__c_n",
-            "fromNodeId": "c_e1",
-            "toNodeId": "c_n",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 17.8,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_n__n_h",
-            "fromNodeId": "c_n",
-            "toNodeId": "n_h",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 75.8,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "n_h__depato-ikebukuro-parco-B1-door0",
-            "fromNodeId": "n_h",
-            "toNodeId": "depato-ikebukuro-parco-B1-door0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 1.0529999999999973,
-            "fromFloorId": "b1",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-door0__depato-ikebukuro-parco-B1-inside0",
-            "fromNodeId": "depato-ikebukuro-parco-B1-door0",
-            "toNodeId": "depato-ikebukuro-parco-B1-inside0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 1.9999999999999942,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-inside0__depato-ikebukuro-parco-B1-approach0",
-            "fromNodeId": "depato-ikebukuro-parco-B1-inside0",
-            "toNodeId": "depato-ikebukuro-parco-B1-approach0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 16.106978799049273,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-approach0__depato-ikebukuro-parco-B1-bypass",
-            "fromNodeId": "depato-ikebukuro-parco-B1-approach0",
-            "toNodeId": "depato-ikebukuro-parco-B1-bypass",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 5.216213051874547,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-aisle__depato-ikebukuro-parco-B1-bypass",
-            "fromNodeId": "depato-ikebukuro-parco-B1-bypass",
-            "toNodeId": "depato-ikebukuro-parco-B1-aisle",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 16,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-aisle",
-            "fromNodeId": "depato-ikebukuro-parco-B1-aisle",
-            "toNodeId": "depato-ikebukuro-parco-B1-lower",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 4,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-down-start",
-            "fromNodeId": "depato-ikebukuro-parco-B1-lower",
-            "toNodeId": "depato-ikebukuro-parco-B1-down-start",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2.214158982548454,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-down-start__depato-ikebukuro-parco-B2-down-end",
-            "fromNodeId": "depato-ikebukuro-parco-B1-down-start",
-            "toNodeId": "depato-ikebukuro-parco-B2-down-end",
-            "reversed": false,
-            "mode": "escalator",
-            "lengthM": 12.816005617976295,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B2-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B2-down-end__depato-ikebukuro-parco-B2-upper",
-            "fromNodeId": "depato-ikebukuro-parco-B2-down-end",
-            "toNodeId": "depato-ikebukuro-parco-B2-upper",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2.214158982548454,
-            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
-            "toFloorId": "depato-ikebukuro-parco-B2-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B2-bypass__depato-ikebukuro-parco-B2-upper",
-            "fromNodeId": "depato-ikebukuro-parco-B2-upper",
-            "toNodeId": "depato-ikebukuro-parco-B2-bypass",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 4,
-            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
-            "toFloorId": "depato-ikebukuro-parco-B2-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B2-aisle__depato-ikebukuro-parco-B2-bypass",
-            "fromNodeId": "depato-ikebukuro-parco-B2-bypass",
-            "toNodeId": "depato-ikebukuro-parco-B2-aisle",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 16,
-            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
-            "toFloorId": "depato-ikebukuro-parco-B2-floor"
-          }
-        ],
-        "totalLengthM": 347.32051543399706,
-        "estimatedSeconds": 295.8417656706523,
-        "waitSeconds": 0,
-        "floorChanges": 2,
-        "crossesFareBoundary": false,
-        "unknowns": [
-          {
-            "kind": "hours",
-            "edgeIds": [
-              "sp_m__g_jr_s",
-              "sp_j__sp_m",
-              "c_s__sp_j",
-              "c_e1__c_s",
-              "c_e1__c_n",
-              "c_n__n_h",
-              "n_h__depato-ikebukuro-parco-B1-door0",
-              "depato-ikebukuro-parco-B1-door0__depato-ikebukuro-parco-B1-inside0",
-              "depato-ikebukuro-parco-B1-inside0__depato-ikebukuro-parco-B1-approach0",
-              "depato-ikebukuro-parco-B1-approach0__depato-ikebukuro-parco-B1-bypass",
-              "depato-ikebukuro-parco-B1-aisle__depato-ikebukuro-parco-B1-bypass",
-              "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-aisle",
-              "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-down-start",
-              "depato-ikebukuro-parco-B1-down-start__depato-ikebukuro-parco-B2-down-end",
-              "depato-ikebukuro-parco-B2-down-end__depato-ikebukuro-parco-B2-upper",
-              "depato-ikebukuro-parco-B2-bypass__depato-ikebukuro-parco-B2-upper",
-              "depato-ikebukuro-parco-B2-aisle__depato-ikebukuro-parco-B2-bypass"
-            ]
-          },
-          {
-            "kind": "wheelchair",
-            "edgeIds": [
-              "sp_m__g_jr_s",
-              "sp_j__sp_m",
-              "c_s__sp_j",
-              "c_e1__c_s",
-              "c_e1__c_n",
-              "c_n__n_h"
-            ]
-          }
-        ],
-        "sourceIds": [
-          "parco-ikebukuro-floorguide-2026-11",
-          "plateau-ubld-13116",
-          "tokyometro-ikebukuro-yardmap-2026-03",
-          "toshima-underground-guide-2022"
-        ],
-        "endpointSourceIds": [
-          "parco-ikebukuro-floorguide-2026-11",
-          "plateau-ubld-13116",
-          "toshima-underground-guide-2022"
-        ],
-        "evidenceCheckedDate": "2026-11-22",
-        "oldestSourceDate": "2022-01",
-        "undatedSourceIds": [
-          "parco-ikebukuro-floorguide-2026-11"
-        ],
-        "expiredSourceIds": [],
-        "stale": true,
-        "synthetic": false,
-        "timeRestricted": [],
-        "operatorIds": [
-          "public"
-        ]
-      }
-    },
-    {
-      "device": {
-        "name": "phone",
-        "width": 390,
-        "height": 844,
-        "mobile": true
-      },
-      "store": "tobu-ikebukuro",
-      "frames": [
-        {
-          "name": "entrance-outside",
-          "file": "phone-tobu-ikebukuro-entrance-outside.png",
-          "avatar": {
-            "x": -60,
-            "y": 82,
-            "z": 27.90999984741211
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.5707963267948966,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:tobu-ikebukuro"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "first-interior",
-          "file": "phone-tobu-ikebukuro-first-interior.png",
-          "avatar": {
-            "x": -66.66999999999982,
-            "y": 82,
-            "z": 27.90999984741211
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.5707963267948966,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:tobu-ikebukuro"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "food-hall-aisle",
-          "file": "phone-tobu-ikebukuro-food-hall-aisle.png",
-          "avatar": {
-            "x": -99.85042610565867,
-            "y": 126.27007331871184,
-            "z": 23.409999847412926
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.250000000000001,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 2.8415926535897933,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:tobu-ikebukuro"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "escalator",
-          "file": "phone-tobu-ikebukuro-escalator.png",
-          "avatar": {
-            "x": -100.82669603835745,
-            "y": 140.71374624632003,
-            "z": 23.40999984741211
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 3.141592653589793,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:tobu-ikebukuro"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "street-door-inside",
-          "file": "phone-tobu-ikebukuro-street-door-inside.png",
-          "avatar": {
-            "x": -115.20800389280825,
-            "y": 20.150393801517385,
-            "z": 32.40999984741211
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000027,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.618113888628192,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:tobu-ikebukuro"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "street-door-outside",
-          "file": "phone-tobu-ikebukuro-street-door-outside.png",
-          "avatar": {
-            "x": -124.18821002761268,
-            "y": 19.73087291240413,
-            "z": 32.40999984741211
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000027,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.5234787649616013,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:tobu-ikebukuro"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "flag-off",
-          "file": "phone-tobu-ikebukuro-flag-off.png",
-          "avatar": {
-            "x": -60,
-            "y": 82,
-            "z": 27.90999984741211
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999977,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.5707963267948966,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [],
-          "shaderErrors": []
-        },
-        {
-          "name": "flag-off-street",
-          "file": "phone-tobu-ikebukuro-flag-off-street.png",
-          "avatar": {
-            "x": -124.18821002761268,
-            "y": 19.73087291240413,
-            "z": 32.40999984741211
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999813,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.5234787649616013,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [],
-          "shaderErrors": []
-        }
-      ],
-      "legs": [
-        {
-          "name": "enter-B1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 138
-          },
-          "avatar": {
-            "x": -66.66999999999982,
-            "y": 82,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 766
-          },
-          "avatar": {
-            "x": -103.69333333333213,
-            "y": 82,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 1235
-          },
-          "avatar": {
-            "x": -103.99842008913973,
-            "y": 141.69088700560505,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": -100.33601490512413,
-            "y": 141.97402309633082,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 42
-          },
-          "avatar": {
-            "x": -99.22793261229597,
-            "y": 140.2731252062967,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 260
-          },
-          "avatar": {
-            "x": -99.0542524663519,
-            "y": 127.70765878765536,
-            "z": 23.41058886637903
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": -99.85042610565867,
-            "y": 126.27007331871184,
-            "z": 23.409999847412926
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 79
-          },
-          "avatar": {
-            "x": -103.6606978042592,
-            "y": 126.0220833445513,
-            "z": 23.40999984741211
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 324
-          },
-          "avatar": {
-            "x": -103.9931738608632,
-            "y": 141.6785535620614,
-            "z": 23.40999984741211
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": -100.33168475348374,
-            "y": 141.9732997144025,
-            "z": 23.40999984741211
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 28
-          },
-          "avatar": {
-            "x": -100.82669603835745,
-            "y": 140.71374624632003,
-            "z": 23.40999984741211
-          }
-        },
-        {
-          "name": "ride-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 269
-          },
-          "avatar": {
-            "x": -100.94710454160415,
-            "y": 127.71263714349581,
-            "z": 27.909370581763184
-          }
-        },
-        {
-          "name": "ride-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": -100.15183077576518,
-            "y": 126.27455366823693,
-            "z": 27.909999847411243
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 73
-          },
-          "avatar": {
-            "x": -103.67121805299692,
-            "y": 126.02345746362485,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 324
-          },
-          "avatar": {
-            "x": -103.99341763965232,
-            "y": 141.68014253506524,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": -100.33181085883287,
-            "y": 141.97342322047908,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 28
-          },
-          "avatar": {
-            "x": -100.8267010357296,
-            "y": 140.71382216303223,
-            "z": 27.90999984741211
-          }
-        },
-        {
-          "name": "ride-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 269
-          },
-          "avatar": {
-            "x": -100.94710397287803,
-            "y": 127.71271300866238,
-            "z": 32.409369804404484
-          }
-        },
-        {
-          "name": "ride-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": -100.15185755002211,
-            "y": 126.27461441281474,
-            "z": 32.40999984741124
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 77
-          },
-          "avatar": {
-            "x": -103.68476507962347,
-            "y": 125.10441478665555,
-            "z": 32.40999984741211
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 0
-          },
-          "avatar": {
-            "x": -103.68476507962347,
-            "y": 125.10441478665555,
-            "z": 32.40999984741211
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 2165
-          },
-          "avatar": {
-            "x": -103.99903497561533,
-            "y": 20.46322004380499,
-            "z": 32.40999984741211
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 232
-          },
-          "avatar": {
-            "x": -115.20800389280825,
-            "y": 20.150393801517385,
-            "z": 32.40999984741211
-          }
-        },
-        {
-          "name": "leave-to-street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 186
-          },
-          "avatar": {
-            "x": -124.18821002761268,
-            "y": 19.73087291240413,
-            "z": 32.40999984741211
-          }
-        }
-      ],
-      "search": {
-        "query": "東武百貨店　池袋店",
-        "hits": [
-          "東武百貨店　池袋店Tobu Department Store Ikebukuro B2"
-        ]
-      },
-      "route": {
-        "ok": true,
-        "profile": {
-          "fare": "ticketed",
-          "stepFree": false,
-          "hours": "warn_unknown",
-          "at": {
-            "weekday": "tue",
-            "minutes": 12.690683333333334
-          },
-          "today": "2026-11-24",
-          "timeZone": "Asia/Tokyo"
-        },
-        "nodeIds": [
-          "g_jr_s",
-          "sp_m",
-          "sp_j",
-          "c_s",
-          "c_e1",
-          "c_c",
-          "c_g2",
-          "c_mid",
-          "c_w",
-          "depato-tobu-ikebukuro-B1-door0",
-          "depato-tobu-ikebukuro-B1-inside0",
-          "depato-tobu-ikebukuro-B1-approach0",
-          "depato-tobu-ikebukuro-B1-bypass",
-          "depato-tobu-ikebukuro-B1-aisle",
-          "depato-tobu-ikebukuro-B1-lower",
-          "depato-tobu-ikebukuro-B1-down-start",
-          "depato-tobu-ikebukuro-B2-down-end",
-          "depato-tobu-ikebukuro-B2-upper",
-          "depato-tobu-ikebukuro-B2-bypass",
-          "depato-tobu-ikebukuro-B2-aisle"
-        ],
-        "steps": [
-          {
-            "edgeId": "sp_m__g_jr_s",
-            "fromNodeId": "g_jr_s",
-            "toNodeId": "sp_m",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 9.7,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "sp_j__sp_m",
-            "fromNodeId": "sp_m",
-            "toNodeId": "sp_j",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 64.9,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_s__sp_j",
-            "fromNodeId": "sp_j",
-            "toNodeId": "c_s",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 84.2,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_e1__c_s",
-            "fromNodeId": "c_s",
-            "toNodeId": "c_e1",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 13.3,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_c__c_e1",
-            "fromNodeId": "c_e1",
-            "toNodeId": "c_c",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 33.2,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_g2__c_c",
-            "fromNodeId": "c_c",
-            "toNodeId": "c_g2",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 21.3,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_mid__c_g2",
-            "fromNodeId": "c_g2",
-            "toNodeId": "c_mid",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 11.4,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_w__c_mid",
-            "fromNodeId": "c_mid",
-            "toNodeId": "c_w",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 37.3,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_w__depato-tobu-ikebukuro-B1-door0",
-            "fromNodeId": "c_w",
-            "toNodeId": "depato-tobu-ikebukuro-B1-door0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 5,
-            "fromFloorId": "b1",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-door0__depato-tobu-ikebukuro-B1-inside0",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-door0",
-            "toNodeId": "depato-tobu-ikebukuro-B1-inside0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-inside0__depato-tobu-ikebukuro-B1-approach0",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-inside0",
-            "toNodeId": "depato-tobu-ikebukuro-B1-approach0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 37,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-approach0__depato-tobu-ikebukuro-B1-bypass",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-approach0",
-            "toNodeId": "depato-tobu-ikebukuro-B1-bypass",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 44,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-aisle__depato-tobu-ikebukuro-B1-bypass",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-bypass",
-            "toNodeId": "depato-tobu-ikebukuro-B1-aisle",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 16,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-aisle",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-aisle",
-            "toNodeId": "depato-tobu-ikebukuro-B1-lower",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 4,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-down-start",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-lower",
-            "toNodeId": "depato-tobu-ikebukuro-B1-down-start",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2.214158982548454,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B1-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B1-down-start__depato-tobu-ikebukuro-B2-down-end",
-            "fromNodeId": "depato-tobu-ikebukuro-B1-down-start",
-            "toNodeId": "depato-tobu-ikebukuro-B2-down-end",
-            "reversed": false,
-            "mode": "escalator",
-            "lengthM": 12.816005617976298,
-            "fromFloorId": "depato-tobu-ikebukuro-B1-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B2-down-end__depato-tobu-ikebukuro-B2-upper",
-            "fromNodeId": "depato-tobu-ikebukuro-B2-down-end",
-            "toNodeId": "depato-tobu-ikebukuro-B2-upper",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2.214158982548454,
-            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B2-bypass__depato-tobu-ikebukuro-B2-upper",
-            "fromNodeId": "depato-tobu-ikebukuro-B2-upper",
-            "toNodeId": "depato-tobu-ikebukuro-B2-bypass",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 4,
-            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
-          },
-          {
-            "edgeId": "depato-tobu-ikebukuro-B2-aisle__depato-tobu-ikebukuro-B2-bypass",
-            "fromNodeId": "depato-tobu-ikebukuro-B2-bypass",
-            "toNodeId": "depato-tobu-ikebukuro-B2-aisle",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 16,
-            "fromFloorId": "depato-tobu-ikebukuro-B2-floor",
-            "toFloorId": "depato-tobu-ikebukuro-B2-floor"
-          }
-        ],
-        "totalLengthM": 420.5443235830732,
-        "estimatedSeconds": 356.86160579488245,
-        "waitSeconds": 0,
-        "floorChanges": 2,
-        "crossesFareBoundary": false,
-        "unknowns": [
-          {
-            "kind": "hours",
-            "edgeIds": [
-              "sp_m__g_jr_s",
-              "sp_j__sp_m",
-              "c_s__sp_j",
-              "c_e1__c_s",
-              "c_c__c_e1",
-              "c_g2__c_c",
-              "c_mid__c_g2",
-              "c_w__c_mid",
-              "c_w__depato-tobu-ikebukuro-B1-door0",
-              "depato-tobu-ikebukuro-B1-door0__depato-tobu-ikebukuro-B1-inside0",
-              "depato-tobu-ikebukuro-B1-inside0__depato-tobu-ikebukuro-B1-approach0",
-              "depato-tobu-ikebukuro-B1-approach0__depato-tobu-ikebukuro-B1-bypass",
-              "depato-tobu-ikebukuro-B1-aisle__depato-tobu-ikebukuro-B1-bypass",
-              "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-aisle",
-              "depato-tobu-ikebukuro-B1-lower__depato-tobu-ikebukuro-B1-down-start",
-              "depato-tobu-ikebukuro-B1-down-start__depato-tobu-ikebukuro-B2-down-end",
-              "depato-tobu-ikebukuro-B2-down-end__depato-tobu-ikebukuro-B2-upper",
-              "depato-tobu-ikebukuro-B2-bypass__depato-tobu-ikebukuro-B2-upper",
-              "depato-tobu-ikebukuro-B2-aisle__depato-tobu-ikebukuro-B2-bypass"
-            ]
-          },
-          {
-            "kind": "wheelchair",
-            "edgeIds": [
-              "sp_m__g_jr_s",
-              "sp_j__sp_m",
-              "c_s__sp_j",
-              "c_e1__c_s",
-              "c_c__c_e1",
-              "c_g2__c_c",
-              "c_mid__c_g2",
-              "c_w__c_mid"
-            ]
-          }
-        ],
-        "sourceIds": [
-          "plateau-ubld-13116",
-          "tobu-dept-ikebukuro-2026-10-B2F",
-          "tokyometro-ikebukuro-yardmap-2026-03",
-          "toshima-underground-guide-2022"
-        ],
-        "endpointSourceIds": [
-          "plateau-ubld-13116",
-          "tobu-dept-ikebukuro-2026-10-B2F",
-          "toshima-underground-guide-2022"
-        ],
-        "evidenceCheckedDate": "2026-11-22",
-        "oldestSourceDate": "2022-01",
-        "undatedSourceIds": [
-          "tobu-dept-ikebukuro-2026-10-B2F"
-        ],
-        "expiredSourceIds": [],
-        "stale": true,
-        "synthetic": false,
-        "timeRestricted": [],
-        "operatorIds": [
-          "public"
-        ]
-      }
-    },
-    {
-      "device": {
-        "name": "phone",
-        "width": 390,
-        "height": 844,
-        "mobile": true
-      },
-      "store": "ikebukuro-parco",
-      "frames": [
-        {
-          "name": "entrance-outside",
-          "file": "phone-ikebukuro-parco-entrance-outside.png",
-          "avatar": {
-            "x": 65.88062434222547,
-            "y": 112.72477381605111,
-            "z": 28.449323913667367
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 1.8267711485300784,
-            "raise": 0.6981317007977318,
-            "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "first-interior",
-          "file": "phone-ikebukuro-parco-first-interior.png",
-          "avatar": {
-            "x": 68.54774264811574,
-            "y": 112.27314187570514,
-            "z": 28.450000762939453
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.250000000000001,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "food-hall-aisle",
-          "file": "phone-ikebukuro-parco-food-hall-aisle.png",
-          "avatar": {
-            "x": 89.1617465582228,
-            "y": 107.29802944199326,
-            "z": 23.950000762940746
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.250000000000001,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 2.8415926535897933,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "escalator",
-          "file": "phone-ikebukuro-parco-escalator.png",
-          "avatar": {
-            "x": 88.17309724518813,
-            "y": 121.7135541841472,
-            "z": 23.950000762939453
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2500000000000018,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 3.141592653589793,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "street-door-inside",
-          "file": "phone-ikebukuro-parco-street-door-inside.png",
-          "avatar": {
-            "x": 99.98732051490761,
-            "y": 114.14505801963679,
-            "z": 32.950000762939446
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2499999999999982,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.9681149734689154,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "street-door-outside",
-          "file": "phone-ikebukuro-parco-street-door-outside.png",
-          "avatar": {
-            "x": 108.33171955917537,
-            "y": 110.79974718354934,
-            "z": 32.950000762939446
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 65,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.25,
-            "boomActual": 2.2499999999999982,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.173477680120878,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
-        },
-        {
-          "name": "flag-off",
-          "file": "phone-ikebukuro-parco-flag-off.png",
-          "avatar": {
-            "x": 66,
-            "y": 113,
-            "z": 28.44962318730932
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999972,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [],
-          "shaderErrors": []
-        },
-        {
-          "name": "flag-off-street",
-          "file": "phone-ikebukuro-parco-flag-off-street.png",
-          "avatar": {
-            "x": 108.33171955917537,
-            "y": 110.79974718354934,
-            "z": 32.950000762939446
-          },
-          "camera": {
-            "lock": 0,
-            "fov": 50,
-            "far": 2000,
-            "slopeOn": false,
-            "boomWanted": 2.4,
-            "boomActual": 2.3999999999999972,
-            "raise": 0,
-            "pitch": 0,
-            "yaw": 1.173477680120878,
-            "avatarFade": 1,
-            "reflections": false,
-            "mode": "walk"
-          },
-          "loaded": [],
-          "shaderErrors": []
-        }
-      ],
-      "legs": [
-        {
-          "name": "enter-B1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 56
-          },
-          "avatar": {
-            "x": 68.54774264811574,
-            "y": 112.27314187570514,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 334
-          },
-          "avatar": {
-            "x": 84.69097933792746,
-            "y": 112.21728233874839,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 216
-          },
-          "avatar": {
-            "x": 84.99005529899497,
-            "y": 122.65299762661843,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 77
-          },
-          "avatar": {
-            "x": 88.69786510629775,
-            "y": 122.97385462069592,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 42
-          },
-          "avatar": {
-            "x": 89.78527690826455,
-            "y": 121.2596680576451,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 259
-          },
-          "avatar": {
-            "x": 89.94561459448948,
-            "y": 108.74236158736844,
-            "z": 23.95093445711132
-          }
-        },
-        {
-          "name": "B1-to-B2",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": 89.1617465582228,
-            "y": 107.29802944199326,
-            "z": 23.950000762940746
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 80
-          },
-          "avatar": {
-            "x": 85.30495648924122,
-            "y": 107.02183843034392,
-            "z": 23.950000762939453
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 324
-          },
-          "avatar": {
-            "x": 85.0061268001374,
-            "y": 122.6789869835418,
-            "z": 23.950000762939453
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 88.667651788956,
-            "y": 122.97328705835096,
-            "z": 23.950000762939453
-          }
-        },
-        {
-          "name": "board-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 28
-          },
-          "avatar": {
-            "x": 88.17309724518813,
-            "y": 121.7135541841472,
-            "z": 23.950000762939453
-          }
-        },
-        {
-          "name": "ride-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 291
-          },
-          "avatar": {
-            "x": 88.02152013257273,
-            "y": 108.72485717273848,
-            "z": 28.449259788134103
-          }
-        },
-        {
-          "name": "ride-up-0",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": 88.83236943934786,
-            "y": 107.29549792952956,
-            "z": 28.45000076293843
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 73
-          },
-          "avatar": {
-            "x": 85.3144780775967,
-            "y": 107.02424808523371,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 324
-          },
-          "avatar": {
-            "x": 85.00627519220828,
-            "y": 122.68121493649541,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 88.667961883799,
-            "y": 122.97349622293639,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "board-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 28
-          },
-          "avatar": {
-            "x": 88.17324920650063,
-            "y": 121.71382544133066,
-            "z": 28.450000762939453
-          }
-        },
-        {
-          "name": "ride-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 269
-          },
-          "avatar": {
-            "x": 88.0528948838874,
-            "y": 108.71271583683553,
-            "z": 32.94937069082952
-          }
-        },
-        {
-          "name": "ride-up-1",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 34
-          },
-          "avatar": {
-            "x": 88.84814103622075,
-            "y": 107.27461709139295,
-            "z": 32.950000762938586
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 77
-          },
-          "avatar": {
-            "x": 85.31523436895381,
-            "y": 106.10441486179457,
-            "z": 32.950000762939446
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 152
-          },
-          "avatar": {
-            "x": 92.6612229826952,
-            "y": 106.00460304934973,
-            "z": 32.950000762939446
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 162
-          },
-          "avatar": {
-            "x": 92.9861691858803,
-            "y": 113.82785748500663,
-            "z": 32.950000762939446
-          }
-        },
-        {
-          "name": "1F-street-door",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 145
-          },
-          "avatar": {
-            "x": 99.98732051490761,
-            "y": 114.14505801963679,
-            "z": 32.950000762939446
-          }
-        },
-        {
-          "name": "leave-to-street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 186
-          },
-          "avatar": {
-            "x": 108.33171955917537,
-            "y": 110.79974718354934,
-            "z": 32.950000762939446
-          }
-        }
-      ],
-      "search": {
-        "query": "池袋パルコ",
-        "hits": [
-          "池袋パルコIkebukuro PARCO B2"
-        ]
-      },
-      "route": {
-        "ok": true,
-        "profile": {
-          "fare": "ticketed",
-          "stepFree": false,
-          "hours": "warn_unknown",
-          "at": {
-            "weekday": "tue",
-            "minutes": 13.294583333333334
-          },
-          "today": "2026-11-24",
-          "timeZone": "Asia/Tokyo"
-        },
-        "nodeIds": [
-          "g_jr_s",
-          "sp_m",
-          "sp_j",
-          "c_s",
-          "c_e1",
-          "c_n",
-          "n_h",
-          "depato-ikebukuro-parco-B1-door0",
-          "depato-ikebukuro-parco-B1-inside0",
-          "depato-ikebukuro-parco-B1-approach0",
-          "depato-ikebukuro-parco-B1-bypass",
-          "depato-ikebukuro-parco-B1-aisle",
-          "depato-ikebukuro-parco-B1-lower",
-          "depato-ikebukuro-parco-B1-down-start",
-          "depato-ikebukuro-parco-B2-down-end",
-          "depato-ikebukuro-parco-B2-upper",
-          "depato-ikebukuro-parco-B2-bypass",
-          "depato-ikebukuro-parco-B2-aisle"
-        ],
-        "steps": [
-          {
-            "edgeId": "sp_m__g_jr_s",
-            "fromNodeId": "g_jr_s",
-            "toNodeId": "sp_m",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 9.7,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "sp_j__sp_m",
-            "fromNodeId": "sp_m",
-            "toNodeId": "sp_j",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 64.9,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_s__sp_j",
-            "fromNodeId": "sp_j",
-            "toNodeId": "c_s",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 84.2,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_e1__c_s",
-            "fromNodeId": "c_s",
-            "toNodeId": "c_e1",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 13.3,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_e1__c_n",
-            "fromNodeId": "c_e1",
-            "toNodeId": "c_n",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 17.8,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "c_n__n_h",
-            "fromNodeId": "c_n",
-            "toNodeId": "n_h",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 75.8,
-            "fromFloorId": "b1",
-            "toFloorId": "b1"
-          },
-          {
-            "edgeId": "n_h__depato-ikebukuro-parco-B1-door0",
-            "fromNodeId": "n_h",
-            "toNodeId": "depato-ikebukuro-parco-B1-door0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 1.0529999999999973,
-            "fromFloorId": "b1",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-door0__depato-ikebukuro-parco-B1-inside0",
-            "fromNodeId": "depato-ikebukuro-parco-B1-door0",
-            "toNodeId": "depato-ikebukuro-parco-B1-inside0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 1.9999999999999942,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-inside0__depato-ikebukuro-parco-B1-approach0",
-            "fromNodeId": "depato-ikebukuro-parco-B1-inside0",
-            "toNodeId": "depato-ikebukuro-parco-B1-approach0",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 16.106978799049273,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-approach0__depato-ikebukuro-parco-B1-bypass",
-            "fromNodeId": "depato-ikebukuro-parco-B1-approach0",
-            "toNodeId": "depato-ikebukuro-parco-B1-bypass",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 5.216213051874547,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-aisle__depato-ikebukuro-parco-B1-bypass",
-            "fromNodeId": "depato-ikebukuro-parco-B1-bypass",
-            "toNodeId": "depato-ikebukuro-parco-B1-aisle",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 16,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-aisle",
-            "fromNodeId": "depato-ikebukuro-parco-B1-aisle",
-            "toNodeId": "depato-ikebukuro-parco-B1-lower",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 4,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-down-start",
-            "fromNodeId": "depato-ikebukuro-parco-B1-lower",
-            "toNodeId": "depato-ikebukuro-parco-B1-down-start",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2.214158982548454,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B1-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B1-down-start__depato-ikebukuro-parco-B2-down-end",
-            "fromNodeId": "depato-ikebukuro-parco-B1-down-start",
-            "toNodeId": "depato-ikebukuro-parco-B2-down-end",
-            "reversed": false,
-            "mode": "escalator",
-            "lengthM": 12.816005617976295,
-            "fromFloorId": "depato-ikebukuro-parco-B1-floor",
-            "toFloorId": "depato-ikebukuro-parco-B2-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B2-down-end__depato-ikebukuro-parco-B2-upper",
-            "fromNodeId": "depato-ikebukuro-parco-B2-down-end",
-            "toNodeId": "depato-ikebukuro-parco-B2-upper",
-            "reversed": false,
-            "mode": "walk",
-            "lengthM": 2.214158982548454,
-            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
-            "toFloorId": "depato-ikebukuro-parco-B2-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B2-bypass__depato-ikebukuro-parco-B2-upper",
-            "fromNodeId": "depato-ikebukuro-parco-B2-upper",
-            "toNodeId": "depato-ikebukuro-parco-B2-bypass",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 4,
-            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
-            "toFloorId": "depato-ikebukuro-parco-B2-floor"
-          },
-          {
-            "edgeId": "depato-ikebukuro-parco-B2-aisle__depato-ikebukuro-parco-B2-bypass",
-            "fromNodeId": "depato-ikebukuro-parco-B2-bypass",
-            "toNodeId": "depato-ikebukuro-parco-B2-aisle",
-            "reversed": true,
-            "mode": "walk",
-            "lengthM": 16,
-            "fromFloorId": "depato-ikebukuro-parco-B2-floor",
-            "toFloorId": "depato-ikebukuro-parco-B2-floor"
-          }
-        ],
-        "totalLengthM": 347.32051543399706,
-        "estimatedSeconds": 295.8417656706523,
-        "waitSeconds": 0,
-        "floorChanges": 2,
-        "crossesFareBoundary": false,
-        "unknowns": [
-          {
-            "kind": "hours",
-            "edgeIds": [
-              "sp_m__g_jr_s",
-              "sp_j__sp_m",
-              "c_s__sp_j",
-              "c_e1__c_s",
-              "c_e1__c_n",
-              "c_n__n_h",
-              "n_h__depato-ikebukuro-parco-B1-door0",
-              "depato-ikebukuro-parco-B1-door0__depato-ikebukuro-parco-B1-inside0",
-              "depato-ikebukuro-parco-B1-inside0__depato-ikebukuro-parco-B1-approach0",
-              "depato-ikebukuro-parco-B1-approach0__depato-ikebukuro-parco-B1-bypass",
-              "depato-ikebukuro-parco-B1-aisle__depato-ikebukuro-parco-B1-bypass",
-              "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-aisle",
-              "depato-ikebukuro-parco-B1-lower__depato-ikebukuro-parco-B1-down-start",
-              "depato-ikebukuro-parco-B1-down-start__depato-ikebukuro-parco-B2-down-end",
-              "depato-ikebukuro-parco-B2-down-end__depato-ikebukuro-parco-B2-upper",
-              "depato-ikebukuro-parco-B2-bypass__depato-ikebukuro-parco-B2-upper",
-              "depato-ikebukuro-parco-B2-aisle__depato-ikebukuro-parco-B2-bypass"
-            ]
-          },
-          {
-            "kind": "wheelchair",
-            "edgeIds": [
-              "sp_m__g_jr_s",
-              "sp_j__sp_m",
-              "c_s__sp_j",
-              "c_e1__c_s",
-              "c_e1__c_n",
-              "c_n__n_h"
-            ]
-          }
-        ],
-        "sourceIds": [
-          "parco-ikebukuro-floorguide-2026-11",
-          "plateau-ubld-13116",
-          "tokyometro-ikebukuro-yardmap-2026-03",
-          "toshima-underground-guide-2022"
-        ],
-        "endpointSourceIds": [
-          "parco-ikebukuro-floorguide-2026-11",
-          "plateau-ubld-13116",
-          "toshima-underground-guide-2022"
-        ],
-        "evidenceCheckedDate": "2026-11-22",
-        "oldestSourceDate": "2022-01",
-        "undatedSourceIds": [
-          "parco-ikebukuro-floorguide-2026-11"
-        ],
-        "expiredSourceIds": [],
-        "stale": true,
-        "synthetic": false,
-        "timeRestricted": [],
-        "operatorIds": [
-          "public"
-        ]
-      }
+      "frames": [],
+      "legs": []
     }
   ],
-  "seibu": [
-    {
-      "device": {
-        "name": "desktop",
-        "width": 1440,
-        "height": 900,
-        "mobile": false
-      },
-      "legs": [
-        {
-          "name": "enter",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 206
-          },
-          "avatar": {
-            "x": 14.835384784768863,
-            "y": -71.70369261258399,
-            "z": 27.700000762939112
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 160
-          },
-          "avatar": {
-            "x": 22.563510688755343,
-            "y": -71.98744330698673,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 852
-          },
-          "avatar": {
-            "x": 22.90274881537273,
-            "y": -113.16604597261562,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 26.563363924859626,
-            "y": -113.47145520295003,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 304
-          },
-          "avatar": {
-            "x": 26.897782010271495,
-            "y": -128.1609823903241,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 297
-          },
-          "avatar": {
-            "x": 26.90533892046014,
-            "y": -113.80598437942007,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 23.242707041090156,
-            "y": -113.52579606060543,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 397
-          },
-          "avatar": {
-            "x": 22.911377326882597,
-            "y": -94.34032351673353,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 26.57144849173788,
-            "y": -94.02846321792444,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 28
-          },
-          "avatar": {
-            "x": 26.077599952318877,
-            "y": -95.28847303186447,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "ride",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 269
-          },
-          "avatar": {
-            "x": 25.958347209487258,
-            "y": -108.28959278727123,
-            "z": 32.19939616928702
-          }
-        },
-        {
-          "name": "ride",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 43
-          },
-          "avatar": {
-            "x": 26.77692264548601,
-            "y": -110.19993403951493,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 62
-          },
-          "avatar": {
-            "x": 26.893590420048188,
-            "y": -113.19432875990334,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 23.230999482734408,
-            "y": -113.47505176160546,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 180
-          },
-          "avatar": {
-            "x": 22.917423672107294,
-            "y": -122.1693987877466,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 458
-          },
-          "avatar": {
-            "x": 45.05168995017242,
-            "y": -122.4953856629878,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 166
-          },
-          "avatar": {
-            "x": 53.07502205791323,
-            "y": -122.49982037589201,
-            "z": 32.374543984906765
-          }
-        }
-      ]
-    },
-    {
-      "device": {
-        "name": "phone",
-        "width": 390,
-        "height": 844,
-        "mobile": true
-      },
-      "legs": [
-        {
-          "name": "enter",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 206
-          },
-          "avatar": {
-            "x": 14.835384784768863,
-            "y": -71.70369261258399,
-            "z": 27.700000762939112
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 160
-          },
-          "avatar": {
-            "x": 22.563510688755343,
-            "y": -71.98744330698673,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 852
-          },
-          "avatar": {
-            "x": 22.90274881537273,
-            "y": -113.16604597261562,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 26.563363924859626,
-            "y": -113.47145520295003,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 304
-          },
-          "avatar": {
-            "x": 26.897782010271495,
-            "y": -128.1609823903241,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 297
-          },
-          "avatar": {
-            "x": 26.90533892046014,
-            "y": -113.80598437942007,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 23.242707041090156,
-            "y": -113.52579606060543,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 397
-          },
-          "avatar": {
-            "x": 22.911377326882597,
-            "y": -94.34032351673353,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 26.57144849173788,
-            "y": -94.02846321792444,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "board",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 28
-          },
-          "avatar": {
-            "x": 26.077599952318877,
-            "y": -95.28847303186447,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "ride",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 269
-          },
-          "avatar": {
-            "x": 25.958347209487258,
-            "y": -108.28959278727123,
-            "z": 32.19939616928702
-          }
-        },
-        {
-          "name": "ride",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 43
-          },
-          "avatar": {
-            "x": 26.77692264548601,
-            "y": -110.19993403951493,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 62
-          },
-          "avatar": {
-            "x": 26.893590420048188,
-            "y": -113.19432875990334,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 76
-          },
-          "avatar": {
-            "x": 23.230999482734408,
-            "y": -113.47505176160546,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 180
-          },
-          "avatar": {
-            "x": 22.917423672107294,
-            "y": -122.1693987877466,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 458
-          },
-          "avatar": {
-            "x": 45.05168995017242,
-            "y": -122.4953856629878,
-            "z": 32.20000076293945
-          }
-        },
-        {
-          "name": "street",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 166
-          },
-          "avatar": {
-            "x": 53.07502205791323,
-            "y": -122.49982037589201,
-            "z": 32.374543984906765
-          }
-        }
-      ]
-    }
-  ],
+  "seibu": [],
   "skipped": [
     {
       "id": "esola-ikebukuro",
@@ -3921,5 +1591,7 @@
       "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
     }
   ],
-  "failures": []
+  "failures": [
+    "desktop ikebukuro-parco: Error: page.goto failed: net::ERR_CONNECTION_REFUSED\n    at navigateInPage (file:////[eval1]:17333:19)\n    at async #runActionBoundary.inputAction (file:////[eval1]:19827:13)\n    at async #withPage.sessionTimeoutMs.sessionTimeoutMs (file:////[eval1]:20672:29)\n    at async file:////[eval1]:17798:28"
+  ]
 }

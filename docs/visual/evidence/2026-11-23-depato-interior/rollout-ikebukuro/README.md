@@ -28,9 +28,29 @@ Known B1 station-approach elevations anchor each store. Store floor heights are 
 
 2026-11-24 JST: the previous capture passed at source `86d715dc`, evidence `7486feb1`; AD rejected it at PR #1541 comment 7106005335. This correction preserves station sign faces and barriers, drops the Tobu B1 tie, aligns the doorway assemblies to their wall normals, uses larger Tobu name-board atlas slots, and activates the existing street context at the 1F exit portals. Existing B2 counters, escalators, PARCO tenant boards/people, footprints and the five store skips are retained.
 
-AD correction capture run 1 is pending. It records the same rollout pose names on desktop 1440×900 and phone 390×844, with Tobu's entrance poses at the usable 1F doorway. PARCO's entrance camera is seven metres back, level. Additional `B1-tie-skipped` frames show Tobu's closed B1 approach. 西武 adds `entrance-before`, `food-hall-aisle`, `escalator-boarding`, and `street-door-inside` on both devices. `receipt.json` binds frames to the source HEAD and records routes, expected Tobu station-route skip, collision walks, shader errors and street context state. Receipt timestamps use UTC (`Z`). PR #1541 stays draft for the lead/AD.
+AD correction capture run 1 was interrupted by the host GPU availability gate (2026-11-24 01:17 JST). It records the same rollout pose names on desktop 1440×900 and phone 390×844, with Tobu's entrance poses at the usable 1F doorway. PARCO's entrance camera is seven metres back, level. Additional `B1-tie-skipped` frames show Tobu's closed B1 approach. 西武 adds `entrance-before`, `food-hall-aisle`, `escalator-boarding`, and `street-door-inside` on both devices. `receipt.json` binds frames to the source HEAD and records routes, expected Tobu station-route skip, collision walks, shader errors and street context state. Receipt timestamps use UTC (`Z`). PR #1541 stays draft for the lead/AD.
 
-Test: `pnpm vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1`, through tachi-run in the detached capture job.
+## AD correction run 1 result — 2026-11-24 JST
+
+Source HEAD: `742ddb0b4549d82e1ae11ee71b8a3ee89aa30d19`. Job `depato-ad1541-capture-1` ran from 2026-11-24 00:48:24 to 01:17:26 JST and exited 1. The host gate requeued it three times when the Owner returned, then stopped: `tachi-run: GPU run requeued 3 times because the Owner returned; stopping`. Once Vite was stopped, the browser recorded `page.goto failed: net::ERR_CONNECTION_REFUSED` for desktop PARCO. The capture task space was closed after the returned result.
+
+Seven new desktop Tobu frames were saved and are committed:
+
+- `desktop-tobu-ikebukuro-entrance-outside.png` (usable 1F doorway)
+- `desktop-tobu-ikebukuro-first-interior.png` (1F)
+- `desktop-tobu-ikebukuro-food-hall-aisle.png`
+- `desktop-tobu-ikebukuro-escalator.png`
+- `desktop-tobu-ikebukuro-street-door-inside.png`
+- `desktop-tobu-ikebukuro-street-door-outside.png`
+- `desktop-tobu-ikebukuro-B1-tie-skipped.png`
+
+All recorded Tobu collision-walk legs completed; all seven frames have zero shader errors. Street context is visible at the 1F doorway. Pixels with max RGB channel ≤ 16 in the desktop Tobu street-door-inside frame: **0.008179%**, below the AD's 0.1% full-frame limit. No AD verdict is claimed.
+
+`receipt.json` is the partial run-1 receipt. All other PNGs remain from source `86d715dc`; desktop/phone PARCO, phone Tobu, 西武's eight requested frames, and matching flag-off frames still need a completed capture. Two of the three permitted capture runs remain, subject to the Owner-away GPU gate opening.
+
+Test command: `job-run --id depato-ad1541-capture-1 --artifact docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/receipt.json -- tachi-run --heavy --host --est 15m -- sh -c 'pnpm vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1 && nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs'`.
+
+Specs passed at 2026-11-24 01:16 JST: `Test Files 2 passed (2)`; `Tests 35 passed (35)`. No specs were rerun after the returned job. One read of PR checks found all 16 successful at source `742ddb0b`; the later evidence commit needs its own CI result.
 
 The diff exceeds 300 lines because it includes the two source footprint polygons and reproducible desktop/phone capture scripts.
 
