@@ -1,0 +1,212 @@
+{
+  "runtimeHead": "9f9509a080debb81d176e3bc42f3de965c1a9cc8",
+  "capturedAt": "2026-11-23T14:27:10.897Z",
+  "timeZone": "UTC",
+  "spaceId": 20,
+  "profiles": [
+    {
+      "device": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900,
+        "mobile": false
+      },
+      "store": "tobu-ikebukuro",
+      "frames": [
+        {
+          "name": "flag-off",
+          "file": "desktop-tobu-ikebukuro-flag-off.png",
+          "avatar": {
+            "x": -60,
+            "y": 82,
+            "z": 27.90999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999977,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "loaded": [],
+          "shaderErrors": []
+        }
+      ],
+      "legs": [],
+      "search": {
+        "query": "東武百貨店　池袋店",
+        "hits": [
+          "東武百貨店　池袋店Tobu Department Store Ikebukuro B2"
+        ]
+      },
+      "route": null
+    },
+    {
+      "device": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900,
+        "mobile": false
+      },
+      "store": "ikebukuro-parco",
+      "frames": [
+        {
+          "name": "flag-off",
+          "file": "desktop-ikebukuro-parco-flag-off.png",
+          "avatar": {
+            "x": 66,
+            "y": 113,
+            "z": 28.44962318730932
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999972,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9734851198546728,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "loaded": [],
+          "shaderErrors": []
+        }
+      ],
+      "legs": [],
+      "search": {
+        "query": "池袋パルコ",
+        "hits": [
+          "池袋パルコIkebukuro PARCO B2"
+        ]
+      },
+      "route": null
+    },
+    {
+      "device": {
+        "name": "phone",
+        "width": 390,
+        "height": 844,
+        "mobile": true
+      },
+      "store": "tobu-ikebukuro",
+      "frames": [
+        {
+          "name": "flag-off",
+          "file": "phone-tobu-ikebukuro-flag-off.png",
+          "avatar": {
+            "x": -60,
+            "y": 82,
+            "z": 27.90999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999977,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "loaded": [],
+          "shaderErrors": []
+        }
+      ],
+      "legs": [],
+      "search": {
+        "query": "東武百貨店　池袋店",
+        "hits": [
+          "東武百貨店　池袋店Tobu Department Store Ikebukuro B2"
+        ]
+      },
+      "route": null
+    },
+    {
+      "device": {
+        "name": "phone",
+        "width": 390,
+        "height": 844,
+        "mobile": true
+      },
+      "store": "ikebukuro-parco",
+      "frames": [
+        {
+          "name": "flag-off",
+          "file": "phone-ikebukuro-parco-flag-off.png",
+          "avatar": {
+            "x": 66,
+            "y": 113,
+            "z": 28.44962318730932
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999972,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.9734851198546728,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "loaded": [],
+          "shaderErrors": []
+        }
+      ],
+      "legs": [],
+      "search": {
+        "query": "池袋パルコ",
+        "hits": [
+          "池袋パルコIkebukuro PARCO B2"
+        ]
+      },
+      "route": null
+    }
+  ],
+  "skipped": [
+    {
+      "id": "esola-ikebukuro",
+      "reason": "No usable entrance in the current walkable station/context: no entrance tie in the POI, nearest public B1 approach sw_h is separated from the footprint by an unmodelled underground gap."
+    },
+    {
+      "id": "lumine-ikebukuro",
+      "reason": "The existing g_jr_s tie is a station tie, explicitly not a store entrance. Phase-1 south wing has no usable doorway within current walkable coverage; connecting it would require a new unmodelled underground corridor."
+    },
+    {
+      "id": "sunshine-city-alpa",
+      "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
+    },
+    {
+      "id": "sunshine-city-world-import-mart",
+      "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
+    },
+    {
+      "id": "sunshine-city-60",
+      "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
+    }
+  ],
+  "failures": [
+    "desktop tobu-ikebukuro: Error: Store name route did not succeed\n    at file:////[eval2]:52:35",
+    "desktop ikebukuro-parco: Error: Store name route did not succeed\n    at file:////[eval2]:52:35",
+    "phone tobu-ikebukuro: Error: Store name route did not succeed\n    at file:////[eval2]:52:35",
+    "phone ikebukuro-parco: Error: Store name route did not succeed\n    at file:////[eval2]:52:35"
+  ]
+}

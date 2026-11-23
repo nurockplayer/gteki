@@ -47,7 +47,7 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
       await page.waitForFunction(id=>[...document.querySelectorAll('[role="option"]')].some(o=>o.textContent.includes(id)),query,{timeout:15000});
       profile.search={query,hits:await page.evaluate(()=>[...document.querySelectorAll('[role="option"]')].map(o=>o.textContent))};
       await page.fill('input[placeholder="Search exits, toilets, platforms…"]','');
-      profile.route=await page.evaluate(({origin,poi})=>{const g=window.__gteki;g.setOrigin(origin);g.setDestination(poi);return g.route();},{origin:first.outsideNode,poi:store.poiId});
+      profile.route=await page.evaluate(({origin,poi})=>{const g=window.__gteki;g.setOrigin(origin);g.setDestination(poi);return g.route();},{origin:'jr-south-gate',poi:store.poiId});
       if(!profile.route?.ok)throw Error('Store name route did not succeed');
       await page.evaluate(node=>{const g=window.__gteki;g.setView({node,headingDeg:180});g.setCamera(null);},first.outsideNode);
       const expanded=await page.evaluate(()=>document.querySelector('.minimap')?.dataset.collapsed==='false');

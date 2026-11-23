@@ -47,3 +47,9 @@ Capture installed pinned dependencies, then exited 1 before scene load: `Error: 
 CI summary: Passed: 15; Failed: 1. Root tests: 2 files failed, 306 passed, 1 skipped; 4 tests failed, 4061 passed, 8 skipped. The four failures require matching source/generated dataFiles declarations and adding the two rollout source IDs to the stairwell provenance union. This correction synchronizes those declarations and includes the rollout file in the existing manifest test.
 
 Round 3 command: `tachi-run --heavy --host --est 15m -- sh -c 'pnpm vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1 && node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs'`. Results pending detached handoff. No full suite or CI watch is run by this resume.
+
+## Round 3 result and correction — 2026-11-23 JST
+
+The two affected specs passed: `Test Files 2 passed (2)`; `Tests 35 passed (35)`. Capture then exited 1: `Store name route did not succeed` for both stores on desktop and phone. Search found each store's B2 destination; the route was null because the capture passed a graph node ID to the POI-only `setOrigin` hook. The correction uses `jr-south-gate`, matching the accepted pilot's routing origin. Walking still starts at each store's B1 approach node.
+
+The committed receipt and four flag-off frames record this failed attempt at runtime HEAD `9f9509a080debb81d176e3bc42f3de965c1a9cc8`; they do not demonstrate the interior journey. Round 4 runs capture only: `tachi-run --heavy --host --est 15m -- nice -n 15 node docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro/capture.mjs`. Result pending detached handoff.
