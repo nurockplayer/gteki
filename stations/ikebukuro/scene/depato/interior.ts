@@ -8,7 +8,7 @@ import { LANDMARK_FACADE, LANDMARK_STREET_BAND, LANDMARK_SIGN } from "../landmar
 
 /** AD 2026-11-22 JST: one neutral retail kit, baked pools, no scene lights. */
 export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMap?: T.Texture) {
-  const THREE = ctx.THREE, root = new THREE.Group(); root.name = `depato-interior:${plan.input.store.id}`;
+  const THREE = ctx.THREE, root = new THREE.Group(), connectorRoot = new THREE.Group(); root.name = `depato-interior:${plan.input.store.id}`;
   const depthTwins:{mesh:T.Mesh;twin:T.Material;original:T.Material}[]=[];
   root.userData.gteki_gtao_depth_twins=depthTwins;
   const walkable: T.Mesh[] = [], colliders: T.Mesh[] = [], cameraBlockers: T.Mesh[] = [];
@@ -80,7 +80,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(part.position,3)); g.computeVertexNormals();
         physical(g,part.role==="walkable"?walkable:colliders,part.walkableOnly===true);
         if(part.role==="walkable"){
-          const mesh=walkable.at(-1)!; mesh.userData.gteki_role="escalator"; root.add(mesh);
+          const mesh=walkable.at(-1)!; mesh.userData.gteki_role="escalator"; connectorRoot.add(mesh);
         }
       }
       // The shared family supplies steps, skirts, glass and rubber. Yellow nosings are store-neutral.
@@ -299,7 +299,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.85,0.85],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
   const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
-  return {root,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
+  return {root,connectorRoot,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
     update(camera:T.Camera,dt=0,elapsed=0,active=true){
       if(!active){if(loaded)unload();return;}
       const cameraP=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cameraP.x,y:cameraP.y-2,z:cameraP.z};

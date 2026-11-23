@@ -85,7 +85,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const interiors = layouts.map(p=>buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
   let avatar: {x:number;y:number;z:number}|null=null;
   const focus = scene.setCameraFocus;
-  scene.root.add(...interiors.map(i=>i.root));
+  scene.root.add(...interiors.flatMap(i=>[i.root,i.connectorRoot]));
   const update = scene.update, dispose = scene.dispose;
   return { ...scene, walkable: [...scene.walkable, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(i=>i.cameraBlockers)],
