@@ -6,7 +6,8 @@
   "method": {
     "pureBlack": "RGB == (0,0,0), whole PNG including UI",
     "nearBlack": "max(R,G,B) <= 8, whole PNG including UI",
-    "voidAssessment": "Visual inspection per frame; dark station fixture/sign edges are not voids. No lighting or postprocessing overrides used."
+    "voidAssessment": "Visual inspection per frame; dark station fixture/sign edges are not voids. No lighting or postprocessing overrides used.",
+    "dark16": "max(R,G,B) <= 16, whole PNG including UI; includes the phone background colour (14,13,11) and dark fixture/sign edges"
   },
   "failures": [],
   "profiles": [
@@ -232,7 +233,9 @@
               "pureBlackPixels": 17218,
               "nearBlackPixels": 149467,
               "pureBlackPercent": 1.3285493827160493,
-              "nearBlackPercent": 11.532947530864197
+              "nearBlackPercent": 11.532947530864197,
+              "dark16Pixels": 163335,
+              "dark16Percent": 12.60300925925926
             },
             "after": {
               "width": 1440,
@@ -241,7 +244,9 @@
               "pureBlackPixels": 472,
               "nearBlackPixels": 3428,
               "pureBlackPercent": 0.03641975308641975,
-              "nearBlackPercent": 0.26450617283950617
+              "nearBlackPercent": 0.26450617283950617,
+              "dark16Pixels": 3525,
+              "dark16Percent": 0.27199074074074076
             }
           },
           "shaderErrors": [],
@@ -288,7 +293,9 @@
               "pureBlackPixels": 118,
               "nearBlackPixels": 958,
               "pureBlackPercent": 0.009104938271604938,
-              "nearBlackPercent": 0.07391975308641975
+              "nearBlackPercent": 0.07391975308641975,
+              "dark16Pixels": 5939,
+              "dark16Percent": 0.45825617283950615
             },
             "after": {
               "width": 1440,
@@ -297,7 +304,9 @@
               "pureBlackPixels": 91,
               "nearBlackPixels": 678,
               "pureBlackPercent": 0.007021604938271605,
-              "nearBlackPercent": 0.052314814814814814
+              "nearBlackPercent": 0.052314814814814814,
+              "dark16Pixels": 872,
+              "dark16Percent": 0.06728395061728396
             }
           },
           "shaderErrors": [],
@@ -344,7 +353,9 @@
               "pureBlackPixels": 4237,
               "nearBlackPixels": 24513,
               "pureBlackPercent": 0.326929012345679,
-              "nearBlackPercent": 1.8914351851851852
+              "nearBlackPercent": 1.8914351851851852,
+              "dark16Pixels": 24751,
+              "dark16Percent": 1.9097993827160493
             },
             "after": {
               "width": 1440,
@@ -353,7 +364,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 15,
+              "dark16Percent": 0.0011574074074074073
             }
           },
           "shaderErrors": [],
@@ -400,7 +413,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 22,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0016975308641975309
+              "nearBlackPercent": 0.0016975308641975309,
+              "dark16Pixels": 140,
+              "dark16Percent": 0.010802469135802469
             },
             "after": {
               "width": 1440,
@@ -409,7 +424,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 18,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.001388888888888889
+              "nearBlackPercent": 0.001388888888888889,
+              "dark16Pixels": 147,
+              "dark16Percent": 0.011342592592592593
             }
           },
           "shaderErrors": [],
@@ -456,7 +473,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 20,
+              "dark16Percent": 0.0015432098765432098
             },
             "after": {
               "width": 1440,
@@ -465,7 +484,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 2,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.00015432098765432098
+              "nearBlackPercent": 0.00015432098765432098,
+              "dark16Pixels": 10,
+              "dark16Percent": 0.0007716049382716049
             }
           },
           "shaderErrors": [],
@@ -512,7 +533,9 @@
               "pureBlackPixels": 7648,
               "nearBlackPixels": 68469,
               "pureBlackPercent": 0.5901234567901235,
-              "nearBlackPercent": 5.2831018518518515
+              "nearBlackPercent": 5.2831018518518515,
+              "dark16Pixels": 70502,
+              "dark16Percent": 5.439969135802469
             },
             "after": {
               "width": 1440,
@@ -521,7 +544,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 13,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0010030864197530865
+              "nearBlackPercent": 0.0010030864197530865,
+              "dark16Pixels": 147,
+              "dark16Percent": 0.011342592592592593
             }
           },
           "shaderErrors": [],
@@ -568,7 +593,9 @@
               "pureBlackPixels": 24167,
               "nearBlackPixels": 152953,
               "pureBlackPercent": 1.8647376543209877,
-              "nearBlackPercent": 11.80192901234568
+              "nearBlackPercent": 11.80192901234568,
+              "dark16Pixels": 173230,
+              "dark16Percent": 13.366512345679013
             },
             "after": {
               "width": 1440,
@@ -577,7 +604,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -624,7 +653,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 3,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0002314814814814815
+              "nearBlackPercent": 0.0002314814814814815,
+              "dark16Pixels": 61,
+              "dark16Percent": 0.0047067901234567906
             },
             "after": {
               "width": 1440,
@@ -633,7 +664,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 44,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0033950617283950617
+              "nearBlackPercent": 0.0033950617283950617,
+              "dark16Pixels": 180,
+              "dark16Percent": 0.013888888888888888
             }
           },
           "shaderErrors": [],
@@ -680,7 +713,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 65,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.005015432098765432
+              "nearBlackPercent": 0.005015432098765432,
+              "dark16Pixels": 170,
+              "dark16Percent": 0.013117283950617283
             },
             "after": {
               "width": 1440,
@@ -689,7 +724,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 25,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0019290123456790122
+              "nearBlackPercent": 0.0019290123456790122,
+              "dark16Pixels": 95,
+              "dark16Percent": 0.0073302469135802465
             }
           },
           "shaderErrors": [],
@@ -736,7 +773,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             },
             "after": {
               "width": 1440,
@@ -745,7 +784,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -793,7 +834,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 29,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0022376543209876544
+              "nearBlackPercent": 0.0022376543209876544,
+              "dark16Pixels": 45,
+              "dark16Percent": 0.003472222222222222
             }
           },
           "shaderErrors": [],
@@ -841,7 +884,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -888,7 +933,9 @@
               "pureBlackPixels": 455,
               "nearBlackPixels": 3920,
               "pureBlackPercent": 0.03510802469135803,
-              "nearBlackPercent": 0.30246913580246915
+              "nearBlackPercent": 0.30246913580246915,
+              "dark16Pixels": 8080,
+              "dark16Percent": 0.6234567901234568
             },
             "after": {
               "width": 1440,
@@ -897,7 +944,9 @@
               "pureBlackPixels": 454,
               "nearBlackPixels": 3913,
               "pureBlackPercent": 0.03503086419753086,
-              "nearBlackPercent": 0.30192901234567904
+              "nearBlackPercent": 0.30192901234567904,
+              "dark16Pixels": 8044,
+              "dark16Percent": 0.620679012345679
             }
           },
           "shaderErrors": [],
@@ -1155,7 +1204,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 1,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0003038036213391664
+              "nearBlackPercent": 0.0003038036213391664,
+              "dark16Pixels": 78649,
+              "dark16Percent": 23.893851014704094
             },
             "after": {
               "width": 390,
@@ -1164,7 +1215,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 1,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0003038036213391664
+              "nearBlackPercent": 0.0003038036213391664,
+              "dark16Pixels": 83,
+              "dark16Percent": 0.025215700571150808
             }
           },
           "shaderErrors": [],
@@ -1211,7 +1264,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 17614,
+              "dark16Percent": 5.351196986268076
             },
             "after": {
               "width": 390,
@@ -1220,7 +1275,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 647,
+              "dark16Percent": 0.19656094300644064
             }
           },
           "shaderErrors": [],
@@ -1267,7 +1324,9 @@
               "pureBlackPixels": 332,
               "nearBlackPixels": 332,
               "pureBlackPercent": 0.10086280228460323,
-              "nearBlackPercent": 0.10086280228460323
+              "nearBlackPercent": 0.10086280228460323,
+              "dark16Pixels": 357,
+              "dark16Percent": 0.1084578928180824
             },
             "after": {
               "width": 390,
@@ -1276,7 +1335,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1323,7 +1384,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             },
             "after": {
               "width": 390,
@@ -1332,7 +1395,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1379,7 +1444,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             },
             "after": {
               "width": 390,
@@ -1388,7 +1455,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1435,7 +1504,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 58073,
+              "dark16Percent": 17.64278770202941
             },
             "after": {
               "width": 390,
@@ -1444,7 +1515,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1491,7 +1564,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             },
             "after": {
               "width": 390,
@@ -1500,7 +1575,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1547,7 +1624,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             },
             "after": {
               "width": 390,
@@ -1556,7 +1635,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1603,7 +1684,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             },
             "after": {
               "width": 390,
@@ -1612,7 +1695,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1659,7 +1744,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             },
             "after": {
               "width": 390,
@@ -1668,7 +1755,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1716,7 +1805,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1764,7 +1855,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 0,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
             }
           },
           "shaderErrors": [],
@@ -1811,7 +1904,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 10,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0030380362133916637
+              "nearBlackPercent": 0.0030380362133916637,
+              "dark16Pixels": 12,
+              "dark16Percent": 0.0036456434560699965
             },
             "after": {
               "width": 390,
@@ -1820,7 +1915,9 @@
               "pureBlackPixels": 0,
               "nearBlackPixels": 10,
               "pureBlackPercent": 0.0,
-              "nearBlackPercent": 0.0030380362133916637
+              "nearBlackPercent": 0.0030380362133916637,
+              "dark16Pixels": 12,
+              "dark16Percent": 0.0036456434560699965
             }
           },
           "shaderErrors": [],
