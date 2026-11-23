@@ -1,0 +1,1957 @@
+{
+  "capturedAt": "2026-11-23T02:43:41.636Z",
+  "timeZone": "UTC",
+  "codeCommit": "4734f913ce52aca9870347ae0195797a18f15e60",
+  "beforeCommit": "c3678ee6dfdc89066cfc6230b107b72bd49ee725",
+  "method": {
+    "pureBlack": "RGB == (0,0,0), whole PNG including UI",
+    "nearBlack": "max(R,G,B) <= 8, whole PNG including UI",
+    "voidAssessment": "Visual inspection per frame; dark station fixture/sign edges are not voids. No lighting or postprocessing overrides used.",
+    "dark16": "max(R,G,B) <= 16, whole PNG including UI; includes the phone background colour (14,13,11) and dark fixture/sign edges"
+  },
+  "failures": [],
+  "profiles": [
+    {
+      "device": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900,
+        "mobile": false
+      },
+      "legs": [
+        {
+          "name": "four-metres-before",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          }
+        },
+        {
+          "name": "wayfinding-context",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          }
+        },
+        {
+          "name": "return-to-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 14.721407566396442,
+            "y": -65.84078969207712,
+            "z": 27.58014905116965
+          }
+        },
+        {
+          "name": "through-station-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 121
+          },
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          }
+        },
+        {
+          "name": "food-hall-main-aisle",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1389
+          },
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "counter-close",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 52
+          },
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "escalator-board",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 925
+          },
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "ride-to-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 312
+          },
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "wide-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 62
+          },
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "street-door-inside",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 714
+          },
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "through-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 166
+          },
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          }
+        },
+        {
+          "name": "flag-off-same-pose",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          }
+        }
+      ],
+      "additionalLegs": [
+        {
+          "name": "far-end-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1069
+          },
+          "avatar": {
+            "x": 26.9055,
+            "y": -161.66833333334182,
+            "z": 27.700000762939453
+          }
+        }
+      ],
+      "searchHits": [
+        {
+          "query": "\u897f\u6b66\u6c60\u888b\u672c\u5e97",
+          "text": [
+            "\u897f\u6b66\u6c60\u888b\u672c\u5e97Seibu Ikebukuro B1"
+          ]
+        },
+        {
+          "query": "\u30c7\u30d1\u5730\u4e0b",
+          "text": [
+            "\u897f\u6b66\u6c60\u888b\u672c\u5e97Seibu Ikebukuro B1 \u00b7 \u201c\u30c7\u30d1\u5730\u4e0b\u201d"
+          ]
+        }
+      ],
+      "routeOk": true,
+      "frames": [
+        {
+          "name": "entrance-before",
+          "file": "desktop-entrance-before.png",
+          "state": "Closed wall above doorway; lit B1 end; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 17218,
+              "nearBlackPixels": 149467,
+              "pureBlackPercent": 1.3285493827160493,
+              "nearBlackPercent": 11.532947530864197,
+              "dark16Pixels": 163335,
+              "dark16Percent": 12.60300925925926
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 472,
+              "nearBlackPixels": 3428,
+              "pureBlackPercent": 0.03641975308641975,
+              "nearBlackPercent": 0.26450617283950617,
+              "dark16Pixels": 3525,
+              "dark16Percent": 0.27199074074074076
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9431259913772756,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            14.524786020676027,
+            27.63618235582337,
+            63.92612424453245
+          ],
+          "cameraDirection": [
+            0,
+            0.33721038600178993,
+            0.9414293152289894
+          ]
+        },
+        {
+          "name": "entrance-context",
+          "file": "desktop-entrance-context.png",
+          "state": "Closed wall behind wayfinding; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 118,
+              "nearBlackPixels": 958,
+              "pureBlackPercent": 0.009104938271604938,
+              "nearBlackPercent": 0.07391975308641975,
+              "dark16Pixels": 5939,
+              "dark16Percent": 0.45825617283950615
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 91,
+              "nearBlackPixels": 678,
+              "pureBlackPercent": 0.007021604938271605,
+              "nearBlackPercent": 0.052314814814814814,
+              "dark16Pixels": 872,
+              "dark16Percent": 0.06728395061728396
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.7980250203384978,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -2.5,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            7.083636437375672,
+            27.66327519487148,
+            60.876291737385856
+          ],
+          "cameraDirection": [
+            0.5627456713516977,
+            0.34033606601973543,
+            0.7533184396662129
+          ]
+        },
+        {
+          "name": "entrance-inside",
+          "file": "desktop-entrance-inside.png",
+          "state": "No black/orange nosings; lit B1 end; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 4237,
+              "nearBlackPixels": 24513,
+              "pureBlackPercent": 0.326929012345679,
+              "nearBlackPercent": 1.8914351851851852,
+              "dark16Pixels": 24751,
+              "dark16Percent": 1.9097993827160493
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 15,
+              "dark16Percent": 0.0011574074074074073
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.0208396328684386,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            14.785668271540825,
+            27.741548477954677,
+            69.6980635136992
+          ],
+          "cameraDirection": [
+            0,
+            0.3355875900796225,
+            0.9420090070612654
+          ]
+        },
+        {
+          "name": "food-hall-aisle",
+          "file": "desktop-food-hall-aisle.png",
+          "state": "Lit B1 aisle end; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 22,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0016975308641975309,
+              "dark16Pixels": 140,
+              "dark16Percent": 0.010802469135802469
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 18,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.001388888888888889,
+              "dark16Pixels": 147,
+              "dark16Percent": 0.011342592592592593
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9426939392174853,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 2.8815926535897933,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            27.19509396947089,
+            27.75618319505677,
+            126.26529959734432
+          ],
+          "cameraDirection": [
+            -0.24202232811288485,
+            0.33721950598099876,
+            0.9097846984208684
+          ]
+        },
+        {
+          "name": "counter",
+          "file": "desktop-counter.png",
+          "state": "No void, figures or ghost lines; close view, aisle end out of view.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 20,
+              "dark16Percent": 0.0015432098765432098
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 2,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.00015432098765432098,
+              "dark16Pixels": 10,
+              "dark16Percent": 0.0007716049382716049
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.6671876725172436,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            28.360808141438206,
+            27.807778568812704,
+            130.4681568722983
+          ],
+          "cameraDirection": [
+            -0.939237954518926,
+            0.343266754567208,
+            -2.220446049250313e-16
+          ]
+        },
+        {
+          "name": "escalator-boarding",
+          "file": "desktop-escalator-boarding.png",
+          "state": "Enclosed, lit well; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 7648,
+              "nearBlackPixels": 68469,
+              "pureBlackPercent": 0.5901234567901235,
+              "nearBlackPercent": 5.2831018518518515,
+              "dark16Pixels": 70502,
+              "dark16Percent": 5.439969135802469
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 13,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0010030864197530865,
+              "dark16Pixels": 147,
+              "dark16Percent": 0.011342592592592593
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.942693939217485,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            25.877442642671333,
+            27.75618319505677,
+            93.38050076221207
+          ],
+          "cameraDirection": [
+            0,
+            0.3372195059809981,
+            0.9414260484955426
+          ]
+        },
+        {
+          "name": "arrival-1F",
+          "file": "desktop-arrival-1F.png",
+          "state": "Continuous landing view and lit far wall; no figures or ceiling outlines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 24167,
+              "nearBlackPixels": 152953,
+              "pureBlackPercent": 1.8647376543209877,
+              "nearBlackPercent": 11.80192901234568,
+              "dark16Pixels": 173230,
+              "dark16Percent": 13.366512345679013
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000053,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            26.577030975141753,
+            32.19863252205959,
+            107.99004473522442
+          ],
+          "cameraDirection": [
+            0,
+            0.3309981469814244,
+            0.9436314040423113
+          ]
+        },
+        {
+          "name": "wide-1F",
+          "file": "desktop-wide-1F.png",
+          "state": "Lit aisle end; no figures or ceiling outlines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 3,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0002314814814814815,
+              "dark16Pixels": 61,
+              "dark16Percent": 0.0047067901234567906
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 44,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0033950617283950617,
+              "dark16Pixels": 180,
+              "dark16Percent": 0.013888888888888888
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9426939392174871,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 2.741592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            27.452535045826416,
+            32.25618319505677,
+            111.35906938074751
+          ],
+          "cameraDirection": [
+            -0.3666085712113168,
+            0.3372195059809979,
+            0.867110812007513
+          ]
+        },
+        {
+          "name": "street-door-inside",
+          "file": "desktop-street-door-inside.png",
+          "state": "No void, figures or ghost lines; pale street panel unchanged.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 65,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.005015432098765432,
+              "dark16Pixels": 170,
+              "dark16Percent": 0.013117283950617283
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 25,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0019290123456790122,
+              "dark16Pixels": 95,
+              "dark16Percent": 0.0073302469135802465
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.942693939217485,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": -1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            43.143366457441935,
+            32.25618319505677,
+            122.6953860064705
+          ],
+          "cameraDirection": [
+            0.9414260484955426,
+            0.3372195059809981,
+            2.220446049250313e-16
+          ]
+        },
+        {
+          "name": "street-door-outside",
+          "file": "desktop-street-door-outside.png",
+          "state": "No void, figures or ghost lines; exterior look unchanged.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000018,
+            "raise": 0.17453292519943295,
+            "pitch": 0.40420154222909066,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            55.32480559820909,
+            32.76337307016406,
+            122.2998203889799
+          ],
+          "cameraDirection": [
+            -0.9599974829178641,
+            0.2800086298515911,
+            -2.2204460492503136e-16
+          ]
+        },
+        {
+          "name": "far-end-B1",
+          "file": "desktop-far-end-B1.png",
+          "state": "Looking back along B1 to a lit end wall; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": null,
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 29,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0022376543209876544,
+              "dark16Pixels": 45,
+              "dark16Percent": 0.003472222222222222
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.9055,
+            "y": -161.66833333334182,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.9426939392174996,
+            "raise": 0,
+            "pitch": 0.40420154222909066,
+            "yaw": 0,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            27.1055,
+            27.756183195056767,
+            163.5766562931084
+          ],
+          "cameraDirection": [
+            0,
+            0.33721950598099726,
+            -0.9414260484955428
+          ]
+        },
+        {
+          "name": "well-from-1F",
+          "file": "desktop-well-from-1F.png",
+          "state": "Looking down into enclosed, lit well; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": null,
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.9055,
+            "y": -110,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": -0.25,
+            "yaw": 0,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            27.1055,
+            33.594200235009964,
+            112.02816059241312
+          ],
+          "cameraDirection": [
+            0,
+            -0.30627654689934575,
+            -0.951942580631528
+          ]
+        },
+        {
+          "name": "flag-off",
+          "file": "desktop-flag-off.png",
+          "state": "Base station at matching entrance pose; interior corrections not applicable.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 455,
+              "nearBlackPixels": 3920,
+              "pureBlackPercent": 0.03510802469135803,
+              "nearBlackPercent": 0.30246913580246915,
+              "dark16Pixels": 8080,
+              "dark16Percent": 0.6234567901234568
+            },
+            "after": {
+              "width": 1440,
+              "height": 900,
+              "pixels": 1296000,
+              "pureBlackPixels": 454,
+              "nearBlackPixels": 3913,
+              "pureBlackPercent": 0.03503086419753086,
+              "nearBlackPercent": 0.30192901234567904,
+              "dark16Pixels": 8044,
+              "dark16Percent": 0.620679012345679
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.3999999999999972,
+            "raise": 0.17453292519943295,
+            "pitch": 0.4277867193525217,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            14.524786020676027,
+            27.667832487568717,
+            63.457969259684724
+          ],
+          "cameraDirection": [
+            0,
+            0.3281918759810621,
+            0.944611080043015
+          ]
+        }
+      ]
+    },
+    {
+      "device": {
+        "name": "phone",
+        "width": 390,
+        "height": 844,
+        "mobile": true
+      },
+      "legs": [
+        {
+          "name": "four-metres-before",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          }
+        },
+        {
+          "name": "wayfinding-context",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          }
+        },
+        {
+          "name": "return-to-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 153
+          },
+          "avatar": {
+            "x": 14.721407566396442,
+            "y": -65.84078969207712,
+            "z": 27.58014905116965
+          }
+        },
+        {
+          "name": "through-station-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 121
+          },
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          }
+        },
+        {
+          "name": "food-hall-main-aisle",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1389
+          },
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "counter-close",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 52
+          },
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "escalator-board",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 925
+          },
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "ride-to-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 312
+          },
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "wide-1F",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 62
+          },
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "street-door-inside",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 714
+          },
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          }
+        },
+        {
+          "name": "through-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 166
+          },
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          }
+        },
+        {
+          "name": "flag-off-same-pose",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 114
+          },
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          }
+        }
+      ],
+      "additionalLegs": [
+        {
+          "name": "far-end-B1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 1069
+          },
+          "avatar": {
+            "x": 26.9055,
+            "y": -161.66833333334182,
+            "z": 27.700000762939453
+          }
+        }
+      ],
+      "searchHits": [
+        {
+          "query": "\u897f\u6b66\u6c60\u888b\u672c\u5e97",
+          "text": [
+            "\u897f\u6b66\u6c60\u888b\u672c\u5e97Seibu Ikebukuro B1"
+          ]
+        },
+        {
+          "query": "\u30c7\u30d1\u5730\u4e0b",
+          "text": [
+            "\u897f\u6b66\u6c60\u888b\u672c\u5e97Seibu Ikebukuro B1 \u00b7 \u201c\u30c7\u30d1\u5730\u4e0b\u201d"
+          ]
+        }
+      ],
+      "routeOk": true,
+      "frames": [
+        {
+          "name": "entrance-before",
+          "file": "phone-entrance-before.png",
+          "state": "Closed wall above doorway; lit B1 end; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 1,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0003038036213391664,
+              "dark16Pixels": 78649,
+              "dark16Percent": 23.893851014704094
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 1,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0003038036213391664,
+              "dark16Pixels": 83,
+              "dark16Percent": 0.025215700571150808
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000027,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            14.632368959064651,
+            27.745137350583075,
+            63.59936186759267
+          ],
+          "cameraDirection": [
+            0,
+            0.26119826519344347,
+            0.9652851735419621
+          ]
+        },
+        {
+          "name": "entrance-context",
+          "file": "phone-entrance-context.png",
+          "state": "Closed wall behind wayfinding; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 17614,
+              "dark16Percent": 5.351196986268076
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 647,
+              "dark16Percent": 0.19656094300644064
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 8.300894792139568,
+            "y": -62.171588046541395,
+            "z": 27.579999923706154
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.003063377169346,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -2.28,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            6.730413433517757,
+            27.773036386266096,
+            60.94566812210586
+          ],
+          "cameraDirection": [
+            0.7314714036583763,
+            0.26632990799998746,
+            0.6277085037935705
+          ]
+        },
+        {
+          "name": "entrance-inside",
+          "file": "phone-entrance-inside.png",
+          "state": "No black/orange nosings; lit B1 end; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 332,
+              "nearBlackPixels": 332,
+              "pureBlackPercent": 0.10086280228460323,
+              "nearBlackPercent": 0.10086280228460323,
+              "dark16Pixels": 357,
+              "dark16Percent": 0.1084578928180824
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 14.985668271540824,
+            "y": -71.68314957978455,
+            "z": 27.700000762933378
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            14.89325120992945,
+            27.865057277339933,
+            69.44763983497165
+          ],
+          "cameraDirection": [
+            0,
+            0.26119826519344375,
+            0.9652851735419619
+          ]
+        },
+        {
+          "name": "food-hall-aisle",
+          "file": "phone-food-hall-aisle.png",
+          "state": "Lit B1 aisle end; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.897779245412533,
+            "y": -128.16089989108517,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000006,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 2.8815926535897933,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            27.383174402219456,
+            27.865057277346008,
+            125.97676704847261
+          ],
+          "cameraDirection": [
+            -0.2481560451474821,
+            0.2611982651934433,
+            0.9328419177527867
+          ]
+        },
+        {
+          "name": "counter",
+          "file": "phone-counter.png",
+          "state": "No void, figures or ghost lines; close view, aisle end out of view.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.723117072619626,
+            "y": -130.66815687229828,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 1.6449087724469562,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            28.35743244601225,
+            27.933619084747956,
+            130.5757398106869
+          ],
+          "cameraDirection": [
+            -0.9616071468651741,
+            0.27442976350574555,
+            2.220446049250313e-16
+          ]
+        },
+        {
+          "name": "escalator-boarding",
+          "file": "phone-escalator-boarding.png",
+          "state": "Enclosed, lit well; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 58073,
+              "dark16Percent": 17.64278770202941
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.077442642671333,
+            "y": -95.28882372197864,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            25.985025581059958,
+            27.865057277346008,
+            93.05331397716574
+          ],
+          "cameraDirection": [
+            0,
+            0.26119826519344375,
+            0.9652851735419619
+          ]
+        },
+        {
+          "name": "arrival-1F",
+          "file": "phone-arrival-1F.png",
+          "state": "Continuous landing view and lit far wall; no figures or ceiling outlines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.777030975141752,
+            "y": -110.20023676434266,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.249999999999996,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            26.684613913530377,
+            32.365057277346004,
+            107.96472701952976
+          ],
+          "cameraDirection": [
+            0,
+            0.2611982651934442,
+            0.9652851735419619
+          ]
+        },
+        {
+          "name": "wide-1F",
+          "file": "phone-wide-1F.png",
+          "state": "Lit aisle end; no figures or ceiling outlines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.893611281045157,
+            "y": -113.19463489141037,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.25,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 2.741592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            27.679038029454436,
+            32.365057277346004,
+            111.09960516481613
+          ],
+          "cameraDirection": [
+            -0.375899752135829,
+            0.26119826519344397,
+            0.8890865214388067
+          ]
+        },
+        {
+          "name": "street-door-inside",
+          "file": "phone-street-door-inside.png",
+          "state": "No void, figures or ghost lines; pale street panel unchanged.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 45.051689417208514,
+            "y": -122.4953860064705,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000003,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": -1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            42.816179672395606,
+            32.365057277346004,
+            122.58780306808187
+          ],
+          "cameraDirection": [
+            0.9652851735419619,
+            0.2611982651934439,
+            -2.220446049250313e-16
+          ]
+        },
+        {
+          "name": "street-door-outside",
+          "file": "phone-street-door-outside.png",
+          "state": "No void, figures or ghost lines; exterior look unchanged.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 53.07502152513215,
+            "y": -122.4998203889799,
+            "z": 32.37454396250531
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.250000000000003,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            55.31053126994506,
+            32.53960047691186,
+            122.40740332736853
+          ],
+          "cameraDirection": [
+            -0.9652851735419619,
+            0.2611982651934439,
+            -2.220446049250313e-16
+          ]
+        },
+        {
+          "name": "far-end-B1",
+          "file": "phone-far-end-B1.png",
+          "state": "Looking back along B1 to a lit end wall; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": null,
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.9055,
+            "y": -161.66833333334182,
+            "z": 27.700000762939453
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": 0.33187848240575685,
+            "yaw": 0,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            26.997917061611375,
+            27.865057277346008,
+            163.90384307815472
+          ],
+          "cameraDirection": [
+            0,
+            0.26119826519344375,
+            -0.9652851735419619
+          ]
+        },
+        {
+          "name": "well-from-1F",
+          "file": "phone-well-from-1F.png",
+          "state": "Looking down into enclosed, lit well; no figures or ghost lines.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": null,
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 0,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0,
+              "dark16Pixels": 0,
+              "dark16Percent": 0.0
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 26.9055,
+            "y": -110,
+            "z": 32.20000076293945
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2499999999999956,
+            "raise": 0,
+            "pitch": -0.25,
+            "yaw": 0,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            26.997917061611375,
+            33.594200235009964,
+            112.02816059241312
+          ],
+          "cameraDirection": [
+            0,
+            -0.30627654689934575,
+            -0.951942580631528
+          ]
+        },
+        {
+          "name": "flag-off",
+          "file": "phone-flag-off.png",
+          "state": "Base station at matching entrance pose; interior corrections not applicable.",
+          "visibleVoidPercent": 0,
+          "blackPixels": {
+            "before": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 10,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0030380362133916637,
+              "dark16Pixels": 12,
+              "dark16Percent": 0.0036456434560699965
+            },
+            "after": {
+              "width": 390,
+              "height": 844,
+              "pixels": 329160,
+              "pureBlackPixels": 0,
+              "nearBlackPixels": 10,
+              "pureBlackPercent": 0.0,
+              "nearBlackPercent": 0.0030380362133916637,
+              "dark16Pixels": 12,
+              "dark16Percent": 0.0036456434560699965
+            }
+          },
+          "shaderErrors": [],
+          "avatar": {
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.579999923706055
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.4,
+            "raise": 0.17453292519943295,
+            "pitch": 0.40185252850322534,
+            "yaw": -3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "cameraPosition": [
+            14.632368959064651,
+            27.731869348714827,
+            63.449896561224776
+          ],
+          "cameraDirection": [
+            0,
+            0.3031166417001478,
+            0.9529534624127374
+          ]
+        }
+      ]
+    }
+  ]
+}
