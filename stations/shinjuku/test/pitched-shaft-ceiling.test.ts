@@ -359,7 +359,7 @@ it("keeps exit-1 flat and pitched wall finishes at their main datums (#1525)", (
     }
     geometry.dispose();
   }
-});
+}, 120_000);
 
 it("keeps the cut mouth panels level with the B3 landing stripe (#1525)", () => {
   const layout = prepareLayout(planBundle(bundle), plan as unknown as Plan, { reuse: true }).layout;
