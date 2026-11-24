@@ -101,6 +101,16 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
 };
 
 
+// Provisional store search destinations, measured to the modeled exit rather than an entrance.
+const nearestModeledExits: Record<string, string> = {
+  "shop-sjk-isetan-honkan": "poi:exit:1", "shop-sjk-isetan-mens": "poi:exit:1",
+  "shop-sjk-odakyudept": "poi:exit:1", "shop-sjk-keio": "poi:exit:1",
+  "shop-sjk-takashimaya": "poi:exit:4", "shop-sjk-marui-honkan": "poi:exit:1",
+  "shop-sjk-marui-annex": "poi:exit:1", "shop-sjk-lumine1": "poi:exit:1",
+  "shop-sjk-lumine2": "poi:exit:1", "shop-sjk-lumineest": "poi:exit:1",
+  "shop-sjk-newoman": "poi:exit:3",
+};
+
 export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
@@ -753,8 +763,18 @@ export class App {
   }
 
   /** A picked endpoint that is search-only shows its note (e.g. "as of 2020; current status unknown") under the field. */
+  private provisionalExit(poi: Poi | null): Poi | undefined {
+    if (!poi || poi.connectorNodeIds.length || this.s.entry?.key !== "shinjuku") return undefined;
+    const exitId = nearestModeledExits[poi.id];
+    return this.s.loaded?.bundle.pois.find(p => p.id === exitId);
+  }
+
+  private provisionalNote(): string {
+    return this.s.lang === "ja" ? "暫定：最寄りのモデル内出口まで。店舗入口は未確認。" : "Provisional: nearest modeled exit; store entrance unverified.";
+  }
+
   private renderEndpointNote(box: HTMLParagraphElement, poi: Poi | null): void {
-    const note = poi && poi.connectorNodeIds.length === 0 ? poiNoteText(poi, this.s.lang) : null;
+    const note = this.provisionalExit(poi) ? this.provisionalNote() : poi && poi.connectorNodeIds.length === 0 ? poiNoteText(poi, this.s.lang) : null;
     // An approximate point says so beside the note: its floor is unverified and the ± radius is not for directions (#463).
     const floor = poi?.approximatePosition ? this.floorLabel(poi) : null;
     const approximate = poi ? this.approximateText(poi) : null;
@@ -869,6 +889,7 @@ export class App {
       // Open now filters after ranking, so it ranks every candidate: a closed shop must not use up the list (#724 review).
       ? this.s.search.search(q, { limit: this.s.openNow ? this.s.loaded.bundle.pois.length : 8, lang: this.s.lang, categories })
       : (groups ?? []).flatMap((group) => group.pois.map((poi) => ({ poi, score: 0, matched: "", routable: true }))));
+    hits = hits.map(h => this.provisionalExit(h.poi) ? { ...h, routable: true } : h);
     const statuses = new Map<string, ReturnType<typeof openNow>>();
     const now = new Date();
     // Closed shops are dropped while Open now is on; the other-category count below drops them too.
@@ -979,7 +1000,7 @@ export class App {
       // A search-only POI's note (e.g. a 2020 status word in the copied name) is shown beside it, not only in routes.
       // A routable store whose route ends at a station gate says so, and carries its note too (#213).
       const arrival = h.routable ? arrivalPrecision(h.poi) : null;
-      const note = h.routable && !arrival ? null : poiNoteText(h.poi, this.s.lang);
+      const note = this.provisionalExit(h.poi) ? this.provisionalNote() : h.routable && !arrival ? null : poiNoteText(h.poi, this.s.lang);
       const tie = arrival ? this.t.merchant.precision[arrival]
         : !h.routable && h.poi.category === "shop" ? this.t.merchant.precision.unverified : null;
       if (tie) b.append(el("span", "result-note", tie));
@@ -1198,10 +1219,14 @@ export class App {
     // One multi-source query: the router ranks entrances by its own cost and keeps "already there";
     // routeBetween also applies the fare policy to the POIs themselves.
     const profile = this.profile();
-    const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
+    const originExit = origin.kind === "poi" ? this.provisionalExit(origin.poi) : undefined;
+    const destinationExit = this.provisionalExit(destination);
+    const routeOrigin = originExit ? { kind: "poi" as const, poi: { ...originExit, connectorNodeIds: originExit.connectorNodeIds } } : origin;
+    const routeDestination = destinationExit ? { ...destination, connectorNodeIds: destinationExit.connectorNodeIds } : destination;
+    const best: RouteResult | RouteFailure = routeBetween(router, routeOrigin, routeDestination, profile);
     this.s.route = best;
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
-    if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
+    if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, routeOrigin, routeDestination, profile);
     const tieStatus = this.stepFreeTieStatus();
     const failureText = tieStatus && tieStatus !== "stepFreeTie" ? this.t.merchant[tieStatus]
       : this.s.noPath ? noPathView(this.t, this.s.noPath)?.text
@@ -1217,7 +1242,12 @@ export class App {
         this.renderSheet();
         return;
       }
-      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
+      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destinationExit ?? destination, origin.kind === "poi" ? origin.poi : undefined);
+      if (destinationExit) {
+        const arrival = this.s.instructions.at(-1)!;
+        const separator = this.s.lang === "ja" ? "。" : ". ";
+        arrival.text = this.t.arrivedAt(this.poiName(destinationExit)) + separator + this.provisionalNote();
+      }
       this.s.activeInstruction = 0;
       this.escalatorSpans = guidePaceSpans(this.s.polyline, best.steps, []).filter((span) => span.mode === "escalator");
       this.explorer.showRoute(this.s.polyline, this.escalatorSpans);
@@ -1709,6 +1739,8 @@ export class App {
       return box;
     }
     const ins = this.s.instructions[this.s.activeInstruction]!;
+    const exit = this.provisionalExit(this.s.destination);
+    if (exit) box.append(el("p", "guide-provisional-note", this.provisionalNote()));
     if (this.escalatorSpan && !this.arrived) {
       let distance = 0;
       let start = this.s.polyline[0];
@@ -1724,7 +1756,9 @@ export class App {
       box.append(el("div", "hud-instruction", `${escalatorArrow(start!.z, end!.z)} ${floor}${suffix}`));
       return box;
     }
-    const card = guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
+    const card = exit && this.arrived
+      ? { line: this.t.arrivedAt(this.poiName(exit)), detail: null }
+      : guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
     const instruction = el("div", "hud-instruction");
     const line = el("span", "guide-card-line", card.line);
     instruction.append(line);
