@@ -1422,6 +1422,7 @@ psdOpeningCenters	function	stations/shinjuku/scene/build.ts
 slabGeometry	function	stations/shinjuku/scene/build.ts
 soffitGeometry	function	stations/shinjuku/scene/build.ts
 contentKey	function	stations/shinjuku/scene/content-key.ts
+buildDepartmentStores	function	stations/shinjuku/scene/department-stores.ts
 ACCESS_WORDING	const	stations/shinjuku/scene/fare-fence.ts
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts
 Fence	interface	stations/shinjuku/scene/fare-fence.ts
