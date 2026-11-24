@@ -1,0 +1,25 @@
+{
+  "id": "depato-ikb-ai-r13b",
+  "status": "failed",
+  "exit_code": 1,
+  "signal": null,
+  "artifacts": [
+    "/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro/docs/visual/ikebukuro-landmarks-2026-11-22/r13",
+    "/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro/docs/visual/ikebukuro-landmarks-2026-11-22/r13-main"
+  ],
+  "log": "/Users/tachikoma/.local/state/job-run/depato-ikb-ai-r13b/log",
+  "cwd": "/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro",
+  "cmd": [
+    "tachi-run",
+    "--heavy",
+    "--host",
+    "--est",
+    "25m",
+    "--",
+    "sh",
+    "-c",
+    "nice -n 15 sh docs/visual/ikebukuro-landmarks-2026-11-22/capture-r13.sh"
+  ],
+  "started": "2026-11-24T06:29:47+09:00",
+  "ended": "2026-11-24T06:33:32+09:00"
+}
