@@ -1517,7 +1517,15 @@ const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPA
 
 // Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
 // source and rights gate as assets; each derivation names the script that writes the file.
+const departmentStores = JSON.parse(readFileSync(join(HERE, "../data/department-stores.json"), "utf8")) as { stores: { poiId: string }[] };
+const departmentStoreSources = [...new Set(["plateau-13104-shinjuku-ku-2025", ...departmentStores.stores.flatMap(s => pois.find(p => p.id === s.poiId)!.evidence.sourceIds)])].sort();
 const dataFiles: DataFile[] = [
+  {
+    id: "department-stores", path: "data/department-stores.json",
+    sourceIds: departmentStoreSources,
+    modified: true,
+    derivation: "tools/import-department-stores.ts: pinned PLATEAU LOD2 walls/roofs and LOD1 footprints, bases flattened to street level; facts-only names from the existing department-store POIs. Render-only, no entrance or routing claims (2026-11-22 JST).",
+  },
   { id: "shop-bays", path: "scene/shop_bays.json", sourceIds: [SRC_NWD, SRC_MAP].sort(), modified: true, derivation: "tools/shop-bays.ts: illustrative bays derived from the scene layout, visual only." },
   { id: "shop-placements", path: "scene/shop_placements.json", sourceIds: ["gteki-kit-0-1-0"], modified: true, derivation: "scene/shop_placements.json: original illustrative shop categories, visual only." },
   { id: "shop-kit", path: "scene/shop_kit.json", sourceIds: ["gteki-kit-0-1-0"], modified: true, derivation: "scene/shop_kit.json: shopfront piece specification copied from the GTEki kit." },
@@ -1527,6 +1535,14 @@ const dataFiles: DataFile[] = [
     sourceIds: [SRC_NWD, SRC_MAP].sort(),
     modified: true,
     derivation: "tools/import-e27.ts: render-only plan from the 構内地図 polygons (level outlines, spaces and their restricted/toll flags, facilities) and the NWD node positions behind nodeRenderZ; heights are symbolic estimates from stair/escalator run lengths, not measurements. It is not routing truth.",
+  },
+  {
+    id: "layout-baked", path: "data/layout-baked.bin", sourceIds: [SRC_NWD, SRC_MAP].sort(), modified: true,
+    derivation: "tools/bake-layout.ts: gzip-compressed lossless layout/protection snapshot, guarded by bundle, plan, ceiling mode, restricted table and derivation source keys; scene geometry only.",
+  },
+  {
+    id: "layout-bake-key", path: "data/layout-bake-key.json", sourceIds: [], modified: true, authored: true,
+    derivation: "tools/bake-layout.ts: fingerprint of GTEki source code and dependency version; not derived from station data.",
   },
   {
     id: "surface",
@@ -1555,14 +1571,14 @@ const dataFiles: DataFile[] = [
   {
     id: "stairwell-cut-high",
     path: "scene/stairwell-cut.high.b64.txt",
-    sourceIds: ["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, "plateau-13104-shinjuku-ku-2025"],
+    sourceIds: [...new Set(["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, ...departmentStoreSources])].sort(),
     modified: true,
     derivation: "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#650) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources.",
   },
   {
     id: "stairwell-cut-low",
     path: "scene/stairwell-cut.low.b64.txt",
-    sourceIds: ["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, "plateau-13104-shinjuku-ku-2025"],
+    sourceIds: [...new Set(["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, ...departmentStoreSources])].sort(),
     modified: true,
     derivation: "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#650) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources.",
   },
@@ -1665,7 +1681,7 @@ const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
   // S03 (#411), the merchant sources (#214), the WP4 line sources (#501) and the kit catalog (nothing in the plan)
   // supply POIs or art only, nothing in the plan, so their credit is not listed here.
-  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && s.id !== SRC_CATALOG && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id) && !SEPARATE_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && s.id !== SRC_CATALOG && s.id !== "toei-media-guide-2026-index21" && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id) && !SEPARATE_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {
