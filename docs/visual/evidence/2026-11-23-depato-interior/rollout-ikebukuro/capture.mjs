@@ -6,13 +6,14 @@ import { PNG } from 'pngjs';
 import { fileURLToPath } from 'node:url';
 const repo=fileURLToPath(new URL('../../../../../',import.meta.url));
 const runtimeHead=execFileSync('rtk',['git','-C',repo,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
-const adR3=process.argv[2]==='ad-r3';
+const parcoOnly=process.argv[2]==='ad-r3-parco';
+const adR3=parcoOnly||process.argv[2]==='ad-r3';
 process.chdir(repo+'apps/web');
 const server=await createServer({server:{host:'127.0.0.1',port:5291,strictPort:true}});
 try{
   await server.listen();
   const run=spawn('ego-browser',['nodejs'],{stdio:['pipe','inherit','inherit']});
-  run.stdin.end(`const runtimeHead=${JSON.stringify(runtimeHead)}, worktree=${JSON.stringify(repo)};\n`
+  run.stdin.end(`const runtimeHead=${JSON.stringify(runtimeHead)}, worktree=${JSON.stringify(repo)}, parcoOnly=${parcoOnly};\n`
     +readFileSync(new URL(adR3?'./ad-r3.mjs':'./walk.mjs',import.meta.url),'utf8'));
   process.exitCode=await new Promise((resolve,reject)=>{run.on('error',reject);run.on('exit',code=>resolve(code??1));});
   if(process.exitCode===0){
@@ -34,7 +35,7 @@ try{
         if(frame.name==='street-door-inside' && frame.blackPixelPct>0.1)
           receipt.failures.push(`${frame.file}: black pixels ${frame.blackPixelPct}% > 0.1%`);
       }
-      if(adR3 && profile.store==='tobu-ikebukuro'){
+      if(adR3 && !parcoOnly && profile.store==='tobu-ikebukuro'){
         const on=frames.find(f=>f.name==='B1-tie-skipped'),off=frames.find(f=>f.name==='flag-off');
         if(Math.abs(on.blackPixelPct-off.blackPixelPct)>0.5)
           receipt.failures.push(`${profile.device.name} Tobu B1: ${on.blackPixelPct}% vs flag-off ${off.blackPixelPct}% black exceeds 0.5 points`);

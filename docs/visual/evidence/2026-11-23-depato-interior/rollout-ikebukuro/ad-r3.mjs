@@ -6,7 +6,9 @@ const receipt = JSON.parse(await fs.readFile(base + "receipt.json", "utf8"));
 const entry = (await listTaskSpaces()).find(s => s.name === "depato-rollout-ikebukuro");
 const task = await taskSpace(entry?.id ?? "depato-rollout-ikebukuro");
 const page = (await task.pages())[0] ?? await task.adopt((await task.tabs())[0].page);
-receipt.adR3 = { sourceHead: runtimeHead, capturedAt: new Date().toISOString(), timeZone: "UTC" };
+const run = { sourceHead: runtimeHead, capturedAt: new Date().toISOString(), timeZone: "UTC" };
+if (parcoOnly) receipt.adR3.parcoApproach = run;
+else receipt.adR3 = run;
 receipt.failures = [];
 
 const load = async next => {
@@ -48,7 +50,7 @@ for (const tobu of receipt.profiles.filter(p => p.store === "tobu-ikebukuro")) {
   await page.cdp("Emulation.setTouchEmulationEnabled", { enabled: device.mobile });
 
   // Keep c_w as the stand point. Turn the narrower phone frame toward the near barrier.
-  for (const next of [false, true]) {
+  for (const next of parcoOnly ? [] : [false, true]) {
     await load(next);
     await page.evaluate(mobile => {
       const g = window.__gteki;
@@ -59,7 +61,7 @@ for (const tobu of receipt.profiles.filter(p => p.store === "tobu-ikebukuro")) {
     await shot(tobu, next ? "B1-tie-skipped" : "flag-off");
   }
 
-  if (!device.mobile) {
+  if (!parcoOnly && !device.mobile) {
     const previous = tobu.frames.find(f => f.name === "street-door-inside");
     await page.evaluate(({ avatar, camera }) => {
       const g = window.__gteki, e = g.scanProbe().explorer;
@@ -84,48 +86,62 @@ for (const tobu of receipt.profiles.filter(p => p.store === "tobu-ikebukuro")) {
     const door = e.pos.clone().set(point[0], height, point[1]);
     const i = e.guide.pts.findIndex(p => p.distanceTo(door) < 0.05);
     if (i < 0) throw Error("PARCO B1 door missing from guide path");
-    g.seekGuide(e.guide.cum[i] - 20);
+    g.seekGuide(e.guide.cum[i] - 50);
     g.goldenFrame();
   }, { point: store.entrances[0].point, height: store.elevations.B1, poiId: store.poiId });
 
   const pending = ["entrance-outside", "entrance-3m"];
   while (pending.length) {
-    const frame = await page.evaluate(({ pending, point, height }) => {
+    const frame = await page.evaluate(({ pending, point, height, storeId }) => {
       const e = window.__gteki.scanProbe().explorer;
       const door = e.pos.clone().set(point[0], height, point[1]);
       const ray = new e.ray.constructor();
-      const meshes = [];
-      e.stationScene.root.traverseVisible(o => {
-        if (o.isMesh && o.material.visible && o.material.depthWrite) meshes.push(o);
-      });
+      const root = e.stationScene.root;
+      const interior = root.getObjectByName("depato-interior:" + storeId);
       const visible = target => {
+        if (!interior.children.length) return false;
         const p = target.clone().project(e.camera);
         if (Math.abs(p.x) >= 1 || Math.abs(p.y) >= 1 || Math.abs(p.z) >= 1) return false;
         const direction = target.clone().sub(e.camera.position);
         ray.far = direction.length() - 0.05;
         ray.set(e.camera.position, direction.normalize());
+        const meshes = [];
+        root.traverseVisible(o => {
+          if (o.isMesh && o.material.visible && o.material.depthWrite) meshes.push(o);
+        });
         return ray.intersectObjects(meshes, false).length === 0;
       };
       const opening = door.clone().add(e.pos.clone().set(0, 1.2, 0));
       const header = door.clone().add(e.pos.clone().set(0, 2.45, 0));
       const time = e.timer.getElapsed();
       const start = e.guide.s;
-      for (let step = 0; e.guide.s - start < 21 && step < 750; step++) {
+      let lastOccludedDistanceM = null;
+      for (let step = 0; e.guide.s - start < 51 && step < 900; step++) {
         e.step(1 / 30, time + step / 30);
         const distanceM = Math.hypot(e.pos.x - door.x, e.pos.z - door.z);
-        const openingVisible = visible(opening);
-        const names = pending.filter(name => name === "entrance-outside" ? openingVisible : distanceM <= 3);
-        if (names.length) {
+        if (pending.includes("entrance-outside") && visible(opening)) {
+          if (lastOccludedDistanceM === null) throw Error("PARCO B1 door visible before approach sampling");
           e.render(1 / 30);
-          return { names, distanceM, guideDistanceM: e.guide.s, openingVisible, headerVisible: visible(header) };
+          return { name: "entrance-outside", distanceM, guideDistanceM: e.guide.s,
+            lastOccludedDistanceM, openingVisible: true, headerVisible: visible(header) };
+        }
+        lastOccludedDistanceM = distanceM;
+        if (pending.includes("entrance-3m") && distanceM <= 3) {
+          // Turn the follow camera like a visitor looking at the header as they approach the turn.
+          const yaw = Math.atan2(e.pos.x - door.x, e.pos.z - door.z) - 0.22;
+          e.setGuidePaused(true);
+          e.input.look.dx = (e.yaw - yaw) / 0.0042;
+          e.input.look.dy = -0.10 / 0.0032;
+          e.step(1 / 30, time + (step + 1) / 30);
+          e.render(1 / 30);
+          return { name: "entrance-3m", distanceM, guideDistanceM: e.guide.s,
+            openingVisible: visible(opening), headerVisible: visible(header) };
         }
       }
       throw Error("PARCO guide reached no remaining approach pose: " + pending.join(", "));
-    }, { pending, point: store.entrances[0].point, height: store.elevations.B1 });
-    for (const name of frame.names) {
-      await shot(parco, name, frame);
-      pending.splice(pending.indexOf(name), 1);
-    }
+    }, { pending, point: store.entrances[0].point, height: store.elevations.B1, storeId: store.id });
+    await shot(parco, frame.name, frame);
+    pending.splice(pending.indexOf(frame.name), 1);
   }
   console.log(JSON.stringify({ device: device.name, parcoApproach: parco.frames
     .filter(f => f.approach).map(f => ({ name: f.name, ...f.approach })) }));
