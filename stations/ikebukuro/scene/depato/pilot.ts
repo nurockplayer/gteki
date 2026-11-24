@@ -91,6 +91,12 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     if(outside.inOut === "outside") cut.accepts = normal => Math.abs(normal.y) < 0.5;
     return cut;
   }));
+  const tobu = layouts.find(p => p.input.store.id === "tobu-ikebukuro")!;
+  const { x, to, width } = tobu.stair;
+  const b1 = tobu.height("B1");
+  // PLATEAU wall and glazing cross the escalator landing and its turn into the west aisle.
+  const tobuLanding = volume(x - 4.5, x + width / 2, to - 0.5, to + 2.5, b1 - 0.1, b1 + 3.1);
+  tobuLanding.rejectsMesh = mesh => !["wall", "windows", "windows_solid"].includes(mesh.userData.gteki_role);
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
     if (uri.includes("ikebukuro_context_")) {
@@ -113,7 +119,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   // The background catalog adds merged stair nosings; cut them after attachment too.
   await scene.settled?.();
   scene.root.updateMatrixWorld(true);
-  cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance, ...rolloutRooms, ...rolloutDoors], resources);
+  cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance, ...rolloutRooms, ...rolloutDoors, tobuLanding], resources);
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p=>[p.input.store.name.ja,p.input.store.name.en,...p.floors.flatMap(f=>[f.label.ja,f.label.en,...f.tenants.flatMap(t=>[t.ja,t.en])])]).join(""));
   const interiors = layouts.map(p=>buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
   let avatar: {x:number;y:number;z:number}|null=null;

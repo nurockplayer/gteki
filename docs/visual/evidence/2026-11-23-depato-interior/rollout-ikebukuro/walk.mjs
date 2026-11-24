@@ -1,6 +1,6 @@
 // 2026-11-23 JST. Ego browser capture, modelled on the accepted pilot walk.mjs.
 const fs=await import('node:fs/promises');
-const repo='/Users/tachikoma/Developer/gteki-wt/depato-rollout-ikebukuro';
+const repo=worktree.slice(0,-1);
 const base=repo+'/docs/visual/evidence/2026-11-23-depato-interior/rollout-ikebukuro';
 const config=JSON.parse(await fs.readFile(repo+'/stations/ikebukuro/data/depato-rollout.json','utf8'));
 const entry=(await listTaskSpaces()).find(s=>s.name==='depato-rollout-ikebukuro');
@@ -46,6 +46,8 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
   await page.evaluate(async()=>{await window.__gteki.scanProbe().explorer.stationScene.settled?.();});
       const first=store.entrances[0],street=store.entrances.find(e=>e.level==='1F'),x=store.circulation.aisleX,from=store.circulation.from,to=store.circulation.to;
       const y=store.elevations.B1,inside={x:first.point[0]+first.inward[0]*2,z:first.point[1]+first.inward[1]*2};
+      // Tobu's B1 access fence crosses x - 4 at the landing. Stay on the store side.
+      const b1West=store.id==='tobu-ikebukuro'?x-3.55:x-4;
       const yaw=Math.atan2(-first.inward[0],-first.inward[1]);
       const query=await page.evaluate(id=>window.__gteki.scanProbe().explorer.station.bundle.pois.find(p=>p.id===id).names[0].text,store.poiId);
       await page.fill('input[placeholder="Search exits, toilets, platforms…"]',query);
@@ -96,10 +98,11 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
         await frame(profile,'first-interior',yaw);
         await walk(profile,'1F-to-B1',[{x:x-4,z:inside.z},{x:x-4,z:from-2},{x,z:from-2},{x:x+0.95,z:from,y:y+4.5},{x:x+0.95,z:to+0.6,y},{x,z:to+2,y}]);
       }
-      await walk(profile,'B1-to-B2',[{x:x-4,z:first.level==='B1'?inside.z:to+2},{x:x-4,z:from-2},{x,z:from-2},{x:x+0.95,z:from,y},{x:x+0.95,z:to+0.6,y:y-4.5},{x,z:to+2,y:y-4.5}]);
+      await walk(profile,'B1-to-B2',[{x:b1West,z:first.level==='B1'?inside.z:to+2},{x:b1West,z:from-2},{x,z:from-2},{x:x+0.95,z:from,y},{x:x+0.95,z:to+0.6,y:y-4.5},{x,z:to+2,y:y-4.5}]);
       await frame(profile,'food-hall-aisle',Math.PI-0.3);
       for(const [i,levelY] of [y-4.5,y].entries()){
-        await walk(profile,`board-up-${i}`,[{x:x-4,z:to+2},{x:x-4,z:from-2},{x,z:from-2},{x:x-0.95,z:from-0.4,y:levelY}]);
+        const west=i===1?b1West:x-4;
+        await walk(profile,`board-up-${i}`,[{x:west,z:to+2},{x:west,z:from-2},{x,z:from-2},{x:x-0.95,z:from-0.4,y:levelY}]);
         if(i===0)await frame(profile,'escalator',Math.PI);
         await walk(profile,`ride-up-${i}`,[{x:x-0.95,z:to+0.6,y:levelY+4.5},{x,z:to+2,y:levelY+4.5}]);
       }

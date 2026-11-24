@@ -23,16 +23,15 @@ try{
       return 100*black/(png.width*png.height);
     };
     const blackPixels=[];
-    for(const profile of receipt.profiles){
-      const frames=profile.frames.filter(f=>adR3?f.sourceHead===runtimeHead:f.name==='street-door-inside');
+    for(const profile of [...receipt.profiles,...receipt.seibu]){
+      const frames=profile.frames.filter(f=>f.sourceHead===runtimeHead);
       for(const frame of frames){
         const png=PNG.sync.read(readFileSync(new URL(frame.file,base)));
         if(png.width!==profile.device.width || png.height!==profile.device.height)
           receipt.failures.push(`${frame.file}: expected ${profile.device.width}×${profile.device.height}, got ${png.width}×${png.height}`);
-        if(frame.name!=='street-door-inside' && frame.name!=='flag-off' && frame.name!=='B1-tie-skipped')continue;
         frame.blackPixelPct=blackPixelPct(png);
         blackPixels.push({file:frame.file,pct:frame.blackPixelPct});
-        if(frame.name==='street-door-inside' && frame.blackPixelPct>0.1)
+        if(profile.store!=='seibu-ikebukuro' && frame.name==='street-door-inside' && frame.blackPixelPct>0.1)
           receipt.failures.push(`${frame.file}: black pixels ${frame.blackPixelPct}% > 0.1%`);
       }
       if(adR3 && !parcoOnly && profile.store==='tobu-ikebukuro'){
