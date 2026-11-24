@@ -1,8 +1,8 @@
 {
-  "runtimeHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
-  "capturedAt": "2026-11-24T18:14:04.300Z",
+  "runtimeHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+  "capturedAt": "2026-11-23T20:47:52.753Z",
   "timeZone": "UTC",
-  "spaceId": 120,
+  "spaceId": 48,
   "profiles": [
     {
       "device": {
@@ -330,9 +330,795 @@
           "shaderErrors": []
         },
         {
+          "name": "food-hall-aisle",
+          "file": "desktop-tobu-ikebukuro-food-hall-aisle.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -99.85120948887585,
+            "y": 126.26827940704707,
+            "z": 23.409999847412905
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000094,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 2.8415926535897933,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 25.599999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.2000000029802322,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 176.20000000298023,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -206.1,
+              22.3,
+              -185.4,
+              177.7,
+              36.2,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 35.9
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 560,
+              "stairwellCut": 186,
+              "cutTargets": 0,
+              "connectors": 373,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -99.52254689450093,
+              24.21339534438969,
+              -128.0075288980508
+            ],
+            "cameraDirection": [
+              -0.29504587848016756,
+              -0.056635212405854174,
+              0.9538031150649542
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:tobu-ikebukuro"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "escalator",
+          "file": "desktop-tobu-ikebukuro-escalator.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -100.82670908806284,
+            "y": 140.7137234724537,
+            "z": 23.40999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 3.141592653589793,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 25.599999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.2000000029802322,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 176.20000000298023,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -206.1,
+              22.3,
+              -185.4,
+              177.7,
+              36.2,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 35.9
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 560,
+              "stairwellCut": 186,
+              "cutTargets": 0,
+              "connectors": 373,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -101.02670908806284,
+              24.213395344388903,
+              -142.4724184127142
+            ],
+            "cameraDirection": [
+              0,
+              -0.0566352124058558,
+              0.9983949382462551
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:tobu-ikebukuro"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "street-door-inside",
+          "file": "desktop-tobu-ikebukuro-street-door-inside.png",
+          "sourceHead": "51ddc54fa65a5c06a434fb6aa31380ae1997f750",
+          "avatar": {
+            "x": -115.20800389287427,
+            "y": 20.15039380143787,
+            "z": 32.40999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000027,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.618113888628192,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 25,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 724,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 38,
+                "cutMs": 178.19999998807907,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              0,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 179625,
+              "bytes": 9426072,
+              "buildMs": 33.9
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 9197,
+              "attach": 3,
+              "sceneRayTrees": 69,
+              "greybox": 27,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 559,
+              "stairwellCut": 189,
+              "cutTargets": 0,
+              "connectors": 369,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 34,
+              "signsShadowsAo": 104,
+              "navmeshPaths": 0,
+              "composer": 4,
+              "startAt": 543,
+              "total": 10003
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -113.02155576037333,
+              33.3092442186331,
+              -20.454152581617393
+            ],
+            "cameraDirection": [
+              -0.9966743104792174,
+              -0.06642974156314864,
+              0.04719542633169206
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "shaderErrors": [],
+          "blackPixelPct": 0
+        },
+        {
+          "name": "street-door-outside",
+          "file": "desktop-tobu-ikebukuro-street-door-outside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -124.188210027684,
+            "y": 19.73087291239823,
+            "z": 32.40999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.5234787649616013,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 25.599999994039536,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1.2000000029802322,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 176.20000000298023,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.3,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 177100,
+              "bytes": 9292024,
+              "buildMs": 35.9
+            },
+            "loadTimings": {
+              "graph": 5,
+              "scene": 9534,
+              "attach": 5,
+              "sceneRayTrees": 60,
+              "greybox": 29,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 560,
+              "stairwellCut": 186,
+              "cutTargets": 0,
+              "connectors": 373,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 36,
+              "signsShadowsAo": 99,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 717,
+              "total": 10338
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -125.93547653741058,
+              33.2133953443889,
+              -19.44791065893355
+            ],
+            "cameraDirection": [
+              0.997277467765377,
+              -0.056635212405855236,
+              -0.04722398758281067
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.1486663686924483,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [
+            "depato-interior:tobu-ikebukuro"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "B1-tie-skipped",
+          "file": "desktop-tobu-ikebukuro-B1-tie-skipped.png",
+          "sourceHead": "51ddc54fa65a5c06a434fb6aa31380ae1997f750",
+          "avatar": {
+            "x": -60,
+            "y": 82,
+            "z": 27.90999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000018,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.5707963267948966,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 25,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 1,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 724,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 38,
+                "cutMs": 178.19999998807907,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              23.3,
+              -185.4,
+              177.7,
+              35.3,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 179625,
+              "bytes": 9426072,
+              "buildMs": 33.9
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 9197,
+              "attach": 3,
+              "sceneRayTrees": 69,
+              "greybox": 27,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 559,
+              "stairwellCut": 189,
+              "cutTargets": 0,
+              "connectors": 369,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 34,
+              "signsShadowsAo": 104,
+              "navmeshPaths": 0,
+              "composer": 4,
+              "startAt": 543,
+              "total": 10003
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              -57.80163132467436,
+              28.8092442186331,
+              -82.2
+            ],
+            "cameraDirection": [
+              -0.9977911051096082,
+              -0.06642974156314914,
+              -4.440892098500627e-16
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "shaderErrors": [],
+          "blackPixelPct": 1.5031635802469137
+        },
+        {
           "name": "flag-off",
           "file": "desktop-tobu-ikebukuro-flag-off.png",
-          "sourceHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+          "sourceHead": "51ddc54fa65a5c06a434fb6aa31380ae1997f750",
           "avatar": {
             "x": -60,
             "y": 82,
@@ -360,7 +1146,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 9.799999982118607,
+              "buildMs": 15.400000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -371,7 +1157,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 2.4000000059604645,
+                "cutMs": 3.199999988079071,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -389,7 +1175,7 @@
                 "skippedMeshes": 16,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 58.80000001192093,
+                "cutMs": 55.099999994039536,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -412,30 +1198,30 @@
               "trees": 66,
               "triangles": 117295,
               "bytes": 6162832,
-              "buildMs": 34.9
+              "buildMs": 35.4
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 616,
+              "graph": 4,
+              "scene": 677,
               "attach": 1,
-              "sceneRayTrees": 30,
-              "greybox": 10,
+              "sceneRayTrees": 37,
+              "greybox": 16,
               "greyboxSegments": 1,
-              "portalCut": 2,
+              "portalCut": 4,
               "stairwellRecipe": 0,
-              "liveScene": 349,
-              "stairwellCut": 73,
+              "liveScene": 360,
+              "stairwellCut": 69,
               "cutTargets": 0,
-              "connectors": 276,
+              "connectors": 290,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
               "rayTrees": 35,
-              "signsShadowsAo": 44,
+              "signsShadowsAo": 43,
               "navmeshPaths": 0,
-              "composer": 4,
-              "startAt": 653,
-              "total": 1095
+              "composer": 6,
+              "startAt": 537,
+              "total": 1182
             },
             "bakedAo": {
               "materials": 37,
@@ -482,6 +1268,162 @@
             "releasedTextures": null
           },
           "streetContextVisible": false,
+          "shaderErrors": [],
+          "blackPixelPct": 1.7726851851851853
+        },
+        {
+          "name": "flag-off-street",
+          "file": "desktop-tobu-ikebukuro-flag-off-street.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -124.188210027684,
+            "y": 19.73087291239823,
+            "z": 32.40999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.399999999999995,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.5234787649616013,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 0,
+              "landingPads": 0,
+              "lengthM": 0,
+              "portals": 0,
+              "meshes": 0,
+              "triangles": 524,
+              "buildMs": 10.899999991059303,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 2.7000000029802322,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 25,
+                "cutTriangles": 512,
+                "skippedMeshes": 16,
+                "railM": 278.10635328985836,
+                "cutMeshes": 13,
+                "cutMs": 47.5,
+                "skippedWells": 0,
+                "recipe": "replayed"
+              }
+            },
+            "world": [
+              -623.7,
+              25.5,
+              -658.4,
+              691,
+              136.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 28,
+            "colliders": 36,
+            "cameraBlockers": 21,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 66,
+              "triangles": 117295,
+              "bytes": 6162832,
+              "buildMs": 37.5
+            },
+            "loadTimings": {
+              "graph": 3,
+              "scene": 840,
+              "attach": 1,
+              "sceneRayTrees": 32,
+              "greybox": 11,
+              "greyboxSegments": 2,
+              "portalCut": 3,
+              "stairwellRecipe": 0,
+              "liveScene": 340,
+              "stairwellCut": 60,
+              "cutTargets": 0,
+              "connectors": 280,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 0,
+              "rayTrees": 38,
+              "signsShadowsAo": 44,
+              "navmeshPaths": 0,
+              "composer": 5,
+              "startAt": 706,
+              "total": 1318
+            },
+            "bakedAo": {
+              "materials": 37,
+              "scaled": 37,
+              "disabled": 0,
+              "textureBytes": 51729737
+            },
+            "assets": [],
+            "camera": [
+              -126.558987352472,
+              33.11594837689634,
+              -19.41838560904529
+            ],
+            "cameraDirection": [
+              0.9981323626207173,
+              -0.0387021527465674,
+              -0.04726446933973194
+            ],
+            "fov": 50,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
           "loaded": [],
           "shaderErrors": []
         }
@@ -493,11 +1435,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 165
+            "steps": 159
           },
           "avatar": {
-            "x": -116.5362105522721,
-            "y": 20.093417316037186,
+            "x": -116.8258859648498,
+            "y": 20.07970034304946,
             "z": 32.40999984741211
           }
         },
@@ -510,8 +1452,8 @@
             "steps": 259
           },
           "avatar": {
-            "x": -104.01787727463044,
-            "y": 20.09459812740662,
+            "x": -104.30756107813713,
+            "y": 20.094242528662306,
             "z": 32.40999984741211
           }
         },
@@ -521,11 +1463,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 2522
+            "steps": 2515
           },
           "avatar": {
-            "x": -104.00000128119923,
-            "y": 141.99126348332797,
+            "x": -104.00087750678357,
+            "y": 141.6521889902719,
             "z": 32.40999984741211
           }
         },
@@ -535,11 +1477,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": -100.03667740120842,
-            "y": 141.9999198918439,
+            "x": -100.3413465333163,
+            "y": 141.9703254892912,
             "z": 32.40999984741211
           }
         },
@@ -549,11 +1491,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 46
+            "steps": 42
           },
           "avatar": {
-            "x": -99.05298055326611,
-            "y": 140.00604135430518,
+            "x": -99.22858577910684,
+            "y": 140.2724846534382,
             "z": 32.40999984741211
           }
         },
@@ -566,30 +1508,352 @@
             "steps": 260
           },
           "avatar": {
-            "x": -99.05000930977437,
-            "y": 127.4393750388947,
-            "z": 27.910021731577903
+            "x": -99.0542595264213,
+            "y": 127.70702718191234,
+            "z": 27.910585313054412
           }
         },
         {
           "name": "1F-to-B1",
           "walk": {
-            "done": false,
-            "stuck": true,
+            "done": true,
+            "stuck": false,
             "timedOut": false,
-            "steps": 90
+            "steps": 34
           },
           "avatar": {
-            "x": -99.96841617395907,
-            "y": 126.0735013724631,
+            "x": -99.85065402666808,
+            "y": 126.26956405389105,
+            "z": 27.90999984741292
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 79
+          },
+          "avatar": {
+            "x": -103.66095512418889,
+            "y": 126.02202619684212,
             "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": -103.9931779634779,
+            "y": 141.67850178955152,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": -100.33169262902524,
+            "y": 141.97329480738762,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 42
+          },
+          "avatar": {
+            "x": -99.2259418936134,
+            "y": 140.27088025413173,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 260
+          },
+          "avatar": {
+            "x": -99.05417457558133,
+            "y": 127.70538754196058,
+            "z": 23.4105760990618
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": -99.85120948887585,
+            "y": 126.26827940704707,
+            "z": 23.409999847412905
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 79
+          },
+          "avatar": {
+            "x": -103.6615845991184,
+            "y": 126.0218834580441,
+            "z": 23.40999984741211
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": -103.99318794514642,
+            "y": 141.67837218383949,
+            "z": 23.40999984741211
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": -100.33171205999088,
+            "y": 141.9732825434429,
+            "z": 23.40999984741211
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 28
+          },
+          "avatar": {
+            "x": -100.82670908806284,
+            "y": 140.7137234724537,
+            "z": 23.40999984741211
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 269
+          },
+          "avatar": {
+            "x": -100.94710505505971,
+            "y": 127.71261425353347,
+            "z": 27.909370816270894
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": -100.1518228191875,
+            "y": 126.2745354623155,
+            "z": 27.909999847411243
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 73
+          },
+          "avatar": {
+            "x": -103.67121131516443,
+            "y": 126.02345634032798,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": -103.99341747931824,
+            "y": 141.6801412764101,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": -100.33181079128373,
+            "y": 141.97342312024153,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 28
+          },
+          "avatar": {
+            "x": -100.82670104233746,
+            "y": 140.71382209193,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 269
+          },
+          "avatar": {
+            "x": -100.94710397367668,
+            "y": 127.71271293750664,
+            "z": 32.40936980513356
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": -100.15185752500508,
+            "y": 126.27461435593423,
+            "z": 32.40999984741124
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 77
+          },
+          "avatar": {
+            "x": -103.68476507246437,
+            "y": 125.1044147836884,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 0
+          },
+          "avatar": {
+            "x": -103.68476507246437,
+            "y": 125.1044147836884,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 2165
+          },
+          "avatar": {
+            "x": -103.99903497560223,
+            "y": 20.463220040866904,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 232
+          },
+          "avatar": {
+            "x": -115.20800389287427,
+            "y": 20.15039380143787,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "leave-to-street",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 186
+          },
+          "avatar": {
+            "x": -124.188210027684,
+            "y": 19.73087291239823,
+            "z": 32.40999984741211
           }
         }
       ],
       "search": {
-        "query": "東武百貨店　池袋店",
+        "query": "\u6771\u6b66\u767e\u8ca8\u5e97\u3000\u6c60\u888b\u5e97",
         "hits": [
-          "東武百貨店　池袋店Tobu Department Store Ikebukuro B2"
+          "\u6771\u6b66\u767e\u8ca8\u5e97\u3000\u6c60\u888b\u5e97Tobu Department Store Ikebukuro B2"
         ]
       },
       "route": {
@@ -621,25 +1885,25 @@
         {
           "name": "entrance-outside",
           "file": "desktop-ikebukuro-parco-entrance-outside.png",
-          "sourceHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+          "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
           "avatar": {
-            "x": 60.61292579667243,
-            "y": 115.7432543184391,
-            "z": 28.45
+            "x": 63.05130537063562,
+            "y": 106.20162071563212,
+            "z": 28.4332907304336
           },
           "camera": {
             "lock": 0,
             "fov": 55,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 0.5,
-            "boomActual": 0.4999999999999985,
+            "boomWanted": 2.25,
+            "boomActual": 2.249999999999996,
             "raise": 0,
             "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 0.25,
+            "yaw": -0.40924589519903337,
+            "avatarFade": 1,
             "reflections": true,
-            "mode": "walk"
+            "mode": "guide"
           },
           "scene": {
             "greybox": {
@@ -649,7 +1913,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 27.69999998807907,
+              "buildMs": 32.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -660,7 +1924,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 1,
+                "cutMs": 0.9000000059604645,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -678,23 +1942,23 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 38,
-                "cutMs": 178.09999999403954,
+                "cutMs": 177.59999999403954,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
             },
             "world": [
               -182.1,
-              22.8,
+              0,
               -185.4,
               177.7,
               36.8,
               183.1
             ],
             "route": [
-              -70.5,
+              -70.1,
               24,
-              -124,
+              -123.6,
               90.5,
               29.8,
               49.1
@@ -706,32 +1970,32 @@
             "seeThrough": 4,
             "rayTrees": {
               "trees": 1664,
-              "triangles": 179953,
-              "bytes": 9440344,
-              "buildMs": 35.9
+              "triangles": 179625,
+              "bytes": 9426072,
+              "buildMs": 33.9
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 10240,
-              "attach": 3,
-              "sceneRayTrees": 57,
-              "greybox": 31,
+              "graph": 6,
+              "scene": 9329,
+              "attach": 4,
+              "sceneRayTrees": 55,
+              "greybox": 35,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 552,
-              "stairwellCut": 188,
+              "liveScene": 557,
+              "stairwellCut": 190,
               "cutTargets": 1,
-              "connectors": 363,
+              "connectors": 366,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 1,
-              "rayTrees": 36,
-              "signsShadowsAo": 104,
+              "walls": 2,
+              "rayTrees": 34,
+              "signsShadowsAo": 111,
               "navmeshPaths": 0,
-              "composer": 4,
-              "startAt": 240,
-              "total": 11033
+              "composer": 17,
+              "startAt": 1002,
+              "total": 10153
             },
             "bakedAo": {
               "materials": 84,
@@ -741,19 +2005,19 @@
             },
             "assets": [],
             "camera": [
-              60.08509766073709,
-              28.97649874916022,
-              -115.75070249555381
+              62.355633715679595,
+              29.278835168005326,
+              -104.09509445656424
             ],
             "cameraDirection": [
-              0.9198374523783888,
-              -0.019400235806426976,
-              0.391819718815542
+              0.39722622011041697,
+              -0.05892383996113652,
+              -0.9158271185879052
             ],
             "fov": 55,
             "far": 2000,
             "aspect": 1.6,
-            "mode": "walk",
+            "mode": "guide",
             "lighting": "scene",
             "coreLightsOn": 0,
             "environment": null,
@@ -778,10 +2042,15 @@
             "releasedTextures": null
           },
           "streetContextVisible": false,
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
+          "shaderErrors": [],
+          "approach": {
+            "name": "entrance-outside",
+            "distanceM": 7.888695760441398,
+            "guideDistanceM": 258.43226986666826,
+            "lastOccludedDistanceM": 8.001187844873456,
+            "openingVisible": true,
+            "headerVisible": true
+          }
         },
         {
           "name": "first-interior",
@@ -1611,7 +2880,7 @@
         {
           "name": "flag-off",
           "file": "desktop-ikebukuro-parco-flag-off.png",
-          "sourceHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 66,
             "y": 113,
@@ -1639,7 +2908,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 9.799999982118607,
+              "buildMs": 10.899999991059303,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -1650,7 +2919,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 2.4000000059604645,
+                "cutMs": 2.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -1668,7 +2937,7 @@
                 "skippedMeshes": 16,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 58.80000001192093,
+                "cutMs": 47.5,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -1691,30 +2960,30 @@
               "trees": 66,
               "triangles": 117295,
               "bytes": 6162832,
-              "buildMs": 34.9
+              "buildMs": 37.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 616,
+              "scene": 840,
               "attach": 1,
-              "sceneRayTrees": 30,
-              "greybox": 10,
-              "greyboxSegments": 1,
-              "portalCut": 2,
+              "sceneRayTrees": 32,
+              "greybox": 11,
+              "greyboxSegments": 2,
+              "portalCut": 3,
               "stairwellRecipe": 0,
-              "liveScene": 349,
-              "stairwellCut": 73,
+              "liveScene": 340,
+              "stairwellCut": 60,
               "cutTargets": 0,
-              "connectors": 276,
+              "connectors": 280,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
-              "rayTrees": 35,
+              "rayTrees": 38,
               "signsShadowsAo": 44,
               "navmeshPaths": 0,
-              "composer": 4,
-              "startAt": 653,
-              "total": 1095
+              "composer": 5,
+              "startAt": 706,
+              "total": 1318
             },
             "bakedAo": {
               "materials": 37,
@@ -1767,10 +3036,10 @@
         {
           "name": "flag-off-street",
           "file": "desktop-ikebukuro-parco-flag-off-street.png",
-          "sourceHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
-            "x": 108.5935132586806,
-            "y": 110.6954839315589,
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
             "z": 32.950000762939446
           },
           "camera": {
@@ -1795,7 +3064,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 9.799999982118607,
+              "buildMs": 10.899999991059303,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -1806,7 +3075,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 2.4000000059604645,
+                "cutMs": 2.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -1824,7 +3093,7 @@
                 "skippedMeshes": 16,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 58.80000001192093,
+                "cutMs": 47.5,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -1847,30 +3116,30 @@
               "trees": 66,
               "triangles": 117295,
               "bytes": 6162832,
-              "buildMs": 34.9
+              "buildMs": 37.5
             },
             "loadTimings": {
               "graph": 3,
-              "scene": 616,
+              "scene": 840,
               "attach": 1,
-              "sceneRayTrees": 30,
-              "greybox": 10,
-              "greyboxSegments": 1,
-              "portalCut": 2,
+              "sceneRayTrees": 32,
+              "greybox": 11,
+              "greyboxSegments": 2,
+              "portalCut": 3,
               "stairwellRecipe": 0,
-              "liveScene": 349,
-              "stairwellCut": 73,
+              "liveScene": 340,
+              "stairwellCut": 60,
               "cutTargets": 0,
-              "connectors": 276,
+              "connectors": 280,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
-              "rayTrees": 35,
+              "rayTrees": 38,
               "signsShadowsAo": 44,
               "navmeshPaths": 0,
-              "composer": 4,
-              "startAt": 653,
-              "total": 1095
+              "composer": 5,
+              "startAt": 706,
+              "total": 1318
             },
             "bakedAo": {
               "materials": 37,
@@ -1880,9 +3149,9 @@
             },
             "assets": [],
             "camera": [
-              110.86818327646138,
+              110.60638957692768,
               33.65594929242368,
-              -109.95784597924424
+              -110.06210923124554
             ],
             "cameraDirection": [
               -0.9214110028875487,
@@ -1919,6 +3188,175 @@
           "streetContextVisible": true,
           "loaded": [],
           "shaderErrors": []
+        },
+        {
+          "name": "entrance-3m",
+          "file": "desktop-ikebukuro-parco-entrance-3m.png",
+          "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
+          "avatar": {
+            "x": 65.08068001996774,
+            "y": 110.88045671270342,
+            "z": 28.44479052011315
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 55,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.22333333333333,
+            "raise": 0,
+            "pitch": 0.1,
+            "yaw": -0.9694341492564627,
+            "avatarFade": 1,
+            "reflections": true,
+            "mode": "guide"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 32.900000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.9000000059604645,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 724,
+                "skippedMeshes": 16,
+                "railM": 432.298894051474,
+                "cutMeshes": 38,
+                "cutMs": 177.59999999403954,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              0,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.1,
+              24,
+              -123.6,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1567,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1664,
+              "triangles": 179625,
+              "bytes": 9426072,
+              "buildMs": 33.9
+            },
+            "loadTimings": {
+              "graph": 6,
+              "scene": 9329,
+              "attach": 4,
+              "sceneRayTrees": 55,
+              "greybox": 35,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 557,
+              "stairwellCut": 190,
+              "cutTargets": 1,
+              "connectors": 366,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 2,
+              "rayTrees": 34,
+              "signsShadowsAo": 111,
+              "navmeshPaths": 0,
+              "composer": 17,
+              "startAt": 1002,
+              "total": 10153
+            },
+            "bakedAo": {
+              "materials": 84,
+              "scaled": 84,
+              "disabled": 0,
+              "textureBytes": 74448877
+            },
+            "assets": [],
+            "camera": [
+              64.0285748682754,
+              29.266820873036252,
+              -108.86520425510419
+            ],
+            "cameraDirection": [
+              0.7485488174698353,
+              0.013803839258506225,
+              -0.6629359862658208
+            ],
+            "fov": 55,
+            "far": 2000,
+            "aspect": 1.6,
+            "mode": "guide",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": 40.9,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "shaderErrors": [],
+          "approach": {
+            "name": "entrance-3m",
+            "distanceM": 2.8952564394813836,
+            "guideDistanceM": 263.53226986666874,
+            "openingVisible": true,
+            "headerVisible": true
+          }
         }
       ],
       "legs": [
@@ -1928,11 +3366,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 56
+            "steps": 49
           },
           "avatar": {
-            "x": 68.8909853265852,
-            "y": 112.21682845497864,
+            "x": 68.56712466076212,
+            "y": 112.31472489810633,
             "z": 28.450000762939453
           }
         },
@@ -1945,8 +3383,8 @@
             "steps": 333
           },
           "avatar": {
-            "x": 84.9859853148394,
-            "y": 112.21621358726922,
+            "x": 84.66183546023869,
+            "y": 112.21824028158657,
             "z": 28.450000762939453
           }
         },
@@ -1956,11 +3394,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 223
+            "steps": 216
           },
           "avatar": {
-            "x": 84.99999290131016,
-            "y": 122.9945378184272,
+            "x": 84.98911993558934,
+            "y": 122.65310898570503,
             "z": 28.450000762939453
           }
         },
@@ -1970,11 +3408,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 77
           },
           "avatar": {
-            "x": 88.96332253941996,
-            "y": 122.99994991535156,
+            "x": 88.69694500786689,
+            "y": 122.97378952949973,
             "z": 28.450000762939453
           }
         },
@@ -1984,11 +3422,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 46
+            "steps": 42
           },
           "avatar": {
-            "x": 89.94700755832322,
-            "y": 121.00606554189923,
+            "x": 89.7849519746803,
+            "y": 121.2599806602949,
             "z": 28.450000762939453
           }
         },
@@ -1998,12 +3436,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 260
+            "steps": 259
           },
           "avatar": {
-            "x": 89.9499906473677,
-            "y": 108.43939922929664,
-            "z": 23.950022653877785
+            "x": 89.9456019872167,
+            "y": 108.74267819458966,
+            "z": 23.950937700050996
           }
         },
         {
@@ -2012,12 +3450,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 35
+            "steps": 34
           },
           "avatar": {
-            "x": 89.01815802071174,
-            "y": 107.0275125245606,
-            "z": 23.95000076293947
+            "x": 89.16185203960116,
+            "y": 107.29828196638316,
+            "z": 23.950000762940746
           }
         },
         {
@@ -2026,11 +3464,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 83
+            "steps": 80
           },
           "avatar": {
-            "x": 85.00658538837536,
-            "y": 107.0000450904764,
+            "x": 85.30507815109534,
+            "y": 107.02186509994672,
             "z": 23.950000762939453
           }
         },
@@ -2040,11 +3478,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 330
+            "steps": 324
           },
           "avatar": {
-            "x": 85.00002056139402,
-            "y": 122.95004373947303,
+            "x": 85.00612878904788,
+            "y": 122.67901136862989,
             "z": 23.950000762939453
           }
         },
@@ -2054,11 +3492,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 88.96304483378233,
-            "y": 122.99953846214969,
+            "x": 88.6676555514489,
+            "y": 122.97328937663501,
             "z": 23.950000762939453
           }
         },
@@ -2068,11 +3506,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 38
+            "steps": 28
           },
           "avatar": {
-            "x": 88.05253764973638,
-            "y": 121.40444563969548,
+            "x": 88.17309902878978,
+            "y": 121.71355727931977,
             "z": 23.950000762939453
           }
         },
@@ -2082,12 +3520,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 293
+            "steps": 291
           },
           "avatar": {
-            "x": 88.04821882276616,
-            "y": 108.41975376344247,
-            "z": 28.44998476762172
+            "x": 88.02151980042031,
+            "y": 108.72486031230333,
+            "z": 28.44925975601914
           }
         },
         {
@@ -2096,12 +3534,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 35
+            "steps": 34
           },
           "avatar": {
-            "x": 88.99020039281642,
-            "y": 107.01461788645534,
-            "z": 28.45000076293944
+            "x": 88.83236819885819,
+            "y": 107.29550055381152,
+            "z": 28.45000076293843
           }
         },
         {
@@ -2110,11 +3548,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 73
           },
           "avatar": {
-            "x": 85.0268936548499,
-            "y": 107.00009852347107,
+            "x": 85.31447702848311,
+            "y": 107.02424822753343,
             "z": 28.450000762939453
           }
         },
@@ -2124,11 +3562,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 330
+            "steps": 324
           },
           "avatar": {
-            "x": 85.00008391545718,
-            "y": 122.95007599172648,
+            "x": 85.00627516813158,
+            "y": 122.68121509897125,
             "z": 28.450000762939453
           }
         },
@@ -2138,11 +3576,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 88.96310857695916,
-            "y": 122.99953954841297,
+            "x": 88.66796187167817,
+            "y": 122.97349623563693,
             "z": 28.450000762939453
           }
         },
@@ -2152,11 +3590,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 38
+            "steps": 28
           },
           "avatar": {
-            "x": 88.05255391631543,
-            "y": 121.40447382737713,
+            "x": 88.1732492062461,
+            "y": 121.71382544937094,
             "z": 28.450000762939453
           }
         },
@@ -2169,9 +3607,9 @@
             "steps": 269
           },
           "avatar": {
-            "x": 88.05000055134056,
-            "y": 108.40280741143538,
-            "z": 32.94998694484594
+            "x": 88.05289488395407,
+            "y": 108.712715844872,
+            "z": 32.94937069074717
           }
         },
         {
@@ -2180,12 +3618,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 35
+            "steps": 34
           },
           "avatar": {
-            "x": 88.99857055413169,
-            "y": 107.00211077728639,
-            "z": 32.95000076293944
+            "x": 88.848141033387,
+            "y": 107.2746170978253,
+            "z": 32.950000762938586
           }
         },
         {
@@ -2194,11 +3632,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 85
+            "steps": 77
           },
           "avatar": {
-            "x": 85.01348123564608,
-            "y": 106.0033786302753,
+            "x": 85.31523436814001,
+            "y": 106.10441486212883,
             "z": 32.950000762939446
           }
         },
@@ -2208,11 +3646,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 165
+            "steps": 152
           },
           "avatar": {
-            "x": 92.98848052202513,
-            "y": 106.00000487321925,
+            "x": 92.66122298187707,
+            "y": 106.00460304937509,
             "z": 32.950000762939446
           }
         },
@@ -2222,11 +3660,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 168
+            "steps": 162
           },
           "avatar": {
-            "x": 92.99994234502138,
-            "y": 114.11999678372068,
+            "x": 92.98616918584655,
+            "y": 113.82785748499977,
             "z": 32.950000762939446
           }
         },
@@ -2236,11 +3674,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 151
+            "steps": 145
           },
           "avatar": {
-            "x": 100.2981625499316,
-            "y": 114.16063279111235,
+            "x": 99.98732051487386,
+            "y": 114.14505801963496,
             "z": 32.950000762939446
           }
         },
@@ -2253,17 +3691,16 @@
             "steps": 186
           },
           "avatar": {
-            "x": 108.5935132586806,
-            "y": 110.6954839315589,
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
             "z": 32.950000762939446
           }
         }
       ],
       "search": {
-        "query": "池袋パルコ",
+        "query": "\u6c60\u888b\u30d1\u30eb\u30b3",
         "hits": [
-          "池袋パルコIkebukuro PARCO B2",
-          "Ikebukuro P'PARCO“池袋パルコ P'PARCO”"
+          "\u6c60\u888b\u30d1\u30eb\u30b3Ikebukuro PARCO B2"
         ]
       },
       "route": {
@@ -2273,10 +3710,10 @@
           "stepFree": false,
           "hours": "warn_unknown",
           "at": {
-            "weekday": "wed",
-            "minutes": 195.03715
+            "weekday": "tue",
+            "minutes": 349.3802166666667
           },
-          "today": "2026-11-25",
+          "today": "2026-11-24",
           "timeZone": "Asia/Tokyo"
         },
         "nodeIds": [
@@ -2545,11 +3982,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 142
+            "steps": 136
           },
           "avatar": {
-            "x": 71.462056589233,
-            "y": 116.4732958298646,
+            "x": 71.22490229252465,
+            "y": 116.30638915069095,
             "z": 28.450000762939453
           }
         },
@@ -2562,11 +3999,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 129
+            "steps": 123
           },
           "avatar": {
-            "x": 71.47254859238284,
-            "y": 116.48152273569491,
+            "x": 71.23196958808596,
+            "y": 116.31959144566262,
             "z": 28.450000762939453
           }
         }
@@ -2898,9 +4335,798 @@
           "shaderErrors": []
         },
         {
+          "name": "food-hall-aisle",
+          "file": "phone-tobu-ikebukuro-food-hall-aisle.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -99.85120948887585,
+            "y": 126.26827940704707,
+            "z": 23.409999847412905
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.7999999999999983,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 2.8415926535897933,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 30.900000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.19999998807907104,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 158.79999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -206.1,
+              22.3,
+              -185.4,
+              177.7,
+              36.2,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 35.3
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 553,
+              "stairwellCut": 172,
+              "cutTargets": 0,
+              "connectors": 381,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 365,
+              "total": 3671
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              -99.41976898785093,
+              24.2133953443897,
+              -127.97573596586494
+            ],
+            "cameraDirection": [
+              -0.29504587848016817,
+              -0.05663521240585586,
+              0.953803115064954
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:tobu-ikebukuro"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "escalator",
+          "file": "phone-tobu-ikebukuro-escalator.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -100.82670908806284,
+            "y": 140.7137234724537,
+            "z": 23.40999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.8000000000000014,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 3.141592653589793,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 30.900000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.19999998807907104,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 158.79999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -206.1,
+              22.3,
+              -185.4,
+              177.7,
+              36.2,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 35.3
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 553,
+              "stairwellCut": 172,
+              "cutTargets": 0,
+              "connectors": 381,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 365,
+              "total": 3671
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              -100.91912614967421,
+              24.213395344388903,
+              -142.4724184127142
+            ],
+            "cameraDirection": [
+              0,
+              -0.0566352124058558,
+              0.9983949382462551
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "loaded": [
+            "depato-interior:tobu-ikebukuro"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "street-door-inside",
+          "file": "phone-tobu-ikebukuro-street-door-inside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -115.20800389287427,
+            "y": 20.15039380143787,
+            "z": 32.40999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.618113888628192,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 30.900000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.19999998807907104,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 158.79999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.3,
+              -658.4,
+              691,
+              93.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 35.3
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 553,
+              "stairwellCut": 172,
+              "cutTargets": 0,
+              "connectors": 381,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 365,
+              "total": 3671
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              -113.4556487201828,
+              33.2133953443889,
+              -20.32589353054377
+            ],
+            "cameraDirection": [
+              -0.997277467765377,
+              -0.05663521240585523,
+              0.04722398758281067
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8871529787199184,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 0.729
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [
+            "depato-interior:tobu-ikebukuro"
+          ],
+          "shaderErrors": [],
+          "blackPixelPct": 0
+        },
+        {
+          "name": "street-door-outside",
+          "file": "phone-tobu-ikebukuro-street-door-outside.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -124.188210027684,
+            "y": 19.73087291239823,
+            "z": 32.40999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 1.8,
+            "boomActual": 1.800000000000005,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.5234787649616013,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 30.900000005960464,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.19999998807907104,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 719,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 37,
+                "cutMs": 158.79999999701977,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -623.7,
+              22.3,
+              -658.4,
+              691,
+              93.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 147039,
+              "bytes": 7670652,
+              "buildMs": 35.3
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 2785,
+              "attach": 63,
+              "sceneRayTrees": 57,
+              "greybox": 34,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 553,
+              "stairwellCut": 172,
+              "cutTargets": 0,
+              "connectors": 381,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 36,
+              "signsShadowsAo": 134,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 365,
+              "total": 3671
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              -125.94056520037547,
+              33.2133953443889,
+              -19.55537318329233
+            ],
+            "cameraDirection": [
+              0.997277467765377,
+              -0.056635212405855236,
+              -0.04722398758281067
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.1486305550275628,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
+          "loaded": [
+            "depato-interior:tobu-ikebukuro"
+          ],
+          "shaderErrors": []
+        },
+        {
+          "name": "B1-tie-skipped",
+          "file": "phone-tobu-ikebukuro-B1-tie-skipped.png",
+          "sourceHead": "51ddc54fa65a5c06a434fb6aa31380ae1997f750",
+          "avatar": {
+            "x": -60,
+            "y": 82,
+            "z": 27.90999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.2500000000000004,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": 1.8707963267948966,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 28.19999998807907,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.30000001192092896,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 724,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 38,
+                "cutMs": 211.19999998807907,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              23.3,
+              -185.4,
+              177.7,
+              35.3,
+              183.1
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 149854,
+              "bytes": 7817740,
+              "buildMs": 34.1
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 2731,
+              "attach": 51,
+              "sceneRayTrees": 54,
+              "greybox": 30,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 581,
+              "stairwellCut": 221,
+              "cutTargets": 0,
+              "connectors": 360,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 34,
+              "signsShadowsAo": 62,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 194,
+              "total": 3552
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              -57.92712929705712,
+              28.8092442186331,
+              -82.73795175642516
+            ],
+            "cameraDirection": [
+              -0.9532262512361716,
+              -0.06642974156314918,
+              0.2948674335868385
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "shaderErrors": [],
+          "blackPixelPct": 0.014278770202940818
+        },
+        {
           "name": "flag-off",
           "file": "phone-tobu-ikebukuro-flag-off.png",
-          "sourceHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+          "sourceHead": "51ddc54fa65a5c06a434fb6aa31380ae1997f750",
           "avatar": {
             "x": -60,
             "y": 82,
@@ -2912,10 +5138,10 @@
             "far": 2000,
             "slopeOn": false,
             "boomWanted": 2.4,
-            "boomActual": 2.3999999999999977,
+            "boomActual": 2.400000000000003,
             "raise": 0,
             "pitch": 0,
-            "yaw": 1.5707963267948966,
+            "yaw": 1.8707963267948966,
             "avatarFade": 1,
             "reflections": false,
             "mode": "walk"
@@ -2928,7 +5154,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 11,
+              "buildMs": 9.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -2939,7 +5165,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.699999988079071,
+                "cutMs": 0.800000011920929,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -2957,7 +5183,7 @@
                 "skippedMeshes": 2,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 41.099999994039536,
+                "cutMs": 52.89999997615814,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -2980,30 +5206,30 @@
               "trees": 65,
               "triangles": 117139,
               "bytes": 6154612,
-              "buildMs": 35.1
+              "buildMs": 34.4
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 552,
-              "attach": 32,
-              "sceneRayTrees": 30,
-              "greybox": 11,
+              "graph": 2,
+              "scene": 584,
+              "attach": 34,
+              "sceneRayTrees": 28,
+              "greybox": 10,
               "greyboxSegments": 1,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 308,
-              "stairwellCut": 52,
+              "liveScene": 317,
+              "stairwellCut": 64,
               "cutTargets": 0,
-              "connectors": 257,
+              "connectors": 253,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
               "rayTrees": 35,
-              "signsShadowsAo": 38,
+              "signsShadowsAo": 35,
               "navmeshPaths": 0,
-              "composer": 9,
-              "startAt": 476,
-              "total": 1020
+              "composer": 1,
+              "startAt": 221,
+              "total": 1049
             },
             "bakedAo": {
               "materials": 4,
@@ -3013,14 +5239,14 @@
             },
             "assets": [],
             "camera": [
-              -57.61709558763139,
+              -57.750835573912276,
               28.615948376896345,
-              -82.09241706161137
+              -82.7924857955725
             ],
             "cameraDirection": [
-              -0.9992507910293499,
-              -0.03870215274656787,
-              0
+              -0.9546207424579636,
+              -0.03870215274656786,
+              0.2952988002715009
             ],
             "fov": 50,
             "far": 2000,
@@ -3050,6 +5276,162 @@
             "releasedTextures": null
           },
           "streetContextVisible": false,
+          "shaderErrors": [],
+          "blackPixelPct": 0.03372220196864747
+        },
+        {
+          "name": "flag-off-street",
+          "file": "phone-tobu-ikebukuro-flag-off-street.png",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
+          "avatar": {
+            "x": -124.188210027684,
+            "y": 19.73087291239823,
+            "z": 32.40999984741211
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 50,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.4,
+            "boomActual": 2.399999999999981,
+            "raise": 0,
+            "pitch": 0,
+            "yaw": -1.5234787649616013,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "walk"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 0,
+              "landingPads": 0,
+              "lengthM": 0,
+              "portals": 0,
+              "meshes": 0,
+              "triangles": 524,
+              "buildMs": 11.699999988079071,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.7000000029802322,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 25,
+                "cutTriangles": 512,
+                "skippedMeshes": 2,
+                "railM": 278.10635328985836,
+                "cutMeshes": 13,
+                "cutMs": 53,
+                "skippedWells": 0,
+                "recipe": "replayed"
+              }
+            },
+            "world": [
+              -623.7,
+              25.5,
+              -658.4,
+              691,
+              93.4,
+              629.3
+            ],
+            "route": [],
+            "routeChildren": 0,
+            "walkable": 28,
+            "colliders": 35,
+            "cameraBlockers": 21,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 65,
+              "triangles": 117139,
+              "bytes": 6154612,
+              "buildMs": 36.6
+            },
+            "loadTimings": {
+              "graph": 6,
+              "scene": 799,
+              "attach": 37,
+              "sceneRayTrees": 33,
+              "greybox": 12,
+              "greyboxSegments": 2,
+              "portalCut": 1,
+              "stairwellRecipe": 0,
+              "liveScene": 332,
+              "stairwellCut": 64,
+              "cutTargets": 0,
+              "connectors": 267,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 0,
+              "rayTrees": 37,
+              "signsShadowsAo": 43,
+              "navmeshPaths": 0,
+              "composer": 2,
+              "startAt": 909,
+              "total": 1304
+            },
+            "bakedAo": {
+              "materials": 4,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 1398100
+            },
+            "assets": [],
+            "camera": [
+              -126.56407601543688,
+              33.11594837689634,
+              -19.525848133404068
+            ],
+            "cameraDirection": [
+              0.9981323626207173,
+              -0.03870215274656748,
+              -0.047264469339732273
+            ],
+            "fov": 50,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "walk",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 1.15,
+            "zone": "outdoor",
+            "overlayToneResidual": null,
+            "street": {
+              "active": true,
+              "opacity": 1
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": true,
           "loaded": [],
           "shaderErrors": []
         }
@@ -3061,11 +5443,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 165
+            "steps": 159
           },
           "avatar": {
-            "x": -116.5362105522721,
-            "y": 20.093417316037186,
+            "x": -116.8258859648498,
+            "y": 20.07970034304946,
             "z": 32.40999984741211
           }
         },
@@ -3078,8 +5460,8 @@
             "steps": 259
           },
           "avatar": {
-            "x": -104.01787727463044,
-            "y": 20.09459812740662,
+            "x": -104.30756107813713,
+            "y": 20.094242528662306,
             "z": 32.40999984741211
           }
         },
@@ -3089,11 +5471,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 2522
+            "steps": 2515
           },
           "avatar": {
-            "x": -104.00000128119923,
-            "y": 141.99126348332797,
+            "x": -104.00087750678357,
+            "y": 141.6521889902719,
             "z": 32.40999984741211
           }
         },
@@ -3103,11 +5485,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": -100.03667740120842,
-            "y": 141.9999198918439,
+            "x": -100.3413465333163,
+            "y": 141.9703254892912,
             "z": 32.40999984741211
           }
         },
@@ -3117,11 +5499,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 46
+            "steps": 42
           },
           "avatar": {
-            "x": -99.05298055326611,
-            "y": 140.00604135430518,
+            "x": -99.22858577910684,
+            "y": 140.2724846534382,
             "z": 32.40999984741211
           }
         },
@@ -3134,30 +5516,352 @@
             "steps": 260
           },
           "avatar": {
-            "x": -99.05000930977437,
-            "y": 127.4393750388947,
-            "z": 27.910021731577903
+            "x": -99.0542595264213,
+            "y": 127.70702718191234,
+            "z": 27.910585313054412
           }
         },
         {
           "name": "1F-to-B1",
           "walk": {
-            "done": false,
-            "stuck": true,
+            "done": true,
+            "stuck": false,
             "timedOut": false,
-            "steps": 90
+            "steps": 34
           },
           "avatar": {
-            "x": -99.96841617395907,
-            "y": 126.0735013724631,
+            "x": -99.85065402666808,
+            "y": 126.26956405389105,
+            "z": 27.90999984741292
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 79
+          },
+          "avatar": {
+            "x": -103.66095512418889,
+            "y": 126.02202619684212,
             "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": -103.9931779634779,
+            "y": 141.67850178955152,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": -100.33169262902524,
+            "y": 141.97329480738762,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 42
+          },
+          "avatar": {
+            "x": -99.2259418936134,
+            "y": 140.27088025413173,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 260
+          },
+          "avatar": {
+            "x": -99.05417457558133,
+            "y": 127.70538754196058,
+            "z": 23.4105760990618
+          }
+        },
+        {
+          "name": "B1-to-B2",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": -99.85120948887585,
+            "y": 126.26827940704707,
+            "z": 23.409999847412905
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 79
+          },
+          "avatar": {
+            "x": -103.6615845991184,
+            "y": 126.0218834580441,
+            "z": 23.40999984741211
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": -103.99318794514642,
+            "y": 141.67837218383949,
+            "z": 23.40999984741211
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": -100.33171205999088,
+            "y": 141.9732825434429,
+            "z": 23.40999984741211
+          }
+        },
+        {
+          "name": "board-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 28
+          },
+          "avatar": {
+            "x": -100.82670908806284,
+            "y": 140.7137234724537,
+            "z": 23.40999984741211
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 269
+          },
+          "avatar": {
+            "x": -100.94710505505971,
+            "y": 127.71261425353347,
+            "z": 27.909370816270894
+          }
+        },
+        {
+          "name": "ride-up-0",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": -100.1518228191875,
+            "y": 126.2745354623155,
+            "z": 27.909999847411243
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 73
+          },
+          "avatar": {
+            "x": -103.67121131516443,
+            "y": 126.02345634032798,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 324
+          },
+          "avatar": {
+            "x": -103.99341747931824,
+            "y": 141.6801412764101,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 76
+          },
+          "avatar": {
+            "x": -100.33181079128373,
+            "y": 141.97342312024153,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "board-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 28
+          },
+          "avatar": {
+            "x": -100.82670104233746,
+            "y": 140.71382209193,
+            "z": 27.90999984741211
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 269
+          },
+          "avatar": {
+            "x": -100.94710397367668,
+            "y": 127.71271293750664,
+            "z": 32.40936980513356
+          }
+        },
+        {
+          "name": "ride-up-1",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 34
+          },
+          "avatar": {
+            "x": -100.15185752500508,
+            "y": 126.27461435593423,
+            "z": 32.40999984741124
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 77
+          },
+          "avatar": {
+            "x": -103.68476507246437,
+            "y": 125.1044147836884,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 0
+          },
+          "avatar": {
+            "x": -103.68476507246437,
+            "y": 125.1044147836884,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 2165
+          },
+          "avatar": {
+            "x": -103.99903497560223,
+            "y": 20.463220040866904,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "1F-street-door",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 232
+          },
+          "avatar": {
+            "x": -115.20800389287427,
+            "y": 20.15039380143787,
+            "z": 32.40999984741211
+          }
+        },
+        {
+          "name": "leave-to-street",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 186
+          },
+          "avatar": {
+            "x": -124.188210027684,
+            "y": 19.73087291239823,
+            "z": 32.40999984741211
           }
         }
       ],
       "search": {
-        "query": "東武百貨店　池袋店",
+        "query": "\u6771\u6b66\u767e\u8ca8\u5e97\u3000\u6c60\u888b\u5e97",
         "hits": [
-          "東武百貨店　池袋店Tobu Department Store Ikebukuro B2"
+          "\u6771\u6b66\u767e\u8ca8\u5e97\u3000\u6c60\u888b\u5e97Tobu Department Store Ikebukuro B2"
         ]
       },
       "route": {
@@ -3189,25 +5893,25 @@
         {
           "name": "entrance-outside",
           "file": "phone-ikebukuro-parco-entrance-outside.png",
-          "sourceHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+          "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
           "avatar": {
-            "x": 60.61292579667243,
-            "y": 115.7432543184391,
-            "z": 28.45
+            "x": 62.51013879748038,
+            "y": 104.95393111641309,
+            "z": 28.430224119852387
           },
           "camera": {
             "lock": 0,
             "fov": 65,
             "far": 2000,
             "slopeOn": false,
-            "boomWanted": 0.5,
-            "boomActual": 0.4999999999999985,
+            "boomWanted": 2.25,
+            "boomActual": 2.249999999999996,
             "raise": 0,
             "pitch": 0,
-            "yaw": -1.9734851198546728,
-            "avatarFade": 0.25,
+            "yaw": -0.40924589519903337,
+            "avatarFade": 1,
             "reflections": false,
-            "mode": "walk"
+            "mode": "guide"
           },
           "scene": {
             "greybox": {
@@ -3217,7 +5921,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 25.5,
+              "buildMs": 23.5,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -3246,23 +5950,23 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 38,
-                "cutMs": 156.2000000178814,
+                "cutMs": 165.80000001192093,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
             },
             "world": [
               -182.1,
-              22.8,
+              0,
               -185.4,
               177.7,
               36.8,
               183.1
             ],
             "route": [
-              -70.5,
+              -70.2,
               24,
-              -124,
+              -123.7,
               90.5,
               29.8,
               49.1
@@ -3274,32 +5978,32 @@
             "seeThrough": 4,
             "rayTrees": {
               "trees": 1663,
-              "triangles": 175477,
-              "bytes": 9199996,
-              "buildMs": 35.8
+              "triangles": 149854,
+              "bytes": 7817740,
+              "buildMs": 43.3
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 5658,
-              "attach": 33,
-              "sceneRayTrees": 57,
-              "greybox": 28,
+              "scene": 2808,
+              "attach": 41,
+              "sceneRayTrees": 48,
+              "greybox": 26,
               "greyboxSegments": 2,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 529,
-              "stairwellCut": 165,
+              "liveScene": 542,
+              "stairwellCut": 175,
               "cutTargets": 0,
-              "connectors": 364,
+              "connectors": 367,
               "connectorWalls": 0,
               "attachGreybox": 0,
-              "walls": 2,
-              "rayTrees": 36,
-              "signsShadowsAo": 50,
+              "walls": 1,
+              "rayTrees": 43,
+              "signsShadowsAo": 52,
               "navmeshPaths": 0,
-              "composer": 2,
-              "startAt": 498,
-              "total": 6400
+              "composer": 3,
+              "startAt": 377,
+              "total": 3569
             },
             "bakedAo": {
               "materials": 15,
@@ -3309,19 +6013,19 @@
             },
             "assets": [],
             "camera": [
-              60.12725871221208,
-              28.97649874916022,
-              -115.84967993930164
+              61.7157682789054,
+              29.27576855742411,
+              -102.89021400301127
             ],
             "cameraDirection": [
-              0.9198374523783888,
-              -0.019400235806426976,
-              0.391819718815542
+              0.3972262201104179,
+              -0.058923839961136516,
+              -0.915827118587905
             ],
             "fov": 65,
             "far": 2000,
             "aspect": 0.462,
-            "mode": "walk",
+            "mode": "guide",
             "lighting": "scene",
             "coreLightsOn": 0,
             "environment": null,
@@ -3346,10 +6050,15 @@
             "releasedTextures": null
           },
           "streetContextVisible": false,
-          "loaded": [
-            "depato-interior:ikebukuro-parco"
-          ],
-          "shaderErrors": []
+          "shaderErrors": [],
+          "approach": {
+            "name": "entrance-outside",
+            "distanceM": 9.239957380030685,
+            "guideDistanceM": 257.07226986666814,
+            "lastOccludedDistanceM": 9.352676815342484,
+            "openingVisible": true,
+            "headerVisible": true
+          }
         },
         {
           "name": "first-interior",
@@ -4179,7 +6888,7 @@
         {
           "name": "flag-off",
           "file": "phone-ikebukuro-parco-flag-off.png",
-          "sourceHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
             "x": 66,
             "y": 113,
@@ -4207,7 +6916,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 11,
+              "buildMs": 11.699999988079071,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -4218,7 +6927,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.699999988079071,
+                "cutMs": 0.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -4236,7 +6945,7 @@
                 "skippedMeshes": 2,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 41.099999994039536,
+                "cutMs": 53,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -4259,30 +6968,30 @@
               "trees": 65,
               "triangles": 117139,
               "bytes": 6154612,
-              "buildMs": 35.1
+              "buildMs": 36.6
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 552,
-              "attach": 32,
-              "sceneRayTrees": 30,
-              "greybox": 11,
-              "greyboxSegments": 1,
+              "graph": 6,
+              "scene": 799,
+              "attach": 37,
+              "sceneRayTrees": 33,
+              "greybox": 12,
+              "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 308,
-              "stairwellCut": 52,
+              "liveScene": 332,
+              "stairwellCut": 64,
               "cutTargets": 0,
-              "connectors": 257,
+              "connectors": 267,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
-              "rayTrees": 35,
-              "signsShadowsAo": 38,
+              "rayTrees": 37,
+              "signsShadowsAo": 43,
               "navmeshPaths": 0,
-              "composer": 9,
-              "startAt": 476,
-              "total": 1020
+              "composer": 2,
+              "startAt": 909,
+              "total": 1304
             },
             "bakedAo": {
               "materials": 4,
@@ -4335,10 +7044,10 @@
         {
           "name": "flag-off-street",
           "file": "phone-ikebukuro-parco-flag-off-street.png",
-          "sourceHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+          "sourceHead": "99287559dd66b1f087e44232e16869d8b951bd7d",
           "avatar": {
-            "x": 108.5935132586806,
-            "y": 110.6954839315589,
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
             "z": 32.950000762939446
           },
           "camera": {
@@ -4363,7 +7072,7 @@
               "portals": 0,
               "meshes": 0,
               "triangles": 524,
-              "buildMs": 11,
+              "buildMs": 11.699999988079071,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -4374,7 +7083,7 @@
               "colliderExemptions": 0,
               "portalCut": {
                 "cutTriangles": 0,
-                "cutMs": 0.699999988079071,
+                "cutMs": 0.7000000029802322,
                 "cutMeshes": 0,
                 "clipped": 0,
                 "skipped": [],
@@ -4392,7 +7101,7 @@
                 "skippedMeshes": 2,
                 "railM": 278.10635328985836,
                 "cutMeshes": 13,
-                "cutMs": 41.099999994039536,
+                "cutMs": 53,
                 "skippedWells": 0,
                 "recipe": "replayed"
               }
@@ -4415,30 +7124,30 @@
               "trees": 65,
               "triangles": 117139,
               "bytes": 6154612,
-              "buildMs": 35.1
+              "buildMs": 36.6
             },
             "loadTimings": {
-              "graph": 3,
-              "scene": 552,
-              "attach": 32,
-              "sceneRayTrees": 30,
-              "greybox": 11,
-              "greyboxSegments": 1,
+              "graph": 6,
+              "scene": 799,
+              "attach": 37,
+              "sceneRayTrees": 33,
+              "greybox": 12,
+              "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 308,
-              "stairwellCut": 52,
+              "liveScene": 332,
+              "stairwellCut": 64,
               "cutTargets": 0,
-              "connectors": 257,
+              "connectors": 267,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 0,
-              "rayTrees": 35,
-              "signsShadowsAo": 38,
+              "rayTrees": 37,
+              "signsShadowsAo": 43,
               "navmeshPaths": 0,
-              "composer": 9,
-              "startAt": 476,
-              "total": 1020
+              "composer": 2,
+              "startAt": 909,
+              "total": 1304
             },
             "bakedAo": {
               "materials": 4,
@@ -4448,9 +7157,9 @@
             },
             "assets": [],
             "camera": [
-              110.82655435372219,
+              110.56476065418849,
               33.65594929242368,
-              -109.85864355274214
+              -109.96290680474344
             ],
             "cameraDirection": [
               -0.9214110028875487,
@@ -4487,6 +7196,175 @@
           "streetContextVisible": true,
           "loaded": [],
           "shaderErrors": []
+        },
+        {
+          "name": "entrance-3m",
+          "file": "phone-ikebukuro-parco-entrance-3m.png",
+          "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
+          "avatar": {
+            "x": 65.08068001996774,
+            "y": 110.88045671270342,
+            "z": 28.44479052011315
+          },
+          "camera": {
+            "lock": 0,
+            "fov": 65,
+            "far": 2000,
+            "slopeOn": false,
+            "boomWanted": 2.25,
+            "boomActual": 2.223333333333329,
+            "raise": 0,
+            "pitch": 0.1,
+            "yaw": -0.9694341492564627,
+            "avatarFade": 1,
+            "reflections": false,
+            "mode": "guide"
+          },
+          "scene": {
+            "greybox": {
+              "runs": 2,
+              "landingPads": 0,
+              "lengthM": 3.9737906535902767,
+              "portals": 0,
+              "meshes": 3,
+              "triangles": 838,
+              "buildMs": 23.5,
+              "overBudget": null,
+              "connectors": {
+                "escalator": 0,
+                "stairs": 25,
+                "elevator": 0
+              },
+              "visualSuppressed": 0,
+              "colliderExemptions": 0,
+              "portalCut": {
+                "cutTriangles": 0,
+                "cutMs": 0.30000001192092896,
+                "cutMeshes": 0,
+                "clipped": 0,
+                "skipped": [],
+                "clonedWalkable": 0,
+                "clonedWalkableVertices": [],
+                "largeSharedVertices": [],
+                "perRegion": {},
+                "heights": {},
+                "maxHeights": {},
+                "meshKeysHash": 2166136261
+              },
+              "stairwells": {
+                "wells": 35,
+                "cutTriangles": 724,
+                "skippedMeshes": 2,
+                "railM": 432.298894051474,
+                "cutMeshes": 38,
+                "cutMs": 165.80000001192093,
+                "skippedWells": 0,
+                "recipe": "stale"
+              }
+            },
+            "world": [
+              -182.1,
+              0,
+              -185.4,
+              177.7,
+              36.8,
+              183.1
+            ],
+            "route": [
+              -70.2,
+              24,
+              -123.7,
+              90.5,
+              29.8,
+              49.1
+            ],
+            "routeChildren": 8,
+            "walkable": 72,
+            "colliders": 1566,
+            "cameraBlockers": 56,
+            "seeThrough": 4,
+            "rayTrees": {
+              "trees": 1663,
+              "triangles": 149854,
+              "bytes": 7817740,
+              "buildMs": 43.3
+            },
+            "loadTimings": {
+              "graph": 4,
+              "scene": 2808,
+              "attach": 41,
+              "sceneRayTrees": 48,
+              "greybox": 26,
+              "greyboxSegments": 2,
+              "portalCut": 0,
+              "stairwellRecipe": 0,
+              "liveScene": 542,
+              "stairwellCut": 175,
+              "cutTargets": 0,
+              "connectors": 367,
+              "connectorWalls": 0,
+              "attachGreybox": 0,
+              "walls": 1,
+              "rayTrees": 43,
+              "signsShadowsAo": 52,
+              "navmeshPaths": 0,
+              "composer": 3,
+              "startAt": 377,
+              "total": 3569
+            },
+            "bakedAo": {
+              "materials": 15,
+              "scaled": 0,
+              "disabled": 0,
+              "textureBytes": 5242879
+            },
+            "assets": [],
+            "camera": [
+              63.96220572615325,
+              29.259019850296326,
+              -108.95570912274877
+            ],
+            "cameraDirection": [
+              0.7490069428792382,
+              0.014905977681176488,
+              -0.66239445298709
+            ],
+            "fov": 65,
+            "far": 2000,
+            "aspect": 0.462,
+            "mode": "guide",
+            "lighting": "scene",
+            "coreLightsOn": 0,
+            "environment": null,
+            "environmentIntensity": null,
+            "exposure": 0.8049999999999999,
+            "zone": "passage",
+            "overlayToneResidual": null,
+            "street": {
+              "active": false,
+              "opacity": 0
+            },
+            "shadows": {
+              "following": false,
+              "fit": null,
+              "texelM": 0,
+              "halfExtent": 0,
+              "casters": 0,
+              "candidates": 0,
+              "tallCandidates": 0,
+              "receivers": 0
+            },
+            "releasedTextures": null
+          },
+          "streetContextVisible": false,
+          "shaderErrors": [],
+          "approach": {
+            "name": "entrance-3m",
+            "distanceM": 2.8952564394813836,
+            "guideDistanceM": 263.53226986666874,
+            "openingVisible": true,
+            "headerVisible": true
+          }
         }
       ],
       "legs": [
@@ -4496,11 +7374,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 56
+            "steps": 49
           },
           "avatar": {
-            "x": 68.8909853265852,
-            "y": 112.21682845497864,
+            "x": 68.56712466076212,
+            "y": 112.31472489810633,
             "z": 28.450000762939453
           }
         },
@@ -4513,8 +7391,8 @@
             "steps": 333
           },
           "avatar": {
-            "x": 84.9859853148394,
-            "y": 112.21621358726922,
+            "x": 84.66183546023869,
+            "y": 112.21824028158657,
             "z": 28.450000762939453
           }
         },
@@ -4524,11 +7402,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 223
+            "steps": 216
           },
           "avatar": {
-            "x": 84.99999290131016,
-            "y": 122.9945378184272,
+            "x": 84.98911993558934,
+            "y": 122.65310898570503,
             "z": 28.450000762939453
           }
         },
@@ -4538,11 +7416,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 77
           },
           "avatar": {
-            "x": 88.96332253941996,
-            "y": 122.99994991535156,
+            "x": 88.69694500786689,
+            "y": 122.97378952949973,
             "z": 28.450000762939453
           }
         },
@@ -4552,11 +7430,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 46
+            "steps": 42
           },
           "avatar": {
-            "x": 89.94700755832322,
-            "y": 121.00606554189923,
+            "x": 89.7849519746803,
+            "y": 121.2599806602949,
             "z": 28.450000762939453
           }
         },
@@ -4566,12 +7444,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 260
+            "steps": 259
           },
           "avatar": {
-            "x": 89.9499906473677,
-            "y": 108.43939922929664,
-            "z": 23.950022653877785
+            "x": 89.9456019872167,
+            "y": 108.74267819458966,
+            "z": 23.950937700050996
           }
         },
         {
@@ -4580,12 +7458,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 35
+            "steps": 34
           },
           "avatar": {
-            "x": 89.01815802071174,
-            "y": 107.0275125245606,
-            "z": 23.95000076293947
+            "x": 89.16185203960116,
+            "y": 107.29828196638316,
+            "z": 23.950000762940746
           }
         },
         {
@@ -4594,11 +7472,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 83
+            "steps": 80
           },
           "avatar": {
-            "x": 85.00658538837536,
-            "y": 107.0000450904764,
+            "x": 85.30507815109534,
+            "y": 107.02186509994672,
             "z": 23.950000762939453
           }
         },
@@ -4608,11 +7486,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 330
+            "steps": 324
           },
           "avatar": {
-            "x": 85.00002056139402,
-            "y": 122.95004373947303,
+            "x": 85.00612878904788,
+            "y": 122.67901136862989,
             "z": 23.950000762939453
           }
         },
@@ -4622,11 +7500,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 88.96304483378233,
-            "y": 122.99953846214969,
+            "x": 88.6676555514489,
+            "y": 122.97328937663501,
             "z": 23.950000762939453
           }
         },
@@ -4636,11 +7514,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 38
+            "steps": 28
           },
           "avatar": {
-            "x": 88.05253764973638,
-            "y": 121.40444563969548,
+            "x": 88.17309902878978,
+            "y": 121.71355727931977,
             "z": 23.950000762939453
           }
         },
@@ -4650,12 +7528,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 293
+            "steps": 291
           },
           "avatar": {
-            "x": 88.04821882276616,
-            "y": 108.41975376344247,
-            "z": 28.44998476762172
+            "x": 88.02151980042031,
+            "y": 108.72486031230333,
+            "z": 28.44925975601914
           }
         },
         {
@@ -4664,12 +7542,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 35
+            "steps": 34
           },
           "avatar": {
-            "x": 88.99020039281642,
-            "y": 107.01461788645534,
-            "z": 28.45000076293944
+            "x": 88.83236819885819,
+            "y": 107.29550055381152,
+            "z": 28.45000076293843
           }
         },
         {
@@ -4678,11 +7556,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 73
           },
           "avatar": {
-            "x": 85.0268936548499,
-            "y": 107.00009852347107,
+            "x": 85.31447702848311,
+            "y": 107.02424822753343,
             "z": 28.450000762939453
           }
         },
@@ -4692,11 +7570,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 330
+            "steps": 324
           },
           "avatar": {
-            "x": 85.00008391545718,
-            "y": 122.95007599172648,
+            "x": 85.00627516813158,
+            "y": 122.68121509897125,
             "z": 28.450000762939453
           }
         },
@@ -4706,11 +7584,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 88.96310857695916,
-            "y": 122.99953954841297,
+            "x": 88.66796187167817,
+            "y": 122.97349623563693,
             "z": 28.450000762939453
           }
         },
@@ -4720,11 +7598,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 38
+            "steps": 28
           },
           "avatar": {
-            "x": 88.05255391631543,
-            "y": 121.40447382737713,
+            "x": 88.1732492062461,
+            "y": 121.71382544937094,
             "z": 28.450000762939453
           }
         },
@@ -4737,9 +7615,9 @@
             "steps": 269
           },
           "avatar": {
-            "x": 88.05000055134056,
-            "y": 108.40280741143538,
-            "z": 32.94998694484594
+            "x": 88.05289488395407,
+            "y": 108.712715844872,
+            "z": 32.94937069074717
           }
         },
         {
@@ -4748,12 +7626,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 35
+            "steps": 34
           },
           "avatar": {
-            "x": 88.99857055413169,
-            "y": 107.00211077728639,
-            "z": 32.95000076293944
+            "x": 88.848141033387,
+            "y": 107.2746170978253,
+            "z": 32.950000762938586
           }
         },
         {
@@ -4762,11 +7640,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 85
+            "steps": 77
           },
           "avatar": {
-            "x": 85.01348123564608,
-            "y": 106.0033786302753,
+            "x": 85.31523436814001,
+            "y": 106.10441486212883,
             "z": 32.950000762939446
           }
         },
@@ -4776,11 +7654,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 165
+            "steps": 152
           },
           "avatar": {
-            "x": 92.98848052202513,
-            "y": 106.00000487321925,
+            "x": 92.66122298187707,
+            "y": 106.00460304937509,
             "z": 32.950000762939446
           }
         },
@@ -4790,11 +7668,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 168
+            "steps": 162
           },
           "avatar": {
-            "x": 92.99994234502138,
-            "y": 114.11999678372068,
+            "x": 92.98616918584655,
+            "y": 113.82785748499977,
             "z": 32.950000762939446
           }
         },
@@ -4804,11 +7682,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 151
+            "steps": 145
           },
           "avatar": {
-            "x": 100.2981625499316,
-            "y": 114.16063279111235,
+            "x": 99.98732051487386,
+            "y": 114.14505801963496,
             "z": 32.950000762939446
           }
         },
@@ -4821,17 +7699,16 @@
             "steps": 186
           },
           "avatar": {
-            "x": 108.5935132586806,
-            "y": 110.6954839315589,
+            "x": 108.3317195591469,
+            "y": 110.7997471835602,
             "z": 32.950000762939446
           }
         }
       ],
       "search": {
-        "query": "池袋パルコ",
+        "query": "\u6c60\u888b\u30d1\u30eb\u30b3",
         "hits": [
-          "池袋パルコIkebukuro PARCO B2",
-          "Ikebukuro P'PARCO“池袋パルコ P'PARCO”"
+          "\u6c60\u888b\u30d1\u30eb\u30b3Ikebukuro PARCO B2"
         ]
       },
       "route": {
@@ -4841,10 +7718,10 @@
           "stepFree": false,
           "hours": "warn_unknown",
           "at": {
-            "weekday": "wed",
-            "minutes": 196.79946666666666
+            "weekday": "tue",
+            "minutes": 351.51351666666665
           },
-          "today": "2026-11-25",
+          "today": "2026-11-24",
           "timeZone": "Asia/Tokyo"
         },
         "nodeIds": [
@@ -5113,11 +7990,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 142
+            "steps": 136
           },
           "avatar": {
-            "x": 71.462056589233,
-            "y": 116.4732958298646,
+            "x": 71.22490229252465,
+            "y": 116.30638915069095,
             "z": 28.450000762939453
           }
         },
@@ -5130,11 +8007,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 129
+            "steps": 123
           },
           "avatar": {
-            "x": 71.47254859238284,
-            "y": 116.48152273569491,
+            "x": 71.23196958808596,
+            "y": 116.31959144566262,
             "z": 28.450000762939453
           }
         }
@@ -5819,12 +8696,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 120
+            "steps": 114
           },
           "avatar": {
-            "x": 14.973458969132645,
-            "y": -65.98407538147958,
-            "z": 27.580002134535942
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
           }
         },
         {
@@ -5833,12 +8710,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 124
+            "steps": 121
           },
           "avatar": {
-            "x": 14.999900074540443,
-            "y": -71.97735038871812,
-            "z": 27.700000762939304
+            "x": 14.985598392773184,
+            "y": -71.67738645486276,
+            "z": 27.70000076293334
           }
         },
         {
@@ -5847,25 +8724,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 163
+            "steps": 157
           },
           "avatar": {
-            "x": 22.878201074313598,
-            "y": -71.99992178834484,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 858
-          },
-          "avatar": {
-            "x": 22.90548020852416,
-            "y": -113.46991281617622,
+            "x": 22.56764387906992,
+            "y": -71.98623758648465,
             "z": 27.700000762939453
           }
         },
@@ -5875,11 +8738,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 852
           },
           "avatar": {
-            "x": 26.868701430147937,
-            "y": -113.49972321003563,
+            "x": 22.902772605584484,
+            "y": -113.16487390116883,
             "z": 27.700000762939453
           }
         },
@@ -5889,11 +8752,25 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 310
+            "steps": 76
           },
           "avatar": {
-            "x": 26.905458323831336,
-            "y": -128.48301145756395,
+            "x": 26.563298600360095,
+            "y": -113.47134938036606,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "aisle",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 304
+          },
+          "avatar": {
+            "x": 26.89777814958358,
+            "y": -128.16087516834313,
             "z": 27.700000762939453
           }
         },
@@ -5903,11 +8780,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 309
+            "steps": 297
           },
           "avatar": {
-            "x": 26.905499866453177,
-            "y": -113.54801145762144,
+            "x": 26.905338895178915,
+            "y": -113.80587715945663,
             "z": 27.700000762939453
           }
         },
@@ -5917,11 +8794,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 22.94245199854172,
-            "y": -113.50044352984281,
+            "x": 23.24269955017934,
+            "y": -113.52578644872506,
             "z": 27.700000762939453
           }
         },
@@ -5931,11 +8808,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 403
+            "steps": 397
           },
           "avatar": {
-            "x": 22.905541963568403,
-            "y": -94.02214516746626,
+            "x": 22.91137703107579,
+            "y": -94.34031378060016,
             "z": 27.700000762939453
           }
         },
@@ -5945,11 +8822,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 26.868814557894765,
-            "y": -94.00020310344549,
+            "x": 26.571448952590078,
+            "y": -94.02846236226125,
             "z": 27.700000762939453
           }
         },
@@ -5959,11 +8836,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 38
+            "steps": 28
           },
           "avatar": {
-            "x": 25.958215477014072,
-            "y": -95.59524346605205,
+            "x": 26.07760032595968,
+            "y": -95.28847214201934,
             "z": 27.700000762939453
           }
         },
@@ -5976,9 +8853,9 @@
             "steps": 269
           },
           "avatar": {
-            "x": 25.955500645243394,
-            "y": -108.5969098492828,
-            "z": 32.19998690140315
+            "x": 25.958347226201887,
+            "y": -108.28959189415386,
+            "z": 32.19939616426528
           }
         },
         {
@@ -5990,8 +8867,8 @@
             "steps": 43
           },
           "avatar": {
-            "x": 26.88375110474508,
-            "y": -110.45643143530427,
+            "x": 26.776922370557315,
+            "y": -110.1999332713656,
             "z": 32.20000076293945
           }
         },
@@ -6004,8 +8881,8 @@
             "steps": 62
           },
           "avatar": {
-            "x": 26.905164299198745,
-            "y": -113.45302159517203,
+            "x": 26.89359036708918,
+            "y": -113.1943279831054,
             "z": 32.20000076293945
           }
         },
@@ -6015,11 +8892,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 22.942104325962546,
-            "y": -113.49957006070638,
+            "x": 23.23099948441926,
+            "y": -113.47505169774448,
             "z": 32.20000076293945
           }
         },
@@ -6029,11 +8906,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 186
+            "steps": 180
           },
           "avatar": {
-            "x": 22.90554272043857,
-            "y": -122.48949571384718,
+            "x": 22.91742367438705,
+            "y": -122.16939872390864,
             "z": 32.20000076293945
           }
         },
@@ -6043,11 +8920,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 464
+            "steps": 458
           },
           "avatar": {
-            "x": 45.332206934265976,
-            "y": -122.4999846626861,
+            "x": 45.0516899515247,
+            "y": -122.49538566211626,
             "z": 32.20000076293945
           }
         }
@@ -6730,12 +9607,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 120
+            "steps": 114
           },
           "avatar": {
-            "x": 14.973458969132645,
-            "y": -65.98407538147958,
-            "z": 27.580002134535942
+            "x": 14.724786020676026,
+            "y": -65.83487161240558,
+            "z": 27.58008083617652
           }
         },
         {
@@ -6744,12 +9621,12 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 124
+            "steps": 121
           },
           "avatar": {
-            "x": 14.999900074540443,
-            "y": -71.97735038871812,
-            "z": 27.700000762939304
+            "x": 14.985598392773184,
+            "y": -71.67738645486276,
+            "z": 27.70000076293334
           }
         },
         {
@@ -6758,25 +9635,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 163
+            "steps": 157
           },
           "avatar": {
-            "x": 22.878201074313598,
-            "y": -71.99992178834484,
-            "z": 27.700000762939453
-          }
-        },
-        {
-          "name": "aisle",
-          "walk": {
-            "done": true,
-            "stuck": false,
-            "timedOut": false,
-            "steps": 858
-          },
-          "avatar": {
-            "x": 22.90548020852416,
-            "y": -113.46991281617622,
+            "x": 22.56764387906992,
+            "y": -71.98623758648465,
             "z": 27.700000762939453
           }
         },
@@ -6786,11 +9649,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 852
           },
           "avatar": {
-            "x": 26.868701430147937,
-            "y": -113.49972321003563,
+            "x": 22.902772605584484,
+            "y": -113.16487390116883,
             "z": 27.700000762939453
           }
         },
@@ -6800,11 +9663,25 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 310
+            "steps": 76
           },
           "avatar": {
-            "x": 26.905458323831336,
-            "y": -128.48301145756395,
+            "x": 26.563298600360095,
+            "y": -113.47134938036606,
+            "z": 27.700000762939453
+          }
+        },
+        {
+          "name": "aisle",
+          "walk": {
+            "done": true,
+            "stuck": false,
+            "timedOut": false,
+            "steps": 304
+          },
+          "avatar": {
+            "x": 26.89777814958358,
+            "y": -128.16087516834313,
             "z": 27.700000762939453
           }
         },
@@ -6814,11 +9691,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 309
+            "steps": 297
           },
           "avatar": {
-            "x": 26.905499866453177,
-            "y": -113.54801145762144,
+            "x": 26.905338895178915,
+            "y": -113.80587715945663,
             "z": 27.700000762939453
           }
         },
@@ -6828,11 +9705,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 22.94245199854172,
-            "y": -113.50044352984281,
+            "x": 23.24269955017934,
+            "y": -113.52578644872506,
             "z": 27.700000762939453
           }
         },
@@ -6842,11 +9719,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 403
+            "steps": 397
           },
           "avatar": {
-            "x": 22.905541963568403,
-            "y": -94.02214516746626,
+            "x": 22.91137703107579,
+            "y": -94.34031378060016,
             "z": 27.700000762939453
           }
         },
@@ -6856,11 +9733,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 26.868814557894765,
-            "y": -94.00020310344549,
+            "x": 26.571448952590078,
+            "y": -94.02846236226125,
             "z": 27.700000762939453
           }
         },
@@ -6870,11 +9747,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 38
+            "steps": 28
           },
           "avatar": {
-            "x": 25.958215477014072,
-            "y": -95.59524346605205,
+            "x": 26.07760032595968,
+            "y": -95.28847214201934,
             "z": 27.700000762939453
           }
         },
@@ -6887,9 +9764,9 @@
             "steps": 269
           },
           "avatar": {
-            "x": 25.955500645243394,
-            "y": -108.5969098492828,
-            "z": 32.19998690140315
+            "x": 25.958347226201887,
+            "y": -108.28959189415386,
+            "z": 32.19939616426528
           }
         },
         {
@@ -6901,8 +9778,8 @@
             "steps": 43
           },
           "avatar": {
-            "x": 26.88375110474508,
-            "y": -110.45643143530427,
+            "x": 26.776922370557315,
+            "y": -110.1999332713656,
             "z": 32.20000076293945
           }
         },
@@ -6915,8 +9792,8 @@
             "steps": 62
           },
           "avatar": {
-            "x": 26.905164299198745,
-            "y": -113.45302159517203,
+            "x": 26.89359036708918,
+            "y": -113.1943279831054,
             "z": 32.20000076293945
           }
         },
@@ -6926,11 +9803,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 82
+            "steps": 76
           },
           "avatar": {
-            "x": 22.942104325962546,
-            "y": -113.49957006070638,
+            "x": 23.23099948441926,
+            "y": -113.47505169774448,
             "z": 32.20000076293945
           }
         },
@@ -6940,11 +9817,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 186
+            "steps": 180
           },
           "avatar": {
-            "x": 22.90554272043857,
-            "y": -122.48949571384718,
+            "x": 22.91742367438705,
+            "y": -122.16939872390864,
             "z": 32.20000076293945
           }
         },
@@ -6954,11 +9831,11 @@
             "done": true,
             "stuck": false,
             "timedOut": false,
-            "steps": 464
+            "steps": 458
           },
           "avatar": {
-            "x": 45.332206934265976,
-            "y": -122.4999846626861,
+            "x": 45.0516899515247,
+            "y": -122.49538566211626,
             "z": 32.20000076293945
           }
         }
@@ -6987,8 +9864,24 @@
       "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
     }
   ],
-  "failures": [
-    "desktop tobu-ikebukuro: Error: 1F-to-B1: {\"walk\":{\"done\":false,\"stuck\":true,\"timedOut\":false,\"steps\":90},\"avatar\":{\"x\":-99.96841617395907,\"y\":126.0735013724631,\"z\":27.90999984741211}}\n    at walk (file:////[eval2]:17:29)\n    at async file:////[eval2]:98:9",
-    "phone tobu-ikebukuro: Error: 1F-to-B1: {\"walk\":{\"done\":false,\"stuck\":true,\"timedOut\":false,\"steps\":90},\"avatar\":{\"x\":-99.96841617395907,\"y\":126.0735013724631,\"z\":27.90999984741211}}\n    at walk (file:////[eval2]:17:29)\n    at async file:////[eval2]:98:9"
-  ]
+  "failures": [],
+  "adR3": {
+    "sourceHead": "51ddc54fa65a5c06a434fb6aa31380ae1997f750",
+    "capturedAt": "2026-11-24T17:26:50.767Z",
+    "timeZone": "UTC",
+    "parcoApproach": {
+      "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
+      "capturedAt": "2026-11-24T17:35:23.722Z",
+      "timeZone": "UTC"
+    }
+  },
+  "e224PartialCapture": {
+    "runtimeHead": "e224b0bef2b8c48f4c6acee98fee7c52649d7913",
+    "capturedAt": "2026-11-24T18:14:04.300Z",
+    "timeZone": "UTC",
+    "failures": [
+      "desktop tobu-ikebukuro: Error: 1F-to-B1: {\"walk\":{\"done\":false,\"stuck\":true,\"timedOut\":false,\"steps\":90},\"avatar\":{\"x\":-99.96841617395907,\"y\":126.0735013724631,\"z\":27.90999984741211}}\n    at walk (file:////[eval2]:17:29)\n    at async file:////[eval2]:98:9",
+      "phone tobu-ikebukuro: Error: 1F-to-B1: {\"walk\":{\"done\":false,\"stuck\":true,\"timedOut\":false,\"steps\":90},\"avatar\":{\"x\":-99.96841617395907,\"y\":126.0735013724631,\"z\":27.90999984741211}}\n    at walk (file:////[eval2]:17:29)\n    at async file:////[eval2]:98:9"
+    ]
+  }
 }
