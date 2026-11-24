@@ -37,6 +37,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - godot: Godot HQ client fed by exported GLB + sidecar snapshots; routes/searches by calling the TS CLIs. `src/*.test.ts` runs in root vitest, the GDScript suites in `packages/godot/tests/` run in no CI · `packages/godot/` · [[pkg-godot]]
 
 ### Stations (`stations/`)
+- Department-store interiors: reusable footprint/floor/entrance generator, near-store instanced kit and Ikebukuro B1/1F next preview · `stations/ikebukuro/scene/depato/` · [[depato-interior]] (2026-11-22 JST)
 - Shinjuku: E27-derived station data (`stations/shinjuku/gteki/`), scene build (`stations/shinjuku/scene/`), importers (`stations/shinjuku/tools/`), fare/replay tests (`stations/shinjuku/test/`) · data generation and raw-data runs: [[data-stations]]; vertical kit and shared stair profile: [[shinjuku-kit]]; prepared-layout bake and explorer integration: [[web-explorer]]; other scene areas: no note yet (station lead)
 - Shinjuku department-store exteriors (2026-11-22 JST): `stations/shinjuku/scene/department-stores.ts`, `stations/shinjuku/data/department-stores.json`, `stations/shinjuku/tools/import-department-stores.ts`; nearest-exit evidence in `tests/e2e/specs/31-shinjuku-department-stores.spec.ts` · [[web-explorer]]. Entrance mappings remain with the data lead.
 - Ikebukuro: data (`stations/ikebukuro/gteki/`), scene (`stations/ikebukuro/scene/`), pipeline (`stations/ikebukuro/pipeline/`), lane docs (`stations/ikebukuro/docs/`), entry point `stations/ikebukuro/README.md` · data generation and receipts: [[data-stations]]; scene: no note yet (station lead)
@@ -65,6 +66,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 
 ### Docs, CI, deploy
 - Architecture and product: `docs/architecture.md`, `docs/product-vision.md`, `docs/acceptance.md`, `docs/ci-limits.md`
+- Plan and acceptance: canonical `docs/release/plan.yaml`, generated journey and mobile /plan page · `tools/plan/build.mjs`, `tools/plan/page.html`; schema and editing: `docs/release/plan-schema.md`
 - Release journey: the v1.0 acceptance table (rows J1–J14, in playhead order) and the working method; a PR names the row it moves · `docs/release/journey.md`
 - Core contracts: `docs/core/contract.md`, `docs/core/merchant-submission-format.md`
 - GIS records (acquisitions, decisions, rights, S03): `docs/gis/`; start at `docs/gis/README.md` · data-lane view: [[data-gis]]
@@ -73,6 +75,7 @@ One line per area: what it owns · where it lives · its note. "no note yet" mea
 - Assets and visual: `docs/assets/`, `docs/visual/`, `assets/`
 - CI: `.github/workflows/root-test.yml` (typecheck + root vitest, the merge gate together with `test`), `.github/workflows/gis-test.yml`, `.github/workflows/e2e-smoke.yml`, `.github/workflows/reuse.yml`, `.github/workflows/deploy-pages.yml`
 - Deploy: `deploy/cloudflare-pages/`
+- Player feedback (J14): menu form, automatic game snapshot, Pages Function/KV and local triage command · `apps/web/src/ui/feedback.ts`, `functions/api/feedback.ts`, `tools/feedback/list.mjs` · setup: `deploy/cloudflare-pages/feedback.md`
 - Licensing: `REUSE.toml`, `LICENSES/`, `NOTICE`
 
 ## Common commands

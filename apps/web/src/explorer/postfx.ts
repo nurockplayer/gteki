@@ -98,6 +98,7 @@ export class FadeAwareGTAOPass extends GTAOPass {
   private originals: THREE.Material[] = [];
   private readonly twinBySource = new Map<THREE.Material, THREE.MeshNormalMaterial>();
   private depthTwins: { mesh: THREE.Mesh; twin: THREE.Material; original: THREE.Material }[] = [];
+  private dynamicDepthTwins: (typeof this.depthTwins)[] = [];
 
   /** Call once per frame before the composer renders; `fade` is the object's opacity (1 opaque). */
   setFade(object: THREE.Object3D | null, fade: number): void {
@@ -133,10 +134,12 @@ export class FadeAwareGTAOPass extends GTAOPass {
     return twin;
   }
 
-  /** Scene-owned meshes that fade by distance: their `userData.gteki_gtao_twin` replaces them in this pass. */
+  /** Scene-owned normal twins, including lists populated by lazily loaded interiors. */
   setDepthTwins(root: THREE.Object3D | null): void {
     this.depthTwins = [];
+    this.dynamicDepthTwins = [];
     root?.traverse((child) => {
+      if (child.userData.gteki_gtao_depth_twins) this.dynamicDepthTwins.push(child.userData.gteki_gtao_depth_twins);
       const mesh = child as THREE.Mesh;
       if (!mesh.isMesh || Array.isArray(mesh.material)) return;
       const twin = mesh.userData.gteki_gtao_twin as THREE.Material | undefined;
@@ -145,8 +148,9 @@ export class FadeAwareGTAOPass extends GTAOPass {
   }
 
   override render(...args: Parameters<GTAOPass["render"]>): void {
-    if (!this.active && this.depthTwins.length === 0) return super.render(...args);
-    const { meshes, twins, originals, depthTwins } = this;
+    const { meshes, twins, originals } = this;
+    const depthTwins = [...this.depthTwins, ...this.dynamicDepthTwins.flat()];
+    if (!this.active && depthTwins.length === 0) return super.render(...args);
     for (let i = 0; i < meshes.length; i++) { originals[i] = meshes[i]!.material as THREE.Material; meshes[i]!.material = twins[i]!; }
     for (const depth of depthTwins) { depth.original = depth.mesh.material as THREE.Material; depth.mesh.material = depth.twin; }
     try { super.render(...args); } finally {

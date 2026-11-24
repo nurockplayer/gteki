@@ -44,6 +44,8 @@ import { escalatorArrow, guideCardText } from "./guideCard.ts";
 import { escalatorEtaSuffix } from "./escalatorEta.ts";
 import { bootProgress, FrameReadiness, type BootStage } from "./bootCard.ts";
 import { shortStationLabel } from "./shortStationLabel.ts";
+import { buildFeedbackPayload, openFeedback } from "./feedback.ts";
+import { feedbackStrings, type FeedbackLang } from "../i18n.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -143,6 +145,7 @@ export class App {
     coverage: el("dialog", "coverage"),
     toast: el("div", "toast"),
     langBtn: el("button", "ghost lang"),
+    feedbackBtn: el("button", "ghost feedback"),
     coverageBtn: el("button", "ghost coverage"),
     railBtn: el("button", "ghost rail-launch"),
     hint: el("div", "hint"),
@@ -272,9 +275,17 @@ export class App {
     const actions = el("div", "top-actions");
     const topMore = el("details", "top-more");
     topMore.append(el("summary", "top-more-button", "…"));
+    const menuItems = el("div", "top-more-items");
+    menuItems.append(this.ui.feedbackBtn);
+    topMore.append(menuItems);
+    this.ui.feedbackBtn.addEventListener("click", () => {
+      topMore.open = false;
+      const language = this.feedbackLanguage();
+      openFeedback(language, (message) => buildFeedbackPayload(message, language, this.explorer, this.s.loaded?.bundle ?? null, this.s.entry?.key ?? null));
+    });
     actions.append(this.ui.coverageBtn, this.ui.langBtn, topMore);
     const syncTop = () => {
-      if (this.explorer.currentMode === "guide") topMore.append(this.ui.langBtn);
+      if (this.explorer.currentMode === "guide") menuItems.append(this.ui.langBtn);
       else actions.insertBefore(this.ui.langBtn, topMore);
     };
     this.root.addEventListener("transitionend", syncTop);
@@ -415,6 +426,7 @@ export class App {
     }
     document.documentElement.lang = this.s.lang;
     this.ui.langBtn.textContent = t.language;
+    this.ui.feedbackBtn.textContent = feedbackStrings(this.feedbackLanguage()).title;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
     this.ui.coverageBtn.textContent = t.coverage;
     this.ui.panelEntry.textContent = t.searchEntry;
@@ -532,7 +544,7 @@ export class App {
     const names = this.identityView.showCard(entry.identity, entry.label, this.s.lang);
     this.ui.live.announce(`${names.ja} ${names.kana} ${names.en} · ${this.t.loading}`);
     try {
-      const loaded = await entry.load();
+      const loaded = await entry.load(this.explorer.previewNext);
       if (!current()) { this.removeBootCard(); return; }
       this.setBootStage("data");
       this.identityView.showCard(loaded.bundle.station.identity, entry.label, this.s.lang);
@@ -2112,6 +2124,10 @@ export class App {
   }
 
   /** Instruction indexes of the current guide run's stops, in the order given to the explorer. */
+  private feedbackLanguage(): FeedbackLang {
+    return new URLSearchParams(location.search).get("lang") === "zh" ? "zh" : this.s.lang;
+  }
+
   private guideWaits: number[] = [];
   private toastTimer = 0;
 

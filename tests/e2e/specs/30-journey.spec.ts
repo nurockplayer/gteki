@@ -7,6 +7,9 @@ import { screenshotFlatRatio } from "../lib/screenshot-flat.ts";
 import type { StationScene } from "../../../packages/scene-api/src/index.ts";
 
 const reelMode = process.env.JOURNEY_MODE === "next" ? "next" : "default";
+const maxJ5GapM = 2.5;
+// Leave room for one more 60 Hz tick at the fastest guide tier (6.8 m/s).
+const j5SampleAfterM = maxJ5GapM - 0.12;
 
 test.use({ trace: "off", video: "off", screenshot: "off" });
 const config = JSON.parse(fs.readFileSync(new URL("../journey.json", import.meta.url), "utf8")) as {
@@ -217,7 +220,8 @@ async function sceneMetrics(page: Page) {
 }
 
 test("guided walk @phone", async ({ page }, info) => {
-  test.setTimeout(1_800_000);
+  // Leave post-arrival captures headroom inside the workflow's 44-minute step (#1450).
+  test.setTimeout(2_400_000);
   const wallStart = Date.now();
   const consoleErrors = new Set<string>(), pageErrors = new Set<string>(), failedRequests = new Set<string>();
   page.on("console", message => { if (message.type() === "error" && consoleErrors.size < 20) consoleErrors.add(message.text()); });
@@ -258,6 +262,10 @@ test("guided walk @phone", async ({ page }, info) => {
       };
       requestAnimationFrame(frame);
     });
+    // The last render is only submitted when the measurement resolves. Wait for GPU
+    // completion and DOM frames before Playwright checks button stability (#1452).
+    e.renderer.getContext().finish();
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
     deltas.sort((a, b) => a - b);
     const mid = Math.floor(deltas.length / 2);
     return { at, frames: deltas.length, medianMs: deltas.length ? (deltas.length % 2 ? deltas[mid]! : (deltas[mid - 1]! + deltas[mid]!) / 2) : null, p95Ms: deltas.length ? deltas[Math.ceil(deltas.length * 0.95) - 1]! : null };
@@ -267,9 +275,22 @@ test("guided walk @phone", async ({ page }, info) => {
   const cdp = await page.context().newCDPSession(page);
   const samples: any[] = [], stepS = Number(process.env.JOURNEY_STEP_S ?? 4);
   let simT = 0, arrived = false;
+  let cuesBefore: number | null = null, cuesAfter: number | null = null, waitedS = 0;
+  let lastJ5S = 0;
+  const probeJ5 = async (at: number) => {
+    const { s, voidRatio, nearBlack } = await page.evaluate(() => {
+      const g = (window as any).__gteki, e = g.scanProbe().explorer;
+      const probe = g.goldenProbe(false);
+      return { s: e.guide.s as number, voidRatio: probe.voidRatio as number, nearBlack: probe.nearBlack as number };
+    });
+    const { nearClip } = await sceneMetrics(page);
+    lastJ5S = s;
+    return { simT: at, s, voidRatio, nearBlack, nearClip };
+  };
+  const extraJ5: Awaited<ReturnType<typeof probeJ5>>[] = [];
   const sample = async (arrival: boolean, simMs: number) => {
     let phaseStart = Date.now();
-    await page.evaluate(() => (window as any).__gteki.goldenFrame());
+    await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.render(1 / 60));
     const index = samples.length;
     const png = Buffer.from((await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false })).data, "base64");
     fs.writeFileSync(path.join(out, `${String(index).padStart(3, "0")}.png`), png);
@@ -316,10 +337,34 @@ test("guided walk @phone", async ({ page }, info) => {
     console.log(`[journey] ${info.project.name} sample=${index} simT=${simT} simMs=${simMs} shotMs=${shotMs} sceneMs=${sceneMs} probeMs=${probeMs} imageMs=${imageMs}`);
   };
   try {
+    await page.evaluate(() => {
+      const e = (window as any).__gteki.scanProbe().explorer;
+      e.step(0, e.timer.getElapsed());
+    });
+    extraJ5.push(await probeJ5(0));
     while (simT < 260 && !arrived) {
       const step = reelMode === "next" && simT < 20 ? 2 : stepS;
-      const start = Date.now(); await hooks.simulate(page, step); const simMs = Date.now() - start; simT += step;
+      const ticks = Math.round(step * 60);
+      const origin = await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.timer.getElapsed() as number);
+      let tick = 0, simMs = 0;
+      // Use the same fixed ticks as simulate(), rendering a small probe between reel captures.
+      while (tick < ticks) {
+        const start = Date.now();
+        tick = await page.evaluate(({ tick, ticks, origin, lastJ5S, j5SampleAfterM }) => {
+          const e = (window as any).__gteki.scanProbe().explorer;
+          while (tick < ticks) {
+            e.step(1 / 60, origin + tick / 60);
+            tick++;
+            if (e.guide.s - lastJ5S >= j5SampleAfterM) break;
+          }
+          return tick;
+        }, { tick, ticks, origin, lastJ5S, j5SampleAfterM });
+        simMs += Date.now() - start;
+        if (tick < ticks) extraJ5.push(await probeJ5(simT + tick / 60));
+      }
+      simT += step;
       await sample(false, simMs);
+      lastJ5S = samples.at(-1)!.s;
       arrived = (await hooks.guideControls(page) as any).arrived;
     }
     if (arrived) {
@@ -463,6 +508,12 @@ test("guided walk @phone", async ({ page }, info) => {
       await page.locator(".arrival-controls .guide-more").click();
       await page.locator(".arrival-menu").getByRole("button", { name: /^(End guide|ガイド終了)$/ }).click();
       await expect.poll(() => hooks.mode(page)).toBe("walk");
+      cuesBefore = await page.evaluate(() => (window as any).__gteki.audio()?.station?.train?.cues ?? null);
+      cuesAfter = cuesBefore;
+      if (cuesBefore !== null) {
+        await hooks.simulate(page, 210); waitedS = 210;
+        cuesAfter = await page.evaluate(() => (window as any).__gteki.audio()?.station?.train?.cues ?? null);
+      }
     }
   } finally { await page.evaluate(() => (window as any).__gteki.holdFrames(false)); }
   for (const sample of samples) expect(sample.legend, `badge visible at sample ${sample.index}`).toBe(true);
@@ -472,17 +523,25 @@ test("guided walk @phone", async ({ page }, info) => {
   const overlayTolerancePct = 1;
   const threshold = info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop;
   const rules = [ { row: "J5", metric: "voidRatio", limit: config.thresholds.voidRatio }, { row: "J5", metric: "nearBlack", limit: config.thresholds.nearBlack }, { row: "J5", metric: "nearClip", limit: config.thresholds.nearClip }, { row: "J6", metric: "catVisible", limit: config.thresholds.catVisibleMin }, { row: "J8", metric: "overlayPct", limit: threshold }, { row: "J9", metric: "overlayPct", limit: threshold } ];
+  const j5Samples = [...extraJ5, ...samples.filter(s => !s.arrival).map(({ index, simT, s, voidRatio, nearBlack, nearClip }) => ({ index, simT, s, voidRatio, nearBlack, nearClip }))].sort((a, b) => a.simT - b.simT);
+  const j5Coverage = {
+    sampleCount: j5Samples.length,
+    maxGapM: j5Samples.reduce((max, sample, i) => Math.max(max, sample.s - (j5Samples[i - 1]?.s ?? 0)), 0),
+    samples: j5Samples,
+  };
   const summary: Record<string, any> = {}, unknown: string[] = [];
   for (const row of ["J5", "J6", "J8", "J9"]) {
-    const checks = rules.filter(r => r.row === row).flatMap(r => samples.filter(s => row === "J9" ? s.arrival : !s.arrival).map(s => {
+    const rowSamples = row === "J5" ? j5Samples : samples.filter(s => row === "J9" ? s.arrival : !s.arrival);
+    const checks = rules.filter(r => r.row === row).flatMap(r => rowSamples.map(s => {
       const value = s[r.metric] as number, failed = r.metric === "catVisible" ? value < r.limit : value > r.limit;
-      const known = config.known.some(k => (k.mode ?? "default") === reelMode && k.project === info.project.name && k.metric === r.metric && k.row === row && s.index >= k.from && s.index <= k.to && (!k.maxValues || value <= k.maxValues[s.index - k.from]! + overlayTolerancePct));
-      return { index: s.index, metric: r.metric, value, failed, known, severity: r.metric === "catVisible" ? r.limit - value : value - r.limit };
+      const known = s.index !== undefined && config.known.some(k => (k.mode ?? "default") === reelMode && k.project === info.project.name && k.metric === r.metric && k.row === row && s.index >= k.from && s.index <= k.to && (!k.maxValues || value <= k.maxValues[s.index - k.from]! + overlayTolerancePct));
+      return { index: s.index, s: s.s, metric: r.metric, value, failed, known, severity: r.metric === "catVisible" ? r.limit - value : value - r.limit };
     }));
     const failed = checks.filter(c => c.failed); const worst = [...checks].sort((a, b) => b.severity - a.severity).slice(0, 3);
-    unknown.push(...failed.filter(c => !c.known).map(c => `${row} ${c.metric} #${c.index}=${c.value.toFixed(3)}`));
-    summary[row] = { status: failed.some(c => !c.known) ? "fail" : failed.length ? "known" : "pass", worst, failingSampleIndexes: [...new Set(failed.map(c => c.index))] };
-    for (const c of checks.filter(c => c.failed)) samples[c.index].failed ??= [], samples[c.index].failed.push(`${row} ${c.metric}=${c.value.toFixed(3)}`);
+    unknown.push(...failed.filter(c => !c.known).map(c => `${row} ${c.metric} ${c.index === undefined ? `at ${c.s.toFixed(2)} m` : `#${c.index}`}=${c.value.toFixed(3)}`));
+    const failingReel = failed.filter(c => c.index !== undefined);
+    summary[row] = { status: failed.some(c => !c.known) ? "fail" : failed.length ? "known" : "pass", worst, failingSampleIndexes: [...new Set(failingReel.map(c => c.index))] };
+    for (const c of failingReel) samples[c.index].failed ??= [], samples[c.index].failed.push(`${row} ${c.metric}=${c.value.toFixed(3)}`);
   }
   for (const k of config.known.filter(k => (k.mode ?? "default") === reelMode && k.project === info.project.name)) {
     const r = rules.find(r => r.row === k.row && r.metric === k.metric)!;
@@ -507,7 +566,23 @@ test("guided walk @phone", async ({ page }, info) => {
   const zoneControls = Object.values(ambienceByZone);
   const trains = audioRecords.flatMap(record => record?.train ? [record.train] : []);
   const trainDistances = trains.flatMap(train => train.listenerDistance === null ? [] : [train.listenerDistance]);
+  const surfaceFloor = samples[0]?.floorId, platformFloor = samples.find(s => s.arrival)?.floorId;
+  const depthBands = [samples.filter(s => s.floorId === surfaceFloor), samples.filter(s => s.floorId !== surfaceFloor && s.floorId !== platformFloor), samples.filter(s => s.floorId === platformFloor)];
+  const signatures = depthBands.map(band => {
+    const counts = new Map<string, number>();
+    for (const sample of band) {
+      const a = sample.audio?.station?.ambience;
+      if (a) { const key = JSON.stringify([a.wetGain.toFixed(2), Math.round(a.wetLowpassHz / 100), a.streetGain.toFixed(2)]); counts.set(key, (counts.get(key) ?? 0) + 1); }
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  });
+  const depth = { status: samples.every(s => s.audio?.state === "running" && !s.audio?.muted) && signatures.every(Boolean) && new Set(signatures).size === 3 ? "pass" : "fail", signatures };
+  const activeEscalators = escalators.filter(s => s.audio?.station?.escalator?.gain > 0 && s.audio.station.escalator.nearestDistance <= 3).length;
+  const escalatorShare = escalators.length ? activeEscalators / escalators.length : 0;
+  const escalator = { status: escalatorShare >= 0.8 ? "pass" : "fail", active: activeEscalators, count: escalators.length, share: escalatorShare };
+  const train = { status: cuesBefore !== null && cuesAfter !== null && cuesAfter > cuesBefore ? "pass" : "fail", waitedS, cuesBefore, cuesAfter };
   const j11 = {
+    check: { status: [depth, escalator, train].every(part => part.status === "pass") ? "pass" : "fail", depth, escalator, train },
     ambience: {
       byZone: ambienceByZone,
       differsAcrossZones: zoneControls.length < 2 ? null : zoneControls.some((controls, i) => zoneControls.slice(i + 1).some(other => controls.some(a => other.some(b => JSON.stringify(a) !== JSON.stringify(b))))),
@@ -518,11 +593,12 @@ test("guided walk @phone", async ({ page }, info) => {
   const j14 = () => ({ consoleErrors: [...consoleErrors], pageErrors: [...pageErrors], failedRequests: [...failedRequests] });
   const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: process.env.GTEKI_ROOT, encoding: "utf8" }).trim();
   const coldOpen = JSON.parse(fs.readFileSync(path.join(out, "cold-open.json"), "utf8"));
-  const journey = { sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j4, j7, j11, j12, j14: j14(), unknown };
+  const journey = { sha, project: info.project.name, reelMode, timeBand, tier, renderer, coldOpen, samples, summary, j4, j5Coverage, j7, j11, j12, j14: j14(), unknown };
   fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify(journey, null, 2));
-  const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `#${v.index} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing: ${s.failingSampleIndexes.join(", ") || "none"}`)];
+  const lines = [`## Journey ${info.project.name}${reelMode === "next" ? " (?next=1)" : ""}`, ...Object.entries(summary).map(([row, s]: [string, any]) => `- ${row}: ${s.status}; worst ${s.worst.map((v: any) => `${v.index === undefined ? `${v.s.toFixed(2)} m` : `#${v.index}`} ${v.metric}=${v.value.toFixed(3)}`).join(", ")}; failing reel frames: ${s.failingSampleIndexes.join(", ") || "none"}`)];
+  lines.push(`- J5 coverage: ${j5Coverage.sampleCount} samples, max path gap ${j5Coverage.maxGapM.toFixed(3)} m`);
   lines.push(`- J7 (report): escalator samples ${j7.count}; lock min ${j7.lockMin ?? "none"} median ${j7.lockMedian ?? "none"}; axisDeg max ${j7.axisDegMax ?? "none"} median ${j7.axisDegMedian ?? "none"}; lock < 0.99 at: ${j7.lockBelow099.join(", ") || "none"}; rides ${j7.rideCount}; farEndY ${j7.farEndY ?? "none"}; catHeight ${j7.catHeight ?? "none"}; feetY ${j7.feetY ?? "none"}; catX ${j7.catX ?? "none"}`);
-  lines.push(`- J4 (report): ${JSON.stringify(j4)}`, `- J11 (report): ${JSON.stringify(j11)}`, `- J12 (report): ${JSON.stringify(j12)}`, `- J14 (report): ${JSON.stringify(j14())}`);
+  lines.push(`- J4 (report): ${JSON.stringify(j4)}`, `- J11: ${j11.check.status}; depth ${depth.status}; escalator ${escalator.status}; train ${train.status}; ${JSON.stringify(j11)}`, `- J12 (report): ${JSON.stringify(j12)}`, `- J14 (report): ${JSON.stringify(j14())}`);
   const noLegend = samples.filter(s => !s.legend).map(s => s.index);
   lines.push(`- J13 (report): badge on screen in ${samples.length - noLegend.length} / ${samples.length} samples; missing at: ${noLegend.join(", ") || "none"}`);
   const unknownReport = unknown.join(", ") || "none";
@@ -575,6 +651,7 @@ test("guided walk @phone", async ({ page }, info) => {
     expect.soft(sample.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
   }
   expect(arrived, "guide arrived within 260 simulated seconds").toBe(true);
+  expect(j5Coverage.maxGapM, "maximum J5 gap along the guide path").toBeLessThanOrEqual(maxJ5GapM);
   expect(samples.length, "at least 30 samples").toBeGreaterThanOrEqual(30);
   journey.j14 = j14();
   fs.writeFileSync(path.join(out, "journey.json"), JSON.stringify(journey, null, 2));

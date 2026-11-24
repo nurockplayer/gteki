@@ -398,7 +398,10 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   const bands: number[] = [];
   for (const well of cutWells) {
     for (const [index, rect] of well.rects.entries()) {
-      const levels = new Set((heights.get(rect) ?? []).map((y) => Math.round(y * 20) / 20));
+      // A cut side face has a centroid height, not a slab level. Only flat
+      // removed polygons can leave horizontal slab edges to finish with a band.
+      const maxima = cut.maxHeights.get(rect) ?? [];
+      const levels = new Set((heights.get(rect) ?? []).filter((y, i) => Math.abs(y - maxima[i]!) < 1e-5).map(levelOf));
       // Bands follow the cut's height interval, not the entire footprint: a lower slab only opens
       // within headroom of the flight. Extending its band farther fences off passages below it.
       const reach = depthInterval(rect, well.upperY, -Infinity, HOLE_DEPTH_M);

@@ -1,0 +1,490 @@
+schema_version: 1
+project: GT-Eki
+state: ACTIVE
+owner_decisions: []
+workstreams:
+  - id: RELEASE
+    title: v1.0 journey
+    outcome: a person who opens GTEki should feel they are in the station straight away.
+    lead: gteki-lead
+    phases:
+      - id: journey
+        title: J1–J14 accepted at one SHA on desktop and phone
+      - id: release
+        title: Owner watches the candidate on a phone and approves v1.0
+    current_phase: journey
+    next_step: Work the earliest failing row (J5); independent art and Owner judgement remains required.
+    references:
+      - label: Visual direction and hero targets
+        url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/visual/direction.md
+    criteria:
+      - id: J1
+        requirement: A designed first frame (title and progress), never a bare form on black
+        judge: "script: screenshot at 1 s"
+        status: PASS
+        context: 0–2 s
+        status_detail: "PASS (default since #1363, reel at e88ef45): designed boot card at 1 s, poster 103 / 71 ms; art acceptance PR #1363 comment 6908862317"
+        verified_at: 2026-11-16 JST
+        verified_sha: e88ef45
+        evidence:
+          - label: "PR #1363"
+            url: https://github.com/nurockplayer/gteki/pull/1363
+          - label: Art acceptance
+            url: https://github.com/nurockplayer/gteki/pull/1363#issuecomment-6908862317
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J2
+        requirement: "Without any input: in the station as the cat, at the exit 1 mouth, stairs ahead (hero H1). Download to that frame ≤ 6 MB"
+        judge: "script: mode, pose, time, bytes"
+        status: PASS
+        context: ≤ 5 s desktop, ≤ 8 s phone
+        status_detail: "PASS (live, after #1371): pose, mode and bytes pass (Shinjuku walk mode at the exit 1 mouth, H1 pose accepted by the art director; 5.57 / 5.56 MB). Live cold loads at / after #1371 (origin/main build served, cache disabled, this Mac's GPU, job j2-live-cap1, 2026-11-17 05:0x JST): desktop ready 3.77 / 3.22 / 3.37 s (median 3.37 s, poster lift median 4.72 s, 5.56 MB to ready) vs the 2026-11-16 15:48 JST baseline 5.1 / 5.4 / 6.9 s; phone project 4.2 / 4.5 s. The warm GPU reel (4249fd8d) read 3914 ms desktop; CI software render does not count"
+        verified_at: 2026-11-17 JST
+        verified_sha: 4249fd8d
+        evidence:
+          - label: "PR #1371"
+            url: https://github.com/nurockplayer/gteki/pull/1371
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J3
+        requirement: "The world owns the frame: overlay ≤ 20% desktop, ≤ 30% phone, one primary action"
+        judge: "script: DOM overlay grid"
+        status: PASS
+        context: first frame
+        status_detail: 'PASS (default since #1363): overlay 10.7% / 13.3%, one primary action ("Walk to the platform")'
+        verified_at: 2026-11-16 JST
+        verified_sha: 272c7f28de5fcfde3039b478e5615856b888a7f6
+        evidence:
+          - label: "PR #1363"
+            url: https://github.com/nurockplayer/gteki/pull/1363
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J4
+        requirement: One tap starts the walk and the sound
+        judge: "script: one click → guide mode, audio running"
+        status: PASS
+        context: first tap
+        status_detail: "PASS by script (2026-11-16 18:1x JST): the reel takes the first tap on the cold open's primary action; `j4` = 1 action, guide mode, audio running, on desktop and phone, in E2E smoke runs 43828853051 (f160f0b5, #1371 on main, deferred audio) and 43832908173 (33a42625, #1374 on main). The \"4 actions\" reading predates the cold open default (#1363)"
+        verified_at: 2026-11-16 JST
+        verified_sha: 33a42625
+        evidence:
+          - label: "PR #1371"
+            url: https://github.com/nurockplayer/gteki/pull/1371
+          - label: "PR #1374"
+            url: https://github.com/nurockplayer/gteki/pull/1374
+          - label: "PR #1363"
+            url: https://github.com/nurockplayer/gteki/pull/1363
+          - label: Reel run 43828853051
+            url: https://github.com/nurockplayer/gteki/actions/runs/43828853051
+          - label: Reel run 43832908173
+            url: https://github.com/nurockplayer/gteki/actions/runs/43832908173
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J5
+        requirement: No void, no black holes, the camera never inside geometry
+        judge: "script: guide camera samples ≤ 2.5 m apart along the path, with count and max gap in journey.json"
+        status: FAIL
+        context: whole walk
+        status_detail: "FAIL: desktop 1 / 38, phone 0 / 38 (run 44940000006, main b99e7f0b equivalent). Near clip 0 since #1479; desktop void 0.0085 at 88 s (B3 wall slit, draft PR #1478)."
+        evidence:
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J6
+        requirement: The cat is always in view
+        judge: "script: avatar visible in ≥ 95% of samples"
+        status: PASS
+        context: whole walk
+        status_detail: "PASS since #1332 (2026-11-15 08:0x JST): the script passes since #1268 (39 / 39 on desktop and on phone, main 2ffb4a65, E2E smoke run 43641997007), and the art director accepted the eased body-check raise on PR #1332 (frame at 11.88 s: 5.4° → 1.56°, phone 1.59°; budget 3°). The remaining frames over 3° are corner yaw snaps, #1331, not this row"
+        verified_at: 2026-11-15 JST
+        verified_sha: 2ffb4a65
+        evidence:
+          - label: "PR #1332"
+            url: https://github.com/nurockplayer/gteki/pull/1332
+          - label: "PR #1268"
+            url: https://github.com/nurockplayer/gteki/pull/1268
+          - label: "PR #1331"
+            url: https://github.com/nurockplayer/gteki/pull/1331
+          - label: Reel run 43641997007
+            url: https://github.com/nurockplayer/gteki/actions/runs/43641997007
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J7
+        requirement: "The ride reads as a ride: camera on the escalator axis (D2), ceiling intact"
+        judge: "person on the reel; script: axis angle"
+        status: FAIL
+        context: escalators
+        status_detail: "FAIL (the person judgement on the reel is outstanding). The pitched shaft ceilings are the default since #1263, accepted by the art director on GPU frames (2026-11-14). Script: axis median 0° over 20 ride samples, 31° entering the first ride; no axis lock in the default mode"
+        evidence:
+          - label: "PR #1263"
+            url: https://github.com/nurockplayer/gteki/pull/1263
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J8
+        requirement: "Guidance stays quiet (D1): overlay ≤ 20% / 30%, no debug text, small markers"
+        judge: "script: overlay and visible strings"
+        status: PASS
+        context: whole walk
+        status_detail: "PASS since #1269 (the quiet walk HUD is the default; accepted by the art director on 2026-11-14): overlay median 7.3% (max 15.6%) / 3.9% (max 10.7%), under the limit in every sample, and the string check passes. One repair is open: on phone the open arrival menu squeezes the instruction card (#1294, PR #1296)"
+        verified_at: 2026-11-14 JST
+        verified_sha: 15ef23e8
+        evidence:
+          - label: "PR #1269"
+            url: https://github.com/nurockplayer/gteki/pull/1269
+          - label: "PR #1294"
+            url: https://github.com/nurockplayer/gteki/pull/1294
+          - label: "PR #1296"
+            url: https://github.com/nurockplayer/gteki/pull/1296
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J9
+        requirement: "Arrival is a moment: platform and name sign in view, data notes one tap away"
+        judge: "script: overlay at arrival; person"
+        status: FAIL
+        context: arrival
+        status_detail: "FAIL: the script part passes since #1269 (overlay 6.0% / 1.0% at arrival). The person part is open: the authored platform arrival shot (#1253) is behind `?next=1` and its flip has not been accepted"
+        evidence:
+          - label: "PR #1269"
+            url: https://github.com/nurockplayer/gteki/pull/1269
+          - label: "PR #1253"
+            url: https://github.com/nurockplayer/gteki/pull/1253
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J10
+        requirement: "It looks like a Tokyo subway: hero frames H1–H4 accepted against the targets"
+        judge: art director, then Owner
+        status: NOT JUDGED
+        context: whole walk
+        status_detail: not judged
+      - id: J11
+        requirement: "It sounds like one: ambience that changes with depth, escalator, distant train"
+        judge: "script: audio state; person"
+        status: FAIL
+        context: whole walk
+        status_detail: "FAIL by script on default (PR #1523, CI journey run 45021058123): desktop and phone depth pass, escalator FAIL, train pass. All three parts pass in `?next=1` on desktop and phone. The script part passes in next; default fails only on the escalator layer, which remains behind `?next=1` pending art director acceptance of #1500. Person judgement is still outstanding."
+      - id: J12
+        requirement: "It holds frame rate: ≥ 50 fps desktop (M2), ≥ 30 fps on a mid-range phone"
+        judge: GPU measurement
+        status: PASS
+        context: whole walk
+        status_detail: "PASS by phone emulation (2026-11-21 09:39–09:42 JST, `pnpm measure:gpu-fps`, main `6ec258d1` after #1480, M2 Pro via ANGLE Metal): desktop median 119.05 / p5 59.52 fps; phone profile (mobile geometry, unchanged 4× CPU throttle) median 119.05 / p5 58.14 fps. No quality cuts. [Measurements and frames](../qa/phone-fps-1473.md) (#1473)."
+        verified_at: 2026-11-21 JST
+        verified_sha: 6ec258d1
+        evidence:
+          - label: "PR #1480"
+            url: https://github.com/nurockplayer/gteki/pull/1480
+          - label: "PR #1473"
+            url: https://github.com/nurockplayer/gteki/pull/1473
+          - label: Measurements and frames
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/qa/phone-fps-1473.md
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J13
+        requirement: 'Truth kept: "approximate, not surveyed" visible, data scope one tap away, nothing invented (D3)'
+        judge: "person: truth review"
+        status: PASS
+        context: always
+        status_detail: 'PASS: the "Approximate, not surveyed" badge is on screen in 39 of 39 samples on desktop and on phone. The exception of the last reading (desktop at 152 s, the arrival data note pushed the badge off screen) is closed by the quiet arrival HUD (#1269)'
+        verified_at: 2026-11-14 JST
+        verified_sha: 15ef23e8
+        evidence:
+          - label: "PR #1269"
+            url: https://github.com/nurockplayer/gteki/pull/1269
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+      - id: J14
+        requirement: "Release hygiene: no console errors, a message when WebGL is unavailable, credits, ja and en"
+        judge: script
+        status: PASS
+        context: always
+        status_detail: 'PASS by script (2026-11-17 04:3x JST, #1381): console 0 errors, 0 page errors, 0 failed requests on desktop and phone (E2E smoke runs 43828853051 and 43832908173); credits 110 visible links on desktop and on phone; the primary action reads "Walk to the platform" (en) and "ホームまで歩く" (ja) after the language switch; without WebGL the page shows "GTEki failed to start: Error: THREE.WebGLRenderer: Error creating WebGL context." (the generic startup message counts, decision on #1380; a localized wording is a later flagged change). Records: spec 31 `j14` in E2E smoke run 43837590010 (commit 6026a706), quoted in PR #1381'
+        verified_at: 2026-11-17 JST
+        verified_sha: 6026a706
+        evidence:
+          - label: "PR #1381"
+            url: https://github.com/nurockplayer/gteki/pull/1381
+          - label: "PR #1380"
+            url: https://github.com/nurockplayer/gteki/pull/1380
+          - label: Reel run 43828853051
+            url: https://github.com/nurockplayer/gteki/actions/runs/43828853051
+          - label: Reel run 43832908173
+            url: https://github.com/nurockplayer/gteki/actions/runs/43832908173
+          - label: Reel run 43837590010
+            url: https://github.com/nurockplayer/gteki/actions/runs/43837590010
+          - label: Original journey judgement
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
+  - id: STATIONS
+    title: Reusable station acceptance
+    outcome: The long-term goal is to reconstruct **Ikebukuro and Shinjuku** as genuinely searchable, reliably navigable, compelling 3D environments, expanding toward validated publicly traversable passages, POIs, exits, levels and access conditions. Both stations have **independent acceptance records**.
+    lead: Station leads
+    phases:
+      - id: L0
+        title: Blockout
+      - id: L1
+        title: Recognizable station
+      - id: L2
+        title: Polished playable experience (first accepted quality target)
+      - id: L3
+        title: High-fidelity digital twin (long term)
+    current_phase: L2
+    next_step: Record independent G0–G4 judgements separately for each station; current engineering artifacts remain NOT YET ACCEPTED.
+    references:
+      - label: Full station acceptance contract
+        url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+    criteria:
+      - id: G0
+        requirement: |-
+          Evidence/rights/safety gate (G0)
+
+          Before interpreting a model as the real station, check actual downloaded resource contents, coverage and licensing. Research metadata/link discovery ≠ geometry read ≠ verified walkable topology ≠ current-world route.
+
+          - No inferred connective edges, shortcut through paid/restricted areas, invented stairs/elevators/levels, or guessed 24-hour access.
+          - Facts about ADA/barrier-free accessibility require actual source evidence and continuity; absent data means **UNKNOWN**, not true/false.
+          - Government open-data usage requires exact dataset/asset rights, derivative redistribution and attribution checks. Operator graphics and other restricted third-party imagery remain reference-only unless explicitly cleared.
+          - If G0 fails for a desired route, produce a **clearly marked synthetic/non-navigational visual prototype**, plus a precise acquisition/survey blocker. Do not greenlight real-user route claims.
+        judge: Station lead
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: G1
+        requirement: "**G1 Geometry:** checked model-scale, collisions, local coordinates, floor connectors, no clipping/teleport shortcuts, documented fidelity of any approximations."
+        judge: Station lead
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: G2
+        requirement: "**G2 Routing:** path display matches a verified directed graph, not a visual navmesh guess; route narration and destination correspond to real public access conditions within checked data freshness."
+        judge: Station lead
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: G3
+        requirement: "**G3 Quality:** actual recorded walk (not a static hero screenshot), recognizable station-specific visual identity, polished lighting/materials/wayfinding, sound/input comfort when appropriate, desktop/phone capture and independent critique. Iteration continues until L2 is credibly met."
+        judge: Independent visual/interaction reviewer
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: G4
+        requirement: "**G4 Delivery:** reproducible build/tests, PR and reviewed SHA, screenshots/video, sources/rights bundle, per-station coverage report, known limitations and Handoff. Owner approval before merging/releasing and before making real-world navigation guarantees; acceptance of a demo ≠ approval of live travel directions."
+        judge: Owner
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+  - id: DEPATO
+    title: Shinjuku + Ikebukuro department stores and Sunshine City
+    outcome: every Shinjuku and Ikebukuro department store becomes walkable, first 1F + the basement food hall, eventually every floor.
+    lead: gteki-lead; look judged by gteki-visual
+    phases:
+      - id: exterior
+        title: 1. Recognisable exterior
+      - id: interior
+        title: "2. Walkable B1 food hall + 1F via a generator: Seibu Ikebukuro pilot, then roll-out"
+      - id: all-floors
+        title: 3. Every floor walkable (end goal)
+      - id: floor-data
+        title: "Floor data — REVIEW, PR #1509 at the gate; data accepted by lead"
+    current_phase: exterior
+    next_step: Judge exterior frames; interior pilot is in progress (no PR yet). Prove the generator on Seibu Ikebukuro B1 + 1F, then roll out.
+    context:
+      - "Stores (all of them; this is the acceptance list): 伊勢丹新宿店 本館, 伊勢丹新宿店 メンズ館, 小田急百貨店 新宿店 (in 新宿西口ハルク), 京王百貨店 新宿店, 新宿髙島屋 (タカシマヤタイムズスクエア), 新宿マルイ 本館, 新宿マルイ アネックス, ルミネ1, ルミネ2, ルミネエスト新宿, ニュウマン新宿. Stores that sit on or inside the station structure (京王, 小田急/ハルク, ルミネ, ニュウマン) get their sign and entrance on the station-side face and street face rather than a separate building."
+      - "Stores (all of them; this is the acceptance list): 西武池袋本店, 東武百貨店 池袋店, ルミネ池袋, エソラ池袋, 池袋パルコ (本館; P'PARCO if it is in the data), and サンシャインシティ (サンシャイン60, 専門店街アルパ, ワールドインポートマート, 文化会館, サンシャインシティプリンスホテル as one landmark group)."
+      - "Stores: Shinjuku — 伊勢丹新宿店 本館, 伊勢丹新宿店 メンズ館, 小田急百貨店 新宿店 (新宿西口ハルク, current floors only), 京王百貨店 新宿店, 新宿髙島屋, 新宿マルイ 本館, 新宿マルイ アネックス, ルミネ1, ルミネ2, ルミネエスト新宿, ニュウマン新宿. Ikebukuro — 西武池袋本店, 東武百貨店 池袋店, ルミネ池袋, エソラ池袋, 池袋パルコ, サンシャインシティ (専門店街アルパ, ワールドインポートマート and サンシャイン60 floors open to the public; one store entry per building)."
+      - "Owner request 2026-11-22: every Shinjuku and Ikebukuro department store becomes walkable, first 1F + the basement food hall, eventually every floor. This run builds the system once and proves it on one store; the other stores are rolled out from it afterwards. So build a generator that takes a store (footprint, floor list from the data contract below, entrances) and produces walkable floors, not a hand-placed one-off; it must already accept any number of floors even though only B1 and 1F are enabled now."
+      - "Phase 1 = the outside of each store, made recognisable: its real building at its real footprint and height (PLATEAU surface/context data the station already uses, or the source that station already ships), standing out from the generic context blocks (own facade material/colour band, lit windows or shopfront at street level), a name sign with the store name in the project sign font (ja + en), and its existing station-side entrance (the POI already in `pois.json`) showing as a door with the same name. Interiors are NOT part of this task."
+      - "Rights: store names and building positions/heights are facts (OD-34 precedent: facts-only OK). Do not copy logos, logo-type lettering, wrapping-paper patterns or facade photos; plain text names only. PLATEAU is CC BY 4.0 and already credited."
+      - "Truth: the game shows the present (2026-11). If source geometry predates a demolition or move, use the current state and note it in the PR (e.g. 小田急百貨店 新宿店 operates in 新宿西口ハルク since 2022-10; its old 本館 site is a construction site)."
+      - "Ship dark (journey.md rule): everything a visitor sees changes only with `?next=1`; with the flag off nothing visible changes. Search entries may be live without the flag."
+      - Each store must be findable in search (existing POI/tenant names) and its search result routes to the store entrance it is attached to.
+      - "Sunshine City is about 700 m east of the station, probably beyond the current context radius: extend the context so サンシャイン60 stands on the skyline seen from the east exit (it is the tallest thing there and must read as such), with its name sign. Add a searchable Sunshine City entry that routes to the station exit that leads there and tells the direction (サンシャイン60通り / 東口); a walkable street to the building is not required. If no source we already use covers it, PLATEAU 豊島区 is the source; record the acquisition in docs/gis like the existing context."
+      - "Principle: a store is recognised by its real building and its plain name, never by brand dress. These are D15's next-slice rule (real names on original, generic fronts) on real buildings. Provisional until the Owner sees it."
+      - "What I judge, per store, desktop 1440×900 and phone 390×844, `?next=1`:"
+      - A PR without these frames is not judged.
+    references:
+      - label: Mezzanine floors (MB, MB3, M2F) keep their official labels plus an explicit vertical order field; the data keeps every floor, the game chooses which to open.
+        url: https://github.com/nurockplayer/gteki/pull/1509#issuecomment-7066779222
+      - label: Floor data accepted as is; remaining completeness-not-established rows and the Isetan/Sunshine 60 GAPs stay recorded.
+        url: https://github.com/nurockplayer/gteki/pull/1509#issuecomment-7067177908
+      - label: Provisional authored doors tied to an official access statement, marked provisional with source URL; no statement = street access only (Shinjuku).
+        url: https://github.com/nurockplayer/gteki/pull/1511#issuecomment-7067005813
+      - label: Provisional authored doors tied to an official access statement, marked provisional with source URL; no statement = no station-side door, street access only (Ikebukuro).
+        url: https://github.com/nurockplayer/gteki/pull/1512#issuecomment-7066937024
+    criteria:
+      - id: DEP-SHINJUKU-1
+        requirement: with ?next=1 each listed store is recognisable from its nearest exit on desktop and phone (frames in the PR body)
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-SHINJUKU-2
+        requirement: flag off, CI golden cameras unchanged
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-SHINJUKU-3
+        requirement: search for each name routes to its entrance
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-IKEBUKURO-1
+        requirement: with ?next=1 each listed store is recognisable from its nearest exit, and サンシャイン60 from the east exit, on desktop and phone (frames in the PR body)
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-IKEBUKURO-2
+        requirement: flag off, CI golden cameras unchanged
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-IKEBUKURO-3
+        requirement: search for each name (and サンシャインシティ / Sunshine City) routes to its entrance or exit
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-1
+        requirement: "Massing: the real PLATEAU footprint and height (LOD2 roof where it exists). The mass separates from the pale context by value, not by saturation or glow. In the first-sight frame the facade is at least 20% darker than the sky and context behind it."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-2
+        requirement: "Facade: pick one of 5 muted swatches (albedo, sRGB), by the real building's dominant facade family. F1 stone beige #B8AD9C, F2 warm grey #9D978F, F3 cool grey #8F969C, F4 dark bronze #4E4740, F5 blue-grey glass #6E7A84 (rough 0.2, environment reflection only). Upper floors use the real type: \"blind\" (most 百貨店: panel joints per floor about 4.5 m, vertical piers every 6–8 m, from geometry or a normal map, no photo texture) or \"glazed\" (a curtain wall, F5, with a spandrel band per floor). Nothing above street level is emissive: in daylight, lit windows read as a sticker."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-3
+        requirement: "Street band (ground floor, real height, about 4–5 m): a shut, glazed shopfront with bronze mullions every 2.5–3.5 m and a warm glow behind (emissive ≤ 0.5, about #FFD9A8). At most 1.5 m of visible depth. No opening, no dark void, no merchandise or brand content."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-4
+        requirement: |-
+          Sign, the same construction on every store: a slim satin band in warm dark bronze (#3A3029, rough 0.5), with ivory letters (#F2ECE0, emissive 0.6–0.8) in the project sign font at one weight. The ja short name sits on top; the en line is 0.45× its height. The text is the short name in plain text (伊勢丹 本館, 髙島屋, ルミネエスト, ニュウマン, 西武, パルコ, サンシャイン60…), listed in the PR table. Mounting: horizontal, inset in the top-floor band. One sign per face that a station exit sees, at most 2 per building. Never a free-standing rooftop billboard frame.
+             Sign size: ja letters no taller than 4 m (Sunshine 60: 6 m). Never inflate a sign to read from far away.
+             Every glyph must come from the sign font: no tofu and no fallback face. Check 髙, ュ, and the apostrophe in P'PARCO.
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-5
+        requirement: "Door at each station-side entrance POI: a shut glazed double door in the same bronze, warm light behind it, and a small version of the same sign above it (ja letters 0.25–0.35 m). In a concourse it goes flush on the existing wall, with D15's wall rules: nothing on escalator shafts or platform walls, nothing in the walk line, no corridor depth."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-6
+        requirement: "Never: a logo, wordmark letterforms (even simplified), a brand colour, a mark or a pattern (tartan, 0101, wrapping paper); magenta or any rail-line colour; a pictogram, an arrow or an exit number. Those belong to wayfinding, and the landmark sign must not look like it."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-7
+        requirement: "Hierarchy: the station's own signs stay the brightest. In any frame that shows both, the landmark sign's mean luminance is ≤ 0.85× the wayfinding sign's. The landmark sign never covers or crowds an exit sign, the magenta band or the cat. H1–H4 and slice frames do not change in `?next=1` unless I accept the addition."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-8
+        requirement: "Sunshine 60: from the east exit it is recognised by its silhouette, the clearly tallest slab with a crisp top edge (F3, with the real vertical bay rhythm). The far plane and any distance fade must not cut or wash it out. Its sign follows rule 4 at real scale. It does not need to be readable from 700 m; search carries the name. No floating label: that would be UI, and the UI diet forbids it."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-AD-9
+        requirement: "Phone budget: at most 3 draw calls per store (facade, street band, sign). Sign text is baked into one mesh or one atlas. No texture above 512² per store."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-FRAME-1
+        requirement: (a) First sight from the nearest exit at the walk camera, cat at the exit top. The building reads as distinct from the context. The ja name is in frame and not under the UI, with a cap height ≥ 18 px on desktop and ≥ 14 px on phone where the distance allows it under the 4 m cap; otherwise the door frame carries the name.
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-FRAME-2
+        requirement: (b) The station-side door from about 3 m.
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-FRAME-3
+        requirement: (c) The same pose as (a) with the flag off, which must be unchanged.
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-FRAME-4
+        requirement: "Sunshine 60: the east exit frame, with its top in frame."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-FRAME-5
+        requirement: "Numbers in the PR body: letter-to-band luminance contrast ≥ 3:1, and the sign-to-wayfinding luminance ratio."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-INTERIOR-1
+        requirement: Walk from the Ikebukuro station concourse through the station-side entrance into 西武's B1 food hall, walk its aisles between counters, take the store's escalator or stairs up to 1F, walk 1F and leave by a street door. The walk works for the player, and search for 西武池袋本店 / デパ地下 routes into it.
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-INTERIOR-2
+        requirement: Interiors use the real footprint (PLATEAU building of the phase-1 run; if it is not on main yet, the context building at the store's position) and real floor heights where known, about 4.5 m otherwise.
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-INTERIOR-3
+        requirement: "Fronts and counters are original generic kit (D15 next-slice rule: real names on original, generic fronts): plain name boards with the real tenant names from the data, no logos, wordmarks, brand colours or product photos."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-INTERIOR-4
+        requirement: "Look: use `stations/ikebukuro/scene/landmark-style.ts` (already on this branch) for signs and doors."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-INTERIOR-5
+        requirement: "Phone budget: the interior loads only near the store (on approach), stays within the explorer's existing phone frame budget, and instancing is used for repeated counters."
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-INTERIOR-DONE-1
+        requirement: "the walk above works with ?next=1 on desktop and phone, and the PR body has frames (desktop 1440×900, phone 390×844): the station-side entrance, the food hall aisle, the escalator, 1F, and the street door"
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-INTERIOR-DONE-2
+        requirement: plus the flag-off pose of the entrance unchanged
+        judge: Art director, then Owner
+        status: NOT JUDGED
+      - id: DEP-DATA-1
+        requirement: both JSON files exist
+        judge: Station lead
+        status: REVIEW
+        status_detail: "PR #1509 at the gate; data accepted by lead. Recorded GAPs remain."
+        evidence:
+          - label: "PR #1509"
+            url: https://github.com/nurockplayer/gteki/pull/1509
+          - label: Lead data acceptance
+            url: https://github.com/nurockplayer/gteki/pull/1509#issuecomment-7067177908
+      - id: DEP-DATA-2
+        requirement: every store above has every public floor with category + label
+        judge: Station lead
+        status: REVIEW
+        status_detail: "PR #1509 at the gate; data accepted by lead. Recorded GAPs remain."
+        evidence:
+          - label: "PR #1509"
+            url: https://github.com/nurockplayer/gteki/pull/1509
+          - label: Lead data acceptance
+            url: https://github.com/nurockplayer/gteki/pull/1509#issuecomment-7067177908
+      - id: DEP-DATA-3
+        requirement: B1/B2 food floors and 1F have their tenant lists
+        judge: Station lead
+        status: REVIEW
+        status_detail: "PR #1509 at the gate; data accepted by lead. Recorded GAPs remain."
+        evidence:
+          - label: "PR #1509"
+            url: https://github.com/nurockplayer/gteki/pull/1509
+          - label: Lead data acceptance
+            url: https://github.com/nurockplayer/gteki/pull/1509#issuecomment-7067177908
+      - id: DEP-DATA-4
+        requirement: the PR body has a per-store table (floors
+        judge: Station lead
+        status: REVIEW
+        status_detail: "PR #1509 at the gate; data accepted by lead. Recorded GAPs remain."
+        evidence:
+          - label: "PR #1509"
+            url: https://github.com/nurockplayer/gteki/pull/1509
+          - label: Lead data acceptance
+            url: https://github.com/nurockplayer/gteki/pull/1509#issuecomment-7067177908
+      - id: DEP-DATA-5
+        requirement: tenant counts
+        judge: Station lead
+        status: REVIEW
+        status_detail: "PR #1509 at the gate; data accepted by lead. Recorded GAPs remain."
+        evidence:
+          - label: "PR #1509"
+            url: https://github.com/nurockplayer/gteki/pull/1509
+          - label: Lead data acceptance
+            url: https://github.com/nurockplayer/gteki/pull/1509#issuecomment-7067177908
+      - id: DEP-DATA-6
+        requirement: GAPs)
+        judge: Station lead
+        status: REVIEW
+        status_detail: "PR #1509 at the gate; data accepted by lead. Recorded GAPs remain."
+        evidence:
+          - label: "PR #1509"
+            url: https://github.com/nurockplayer/gteki/pull/1509
+          - label: Lead data acceptance
+            url: https://github.com/nurockplayer/gteki/pull/1509#issuecomment-7067177908
+      - id: DEP-ALL-FLOORS
+        requirement: every Shinjuku and Ikebukuro department store becomes walkable, first 1F + the basement food hall, eventually every floor.
+        judge: Art director, then Owner
+        status: NOT JUDGED
