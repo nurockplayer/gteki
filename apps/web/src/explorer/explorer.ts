@@ -753,7 +753,11 @@ export class Explorer {
           return { name: feature.name, pixels, meshes: sign ? (sign.faces ? meshes.length : 0) : meshes.length };
         } finally { meshes.forEach((mesh, j) => { mesh.visible = before[j]!; }); }
       });
-      return { ...goldenPixels(shown, overview ? hidden : null), features: featureResults, renders };
+      let black = 0;
+      for (let i = 0; i < shown.length; i += 4) {
+        if (0.2126 * shown[i]! + 0.7152 * shown[i + 1]! + 0.0722 * shown[i + 2]! <= 12) black++;
+      }
+      return { ...goldenPixels(shown, overview ? hidden : null), nearBlack: black / (width * height), features: featureResults, renders };
     } finally {
       root.visible = visible;
       for (const [mesh, wasVisible] of visibility) mesh.visible = wasVisible;
