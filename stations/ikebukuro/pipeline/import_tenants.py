@@ -123,7 +123,8 @@ def main():
             elif row.get("sourceId") not in source_ids:
                 skipped.append((row.get("id"), f"unknown source {row.get('sourceId')}"))
             else:
-                tenants.append(tenant(row, poi_id, checked))
+                row_poi_id = "shop-ikb-pparco" if poi_id == "shop-ikb-parco" and row["floorLabel"].startswith("P'PARCO") else poi_id
+                tenants.append(tenant(row, row_poi_id, checked))
 
     outputs = (
         (GRAPH_SRC, graph_src),

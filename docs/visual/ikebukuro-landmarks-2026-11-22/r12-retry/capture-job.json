@@ -1,0 +1,24 @@
+{
+  "id": "depato-ikb-ai-r12e",
+  "status": "ok",
+  "exit_code": 0,
+  "signal": null,
+  "artifacts": [
+    "/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro/docs/visual/ikebukuro-landmarks-2026-11-22/r12-retry"
+  ],
+  "log": "/Users/tachikoma/.local/state/job-run/depato-ikb-ai-r12e/log",
+  "cwd": "/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro",
+  "cmd": [
+    "tachi-run",
+    "--heavy",
+    "--host",
+    "--est",
+    "15m",
+    "--",
+    "sh",
+    "-c",
+    "nice -n 15 ego-browser nodejs --session ikb-package-ai-r12-retry --timeout-ms 600000 < docs/visual/ikebukuro-landmarks-2026-11-22/capture-r12.mjs"
+  ],
+  "started": "2026-11-24T06:08:07+09:00",
+  "ended": "2026-11-24T06:17:45+09:00"
+}
