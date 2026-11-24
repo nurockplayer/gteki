@@ -1,5 +1,9 @@
 # Ikebukuro interior rollout
 
+## Partial recapture — 2026-11-25 03:18 JST
+
+Job `depato-1541-e224-capture-2` failed at source `e224b0bef2b8c48f4c6acee98fee7c52649d7913`: the Tobu 1F-to-B1 walk got stuck after 90 steps on both desktop and phone. The receipt records the failures and each frame's source. Tobu entrance-outside and first-interior, PARCO first-interior, food-hall-aisle, escalator and both street-door frames, and all four Seibu frames were captured on both devices. Other frames retain their prior source, including the PARCO approach and all flag-off frames. The capture did not complete its native-resolution and black-pixel checks; visual comparison is pending. PR #1541 remains draft.
+
 ## Tobu visitor access — 2026-11-25 JST
 
 The public preview currently has no visitor route into Tobu. Searching for the store selects its B2 food hall as the destination and leaves the cat in place. The existing station exits have no walkable street connection to Tobu's 1F apron. QA places the cat on the apron to inspect the doorway and walk the internal escalators to B2. Treat the two Tobu exterior frames as context and the interior frames as the preview to judge.
