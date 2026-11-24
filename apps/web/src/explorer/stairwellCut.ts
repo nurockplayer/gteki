@@ -416,11 +416,11 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
       for (const [from, to] of cut.inclinedEdges.get(rect) ?? []) {
         const along = alongOf(rect, from, to);
         if (isStairMouth(rect, well.rects, index, along)) continue;
-        const alongSpan = (to.x - from.x) * rect.along.x + (to.z - from.z) * rect.along.z;
+        const acrossSpan = (to.x - from.x) * rect.across.x + (to.z - from.z) * rect.across.z;
         const y = (from.y + to.y) / 2;
         const riseY = rect.center.y + along * rect.rise / (2 * rect.halfLength);
-        // A transverse band under the upper slab must stay beyond the flight's headroom.
-        if (y < well.upperY - SLAB_BAND_M && Math.abs(alongSpan) < 1e-6 && y - riseY < HEADROOM_M - 1e-3) continue;
+        // A band running across the flight under the upper slab must stay beyond its headroom.
+        if (y < well.upperY - SLAB_BAND_M && Math.abs(acrossSpan) > 1e-6 && y - riseY < HEADROOM_M - 1e-3) continue;
         for (const [a, b] of sideRemainder(from, to, rect, well.rects)) {
           quad(bands, a, b, b.clone().setY(b.y - BAND_DEPTH_M), a.clone().setY(a.y - BAND_DEPTH_M));
         }

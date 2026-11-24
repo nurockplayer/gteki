@@ -424,6 +424,20 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
+  it("leaves no camera-blocking band where a sloped ceiling cuts diagonally across the flight", () => {
+    const geometry = new THREE.PlaneGeometry(16, 6).rotateX(-Math.PI / 2).translate(5, 0, 0);
+    const positions = geometry.getAttribute("position");
+    for (let i = 0; i < positions.count; i++) positions.setY(i, 2.5 + 0.1 * positions.getZ(i));
+    const ceiling = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    const result = cutStairwells(ceiling, stairwellWells(bundle(), traversable), { tier: "low" });
+    expect(result.stats.wells).toBe(1);
+    expect(result.bandTriangles).toBeGreaterThan(0);
+    // At z = 0 the cut ends at x = 5.5, where a band would reach the walking surface at y = 2.2.
+    const ray = new THREE.Raycaster(new THREE.Vector3(5, 2.35, 0), new THREE.Vector3(1, 0, 0), 0, 1);
+    expect(ray.intersectObjects(result.cameraBlockers)).toHaveLength(0);
+    result.dispose();
+  });
+
   it("keeps an upper-slab cross-lane band within the flight's headroom", () => {
     const s = scene();
     const wells = stairwellWells(bundle(), traversable);
