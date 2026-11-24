@@ -497,6 +497,12 @@ precedence = "override"
 SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
 
+# PLATEAU-derived landmark scene captures, 2026-11-22 JST.
+[[annotations]]
+path = ["docs/visual/ikebukuro-landmarks-2026-11-22/*.png", "docs/visual/ikebukuro-landmarks-2026-11-22/r6/*.png", "docs/visual/ikebukuro-landmarks-2026-11-22/r8/*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy"
 # Department-store pilot: factual names only; generic fronts are original code.
 [[annotations]]
 path = "stations/ikebukuro/data/depato-floors.json"

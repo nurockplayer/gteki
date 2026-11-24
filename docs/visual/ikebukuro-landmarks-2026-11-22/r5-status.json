@@ -1,0 +1,212 @@
+{
+  "recordedAt": "2026-11-22 JST",
+  "sceneCommit": "f1154d6f838d6b81a98284c15c24f504024a6154",
+  "job": "depato-ikebukuro-capture-r5",
+  "exitCode": 1,
+  "error": "No clear public-road look camera: pparco",
+  "submission": "Rejected incomplete capture set; local r5 PNGs are not submitted for AD acceptance.",
+  "inspection": "All 11 attempted frames inspected as a 1600 px contact sheet. Seibu walk and five look frames show names; the other five attempted walk frames do not.",
+  "pparcoDiagnosis": {
+    "eyeHeightM": 1.6,
+    "horizontalDistancesM": [
+      60,
+      80,
+      100,
+      120,
+      150
+    ],
+    "azimuthRangeRad": [
+      -1.55,
+      1.55
+    ],
+    "azimuthStepRad": 0.05,
+    "sightlineSamples": "Six points: left/centre/right at sign top and bottom; all scene meshes, including the store itself, can occlude.",
+    "clearPublicRoadCameras": 0,
+    "bestRoadCandidate": {
+      "distanceM": 80,
+      "angleRad": -0.6,
+      "blockedSamples": 2,
+      "occluder": "ctx_bldg_t01_01",
+      "hitToSignGapM": [
+        40.61083331816253,
+        41.338620560962205
+      ]
+    },
+    "fixedDatumSearch": {
+      "eyeYM": 34.1,
+      "clearCameras": 4,
+      "groundHitsWithin10MBelow": 0,
+      "usableAsPavementEvidence": false
+    },
+    "limit": "Sampled search only; does not prove every continuous camera position is blocked."
+  },
+  "walkDiagnosis": {
+    "pavementTriangleCentroids": 13,
+    "method": "Existing station walkable triangles intersecting context road geometry, with overhead clearance. This is not an exhaustive survey of public pavement.",
+    "clearCandidateCounts": {
+      "seibu": 11,
+      "tobu": 0,
+      "lumine": 0,
+      "esola": 0,
+      "parco": 0,
+      "pparco": 0
+    }
+  },
+  "actualSignAnchorsRendererXYZ": {
+    "seibu": [
+      52.68105631529751,
+      59.151001,
+      83.1124389211281
+    ],
+    "tobu": [
+      -107.75305065752681,
+      81,
+      -143.3241244954373
+    ],
+    "lumine": [
+      -188.28455796747167,
+      109.5,
+      91.91130701322814
+    ],
+    "esola": [
+      -172.89733894140463,
+      61.5,
+      -3.413461099627618
+    ],
+    "parco": [
+      89.22870393109702,
+      68.418999,
+      -156.3610620307367
+    ],
+    "pparco": [
+      88.84079650493176,
+      70,
+      -211.55921103572723
+    ],
+    "sunshine": [
+      578.5846726040968,
+      268,
+      21.982135068947592
+    ]
+  },
+  "attemptedFrames": [
+    {
+      "file": "desktop-seibu-walk-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:22.973Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": true,
+      "jaCapPx": 23.953239870043223,
+      "letterContrast": 2.9313652660591485,
+      "signVsWayfinding": 0.36680935736934034
+    },
+    {
+      "file": "desktop-seibu-look-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:24.997Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": true,
+      "jaCapPx": 22.72550402892439,
+      "letterContrast": 2.075068744167842,
+      "signVsWayfinding": 0.46245420808746945
+    },
+    {
+      "file": "desktop-tobu-walk-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:27.335Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": false,
+      "jaCapPx": 0,
+      "letterContrast": null,
+      "signVsWayfinding": null
+    },
+    {
+      "file": "desktop-tobu-look-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:30.288Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": true,
+      "jaCapPx": 19.627440996857665,
+      "letterContrast": 2.152332709605225,
+      "signVsWayfinding": 0.4923372065083813
+    },
+    {
+      "file": "desktop-lumine-walk-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:31.858Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": false,
+      "jaCapPx": 0,
+      "letterContrast": null,
+      "signVsWayfinding": null
+    },
+    {
+      "file": "desktop-lumine-look-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:32.386Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": true,
+      "jaCapPx": 12.688644464000005,
+      "letterContrast": 1.158296517234555,
+      "signVsWayfinding": 0.8629647928558125
+    },
+    {
+      "file": "desktop-esola-walk-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:34.602Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": false,
+      "jaCapPx": 0,
+      "letterContrast": null,
+      "signVsWayfinding": null
+    },
+    {
+      "file": "desktop-esola-look-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:36.556Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": true,
+      "jaCapPx": 22.375703676275123,
+      "letterContrast": 2.138728733543328,
+      "signVsWayfinding": 0.5303443638483968
+    },
+    {
+      "file": "desktop-parco-walk-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:37.745Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": false,
+      "jaCapPx": 0,
+      "letterContrast": null,
+      "signVsWayfinding": null
+    },
+    {
+      "file": "desktop-parco-look-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:39.271Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": true,
+      "jaCapPx": 14.274301766539518,
+      "letterContrast": 1.407415213642589,
+      "signVsWayfinding": 0.7896236180960711
+    },
+    {
+      "file": "desktop-pparco-walk-next.png",
+      "capturedAtUTC": "2026-11-21T22:34:40.290Z",
+      "facadeCallbacks": 2,
+      "signCallbacks": 2,
+      "clearSign": false,
+      "jaCapPx": 0,
+      "letterContrast": null,
+      "signVsWayfinding": null
+    }
+  ],
+  "outstanding": [
+    "Phone and flag-off frames",
+    "P PARCO look frame",
+    "Sunshine frames",
+    "Compliant walk frames",
+    "CI7 watch"
+  ],
+  "scopeDecision": "Extend the exterior-face relocation rule to P PARCO, and permit capture-only public-road poses beyond station walkable coverage without adding graph edges or building geometry; or provide compliant poses within current scope."
+}

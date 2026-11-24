@@ -1,0 +1,137 @@
+// Phase-one exterior landmarks, 2026-11-22 JST. Only built for ctx.previewNext.
+import type * as Three from "three";
+import type { SceneContext } from "@gteki/scene-api";
+import { createContextMaterial } from "./context.ts";
+import { LANDMARK_FACADE, LANDMARK_FLOOR_JOINT_M, LANDMARK_PIER_SPACING_M, LANDMARK_STREET_BAND, LANDMARK_SIGN, LANDMARK_MAX_TEXTURE_PX } from "./landmark-style.ts";
+import ranges from "./landmark-ranges.json";
+
+const stores = [
+  { id: "seibu", ja: "西武", en: "SEIBU", facade: "F1_stoneBeige", exit: "x38", target: [52.681024, 59.151001, 83.112809], signEye: [152.262733, 59.151001, 92.249721], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "tobu", ja: "東武", en: "TOBU", facade: "F2_warmGrey", exit: "x17", target: [-110, 81, -75], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "lumine", ja: "ルミネ池袋", en: "LUMINE IKEBUKURO", facade: "F2_warmGrey", exit: "x4f", target: [-188.284558, 109.5, 91.911307], signEye: [-280.877992, 109.5, 54.142855], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "esola", ja: "エソラ池袋", en: "ESOLA IKEBUKURO", facade: "F4_darkBronze", exit: "x4f", target: [-172.897339, 61.5, -3.413457], signEye: [-272.400798, 61.5, 6.53951], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "parco", ja: "パルコ", en: "PARCO", facade: "F3_coolGrey", exit: "x22", target: [89.228704, 68.418999, -156.361062], signEye: [-2.081387, 68.418999, -197.134427], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "pparco", ja: "P'パルコ", en: "P'PARCO", facade: "F3_coolGrey", exit: "x22", target: [90.660534, 50.748502, -244.366749], signEye: [-0.958270, 50.748502, -284.291649], cap: LANDMARK_SIGN.maxJaLetterM / 2 },
+  { id: "sunshine", ja: "サンシャイン60", en: "SUNSHINE 60", facade: "F3_coolGrey", exit: "x35", target: [581.674744, 251, 12.689152], signEye: [498.531567, 251, -42.873534], cap: 5 },
+] as const;
+
+/** Remove only the source features replaced by the LOD2 landmark meshes, before stair cuts change triangle indices. */
+export function removeLandmarkContext(THREE: typeof Three, root: Three.Object3D, quality: "low" | "high"): void {
+  for (const name of new Set(ranges[quality].map(r => r.mesh))) {
+    const mesh = root.getObjectByName(name) as Three.Mesh;
+    const geometry = mesh.geometry;
+    const count = geometry.index?.count ?? geometry.getAttribute("position").count;
+    const kept: number[] = [];
+    // All ranges for one mesh are removed together, in the original triangle order.
+    const cuts = ranges[quality].filter(r => r.mesh === name);
+    for (let i = 0; i < count; i++) if (!cuts.some(r => i >= r.start * 3 && i < (r.start + r.count) * 3)) kept.push(geometry.index ? geometry.index.getX(i) : i);
+    const copy = geometry.clone();
+    copy.setIndex(new THREE.BufferAttribute(new Uint32Array(kept), 1));
+    mesh.geometry = copy;
+    geometry.dispose();
+  }
+}
+
+/** Each store uses one facade draw (including its street band), and one baked sign draw. */
+export async function addLandmarks(ctx: SceneContext, parent: Three.Object3D): Promise<() => void> {
+  const THREE = ctx.THREE;
+  if (!document.fonts.check('600 32px "GTEki Sign JP"')) throw new Error("Landmarks require the project sign font");
+  const loaded = await ctx.loadGlb("assets/ikebukuro_landmarks_next.glb");
+  const materials: Three.Material[] = [], textures: Three.Texture[] = [];
+  loaded.scene.name = "landmarks-next";
+  for (const store of stores) {
+    const mesh = loaded.scene.getObjectByName(store.id) as Three.Mesh;
+    mesh.geometry.computeVertexNormals();
+    const material = createContextMaterial(THREE, { color: new THREE.Color(LANDMARK_FACADE[store.facade]).getHex() });
+    material.name = `landmark-facade:${store.id}`;
+    if (store.id === "seibu") material.color.multiplyScalar(0.82);
+    // Preview landmarks retain their authored value separation beyond the station street haze.
+    // Only these materials bypass fog; the station fog and exposure are unchanged.
+    material.fog = false;
+    const daylight = material.onBeforeCompile;
+    const bronze = new THREE.Color(LANDMARK_SIGN.band), glow = new THREE.Color(LANDMARK_STREET_BAND.glow);
+    material.onBeforeCompile = (shader, renderer) => {
+      daylight(shader, renderer);
+      shader.vertexShader = shader.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 landmarkP;").replace("#include <begin_vertex>", "#include <begin_vertex>\nlandmarkP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+      shader.fragmentShader = shader.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec3 landmarkP;").replace("#include <opaque_fragment>", `
+float h = landmarkP.y - 32.5;
+float along = abs(vCtxN.x) > abs(vCtxN.z) ? landmarkP.z : landmarkP.x;
+float joint = step(mod(h, ${LANDMARK_FLOOR_JOINT_M.toFixed(1)}), 0.08);
+float pier = step(mod(along + 1000.0, ${((LANDMARK_PIER_SPACING_M[0] + LANDMARK_PIER_SPACING_M[1])/2).toFixed(1)}), 0.18);
+float wall = 1.0 - step(0.5, abs(vCtxN.y));
+outgoingLight *= 1.0 - wall * max(joint, pier) * 0.22;
+float street = wall * step(0.0, h) * (1.0 - step(${LANDMARK_STREET_BAND.heightM[0].toFixed(1)}, h));
+float mullion = step(mod(along + 1000.0, ${((LANDMARK_STREET_BAND.mullionSpacingM[0]+LANDMARK_STREET_BAND.mullionSpacingM[1])/2).toFixed(1)}), 0.08);
+vec3 streetColor = mix(vec3(${glow.toArray().join(",")}) * ${LANDMARK_STREET_BAND.maxEmissive.toFixed(1)}, vec3(${bronze.toArray().join(",")}), mullion);
+outgoingLight = mix(outgoingLight, streetColor, street);
+#include <opaque_fragment>`);
+    };
+    material.customProgramCacheKey = () => "landmark-facade";
+    mesh.material = material;
+    mesh.name = `ctx_bldg_landmark_${store.id}`;
+    materials.push(material);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = LANDMARK_MAX_TEXTURE_PX;
+    canvas.height = LANDMARK_MAX_TEXTURE_PX / 4;
+    const g = canvas.getContext("2d")!;
+    g.fillStyle = LANDMARK_SIGN.letters; g.textAlign = "center"; g.textBaseline = "middle";
+    const jaPx = 62;
+    g.font = `${store.id === "sunshine" ? 800 : 600} ${jaPx}px "GTEki Sign JP"`;
+    g.fillText(store.ja, canvas.width/2, 46);
+    g.font = `600 ${jaPx * LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;
+    g.fillText(store.en, canvas.width/2, 100);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const minifiedSign = store.id === "lumine" || store.id === "sunshine";
+    if (minifiedSign) texture.anisotropy = 16;
+    textures.push(texture);
+    const signMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: LANDMARK_SIGN.bandRoughness, emissiveMap: texture, emissive: new THREE.Color(0xffffff), emissiveIntensity: LANDMARK_SIGN.letterEmissive[minifiedSign ? 1 : 0], fog: material.fog, side: THREE.DoubleSide, polygonOffset: store.id === "sunshine", polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+    signMaterial.customProgramCacheKey = () => `landmark-sign:${minifiedSign ? store.id : "standard"}`;
+    signMaterial.onBeforeCompile = shader => {
+      if (minifiedSign) {
+        // Use coverage once: filtered transparent RGB already contains the letter's alpha.
+        // Sunshine's grazing walk view needs coverage contrast after mipmap minification.
+        const letters = new THREE.Color(LANDMARK_SIGN.letters);
+        shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>
+float landmarkCoverage = texture2D(map, vMapUv).a;
+${store.id === "sunshine" ? "landmarkCoverage = smoothstep(0.25, 0.55, landmarkCoverage);" : ""}
+diffuseColor.rgb = mix(vec3(${bronze.toArray().join(",")}), vec3(${letters.toArray().join(",")}), landmarkCoverage);
+diffuseColor.a = 1.0;`);
+        shader.fragmentShader = shader.fragmentShader.replace("#include <emissivemap_fragment>", `totalEmissiveRadiance = vec3(${letters.toArray().join(",")}) * ${LANDMARK_SIGN.letterEmissive[1]} * landmarkCoverage + vec3(${bronze.toArray().join(",")}) * 0.35 * (1.0 - landmarkCoverage);`);
+        return;
+      }
+      shader.fragmentShader = shader.fragmentShader.replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(${bronze.toArray().join(",")}) * 0.35 * (1.0 - texture2D(map, vMapUv).a);`);
+      shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `#include <map_fragment>\ndiffuseColor.rgb = mix(vec3(${bronze.toArray().join(",")}), diffuseColor.rgb, diffuseColor.a);\ndiffuseColor.a = 1.0;`);
+    };
+    materials.push(signMaterial);
+    // The r5 mounts raycast from public-street-facing exterior points, not from inside the station mass.
+    const target = new THREE.Vector3(...store.target);
+    const exit = ctx.bundle.nodes.find(n => n.id === store.exit)!;
+    const eye = "signEye" in store ? new THREE.Vector3(...store.signEye) : new THREE.Vector3(exit.position.x, target.y, -exit.position.y);
+    const ray = new THREE.Raycaster(eye, target.clone().sub(eye).normalize());
+    mesh.updateMatrixWorld(true);
+    const hit = ray.intersectObject(mesh)[0];
+    if (!hit) throw new Error(`No PLATEAU facade at sign anchor: ${store.id}`);
+    const normal = hit.face!.normal.clone(); normal.y = 0; normal.normalize();
+    if (normal.dot(eye.clone().sub(hit.point)) < 0) normal.negate();
+    const signHeight = store.cap * canvas.height / jaPx;
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(signHeight * canvas.width / canvas.height, signHeight), signMaterial);
+    sign.name = `landmark-sign:${store.id}`;
+    sign.position.copy(hit.point).addScaledVector(normal, 0.06);
+    sign.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
+    loaded.scene.add(sign);
+  }
+  // Visual city backing reaches beyond the farthest landmark; it adds no walkable route.
+  const groundMaterial = createContextMaterial(THREE, { color: 0x62635f });
+  groundMaterial.fog = false;
+  materials.push(groundMaterial);
+  const groundGeometry = new THREE.PlaneGeometry(2400, 2400);
+  groundGeometry.rotateX(-Math.PI / 2);
+  groundGeometry.translate(0, 31, 0);
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  ground.name = "ctx_road_landmark_ring";
+  loaded.scene.add(ground);
+  parent.add(loaded.scene);
+  return () => { loaded.scene.removeFromParent(); loaded.scene.traverse(o => (o as Three.Mesh).geometry?.dispose()); materials.forEach(m=>m.dispose()); textures.forEach(t=>t.dispose()); };
+}
