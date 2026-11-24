@@ -62,7 +62,7 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     edges.push({ id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: mode === "escalator" ? "forward" : "both", mode,
       lengthM: Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y, b.position.z! - a.position.z!),
       geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode === "walk", steps: mode !== "walk",
-      hours: null, closed: false, verification: "verified", geometryEvidence: evidence, accessEvidence: evidence });
+      hours: null, closed: false, verification: "geometry_only", geometryEvidence: evidence, accessEvidence: null });
   };
   let previousLower: Node | undefined;
   for (const floor of plan.floors) {
@@ -91,10 +91,9 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
       edge(bundle.nodes.find(n => n.id === entrance.outsideNode)!, door);
     }
   }
-  const goal = nodes.find(n => n.id === id("B1", "aisle")) ?? nodes[0]!;
   return { ...bundle,
     floors: [...bundle.floors, ...plan.floors.map(f => ({ id: id(f.level, "floor"), operatorId: "public", sourceLabels: [], ordinal: f.level.startsWith("B") ? -Number(f.level.slice(1)) : Number(f.level.replace("F", "")) - 1, intermediate: false, elevationM: null, elevationSource: "unknown" as const, renderElevationM: plan.height(f.level), displayNames: [{ lang: "ja", text: `${store.name.ja} ${f.level}` }, { lang: "en", text: `${store.name.en} ${f.level}` }] }))],
     nodes: [...bundle.nodes, ...nodes], edges: [...bundle.edges, ...edges],
-    pois: bundle.pois.map(p => p.id !== plan.input.poiId ? p : { ...p, floorId: goal.floorId, displayPosition: goal.position, connectorNodeIds: [goal.id], aliases: [...p.aliases, { lang: "ja", text: "デパ地下" }, { lang: "en", text: "Seibu Ikebukuro food hall" }], evidence, notes: [{ lang: "ja", text: "生成された店内プレビュー。通路・売場位置は実測ではありません。" }, { lang: "en", text: "Generated interior preview; aisles and tenant positions are illustrative." }] }),
+    pois: bundle.pois.map(p => p.id !== plan.input.poiId ? p : { ...p, aliases: [...p.aliases, { lang: "ja", text: "デパ地下" }, { lang: "en", text: "Seibu Ikebukuro food hall" }] }),
   };
 }
