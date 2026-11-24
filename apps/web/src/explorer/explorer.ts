@@ -3893,6 +3893,16 @@ export class Explorer {
     } else this.stairAimElevation = undefined;
     const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
     if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
+    const boardingDistance = lockOn && firstRide ? this.guide!.s - span!.fromS : Infinity;
+    if (boardingDistance < 1.65) {
+      // The boom turns into the shaft before the guide turns. Follow the cat with the aim
+      // through that crossover, then ease back to the ride composition; keep the J5 boom.
+      const aimIn = THREE.MathUtils.smoothstep(boardingDistance, -ESCALATOR_SHOT.leadM, -1);
+      const aimOut = THREE.MathUtils.smoothstep(boardingDistance, 1, 1.65);
+      const boardingAim = head.clone().sub(this.camera.position)
+        .setLength(pose.target.distanceTo(this.camera.position)).add(this.camera.position);
+      pose.target.lerp(boardingAim, aimIn * (1 - aimOut));
+    }
     this.camera.lookAt(pose.target);
     if (this.openingRelease) {
       this.openingElapsed = Math.min(1.2, this.openingElapsed + dt);
