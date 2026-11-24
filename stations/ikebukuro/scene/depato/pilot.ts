@@ -69,8 +69,11 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   });
   const rolloutRooms = layouts.slice(1).flatMap(p => {
     const points=p.input.footprint.map(([x,z])=>new THREE.Vector2(x,z));
+    // A street-only tie opens the street shell and leaves the station concourses intact.
+    const firstCutFloor = p.input.entrances.some(e => e.level !== "1F") ? p.floors[0]!.level : "1F";
+    const minY = p.height(firstCutFloor) - 0.1, maxY = p.height("1F") + 4.1;
     return THREE.ShapeUtils.triangulateShape(points,[]).map(indices=>{
-      const tri=indices.map(i=>points[i]!), minY=p.height(p.floors[0]!.level)-0.1, maxY=p.height("1F")+4.1;
+      const tri=indices.map(i=>points[i]!);
       const cut=volume(Math.min(...tri.map(v=>v.x))-0.01,Math.max(...tri.map(v=>v.x))+0.01,
         Math.min(...tri.map(v=>v.y))-0.01,Math.max(...tri.map(v=>v.y))+0.01,minY,maxY);
       const cross=(a:import("three").Vector2,b:import("three").Vector2,x:number,z:number)=>(b.x-a.x)*(z-a.y)-(b.y-a.y)*(x-a.x);
@@ -90,7 +93,21 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   }));
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
-    if (uri.includes("ikebukuro_context_")) { loaded.scene.updateMatrixWorld(true); cutRegions(loaded.scene, [room, ...streetDoors, ...rolloutRooms, ...rolloutDoors], resources); }
+    if (uri.includes("ikebukuro_context_")) {
+      loaded.scene.updateMatrixWorld(true);
+      cutRegions(loaded.scene, [room, ...streetDoors, ...rolloutRooms, ...rolloutDoors], resources);
+      // Fill the missing visual pavement between Tobu's 32.41 m apron and the PLATEAU road.
+      const pavement = new THREE.BufferGeometry();
+      pavement.setAttribute("position", new THREE.Float32BufferAttribute([
+        -118.6, 32.39, -26, -125, 32.78, -26, -125, 32.78, -14,
+        -118.6, 32.39, -26, -125, 32.78, -14, -118.6, 32.39, -14,
+      ], 3));
+      pavement.computeVertexNormals();
+      const road = loaded.scene.getObjectByName("ctx_road_t00_01") as import("three").Mesh;
+      const forecourt = new THREE.Mesh(pavement, road.material);
+      forecourt.name = "ctx_road_tobu_forecourt";
+      loaded.scene.add(forecourt);
+    }
     return loaded;
   } });
   // The background catalog adds merged stair nosings; cut them after attachment too.

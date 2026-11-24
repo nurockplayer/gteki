@@ -1,5 +1,11 @@
 # Ikebukuro interior rollout
 
+## Tobu visitor access — 2026-11-25 JST
+
+The public preview currently has no visitor route into Tobu. Searching for the store selects its B2 food hall as the destination and leaves the cat in place. The existing station exits have no walkable street connection to Tobu's 1F apron. QA places the cat on the apron to inspect the doorway and walk the internal escalators to B2. Treat the two Tobu exterior frames as context and the interior frames as the preview to judge.
+
+The third art-direction capture covers Tobu's B1 barrier with matching flag-off poses, desktop Tobu 1F from the original inside pose, and the first visible doorway and the 3 m approach on the PARCO B1 guide. Those frames carry their own source HEAD in `receipt.json`. The other frames and the Package E walks retain their recorded source.
+
 ## Package E correction — 2026-11-24 JST
 
 Tobu's rollout adapter selects the first 40 tenant names per floor (40/40/37 on B2/B1/1F) for the shared 1024px atlas; the full source directory is unchanged. PARCO counter placements reserve the existing `n_h__n_c` segment bounds with 0.5m walker clearance. Both visual counters and persistent colliders use the filtered placements. The shared interior kit is unchanged; Tobu's B1 tie remains skipped and its barrier remains.
@@ -18,7 +24,7 @@ Full-frame street-door-inside black pixels (max RGB ≤16): Tobu desktop **0.010
 
 2026-11-23 JST. Journey row: none (Owner request 2026-11-22).
 
-Behind `?station=ikebukuro&next=1`, 東武百貨店 池袋店 and 池袋パルコ share the accepted 西武 kit, with B2/B1/1F and tenant names from `stations/ikebukuro/data/depato-floors.json`. Store-name search targets the lowest food/sweets floor, B2. PARCO enters from B1 at `n_h`. Tobu enters from its 1F street door and reaches B2 by the internal escalators; the generated B1 `c_w` tie is skipped because it crosses the station unverified-access barrier and no alternative verified doorway exists in the committed data. Tobu no longer advertises a route from the station network. The capture records every collision-walk leg.
+Behind `?station=ikebukuro&next=1`, 東武百貨店 池袋店 and 池袋パルコ share the accepted 西武 kit, with B2/B1/1F and tenant names from `stations/ikebukuro/data/depato-floors.json`. Store-name search targets the lowest food/sweets floor, B2. PARCO enters from B1 at `n_h`. Tobu's B1 `c_w` tie is skipped because it crosses the station unverified-access barrier and the committed data has no alternative verified station doorway. The Package E capture records every collision-walk leg.
 
 Only the nearest store can allocate detail; the previous store unloads first, including 西武. Flag-off keeps the original bundle and scene hook. No palette, exposure, light, shell-wall finish or counter finish was retuned. The entrance assembly only rotates to match the new footprint's doorway direction. Existing kit items on #1534 remain for the kit owner.
 
