@@ -1,18 +1,16 @@
 # Shinjuku fast-tap crowd comparison (#1454)
 
-Captured 2026-11-24 JST for J4/J5. Each row pairs the same frame on main `bf0bd522` (left) and the fix `030229c2` (right). The blue-coated commuter is ahead of the cat at the foot of the next flight. The 43 rows cover every frame from 3.500 through 4.200 seconds after tapping **Walk to the platform**.
+Captured 2026-11-24 JST for J4/J5. Each lossless WebP pairs the same frame on main `bf0bd522` (left) and the fix `b4eb43cc` (right). Open the original image to see each complete, unscaled 960×600 desktop frame. The phone viewport is 412×839 at DPR 2, yielding 824×1678 pixels per side.
 
-| Time after tap | Frames |
-| --- | --- |
-| 3.500–3.617 s | [210–217](frames-210-217.jpg) |
-| 3.633–3.750 s | [218–225](frames-218-225.jpg) |
-| **3.767–3.883 s** | [**226–233, first frame of the disappearance**](frames-226-233.jpg) |
-| 3.900–4.017 s | [234–241](frames-234-241.jpg) |
-| 4.033–4.150 s | [242–249](frames-242-249.jpg) |
-| 4.167–4.200 s | [250–252](frames-250-252.jpg) |
+| Replay after tapping **Walk to the platform** | Pairs | Result |
+| --- | --- | --- |
+| [Desktop fast tap](desktop/) | Every frame 210–258 (3.500–4.300 s), then every sixth frame 264–480 (4.400–8.000 s) | Main first hides commuter 48 at [frame 231](desktop/231.webp) (3.850 s) and draws him again after frame 256. The fix draws him at full opacity on every update from frame 210 through 480. |
+| [Early desktop tap](early/) | Frames 0–6 | Main hides commuter 2 on [frame 2](early/002.webp) (0.033 s). The fix draws him throughout the opening return fade. |
+| [Phone viewport](phone/) | Frames 230, 231, 232, 258 and 480 | One load per revision. No matching disappearance on either load. |
+| [Desktop `?next=1`](next/) | Frames 230, 231, 232, 258 and 480 | One load per revision. No matching disappearance on either load. |
 
-Ego Lite desktop viewport at 960×600, DPR 1, default Shinjuku mode, morning crowd. The QA replay starts commuter 48 on the recorded opening-stair path on both revisions, holds at poster lift, steps 1.4 seconds, taps the button, then renders each 1/60-second step. The camera, guide, walking and visibility run through the app. The commuter's sampled position and focus-line distance match across both captures.
+The Ego Lite fast-tap replay places commuter 48 on the recorded opening-stair path and taps after 1.4 seconds. The early replay uses the earlier camera path on both revisions, places commuter 2 and taps after 0.6 seconds. Both commuters are farther from the camera than the cat during their respective crossings. The phone and `?next=1` runs use the regular crowd placement.
 
-At frame 230 the commuter is 4.67 m ahead and 45.4 cm from the camera-to-focus line. At frame 231 the distance to the line falls to 44.6 cm. Main zeros every body-part matrix on that update. The branch still draws the commuter with 92% dither coverage on frame 231, 83% at frame 232 and 50% at frame 236. The original camera path at `cd54eb29` triggers the same hide at frame 232 (3.867 s). A second replay of that revision recorded commuter 2 crossing the focus line for one update at frame 2 (0.033 s).
+The tracked commuter's body never intersected the cat's world bounds from 3.500 to 8.000 s on either revision. See the [capture summary](summary.json) for the visibility and overlap measurements.
 
 Credits: GTEki contributors. Shinjuku geometry derived from 国土交通省（ほこナビDP）. The E27 terms marker applies alongside the GTEki rendering license. Cat by guillaume bolis, modified by GTEki contributors (CC BY 4.0).
