@@ -6,7 +6,7 @@ The public preview currently has no visitor route into Tobu. Searching for the s
 
 The third art-direction capture completed at 02:27 JST from source `51ddc54f`. Both native Tobu B1 views show the barrier and the concourse beyond. Desktop black pixels are 1.5032% with the flag on and 1.7727% with it off, a 0.2695 percentage-point difference. Phone black pixels are 0.0143% and 0.0337%, a 0.0194-point difference. The desktop Tobu 1F frame uses the original inside position and shows pavement between the apron and road.
 
-The first PARCO run found the doorway already in view at the 19.1 m starting sample and the 2.93 m header was too oblique to read. The next pass starts 50 m back on the guide, records the last occluded sample and turns the follow camera toward the header at 3 m. Each frame carries its source HEAD in `receipt.json`. The other frames and the Package E walks retain their recorded source.
+The PARCO guide capture starts 50 m back, records the last occluded sample and turns the follow camera toward the header at 3 m. At 02:31 JST, source `86b9acbb` recorded first sight at 7.89 m on desktop and 9.24 m on phone. The 2.90 m view still made the lettering hard to read, so the PARCO B1 header now uses a larger atlas slot and larger lettering within the same sign face. Each frame carries its source HEAD in `receipt.json`. The other frames and the Package E walks retain their recorded source.
 
 ## Package E correction — 2026-11-24 JST
 

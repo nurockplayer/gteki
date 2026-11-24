@@ -126,13 +126,15 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const canvas=typeof document!=="undefined"?document.createElement("canvas"):null;
     const slots:{x:number;y:number;width:number;height:number}[]=[];
     let atlas:T.CanvasTexture|null=null;
+    const storeRows=levels.map((_,i)=>levels.slice(0,i).reduce((n,l)=>n+l.floor.tenants.length+1,0));
+    const parcoB1Row=plan.input.store.id==="ikebukuro-parco" ? storeRows[levels.findIndex(l=>l.floor.level==="B1")] : -1;
     if(canvas){
       canvas.width=canvas.height=1024;const paint=canvas.getContext("2d")!;
       paint.fillStyle="#EFE9DD";paint.fillRect(0,0,1024,1024);paint.textAlign="center";
-      const storeRows=levels.map((_,i)=>levels.slice(0,i).reduce((n,l)=>n+l.floor.tenants.length+1,0));
       let x=0,y=0,lineHeight=0;
       boards.forEach((b,i)=>{
-        const nameBoard=storeRows.includes(i), px=nameBoard&&boards.length>100?36:fontPx, height=nameBoard&&boards.length>100?80:rowHeight;
+        const nameBoard=storeRows.includes(i), large=i===parcoB1Row || (nameBoard&&boards.length>100);
+        const px=large?36:fontPx, height=large?80:rowHeight;
         paint.font=`600 ${px}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
         paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
         const width=Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
@@ -206,7 +208,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         lit.push(cube(plan.aisleX+side*1.48,l.y+l.clear-0.13,(from!+to!)/2,0.08,0.05,to!-from!));
       }
       const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
-        const slot=slots[row]!, labelHeight=height*0.6;
+        // The B1 approach sees PARCO's header at a steep angle from the guide.
+        const slot=slots[row]!, labelHeight=height*(row===parcoB1Row?0.9:0.6);
         const labelWidth=slot.width/slot.height*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
         for(const face of [0,1,-1]){
           const text=face!==0;
