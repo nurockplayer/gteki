@@ -475,6 +475,18 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
   stairSlab(x39(172.46, -178.32, 32.645), x39(173.02, -179.78, 32.645),
     x39(170.79, -178.48, 31.57), x39(171.36, -179.94, 31.57));
 
+  // The surveyed street lip is one riser above the upper tread. Cap it at the
+  // portal elevation so the walker can stand on the street threshold.
+  const a = x39(172.23, -178.354, 32.79), b = x39(172.792, -179.753, 32.79);
+  panel(a, b, b.clone().setY(32.645), a.clone().setY(32.645), slab);
+  const thresholdStart = positions.length;
+  panel(a, a.clone().add(new THREE.Vector3(1, 0, 0)),
+    b.clone().add(new THREE.Vector3(1, 0, 0)), b, slab);
+  const thresholdGeometry = new THREE.BufferGeometry();
+  thresholdGeometry.setAttribute("position", new THREE.Float32BufferAttribute(positions.slice(thresholdStart), 3));
+  const threshold = new THREE.Mesh(thresholdGeometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+  threshold.userData.gteki_role = "stairs_ramps";
+
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
@@ -491,7 +503,7 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
     side: THREE.DoubleSide, blending: THREE.NoBlending, transparent: true, opacity: 0,
   });
   normal.allowOverride = false;
-  return { mesh, blocker, normal };
+  return { mesh, blocker, normal, threshold };
 }
 
 export async function buildScene(ctx: SceneContext): Promise<StationScene> {
@@ -506,7 +518,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // These flights have surveyed stair meshes. Keep the generated support, but omit the overlapping
   // display stairs, suspended connector lights and short rail sections.
   root.userData.modelledStairEdges = ["e_low__x35", "s39_f__x39"];
-  const { mesh: stairEnclosures, blocker: stairEnclosureBlocker, normal: stairEnclosureNormal } =
+  root.userData.modelledStairwellSlabEdges = ["s39_f__x39"];
+  const { mesh: stairEnclosures, blocker: stairEnclosureBlocker, normal: stairEnclosureNormal, threshold } =
     exitStairEnclosures(THREE, toRenderer, low);
   root.userData.gteki_gtao_depth_twins = [{ mesh: stairEnclosures, twin: stairEnclosureNormal, original: stairEnclosures.material }];
 
@@ -798,7 +811,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   return {
     root,
     interactables,
-    walkable: walkTiles,
+    walkable: [...walkTiles, threshold],
     colliders: colliderTiles,
     cameraBlockers: [...contextBlockers.meshes, stairEnclosureBlocker],
     cameraGateAisles: builtKit.cameraGateAisles,
@@ -839,6 +852,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       stairEnclosures.geometry.dispose();
       stairEnclosures.material.dispose();
       stairEnclosureNormal.dispose();
+      threshold.geometry.dispose();
+      threshold.material.dispose();
       geometry.dispose();
       material.dispose();
       wallProps.geometry.dispose();
