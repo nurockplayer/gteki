@@ -285,12 +285,12 @@
         "normalized": "tobu",
         "top": [
           {
-            "poiId": "tobu-central-gate-2",
+            "poiId": "shop-ikb-tobudept",
             "score": 105
           },
           {
-            "poiId": "shop-ikb-tobudept",
-            "score": 100
+            "poiId": "tobu-central-gate-2",
+            "score": 105
           },
           {
             "poiId": "tobu-central-gate-1",

@@ -66,6 +66,6 @@ describe("empty suggestions", () => {
   it("suggests names found in the real Ikebukuro bundle", () => {
     const parsed = parseStationFiles(ikebukuroStation, ikebukuroGraph, ikebukuroPois);
     if (!parsed.ok) throw new Error("Ikebukuro station files failed validation");
-    expect(exampleQueries(parsed.bundle.pois, "ja", "トイレ")).toContain("ルミネ池袋");
+    expect(exampleQueries(parsed.bundle.pois, "ja", "トイレ")).toContain("東武百貨店　池袋店");
   });
 });
