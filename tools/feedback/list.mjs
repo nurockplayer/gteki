@@ -1,5 +1,5 @@
 // Read-only against Cloudflare; writes a local triage folder with screenshot links.
-import { mkdir, writeFile } from "node:fs/promises";
+import { lstat, mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const { CLOUDFLARE_ACCOUNT_ID: account, CLOUDFLARE_API_TOKEN: token, FEEDBACK_NAMESPACE_ID: namespace } = process.env;
@@ -13,7 +13,20 @@ async function api(resource) {
   return response.json();
 }
 await mkdir(out, { recursive: true });
-const rows = [`# New feedback since ${since} (UTC)`, "", "Reports expire in KV 90 days after submission. Delete local exports by the same deadline.", ""];
+const indexName = "index.md";
+const indexHeading = "# New feedback since ";
+const reportFilename = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:json|jpg)$/;
+const cutoff = Date.now() - 90 * 86_400_000;
+for (const name of await readdir(out)) {
+  if (name !== indexName && !reportFilename.test(name)) continue;
+  const file = path.join(out, name);
+  const info = await lstat(file);
+  if (!info.isFile() || info.mtimeMs >= cutoff) continue;
+  if (name === indexName && !(await readFile(file, "utf8")).startsWith(indexHeading)) continue;
+  await unlink(file);
+}
+
+const rows = [`${indexHeading}${since} (UTC)`, "", "Reports expire in KV 90 days after submission. Delete local exports by the same deadline.", ""];
 let cursor = "";
 let count = 0;
 do {
@@ -31,5 +44,5 @@ do {
   }
   cursor = page.result_info.cursor ?? "";
 } while (cursor);
-await writeFile(path.join(out, "index.md"), rows.join("\n") + "\n");
-console.log(`${count} new report(s): ${path.join(out, "index.md")}`);
+await writeFile(path.join(out, indexName), rows.join("\n") + "\n");
+console.log(`${count} new report(s): ${path.join(out, indexName)}`);
