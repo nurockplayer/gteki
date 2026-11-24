@@ -22,7 +22,11 @@ function loadTurnstile(): Promise<Turnstile> {
       const api = (window as unknown as { turnstile: Turnstile }).turnstile;
       resolve(api);
     };
-    script.onerror = () => reject(new Error("Turnstile could not load"));
+    script.onerror = () => {
+      turnstileReady = undefined;
+      script.remove();
+      reject(new Error("Turnstile could not load"));
+    };
     document.head.append(script);
   });
 }
