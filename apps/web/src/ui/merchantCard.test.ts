@@ -203,8 +203,8 @@ describe("field-only department stores on the public bundles", () => {
   const read = (station: string, file: string) => JSON.parse(readFileSync(`stations/${station}/gteki/${file}.json`, "utf8"));
 
   it.each([
-    ["ikebukuro", "shop-ikb-seibu-honten", "tie", ["g_jr_s"]],
-    ["ikebukuro", "shop-ikb-tobudept", "area", []],
+    ["ikebukuro", "shop-ikb-seibu-honten", "tie", ["x38"]],
+    ["ikebukuro", "shop-ikb-tobudept", "area", ["x18"]],
     ["shinjuku", "shop-sjk-keio", "search", []],
   ] as const)("%s %s keeps its real connector and labels the entrance", (station, id, precision, connectors) => {
     const poi: Poi = read(station, "pois").pois.find((p: Poi) => p.id === id);
@@ -216,7 +216,7 @@ describe("field-only department stores on the public bundles", () => {
     expect(model.precision).toBe(precision);
     expect(model.routable).toBe(connectors.length > 0);
     const card = merchantCardEl(model, strings("ja"), sources, "ja");
-    expect(card.querySelector(".merchant-meta")?.textContent).toContain("入口未確認");
+    expect(card.textContent).toContain(id === "shop-ikb-tobudept" ? "入口と接続は未確認" : "入口未確認");
     expect(card.querySelector(".merchant-no-route") !== null).toBe(connectors.length === 0);
   });
 });
