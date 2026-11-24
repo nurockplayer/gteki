@@ -21,7 +21,20 @@ const plan = () => depatoLayout({
 /** Called before the host creates search/router; the flag-off bundle is never modified. */
 export function previewBundle(bundle: StationBundle): StationBundle {
   const street = { id: "depato-seibu-street", floorId: "street", position: { x: 56, y: -122.5, z: 32.5 }, kind: "junction" as const, inOut: "outside" as const, sourceRefs: [] };
-  return depatoBundle({ ...bundle, nodes: [...bundle.nodes, street] }, plan());
+  const layout = plan();
+  const preview = depatoBundle({ ...bundle, nodes: [...bundle.nodes, street] }, layout);
+  return { ...preview, pois: preview.pois.map(p => p.id !== layout.input.poiId ? p : {
+    ...p, connectorNodeIds: [layout.input.entrances[0]!.outsideNode],
+    evidence: {
+      sourceIds: [...p.evidence.sourceIds, layout.input.sourceId, "toshima-underground-guide-2022"],
+      method: "STATION_TIE: official South Passage and B1 South Entrance names; the connector is the verified public passage junction. The doorway coordinates and interior continuation are illustrative.",
+      checkedDate: "2026-11-24",
+    },
+    notes: [
+      { lang: "ja", text: "確認済みの案内は南通路までです。西武B1の入口の位置と店内経路は現地未確認です。" },
+      { lang: "en", text: "Verified station directions end in the South Passage. The Seibu B1 entrance position and interior path are unsurveyed." },
+    ],
+  }) };
 }
 
 /** One station hook: wrap context loading, open the station shell and attach the reusable kit. */
