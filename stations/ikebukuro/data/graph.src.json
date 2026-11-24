@@ -220,7 +220,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "店内・施設のサービス｜インフォメーション｜東武百貨店 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-28T04:11:41Z",
@@ -235,7 +238,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/342",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 — 東武百貨店 池袋店 アクセス",
    "modified": false,
    "retrievedAt": "2026-10-24T00:00:00+09:00",
@@ -250,7 +256,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/342",
+    "date": "2026-10-24"
+   },
    "attribution": "一般社団法人豊島区観光協会（協力：豊島区） — 豊島、もっと楽しく FUN 池袋 (2025年3月), PDF page 2",
    "modified": false,
    "retrievedAt": "2026-10-24T00:00:00+09:00",
@@ -268,7 +277,10 @@
    },
    "rights": "REUSABLE_WITH_CONDITIONS",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/342",
+    "date": "2026-10-24"
+   },
    "attribution": "© OpenStreetMap contributors (ODbL)",
    "modified": false,
    "retrievedAt": "2026-10-24T00:53:00+09:00",
@@ -338,7 +350,10 @@
    "datasetDate": "2022-01",
    "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   }
   },
   {
    "id": "toshima-terminal-sign-guideline-draft-v1.3",
@@ -353,7 +368,10 @@
    "datasetDate": "2026-03",
    "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222); also cited as supporting (not confirming) evidence for the east-side station identity label (#342 Q4), which is not route evidence. Freshness check: replace when the final guideline is published.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823", "date": "2026-10-22" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823",
+    "date": "2026-10-22"
+   }
   },
   {
    "id": "tokyometro-ikebukuro-yardmap-2026-03",
@@ -368,7 +386,10 @@
    "datasetDate": "2026-03",
    "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   }
   },
   {
    "id": "tokyometro-ikebukuro-accessibility-2026-10",
@@ -383,7 +404,10 @@
    "datasetDate": null,
    "notes": "ライセンスなし・事実のみ参照（複製なし）。丸ノ内線・有楽町線・副都心線の各バリアフリー設備（エレベーター・エスカレーターの設置場所の端点表記、対応の有無「あり」のみ採用）。運転停止予定は対象外。トイレ設備は車いす対応トイレ・乳幼児用設備・オストメイトの設置場所表記のみ採用（「なし」の行は除外、#431）。 Re-read 2026-10-24 (WP2): lift and escalator end pairs per line. The existing station record (retrieved 2026-10-22) keeps its id; the writer updates retrievedAt and these notes. Re-read 2026-10-24 (#431): toilet rows; page undated.",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   }
   },
   {
    "id": "plateau-13116-bldg-53394576",
@@ -537,7 +561,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/342", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/342",
+    "date": "2026-10-24"
+   },
    "attribution": "Tabi-mag / LIVE JAPAN (location facts only; no content reproduced)",
    "modified": false,
    "retrievedAt": null,
@@ -556,7 +583,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
    "attribution": "東京メトロ 池袋駅 施設・店舗 (facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T00:40:00Z",
@@ -571,7 +601,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614",
+    "date": "2026-10-24"
+   },
    "attribution": "池袋ショッピングパーク フロアガイド (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T00:40:00Z",
@@ -586,7 +619,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614",
+    "date": "2026-10-24"
+   },
    "attribution": "池袋ショッピングパーク アクセス (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-28T00:00:00+09:00",
@@ -601,7 +637,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/360#issuecomment-6377632614",
+    "date": "2026-10-24"
+   },
    "attribution": "エチカ池袋 フロアガイド・ショップ一覧 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T02:56:55Z",
@@ -616,7 +655,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6378920311",
+    "date": "2026-10-24"
+   },
    "attribution": "東武ホープセンター フロアガイド (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T02:56:55Z",
@@ -636,7 +678,10 @@
    "datasetDate": "2026-03",
    "notes": "ライセンスなし・事実のみ参照（複製なし）。出口案内の出入口番号・時間制限表記（*）・地上行エレベーターの表記のみ採用。近隣施設名・構内図画像は対象外。 改定日：2026年3月（ページ表記）。",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   }
   },
   {
    "id": "seibu-ikebukuro-station-2026-10",
@@ -651,7 +696,10 @@
    "datasetDate": null,
    "notes": "ライセンスなし・事実のみ参照（複製なし）。駅の案内文の改札口名、駅施設の営業時間（西武南口）を確認。エレベーター・エスカレーター位置は画像のみで本文に無し。 Rights: OD-25 (docs/research/owner-decisions-pending.md; decided 2026-10-22 by the director under the Owner's delegation, recorded in PR #222): same class as Tokyo Metro, facts-only under #26. batch 3 で採取した設備：駅からのお知らせ本文の AED（1F改札口付近・B1F改札口付近）のみ。トイレ・授乳室等の位置は構内図画像のみで本文に無し（GAP）。",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   }
   },
   {
    "id": "lumine-ikebukuro-floorguide-2026-10",
@@ -661,7 +709,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "フロアガイド │ ルミネ池袋 │ LUMINE (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -676,7 +727,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "フロアガイドB1｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -691,7 +745,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店トップ (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -706,7 +763,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 2F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-10T13:20:00+09:00",
@@ -721,7 +781,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 6F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-10T13:20:00+09:00",
@@ -736,7 +799,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド B2F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -751,7 +817,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド B1F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -766,7 +835,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 1F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -781,7 +853,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 2F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -796,7 +871,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 3F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -811,7 +889,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 4F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -826,7 +907,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 5F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -841,7 +925,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 6F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -856,7 +943,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 7F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -871,7 +961,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 8F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -886,7 +979,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 9F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -901,7 +997,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 10F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -916,7 +1015,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 11F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -931,7 +1033,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 12F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -946,7 +1051,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 13F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -961,7 +1069,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 14F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -976,7 +1087,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 フロアガイド 15F (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T09:18:40Z",
@@ -991,7 +1105,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+    "date": "2026-10-24"
+   },
    "attribution": "エミオ 池袋 | エミオを探す | エミオ (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T10:12:37Z",
@@ -1006,7 +1123,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382878896",
+    "date": "2026-10-24"
+   },
    "attribution": "池袋 | 駅ナカ・駅チカニュース | 西武沿線駅ナカ・駅チカ情報ポータル (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T10:12:37Z",
@@ -1021,7 +1141,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "サービス・施設案内 │ ルミネ池袋 │ LUMINE (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1036,7 +1159,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "フロアガイド3F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1051,7 +1177,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "フロアガイド4F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1066,7 +1195,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "フロアガイド6F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1081,7 +1213,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "フロアガイド7F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1096,7 +1231,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "フロアガイド8F｜エソラ池袋 | 東京メトロ有楽町線池袋駅直結の駅ビル (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1111,7 +1249,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "店内・施設のサービス｜インフォメーション｜東武百貨店 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1126,7 +1267,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "お子様連れのお客様へのサービス｜インフォメーション｜東武百貨店 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1141,7 +1285,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "ご高齢・お体の不自由なお客様へのサービス｜インフォメーション｜東武百貨店 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T11:04:19Z",
@@ -1156,7 +1303,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
    "attribution": "西武鉄道 池袋駅ページ (facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-24T20:00:00+09:00",
@@ -1171,7 +1321,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
    "attribution": "東京メトロ 池袋駅 (English station page) (facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-25T18:30:00+09:00",
@@ -1186,7 +1339,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
    "attribution": "一般社団法人日本ショッピングセンター協会「まちづくり・地域活性化セミナー」＜SC概要＞ (no licence — facts cited, not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-25T18:25:00+09:00",
@@ -1201,7 +1357,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "アクセス │ ルミネ池袋 │ LUMINE (facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-25T13:05:34Z",
@@ -1216,7 +1375,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
    "attribution": "一般社団法人日本ショッピングセンター協会「2026年オープンSC（一覧表）」(no licence — facts cited, not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-26T05:19:00+09:00",
@@ -1406,7 +1568,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+    "date": "2026-10-27"
+   },
    "attribution": "西武池袋本店 フロアガイド（本館） (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-27T11:43:00Z",
@@ -1421,7 +1586,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+    "date": "2026-10-27"
+   },
    "attribution": "西武池袋本店 アクセス (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-28T00:00:00+09:00",
@@ -1436,7 +1604,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+    "date": "2026-10-27"
+   },
    "attribution": "西武池袋本店 フロアガイド（別館・書籍館） (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-27T11:42:00Z",
@@ -1451,7 +1622,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+    "date": "2026-10-27"
+   },
    "attribution": "西武池袋本店 営業時間のご案内 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-01T21:53:43Z",
@@ -1466,7 +1640,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+    "date": "2026-10-27"
+   },
    "attribution": "東武鉄道「池袋駅 構内マップ」(facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-27T08:17:00+09:00",
@@ -1481,7 +1658,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "東武百貨店 池袋店 アクセス (facts only; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-10-27T08:17:00+09:00",
@@ -1496,7 +1676,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-11-02" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+    "date": "2026-11-02"
+   },
    "attribution": "池袋PARCO フロアガイド (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-01T19:34:52Z",
@@ -1639,7 +1822,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md", "date": "2026-10-27" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/blob/main/docs/research/use-tiers.md",
+    "date": "2026-10-27"
+   },
    "attribution": "東武鉄道 池袋駅 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-02T19:58:53.310019+00:00",
@@ -1657,7 +1843,10 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098", "date": "2026-10-24" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/pull/377#issuecomment-6382700098",
+    "date": "2026-10-24"
+   },
    "attribution": "エソラ池袋 営業時間 (facts only, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-02T20:47:09Z",
@@ -1672,12 +1861,69 @@
    "license": null,
    "rights": "REFERENCE_ONLY",
    "usage": "facts-only",
-   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" },
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
    "attribution": "外貨両替機 SMART EXCHANGE NewDays 池袋 (no licence — facts cited, UNVERIFIED; not reproduced)",
    "modified": false,
    "retrievedAt": "2026-11-06T07:18:24+09:00",
    "datasetDate": null,
    "notes": "Printed machine listing only: the name, the address 「東京都豊島区南池袋1-28-2 池袋駅 1F JR改札外東口」 and the 1F East Exit side. The site has no explicit reuse clause (checked by the lead 2026-11-06 JST), so facts only: nothing copied, no description, image, logo or map. Lead ruling 2026-11-06 05:3x JST for #862: Ikebukuro only, search-only, no position. Corroboration only (OD-34, never the sole source in S): https://shop.jr-cross.co.jp/eki/spot/detail?code=1040188 prints 「1F 東口」; that operator's site is excluded, so no name or text from it is used. gteki-lead 2026-11-09 10:4x JST (#1044 Q2): no use terms (copyright notice and site policy only), covered by the Owner's #26 decision like JCSC; only name, address and the 1F East Exit side are taken."
+  },
+  {
+   "id": "sunshine-city-access-2026-11",
+   "title": "Sunshine City official train access and building group",
+   "publisher": "株式会社サンシャインシティ",
+   "url": "https://sunshinecity.jp/information/access_train.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
+   "attribution": "Sunshine City official access: place names and exit 35 access facts only; no artwork reproduced",
+   "modified": false,
+   "retrievedAt": "2026-11-21T17:42:50.006284+00:00",
+   "datasetDate": null,
+   "notes": "Owner request 2026-11-22 JST; OD-34 facts-only precedent. Official page read 2026-11-22 JST: Ikebukuro exit 35, about eight minutes. https://sunshinecity.jp/information/floor_map/ describes the five-building complex."
+  },
+  {
+   "id": "sunshine-city-en-access-2026-11",
+   "title": "Sunshine City English access",
+   "publisher": "株式会社サンシャインシティ",
+   "url": "https://sunshinecity.jp/en/information/access.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
+   "attribution": "Official English place name; facts only, no imagery reproduced",
+   "modified": false,
+   "retrievedAt": "2026-11-21T17:42:50.006284+00:00",
+   "datasetDate": null,
+   "notes": "Official English name consulted 2026-11-22 JST; facts only under OD-34."
+  },
+  {
+   "id": "parco-ikebukuro-en-2016",
+   "title": "PARCO annual report 2016 (English)",
+   "publisher": "株式会社パルコ",
+   "url": "https://www.parco.co.jp/pdf/en/library/ar2016.pdf",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "usage": "facts-only",
+   "decision": {
+    "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404",
+    "date": "2026-10-21"
+   },
+   "attribution": "Official English place name; facts only, no imagery reproduced",
+   "modified": false,
+   "retrievedAt": "2026-11-21T17:42:50.006284+00:00",
+   "datasetDate": null,
+   "notes": "Official English name consulted 2026-11-22 JST; facts only under OD-34."
   }
  ],
  "floors": [
@@ -21775,26 +22021,37 @@
      "text": "東武百貨店　池袋店"
     }
    ],
-   "aliases": [{"lang": "ja", "text": "東武池袋"}, {"lang": "en", "text": "Tobu"}],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武池袋"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "x18"
+   ],
    "paid": null,
    "evidence": {
     "sourceIds": [
      "tobu-dept-ikebukuro-2026-10"
     ],
-    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.tobu-dept.jp/ikebukuro/, read 2026-11-10 19:13 JST",
+    "method": "Provisional nearest modeled exit: x18, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. AREA_ONLY. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.tobu-dept.jp/ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-24"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "池袋駅西口 直結。位置・入口は未確認（案内ルートなし）。現在の営業状況は未確認。"
+     "text": "池袋駅西口 直結。位置・入口は未確認。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 18 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
     },
     {
      "lang": "en",
-     "text": "Direct connection to Ikebukuro Station West Exit (store wording: 池袋駅西口 直結). Location and entrance not verified for routing. Current status unknown."
+     "text": "Direct connection to Ikebukuro Station West Exit (store wording: 池袋駅西口 直結). Location and entrance not verified for routing. Current status unknown. Provisional route to nearest modeled exit 18, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ],
    "hours": {
@@ -24968,11 +25225,16 @@
      "text": "ルミネ池袋"
     }
    ],
-   "aliases": [{"lang": "en", "text": "LUMINE"}],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "LUMINE"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [
-    "g_jr_s"
+    "x37"
    ],
    "paid": false,
    "evidence": {
@@ -24980,17 +25242,17 @@
      "lumine-ikebukuro-floorguide-2026-10",
      "lumine-ikebukuro-access-2026-10"
     ],
-    "method": "printed store-entrance tie: the store's access page prints 「JR池袋駅南改札、正面右手よりすぐ」; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to (facts only). STATION_TIE: the store's own entrance is not verified (field item FC-MER-01). The floor range is the floor guide's, UNVERIFIED. The store's own entrance and the floors inside are not surveyed; alias source https://www.lumine.ne.jp/ikebukuro/, read 2026-11-10 19:13 JST",
+    "method": "Provisional nearest modeled exit: x37, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. STATION_TIE. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): printed store-entrance tie: the store's access page prints 「JR池袋駅南改札、正面右手よりすぐ」; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to (facts only). STATION_TIE: the store's own entrance is not verified (field item FC-MER-01). The floor range is the floor guide's, UNVERIFIED. The store's own entrance and the floors inside are not surveyed; alias source https://www.lumine.ne.jp/ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-25"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "「JR池袋駅南改札、正面右手よりすぐ」（ルミネ池袋アクセスページの表記）。案内はJR南改札の改札外側（公共側）で終わります。店舗の入口そのものと店内の階は未確認。掲載フロア: B1～10F（フロアガイドの表記）。現在の営業状況は未確認。"
+     "text": "「JR池袋駅南改札、正面右手よりすぐ」（ルミネ池袋アクセスページの表記）。店舗の入口そのものと店内の階は未確認。掲載フロア: B1～10F（フロアガイドの表記）。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 37 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
     },
     {
      "lang": "en",
-     "text": "「JR池袋駅南改札、正面右手よりすぐ」 (the store's access page wording: straight ahead and immediately to the right of the JR South Gate). The guide ends on the public (outside the fare gates) side of the JR South Gate; the store's own entrance and the floors inside are not verified. Floors printed: B1–10F (floor guide). Current status unknown."
+     "text": "「JR池袋駅南改札、正面右手よりすぐ」 (the store's access page wording: straight ahead and immediately to the right of the JR South Gate).  Floors printed: B1–10F (floor guide). Current status unknown. Provisional route to nearest modeled exit 37, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ]
   },
@@ -25043,26 +25305,33 @@
      "text": "エソラ池袋"
     }
    ],
-   "aliases": [{"lang": "en", "text": "Esola"}],
+   "aliases": [
+    {
+     "lang": "en",
+     "text": "Esola"
+    }
+   ],
    "floorId": null,
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "x15"
+   ],
    "paid": null,
    "evidence": {
     "sourceIds": [
      "esola-ikebukuro-floorguide-2026-10"
     ],
-    "method": "facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.metropro-sc.jp/esola-ikebukuro/, read 2026-11-10 19:13 JST",
+    "method": "Provisional nearest modeled exit: x15, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. AREA_ONLY. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): facts-only directory listing (OD-23/OD-31/OD-33), UNVERIFIED, AREA_ONLY; alias source https://www.metropro-sc.jp/esola-ikebukuro/, read 2026-11-10 19:13 JST",
     "checkedDate": "2026-10-24"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "運営: 株式会社メトロプロパティーズ。掲載フロア: B1～8F（出典のフロアガイドに掲載のフロア）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+     "text": "運営: 株式会社メトロプロパティーズ。掲載フロア: B1～8F（出典のフロアガイドに掲載のフロア）。位置・入口は未確認。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 15 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
     },
     {
      "lang": "en",
-     "text": "Operator: 株式会社メトロプロパティーズ. Floors: B1–8F as printed in the source floor guide. Location and entrance not verified (search only, no route). Current status unknown."
+     "text": "Operator: 株式会社メトロプロパティーズ. Floors: B1–8F as printed in the source floor guide. Location and entrance not verified . Current status unknown. Provisional route to nearest modeled exit 15, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ],
    "hours": {
@@ -25085,23 +25354,25 @@
    "aliases": [],
    "floorId": null,
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "x22"
+   ],
    "paid": null,
    "evidence": {
     "sourceIds": [
      "jcsc-ikebukuro-parco-facility-2021-10"
     ],
-    "method": "facts-only facility record (OD-34 class, S13), UNVERIFIED, AREA_ONLY",
+    "method": "Provisional nearest modeled exit: x22, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. AREA_ONLY. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): facts-only facility record (OD-34 class, S13), UNVERIFIED, AREA_ONLY",
     "checkedDate": "2026-10-25"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "池袋パルコは地下2階〜地上8階（日本ショッピングセンター協会の＜SC概要＞の表記。資料の名称は「池袋パルコ」で、本館・別館の区別は書かれていない。ページに印刷された日付はなく、URL の日付トークンは 20211029）。位置・入口は未確認（検索のみ。案内ルートなし）。現在の営業状況は未確認。"
+     "text": "池袋パルコは地下2階〜地上8階（日本ショッピングセンター協会の＜SC概要＞の表記。資料の名称は「池袋パルコ」で、本館・別館の区別は書かれていない。ページに印刷された日付はなく、URL の日付トークンは 20211029）。位置・入口は未確認。現在の営業状況は未確認。 暫定案内はモデル内の最寄り出口 22 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
     },
     {
      "lang": "en",
-     "text": "池袋パルコ spans B2–8F (Japan Council of Shopping Centers ＜SC概要＞; the source names it 池袋パルコ, does not split 本館 / 別館, and prints no date — 20211029 is a URL token). Location and entrance not verified (search only, no route). Current status unknown."
+     "text": "池袋パルコ spans B2–8F (Japan Council of Shopping Centers ＜SC概要＞; the source names it 池袋パルコ, does not split 本館 / 別館, and prints no date — 20211029 is a URL token). Location and entrance not verified . Current status unknown. Provisional route to nearest modeled exit 22, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ]
   },
@@ -25118,7 +25389,7 @@
    "floorId": null,
    "displayPosition": null,
    "connectorNodeIds": [
-    "g_jr_s"
+    "x38"
    ],
    "paid": false,
    "evidence": {
@@ -25126,17 +25397,17 @@
      "jcsc-ikebukuro-links-open-sc",
      "sogo-seibu-ikebukuro-access-2026-10"
     ],
-    "method": "facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED, printed station-level tie: the store's access page prints 「南改札口から徒歩すぐ」 under JR; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to. STATION_TIE: the store's own entrance is not verified (field item V1). Store record: facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED",
+    "method": "Provisional nearest modeled exit: x38, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. STATION_TIE. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED, printed station-level tie: the store's access page prints 「南改札口から徒歩すぐ」 under JR; connector = the public (outside the fare gates) side of the JR South Gate, the node the JR South Gate POI routes to. STATION_TIE: the store's own entrance is not verified (field item V1). Store record: facts-only opening-SC record (OD-34 class, JCSC), UNVERIFIED",
     "checkedDate": "2026-10-26"
    },
    "notes": [
     {
      "lang": "ja",
-     "text": "日本ショッピングセンター協会の2026年オープンSC一覧で、LINKS IKEBUKURO（東京都豊島区南池袋1-28-1、注8）のオープン日は2026年6月30日と印刷され、そのキーテナントとして「西武池袋本店」と印刷されている（同店自身の開業日として書かれたものではない）。階数はこの資料に記載なし。位置・入口は未確認。現在の営業状況は未確認。「南改札口から徒歩すぐ」（西武池袋本店アクセスページのJR線の表記）。案内はJR南改札の改札外側（公共側）で終わります。店舗入口の位置は未確認です。"
+     "text": "日本ショッピングセンター協会の2026年オープンSC一覧で、LINKS IKEBUKURO（東京都豊島区南池袋1-28-1、注8）のオープン日は2026年6月30日と印刷され、そのキーテナントとして「西武池袋本店」と印刷されている（同店自身の開業日として書かれたものではない）。階数はこの資料に記載なし。位置・入口は未確認。現在の営業状況は未確認。「南改札口から徒歩すぐ」（西武池袋本店アクセスページのJR線の表記）。店舗入口の位置は未確認です。 暫定案内はモデル内の最寄り出口 38 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
     },
     {
      "lang": "en",
-     "text": "Printed as 西武池袋本店, a key tenant of LINKS IKEBUKURO (東京都豊島区南池袋1-28-1; the row prints the complex's opening date, 2026-06-30; note 8), in the Japan Council of Shopping Centers 2026 opening-SC list. That date is the complex's, not the store's own opening date. Floors are not printed in that source. Location and entrance not verified. Current status unknown. 「南改札口から徒歩すぐ」 (the store's access page, under JR: a short walk from the South Gate). Directions end on the public side of the JR South Gate; the store entrance position is not yet verified."
+     "text": "Printed as 西武池袋本店, a key tenant of LINKS IKEBUKURO (東京都豊島区南池袋1-28-1; the row prints the complex's opening date, 2026-06-30; note 8), in the Japan Council of Shopping Centers 2026 opening-SC list. That date is the complex's, not the store's own opening date. Floors are not printed in that source. Location and entrance not verified. Current status unknown. 「南改札口から徒歩すぐ」 (the store's access page, under JR: a short walk from the South Gate).  Provisional route to nearest modeled exit 38, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ],
    "hours": {
@@ -25772,6 +26043,122 @@
     {
      "lang": "en",
      "text": "One search entry records facility availability, not a device count. Individual locations and quantities are unknown. Location and entrance not verified (search only, no route). Floor and paid side are not stated in the text. Current status unknown."
+    }
+   ]
+  },
+  {
+   "id": "landmark-sunshine-city",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "サンシャインシティ"
+    },
+    {
+     "lang": "en",
+     "text": "Sunshine City"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "サンシャイン60"
+    },
+    {
+     "lang": "ja",
+     "text": "専門店街アルパ"
+    },
+    {
+     "lang": "ja",
+     "text": "ワールドインポートマート"
+    },
+    {
+     "lang": "ja",
+     "text": "文化会館"
+    },
+    {
+     "lang": "ja",
+     "text": "サンシャインシティプリンスホテル"
+    },
+    {
+     "lang": "en",
+     "text": "Sunshine 60"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x35"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "sunshine-city-en-access-2026-11",
+     "sunshine-city-access-2026-11"
+    ],
+    "method": "Provisional nearest modeled exit: x35, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): Official access page specifies Ikebukuro exit 35. Route ends at that station exit, not the remote building; facts only, Owner request 2026-11-22 JST.",
+    "checkedDate": "2026-11-22"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "東口・35番出口からサンシャイン60通り方面へ。公式案内は徒歩約8分。建物までの街路はこのゲームにありません。 暫定案内はモデル内の最寄り出口 35 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
+    },
+    {
+     "lang": "en",
+     "text": "East side: exit 35, toward Sunshine 60 Street. The official access guide gives about eight minutes on foot.  Provisional route to nearest modeled exit 35, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
+    }
+   ]
+  },
+  {
+   "id": "shop-ikb-pparco",
+   "category": "shop",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "池袋パルコ P'PARCO"
+    },
+    {
+     "lang": "en",
+     "text": "Ikebukuro P'PARCO"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "P'PARCO"
+    },
+    {
+     "lang": "ja",
+     "text": "P’PARCO"
+    },
+    {
+     "lang": "ja",
+     "text": "ピーダッシュパルコ"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x22"
+   ],
+   "paid": null,
+   "evidence": {
+    "sourceIds": [
+     "parco-ikebukuro-en-2016",
+     "parco-ikebukuro-floorguide-2026-11"
+    ],
+    "method": "Provisional nearest modeled exit: x22, by geometric distance to the PLATEAU footprint; official entrance coordinates and a wall-safe station-side door connection are not established. Sources describe the store, not the modeled exit connection. Previous evidence (earlier routing superseded): Provisional station-exit routing tie to x22 (east exit); P'PARCO is a separate building, not a surveyed station-side entrance. Official PARCO access: https://ikebukuro.parco.jp/info/?gcd=access; official PARCO source identifies the east-exit area: https://www.parco.co.jp/pdf/jp/store/storage/cname_20211026130032.pdf, 「池袋駅東口（北）方面」. Facts only; move this tie after survey.",
+    "checkedDate": "2026-11-22"
+   },
+   "notes": [
+    {
+     "lang": "ja",
+     "text": "本館とは別棟のP'PARCO。既存フロアガイドのP'PARCO各階の店舗をこの建物にまとめています。店舗入口の位置は未確認です。 暫定案内はモデル内の最寄り出口 22 までです。PLATEAU建物形状との距離で選定した出口で、公式入口ではありません。入口と接続は未確認です。"
+    },
+    {
+     "lang": "en",
+     "text": "P'PARCO is separate from the main building. Tenant rows with P'PARCO floor labels belong here.  Provisional route to nearest modeled exit 22, selected by distance to the PLATEAU footprint. This is not the official entrance; the entrance and station-side connection are not verified."
     }
    ]
   }
@@ -27203,210 +27590,220 @@
     }
    ],
    "files": [
-    "assets/ikebukuro_context_high.glb"
+    "assets/ikebukuro_context_high.glb",
+    "assets/ikebukuro_landmarks_next.glb"
    ]
   }
  ],
  "dataFiles": [
-   {
-     "id": "depato-floors",
-     "path": "data/depato-floors.json",
-     "sourceIds": [
-       "sogo-seibu-ikebukuro-floorguide-2026-10"
-     ],
-     "modified": true,
-     "derivation": "Names, floor labels and categories only from the official floor guide, read 2026-11-22 JST. Owner-requested B1/1F pilot seed; no copied art or map."
-   },
-   {
-     "id": "depato-footprint",
-     "path": "data/depato-footprint.json",
-     "sourceIds": [
-       "plateau-13116-bldg-53394576",
-       "plateau-13116-bldg-53394577"
-     ],
-     "modified": true,
-     "derivation": "Southern wing of the connected station/store building: context low GLB ctx_bldg_t01_00 ground ring at TP 32.2 m, clipped at x=0 and renderer z=70/180 as authored partitions. PLATEAU vertices retained; not a surveyed interior plan."
-   },
-   {
-     "id": "stairwell-cut-high",
-     "path": "scene/stairwell-cut.high.b64.txt",
-     "sourceIds": [
-       "esola-ikebukuro-floorguide-2026-10",
-       "gteki-ikb-catalog-0-1-0",
-       "gteki-kit-0-1-0",
-       "ikefukuro-location-references-2026-10",
-       "lumine-ikebukuro-access-2026-10",
-       "osm-ikebukuro-station-refs-2026-10",
-       "plateau-13116-bldg-53394576",
-       "plateau-13116-bldg-53394577",
-       "plateau-13116-tran-53394576",
-       "plateau-13116-tran-53394577",
-       "plateau-ubld-13116",
-       "sogo-seibu-ikebukuro-floorguide-2026-10",
-       "tokyometro-ikebukuro-yardmap-2026-03",
-       "toshima-terminal-sign-guideline-draft-v1.3",
-       "toshima-underground-guide-2022"
-     ],
-     "modified": true,
-     "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
-   },
-   {
-     "id": "stairwell-cut-low",
-     "path": "scene/stairwell-cut.low.b64.txt",
-     "sourceIds": [
-       "esola-ikebukuro-floorguide-2026-10",
-       "gteki-ikb-catalog-0-1-0",
-       "gteki-kit-0-1-0",
-       "ikefukuro-location-references-2026-10",
-       "lumine-ikebukuro-access-2026-10",
-       "osm-ikebukuro-station-refs-2026-10",
-       "plateau-13116-bldg-53394576",
-       "plateau-13116-bldg-53394577",
-       "plateau-13116-tran-53394576",
-       "plateau-13116-tran-53394577",
-       "plateau-ubld-13116",
-       "sogo-seibu-ikebukuro-floorguide-2026-10",
-       "tokyometro-ikebukuro-yardmap-2026-03",
-       "toshima-terminal-sign-guideline-draft-v1.3",
-       "toshima-underground-guide-2022"
-     ],
-     "modified": true,
-     "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
-   },
-   {
-     "id": "navmesh-paths",
-     "path": "navmesh-paths.json",
-     "sourceIds": [
-       "plateau-ubld-13116"
-     ],
-     "modified": true,
-     "derivation": "packages/godot/src/navmesh-fallback.ts --write-paths: navmesh walk paths baked from the public scene and greybox (#647 navmesh switch)."
-   },
-   {
-     "id": "signage",
-     "path": "scene/signage.json",
-     "sourceIds": [
-       "esola-ikebukuro-floorguide-2026-10",
-       "plateau-ubld-13116",
-       "tokyometro-ikebukuro-yardmap-2026-03",
-       "toshima-terminal-sign-guideline-draft-v1.3",
-       "toshima-underground-guide-2022"
-     ],
-     "modified": true,
-     "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json), with continuous 6-10 m full-face sight-line envelopes from the 1.62 m walker eye and default follow camera against the shipped lit GLB walls/ceiling/barriers/light_fixtures and scene/columns.json kit sleeves (nearest clear candidate, otherwise retained and reported blocked); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set); the sign at the foot of Exit 4 names エソラ, the name from the floor guide, the tie from Metro's accessibility print 南通路西改札～4番出入口（エソラ）"
-   },
-   {
-     "id": "crowd-lanes",
-     "path": "scene/crowd_lanes.json",
-     "sourceIds": [
-       "plateau-ubld-13116",
-       "tokyometro-ikebukuro-yardmap-2026-03",
-       "toshima-underground-guide-2022"
-     ],
-     "modified": true,
-     "derivation": "pipeline/build_station.py crowd_lanes(): per verified edge (gteki/graph.json geometry), the lateral width a pedestrian may stand off the polyline, sampled on the PLATEAU walkable grid (build/ubld_enu.json, >= 0.35 m from walls) inside the routable coverage areas (data/graph.src.json). sourceIds = PLATEAU, the routable areas' sources and every verified edge's geometry/access evidence and end nodes' sourceRefs (a wide set)"
-   },
-   {
-     "id": "underfloor-backing",
-     "path": "scene/underfloor_backing.json",
-     "sourceIds": [
-       "plateau-ubld-13116"
-     ],
-     "modified": true,
-     "derivation": "Hand-transcribed from the PLATEAU exterior GroundSurface_1 triangles identified in issue #1098; visual backing only"
-   },
-   {
-     "id": "walk-bridges",
-     "path": "scene/walk_bridges.json",
-     "sourceIds": [
-       "plateau-ubld-13116"
-     ],
-     "modified": true,
-     "derivation": "pipeline/build_walkfix.py: thin invisible quads bridging hairline cracks (< 0.30 m, same height within 0.06 m) between adjacent PLATEAU floor and stair-tread polygons (build/ubld_enu.json); they change neither the graph nor the rendered geometry"
-   },
-   {
-     "id": "access-fences",
-     "path": "scene/access_fences.json",
-     "sourceIds": [
-       "plateau-ubld-13116",
-       "tokyometro-ikebukuro-yardmap-2026-03",
-       "toshima-underground-guide-2022"
-     ],
-     "modified": true,
-     "derivation": "pipeline/build_access.py: fence pieces and 'access unverified' label stretches along the outline of the routable coverage areas (data/graph.src.json) where PLATEAU floor (build/ubld_enu.json) lies beside it; verified edge geometry (gteki/graph.json) is only checked for clearance and does not shape the output. sourceIds = PLATEAU and the routable areas' sources"
-   },
-   {
-     "id": "finishes",
-     "path": "scene/finishes.json",
-     "sourceIds": [],
-     "modified": true,
-     "authored": true,
-     "derivation": "GTEki-authored finish-pack config (role → texture folder + repeat in metres); empty today; no external source"
-   },
-   {
-     "id": "kit-manifest",
-     "path": "scene/kit/kit.json",
-     "sourceIds": [],
-     "modified": true,
-     "authored": true,
-     "derivation": "GTEki-authored kit placement config (which library pieces the scene places, their use, pitch and the representative gate-array label); the pieces themselves are assets[] files (gteki/kit/**); no external source"
-   },
-   {
-     "id": "columns",
-     "path": "scene/columns.json",
-     "sourceIds": [
-       "plateau-ubld-13116"
-     ],
-     "modified": true,
-     "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
-   },
-   {
-     "id": "shop-openings",
-     "path": "scene/shop_openings.json",
-     "sourceIds": [
-       "plateau-ubld-13116"
-     ],
-     "modified": true,
-     "derivation": "pipeline/extract_shop_openings.py: PLATEAU room door and window panels (build/ubld_enu.json) welded per opening type and wall plane, with width, base, height, the surveyed wall normal and the nearest walk-graph edge. sourceIds = PLATEAU"
-   },
-   {
-     "id": "shop-placements",
-     "path": "scene/shop_placements.json",
-     "sourceIds": [
-       "lumine-ikebukuro-access-2026-10",
-       "plateau-ubld-13116"
-     ],
-     "modified": true,
-     "derivation": "GTEki-authored (merchant scene lead, #209): which surveyed openings get a shopfront and its plain-text sign. kind=placeholder: original illustrative shops (示意店面), no POI, connector or route. kind=real: ルミネ池袋 at the JR South Gate, position printed-relative (「JR池袋駅南改札、正面右手よりすぐ」), not surveyed (director ruling R1, field check FC-MER-01). Visual only, drawn by scene/kit_shops.ts, no colliders"
-   },
-   {
-     "id": "identity",
-     "path": "scene/identity.json",
-     "sourceIds": [
-       "ikefukuro-location-references-2026-10",
-       "osm-ikebukuro-station-refs-2026-10",
-       "plateau-ubld-13116"
-     ],
-     "modified": true,
-     "derivation": "pipeline/build_identity.py: GTEki-authored board placements fitted to shipped PLATEAU ceilings/walls with fittings excluded from Sightlines; station/transfer facts from OSM and approximate meeting-point facts from reference-only sources. NOT_FOR_ROUTING."
-   },
-   {
-     "id": "kit-placements",
-     "path": "scene/kit_placements.json",
-     "sourceIds": [
-       "plateau-ubld-13116"
-     ],
-     "modified": true,
-     "derivation": "pipeline/build_kit_catalog.py: for every surveyed stair flight and escalator lane in scene/dressing_anchors.json (PLATEAU ubld installations and their landings), the Lane E catalog ids of its parts plus the ENU origin, travel direction, yaw and the quality tiers that draw each part; visual only, never route evidence. main_route is a selection read from the golden routes' walked edges in gteki/graph.json. Batch A loads the 5 escalators on the desktop tier; the loader skips any id whose GLB the station does not ship."
-   },
-   {
-     "id": "kit-catalog-atlas",
-     "path": "scene/kit_catalog_atlas.json",
-     "sourceIds": [
-       "gteki-ikb-catalog-0-1-0"
-     ],
-     "modified": true,
-     "derivation": "tools/blender/ao_atlas.py: packs the per-id Cycles AO bakes of the Lane E catalog (0.1.0, ike_catalog_cb3b29b) into one PNG per tier and records each atlas's pixel size, byte length and maximum isolated mip here; scene/kit_catalog_loader.ts samples it through TEXCOORD_1 for the catalog pieces whose GLBs carry no per-id AO image. Visual only, never route evidence."
-   }
+{
+  "id": "depato-floors",
+  "path": "data/depato-floors.json",
+  "sourceIds": [
+    "sogo-seibu-ikebukuro-floorguide-2026-10"
+  ],
+  "modified": true,
+  "derivation": "Names, floor labels and categories only from the official floor guide, read 2026-11-22 JST. Owner-requested B1/1F pilot seed; no copied art or map."
+},
+{
+  "id": "depato-footprint",
+  "path": "data/depato-footprint.json",
+  "sourceIds": [
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577"
+  ],
+  "modified": true,
+  "derivation": "Southern wing of the connected station/store building: context low GLB ctx_bldg_t01_00 ground ring at TP 32.2 m, clipped at x=0 and renderer z=70/180 as authored partitions. PLATEAU vertices retained; not a surveyed interior plan."
+},
+{
+  "id": "stairwell-cut-high",
+  "path": "scene/stairwell-cut.high.b64.txt",
+  "sourceIds": [
+    "esola-ikebukuro-floorguide-2026-10",
+    "gteki-ikb-catalog-0-1-0",
+    "gteki-kit-0-1-0",
+    "ikefukuro-location-references-2026-10",
+    "lumine-ikebukuro-access-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577",
+    "plateau-ubld-13116",
+    "sogo-seibu-ikebukuro-floorguide-2026-10",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+  ],
+  "modified": true,
+  "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
+},
+{
+  "id": "stairwell-cut-low",
+  "path": "scene/stairwell-cut.low.b64.txt",
+  "sourceIds": [
+    "esola-ikebukuro-floorguide-2026-10",
+    "gteki-ikb-catalog-0-1-0",
+    "gteki-kit-0-1-0",
+    "ikefukuro-location-references-2026-10",
+    "lumine-ikebukuro-access-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577",
+    "plateau-ubld-13116",
+    "sogo-seibu-ikebukuro-floorguide-2026-10",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+  ],
+  "modified": true,
+  "derivation": "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#658) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources."
+},
+{
+  "id": "navmesh-paths",
+  "path": "navmesh-paths.json",
+  "sourceIds": [
+    "plateau-ubld-13116"
+  ],
+  "modified": true,
+  "derivation": "packages/godot/src/navmesh-fallback.ts --write-paths: navmesh walk paths baked from the public scene and greybox (#647 navmesh switch)."
+},
+{
+  "id": "signage",
+  "path": "scene/signage.json",
+  "sourceIds": [
+    "esola-ikebukuro-floorguide-2026-10",
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+  ],
+  "modified": true,
+  "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json), with continuous 6-10 m full-face sight-line envelopes from the 1.62 m walker eye and default follow camera against the shipped lit GLB walls/ceiling/barriers/light_fixtures and scene/columns.json kit sleeves (nearest clear candidate, otherwise retained and reported blocked); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set); the sign at the foot of Exit 4 names エソラ, the name from the floor guide, the tie from Metro's accessibility print 南通路西改札～4番出入口（エソラ）"
+},
+{
+  "id": "crowd-lanes",
+  "path": "scene/crowd_lanes.json",
+  "sourceIds": [
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-underground-guide-2022"
+  ],
+  "modified": true,
+  "derivation": "pipeline/build_station.py crowd_lanes(): per verified edge (gteki/graph.json geometry), the lateral width a pedestrian may stand off the polyline, sampled on the PLATEAU walkable grid (build/ubld_enu.json, >= 0.35 m from walls) inside the routable coverage areas (data/graph.src.json). sourceIds = PLATEAU, the routable areas' sources and every verified edge's geometry/access evidence and end nodes' sourceRefs (a wide set)"
+},
+{
+  "id": "underfloor-backing",
+  "path": "scene/underfloor_backing.json",
+  "sourceIds": [
+    "plateau-ubld-13116"
+  ],
+  "modified": true,
+  "derivation": "Hand-transcribed from the PLATEAU exterior GroundSurface_1 triangles identified in issue #1098; visual backing only"
+},
+{
+  "id": "walk-bridges",
+  "path": "scene/walk_bridges.json",
+  "sourceIds": [
+    "plateau-ubld-13116"
+  ],
+  "modified": true,
+  "derivation": "pipeline/build_walkfix.py: thin invisible quads bridging hairline cracks (< 0.30 m, same height within 0.06 m) between adjacent PLATEAU floor and stair-tread polygons (build/ubld_enu.json); they change neither the graph nor the rendered geometry"
+},
+{
+  "id": "access-fences",
+  "path": "scene/access_fences.json",
+  "sourceIds": [
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-underground-guide-2022"
+  ],
+  "modified": true,
+  "derivation": "pipeline/build_access.py: fence pieces and 'access unverified' label stretches along the outline of the routable coverage areas (data/graph.src.json) where PLATEAU floor (build/ubld_enu.json) lies beside it; verified edge geometry (gteki/graph.json) is only checked for clearance and does not shape the output. sourceIds = PLATEAU and the routable areas' sources"
+},
+{
+  "id": "finishes",
+  "path": "scene/finishes.json",
+  "sourceIds": [],
+  "modified": true,
+  "authored": true,
+  "derivation": "GTEki-authored finish-pack config (role → texture folder + repeat in metres); empty today; no external source"
+},
+{
+  "id": "kit-manifest",
+  "path": "scene/kit/kit.json",
+  "sourceIds": [],
+  "modified": true,
+  "authored": true,
+  "derivation": "GTEki-authored kit placement config (which library pieces the scene places, their use, pitch and the representative gate-array label); the pieces themselves are assets[] files (gteki/kit/**); no external source"
+},
+{
+  "id": "columns",
+  "path": "scene/columns.json",
+  "sourceIds": [
+    "plateau-ubld-13116"
+  ],
+  "modified": true,
+  "derivation": "pipeline/extract_columns.py: PLATEAU column footprints and heights found by shape in the barriers triangles (build/ubld_enu.json, welded vertical prisms 1.5 m or taller, up to 3 m across), each with its kit sleeve piece id or null and a reason. sourceIds = PLATEAU"
+},
+{
+  "id": "shop-openings",
+  "path": "scene/shop_openings.json",
+  "sourceIds": [
+    "plateau-ubld-13116"
+  ],
+  "modified": true,
+  "derivation": "pipeline/extract_shop_openings.py: PLATEAU room door and window panels (build/ubld_enu.json) welded per opening type and wall plane, with width, base, height, the surveyed wall normal and the nearest walk-graph edge. sourceIds = PLATEAU"
+},
+{
+  "id": "shop-placements",
+  "path": "scene/shop_placements.json",
+  "sourceIds": [
+    "lumine-ikebukuro-access-2026-10",
+    "plateau-ubld-13116"
+  ],
+  "modified": true,
+  "derivation": "GTEki-authored (merchant scene lead, #209): which surveyed openings get a shopfront and its plain-text sign. kind=placeholder: original illustrative shops (示意店面), no POI, connector or route. kind=real: ルミネ池袋 at the JR South Gate, position printed-relative (「JR池袋駅南改札、正面右手よりすぐ」), not surveyed (director ruling R1, field check FC-MER-01). Visual only, drawn by scene/kit_shops.ts, no colliders"
+},
+{
+  "id": "identity",
+  "path": "scene/identity.json",
+  "sourceIds": [
+    "ikefukuro-location-references-2026-10",
+    "osm-ikebukuro-station-refs-2026-10",
+    "plateau-ubld-13116"
+  ],
+  "modified": true,
+  "derivation": "pipeline/build_identity.py: GTEki-authored board placements fitted to shipped PLATEAU ceilings/walls with fittings excluded from Sightlines; station/transfer facts from OSM and approximate meeting-point facts from reference-only sources. NOT_FOR_ROUTING."
+},
+{
+  "id": "kit-placements",
+  "path": "scene/kit_placements.json",
+  "sourceIds": [
+    "plateau-ubld-13116"
+  ],
+  "modified": true,
+  "derivation": "pipeline/build_kit_catalog.py: for every surveyed stair flight and escalator lane in scene/dressing_anchors.json (PLATEAU ubld installations and their landings), the Lane E catalog ids of its parts plus the ENU origin, travel direction, yaw and the quality tiers that draw each part; visual only, never route evidence. main_route is a selection read from the golden routes' walked edges in gteki/graph.json. Batch A loads the 5 escalators on the desktop tier; the loader skips any id whose GLB the station does not ship."
+},
+{
+  "id": "kit-catalog-atlas",
+  "path": "scene/kit_catalog_atlas.json",
+  "sourceIds": [
+    "gteki-ikb-catalog-0-1-0"
+  ],
+  "modified": true,
+  "derivation": "tools/blender/ao_atlas.py: packs the per-id Cycles AO bakes of the Lane E catalog (0.1.0, ike_catalog_cb3b29b) into one PNG per tier and records each atlas's pixel size, byte length and maximum isolated mip here; scene/kit_catalog_loader.ts samples it through TEXCOORD_1 for the catalog pieces whose GLBs carry no per-id AO image. Visual only, never route evidence."
+},
+{
+  "id": "landmark-context-ranges",
+  "path": "scene/landmark-ranges.json",
+  "sourceIds": [
+    "plateau-13116-bldg-53394576"
+  ],
+  "modified": true,
+  "derivation": "pipeline/build_landmarks.mjs: source triangle ranges removed from the existing low/high context only for ?next=1. Source-backed LOD2 replacements retain footprint and TP height."
+}
  ]
 }

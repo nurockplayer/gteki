@@ -20,6 +20,7 @@ import { createStreetAmbience } from "./street-ambience.ts";
 import { createZoneAcoustics, ZONE_ACOUSTICS } from "./zone-acoustics.ts";
 import { createStationSound } from "./station-sound.ts";
 import { CONTEXT_GLB, CONTEXT_ROAD_COLOR, contextVisibleAt, cutContextStairOpenings, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
+import { addLandmarks, removeLandmarkContext } from "./landmarks.ts";
 import { loadN02Overlay } from "./n02_overlay.ts";
 import crowdLanes from "./crowd_lanes.json";
 import finishManifest from "./finishes.json";
@@ -512,15 +513,19 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   let context: THREE_NS.Object3D | null = null;
   let contextMaterial: THREE_NS.Material | null = null;
   let contextRoadMaterial: THREE_NS.Material | null = null;
+  let disposeLandmarks: (() => void) | null = null;
   let disposed = false;
   const n02Overlay = loadN02Overlay(THREE, ctx, root);
   const contextReady = ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     async (loaded) => {
       const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
-      await cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
+      if (ctx.previewNext) removeLandmarkContext(THREE, loaded.scene, ctx.quality);
       dressContext(loaded.scene, material, roadMaterial);
+      if (ctx.previewNext) disposeLandmarks = await addLandmarks(ctx, loaded.scene);
+      await cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
       if (disposed) {
+        disposeLandmarks?.();
         loaded.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
         material.dispose();
         roadMaterial.dispose();
@@ -759,6 +764,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       disposed = true;
       n02Overlay.dispose();
       contextBlockers.dispose();
+      disposeLandmarks?.();
       if (context) {
         setContext(false);
         context.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
