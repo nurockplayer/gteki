@@ -82,7 +82,7 @@ workstreams:
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
       - id: J5
         requirement: No void, no black holes, the camera never inside geometry
-        judge: "script: every 4 s with the guide camera"
+        judge: "script: guide camera samples ≤ 2.5 m apart along the path, with count and max gap in journey.json"
         status: FAIL
         context: whole walk
         status_detail: "FAIL: desktop 1 / 38, phone 0 / 38 (run 44940000006, main b99e7f0b equivalent). Near clip 0 since #1479; desktop void 0.0085 at 88 s (B3 wall slit, draft PR #1478)."
