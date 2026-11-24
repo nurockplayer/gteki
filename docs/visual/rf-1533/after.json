@@ -1,0 +1,18 @@
+{
+  "sha": "6b63ef5b921054e25ea0825138d341d8a19c10c9",
+  "capturedAtUTC": "2026-11-24T08:49:33.566Z",
+  "bounds": {
+    ".topbar": {
+      "x": 0,
+      "y": 0,
+      "width": 960,
+      "height": 98
+    },
+    ".panel": {
+      "x": 16,
+      "y": 58,
+      "width": 400,
+      "height": 550.28125
+    }
+  }
+}
