@@ -753,7 +753,11 @@ export class Explorer {
           return { name: feature.name, pixels, meshes: sign ? (sign.faces ? meshes.length : 0) : meshes.length };
         } finally { meshes.forEach((mesh, j) => { mesh.visible = before[j]!; }); }
       });
-      return { ...goldenPixels(shown, overview ? hidden : null), features: featureResults, renders };
+      let black = 0;
+      for (let i = 0; i < shown.length; i += 4) {
+        if (0.2126 * shown[i]! + 0.7152 * shown[i + 1]! + 0.0722 * shown[i + 2]! <= 12) black++;
+      }
+      return { ...goldenPixels(shown, overview ? hidden : null), nearBlack: black / (width * height), features: featureResults, renders };
     } finally {
       root.visible = visible;
       for (const [mesh, wasVisible] of visibility) mesh.visible = wasVisible;
@@ -3095,7 +3099,7 @@ export class Explorer {
 
   /**
    * Walk renderer-space points (x/z, optional y in metres) in the explorer world frame, through normal walk input.
-   * A point is reached when its horizontal distance is within 0.35 m and, if it carries `y`, the feet are within 0.6 m of it vertically.
+   * A point is reached when its horizontal distance is within 0.05 m and, if it carries `y`, the feet are within 0.6 m of it vertically.
    * stuck: no waypoint advanced and under 0.1 m of 3D displacement over the last second. timedOut: maxSeconds ran out while still moving.
    */
   walkPath(
@@ -3110,8 +3114,9 @@ export class Explorer {
     }
     if (points.length === 0) return { done: true, stuck: false, timedOut: false, steps: 0 };
     this.input.virtualKeys.clear();
+    // Reach the turn before steering to the next leg; early advancement cuts into stairwell corners.
     const reached = (p: { x: number; z: number; y?: number }): boolean =>
-      Math.hypot(p.x - this.pos.x, p.z - this.pos.z) <= 0.35 && (p.y === undefined || Math.abs(this.pos.y - p.y) <= 0.6);
+      Math.hypot(p.x - this.pos.x, p.z - this.pos.z) <= 0.05 && (p.y === undefined || Math.abs(this.pos.y - p.y) <= 0.6);
     const checkpointPos = this.pos.clone();
     let point = 0;
     let steps = 0;
