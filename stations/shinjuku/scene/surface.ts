@@ -14,6 +14,8 @@ import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./sur
 import { inside, strip, surfaceKerbs, surfaceLampRails, surfacePaving, surfaceStreets } from "./surface-street.ts";
 import { OEDO_MAGENTA } from "./palette.ts";
 import { stableHypot } from "./stable-hypot.ts";
+import { buildDepartmentStores } from "./department-stores.ts";
+import departmentStores from "../data/department-stores.json";
 export { surfaceWalls } from "./surface-layout.ts";
 export type { SurfaceData } from "./surface-data.ts";
 
@@ -74,7 +76,7 @@ function beam(a: THREE.Vector3, b: THREE.Vector3, width: number, depth: number) 
  * keeps the whole scope it was defined in reachable, and this scope holds the street polygons, building
  * footprints and every source geometry (#72). The survivors are created in buildSurface, whose scope
  * holds nothing else. */
-export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
+export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high"; previewNext?: boolean }) {
   const { root, resources, visibility } = assembleSurface(surface, layout, opts);
   const dome = root.getObjectByName("surface-sky")!;
   dome.onBeforeRender = (_renderer, _scene, camera) => { dome.position.copy(camera.position); dome.updateMatrixWorld(); };
@@ -85,7 +87,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   const update = (_dt: number, _t: number) => { root.visible = root.userData.suppressed !== true && viewer !== null && surfaceVisibleIn(visibility, viewer); };
   return { root, update, setViewer(p: XYZ) { viewer = { ...p }; update(0, 0); }, dispose() { if (disposed) return; disposed = true; for (const r of resources) r.dispose(); resources.clear(); root.clear(); } };
 }
-function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
+function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high"; previewNext?: boolean }) {
   const root = new THREE.Group(); root.name = "surface-render-only"; root.visible = false;
   root.userData.attribution = surface.attribution;
   const resources = new Set<{ dispose(): void }>();
@@ -204,6 +206,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
 
   const buildings=surfaceBuildingFootprints(surface,layout,opts.bundle);
   for(const b of buildings){
+    if (opts.previewNext && departmentStores.buildings.some(store => b.id.startsWith(`${store.id}/`))) continue;
     const h=hash(b.id), style=b.height>65?0:b.usage==="401"?1:(h%4)+1;
     const tint=new THREE.Color().setRGB(.88+(h%9)/100,.88+((h>>>4)%8)/100,.87+((h>>>8)%9)/100);
     const storey=b.storeys&&b.storeys>0?Math.max(3.5,Math.min(4,b.height/b.storeys)):3.8;
@@ -223,6 +226,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
       if(inside({x:cx,y:cy},[b.rings])){const g=new THREE.BoxGeometry(3.2,1.9,2.4);g.translate(cx,b.height+.95,-cy);add("roof",g,mats.roof);}
     }
   }
+  if (opts.previewNext) root.add(buildDepartmentStores(track));
   // Repeated streetscape props use instances and remain outside every walk pad.
   const trees=streets.furniture.filter(f=>f.tree),lights=streets.furniture.filter(f=>!f.tree);
   const instance=(name:string,g:THREE.BufferGeometry,m:THREE.Material,matrices:THREE.Matrix4[],colors?:THREE.Color[])=>{
