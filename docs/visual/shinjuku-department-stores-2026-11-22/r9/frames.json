@@ -1,0 +1,766 @@
+{
+  "capturedAt": "2026-11-22T10:50:46.672Z",
+  "timezone": "UTC",
+  "rows": [
+    {
+      "store": "shop-sjk-odakyudept",
+      "kind": "walk",
+      "next": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "mobile": false,
+        "name": "desktop"
+      },
+      "image": "desktop-odakyudept-walk-next.png",
+      "camera": [
+        -64.16997644935573,
+        1.6,
+        -565.1716560425667
+      ],
+      "target": [
+        -59.52722454071045,
+        6.749999761581421,
+        -589.7367706298828
+      ],
+      "pitchDeg": 11.640099902331908,
+      "distanceM": 25.524938736801854,
+      "signFace": 0,
+      "signCenter": [
+        -59.52722454071045,
+        6.749999761581421,
+        -589.7367706298828
+      ],
+      "signCorners": [
+        [
+          -67.89264678955078,
+          9,
+          -591.3178100585938
+        ],
+        [
+          -51.161808013916016,
+          9,
+          -588.1557006835938
+        ],
+        [
+          -67.89263916015625,
+          4.499999523162842,
+          -591.3178100585938
+        ],
+        [
+          -51.16180419921875,
+          4.499999523162842,
+          -588.15576171875
+        ]
+      ],
+      "pavement": true,
+      "poseSurface": "public pavement",
+      "exception": false,
+      "eyeHeightM": 1.6,
+      "metrics": {
+        "contrast": 6.832600967646761,
+        "letterY": 0.5539704609888589,
+        "bandY": 0.038395394937994515,
+        "meanY": 0.1680310093132443,
+        "jaCapPx": 81,
+        "letterPixels": 17931,
+        "signPixels": 106128,
+        "coverage": 0.9887292804140458,
+        "fullSignInFrame": true,
+        "projected": [
+          [
+            -0.43923377473387976,
+            0.18191345406959675,
+            0.99240106470898
+          ],
+          [
+            0.4392340721275218,
+            0.18191387305794068,
+            0.9924010595368458
+          ],
+          [
+            -0.45514003618787546,
+            -0.1885011676851497,
+            0.9921222508977205
+          ],
+          [
+            0.45513929684891113,
+            -0.1885015777616135,
+            0.9921222638148638
+          ]
+        ]
+      },
+      "accepted": true,
+      "nearestCheckedM": 25.524938736801854,
+      "drawProof": {
+        "present": true,
+        "calls": {
+          "department-store:bldg_5c2afdef-6b54-4e66-b7c0-98e98ae88ce4:0:facade": 1,
+          "department-store:bldg_5c2afdef-6b54-4e66-b7c0-98e98ae88ce4:0:street": 1,
+          "department-store:bldg_5c2afdef-6b54-4e66-b7c0-98e98ae88ce4:0:sign": 1
+        },
+        "source": {
+          "tile": "53394535_bldg_6697_op.gml",
+          "heightM": 34.2,
+          "lod": 2
+        }
+      },
+      "facadeY": 0.3004909408223344,
+      "skyY": null,
+      "facadeSkyRatio": null,
+      "signWayfindingRatio": 0.32180116189974234,
+      "wayfinding": {
+        "id": "poi:exit:1",
+        "mode": "isolated rendered reference at same distance and lighting",
+        "distanceM": 25.524938736801854,
+        "meanY": 0.5221578701620556
+      }
+    },
+    {
+      "store": "shop-sjk-keio",
+      "kind": "walk",
+      "next": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "mobile": false,
+        "name": "desktop"
+      },
+      "image": "desktop-keio-walk-next.png",
+      "camera": [
+        -50.98463552749803,
+        1.6,
+        -342.5447648818067
+      ],
+      "target": [
+        -39.99647903442383,
+        6.7499377727508545,
+        -314.62953186035156
+      ],
+      "pitchDeg": 9.740715943891427,
+      "distanceM": 30.43881858452517,
+      "signFace": 0,
+      "signCenter": [
+        -39.99647903442383,
+        6.7499377727508545,
+        -314.62953186035156
+      ],
+      "signCorners": [
+        [
+          -40.824249267578125,
+          8.999935150146484,
+          -321.8797302246094
+        ],
+        [
+          -39.175662994384766,
+          8.999935150146484,
+          -307.3785400390625
+        ],
+        [
+          -40.81729507446289,
+          4.499940395355225,
+          -321.8805236816406
+        ],
+        [
+          -39.16870880126953,
+          4.499940395355225,
+          -307.37933349609375
+        ]
+      ],
+      "pavement": true,
+      "poseSurface": "public pavement",
+      "exception": false,
+      "eyeHeightM": 1.6,
+      "metrics": {
+        "contrast": 7.00935390161619,
+        "letterY": 0.5600755236609974,
+        "bandY": 0.03703734070558609,
+        "meanY": 0.17462255120869846,
+        "jaCapPx": 105,
+        "letterPixels": 452,
+        "signPixels": 18533,
+        "coverage": 0.9875458784300155,
+        "fullSignInFrame": true,
+        "projected": [
+          [
+            -0.10585377584004352,
+            0.3063625295392576,
+            0.991721418945709
+          ],
+          [
+            0.06714988906613323,
+            0.05821293100411654,
+            0.9948039207572205
+          ],
+          [
+            -0.10972475332036298,
+            -0.09512151968249749,
+            0.9914460586540701
+          ],
+          [
+            0.0682832830031554,
+            -0.1976258205253261,
+            0.9946952156274734
+          ]
+        ]
+      },
+      "accepted": true,
+      "nearestCheckedM": 30.43881858452517,
+      "drawProof": {
+        "present": true,
+        "calls": {
+          "department-store:bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0:facade": 1,
+          "department-store:bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0:street": 1,
+          "department-store:bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0:sign": 1
+        },
+        "source": {
+          "tile": "53394525_bldg_6697_op.gml",
+          "heightM": 36.7,
+          "lod": 2
+        }
+      },
+      "facadeY": 0.24837138092302768,
+      "skyY": 0.4209714546967214,
+      "facadeSkyRatio": 0.5899957779844259,
+      "signWayfindingRatio": 0.3319573437628216,
+      "wayfinding": {
+        "id": "poi:exit:1",
+        "mode": "isolated rendered reference at same distance and lighting",
+        "distanceM": 30.43881858452517,
+        "meanY": 0.5260391266820823
+      }
+    },
+    {
+      "store": "shop-sjk-lumine2",
+      "kind": "look",
+      "next": true,
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "mobile": false,
+        "name": "desktop"
+      },
+      "image": "desktop-lumine2-look-next.png",
+      "camera": [
+        121.08000540645958,
+        1.6,
+        -245.92035528001733
+      ],
+      "target": [
+        118.15166282653809,
+        3.3750540018081665,
+        -260.6316833496094
+      ],
+      "pitchDeg": 6.74884528113827,
+      "distanceM": 15.859444387665697,
+      "signFace": 0,
+      "signCenter": [
+        118.15166282653809,
+        6.750108003616333,
+        -260.6316833496094
+      ],
+      "signCorners": [
+        [
+          112.1864013671875,
+          9.000100135803223,
+          -259.4504699707031
+        ],
+        [
+          124.11455535888672,
+          9.000100135803223,
+          -261.8247985839844
+        ],
+        [
+          112.18877410888672,
+          4.500115871429443,
+          -259.4385681152344
+        ],
+        [
+          124.1169204711914,
+          4.500115871429443,
+          -261.8128967285156
+        ]
+      ],
+      "pavement": false,
+      "poseSurface": "capture-only road",
+      "exception": true,
+      "eyeHeightM": 1.6,
+      "metrics": {
+        "contrast": 6.971141273795266,
+        "letterY": 0.557939101185956,
+        "bandY": 0.03720797317237248,
+        "meanY": 0.10624476123962566,
+        "jaCapPx": 125,
+        "letterPixels": 18386,
+        "signPixels": 204299,
+        "coverage": 0.9956613533792563,
+        "fullSignInFrame": true,
+        "projected": [
+          [
+            -0.5167856394451255,
+            0.7594519281112505,
+            0.9874184141973819
+          ],
+          [
+            0.5167860754218668,
+            0.7594527534894786,
+            0.9874184038669162
+          ],
+          [
+            -0.5351374884816698,
+            0.15741210379186282,
+            0.9869680637997932
+          ],
+          [
+            0.5351378723836901,
+            0.15741241070951376,
+            0.9869680539978768
+          ]
+        ]
+      },
+      "accepted": true,
+      "nearestCheckedM": 6.7960325684823575,
+      "drawProof": {
+        "present": true,
+        "calls": {
+          "department-store:bldg_df40b0c1-53fc-4541-80f5-638976540ee7:0:facade": 1,
+          "department-store:bldg_df40b0c1-53fc-4541-80f5-638976540ee7:0:street": 1,
+          "department-store:bldg_df40b0c1-53fc-4541-80f5-638976540ee7:0:sign": 1
+        },
+        "source": {
+          "tile": "53394526_bldg_6697_op.gml",
+          "heightM": 20.7,
+          "lod": 2
+        }
+      },
+      "facadeY": 0.37065443389178404,
+      "skyY": null,
+      "facadeSkyRatio": null,
+      "signWayfindingRatio": 0.20591469399311849,
+      "wayfinding": {
+        "id": "poi:exit:1",
+        "mode": "isolated rendered reference at same distance and lighting",
+        "distanceM": 15.859444387665697,
+        "meanY": 0.5159649327559707
+      }
+    },
+    {
+      "store": "shop-sjk-odakyudept",
+      "kind": "walk",
+      "next": false,
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "mobile": false,
+        "name": "desktop"
+      },
+      "image": "desktop-odakyudept-walk-off.png",
+      "camera": [
+        -64.16997644935573,
+        1.6,
+        -565.1716560425667
+      ],
+      "target": [
+        -59.52722454071045,
+        6.749999761581421,
+        -589.7367706298828
+      ],
+      "pitchDeg": 11.640099902331908,
+      "distanceM": 25.524938736801854,
+      "signFace": 0,
+      "signCenter": [
+        -59.52722454071045,
+        6.749999761581421,
+        -589.7367706298828
+      ],
+      "signCorners": [
+        [
+          -67.89264678955078,
+          9,
+          -591.3178100585938
+        ],
+        [
+          -51.161808013916016,
+          9,
+          -588.1557006835938
+        ],
+        [
+          -67.89263916015625,
+          4.499999523162842,
+          -591.3178100585938
+        ],
+        [
+          -51.16180419921875,
+          4.499999523162842,
+          -588.15576171875
+        ]
+      ],
+      "pavement": true,
+      "poseSurface": "public pavement",
+      "exception": false,
+      "eyeHeightM": 1.6,
+      "metrics": {
+        "contrast": null,
+        "jaCapPx": 0,
+        "reason": "Landmark sign absent with flag off"
+      },
+      "accepted": true,
+      "nearestCheckedM": 25.524938736801854,
+      "drawProof": {
+        "present": false
+      },
+      "facadeY": 0.3004909408223344,
+      "skyY": null,
+      "facadeSkyRatio": null,
+      "signWayfindingRatio": 0.32180116189974234,
+      "wayfinding": {
+        "id": "poi:exit:1",
+        "mode": "isolated rendered reference at same distance and lighting",
+        "distanceM": 25.524938736801854,
+        "meanY": 0.5221578701620556
+      }
+    },
+    {
+      "store": "shop-sjk-keio",
+      "kind": "walk",
+      "next": false,
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "mobile": false,
+        "name": "desktop"
+      },
+      "image": "desktop-keio-walk-off.png",
+      "camera": [
+        -50.98463552749803,
+        1.6,
+        -342.5447648818067
+      ],
+      "target": [
+        -39.99647903442383,
+        6.7499377727508545,
+        -314.62953186035156
+      ],
+      "pitchDeg": 9.740715943891427,
+      "distanceM": 30.43881858452517,
+      "signFace": 0,
+      "signCenter": [
+        -39.99647903442383,
+        6.7499377727508545,
+        -314.62953186035156
+      ],
+      "signCorners": [
+        [
+          -40.824249267578125,
+          8.999935150146484,
+          -321.8797302246094
+        ],
+        [
+          -39.175662994384766,
+          8.999935150146484,
+          -307.3785400390625
+        ],
+        [
+          -40.81729507446289,
+          4.499940395355225,
+          -321.8805236816406
+        ],
+        [
+          -39.16870880126953,
+          4.499940395355225,
+          -307.37933349609375
+        ]
+      ],
+      "pavement": true,
+      "poseSurface": "public pavement",
+      "exception": false,
+      "eyeHeightM": 1.6,
+      "metrics": {
+        "contrast": null,
+        "jaCapPx": 0,
+        "reason": "Landmark sign absent with flag off"
+      },
+      "accepted": true,
+      "nearestCheckedM": 30.43881858452517,
+      "drawProof": {
+        "present": false
+      },
+      "facadeY": 0.24837138092302768,
+      "skyY": 0.4209714546967214,
+      "facadeSkyRatio": 0.5899957779844259,
+      "signWayfindingRatio": 0.3319573437628216,
+      "wayfinding": {
+        "id": "poi:exit:1",
+        "mode": "isolated rendered reference at same distance and lighting",
+        "distanceM": 30.43881858452517,
+        "meanY": 0.5260391266820823
+      }
+    },
+    {
+      "store": "shop-sjk-lumine2",
+      "kind": "look",
+      "next": false,
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "mobile": false,
+        "name": "desktop"
+      },
+      "image": "desktop-lumine2-look-off.png",
+      "camera": [
+        121.08000540645958,
+        1.6,
+        -245.92035528001733
+      ],
+      "target": [
+        118.15166282653809,
+        3.3750540018081665,
+        -260.6316833496094
+      ],
+      "pitchDeg": 6.74884528113827,
+      "distanceM": 15.859444387665697,
+      "signFace": 0,
+      "signCenter": [
+        118.15166282653809,
+        6.750108003616333,
+        -260.6316833496094
+      ],
+      "signCorners": [
+        [
+          112.1864013671875,
+          9.000100135803223,
+          -259.4504699707031
+        ],
+        [
+          124.11455535888672,
+          9.000100135803223,
+          -261.8247985839844
+        ],
+        [
+          112.18877410888672,
+          4.500115871429443,
+          -259.4385681152344
+        ],
+        [
+          124.1169204711914,
+          4.500115871429443,
+          -261.8128967285156
+        ]
+      ],
+      "pavement": false,
+      "poseSurface": "capture-only road",
+      "exception": true,
+      "eyeHeightM": 1.6,
+      "metrics": {
+        "contrast": null,
+        "jaCapPx": 0,
+        "reason": "Landmark sign absent with flag off"
+      },
+      "accepted": true,
+      "nearestCheckedM": 6.7960325684823575,
+      "drawProof": {
+        "present": false
+      },
+      "facadeY": 0.37065443389178404,
+      "skyY": null,
+      "facadeSkyRatio": null,
+      "signWayfindingRatio": 0.20591469399311849,
+      "wayfinding": {
+        "id": "poi:exit:1",
+        "mode": "isolated rendered reference at same distance and lighting",
+        "distanceM": 15.859444387665697,
+        "meanY": 0.5159649327559707
+      }
+    },
+    {
+      "store": "shop-sjk-keio",
+      "kind": "walk",
+      "next": true,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "mobile": true,
+        "name": "phone"
+      },
+      "image": "phone-keio-walk-next.png",
+      "camera": [
+        -50.98463552749803,
+        1.6,
+        -342.5447648818067
+      ],
+      "target": [
+        -39.99647903442383,
+        6.7499377727508545,
+        -314.62953186035156
+      ],
+      "pitchDeg": 9.740715943891427,
+      "distanceM": 30.43881858452517,
+      "signFace": 0,
+      "signCenter": [
+        -39.99647903442383,
+        6.7499377727508545,
+        -314.62953186035156
+      ],
+      "signCorners": [
+        [
+          -40.824249267578125,
+          8.999935150146484,
+          -321.8797302246094
+        ],
+        [
+          -39.175662994384766,
+          8.999935150146484,
+          -307.3785400390625
+        ],
+        [
+          -40.81729507446289,
+          4.499940395355225,
+          -321.8805236816406
+        ],
+        [
+          -39.16870880126953,
+          4.499940395355225,
+          -307.37933349609375
+        ]
+      ],
+      "pavement": true,
+      "poseSurface": "public pavement",
+      "exception": false,
+      "eyeHeightM": 1.6,
+      "metrics": {
+        "contrast": 6.994841310245,
+        "letterY": 0.5594484356367748,
+        "bandY": 0.03712827190863439,
+        "meanY": 0.17637789546415772,
+        "jaCapPx": 100,
+        "letterPixels": 329,
+        "signPixels": 16284,
+        "coverage": 0.9866719330120706,
+        "fullSignInFrame": true,
+        "projected": [
+          [
+            -0.366525484344602,
+            0.3063625295392576,
+            0.991721418945709
+          ],
+          [
+            0.23251079537155464,
+            0.05821293100411654,
+            0.9948039207572205
+          ],
+          [
+            -0.3799289920097902,
+            -0.09512151968249749,
+            0.9914460586540701
+          ],
+          [
+            0.23643524453195144,
+            -0.1976258205253261,
+            0.9946952156274734
+          ]
+        ]
+      },
+      "accepted": true,
+      "nearestCheckedM": 30.43881858452517,
+      "drawProof": {
+        "present": true,
+        "calls": {
+          "department-store:bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0:facade": 1,
+          "department-store:bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0:street": 1,
+          "department-store:bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0:sign": 1
+        },
+        "source": {
+          "tile": "53394525_bldg_6697_op.gml",
+          "heightM": 36.7,
+          "lod": 2
+        }
+      },
+      "facadeY": 0.26231956365637726,
+      "skyY": 0.3838565797929904,
+      "facadeSkyRatio": 0.6833790990318397,
+      "signWayfindingRatio": 0.3390401724277016,
+      "wayfinding": {
+        "id": "poi:exit:1",
+        "mode": "isolated rendered reference at same distance and lighting",
+        "distanceM": 30.43881858452517,
+        "meanY": 0.5202271288419937
+      }
+    },
+    {
+      "store": "shop-sjk-keio",
+      "kind": "walk",
+      "next": false,
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "mobile": true,
+        "name": "phone"
+      },
+      "image": "phone-keio-walk-off.png",
+      "camera": [
+        -50.98463552749803,
+        1.6,
+        -342.5447648818067
+      ],
+      "target": [
+        -39.99647903442383,
+        6.7499377727508545,
+        -314.62953186035156
+      ],
+      "pitchDeg": 9.740715943891427,
+      "distanceM": 30.43881858452517,
+      "signFace": 0,
+      "signCenter": [
+        -39.99647903442383,
+        6.7499377727508545,
+        -314.62953186035156
+      ],
+      "signCorners": [
+        [
+          -40.824249267578125,
+          8.999935150146484,
+          -321.8797302246094
+        ],
+        [
+          -39.175662994384766,
+          8.999935150146484,
+          -307.3785400390625
+        ],
+        [
+          -40.81729507446289,
+          4.499940395355225,
+          -321.8805236816406
+        ],
+        [
+          -39.16870880126953,
+          4.499940395355225,
+          -307.37933349609375
+        ]
+      ],
+      "pavement": true,
+      "poseSurface": "public pavement",
+      "exception": false,
+      "eyeHeightM": 1.6,
+      "metrics": {
+        "contrast": null,
+        "jaCapPx": 0,
+        "reason": "Landmark sign absent with flag off"
+      },
+      "accepted": true,
+      "nearestCheckedM": 30.43881858452517,
+      "drawProof": {
+        "present": false
+      },
+      "facadeY": 0.26231956365637726,
+      "skyY": 0.3838565797929904,
+      "facadeSkyRatio": 0.6833790990318397,
+      "signWayfindingRatio": 0.3390401724277016,
+      "wayfinding": {
+        "id": "poi:exit:1",
+        "mode": "isolated rendered reference at same distance and lighting",
+        "distanceM": 30.43881858452517,
+        "meanY": 0.5202271288419937
+      }
+    }
+  ]
+}

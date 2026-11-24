@@ -17,20 +17,22 @@ import { App } from "./app.ts";
 
 type Harness = {
   s: {
-    lang: Lang; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | unknown; route: unknown; noPath: null; origin: unknown;
+    lang: Lang; entry?: { key: string }; loaded: { bundle: ReturnType<typeof createSyntheticBundle> } | unknown; route: unknown; noPath: null; origin: unknown;
     destination: Poi | null; search?: unknown; router?: Router | null; profile?: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
     polyline?: unknown[]; instructions?: unknown[]; activeInstruction?: number;
   };
   ui: {
     sheet: HTMLElement; fromNote: HTMLElement; toNote: HTMLElement; fromInput: HTMLInputElement; toInput: HTMLInputElement;
     fromResults: HTMLElement; toResults: HTMLElement; minimap?: { setRoute: ReturnType<typeof vi.fn> }; live?: { announce: ReturnType<typeof vi.fn> };
-    coverage: HTMLDialogElement;
+    coverage: HTMLDialogElement; hud: HTMLElement;
   };
   stationReady: boolean;
   renderEndpointNote: (box: HTMLElement, poi: Poi | null) => void;
   renderResults: (which: "from" | "to") => void;
   renderSheet: () => void;
   computeRoute: () => void;
+  renderHud: () => void;
+  onGuideProgress: (progress: { s: number; stepIndex: number; done: boolean }) => void;
   openCoverage: () => void;
   releaseMascot: () => void;
   mascotSay: () => void;
@@ -203,6 +205,38 @@ describe("Central Gate 2 notes in the route panel (#787, #799)", () => {
       expect(instructions(a).join("\n")).not.toContain(destinationNote);
     }
   });
+});
+
+it("names the substitute exit in the route and guide and keeps the entrance warning visible", () => {
+  const a = app("en");
+  const bundle = createSyntheticBundle();
+  const [origin, exit, store] = bundle.pois;
+  exit!.id = "poi:exit:1";
+  store!.id = "shop-sjk-isetan-honkan";
+  a.s.entry = { key: "shinjuku" };
+  a.s.loaded = { bundle };
+  a.s.origin = { kind: "poi", poi: origin };
+  a.s.destination = store!;
+  a.s.router = createRouter(bundle);
+  a.ui.minimap = { setRoute: vi.fn() };
+  a.ui.live = { announce: vi.fn() };
+  const explorer = {
+    currentMode: "overview", refitOverview: vi.fn(), clearRoute: vi.fn(), showRoute: vi.fn(), focusPoints: vi.fn(),
+    connectorRoutePaths: () => null, navmeshRoutePaths: () => null, guideTier: "run", setArrivalBeacon: vi.fn(),
+  };
+  a.explorer = explorer;
+  vi.spyOn(window, "requestAnimationFrame").mockReturnValue(0);
+
+  const warning = "Provisional: nearest modeled exit; store entrance unverified.";
+  a.computeRoute();
+  expect(a.ui.sheet.querySelector(".ins-arrive .ins-text")?.textContent).toBe(`Arrived · Exit A1. ${warning}`);
+
+  explorer.currentMode = "guide";
+  a.renderHud();
+  expect(a.ui.hud.querySelector(".guide-provisional-note")?.textContent).toBe(warning);
+  a.onGuideProgress({ s: 10, stepIndex: 0, done: true });
+  expect(a.ui.hud.querySelector(".guide-card-line")?.textContent).toBe("Arrived · Exit A1");
+  expect(a.ui.hud.querySelector(".guide-provisional-note")?.textContent).toBe(warning);
 });
 
 describe("approximate positions are search display only (#463)", () => {
