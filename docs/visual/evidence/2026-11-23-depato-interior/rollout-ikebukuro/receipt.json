@@ -1885,7 +1885,7 @@
         {
           "name": "entrance-outside",
           "file": "desktop-ikebukuro-parco-entrance-outside.png",
-          "sourceHead": "86b9acbbec784447aa6e373b20ec176c79b49c3a",
+          "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
           "avatar": {
             "x": 63.05130537063562,
             "y": 106.20162071563212,
@@ -1913,7 +1913,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 28.80000001192093,
+              "buildMs": 32.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -1942,7 +1942,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 38,
-                "cutMs": 167.59999999403954,
+                "cutMs": 177.59999999403954,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -1972,30 +1972,30 @@
               "trees": 1664,
               "triangles": 179625,
               "bytes": 9426072,
-              "buildMs": 31.6
+              "buildMs": 33.9
             },
             "loadTimings": {
-              "graph": 11,
-              "scene": 9451,
-              "attach": 3,
-              "sceneRayTrees": 66,
-              "greybox": 32,
+              "graph": 6,
+              "scene": 9329,
+              "attach": 4,
+              "sceneRayTrees": 55,
+              "greybox": 35,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 537,
-              "stairwellCut": 179,
-              "cutTargets": 0,
-              "connectors": 358,
+              "liveScene": 557,
+              "stairwellCut": 190,
+              "cutTargets": 1,
+              "connectors": 366,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 2,
-              "rayTrees": 32,
-              "signsShadowsAo": 105,
+              "rayTrees": 34,
+              "signsShadowsAo": 111,
               "navmeshPaths": 0,
-              "composer": 13,
-              "startAt": 1125,
-              "total": 10255
+              "composer": 17,
+              "startAt": 1002,
+              "total": 10153
             },
             "bakedAo": {
               "materials": 84,
@@ -3193,7 +3193,7 @@
         {
           "name": "entrance-3m",
           "file": "desktop-ikebukuro-parco-entrance-3m.png",
-          "sourceHead": "86b9acbbec784447aa6e373b20ec176c79b49c3a",
+          "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
           "avatar": {
             "x": 65.08068001996774,
             "y": 110.88045671270342,
@@ -3221,7 +3221,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 28.80000001192093,
+              "buildMs": 32.900000005960464,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -3250,7 +3250,7 @@
                 "skippedMeshes": 16,
                 "railM": 432.298894051474,
                 "cutMeshes": 38,
-                "cutMs": 167.59999999403954,
+                "cutMs": 177.59999999403954,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -3280,30 +3280,30 @@
               "trees": 1664,
               "triangles": 179625,
               "bytes": 9426072,
-              "buildMs": 31.6
+              "buildMs": 33.9
             },
             "loadTimings": {
-              "graph": 11,
-              "scene": 9451,
-              "attach": 3,
-              "sceneRayTrees": 66,
-              "greybox": 32,
+              "graph": 6,
+              "scene": 9329,
+              "attach": 4,
+              "sceneRayTrees": 55,
+              "greybox": 35,
               "greyboxSegments": 2,
               "portalCut": 1,
               "stairwellRecipe": 0,
-              "liveScene": 537,
-              "stairwellCut": 179,
-              "cutTargets": 0,
-              "connectors": 358,
+              "liveScene": 557,
+              "stairwellCut": 190,
+              "cutTargets": 1,
+              "connectors": 366,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 2,
-              "rayTrees": 32,
-              "signsShadowsAo": 105,
+              "rayTrees": 34,
+              "signsShadowsAo": 111,
               "navmeshPaths": 0,
-              "composer": 13,
-              "startAt": 1125,
-              "total": 10255
+              "composer": 17,
+              "startAt": 1002,
+              "total": 10153
             },
             "bakedAo": {
               "materials": 84,
@@ -5894,7 +5894,7 @@
         {
           "name": "entrance-outside",
           "file": "phone-ikebukuro-parco-entrance-outside.png",
-          "sourceHead": "86b9acbbec784447aa6e373b20ec176c79b49c3a",
+          "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
           "avatar": {
             "x": 62.51013879748038,
             "y": 104.95393111641309,
@@ -5922,7 +5922,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 23.69999998807907,
+              "buildMs": 23.5,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -5951,7 +5951,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 38,
-                "cutMs": 149.2999999821186,
+                "cutMs": 165.80000001192093,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -5965,9 +5965,9 @@
               183.1
             ],
             "route": [
-              -70.1,
+              -70.2,
               24,
-              -123.6,
+              -123.7,
               90.5,
               29.8,
               49.1
@@ -5985,26 +5985,26 @@
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2853,
-              "attach": 36,
-              "sceneRayTrees": 56,
+              "scene": 2808,
+              "attach": 41,
+              "sceneRayTrees": 48,
               "greybox": 26,
               "greyboxSegments": 2,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 524,
-              "stairwellCut": 159,
+              "liveScene": 542,
+              "stairwellCut": 175,
               "cutTargets": 0,
-              "connectors": 365,
+              "connectors": 367,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
               "rayTrees": 43,
-              "signsShadowsAo": 48,
+              "signsShadowsAo": 52,
               "navmeshPaths": 0,
               "composer": 3,
-              "startAt": 458,
-              "total": 3597
+              "startAt": 377,
+              "total": 3569
             },
             "bakedAo": {
               "materials": 15,
@@ -7202,7 +7202,7 @@
         {
           "name": "entrance-3m",
           "file": "phone-ikebukuro-parco-entrance-3m.png",
-          "sourceHead": "86b9acbbec784447aa6e373b20ec176c79b49c3a",
+          "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
           "avatar": {
             "x": 65.08068001996774,
             "y": 110.88045671270342,
@@ -7230,7 +7230,7 @@
               "portals": 0,
               "meshes": 3,
               "triangles": 838,
-              "buildMs": 23.69999998807907,
+              "buildMs": 23.5,
               "overBudget": null,
               "connectors": {
                 "escalator": 0,
@@ -7259,7 +7259,7 @@
                 "skippedMeshes": 2,
                 "railM": 432.298894051474,
                 "cutMeshes": 38,
-                "cutMs": 149.2999999821186,
+                "cutMs": 165.80000001192093,
                 "skippedWells": 0,
                 "recipe": "stale"
               }
@@ -7273,9 +7273,9 @@
               183.1
             ],
             "route": [
-              -70.4,
+              -70.2,
               24,
-              -123.9,
+              -123.7,
               90.5,
               29.8,
               49.1
@@ -7293,26 +7293,26 @@
             },
             "loadTimings": {
               "graph": 4,
-              "scene": 2853,
-              "attach": 36,
-              "sceneRayTrees": 56,
+              "scene": 2808,
+              "attach": 41,
+              "sceneRayTrees": 48,
               "greybox": 26,
               "greyboxSegments": 2,
               "portalCut": 0,
               "stairwellRecipe": 0,
-              "liveScene": 524,
-              "stairwellCut": 159,
+              "liveScene": 542,
+              "stairwellCut": 175,
               "cutTargets": 0,
-              "connectors": 365,
+              "connectors": 367,
               "connectorWalls": 0,
               "attachGreybox": 0,
               "walls": 1,
               "rayTrees": 43,
-              "signsShadowsAo": 48,
+              "signsShadowsAo": 52,
               "navmeshPaths": 0,
               "composer": 3,
-              "startAt": 458,
-              "total": 3597
+              "startAt": 377,
+              "total": 3569
             },
             "bakedAo": {
               "materials": 15,
@@ -9872,8 +9872,8 @@
     "capturedAt": "2026-11-24T17:26:50.767Z",
     "timeZone": "UTC",
     "parcoApproach": {
-      "sourceHead": "86b9acbbec784447aa6e373b20ec176c79b49c3a",
-      "capturedAt": "2026-11-24T17:30:59.356Z",
+      "sourceHead": "019b3e9aa257ebf8376a27a84892ab49614c368a",
+      "capturedAt": "2026-11-24T17:35:23.722Z",
       "timeZone": "UTC"
     }
   }
