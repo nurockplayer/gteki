@@ -1249,6 +1249,8 @@ LANDMARK_PIER_SPACING_M	const	stations/ikebukuro/scene/landmark-style.ts
 LANDMARK_SIGN	const	stations/ikebukuro/scene/landmark-style.ts
 LANDMARK_STREET_BAND	const	stations/ikebukuro/scene/landmark-style.ts
 LandmarkFacade	type	stations/ikebukuro/scene/landmark-style.ts
+addLandmarks	function	stations/ikebukuro/scene/landmarks.ts
+removeLandmarkContext	function	stations/ikebukuro/scene/landmarks.ts
 ENV_INTENSITY	const	stations/ikebukuro/scene/materials.ts
 LIGHTMAP_BALANCE	const	stations/ikebukuro/scene/materials.ts
 StationMaterials	interface	stations/ikebukuro/scene/materials.ts

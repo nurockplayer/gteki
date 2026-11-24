@@ -48,7 +48,7 @@ for (const station of ["ikebukuro", "shinjuku"]) describe(station, () => {
     const preview = ingest(s.file, false, s.root);
     expect(preview).toHaveLength(1);
     expect(preview[0]).toContain("→ point");
-    expect(s.poi()).toMatchObject({ displayPosition: s.node.position, connectorNodeIds: [s.node.id], evidence: { checkedDate: "2026-10-28" } });
+    expect(s.poi()).toMatchObject({ displayPosition: s.node.position, connectorNodeIds: [...(station === "ikebukuro" ? ["x15"] : []), s.node.id], evidence: { checkedDate: "2026-10-28" } });
     expect(s.poi().evidence.method).toContain("displayPosition = public connector node position");
     expect(merchantPrecision(s.poi())).toBe("point");
     expect(read(join(s.dir, "gteki/pois.json")).pois.filter((p: any) => p.id !== s.poiId)).toEqual(before.pois.filter((p: any) => p.id !== s.poiId));
@@ -131,7 +131,7 @@ for (const station of ["ikebukuro", "shinjuku"]) describe(station, () => {
     s.receipt.items[0]!.paid = false;
     s.save();
     expect(ingest(s.file, false, s.root)[0]).toContain("checkedDate 2026-10-29 → 2026-10-29");
-    expect(s.poi()).toMatchObject({ paid: true, connectorNodeIds: [s.node.id, other.id], displayPosition: s.node.position,
+    expect(s.poi()).toMatchObject({ paid: true, connectorNodeIds: [...(station === "ikebukuro" ? ["x15"] : []), s.node.id, other.id], displayPosition: s.node.position,
       evidence: { checkedDate: "2026-10-29" } });
     expect(s.poi().evidence.method).toContain(latestMethod);
     expect(() => ingest(s.file, false, s.root)).toThrow("duplicate existing connector");

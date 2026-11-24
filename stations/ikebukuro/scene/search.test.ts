@@ -110,7 +110,7 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "東上線 エレベーター", top1: "tobu-tj-lift-1" },
   ],
   "Tobu Tojo gates": [
-    { q: "東武", top: TOBU },
+    { q: "東武", top: ["shop-ikb-tobudept", "tobu-central-gate-2"] },
     { q: "東上線", top: TOBU },
     { q: "Tobu Tojo", top: TOBU },
     { q: "とうぶとうじょうせん", top: TOBU },
@@ -262,7 +262,7 @@ describe("Ikebukuro golden search", () => {
           .filter(
             ({ text }) =>
               sogo.test(text) ||
-              (parco.test(text) && !(poi.id === PARCO_POI && poi.evidence.sourceIds.includes(PARCO_SOURCE))) ||
+              (parco.test(text) && !((poi.id === PARCO_POI && poi.evidence.sourceIds.includes(PARCO_SOURCE)) || (poi.id === "shop-ikb-pparco" && poi.evidence.sourceIds.includes("parco-ikebukuro-floorguide-2026-11")))) ||
               (departmentStore.test(text) && !(poi.id === TOBU_DEPT_POI && poi.evidence.sourceIds.includes(TOBU_DEPT_SOURCE))) ||
               (seibu.test(text) && !fromSeibu(poi) && !isSeibuStore(poi)),
           )

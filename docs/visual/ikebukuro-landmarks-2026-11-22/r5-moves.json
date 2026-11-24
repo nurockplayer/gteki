@@ -1,0 +1,142 @@
+{
+  "recordedAt": "2026-11-22 JST",
+  "basis": "No real main-sign face is identified in the existing data. Use the largest coplanar source wall with a full-sign clear sightline from a modeled public-road surface. Building and graph geometry unchanged.",
+  "moves": [
+    {
+      "store": "seibu",
+      "oldAnchor": [
+        53.87089132260219,
+        62,
+        52.69110484874142
+      ],
+      "targetAnchor": [
+        52.68102352291716,
+        59.1510009765625,
+        83.11280890345056
+      ],
+      "exteriorRayOrigin": [
+        152.26273291226715,
+        59.1510009765625,
+        92.24972058601844
+      ],
+      "faceNormal": [
+        0.9958170938934998,
+        0,
+        0.09136911682567889
+      ],
+      "sourceWallAreaM2": 6449.679060215936,
+      "publicRoadLookPose": {
+        "eye": [
+          88.36115425448307,
+          33.64416687012544,
+          11.510237224925163
+        ],
+        "distance": 80,
+        "angle": 1.2
+      },
+      "why": "Old name is occluded; this is the largest sampled source wall whose full sign fits and has a clear eye-level sightline from existing public-road geometry."
+    },
+    {
+      "store": "lumine",
+      "oldAnchor": [
+        -137.19482610873987,
+        72,
+        74.59978445791704
+      ],
+      "targetAnchor": [
+        -188.28455805874069,
+        109.5,
+        91.91130723698404
+      ],
+      "exteriorRayOrigin": [
+        -280.8779920984389,
+        109.5,
+        54.14285515411393
+      ],
+      "faceNormal": [
+        -0.9259343403969822,
+        0,
+        -0.37768452082870113
+      ],
+      "sourceWallAreaM2": 2104.444123083237,
+      "publicRoadLookPose": {
+        "eye": [
+          -186.30488839497323,
+          34.25487781156567,
+          -28.072362101898747
+        ],
+        "distance": 120,
+        "angle": -1.2
+      },
+      "why": "Old name is occluded; this is the largest sampled source wall whose full sign fits and has a clear eye-level sightline from existing public-road geometry."
+    },
+    {
+      "store": "esola",
+      "oldAnchor": [
+        -146.17248256255763,
+        74,
+        1.1663305717799948
+      ],
+      "targetAnchor": [
+        -172.89733855656027,
+        61.5,
+        -3.4134572509483747
+      ],
+      "exteriorRayOrigin": [
+        -272.4007980509317,
+        61.5,
+        6.539509575680858
+      ],
+      "faceNormal": [
+        -0.9950345949437145,
+        0,
+        0.09952966826629232
+      ],
+      "sourceWallAreaM2": 831.8779074697622,
+      "publicRoadLookPose": {
+        "eye": [
+          -216.14207099911167,
+          33.40415435197309,
+          63.89102340206717
+        ],
+        "distance": 80,
+        "angle": 0.9
+      },
+      "why": "Old name is occluded; this is the largest sampled source wall whose full sign fits and has a clear eye-level sightline from existing public-road geometry."
+    },
+    {
+      "store": "parco",
+      "oldAnchor": [
+        80.05507280202085,
+        65,
+        -130.3338672490242
+      ],
+      "targetAnchor": [
+        89.22870396104085,
+        68.41899871826172,
+        -156.3610620977946
+      ],
+      "exteriorRayOrigin": [
+        -2.081387004116678,
+        68.41899871826172,
+        -197.13442703048878
+      ],
+      "faceNormal": [
+        -0.9131009096515753,
+        0,
+        -0.40773364932694195
+      ],
+      "sourceWallAreaM2": 2106.499312143429,
+      "publicRoadLookPose": {
+        "eye": [
+          -0.9903062308055297,
+          33.89029667369364,
+          -235.48457440610608
+        ],
+        "distance": 120,
+        "angle": -0.3
+      },
+      "why": "Old name is occluded; this is the largest sampled source wall whose full sign fits and has a clear eye-level sightline from existing public-road geometry."
+    }
+  ]
+}
