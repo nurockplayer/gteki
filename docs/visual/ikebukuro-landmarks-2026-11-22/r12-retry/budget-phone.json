@@ -1,0 +1,78 @@
+{
+  "sourceSha": "cd9547a3835e5f28a84f8307294cf0697482fc58",
+  "device": "phone",
+  "recordedAtUTC": "2026-11-23T21:11:11.257Z",
+  "sharedGroundDraws": 1,
+  "stores": [
+    {
+      "store": "seibu",
+      "draws": 2,
+      "textures": [
+        {
+          "width": 512,
+          "height": 128
+        }
+      ]
+    },
+    {
+      "store": "tobu",
+      "draws": 2,
+      "textures": [
+        {
+          "width": 512,
+          "height": 128
+        }
+      ]
+    },
+    {
+      "store": "lumine",
+      "draws": 2,
+      "textures": [
+        {
+          "width": 512,
+          "height": 128
+        }
+      ]
+    },
+    {
+      "store": "esola",
+      "draws": 2,
+      "textures": [
+        {
+          "width": 512,
+          "height": 128
+        }
+      ]
+    },
+    {
+      "store": "parco",
+      "draws": 2,
+      "textures": [
+        {
+          "width": 512,
+          "height": 128
+        }
+      ]
+    },
+    {
+      "store": "pparco",
+      "draws": 2,
+      "textures": [
+        {
+          "width": 512,
+          "height": 128
+        }
+      ]
+    },
+    {
+      "store": "sunshine",
+      "draws": 2,
+      "textures": [
+        {
+          "width": 512,
+          "height": 128
+        }
+      ]
+    }
+  ]
+}
