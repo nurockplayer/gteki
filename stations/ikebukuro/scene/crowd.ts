@@ -1140,6 +1140,7 @@ export function buildCrowd(
     let signMinX = Infinity, signMaxX = -Infinity, signMinY = Infinity, signMaxY = -Infinity;
     const sign = cameraSignFocus;
     const softenFocus = !openingZone && !sign;
+    const focusDepthSq = softenFocus && avatarPosition ? avatarPosition.distanceToSquared(cam) : Infinity;
     if (sign) for (let x = -1; x <= 1; x += 2) for (let y = -1; y <= 1; y += 2) {
       projected.set(sign.x + x * sign.halfWidthX, sign.y + y * sign.halfHeight, sign.z + x * sign.halfWidthZ).applyMatrix4(viewProj);
       signMinX = Math.min(signMinX, projected.x); signMaxX = Math.max(signMaxX, projected.x);
@@ -1287,11 +1288,14 @@ export function buildCrowd(
       pos.y = floorY;
       let blocksFocus = false;
       if (cameraFocus) {
-        focusSegment.copy(cameraFocus).sub(cam);
         focusBody.set(pos.x, floorY + 0.9, pos.z).sub(cam);
-        const lengthSq = focusSegment.lengthSq();
-        const t = lengthSq > 0 ? focusBody.dot(focusSegment) / lengthSq : -1;
-        blocksFocus = t >= 0 && t <= 1 && focusBody.addScaledVector(focusSegment, -t).lengthSq() <= 0.45 * 0.45;
+        // A guide can aim beyond the cat, where a commuter cannot occlude it.
+        if (focusBody.lengthSq() < focusDepthSq) {
+          focusSegment.copy(cameraFocus).sub(cam);
+          const lengthSq = focusSegment.lengthSq();
+          const t = lengthSq > 0 ? focusBody.dot(focusSegment) / lengthSq : -1;
+          blocksFocus = t >= 0 && t <= 1 && focusBody.addScaledVector(focusSegment, -t).lengthSq() <= 0.45 * 0.45;
+        }
       }
       // A leg or shoe can cross the target even when the body's centre is behind it.
       focusBounds.min.set(pos.x - 0.65 * L.sw, floorY, pos.z - 0.65 * L.sw);
