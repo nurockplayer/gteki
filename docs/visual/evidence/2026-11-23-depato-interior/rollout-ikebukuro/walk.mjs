@@ -96,7 +96,8 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
       }else{
         await walk(profile,'enter-1F',[{...inside,y:store.elevations['1F']}]);
         await frame(profile,'first-interior',yaw);
-        await walk(profile,'1F-to-B1',[{x:x-4,z:inside.z},{x:x-4,z:from-2},{x,z:from-2},{x:x+0.95,z:from,y:y+4.5},{x:x+0.95,z:to+0.6,y},{x,z:to+2,y}]);
+        // Split the long 1F aisle so each browser evaluation stays within its execution limit.
+        await walk(profile,'1F-to-B1',[{x:x-4,z:inside.z},{x:x-4,z:from+78},{x:x-4,z:from+38},{x:x-4,z:from-2},{x,z:from-2},{x:x+0.95,z:from,y:y+4.5},{x:x+0.95,z:to+0.6,y},{x,z:to+2,y}]);
       }
       await walk(profile,'B1-to-B2',[{x:b1West,z:first.level==='B1'?inside.z:to+2},{x:b1West,z:from-2},{x,z:from-2},{x:x+0.95,z:from,y},{x:x+0.95,z:to+0.6,y:y-4.5},{x,z:to+2,y:y-4.5}]);
       await frame(profile,'food-hall-aisle',Math.PI-0.3);
@@ -108,7 +109,8 @@ for(const device of [{name:'desktop',width:1440,height:900,mobile:false},{name:'
       }
       const doorInside={x:street.point[0]+street.inward[0]*3,z:street.point[1]+street.inward[1]*3};
       const doorSide=doorInside.x>x?x+4:x-4;
-      await walk(profile,'1F-street-door',[{x:x-4,z:to+3},{x:doorSide,z:to+3},{x:doorSide,z:doorInside.z},doorInside]);
+      const streetAisle=first.level==='1F'?[{x:doorSide,z:to+38},{x:doorSide,z:to+73}]:[];
+      await walk(profile,'1F-street-door',[{x:x-4,z:to+3},{x:doorSide,z:to+3},...streetAisle,{x:doorSide,z:doorInside.z},doorInside]);
       await frame(profile,'street-door-inside',Math.atan2(street.inward[0],street.inward[1]));
       await walk(profile,'leave-to-street',[{x:store.street.point[0],z:store.street.point[1],y:store.elevations['1F']}]);
       await frame(profile,'street-door-outside',Math.atan2(-street.inward[0],-street.inward[1]));

@@ -94,9 +94,9 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const tobu = layouts.find(p => p.input.store.id === "tobu-ikebukuro")!;
   const { x, to, width } = tobu.stair;
   const b1 = tobu.height("B1");
-  // PLATEAU wall and glazing cross the escalator landing and its turn into the west aisle.
+  // The original station partitions cross the escalator landing and its turn into the west aisle.
   const tobuLanding = volume(x - 4.5, x + width / 2, to - 0.5, to + 2.5, b1 - 0.1, b1 + 3.1);
-  tobuLanding.rejectsMesh = mesh => !["wall", "windows", "windows_solid"].includes(mesh.userData.gteki_role);
+  tobuLanding.rejectsMesh = mesh => !["wall", "windows", "windows_solid", "doors", "doors_solid"].includes(mesh.userData.gteki_role);
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
     if (uri.includes("ikebukuro_context_")) {
