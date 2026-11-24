@@ -658,3 +658,105 @@ test("guided walk @phone", async ({ page }, info) => {
   const summaryPath = path.join(out, "summary.md");
   fs.writeFileSync(summaryPath, fs.readFileSync(summaryPath, "utf8").replace(/^- J14 \(report\):.*$/m, `- J14 (report): ${JSON.stringify(journey.j14)}`));
 });
+
+// D15 shop acceptance: these frames travel with the existing desktop/phone journey artifacts.
+test("simulated shop stop from the guided walk @phone", async ({ page }, info) => {
+  test.setTimeout(360_000);
+  const out = path.join(outDir(info.project.name), "slice-shop"); fs.mkdirSync(out, { recursive: true });
+  await page.addInitScript(PROBE_SCRIPT);
+  await page.goto(reelMode === "next" ? "/?next=1&qaTimeBand=morning" : "/?qaTimeBand=morning");
+  await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready" && (window as any).__gteki.route()?.ok, null, { timeout: 120_000, polling: 250 });
+  await page.evaluate(() => (window as any).__gteki.holdFrames(true));
+  const records: Record<string, unknown>[] = [];
+  const feature = { name: "shopfront", match: { namePrefix: "kit_shop" }, minPixels: 640 };
+  const capture = async (name: string) => {
+    // Restore the displayed frame after probing without advancing the guide camera.
+    await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.render(0));
+    await page.screenshot({ path: path.join(out, `${name}.png`), timeout: 60_000 });
+    const probe = await page.evaluate(feature => (window as any).__gteki.goldenProbe(false, [feature]), feature);
+    const metrics = await sceneMetrics(page), coverage = await overlay(page);
+    records.push({ index: records.length, name, probe, frontFramePct: probe.features[0].pixels / 640, ...metrics, ...coverage });
+    expect(probe.features[0].pixels).toBeGreaterThanOrEqual(feature.minPixels);
+    expect(probe.voidRatio).toBeLessThanOrEqual(config.thresholds.voidRatio);
+    expect(metrics.nearClip).toBeLessThanOrEqual(config.thresholds.nearClip);
+    // J5 walking budgets apply to guide frames; the stopped interaction prompt is recorded for art review.
+    if (name === "first-sight" || name === "approach") {
+      expect(coverage.overlayPct).toBeLessThanOrEqual(info.project.name.startsWith("phone") ? config.thresholds.overlayPctPhone : config.thresholds.overlayPctDesktop);
+    }
+  };
+  try {
+    await page.locator(".cold-open .primary").click();
+    await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.setGuidePaused(true));
+    let first: number | undefined, approach: number | undefined;
+    // Look toward the front from the guided path; retain the route and collision-aware camera.
+    for (let distance = 18; distance <= 34; distance += 1) {
+      await page.evaluate(distance => { const g = (window as any).__gteki; g.seekGuide(distance); g.simulate(0.1);
+        const e = g.scanProbe().explorer, p = e.getPose();
+        g.setCamera({ yaw: Math.atan2(p.east + 59.29, 188.2 - p.north), pitch: -0.04 });
+        g.simulate(0.1); g.goldenFrame(); }, distance);
+      const probe = await page.evaluate(feature => (window as any).__gteki.goldenProbe(false, [feature]), feature);
+      const pixels = probe.features[0].pixels;
+      if (pixels >= feature.minPixels) {
+        if (first === undefined) { first = distance; await capture("first-sight"); }
+        else { approach = distance; await capture("approach"); break; }
+      }
+    }
+    expect(first, "shop occupies at least 1% while looking from the guided path").toBeDefined();
+    expect(approach, "shop occupies at least 1% farther along the guided path").toBeDefined();
+    const spec = await page.evaluate(() => (window as any).__gteki.interactables().specs.find((s: any) => s.id === "sim-sjk-komorebi"));
+    expect(spec).toMatchObject({ kind: "shop", simulated: true, reward: "wooden-leaf" });
+    const walk = await page.evaluate(anchor => {
+      const e = (window as any).__gteki.scanProbe().explorer;
+      e.stopGuide(); e.setCamera(null);
+      // Approach the stand from the passage, ending facing the closed front.
+      return e.walkPath([{ ...anchor, x: anchor.x + 1.0 }, anchor], { maxSeconds: 20 });
+    }, spec.anchor);
+    expect(walk.done).toBe(true);
+    await hooks.simulate(page, 0.1);
+    const prompt = page.locator(".interaction-prompt");
+    await expect(prompt.locator("button")).toBeVisible();
+    await expect(prompt).toContainText(/模擬店（実在の店舗ではありません）|Simulated shop/);
+    await capture("stand");
+    const route = await hooks.route(page);
+    const costs = await page.evaluate(() => {
+      const g = (window as any).__gteki, e = g.scanProbe().explorer;
+      const group = e.stationScene.root.getObjectByName("ikebukuro_kit_shops");
+      let addedTriangles = 0;
+      group.traverse((mesh: any) => {
+        if (!mesh.isMesh) return;
+        const p = mesh.geometry.attributes.position, ix = mesh.geometry.index;
+        for (let i = 0; i < (ix?.count ?? p.count); i += 3) {
+          const indexes = [0, 1, 2].map(k => ix ? ix.getX(i + k) : i + k);
+          const x = indexes.reduce((s, k) => s + p.getX(k), 0) / 3;
+          if (Math.abs(x - -59.29) < 5) addedTriangles++;
+        }
+      });
+      g.goldenFrame();
+      const idle = { ...e.renderer.info.render };
+      e.interact(); g.simulate(1.3); g.goldenFrame();
+      return { addedTriangles, idle, reacting: { ...e.renderer.info.render }, shopKit: e.stationScene.root.userData.shopKit };
+    });
+    expect((await page.evaluate(() => (window as any).__gteki.interaction())).step).toBe("react");
+    await capture("interaction");
+    await hooks.simulate(page, 2.1);
+    await expect(prompt).toContainText(/木の葉のお守り|wooden leaf charm/);
+    await expect(prompt.locator("button")).toBeDisabled();
+    expect((await page.evaluate(() => (window as any).__gteki.interaction())).items).toContain("wooden-leaf");
+    expect(await hooks.route(page)).toEqual(route);
+    await capture("completed");
+    records.push({ firstSightDistanceM: first, approachDistanceM: approach, costs });
+    // A separate reference frame keeps the unchanged 新宿 board visible on both aspect ratios.
+    await page.evaluate(() => {
+      const e = (window as any).__gteki.scanProbe().explorer;
+      const board = e.stationScene.root.getObjectByName("identity:spawn");
+      board.updateWorldMatrix(true, false);
+      const centre = board.position.clone().set(0, 0, 0).applyMatrix4(board.matrixWorld);
+      e.camera.position.copy(board.position.clone().set(0, 0, 4).applyMatrix4(board.matrixWorld));
+      e.camera.lookAt(centre); e.render(0);
+    });
+    await page.screenshot({ path: path.join(out, "brightness-reference.png"), timeout: 60_000 });
+  } finally {
+    fs.writeFileSync(path.join(out, "evidence.json"), JSON.stringify(records, null, 2));
+    await page.evaluate(() => (window as any).__gteki.holdFrames(false));
+  }
+});
