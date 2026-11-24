@@ -107,12 +107,12 @@ it("filters the real public stores and their brands at noon and 21:00 JST, retai
     const tags = suggestions.map((row) => row.querySelector(".result-meta")!.textContent!);
     if (key === "ikebukuro") {
       expect(suggestions.map((row) => row.querySelector(".result-name")?.textContent))
-        .toEqual(["西武池袋本店", "ルミネ池袋", "池袋ショッピングパーク"]);
+        .toEqual(["西武池袋本店", "東武百貨店　池袋店", "ルミネ池袋", "池袋ショッピングパーク", "エソラ池袋", "池袋パルコ", "サンシャインシティ", "池袋パルコ P'PARCO"]);
       expect(tags[0]).toContain("営業中");
       expect(tags.slice(1).every((tag) => tag.includes("営業時間不明"))).toBe(true);
       vi.setSystemTime(new Date("2026-11-04T21:00:00+09:00"));
       expect(search("").map((row) => row.querySelector(".result-name")?.textContent))
-        .toEqual(["ルミネ池袋", "池袋ショッピングパーク"]);
+        .toEqual(["東武百貨店　池袋店", "ルミネ池袋", "池袋ショッピングパーク", "エソラ池袋", "池袋パルコ", "サンシャインシティ", "池袋パルコ P'PARCO"]);
     } else expect(suggestions).toHaveLength(0); // Public SJK shops have no verified connectors for suggestions.
     a.s.filter = "ticket_gate";
     toggle(false);

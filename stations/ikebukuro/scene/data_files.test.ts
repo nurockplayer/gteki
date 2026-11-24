@@ -60,6 +60,7 @@ const stairwellSources = (): string[] => [
 
 const EXPECTED: Record<string, { script: string; sources: () => string[]; authored?: boolean }> = {
   "data/depato-rollout.json": { script: "2026-11-23 JST: PLATEAU", sources: () => ["parco-ikebukuro-floorguide-2026-11", "plateau-13116-bldg-53394576", "plateau-13116-bldg-53394577", "tobu-dept-ikebukuro-2026-10-B2F"] },
+  "scene/landmark-ranges.json": { script: "pipeline/build_landmarks.mjs", sources: () => ["plateau-13116-bldg-53394576"] },
   "data/depato-floors.json": { script: "Names, floor labels", sources: () => ["sogo-seibu-ikebukuro-floorguide-2026-10"] },
   "data/depato-footprint.json": { script: "Southern wing", sources: () => ["plateau-13116-bldg-53394576", "plateau-13116-bldg-53394577"] },
   "scene/stairwell-cut.high.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },

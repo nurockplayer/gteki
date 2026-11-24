@@ -1,0 +1,4857 @@
+{
+  "referenceInfo": {
+    "station": "shinjuku",
+    "poi": "poi:exit:1",
+    "node": "n:a06f3d191885497bac197b666c4daef9",
+    "sourceMesh": "sign-faces:station:1",
+    "sourceFaceCentre": [
+      -43.12605094909668,
+      -5.25,
+      -194.95954132080078
+    ],
+    "widthM": 1.9000016628697554,
+    "heightM": 0.7124996185302734,
+    "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+  },
+  "frames": [
+    {
+      "file": "desktop-seibu-walk-next.png",
+      "pose": {
+        "eye": [
+          62.73007710774739,
+          33.84600092569987,
+          83.84273783365884
+        ],
+        "target": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "fov": 47.18787145070902,
+        "road": "ctx_road_t01_00",
+        "facadeDistanceM": 0,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "normal": [
+          0.9963637088878371,
+          0,
+          0.0852018756323688
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 24.32766179132706,
+        "projectedJaCapPx": 24.32766179132706,
+        "letterContrast": 8.259625659684389,
+        "signMeanLuminance": 0.04766455719357046,
+        "projectedSignCorners": [
+          [
+            428.5837567692663,
+            426.5023597403284,
+            0.9932489714939319
+          ],
+          [
+            1012.1964432645725,
+            419.51161694488115,
+            0.99323062942585
+          ],
+          [
+            1056.535954362243,
+            477.13575846830287,
+            0.9921882322251442
+          ],
+          [
+            384.4985757163822,
+            485.00691461132897,
+            0.9922125534508706
+          ]
+        ],
+        "signVsWayfinding": 0.12450824754553863
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "landmark-sign:seibu": 2,
+        "ctx_bldg_landmark_tobu": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 27.237092064849055,
+        "meanLuminance": 0.38282248873623614,
+        "calibrationFov": 4.494123901896147,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 27.237092064849055,
+      "actualAnchor": [
+        52.68105631529751,
+        59.151001,
+        83.1124389211281
+      ],
+      "flag": "next",
+      "store": "seibu",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:08.633Z"
+    },
+    {
+      "file": "desktop-seibu-look-next.png",
+      "pose": {
+        "eye": [
+          87.91718387383617,
+          33.64567024933202,
+          11.290330105816963
+        ],
+        "target": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "fov": 40.09361128080066,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t01_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "normal": [
+          0.9963637088878371,
+          0,
+          0.0852018756323688
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 25.172187627836927,
+        "projectedJaCapPx": 25.172187627836927,
+        "letterContrast": 2.0852467789389477,
+        "signMeanLuminance": 0.1993180937601176,
+        "projectedSignCorners": [
+          [
+            679.8566631159016,
+            454.97660246369145,
+            0.997924272431821
+          ],
+          [
+            767.7636549883707,
+            381.2859724027755,
+            0.9975112580795482
+          ],
+          [
+            768.5518104992434,
+            443.98099215207674,
+            0.9974685407633733
+          ],
+          [
+            679.301396048059,
+            508.55006271616014,
+            0.9978941774587207
+          ]
+        ],
+        "signVsWayfinding": 0.47217617042268745
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "landmark-sign:seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 83.96738591084619,
+        "meanLuminance": 0.4221265414171368,
+        "calibrationFov": 1.4584597204706942,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 83.96738591084619,
+      "actualAnchor": [
+        52.68105631529751,
+        59.151001,
+        83.1124389211281
+      ],
+      "flag": "next",
+      "store": "seibu",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:10.543Z"
+    },
+    {
+      "file": "desktop-tobu-walk-next.png",
+      "pose": {
+        "eye": [
+          -119.50818634033203,
+          34.59876658121745,
+          -147.56271362304688
+        ],
+        "target": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "fov": 19.743699849577222,
+        "road": "ctx_road_t00_01",
+        "facadeDistanceM": 0,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "normal": [
+          -0.9221441268582645,
+          0,
+          -0.3868464931995763
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 24.706041722709266,
+        "projectedJaCapPx": 24.706041722709266,
+        "letterContrast": 6.1493307088355245,
+        "signMeanLuminance": 0.06850505105353313,
+        "projectedSignCorners": [
+          [
+            294.811180155165,
+            443.3395507806825,
+            0.9961123784862533
+          ],
+          [
+            1147.058293408407,
+            401.09138575404165,
+            0.9960948456584804
+          ],
+          [
+            1184.1123765547343,
+            457.2701745008936,
+            0.9957473345351634
+          ],
+          [
+            258.0947456702536,
+            502.89944312260616,
+            0.9957680339954813
+          ]
+        ],
+        "signVsWayfinding": 0.17415642018941144
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "landmark-sign:tobu": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 48.05437873386975,
+        "meanLuminance": 0.3933535782317268,
+        "calibrationFov": 2.5481439926041833,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 48.05437873386975,
+      "actualAnchor": [
+        -107.75305065752681,
+        81,
+        -143.3241244954373
+      ],
+      "flag": "next",
+      "store": "tobu",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:11.126Z"
+    },
+    {
+      "file": "desktop-tobu-look-next.png",
+      "pose": {
+        "eye": [
+          -187.37536171649683,
+          34.46999893188477,
+          -151.08863231168857
+        ],
+        "target": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "fov": 33.43766909984021,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "normal": [
+          -0.9221441268582645,
+          0,
+          -0.3868464931995763
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 25.1196585869338,
+        "projectedJaCapPx": 25.1196585869338,
+        "letterContrast": 2.101493029935515,
+        "signMeanLuminance": 0.22633671498481248,
+        "projectedSignCorners": [
+          [
+            596.491386157077,
+            441.26993309854277,
+            0.9980099279167574
+          ],
+          [
+            849.2051537282332,
+            400.67811414968475,
+            0.9979135281022098
+          ],
+          [
+            852.2054147529224,
+            459.34479045320444,
+            0.9978627561226928
+          ],
+          [
+            593.7526546208293,
+            498.19279245465646,
+            0.9979635816754414
+          ]
+        ],
+        "signVsWayfinding": 0.5242948831881381
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "landmark-sign:tobu": 2,
+        "ctx_bldg_landmark_parco": 2,
+        "ctx_bldg_landmark_pparco": 2,
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 92.54750671627416,
+        "meanLuminance": 0.4316973562825974,
+        "calibrationFov": 1.3232579004673024,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 92.54750671627416,
+      "actualAnchor": [
+        -107.75305065752681,
+        81,
+        -143.3241244954373
+      ],
+      "flag": "next",
+      "store": "tobu",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:12.116Z"
+    },
+    {
+      "file": "desktop-lumine-walk-next.png",
+      "pose": {
+        "eye": [
+          -237.2755889892578,
+          32.21400032043457,
+          124.97894287109375
+        ],
+        "target": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "fov": 22.706617183947362,
+        "road": "ctx_road_t00_00",
+        "facadeDistanceM": 20.874557495117188,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "normal": [
+          -0.9259343403969822,
+          0,
+          -0.3776845208287014
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 25.04116783307127,
+        "projectedJaCapPx": 25.04116783307127,
+        "letterContrast": 1.7827455070393141,
+        "signMeanLuminance": 0.2747140258214863,
+        "projectedSignCorners": [
+          [
+            620.1661987948562,
+            541.2357819618765,
+            0.9981601593330421
+          ],
+          [
+            828.6179195883593,
+            291.41679559451563,
+            0.9979894773217373
+          ],
+          [
+            832.511839456962,
+            347.17805463770515,
+            0.997913815536907
+          ],
+          [
+            616.8861374387229,
+            600.5472283538935,
+            0.9980964252797149
+          ]
+        ],
+        "signVsWayfinding": 0.6291215119671437
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "landmark-sign:lumine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 97.29704727418917,
+        "meanLuminance": 0.43666290310516903,
+        "calibrationFov": 1.2586685960167687,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 97.29704727418917,
+      "actualAnchor": [
+        -188.28455796747167,
+        109.5,
+        91.91130701322814
+      ],
+      "flag": "next",
+      "store": "lumine",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:15.030Z"
+    },
+    {
+      "file": "desktop-lumine-look-next.png",
+      "pose": {
+        "eye": [
+          -186.3048883037042,
+          34.2548778112482,
+          -28.07236232565468
+        ],
+        "target": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "fov": 21.77663468379743,
+        "facadeDistanceM": 120,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "normal": [
+          -0.9259343403969822,
+          0,
+          -0.3776845208287014
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 25.168323934492363,
+        "projectedJaCapPx": 25.168323934492363,
+        "letterContrast": 1.2012337897828262,
+        "signMeanLuminance": 0.40018978055077825,
+        "projectedSignCorners": [
+          [
+            668.6085691623331,
+            349.7375852135844,
+            0.9986316713042928
+          ],
+          [
+            766.9009478370825,
+            486.67271467694906,
+            0.9987599714390312
+          ],
+          [
+            767.6004946823072,
+            542.8664655582602,
+            0.9987399842896564
+          ],
+          [
+            667.7674536856404,
+            409.1584103056742,
+            0.9986076393173157
+          ]
+        ],
+        "signVsWayfinding": 0.905230944816602
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "landmark-sign:lumine": 2,
+        "ctx_bldg_landmark_esola": 2,
+        "landmark-sign:esola": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 141.63978400576653,
+        "meanLuminance": 0.4420858376995231,
+        "calibrationFov": 0.8646394076205416,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 141.63978400576653,
+      "actualAnchor": [
+        -188.28455796747167,
+        109.5,
+        91.91130701322814
+      ],
+      "flag": "next",
+      "store": "lumine",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:15.601Z"
+    },
+    {
+      "file": "desktop-esola-walk-next.png",
+      "pose": {
+        "eye": [
+          -180.72764587402344,
+          34.18000183105469,
+          6.13688325881958
+        ],
+        "target": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "fov": 47.67439175720966,
+        "road": "ctx_road_t00_00",
+        "facadeDistanceM": 6.8357086181640625,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "normal": [
+          -0.9950413495644815,
+          0,
+          0.09946211669221328
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 24.426457111649867,
+        "projectedJaCapPx": 24.426457111649867,
+        "letterContrast": 6.578622764189237,
+        "signMeanLuminance": 0.089769555102541,
+        "projectedSignCorners": [
+          [
+            546.2650270881002,
+            582.7223369774439,
+            0.9942630118193087
+          ],
+          [
+            922.0769129123887,
+            236.82525003497696,
+            0.9933108045132907
+          ],
+          [
+            951.6636318995438,
+            273.02389609268863,
+            0.9923167762294056
+          ],
+          [
+            524.8356255676159,
+            655.8825826369421,
+            0.9935430458363503
+          ]
+        ],
+        "signVsWayfinding": 0.23395479462109064
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "ctx_bldg_landmark_esola": 2,
+        "landmark-sign:esola": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 29.98174584601633,
+        "meanLuminance": 0.38370470350022234,
+        "calibrationFov": 4.083078744663518,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 29.98174584601633,
+      "actualAnchor": [
+        -172.89733894140463,
+        61.5,
+        -3.413461099627618
+      ],
+      "flag": "next",
+      "store": "esola",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:16.090Z"
+    },
+    {
+      "file": "desktop-esola-look-next.png",
+      "pose": {
+        "eye": [
+          -216.14664048038517,
+          33.4041094350553,
+          63.88808358093923
+        ],
+        "target": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "fov": 39.379291960598465,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "normal": [
+          -0.9950413495644815,
+          0,
+          0.09946211669221328
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 25.16376129164688,
+        "projectedJaCapPx": 25.16376129164688,
+        "letterContrast": 2.1404466442120538,
+        "signMeanLuminance": 0.2273446207747019,
+        "projectedSignCorners": [
+          [
+            649.5110760984336,
+            452.68583110323596,
+            0.9979159559104179
+          ],
+          [
+            801.3295585624685,
+            385.1784337687958,
+            0.9975800665684642
+          ],
+          [
+            802.7560974281192,
+            446.8467542394996,
+            0.9975358662779973
+          ],
+          [
+            648.4419858920454,
+            507.03341605265757,
+            0.9978828309120075
+          ]
+        ],
+        "signVsWayfinding": 0.5373811081281342
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "landmark-sign:tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "ctx_bldg_landmark_esola": 2,
+        "landmark-sign:esola": 2,
+        "ctx_bldg_landmark_parco": 2,
+        "landmark-sign:parco": 2,
+        "ctx_bldg_landmark_pparco": 2,
+        "landmark-sign:pparco": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 84.79020619527559,
+        "meanLuminance": 0.4230603148045417,
+        "calibrationFov": 1.4443080562155353,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 84.79020619527559,
+      "actualAnchor": [
+        -172.89733894140463,
+        61.5,
+        -3.413461099627618
+      ],
+      "flag": "next",
+      "store": "esola",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:16.786Z"
+    },
+    {
+      "file": "desktop-parco-walk-next.png",
+      "pose": {
+        "eye": [
+          101.3393071492513,
+          34.08866653442383,
+          -238.8042755126953
+        ],
+        "target": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "fov": 36.518501664561114,
+        "road": "ctx_road_t01_01",
+        "facadeDistanceM": 67.51972961425781,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "normal": [
+          -0.9131009096515752,
+          0,
+          -0.40773364932694145
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 23.345020704722927,
+        "projectedJaCapPx": 23.345020704722927,
+        "letterContrast": 1.8097612890675219,
+        "signMeanLuminance": 0.2178400253757804,
+        "projectedSignCorners": [
+          [
+            683.5110694605627,
+            369.4112380634978,
+            0.997706363452886
+          ],
+          [
+            751.0297770339781,
+            465.53853432831346,
+            0.9980644790909967
+          ],
+          [
+            751.5345582779215,
+            519.6466290533097,
+            0.9980313658881712
+          ],
+          [
+            682.8110454981917,
+            431.3771834219865,
+            0.9976604425005393
+          ]
+        ],
+        "signVsWayfinding": 0.5077428881959266
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "landmark-sign:seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "ctx_bldg_landmark_parco": 2,
+        "landmark-sign:parco": 2,
+        "ctx_bldg_landmark_pparco": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 90.12281557261937,
+        "meanLuminance": 0.429036093739871,
+        "calibrationFov": 1.3588559325304888,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 90.12281557261937,
+      "actualAnchor": [
+        89.22870393109702,
+        68.418999,
+        -156.3610620307367
+      ],
+      "flag": "next",
+      "store": "parco",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:17.870Z"
+    },
+    {
+      "file": "desktop-parco-look-next.png",
+      "pose": {
+        "eye": [
+          -0.9903062607493638,
+          33.890296673230125,
+          -235.48457433904812
+        ],
+        "target": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "fov": 27.80256185395523,
+        "facadeDistanceM": 120,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "normal": [
+          -0.9131009096515752,
+          0,
+          -0.40773364932694145
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 23.405376779176937,
+        "projectedJaCapPx": 23.405376779176937,
+        "letterContrast": 1.4440980669537802,
+        "signMeanLuminance": 0.33702387017670843,
+        "projectedSignCorners": [
+          [
+            603.4705532136554,
+            410.72703553189405,
+            0.9984751553634784
+          ],
+          [
+            832.2520616709664,
+            431.37214608193045,
+            0.9985347978645178
+          ],
+          [
+            833.2640760739991,
+            488.1724633372954,
+            0.9985206866567456
+          ],
+          [
+            602.3795685809871,
+            469.5187169094145,
+            0.9984599430198778
+          ]
+        ],
+        "signVsWayfinding": 0.7977737726835137
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_parco": 2,
+        "landmark-sign:parco": 2,
+        "ctx_bldg_landmark_pparco": 2,
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 124.86885634284745,
+        "meanLuminance": 0.42245544002160346,
+        "calibrationFov": 0.9807623478707312,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 124.86885634284745,
+      "actualAnchor": [
+        89.22870393109702,
+        68.418999,
+        -156.3610620307367
+      ],
+      "flag": "next",
+      "store": "parco",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:18.312Z"
+    },
+    {
+      "file": "desktop-pparco-walk-next.png",
+      "pose": {
+        "eye": [
+          16.13871192932129,
+          34.230001068115236,
+          -251.52032470703125
+        ],
+        "target": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "fov": 44.54985561002952,
+        "road": "ctx_road_t01_01",
+        "facadeDistanceM": 54.52583122253418,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "normal": [
+          -0.9167379543061812,
+          0,
+          -0.3994890776160449
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 23.38746339105165,
+        "projectedJaCapPx": 23.38746339105165,
+        "letterContrast": 2.766919089354718,
+        "signMeanLuminance": 0.17046777435513275,
+        "projectedSignCorners": [
+          [
+            611.6591064741538,
+            429.79302606756994,
+            0.997587641688885
+          ],
+          [
+            835.602526772469,
+            412.19175901783046,
+            0.9974192485701311
+          ],
+          [
+            836.997622223193,
+            471.82156548170184,
+            0.9973868971051193
+          ],
+          [
+            610.4347017443623,
+            485.83374269911747,
+            0.9975592484439959
+          ]
+        ],
+        "signVsWayfinding": 0.41157197817260294
+      },
+      "draws": {
+        "ctx_bldg_landmark_parco": 2,
+        "ctx_bldg_landmark_pparco": 2,
+        "landmark-sign:pparco": 2,
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 76.6650929307215,
+        "meanLuminance": 0.41418702777583866,
+        "calibrationFov": 1.5973597096541532,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 76.6650929307215,
+      "actualAnchor": [
+        90.6605339438906,
+        50.748502,
+        -244.36674905087585
+      ],
+      "flag": "next",
+      "store": "pparco",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:18.717Z"
+    },
+    {
+      "file": "desktop-pparco-look-next.png",
+      "pose": {
+        "eye": [
+          11.152508864602694,
+          34.113272216421066,
+          -253.22530130230646
+        ],
+        "target": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "fov": 42.14574353221686,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "normal": [
+          -0.9167379543061812,
+          0,
+          -0.3994890776160449
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 23.397045508081604,
+        "projectedJaCapPx": 23.397045508081604,
+        "letterContrast": 2.500311646673852,
+        "signMeanLuminance": 0.1897531541896553,
+        "projectedSignCorners": [
+          [
+            610.9923350288067,
+            428.9363359662468,
+            0.9977336076619667
+          ],
+          [
+            835.5400537326875,
+            413.1214873386628,
+            0.9975917990342715
+          ],
+          [
+            836.7710072585278,
+            472.5637827067172,
+            0.997565076829481
+          ],
+          [
+            609.8972973029339,
+            485.1429983307383,
+            0.9977098359908599
+          ]
+        ],
+        "signVsWayfinding": 0.45218259341062805
+      },
+      "draws": {
+        "ctx_bldg_landmark_parco": 2,
+        "ctx_bldg_landmark_pparco": 2,
+        "landmark-sign:pparco": 2,
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 81.71126525732221,
+        "meanLuminance": 0.4196383429057386,
+        "calibrationFov": 1.49872455916485,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 81.71126525732221,
+      "actualAnchor": [
+        90.6605339438906,
+        50.748502,
+        -244.36674905087585
+      ],
+      "flag": "next",
+      "store": "pparco",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:19.102Z"
+    },
+    {
+      "file": "desktop-sunshine-walk-next.png",
+      "pose": {
+        "point": [
+          498.4127107940815,
+          39.3815,
+          14.713816400686145
+        ],
+        "horizontalSignDistanceM": 80.5007572419319,
+        "facadeDistanceM": 60.40015541685602,
+        "eye": [
+          498.4127107940815,
+          40.981500000000004,
+          14.713816400686145
+        ],
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 7.658355145436779,
+        "road": "plateau-13116-tran-53394577",
+        "clearSign": true,
+        "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 24.21947222939045,
+        "projectedJaCapPx": 24.21947222939045,
+        "letterContrast": 4.155012746265712,
+        "signMeanLuminance": 0.1211780194492599,
+        "projectedSignCorners": [
+          [
+            402.27210616189114,
+            534.5902883541396,
+            0.9992844653668289
+          ],
+          [
+            1041.55953579739,
+            306.9593367545786,
+            0.999274630360399
+          ],
+          [
+            1049.4968007179427,
+            362.2764166286899,
+            0.9992542570968322
+          ],
+          [
+            394.52515069877336,
+            594.7823284055398,
+            0.9992645805869874
+          ]
+        ],
+        "signVsWayfinding": 0.24564223714871403
+      },
+      "draws": {
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 240.86878431830877,
+        "meanLuminance": 0.49331100732443517,
+        "calibrationFov": 0.5084463716956975,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 240.86878431830877,
+      "actualAnchor": [
+        578.5846726040968,
+        268,
+        21.982135068947592
+      ],
+      "flag": "next",
+      "store": "sunshine",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:19.471Z"
+    },
+    {
+      "file": "desktop-sunshine-look-next.png",
+      "pose": {
+        "point": [
+          478.00129063394013,
+          30.45775,
+          29.085608732487845
+        ],
+        "horizontalSignDistanceM": 100.833903352879,
+        "facadeDistanceM": 80.81157557699737,
+        "eye": [
+          478.00129063394013,
+          32.05775,
+          29.085608732487845
+        ],
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 8.450787914061648,
+        "road": "plateau-13116-tran-53394577",
+        "clearSign": true,
+        "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 24.23244879077121,
+        "projectedJaCapPx": 24.23244879077121,
+        "letterContrast": 5.047099627389769,
+        "signMeanLuminance": 0.10961954193405131,
+        "projectedSignCorners": [
+          [
+            470.1940551137547,
+            553.7149769386949,
+            0.999336197040465
+          ],
+          [
+            974.5213841933227,
+            286.64433380235334,
+            0.9993217790886492
+          ],
+          [
+            980.2893567995441,
+            341.93249724242884,
+            0.9993041429055294
+          ],
+          [
+            464.64015744096315,
+            613.8938014327064,
+            0.9993192154139778
+          ]
+        ],
+        "signVsWayfinding": 0.22221183048112683
+      },
+      "draws": {
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 256.5856999166274,
+        "meanLuminance": 0.49331100732443517,
+        "calibrationFov": 0.4773023396245562,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 256.5856999166274,
+      "actualAnchor": [
+        578.5846726040968,
+        268,
+        21.982135068947592
+      ],
+      "flag": "next",
+      "store": "sunshine",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:48:19.841Z"
+    },
+    {
+      "file": "desktop-sunshine-east-exit-next.png",
+      "pose": {
+        "eye": [
+          148.18247985839844,
+          32.839999771118165,
+          1.1556751728057861
+        ],
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 9.859877279717615,
+        "road": "ctx_road_t01_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "exitNode": "x35",
+        "exitOffsetM": 20.498533877075477,
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 24.335954244931553,
+        "projectedJaCapPx": 24.335954244931553,
+        "letterContrast": 7.085989182139927,
+        "signMeanLuminance": 0.08179572070406477,
+        "projectedSignCorners": [
+          [
+            600.2925754913914,
+            445.87856719505186,
+            0.9996972809002235
+          ],
+          [
+            841.797923103756,
+            396.08672841713314,
+            0.9996902479683165
+          ],
+          [
+            842.5427835606563,
+            454.21905199489373,
+            0.999687742081498
+          ],
+          [
+            599.573140189475,
+            503.30637693473375,
+            0.9996948605496422
+          ]
+        ],
+        "signVsWayfinding": 0.16580964034777818
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 490.8971528332168,
+        "meanLuminance": 0.49331100732443517,
+        "calibrationFov": 0.249480912517872,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 490.8971528332168,
+      "actualAnchor": [
+        578.5846726040968,
+        268,
+        21.982135068947592
+      ],
+      "flag": "next",
+      "store": "sunshine",
+      "kind": "east-exit",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:49:52.946Z"
+    },
+    {
+      "file": "desktop-seibu-walk-off.png",
+      "pose": {
+        "eye": [
+          62.73007710774739,
+          33.84600092569987,
+          83.84273783365884
+        ],
+        "target": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "fov": 47.18787145070902,
+        "road": "ctx_road_t01_00",
+        "facadeDistanceM": 0,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "normal": [
+          0.9963637088878371,
+          0,
+          0.0852018756323688
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 27.237092064849055,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "seibu",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:01.937Z"
+    },
+    {
+      "file": "desktop-seibu-look-off.png",
+      "pose": {
+        "eye": [
+          87.91718387383617,
+          33.64567024933202,
+          11.290330105816963
+        ],
+        "target": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "fov": 40.09361128080066,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t01_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "normal": [
+          0.9963637088878371,
+          0,
+          0.0852018756323688
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 83.96738591084619,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "seibu",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:03.389Z"
+    },
+    {
+      "file": "desktop-tobu-walk-off.png",
+      "pose": {
+        "eye": [
+          -119.50818634033203,
+          34.59876658121745,
+          -147.56271362304688
+        ],
+        "target": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "fov": 19.743699849577222,
+        "road": "ctx_road_t00_01",
+        "facadeDistanceM": 0,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "normal": [
+          -0.9221441268582645,
+          0,
+          -0.3868464931995763
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 48.05437873386975,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "tobu",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:03.723Z"
+    },
+    {
+      "file": "desktop-tobu-look-off.png",
+      "pose": {
+        "eye": [
+          -187.37536171649683,
+          34.46999893188477,
+          -151.08863231168857
+        ],
+        "target": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "fov": 33.43766909984021,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "normal": [
+          -0.9221441268582645,
+          0,
+          -0.3868464931995763
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 92.54750671627416,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "tobu",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:04.069Z"
+    },
+    {
+      "file": "desktop-lumine-walk-off.png",
+      "pose": {
+        "eye": [
+          -237.2755889892578,
+          32.21400032043457,
+          124.97894287109375
+        ],
+        "target": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "fov": 22.706617183947362,
+        "road": "ctx_road_t00_00",
+        "facadeDistanceM": 20.874557495117188,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "normal": [
+          -0.9259343403969822,
+          0,
+          -0.3776845208287014
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 97.29704727418917,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "lumine",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:04.412Z"
+    },
+    {
+      "file": "desktop-lumine-look-off.png",
+      "pose": {
+        "eye": [
+          -186.3048883037042,
+          34.2548778112482,
+          -28.07236232565468
+        ],
+        "target": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "fov": 21.77663468379743,
+        "facadeDistanceM": 120,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "normal": [
+          -0.9259343403969822,
+          0,
+          -0.3776845208287014
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 141.63978400576653,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "lumine",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:04.731Z"
+    },
+    {
+      "file": "desktop-esola-walk-off.png",
+      "pose": {
+        "eye": [
+          -180.72764587402344,
+          34.18000183105469,
+          6.13688325881958
+        ],
+        "target": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "fov": 47.67439175720966,
+        "road": "ctx_road_t00_00",
+        "facadeDistanceM": 6.8357086181640625,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "normal": [
+          -0.9950413495644815,
+          0,
+          0.09946211669221328
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 29.98174584601633,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "esola",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:05.052Z"
+    },
+    {
+      "file": "desktop-esola-look-off.png",
+      "pose": {
+        "eye": [
+          -216.14664048038517,
+          33.4041094350553,
+          63.88808358093923
+        ],
+        "target": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "fov": 39.379291960598465,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "normal": [
+          -0.9950413495644815,
+          0,
+          0.09946211669221328
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 84.79020619527559,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "esola",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:05.440Z"
+    },
+    {
+      "file": "desktop-parco-walk-off.png",
+      "pose": {
+        "eye": [
+          101.3393071492513,
+          34.08866653442383,
+          -238.8042755126953
+        ],
+        "target": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "fov": 36.518501664561114,
+        "road": "ctx_road_t01_01",
+        "facadeDistanceM": 67.51972961425781,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "normal": [
+          -0.9131009096515752,
+          0,
+          -0.40773364932694145
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 90.12281557261937,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "parco",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:05.770Z"
+    },
+    {
+      "file": "desktop-parco-look-off.png",
+      "pose": {
+        "eye": [
+          -0.9903062607493638,
+          33.890296673230125,
+          -235.48457433904812
+        ],
+        "target": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "fov": 27.80256185395523,
+        "facadeDistanceM": 120,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "normal": [
+          -0.9131009096515752,
+          0,
+          -0.40773364932694145
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 124.86885634284745,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "parco",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:06.087Z"
+    },
+    {
+      "file": "desktop-pparco-walk-off.png",
+      "pose": {
+        "eye": [
+          16.13871192932129,
+          34.230001068115236,
+          -251.52032470703125
+        ],
+        "target": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "fov": 44.54985561002952,
+        "road": "ctx_road_t01_01",
+        "facadeDistanceM": 54.52583122253418,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "normal": [
+          -0.9167379543061812,
+          0,
+          -0.3994890776160449
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 76.6650929307215,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "pparco",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:06.482Z"
+    },
+    {
+      "file": "desktop-pparco-look-off.png",
+      "pose": {
+        "eye": [
+          11.152508864602694,
+          34.113272216421066,
+          -253.22530130230646
+        ],
+        "target": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "fov": 42.14574353221686,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "normal": [
+          -0.9167379543061812,
+          0,
+          -0.3994890776160449
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 81.71126525732221,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "pparco",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:06.793Z"
+    },
+    {
+      "file": "desktop-sunshine-walk-off.png",
+      "pose": {
+        "point": [
+          498.4127107940815,
+          39.3815,
+          14.713816400686145
+        ],
+        "horizontalSignDistanceM": 80.5007572419319,
+        "facadeDistanceM": 60.40015541685602,
+        "eye": [
+          498.4127107940815,
+          40.981500000000004,
+          14.713816400686145
+        ],
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 7.658355145436779,
+        "road": "plateau-13116-tran-53394577",
+        "clearSign": true,
+        "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 240.86878431830877,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "sunshine",
+      "kind": "walk",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:07.129Z"
+    },
+    {
+      "file": "desktop-sunshine-look-off.png",
+      "pose": {
+        "point": [
+          478.00129063394013,
+          30.45775,
+          29.085608732487845
+        ],
+        "horizontalSignDistanceM": 100.833903352879,
+        "facadeDistanceM": 80.81157557699737,
+        "eye": [
+          478.00129063394013,
+          32.05775,
+          29.085608732487845
+        ],
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 8.450787914061648,
+        "road": "plateau-13116-tran-53394577",
+        "clearSign": true,
+        "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 256.5856999166274,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "sunshine",
+      "kind": "look",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:07.477Z"
+    },
+    {
+      "file": "desktop-sunshine-east-exit-off.png",
+      "pose": {
+        "eye": [
+          148.18247985839844,
+          32.839999771118165,
+          1.1556751728057861
+        ],
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 9.859877279717615,
+        "road": "ctx_road_t01_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "exitNode": "x35",
+        "exitOffsetM": 20.498533877075477,
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 490.8971528332168,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "sunshine",
+      "kind": "east-exit",
+      "viewport": [
+        1440,
+        900
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:07.812Z"
+    },
+    {
+      "file": "phone-seibu-walk-next.png",
+      "pose": {
+        "eye": [
+          62.73007710774739,
+          33.84600092569987,
+          83.84273783365884
+        ],
+        "target": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "fov": 79.49504621998527,
+        "road": "ctx_road_t01_00",
+        "facadeDistanceM": 0,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "normal": [
+          0.9963637088878371,
+          0,
+          0.0852018756323688
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 11.981810233482896,
+        "projectedJaCapPx": 11.981810233482896,
+        "letterContrast": 6.637990371819546,
+        "signMeanLuminance": 0.05246742368356949,
+        "projectedSignCorners": [
+          [
+            51.472267853133545,
+            410.4269902738288,
+            0.9932489714939319
+          ],
+          [
+            338.91199467196225,
+            406.9839239288338,
+            0.99323062942585
+          ],
+          [
+            360.75,
+            435.36484826604845,
+            0.9921882322251442
+          ],
+          [
+            29.75952463862924,
+            439.2415339924784,
+            0.9922125534508706
+          ]
+        ],
+        "signVsWayfinding": 0.13705418366818944
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "landmark-sign:seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 27.237092064849055,
+        "meanLuminance": 0.38282248873623614,
+        "calibrationFov": 4.494123901896147,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 27.237092064849055,
+      "actualAnchor": [
+        52.68105631529751,
+        59.151001,
+        83.1124389211281
+      ],
+      "flag": "next",
+      "store": "seibu",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:13.916Z"
+    },
+    {
+      "file": "phone-seibu-look-next.png",
+      "pose": {
+        "eye": [
+          87.91718387383617,
+          33.64567024933202,
+          11.290330105816963
+        ],
+        "target": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "fov": 47.96362006789768,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t01_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "normal": [
+          0.9963637088878371,
+          0,
+          0.0852018756323688
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 19.36322125218225,
+        "projectedJaCapPx": 19.36322125218225,
+        "letterContrast": 2.0045073192204588,
+        "signMeanLuminance": 0.19987110680644743,
+        "projectedSignCorners": [
+          [
+            164.12051008915506,
+            425.82815574130115,
+            0.997924272431821
+          ],
+          [
+            231.74127306797743,
+            369.1430556944427,
+            0.9975112580795482
+          ],
+          [
+            232.3475465378796,
+            417.3699939631359,
+            0.9974685407633733
+          ],
+          [
+            163.69338157543,
+            467.0385097816617,
+            0.9978941774587207
+          ]
+        ],
+        "signVsWayfinding": 0.4734862350409256
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "landmark-sign:seibu": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 83.96738591084619,
+        "meanLuminance": 0.4221265414171368,
+        "calibrationFov": 1.4584597204706942,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 83.96738591084619,
+      "actualAnchor": [
+        52.68105631529751,
+        59.151001,
+        83.1124389211281
+      ],
+      "flag": "next",
+      "store": "seibu",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:14.894Z"
+    },
+    {
+      "file": "phone-tobu-walk-next.png",
+      "pose": {
+        "eye": [
+          -119.50818634033203,
+          34.59876658121745,
+          -147.56271362304688
+        ],
+        "target": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "fov": 49.116489377880946,
+        "road": "ctx_road_t00_01",
+        "facadeDistanceM": 0,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "normal": [
+          -0.9221441268582645,
+          0,
+          -0.3868464931995763
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 8.823351029631766,
+        "projectedJaCapPx": 8.823351029631766,
+        "letterContrast": 4.7552162598180905,
+        "signMeanLuminance": 0.07544261525898091,
+        "projectedSignCorners": [
+          [
+            43.15089954626523,
+            419.62133156995935,
+            0.9961123784862533
+          ],
+          [
+            347.5167517787485,
+            404.5331035740833,
+            0.9960948456584804
+          ],
+          [
+            360.75,
+            424.59642165216206,
+            0.9957473345351634
+          ],
+          [
+            30.038236916902328,
+            440.8921544447068,
+            0.9957680339954813
+          ]
+        ],
+        "signVsWayfinding": 0.19179338751187677
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "landmark-sign:tobu": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 48.05437873386975,
+        "meanLuminance": 0.3933535782317268,
+        "calibrationFov": 2.5481439926041833,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 48.05437873386975,
+      "actualAnchor": [
+        -107.75305065752681,
+        81,
+        -143.3241244954373
+      ],
+      "flag": "next",
+      "store": "tobu",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:15.136Z"
+    },
+    {
+      "file": "phone-tobu-look-next.png",
+      "pose": {
+        "eye": [
+          -187.37536171649683,
+          34.46999893188477,
+          -151.08863231168857
+        ],
+        "target": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "fov": 40.22422120818879,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "normal": [
+          -0.9221441268582645,
+          0,
+          -0.3868464931995763
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 19.322814297641383,
+        "projectedJaCapPx": 19.322814297641383,
+        "letterContrast": 2.0456927361779553,
+        "signMeanLuminance": 0.2276640633807319,
+        "projectedSignCorners": [
+          [
+            99.99337396698235,
+            415.28456392195596,
+            0.9980099279167574
+          ],
+          [
+            294.3885797909486,
+            384.06008780744975,
+            0.9979135281022098
+          ],
+          [
+            296.69647288686343,
+            429.1883003486188,
+            0.9978627561226928
+          ],
+          [
+            97.88665740063787,
+            459.07137881127414,
+            0.9979635816754414
+          ]
+        ],
+        "signVsWayfinding": 0.5273696029579078
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "landmark-sign:tobu": 2,
+        "ctx_bldg_landmark_parco": 2,
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 92.54750671627416,
+        "meanLuminance": 0.4316973562825974,
+        "calibrationFov": 1.3232579004673024,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 92.54750671627416,
+      "actualAnchor": [
+        -107.75305065752681,
+        81,
+        -143.3241244954373
+      ],
+      "flag": "next",
+      "store": "tobu",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:15.854Z"
+    },
+    {
+      "file": "phone-lumine-walk-next.png",
+      "pose": {
+        "eye": [
+          -237.2755889892578,
+          32.21400032043457,
+          124.97894287109375
+        ],
+        "target": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "fov": 27.509057651800024,
+        "road": "ctx_road_t00_00",
+        "facadeDistanceM": 20.874557495117188,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "normal": [
+          -0.9259343403969822,
+          0,
+          -0.3776845208287014
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 19.262436794670208,
+        "projectedJaCapPx": 19.262436794670208,
+        "letterContrast": 1.7031852095964166,
+        "signMeanLuminance": 0.27572029895308864,
+        "projectedSignCorners": [
+          [
+            118.20476830373555,
+            492.18137073990493,
+            0.9981601593330421
+          ],
+          [
+            278.5522458371995,
+            300.01291968808897,
+            0.9979894773217373
+          ],
+          [
+            281.5475688130477,
+            342.90619587515783,
+            0.997913815536907
+          ],
+          [
+            115.68164418363307,
+            537.8055602722258,
+            0.9980964252797149
+          ]
+        ],
+        "signVsWayfinding": 0.6314259741150536
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "landmark-sign:lumine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 97.29704727418917,
+        "meanLuminance": 0.43666290310516903,
+        "calibrationFov": 1.2586685960167687,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 97.29704727418917,
+      "actualAnchor": [
+        -188.28455796747167,
+        109.5,
+        91.91130701322814
+      ],
+      "flag": "next",
+      "store": "lumine",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:18.370Z"
+    },
+    {
+      "file": "phone-lumine-look-next.png",
+      "pose": {
+        "eye": [
+          -186.3048883037042,
+          34.2548778112482,
+          -28.07236232565468
+        ],
+        "target": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "fov": 26.395452033104466,
+        "facadeDistanceM": 120,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "normal": [
+          -0.9259343403969822,
+          0,
+          -0.3776845208287014
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 19.360249180378744,
+        "projectedJaCapPx": 19.360249180378744,
+        "letterContrast": 1.1767489184097744,
+        "signMeanLuminance": 0.40086365433436094,
+        "projectedSignCorners": [
+          [
+            155.46813012487164,
+            344.87506554891104,
+            0.9986316713042928
+          ],
+          [
+            231.07765218237125,
+            450.2097805207301,
+            0.9987599714390312
+          ],
+          [
+            231.61576514023628,
+            493.43574273712323,
+            0.9987399842896564
+          ],
+          [
+            154.82111821972333,
+            390.5833925428263,
+            0.9986076393173157
+          ]
+        ],
+        "signVsWayfinding": 0.9067552501123548
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "landmark-sign:lumine": 2,
+        "ctx_bldg_landmark_esola": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 141.63978400576653,
+        "meanLuminance": 0.4420858376995231,
+        "calibrationFov": 0.8646394076205416,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 141.63978400576653,
+      "actualAnchor": [
+        -188.28455796747167,
+        109.5,
+        91.91130701322814
+      ],
+      "flag": "next",
+      "store": "lumine",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:18.677Z"
+    },
+    {
+      "file": "phone-esola-walk-next.png",
+      "pose": {
+        "eye": [
+          -180.72764587402344,
+          34.18000183105469,
+          6.13688325881958
+        ],
+        "target": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "fov": 60.1507422568897,
+        "road": "ctx_road_t00_00",
+        "facadeDistanceM": 6.8357086181640625,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "normal": [
+          -0.9950413495644815,
+          0,
+          0.09946211669221328
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 17.476568216851557,
+        "projectedJaCapPx": 17.476568216851557,
+        "letterContrast": 5.650344360146565,
+        "signMeanLuminance": 0.09323197753028684,
+        "projectedSignCorners": [
+          [
+            70.69662305633524,
+            516.9597792870252,
+            0.9942630118193087
+          ],
+          [
+            339.58138310527966,
+            269.47836975108675,
+            0.9933108045132907
+          ],
+          [
+            360.74999999999994,
+            295.37766838017603,
+            0.9923167762294056
+          ],
+          [
+            55.364379178019135,
+            569.3042522568703,
+            0.9935430458363503
+          ]
+        ],
+        "signVsWayfinding": 0.2429784589029225
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "ctx_bldg_landmark_esola": 2,
+        "landmark-sign:esola": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 29.98174584601633,
+        "meanLuminance": 0.38370470350022234,
+        "calibrationFov": 4.083078744663518,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 29.98174584601633,
+      "actualAnchor": [
+        -172.89733894140463,
+        61.5,
+        -3.413461099627618
+      ],
+      "flag": "next",
+      "store": "esola",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:18.917Z"
+    },
+    {
+      "file": "phone-esola-look-next.png",
+      "pose": {
+        "eye": [
+          -216.14664048038517,
+          33.4041094350553,
+          63.88808358093923
+        ],
+        "target": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "fov": 47.13909287179261,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "normal": [
+          -0.9950413495644815,
+          0,
+          0.09946211669221328
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 19.356739455112983,
+        "projectedJaCapPx": 19.356739455112983,
+        "letterContrast": 2.0306696954624615,
+        "signMeanLuminance": 0.22932500862633126,
+        "projectedSignCorners": [
+          [
+            140.77775084494897,
+            424.0660239255661,
+            0.9979159559104179
+          ],
+          [
+            257.5611988942065,
+            372.13725674522755,
+            0.9975800665684642
+          ],
+          [
+            258.65853648316863,
+            419.5744263380766,
+            0.9975358662779973
+          ],
+          [
+            139.9553737631118,
+            465.87185850204435,
+            0.9978828309120075
+          ]
+        ],
+        "signVsWayfinding": 0.5420622086292396
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "landmark-sign:tobu": 2,
+        "ctx_bldg_landmark_lumine": 2,
+        "ctx_bldg_landmark_esola": 2,
+        "landmark-sign:esola": 2,
+        "ctx_bldg_landmark_pparco": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 84.79020619527559,
+        "meanLuminance": 0.4230603148045417,
+        "calibrationFov": 1.4443080562155353,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 84.79020619527559,
+      "actualAnchor": [
+        -172.89733894140463,
+        61.5,
+        -3.413461099627618
+      ],
+      "flag": "next",
+      "store": "esola",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:19.708Z"
+    },
+    {
+      "file": "phone-parco-walk-next.png",
+      "pose": {
+        "eye": [
+          101.3393071492513,
+          34.08866653442383,
+          -238.8042755126953
+        ],
+        "target": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "fov": 43.822034892590395,
+        "road": "ctx_road_t01_01",
+        "facadeDistanceM": 67.51972961425781,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "normal": [
+          -0.9131009096515752,
+          0,
+          -0.40773364932694145
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 17.95770823440225,
+        "projectedJaCapPx": 17.95770823440225,
+        "letterContrast": 1.6683180216559665,
+        "signMeanLuminance": 0.21978382037099128,
+        "projectedSignCorners": [
+          [
+            166.93159189274053,
+            360.00864466422905,
+            0.997706363452886
+          ],
+          [
+            218.86905925690624,
+            433.9527187140873,
+            0.9980644790909967
+          ],
+          [
+            219.2573525214781,
+            475.57433004100744,
+            0.9980313658881712
+          ],
+          [
+            166.39311192168591,
+            407.6747564784512,
+            0.9976604425005393
+          ]
+        ],
+        "signVsWayfinding": 0.5122734976797744
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "landmark-sign:seibu": 2,
+        "ctx_bldg_landmark_tobu": 2,
+        "ctx_bldg_landmark_parco": 2,
+        "landmark-sign:parco": 2,
+        "ctx_bldg_landmark_pparco": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 90.12281557261937,
+        "meanLuminance": 0.429036093739871,
+        "calibrationFov": 1.3588559325304888,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 90.12281557261937,
+      "actualAnchor": [
+        89.22870393109702,
+        68.418999,
+        -156.3610620307367
+      ],
+      "flag": "next",
+      "store": "parco",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:20.629Z"
+    },
+    {
+      "file": "phone-parco-look-next.png",
+      "pose": {
+        "eye": [
+          -0.9903062607493638,
+          33.890296673230125,
+          -235.48457433904812
+        ],
+        "target": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "fov": 33.58011079113194,
+        "facadeDistanceM": 120,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "normal": [
+          -0.9131009096515752,
+          0,
+          -0.40773364932694145
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 18.004135983982252,
+        "projectedJaCapPx": 18.004135983982252,
+        "letterContrast": 1.421632983668269,
+        "signMeanLuminance": 0.3374428086008862,
+        "projectedSignCorners": [
+          [
+            105.36196401050421,
+            391.7900273322262,
+            0.9984751553634784
+          ],
+          [
+            281.34773974689716,
+            407.67088160148495,
+            0.9985347978645178
+          ],
+          [
+            282.1262123646147,
+            451.3634333363811,
+            0.9985206866567456
+          ],
+          [
+            104.52274506229779,
+            437.0143976226265,
+            0.9984599430198778
+          ]
+        ],
+        "signVsWayfinding": 0.7987654475076238
+      },
+      "draws": {
+        "ctx_bldg_landmark_parco": 2,
+        "landmark-sign:parco": 2,
+        "ctx_bldg_landmark_pparco": 2,
+        "ctx_bldg_landmark_sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 124.86885634284745,
+        "meanLuminance": 0.42245544002160346,
+        "calibrationFov": 0.9807623478707312,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 124.86885634284745,
+      "actualAnchor": [
+        89.22870393109702,
+        68.418999,
+        -156.3610620307367
+      ],
+      "flag": "next",
+      "store": "parco",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:20.919Z"
+    },
+    {
+      "file": "phone-pparco-walk-next.png",
+      "pose": {
+        "eye": [
+          16.13871192932129,
+          34.230001068115236,
+          -251.52032470703125
+        ],
+        "target": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "fov": 53.072407908767275,
+        "road": "ctx_road_t01_01",
+        "facadeDistanceM": 54.52583122253418,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "normal": [
+          -0.9167379543061812,
+          0,
+          -0.3994890776160449
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 17.990356454655114,
+        "projectedJaCapPx": 17.990356454655114,
+        "letterContrast": 2.6459626021975593,
+        "signMeanLuminance": 0.17147742595283008,
+        "projectedSignCorners": [
+          [
+            111.66085113396448,
+            406.4561738981307,
+            0.997587641688885
+          ],
+          [
+            283.92502059420696,
+            392.9167377060234,
+            0.9974192485701311
+          ],
+          [
+            284.99817094091776,
+            438.78581960130913,
+            0.9973868971051193
+          ],
+          [
+            110.71900134181716,
+            449.56441746085954,
+            0.9975592484439959
+          ]
+        ],
+        "signVsWayfinding": 0.4140096489106729
+      },
+      "draws": {
+        "ctx_bldg_landmark_pparco": 2,
+        "landmark-sign:pparco": 2,
+        "ctx_bldg_landmark_sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 76.6650929307215,
+        "meanLuminance": 0.41418702777583866,
+        "calibrationFov": 1.5973597096541532,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 76.6650929307215,
+      "actualAnchor": [
+        90.6605339438906,
+        50.748502,
+        -244.36674905087585
+      ],
+      "flag": "next",
+      "store": "pparco",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:21.124Z"
+    },
+    {
+      "file": "phone-pparco-look-next.png",
+      "pose": {
+        "eye": [
+          11.152508864602694,
+          34.113272216421066,
+          -253.22530130230646
+        ],
+        "target": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "fov": 50.32384342143293,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "normal": [
+          -0.9167379543061812,
+          0,
+          -0.3994890776160449
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 17.99772731390893,
+        "projectedJaCapPx": 17.99772731390893,
+        "letterContrast": 2.401058585395015,
+        "signMeanLuminance": 0.19078430401616547,
+        "projectedSignCorners": [
+          [
+            111.14795002215895,
+            405.79718151249756,
+            0.9977336076619667
+          ],
+          [
+            283.87696440975964,
+            393.63191333743293,
+            0.9975917990342715
+          ],
+          [
+            284.82385173732905,
+            439.35675592824396,
+            0.997565076829481
+          ],
+          [
+            110.30561330994918,
+            449.03307563902945,
+            0.9977098359908599
+          ]
+        ],
+        "signVsWayfinding": 0.45463982794112895
+      },
+      "draws": {
+        "ctx_bldg_landmark_pparco": 2,
+        "landmark-sign:pparco": 2,
+        "ctx_bldg_landmark_sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 81.71126525732221,
+        "meanLuminance": 0.4196383429057386,
+        "calibrationFov": 1.49872455916485,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 81.71126525732221,
+      "actualAnchor": [
+        90.6605339438906,
+        50.748502,
+        -244.36674905087585
+      ],
+      "flag": "next",
+      "store": "pparco",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:21.372Z"
+    },
+    {
+      "file": "phone-sunshine-walk-next.png",
+      "pose": {
+        "point": [
+          498.4127107940815,
+          39.3815,
+          14.713816400686145
+        ],
+        "horizontalSignDistanceM": 80.5007572419319,
+        "facadeDistanceM": 60.40015541685602,
+        "eye": [
+          498.4127107940815,
+          40.981500000000004,
+          14.713816400686145
+        ],
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 14.224650820271348,
+        "road": "plateau-13116-tran-53394577",
+        "clearSign": true,
+        "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 12.183358118423333,
+        "projectedJaCapPx": 12.183358118423333,
+        "letterContrast": 3.4619363966875305,
+        "signMeanLuminance": 0.12766516607154701,
+        "projectedSignCorners": [
+          [
+            35.170228393969595,
+            464.5522805203223,
+            0.9992844653668289
+          ],
+          [
+            356.75723995585065,
+            350.0448554241834,
+            0.999274630360399
+          ],
+          [
+            360.74999999999994,
+            377.8715474259145,
+            0.9992542570968322
+          ],
+          [
+            31.27320157849239,
+            494.83127144460735,
+            0.9992645805869874
+          ]
+        ],
+        "signVsWayfinding": 0.25879245379899996
+      },
+      "draws": {
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 240.86878431830877,
+        "meanLuminance": 0.49331100732443517,
+        "calibrationFov": 0.5084463716956975,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 240.86878431830877,
+      "actualAnchor": [
+        578.5846726040968,
+        268,
+        21.982135068947592
+      ],
+      "flag": "next",
+      "store": "sunshine",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:21.572Z"
+    },
+    {
+      "file": "phone-sunshine-look-next.png",
+      "pose": {
+        "point": [
+          478.00129063394013,
+          30.45775,
+          29.085608732487845
+        ],
+        "horizontalSignDistanceM": 100.833903352879,
+        "facadeDistanceM": 80.81157557699737,
+        "eye": [
+          478.00129063394013,
+          32.05775,
+          29.085608732487845
+        ],
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 12.418906690142753,
+        "road": "plateau-13116-tran-53394577",
+        "clearSign": true,
+        "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 15.431012763858666,
+        "projectedJaCapPx": 15.431012763858666,
+        "letterContrast": 4.404249243232639,
+        "signMeanLuminance": 0.11266708493830824,
+        "projectedSignCorners": [
+          [
+            35.92574558558484,
+            488.04479583399853,
+            0.999336197040465
+          ],
+          [
+            357.07700517901895,
+            317.97653163701176,
+            0.9993217790886492
+          ],
+          [
+            360.75,
+            353.1835535562751,
+            0.9993041429055294
+          ],
+          [
+            32.389071821493374,
+            526.3661482032547,
+            0.9993192154139778
+          ]
+        ],
+        "signVsWayfinding": 0.22838956209264277
+      },
+      "draws": {
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 256.5856999166274,
+        "meanLuminance": 0.49331100732443517,
+        "calibrationFov": 0.4773023396245562,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 256.5856999166274,
+      "actualAnchor": [
+        578.5846726040968,
+        268,
+        21.982135068947592
+      ],
+      "flag": "next",
+      "store": "sunshine",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:21.733Z"
+    },
+    {
+      "file": "phone-sunshine-east-exit-next.png",
+      "pose": {
+        "eye": [
+          148.18247985839844,
+          32.839999771118165,
+          1.1556751728057861
+        ],
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 12.005914616331054,
+        "road": "ctx_road_t01_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "exitNode": "x35",
+        "exitOffsetM": 20.498533877075477,
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 18.71996480379351,
+        "projectedJaCapPx": 18.71996480379351,
+        "letterContrast": 6.344609267524626,
+        "signMeanLuminance": 0.08285520459562658,
+        "projectedSignCorners": [
+          [
+            102.9173657626088,
+            418.82966707311687,
+            0.9996972809002235
+          ],
+          [
+            288.69071007981245,
+            380.52825262856396,
+            0.9996902479683165
+          ],
+          [
+            289.26367966204333,
+            425.24542461145677,
+            0.999687742081498
+          ],
+          [
+            102.36395399190387,
+            463.0049053344105,
+            0.9996948605496422
+          ]
+        ],
+        "signVsWayfinding": 0.1679573400257321
+      },
+      "draws": {
+        "ctx_bldg_landmark_seibu": 2,
+        "ctx_bldg_landmark_sunshine": 2,
+        "landmark-sign:sunshine": 2
+      },
+      "wayfinding": {
+        "reference": "Shinjuku exit 1",
+        "distanceM": 490.8971528332168,
+        "meanLuminance": 0.49331100732443517,
+        "calibrationFov": 0.249480912517872,
+        "samples": 8100,
+        "source": {
+          "station": "shinjuku",
+          "poi": "poi:exit:1",
+          "node": "n:a06f3d191885497bac197b666c4daef9",
+          "sourceMesh": "sign-faces:station:1",
+          "sourceFaceCentre": [
+            -43.12605094909668,
+            -5.25,
+            -194.95954132080078
+          ],
+          "widthM": 1.9000016628697554,
+          "heightM": 0.7124996185302734,
+          "method": "Actual exit-1-nearest wayfinding face, rendered alone at the store-sign distance. Calibration FOV magnifies the small reference face for resolved pixel luminance; construction and material are unchanged."
+        }
+      },
+      "signDistanceM": 490.8971528332168,
+      "actualAnchor": [
+        578.5846726040968,
+        268,
+        21.982135068947592
+      ],
+      "flag": "next",
+      "store": "sunshine",
+      "kind": "east-exit",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:25.226Z"
+    },
+    {
+      "file": "phone-seibu-walk-off.png",
+      "pose": {
+        "eye": [
+          62.73007710774739,
+          33.84600092569987,
+          83.84273783365884
+        ],
+        "target": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "fov": 79.49504621998527,
+        "road": "ctx_road_t01_00",
+        "facadeDistanceM": 0,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "normal": [
+          0.9963637088878371,
+          0,
+          0.0852018756323688
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 27.237092064849055,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "seibu",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:32.415Z"
+    },
+    {
+      "file": "phone-seibu-look-off.png",
+      "pose": {
+        "eye": [
+          87.91718387383617,
+          33.64567024933202,
+          11.290330105816963
+        ],
+        "target": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "fov": 47.96362006789768,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t01_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          52.68105631529751,
+          59.151001,
+          83.1124389211281
+        ],
+        "normal": [
+          0.9963637088878371,
+          0,
+          0.0852018756323688
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 83.96738591084619,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "seibu",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:33.622Z"
+    },
+    {
+      "file": "phone-tobu-walk-off.png",
+      "pose": {
+        "eye": [
+          -119.50818634033203,
+          34.59876658121745,
+          -147.56271362304688
+        ],
+        "target": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "fov": 49.116489377880946,
+        "road": "ctx_road_t00_01",
+        "facadeDistanceM": 0,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "normal": [
+          -0.9221441268582645,
+          0,
+          -0.3868464931995763
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 48.05437873386975,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "tobu",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:33.736Z"
+    },
+    {
+      "file": "phone-tobu-look-off.png",
+      "pose": {
+        "eye": [
+          -187.37536171649683,
+          34.46999893188477,
+          -151.08863231168857
+        ],
+        "target": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "fov": 40.22422120818879,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -107.75305065752681,
+          81,
+          -143.3241244954373
+        ],
+        "normal": [
+          -0.9221441268582645,
+          0,
+          -0.3868464931995763
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 92.54750671627416,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "tobu",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:33.850Z"
+    },
+    {
+      "file": "phone-lumine-walk-off.png",
+      "pose": {
+        "eye": [
+          -237.2755889892578,
+          32.21400032043457,
+          124.97894287109375
+        ],
+        "target": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "fov": 27.509057651800024,
+        "road": "ctx_road_t00_00",
+        "facadeDistanceM": 20.874557495117188,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "normal": [
+          -0.9259343403969822,
+          0,
+          -0.3776845208287014
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 97.29704727418917,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "lumine",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:33.968Z"
+    },
+    {
+      "file": "phone-lumine-look-off.png",
+      "pose": {
+        "eye": [
+          -186.3048883037042,
+          34.2548778112482,
+          -28.07236232565468
+        ],
+        "target": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "fov": 26.395452033104466,
+        "facadeDistanceM": 120,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -188.28455796747167,
+          109.5,
+          91.91130701322814
+        ],
+        "normal": [
+          -0.9259343403969822,
+          0,
+          -0.3776845208287014
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 141.63978400576653,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "lumine",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:34.091Z"
+    },
+    {
+      "file": "phone-esola-walk-off.png",
+      "pose": {
+        "eye": [
+          -180.72764587402344,
+          34.18000183105469,
+          6.13688325881958
+        ],
+        "target": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "fov": 60.1507422568897,
+        "road": "ctx_road_t00_00",
+        "facadeDistanceM": 6.8357086181640625,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "normal": [
+          -0.9950413495644815,
+          0,
+          0.09946211669221328
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 29.98174584601633,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "esola",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:34.218Z"
+    },
+    {
+      "file": "phone-esola-look-off.png",
+      "pose": {
+        "eye": [
+          -216.14664048038517,
+          33.4041094350553,
+          63.88808358093923
+        ],
+        "target": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "fov": 47.13909287179261,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          -172.89733894140463,
+          61.5,
+          -3.413461099627618
+        ],
+        "normal": [
+          -0.9950413495644815,
+          0,
+          0.09946211669221328
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 84.79020619527559,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "esola",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:34.712Z"
+    },
+    {
+      "file": "phone-parco-walk-off.png",
+      "pose": {
+        "eye": [
+          101.3393071492513,
+          34.08866653442383,
+          -238.8042755126953
+        ],
+        "target": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "fov": 43.822034892590395,
+        "road": "ctx_road_t01_01",
+        "facadeDistanceM": 67.51972961425781,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "normal": [
+          -0.9131009096515752,
+          0,
+          -0.40773364932694145
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 90.12281557261937,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "parco",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:34.881Z"
+    },
+    {
+      "file": "phone-parco-look-off.png",
+      "pose": {
+        "eye": [
+          -0.9903062607493638,
+          33.890296673230125,
+          -235.48457433904812
+        ],
+        "target": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "fov": 33.58011079113194,
+        "facadeDistanceM": 120,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          89.22870393109702,
+          68.418999,
+          -156.3610620307367
+        ],
+        "normal": [
+          -0.9131009096515752,
+          0,
+          -0.40773364932694145
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 124.86885634284745,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "parco",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:35.040Z"
+    },
+    {
+      "file": "phone-pparco-walk-off.png",
+      "pose": {
+        "eye": [
+          16.13871192932129,
+          34.230001068115236,
+          -251.52032470703125
+        ],
+        "target": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "fov": 53.072407908767275,
+        "road": "ctx_road_t01_01",
+        "facadeDistanceM": 54.52583122253418,
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "aim": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "normal": [
+          -0.9167379543061812,
+          0,
+          -0.3994890776160449
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 76.6650929307215,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "pparco",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:35.168Z"
+    },
+    {
+      "file": "phone-pparco-look-off.png",
+      "pose": {
+        "eye": [
+          11.152508864602694,
+          34.113272216421066,
+          -253.22530130230646
+        ],
+        "target": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "fov": 50.32384342143293,
+        "facadeDistanceM": 80,
+        "road": "ctx_road_t00_01",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "aim": [
+          90.6605339438906,
+          50.748502,
+          -244.36674905087585
+        ],
+        "normal": [
+          -0.9167379543061812,
+          0,
+          -0.3994890776160449
+        ],
+        "signWidth": 16.516129032258064,
+        "signHeight": 4.129032258064516
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 81.71126525732221,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "pparco",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:35.284Z"
+    },
+    {
+      "file": "phone-sunshine-walk-off.png",
+      "pose": {
+        "point": [
+          498.4127107940815,
+          39.3815,
+          14.713816400686145
+        ],
+        "horizontalSignDistanceM": 80.5007572419319,
+        "facadeDistanceM": 60.40015541685602,
+        "eye": [
+          498.4127107940815,
+          40.981500000000004,
+          14.713816400686145
+        ],
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 14.224650820271348,
+        "road": "plateau-13116-tran-53394577",
+        "clearSign": true,
+        "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 240.86878431830877,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "sunshine",
+      "kind": "walk",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:35.383Z"
+    },
+    {
+      "file": "phone-sunshine-look-off.png",
+      "pose": {
+        "point": [
+          478.00129063394013,
+          30.45775,
+          29.085608732487845
+        ],
+        "horizontalSignDistanceM": 100.833903352879,
+        "facadeDistanceM": 80.81157557699737,
+        "eye": [
+          478.00129063394013,
+          32.05775,
+          29.085608732487845
+        ],
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 12.418906690142757,
+        "road": "plateau-13116-tran-53394577",
+        "clearSign": true,
+        "sourceSha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 256.5856999166274,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "sunshine",
+      "kind": "look",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:35.557Z"
+    },
+    {
+      "file": "phone-sunshine-east-exit-off.png",
+      "pose": {
+        "eye": [
+          148.18247985839844,
+          32.839999771118165,
+          1.1556751728057861
+        ],
+        "target": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "fov": 12.005914616331054,
+        "road": "ctx_road_t01_00",
+        "clearSign": true,
+        "eyeHeightM": 1.6,
+        "captureOnly": true,
+        "pavementSamples": 43088,
+        "exitNode": "x35",
+        "exitOffsetM": 20.498533877075477,
+        "aim": [
+          578.5846726040968,
+          268,
+          21.982135068947592
+        ],
+        "normal": [
+          -0.8999539827907244,
+          0,
+          -0.4359848952189882
+        ],
+        "signWidth": 24.774193548387096,
+        "signHeight": 6.193548387096774
+      },
+      "metrics": {
+        "jaCapPx": 0,
+        "projectedJaCapPx": 0,
+        "letterContrast": null,
+        "signMeanLuminance": null,
+        "projectedSignCorners": [],
+        "signVsWayfinding": null
+      },
+      "draws": {},
+      "wayfinding": null,
+      "signDistanceM": 490.8971528332168,
+      "actualAnchor": null,
+      "flag": "off",
+      "store": "sunshine",
+      "kind": "east-exit",
+      "viewport": [
+        390,
+        844
+      ],
+      "shellHidden": true,
+      "capturedAtUTC": "2026-11-21T22:50:35.684Z"
+    }
+  ]
+}

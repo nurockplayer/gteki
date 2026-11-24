@@ -1,0 +1,41 @@
+{
+  "recordedAt": "2026-11-22 JST",
+  "basis": "r6 authorization applies the exterior-face rule to every store. Existing data does not identify P PARCO main-sign face. Building geometry, sign construction and size, and graph edges unchanged.",
+  "moves": [
+    {
+      "store": "pparco",
+      "oldAnchor": [
+        88.84079650493176,
+        70,
+        -211.55921103572723
+      ],
+      "targetAnchor": [
+        90.6605340968172,
+        50.748501777648926,
+        -244.36674940180822
+      ],
+      "exteriorRayOrigin": [
+        -0.9582695872300633,
+        50.748501777648926,
+        -284.2916492814092
+      ],
+      "faceNormal": [
+        -0.9167381155348561,
+        0,
+        -0.39948870763214467
+      ],
+      "sourceWallAreaM2": 2234.412595420425,
+      "publicRoadLookPose": {
+        "eye": [
+          11.152505442335894,
+          34.11326911323724,
+          -253.22526956480272
+        ],
+        "distance": 80,
+        "angle": 0.3,
+        "road": "ctx_road_t00_01"
+      },
+      "why": "Largest sampled coplanar source wall that fits the full unchanged sign and has a clear eye-level public-road sightline."
+    }
+  ]
+}

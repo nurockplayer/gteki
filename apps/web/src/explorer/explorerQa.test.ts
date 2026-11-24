@@ -89,7 +89,7 @@ describe("Explorer QA hooks", () => {
     });
     expect(result).toMatchObject({ done: true, stuck: false, timedOut: false });
     expect(result.steps).toBeGreaterThan(0);
-    expect(Math.hypot(state.pos.x - 1, state.pos.z + 2)).toBeLessThanOrEqual(0.35);
+    expect(Math.hypot(state.pos.x - 1, state.pos.z + 2)).toBeLessThanOrEqual(0.05);
     expect(sampled).toHaveLength(result.steps);
     expect([...state.input.virtualKeys]).toEqual([]);
     expect(state.render).toHaveBeenCalledTimes(1);

@@ -51,7 +51,7 @@ function app(bundle: StationBundle, originId: string) {
   const a = new App(root) as unknown as Harness;
   a.s.lang = "ja";
   a.layout(); // Mounts the panel and binds the destination field's real input handler.
-  const explorer = { connectorRoutePaths: () => new Map(), refitOverview: vi.fn(), clearRoute: vi.fn(), showPois: vi.fn(), showRoute: vi.fn(), currentMode: "overview" };
+  const explorer = { connectorRoutePaths: () => new Map(), navmeshRoutePaths: () => null, focusPoints: vi.fn(), refitOverview: vi.fn(), clearRoute: vi.fn(), showPois: vi.fn(), showRoute: vi.fn(), currentMode: "overview" };
   a.s.loaded = { bundle };
   a.s.search = createSearchIndex(bundle);
   a.s.router = createRouter(bundle);
@@ -93,7 +93,7 @@ function expectBrandFlow(bundle: StationBundle, want: Flow) {
   const discovered = discoverStations([stationsDir]).find((s) => s.dir === want.stationDir);
   expect(discovered?.tenants, "the plugin finds the station's tenants.json").toBe(path.join(stationsDir, want.stationDir, "gteki/tenants.json"));
   const store = bundle.pois.find((p) => p.id === want.storeId);
-  expect(store, "the store POI").toMatchObject({ category: "shop", displayPosition: null, connectorNodeIds: [] });
+  expect(store, "the store POI").toMatchObject({ category: "shop", displayPosition: null, connectorNodeIds: want.stationDir === "ikebukuro" ? ["x18"] : [] });
   expect(bundle.pois.find((p) => p.id === want.originId)?.connectorNodeIds.length, "a routable start").toBeGreaterThan(0);
 
   const { a, explorer, root } = app(bundle, want.originId);
@@ -120,6 +120,12 @@ function expectBrandFlow(bundle: StationBundle, want: Flow) {
   expect(a.ui.toInput.value).toBe(`${want.storeName} — ${want.brand}（${want.floor}）`);
 
   // No verified entrance: the honest no-route card, with the directory date and the store's own wording.
+  if (want.stationDir === "ikebukuro") {
+    expect(a.s.route).toMatchObject({ ok: true });
+    expect(explorer.showRoute).toHaveBeenCalled();
+    expect(a.ui.sheet.textContent).toContain("最寄り出口");
+    return;
+  }
   expect(a.s.route).toMatchObject({ ok: false, reason: "unknown_goal" });
   expect(explorer.clearRoute).toHaveBeenCalled();
   expect(explorer.showRoute, "never a fake route").not.toHaveBeenCalled();
@@ -147,7 +153,7 @@ describe("#419 department-store brand search end to end", () => {
     expectBrandFlow(bundleOf(ikbStation, ikbGraph, ikbPois, ikbTenants), {
       stationDir: "ikebukuro", query: "紀伊國屋書店", brand: "紀伊國屋書店", storeId: "shop-ikb-tobudept", storeName: "東武百貨店　池袋店",
       floor: "7F", tenantId: "tenant-ikb-tobudept-109225501", checkedDate: "2026-11-10",
-      resultMeta: "7F · “紀伊國屋書店” · 入口未確認のため道案内なし（現地確認待ち）",
+      resultMeta: "7F · “紀伊國屋書店”",
       sourceNote: "池袋駅西口 直結", originId: "exit-22",
     });
   });

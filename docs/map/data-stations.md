@@ -88,3 +88,5 @@ tachi-run --heavy -- sh -c 'pnpm typecheck && pnpm vitest run --maxWorkers=2'
 - PRs: #503, #504 (tenants) · #509, #532 (Shinjuku line aliases) · #531 (first routed store) · #538, #539 (store POIs) · #549 (spawn heading) · #554, #556 (field receipts) · #527 (Marui tenants, open)
 - Issues: #533 (field items), #16 (E-27 publish override)
 - Notes: [[data-research-lines]] · [[data-gis]] · [[data-rights]]
+
+Ikebukuro exterior landmarks (2026-11-22 JST): `stations/ikebukuro/pipeline/build_landmarks.mjs` reuses the acquired PLATEAU sources and existing context receipts to write `stations/ikebukuro/gteki/assets/ikebukuro_landmarks_next.glb` and `stations/ikebukuro/scene/landmark-ranges.json`. `stations/ikebukuro/scene/landmarks.ts` uses the shared style constants and attaches the LOD2 facades and bilingual signs only for `ctx.previewNext`. Sunshine City's search route ends at exit 35; other store entrance ties remain as recorded in the POIs.
