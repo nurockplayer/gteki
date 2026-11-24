@@ -497,6 +497,7 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
   // stays outside that cut, so the follow boom cannot cross a panel.
   const blocker = mesh.clone();
   blocker.userData.gteki_role = "camera_blocker";
+  blocker.userData.gteki_source = "procedural";
   // Match the opaque, two-sided shell in the desktop depth pass. Alpha zero marks the
   // enclosure as matte in the floor-reflection pass while keeping its normals and depth.
   const normal = new THREE.MeshNormalMaterial({
