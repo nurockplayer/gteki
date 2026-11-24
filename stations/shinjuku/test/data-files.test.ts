@@ -59,6 +59,7 @@ const stairwellSources = (): string[] => {
 };
 
 const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
+  "data/department-stores.json": { script: "tools/import-department-stores.ts", sources: () => [PLATEAU, ...read("data/department-stores.json").stores.flatMap((s: { poiId: string }) => read("gteki/pois.json").pois.find((p: { id: string }) => p.id === s.poiId).evidence.sourceIds)] },
   "scene/stairwell-cut.high.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/stairwell-cut.low.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/shop_bays.json": { script: "tools/shop-bays.ts", sources: () => [NWD, MAP] },
