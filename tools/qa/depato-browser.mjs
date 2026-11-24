@@ -1,15 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-FileCopyrightText: GTEki contributors
-// Injected into ego-browser nodejs by depato-capture.mjs; settings is supplied there.
+// Injected into ego-browser nodejs by depato-capture.mjs; settings and task are supplied there.
 const fs = await import('node:fs/promises');
-const entry = (await listTaskSpaces()).find(s => s.id === 65);
-const task = !entry ? await taskSpace('Shinjuku department-store r9 captures')
-  : entry.ownership === 'user' ? await claimTaskSpace(65)
-  : entry.ownership === 'agentDelegatedToUser' ? await takeOverTaskSpace(65)
-  : await taskSpace(65);
 console.log({ taskSpaceId: task.spaceId });
-await fs.writeFile(settings.output + '/browser-space.json', JSON.stringify({ spaceId: task.spaceId }));
-const page = (await task.pages())[0] ?? await task.adopt((await task.tabs())[0].page);
+const page = task.page('p1');
 const rows = [];
 for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'desktop' }, { width: 390, height: 844, mobile: true, name: 'phone' }]) {
   await page.cdp('Emulation.setDeviceMetricsOverride', { width: viewport.width, height: viewport.height, deviceScaleFactor: 1, mobile: viewport.mobile });

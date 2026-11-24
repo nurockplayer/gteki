@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 
 const root = process.cwd();
 const output = path.join(root, 'docs/visual/shinjuku-department-stores-2026-11-22/r9');
@@ -26,16 +27,19 @@ try {
     server.stdout.on('data', chunk => { process.stdout.write(chunk); if (String(chunk).includes('http://127.0.0.1:5287')) resolve(); });
     server.once('exit', code => reject(new Error(`Vite exited ${code}`)));
   });
-  const script = 'const settings = ' + JSON.stringify(settings) + ';\n' + fs.readFileSync('tools/qa/depato-browser.mjs', 'utf8');
+  const spaceName = `Shinjuku department-store r9 captures ${randomUUID()}`;
+  const script = `
+const settings = ${JSON.stringify(settings)};
+const task = await taskSpace(${JSON.stringify(spaceName)});
+try {
+${fs.readFileSync('tools/qa/depato-browser.mjs', 'utf8')}
+} finally {
+  await task.finish({ keep: [] });
+}`;
   const browser = spawn('ego-browser', ['nodejs'], { cwd: root, stdio: ['pipe', 'inherit', 'inherit'] });
   browser.stdin.end(script);
   const code = await new Promise(resolve => browser.once('exit', resolve));
   if (code !== 0) throw new Error(`ego-browser exited ${code}`);
-  const spaceId = JSON.parse(fs.readFileSync(path.join(output, 'browser-space.json'), 'utf8')).spaceId;
-  const finish = spawn('ego-browser', ['nodejs'], { cwd: root, stdio: ['pipe', 'inherit', 'inherit'] });
-  finish.stdin.end(`const task = await taskSpace(${spaceId}); await task.finish({ keep: [] });`);
-  const finishCode = await new Promise(resolve => finish.once('exit', resolve));
-  if (finishCode !== 0) throw new Error(`ego-browser finish exited ${finishCode}`);
 } finally {
   process.kill(-server.pid, 'SIGTERM');
 }

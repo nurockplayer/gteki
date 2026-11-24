@@ -1230,7 +1230,12 @@ export class App {
         this.renderSheet();
         return;
       }
-      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
+      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destinationExit ?? destination, origin.kind === "poi" ? origin.poi : undefined);
+      if (destinationExit) {
+        const arrival = this.s.instructions.at(-1)!;
+        const separator = this.s.lang === "ja" ? "。" : ". ";
+        arrival.text = this.t.arrivedAt(this.poiName(destinationExit)) + separator + this.provisionalNote();
+      }
       this.s.activeInstruction = 0;
       this.escalatorSpans = guidePaceSpans(this.s.polyline, best.steps, []).filter((span) => span.mode === "escalator");
       this.explorer.showRoute(this.s.polyline, this.escalatorSpans);
@@ -1722,6 +1727,8 @@ export class App {
       return box;
     }
     const ins = this.s.instructions[this.s.activeInstruction]!;
+    const exit = this.provisionalExit(this.s.destination);
+    if (exit) box.append(el("p", "guide-provisional-note", this.provisionalNote()));
     if (this.escalatorSpan && !this.arrived) {
       let distance = 0;
       let start = this.s.polyline[0];
@@ -1737,7 +1744,9 @@ export class App {
       box.append(el("div", "hud-instruction", `${escalatorArrow(start!.z, end!.z)} ${floor}${suffix}`));
       return box;
     }
-    const card = guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
+    const card = exit && this.arrived
+      ? { line: this.t.arrivedAt(this.poiName(exit)), detail: null }
+      : guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
     const instruction = el("div", "hud-instruction");
     const line = el("span", "guide-card-line", card.line);
     instruction.append(line);

@@ -198,6 +198,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
    It sits in the bottom HUD stack, above the controls, so overhead signs in the upper view band stay clear (#838). */
 .hud-line { width: fit-content; max-width: min(560px, calc(100vw - 32px)); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
 .hud-instruction { flex: 1 1 auto; min-width: 0; padding: 10px 18px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 18px; font-weight: 700; box-shadow: 0 0 30px rgba(94, 240, 255, 0.2); }
+.guide-provisional-note { order: 3; flex: 1 0 100%; margin: 0; padding: 5px 8px; border-radius: 10px; background: var(--glass-strong); font-size: 12px; }
 .hud-row { display: flex; gap: 6px; padding: 6px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(12px); }
 /* Guide playback controls: ‹ pause › speed end. Previous/next are compact icon buttons; the group never wraps. */
 .hud-guide { display: flex; flex-wrap: nowrap; gap: 6px; flex: none; }
