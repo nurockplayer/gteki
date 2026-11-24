@@ -880,7 +880,7 @@ describe("stairwell cuts", () => {
     result.dispose();
   });
 
-  it("classifies an unroled sloped slab triangle by its whole triangle, so its clipped piece is still cut", () => {
+  it("finishes the cut of an unroled sloped slab at the actual incline in live and replayed cuts", () => {
     // Whole triangle: two corners outside the footprint at 3.0 m, one inside at 3.9 m; mean 3.3 m. Its piece inside
     // the footprint (x 1.9 to 3, within the hole) has a mean of 3.6 m, a different 5 cm level, and lies above the 2.1 m
     // headroom, so only the band cuts it.
@@ -890,9 +890,25 @@ describe("stairwell cuts", () => {
     const slab = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
     const root = new THREE.Group(); root.add(slab); root.updateMatrixWorld(true);
     const original = slab.geometry;
-    const result = cutStairwells(root, stairwellWells(bundle(), traversable), { tier: "high" });
+    const wells = stairwellWells(bundle(), traversable), record: MeshRecord[] = [];
+    const result = cutStairwells(root, wells, { tier: "high", record });
     expect(slab.geometry).not.toBe(original);
+    const band = result.cameraBlockers[0] as THREE.Mesh;
+    const top = band.geometry.getAttribute("position");
+    const heights = new Set<number>();
+    for (let i = 0; i < top.count; i += 6) for (const j of [i, i + 1]) {
+      expect(top.getY(j)).toBeCloseTo(3 + 0.45 * (top.getX(j) - 1), 5);
+      heights.add(Math.round(top.getY(j) * 1000));
+    }
+    expect(heights.size).toBeGreaterThan(1);
+    const recipe = decodeRecipe(encodeRecipe({ version: RECIPE_VERSION, tier: "high", wellsSha256: wellsSha256(wells),
+      keyCount: wells.flatMap(well => well.rects).length, meshKeysHash: result.meshKeysHash, meshes: record }));
     result.dispose();
+    const replay = cutStairwells(root, wells, { tier: "high", recipe });
+    expect(replay.stats.recipe).toBe("replayed");
+    const replayBand = replay.cameraBlockers[0] as THREE.Mesh;
+    expect(replayBand.geometry.getAttribute("position").array).toEqual(top.array);
+    replay.dispose();
   });
 
   it("cuts a large upward floor triangle whose centroid is on the walking surface but whose corners are not", () => {

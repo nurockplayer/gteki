@@ -309,6 +309,7 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       const corners = [...rectCorners(rect, rect.center.y - Math.abs(rect.rise) / 2 + WALK_CLEAR_M), ...rectCorners(rect, well.upperY + UPPER_CLEAR_M)];
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(corners), planes: rectPlanes(rect, well.upperY), clip: null, accepts: horizontal,
+        finishIncline: true,
         // Stair models tagged by either role field are never cut, even where another flight passes above the footprint.
         rejectsMesh: stairModel,
         admits: (piece, mesh, triangle) => !onWalkingSurface(piece, triangle, well),
@@ -330,6 +331,7 @@ export function stairwellRegions(wells: readonly StairwellWell[]): CutRegion[] {
       };
       regions.push({
         key: rect, bounds: new THREE.Box3().setFromPoints(band), planes, clip: null,
+        finishIncline: true,
         // Horizontal faces, and near-vertical side faces that the slab levels below decide.
         accepts: (normal) => horizontal(normal) || Math.abs(normal.y) < VERTICAL_NORMAL_M,
         // A collision proxy (the merged ceiling caps) is cut by its own slab levels, as an untagged mesh is, so it opens
@@ -398,8 +400,7 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   const bands: number[] = [];
   for (const well of cutWells) {
     for (const [index, rect] of well.rects.entries()) {
-      // A cut side face has a centroid height, not a slab level. Only flat
-      // removed polygons can leave horizontal slab edges to finish with a band.
+      // Only flat removed polygons supply a horizontal slab level.
       const maxima = cut.maxHeights.get(rect) ?? [];
       const levels = new Set((heights.get(rect) ?? []).filter((y, i) => Math.abs(y - maxima[i]!) < 1e-5).map(levelOf));
       // Bands follow the cut's height interval, not the entire footprint: a lower slab only opens
@@ -411,6 +412,18 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
         if (!opening) continue;
         // #1285: rounding the level can move it across the slab cutoff.
         addBand(bands, rect, level, well.rects, index, !inSlab && level < well.upperY - SLAB_BAND_M - 0.025 - 1e-6, opening);
+      }
+      for (const [from, to] of cut.inclinedEdges.get(rect) ?? []) {
+        const along = alongOf(rect, from, to);
+        if (isStairMouth(rect, well.rects, index, along)) continue;
+        const alongSpan = (to.x - from.x) * rect.along.x + (to.z - from.z) * rect.along.z;
+        const y = (from.y + to.y) / 2;
+        const riseY = rect.center.y + along * rect.rise / (2 * rect.halfLength);
+        // A transverse band under the upper slab must stay beyond the flight's headroom.
+        if (y < well.upperY - SLAB_BAND_M && Math.abs(alongSpan) < 1e-6 && y - riseY < HEADROOM_M - 1e-3) continue;
+        for (const [a, b] of sideRemainder(from, to, rect, well.rects)) {
+          quad(bands, a, b, b.clone().setY(b.y - BAND_DEPTH_M), a.clone().setY(a.y - BAND_DEPTH_M));
+        }
       }
     }
   }
@@ -619,14 +632,17 @@ function bandLevels(faces: readonly HorizontalFace[], rect: StairwellRect, floor
   return { all, outside };
 }
 
+/** The first piece's start and last piece's end meet floors, rather than a slab edge. */
+const isStairMouth = (rect: StairwellRect, pieces: readonly StairwellRect[], index: number, along: number): boolean =>
+  (index === 0 && along < -rect.halfLength + 1e-3) || (index === pieces.length - 1 && along > rect.halfLength - 1e-3);
+
 /** Band around one rectangle's cut boundary, on the sides no other piece of the same well covers. */
 function addBand(out: number[], rect: StairwellRect, level: number, pieces: readonly StairwellRect[], index: number, lowerLevel: boolean, reach?: { from: number; to: number }): void {
   const corners = rectCorners(rect, 0, reach?.from, reach?.to);
   for (let i = 0; i < 4; i++) {
     const from = corners[i]!, to = corners[(i + 1) % 4]!;
-    // The stair mouth: the first piece's start side and the last piece's end side meet the floors, not a slab edge.
-    if ((index === 0 && alongOf(rect, from, to) < -rect.halfLength + 1e-3) || (index === pieces.length - 1 && alongOf(rect, from, to) > rect.halfLength - 1e-3)) continue;
     const along = alongOf(rect, from, to);
+    if (isStairMouth(rect, pieces, index, along)) continue;
     const alongSpan = (to.x - from.x) * rect.along.x + (to.z - from.z) * rect.along.z;
     // #1285: suppress spurious lower-level bands in headroom; slab edges stay because the slab fixes the overhang.
     if (lowerLevel && Math.abs(alongSpan) < 1e-6 && level - (rect.center.y + along * rect.rise / (2 * rect.halfLength)) < HEADROOM_M - 1e-3) continue;
