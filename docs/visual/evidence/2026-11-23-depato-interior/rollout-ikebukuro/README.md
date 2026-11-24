@@ -1,5 +1,17 @@
 # Ikebukuro interior rollout
 
+## Post-merge recapture — 2026-11-25 03:38 JST
+
+Job `depato-1541-tobu-route` exited 0 with `failures=[]`. All 44 frames were captured at `c0885caedd4ee3a3df4c15206acb691eb53cc618` and passed native-size checks (1440×900 desktop, 390×844 phone). The receipt records the percentage of pixels with max RGB ≤16 for each frame. The two street-door-inside checks were below 0.1% on both devices: Tobu 0.000154% desktop and 0% phone, PARCO 0.000694% desktop and 0% phone. All 150 recorded walk legs passed, including the full Tobu 1F → B1 → B2 → 1F walk and exit. The PARCO north passage completed on both devices with detail loaded (142 steps) and unloaded (129 steps).
+
+The tighter explorer waypoint tolerance exposed a PLATEAU partition across the Tobu B1 landing. The preview cuts the intersecting wall, glazing and door faces and their colliders just at that landing and its west turn. The capture turns inside the existing access fence and splits the long 1F aisle into shorter evaluations.
+
+Matched images at the r3 evidence commit `04ee31d2` show these differences:
+
+- **Tobu B1 concourse and barrier.** The lit concourse and striped access barrier remain visible in both views. Full-frame black pixels went from 1.503164% to 1.504630% on desktop and stayed at 0.014279% on phone. The new flag-off matches measure 1.773534% and 0.033722%, respectively.
+- **Tobu 1F band.** The doorway header remains visible, but a tan surface with a dark vertical seam fills the view through the opening on both devices. The r3 frames show the apron, road and buildings through that opening. The exit walk still completes.
+- **PARCO B1 doorway.** The first visible opening and header remain at 7.89 m on desktop and 9.24 m on phone. Both are visible at 2.90 m in the closer frame. The small lettering remains hard to read at that angle.
+
 ## Partial recapture — 2026-11-25 03:18 JST
 
 Job `depato-1541-e224-capture-2` failed at source `e224b0bef2b8c48f4c6acee98fee7c52649d7913`: the Tobu 1F-to-B1 walk got stuck after 90 steps on both desktop and phone. The receipt records the failures and each frame's source. Tobu entrance-outside and first-interior, PARCO first-interior, food-hall-aisle, escalator and both street-door frames, and all four Seibu frames were captured on both devices. Other frames retain their prior source, including the PARCO approach and all flag-off frames. The capture did not complete its native-resolution and black-pixel checks; visual comparison is pending. PR #1541 remains draft.
