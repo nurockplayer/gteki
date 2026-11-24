@@ -344,12 +344,12 @@ test("guided walk @phone", async ({ page }, info) => {
     extraJ5.push(await probeJ5(0));
     while (simT < 260 && !arrived) {
       const step = reelMode === "next" && simT < 20 ? 2 : stepS;
-      const start = Date.now();
       const ticks = Math.round(step * 60);
       const origin = await page.evaluate(() => (window as any).__gteki.scanProbe().explorer.timer.getElapsed() as number);
-      let tick = 0;
+      let tick = 0, simMs = 0;
       // Use the same fixed ticks as simulate(), rendering a small probe between reel captures.
       while (tick < ticks) {
+        const start = Date.now();
         tick = await page.evaluate(({ tick, ticks, origin, lastJ5S, j5SampleAfterM }) => {
           const e = (window as any).__gteki.scanProbe().explorer;
           while (tick < ticks) {
@@ -359,10 +359,10 @@ test("guided walk @phone", async ({ page }, info) => {
           }
           return tick;
         }, { tick, ticks, origin, lastJ5S, j5SampleAfterM });
+        simMs += Date.now() - start;
         if (tick < ticks) extraJ5.push(await probeJ5(simT + tick / 60));
       }
       simT += step;
-      const simMs = Date.now() - start;
       await sample(false, simMs);
       lastJ5S = samples.at(-1)!.s;
       arrived = (await hooks.guideControls(page) as any).arrived;
