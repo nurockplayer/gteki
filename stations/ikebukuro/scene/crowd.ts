@@ -897,6 +897,7 @@ export function buildCrowd(
   let avatarPosition: THREE_NS.Vector3 | null = null;
   let openingZone: { camera: THREE_NS.Camera; floorY: number } | null = null;
   const openingFades = new Float32Array(count).fill(1);
+  const focusFades = new Float32Array(count).fill(1);
   const openingHeld = new Uint8Array(count);
   let cameraSignFocus: { x: number; y: number; z: number; halfWidthX: number; halfWidthZ: number; halfHeight: number } | null = null;
   const projected = new THREE.Vector3();
@@ -1138,6 +1139,7 @@ export function buildCrowd(
     let near = 0, moves = 0;
     let signMinX = Infinity, signMaxX = -Infinity, signMinY = Infinity, signMaxY = -Infinity;
     const sign = cameraSignFocus;
+    const softenFocus = !openingZone && !sign;
     if (sign) for (let x = -1; x <= 1; x += 2) for (let y = -1; y <= 1; y += 2) {
       projected.set(sign.x + x * sign.halfWidthX, sign.y + y * sign.halfHeight, sign.z + x * sign.halfWidthZ).applyMatrix4(viewProj);
       signMinX = Math.min(signMinX, projected.x); signMaxX = Math.max(signMaxX, projected.x);
@@ -1325,10 +1327,12 @@ export function buildCrowd(
         if (!avatarPosition || focusBody.distanceToSquared(avatarPosition) < 9) excluded = true;
         else openingHeld[i] = 0;
       }
-      // Reuse the near-fade dither for a half-second return after leaving any opening zone/hold.
-      const fade = excluded ? 0 : Math.min(1, openingFades[i]! + dt / 0.5);
-      if (fade !== openingFades[i]) {
-        openingFades[i] = fade;
+      // The opening hold keeps its half-second return. A moving focus line fades over 0.2 s
+      // in either direction so a single update across a commuter cannot erase their body.
+      const openingFade = excluded ? 0 : Math.min(1, openingFades[i]! + dt / 0.5);
+      const focusFade = softenFocus ? clamp(focusFades[i]! + (blocksFocus ? -dt : dt) / 0.2, 0, 1) : 1;
+      const fade = Math.min(openingFade, focusFade);
+      if (fade !== Math.min(openingFades[i]!, focusFades[i]!)) {
         if (lowMesh) {
           const attr = lowMesh.geometry.getAttribute("openingFade") as THREE_NS.InstancedBufferAttribute;
           attr.setX(i, fade); attr.needsUpdate = true;
@@ -1339,7 +1343,10 @@ export function buildCrowd(
           attr.setX(who, fade); attr.needsUpdate = true;
         }
       }
-      if (excluded || !shown || blocksFocus || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
+      openingFades[i] = openingFade;
+      focusFades[i] = focusFade;
+      const hideFocus = blocksFocus && (!softenFocus || focusFade === 0);
+      if (excluded || !shown || hideFocus || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
         hide(i);
         continue;
       }

@@ -165,7 +165,7 @@ describe("cold-open crowd exclusion (#1373)", () => {
     }
   });
 
-  it.each([56, 150])("keeps blocksFocus on the camera-to-focus line independently of the avatar (%i tier)", (count) => {
+  it.each([56, 150])("keeps a commuter drawn through the 0.03 s single-frame focus overlap (#1454, %i tier)", (count) => {
     const crowd = buildCrowd(THREE, path, toRenderer, count, new THREE.Texture());
     try {
       const people = (crowd.group.children as THREE.InstancedMesh[]).find(m => m.name === "crowd_low" || m.name === "crowd_torso")!;
@@ -179,16 +179,65 @@ describe("cold-open crowd exclusion (#1373)", () => {
       crowd.setCameraFocus(away.x, away.y, away.z, null, { camera, floorY: 0 }, away);
       people.getMatrixAt(0, matrix);
       expect(matrix.determinant()).not.toBe(0);
-      // The focus line crosses the walker; the distant avatar must not replace it.
+      crowd.setCameraFocus(away.x, away.y, away.z, null, null, away);
+      crowd.update(1 / 60, 1 / 60);
+      // The first guide focus crosses the walker for one update; the distant avatar is independent.
+      const fade = people.geometry.getAttribute("openingFade");
       crowd.setCameraFocus(x, 0.9, z - 2, null, null, away);
-      people.getMatrixAt(0, matrix);
-      expect(matrix.determinant()).toBe(0);
-      expect(people.geometry.getAttribute("openingFade").getX(0)).toBe(1);
-      // Conversely, an avatar behind the walker must not become a focus-line occluder.
-      crowd.setCameraFocus(away.x, away.y, away.z, null, null, new THREE.Vector3(x, 0.9, z - 2));
-      crowd.update(0, 0);
+      crowd.update(1 / 60, 2 / 60);
       people.getMatrixAt(0, matrix);
       expect(matrix.determinant()).not.toBe(0);
+      expect(fade.getX(0)).toBeGreaterThan(0);
+      expect(fade.getX(0)).toBeLessThan(1);
+      // Conversely, an avatar behind the walker must not become a focus-line occluder.
+      crowd.setCameraFocus(away.x, away.y, away.z, null, null, new THREE.Vector3(x, 0.9, z - 2));
+      crowd.update(1 / 60, 3 / 60);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).not.toBe(0);
+      expect(fade.getX(0)).toBeCloseTo(1);
+      // A sustained overlap still clears the camera-to-focus line.
+      crowd.setCameraFocus(x, 0.9, z - 2, null, null, away);
+      crowd.update(0.2, 0.25);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).toBe(0);
+    } finally { crowd.dispose(); }
+  });
+
+  it("fades a returned commuter when the guide focus crosses it at 3.87 s (#1454)", () => {
+    const crowd = buildCrowd(THREE, path, toRenderer, 56, new THREE.Texture());
+    try {
+      const people = crowd.group.children[0] as THREE.InstancedMesh;
+      const matrix = new THREE.Matrix4();
+      people.getMatrixAt(0, matrix);
+      const x = matrix.elements[12]!, z = matrix.elements[14]!;
+      const camera = new THREE.PerspectiveCamera(70, 1.5, 0.05, 100);
+      camera.position.set(x, 0.9, z + 4);
+      camera.lookAt(x, 0.9, z);
+      const avatar = new THREE.Vector3(x, 0.9, z + 4.7);
+      crowd.setCameraFocus(null, 0, 0, null, { camera, floorY: 0 }, avatar);
+      expect(people.geometry.getAttribute("openingFade").getX(0)).toBe(0);
+      camera.position.set(x + 0.46, 0.9, z + 7);
+      crowd.setCameraFocus(null, 0, 0, null, { camera, floorY: 0 }, avatar);
+      crowd.setCameraFocus(null, 0, 0, null, null, avatar);
+      crowd.update(0.5, 231 / 60);
+
+      // The recorded update moves the guide focus line inside the 45 cm radius.
+      // Re-centre on the returned walker's position after its half-second return.
+      people.getMatrixAt(0, matrix);
+      const returnedX = matrix.elements[12]!;
+      const fade = people.geometry.getAttribute("openingFade");
+      crowd.setCameraFocus(returnedX + 1, 0.9, z - 1, null, null, avatar);
+      crowd.update(0, 231 / 60);
+      people.getMatrixAt(0, matrix);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).not.toBe(0);
+      expect(fade.getX(0)).toBe(1);
+      crowd.setCameraFocus(returnedX + 0.20, 0.9, z - 1, null, null, avatar);
+      crowd.update(1 / 60, 232 / 60);
+      people.getMatrixAt(0, matrix);
+      expect(matrix.determinant()).not.toBe(0);
+      expect(fade.getX(0)).toBeGreaterThan(0);
+      expect(fade.getX(0)).toBeLessThan(1);
     } finally { crowd.dispose(); }
   });
 
