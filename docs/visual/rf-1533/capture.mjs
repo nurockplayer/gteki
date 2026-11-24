@@ -1,10 +1,10 @@
-// 2026-11-24 JST. Prepend const repo = "<worktree>"; const label = "before" or "after";
+// 2026-11-24 JST. Prepend repo (worktree), node (host Node path) and label ("before" or "after").
 // then pass this script to ego-browser nodejs at the revision being captured.
 const fs = await import("node:fs/promises");
 const { spawn, execFileSync } = await import("node:child_process");
 const sha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
 const port = 5196;
-const server = spawn("nice", ["-n", "15", process.execPath, repo + "/apps/web/node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
+const server = spawn("nice", ["-n", "15", node, repo + "/apps/web/node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
   cwd: repo + "/apps/web", env: { ...process.env, GITHUB_SHA: sha }, stdio: ["ignore", "pipe", "inherit"],
 });
 let task;
@@ -12,7 +12,7 @@ try {
   await new Promise((resolve, reject) => {
     server.stdout.on("data", data => { if (data.toString().includes("Local:")) resolve(); });
     server.once("error", reject);
-    server.once("exit", code => reject(Error("Capture server exited: " + code)));
+    server.once("exit", (code, signal) => reject(Error("Capture server exited: " + (signal ?? code))));
   });
   task = await taskSpace("Review follow-up 1533 " + label);
   const page = task.page("p1");
