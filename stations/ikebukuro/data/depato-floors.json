@@ -2803,7 +2803,17 @@
           "tenants": [],
           "source": "https://ikebukuro.parco.jp/floor/detail/?f=8f&ft=type1",
           "read": "2026-11-22"
-        },
+        }
+      ]
+    },
+    {
+      "id": "ikebukuro-pparco",
+      "name": {
+        "ja": "P'パルコ",
+        "en": "P'PARCO"
+      },
+      "building": "bldg_e4d518a9-7b83-49f1-8970-af38da31ecb8",
+      "floors": [
         {
           "level": "B2",
           "order": -2,
