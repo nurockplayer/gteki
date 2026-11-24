@@ -417,10 +417,15 @@ export function tileCollision(THREE: ThreeNS, world: { walkable: THREE_NS.Object
 }
 
 /** Approximate enclosure panels around the surveyed exit flights, in ENU metres. */
-function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3) {
+function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3, low: boolean) {
   const positions: number[] = [], colors: number[] = [];
   const roof = new THREE.Color(0xc1beb7), wall = new THREE.Color(0xaaa79f);
   const lamp = new THREE.Color(1.5, 1.4, 1.25);
+  const slab = new THREE.Color(0xb3b3ae);
+  if (!low) {
+    roof.multiplyScalar(1.55);
+    lamp.multiplyScalar(2);
+  }
   const panel = (a: THREE_NS.Vector3, b: THREE_NS.Vector3, c: THREE_NS.Vector3, d: THREE_NS.Vector3, color: THREE_NS.Color) => {
     for (const p of [a, b, c, a, c, d]) {
       positions.push(p.x, p.y, p.z);
@@ -455,12 +460,38 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
     panel(x39(169.2, y, 35.025), x39(173.6, y, 35.025), x39(173.6, y + 0.09, 35.025), x39(169.2, y + 0.09, 35.025), lamp);
   }
 
+  // The surveyed treads and risers are open underneath and at their sides. Close the exposed
+  // upper flights with a smooth soffit, stringer faces and a landing fascia below the walking surface.
+  const stairSlab = (topLeft: THREE_NS.Vector3, topRight: THREE_NS.Vector3, footLeft: THREE_NS.Vector3, footRight: THREE_NS.Vector3) => {
+    const below = (p: THREE_NS.Vector3) => p.clone().setY(p.y - 0.32);
+    const a = below(topLeft), b = below(topRight), c = below(footLeft), d = below(footRight);
+    panel(a, b, d, c, slab);
+    panel(topLeft, a, c, footLeft, slab);
+    panel(topRight, footRight, d, b, slab);
+    panel(topLeft, topRight, b, a, slab);
+  };
+  stairSlab(x35(-0.035, -0.94, 31.265), x35(-0.035, 0.96, 31.265),
+    x35(4.28, -0.94, 29.25), x35(4.28, 0.96, 29.25));
+  stairSlab(x39(172.46, -178.32, 32.645), x39(173.02, -179.78, 32.645),
+    x39(170.79, -178.48, 31.57), x39(171.36, -179.94, 31.57));
+
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
   const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
   mesh.name = "ikebukuro-exit-stair-enclosures";
-  return mesh;
+  // The visual shell joins the root after the stairwell cut. Its matching camera target
+  // stays outside that cut, so the follow boom cannot cross a panel.
+  const blocker = mesh.clone();
+  blocker.userData.gteki_role = "camera_blocker";
+  // Match the opaque, two-sided shell in the desktop depth pass. Alpha zero marks the
+  // enclosure as matte in the floor-reflection pass while keeping its normals and depth.
+  const normal = new THREE.MeshNormalMaterial({
+    side: THREE.DoubleSide, blending: THREE.NoBlending, transparent: true, opacity: 0,
+  });
+  normal.allowOverride = false;
+  return { mesh, blocker, normal };
 }
 
 export async function buildScene(ctx: SceneContext): Promise<StationScene> {
@@ -475,7 +506,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // These flights have surveyed stair meshes. Keep the generated support, but omit the overlapping
   // display stairs, suspended connector lights and short rail sections.
   root.userData.modelledStairEdges = ["e_low__x35", "s39_f__x39"];
-  const stairEnclosures = exitStairEnclosures(THREE, toRenderer);
+  const { mesh: stairEnclosures, blocker: stairEnclosureBlocker, normal: stairEnclosureNormal } =
+    exitStairEnclosures(THREE, toRenderer, low);
+  root.userData.gteki_gtao_depth_twins = [{ mesh: stairEnclosures, twin: stairEnclosureNormal, original: stairEnclosures.material }];
 
   let gltf: GLTF;
   let baked = true;
@@ -767,7 +800,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     interactables,
     walkable: walkTiles,
     colliders: colliderTiles,
-    cameraBlockers: contextBlockers.meshes,
+    cameraBlockers: [...contextBlockers.meshes, stairEnclosureBlocker],
     cameraGateAisles: builtKit.cameraGateAisles,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
@@ -805,6 +838,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     dispose() {
       stairEnclosures.geometry.dispose();
       stairEnclosures.material.dispose();
+      stairEnclosureNormal.dispose();
       geometry.dispose();
       material.dispose();
       wallProps.geometry.dispose();
