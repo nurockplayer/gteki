@@ -150,6 +150,7 @@ path = [
   "stations/ikebukuro/scene/*.json",
   "tools/gis/test/fixtures/plateau-catalog-meshes-13116-13104.json",
   "stations/shinjuku/data/surface.json",
+  "stations/shinjuku/data/department-stores.json",
 ]
 precedence = "override"
 SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors"
