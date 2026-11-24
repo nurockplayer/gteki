@@ -22,17 +22,23 @@ function loadTurnstile(): Promise<Turnstile> {
       const api = (window as unknown as { turnstile: Turnstile }).turnstile;
       resolve(api);
     };
-    script.onerror = () => reject(new Error("Turnstile could not load"));
+    script.onerror = () => {
+      turnstileReady = undefined;
+      script.remove();
+      reject(new Error("Turnstile could not load"));
+    };
     document.head.append(script);
   });
 }
 
 export function buildFeedbackPayload(message: string, language: FeedbackLang, explorer: Explorer, bundle: StationBundle | null, station: string | null) {
   const { pose, simT, screenshot } = explorer.captureFeedback();
+  const camera = explorer.currentMode;
+  const perspective = camera === "overview" ? "orbit" : explorer.firstPersonOn ? "first-person" : "third-person";
   return {
     message, url: feedbackUrl(location.href), language, station,
     device: { userAgent: navigator.userAgent, viewport: { width: innerWidth, height: innerHeight, pixelRatio: devicePixelRatio }, touch: { maxTouchPoints: navigator.maxTouchPoints, coarsePointer: matchMedia("(pointer: coarse)").matches } },
-    mode: { play: explorer.currentMode === "guide" ? "guide" : "free", camera: explorer.currentMode, next: new URLSearchParams(location.search).get("next") === "1" },
+    mode: { play: camera === "guide" ? "guide" : "free", camera, perspective, next: new URLSearchParams(location.search).get("next") === "1" },
     pose, floorId: pose && bundle ? currentFloorId(bundle, pose.up, pose.east, pose.north) : null,
     simT, buildSha: __BUILD_SHA__, screenshot,
   };
