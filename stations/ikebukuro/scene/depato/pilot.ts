@@ -179,7 +179,8 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       const road = loaded.scene.getObjectByName("ctx_road_t00_01") as import("three").Mesh;
       const forecourt = new THREE.Mesh(pavement, road.material);
       forecourt.name = "ctx_road_tobu_forecourt";
-      const walk = new THREE.Mesh(sidewalkGeometry.clone(), road.material);
+      // Keep the visible strip between the forecourts. The full invisible strip still supports walking.
+      const walk = new THREE.Mesh(pavement(sidewalk.slice(1, -1)), road.material);
       walk.name = "ctx_road_pparco_approach";
       loaded.scene.add(forecourt, walk);
     }

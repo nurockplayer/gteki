@@ -40,7 +40,7 @@ const frame=async(profile,name,yaw)=>{
   profile.frames.push({name,file,sourceHead:runtimeHead,...state});
   if(state.loaded.length>1)throw Error('Neighbour interiors simultaneously loaded: '+state.loaded.join(', '));
   if(state.shaderErrors.length)throw Error(state.shaderErrors.join('\n'));
-  if(annex && name!=='flag-off'){
+  if(annex && name!=='flag-off' && !name.startsWith('exit-22-')){
     if(!state.loaded.includes('depato-interior:'+profile.store))throw Error(name+': P\'PARCO detail is missing');
     const {visibleTriangles,drawCallsPerFloor,atlasPx}=state.budget;
     if(profile.device.mobile && (visibleTriangles>60000 || Math.max(...drawCallsPerFloor)>30 || atlasPx>1024))
@@ -55,11 +55,14 @@ const pparcoWalk=async(profile,store)=>{
   const pointAt=m=>({x:point[0]+inward[0]*m,z:point[1]+inward[1]*m,y});
   const facing=Math.atan2(-inward[0],-inward[1]);
   const towardDoor=([x,,z])=>Math.atan2(x-point[0],z-point[1]);
+  const routeYaw=([x,,z],[nextX,,nextZ])=>Math.atan2(x-nextX,z-nextZ);
   const rendererPoints=points=>points.map(([x,y,z])=>({x,y,z}));
   const west=x-4;
   const placed=await page.evaluate(node=>window.__gteki.setView({node,headingDeg:0}).placed,exit);
   if(!placed)throw Error('Could not stand at '+exit);
+  await frame(profile,'exit-22-landing',routeYaw(landing[0],accessBay[0]));
   await walk(profile,'exit-22-to-street',rendererPoints([...landing.slice(1),...accessBay,sidewalk[0]]));
+  await frame(profile,'exit-22-street',routeYaw(sidewalk[0],sidewalk[1]));
   await walk(profile,'street-first-sight',rendererPoints(sidewalk.slice(1,-2)));
   await frame(profile,'street-first-sight',towardDoor(sidewalk.at(-3)));
   await walk(profile,'street-to-entrance',rendererPoints(sidewalk.slice(-2)));
