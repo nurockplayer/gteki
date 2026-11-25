@@ -86,7 +86,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     return volume(Math.min(e.point[0],p[0])- (front?2.1:0.2),Math.max(e.point[0],p[0])+(front?2.1:3),
       Math.min(e.point[1],p[2])-(front?0.2:2.1),Math.max(e.point[1],p[2])+(front?3:2.1),y+0.01,y+4.1);
   });
-  // Esola sits outside the station shell. Its door only needs a cut in its own LOD2 facade.
+  // Esola sits outside the station shell; its entrance cuts are in the context assets below.
   const stationRollout = layouts.slice(1).filter(p => p.input.store.id !== esola.id);
   const rolloutRooms = stationRollout.flatMap(p => {
     const points=p.input.footprint.map(([x,z])=>new THREE.Vector2(x,z));
@@ -121,6 +121,19 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const [doorX, doorZ] = esola.entrances[0]!.point as PlanPoint;
   const doorY = esola.elevations["1F"];
   const esolaDoor = volume(doorX - 0.4, doorX + 0.4, doorZ - 2, doorZ + 2, doorY - 0.1, doorY + 2.8);
+  // Both tiers retain a context panel about 6.5 m west of the kit door, plus a duplicate face at the door.
+  // Open the street panel before the context builds its camera blockers from that same geometry.
+  const entryMinZ = -7.55, entryMaxZ = -3.15;
+  const esolaVestibule = volume(-180, -178.9, entryMinZ, entryMaxZ, doorY - 0.1, doorY + 3.1);
+  esolaVestibule.accepts = normal => Math.abs(normal.y) < 0.5;
+  const facadeNorth = { x: -179.74, z: -7.8737 }, facadeSouth = { x: -179.2285, z: -2.7569 };
+  const facadePoint = (z: number) => ({
+    x: facadeNorth.x + (z - facadeNorth.z) * (facadeSouth.x - facadeNorth.x) / (facadeSouth.z - facadeNorth.z),
+    y: -z,
+  });
+  const esolaJambs = [[facadeNorth.z, entryMinZ], [entryMaxZ, facadeSouth.z]].map(([a, b]) => ({
+    source: "esola-street-facade", a: facadePoint(a!), b: facadePoint(b!), zMin: doorY - 0.1, zMax: doorY + 3.1,
+  }));
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
     if (uri.includes("ikebukuro_landmarks_next.glb")) {
@@ -129,6 +142,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     }
     if (uri.includes("ikebukuro_context_")) {
       loaded.scene.updateMatrixWorld(true);
+      cutRegions(loaded.scene.getObjectByName("ctx_bldg_t00_00")!, [esolaVestibule, esolaDoor], resources);
       cutRegions(loaded.scene, [room, ...streetDoors, ...rolloutRooms, ...rolloutDoors], resources);
       // Fill the missing visual pavement between Tobu's 32.41 m apron and the PLATEAU road.
       const pavement = new THREE.BufferGeometry();
@@ -181,6 +195,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const update = scene.update, dispose = scene.dispose;
   return { ...scene, walkable: [...scene.walkable, esolaPavement, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(i=>i.cameraBlockers)],
+    walls: [...(scene.walls ?? []), ...esolaJambs],
     setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); avatar=args[3] ?? null; interiors.forEach(i=>i.setAvatar(avatar)); },
     update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if(camera){
       const cp=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cp.x,y:cp.y-2,z:cp.z};

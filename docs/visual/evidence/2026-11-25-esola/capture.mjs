@@ -90,7 +90,7 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
   const threshold = d => pos(dx + nx * d, y, dz + nz * d);
   const towardDoor = Math.atan2(-nx, -nz);
   const open = async next => {
-    await page.goto(url + '?station=ikebukuro&qaTimeBand=morning' + (next ? '&next=1' : ''));
+    await page.goto(url + '?station=ikebukuro&lang=ja&qaTimeBand=morning' + (next ? '&next=1' : ''));
     await page.waitForFunction(() => window.__gteki?.phase() === 'ready', undefined, { timeout: 120000 });
     await page.evaluate(async () => {
       const g = window.__gteki;
@@ -113,8 +113,9 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
       }
     };
     const frame = async (name, yaw, pose) => {
-      const state = await page.evaluate(({ yaw, pose }) => {
-        const g = window.__gteki, e = g.scanProbe().explorer;
+      const street = ['street-first-sight', 'door-6-8m', 'street-door-outside'].includes(name);
+      const state = await page.evaluate(({ yaw, pose, street, header }) => {
+        const g = window.__gteki, { explorer: e, castAll } = g.scanProbe();
         if (pose) {
           g.setView({ node: 'x15', headingDeg: -yaw * 180 / Math.PI });
           e.pos.set(pose.x, pose.z, -pose.y);
@@ -138,21 +139,50 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
         try { g.goldenFrame(); } finally { restore.forEach(fn => fn()); }
         const loaded = [];
         e.stationScene.root.traverse(o => { if (o.name.startsWith('depato-interior:') && o.children.length) loaded.push(o.name); });
+        const cat = e.catScreenBox();
+        const catVisible = cat && cat.left >= 0 && cat.right <= innerWidth && cat.top >= 0 && cat.bottom <= innerHeight &&
+          ![...document.querySelectorAll('.hud button')].some(button => {
+            if (!button.getClientRects().length) return false;
+            const r = button.getBoundingClientRect();
+            return cat.left < r.right && cat.right > r.left && cat.top < r.bottom && cat.bottom > r.top;
+          });
+        let headerVisible = null;
+        if (street) {
+          const facade = ['ctx_bldg_t00_00', 'ctx_bldg_landmark_esola'].map(name => e.stationScene.root.getObjectByName(name));
+          const far = e.ray.far;
+          headerVisible = Boolean(root?.children.length) && facade.every(Boolean) && [-1.9, 1.9].every(side => [2.15, 2.75].every(height => {
+            const point = e.pos.clone().set(header.x + side * header.nz, header.y + height, header.z - side * header.nx);
+            const ndc = point.clone().project(e.camera);
+            const ray = point.sub(e.camera.position);
+            e.ray.far = ray.length() - 0.02;
+            e.ray.set(e.camera.position, ray.normalize());
+            return Math.abs(ndc.x) <= 1 && Math.abs(ndc.y) <= 1 && Math.abs(ndc.z) <= 1 && !castAll(e.ray, facade).length;
+          }));
+          e.ray.far = far;
+        }
         return {
           avatar: g.avatar(), camera: g.camera(), eye: e.camera.position.toArray(), loaded,
+          cat, catVisible, headerVisible, minimapCollapsed: document.querySelector('.minimap').dataset.collapsed === 'true',
           triangles: [...draws.values()].reduce((sum, count) => sum + count, 0), draws: draws.size,
           atlasPx: root?.children.length ? root.userData.depato.atlasPx : 0,
           shaderErrors: e.renderer.info.programs.filter(p => p.diagnostics?.runnable === false).length,
         };
-      }, { yaw, pose });
-      const file = pose ? 'flag-off/' + (baseline ? 'base/' : 'head/') + device.id + '-' + name.replace(/^(baseline-)?off-/, '') + '.png'
+      }, { yaw, pose, street, header: { x: dx, y, z: dz, nx, nz } });
+      const file = baseline || name.startsWith('off-') ? 'flag-off/' + (baseline ? 'base/' : 'head/') + device.id + '-' + name.replace(/^(baseline-)?off-/, '') + '.png'
         : device.id + '-' + name + '.png';
       await page.screenshot({ path: joinFile(file) });
       profile.frames.push({ name, file, sourceHead, yaw, ...state });
+      if (street && !state.headerVisible) receipt.failures.push(file + ': door header is outside the frame or behind the facade');
+      if ((name === 'door-6-8m' || name === 'B1-aisle') && !state.catVisible) receipt.failures.push(file + ': cat is clipped or behind the HUD');
+      if (name === 'door-6-8m' && (state.camera.raise > 0.01 || state.camera.boomActual < 2.24)) receipt.failures.push(file + ': follow camera obstructed');
+      if (device.mobile && !state.minimapCollapsed) receipt.failures.push(file + ': minimap is expanded');
       if (state.loaded.length > 1 || state.shaderErrors || (device.mobile && (state.triangles > 60000 || state.draws > 30 || state.atlasPx > 1024))) throw Error(file + ': ' + JSON.stringify(state));
       return state;
     };
     const joinFile = file => out + '/' + file;
+    const minimap = await page.cdp('Page.addScriptToEvaluateOnNewDocument', {
+      source: `localStorage.setItem('gteki.minimap.collapsed', '${device.mobile}')`,
+    });
     try {
       await page.cdp('Emulation.setDeviceMetricsOverride', {
         width: device.width, height: device.height, screenWidth: device.width, screenHeight: device.height,
@@ -171,11 +201,10 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
         profile.route = route;
         if (!route.ok || !route.edgeIds.includes('x15__depato-esola-approach-0')) throw Error('Street route: ' + JSON.stringify(route));
         const approach = config.streetApproach.waypoints.map(p => pos(...p));
-        for (const [i, p] of approach.entries()) {
-          await walk('street-outbound', p);
-          if (i === 7) await frame('street-first-sight', Math.atan2(p.x - dx, p.z - dz));
-        }
-        await walk('approach-apron', threshold(-7), threshold(-5));
+        await walk('street-outbound', ...approach);
+        const first = approach.at(-1), firstYaw = Math.atan2(first.x - dx, first.z - dz);
+        const firstSight = await frame('street-first-sight', firstYaw);
+        await walk('approach-apron', threshold(-7), threshold(-5.5));
         const outside = await frame('door-6-8m', towardDoor);
         profile.doorDistanceM = Math.hypot(outside.eye[0] - dx, outside.eye[2] - dz);
         if (profile.doorDistanceM < 6 || profile.doorDistanceM > 8) throw Error('Door lens distance: ' + profile.doorDistanceM);
@@ -187,8 +216,9 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
         await frame('escalator-top', Math.PI);
         await walk('down-to-B1', pos(x + 0.95, y, from), pos(x + 0.95, b1, to + 0.6), pos(x, b1, to + 2));
         await frame('escalator-bottom', 0);
-        await walk('B1-aisle', pos(x - 4, b1, to + 2), pos(x - 4, b1, from - 2));
+        await walk('B1-aisle', pos(x - 4, b1, to + 2), pos(x - 4, b1, from + 3));
         await frame('B1-aisle', Math.PI);
+        await walk('B1-aisle', pos(x - 4, b1, from - 2));
         await walk('up-to-1F', pos(x, b1, from - 2), pos(x - 0.95, b1, from - 0.4), pos(x - 0.95, y, to + 0.6), pos(x, y, to + 2));
         await walk('return-to-door', pos(x - 4, y, to + 2), pos(x - 4, y, threshold(3).z), threshold(3));
         await frame('street-door-inside', towardDoor + Math.PI);
@@ -198,6 +228,21 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
         const loaded = await page.evaluate(() => window.__gteki.scanProbe().explorer.stationScene.root.getObjectByName('depato-interior:esola-ikebukuro').children.length);
         profile.unloadedOnReturn = loaded === 0;
         if (loaded) throw Error('Esola remained loaded at x15');
+        const panelFolded = await page.evaluate(() => Boolean(document.querySelector('.panel-entry').getClientRects().length));
+        if (panelFolded) await page.click('.panel-entry', { label: 'Open route search' });
+        for (const [field, query] of [['from', '15番出口'], ['to', 'エソラ池袋']]) {
+          await page.fill('#gteki-' + field, query);
+          await page.click(`.field-${field} .result-name:text-is("${query}")`, { label: 'Select route search result' });
+        }
+        profile.searchedRoute = await page.evaluate(() => {
+          const g = window.__gteki;
+          return { endpoints: g.routeEndpoints(), ok: g.route()?.ok, edgeIds: g.route()?.steps?.map(step => step.edgeId), ribbonOpacity: g.quietHud().opacity };
+        });
+        const { endpoints, ok, edgeIds, ribbonOpacity } = profile.searchedRoute;
+        if (!ok || endpoints.from !== 'exit-15' || endpoints.to !== config.poiId || !edgeIds.includes('depato-esola-street__depato-esola-ikebukuro-1F-door0') || !(ribbonOpacity > 0)) {
+          throw Error('Searched route: ' + JSON.stringify(profile.searchedRoute));
+        }
+        await frame('searched-route', firstYaw, firstSight.avatar);
       }
     } catch (error) {
       receipt.failures.push(device.id + ': ' + error.message);
@@ -212,5 +257,6 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
       receipt.failures.push(device.id + ' flag-off: ' + error.message);
     }
     await save();
+    await page.cdp('Page.removeScriptToEvaluateOnNewDocument', { identifier: minimap.identifier });
   }
 }
