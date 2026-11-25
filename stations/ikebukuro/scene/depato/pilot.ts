@@ -170,14 +170,14 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       loaded.scene.updateMatrixWorld(true);
       cutRegions(loaded.scene, [room, ...streetDoors, ...rolloutRooms, ...rolloutDoors], resources);
       // Fill the missing visual pavement between Tobu's 32.41 m apron and the PLATEAU road.
-      const pavement = new THREE.BufferGeometry();
-      pavement.setAttribute("position", new THREE.Float32BufferAttribute([
+      const tobuPavement = new THREE.BufferGeometry();
+      tobuPavement.setAttribute("position", new THREE.Float32BufferAttribute([
         -118.6, 32.39, -26, -125, 32.78, -26, -125, 32.78, -14,
         -118.6, 32.39, -26, -125, 32.78, -14, -118.6, 32.39, -14,
       ], 3));
-      pavement.computeVertexNormals();
+      tobuPavement.computeVertexNormals();
       const road = loaded.scene.getObjectByName("ctx_road_t00_01") as import("three").Mesh;
-      const forecourt = new THREE.Mesh(pavement, road.material);
+      const forecourt = new THREE.Mesh(tobuPavement, road.material);
       forecourt.name = "ctx_road_tobu_forecourt";
       // Keep the visible strip between the forecourts. The full invisible strip still supports walking.
       const walk = new THREE.Mesh(pavement(sidewalk.slice(1, -1)), road.material);

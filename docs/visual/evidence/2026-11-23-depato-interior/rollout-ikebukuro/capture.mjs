@@ -30,6 +30,13 @@ try{
     for(const profile of [...receipt.profiles,...receipt.seibu]){
       const frames=profile.frames.filter(f=>f.sourceHead===runtimeHead);
       for(const frame of frames){
+        const previewStreet=g3 && (frame.name.startsWith('street-') || frame.name.startsWith('exit-22-') ||
+          (profile.store==='ikebukuro-pparco' && frame.name==='entrance-outside'));
+        if(previewStreet){
+          const [minX,,minZ,maxX,,maxZ]=frame.scene.world;
+          if(frame.streetContextVisible!==true || minX>-1200 || minZ>-1200 || maxX<1200 || maxZ<1200)
+            receipt.failures.push(`${frame.file}: expected visible preview street context spanning ±1200 m, got visible=${frame.streetContextVisible}, X=${minX}…${maxX}, Z=${minZ}…${maxZ}`);
+        }
         const png=PNG.sync.read(readFileSync(evidenceDir+'/'+frame.file));
         if(png.width!==profile.device.width || png.height!==profile.device.height)
           receipt.failures.push(`${frame.file}: expected ${profile.device.width}×${profile.device.height}, got ${png.width}×${png.height}`);
