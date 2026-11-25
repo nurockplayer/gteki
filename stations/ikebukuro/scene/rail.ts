@@ -18,7 +18,7 @@ interface RailLane {
 }
 
 type RailGeometry = Pick<StationScene, "root" | "walkable" | "colliders" | "cameraBlockers" | "dispose">;
-type BuildRailGeometry = (ctx: SceneContext) => RailGeometry;
+type BuildRailGeometry = (ctx: SceneContext, scene: StationScene) => RailGeometry;
 
 const lanes = import.meta.glob<RailLane>("../data/rail/*.json", { eager: true, import: "default" });
 const builders = import.meta.glob<BuildRailGeometry>(["./rail/*.ts", "!./rail/*.test.ts"], { import: "default" });
@@ -145,7 +145,7 @@ export async function buildRailScene(ctx: SceneContext, base: BuildScene): Promi
         slice.started = true;
         void slice.build().then(build => {
           if (disposed) return;
-          const geometry = slice.geometry = build(ctx);
+          const geometry = slice.geometry = build(ctx, scene);
           scene.root.add(geometry.root);
           geometry.root.updateMatrixWorld(true);
           ctx.addCollision?.(geometry);

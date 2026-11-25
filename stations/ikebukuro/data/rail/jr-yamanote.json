@@ -10,14 +10,14 @@
   "gates": [
     { "id": "jr-yamanote-central-1-public", "poiId": "jr-central-gate-1", "side": "public", "position": null, "source": "ikebukuro-public-graph" },
     { "id": "jr-yamanote-central-2-public", "poiId": "jr-central-gate-2", "side": "public", "position": null, "source": "ikebukuro-public-graph" },
-    { "id": "jr-yamanote-central-1-paid", "side": "paid", "level": "b1", "position": [-24, 54, 27.91], "source": "jr-yamanote-preview" },
+    { "id": "jr-yamanote-central-1-paid", "side": "paid", "level": "b1", "position": [-23.48, 54, 27.91], "source": "jr-yamanote-preview" },
     { "id": "jr-yamanote-central-2-paid", "side": "paid", "level": "b1", "position": [-14, 84, 27.91], "source": "jr-yamanote-preview" }
   ],
   "platforms": [
     { "id": "jr-yamanote-platform", "number": null, "track": null, "services": ["JY"], "level": "jr-yamanote-1f", "centerline": [[-19, 35], [-19, 103]], "width_m": 14, "length_m": 68, "source": "jr-yamanote-preview" }
   ],
   "waypoints": [
-    { "id": "jr-yamanote-central-1-landing", "level": "jr-yamanote-1f", "position": [-24, 43, 32.21], "source": "jr-yamanote-preview" },
+    { "id": "jr-yamanote-central-1-landing", "level": "jr-yamanote-1f", "position": [-23.48, 43, 32.21], "source": "jr-yamanote-preview" },
     { "id": "jr-yamanote-central-2-landing", "level": "jr-yamanote-1f", "position": [-14, 95, 32.21], "source": "jr-yamanote-preview" }
   ],
   "connectors": [
@@ -25,7 +25,7 @@
     { "from": "jr-yamanote-central-2-public", "to": "jr-yamanote-central-2-paid", "kind": "gate", "source": "jr-yamanote-preview" },
     { "from": "jr-yamanote-central-1-paid", "to": "jr-yamanote-central-1-landing", "kind": "stairs", "source": "jr-yamanote-preview" },
     { "from": "jr-yamanote-central-2-paid", "to": "jr-yamanote-central-2-landing", "kind": "stairs", "source": "jr-yamanote-preview" },
-    { "from": "jr-yamanote-central-1-landing", "to": "jr-yamanote-platform", "kind": "walk", "via": [[-24, 42, 32.21], [-19, 42, 32.21]], "source": "jr-yamanote-preview" },
+    { "from": "jr-yamanote-central-1-landing", "to": "jr-yamanote-platform", "kind": "walk", "via": [[-23.48, 42, 32.21], [-19, 42, 32.21]], "source": "jr-yamanote-preview" },
     { "from": "jr-yamanote-central-2-landing", "to": "jr-yamanote-platform", "kind": "walk", "via": [[-14, 96, 32.21], [-19, 96, 32.21]], "source": "jr-yamanote-preview" }
   ],
   "sources": [

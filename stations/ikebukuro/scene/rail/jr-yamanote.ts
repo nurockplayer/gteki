@@ -1,8 +1,10 @@
-import type { SceneContext } from "@gteki/scene-api";
+import type { SceneContext, StationScene } from "@gteki/scene-api";
 import type { Mesh, Object3D } from "three";
+import { cutRegions, disposePortalCuts, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
+import { prepareRayTrees } from "../../../../apps/web/src/explorer/meshBvh.ts";
 import lane from "../../data/rail/jr-yamanote.json";
 
-export default function buildYamanote(ctx: SceneContext) {
+export default function buildYamanote(ctx: SceneContext, scene: StationScene) {
   const { THREE, bundle } = ctx;
   const root = new THREE.Group();
   root.name = "jr-yamanote-platform-preview";
@@ -24,6 +26,20 @@ export default function buildYamanote(ctx: SceneContext) {
     approach: nodes.get(`g_jr_c${gate}`)!,
   }));
   const stairWidth = 2.6;
+  const cuts: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
+  const gateBarriers = new Set(["access_fences", "access_fences_collider", "portal_beyond"]);
+  const targets = (scene.colliders ?? []).filter(object => gateBarriers.has(object.userData.gteki_role));
+  scene.root.traverse(object => {
+    if (gateBarriers.has(object.userData.gteki_role)) targets.push(object);
+  });
+  cutRegions(targets, flights.map(({ start, approach }) => {
+    const min = new THREE.Vector3(Math.min(start.x, approach.x) - stairWidth / 2, start.z! - 0.05, -Math.max(start.y, approach.y) - 0.1);
+    const max = new THREE.Vector3(Math.max(start.x, approach.x) + stairWidth / 2, start.z! + 2.6, -Math.min(start.y, approach.y) + 0.1);
+    return { key: {}, bounds: new THREE.Box3(min, max), clip: null, accepts: () => true,
+      planes: [p => p.x - min.x, p => max.x - p.x, p => p.y - min.y, p => max.y - p.y, p => p.z - min.z, p => max.z - p.z] };
+  }), cuts);
+  prepareRayTrees([...cuts.originals.keys()]);
+
   const box = (x0: number, x1: number, y0: number, y1: number, top: number, depth: number, material: typeof deck, floor = false) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, depth, y1 - y0), material);
     mesh.position.set(...ctx.enuToRenderer({ x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: top - depth / 2 }));
@@ -90,6 +106,7 @@ export default function buildYamanote(ctx: SceneContext) {
   return {
     root, walkable,
     dispose() {
+      disposePortalCuts(cuts);
       root.removeFromParent();
       const materials = new Set<typeof deck>();
       for (const object of root.children) {

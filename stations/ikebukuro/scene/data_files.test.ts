@@ -1,3 +1,5 @@
+/// <reference path="../../../apps/web/src/env.d.ts" />
+
 // station.json `dataFiles` (#186): the scene data the web bundle inlines is declared with the sources it is actually
 // derived from. The expected sourceIds are computed here from the generators' inputs, so a declaration can neither
 // miss a source a new input brings in nor keep one that no longer contributes. Where a generator's exact inputs are
@@ -6,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import { createRouter } from "@gteki/navigation";
+import { createRouter } from "../../../packages/navigation/src/index.ts";
 import { listStations } from "../../../apps/web/src/registry.ts";
 
 vi.mock("virtual:gteki-stations", () => ({
