@@ -368,28 +368,33 @@ describe("ikebukuro crowd near-camera hiding", () => {
     return m.determinant() === 0;
   };
 
-  it("hides only bodies on the camera-to-focus segment and restores them with null focus", () => {
+  it("dithers bodies on the focus segment only when nearer than the cat and restores them with null focus", () => {
     const w = firstWalker();
     const c = buildCrowd(THREE, LONG, toRenderer, 1, new THREE.Texture(), {});
+    const fade = named(c, "torso").geometry.getAttribute("openingFade");
+    const avatar = { x: w.s, y: 0.2, z: -2 };
     renderFrom(c, w.s, 3);
     c.update(0, 0);
     expect(hidden(c)).toBe(false);
-    c.setCameraFocus(w.s, 0.2, -3);
-    c.update(0, 0);
+    c.setCameraFocus(w.s, 0.2, -3, null, null, { ...avatar, z: 1 });
+    c.update(0.01, 0);
+    expect(fade.getX(0)).toBe(1);
+    c.setCameraFocus(w.s, 0.2, -3, null, null, avatar);
+    c.update(0.2, 0);
     expect(hidden(c)).toBe(true);
     c.setCameraFocus(null);
-    c.update(0, 0);
+    c.update(0.2, 0);
     expect(hidden(c)).toBe(false);
     // A parallel segment 1 m beside the walker's body.
     renderFrom(c, w.s + 1, 3);
-    c.setCameraFocus(w.s + 1, 0.2, -3);
-    c.update(0, 0);
-    expect(hidden(c)).toBe(false);
+    c.setCameraFocus(w.s + 1, 0.2, -3, null, null, avatar);
+    c.update(0.01, 0);
+    expect(fade.getX(0)).toBe(1);
     // Focus stops 1 m in front of the walker, not on the infinite ray.
     renderFrom(c, w.s, 3);
-    c.setCameraFocus(w.s, 1.13, 1);
-    c.update(0, 0);
-    expect(hidden(c)).toBe(false);
+    c.setCameraFocus(w.s, 1.13, 1, null, null, avatar);
+    c.update(0.01, 0);
+    expect(fade.getX(0)).toBe(1);
     c.dispose();
   });
 
