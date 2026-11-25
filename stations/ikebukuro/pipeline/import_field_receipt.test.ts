@@ -21,7 +21,7 @@ describe("applyFieldReceipt", () => {
     const ja = "入口は現地で確認（#533 項目25、2026-10-27T10:12+09:00）：「EXAMPLE — not an observation」。";
     const en = "Entrance checked on site (#533 item 25, 2026-10-27T10:12+09:00): 「EXAMPLE — not an observation」.";
 
-    expect(srcPoi.connectorNodeIds).toEqual(["x4f"]);
+    expect(srcPoi.connectorNodeIds).toEqual(["x15", "x4f"]);
     expect(srcPoi.paid).toBe(false);
     expect(srcPoi.evidence.sourceIds).toContain(sourceId);
     expect(srcPoi.evidence.method).toBe(method);

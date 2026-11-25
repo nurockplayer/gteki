@@ -276,22 +276,24 @@ export async function cutContextStairOpenings(THREE: ThreeNS, root: THREE_NS.Obj
   const streetFloors = new Set(bundle.floors.filter(f => f.ordinal === 0 && !f.intermediate).map(f => f.id));
   const exits = new Set(bundle.nodes.filter(n => n.kind === "exit" && streetFloors.has(n.floorId)).map(n => n.id));
   const openings = stairwellWells(bundle, e => !e.closed && (exits.has(e.from) || exits.has(e.to))).flatMap(well => well.rects.map(rect => {
+    const halfWidth = well.edgeId === "w_n__x18" ? 2.741 / 2 + 3 : rect.halfWidth;
+    const halfLength = rect.halfLength + (well.edgeId === "w_n__x18" ? 3 : 0);
     const along = (p: THREE_NS.Vector3) => (p.x - rect.center.x) * rect.along.x + (p.z - rect.center.z) * rect.along.z;
     const across = (p: THREE_NS.Vector3) => (p.x - rect.center.x) * rect.across.x + (p.z - rect.center.z) * rect.across.z;
     return {
-    bounds: { along: rect.halfLength, across: rect.halfWidth, lowerY: well.lowerY, upperY: well.upperY },
+    bounds: { along: halfLength, across: halfWidth, lowerY: well.lowerY, upperY: well.upperY },
     planes: [
-      (p: THREE_NS.Vector3) => along(p) + rect.halfLength,
-      (p: THREE_NS.Vector3) => rect.halfLength - along(p),
+      (p: THREE_NS.Vector3) => along(p) + halfLength,
+      (p: THREE_NS.Vector3) => halfLength - along(p),
       (p: THREE_NS.Vector3) => p.y - well.lowerY,
       (p: THREE_NS.Vector3) => well.upperY - p.y,
-      (p: THREE_NS.Vector3) => across(p) + rect.halfWidth,
-      (p: THREE_NS.Vector3) => rect.halfWidth - across(p),
+      (p: THREE_NS.Vector3) => across(p) + halfWidth,
+      (p: THREE_NS.Vector3) => halfWidth - across(p),
     ],
     intersectsBounds: (polygon: Polygon) => {
       const coords = polygon.map(vertex => ({ u: along(vertex.point), v: across(vertex.point), y: vertex.point.y }));
-      return Math.min(...coords.map(p => p.u)) <= rect.halfLength && Math.max(...coords.map(p => p.u)) >= -rect.halfLength
-        && Math.min(...coords.map(p => p.v)) <= rect.halfWidth && Math.max(...coords.map(p => p.v)) >= -rect.halfWidth
+      return Math.min(...coords.map(p => p.u)) <= halfLength && Math.max(...coords.map(p => p.u)) >= -halfLength
+        && Math.min(...coords.map(p => p.v)) <= halfWidth && Math.max(...coords.map(p => p.v)) >= -halfWidth
         && Math.min(...coords.map(p => p.y)) <= well.upperY && Math.max(...coords.map(p => p.y)) >= well.lowerY;
     },
   }; }));

@@ -845,6 +845,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
         flightPath = [flightFrom.clone(), flightTo.clone()];
         const f = frame(flightFrom, flightTo);
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", f.matrix, f.length / 2, -0.04, 0, f.length, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
+        if (floored(i - 1)) parts.at(-1)!.walkableOnly = true;
       }
       if (edgePath.length && edgePath.at(-1)!.distanceTo(flightPath[0]!) < 1e-6) flightPath.shift();
       edgePath.push(...flightPath);
@@ -854,6 +855,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (incoming.lengthSq() && outgoing.lengthSq() && incoming.angleTo(outgoing) > 1e-6) {
         const rotation = new THREE.Matrix4().makeRotationY(Math.atan2(-(to.z - from.z), to.x - from.x)).setPosition(to);
         box(parts, edge.mode === "stairs" ? "tread" : "escStep", rotation, 0, -0.04, 0, edge.mode === "stairs" ? width : 1.2, 0.08, edge.mode === "stairs" ? width : 1.2, "walkable");
+        if (onFloor(to)) parts.at(-1)!.walkableOnly = true;
       }
     }
     const lowerFirst = points[0]!.y <= points.at(-1)!.y ? edgePath : edgePath.reverse();

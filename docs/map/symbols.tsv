@@ -1249,6 +1249,8 @@ LANDMARK_PIER_SPACING_M	const	stations/ikebukuro/scene/landmark-style.ts
 LANDMARK_SIGN	const	stations/ikebukuro/scene/landmark-style.ts
 LANDMARK_STREET_BAND	const	stations/ikebukuro/scene/landmark-style.ts
 LandmarkFacade	type	stations/ikebukuro/scene/landmark-style.ts
+addLandmarks	function	stations/ikebukuro/scene/landmarks.ts
+removeLandmarkContext	function	stations/ikebukuro/scene/landmarks.ts
 ENV_INTENSITY	const	stations/ikebukuro/scene/materials.ts
 LIGHTMAP_BALANCE	const	stations/ikebukuro/scene/materials.ts
 StationMaterials	interface	stations/ikebukuro/scene/materials.ts
@@ -1422,6 +1424,7 @@ psdOpeningCenters	function	stations/shinjuku/scene/build.ts
 slabGeometry	function	stations/shinjuku/scene/build.ts
 soffitGeometry	function	stations/shinjuku/scene/build.ts
 contentKey	function	stations/shinjuku/scene/content-key.ts
+buildDepartmentStores	function	stations/shinjuku/scene/department-stores.ts
 ACCESS_WORDING	const	stations/shinjuku/scene/fare-fence.ts
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts
 Fence	interface	stations/shinjuku/scene/fare-fence.ts
