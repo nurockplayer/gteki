@@ -2,11 +2,17 @@
 import { buildScene as baseScene } from "../scene/scene.ts";
 import type { BuildScene } from "@gteki/scene-api";
 export { generatedSignageFromGraph } from "../scene/scene.ts";
-export const previewBundle = async (bundle: import("@gteki/schema").StationBundle) =>
-  (await import("../scene/depato/pilot.ts")).previewBundle(bundle);
-export const buildScene: BuildScene = async ctx => ctx.previewNext
-  ? (await import("../scene/depato/pilot.ts")).buildPilotScene(ctx, baseScene)
-  : baseScene(ctx);
+export const previewBundle = async (bundle: import("@gteki/schema").StationBundle) => {
+  const pilot = await import("../scene/depato/pilot.ts");
+  const rail = await import("../scene/rail.ts");
+  return rail.railBundle(pilot.previewBundle(bundle));
+};
+export const buildScene: BuildScene = async ctx => {
+  if (!ctx.previewNext) return baseScene(ctx);
+  const pilot = await import("../scene/depato/pilot.ts");
+  const rail = await import("../scene/rail.ts");
+  return rail.buildRailScene(ctx, context => pilot.buildPilotScene(context, baseScene));
+};
 import type { NavmeshPaths } from "@gteki/scene-api";
 
 /** Baked stairwell cut recipe for a tier (#658), bundled as a data URL only when the explorer loads it. */

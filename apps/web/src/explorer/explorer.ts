@@ -1470,6 +1470,21 @@ export class Explorer {
       THREE,
       bundle,
       previewNext: this.previewNext,
+      addCollision: ({ walkable, colliders = [], cameraBlockers = [] }) => {
+        if (generation !== this.loadGeneration || this.disposed) return;
+        const targets = explorerTargets(walkable, colliders, cameraBlockers);
+        prepareRayTrees(targets.camera);
+        this.walkable.push(...walkable);
+        this.colliders.push(...colliders);
+        this.cameraBlockers.push(...cameraBlockers);
+        this.groundTargets.push(...targets.ground);
+        this.sceneGroundTargets.push(...targets.ground);
+        this.colliderTargets.push(...targets.collider);
+        this.skyTargets.push(...targets.sky);
+        this.cameraTargets.push(...targets.camera);
+        this.cameraSides = new Set(this.cameraTargets);
+        this.blockerTargets = new Set([...this.blockerTargets, ...targets.blockers]);
+      },
       enuToRenderer: (p) => enuToRenderer(p),
       assetUrl: (uri) => station.assetUrls.get(uri) ?? null,
       loadGlb: (uri) => {
@@ -1575,7 +1590,8 @@ export class Explorer {
         if (value === undefined) { value = probe(p); floorCache.set(key, value); }
         return value;
       };
-      const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+      const lazyEdgeIds = this.stationScene.lazyEdgeIds;
+      const traversable = (edge: StationBundle["edges"][number]) => !lazyEdgeIds?.has(edge.id) && router.isTraversable(edge, DEFAULT_PROFILE);
       this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality, false, station.privateRegions);
       lap("greybox");
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));

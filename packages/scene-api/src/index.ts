@@ -86,6 +86,8 @@ export interface StationScene {
   /** Construct station sound when the host first enables audio; idempotent. */
   startAudio?(audio: NonNullable<SceneContext["audio"]>): void;
   root: THREE.Object3D;
+  /** Graph edges whose physical surfaces are supplied by this scene on approach. */
+  lazyEdgeIds?: ReadonlySet<string>;
   interactables?: InteractableSpec[];
   /** Surfaces the walker can stand on (raycast from above). Empty = no free walking. */
   walkable: THREE.Object3D[];
@@ -161,6 +163,8 @@ export interface SceneContext {
   bundle: StationBundle;
   /** Host's ?next=1 preview; absent keeps the shipping scene. */
   previewNext?: boolean;
+  /** Register newly attached geometry with the live walker's ray targets. Call after initial scene load. */
+  addCollision?(geometry: Pick<StationScene, "walkable" | "colliders" | "cameraBlockers">): void;
   /** Extra curated shopfronts supplied only by a private overlay (OD-35). */
   privateShops?: { shops: unknown[]; openings: unknown[] };
   enuToRenderer(p: { x: number; y: number; z: number }): [number, number, number];

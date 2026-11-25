@@ -5,7 +5,22 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { createRouter } from "@gteki/navigation";
+import { listStations } from "../../../apps/web/src/registry.ts";
+
+vi.mock("virtual:gteki-stations", () => ({
+  privateBuild: false,
+  stations: [{
+    dir: "ikebukuro",
+    manifest: async () => read("gteki/station.json"),
+    graph: async () => read("gteki/graph.json"),
+    pois: async () => read("gteki/pois.json"),
+    tenants: async () => read("gteki/tenants.json"),
+    scene: () => import("../gteki/scene.ts"),
+    assets: {},
+  }],
+}));
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (p: string) => JSON.parse(readFileSync(join(ROOT, p), "utf8"));
@@ -103,5 +118,18 @@ describe("ikebukuro dataFiles", () => {
 
   it("declares nothing else", () => {
     expect(declared.map((d) => d.path).filter((p) => !(p in EXPECTED))).toEqual([]);
+  });
+});
+
+it("routes from Central Passage through a JR fare gate to the next-preview platform only", async () => {
+  const [station] = await listStations();
+  const baseline = (await station!.load()).bundle;
+  const preview = (await station!.load(true)).bundle;
+  const destination = "jr-yamanote-platform";
+  expect(baseline.pois.some(poi => poi.id === destination)).toBe(false);
+  expect(createRouter(baseline).route(["c_mid"], [destination]).ok).toBe(false);
+  expect(createRouter(preview).route(["c_mid"], [destination])).toMatchObject({
+    ok: true,
+    steps: expect.arrayContaining([expect.objectContaining({ mode: "gate" })]),
   });
 });
