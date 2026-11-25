@@ -1559,7 +1559,7 @@ export class Explorer {
         .filter((n) => streets.some((f) => f.id === n.floorId))
         .map((n) => R(n.position.x, n.position.y, nodeDisplayZ(n, streets.find((f) => f.id === n.floorId)).z));
       this.stationScene.root.updateMatrixWorld(true);
-      this.street.attach(this.stationScene.root);
+      this.street.attach(this.stationScene.root, this.previewNext && this.stationScene.root.name === "shinjuku-e27");
       this.world.updateMatrixWorld(true);
       const originalTargets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
       lap("attach");

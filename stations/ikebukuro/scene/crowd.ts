@@ -520,6 +520,31 @@ function makeGeometry(THREE: typeof THREE_NS, low: boolean) {
   return { torso, shirt, skirt, head, hair0, hair1, hair2, upperArm, foreArm, hand, thigh, shin, shoe, solePts, backpack, shoulderBag };
 }
 
+/** One stationary adult, using the commuter kit's existing body parts and dimensions. */
+export function buildStandingFigure(THREE: typeof THREE_NS, low: boolean) {
+  const geometry = makeGeometry(THREE, low), group = new THREE.Group();
+  group.name = "j10-landing-figure";
+  const material = new THREE.MeshBasicMaterial({ color: "#010203" });
+  const used = new Set<THREE_NS.BufferGeometry>();
+  const add = (g: THREE_NS.BufferGeometry, x: number, y: number, z = 0, scale = 1) => {
+    const mesh = new THREE.Mesh(g, material); mesh.position.set(x, y, z); mesh.scale.setScalar(scale);
+    group.add(mesh); used.add(g);
+  };
+  add(geometry.torso, 0, CHEST_Y);
+  add(geometry.head, 0, CHEST_Y + HEAD_PIVOT_DY, 0, HEAD_SCALE);
+  add(geometry.hair0, 0, CHEST_Y + HEAD_PIVOT_DY, 0, HEAD_SCALE);
+  for (const side of [-1, 1]) {
+    add(geometry.upperArm, side * SHOULDER_X, CHEST_Y + SHOULDER_DY);
+    add(geometry.foreArm, side * SHOULDER_X, CHEST_Y + SHOULDER_DY - L_UPPER_ARM);
+    add(geometry.hand, side * SHOULDER_X, CHEST_Y + SHOULDER_DY - L_UPPER_ARM - L_FOREARM);
+    add(geometry.thigh, side * THIGH_X, HIPS_Y + THIGH_DY);
+    add(geometry.shin, side * THIGH_X, HIPS_Y + THIGH_DY - L_THIGH);
+    add(geometry.shoe, side * THIGH_X, ANKLE_H);
+  }
+  for (const g of Object.values(geometry)) if (g instanceof THREE.BufferGeometry && !used.has(g)) g.dispose();
+  return { group, dispose() { used.forEach(g => g.dispose()); material.dispose(); } };
+}
+
 interface Look {
   sh: number; sw: number; stride: number; stoop: number; headPitch: number; glance: number; glanceRate: number;
   hair: 0 | 1 | 2; open: boolean; tail: number; carry: "backpack" | "shoulderBag" | null; bagSide: 1 | -1;
