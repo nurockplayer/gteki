@@ -22,4 +22,4 @@ The distances are straight-line plan distances from the search destination's exi
 
 This table is the pre-rollout audit. The Owner's 2026-11-24 JST street-approach rule allows a source-backed preview door fitted to the PLATEAU footprint and a walk at street grade from the listed exit. `stations/shinjuku/data/depato-rollout.json` records the separate Keio and Lumine 1 doors on their shared building part and the Lumine 2 door on its own building, all from Exit 1. It also records the NEWoMan 1F entrance beside Blue Bottle Coffee from Exit 3 and the Takashimaya 1F Meiji-dori entrance from Exit 4.
 
-Lumine Est uses the 1F entrance beside shop 6 on the east side, also reached from Exit 1.
+Lumine Est uses the 1F entrance beside shop 6 on the east side. Odakyu uses the HALC 1F front entrance, Isetan Main uses door A, Isetan Men’s uses door N on Yasukuni-dori, and the two Marui stores use entrances marked on their 1F guides. These six street approaches also start at Exit 1.
