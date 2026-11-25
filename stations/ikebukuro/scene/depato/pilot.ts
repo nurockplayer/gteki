@@ -6,6 +6,7 @@ import floorData from "../../data/depato-floors.json";
 import rolloutData from "../../data/depato-rollout.json";
 import { depatoBundle, depatoLayout, type PlanPoint } from "./layout.ts";
 import { buildDepatoInterior } from "./interior.ts";
+import { removeLandmarkContext } from "../landmarks.ts";
 
 // PLATEAU context low GLB, ctx_bldg_t01_00: southern store wing of the connected
 // station building, clipped at z=70/180 and x=0 (authored internal partitions).
@@ -162,7 +163,8 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       cutRegions([loaded.scene.getObjectByName("lumine")!, loaded.scene.getObjectByName("tobu")!], [doorway], resources);
     }
     if (uri.includes("ikebukuro_context_")) {
-      loaded.scene.updateMatrixWorld(true);
+      // The landmark ranges address the untouched GLB triangle order.
+      removeLandmarkContext(THREE, loaded.scene, ctx.quality);
       cutRegions(loaded.scene, [room, ...streetDoors, ...rolloutRooms, ...rolloutDoors], resources);
       // Fill the missing visual pavement between Tobu's 32.41 m apron and the PLATEAU road.
       const pavement = new THREE.BufferGeometry();

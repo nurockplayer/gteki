@@ -61,6 +61,7 @@ async function browser({ out, repo, sourceHead, space, receiptPath }) {
   for (const device of devices) {
     const profile = { device, frames: [], legs: [] };
     receipt.profiles.push(profile);
+    let doorway;
     const open = async next => {
       await page.goto('http://127.0.0.1:5301/?station=ikebukuro&qaTimeBand=morning' + (next ? '&next=1' : ''));
       await page.waitForFunction(() => window.__gteki?.phase() === 'ready', undefined, { timeout: 120000 });
@@ -69,6 +70,7 @@ async function browser({ out, repo, sourceHead, space, receiptPath }) {
         await g.scanProbe().explorer.stationScene.settled?.();
         g.holdFrames(true);
       });
+      if (device.mobile) await page.evaluate(() => document.querySelector('.minimap-collapse').click());
     };
     const walk = async (name, ...points) => {
       for (const point of points) {
@@ -82,7 +84,8 @@ async function browser({ out, repo, sourceHead, space, receiptPath }) {
       }
     };
     const frame = async (name, yaw, pose, pitch = 0.06) => {
-      const state = await page.evaluate(({ yaw, pitch, pose, rootName, exit }) => {
+      const probe = name.endsWith('street-door-outside') || name === 'street-door-inside' ? doorway : null;
+      const state = await page.evaluate(({ yaw, pitch, pose, rootName, exit, probe }) => {
         const g = window.__gteki, e = g.scanProbe().explorer;
         if (pose) {
           g.setView({ node: exit, headingDeg: -yaw * 180 / Math.PI });
@@ -106,17 +109,33 @@ async function browser({ out, repo, sourceHead, space, receiptPath }) {
         });
         try { g.goldenFrame(); } finally { restore.forEach(fn => fn()); }
         const loaded = e.stationScene.root.children.filter(o => o.name.startsWith('depato-interior:') && o.children.length).map(o => o.name);
+        const facadeHits = [];
+        if (probe) {
+          const { door, nx, nz } = probe;
+          const context = e.stationScene.root.getObjectByName('street-context');
+          const inward = e.pos.clone().set(nx, 0, nz).normalize();
+          const across = e.pos.clone().set(nz, 0, -nx).normalize();
+          const ray = new e.ray.constructor();
+          ray.far = 2.8;
+          for (const height of [0.9, 1.5, 2.1]) for (const side of [-1.2, 0, 1.2]) {
+            ray.set(e.pos.clone().set(door.x, door.y + height, door.z).addScaledVector(across, side).addScaledVector(inward, -1.4), inward);
+            facadeHits.push(...ray.intersectObject(context).map(hit => hit.object.name));
+          }
+        }
         return {
           avatar: g.avatar(), camera: g.camera(), eye: e.camera.position.toArray(), loaded,
+          quality: g.quality(), minimapCollapsed: document.querySelector('.minimap').dataset.collapsed === 'true', facadeHits,
           triangles: [...draws.values()].reduce((sum, count) => sum + count, 0), draws: draws.size,
           atlasPx: root?.children.length ? root.userData.depato.atlasPx : 0,
           shaderErrors: e.renderer.info.programs.filter(p => p.diagnostics?.runnable === false).length,
         };
-      }, { yaw, pitch, pose, rootName, exit });
+      }, { yaw, pitch, pose, rootName, exit, probe });
       const file = device.id + '-' + name + '.png';
       await page.screenshot({ path: out + '/' + file });
       profile.frames.push({ name, file, sourceHead, yaw, pitch, ...state });
       if (state.loaded.length > 1 || state.shaderErrors || (device.mobile && (state.triangles > 60000 || state.draws > 30 || state.atlasPx > 1024))) throw Error(file + ': ' + JSON.stringify(state));
+      if (device.mobile && !state.minimapCollapsed) throw Error(file + ': minimap open');
+      if (probe && Boolean(state.facadeHits.length) !== name.startsWith('flag-off-')) throw Error(file + ': facade hits ' + JSON.stringify(state.facadeHits));
       return state;
     };
 
@@ -146,14 +165,12 @@ async function browser({ out, repo, sourceHead, space, receiptPath }) {
       if (!Array.isArray(route) || route[0] !== 'x15__depato-lumine-approach-0' || !route.some(id => id.includes('-1F-down-start__'))) throw Error('Street route: ' + JSON.stringify(route));
 
       const nx = (door.x - street.x) / 7, nz = (door.z - street.z) / 7;
+      doorway = { door, nx, nz };
       const threshold = d => ({ x: door.x + nx * d, y: door.y, z: door.z + nz * d });
       const yaw = Math.atan2(-nx, -nz);
       const x = lower.x, from = lower.z + 2, to = top.z, y = door.y, b1 = bottom.y;
       const pos = (x, y, z) => ({ x, y, z });
-      for (const [i, p] of approach.entries()) {
-        await walk('street-outbound', p);
-        if (i === 11) await frame('street-first-sight', Math.atan2(p.x - door.x, p.z - door.z), undefined, 0);
-      }
+      await walk('street-outbound', ...approach);
       await walk('approach-apron', street, threshold(-5));
       const outside = await frame('street-door-outside', yaw, undefined, 0);
       profile.doorDistanceM = Math.hypot(outside.eye[0] - door.x, outside.eye[2] - door.z);
@@ -170,7 +187,25 @@ async function browser({ out, repo, sourceHead, space, receiptPath }) {
       await walk('up-to-1F', pos(x, b1, from - 2), pos(x - 0.95, b1, from - 0.4), pos(x - 0.95, y, to + 0.6), pos(x, y, to + 2));
       await walk('return-to-door', pos(x - 4, y, to + 2), pos(x - 4, y, inside.z), inside);
       await frame('street-door-inside', yaw + Math.PI);
-      await walk('street-return', street, ...approach.reverse(), pos(-117.5, 33.146, -137));
+      const sight = approach.at(-1);
+      await walk('street-return', street, sight);
+      profile.search = await page.evaluate(query => {
+        const g = window.__gteki;
+        if (!g.setOrigin('exit-15')) throw Error('Could not select Exit 15 as origin');
+        const entry = document.querySelector('.panel-entry');
+        if (entry.getAttribute('aria-expanded') === 'false') entry.click();
+        const input = document.querySelector('#gteki-to');
+        input.value = query;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        document.querySelector('#gteki-to-listbox [data-poi="shop-ikb-lumine"]').click();
+        const { from, to } = g.routeEndpoints();
+        const ribbon = g.quietHud().opacity;
+        if (from !== 'exit-15' || to !== 'shop-ikb-lumine' || !g.route()?.ok || !ribbon) throw Error('Lumine search did not draw the Exit 15 guide');
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        return { query, from, to, ribbon };
+      }, 'ルミネ池袋');
+      await frame('street-first-sight', Math.atan2(sight.x - door.x, sight.z - door.z), undefined, 0);
+      await walk('street-return', ...approach.slice(0, -1).reverse(), pos(-117.5, 33.146, -137));
       const loaded = await page.evaluate(name => window.__gteki.scanProbe().explorer.stationScene.root.getObjectByName(name).children.length, rootName);
       profile.unloadedOnReturn = loaded === 0;
       if (loaded) throw Error('Lumine remained loaded at Exit 15');
