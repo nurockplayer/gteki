@@ -11,7 +11,9 @@ import rollout from "../data/depato-rollout.json";
 
 const layouts = rollout.stores.map(row => {
   const store = floorData.stores.find(s => s.id === row.id)!;
-  return depatoLayout({
+  const [doorX, doorZ] = row.entrance.point as PlanPoint;
+  const [inwardX, inwardZ] = row.entrance.inward as PlanPoint;
+  const layout = depatoLayout({
     store: { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
     footprint: row.footprint as PlanPoint[],
     poiId: row.poiId,
@@ -20,6 +22,13 @@ const layouts = rollout.stores.map(row => {
     circulation: row.circulation,
     entrances: [{ ...row.entrance, point: row.entrance.point as PlanPoint, inward: row.entrance.inward as PlanPoint }],
   });
+  // The shared kit's row clearance is axis-aligned. Keep the diagonal entry clear too.
+  layout.counters = layout.counters.filter(([x, z]) => {
+    const depth = (x - doorX) * inwardX + (z - doorZ) * inwardZ;
+    const across = (z - doorZ) * inwardX - (x - doorX) * inwardZ;
+    return depth <= 0 || depth >= 8 || Math.abs(across) >= 2;
+  });
+  return layout;
 });
 
 function approachIds(row: typeof rollout.stores[number]) {
@@ -71,7 +80,10 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     const end = points.at(-1)!;
     end.addScaledVector(end.clone().sub(points.at(-2)!).setY(0).normalize(), 0.35);
     const strip = points.map((point, i) => {
-      const direction = points[Math.min(i + 1, points.length - 1)]!.clone().sub(points[Math.max(i - 1, 0)]!);
+      // Bisect the turn so a long leg cannot flip the strip across a short one.
+      const incoming = point.clone().sub(points[Math.max(i - 1, 0)]!).setY(0).normalize();
+      const outgoing = points[Math.min(i + 1, points.length - 1)]!.clone().sub(point).setY(0).normalize();
+      const direction = incoming.add(outgoing);
       const side = new THREE.Vector3(direction.z, 0, -direction.x).normalize().multiplyScalar(1.8);
       return [point.clone().add(side), point.clone().sub(side)] as const;
     });
