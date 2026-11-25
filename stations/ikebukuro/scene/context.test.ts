@@ -147,10 +147,12 @@ describe("the context is not part of the collision world", () => {
     });
   }
 
-  it("scene.ts builds walkable and colliders from assembleCollision alone; its only cameraBlockers are the context blockers", () => {
+  it("scene.ts keeps context buildings outside walkable and colliders and uses separate camera blockers", () => {
     const src = fs.readFileSync(new URL("./scene.ts", import.meta.url), "utf8").replace(/\/\/[^\n]*/g, "");
     expect(src.match(/cameraBlockers/g)).toEqual(["cameraBlockers"]);
-    expect(src).toContain("cameraBlockers: contextBlockers.meshes");
+    expect(src).toContain("walkable: [...walkTiles, threshold]");
+    expect(src).toContain("colliders: colliderTiles");
+    expect(src).toContain("cameraBlockers: [...contextBlockers.meshes, stairEnclosureBlocker]");
     expect(src).toMatch(/tileCollision\(THREE, \{ walkable, colliders \}\)/);
     expect(src).toMatch(/root\.add\(context\)/);
     expect(src).not.toMatch(/root\.add\([^)]*contextBlockers/);
