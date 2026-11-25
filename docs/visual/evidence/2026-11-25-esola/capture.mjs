@@ -183,8 +183,9 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
     const minimap = await page.cdp('Page.addScriptToEvaluateOnNewDocument', {
       source: `if (location.origin === ${JSON.stringify(new URL(url).origin)}) {
         localStorage.setItem('gteki.minimap.collapsed', '${device.mobile}');
-        // The searched route adds recent suggestions on the head origin only.
+        // Reset route history and tutorial state for each captured page.
         localStorage.removeItem('gteki.recent.ikebukuro');
+        localStorage.removeItem('gteki.firstRunDone');
       }`,
     });
     try {
@@ -252,10 +253,12 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
       receipt.failures.push(device.id + ': ' + error.message);
     }
     try {
-      await open(false);
       for (const name of ['street-first-sight', 'door-6-8m', 'street-door-outside']) {
         const original = profile.frames.find(f => f.name === name);
-        if (original) await frame((baseline ? 'baseline-off-' : 'off-') + name, original.yaw, original.avatar);
+        if (original) {
+          await open(false);
+          await frame((baseline ? 'baseline-off-' : 'off-') + name, original.yaw, original.avatar);
+        }
       }
     } catch (error) {
       receipt.failures.push(device.id + ' flag-off: ' + error.message);
