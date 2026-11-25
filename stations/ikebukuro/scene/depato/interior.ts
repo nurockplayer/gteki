@@ -187,6 +187,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
       const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
       // Repeated shallow bays and a warm cove frame the main aisle without runtime lights.
+      if(!plan.input.entrances.some(e=>e.inward)) {
       for(const axis of [0,1] as const){
         const cross=axis===0?1:0, lo=axis===0?plan.bounds.front:plan.bounds.left, hi=axis===0?plan.bounds.back:plan.bounds.right;
         for(let v=Math.ceil(lo/4.4)*4.4-2.2;v<hi;v+=4.4){
@@ -199,16 +200,14 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
             const from=ends[i]!,to=ends[i+1]!, cut=axis===0?[plan.stair.x-plan.stair.width/2,plan.stair.x+plan.stair.width/2]:[plan.stair.from,plan.stair.to];
             const overWell=axis===0?v>plan.stair.from&&v<plan.stair.to:Math.abs(v-plan.stair.x)<plan.stair.width/2;
             const spans=l.index+1<levels.length&&overWell?[[from,Math.min(to,cut[0]!)],[Math.max(from,cut[1]!),to]]:[[from,to]];
-            for(const [a,b] of spans){
-              const inset=plan.input.entrances.some(e=>e.inward)?0.35:0;
-              if(b!-a!>2*inset)bays.push(cube(axis===0?(a!+b!)/2:v,l.y+l.clear-0.08,axis===0?v:(a!+b!)/2,axis===0?b!-a!-2*inset:0.1,0.16,axis===0?0.1:b!-a!-2*inset));
-            }
+            for(const [a,b] of spans)if(b!>a!)bays.push(cube(axis===0?(a!+b!)/2:v,l.y+l.clear-0.08,axis===0?v:(a!+b!)/2,axis===0?b!-a!:0.1,0.16,axis===0?0.1:b!-a!));
           }
         }
       }
       for(const side of [-1,1])for(const [from,to] of [[plan.bounds.front+0.5,plan.stair.from],[plan.stair.to,plan.bounds.back-0.5]]){
         bays.push(cube(plan.aisleX+side*1.6,l.y+l.clear-0.18,(from!+to!)/2,0.18,0.36,to!-from!));
         lit.push(cube(plan.aisleX+side*1.48,l.y+l.clear-0.13,(from!+to!)/2,0.08,0.05,to!-from!));
+      }
       }
       const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
         // The B1 approach sees PARCO's header at a steep angle from the guide.
