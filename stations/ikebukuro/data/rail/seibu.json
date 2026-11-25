@@ -1,0 +1,166 @@
+{
+  "line": { "ja": "西武池袋線", "en": "Seibu Ikebukuro Line" },
+  "operator": "seibu",
+  "lineCode": "SI",
+  "stationCode": "SI01",
+  "status": "representative",
+  "geometryBasis": "z_m uses the existing B1/street render elevations as preview datums in the station frame. Widths and lengths are preview dimensions. Null positions and centerlines leave alignment to the scene slice. Sources on records support the identities and topology, with specific inferences noted in gaps.",
+  "levels": [
+    { "id": "seibu-1f", "label": "1F", "z_m": 32.5, "source": "seibu-yard-map" },
+    { "id": "seibu-b1f", "label": "B1F", "z_m": 27.9, "source": "seibu-yard-map" }
+  ],
+  "gates": [
+    {
+      "id": "seibu-1f-gate-public", "poiId": "seibu-1f-gate", "side": "public",
+      "label": "1F改札口", "level": "seibu-1f", "position": null, "source": "seibu-station"
+    },
+    {
+      "id": "seibu-1f-gate-paid", "poiId": "seibu-1f-gate", "side": "paid",
+      "label": "1F改札口", "level": "seibu-1f", "position": null, "source": "seibu-station"
+    },
+    {
+      "id": "seibu-b1f-gate-public", "poiId": "seibu-b1f-gate", "side": "public",
+      "label": "B1F改札口", "level": "seibu-b1f", "position": null, "source": "seibu-station"
+    },
+    {
+      "id": "seibu-b1f-gate-paid", "poiId": "seibu-b1f-gate", "side": "paid",
+      "label": "B1F改札口", "level": "seibu-b1f", "position": null, "source": "seibu-station"
+    },
+    {
+      "id": "seibu-south-gate-public", "poiId": "seibu-minami-guchi", "side": "public",
+      "label": "西武南口改札", "level": "seibu-1f", "position": null, "source": "seibu-south-gate-notice"
+    },
+    {
+      "id": "seibu-south-gate-paid", "poiId": "seibu-minami-guchi", "side": "paid",
+      "label": "西武南口改札", "level": "seibu-1f", "position": null, "source": "seibu-south-gate-notice"
+    }
+  ],
+  "platforms": [
+    {
+      "id": "seibu-platform-1", "number": 1, "track": "seibu-track-1-2",
+      "services": ["alighting-only"], "level": "seibu-1f", "landing": "seibu-side-1",
+      "centerline": null, "width_m": 5, "length_m": 200, "source": "seibu-yard-map"
+    },
+    {
+      "id": "seibu-platform-2", "number": 2, "track": "seibu-track-1-2",
+      "services": ["Tokorozawa / Hanno / Seibu-Chichibu direction"], "level": "seibu-1f", "landing": "seibu-island-2-3",
+      "centerline": null, "width_m": 8, "length_m": 200, "source": "seibu-yard-map"
+    },
+    {
+      "id": "seibu-platform-3", "number": 3, "track": "seibu-track-3-4",
+      "services": ["Tokorozawa / Hanno / Seibu-Chichibu direction"], "level": "seibu-1f", "landing": "seibu-island-2-3",
+      "centerline": null, "width_m": 8, "length_m": 200, "source": "seibu-yard-map"
+    },
+    {
+      "id": "seibu-platform-4", "number": 4, "track": "seibu-track-3-4",
+      "services": ["alighting-only"], "level": "seibu-1f", "landing": "seibu-island-4-5",
+      "centerline": null, "width_m": 8, "length_m": 200, "source": "seibu-yard-map"
+    },
+    {
+      "id": "seibu-platform-5", "number": 5, "track": "seibu-track-5-6",
+      "services": ["Tokorozawa / Hanno / Seibu-Chichibu direction"], "level": "seibu-1f", "landing": "seibu-island-4-5",
+      "centerline": null, "width_m": 8, "length_m": 200, "source": "seibu-yard-map"
+    },
+    {
+      "id": "seibu-platform-6", "number": 6, "track": "seibu-track-5-6",
+      "services": ["alighting-only"], "level": "seibu-1f", "landing": "seibu-island-6-7",
+      "centerline": null, "width_m": 8, "length_m": 200, "source": "seibu-yard-map"
+    },
+    {
+      "id": "seibu-platform-7", "number": 7, "track": "seibu-track-7-limited-express",
+      "services": ["Tokorozawa / Hanno / Seibu-Chichibu direction"], "level": "seibu-1f", "landing": "seibu-island-6-7",
+      "centerline": null, "width_m": 8, "length_m": 200, "source": "seibu-yard-map"
+    },
+    {
+      "id": "seibu-platform-limited-express", "number": null, "track": "seibu-track-7-limited-express",
+      "label": { "ja": "特急ホーム", "en": "Limited Express platform" },
+      "services": ["Laview Chichibu", "Laview Musashi"], "level": "seibu-1f",
+      "centerline": null, "width_m": 5, "length_m": 160, "source": "seibu-yard-map",
+      "serviceSource": "seibu-laview"
+    }
+  ],
+  "landings": [
+    { "id": "seibu-1f-paid-concourse", "level": "seibu-1f", "source": "seibu-yard-map" },
+    { "id": "seibu-b1f-paid-concourse", "level": "seibu-b1f", "source": "seibu-yard-map" },
+    { "id": "seibu-side-1", "level": "seibu-1f", "source": "seibu-platform-access" },
+    { "id": "seibu-island-2-3", "level": "seibu-1f", "source": "seibu-platform-access" },
+    { "id": "seibu-island-4-5", "level": "seibu-1f", "source": "seibu-platform-access" },
+    { "id": "seibu-island-6-7", "level": "seibu-1f", "source": "seibu-platform-access" }
+  ],
+  "connectors": [
+    { "from": "seibu-1f-gate-public", "to": "seibu-1f-gate-paid", "kind": "gate", "source": "seibu-station" },
+    { "from": "seibu-b1f-gate-public", "to": "seibu-b1f-gate-paid", "kind": "gate", "source": "seibu-station" },
+    { "from": "seibu-south-gate-public", "to": "seibu-south-gate-paid", "kind": "gate", "source": "seibu-south-gate-notice" },
+    { "from": "seibu-1f-gate-paid", "to": "seibu-1f-paid-concourse", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-b1f-gate-paid", "to": "seibu-b1f-paid-concourse", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-south-gate-paid", "to": "seibu-side-1", "kind": "walk", "source": "seibu-south-gate-notice" },
+    { "from": "seibu-1f-paid-concourse", "to": "seibu-side-1", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-1f-paid-concourse", "to": "seibu-island-2-3", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-1f-paid-concourse", "to": "seibu-island-4-5", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-1f-paid-concourse", "to": "seibu-island-6-7", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-1f-paid-concourse", "to": "seibu-platform-limited-express", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-b1f-paid-concourse", "to": "seibu-side-1", "kind": "stairs", "source": "seibu-platform-access" },
+    { "from": "seibu-b1f-paid-concourse", "to": "seibu-side-1", "kind": "lift", "source": "seibu-lift-notice" },
+    { "from": "seibu-b1f-paid-concourse", "to": "seibu-island-2-3", "kind": "stairs", "source": "seibu-platform-access" },
+    { "from": "seibu-b1f-paid-concourse", "to": "seibu-island-2-3", "kind": "escalator", "source": "seibu-platform-access" },
+    { "from": "seibu-b1f-paid-concourse", "to": "seibu-island-4-5", "kind": "stairs", "source": "seibu-platform-access" },
+    { "from": "seibu-b1f-paid-concourse", "to": "seibu-island-4-5", "kind": "escalator", "source": "seibu-platform-access" },
+    { "from": "seibu-b1f-paid-concourse", "to": "seibu-island-6-7", "kind": "stairs", "source": "seibu-platform-access" },
+    { "from": "seibu-b1f-paid-concourse", "to": "seibu-island-6-7", "kind": "escalator", "source": "seibu-platform-access" },
+    { "from": "seibu-side-1", "to": "seibu-platform-1", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-island-2-3", "to": "seibu-platform-2", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-island-2-3", "to": "seibu-platform-3", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-island-4-5", "to": "seibu-platform-4", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-island-4-5", "to": "seibu-platform-5", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-island-6-7", "to": "seibu-platform-6", "kind": "walk", "source": "seibu-yard-map" },
+    { "from": "seibu-island-6-7", "to": "seibu-platform-7", "kind": "walk", "source": "seibu-yard-map" }
+  ],
+  "sources": [
+    {
+      "id": "seibu-station", "url": "https://www.seiburailway.jp/railway/station/ikebukuro/",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-25",
+      "scope": "Station identity, 1F/B1F gate names, Seibu South Exit hours 07:00–22:30."
+    },
+    {
+      "id": "seibu-yard-map", "url": "https://www.seiburailway.jp/railway/station/image/SI01_1.png",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-25",
+      "scope": "Map dated 2026-08-01. Platform numbers, level, use and paid concourse relationships."
+    },
+    {
+      "id": "seibu-platform-access", "url": "https://www.seiburailway.jp/railway/station/image/si01_pos_10.png",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-25",
+      "scope": "Numbered platform faces grouped by shared track and platform strip, and stair, escalator and lift associations. The dated yard map identifies B1F as the lower level."
+    },
+    {
+      "id": "seibu-south-gate-notice", "url": "https://www.seiburailway.jp/file.jsp?id=26515",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-25",
+      "scope": "Names the public side of the South Gate, a public-street approach, and a movement from the gate to platform 1. The yard map identifies the gate as 1F."
+    },
+    {
+      "id": "seibu-lift-notice", "url": "https://www.seiburailway.jp/file.jsp?id=22943",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-25",
+      "scope": "October 2024 inspection schedule, SI01 row names the underground gate and platform 1 as lift endpoints. The yard map shows the lift on the paid side."
+    },
+    {
+      "id": "seibu-laview", "url": "https://www.seiburailway.jp/railway/reservedtrain/laview/",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-25",
+      "scope": "Laview Chichibu and Musashi services from Ikebukuro."
+    },
+    {
+      "id": "seibu-public-seam-check", "path": "stations/ikebukuro/docs/seibu-stair36-source-check.md",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-23",
+      "scope": "ISP 1F-to-stair-36 approach clue, PLATEAU public B1 coverage and the missing stair-top and fare-bank tie."
+    },
+    {
+      "id": "toshima-exit-names", "url": "https://www.city.toshima.lg.jp/documents/56546/20260519131956.pdf",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-22",
+      "scope": "Exit 37/38 alias facts via the existing repo POIs."
+    }
+  ],
+  "gaps": [
+    "Public seams: the three POIs identify the fare banks, with exact openings, street/B1 approach ties and gate coordinates still unverified. PLATEAU covers public B1. Its x36f is only the foot of stair 36. Exits 37 and 38 are public exit POIs. The South Gate has a public-street approach, with its junction in the station frame unresolved.",
+    "Paid placement: surveyed level heights, platform and track alignments, widths, lengths, rise, landings and device coordinates are unavailable. Connector endpoints describe paid connectivity at concourse/strip granularity. Escalator operating direction and exact gate or device availability need confirmation.",
+    "The numbered track pairings come from Seibu's platform access chart. Platform 7 and the unnumbered Limited Express platform sharing a terminal rail is an inference from the yard map's continuous platform edge. Track IDs are lane keys. Dispatch assignments within the general departure platforms are unavailable from the legend.",
+    "The Limited Express platform's internal entrance geometry and any current supplemental ticket-check procedure remain unverified."
+  ]
+}
