@@ -13,6 +13,7 @@ import type { Router, PolylinePoint, RouteStep } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api";
+import type { LazyGeometryContext, LazyGeometryScene } from "@gteki/scene-api/lazy-geometry";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
@@ -272,7 +273,7 @@ export class Explorer {
   private qaSignNearestGap = Infinity;
 
   private station: LoadedStation | null = null;
-  private stationScene: StationScene | null = null;
+  private stationScene: LazyGeometryScene | null = null;
   /** Shinjuku's street surface layer, looked up once per station scene; overview suppresses it (see tick). */
   private surfaceLayer: { scene: StationScene; obj: THREE.Object3D | undefined } | null = null;
   private interactionController = new InteractionController([]);
@@ -1466,7 +1467,7 @@ export class Explorer {
     manager.setURLModifier(fencedUrlResolver(station.assetUrls, refused));
     const fenceError = (err: unknown) => refused.length ? new Error(`blocked asset request outside station folder: ${refused.join(", ")}`) : err;
     const audioBus = this.audio ? this.newStationAudioBus() : null;
-    const ctx: SceneContext = {
+    const ctx: LazyGeometryContext = {
       THREE,
       bundle,
       previewNext: this.previewNext,

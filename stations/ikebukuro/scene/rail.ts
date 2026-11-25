@@ -1,4 +1,5 @@
 import type { BuildScene, SceneContext, StationScene } from "@gteki/scene-api";
+import type { LazyGeometryContext, LazyGeometryScene } from "@gteki/scene-api/lazy-geometry";
 import type { Edge, Node, Poi, StationBundle } from "@gteki/schema";
 import type { Camera } from "three";
 
@@ -121,7 +122,7 @@ export function railBundle(bundle: StationBundle): StationBundle {
 }
 
 /** Load each lane's geometry once its public gate or platform is within approach distance. */
-export async function buildRailScene(ctx: SceneContext, base: BuildScene): Promise<StationScene> {
+export async function buildRailScene(ctx: LazyGeometryContext, base: BuildScene): Promise<LazyGeometryScene> {
   const scene = await base(ctx);
   const lazyEdgeIds = new Set(ctx.bundle.edges.filter(edge => edge.id.startsWith("rail:")).map(edge => edge.id));
   const slices = entries.flatMap(({ name, build }) => {

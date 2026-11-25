@@ -937,6 +937,8 @@ glbPrimitivePlugin	function	packages/scene-api/src/index.ts
 roleOf	function	packages/scene-api/src/index.ts
 sceneFromGlbRoles	function	packages/scene-api/src/index.ts
 seeThroughMeshes	function	packages/scene-api/src/index.ts
+LazyGeometryContext	interface	packages/scene-api/src/lazy-geometry.ts
+LazyGeometryScene	interface	packages/scene-api/src/lazy-geometry.ts
 LIFT_DOOR_CLEARANCE_M	const	packages/scene-api/src/liftShaft.ts
 LIFT_DOOR_HALF_M	const	packages/scene-api/src/liftShaft.ts
 LIFT_FACE_NORMALS	const	packages/scene-api/src/liftShaft.ts
