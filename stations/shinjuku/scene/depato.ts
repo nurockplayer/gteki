@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: GTEki contributors
 import type { Edge, Node, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
+import type { Vector3 } from "three";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
 import { depatoBundle, depatoLayout, type PlanPoint } from "../../ikebukuro/scene/depato/layout.ts";
 import { buildDepatoInterior } from "../../ikebukuro/scene/depato/interior.ts";
@@ -85,13 +86,15 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     const building = scene.root.getObjectByName(`department-store:${row.buildingId}`)!;
     const [x, z] = row.entrance.point, [nx, nz] = row.entrance.inward;
     const y = row.entrance.elevation;
+    const across = (p: Vector3) => (p.x - x!) * -nz! + (p.z - z!) * nx!;
+    const depth = (p: Vector3) => (p.x - x!) * nx! + (p.z - z!) * nz!;
     const region: CutRegion = {
       key: row, clip: null, accepts: normal => Math.abs(normal.y) < 0.1,
       bounds: new THREE.Box3(new THREE.Vector3(x! - 2.6, y - 0.08, z! - 2.6),
         new THREE.Vector3(x! + 2.6, y + 2.8, z! + 2.6)),
       planes: [
-        p => 2 - Math.abs((p.x - x!) * -nz! + (p.z - z!) * nx!),
-        p => 0.6 - Math.abs((p.x - x!) * nx! + (p.z - z!) * nz!),
+        p => 2 - across(p), p => 2 + across(p),
+        p => 0.6 - depth(p), p => 0.6 + depth(p),
         p => p.y - y + 0.08,
         p => y + 2.8 - p.y,
       ],

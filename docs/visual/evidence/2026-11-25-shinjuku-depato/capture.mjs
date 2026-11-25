@@ -9,8 +9,8 @@ import { fileURLToPath } from "node:url";
 
 const repo = fileURLToPath(new URL("../../../../", import.meta.url));
 const [storeId, out, baseline] = process.argv.slice(2);
-const git = (...args) => execFileSync("rtk", ["git", "-C", repo, ...args], { encoding: "utf8" }).trim();
-const head = git("rev-parse", "HEAD"), base = git("rev-parse", baseline);
+const git = (...args) => execFileSync("rtk", ["proxy", "git", "-C", repo, ...args], { encoding: "utf8" });
+const head = git("rev-parse", "HEAD").trim(), base = git("rev-parse", baseline).trim();
 const config = JSON.parse(readFileSync(join(repo, "stations/shinjuku/data/depato-rollout.json"))).stores.find(s => s.id === storeId);
 const space = `depato-1540-${storeId}`;
 const devices = [{ id: "desktop", width: 1440, height: 900, mobile: false }, { id: "phone", width: 390, height: 844, mobile: true }];
@@ -130,6 +130,15 @@ async function browser({ out, space, receiptPath, config, devices, source, isBas
         }, { exitPoi, exitNode, poiId: config.poiId });
         profile.route = start.route;
         if (!start.route?.ok || start.route.nodeIds.at(-1) !== `depato-${config.id}-1F-door0`) throw Error("Route did not end at the store door");
+        profile.doorwayClear = await page.evaluate(({ buildingId, entrance }) => {
+          const e = window.__gteki.scanProbe().explorer;
+          const facade = e.stationScene.root.getObjectByName("department-store:" + buildingId);
+          const [x, z] = entrance.point, [nx, nz] = entrance.inward;
+          const origin = e.camera.position.clone().set(x - nx, entrance.elevation + 1.4, z - nz);
+          const ray = new e.ray.constructor(origin, origin.clone().set(nx, 0, nz).normalize(), 0, 2);
+          return ray.intersectObject(facade, true).length === 0;
+        }, config);
+        if (!profile.doorwayClear) throw Error("Exterior facade blocks the opening");
         const approach = waypoints.map(p => pos(...p));
         await walk("exit-to-street", ...approach.slice(0, -1));
         if (!(await frame("street-approach", facing(approach.at(-2)))).streetVisible) throw Error("Street context hidden on approach");
