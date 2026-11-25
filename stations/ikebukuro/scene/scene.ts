@@ -416,6 +416,97 @@ export function tileCollision(THREE: ThreeNS, world: { walkable: THREE_NS.Object
   return { walkable: raycastTiles(THREE, world.walkable, true), colliders: raycastTiles(THREE, world.colliders) };
 }
 
+/** Approximate enclosure panels around the surveyed exit flights, in ENU metres. */
+function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3, low: boolean) {
+  const positions: number[] = [], colors: number[] = [];
+  const roof = new THREE.Color(0xc1beb7), wall = new THREE.Color(0xaaa79f);
+  const lamp = new THREE.Color(1.5, 1.4, 1.25);
+  const slab = new THREE.Color(0xb3b3ae);
+  if (!low) {
+    roof.multiplyScalar(1.55);
+    lamp.multiplyScalar(2);
+  }
+  const panel = (a: THREE_NS.Vector3, b: THREE_NS.Vector3, c: THREE_NS.Vector3, d: THREE_NS.Vector3, color: THREE_NS.Color) => {
+    for (const p of [a, b, c, a, c, d]) {
+      positions.push(p.x, p.y, p.z);
+      colors.push(color.r, color.g, color.b);
+    }
+  };
+
+  // x35: from the open street mouth above the follow camera down to the existing concourse ceiling.
+  // The wider side also covers the escalators parallel to these flights.
+  const x35 = (along: number, across: number, height: number) =>
+    toRenderer(154 - 0.792 * along + 0.611 * across, 18.5 + 0.611 * along + 0.792 * across, height);
+  const profile = [[-3.4, 34.05, 31], [0, 34.05, 31], [4.6, 32.2, 28.8], [10.4, 29.43, 26.8]] as const;
+  for (let i = 1; i < profile.length; i++) {
+    const [a, topA, baseA] = profile[i - 1]!;
+    const [b, topB, baseB] = profile[i]!;
+    panel(x35(a, -4.15, topA), x35(b, -4.15, topB), x35(b, 1.7, topB), x35(a, 1.7, topA), roof);
+    for (const side of [-4.15, 1.7]) {
+      panel(x35(a, side, baseA), x35(b, side, baseB), x35(b, side, topB), x35(a, side, topA), wall);
+    }
+    for (const offset of [-0.78, 0.78]) {
+      panel(x35(a, offset - 0.045, topA - 0.025), x35(b, offset - 0.045, topB - 0.025),
+        x35(b, offset + 0.045, topB - 0.025), x35(a, offset + 0.045, topA - 0.025), lamp);
+    }
+  }
+
+  // x39: a soffit over the upper switchback, open toward the street and the lower flight.
+  const x39 = (x: number, y: number, height = 35.05) => toRenderer(x, y, height);
+  panel(x39(168.1, -177), x39(175.3, -177), x39(175.3, -182.55), x39(168.1, -182.55), roof);
+  panel(x39(168.1, -177, 29.3), x39(168.1, -182.55, 29.3), x39(168.1, -182.55), x39(168.1, -177), wall);
+  panel(x39(168.1, -182.55, 29.3), x39(175.3, -182.55, 29.3), x39(175.3, -182.55), x39(168.1, -182.55), wall);
+  for (const y of [-178.4, -181.25]) {
+    panel(x39(169.2, y, 35.025), x39(173.6, y, 35.025), x39(173.6, y + 0.09, 35.025), x39(169.2, y + 0.09, 35.025), lamp);
+  }
+
+  // The surveyed treads and risers are open underneath and at their sides. Close the exposed
+  // upper flights with a smooth soffit, stringer faces and a landing fascia below the walking surface.
+  const stairSlab = (topLeft: THREE_NS.Vector3, topRight: THREE_NS.Vector3, footLeft: THREE_NS.Vector3, footRight: THREE_NS.Vector3) => {
+    const below = (p: THREE_NS.Vector3) => p.clone().setY(p.y - 0.32);
+    const a = below(topLeft), b = below(topRight), c = below(footLeft), d = below(footRight);
+    panel(a, b, d, c, slab);
+    panel(topLeft, a, c, footLeft, slab);
+    panel(topRight, footRight, d, b, slab);
+    panel(topLeft, topRight, b, a, slab);
+  };
+  stairSlab(x35(-0.035, -0.94, 31.265), x35(-0.035, 0.96, 31.265),
+    x35(4.28, -0.94, 29.25), x35(4.28, 0.96, 29.25));
+  stairSlab(x39(172.46, -178.32, 32.645), x39(173.02, -179.78, 32.645),
+    x39(170.79, -178.48, 31.57), x39(171.36, -179.94, 31.57));
+
+  // The surveyed street lip is one riser above the upper tread. Cap it at the
+  // portal elevation so the walker can stand on the street threshold.
+  const a = x39(172.23, -178.354, 32.79), b = x39(172.792, -179.753, 32.79);
+  panel(a, b, b.clone().setY(32.645), a.clone().setY(32.645), slab);
+  const thresholdStart = positions.length;
+  panel(a, a.clone().add(new THREE.Vector3(1, 0, 0)),
+    b.clone().add(new THREE.Vector3(1, 0, 0)), b, slab);
+  const thresholdGeometry = new THREE.BufferGeometry();
+  thresholdGeometry.setAttribute("position", new THREE.Float32BufferAttribute(positions.slice(thresholdStart), 3));
+  const threshold = new THREE.Mesh(thresholdGeometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+  threshold.userData.gteki_role = "stairs_ramps";
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+  geometry.computeVertexNormals();
+  const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  mesh.name = "ikebukuro-exit-stair-enclosures";
+  // The visual shell joins the root after the stairwell cut. Its matching camera target
+  // stays outside that cut, so the follow boom cannot cross a panel.
+  const blocker = mesh.clone();
+  blocker.userData.gteki_role = "camera_blocker";
+  blocker.userData.gteki_source = "procedural";
+  // Match the opaque, two-sided shell in the desktop depth pass. Alpha zero marks the
+  // enclosure as matte in the floor-reflection pass while keeping its normals and depth.
+  const normal = new THREE.MeshNormalMaterial({
+    side: THREE.DoubleSide, blending: THREE.NoBlending, transparent: true, opacity: 0,
+  });
+  normal.allowOverride = false;
+  return { mesh, blocker, normal, threshold };
+}
+
 export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const THREE = ctx.THREE;
   const low = ctx.quality === "low";
@@ -425,6 +516,13 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const mats = createMaterials(THREE, low, finishes.packs);
   const root = new THREE.Group();
   root.name = "ikebukuro";
+  // These flights have surveyed stair meshes. Keep the generated support, but omit the overlapping
+  // display stairs, suspended connector lights and short rail sections.
+  root.userData.modelledStairEdges = ["w_n__x18", "e_low__x35", "s39_f__x39"];
+  root.userData.modelledStairwellSlabEdges = ["s39_f__x39"];
+  const { mesh: stairEnclosures, blocker: stairEnclosureBlocker, normal: stairEnclosureNormal, threshold } =
+    exitStairEnclosures(THREE, toRenderer, low);
+  root.userData.gteki_gtao_depth_twins = [{ mesh: stairEnclosures, twin: stairEnclosureNormal, original: stairEnclosures.material }];
 
   let gltf: GLTF;
   let baked = true;
@@ -714,9 +812,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   return {
     root,
     interactables,
-    walkable: walkTiles,
+    walkable: [...walkTiles, threshold],
     colliders: colliderTiles,
-    cameraBlockers: contextBlockers.meshes,
+    cameraBlockers: [...contextBlockers.meshes, stairEnclosureBlocker],
     cameraGateAisles: builtKit.cameraGateAisles,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
@@ -725,10 +823,12 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     ...(lightmap ? { generatedMeshEnvMap: env } : {}),
     startAudio,
     setAcousticZone: (next: AcousticZone) => { zone = next; acoustics?.setZone(next); streetAmbience?.setZone(next); },
-    settled: async () => { await catalogKit.settled(); await contextReady; },
+    settled: async () => { root.add(stairEnclosures); await catalogKit.settled(); await contextReady; },
     setCameraNearFade: (startM, endM) => crowd.setCameraNearFade(startM, endM),
     setCameraFocus: (p, sign, opening, avatar) => crowd.setCameraFocus(p?.x ?? null, p?.y, p?.z, sign, opening, avatar),
     update: (dt, elapsed, camera) => {
+      // Attach the visual panels after the baked stairwell cuts have opened the surveyed shell.
+      if (!stairEnclosures.parent) root.add(stairEnclosures);
       catalogKit.start();
       if (camera) catalogKit.update(camera);
       crowd.update(dt, elapsed);
@@ -750,6 +850,11 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       }
     },
     dispose() {
+      stairEnclosures.geometry.dispose();
+      stairEnclosures.material.dispose();
+      stairEnclosureNormal.dispose();
+      threshold.geometry.dispose();
+      threshold.material.dispose();
       geometry.dispose();
       material.dispose();
       wallProps.geometry.dispose();

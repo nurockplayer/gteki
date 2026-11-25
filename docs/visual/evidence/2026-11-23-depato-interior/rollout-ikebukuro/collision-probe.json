@@ -1,0 +1,188 @@
+{
+  "runtimeHead": "53f0e348547862dfc07b0bcc3e57edd68d8f924a",
+  "measuredAt": "2026-11-23T15:03:20.508Z",
+  "timeZone": "UTC",
+  "cause": "The c_w__w_c station edge crossed the authored Tobu well at x=-98.72, z=-109.81. Missing station-route floor generated procedural greybox_wall segments through the descending escalator. Tobu circulation moved to z=-140…-128, within the original footprint and clear of that edge.",
+  "walks": [
+    {
+      "store": "tobu",
+      "name": "enter",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 138
+      },
+      "avatar": {
+        "x": -66.66999999999982,
+        "y": 82,
+        "z": 27.90999984741211
+      }
+    },
+    {
+      "store": "tobu",
+      "name": "descent",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 2413
+      },
+      "avatar": {
+        "x": -99.85042610565867,
+        "y": 126.27007331871184,
+        "z": 23.409999847412926
+      }
+    },
+    {
+      "store": "tobu",
+      "name": "board-up-0",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 507
+      },
+      "avatar": {
+        "x": -100.82669603835745,
+        "y": 140.71374624632003,
+        "z": 23.40999984741211
+      }
+    },
+    {
+      "store": "tobu",
+      "name": "ride-up-0",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 303
+      },
+      "avatar": {
+        "x": -100.15183077576518,
+        "y": 126.27455366823693,
+        "z": 27.909999847411243
+      }
+    },
+    {
+      "store": "tobu",
+      "name": "board-up-1",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 501
+      },
+      "avatar": {
+        "x": -100.8267010357296,
+        "y": 140.71382216303223,
+        "z": 27.90999984741211
+      }
+    },
+    {
+      "store": "tobu",
+      "name": "ride-up-1",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 303
+      },
+      "avatar": {
+        "x": -100.15185755002211,
+        "y": 126.27461441281474,
+        "z": 32.40999984741124
+      }
+    },
+    {
+      "store": "tobu",
+      "name": "street",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 2660
+      },
+      "avatar": {
+        "x": -124.18820881665913,
+        "y": 19.730875941403962,
+        "z": 32.40999984741211
+      }
+    },
+    {
+      "store": "seibu",
+      "name": "enter",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 206
+      },
+      "avatar": {
+        "x": 14.835384784768863,
+        "y": -71.70369261258399,
+        "z": 27.700000762939112
+      }
+    },
+    {
+      "store": "seibu",
+      "name": "aisle",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 1392
+      },
+      "avatar": {
+        "x": 26.897782010271495,
+        "y": -128.1609823903241,
+        "z": 27.700000762939453
+      }
+    },
+    {
+      "store": "seibu",
+      "name": "board",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 874
+      },
+      "avatar": {
+        "x": 26.077599952318877,
+        "y": -95.28847303186447,
+        "z": 27.700000762939453
+      }
+    },
+    {
+      "store": "seibu",
+      "name": "ride",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 312
+      },
+      "avatar": {
+        "x": 26.77692264548601,
+        "y": -110.19993403951493,
+        "z": 32.20000076293945
+      }
+    },
+    {
+      "store": "seibu",
+      "name": "street",
+      "walk": {
+        "done": true,
+        "stuck": false,
+        "timedOut": false,
+        "steps": 942
+      },
+      "avatar": {
+        "x": 53.07502205791323,
+        "y": -122.49982037589201,
+        "z": 32.374543984906765
+      }
+    }
+  ]
+}

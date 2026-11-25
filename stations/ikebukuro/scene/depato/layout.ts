@@ -13,7 +13,8 @@ export interface DepatoInput {
   poiId: string;
   sourceId: string;
   elevations: Record<string, number>;
-  entrances: { level: string; point: PlanPoint; outsideNode: string }[];
+  circulation?: { aisleX: number; from: number; to: number };
+  entrances: { level: string; point: PlanPoint; outsideNode: string; inward?: PlanPoint }[];
 }
 
 /** Reusable circulation plan: any number of floors, with paired station-family escalators per pair. */
@@ -24,8 +25,8 @@ export function depatoLayout(input: DepatoInput) {
   const ordinal = (level: string) => level.startsWith("B") ? -Number(level.slice(1)) : Number(level.replace("F", "")) - 1;
   const height = (level: string) => elevations[level] ?? elevations["1F"]! + ordinal(level) * 4.5;
   const floors = [...store.floors].sort((a, b) => height(a.level) - height(b.level));
-  const aisleX = (bounds.left + bounds.right) / 2;
-  const stair = { x: aisleX, from: bounds.front + 26, to: bounds.front + 38, width: 4.2 };
+  const aisleX = input.circulation?.aisleX ?? (bounds.left + bounds.right) / 2;
+  const stair = { x: aisleX, from: input.circulation?.from ?? bounds.front + 26, to: input.circulation?.to ?? bounds.front + 38, width: 4.2 };
   const contains = ([x, z]: PlanPoint) => {
     let inside = false;
     for (let i = 0, j = footprint.length - 1; i < footprint.length; j = i++) {
@@ -84,16 +85,25 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     previousLower = lower;
     for (const [i, entrance] of entrances.filter(e => e.level === floor.level).entries()) {
       const door = node(floor.level, `door${i}`, ...entrance.point);
+      if (floor.level === "1F") door.kind = "exit";
       const front = Math.abs(entrance.point[1] - plan.bounds.front) < 0.1;
-      const inside = node(floor.level, `inside${i}`, entrance.point[0] + (front ? 0 : -2), entrance.point[1] + (front ? 2 : 0));
-      const approach = node(floor.level, `approach${i}`, plan.aisleX - 4, inside.position.y * -1);
-      edge(door, inside); edge(inside, approach); edge(approach, aisle);
+      const inward = entrance.inward ?? (front ? [0,1] : [-1,0]);
+      const inside = node(floor.level, `inside${i}`, entrance.point[0] + inward[0]! * 2, entrance.point[1] + inward[1]! * 2);
+      const insideZ = -inside.position.y;
+      const east = inside.position.x > plan.aisleX && insideZ > plan.stair.from - 2 && insideZ < plan.stair.to + 2;
+      const approach = node(floor.level, `approach${i}`, plan.aisleX + (east ? 4 : -4), insideZ);
+      edge(door, inside); edge(inside, approach);
+      if(east){
+        const around = node(floor.level, `around${i}`, plan.aisleX + 4, plan.stair.to + 2);
+        edge(approach, around); edge(around, bypass);
+      }else edge(approach, bypass);
       edge(bundle.nodes.find(n => n.id === entrance.outsideNode)!, door);
     }
   }
+  const goal = nodes.find(n => n.id === id(plan.floors[0]!.level, "aisle"))!;
   return { ...bundle,
     floors: [...bundle.floors, ...plan.floors.map(f => ({ id: id(f.level, "floor"), operatorId: "public", sourceLabels: [], ordinal: f.level.startsWith("B") ? -Number(f.level.slice(1)) : Number(f.level.replace("F", "")) - 1, intermediate: false, elevationM: null, elevationSource: "unknown" as const, renderElevationM: plan.height(f.level), displayNames: [{ lang: "ja", text: `${store.name.ja} ${f.level}` }, { lang: "en", text: `${store.name.en} ${f.level}` }] }))],
     nodes: [...bundle.nodes, ...nodes], edges: [...bundle.edges, ...edges],
-    pois: bundle.pois.map(p => p.id !== plan.input.poiId ? p : { ...p, aliases: [...p.aliases, { lang: "ja", text: "デパ地下" }, { lang: "en", text: "Seibu Ikebukuro food hall" }] }),
+    pois: bundle.pois.map(p => p.id !== plan.input.poiId ? p : { ...p, floorId: goal.floorId, displayPosition: goal.position, connectorNodeIds: [goal.id], aliases: [...p.aliases, { lang: "ja", text: "デパ地下" }, { lang: "en", text: `${store.name.en} food hall` }], evidence, notes: [{ lang: "ja", text: "生成された店内プレビュー。通路・売場位置は実測ではありません。" }, { lang: "en", text: "Generated interior preview; aisles and tenant positions are illustrative." }] }),
   };
 }

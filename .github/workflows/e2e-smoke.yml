@@ -4,6 +4,8 @@ on:
   # Docs-only PRs skip browser jobs via changes; no paths: filter, so checks still report
   # on every PR and cannot leave a future required check pending outside its paths.
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -20,6 +22,8 @@ jobs:
     timeout-minutes: 5
     outputs:
       code: ${{ steps.filter.outputs.code }}
+      ikebukuro: ${{ steps.filter.outputs.ikebukuro }}
+      shinjuku: ${{ steps.filter.outputs.shinjuku }}
     steps:
       - id: filter
         env:
@@ -27,14 +31,21 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           code=true
+          ikebukuro=true
+          shinjuku=true
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            if files=$(gh pr diff ${{ github.event.pull_request.number }} --name-only); then
-              if [[ -n "$files" ]] && ! grep -qv '^docs/' <<< "$files"; then
-                code=false
-              fi
+            files=$(gh api --paginate "repos/${GH_REPO}/pulls/${{ github.event.pull_request.number }}/files?per_page=100" --jq '.[] | .filename, (.previous_filename // empty)')
+            if [[ -n "$files" ]] && ! grep -qv '^docs/' <<< "$files"; then
+              code=false
+            elif [[ -n "$files" ]] && ! grep -qv '^stations/ikebukuro/gteki/' <<< "$files"; then
+              shinjuku=false
+            elif [[ -n "$files" ]] && ! grep -qv '^stations/shinjuku/' <<< "$files"; then
+              ikebukuro=false
             fi
           fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "ikebukuro=$ikebukuro" >> "$GITHUB_OUTPUT"
+          echo "shinjuku=$shinjuku" >> "$GITHUB_OUTPUT"
 
   e2e-smoke:
     needs: changes
@@ -148,24 +159,33 @@ jobs:
       fail-fast: false
       matrix:
         station: [ikebukuro, shinjuku]
+    env:
+      RUN_STATION: ${{ needs.changes.outputs[matrix.station] }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - if: env.RUN_STATION == 'true'
+        uses: actions/checkout@v4
+      - if: env.RUN_STATION == 'true'
+        uses: pnpm/action-setup@v4
+      - if: env.RUN_STATION == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: |
             pnpm-lock.yaml
             tests/e2e/pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - if: env.RUN_STATION == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: env.RUN_STATION == 'true'
+        run: pnpm build
       - name: Install Playwright harness
+        if: env.RUN_STATION == 'true'
         working-directory: tests/e2e
         run: |
           pnpm install --ignore-workspace --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
       - name: Run golden cameras
+        if: env.RUN_STATION == 'true'
         timeout-minutes: 12
         working-directory: tests/e2e
         env:
@@ -173,7 +193,7 @@ jobs:
           GTEKI_GOLDEN_STATION: ${{ matrix.station }}
         run: pnpm exec playwright test specs/29-golden-shots.spec.ts --project=desktop-chromium --trace=off
       - name: Upload golden shots
-        if: always()
+        if: env.RUN_STATION == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
           name: golden-shots-${{ matrix.station }}
@@ -182,14 +202,14 @@ jobs:
           if-no-files-found: ignore
 
       - name: Checkout base
-        if: github.event_name == 'pull_request' && !cancelled()
+        if: env.RUN_STATION == 'true' && github.event_name == 'pull_request' && !cancelled()
         continue-on-error: true
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           path: base-src
       - name: Build base
-        if: github.event_name == 'pull_request' && !cancelled()
+        if: env.RUN_STATION == 'true' && github.event_name == 'pull_request' && !cancelled()
         continue-on-error: true
         working-directory: base-src
         run: |
@@ -204,7 +224,7 @@ jobs:
           cd tests/e2e
           pnpm install --ignore-workspace --frozen-lockfile
       - name: Run base golden cameras
-        if: github.event_name == 'pull_request' && !cancelled()
+        if: env.RUN_STATION == 'true' && github.event_name == 'pull_request' && !cancelled()
         continue-on-error: true
         timeout-minutes: 12
         working-directory: base-src/tests/e2e
@@ -213,7 +233,7 @@ jobs:
           GTEKI_GOLDEN_STATION: ${{ matrix.station }}
         run: pnpm exec playwright test specs/29-golden-shots.spec.ts --project=desktop-chromium --trace=off
       - name: Compare golden cameras
-        if: github.event_name == 'pull_request' && !cancelled()
+        if: env.RUN_STATION == 'true' && github.event_name == 'pull_request' && !cancelled()
         continue-on-error: true
         run: |
           if ! node tools/qa/golden-diff.mjs base-src/tests/e2e/artifacts/golden/desktop-chromium tests/e2e/artifacts/golden/desktop-chromium golden-diff-out --cameras tests/e2e/golden-cameras.json; then
@@ -221,7 +241,7 @@ jobs:
             echo "golden diff missing: comparison failed; inspect base/head capture steps" >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Upload golden diff
-        if: github.event_name == 'pull_request' && !cancelled()
+        if: env.RUN_STATION == 'true' && github.event_name == 'pull_request' && !cancelled()
         continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
@@ -241,24 +261,33 @@ jobs:
       matrix:
         project: [desktop-chromium, phone-chromium]
         mode: [default, next]
+    env:
+      RUN_STATION: ${{ needs.changes.outputs.shinjuku }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - if: env.RUN_STATION == 'true'
+        uses: actions/checkout@v4
+      - if: env.RUN_STATION == 'true'
+        uses: pnpm/action-setup@v4
+      - if: env.RUN_STATION == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: |
             pnpm-lock.yaml
             tests/e2e/pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
+      - if: env.RUN_STATION == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: env.RUN_STATION == 'true'
+        run: pnpm build
       - name: Install Playwright harness
+        if: env.RUN_STATION == 'true'
         working-directory: tests/e2e
         run: |
           pnpm install --ignore-workspace --frozen-lockfile
           pnpm exec playwright install --with-deps chromium
       - name: Run journey
+        if: env.RUN_STATION == 'true'
         timeout-minutes: 44  # 2026-11-17: phone next passed its arrival checks then hit 32 min on #1422 and #1408
         working-directory: tests/e2e
         env:
@@ -267,7 +296,7 @@ jobs:
           GTEKI_ROOT: ${{ github.workspace }}
         run: pnpm exec playwright test specs/30-journey.spec.ts --project=${{ matrix.project }} --trace=off
       - name: Capture Shinjuku department stores
-        if: always()
+        if: env.RUN_STATION == 'true' && always()
         timeout-minutes: 12
         working-directory: tests/e2e
         env:
@@ -276,13 +305,13 @@ jobs:
           GTEKI_ROOT: ${{ github.workspace }}
         run: pnpm exec playwright test specs/31-shinjuku-department-stores.spec.ts --project=${{ matrix.project }} --trace=off
       - name: Append journey summary
-        if: always()
+        if: env.RUN_STATION == 'true' && always()
         run: |
           if [ -f "tests/e2e/artifacts/journey/${{ matrix.project }}/summary.md" ]; then
             cat "tests/e2e/artifacts/journey/${{ matrix.project }}/summary.md" >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Upload journey reel
-        if: always()
+        if: env.RUN_STATION == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
           name: journey-reel-${{ matrix.project }}${{ matrix.mode == 'next' && '-next' || '' }}
@@ -290,7 +319,7 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
       - name: Upload journey test results
-        if: always()
+        if: env.RUN_STATION == 'true' && always()
         uses: actions/upload-artifact@v4
         with:
           name: journey-results-${{ matrix.project }}${{ matrix.mode == 'next' && '-next' || '' }}
