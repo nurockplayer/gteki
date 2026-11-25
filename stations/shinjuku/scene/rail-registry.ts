@@ -1,5 +1,6 @@
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import type { Edge, EvidenceRef, Node, Poi, StationBundle } from "@gteki/schema";
+import { stableHypot } from "./stable-hypot.ts";
 
 type XY = [number, number];
 type XYZ = [number, number, number];
@@ -72,7 +73,7 @@ export function mergeRailBundle(bundle: StationBundle): StationBundle {
       const step = mode === "stairs" || mode === "escalator";
       edges.push({
         id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: "both", mode,
-        lengthM: Math.hypot(p.x - q.x, p.y - q.y, (a.renderZ ?? 0) - (b.renderZ ?? 0)),
+        lengthM: stableHypot(p.x - q.x, p.y - q.y, (a.renderZ ?? 0) - (b.renderZ ?? 0)),
         geometry: [p, q], geometryZ: "symbolic", paid: isPaid, crossesFareBoundary: mode === "gate",
         wheelchair: step ? false : null, steps: step, hours: null, closed: false,
         verification: "verified", geometryEvidence: evidence(source), accessEvidence: evidence(source),
@@ -92,7 +93,7 @@ export function mergeRailBundle(bundle: StationBundle): StationBundle {
         { ja: `${lane.line.ja} 改札`, en: `${lane.line.en} gate` }, gate.poiId ?? undefined);
       const node = positions.get(gate.id);
       if (gate.side !== "public" || !node) continue;
-      const distance = (candidate: Node) => Math.hypot(candidate.position.x - node.position.x, candidate.position.y - node.position.y);
+      const distance = (candidate: Node) => stableHypot(candidate.position.x - node.position.x, candidate.position.y - node.position.y);
       const nearest = concourse.reduce((a, b) => distance(a) <= distance(b) ? a : b);
       connect(nearest, node, "walk", gate.source);
     }

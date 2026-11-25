@@ -1521,6 +1521,12 @@ const departmentStores = JSON.parse(readFileSync(join(HERE, "../data/department-
 const departmentStoreSources = [...new Set(["plateau-13104-shinjuku-ku-2025", ...departmentStores.stores.flatMap(s => pois.find(p => p.id === s.poiId)!.evidence.sourceIds)])].sort();
 const dataFiles: DataFile[] = [
   {
+    id: "jr-yamanote", path: "data/rail/jr-yamanote.json",
+    sourceIds: [SRC_NWD, SRC_MAP, S03_SOURCE_ID].sort(),
+    modified: true,
+    derivation: "Shinjuku rail preview: S03 gate and platform labels, E27 north concourse level, and authored illustrative geometry.",
+  },
+  {
     id: "department-stores", path: "data/department-stores.json",
     sourceIds: departmentStoreSources,
     modified: true,
