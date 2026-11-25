@@ -22,11 +22,18 @@ const layouts = rollout.stores.map(row => {
     circulation: row.circulation,
     entrances: [{ ...row.entrance, point: row.entrance.point as PlanPoint, inward: row.entrance.inward as PlanPoint }],
   });
-  // The shared kit's row clearance is axis-aligned. Keep the diagonal entry clear too.
+  // Clear the entry and the cross-aisle joining it to the stair bypass.
+  const insideX = doorX + 4 * inwardX;
+  const crossAisleZ = doorZ + 4 * inwardZ;
+  const bypassX = layout.aisleX - 4;
+  const crossAisleLeft = Math.min(insideX, bypassX) - 0.9;
+  const crossAisleRight = Math.max(insideX, bypassX) + 0.9;
   layout.counters = layout.counters.filter(([x, z]) => {
     const depth = (x - doorX) * inwardX + (z - doorZ) * inwardZ;
     const across = (z - doorZ) * inwardX - (x - doorX) * inwardZ;
-    return depth <= 0 || depth >= 8 || Math.abs(across) >= 2;
+    const onEntry = depth > 0 && depth < 8 && Math.abs(across) < 2;
+    const onCrossAisle = x > crossAisleLeft && x < crossAisleRight && Math.abs(z - crossAisleZ) < 2.4;
+    return !onEntry && !onCrossAisle;
   });
   return layout;
 });
