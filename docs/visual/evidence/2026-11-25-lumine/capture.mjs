@@ -1,6 +1,7 @@
 // 2026-11-25 JST. Run through job-run + tachi-run --heavy --host.
 import { createServer } from '../../../../apps/web/node_modules/vite/dist/node/index.js';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
+import { once } from 'node:events';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,10 +17,10 @@ process.chdir(join(repo, 'apps/web'));
 const server = await createServer({ server: { host: '127.0.0.1', port: 5301, strictPort: true } });
 try {
   await server.listen();
-  execFileSync('ego-browser', ['nodejs'], {
-    input: browser.toString() + '\nawait browser(' + JSON.stringify({ out, repo, sourceHead, space, receiptPath }) + ');',
-    stdio: ['pipe', 'inherit', 'inherit'],
-  });
+  const script = browser.toString() + '\nawait browser(' + JSON.stringify({ out, repo, sourceHead, space, receiptPath }) + ');';
+  const capture = spawn('ego-browser', ['nodejs', '-e', script], { stdio: 'inherit' });
+  const [code, signal] = await once(capture, 'close');
+  if (code !== 0) throw Error('Ego-lite capture exited with ' + (signal ?? code));
 } finally {
   try {
     execFileSync('ego-browser', ['nodejs', '-e', `const s = (await listTaskSpaces()).find(s => s.name === '${space}'); if (s) await (await taskSpace(s.id)).finish({ keep: [] });`], { stdio: 'inherit' });
