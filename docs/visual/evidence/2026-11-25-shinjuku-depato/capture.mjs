@@ -28,6 +28,7 @@ try {
     const originals = isBase ? new Map([
       "stations/shinjuku/gteki/scene.ts", "stations/shinjuku/scene/build.ts",
       "stations/shinjuku/scene/surface.ts", "stations/shinjuku/scene/surface-layout.ts",
+      "stations/shinjuku/scene/surface-street.ts", "apps/web/src/explorer/explorer.ts",
     ].map(path => [join(repo, path), git("show", `${base}:${path}`)])) : new Map();
     const server = await createServer({
       define: { __BUILD_SHA__: JSON.stringify(source) },
@@ -69,19 +70,24 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
   const task = await taskSpace(entry?.id ?? space), page = task.page("p1");
   const receipt = JSON.parse(await fs.readFile(receiptPath, "utf8"));
   const { exitPoi, exitNode, waypoints } = config.streetApproach;
-  const exitCamera = exitPoi.split(":").slice(1).join("-");
   const { point: [dx, dz], inward: [nx, nz], elevation: y } = config.entrance;
   const { aisleX: x, from, to } = config.circulation, b1 = y - 4.5;
   const pos = (x, y, z) => ({ x, y, z });
   const threshold = d => pos(dx + nx * d, y, dz + nz * d);
   const facing = p => Math.atan2(p.x - dx, p.z - dz);
+  const doorPose = threshold(-4.5);
+  const approach = waypoints.map(p => pos(...p));
+  const posterGone = () => ![...document.querySelectorAll("#cold-open-poster, .boot-card")].some(el =>
+    !el.hidden && getComputedStyle(el).display !== "none");
   const open = async next => {
-    await page.goto(url + "?station=shinjuku&open=search&qaTimeBand=morning" + (next ? "&next=1" : ""));
-    await page.waitForFunction(() => window.__gteki?.phase() === "ready", undefined, { timeout: 120000 });
+    await page.goto(url + "?station=shinjuku&open=search&lang=ja&qaTimeBand=morning" + (next ? "&next=1" : ""));
+    await page.waitForFunction(() => window.__gteki?.phase() === "ready" &&
+      document.querySelector("#gteki-to:not(:disabled)"), undefined, { timeout: 120000 });
+    await page.waitForFunction(posterGone);
     await page.evaluate(async () => {
       const g = window.__gteki;
       await g.scanProbe().explorer.stationScene.settled?.();
-      document.getElementById("search-panel").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await document.fonts.ready;
       document.querySelector(".minimap-collapse:not([hidden])")?.click();
       g.holdFrames(true);
     });
@@ -91,44 +97,89 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
     if (!isBase) receipt.profiles.push(profile);
     const frame = async (name, yaw, golden = false) => {
       const showOpening = name === "street-approach" || name === "outside-door";
-      const checkCat = !golden && device.mobile && (showOpening || name === "inside-door");
-      const distance = name.endsWith("-door") ? 3.1 : 2.25;
-      const state = await page.evaluate(({ yaw, distance, showOpening, checkCat, entrance, buildingId }) => {
+      const showHeader = showOpening || name === "inside-door";
+      const guiding = name === "halfway" || name === "street-approach";
+      const checkCat = !golden && device.mobile;
+      const distance = golden || name.endsWith("-door") || (guiding && checkCat) ? 3.1 : 2.25;
+      const state = await page.evaluate(async ({ yaw, distance, showOpening, showHeader, checkCat, entrance, buildingId, poiId }) => {
         const g = window.__gteki, e = g.scanProbe().explorer;
         g.setCamera({ yaw, pitch: 0.06, distance });
         g.goldenFrame(); g.goldenFrame();
+        await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         const loaded = [];
         e.stationScene.root.traverse(o => { if (o.name.startsWith("depato-interior:") && o.children.length) loaded.push(o.name); });
         const fits = (left, right, top, bottom) => e.freeRects().some(r =>
           left >= r.x + 4 && right <= r.x + r.w - 4 && top >= r.y + 4 && bottom <= r.y + r.h - 4);
+        const overlaps = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
         const catBox = checkCat ? e.catScreenBox() : null;
+        const hud = [...document.querySelectorAll(".hud-line, .hud-row")].map(el => el.getBoundingClientRect());
+        const project = (sideM, bottomM, topM) => {
+          const [x, z] = entrance.point, [nx, nz] = entrance.inward;
+          return g.projectEnu([-sideM, sideM].flatMap(side => [bottomM, topM].map(height => ({
+            x: x - nz * side, y: -(z + nx * side), z: entrance.elevation + height,
+          }))));
+        };
+        const bounds = points => ({ left: Math.min(...points.map(p => p.x)), right: Math.max(...points.map(p => p.x)),
+          top: Math.min(...points.map(p => p.y)), bottom: Math.max(...points.map(p => p.y)) });
         let openingInView = null;
         if (showOpening) {
-          const [x, z] = entrance.point, [nx, nz] = entrance.inward;
-          const points = [-1.7, 1.7].flatMap(side => [0.25, 2.55].map(height => ({
-            x: x - nz * side, y: -(z + nx * side), z: entrance.elevation + height,
-          })));
-          const projected = g.projectEnu(points);
+          const [x, z] = entrance.point;
+          const projected = project(1.7, 0.25, 2.55);
+          const box = bounds(projected);
           const facade = e.stationScene.root.getObjectByName("department-store:" + buildingId);
           const origin = e.camera.position;
           const target = origin.clone().set(x, entrance.elevation + 1.4, z);
           const ray = new e.ray.constructor(origin, target.clone().sub(origin).normalize(), 0, target.distanceTo(origin) + 0.35);
-          openingInView = !projected.some(p => p.behind) && fits(Math.min(...projected.map(p => p.x)),
-            Math.max(...projected.map(p => p.x)), Math.min(...projected.map(p => p.y)), Math.max(...projected.map(p => p.y))) &&
+          openingInView = !projected.some(p => p.behind) && fits(box.left, box.right, box.top, box.bottom) &&
             ray.intersectObject(facade, true).length === 0;
         }
+        let headerInView = null, pillOverHeader = null;
+        if (showHeader) {
+          const projected = project(1.9, 2.15, 2.75);
+          const box = bounds(projected);
+          const pill = e.poiLabels.find(label => label.poiId === poiId).obj.element;
+          headerInView = !projected.some(p => p.behind) && fits(box.left, box.right, box.top, box.bottom);
+          pillOverHeader = overlaps(pill.getBoundingClientRect(), box);
+        }
         return { avatar: g.avatar(), camera: g.camera(), loaded, minimapCollapsed: !!document.querySelector(".minimap-reopen:not([hidden])"),
-          streetVisible: e.stationScene.root.getObjectByName("surface-render-only")?.visible, openingInView, catBox,
-          catInView: checkCat ? !!catBox && fits(catBox.left, catBox.right, catBox.top, catBox.bottom) : null };
-      }, { yaw, distance, showOpening, checkCat, entrance: config.entrance, buildingId: config.buildingId });
-      const file = golden ? `flag-off/${isBase ? "base" : "head"}/${device.id}-${exitCamera}.png` : `${device.id}-${name}.png`;
+          streetVisible: e.stationScene.root.getObjectByName("surface-render-only")?.visible,
+          guiding: g.mode() === "guide" && !!document.querySelector(".hud-line .hud-instruction"),
+          openingInView, headerInView, pillOverHeader, catBox,
+          catInView: checkCat ? !!catBox && fits(catBox.left, catBox.right, catBox.top, catBox.bottom) &&
+            !hud.some(rect => overlaps(catBox, rect)) : null };
+      }, { yaw, distance, showOpening, showHeader, checkCat, entrance: config.entrance, buildingId: config.buildingId, poiId: config.poiId });
+      await page.waitForFunction(posterGone);
+      const file = golden ? `flag-off/${isBase ? "base" : "head"}/${device.id}-outside-door.png` : `${device.id}-${name}.png`;
       await page.screenshot({ path: out + "/" + file });
       profile.frames.push({ name, file, source, ...state });
       if (!state.minimapCollapsed || state.loaded.length > 1) throw Error(`${name}: invalid minimap or active store count`);
-      if (state.openingInView === false || state.catInView === false)
-        throw Error(`${name}: opening in frame ${state.openingInView}, cat in frame ${state.catInView}`);
+      if ((golden || guiding || showOpening) && !state.streetVisible) throw Error(`${name}: street context hidden`);
+      if (guiding && !state.guiding) throw Error(`${name}: guide panel missing`);
+      if (state.openingInView === false || state.headerInView === false || state.pillOverHeader || state.catInView === false)
+        throw Error(`${name}: opening ${state.openingInView}, header ${state.headerInView}, pill overlap ${state.pillOverHeader}, cat ${state.catInView}`);
       return state;
     };
+    const guideAt = async point => page.evaluate(p => {
+      const g = window.__gteki, e = g.scanProbe().explorer;
+      const { pts, cum } = e.guide;
+      if (!p) {
+        g.seekGuide(cum.at(-1) / 2);
+        return;
+      }
+      const target = e.pos.clone().set(p.x, p.y, p.z);
+      let nearest = Infinity, distance = 0;
+      pts.slice(1).forEach((b, i) => {
+        const a = pts[i], delta = b.clone().sub(a);
+        if (!delta.lengthSq()) return;
+        const t = Math.max(0, Math.min(1, target.clone().sub(a).dot(delta) / delta.lengthSq()));
+        const gap = a.clone().addScaledVector(delta, t).distanceToSquared(target);
+        if (gap < nearest) {
+          nearest = gap;
+          distance = cum[i] + t * (cum[i + 1] - cum[i]);
+        }
+      });
+      g.seekGuide(distance);
+    }, point);
     const walk = async (name, ...points) => {
       for (const target of points) {
         const leg = await page.evaluate(point => {
@@ -148,16 +199,28 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
       await page.cdp("Emulation.setTouchEmulationEnabled", { enabled: device.mobile });
       if (!isBase) {
         await open(true);
-        const start = await page.evaluate(({ exitPoi, exitNode, poiId }) => {
+        const searchName = await page.evaluate(({ exitPoi, poiId }) => {
           const g = window.__gteki;
           g.setOrigin(exitPoi);
-          g.setDestination(poiId);
-          const route = g.route();
+          return g.scanProbe().explorer.station.bundle.pois.find(p => p.id === poiId).names.find(n => n.lang === "ja").text;
+        }, { exitPoi, poiId: config.poiId });
+        await page.fill("#gteki-to", searchName);
+        await page.click(`#gteki-to-listbox .result-name:text-is(${JSON.stringify(searchName)})`, { label: "Choose the searched store" });
+        const route = await page.evaluate(() => window.__gteki.route());
+        profile.searchName = searchName;
+        profile.route = route;
+        if (!route?.ok || route.nodeIds.at(-1) !== `depato-${config.id}-1F-door0`) throw Error("Search route did not end at the store door");
+        await page.click(".sheet .actions .primary", { label: "Start the store guide" });
+        await guideAt(null);
+        const halfYaw = await page.evaluate(() => window.__gteki.scanProbe().explorer.yaw);
+        await frame("halfway", halfYaw);
+        await guideAt(approach.at(-2));
+        await frame("street-approach", facing(approach.at(-2)));
+        const start = await page.evaluate(({ exitNode }) => {
+          const g = window.__gteki;
           if (!g.setView({ node: exitNode, headingDeg: 0 }).placed) throw Error("Exit placement failed");
-          return { route, avatar: g.avatar() };
-        }, { exitPoi, exitNode, poiId: config.poiId });
-        profile.route = start.route;
-        if (!start.route?.ok || start.route.nodeIds.at(-1) !== `depato-${config.id}-1F-door0`) throw Error("Route did not end at the store door");
+          return g.avatar();
+        }, { exitNode });
         profile.doorwayClear = await page.evaluate(({ buildingId, entrance }) => {
           const e = window.__gteki.scanProbe().explorer;
           const facade = e.stationScene.root.getObjectByName("department-store:" + buildingId);
@@ -167,13 +230,11 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
           return ray.intersectObject(facade, true).length === 0;
         }, config);
         if (!profile.doorwayClear) throw Error("Exterior facade blocks the opening");
-        const approach = waypoints.map(p => pos(...p));
-        await walk("exit-to-street", ...approach.slice(0, -1));
-        if (!(await frame("street-approach", facing(approach.at(-2)))).streetVisible) throw Error("Street context hidden on approach");
-        await walk("outside-door", approach.at(-1), threshold(-4.5));
-        await frame("outside-door", facing(threshold(-4.5)));
+        await walk("exit-to-street", ...approach);
+        await walk("outside-door", doorPose);
+        await frame("outside-door", facing(doorPose));
         await walk("door-to-1F", threshold(0), threshold(4));
-        await frame("inside-door", facing(threshold(-4.5)));
+        await frame("inside-door", facing(threshold(4)));
         await walk("1F-aisle", pos(x - 4, y, threshold(4).z), pos(x - 4, y, from - 2));
         if (!(await frame("1F-aisle", Math.PI)).loaded.includes(`depato-interior:${config.id}`)) throw Error("Store detail missing in the 1F aisle");
         if (hasB1) {
@@ -183,8 +244,8 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
           await walk("up-to-1F", pos(x - 4, b1, from - 2), pos(x, b1, from - 2), pos(x - 0.95, b1, from - 0.4),
             pos(x - 0.95, y, to + 0.6), pos(x, y, to + 2), pos(x - 4, y, to + 2));
         }
-        await walk("back-out", pos(x - 4, y, threshold(4).z), threshold(4), threshold(0), ...approach.reverse(),
-          pos(start.avatar.x, start.avatar.z, -start.avatar.y));
+        await walk("back-out", pos(x - 4, y, threshold(4).z), threshold(4), threshold(0), ...approach.toReversed(),
+          pos(start.x, start.z, -start.y));
         profile.unloadedOnReturn = await page.evaluate(id =>
           window.__gteki.scanProbe().explorer.stationScene.root.getObjectByName("depato-interior:" + id).children.length === 0, config.id);
         if (!profile.unloadedOnReturn) throw Error("Store detail remained loaded at the exit");
@@ -194,11 +255,17 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
     }
     try {
       await open(false);
-      await page.evaluate(node => {
-        const g = window.__gteki;
-        if (!g.setView({ node, headingDeg: 0 }).placed) throw Error("Flag-off exit placement failed");
-      }, exitNode);
-      await frame(isBase ? "flag-off-base" : "flag-off-head", 0, true);
+      const outside = profile.frames.find(f => f.name === "outside-door")?.avatar;
+      await page.evaluate(({ node, point }) => {
+        const g = window.__gteki, e = g.scanProbe().explorer;
+        if (!g.setView({ node, headingDeg: 0 }).placed) throw Error("Flag-off walk camera did not initialize");
+        document.getElementById("search-panel").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        // The default graph has no walkable surface at the storefront.
+        e.pos.set(point.x, point.y, point.z);
+        e.lastAvatarPos.copy(e.pos);
+        e.teleported = true;
+      }, { node: exitNode, point: outside ? pos(outside.x, outside.z, -outside.y) : doorPose });
+      await frame(isBase ? "flag-off-base" : "flag-off-head", facing(doorPose), true);
     } catch (error) {
       receipt.failures.push(device.id + " flag-off: " + error.message);
     }

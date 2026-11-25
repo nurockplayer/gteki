@@ -244,7 +244,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   instance("surface-tree-trunks",new THREE.CylinderGeometry(.12,.17,3,6),mats.stone,trees.map(({p})=>matrix(p,1.6)),trees.map(()=>new THREE.Color("#75685b")));
   const lampParts=[new THREE.CylinderGeometry(.055,.095,6,8),new THREE.BoxGeometry(.85,.12,.28)];lampParts[0]!.translate(0,3,0);lampParts[1]!.translate(.32,6,0);
   const lamp=mergeGeometries(lampParts,false)!;lampParts.forEach(g=>g.dispose());instance("surface-streetlights",lamp,mats.steel,lights.map(({p})=>matrix(p,0)));
-  for(const {a,b} of surfaceLampRails(surface,layout,opts.bundle)){
+  for(const {a,b} of surfaceLampRails(surface,layout,opts.bundle,opts.previewNext)){
     add("steel",beam(pos(a,.85),pos(b,.85),.04,.04),mats.steel);
     for(const q of [a,b]){
       const bollard=new THREE.CylinderGeometry(.065,.065,.9,8);bollard.translate(q.x,.45,-q.y);add("steel",bollard,mats.steel);

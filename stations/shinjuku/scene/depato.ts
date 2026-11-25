@@ -51,7 +51,8 @@ export function depatoPreviewBundle(bundle: StationBundle): StationBundle {
     }, layouts[index]!);
     const door = withInterior.nodes.find(n => n.id === `depato-${row.id}-1F-door0`)!;
     return { ...withInterior, pois: withInterior.pois.map(p => p.id === row.poiId
-      ? { ...p, floorId: door.floorId, displayPosition: door.position, connectorNodeIds: [door.id] } : p) };
+      ? { ...p, floorId: door.floorId, displayPosition: { ...door.position, z: row.entrance.elevation + 1.3 },
+        connectorNodeIds: [door.id] } : p) };
   }, bundle);
 }
 

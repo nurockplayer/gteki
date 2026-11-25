@@ -139,10 +139,10 @@ export function surfacePadWalls(layout: Layout, bundle: StationBundle, previewNe
     const footprint = streetFootprint(layout), segs = graphSegments(layout, bundle);
     const departures = previewNext ? depatoRollout.stores.flatMap(({ streetApproach }) => {
       const exit = bundle.nodes.find(n => n.id === streetApproach.exitNode)!.position;
-      const [x, , z] = streetApproach.waypoints[0]!;
-      return [{ a: exit, b: { x: x!, y: -z! } }];
+      const points = [exit, ...streetApproach.waypoints.map(([x, , z]) => ({ x: x!, y: -z! }))];
+      return points.slice(1).map((b, i) => ({ a: points[i]!, b }));
     }) : [];
-    const clear = (p: XY) => departures.some(({ a, b }) => dist(p, a, b).d < 0.8) ||
+    const clear = (p: XY) => departures.some(({ a, b }) => dist(p, a, b).d < 1.1) ||
       segs.some(({ a, b }) => { const q = dist(p, a, b), z = a.z + (b.z - a.z) * q.t; return q.d < 0.65 && z > -2.0 && z < 1.2; });
     const walls: WallSeg[] = [];
     for (const poly of footprint) for (const ring of poly) for (let i = 1; i < ring.length; i++) {
