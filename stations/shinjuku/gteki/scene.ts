@@ -1,10 +1,10 @@
 /**
  * @gteki/scene-api hook for the shared explorer (apps/web). Reuses the Shinjuku lane's
- * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
- * never adds routes (the explorer routes only on graph.json).
+ * renderer-neutral layout + Three.js builder. The separate rail registry adds preview-only routes.
  */
 import { WALKER_BODY, buildWallProps, wallPropDrawRanges, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
+import type { StationBundle } from "@gteki/schema";
 import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -230,6 +230,9 @@ export const releaseCaches = releaseShinjukuCaches;
 export const stairwellRecipeUrl = async (tier: "high" | "low"): Promise<string | null> =>
   (tier === "high" ? await import("../scene/stairwell-recipe-high.ts") : await import("../scene/stairwell-recipe-low.ts")).default;
 
+export const previewBundle = async (bundle: StationBundle) =>
+  (await import("../scene/rail-registry.ts")).mergeRailBundle(bundle);
+
 /**
  * The explorer hook. The Lane E kit swap (Issue #94) is ON by default for the escalator role only: with no query
  * the scene loads the station's mobile kit bundle and dresses the escalators, and if that fails for any reason it
@@ -247,9 +250,11 @@ export const buildScene: BuildScene = (ctx) => {
     .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; })
     .finally(() => markScene("shops"));
   const markedSwap = swap.finally(() => markScene("kit"));
-  return Promise.all([markedSwap, shops, layoutBake]).then(([kit, shopKit, layoutBakeText]) => {
+  const rail = ctx.previewNext ? import("../scene/rail-registry.ts") : null;
+  return Promise.all([markedSwap, shops, layoutBake, rail]).then(([kit, shopKit, layoutBakeText, registry]) => {
     markScene("assemble-start");
-    return assembleScene(ctx, kit ?? undefined, shopKit ?? undefined, { layoutBakeText });
+    const scene = assembleScene(ctx, kit ?? undefined, shopKit ?? undefined, { layoutBakeText });
+    return registry ? registry.attachRailScene(ctx, scene) : scene;
   });
 };
 
