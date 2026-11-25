@@ -396,7 +396,10 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   for (const well of live) for (const rect of well.rects) heights.set(rect, cut.heights.get(rect) ?? []);
 
   const bands: number[] = [];
+  const modelledSlabEdges: string[] | undefined = root.userData.modelledStairwellSlabEdges;
   for (const well of cutWells) {
+    // The authored slab finishes this well. A generic band can cross its surveyed switchback landing.
+    if (modelledSlabEdges?.includes(well.edgeId)) continue;
     for (const [index, rect] of well.rects.entries()) {
       // A cut side face has a centroid height, not a slab level. Only flat
       // removed polygons can leave horizontal slab edges to finish with a band.
