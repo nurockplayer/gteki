@@ -42,7 +42,7 @@ function app(bundle: StationBundle, originId: string) {
   a.s.router = createRouter(bundle);
   a.s.origin = { kind: "poi", poi: bundle.pois.find((p) => p.id === originId)! };
   a.stationReady = true;
-  a.explorer = { connectorRoutePaths: () => new Map(), refitOverview: vi.fn(), clearRoute: vi.fn(), showPois: vi.fn(), showRoute: vi.fn(), currentMode: "overview" };
+  a.explorer = { connectorRoutePaths: () => new Map(), navmeshRoutePaths: () => null, focusPoints: vi.fn(), refitOverview: vi.fn(), clearRoute: vi.fn(), showPois: vi.fn(), showRoute: vi.fn(), currentMode: "overview" };
   for (const name of ["renderIdentity", "renderCredit", "renderBanner", "renderSpawnChips", "renderProfile", "syncPanelMascot", "releaseMascot", "mascotSay"])
     vi.spyOn(a as unknown as Record<string, () => void>, name).mockImplementation(() => {});
   return a;

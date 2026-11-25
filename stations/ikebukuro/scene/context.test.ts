@@ -147,10 +147,12 @@ describe("the context is not part of the collision world", () => {
     });
   }
 
-  it("scene.ts builds walkable and colliders from assembleCollision alone; its only cameraBlockers are the context blockers", () => {
+  it("scene.ts keeps context buildings outside walkable and colliders and uses separate camera blockers", () => {
     const src = fs.readFileSync(new URL("./scene.ts", import.meta.url), "utf8").replace(/\/\/[^\n]*/g, "");
     expect(src.match(/cameraBlockers/g)).toEqual(["cameraBlockers"]);
-    expect(src).toContain("cameraBlockers: contextBlockers.meshes");
+    expect(src).toContain("walkable: [...walkTiles, threshold]");
+    expect(src).toContain("colliders: colliderTiles");
+    expect(src).toContain("cameraBlockers: [...contextBlockers.meshes, stairEnclosureBlocker]");
     expect(src).toMatch(/tileCollision\(THREE, \{ walkable, colliders \}\)/);
     expect(src).toMatch(/root\.add\(context\)/);
     expect(src).not.toMatch(/root\.add\([^)]*contextBlockers/);
@@ -328,7 +330,7 @@ describe("station.json: street-context asset, sources and attribution", () => {
     expect(a.floorIds).toEqual(["street"]);
     expect(a.sourceIds).toEqual(SOURCE_IDS);
     expect(a.uri).toBe(CONTEXT_GLB.low);
-    expect(a.files).toEqual([CONTEXT_GLB.high]);
+    expect(a.files).toEqual([CONTEXT_GLB.high, "assets/ikebukuro_landmarks_next.glb"]);
     for (const f of [a.uri, ...(a.files ?? [])]) expect(fs.existsSync(GTEKI + f), f).toBe(true);
     expect(a.derivation).toContain("--merge tiles:380");
     expect(a.derivation).toContain(DECISION);

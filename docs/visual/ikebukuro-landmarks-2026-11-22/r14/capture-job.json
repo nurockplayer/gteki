@@ -1,0 +1,18 @@
+{
+  "id": "depato-ikb-ai-r14",
+  "status": "ok",
+  "exit_code": 0,
+  "signal": null,
+  "artifacts": [
+    "/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro/docs/visual/ikebukuro-landmarks-2026-11-22/r14"
+  ],
+  "log": "/Users/tachikoma/.local/state/job-run/depato-ikb-ai-r14/log",
+  "cwd": "/Users/tachikoma/Developer/gteki-wt/depato-ikebukuro",
+  "cmd": [
+    "sh",
+    "-c",
+    "mkdir -p docs/visual/ikebukuro-landmarks-2026-11-22/r14 && tachi-run -- pnpm exec vitest run stations/ikebukuro/scene/data_files.test.ts stations/ikebukuro/scene/identity.test.ts --maxWorkers=1 > docs/visual/ikebukuro-landmarks-2026-11-22/r14/focused-tests.log 2>&1 && tail -n 9 docs/visual/ikebukuro-landmarks-2026-11-22/r14/focused-tests.log && tachi-run --heavy --host --est 15m -- sh -c \"nice -n 15 ego-browser nodejs --session ikb-package-ai-r14 --timeout-ms 600000 < docs/visual/ikebukuro-landmarks-2026-11-22/capture-r14.mjs\""
+  ],
+  "started": "2026-11-24T06:36:48+09:00",
+  "ended": "2026-11-24T06:44:56+09:00"
+}
