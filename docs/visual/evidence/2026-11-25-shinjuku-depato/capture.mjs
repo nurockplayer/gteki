@@ -80,6 +80,7 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
     await page.evaluate(async () => {
       const g = window.__gteki;
       await g.scanProbe().explorer.stationScene.settled?.();
+      document.getElementById("search-panel").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
       document.querySelector(".minimap-collapse:not([hidden])")?.click();
       g.holdFrames(true);
     });
@@ -171,7 +172,7 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
         await walk("outside-door", approach.at(-1), threshold(-4.5));
         await frame("outside-door", facing(threshold(-4.5)));
         await walk("door-to-1F", threshold(0), threshold(4));
-        await frame("inside-door", facing(threshold(4)));
+        await frame("inside-door", facing(threshold(-4.5)));
         await walk("1F-aisle", pos(x - 4, y, threshold(4).z), pos(x - 4, y, from - 2));
         if (!(await frame("1F-aisle", Math.PI)).loaded.includes(`depato-interior:${config.id}`)) throw Error("Store detail missing in the 1F aisle");
         if (hasB1) {
