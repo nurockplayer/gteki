@@ -34,7 +34,7 @@ try {
       await server.listen();
       const inputs = { out, repo, space, receiptPath, config, devices, sourceHead, baseline, url: server.resolvedUrls.local[0] };
       const run = spawn('ego-browser', ['nodejs'], { stdio: ['pipe', 'inherit', 'inherit'] });
-      run.stdin.end('await (' + browser.toString() + ')(' + JSON.stringify(inputs) + ')');
+      run.stdin.end(browser.toString() + '\nawait browser(' + JSON.stringify(inputs) + ');');
       const code = await new Promise((resolve, reject) => {
         run.on('error', reject);
         run.on('exit', resolve);
