@@ -515,6 +515,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const finishes = await loadFinishPacks(THREE, ctx, finishManifest as FinishManifest, low);
   const mats = createMaterials(THREE, low, finishes.packs);
   const root = new THREE.Group();
+  root.userData.modelledStairEdges = ["w_n__x18"];
   root.name = "ikebukuro";
   // These flights have surveyed stair meshes. Keep the generated support, but omit the overlapping
   // display stairs, suspended connector lights and short rail sections.
