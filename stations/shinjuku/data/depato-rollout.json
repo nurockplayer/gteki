@@ -45,6 +45,29 @@
         "exitNode": "n:a06f3d191885497bac197b666c4daef9",
         "waypoints": [[-60.73, 0.02, -220.5], [-58.5, 0.02, -245], [-55.8, 0.02, -255.975712], [-40.525220, 0.02, -257.709713]]
       }
+    },
+    {
+      "id": "lumine-2-shinjuku",
+      "poiId": "shop-sjk-lumine2",
+      "buildingId": "bldg_df40b0c1-53fc-4541-80f5-638976540ee7:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[47.495205, -302], [86, -302], [86, -255], [57.394178, -255]],
+      "circulation": { "aisleX": 71, "from": -268, "to": -259 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [53.181849, -275],
+        "inward": [0.9785320, -0.2060949],
+        "outsideNode": "depato-lumine-2-shinjuku-street",
+        "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=1f",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official 1F map marks an entrance beside shop 1 on the JR South Exit side. The preview fits it to the PLATEAU west wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [37, 0.02, -248], [34.589741, 0.02, -271.084196], [46.332125, 0.02, -273.557336]]
+      }
     }
   ]
 }

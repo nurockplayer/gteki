@@ -12,6 +12,8 @@ const [storeId, out, baseline] = process.argv.slice(2);
 const git = (...args) => execFileSync("rtk", ["proxy", "git", "-C", repo, ...args], { encoding: "utf8" });
 const head = git("rev-parse", "HEAD").trim(), base = git("rev-parse", baseline).trim();
 const config = JSON.parse(readFileSync(join(repo, "stations/shinjuku/data/depato-rollout.json"))).stores.find(s => s.id === storeId);
+const hasB1 = JSON.parse(readFileSync(join(repo, "stations/shinjuku/data/depato-floors.json")))
+  .stores.find(s => s.id === storeId).floors.some(f => f.level === "B1");
 const space = `depato-1540-${storeId}`;
 const devices = [{ id: "desktop", width: 1440, height: 900, mobile: false }, { id: "phone", width: 390, height: 844, mobile: true }];
 const golden = join(out, "flag-off");
@@ -34,7 +36,7 @@ try {
     });
     try {
       await server.listen();
-      const inputs = { out, space, receiptPath, config, devices, source, isBase, url: server.resolvedUrls.local[0] };
+      const inputs = { out, space, receiptPath, config, hasB1, devices, source, isBase, url: server.resolvedUrls.local[0] };
       const run = spawn("ego-browser", ["nodejs"], { stdio: ["pipe", "inherit", "inherit"] });
       run.stdin.end(`${browser.toString()}\nawait browser(${JSON.stringify(inputs)});`);
       const code = await new Promise((resolve, reject) => {
@@ -61,7 +63,7 @@ console.log(JSON.stringify({ profiles: receipt.profiles.map(({ device, frames, l
 })), failures: receipt.failures }));
 if (receipt.failures.length) process.exitCode = 1;
 
-async function browser({ out, space, receiptPath, config, devices, source, isBase, url }) {
+async function browser({ out, space, receiptPath, config, hasB1, devices, source, isBase, url }) {
   const fs = await import("node:fs/promises");
   const entry = (await listTaskSpaces()).find(s => s.name === space);
   const task = await taskSpace(entry?.id ?? space), page = task.page("p1");
@@ -148,12 +150,15 @@ async function browser({ out, space, receiptPath, config, devices, source, isBas
         await frame("inside-door", facing(threshold(4)));
         await walk("1F-aisle", pos(x - 4, y, threshold(4).z), pos(x - 4, y, from - 2));
         if (!(await frame("1F-aisle", Math.PI)).loaded.includes(`depato-interior:${config.id}`)) throw Error("Store detail missing in the 1F aisle");
-        await walk("down-to-B1", pos(x, y, from - 2), pos(x + 0.95, y, from), pos(x + 0.95, b1, to + 0.6),
-          pos(x, b1, to + 2), pos(x - 4, b1, to + 2));
-        await frame("B1-aisle", 0);
-        await walk("up-to-1F", pos(x - 4, b1, from - 2), pos(x, b1, from - 2), pos(x - 0.95, b1, from - 0.4),
-          pos(x - 0.95, y, to + 0.6), pos(x, y, to + 2), pos(x - 4, y, to + 2), pos(x - 4, y, threshold(4).z));
-        await walk("back-out", threshold(4), threshold(0), ...approach.reverse(), pos(start.avatar.x, start.avatar.z, -start.avatar.y));
+        if (hasB1) {
+          await walk("down-to-B1", pos(x, y, from - 2), pos(x + 0.95, y, from), pos(x + 0.95, b1, to + 0.6),
+            pos(x, b1, to + 2), pos(x - 4, b1, to + 2));
+          await frame("B1-aisle", 0);
+          await walk("up-to-1F", pos(x - 4, b1, from - 2), pos(x, b1, from - 2), pos(x - 0.95, b1, from - 0.4),
+            pos(x - 0.95, y, to + 0.6), pos(x, y, to + 2), pos(x - 4, y, to + 2));
+        }
+        await walk("back-out", pos(x - 4, y, threshold(4).z), threshold(4), threshold(0), ...approach.reverse(),
+          pos(start.avatar.x, start.avatar.z, -start.avatar.y));
         profile.unloadedOnReturn = await page.evaluate(id =>
           window.__gteki.scanProbe().explorer.stationScene.root.getObjectByName("depato-interior:" + id).children.length === 0, config.id);
         if (!profile.unloadedOnReturn) throw Error("Store detail remained loaded at the exit");

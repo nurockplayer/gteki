@@ -20,4 +20,4 @@ The distances are straight-line plan distances from the search destination's exi
 | `keio-shinjuku` | `poi:exit:1` | 31.5 m | The Keio department-store gate has no modeled entrance connection. |
 | `takashimaya-shinjuku` | `poi:exit:4` | 232.1 m | The direct Shinjuku-sanchome B1 entrance has no modeled connection. |
 
-This table is the pre-rollout audit. The Owner's 2026-11-24 JST street-approach rule allows a source-backed preview door fitted to the PLATEAU footprint and a walk at street grade from the listed exit. `stations/shinjuku/data/depato-rollout.json` records the separate Keio and Lumine 1 doors and interior extents on their shared building part. Both approaches start at Exit 1.
+This table is the pre-rollout audit. The Owner's 2026-11-24 JST street-approach rule allows a source-backed preview door fitted to the PLATEAU footprint and a walk at street grade from the listed exit. `stations/shinjuku/data/depato-rollout.json` records the separate Keio and Lumine 1 doors on their shared building part and the Lumine 2 door on its own building. All three approaches start at Exit 1.
