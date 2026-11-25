@@ -1,0 +1,49 @@
+{
+  "line": {"ja": "有楽町線", "en": "Yurakucho Line"},
+  "operator": "Tokyo Metro",
+  "lineCode": "Y09",
+  "status": "representative",
+  "levels": [
+    {"id": "b1", "label": "B1F", "z_m": 27.9, "source": "toshima-floors", "zBasis": "Existing B1 render elevation (ikebukuro-station)."},
+    {"id": "b2", "label": "B2F", "z_m": 22.9, "source": "toshima-floors", "zBasis": "Representative preview elevation 5 m below B1."}
+  ],
+  "gates": [
+    {"id": "metro-y-south-west-gate", "name": "南通路西改札", "poiId": "metro-y-south-west-gate", "side": "public", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-y-south-west-gate-paid", "name": "南通路西改札", "poiId": null, "side": "paid", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-y-south-east-gate", "name": "南通路東改札", "poiId": "metro-y-south-east-gate", "side": "public", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-y-south-east-gate-paid", "name": "南通路東改札", "poiId": null, "side": "paid", "level": "b1", "position": null, "source": "ikebukuro-pois"}
+  ],
+  "platforms": [
+    {"id": "metro-y09-platform-3", "number": 3, "track": 3, "services": ["新木場方面"], "level": "b2", "islandId": "metro-y09-island", "centerline": null, "width_m": 8, "length_m": 210, "source": "metro-map-facts", "servicesSource": "metro-timetable"},
+    {"id": "metro-y09-platform-4", "number": 4, "track": 4, "services": ["和光市方面"], "level": "b2", "islandId": "metro-y09-island", "centerline": null, "width_m": 8, "length_m": 210, "source": "metro-map-facts", "servicesSource": "metro-timetable"}
+  ],
+  "junctions": [
+    {"id": "metro-y09-island", "level": "b2", "label": "Shared island", "side": "paid", "source": "metro-map-facts"}
+  ],
+  "connectors": [
+    {"from": "metro-y-south-west-gate", "to": "metro-y-south-west-gate-paid", "kind": "gate", "source": "ikebukuro-pois"},
+    {"from": "metro-y-south-east-gate", "to": "metro-y-south-east-gate-paid", "kind": "gate", "source": "ikebukuro-pois"},
+    {"from": "metro-y-south-west-gate-paid", "to": "metro-y09-island", "kind": "stairs", "source": "metro-map-facts"},
+    {"from": "metro-y-south-west-gate-paid", "to": "metro-y09-island", "kind": "lift", "source": "metro-accessibility", "platformEnd": "Wakoshi"},
+    {"from": "metro-y-south-west-gate-paid", "to": "metro-y09-island", "kind": "escalator", "source": "metro-accessibility", "platformEnd": "center / Wakoshi"},
+    {"from": "metro-y-south-east-gate-paid", "to": "metro-y09-island", "kind": "stairs", "source": "metro-map-facts"},
+    {"from": "metro-y-south-east-gate-paid", "to": "metro-y09-island", "kind": "escalator", "source": "metro-accessibility", "platformEnd": "center / Shin-kiba"},
+    {"from": "metro-y09-island", "to": "metro-y-south-east-gate-paid", "kind": "escalator", "source": "metro-accessibility", "direction": "up", "platformEnd": "Shin-kiba"},
+    {"from": "metro-y09-island", "to": "metro-y09-platform-3", "kind": "walk", "source": "metro-map-facts"},
+    {"from": "metro-y09-island", "to": "metro-y09-platform-4", "kind": "walk", "source": "metro-map-facts"}
+  ],
+  "sources": [
+    {"id": "ikebukuro-station", "path": "stations/ikebukuro/gteki/station.json", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Existing PLATEAU 13116-derived B1 render datum. See the plateau-ubld-13116 credit and conditions in that file."},
+    {"id": "toshima-floors", "url": "https://www.city.toshima.lg.jp/303/machizukuri/toshikekaku/shisaku/021391/documents/kihonnkousou.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Toshima barrier-free concept, printed p. 19, platform and gate floor table."},
+    {"id": "ikebukuro-pois", "path": "stations/ikebukuro/gteki/pois.json", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Existing search-only gate POI names and IDs."},
+    {"id": "metro-map-facts", "url": "https://www.metocan.co.jp/upfile/c91fd36928e7611357c3b0f72471652c55e1acb9.pdf#page=8", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Tokyo Metro joint release supplement, p. 8, Ikebukuro diagram dated 2022-10. Platform numbers, island count and stair/device facts only. Printed credits: Shobunsha and Tokyo Metro."},
+    {"id": "metro-accessibility", "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Printed equipment spans, fare-side labels where given and escalator directions."},
+    {"id": "metro-timetable", "url": "https://www.tokyometro.jp/station/ikebukuro/timetable/index.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Tokyo Metro station timetable directions."},
+    {"id": "metro-transfer-guide", "url": "https://www.tokyometro.jp/support/guide/operation/pdf/information_20260314.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "March 2026 guide lists the three Metro line pairs among valid out-of-gate transfers."}
+  ],
+  "gaps": [
+    "No sourced station-frame gate positions or platform/track centerlines, measured island dimensions, paid path geometry or paid elevations. Geometry fields are unset or representative; B1 uses the existing render datum.",
+    "The operator names a public lift and escalator between the west gate and Exit 4 (Esola). Exact threshold, opening, lift stops and tie to the surveyed public B1 graph remain open.",
+    "Transfers to M25 and F09 are listed as out-of-gate; the two Y09 entrances share the Y09 island within their own fare area."
+  ]
+}

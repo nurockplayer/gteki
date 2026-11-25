@@ -1,0 +1,54 @@
+{
+  "line": {"ja": "丸ノ内線", "en": "Marunouchi Line"},
+  "operator": "Tokyo Metro",
+  "lineCode": "M25",
+  "status": "representative",
+  "levels": [
+    {"id": "b1", "label": "B1F", "z_m": 27.9, "source": "toshima-floors", "zBasis": "Existing B1 render elevation (ikebukuro-station)."},
+    {"id": "b2", "label": "B2F", "z_m": 22.9, "source": "toshima-floors", "zBasis": "Representative preview elevation 5 m below B1."}
+  ],
+  "gates": [
+    {"id": "metro-m-central-west-gate", "name": "中央通路西改札", "poiId": "metro-m-central-west-gate", "side": "public", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-m-central-west-gate-paid", "name": "中央通路西改札", "poiId": null, "side": "paid", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-m-central-gate", "name": "中央通路中央改札", "poiId": "metro-m-central-gate", "side": "public", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-m-central-gate-paid", "name": "中央通路中央改札", "poiId": null, "side": "paid", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-m-central-east-gate", "name": "中央通路東改札", "poiId": "metro-m-central-east-gate", "side": "public", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-m-central-east-gate-paid", "name": "中央通路東改札", "poiId": null, "side": "paid", "level": "b1", "position": null, "source": "ikebukuro-pois"}
+  ],
+  "platforms": [
+    {"id": "metro-m25-platform-1", "number": 1, "track": 1, "services": ["荻窪方面"], "level": "b2", "islandId": "metro-m25-island", "centerline": null, "width_m": 8, "length_m": 120, "source": "metro-map-facts", "servicesSource": "metro-boarding"},
+    {"id": "metro-m25-platform-2", "number": 2, "track": 2, "services": ["荻窪方面"], "level": "b2", "islandId": "metro-m25-island", "centerline": null, "width_m": 8, "length_m": 120, "source": "metro-map-facts", "servicesSource": "metro-boarding"}
+  ],
+  "junctions": [
+    {"id": "metro-m25-island", "level": "b2", "label": "Shared island", "side": "paid", "source": "metro-map-facts"}
+  ],
+  "connectors": [
+    {"from": "metro-m-central-west-gate", "to": "metro-m-central-west-gate-paid", "kind": "gate", "source": "ikebukuro-pois"},
+    {"from": "metro-m-central-gate", "to": "metro-m-central-gate-paid", "kind": "gate", "source": "ikebukuro-pois"},
+    {"from": "metro-m-central-east-gate", "to": "metro-m-central-east-gate-paid", "kind": "gate", "source": "ikebukuro-pois"},
+    {"from": "metro-m-central-west-gate-paid", "to": "metro-m25-island", "kind": "stairs", "source": "metro-map-facts"},
+    {"from": "metro-m-central-west-gate-paid", "to": "metro-m25-island", "kind": "lift", "source": "metro-accessibility", "platformEnd": "terminus"},
+    {"from": "metro-m-central-gate-paid", "to": "metro-m25-island", "kind": "stairs", "source": "metro-map-facts"},
+    {"from": "metro-m-central-east-gate-paid", "to": "metro-m25-island", "kind": "stairs", "source": "metro-map-facts"},
+    {"from": "metro-m25-island", "to": "metro-m-central-east-gate-paid", "kind": "escalator", "source": "metro-accessibility", "direction": "up", "platformEnd": "Ogikubo"},
+    {"from": "metro-m25-island", "to": "metro-m25-platform-1", "kind": "walk", "source": "metro-map-facts"},
+    {"from": "metro-m25-island", "to": "metro-m25-platform-2", "kind": "walk", "source": "metro-map-facts"}
+  ],
+  "sources": [
+    {"id": "ikebukuro-station", "path": "stations/ikebukuro/gteki/station.json", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Existing PLATEAU 13116-derived B1 render datum. See the plateau-ubld-13116 credit and conditions in that file."},
+    {"id": "toshima-floors", "url": "https://www.city.toshima.lg.jp/303/machizukuri/toshikekaku/shisaku/021391/documents/kihonnkousou.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Toshima barrier-free concept, printed p. 19, platform and gate floor table."},
+    {"id": "ikebukuro-pois", "path": "stations/ikebukuro/gteki/pois.json", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Existing search-only gate POI names and IDs."},
+    {"id": "metro-map-facts", "url": "https://www.metocan.co.jp/upfile/c91fd36928e7611357c3b0f72471652c55e1acb9.pdf#page=8", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Tokyo Metro joint release supplement, p. 8, Ikebukuro diagram dated 2022-10. Platform numbers, island count and stair/device facts only. Printed credits: Shobunsha and Tokyo Metro."},
+    {"id": "metro-accessibility", "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Printed equipment spans, fare-side labels where given and escalator directions."},
+    {"id": "metro-timetable", "url": "https://www.tokyometro.jp/station/ikebukuro/timetable/index.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Tokyo Metro station timetable directions."},
+    {"id": "metro-boarding", "url": "https://www.smoothmetro.jp/position/ikebukuro.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Tokyo Metro's Smooth Metro boarding guide lists Ogikubo-side departures on both M25 tracks."},
+    {"id": "metro-printed-exits", "url": "https://www.tokyometro.jp/station/ikebukuro/yardmap/index_print.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "March 2026 exit list marks 35 as lift-served. Its linked map JPEG returned HTTP 403 to default curl."},
+    {"id": "metro-m-f-passage", "url": "https://www.tokyometro.jp/station/ikebukuro/shop/shomeishashin.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Operator names the paid M25–F09 passage."}
+  ],
+  "gaps": [
+    "No sourced station-frame gate positions or platform/track centerlines, measured island dimensions, paid path geometry or paid elevations. Geometry fields are unset or representative; B1 uses the existing render datum.",
+    "The three B1 POIs identify gates by name. Public passage attachment and exact fare thresholds remain to be placed.",
+    "The operator's accessibility list names exit 34 for the east-gate street lift. Its March 2026 exit list marks 35. Keep the public lift detached until the landing is confirmed.",
+    "The operator lists a paid passage to F09. Its geometry, controls and connection to the preview stay open."
+  ]
+}
