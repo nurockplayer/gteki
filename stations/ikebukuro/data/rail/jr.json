@@ -1,0 +1,119 @@
+{
+  "line": { "ja": "JR 池袋駅", "en": "JR Lines at Ikebukuro" },
+  "operator": "jreast",
+  "lineCode": "JR",
+  "status": "representative",
+  "serviceNames": {
+    "JA": { "ja": "埼京線", "en": "Saikyo Line", "stationCode": "JA12" },
+    "JS": { "ja": "湘南新宿ライン", "en": "Shonan–Shinjuku Line", "stationCode": "JS21" },
+    "JY": { "ja": "山手線", "en": "Yamanote Line", "stationCode": "JY13" }
+  },
+  "publication": {
+    "id": "jr-ikebukuro-evidence",
+    "sourceIds": ["plateau-ubld-13116", "toshima-underground-guide-2022"],
+    "modified": true,
+    "derivation": "Hand-authored register of station facts and representative access for 2026-11-26 JST. The station pipeline supplies three snapped public B1 approach anchors from gteki/graph.json. The lane source list records fact provenance. 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"
+  },
+  "levels": [
+    { "id": "b1", "label": "B1", "z_m": 27.9, "source": "ikebukuro-public-anchors" },
+    { "id": "jr-1f", "label": "1F", "z_m": 32.21, "source": "jr-representative", "labelSource": "toshima-access-2011" },
+    { "id": "jr-2f", "label": "2F", "z_m": 37, "source": "jr-representative", "labelSource": "toshima-station-2f-b1" }
+  ],
+  "gates": [
+    { "id": "jr-north-public", "poiId": "jr-north-gate", "side": "public", "level": "b1", "position": null, "source": "toshima-sign-guide" },
+    { "id": "jr-north-paid", "poiId": "jr-north-gate", "side": "paid", "level": "b1", "position": null, "source": "toshima-access-2011" },
+    { "id": "jr-central-2-public", "poiId": "jr-central-gate-2", "side": "public", "level": "b1", "position": [-14, 78.5, 27.91], "approachNodeId": "g_jr_c2", "source": "ikebukuro-public-anchors" },
+    { "id": "jr-central-2-paid", "poiId": "jr-central-gate-2", "side": "paid", "level": "b1", "position": null, "source": "toshima-access-2011" },
+    { "id": "jr-central-1-public", "poiId": "jr-central-gate-1", "side": "public", "level": "b1", "position": [-24, 59.5, 27.91], "approachNodeId": "g_jr_c1", "source": "ikebukuro-public-anchors" },
+    { "id": "jr-central-1-paid", "poiId": "jr-central-gate-1", "side": "paid", "level": "b1", "position": null, "source": "toshima-access-2011" },
+    { "id": "jr-south-public", "poiId": "jr-south-gate", "side": "public", "level": "b1", "position": [-69.5, -30.5, 27.58], "approachNodeId": "g_jr_s", "source": "ikebukuro-public-anchors" },
+    { "id": "jr-south-paid", "poiId": "jr-south-gate", "side": "paid", "level": "b1", "position": null, "source": "toshima-access-2011" },
+    { "id": "jr-metropolitan-public", "poiId": "jr-metropolitan-gate", "side": "public", "level": "jr-2f", "position": null, "source": "toshima-sign-guide" },
+    { "id": "jr-metropolitan-paid", "poiId": "jr-metropolitan-gate", "side": "paid", "level": "jr-2f", "position": null, "source": "toshima-station-2f-b1" }
+  ],
+  "platforms": [
+    { "id": "jr-platform-1", "number": 1, "track": 1, "services": ["JA"], "direction": { "ja": "新宿方面", "en": "Toward Shinjuku" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-2", "number": 2, "track": 2, "services": ["JS"], "direction": { "ja": "新宿方面", "en": "Toward Shinjuku" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-3", "number": 3, "track": 3, "services": ["JS"], "direction": { "ja": "赤羽・大宮方面", "en": "Toward Akabane and Ōmiya" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-4", "number": 4, "track": 4, "services": ["JA"], "direction": { "ja": "赤羽・大宮方面", "en": "Toward Akabane and Ōmiya" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-5", "number": 5, "track": 5, "services": ["JY"], "direction": { "ja": "内回り・新宿方面", "en": "Inner loop toward Shinjuku" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-6", "number": 6, "track": 6, "services": ["JY"], "direction": { "ja": "内回り・新宿方面", "en": "Inner loop toward Shinjuku" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-7", "number": 7, "track": 7, "services": ["JY"], "direction": { "ja": "外回り・上野方面", "en": "Outer loop toward Ueno" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-8", "number": 8, "track": 8, "services": ["JY"], "direction": { "ja": "外回り・上野方面", "en": "Outer loop toward Ueno" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" }
+  ],
+  "islands": [
+    { "id": "jr-island-1-2", "level": "jr-1f", "source": "toshima-station-2f-b1" },
+    { "id": "jr-island-3-4", "level": "jr-1f", "source": "toshima-station-2f-b1" },
+    { "id": "jr-island-5-6", "level": "jr-1f", "source": "toshima-station-2f-b1" },
+    { "id": "jr-island-7-8", "level": "jr-1f", "source": "toshima-station-2f-b1" }
+  ],
+  "paidAreas": [
+    { "id": "jr-south-paid-hall", "level": "b1", "source": "jr-representative" }
+  ],
+  "connectors": [
+    { "from": "jr-north-public", "to": "jr-north-paid", "kind": "gate", "source": "toshima-sign-guide" },
+    { "from": "jr-central-2-public", "to": "jr-central-2-paid", "kind": "gate", "source": "toshima-sign-guide" },
+    { "from": "jr-central-1-public", "to": "jr-central-1-paid", "kind": "gate", "source": "toshima-sign-guide" },
+    { "from": "jr-south-public", "to": "jr-south-paid", "kind": "gate", "source": "toshima-sign-guide" },
+    { "from": "jr-metropolitan-public", "to": "jr-metropolitan-paid", "kind": "gate", "source": "toshima-sign-guide" },
+    { "from": "jr-central-1-paid", "to": "jr-south-paid-hall", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-south-paid", "to": "jr-south-paid-hall", "kind": "walk", "source": "jr-representative" },
+
+    { "from": "jr-north-paid", "to": "jr-island-1-2", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-north-paid", "to": "jr-island-3-4", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-north-paid", "to": "jr-island-5-6", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-north-paid", "to": "jr-island-7-8", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-central-2-paid", "to": "jr-island-1-2", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-central-2-paid", "to": "jr-island-3-4", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-central-2-paid", "to": "jr-island-5-6", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-central-2-paid", "to": "jr-island-7-8", "kind": "stairs", "source": "toshima-station-2f-b1" },
+
+    { "from": "jr-south-paid-hall", "to": "jr-island-1-2", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-1-2", "kind": "escalator", "source": "toshima-station-2f-b1" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-1-2", "kind": "lift", "source": "toshima-access-2011" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-3-4", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-3-4", "kind": "escalator", "source": "toshima-station-2f-b1" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-3-4", "kind": "lift", "source": "toshima-access-2011" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-5-6", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-5-6", "kind": "escalator", "source": "toshima-station-2f-b1" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-5-6", "kind": "lift", "source": "toshima-access-2011" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-7-8", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-7-8", "kind": "escalator", "source": "toshima-station-2f-b1" },
+    { "from": "jr-south-paid-hall", "to": "jr-island-7-8", "kind": "lift", "source": "toshima-access-2011" },
+
+    { "from": "jr-metropolitan-paid", "to": "jr-island-1-2", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-metropolitan-paid", "to": "jr-island-3-4", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-metropolitan-paid", "to": "jr-island-5-6", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-metropolitan-paid", "to": "jr-island-7-8", "kind": "stairs", "source": "toshima-station-2f-b1" },
+
+    { "from": "jr-island-1-2", "to": "jr-platform-1", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-island-1-2", "to": "jr-platform-2", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-island-3-4", "to": "jr-platform-3", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-island-3-4", "to": "jr-platform-4", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-island-5-6", "to": "jr-platform-5", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-island-5-6", "to": "jr-platform-6", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-island-7-8", "to": "jr-platform-7", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-island-7-8", "to": "jr-platform-8", "kind": "walk", "source": "jr-representative" }
+  ],
+  "sources": [
+    { "id": "toshima-station-2f-b1", "url": "https://www.city.toshima.lg.jp/documents/3071/ekikounaib2f-b1-02_1.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "scope": "Toshima barrier-free map pp. 9–10, indexed PDF text. Track and directional service labels, four paired islands, levels and vertical-access categories. Direct PDF returned 404." },
+    { "id": "toshima-access-2011", "url": "https://www.city.toshima.lg.jp/documents/15443/kihonnkousou.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "scope": "Toshima's April 2011 accessibility plan, printed p. 19. Ground-level JR platforms, B1 North/Central 1/Central 2/South, over-track Metropolitan gate and the Central 1/South lift access group." },
+    { "id": "toshima-sign-guide", "url": "https://www.city.toshima.lg.jp/405/documents/saingaidorain-honpen_kaitei1-2.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "scope": "Station wayfinding glossary and public gate names. Existing POI identities are retained." },
+    { "id": "ikebukuro-public-anchors", "path": "stations/ikebukuro/gteki/graph.json", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN", "scope": "Existing PLATEAU 13116 public B1 anchors and station render height. The reuse record is docs/gis/rights/plateau-13116-related-catalog.json under PLATEAU Site Policy section 3. 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成" },
+    { "id": "ikebukuro-service-codes", "path": "stations/ikebukuro/scene/identity.json", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN", "scope": "Existing station codes JA12, JS21 and JY13." },
+    { "id": "jr-representative", "path": "stations/ikebukuro/data/rail/jr-plan.md", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN", "scope": "GTEki-authored connectivity abstraction and nominal render heights." },
+    { "id": "jr-east-corroboration", "url": "https://www.jreast.co.jp/estation/stations/108.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-02", "scope": "Corroboration under OD-34 §1. All eight boarding assignments and paid lift access via Central 1 or South." },
+    { "id": "jr-east-metropolitan-corroboration", "url": "https://media.jreast.co.jp/articles/5285", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "scope": "Corroboration only. Stair access from each island to the Metropolitan gate." },
+    { "id": "ecomo-corroboration", "url": "https://www.ecomo.or.jp/barrierfree/transfer/ikebukuro/", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN", "scope": "June 2024 route descriptions corroborate the four shared islands and lift access from both Central 1 and South. The existing source record holds reuse as UNKNOWN. No route text or measurements imported." },
+    { "id": "metro-government-corroboration", "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_bunyabetsu_machizukuri_bfree_pdf_tetsudo_bf_hd_jr07-1", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN", "scope": "Tokyo Metropolitan Government platform-door register corroborates the regular-service track assignments. No door status imported." },
+    { "id": "isp-access-corroboration", "url": "https://secure02.red.shared-server.net/www.zenshinza.com/stage_guide6/2024-05zenshinza-kabuki/ikebukuro-map02.pdf", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN", "scope": "Hosted copy of an Ikebukuro Shopping Park access sheet. Corroborates stairs at North/Central 2 and escalator/lift access at Central 1. Host reuse status is UNKNOWN." }
+  ],
+  "gaps": [
+    "The three PLATEAU-derived public anchors locate the B1 approaches. Exact fare thresholds, paid endpoints and North/Metropolitan public seam coordinates are GAPs. Central 1's existing opening tie is weaker than Central 2's.",
+    "1F and 2F labels are sourced. Their z_m values are nominal render heights. Exact platform centerlines, widths, lengths, paid concourse shapes and device landings are GAPs.",
+    "The connector records describe preview adjacency and device categories. Exact counts, landing positions, escalator directions and gate hours are GAPs. The south paid hall groups shared access from Central 1 and South.",
+    "The indexed Toshima 2F–B1 PDF was readable as text. Direct retrieval returned 404. The JR East B1 diagram image returned 403. Retain facts-only provenance and confirm detailed device placements in the field.",
+    "R1 is context only (OD-17). N02 gives visual rail context. MLIT R2 newer indoor data is login-gated. The JR–Tobu paid transfer opening is unresolved in the station inventory.",
+    "Platform services record the regular JY, JA and JS assignments. The ward sheet also names Narita Express. Limited-express and exceptional track assignments need a dated per-track source."
+  ]
+}
