@@ -13,4 +13,4 @@ updated: 2026-11-23 JST
 
 The station module’s optional `previewBundle` export is applied in `apps/web/src/registry.ts` before search/router construction when `StationEntry.load(true)` is requested. The UI passes its existing next flag. Default loads use the original bundle and scene.
 
-Shinjuku's `stations/shinjuku/scene/depato.ts` uses the same kit and routes Keio, Lumine 1 and Lumine 2 searches via Exit 1 to separate PLATEAU-fitted 1F doors. The approaches and entrance sources are recorded in `stations/shinjuku/data/depato-rollout.json`. Shinjuku's surface layer opens the preview doors and exit rail while keeping the original station graph for base geometry. Updated 2026-11-25 JST.
+Shinjuku's `stations/shinjuku/scene/depato.ts` uses the same kit and routes searches to PLATEAU-fitted 1F doors. Keio, Lumine 1 and Lumine 2 use Exit 1, NEWoMan uses Exit 3, and Takashimaya uses Exit 4. The approaches and entrance sources are recorded in `stations/shinjuku/data/depato-rollout.json`. Shinjuku's surface layer opens the preview doors and exit rail while keeping the original station graph for base geometry. Updated 2026-11-25 JST.

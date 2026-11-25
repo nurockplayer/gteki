@@ -91,6 +91,29 @@
         "exitNode": "n:e6feaa2cc7514b68be2758b956baeb28",
         "waypoints": [[3.71, 0.02, -15.67], [12, 0.02, -20], [38, 0.02, -28], [32, 0.02, -66], [54, 0.02, -74], [66, 0.02, -78], [65, 0.02, -130], [60, 0.02, -180], [68, 0.02, -200], [115, 0.02, -214], [170, 0.02, -230], [222, 0.02, -246], [258, 0.02, -222], [273.798342, 0.02, -203.380104], [267.099171, 0.02, -201.350052]]
       }
+    },
+    {
+      "id": "takashimaya-shinjuku",
+      "poiId": "shop-sjk-takashimaya",
+      "buildingId": "bldg_c2144cb0-0e0e-4208-84a9-83059ece20a3:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[238, -112], [276.4625, -112], [297.6, -83.5], [302.368061, -55], [238, -55]],
+      "circulation": { "aisleX": 260, "from": -85, "to": -72 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [286.92, -97.9],
+        "inward": [-0.803201, 0.595708],
+        "outsideNode": "depato-takashimaya-shinjuku-street",
+        "source": "https://www.takashimaya.co.jp/base/shinjuku/top/img/info_221226_shinjuku.pdf",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official entrance map labels the 1F Meiji-dori entrance. The preview door is fitted to the PLATEAU wall facing Meiji-dori at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:4",
+        "exitNode": "n:e4cfe61e944e4f5e8ad8caeb6d521750",
+        "waypoints": [[12, 0.02, 14], [36, 0.02, 20], [80, 0.02, 15], [124, 0.02, 11], [166, 0.02, 7], [214, 0.02, 2], [234, 0.02, 20], [244, 0.02, 50], [248, 0.02, 52], [256, 0.02, 50], [260, 0.02, 46], [285, 0.02, 8], [310, 0.02, -30], [312, 0.02, -65], [298.164819, 0.02, -106.239907], [292.542409, 0.02, -102.069954]]
+      }
     }
   ]
 }
