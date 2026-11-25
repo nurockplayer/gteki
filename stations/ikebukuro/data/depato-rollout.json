@@ -482,4 +482,11 @@
     },
     {
       "id": "sunshine-city-world-import-mart",
-... (+8 lines) [see remaining: rtk proxy git show HEAD:stations/ikebukuro/data/depato-rollout.json | tail -n +419]
+      "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
+    },
+    {
+      "id": "sunshine-city-60",
+      "reason": "Outside the committed station/context building and walkable street coverage. Phase-1 PR #1512 is open and has only a combined Sunshine skyline, without a building-to-store entrance mapping."
+    }
+  ]
+}
