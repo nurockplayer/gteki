@@ -20,4 +20,4 @@ The distances are straight-line plan distances from the search destination's exi
 | `keio-shinjuku` | `poi:exit:1` | 31.5 m | The Keio department-store gate has no modeled entrance connection. |
 | `takashimaya-shinjuku` | `poi:exit:4` | 232.1 m | The direct Shinjuku-sanchome B1 entrance has no modeled connection. |
 
-Resume each store when a doorway can be placed on its footprint at a known or preview floor elevation and joined to a reachable approach. The brief also requires a walkable 1F street exit. Keio and Lumine 1 share a building part, so their interior extents need separate placements. The facade finish in #1544 does not supply door anchors. Zero stores qualify for interior captures on this base.
+This table is the pre-rollout audit. The Owner's 2026-11-24 JST street-approach rule allows a source-backed preview door fitted to the PLATEAU footprint and a walk at street grade from the listed exit. Keio is the first candidate in `stations/shinjuku/data/depato-rollout.json`. Lumine 1 shares the building part and will use its own door and interior extent.

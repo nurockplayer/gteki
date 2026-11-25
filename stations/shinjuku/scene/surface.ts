@@ -127,7 +127,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     add("stone",quad(a,b,-.06,.11),mats.stone);
     add("stone",flat(strip(a,b,.13),.11),mats.stone);
   }
-  for(const w of surfacePadWalls(layout,opts.bundle)){
+  for(const w of surfacePadWalls(layout,opts.bundle,opts.previewNext)){
     add("steel",beam(pos(w.a,1.04),pos(w.b,1.04),.042,.042),mats.steel);
     add("steel",beam(pos(w.a,.48),pos(w.b,.48),.028,.028),mats.steel);
     const count=Math.max(1,Math.ceil(stableHypot(w.b.x-w.a.x,w.b.y-w.a.y)/1.5));

@@ -1,0 +1,27 @@
+{
+  "stores": [
+    {
+      "id": "keio-shinjuku",
+      "poiId": "shop-sjk-keio",
+      "buildingId": "bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0",
+      "sourceTile": "53394525_bldg_6697_op.gml",
+      "footprint": [[-40.898766, -323], [-2, -323], [-2, -270], [-34.876658, -270]],
+      "circulation": { "aisleX": -20, "from": -289, "to": -277 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [-37.887712, -296.5],
+        "inward": [0.9936066, -0.1128982],
+        "outsideNode": "depato-keio-shinjuku-street",
+        "source": "https://www.keionet.com/info/shinjuku/floor/01.html",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The 1F guide marks a south-side entrance west of the hall beside the Keio Line elevator. The preview door is fitted to that part of the PLATEAU west wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-58.5, 0.02, -245], [-54.5, 0.02, -273], [-51.798204, 0.02, -294.919425], [-44.842958, 0.02, -295.709712]]
+      }
+    }
+  ]
+}

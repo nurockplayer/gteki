@@ -4,6 +4,7 @@ import type { StationBundle } from "@gteki/schema";
 import { pointInRings, stairShaftGroups, widthFromClass, type Layout, type XY, type WallSeg } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
 import { stableHypot } from "./stable-hypot.ts";
+import depatoRollout from "../data/depato-rollout.json";
 
 /** Within `withSurfaceMemo`, the pure derivations below are computed once per (layout, bundle[, surface]).
  * buildStation asks for the same street footprint, openings, graph segments, entrances, pad walls and
@@ -133,10 +134,16 @@ const dist = (p: XY, a: XY, b: XY) => {
 /** Continuous waist-high guard rails on the actual walkable perimeter. The same
  * segments are rendered and passed to WalkWorld. Local graph mouths are opened
  * with 0.65 m clearance (0.3 m body + rail thickness + margin), at every height. */
-export function surfacePadWalls(layout: Layout, bundle: StationBundle): WallSeg[] {
-  return surfaceMemoized("surfacePadWalls", [layout, bundle], () => {
+export function surfacePadWalls(layout: Layout, bundle: StationBundle, previewNext = false): WallSeg[] {
+  return surfaceMemoized(previewNext ? "previewSurfacePadWalls" : "surfacePadWalls", [layout, bundle], () => {
     const footprint = streetFootprint(layout), segs = graphSegments(layout, bundle);
-    const clear = (p: XY) => segs.some(({ a, b }) => { const q = dist(p, a, b), z = a.z + (b.z - a.z) * q.t; return q.d < 0.65 && z > -2.0 && z < 1.2; });
+    const departures = previewNext ? depatoRollout.stores.flatMap(({ streetApproach }) => {
+      const exit = bundle.nodes.find(n => n.id === streetApproach.exitNode)!.position;
+      const [x, , z] = streetApproach.waypoints[0]!;
+      return [{ a: exit, b: { x: x!, y: -z! } }];
+    }) : [];
+    const clear = (p: XY) => departures.some(({ a, b }) => dist(p, a, b).d < 0.8) ||
+      segs.some(({ a, b }) => { const q = dist(p, a, b), z = a.z + (b.z - a.z) * q.t; return q.d < 0.65 && z > -2.0 && z < 1.2; });
     const walls: WallSeg[] = [];
     for (const poly of footprint) for (const ring of poly) for (let i = 1; i < ring.length; i++) {
       const [ax, ay] = ring[i - 1]!, [bx, by] = ring[i]!;
@@ -246,9 +253,29 @@ export function surfaceCanopyWalls(layout: Layout, bundle: StationBundle): Canop
 }
 
 /** Call once after buildLayout. It adds only obstacles, never walkable context. */
-export function surfaceWalls(layout: Layout, bundle: StationBundle, surface?: SurfaceData): WallSeg[] {
-  const walls = [...surfacePadWalls(layout, bundle), ...surfaceColumns(layout, bundle), ...surfaceCanopyWalls(layout, bundle)];
-  if (surface) for (const b of surfaceBuildingFootprints(surface, layout, bundle)) for (const ring of b.rings) for (let i = 1; i < ring.length; i++) walls.push({ a: { x: ring[i - 1]![0], y: ring[i - 1]![1] }, b: { x: ring[i]![0], y: ring[i]![1] }, zMin: 0, zMax: b.height + 0.55, side: 1, kind: "room" });
+export function surfaceWalls(layout: Layout, bundle: StationBundle, surface?: SurfaceData, previewNext = false): WallSeg[] {
+  const walls = [...surfacePadWalls(layout, bundle, previewNext), ...surfaceColumns(layout, bundle), ...surfaceCanopyWalls(layout, bundle)];
+  if (surface) for (const building of surfaceBuildingFootprints(surface, layout, bundle)) {
+    const doors = previewNext ? depatoRollout.stores.filter(s => building.id.startsWith(`${s.buildingId}/`)).map(s => s.entrance) : [];
+    for (const ring of building.rings) for (let i = 1; i < ring.length; i++) {
+      const a = { x: ring[i - 1]![0], y: ring[i - 1]![1] }, b = { x: ring[i]![0], y: ring[i]![1] };
+      const wall: WallSeg = { a, b, zMin: 0, zMax: building.height + 0.55, side: 1, kind: "room" };
+      const cuts = doors.flatMap(door => {
+        const hit = dist({ x: door.point[0]!, y: -door.point[1]! }, a, b);
+        return hit.d < 0.1 ? [{ t: hit.t, top: door.elevation + 2.8 }] : [];
+      }).sort((a, b) => a.t - b.t);
+      if (!cuts.length) { walls.push(wall); continue; }
+      const half = 2 / stableHypot(b.x - a.x, b.y - a.y);
+      const point = (t: number) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+      let start = a;
+      for (const { t, top } of cuts) {
+        const left = point(t - half), right = point(t + half);
+        walls.push({ ...wall, a: start, b: left }, { ...wall, a: left, b: right, zMin: top });
+        start = right;
+      }
+      walls.push({ ...wall, a: start });
+    }
+  }
   return walls;
 }
 
