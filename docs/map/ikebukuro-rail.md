@@ -10,3 +10,5 @@ updated: 2026-11-26 JST
 The scene module's default builder receives the loaded scene context and base scene. It returns a root, walkable meshes, optional colliders and camera blockers, and a disposer. The registry calls it when the camera approaches a lane node within 12 m and keeps the geometry until station unload. The explorer uses the lane's walkable meshes and skips its own corridor generation for those edges.
 
 The sample is `stations/ikebukuro/data/rail/jr-yamanote.json` with a representative platform from JR Central Gates 1 and 2. Paid geometry is authored. The public approaches use the existing B1 graph. The station preview, data and scene hooks leave flag-off routing and rendering on their baseline paths.
+
+Each lane supplies a `publication` record with the usual station data-file fields except `path`, which the web build derives from the lane's location. The build checks the lane record under the same rights rules as any other station data file.

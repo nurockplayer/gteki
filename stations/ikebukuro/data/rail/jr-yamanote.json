@@ -3,6 +3,13 @@
   "operator": "jreast",
   "lineCode": "JY",
   "status": "representative",
+  "publication": {
+    "id": "jr-yamanote-preview",
+    "sourceIds": [],
+    "modified": true,
+    "authored": true,
+    "derivation": "GTEki-authored representative access and platform layout (2026-11-26 JST); existing public gate connectors are referenced by ID."
+  },
   "levels": [
     { "id": "b1", "label": "B1", "z_m": 27.91, "source": "ikebukuro-public-graph" },
     { "id": "jr-yamanote-1f", "label": "1F", "z_m": 32.21, "source": "jr-yamanote-preview" }
