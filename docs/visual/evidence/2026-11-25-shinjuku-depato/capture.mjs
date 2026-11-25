@@ -69,6 +69,7 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
   const task = await taskSpace(entry?.id ?? space), page = task.page("p1");
   const receipt = JSON.parse(await fs.readFile(receiptPath, "utf8"));
   const { exitPoi, exitNode, waypoints } = config.streetApproach;
+  const exitCamera = exitPoi.split(":").slice(1).join("-");
   const { point: [dx, dz], inward: [nx, nz], elevation: y } = config.entrance;
   const { aisleX: x, from, to } = config.circulation, b1 = y - 4.5;
   const pos = (x, y, z) => ({ x, y, z });
@@ -120,7 +121,7 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
           streetVisible: e.stationScene.root.getObjectByName("surface-render-only")?.visible, openingInView, catBox,
           catInView: checkCat ? !!catBox && fits(catBox.left, catBox.right, catBox.top, catBox.bottom) : null };
       }, { yaw, distance, showOpening, checkCat, entrance: config.entrance, buildingId: config.buildingId });
-      const file = golden ? `flag-off/${isBase ? "base" : "head"}/${device.id}-exit-1.png` : `${device.id}-${name}.png`;
+      const file = golden ? `flag-off/${isBase ? "base" : "head"}/${device.id}-${exitCamera}.png` : `${device.id}-${name}.png`;
       await page.screenshot({ path: out + "/" + file });
       profile.frames.push({ name, file, source, ...state });
       if (!state.minimapCollapsed || state.loaded.length > 1) throw Error(`${name}: invalid minimap or active store count`);

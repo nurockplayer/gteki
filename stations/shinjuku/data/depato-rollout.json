@@ -68,6 +68,29 @@
         "exitNode": "n:a06f3d191885497bac197b666c4daef9",
         "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [85.929854, 0.02, -238.928497], [84.367265, 0.02, -246.774408]]
       }
+    },
+    {
+      "id": "newoman-shinjuku",
+      "poiId": "shop-sjk-newoman",
+      "buildingId": "bldg_6a5be1be-eea6-45ce-80cb-5a228581b362:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[222, -214], [255.95152, -214], [267.769697, -175], [222, -175]],
+      "circulation": { "aisleX": 246, "from": -205, "to": -187 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [260.4, -199.32],
+        "inward": [-0.957024, 0.290007],
+        "outsideNode": "depato-newoman-shinjuku-street",
+        "source": "https://www.newoman.jp/shinjuku/floorguide/?area=area01nman01&floor=1f",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official 1F map shows the street entrance beside Blue Bottle Coffee. The preview door is fitted to the east PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:3",
+        "exitNode": "n:e6feaa2cc7514b68be2758b956baeb28",
+        "waypoints": [[3.71, 0.02, -15.67], [12, 0.02, -20], [38, 0.02, -28], [32, 0.02, -66], [54, 0.02, -74], [66, 0.02, -78], [65, 0.02, -130], [60, 0.02, -180], [68, 0.02, -200], [115, 0.02, -214], [170, 0.02, -230], [222, 0.02, -246], [258, 0.02, -222], [273.798342, 0.02, -203.380104], [267.099171, 0.02, -201.350052]]
+      }
     }
   ]
 }
