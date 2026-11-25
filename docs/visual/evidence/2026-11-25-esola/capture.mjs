@@ -181,7 +181,11 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
     };
     const joinFile = file => out + '/' + file;
     const minimap = await page.cdp('Page.addScriptToEvaluateOnNewDocument', {
-      source: `localStorage.setItem('gteki.minimap.collapsed', '${device.mobile}')`,
+      source: `if (location.origin === ${JSON.stringify(new URL(url).origin)}) {
+        localStorage.setItem('gteki.minimap.collapsed', '${device.mobile}');
+        // The searched route adds recent suggestions on the head origin only.
+        localStorage.removeItem('gteki.recent.ikebukuro');
+      }`,
     });
     try {
       await page.cdp('Emulation.setDeviceMetricsOverride', {
