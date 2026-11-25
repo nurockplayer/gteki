@@ -77,6 +77,8 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
   const facing = p => Math.atan2(p.x - dx, p.z - dz);
   const doorPose = threshold(-4.5);
   const approach = waypoints.map(p => pos(...p));
+  const beforeDoor = approach.at(-2), sidewalk = approach.at(-1);
+  const approachPose = pos((beforeDoor.x + sidewalk.x) / 2, y, (beforeDoor.z + sidewalk.z) / 2);
   const posterGone = () => ![...document.querySelectorAll("#cold-open-poster, .boot-card")].some(el =>
     !el.hidden && getComputedStyle(el).display !== "none");
   const open = async next => {
@@ -210,12 +212,13 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
         profile.searchName = searchName;
         profile.route = route;
         if (!route?.ok || route.nodeIds.at(-1) !== `depato-${config.id}-1F-door0`) throw Error("Search route did not end at the store door");
-        await page.click(".sheet .actions .primary", { label: "Start the store guide" });
+        await page.focus(".sheet .actions .primary");
+        await page.keyboard.press("Enter");
         await guideAt(null);
         const halfYaw = await page.evaluate(() => window.__gteki.scanProbe().explorer.yaw);
         await frame("halfway", halfYaw);
-        await guideAt(approach.at(-2));
-        await frame("street-approach", facing(approach.at(-2)));
+        await guideAt(approachPose);
+        await frame("street-approach", facing(approachPose));
         const start = await page.evaluate(({ exitNode }) => {
           const g = window.__gteki;
           if (!g.setView({ node: exitNode, headingDeg: 0 }).placed) throw Error("Exit placement failed");
