@@ -315,7 +315,7 @@ SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省 Project PLATEAU
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy"
 
 [[annotations]]
-path = "docs/qa/reports/2026-10-21-evidence/shinjuku-*.jpg"
+path = ["docs/qa/reports/2026-10-21-evidence/shinjuku-*.jpg", "docs/qa/evidence/1433/*.png"]
 precedence = "override"
 SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
