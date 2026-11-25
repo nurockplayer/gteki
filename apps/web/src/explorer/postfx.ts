@@ -150,14 +150,15 @@ export class FadeAwareGTAOPass extends GTAOPass {
 
   override render(...args: Parameters<GTAOPass["render"]>): void {
     const { meshes, twins, originals } = this;
+    const avatarMeshCount = this.active ? meshes.length : 0;
     const depthTwins = [...this.depthTwins, ...this.dynamicDepthTwins.flat()];
     const excludedVisible = this.excluded?.visible;
     if (this.excluded) this.excluded.visible = false;
-    for (let i = 0; i < meshes.length; i++) { originals[i] = meshes[i]!.material as THREE.Material; meshes[i]!.material = twins[i]!; }
+    for (let i = 0; i < avatarMeshCount; i++) { originals[i] = meshes[i]!.material as THREE.Material; meshes[i]!.material = twins[i]!; }
     for (const depth of depthTwins) { depth.original = depth.mesh.material as THREE.Material; depth.mesh.material = depth.twin; }
     try { super.render(...args); } finally {
       if (this.excluded && excludedVisible !== undefined) this.excluded.visible = excludedVisible;
-      for (let i = 0; i < meshes.length; i++) meshes[i]!.material = originals[i]!;
+      for (let i = 0; i < avatarMeshCount; i++) meshes[i]!.material = originals[i]!;
       for (const depth of depthTwins) depth.mesh.material = depth.original;
     }
   }
