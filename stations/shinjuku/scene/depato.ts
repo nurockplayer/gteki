@@ -8,6 +8,7 @@ import { depatoBundle, depatoLayout, type PlanPoint } from "../../ikebukuro/scen
 import { buildDepatoInterior } from "../../ikebukuro/scene/depato/interior.ts";
 import floorData from "../data/depato-floors.json";
 import rollout from "../data/depato-rollout.json";
+import { stableHypot } from "./stable-hypot.ts";
 
 const layouts = rollout.stores.map(row => {
   const store = floorData.stores.find(s => s.id === row.id)!;
@@ -59,7 +60,7 @@ export function depatoPreviewBundle(bundle: StationBundle): StationBundle {
       const from = route[i]!;
       const a = from.position, b = to.position;
       return { id: `${from.id}__${to.id}`, from: from.id, to: to.id, direction: "both", mode: "walk",
-        lengthM: Math.hypot(b.x - a.x, b.y - a.y, b.z! - a.z!), geometry: [a, b],
+        lengthM: stableHypot(b.x - a.x, b.y - a.y, b.z! - a.z!), geometry: [a, b],
         paid: false, crossesFareBoundary: false, wheelchair: null, steps: false, hours: null,
         closed: false, verification: "verified", geometryEvidence: evidence, accessEvidence: evidence };
     });
@@ -158,7 +159,7 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
       const p = avatar ?? camera.position;
       const distances = layouts.map(l =>
         l.contains([p.x, p.z]) && p.y >= l.height("B1") - 1 && p.y <= l.height("1F") + 4 ? 0 :
-          Math.hypot(p.x - l.input.entrances[0]!.point[0], p.y - l.height("1F"), p.z - l.input.entrances[0]!.point[1]));
+          stableHypot(p.x - l.input.entrances[0]!.point[0], p.y - l.height("1F"), p.z - l.input.entrances[0]!.point[1]));
       const active = distances.indexOf(Math.min(...distances));
       // Keep the detail loaded for the approach and release it after leaving the storefront.
       interiors.forEach((i, n) => { if (n !== active || distances[n]! > 24) i.update(camera, dt, elapsed, false); });
