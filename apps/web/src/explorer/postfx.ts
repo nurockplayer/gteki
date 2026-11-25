@@ -89,6 +89,7 @@ export const GradeShader = {
  * (see PostFx), so both discard the same pixels. The main render and the shadow pass are untouched.
  */
 export class FadeAwareGTAOPass extends GTAOPass {
+  excluded: THREE.Object3D | null = null;
   /** The one uniform object every twin reads; written by `setFade`, never reallocated. */
   readonly fadeUniform = { value: 1 };
   private object: THREE.Object3D | null = null;
@@ -150,10 +151,12 @@ export class FadeAwareGTAOPass extends GTAOPass {
   override render(...args: Parameters<GTAOPass["render"]>): void {
     const { meshes, twins, originals } = this;
     const depthTwins = [...this.depthTwins, ...this.dynamicDepthTwins.flat()];
-    if (!this.active && depthTwins.length === 0) return super.render(...args);
+    const excludedVisible = this.excluded?.visible;
+    if (this.excluded) this.excluded.visible = false;
     for (let i = 0; i < meshes.length; i++) { originals[i] = meshes[i]!.material as THREE.Material; meshes[i]!.material = twins[i]!; }
     for (const depth of depthTwins) { depth.original = depth.mesh.material as THREE.Material; depth.mesh.material = depth.twin; }
     try { super.render(...args); } finally {
+      if (this.excluded && excludedVisible !== undefined) this.excluded.visible = excludedVisible;
       for (let i = 0; i < meshes.length; i++) meshes[i]!.material = originals[i]!;
       for (const depth of depthTwins) depth.mesh.material = depth.original;
     }
@@ -226,6 +229,10 @@ export class PostFx {
   /** Registers the scene's own distance-faded meshes with GTAO; null clears them. */
   setDepthTwins(root: THREE.Object3D | null): void {
     this.gtao.setDepthTwins(root);
+  }
+
+  setOcclusionExcluded(root: THREE.Object3D): void {
+    this.gtao.excluded = root;
   }
 
   render(dt: number): void {

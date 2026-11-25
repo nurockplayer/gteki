@@ -1366,6 +1366,7 @@ export class Explorer {
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
     this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
+    this.composer.setOcclusionExcluded(this.routeGroup);
     // The composer is built after the station scene is attached, so the cat's depth twins are registered here
     // on the first load; later loads register them in the scene step.
     if (this.catAvatar) this.composer.setDepthTwins(this.stationScene?.root ?? null);

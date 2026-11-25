@@ -31,7 +31,8 @@ const layouts = rollout.stores.map(row => {
   layout.counters = layout.counters.filter(([x, z]) => {
     const depth = (x - doorX) * inwardX + (z - doorZ) * inwardZ;
     const across = (z - doorZ) * inwardX - (x - doorX) * inwardZ;
-    const onEntry = depth > 0 && depth < 8 && Math.abs(across) < 2;
+    const entryWidth = row.id === "shinjuku-marui-main" ? 4 : 2;
+    const onEntry = depth > 0 && depth < 8 && Math.abs(across) < entryWidth;
     const onCrossAisle = x > crossAisleLeft && x < crossAisleRight && Math.abs(z - crossAisleZ) < 2.4;
     return !onEntry && !onCrossAisle;
   });
@@ -122,6 +123,14 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     };
     const regions = facadeCuts.get(building) ?? [];
     regions.push(region);
+    if (row.id === "shinjuku-marui-main") {
+      regions.push({
+        key: {}, clip: null, accepts: () => true,
+        bounds: new THREE.Box3(new THREE.Vector3(x! - 20, y, z! - 20), new THREE.Vector3(x! + 20, y + 5, z! + 20)),
+        planes: [p => 14 - across(p), p => 14 + across(p), p => depth(p) - 0.2,
+          p => 16 - depth(p), p => p.y - y, p => y + 5 - p.y],
+      });
+    }
     facadeCuts.set(building, regions);
     return mesh;
   });

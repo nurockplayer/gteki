@@ -199,7 +199,10 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
             const from=ends[i]!,to=ends[i+1]!, cut=axis===0?[plan.stair.x-plan.stair.width/2,plan.stair.x+plan.stair.width/2]:[plan.stair.from,plan.stair.to];
             const overWell=axis===0?v>plan.stair.from&&v<plan.stair.to:Math.abs(v-plan.stair.x)<plan.stair.width/2;
             const spans=l.index+1<levels.length&&overWell?[[from,Math.min(to,cut[0]!)],[Math.max(from,cut[1]!),to]]:[[from,to]];
-            for(const [a,b] of spans)if(b!>a!)bays.push(cube(axis===0?(a!+b!)/2:v,l.y+l.clear-0.08,axis===0?v:(a!+b!)/2,axis===0?b!-a!:0.1,0.16,axis===0?0.1:b!-a!));
+            for(const [a,b] of spans){
+              const inset=plan.input.entrances.some(e=>e.inward)?0.35:0;
+              if(b!-a!>2*inset)bays.push(cube(axis===0?(a!+b!)/2:v,l.y+l.clear-0.08,axis===0?v:(a!+b!)/2,axis===0?b!-a!-2*inset:0.1,0.16,axis===0?0.1:b!-a!-2*inset));
+            }
           }
         }
       }

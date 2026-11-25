@@ -29,6 +29,7 @@ try {
       "stations/shinjuku/gteki/scene.ts", "stations/shinjuku/scene/build.ts",
       "stations/shinjuku/scene/surface.ts", "stations/shinjuku/scene/surface-layout.ts",
       "stations/shinjuku/scene/surface-street.ts", "apps/web/src/explorer/explorer.ts",
+      "apps/web/src/explorer/postfx.ts",
     ].map(path => [join(repo, path), git("show", `${base}:${path}`)])) : new Map();
     const server = await createServer({
       define: { __BUILD_SHA__: JSON.stringify(source) },
@@ -218,7 +219,9 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
         const halfYaw = await page.evaluate(() => window.__gteki.scanProbe().explorer.yaw);
         await frame("halfway", halfYaw);
         await guideAt(approachPose);
-        await frame("street-approach", facing(approachPose));
+        await page.evaluate(() => { window.__gteki.goldenFrame(); window.__gteki.goldenFrame(); });
+        const streetFrame = await frame("street-approach", facing(approachPose));
+        if (!streetFrame.loaded.includes(`depato-interior:${config.id}`)) throw Error("Store detail missing at street approach");
         const start = await page.evaluate(({ exitNode }) => {
           const g = window.__gteki;
           if (!g.setView({ node: exitNode, headingDeg: 0 }).placed) throw Error("Exit placement failed");
