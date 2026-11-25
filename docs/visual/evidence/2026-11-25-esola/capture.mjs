@@ -100,8 +100,6 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
       await g.scanProbe().explorer.stationScene.settled?.();
       g.holdFrames(true);
     });
-    const overlay = await page.evaluate(() => document.querySelector('.minimap')?.dataset.collapsed === 'false');
-    if (overlay) await page.click('button.minimap-collapse');
   };
   for (const device of devices) {
     const profile = baseline ? receipt.profiles.find(p => p.device.id === device.id) : { device, frames: [], legs: [] };
