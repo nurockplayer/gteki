@@ -75,7 +75,7 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
   const threshold = d => pos(dx + nx * d, y, dz + nz * d);
   const facing = p => Math.atan2(p.x - dx, p.z - dz);
   const open = async next => {
-    await page.goto(url + "?station=shinjuku&qaTimeBand=morning" + (next ? "&next=1" : ""));
+    await page.goto(url + "?station=shinjuku&open=search&qaTimeBand=morning" + (next ? "&next=1" : ""));
     await page.waitForFunction(() => window.__gteki?.phase() === "ready", undefined, { timeout: 120000 });
     await page.evaluate(async () => {
       const g = window.__gteki;
@@ -88,19 +88,43 @@ async function browser({ out, space, receiptPath, config, hasB1, devices, source
     const profile = isBase ? receipt.profiles.find(p => p.device.id === device.id) : { device, frames: [], legs: [] };
     if (!isBase) receipt.profiles.push(profile);
     const frame = async (name, yaw, golden = false) => {
-      const state = await page.evaluate(yaw => {
+      const showOpening = name === "street-approach" || name === "outside-door";
+      const checkCat = !golden && device.mobile && (showOpening || name === "inside-door");
+      const distance = name.endsWith("-door") ? 3.1 : 2.25;
+      const state = await page.evaluate(({ yaw, distance, showOpening, checkCat, entrance, buildingId }) => {
         const g = window.__gteki, e = g.scanProbe().explorer;
-        g.setCamera({ yaw, pitch: 0.06, distance: 2.25 });
+        g.setCamera({ yaw, pitch: 0.06, distance });
         g.goldenFrame(); g.goldenFrame();
         const loaded = [];
         e.stationScene.root.traverse(o => { if (o.name.startsWith("depato-interior:") && o.children.length) loaded.push(o.name); });
-        return { avatar: g.avatar(), camera: g.camera(), loaded, minimapCollapsed: !document.querySelector(".minimap-reopen")?.hidden,
-          streetVisible: e.stationScene.root.getObjectByName("surface-render-only")?.visible };
-      }, yaw);
+        const fits = (left, right, top, bottom) => e.freeRects().some(r =>
+          left >= r.x + 4 && right <= r.x + r.w - 4 && top >= r.y + 4 && bottom <= r.y + r.h - 4);
+        const catBox = checkCat ? e.catScreenBox() : null;
+        let openingInView = null;
+        if (showOpening) {
+          const [x, z] = entrance.point, [nx, nz] = entrance.inward;
+          const points = [-1.7, 1.7].flatMap(side => [0.25, 2.55].map(height => ({
+            x: x - nz * side, y: -(z + nx * side), z: entrance.elevation + height,
+          })));
+          const projected = g.projectEnu(points);
+          const facade = e.stationScene.root.getObjectByName("department-store:" + buildingId);
+          const origin = e.camera.position;
+          const target = origin.clone().set(x, entrance.elevation + 1.4, z);
+          const ray = new e.ray.constructor(origin, target.clone().sub(origin).normalize(), 0, target.distanceTo(origin) + 0.35);
+          openingInView = !projected.some(p => p.behind) && fits(Math.min(...projected.map(p => p.x)),
+            Math.max(...projected.map(p => p.x)), Math.min(...projected.map(p => p.y)), Math.max(...projected.map(p => p.y))) &&
+            ray.intersectObject(facade, true).length === 0;
+        }
+        return { avatar: g.avatar(), camera: g.camera(), loaded, minimapCollapsed: !!document.querySelector(".minimap-reopen:not([hidden])"),
+          streetVisible: e.stationScene.root.getObjectByName("surface-render-only")?.visible, openingInView, catBox,
+          catInView: checkCat ? !!catBox && fits(catBox.left, catBox.right, catBox.top, catBox.bottom) : null };
+      }, { yaw, distance, showOpening, checkCat, entrance: config.entrance, buildingId: config.buildingId });
       const file = golden ? `flag-off/${isBase ? "base" : "head"}/${device.id}-exit-1.png` : `${device.id}-${name}.png`;
       await page.screenshot({ path: out + "/" + file });
       profile.frames.push({ name, file, source, ...state });
       if (!state.minimapCollapsed || state.loaded.length > 1) throw Error(`${name}: invalid minimap or active store count`);
+      if (state.openingInView === false || state.catInView === false)
+        throw Error(`${name}: opening in frame ${state.openingInView}, cat in frame ${state.catInView}`);
       return state;
     };
     const walk = async (name, ...points) => {
