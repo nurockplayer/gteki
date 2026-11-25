@@ -6,9 +6,13 @@
 // (53394577). Grades are simplified to join the modeled exit and the existing street backing.
 import type { BuildScene, SceneContext } from "@gteki/scene-api";
 import type { Edge, Node, Poi, StationBundle } from "@gteki/schema";
-import type { BufferGeometry, Mesh, MeshBasicMaterial, Object3D } from "three";
+import type { BufferGeometry, Mesh, MeshBasicMaterial, Object3D, Vector3 } from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
+import floorData from "../data/depato-floors.json";
 import { createContextMaterial } from "./context.ts";
+import { buildDepatoInterior } from "./depato/interior.ts";
+import { depatoBundle, depatoLayout, type PlanPoint } from "./depato/layout.ts";
 import { LANDMARK_FACADE, LANDMARK_SIGN } from "./landmark-style.ts";
 
 type Point = readonly [number, number];
@@ -38,6 +42,31 @@ const doorPoint = (store: typeof stores[number], distance: number): Point => {
   const [x, z] = point(u, v);
   return [x + store.outward[0] * distance, z + store.outward[1] * distance];
 };
+
+// The complex directory shows the low-floor escalators. Align a representative pair within
+// each building footprint, reusing Seibu's authored spacing and the completed street thresholds.
+// https://sunshinecity.jp/information/floor_map/
+const interiorSites = [
+  { site: stores[0], levels: ["B2", "B1", "1F"], aisleX: 598, from: 4 },
+  { site: stores[1], levels: ["B1", "1F"], aisleX: 633, from: -20 },
+  { site: stores[2], levels: ["B1", "1F"], aisleX: 786, from: 38 },
+];
+
+function sunshineLayouts() {
+  return interiorSites.map(({ site, levels, aisleX, from }) => {
+    const store = floorData.stores.find(row => row.id === site.id)!;
+    const plan = depatoLayout({
+      store: { ...store, floors: store.floors.filter(floor => levels.includes(floor.level)).map(floor => ({ ...floor, tenants: floor.tenants.slice(0, 24) })) },
+      footprint: site.footprint.map(([u, v]) => [...point(u, v)] as PlanPoint),
+      poiId: site.id, sourceId: "sunshine-city-en-access-2026-11", elevations: { "1F": grade },
+      circulation: { aisleX, from, to: from + 12 },
+      entrances: [{ level: "1F", point: [...doorPoint(site, 0)], outsideNode: site.id, inward: [-site.outward[0], -site.outward[1]] }],
+    });
+    // Furnish the public concourse around the escalator without filling the entire building mass.
+    plan.counters = plan.counters.filter(([x, z]) => Math.abs(x - aisleX) < 11 && z > from - 12 && z < from + 28);
+    return plan;
+  });
+}
 
 const westCorner = "sunshine-city-west-corner";
 const plaza = "sunshine-city-west-plaza";
@@ -106,7 +135,22 @@ export function sunshineBundle(bundle: StationBundle): StationBundle {
   const pois = bundle.pois.map(p => p.id !== "landmark-sunshine-city" ? p : {
     ...p, displayPosition: entrancePlaza.position, connectorNodeIds: [plaza], aliases: [], evidence, notes: [],
   });
-  return { ...bundle, nodes: [...bundle.nodes, ...nodes], edges: [...bundle.edges, ...edges], pois: [...pois, ...stops] };
+  return sunshineLayouts().reduce((current, plan) => {
+    const interior = depatoBundle(current, plan);
+    const store = plan.input.store;
+    const floors: Poi[] = plan.floors.map(floor => {
+      const goal = interior.nodes.find(n => n.id === `depato-${store.id}-${floor.level}-aisle`)!;
+      return {
+        id: `${store.id}-${floor.level}`, category: "shop", floorId: goal.floorId,
+        names: [{ lang: "ja", text: `${store.name.ja} ${floor.level}` }, { lang: "en", text: `${store.name.en} ${floor.level}` }],
+        aliases: [{ lang: "ja", text: floor.label.ja }, { lang: "en", text: floor.label.en }],
+        displayPosition: goal.position, connectorNodeIds: [goal.id], paid: false,
+        evidence: { ...evidence, method: `Public floor and vertical-link type from the Sunshine City directory; interior geometry is illustrative. ${floor.source}` },
+      };
+    });
+    // The original search entries still end outside. Only floor-specific searches route inside.
+    return { ...interior, pois: [...current.pois, ...floors] };
+  }, { ...bundle, nodes: [...bundle.nodes, ...nodes], edges: [...bundle.edges, ...edges], pois: [...pois, ...stops] });
 }
 
 function streetSurface(ctx: SceneContext) {
@@ -218,11 +262,59 @@ export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
   });
   group.add(street, ...facades, ...overlays);
   landmarks.add(group);
+  group.updateWorldMatrix(true, true);
+  const layouts = sunshineLayouts();
+  const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
+  layouts.forEach((plan, i) => {
+    const site = stores[i]!;
+    const [x, z] = doorPoint(site, 0), [nx, nz] = site.outward;
+    const across = (p: Vector3) => (p.x - x) * nz - (p.z - z) * nx;
+    const depth = (p: Vector3) => (p.x - x) * nx + (p.z - z) * nz;
+    const opening: CutRegion = {
+      key: {}, clip: null, accepts: normal => Math.abs(normal.y) < 0.5,
+      bounds: new THREE.Box3(new THREE.Vector3(x - 2.1, grade - 0.1, z - 2.1), new THREE.Vector3(x + 2.1, grade + 2.8, z + 2.1)),
+      planes: [p => 2 + across(p), p => 2 - across(p), p => 0.2 + depth(p), p => 0.2 - depth(p), p => p.y - grade + 0.1, p => grade + 2.8 - p.y],
+    };
+    const { x: aisle, from, to, width } = plan.stair;
+    const well: CutRegion = {
+      key: {}, clip: null, accepts: normal => Math.abs(normal.y) > 0.9,
+      bounds: new THREE.Box3(new THREE.Vector3(aisle - width / 2, grade - 0.4, from), new THREE.Vector3(aisle + width / 2, grade - 0.3, to)),
+      planes: [p => p.x - aisle + width / 2, p => aisle + width / 2 - p.x, p => p.z - from, p => to - p.z, p => p.y - grade + 0.4, p => grade - 0.3 - p.y],
+    };
+    cutRegions([facades[i]!, overlays[i]!], [opening, well], resources);
+  });
+  await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(plan => plan.floors.flatMap(floor => [plan.input.store.name.ja, floor.label.ja, ...floor.tenants.map(tenant => tenant.ja)])).join(""));
+  const interiors = layouts.map(plan => buildDepatoInterior(ctx, plan, scene.generatedMeshEnvMap));
+  scene.root.add(...interiors.flatMap(interior => [interior.root, interior.connectorRoot]));
+  let avatar: { x: number; y: number; z: number } | undefined;
+  const cameraPoint = new THREE.Vector3();
   return {
     ...scene,
-    walkable: [...scene.walkable, street],
-    colliders: [...(scene.colliders ?? []), ...facades],
+    walkable: [...scene.walkable, street, ...interiors.flatMap(interior => interior.walkable)],
+    colliders: [...(scene.colliders ?? []), ...facades, ...interiors.flatMap(interior => interior.colliders)],
+    cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(interior => interior.cameraBlockers)],
+    setCameraFocus(...args: Parameters<NonNullable<typeof scene.setCameraFocus>>) {
+      scene.setCameraFocus?.(...args);
+      avatar = args[3] ?? undefined;
+      interiors.forEach(interior => interior.setAvatar(avatar ?? null));
+    },
+    update(dt: number, elapsed: number, camera?: import("three").Camera) {
+      scene.update?.(dt, elapsed, camera);
+      if (!camera) return;
+      const cp = camera.getWorldPosition(cameraPoint);
+      const p = avatar ?? { x: cp.x, y: cp.y - 2, z: cp.z };
+      const distances = layouts.map(plan => {
+        if (plan.contains([p.x, p.z]) && p.y >= plan.height(plan.floors[0]!.level) - 1 && p.y <= grade + 3.8) return 0;
+        const [x, z] = plan.input.entrances[0]!.point;
+        return Math.hypot(p.x - x, p.y - grade, p.z - z);
+      });
+      const active = distances.indexOf(Math.min(...distances));
+      interiors.forEach((interior, i) => { if (i !== active) interior.update(camera, dt, elapsed, false); });
+      interiors[active]!.update(camera, dt, elapsed);
+    },
     dispose() {
+      disposePortalCuts(resources);
+      interiors.forEach(interior => interior.dispose());
       street.geometry.dispose();
       street.material.dispose();
       for (const facade of facades) {
