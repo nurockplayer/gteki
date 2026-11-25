@@ -6,6 +6,7 @@ import type { Edge, StationBundle } from "@gteki/schema";
 import { buildConnectors } from "./greyboxConnectors.ts";
 import { buildGreybox, splitWallsAtOpenings, type Box } from "./greybox.ts";
 import { sceneMeshProbe } from "./routeGroundQa.ts";
+import { prepareRayTrees } from "./meshBvh.ts";
 import type { ExplorerTargets } from "./raycast.ts";
 import { cutStairwells, stairwellWells, type StairwellCut } from "./stairwellCut.ts";
 import type { CutRecipe } from "./cutRecipe.ts";
@@ -102,6 +103,8 @@ export function buildLiveScene(options: LiveSceneOptions): LiveScene {
   liveColliders.push(...greybox.colliders, ...stairwellCut.colliders);
   liveBlockers.push(...stairwellCut.cameraBlockers);
   const targetsMs = elapsed();
+  // The cuts replace ground geometry. Refresh its ray trees before connector floor probes use it.
+  prepareRayTrees(originalTargets.ground);
   const connectors = buildConnectors(bundle, traversable, { hasFloor, nearMesh: sceneMeshProbe([root]), envMap: options.envMap ?? null, visuallyModelled: root.userData.modelledStairEdges ? new Set<string>(root.userData.modelledStairEdges) : undefined }, tier);
   const connectorsMs = elapsed();
   liveWalkable.push(...connectors.walkable);
