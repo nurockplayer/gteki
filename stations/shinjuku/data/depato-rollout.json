@@ -114,6 +114,29 @@
         "exitNode": "n:e4cfe61e944e4f5e8ad8caeb6d521750",
         "waypoints": [[12, 0.02, 14], [36, 0.02, 20], [80, 0.02, 15], [124, 0.02, 11], [166, 0.02, 7], [214, 0.02, 2], [234, 0.02, 20], [244, 0.02, 50], [248, 0.02, 52], [256, 0.02, 50], [260, 0.02, 46], [285, 0.02, 8], [310, 0.02, -30], [312, 0.02, -65], [298.164819, 0.02, -106.239907], [292.542409, 0.02, -102.069954]]
       }
+    },
+    {
+      "id": "lumine-est-shinjuku",
+      "poiId": "shop-sjk-lumineest",
+      "buildingId": "bldg_f7a93b6b-0bc8-4a74-897d-ed2954e1d65a:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[145, -499], [167.083879, -499], [172.226616, -450], [145, -450]],
+      "circulation": { "aisleX": 156, "from": -489, "to": -477 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [169.917632, -472],
+        "inward": [-0.9945374, 0.1043805],
+        "outsideNode": "depato-lumine-est-shinjuku-street",
+        "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=1f",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official 1F map marks the entrance beside shop 6 midway along the east side. The preview door is fitted to the east PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [108, 0.02, -246.4], [152, 0.02, -259], [192, 0.02, -270.3], [212, 0.02, -276], [214, 0.02, -280], [218, 0.02, -314], [207, 0.02, -366], [196, 0.02, -418], [183.841156, 0.02, -473.461327], [176.879394, 0.02, -472.730664]]
+      }
     }
   ]
 }
