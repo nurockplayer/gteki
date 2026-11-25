@@ -2,6 +2,7 @@ import type * as T from "three";
 import type { SceneContext } from "@gteki/scene-api";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { buildEscalator } from "../../../../apps/web/src/explorer/greyboxConnectors.ts";
+import { cutRegions, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
 import { buildCrowd, type Lane } from "../crowd.ts";
 import type { DepatoLayout } from "./layout.ts";
 import { LANDMARK_FACADE, LANDMARK_STREET_BAND, LANDMARK_SIGN } from "../landmark-style.ts";
@@ -59,7 +60,16 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   const levels=plan.floors.map((floor,index)=>{
     const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets", clear=food?3.1:3.8;
     const wallHeight=index+1<plan.floors.length?plan.height(plan.floors[index+1]!.level)-y:clear;
-    const floorG=shape(y,index>0), ceilingG=shape(y+clear,index+1<plan.floors.length,true), wallG=walls(floor.level,y,wallHeight);
+    const floorG=shape(y,index>0), ceilingMesh=new THREE.Mesh(shape(y+clear,index+1<plan.floors.length,true)), wallG=walls(floor.level,y,wallHeight);
+    if(plan.input.store.id==="tobu-ikebukuro" && floor.level==="B1"){
+      // The x18 station stairs cross Tobu's illustrative B1 ceiling.
+      const left=-111, right=-90, front=-159.5, back=-148;
+      const resources:PortalCutResources={geometries:[],materials:[],portalMeshes:new Map(),originals:new Map(),clippedMeshes:[],instances:[]};
+      cutRegions(ceilingMesh,[{key:{},bounds:new THREE.Box3(new THREE.Vector3(left,y,front),new THREE.Vector3(right,y+clear+1,back)),clip:null,
+        planes:[p=>p.x-left,p=>right-p.x,p=>p.z-front,p=>back-p.z],accepts:()=>true}],resources,new Set(),false);
+      if(resources.geometries.length) resources.originals.get(ceilingMesh)!.geometry.dispose();
+    }
+    const ceilingG=ceilingMesh.geometry;
     physical(floorG.clone(),walkable); physical(ceilingG.clone(),colliders); physical(wallG.clone(),colliders);
     if(index>0){
       // The follow boom must clear the upper floor even while its endpoint is over the well.
