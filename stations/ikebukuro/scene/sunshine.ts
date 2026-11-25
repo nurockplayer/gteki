@@ -123,7 +123,7 @@ export function sunshineBundle(bundle: StationBundle): StationBundle {
   const corner = nodes.find(n => n.id === westCorner)!;
   const [tower, alpa, mart] = stores;
   const doors = [
-    addPath(entrancePlaza, [["sunshine-tower-apron", [589, -23]], [tower.id, doorPoint(tower, 1)]]),
+    addPath(entrancePlaza, [["sunshine-tower-apron", doorPoint(tower, 12)], [tower.id, doorPoint(tower, 1)]]),
     addPath(entrancePlaza, [[alpa.id, doorPoint(alpa, 1)]]),
     addPath(corner, [...northSide, [mart.id, doorPoint(mart, 1)]]),
   ];
@@ -185,29 +185,34 @@ function streetSurface(ctx: SceneContext) {
 export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
   const { THREE } = ctx;
   let landmarks!: Object3D;
-  const scene = await base({ ...ctx, loadGlb: async uri => {
-    const loaded = await ctx.loadGlb(uri);
-    if (uri === "assets/ikebukuro_landmarks_next.glb") landmarks = loaded.scene;
-    return loaded;
-  } });
-  const merged = landmarks.getObjectByName("ctx_bldg_landmark_sunshine") as Mesh;
-  const original = merged.geometry.getAttribute("position");
   const towerVertices: number[] = [], neighbours: number[] = [];
-  for (let i = 0; i < original.count; i += 3) {
-    const x = (original.getX(i) + original.getX(i + 1) + original.getX(i + 2)) / 3 - 592;
-    const z = (original.getZ(i) + original.getZ(i + 1) + original.getZ(i + 2)) / 3 + 19;
-    const u = -0.55 * x + 0.835 * z, v = 0.835 * x + 0.55 * z;
-    const highest = Math.max(original.getY(i), original.getY(i + 1), original.getY(i + 2));
-    const target = u > 0 && u < 58 && v > 0 && v < 86 && highest > 53 ? towerVertices
-      : v > 228 || (u < -36 && v > 87 && v < 161) ? neighbours : null;
-    if (target) for (let j = i; j < i + 3; j++) target.push(original.getX(j), original.getY(j), original.getZ(j));
-  }
   const triangles = (vertices: number[]) => {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
     geometry.computeVertexNormals();
     return geometry;
   };
+  const scene = await base({ ...ctx, loadGlb: async uri => {
+    const loaded = await ctx.loadGlb(uri);
+    if (uri !== "assets/ikebukuro_landmarks_next.glb") return loaded;
+    landmarks = loaded.scene;
+    const backing = landmarks.getObjectByName("sunshine") as Mesh;
+    const original = backing.geometry.getAttribute("position");
+    for (let i = 0; i < original.count; i += 3) {
+      const x = (original.getX(i) + original.getX(i + 1) + original.getX(i + 2)) / 3 - 592;
+      const z = (original.getZ(i) + original.getZ(i + 1) + original.getZ(i + 2)) / 3 + 19;
+      const u = -0.55 * x + 0.835 * z, v = 0.835 * x + 0.55 * z;
+      const highest = Math.max(original.getY(i), original.getY(i + 1), original.getY(i + 2));
+      const target = u > 0 && u < 58 && v > 0 && v < 86 && highest > 53 ? towerVertices
+        : v > 228 || (u < -36 && v > 87 && v < 161) ? neighbours : null;
+      if (target) for (let j = i; j < i + 3; j++) target.push(original.getX(j), original.getY(j), original.getZ(j));
+    }
+    // Clear the replaced podium before the base scene copies the backing into camera blockers.
+    backing.geometry.dispose();
+    backing.geometry = triangles([...towerVertices, ...neighbours]);
+    return loaded;
+  } });
+  const merged = landmarks.getObjectByName("ctx_bldg_landmark_sunshine") as Mesh;
   merged.geometry.dispose();
   merged.geometry = triangles(neighbours);
   merged.name = "ctx_bldg_sunshine_neighbours";
@@ -243,20 +248,51 @@ export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
     canvas.width = 512;
     canvas.height = 256;
     const g = canvas.getContext("2d")!;
-    g.fillStyle = LANDMARK_SIGN.band;
-    g.fillRect(0, 0, 512, 256);
-    g.fillStyle = "#445761";
-    for (let x = 18; x < 480; x += 120) g.fillRect(x, 91, 113, 163);
+    const alpa = store.id === "sunshine-city-alpa";
+    const width = alpa ? 8 : 10;
+    const height = alpa ? 4 : 4.65;
+    if (alpa) {
+      g.fillStyle = LANDMARK_SIGN.band;
+      g.fillRect(0, 0, 512, 256);
+      g.fillStyle = "#445761";
+      for (let x = 18; x < 480; x += 120) g.fillRect(x, 91, 113, 163);
+    } else {
+      const tower = store.id === "sunshine-city-60";
+      g.fillStyle = store.color;
+      g.fillRect(0, 0, 512, 256);
+      for (const x of [12, 384]) {
+        g.fillStyle = "#445761";
+        g.fillRect(x, 105, 116, 144);
+        g.fillStyle = "#667983";
+        g.fillRect(x, 105, 116, 39);
+        g.fillStyle = store.color;
+        g.fillRect(x + 56, 105, 4, 144);
+      }
+      g.fillStyle = tower ? "#3F484E" : LANDMARK_SIGN.band;
+      g.fillRect(74, 15, 364, 79);
+      g.fillRect(121, 94, 270, 17);
+      for (const x of [124, 359]) {
+        g.fillRect(x, 111, 29, 145);
+        g.fillStyle = tower ? "#7C8C95" : "#B79E80";
+        g.fillRect(x + 3, 113, 23, 141);
+        g.fillStyle = "#445761";
+        g.fillRect(x + 7, 120, 15, 116);
+        g.fillStyle = LANDMARK_SIGN.letters;
+        g.fillRect(x + 12, 188, 5, 15);
+        g.fillStyle = tower ? "#3F484E" : LANDMARK_SIGN.band;
+      }
+    }
     g.textAlign = "center";
     g.fillStyle = LANDMARK_SIGN.letters;
     g.font = '600 38px "GTEki Sign JP", sans-serif';
-    g.fillText(store.en, 256, 62, 476);
+    g.fillText(store.en, 256, 62, alpa ? 476 : 342);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
-    const overlay = new THREE.Mesh(new THREE.PlaneGeometry(8, 4), new THREE.MeshBasicMaterial({ map: texture, fog: false }));
+    const overlay = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ map: texture, fog: false }));
     overlay.name = `sunshine-door:${store.id}`;
-    const [x, z] = doorPoint(store, 0.025);
-    overlay.position.set(x, grade + 2, z);
+    // The signed street front sits ahead of the interior wall and bronze door frame.
+    const [x, z] = doorPoint(store, alpa ? 0.025 : 0.17);
+    overlay.position.set(x, grade + height / 2, z);
     overlay.rotation.y = Math.atan2(store.outward[0], store.outward[1]);
     return overlay;
   });
