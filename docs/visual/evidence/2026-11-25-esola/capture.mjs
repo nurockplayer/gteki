@@ -1,7 +1,7 @@
 // 2026-11-25 JST. Run via job-run + tachi-run --heavy --host.
 import { createServer } from '../../../../apps/web/node_modules/vite/dist/node/index.js';
 import { execFileSync, spawn } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PNG } from 'pngjs';
@@ -14,6 +14,8 @@ const space = 'depato-G1-esola';
 const config = JSON.parse(readFileSync(join(repo, 'stations/ikebukuro/data/depato-rollout.json'))).stores.find(s => s.id === 'esola-ikebukuro');
 const devices = [{ id: 'desktop', width: 1440, height: 900, mobile: false }, { id: 'phone', width: 390, height: 844, mobile: true }];
 const receiptPath = join(out, 'receipt.json');
+const goldenDir = join(out, 'flag-off');
+for (const side of ['base', 'head']) mkdirSync(join(goldenDir, side), { recursive: true });
 const save = receipt => writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\n');
 save({ head, base, capturedAt: new Date().toISOString(), timeZone: 'UTC', profiles: [], failures: [] });
 
@@ -49,11 +51,15 @@ try {
 }
 
 const receipt = JSON.parse(readFileSync(receiptPath));
+execFileSync(process.execPath, [join(repo, 'tools/qa/golden-diff.mjs'), join(goldenDir, 'base'),
+  join(goldenDir, 'head'), goldenDir, '--cameras', join(repo, 'tests/e2e/golden-cameras.json')], { stdio: 'inherit' });
+receipt.flagOffGolden = JSON.parse(readFileSync(join(goldenDir, 'diff.json')));
+for (const { camera, diffRatio, changed } of receipt.flagOffGolden) {
+  if (changed) receipt.failures.push(camera + ', golden diff ratio ' + diffRatio);
+}
 for (const profile of receipt.profiles) {
-  const frames = new Map();
   for (const frame of profile.frames) {
     const png = PNG.sync.read(readFileSync(join(out, frame.file)));
-    frames.set(frame.name, png);
     if (png.width !== profile.device.width || png.height !== profile.device.height) receipt.failures.push(frame.file + ' viewport');
     if (frame.name === 'street-door-inside') {
       let black = 0;
@@ -62,20 +68,11 @@ for (const profile of receipt.profiles) {
       if (frame.blackPixelPct > 0.1) receipt.failures.push(frame.file + ' black pixels ' + frame.blackPixelPct + '%');
     }
   }
-  profile.flagOffChangedPixels = {};
-  for (const [name, png] of frames) {
-    if (!name.startsWith('baseline-off-')) continue;
-    const candidate = frames.get(name.replace('baseline-', ''));
-    let changed = 0;
-    for (let i = 0; i < png.data.length; i += 4) if (png.data.readUInt32LE(i) !== candidate.data.readUInt32LE(i)) changed++;
-    profile.flagOffChangedPixels[name] = changed;
-    if (changed) receipt.failures.push(profile.device.id + ' ' + name + ', ' + changed + ' changed pixels');
-  }
 }
 save(receipt);
 console.log(JSON.stringify(receipt.profiles.map(p => ({
   device: p.device.id, frames: p.frames.length, passedLegs: p.legs.filter(l => l.done).length,
-  changedPixels: p.flagOffChangedPixels, black: p.frames.find(f => f.name === 'street-door-inside')?.blackPixelPct,
+  black: p.frames.find(f => f.name === 'street-door-inside')?.blackPixelPct,
   triangles: Math.max(...p.frames.map(f => f.triangles)), draws: Math.max(...p.frames.map(f => f.draws)),
 }))));
 console.log(JSON.stringify({ failures: receipt.failures }));
@@ -148,7 +145,8 @@ async function browser({ out, repo, space, receiptPath, config, devices, sourceH
           shaderErrors: e.renderer.info.programs.filter(p => p.diagnostics?.runnable === false).length,
         };
       }, { yaw, pose });
-      const file = device.id + '-' + name + '.png';
+      const file = pose ? 'flag-off/' + (baseline ? 'base/' : 'head/') + device.id + '-' + name.replace(/^(baseline-)?off-/, '') + '.png'
+        : device.id + '-' + name + '.png';
       await page.screenshot({ path: joinFile(file) });
       profile.frames.push({ name, file, sourceHead, yaw, ...state });
       if (state.loaded.length > 1 || state.shaderErrors || (device.mobile && (state.triangles > 60000 || state.draws > 30 || state.atlasPx > 1024))) throw Error(file + ': ' + JSON.stringify(state));
