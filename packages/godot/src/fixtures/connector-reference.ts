@@ -1093,7 +1093,7 @@ export function buildConnectors(bundle: StationBundle, traversable: (edge: Edge)
       if (material === lampMaterials) lightBatches.push({ mesh, parts });
     }
   }
-  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, visualSuppressed, connectorsSkippedByReason, legacyConnectors: legacyEdgeIds.size, overBudget: null as string | null,
+  const stats = { connectors: counts, meshes: root.children.length, triangles, approximateFits, omittedLandings, connectorsSkipped, ...(visualSuppressed ? { visualSuppressed } : {}), connectorsSkippedByReason, legacyConnectors: legacyEdgeIds.size, overBudget: null as string | null,
     dropSoffits() {
       for (const batch of lightBatches) {
         const kept = batch.parts.filter((p) => !p.soffit);
