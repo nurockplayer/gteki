@@ -137,6 +137,29 @@
         "exitNode": "n:a06f3d191885497bac197b666c4daef9",
         "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [108, 0.02, -246.4], [152, 0.02, -259], [192, 0.02, -270.3], [212, 0.02, -276], [214, 0.02, -280], [218, 0.02, -314], [207, 0.02, -366], [196, 0.02, -418], [183.841156, 0.02, -473.461327], [176.879394, 0.02, -472.730664]]
       }
+    },
+    {
+      "id": "odakyu-shinjuku",
+      "poiId": "shop-sjk-odakyudept",
+      "buildingId": "bldg_5c2afdef-6b54-4e66-b7c0-98e98ae88ce4:0",
+      "sourceTile": "53394535_bldg_6697_op.gml",
+      "footprint": [[-29.0, -628.0], [-21.1, -588.6], [-29.0, -584.0], [-90.1, -595.5], [-95.4, -598.0], [-101.0, -602.0], [-107.4, -607.8], [-124.5, -625.3], [-122.4, -633.9], [-90.0, -627.8], [-87.8, -639.6]],
+      "circulation": {"aisleX": -56, "from": -621, "to": -608},
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [-43.634, -586.772],
+        "inward": [0.1857448, -0.982598],
+        "outsideNode": "depato-odakyu-shinjuku-street",
+        "source": "https://www.odakyu-dept.co.jp/info/v4l5d000001cquyy-att/20250917.pdf",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "Odakyu’s street access map places the 1F front entrance on the station-facing HALC facade after the crossing by Palette. The preview fits that door to the south PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-58.5, 0.02, -245], [-60, 0.02, -296], [-62, 0.02, -346], [-62, 0.02, -396], [-62, 0.02, -446], [-28, 0.02, -484], [-28, 0.02, -510], [-46, 0.02, -558], [-46.234427, 0.02, -573.015628], [-44.934214, 0.02, -579.893814]]
+      }
     }
   ]
 }
