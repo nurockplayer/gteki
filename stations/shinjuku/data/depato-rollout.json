@@ -22,6 +22,29 @@
         "exitNode": "n:a06f3d191885497bac197b666c4daef9",
         "waypoints": [[-60.73, 0.02, -220.5], [-58.5, 0.02, -245], [-54.5, 0.02, -273], [-51.798204, 0.02, -294.919425], [-44.842958, 0.02, -295.709712]]
       }
+    },
+    {
+      "id": "lumine-1-shinjuku",
+      "poiId": "shop-sjk-lumine1",
+      "buildingId": "bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0",
+      "sourceTile": "53394525_bldg_6697_op.gml",
+      "footprint": [[-34.649409, -268], [-2, -268], [-2, -222], [-29.422674, -222]],
+      "circulation": { "aisleX": -18, "from": -250, "to": -238 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [-33.569974, -258.5],
+        "inward": [0.9936066, -0.1128982],
+        "outsideNode": "depato-lumine-1-shinjuku-street",
+        "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=1f",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official 1F map shows an entrance beside the lift and shop 4. The preview fits that entrance to the west wall of the Lumine 1 section of the shared PLATEAU part at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-58.5, 0.02, -245], [-55.8, 0.02, -255.975712], [-40.525220, 0.02, -257.709713]]
+      }
     }
   ]
 }

@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: GTEki contributors
 import type { Edge, Node, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import type { Vector3 } from "three";
+import type { Object3D, Vector3 } from "three";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
 import { depatoBundle, depatoLayout, type PlanPoint } from "../../ikebukuro/scene/depato/layout.ts";
 import { buildDepatoInterior } from "../../ikebukuro/scene/depato/interior.ts";
@@ -61,6 +61,7 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [],
   };
   const pavementMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, visible: false });
+  const facadeCuts = new Map<Object3D, CutRegion[]>();
   const pavement = rollout.stores.map(row => {
     const exit = ctx.bundle.nodes.find(n => n.id === row.streetApproach.exitNode)!;
     const start = new THREE.Vector3(exit.position.x, exit.renderZ ?? exit.position.z!, -exit.position.y);
@@ -99,9 +100,12 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
         p => y + 2.8 - p.y,
       ],
     };
-    cutRegions(building, [region], resources);
+    const regions = facadeCuts.get(building) ?? [];
+    regions.push(region);
+    facadeCuts.set(building, regions);
     return mesh;
   });
+  for (const [building, regions] of facadeCuts) cutRegions(building, regions, resources);
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p => [
     p.input.store.name.ja, p.input.store.name.en,
     ...p.floors.flatMap(f => [f.label.ja, f.label.en, ...f.tenants.flatMap(t => [t.ja, t.en])]),
