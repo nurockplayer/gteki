@@ -30,7 +30,7 @@ export function readDepatoFloors(data: { version: number; stores: SourceStore[] 
       if (coverage !== "complete" && coverage !== "partial" && coverage !== "unknown") {
         throw new Error(`Invalid tenant_coverage for ${store.id} ${floor.level}: ${coverage}`);
       }
-      return { ...floor, tenant_coverage: coverage };
+      return { ...floor, tenant_coverage: coverage } satisfies DepatoFloor;
     }),
   }));
 }
