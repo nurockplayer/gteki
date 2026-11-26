@@ -101,6 +101,10 @@ export interface StationScene {
   /** Camera pivot datum on a stair support; never changes the walker's visible height. */
   cameraPivotGroundAt?(position: { x: number; y: number; z: number }): number | null;
   walls?: WallSegment[];
+  /** Openings from the built station into preview extensions, in renderer coordinates. */
+  openings?: { center: THREE.Vector3; along: THREE.Vector3; across: THREE.Vector3; width: number; depth: number; height: number }[];
+  /** Called with the walker position in renderer coordinates to load nearby extensions. */
+  approach?(position: THREE.Vector3): void;
   spawnPoints?: SpawnPoint[];
   /** Fog/background/lighting preferences; the explorer applies sane defaults otherwise. */
   environment?: {
@@ -161,6 +165,8 @@ export interface SceneContext {
   bundle: StationBundle;
   /** Host's ?next=1 preview; absent keeps the shipping scene. */
   previewNext?: boolean;
+  /** Register the collision targets of a chunk attached after the station has loaded. */
+  mountChunk?(chunk: Pick<StationScene, "walkable" | "colliders" | "cameraBlockers">): void;
   /** Extra curated shopfronts supplied only by a private overlay (OD-35). */
   privateShops?: { shops: unknown[]; openings: unknown[] };
   enuToRenderer(p: { x: number; y: number; z: number }): [number, number, number];
