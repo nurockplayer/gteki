@@ -3394,6 +3394,15 @@ export class Explorer {
   get interaction(): InteractionState { return this.interactionController.state; }
 
   interact(): void {
+    const near = this.interactionController.state.nearId;
+    const lift = this.stationScene?.interactables?.find(spec => spec.id === near)?.lift;
+    if (lift) {
+      const { x, y, z } = lift.arrival;
+      this.pos.set(x, y, z);
+      this.teleported = true;
+      this.publishInteraction(this.interactionController.update(0, { position: this.pos, moving: false, mode: this.mode }));
+      return;
+    }
     const state = this.interactionController.start();
     this.publishInteraction(state);
     // Near a usable interactable the interaction wins; anywhere else E meows.

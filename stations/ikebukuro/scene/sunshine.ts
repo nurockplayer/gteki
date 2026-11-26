@@ -4,7 +4,7 @@
 // https://sunshinecity.jp/information/floor_map/1f.html
 // Authored walk centreline and doorway offsets, aligned to the pinned PLATEAU roads/buildings
 // (53394577). Grades are simplified to join the modeled exit and the existing street backing.
-import type { BuildScene, SceneContext } from "@gteki/scene-api";
+import type { BuildScene, InteractableSpec, SceneContext } from "@gteki/scene-api";
 import type { Edge, Node, Poi, StationBundle } from "@gteki/schema";
 import type { BufferGeometry, Mesh, MeshBasicMaterial, Object3D, Vector3 } from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
@@ -12,7 +12,7 @@ import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources 
 import floorData from "../data/depato-floors.json";
 import { createContextMaterial } from "./context.ts";
 import { buildDepatoInterior } from "./depato/interior.ts";
-import { depatoBundle, depatoLayout, type PlanPoint } from "./depato/layout.ts";
+import { depatoBundle, depatoLayout, type DepatoInput, type PlanPoint } from "./depato/layout.ts";
 import { LANDMARK_FACADE, LANDMARK_SIGN } from "./landmark-style.ts";
 
 type Point = readonly [number, number];
@@ -43,27 +43,84 @@ const doorPoint = (store: typeof stores[number], distance: number): Point => {
   return [x + store.outward[0] * distance, z + store.outward[1] * distance];
 };
 
-// The complex directory shows the low-floor escalators. Align a representative pair within
-// each building footprint, reusing Seibu's authored spacing and the completed street thresholds.
-// https://sunshinecity.jp/information/floor_map/
-const interiorSites = [
-  { site: stores[0], levels: ["B2", "B1", "1F"], aisleX: 598, from: 4 },
-  { site: stores[1], levels: ["B1", "1F"], aisleX: 633, from: -20 },
-  { site: stores[2], levels: ["B1", "1F"], aisleX: 786, from: 38 },
+const directory = "https://sunshinecity.jp/information/floor_map/";
+const aquarium = "https://sunshinecity.jp/en/aquarium/access/";
+const planetarium = "https://sunshinecity.jp/file/official/barrierfree/facility/manten.html";
+const skyRestaurants = "https://sunshinecity.jp/en/facility/sky-restaurant.html";
+const observatory = "https://sunshinecity.jp/observatory/access/";
+const towerOffices = "https://co.sunshinecity.co.jp/file/pdf/about/ssc_katsuyo_book.pdf";
+
+const escalators = (...landings: string[]): NonNullable<DepatoInput["flights"]> =>
+  Object.fromEntries(landings.map(level => [level, "escalator"]));
+const transferFloor = (level: string, source: string) => ({
+  level, category: "other", label: { ja: "乗継フロア", en: "Transfer landing" },
+  tenants: [], source, read: "2026-11-26",
+});
+
+// Public stops come from the recorded floor directory. The landings used solely
+// to connect the published escalator runs do not get search entries.
+const interiorSites: {
+  site: typeof stores[number]; aisleX: number; from: number;
+  flights: NonNullable<DepatoInput["flights"]>; transfer: string[];
+  elevations: Record<string, number>;
+  lifts: [string, string, number, string, string, string][];
+}[] = [
+  {
+    site: stores[0], aisleX: 598, from: 4, transfer: ["2F"],
+    flights: escalators("B1", "1F", "2F", "3F", "4F"),
+    elevations: { "36F": 164, "58F": 242.9, "59F": 247, "60F": 251 },
+    lifts: [
+      ["4F", "5F", -4, "低層階", "Low-rise lift", directory],
+      ["4F", "7F", 0, "低層階", "Low-rise lift", directory],
+      ["4F", "8F", 4, "低層階", "Low-rise lift", directory],
+      ["1F", "36F", 0, "オフィス", "Office lift", towerOffices],
+      ["B1", "58F", -4, "スカイレストラン", "Sky restaurant lift", skyRestaurants],
+      ["B1", "59F", 0, "スカイレストラン", "Sky restaurant lift", skyRestaurants],
+      ["58F", "59F", 4, "スカイレストラン", "Sky restaurant lift", skyRestaurants],
+      ["B1", "60F", 4, "展望台", "Observatory lift", observatory],
+    ],
+  },
+  {
+    site: stores[1], aisleX: 633, from: -20, transfer: [], elevations: {},
+    flights: escalators("1F", "2F", "3F"), lifts: [],
+  },
+  {
+    site: stores[2], aisleX: 786, from: 38, transfer: ["7F", "8F"],
+    flights: { ...escalators("1F", "2F", "3F", "4F", "5F", "6F", "7F", "8F", "9F"), "10F": "stairs" },
+    elevations: { "5F": grade + 19.3, "6F": grade + 25.1, "7F": grade + 31, "8F": grade + 36.8, "9F": grade + 42.6, "10F": grade + 48 },
+    lifts: [
+      ["1F", "9F", -5, "館内", "Building lift", directory],
+      ["1F", "10F", -1, "水族館", "Aquarium lift", aquarium],
+      ["B1", "10F", 3, "プラネタリウム", "Planetarium lift", planetarium],
+    ],
+  },
 ];
 
 function sunshineLayouts() {
-  return interiorSites.map(({ site, levels, aisleX, from }) => {
+  return interiorSites.map(({ site, aisleX, from, flights, elevations, transfer, lifts }) => {
     const store = floorData.stores.find(row => row.id === site.id)!;
+    const roof = store.floors.find(floor => floor.level === "RF");
+    const floors = store.floors.filter(floor => floor !== roof).map(floor => ({
+      ...floor, tenants: floor.tenants.slice(0, 24),
+      // The aquarium and gallery share the same rooftop plate; keep both recorded labels.
+      label: floor.level === "10F" && roof ? {
+        ja: `${floor.label.ja} / RF ${roof.label.ja}`,
+        en: `${floor.label.en} / RF ${roof.label.en}`,
+      } : floor.label,
+    }));
+    floors.push(...transfer.map(level => ({ ...transferFloor(level, roof ? aquarium : directory), order: Number(level.slice(0, -1)) })));
     const plan = depatoLayout({
-      store: { ...store, floors: store.floors.filter(floor => levels.includes(floor.level)).map(floor => ({ ...floor, tenants: floor.tenants.slice(0, 24) })) },
+      store: { ...store, floors },
       footprint: site.footprint.map(([u, v]) => [...point(u, v)] as PlanPoint),
-      poiId: site.id, sourceId: "sunshine-city-en-access-2026-11", elevations: { "1F": grade },
+      poiId: site.id, sourceId: "sunshine-city-en-access-2026-11", elevations: { "1F": grade, ...elevations },
+      flights, lifts: lifts.map(([fromLevel, to, dx, ja, en, source]) =>
+        ({ from: fromLevel, to, x: aisleX + dx, z: from + 18, label: { ja, en }, source })),
       circulation: { aisleX, from, to: from + 12 },
       entrances: [{ level: "1F", point: [...doorPoint(site, 0)], outsideNode: site.id, inward: [-site.outward[0], -site.outward[1]] }],
     });
     // Furnish the public concourse around the escalator without filling the entire building mass.
-    plan.counters = plan.counters.filter(([x, z]) => Math.abs(x - aisleX) < 11 && z > from - 12 && z < from + 28);
+    plan.counters = plan.counters.filter(([x, z]) => Math.abs(x - aisleX) < 11 && z > from - 12 && z < from + 28 &&
+      (lifts.length === 0 || z < from + 12 || z > from + 23));
     return plan;
   });
 }
@@ -138,8 +195,9 @@ export function sunshineBundle(bundle: StationBundle): StationBundle {
   return sunshineLayouts().reduce((current, plan) => {
     const interior = depatoBundle(current, plan);
     const store = plan.input.store;
-    const floors: Poi[] = plan.floors.map(floor => {
-      const goal = interior.nodes.find(n => n.id === `depato-${store.id}-${floor.level}-aisle`)!;
+    const floors: Poi[] = floorData.stores.find(row => row.id === store.id)!.floors.map(floor => {
+      const destination = floor.level === "RF" ? "10F-upper" : `${floor.level}-aisle`;
+      const goal = interior.nodes.find(n => n.id === `depato-${store.id}-${destination}`)!;
       return {
         id: `${store.id}-${floor.level}`, category: "shop", floorId: goal.floorId,
         names: [{ lang: "ja", text: `${store.name.ja} ${floor.level}` }, { lang: "en", text: `${store.name.en} ${floor.level}` }],
@@ -321,11 +379,18 @@ export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
   });
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(plan => plan.floors.flatMap(floor => [plan.input.store.name.ja, floor.label.ja, ...floor.tenants.map(tenant => tenant.ja)])).join(""));
   const interiors = layouts.map(plan => buildDepatoInterior(ctx, plan, scene.generatedMeshEnvMap));
+  const lifts: InteractableSpec[] = layouts.flatMap(plan =>
+    plan.input.lifts!.flatMap((lift, i) => [[lift.from, lift.to], [lift.to, lift.from]].map(([from, to]) => ({
+      id: `depato-${plan.input.store.id}-${from}-lift-${i}`, kind: "elevator",
+      layer: "fictional", simulated: true, anchor: { x: lift.x, y: plan.height(from!), z: lift.z },
+      radiusM: 1.25, steps: [], lift: { level: to!, arrival: { x: lift.x, y: plan.height(to!), z: lift.z } },
+    }))));
   scene.root.add(...interiors.flatMap(interior => [interior.root, interior.connectorRoot]));
   let avatar: { x: number; y: number; z: number } | undefined;
   const cameraPoint = new THREE.Vector3();
   return {
     ...scene,
+    interactables: [...(scene.interactables ?? []), ...lifts],
     walkable: [...scene.walkable, street, ...interiors.flatMap(interior => interior.walkable)],
     colliders: [...(scene.colliders ?? []), ...facades, ...interiors.flatMap(interior => interior.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(interior => interior.cameraBlockers)],
@@ -340,7 +405,7 @@ export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
       const cp = camera.getWorldPosition(cameraPoint);
       const p = avatar ?? { x: cp.x, y: cp.y - 2, z: cp.z };
       const distances = layouts.map(plan => {
-        if (plan.contains([p.x, p.z]) && p.y >= plan.height(plan.floors[0]!.level) - 1 && p.y <= grade + 3.8) return 0;
+        if (plan.contains([p.x, p.z]) && p.y >= plan.height(plan.floors[0]!.level) - 1 && p.y <= plan.height(plan.floors.at(-1)!.level) + 3.8) return 0;
         const [x, z] = plan.input.entrances[0]!.point;
         return Math.hypot(p.x - x, p.y - grade, p.z - z);
       });
