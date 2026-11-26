@@ -2,7 +2,7 @@
 
 2026-11-26 JST
 
-`keio.json` covers five tracks and seven passenger faces across four physical decks. Both operators use the B5 island. Keio manages the joint station. The inventory includes the eight S03 gate POIs, the JR transfer and the Maynds Tower approach named in the Toei guide.
+`evidence/keio.json` covers five tracks and seven passenger faces across four physical decks. Both operators use the B5 island. Keio manages the joint station. The inventory includes the eight S03 gate POIs, the JR transfer and the Maynds Tower approach named in the Toei guide. When the first scene slice places thresholds, add the runtime lane JSON alongside this plan and declare it with its sources in the station manifest.
 
 | Platform face | Sourced facts | Representative preview |
 | --- | --- | --- |
