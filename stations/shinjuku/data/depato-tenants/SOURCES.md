@@ -12,9 +12,9 @@ Collected on 2026-11-27 JST. Counts compare TSV rows with the official directory
 - **Complete** for the shop guide, 57 rows. B1F 1/1, 1F 8/8, 2F 8/8, 3F 11/11, 4F 6/6, 5F 1/1, 6F 1/1, 7F 14/14, 8F 7/7. The 6F guide displays one named shop card. [Floor guide](https://www.0101.co.jp/005/info/) · [Floor feed](https://www.0101.co.jp/contents2/floormap/005/floor_map_list.json) · [Shop feed](https://www.0101.co.jp/contents2/shopinfo/005/shop_introduce_list.json) · [Shop index](https://www.0101.co.jp/contents2/shopinfo/005/shop_list.json).
 - Live spot check on 2026-11-27 JST matched all eight 1F shop names and their displayed categories. [1F](https://www.0101.co.jp/005/info/?floor=1F).
 
-## Shinjuku Marui Men — store ID pending
+## Shinjuku Marui Men — `shinjuku-marui-men`
 
-- **Complete** extraction, pending TSV placement. Extracted rows match the live card counts on 1F 3/3, 2F 4/4, 3F 8/8, 4F 9/9, 5F 5/5, 6F 5/5, 7F 2/2, 8F 2/2. The station floor data has no store ID for this building. [Floor guide](https://www.0101.co.jp/074/info/) · [Floor feed](https://www.0101.co.jp/contents2/floormap/074/floor_map_list.json) · [Shop feed](https://www.0101.co.jp/contents2/shopinfo/074/shop_introduce_list.json) · [Shop index](https://www.0101.co.jp/contents2/shopinfo/074/shop_list.json).
+- **Complete** for the shop guide, 38 rows. Counts match the live cards on 1F 3/3, 2F 4/4, 3F 8/8, 4F 9/9, 5F 5/5, 6F 5/5, 7F 2/2, 8F 2/2. The approved TSV filename reserves the ID for the import step. [Floor guide](https://www.0101.co.jp/074/info/) · [Floor feed](https://www.0101.co.jp/contents2/floormap/074/floor_map_list.json) · [Shop feed](https://www.0101.co.jp/contents2/shopinfo/074/shop_introduce_list.json) · [Shop index](https://www.0101.co.jp/contents2/shopinfo/074/shop_list.json).
 - Live spot check on 2026-11-27 JST matched all five 5F shop names and their displayed categories, including ムッシュニコル キャナルドゥ　コンセプトストア and メンズ　メルローズ. [5F](https://www.0101.co.jp/074/info/?floor=5F).
 
 ## Shinjuku Takashimaya department store — `takashimaya-shinjuku`
