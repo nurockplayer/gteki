@@ -394,10 +394,10 @@ export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
     walkable: [...scene.walkable, street, ...interiors.flatMap(interior => interior.walkable)],
     colliders: [...(scene.colliders ?? []), ...facades, ...interiors.flatMap(interior => interior.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(interior => interior.cameraBlockers)],
-    setCameraFocus(...args: Parameters<NonNullable<typeof scene.setCameraFocus>>) {
-      scene.setCameraFocus?.(...args);
-      avatar = args[3] ?? undefined;
-      interiors.forEach(interior => interior.setAvatar(avatar ?? null));
+    approach(position) {
+      scene.approach?.(position);
+      avatar = position;
+      interiors.forEach(interior => interior.setAvatar(position));
     },
     update(dt: number, elapsed: number, camera?: import("three").Camera) {
       scene.update?.(dt, elapsed, camera);

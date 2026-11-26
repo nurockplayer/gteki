@@ -3317,9 +3317,9 @@ export class Explorer {
       const ring = g.userData.pulse as THREE.Mesh | undefined;
       if (ring) ring.scale.setScalar(this.reducedMotion || (this.arrivalBeaconTime !== null && !g.userData.routeStart) ? 1 : 1 + 0.25 * Math.sin(t * 3));
     }
+    if (this.phase === "ready" && this.mode !== "overview") this.stationScene?.approach?.(this.pos);
     // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
     this.stationScene?.update?.(dt, t, this.camera);
-    if (this.phase === "ready" && this.mode !== "overview") this.stationScene?.approach?.(this.pos);
     // Overview looks down on the underground model: Shinjuku's street surface layer (shown from any camera at
     // or above street level) would cover it with buildings and haze. The layer re-checks its own visibility on
     // every render pass, so veto it through its suppressed flag rather than setting visible once.
