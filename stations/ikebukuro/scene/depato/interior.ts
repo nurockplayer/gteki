@@ -205,6 +205,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
       const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
       // Repeated shallow bays and a warm cove frame the main aisle without runtime lights.
+      if(!plan.input.entrances.some(e=>e.inward)) {
       for(const axis of [0,1] as const){
         const cross=axis===0?1:0, lo=axis===0?plan.bounds.front:plan.bounds.left, hi=axis===0?plan.bounds.back:plan.bounds.right;
         for(let v=Math.ceil(lo/4.4)*4.4-2.2;v<hi;v+=4.4){
@@ -224,6 +225,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       for(const side of [-1,1])for(const [from,to] of [[plan.bounds.front+0.5,plan.stair.from],[plan.stair.to,plan.bounds.back-0.5]]){
         bays.push(cube(plan.aisleX+side*1.6,l.y+l.clear-0.18,(from!+to!)/2,0.18,0.36,to!-from!));
         lit.push(cube(plan.aisleX+side*1.48,l.y+l.clear-0.13,(from!+to!)/2,0.08,0.05,to!-from!));
+      }
       }
       const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
         // The B1 approach sees PARCO's header at a steep angle from the guide.

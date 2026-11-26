@@ -1,6 +1,7 @@
 /** Road geometry from PLATEAU; markings and furniture positions are explicitly decorative. */
 import polygonClipping, { type Polygon, type MultiPolygon } from "polygon-clipping";
 import type { StationBundle } from "@gteki/schema";
+import depatoRollout from "../data/depato-rollout.json";
 import type { Layout, XY } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
 import { streetFootprint, surfaceGround, surfaceMemoized, surfaceOpenings } from "./surface-layout.ts";
@@ -47,12 +48,18 @@ export function surfaceKerbs(surface: SurfaceData, layout: Layout, bundle: Stati
 }
 /** Bollard rails beside each streetlight whose whole 3 m run (and 0.15 m margin) is clear of pads, openings,
  * asphalt and buildings. */
-export function surfaceLampRails(surface: SurfaceData, layout: Layout, bundle: StationBundle): { a: XY; b: XY }[] {
-  return surfaceMemoized("surfaceLampRails", [layout, bundle, surface], () => {
+export function surfaceLampRails(surface: SurfaceData, layout: Layout, bundle: StationBundle, previewNext = false): { a: XY; b: XY }[] {
+  return surfaceMemoized(previewNext ? "previewSurfaceLampRails" : "surfaceLampRails", [layout, bundle, surface], () => {
     const streets = surfaceStreets(surface, layout, bundle), rails: { a: XY; b: XY }[] = [];
     const buildings = surface.buildings.map((b) => b.rings);
+    const approaches = previewNext ? depatoRollout.stores.flatMap(({ streetApproach, entrance }) => {
+      const points = [...streetApproach.waypoints.map(([x, , z]) => ({ x: x!, y: -z! })),
+        { x: entrance.point[0]!, y: -entrance.point[1]! }];
+      return points.slice(1).map((b, i) => strip(points[i]!, b, 2.5));
+    }) : [];
     for (const { p, u } of streets.furniture.filter((f) => !f.tree)) {
-      const safe = (q: XY) => !inside(q, streets.pads) && !inside(q, streets.holes) && !inside(q, streets.asphalt) && !inside(q, buildings);
+      const safe = (q: XY) => !inside(q, streets.pads) && !inside(q, streets.holes) && !inside(q, streets.asphalt) &&
+        !inside(q, buildings) && !inside(q, approaches);
       const a = { x: p.x + u.x * 2, y: p.y + u.y * 2 }, b = { x: p.x + u.x * 5, y: p.y + u.y * 5 };
       const samples = Array.from({ length: 31 }, (_, i) => ({ x: a.x + (b.x - a.x) * i / 30, y: a.y + (b.y - a.y) * i / 30 }));
       if (!samples.every((q) => [-.15, 0, .15].every((dx) => [-.15, 0, .15].every((dy) => safe({ x: q.x + dx, y: q.y + dy }))))) continue;
