@@ -1,0 +1,243 @@
+{
+  "line": {
+    "ja": "京王線・京王新線・都営新宿線",
+    "en": "Keio Line, Keio New Line and Toei Shinjuku Line"
+  },
+  "operator": "keio",
+  "lineCode": "KO01 / S01",
+  "status": "representative",
+  "levels": [
+    {"id": "toei-nwd-m1", "label": "B1F", "z_m": -7.8, "source": "tokyo-s03-zip"},
+    {"id": "keio-b2", "label": "B2F", "z_m": -16.2, "source": "jrtt-keio-improvement"},
+    {"id": "keio-b4", "label": "B4F", "z_m": -23.74, "source": "toei-s01-access"},
+    {"id": "keio-b5", "label": "B5F", "z_m": -31.8, "source": "toei-media-guide-2026"}
+  ],
+  "gates": [
+    {
+      "id": "lumine-public", "poiId": "poi:keio-gate:4", "side": "public", "position": null,
+      "source": "tokyo-s03-zip", "label": "ルミネ口", "level": "toei-nwd-m1", "fareArea": "public",
+      "areaHint": {"xy": [5.15, 258.88], "uncertainty_m": 5}
+    },
+    {"id": "lumine-paid", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "keio"},
+    {
+      "id": "department-store-public", "poiId": "poi:keio-gate:5", "side": "public", "position": null,
+      "source": "tokyo-s03-zip", "label": "京王百貨店口", "level": "toei-nwd-m1", "fareArea": "public",
+      "areaHint": {"xy": [-30.45, 357.72], "uncertainty_m": 5}
+    },
+    {"id": "department-store-paid", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "keio"},
+    {
+      "id": "west-public", "poiId": "poi:keio-gate:6", "side": "public", "position": null,
+      "source": "tokyo-s03-zip", "label": "京王西口", "level": "toei-nwd-m1", "fareArea": "public",
+      "areaHint": {"xy": [-33.89, 394.78], "uncertainty_m": 14.1}
+    },
+    {"id": "west-paid", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "keio"},
+    {
+      "id": "hiroba-public", "poiId": "poi:keio-gate:7", "side": "public", "position": null,
+      "source": "tokyo-s03-zip", "label": "広場口", "level": "toei-nwd-m1", "fareArea": "public", "exitOnly": true,
+      "areaHint": {"xy": [-20.78, 435.84], "uncertainty_m": 5}
+    },
+    {"id": "hiroba-paid", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "keio"},
+    {
+      "id": "rinji-public", "poiId": "poi:keio-gate:8", "side": "public", "position": null,
+      "source": "tokyo-s03-zip", "label": "臨時口", "level": "toei-nwd-m1", "fareArea": "public", "exitOnly": true,
+      "areaHint": {"xy": [-19.72, 412.74], "uncertainty_m": 5}
+    },
+    {"id": "rinji-paid", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "keio"},
+    {
+      "id": "jr-transfer-keio", "poiId": "poi:jreast-keio-transfer:1", "side": "paid", "position": null,
+      "source": "tokyo-s03-zip", "label": "JR・京王線連絡口", "level": "toei-nwd-m1", "fareArea": "keio",
+      "areaHint": {"xy": [-19.24, 355.99], "uncertainty_m": 6.6}
+    },
+    {"id": "jr-transfer-jr", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "jr"},
+    {
+      "id": "shinsen-s03-1-public", "poiId": "poi:keio-gate:1", "side": "public", "position": null,
+      "source": "tokyo-s03-zip", "label": "京王新線口", "level": "toei-nwd-m1", "fareArea": "public",
+      "identity": "unresolved second historical record of 京王新線口"
+    },
+    {"id": "shinsen-s03-1-paid", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "keio"},
+    {
+      "id": "shinsen-s03-2-public", "poiId": "poi:keio-gate:2", "side": "public", "position": null,
+      "source": "tokyo-s03-zip", "label": "京王新線口", "level": "toei-nwd-m1", "fareArea": "public",
+      "areaHint": {"xy": [-43.87, 178.57], "uncertainty_m": 5}
+    },
+    {"id": "shinsen-s03-2-paid", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "keio"},
+    {
+      "id": "shintoshin-public", "poiId": "poi:keio-gate:3", "side": "public", "position": null,
+      "source": "tokyo-s03-zip", "label": "新都心口", "level": "toei-nwd-m1", "fareArea": "public",
+      "areaHint": {"xy": [-234.26, 71.28], "uncertainty_m": 5}
+    },
+    {"id": "shintoshin-paid", "poiId": null, "side": "paid", "position": null, "source": "tokyo-s03-zip", "level": "toei-nwd-m1", "fareArea": "keio"},
+    {
+      "id": "maynds-public", "poiId": null, "side": "public", "position": null,
+      "source": "toei-s01-access", "label": "マインズタワー方面改札", "fareArea": "public",
+      "candidatePoiId": "poi:gate:3", "identity": "Existing E27 southeast gate is a candidate. Exact tie and gate level are open."
+    },
+    {"id": "maynds-paid", "poiId": null, "side": "paid", "position": null, "source": "toei-s01-access", "fareArea": "toei"}
+  ],
+  "platforms": [
+    {
+      "id": "platform-1", "number": 1, "track": 1, "services": ["京王線"], "level": "keio-b2",
+      "centerline": null, "width_m": 7, "length_m": 210, "source": "tokyo-keio-platforms",
+      "deck": "main-1-2", "use": "boarding"
+    },
+    {
+      "id": "platform-2", "number": 2, "track": 2, "services": ["京王線"], "level": "keio-b2",
+      "centerline": null, "width_m": 7, "length_m": 210, "source": "tokyo-keio-platforms",
+      "deck": "main-1-2", "use": "boarding"
+    },
+    {
+      "id": "platform-2-alighting", "number": 2, "track": 2, "services": ["京王線"], "level": "keio-b2",
+      "centerline": null, "width_m": 6, "length_m": 210, "source": "tokyo-keio-platforms",
+      "deck": "main-alighting", "use": "alighting-only"
+    },
+    {
+      "id": "platform-3-alighting", "number": 3, "track": 3, "services": ["京王線"], "level": "keio-b2",
+      "centerline": null, "width_m": 6, "length_m": 210, "source": "tokyo-keio-platforms",
+      "deck": "main-alighting", "use": "alighting-only"
+    },
+    {
+      "id": "platform-3", "number": 3, "track": 3, "services": ["京王線"], "level": "keio-b2",
+      "centerline": null, "width_m": 7, "length_m": 210, "source": "tokyo-keio-platforms",
+      "deck": "main-3", "use": "boarding"
+    },
+    {
+      "id": "platform-4", "number": 4, "track": 4, "services": ["京王新線", "都営新宿線"], "level": "keio-b5",
+      "centerline": null, "width_m": 10, "length_m": 210, "source": "toei-s01-westbound",
+      "deck": "shinsen-s01", "direction": "Sasazuka and Keio through services via Hatsudai and Hatagaya"
+    },
+    {
+      "id": "platform-5", "number": 5, "track": 5, "services": ["都営新宿線", "京王新線"], "level": "keio-b5",
+      "centerline": null, "width_m": 10, "length_m": 210, "source": "toei-s01-access",
+      "deck": "shinsen-s01", "direction": "Normally toward Motoyawata. Some westbound departures use track 5 per the Toei timetable."
+    }
+  ],
+  "connectors": [
+    {"from": "lumine-public", "to": "lumine-paid", "kind": "gate", "source": "tokyo-s03-zip"},
+    {"from": "department-store-public", "to": "department-store-paid", "kind": "gate", "source": "tokyo-s03-zip"},
+    {"from": "west-public", "to": "west-paid", "kind": "gate", "source": "tokyo-s03-zip"},
+    {"from": "hiroba-paid", "to": "hiroba-public", "kind": "gate", "source": "tokyo-s03-zip", "direction": "forward"},
+    {"from": "rinji-paid", "to": "rinji-public", "kind": "gate", "source": "tokyo-s03-zip", "direction": "forward"},
+    {"from": "jr-transfer-keio", "to": "jr-transfer-jr", "kind": "gate", "source": "tokyo-s03-zip"},
+    {"from": "shinsen-s03-1-public", "to": "shinsen-s03-1-paid", "kind": "gate", "source": "tokyo-s03-zip", "status": "representative"},
+    {"from": "shinsen-s03-2-public", "to": "shinsen-s03-2-paid", "kind": "gate", "source": "tokyo-s03-zip"},
+    {"from": "shintoshin-public", "to": "shintoshin-paid", "kind": "gate", "source": "tokyo-s03-zip"},
+    {"from": "maynds-public", "to": "maynds-paid", "kind": "gate", "source": "toei-s01-access"},
+
+    {"from": "west-paid", "to": "department-store-paid", "kind": "walk", "source": "keio-preview", "status": "representative"},
+    {"from": "department-store-paid", "to": "jr-transfer-keio", "kind": "walk", "source": "keio-preview", "status": "representative"},
+    {"from": "department-store-paid", "to": "lumine-paid", "kind": "walk", "source": "keio-preview", "status": "representative"},
+    {"from": "hiroba-paid", "to": "west-paid", "kind": "walk", "source": "keio-preview", "status": "representative"},
+    {"from": "rinji-paid", "to": "west-paid", "kind": "walk", "source": "keio-preview", "status": "representative"},
+    {"from": "west-paid", "to": "platform-1", "kind": "stairs", "source": "keio-preview", "status": "representative"},
+    {"from": "west-paid", "to": "platform-3", "kind": "lift", "source": "keio-preview", "status": "representative", "corroborated_by": ["keio-main-diagram"]},
+    {"from": "department-store-paid", "to": "platform-2-alighting", "kind": "stairs", "source": "keio-preview", "status": "representative"},
+    {"from": "lumine-paid", "to": "platform-3", "kind": "stairs", "source": "keio-preview", "status": "representative", "corroborated_by": ["keio-main-diagram"]},
+    {"from": "platform-1", "to": "platform-2", "kind": "walk", "source": "keio-preview", "status": "representative"},
+    {"from": "platform-2-alighting", "to": "platform-3-alighting", "kind": "walk", "source": "tokyo-keio-platforms", "status": "representative"},
+
+    {"from": "shinsen-s03-1-paid", "to": "shinsen-s03-2-paid", "kind": "walk", "source": "keio-preview", "status": "representative"},
+    {"from": "shinsen-s03-2-paid", "to": "platform-4", "kind": "lift", "source": "toei-s01-access", "viaLevels": ["keio-b4"]},
+    {"from": "shinsen-s03-2-paid", "to": "platform-5", "kind": "escalator", "source": "toei-s01-access", "status": "representative", "viaLevels": ["keio-b4"]},
+    {"from": "shintoshin-paid", "to": "platform-4", "kind": "escalator", "source": "toei-s01-access", "status": "representative"},
+    {"from": "maynds-paid", "to": "platform-5", "kind": "stairs", "source": "toei-s01-access", "status": "representative", "viaLevels": ["keio-b4"]},
+    {"from": "platform-4", "to": "platform-5", "kind": "walk", "source": "tokyo-toei-barrierfree-shinjuku-line-csv", "status": "representative"},
+    {"from": "shinsen-s03-2-paid", "to": "platform-3", "kind": "stairs", "source": "keio-preview", "status": "representative", "corroborated_by": ["keio-new-diagram"]}
+  ],
+  "sources": [
+    {
+      "id": "tokyo-s03-zip",
+      "url": "https://catalog.data.metro.tokyo.lg.jp/dataset/t000008d0000000037",
+      "path": "docs/research/lines/shinjuku-line-pois.json",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "UNKNOWN",
+      "rights": "S03 Q2/Q3 and R-1/R-2. CC BY 4.0 for the factual subset. The 2026-10-24 JST positions ruling permits the existing approximate gate and transfer points as search context.",
+      "attribution": "出典：東京都都市整備局「新宿駅周辺の施設情報等」",
+      "modification": "GTEki extracted March 2020 gate attributes and reused the published approximate area hints.",
+      "locator": "com-entity.geojson and geojson-level-geom-B1F.geojson. The two 京王新線口 features are 28993983 and 28993984."
+    },
+    {
+      "id": "tokyo-keio-platforms",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_bunyabetsu_machizukuri_bfree_pdf_tetsudo_bf_hd_keio",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "UNKNOWN",
+      "rights": "Tokyo Bureau of Urban Development public accessibility report, facts only under the OD-34 precedent. Site policy https://www.toshiseibi.metro.tokyo.lg.jp/policy retains the statutory exceptions.",
+      "locator": "京王線 新宿 K001 row, including the alighting-only faces on tracks 2 and 3."
+    },
+    {
+      "id": "jrtt-keio-improvement",
+      "url": "https://www.jrtt.go.jp/subsidy/asset/8ce04d650949125ad7398e9f28b6ea39_22.pdf",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "UNKNOWN",
+      "rights": "JRTT website terms https://www.jrtt.go.jp/terms-of-use.html, Public Data License 1.0 and CC BY 4.0 compatibility for covered material. Existing B2 platform level and JR transfer facts only.",
+      "locator": "Printed p.20, 事業の概要, 京王線 新宿駅."
+    },
+    {
+      "id": "toei-s01-access",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/kanren/pdf/barrierfree_guide_shinjuku.pdf",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "locator": "S01 row. Tracks 4 and 5, 京王新線口 lift access, platform access from 新都心口 and マインズタワー方面改札, and B4F Oedo transfer level."
+    },
+    {
+      "id": "tokyo-toei-barrierfree-shinjuku-line-csv",
+      "url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/subway_barrierfree_shinjyuku.csv",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "rights": "#501 attribute-only ruling. Dataset t000018d0000000028, CC BY 4.0.",
+      "attribution": "出典：東京都交通局『地下鉄関連情報　バリアフリー情報』（東京都オープンデータカタログサイト経由）",
+      "modification": "GTEki extracted the S01 island-platform and gate-to-platform lift/escalator availability attributes."
+    },
+    {
+      "id": "toei-media-guide-2026",
+      "url": "https://www.kotsu.metro.tokyo.jp/other/kanren/ad/media_guide_2026/pageindices/index21.html",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "locator": "Printed spread pp.20–21, Shinjuku station, B5F label on the Shinjuku Line platform."
+    },
+    {
+      "id": "toei-s01-westbound",
+      "url": "https://www.kotsu.metro.tokyo.jp/subway/timetable/shinjuku/S01WD.html",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "locator": "Westbound timetable legend assigns unbracketed departures to track 4 and bracketed departures to track 5."
+    },
+    {
+      "id": "toei-s01-exit-2",
+      "url": "https://www.kotsu.metro.tokyo.jp/pickup_information/news/subway/2024/sub_i_2024012911347_h.html",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "locator": "Identifies Shinjuku as a joint-use station and dates public exit 2's closure to 2024-03-30 JST."
+    },
+    {
+      "id": "keio-main-diagram",
+      "url": "https://www.keio.co.jp/train/station/station_map/pdf/ko01_shinjuku_floor_map.pdf",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "UNKNOWN",
+      "rights": "S05 under OD-34 round 5(a), corroboration only.",
+      "locator": "Main-line B1F/B2F labels, gate names, boarding faces and the shared alighting deck."
+    },
+    {
+      "id": "keio-new-diagram",
+      "url": "https://www.keio.co.jp/train/station/station_map/pdf/ko01_newline_shinjuku.pdf",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "UNKNOWN",
+      "rights": "S05 under OD-34 round 5(a), corroboration only.",
+      "locator": "Shared gate names, B1F/B4F/B5F labels and the stair towards main-line track 3."
+    },
+    {
+      "id": "keio-preview",
+      "path": "stations/shinjuku/data/rail/keio-plan.md",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "UNKNOWN",
+      "rights": "Project-authored preview layout."
+    }
+  ],
+  "gaps": [
+    "Gate areaHint values are historical S03 station-frame easting and northing for search context. Every 3D gate threshold, its paid/public offsets and its ties to public concourse nodes await placement.",
+    "Platform centerlines, track orientation and spacing, width and length measurements, and rail elevations lack a qualified station-frame tie. Widths, lengths, and z_m are preview values. Width is for the entire physical deck.",
+    "Actual paid passage geometry and the main-line gate-to-device assignments are open. For S01, the Toei guide gives the gate associations and the CSV gives equipment classes. Representative links summarize the gate-to-deck routes, with B4F where the transfer is supported or planned.",
+    "S03 has two 京王新線口 gate features and Toei names one gate. The unplaced POI remains an evidence record until both physical identities can be checked. The adjacent E27 gate identities also need a tie. Exit 2 is a closed public exit. The other unassigned Toei exit POIs do not identify fare gates.",
+    "S03 v5_nav remains on hold for routing. PLATEAU 13104 has no established Keio public/paid feature tie here. MLIT R2 is login-gated and was skipped.",
+    "Toei's accessibility PDF yielded a challenge to default curl. Toei's indexed PDF supplied the readable S01 row. Exact construction detours, device availability, gate hours, and present opening status remain open."
+  ]
+}
