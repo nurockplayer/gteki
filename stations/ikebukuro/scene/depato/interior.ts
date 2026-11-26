@@ -144,34 +144,38 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     if(canvas){
       canvas.width=canvas.height=1024;const paint=canvas.getContext("2d")!;
       paint.fillStyle="#EFE9DD";paint.fillRect(0,0,1024,1024);paint.textAlign="center";
+      const directoryWidth=512, directoryLine=32, directoryHeight=levels.length*directoryLine;
+      const directoryX=1024-directoryWidth, directoryY=1024-directoryHeight;
+      const rows=boards.map((_,i)=>i);
+      // Pack the tall floor headers together, leaving the lower right for the directory.
+      if(fullIsetan)rows.sort((a,b)=>Number(storeRows.includes(b))-Number(storeRows.includes(a)));
       let x=0,y=0,lineHeight=0;
-      boards.forEach((b,i)=>{
+      rows.forEach(i=>{
+        const b=boards[i]!;
         const nameBoard=storeRows.includes(i), large=i===parcoB1Row || (nameBoard&&boards.length>100);
         const px=large?36:fontPx, height=large?80:rowHeight;
         paint.font=`600 ${px}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
         paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
         const width=Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
-        if(x+width>1024){x=0;y+=lineHeight;lineHeight=0;}
-        if(y+height>1024)throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
-        slots.push({x,y,width,height});lineHeight=Math.max(lineHeight,height);const door=nameBoard;
+        const limit=()=>fullIsetan&&y+height>directoryY?directoryX:1024;
+        if(x+width>limit()){x=0;y+=lineHeight;lineHeight=0;}
+        if(y+height>1024||width>limit())throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
+        slots[i]={x,y,width,height};lineHeight=Math.max(lineHeight,height);const door=nameBoard;
         paint.fillStyle=door?LANDMARK_SIGN.band:"#EFE9DD";paint.fillRect(x,y,width,height);paint.fillStyle=door?LANDMARK_SIGN.letters:LANDMARK_SIGN.band;
         paint.font=`600 ${px}px "GTEki Sign JP"`;paint.fillText(b.ja,x+width/2,y+height/2,width-rowHeight*0.3);
         paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;paint.fillText(b.en,x+width/2,y+height*0.825,width-rowHeight*0.3);
         x+=width;
       });
       if(fullIsetan){
-        const width=512, line=32, height=levels.length*line;
-        y+=lineHeight;
-        if(y+height>1024)throw new Error(`Department-store directory exceeds 1024px: ${plan.input.store.id}`);
-        slots.push({x:0,y,width,height});
+        slots[directoryRow]={x:directoryX,y:directoryY,width:directoryWidth,height:directoryHeight};
         paint.textAlign="left";
         [...levels].reverse().forEach(({floor},i)=>{
-          const top=y+i*line;
-          paint.fillStyle=i%2?"#EFE9DD":"#ded5c3";paint.fillRect(0,top,width,line);
+          const top=directoryY+i*directoryLine;
+          paint.fillStyle=i%2?"#EFE9DD":"#ded5c3";paint.fillRect(directoryX,top,directoryWidth,directoryLine);
           paint.fillStyle=LANDMARK_SIGN.band;
-          paint.font='600 21px "GTEki Sign JP"';paint.fillText(floor.level,10,top+23);
-          paint.font='600 16px "GTEki Sign JP"';paint.fillText(floor.label.ja,66,top+14,width-76);
-          paint.font='600 12px "GTEki Sign JP"';paint.fillText(floor.label.en,66,top+27,width-76);
+          paint.font='600 21px "GTEki Sign JP"';paint.fillText(floor.level,directoryX+10,top+23);
+          paint.font='600 16px "GTEki Sign JP"';paint.fillText(floor.label.ja,directoryX+66,top+14,directoryWidth-76);
+          paint.font='600 12px "GTEki Sign JP"';paint.fillText(floor.label.en,directoryX+66,top+27,directoryWidth-76);
         });
       }
       atlas=new THREE.CanvasTexture(canvas);atlas.colorSpace=THREE.SRGBColorSpace;textures.push(atlas);
@@ -261,7 +265,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
           glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
           detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
           lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
-          if(fullIsetan)for(let j=0;j<5;j++)contents.push({x:x-0.13,y:l.y+0.68,z:z-1.5+j*0.75});
+          if(fullIsetan)for(let j=0;j<3;j++)contents.push({x:x-0.13,y:l.y+0.68,z:z-1.2+j*1.2});
           else for(let j=0;j<10;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*0.37});
         }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,2.8));
         board(x-side*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
