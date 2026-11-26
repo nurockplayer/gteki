@@ -793,7 +793,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   // has the same conservative z band in collision and the rendered trapezoid fits inside it.
   // A passage inside the same shaft, parallel to a face, is part of the enclosed
   // volume and must not open a doorway through its own wall.
-  const addWall = (lv: LevelLayout, a: XY, b: XY, bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false, cap: (p: XY) => number = () => streetUnderside, inside?: (p: XY) => boolean) => {
+  const addWall = (lv: LevelLayout, a: XY, b: XY, bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false, cap: (p: XY) => number = () => streetUnderside, inside?: (p: XY) => boolean, surface = bottom) => {
     const count = Math.max(1, Math.ceil(len(sub(b, a)) / 0.4));
     const minX = Math.min(a.x, b.x), maxX = Math.max(a.x, b.x), minY = Math.min(a.y, b.y), maxY = Math.max(a.y, b.y);
     const wallMinZ = Math.min(bottom(a), bottom(b)), wallMaxZ = Math.min(Math.max(cap(a), cap(b)), Math.max(top(a), top(b)));
@@ -855,10 +855,13 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       for (const [lo, hi] of bands) {
         extra = extra.flatMap(([a, b]): [number, number][] => b <= lo || a >= hi ? [[a, b]] : [[a, Math.min(b, lo)], [Math.max(a, hi), b]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
       }
+      const surfaceA = surface(p), surfaceB = surface(q);
+      // Legacy structural datums lower pitched finishes by 180 mm; flat end walls do not.
+      const offset = surface === bottom && finish === "shaft" && Math.abs(surfaceA - surfaceB) > 1e-5 ? 0.18 : 0;
       for (const [lo, hi] of extra) {
         const profile = { bottomA: Math.max(lo, bottom(p)), bottomB: Math.max(lo, bottom(q)), topA: Math.min(hi, top(p)), topB: Math.min(hi, top(q)) };
         if (profile.topA <= profile.bottomA || profile.topB <= profile.bottomB) continue;
-        layout.cornerFills.push({ a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: bottom(p), b: bottom(q) }, level: lv.label });
+        layout.cornerFills.push({ a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: surfaceA - offset, b: surfaceB - offset }, level: lv.label });
       }
       for (const [lo, hi] of bands) {
         const profile = { bottomA: Math.max(lo, bottom(p)), bottomB: Math.max(lo, bottom(q)), topA: Math.min(hi, top(p)), topB: Math.min(hi, top(q)) };
@@ -875,17 +878,17 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
             continue;
           }
         }
-        const wall: WallSeg = { a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: bottom(p), b: bottom(q) } };
+        const wall: WallSeg = { a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: surfaceA - offset, b: surfaceB - offset } };
         lv.walls.push(wall);
         // Preserve the original sequential overlap behavior for later pieces.
         if (skipExisting) existing.push(wall);
       }
     }
   };
-  const enclose = (lv: LevelLayout, rings: XY[][], bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false, cap?: (p: XY) => number, inside?: (p: XY) => boolean) => {
+  const enclose = (lv: LevelLayout, rings: XY[][], bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false, cap?: (p: XY) => number, inside?: (p: XY) => boolean, surface = bottom) => {
     for (const ring of rings) for (let i = 0; i < ring.length; i++) {
       const a = ring[i]!, b = ring[(i + 1) % ring.length]!;
-      if (len(sub(b, a)) > 0.01) addWall(lv, a, b, bottom, top, finish, skipExisting, cap, inside);
+      if (len(sub(b, a)) > 0.01) addWall(lv, a, b, bottom, top, finish, skipExisting, cap, inside, surface);
     }
   };
 
@@ -946,6 +949,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const corners = group.flatMap((r) => [r.a, r.b].flatMap((p) => [across(p) - r.width / 2 - wallMargin, across(p) + r.width / 2 + wallMargin]));
     const stations = group.flatMap((r) => [r.a, r.b].map(along));
     const minS = Math.min(...stations) - 0.25, maxS = Math.max(...stations) + 0.25;
+    const collarHalfLength = 0.85;
     const minN = Math.min(...corners), maxN = Math.max(...corners);
     const at = (s: number, c: number): XY => ({ x: lo.x + u.x * s + n.x * c, y: lo.y + u.y * s + n.y * c });
     // One rectangular hull spans intermediate landings and parallel lanes without interior walls.
@@ -957,6 +961,13 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       const pitch = (r: Run, l: number) => Math.atan2(Math.abs(r.b.z - r.a.z), l);
       return angle <= Math.PI / 180 && Math.abs(pitch(a, la) - pitch(b, lb)) <= Math.PI / 180;
     }));
+    // The mouth collars are flat landing finishes. Keep their stripe level, then
+    // interpolate continuously along the flight between the two inner collar edges.
+    const stripeStart = Math.max(...group.map((r) => along(ends(r)[0]))) + collarHalfLength;
+    const stripeEnd = Math.min(...group.map((r) => along(ends(r)[1]))) - collarHalfLength;
+    const wallSurface = parallel ? (p: XY) => lo.z + (hi.z - lo.z) *
+      Math.max(0, Math.min(1, (along(p) - stripeStart) / (stripeEnd - stripeStart))) :
+      group[0]!.mode === "stairs" ? bottom : base;
     if (pitchedCeilings && parallel) {
       // The maximum endpoint offset bounds every affine flight roof, including
       // transverse pitch differences. Never lower any existing flight ceiling.
@@ -1047,7 +1058,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         z: lo.z + Math.min(...offsets) - 0.3 };
       shaftHulls.push(invert);
       for (const panel of cropUndergroundRoof(invert, streetUnderside)) layout.soffits.push(...clearSoffit(panel, passages, 0.025, 2.1));
-      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => Math.min(base(p) + rise, streetSurface) : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined);
+      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => Math.min(base(p) + rise, streetSurface) : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined, wallSurface);
     }
     // Raised short collars bridge the clearance cut at the tangent change between an
     // inclined shaft and a flat hall. Without this step, two individually safe cut roofs
@@ -1066,7 +1077,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       if (z + collarClearance >= -0.5) continue;
       const L = Math.sqrt(l2), u = { x: d.x / L, y: d.y / L };
       const collars = union(mouths.map(({ p, width }) => {
-        return [passageRing({ x: p.x - u.x * 0.85, y: p.y - u.y * 0.85 }, { x: p.x + u.x * 0.85, y: p.y + u.y * 0.85 }, width / 2 + wallMargin)];
+        return [passageRing({ x: p.x - u.x * collarHalfLength, y: p.y - u.y * collarHalfLength }, { x: p.x + u.x * collarHalfLength, y: p.y + u.y * collarHalfLength }, width / 2 + wallMargin)];
       }));
       for (const [i, rings] of collars.entries()) {
         // The collar is the higher of the two roof surfaces. Keep its raised panel only
@@ -1101,7 +1112,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
           }
           shaftRoofCuts.push({ prefix: `shaft-roof:${si}:`, rings: panel });
           shaftVoids.push({ rings: panel, bottom: () => z - 0.18, top: () => z + collarClearance, ceilingTop: () => z + collarClearance });
-          enclose(lv, panel, () => z - 0.18, () => z + collarClearance, "shaft");
+          enclose(lv, panel, () => z - 0.18, () => z + collarClearance, "shaft", false, undefined, undefined,
+            () => group[0]!.mode === "stairs" ? z - 0.18 : z);
         }
       }
     }
@@ -1580,7 +1592,7 @@ function wallVoidCutter(voids: Parameters<typeof cutWallsByVoids>[1]) {
     bottom: w.profile ? w.profile.bottomA + (w.profile.bottomB - w.profile.bottomA) * t : w.zMin,
     top: w.profile ? w.profile.topA + (w.profile.topB - w.profile.topA) * t : w.zMax,
   });
-  const surfaceAt = (w: WallSeg, t: number) => w.surfaceBase ? w.surfaceBase.a + (w.surfaceBase.b - w.surfaceBase.a) * t : undefined;
+  const surfaceAt = (w: WallSeg, t: number) => w.surfaceBase ? w.surfaceBase.a + (w.surfaceBase.b - w.surfaceBase.a) * t : w.zMin;
   const positiveInterval = (a: number, b: number, threshold = 0.015): [number, number] | null => {
     const da = a - threshold, db = b - threshold;
     if (da > 0 && db > 0) return [0, 1];
@@ -1675,7 +1687,7 @@ function wallVoidCutter(voids: Parameters<typeof cutWallsByVoids>[1]) {
           for (const piece of pieces) {
             const s0 = t0 + (t1 - t0) * piece.u0, s1 = t0 + (t1 - t0) * piece.u1;
             const a = lerp(w.a, w.b, s0), b = lerp(w.a, w.b, s1);
-            const surfaceA = surfaceAt(w, s0) ?? piece.bottomA, surfaceB = surfaceAt(w, s1) ?? piece.bottomB;
+            const surfaceA = surfaceAt(w, s0), surfaceB = surfaceAt(w, s1);
             result.push({ ...w, a, b, zMin: Math.min(piece.bottomA, piece.bottomB), zMax: Math.max(piece.topA, piece.topB), finish: w.finish ?? "shaft", profile: { bottomA: piece.bottomA, bottomB: piece.bottomB, topA: piece.topA, topB: piece.topB }, surfaceBase: { a: surfaceA, b: surfaceB } });
           }
         }
