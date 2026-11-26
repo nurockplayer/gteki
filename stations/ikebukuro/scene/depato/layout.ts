@@ -88,7 +88,9 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
       if (floor.level === "1F") door.kind = "exit";
       const front = Math.abs(entrance.point[1] - plan.bounds.front) < 0.1;
       const inward = entrance.inward ?? (front ? [0,1] : [-1,0]);
-      const inside = node(floor.level, `inside${i}`, entrance.point[0] + inward[0]! * 2, entrance.point[1] + inward[1]! * 2);
+      // Marui Main's diagonal frontage needs a deeper turn to keep the cross-aisle inside its footprint.
+      const depth = store.id === "shinjuku-marui-main" ? 4 : 2;
+      const inside = node(floor.level, `inside${i}`, entrance.point[0] + inward[0]! * depth, entrance.point[1] + inward[1]! * depth);
       const insideZ = -inside.position.y;
       const east = inside.position.x > plan.aisleX && insideZ > plan.stair.from - 2 && insideZ < plan.stair.to + 2;
       const approach = node(floor.level, `approach${i}`, plan.aisleX + (east ? 4 : -4), insideZ);
