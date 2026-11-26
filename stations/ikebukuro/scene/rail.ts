@@ -1,32 +1,12 @@
 import type { BuildScene, SceneContext, StationScene } from "@gteki/scene-api";
-import type { LazyGeometryContext, LazyGeometryScene } from "@gteki/scene-api/lazy-geometry";
+import { discoverRailLanes, mountRailChunks, type RailBuilder, type RailLane } from "@gteki/scene-api/rail-registry";
 import type { Edge, Node, Poi, StationBundle } from "@gteki/schema";
-import type { Camera } from "three";
 
 type Position = [number, number, number];
-interface RailLane {
-  line: { ja: string; en: string };
-  operator: string;
-  lineCode: string;
-  status: "evidence" | "representative" | "sourced";
-  levels: { id: string; label: string; z_m: number; source: string }[];
-  gates: { id: string; poiId?: string; side: "public" | "paid"; level?: string; position: Position | null; source: string }[];
-  platforms: { id: string; number: number | string | null; track: number | string | null; services: string[]; level: string; centerline: [[number, number], [number, number]] | null; width_m: number | null; length_m: number | null; source: string }[];
-  waypoints?: { id: string; level: string; position: Position; source: string }[];
-  connectors: { from: string; to: string; kind: "walk" | "stairs" | "escalator" | "lift" | "gate"; via?: Position[]; source: string }[];
-  sources: { id: string; url?: string; path?: string; read_date: string; terms_ref: string }[];
-  gaps: string[];
-}
-
-type RailGeometry = Pick<StationScene, "root" | "walkable" | "colliders" | "cameraBlockers" | "dispose">;
-type BuildRailGeometry = (ctx: SceneContext, scene: StationScene) => RailGeometry;
 
 const lanes = import.meta.glob<RailLane>("../data/rail/*.json", { eager: true, import: "default" });
-const builders = import.meta.glob<BuildRailGeometry>(["./rail/*.ts", "!./rail/*.test.ts"], { import: "default" });
-const entries = Object.entries(lanes).map(([path, lane]) => {
-  const name = path.slice("../data/rail/".length, -".json".length);
-  return { lane, name, build: builders[`./rail/${name}.ts`] };
-});
+const builders = import.meta.glob<RailBuilder>(["./rail/*.ts", "!./rail/*.test.ts"], { import: "default" });
+const entries = discoverRailLanes(lanes, builders);
 const edgeId = (name: string, from: string, to: string) => `rail:${name}:${from}__${to}`;
 
 /** Merge the preview before search and routing. Positions on evidence-only rows may be absent. */
@@ -37,8 +17,8 @@ export function railBundle(bundle: StationBundle): StationBundle {
   const sources = new Map(bundle.sources.map(source => [source.id, source]));
   const edges = [...bundle.edges];
 
-  for (const { lane, name, build } of entries) {
-    if (!build) continue;
+  for (const { lane, prefix, load } of entries) {
+    if (!load) continue;
     const evidence = (id: string) => ({
       sourceIds: [id],
       method: `Ikebukuro rail preview (${lane.status})`,
@@ -111,10 +91,11 @@ export function railBundle(bundle: StationBundle): StationBundle {
         lengthM += Math.hypot(b.x - a.x, b.y - a.y, b.z! - a.z!);
       }
       edges.push({
-        id: edgeId(name, from.id, to.id), from: from.id, to: to.id, direction: "both", mode,
+        id: edgeId(prefix, from.id, to.id), from: from.id, to: to.id, direction: "both", mode,
         lengthM, geometry, paid: true, crossesFareBoundary: mode === "gate",
         steps: mode === "stairs" || mode === "escalator", wheelchair: mode === "stairs" || mode === "escalator" ? false : null,
         hours: null, closed: false, verification: "verified", geometryEvidence: source, accessEvidence: source,
+        attributes: { deferredScene: true },
       });
     }
   }
@@ -122,41 +103,14 @@ export function railBundle(bundle: StationBundle): StationBundle {
 }
 
 /** Load each lane's geometry once its public gate or platform is within approach distance. */
-export async function buildRailScene(ctx: LazyGeometryContext, base: BuildScene): Promise<LazyGeometryScene> {
+export async function buildRailScene(ctx: SceneContext, base: BuildScene): Promise<StationScene> {
   const scene = await base(ctx);
-  const lazyEdgeIds = new Set(ctx.bundle.edges.filter(edge => edge.id.startsWith("rail:")).map(edge => edge.id));
-  const slices = entries.flatMap(({ name, build }) => {
-    if (!build) return [];
-    const nodeIds = new Set(ctx.bundle.edges.filter(edge => edge.id.startsWith(`rail:${name}:`)).flatMap(edge => [edge.from, edge.to]));
+  const queued = entries.flatMap(({ lane, prefix, load }) => {
+    if (!load) return [];
+    const nodeIds = new Set(ctx.bundle.edges.filter(edge => edge.id.startsWith(`rail:${prefix}:`)).flatMap(edge => [edge.from, edge.to]));
     const anchors = ctx.bundle.nodes.filter(node => nodeIds.has(node.id))
       .map(node => new ctx.THREE.Vector3(...ctx.enuToRenderer({ ...node.position, z: node.position.z! })));
-    return [{ anchors, build, geometry: null as RailGeometry | null, started: false }];
+    return [{ anchors, lane, load }];
   });
-  const focus = new ctx.THREE.Vector3();
-  let disposed = false;
-  return {
-    ...scene,
-    lazyEdgeIds,
-    update(dt: number, elapsed: number, camera?: Camera) {
-      scene.update?.(dt, elapsed, camera);
-      if (!camera) return;
-      camera.getWorldPosition(focus);
-      for (const slice of slices) {
-        if (slice.started || !slice.anchors.some(anchor => anchor.distanceToSquared(focus) < 12 ** 2)) continue;
-        slice.started = true;
-        void slice.build().then(build => {
-          if (disposed) return;
-          const geometry = slice.geometry = build(ctx, scene);
-          scene.root.add(geometry.root);
-          geometry.root.updateMatrixWorld(true);
-          ctx.addCollision?.(geometry);
-        });
-      }
-    },
-    dispose() {
-      disposed = true;
-      for (const slice of slices) slice.geometry?.dispose();
-      scene.dispose();
-    },
-  };
+  return mountRailChunks(ctx, scene, queued, 12);
 }

@@ -13,7 +13,6 @@ import type { Router, PolylinePoint, RouteStep } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { NavmeshPaths, SceneContext, StationScene } from "@gteki/scene-api";
-import type { LazyGeometryContext, LazyGeometryScene } from "@gteki/scene-api/lazy-geometry";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { loadSignFont } from "../signFont.ts";
@@ -273,7 +272,7 @@ export class Explorer {
   private qaSignNearestGap = Infinity;
 
   private station: LoadedStation | null = null;
-  private stationScene: LazyGeometryScene | null = null;
+  private stationScene: StationScene | null = null;
   /** Shinjuku's street surface layer, looked up once per station scene; overview suppresses it (see tick). */
   private surfaceLayer: { scene: StationScene; obj: THREE.Object3D | undefined } | null = null;
   private interactionController = new InteractionController([]);
@@ -1468,24 +1467,20 @@ export class Explorer {
     manager.setURLModifier(fencedUrlResolver(station.assetUrls, refused));
     const fenceError = (err: unknown) => refused.length ? new Error(`blocked asset request outside station folder: ${refused.join(", ")}`) : err;
     const audioBus = this.audio ? this.newStationAudioBus() : null;
-    const ctx: LazyGeometryContext = {
+    const ctx: SceneContext = {
       THREE,
       bundle,
       previewNext: this.previewNext,
-      addCollision: ({ walkable, colliders = [], cameraBlockers = [] }) => {
+      mountChunk: (chunk) => {
         if (generation !== this.loadGeneration || this.disposed) return;
-        const targets = explorerTargets(walkable, colliders, cameraBlockers);
-        prepareRayTrees(targets.camera);
-        this.walkable.push(...walkable);
-        this.colliders.push(...colliders);
-        this.cameraBlockers.push(...cameraBlockers);
-        this.groundTargets.push(...targets.ground);
+        this.walkable.push(...chunk.walkable);
+        this.colliders.push(...(chunk.colliders ?? []));
+        this.cameraBlockers.push(...(chunk.cameraBlockers ?? []));
+        const targets = explorerTargets(chunk.walkable, chunk.colliders ?? [], chunk.cameraBlockers);
         this.sceneGroundTargets.push(...targets.ground);
-        this.colliderTargets.push(...targets.collider);
-        this.skyTargets.push(...targets.sky);
-        this.cameraTargets.push(...targets.camera);
-        this.cameraSides = new Set(this.cameraTargets);
-        this.blockerTargets = new Set([...this.blockerTargets, ...targets.blockers]);
+        for (const object of targets.collider) this.sceneColliderTargets.add(object);
+        this.refreshRayTargets();
+        this.rayTrees = prepareRayTrees(this.cameraTargets);
       },
       enuToRenderer: (p) => enuToRenderer(p),
       assetUrl: (uri) => station.assetUrls.get(uri) ?? null,
@@ -1592,13 +1587,15 @@ export class Explorer {
         if (value === undefined) { value = probe(p); floorCache.set(key, value); }
         return value;
       };
-      const lazyEdgeIds = this.stationScene.lazyEdgeIds;
-      const traversable = (edge: StationBundle["edges"][number]) => !lazyEdgeIds?.has(edge.id) && router.isTraversable(edge, DEFAULT_PROFILE);
+      const traversable = (edge: StationBundle["edges"][number]) =>
+        edge.attributes?.deferredScene !== true && router.isTraversable(edge, DEFAULT_PROFILE);
       this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality, false, station.privateRegions);
       lap("greybox");
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       lap("greyboxSegments");
-      this.greyboxOpenings = this.greybox.openings;
+      this.greyboxOpenings = this.stationScene.openings
+        ? [...this.greybox.openings, ...this.stationScene.openings]
+        : this.greybox.openings;
       this.sceneColliderTargets = new Set(originalTargets.collider);
       this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
       lap("portalCut");
@@ -1651,16 +1648,9 @@ export class Explorer {
       }
     }
     this.world.updateMatrixWorld(true);
-    const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
-    this.groundTargets = targets.ground;
-    this.colliderTargets = targets.collider;
-    this.skyTargets = targets.sky;
-    this.cameraTargets = targets.camera;
-    this.cameraSides = new Set(targets.camera);
-    this.blockerTargets = targets.blockers;
+    this.refreshRayTargets();
     lap("walls");
-    // Every ray target is in the camera set (walls, floors, blockers); trees are built here, never mid-frame.
-    this.rayTrees = prepareRayTrees(targets.camera);
+    this.rayTrees = prepareRayTrees(this.cameraTargets);
     lap("rayTrees");
     if (this.stationScene) {
       // A sign that stands, or sits under a listed group, among the walkable/collider/camera targets is never cut:
@@ -1731,6 +1721,16 @@ export class Explorer {
     if (assets.length === 0) return null;
     // No scene module: load manifest GLBs and classify by gteki_role.
     return await manifestScene(assets, ctx);
+  }
+
+  private refreshRayTargets(): void {
+    const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+    this.groundTargets = targets.ground;
+    this.colliderTargets = targets.collider;
+    this.skyTargets = targets.sky;
+    this.cameraTargets = targets.camera;
+    this.cameraSides = new Set(targets.camera);
+    this.blockerTargets = targets.blockers;
   }
 
   /** `leaving`: the explorer is switching to a different station (or disposing), so the previous station's GPU textures are freed. */
@@ -3319,6 +3319,7 @@ export class Explorer {
     }
     // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
     this.stationScene?.update?.(dt, t, this.camera);
+    if (this.phase === "ready" && this.mode !== "overview") this.stationScene?.approach?.(this.pos);
     // Overview looks down on the underground model: Shinjuku's street surface layer (shown from any camera at
     // or above street level) would cover it with buildings and haze. The layer re-checks its own visibility on
     // every render pass, so veto it through its suppressed flag rather than setting visible once.

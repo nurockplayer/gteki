@@ -937,8 +937,6 @@ glbPrimitivePlugin	function	packages/scene-api/src/index.ts
 roleOf	function	packages/scene-api/src/index.ts
 sceneFromGlbRoles	function	packages/scene-api/src/index.ts
 seeThroughMeshes	function	packages/scene-api/src/index.ts
-LazyGeometryContext	interface	packages/scene-api/src/lazy-geometry.ts
-LazyGeometryScene	interface	packages/scene-api/src/lazy-geometry.ts
 LIFT_DOOR_CLEARANCE_M	const	packages/scene-api/src/liftShaft.ts
 LIFT_DOOR_HALF_M	const	packages/scene-api/src/liftShaft.ts
 LIFT_FACE_NORMALS	const	packages/scene-api/src/liftShaft.ts
@@ -950,6 +948,10 @@ liftDoorClearance	function	packages/scene-api/src/liftShaft.ts
 liftRides	function	packages/scene-api/src/liftShaft.ts
 liftShafts	function	packages/scene-api/src/liftShaft.ts
 liftStopSquare	function	packages/scene-api/src/liftShaft.ts
+RailBuilder	type	packages/scene-api/src/rail-registry.ts
+RailLane	interface	packages/scene-api/src/rail-registry.ts
+discoverRailLanes	function	packages/scene-api/src/rail-registry.ts
+mountRailChunks	function	packages/scene-api/src/rail-registry.ts
 WallPropPlacement	interface	packages/scene-api/src/wallProps.ts
 buildWallProps	function	packages/scene-api/src/wallProps.ts
 wallPropDrawRanges	function	packages/scene-api/src/wallProps.ts
@@ -1631,6 +1633,9 @@ installLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 parseLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 shaftGrade	function	stations/shinjuku/scene/lightPreset.ts
 OEDO_MAGENTA	const	stations/shinjuku/scene/palette.ts
+attachRailScene	function	stations/shinjuku/scene/rail-registry.ts
+mergeRailBundle	function	stations/shinjuku/scene/rail-registry.ts
+buildYamanote	function	stations/shinjuku/scene/rail/jr-yamanote.ts
 stationSpawn	function	stations/shinjuku/scene/spawn.ts
 stableHypot	function	stations/shinjuku/scene/stable-hypot.ts
 stairProfile	function	stations/shinjuku/scene/stairProfile.ts

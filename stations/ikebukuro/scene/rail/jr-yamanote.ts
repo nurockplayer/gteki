@@ -1,10 +1,10 @@
 import type { SceneContext, StationScene } from "@gteki/scene-api";
+import type { RailLane } from "@gteki/scene-api/rail-registry";
 import type { Mesh, Object3D } from "three";
 import { cutRegions, disposePortalCuts, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
 import { prepareRayTrees } from "../../../../apps/web/src/explorer/meshBvh.ts";
-import lane from "../../data/rail/jr-yamanote.json";
 
-export default function buildYamanote(ctx: SceneContext, scene: StationScene) {
+export default function buildYamanote(ctx: SceneContext, lane: RailLane, scene: StationScene) {
   const { THREE, bundle } = ctx;
   const root = new THREE.Group();
   root.name = "jr-yamanote-platform-preview";
@@ -15,10 +15,10 @@ export default function buildYamanote(ctx: SceneContext, scene: StationScene) {
   const rail = new THREE.MeshBasicMaterial({ color: 0x686b69 });
   const ballast = new THREE.MeshBasicMaterial({ color: 0x383937 });
   const platform = lane.platforms[0]!;
-  const [[centerX, south], [, north]] = platform.centerline as [[number, number], [number, number]];
+  const [[centerX, south], [, north]] = platform.centerline!;
   const height = bundle.floors.find(floor => floor.id === platform.level)!.renderElevationM;
-  const left = centerX - platform.width_m / 2;
-  const right = centerX + platform.width_m / 2;
+  const left = centerX - platform.width_m! / 2;
+  const right = centerX + platform.width_m! / 2;
   const nodes = new Map(bundle.nodes.map(node => [node.id, node.position]));
   const flights = [1, 2].map(gate => ({
     start: nodes.get(`jr-yamanote-central-${gate}-paid`)!,
