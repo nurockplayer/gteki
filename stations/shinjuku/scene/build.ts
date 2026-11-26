@@ -854,7 +854,15 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     // walls (u continuous along each segment)
     for (const w of lv.walls.filter((w) => w.finish === "fascia")) fasciaGeos.push(enclosureWallGeometry(w));
     // public-facing "room" walls use the station cladding as well; plain material only for very short jogs
-    const wg = cladWallGeometry([...lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia"), ...layout.cornerFills.filter((w) => w.level === lv.label)]);
+    const wallPanels = [...lv.walls.filter((w) => w.kind !== "trackside" && w.finish !== "fascia"), ...layout.cornerFills.filter((w) => w.level === lv.label)];
+    // J5 (#1468): the B3 return stops 0.091 m short of the adjoining wall.
+    // Close only its cladding; preserve the prepared layout and collision contract.
+    if (lv.label === "B3") wallPanels.push({
+      a: { x: -55.593333333333334, y: 158.35444444444443 },
+      b: { x: -55.51, y: 158.39 },
+      zMin: lv.z, zMax: lv.ceilingZ, side: 1, kind: "wall",
+    });
+    const wg = cladWallGeometry(wallPanels);
     if (wg) {
       const m = new THREE.Mesh(track(wg), mat.wall);
       m.receiveShadow = true;
