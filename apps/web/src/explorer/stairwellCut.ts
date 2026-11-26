@@ -420,7 +420,9 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
 
   const railPositions: number[] = [], railColors: number[] = [], glassPositions: number[] = [], walls: Segment2[] = [];
   const steel = new THREE.Color(0xaab2b5).toArray();
+  const modelledRailEdges: string[] | undefined = root.userData.modelledStairwellRailEdges;
   for (const well of cutWells) {
+    if (modelledRailEdges?.includes(well.edgeId)) continue;
     const opened = well.rects.filter((rect) => (cut.maxHeights.get(rect) ?? []).some((y) => y >= well.upperY - 0.3 - 1e-6));
     for (const [from, to] of wellRails(well, opened, unionRings, live)) {
       addRail(railPositions, railColors, from, to, well.upperY, steel);
