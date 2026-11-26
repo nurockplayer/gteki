@@ -1293,6 +1293,8 @@ createStationSound	function	stations/ikebukuro/scene/station-sound.ts
 webSpeechPort	function	stations/ikebukuro/scene/station-sound.ts
 createStreetAmbience	function	stations/ikebukuro/scene/street-ambience.ts
 streetLevel	function	stations/ikebukuro/scene/street-ambience.ts
+buildSunshineScene	function	stations/ikebukuro/scene/sunshine.ts
+sunshineBundle	function	stations/ikebukuro/scene/sunshine.ts
 TimeBand	type	stations/ikebukuro/scene/time-band.ts
 bandForHour	function	stations/ikebukuro/scene/time-band.ts
 currentTimeBand	function	stations/ikebukuro/scene/time-band.ts
@@ -1375,6 +1377,7 @@ assembleScene	const	stations/shinjuku/gteki/scene.ts
 buildScene	const	stations/shinjuku/gteki/scene.ts
 navmeshPaths	const	stations/shinjuku/gteki/scene.ts
 planBundle	function	stations/shinjuku/gteki/scene.ts
+previewBundle	function	stations/shinjuku/gteki/scene.ts
 releaseCaches	const	stations/shinjuku/gteki/scene.ts
 releaseShinjukuCaches	function	stations/shinjuku/gteki/scene.ts
 stairwellRecipeUrl	const	stations/shinjuku/gteki/scene.ts
@@ -1425,6 +1428,8 @@ slabGeometry	function	stations/shinjuku/scene/build.ts
 soffitGeometry	function	stations/shinjuku/scene/build.ts
 contentKey	function	stations/shinjuku/scene/content-key.ts
 buildDepartmentStores	function	stations/shinjuku/scene/department-stores.ts
+attachDepatoPreview	function	stations/shinjuku/scene/depato.ts
+depatoPreviewBundle	function	stations/shinjuku/scene/depato.ts
 ACCESS_WORDING	const	stations/shinjuku/scene/fare-fence.ts
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts
 Fence	interface	stations/shinjuku/scene/fare-fence.ts
@@ -1623,6 +1628,10 @@ installLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 parseLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 shaftGrade	function	stations/shinjuku/scene/lightPreset.ts
 OEDO_MAGENTA	const	stations/shinjuku/scene/palette.ts
+RailLane	interface	stations/shinjuku/scene/rail-registry.ts
+attachRailScene	function	stations/shinjuku/scene/rail-registry.ts
+mergeRailBundle	function	stations/shinjuku/scene/rail-registry.ts
+buildYamanote	function	stations/shinjuku/scene/rail/jr-yamanote.ts
 stationSpawn	function	stations/shinjuku/scene/spawn.ts
 stableHypot	function	stations/shinjuku/scene/stable-hypot.ts
 stairProfile	function	stations/shinjuku/scene/stairProfile.ts

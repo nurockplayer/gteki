@@ -1744,7 +1744,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const seed = opts.useBakedSurface === false ? null : surfaceSeed(bakedSurface, surfaceJson as SurfaceData, layout, bundle, plan);
   const { surface, surfaceBarriers } = withSurfaceMemo(() => ({
     surface: buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle }),
-    surfaceBarriers: surfaceWalls(layout, bundle, surfaceJson as SurfaceData),
+    surfaceBarriers: surfaceWalls(layout, bundle, surfaceJson as SurfaceData, opts.previewNext),
   }), seed);
   surface.root.userData.bakedSurface = seed !== null; // observable by tests: was the baked table used?
   root.add(surface.root);

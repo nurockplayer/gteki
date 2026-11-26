@@ -59,7 +59,10 @@ const stairwellSources = (): string[] => {
 };
 
 const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
+  "data/depato-floors.json": { script: "data/depato-floors.json", sources: () => [PLATEAU, "keio-shinjuku-shopsearch-2026-11", ...read("data/department-stores.json").stores.flatMap((s: { poiId: string }) => read("gteki/pois.json").pois.find((p: { id: string }) => p.id === s.poiId).evidence.sourceIds)] },
+  "data/depato-rollout.json": { script: "data/depato-rollout.json", sources: () => [PLATEAU, "keio-shinjuku-shopsearch-2026-11", ...read("data/department-stores.json").stores.flatMap((s: { poiId: string }) => read("gteki/pois.json").pois.find((p: { id: string }) => p.id === s.poiId).evidence.sourceIds)] },
   "data/department-stores.json": { script: "tools/import-department-stores.ts", sources: () => [PLATEAU, ...read("data/department-stores.json").stores.flatMap((s: { poiId: string }) => read("gteki/pois.json").pois.find((p: { id: string }) => p.id === s.poiId).evidence.sourceIds)] },
+  "data/rail/jr-yamanote.json": { script: "data/rail/jr-yamanote.json", sources: () => [NWD, MAP, "tokyo-s03-zip"] },
   "scene/stairwell-cut.high.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/stairwell-cut.low.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/shop_bays.json": { script: "tools/shop-bays.ts", sources: () => [NWD, MAP] },
