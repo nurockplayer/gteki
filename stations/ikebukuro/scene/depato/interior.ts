@@ -334,13 +334,14 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if(signs.length){const g=mergeGeometries(signs);retain(g);signs.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,boardMaterial));}
       label+=l.floor.tenants.length+1;
     }
+    const rubber=fullIsetan&&ctx.quality==="high"?"#242c32":"#14191b";
     for(const lower of levels.slice(0,-1)){
       const pair=flights.filter(f=>f.lower===lower.index);
       const group=new THREE.Group();flightGroups.push(group);root.add(group);
       const solids:T.BufferGeometry[]=[], glasses:T.BufferGeometry[]=[];
       for(const flight of pair)for(const p of flight.parts.filter(p=>!p.walkableOnly)){
         const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(p.position,3));g.setAttribute("normal",new THREE.Float32BufferAttribute(p.normal,3));
-        const finish={tread:"#30383c",riser:"#30383c",nosing:"#f2c94c",escStep:"#30383c",rubber:"#14191b",escTruss:"#b49e7e",steel:"#889fa4",glass:"#b4ccd1",light:"#ffe0a1",lampOk:"#89a37b",lampNo:"#b27565"}[p.material];
+        const finish={tread:"#30383c",riser:"#30383c",nosing:"#f2c94c",escStep:"#30383c",rubber,escTruss:"#b49e7e",steel:"#889fa4",glass:"#b4ccd1",light:"#ffe0a1",lampOk:"#89a37b",lampNo:"#b27565"}[p.material];
         const c=new THREE.Color(finish),colors=Array.from({length:p.position.length/3},()=>[c.r,c.g,c.b]).flat();
         g.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));(p.material==="glass"?glasses:solids).push(g);
       }
