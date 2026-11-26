@@ -1471,6 +1471,17 @@ export class Explorer {
       THREE,
       bundle,
       previewNext: this.previewNext,
+      mountChunk: (chunk) => {
+        if (generation !== this.loadGeneration || this.disposed) return;
+        this.walkable.push(...chunk.walkable);
+        this.colliders.push(...(chunk.colliders ?? []));
+        this.cameraBlockers.push(...(chunk.cameraBlockers ?? []));
+        const targets = explorerTargets(chunk.walkable, chunk.colliders ?? [], chunk.cameraBlockers);
+        this.sceneGroundTargets.push(...targets.ground);
+        for (const object of targets.collider) this.sceneColliderTargets.add(object);
+        this.refreshRayTargets();
+        this.rayTrees = prepareRayTrees(this.cameraTargets);
+      },
       enuToRenderer: (p) => enuToRenderer(p),
       assetUrl: (uri) => station.assetUrls.get(uri) ?? null,
       loadGlb: (uri) => {
@@ -1576,12 +1587,15 @@ export class Explorer {
         if (value === undefined) { value = probe(p); floorCache.set(key, value); }
         return value;
       };
-      const traversable = (edge: StationBundle["edges"][number]) => router.isTraversable(edge, DEFAULT_PROFILE);
+      const traversable = (edge: StationBundle["edges"][number]) =>
+        edge.attributes?.deferredScene !== true && router.isTraversable(edge, DEFAULT_PROFILE);
       this.greybox = buildGreybox(bundle, traversable, hasFloor, scene, this.quality, false, station.privateRegions);
       lap("greybox");
       this.greyboxSegments = greyboxPathSegments(unmodelledRunsByEdge(bundle, traversable, hasFloor));
       lap("greyboxSegments");
-      this.greyboxOpenings = this.greybox.openings;
+      this.greyboxOpenings = this.stationScene.openings
+        ? [...this.greybox.openings, ...this.stationScene.openings]
+        : this.greybox.openings;
       this.sceneColliderTargets = new Set(originalTargets.collider);
       this.portalCutStats = cutPortals(this.stationScene.root, this.greyboxOpenings, this.portalCutResources, new Set(originalTargets.ground));
       lap("portalCut");
@@ -1634,16 +1648,9 @@ export class Explorer {
       }
     }
     this.world.updateMatrixWorld(true);
-    const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
-    this.groundTargets = targets.ground;
-    this.colliderTargets = targets.collider;
-    this.skyTargets = targets.sky;
-    this.cameraTargets = targets.camera;
-    this.cameraSides = new Set(targets.camera);
-    this.blockerTargets = targets.blockers;
+    this.refreshRayTargets();
     lap("walls");
-    // Every ray target is in the camera set (walls, floors, blockers); trees are built here, never mid-frame.
-    this.rayTrees = prepareRayTrees(targets.camera);
+    this.rayTrees = prepareRayTrees(this.cameraTargets);
     lap("rayTrees");
     if (this.stationScene) {
       // A sign that stands, or sits under a listed group, among the walkable/collider/camera targets is never cut:
@@ -1714,6 +1721,16 @@ export class Explorer {
     if (assets.length === 0) return null;
     // No scene module: load manifest GLBs and classify by gteki_role.
     return await manifestScene(assets, ctx);
+  }
+
+  private refreshRayTargets(): void {
+    const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+    this.groundTargets = targets.ground;
+    this.colliderTargets = targets.collider;
+    this.skyTargets = targets.sky;
+    this.cameraTargets = targets.camera;
+    this.cameraSides = new Set(targets.camera);
+    this.blockerTargets = targets.blockers;
   }
 
   /** `leaving`: the explorer is switching to a different station (or disposing), so the previous station's GPU textures are freed. */
@@ -3302,6 +3319,7 @@ export class Explorer {
     }
     // The camera still holds last frame's pose here (fine for distance culling; see the scene hook contract).
     this.stationScene?.update?.(dt, t, this.camera);
+    if (this.phase === "ready" && this.mode !== "overview") this.stationScene?.approach?.(this.pos);
     // Overview looks down on the underground model: Shinjuku's street surface layer (shown from any camera at
     // or above street level) would cover it with buildings and haze. The layer re-checks its own visibility on
     // every render pass, so veto it through its suppressed flag rather than setting visible once.
