@@ -1,6 +1,6 @@
 # Shinjuku JR scene plan
 
-Evidence read 2026-11-26 JST. This is the `?next=1` plan for the JR data in [jr.json](jr.json).
+Evidence read 2026-11-26 JST. This is the `?next=1` plan for the JR data in [plans/jr.json](plans/jr.json). The plan holds unplaced connectors for future island runs. The runtime registry loads the placed [Yamanote lane](jr-yamanote.json) from this directory.
 
 ## Facts to carry into the scene
 
