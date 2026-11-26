@@ -4,6 +4,8 @@
 
 Fetched 2026-11-27 JST with sequential curl requests using curl's default User-Agent. The mobile shop guide supplies the printed shop names, category tags and position text. The desktop floor map lists the same cards, checked by shop ID, printed name and position.
 
+The `name_latin` column contains 832 printed names. It uses the floor heading when it is written in Latin script, otherwise the Latin name printed on the page linked from that card, such as [Din Tai Fung](https://www.tobu-dept.jp/sp/ikebukuro/shop/115441201) or [HANA 3 TERRACE](https://www.tobu-dept.jp/ikebukuro/event/detail/7969). Blank values indicate that these sources supplied no Latin-script shop name in text. The [6F Rolex listing](https://www.tobu-dept.jp/sp/ikebukuro/shop/108959401) redirects to [Tobu's Rolex page](https://www.tobu-dept.jp/ikebukuro/tnb/shop/rolex/shop_rolex.html), which prints the boutique name in Japanese.
+
 Tobu's displayed total is the number of `.list li` cards already in the page HTML. Its [pagination script](https://www.tobu-dept.jp/ikebukuro/search/js/search.js) sets that total and shows 20 cards at a time. Counts below include named services and event spaces when Tobu includes them in the directory.
 
 | Floor | TSV rows | Official cards | Coverage | Mobile shop guide | Desktop floor map |
