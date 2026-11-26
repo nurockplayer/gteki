@@ -1519,12 +1519,50 @@ const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPA
 // source and rights gate as assets; each derivation names the script that writes the file.
 const departmentStores = JSON.parse(readFileSync(join(HERE, "../data/department-stores.json"), "utf8")) as { stores: { poiId: string }[] };
 const departmentStoreSources = [...new Set(["plateau-13104-shinjuku-ku-2025", ...departmentStores.stores.flatMap(s => pois.find(p => p.id === s.poiId)!.evidence.sourceIds)])].sort();
+const m08References: Source[] = [
+  {
+    id: "metro-yardmap",
+    title: "Tokyo Metro Shinjuku M08 station diagram",
+    publisher: "Tokyo Metro",
+    url: "https://www.tokyometro.jp/lang_en/station/yardmap_img/figure_yardmap_shinjuku_all.jpg",
+    license: null,
+    rights: "REFERENCE_ONLY",
+    attribution: "Tokyo Metro Shinjuku station diagram (facts only)",
+    modified: false,
+    retrievedAt: "2026-11-26T02:30:00+09:00",
+    datasetDate: "2025-11",
+    usage: "facts-only",
+    decision: { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" },
+  },
+  {
+    id: "metro-timetable-snapshot",
+    title: "Tokyo Metro Shinjuku M08 timetable, December 2024 revision",
+    publisher: "Tokyo Metro",
+    url: "https://www.tokyometro.jp/station/timetable/pdf/202503/M08.pdf",
+    license: null,
+    rights: "REFERENCE_ONLY",
+    attribution: "Tokyo Metro Shinjuku timetable (destination facts only)",
+    modified: false,
+    retrievedAt: "2026-11-26T02:30:00+09:00",
+    datasetDate: "2024-12",
+    usage: "facts-only",
+    decision: { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" },
+  },
+];
+const m08ReferenceIds = new Set(m08References.map(source => source.id));
+sources.push(...m08References);
 const dataFiles: DataFile[] = [
   {
     id: "jr-yamanote", path: "data/rail/jr-yamanote.json",
     sourceIds: [SRC_NWD, SRC_MAP, S03_SOURCE_ID].sort(),
     modified: true,
     derivation: "data/rail/jr-yamanote.json: S03 gate and platform labels, E27 north concourse level, and authored illustrative geometry.",
+  },
+  {
+    id: "metro-m08", path: "data/rail/metro-m08.json",
+    sourceIds: [...m08ReferenceIds, S03_SOURCE_ID, "tokyometro-shinjuku-accessibility-2026-10"].sort(),
+    modified: true,
+    derivation: "data/rail/metro-m08.json: Tokyo Metro platform, destination and access facts, S03 candidate gate IDs and representative dimensions.",
   },
   {
     id: "department-stores", path: "data/department-stores.json",
@@ -1687,7 +1725,7 @@ const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
   // S03 (#411), the merchant sources (#214), the WP4 line sources (#501) and the kit catalog (nothing in the plan)
   // supply POIs or art only, nothing in the plan, so their credit is not listed here.
-  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && s.id !== SRC_CATALOG && s.id !== "toei-media-guide-2026-index21" && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id) && !SEPARATE_SOURCE_IDS.has(s.id)).map((s) => s.attribution),
+  attribution: sources.filter((s) => s.id !== S03_SOURCE_ID && s.id !== LINE_ALIAS_SOURCE && s.id !== SRC_CATALOG && s.id !== "toei-media-guide-2026-index21" && !MERCHANT_SOURCE_IDS.has(s.id) && !WP4_SOURCE_IDS.has(s.id) && !SEPARATE_SOURCE_IDS.has(s.id) && !m08ReferenceIds.has(s.id)).map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {

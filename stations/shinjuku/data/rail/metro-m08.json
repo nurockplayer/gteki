@@ -89,27 +89,17 @@
       "dimensions_status": "representative"
     }
   ],
-  "landings": [
-    { "id": "metro-m08-island-east", "level": "metro-m08-b2", "side": "paid", "position": null },
-    { "id": "metro-m08-island-west", "level": "metro-m08-b2", "side": "paid", "position": null }
-  ],
   "connectors": [
     { "from": "metro-m08-east-public", "to": "metro-m08-east-paid", "kind": "gate", "source": "metro-yardmap" },
     { "from": "metro-m08-west-public", "to": "metro-m08-west-paid", "kind": "gate", "source": "metro-yardmap" },
-    { "from": "metro-m08-east-paid", "to": "metro-m08-island-east", "kind": "stairs", "source": "metro-yardmap" },
-    { "from": "metro-m08-east-paid", "to": "metro-m08-island-east", "kind": "lift", "source": "metro-accessibility" },
-    {
-      "from": "metro-m08-island-east",
-      "to": "metro-m08-east-paid",
-      "kind": "escalator",
-      "direction": "from-to",
-      "source": "metro-accessibility"
-    },
-    { "from": "metro-m08-west-paid", "to": "metro-m08-island-west", "kind": "stairs", "source": "metro-yardmap" },
-    { "from": "metro-m08-island-east", "to": "metro-m08-platform-1", "kind": "walk", "source": "metro-yardmap" },
-    { "from": "metro-m08-island-east", "to": "metro-m08-platform-2", "kind": "walk", "source": "metro-yardmap" },
-    { "from": "metro-m08-island-west", "to": "metro-m08-platform-1", "kind": "walk", "source": "metro-yardmap" },
-    { "from": "metro-m08-island-west", "to": "metro-m08-platform-2", "kind": "walk", "source": "metro-yardmap" }
+    { "from": "metro-m08-east-paid", "to": "metro-m08-platform-1", "kind": "stairs", "source": "metro-yardmap" },
+    { "from": "metro-m08-east-paid", "to": "metro-m08-platform-2", "kind": "stairs", "source": "metro-yardmap" },
+    { "from": "metro-m08-east-paid", "to": "metro-m08-platform-1", "kind": "lift", "source": "metro-accessibility" },
+    { "from": "metro-m08-east-paid", "to": "metro-m08-platform-2", "kind": "lift", "source": "metro-accessibility" },
+    { "from": "metro-m08-platform-1", "to": "metro-m08-east-paid", "kind": "escalator", "direction": "from-to", "source": "metro-accessibility" },
+    { "from": "metro-m08-platform-2", "to": "metro-m08-east-paid", "kind": "escalator", "direction": "from-to", "source": "metro-accessibility" },
+    { "from": "metro-m08-west-paid", "to": "metro-m08-platform-1", "kind": "stairs", "source": "metro-yardmap" },
+    { "from": "metro-m08-west-paid", "to": "metro-m08-platform-2", "kind": "stairs", "source": "metro-yardmap" }
   ],
   "sources": [
     {

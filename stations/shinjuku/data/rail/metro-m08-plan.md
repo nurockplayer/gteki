@@ -4,7 +4,7 @@
 
 Tracks 1 and 2 are opposite boarding edges of one B2F island. Both B1F gate groups reach both edges. The source supports the East paid stairs, lift and up-only escalator at the Ikebukuro end and the West paid stairs at the Ogikubo end. Street lifts and the B11 escalator are on the public side.
 
-`metro-m08.json` uses one public and one paid endpoint per gate group, and one B2 landing per end. The landing links describe how players reach each boarding edge. The representative model uses a single 120 m deck with two 4 m boarding sides. Use the existing B1 render height of −7.8 m as the preview datum and start the island at −12 m. These heights describe preview geometry. Choose the centerlines and gate coordinates against the station frame when the public seam is placed. Keep S03 search POI matches as candidates until field item 31 supplies a tie.
+`metro-m08.json` uses one public and one paid endpoint per gate group. Its connectors express reachability to both boarding edges through the same equipment at each end. In the scene, use one shared B2 landing per end and walk links to each edge. Before adding positions, wire those landings and the up-only escalator direction into navigation. The representative model uses a single 120 m deck with two 4 m boarding sides. Use the existing B1 render height of −7.8 m as the preview datum and start the island at −12 m. These heights describe preview geometry. Choose the centerlines and gate coordinates against the station frame when the public seam is placed. Keep S03 search POI matches as candidates until field item 31 supplies a tie.
 
 | Run | Platforms | Build | Time budget |
 | --- | --- | --- | --- |
