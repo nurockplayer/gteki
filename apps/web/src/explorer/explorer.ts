@@ -3399,6 +3399,10 @@ export class Explorer {
     if (lift) {
       const { x, y, z } = lift.arrival;
       this.pos.set(x, y, z);
+      this.lastAvatarPos.copy(this.pos);
+      this.yaw = this.bodyYaw = 0;
+      this.pitch = 0;
+      this.camDistance = Math.min(this.camDistance, FOLLOW_CAT_NEXT.distance);
       this.teleported = true;
       this.publishInteraction(this.interactionController.update(0, { position: this.pos, moving: false, mode: this.mode }));
       return;

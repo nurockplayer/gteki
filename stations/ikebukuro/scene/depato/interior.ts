@@ -21,8 +21,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     if (support) mesh.userData.gtekiStairWalkSupport = true;
     physicalGeometry.push(g); target.push(mesh);
   };
-  const shape = (y: number, hole: boolean, ceiling = false) => {
-    const s = new THREE.Shape(plan.input.footprint.map(([x,z]) => new THREE.Vector2(x,-z)));
+  const shape = (y: number, hole: boolean, ceiling = false, footprint = plan.input.footprint) => {
+    const s = new THREE.Shape(footprint.map(([x,z]) => new THREE.Vector2(x,-z)));
     if (hole) {
       const { x, from, to, width } = plan.stair;
       s.holes.push(new THREE.Path([[x-width/2,-from],[x+width/2,-from],[x+width/2,-to],[x-width/2,-to]].map(([x,z]) => new THREE.Vector2(x!,z!))));
@@ -38,8 +38,19 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   const cube = (x:number,y:number,z:number,w:number,h:number,d:number,yaw=0) => {
     const g = new THREE.BoxGeometry(w,h,d).toNonIndexed(); g.rotateY(yaw); g.translate(x,y,z); return g;
   };
-  const walls = (level:string, y:number, clear:number) => {
+  const roof = plan.input.roof;
+  const footprint = plan.input.footprint;
+  const covered = roof ? footprint.flatMap((a, i) => {
+    const b = footprint[(i + 1) % footprint.length]!;
+    const points = a[0] < roof.edgeX ? [a] : [];
+    if ((a[0] < roof.edgeX) !== (b[0] < roof.edgeX)) {
+      points.push([roof.edgeX, a[1] + (b[1] - a[1]) * (roof.edgeX - a[0]) / (b[0] - a[0])]);
+    }
+    return points;
+  }) : footprint;
+  const walls = (level:string, y:number, clear:number, deck:typeof roof) => {
     const pieces:T.BufferGeometry[]=[];
+    const rails:T.BufferGeometry[]=[];
     for (let i=0;i<plan.input.footprint.length;i++) {
       const a=plan.input.footprint[i]!, b=plan.input.footprint[(i+1)%plan.input.footprint.length]!;
       const length=Math.hypot(b[0]-a[0],b[1]-a[1]);
@@ -47,21 +58,54 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         const t=((e.point[0]-a[0])*(b[0]-a[0])+(e.point[1]-a[1])*(b[1]-a[1]))/length**2;
         return t>=0 && t<=1 && Math.hypot(e.point[0]-a[0]-t*(b[0]-a[0]),e.point[1]-a[1]-t*(b[1]-a[1]))<0.1 ? [t*length] : [];
       }).sort((a,b)=>a-b);
-      const part=(from:number,to:number,bottom=y,height=clear)=>{
+      const section=(from:number,to:number,bottom:number,height:number,depth=0.16)=>{
         const t=(from+to)/2/length;
-        pieces.push(cube(a[0]+(b[0]-a[0])*t,bottom+height/2,a[1]+(b[1]-a[1])*t,to-from,height,0.16,-Math.atan2(b[1]-a[1],b[0]-a[0])));
+        return cube(a[0]+(b[0]-a[0])*t,bottom+height/2,a[1]+(b[1]-a[1])*t,to-from,height,depth,-Math.atan2(b[1]-a[1],b[0]-a[0]));
       };
+      const part=(from:number,to:number,bottom=y,height=clear)=>{
+        pieces.push(section(from,to,bottom,height));
+      };
+      if(deck){
+        const cut = (deck.edgeX - a[0]) / (b[0] - a[0]) * length;
+        const points = cut > 0 && cut < length ? [0, cut, length] : [0, length];
+        for (const [j, to] of points.slice(1).entries()) {
+          const from = points[j]!;
+          if (a[0] + (b[0] - a[0]) * (from + to) / (2 * length) < deck.edgeX) {
+            part(from, to);
+          } else {
+            part(from, to, y, 0.2);
+            rails.push(section(from,to,y+1.02,0.07,0.08),section(from,to,y+0.56,0.05,0.05));
+            const posts = Math.ceil((to - from) / 4);
+            for(let k=0;k<posts;k++){
+              const d=from+(to-from)*(k+0.5)/posts;
+              rails.push(section(d-0.045,d+0.045,y+0.2,0.84,0.08));
+            }
+            physical(section(from,to,y,1.1),colliders);
+          }
+        }
+        continue;
+      }
       let start=0;
       for(const door of cuts){part(start,door-2);part(door-2,door+2,y+2.8,clear-2.8);start=door+2;}
       part(start,length);
     }
-    const merged=mergeGeometries(pieces); pieces.forEach(g=>g.dispose()); return merged;
+    if(deck){
+      const [front,back]=covered.filter(([x])=>x===deck.edgeX).map(([,z])=>z).sort((a,b)=>a-b);
+      const passage = plan.stair.to + 2;
+      for(const [a,b] of [[front!,passage-2],[passage+2,back!]]) {
+        pieces.push(cube(deck.edgeX,y+clear/2,(a!+b!)/2,0.16,clear,b!-a!));
+      }
+    }
+    const merged=mergeGeometries(pieces); pieces.forEach(g=>g.dispose()); return {wallG:merged,rails};
   };
   const levels=plan.floors.map((floor,index)=>{
     const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets", clear=food?3.1:3.8;
     const next=plan.floors[index+1], up=next && plan.flight(next.level), down=index>0 && plan.flight(floor.level);
     const wallHeight=up ? plan.height(next.level)-y : clear;
-    const floorG=shape(y,Boolean(down)), ceilingMesh=new THREE.Mesh(shape(y+clear,Boolean(up),true)), wallG=walls(floor.level,y,wallHeight);
+    const deck = floor.level === roof?.level ? roof : undefined;
+    const counters = deck ? plan.counters.filter(([x]) => x + 0.6 < deck.edgeX) : plan.counters;
+    const floorG=shape(y,Boolean(down)), ceilingMesh=new THREE.Mesh(shape(y+clear,Boolean(up),true,deck?covered:footprint));
+    const {wallG,rails}=walls(floor.level,y,wallHeight,deck);
     if(plan.input.store.id==="tobu-ikebukuro" && floor.level==="B1"){
       // The x18 station stairs cross Tobu's illustrative B1 ceiling.
       const left=-111, right=-90, front=-159.5, back=-148;
@@ -78,11 +122,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       cameraBlockers.at(-1)!.userData.gtekiCameraTargetOnly=true;
     }
     if(down)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
-    for(const [x,z] of plan.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
+    for(const [x,z] of counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
     for(const lift of plan.input.lifts??[]){
       if(floor.level===lift.from || floor.level===lift.to)physical(cube(lift.x,y+1.1,lift.z+0.85,1.8,2.2,0.1),colliders);
     }
-    return {floor,index,y,food,clear,up,down,floorG,ceilingG,wallG};
+    return {floor,index,y,food,clear,up,down,floorG,ceilingG,wallG,deck,counters,rails};
   });
   const flights=levels.slice(1).flatMap((upper,i)=>{
     if(!upper.down)return [];
@@ -144,7 +188,12 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     boards.push(...directory);
     const lifts=plan.input.lifts??[];
     const liftsRow=boards.length;
-    boards.push(...lifts.flatMap(lift=>[lift.to,lift.from].map(level=>({ja:`${lift.label.ja} ${level}`,en:`${lift.label.en} ${level}`}))));
+    boards.push(...lifts.flatMap(lift=>[lift.to,lift.from].map(level=>{
+      const label = roof && level === roof.level && lift.x > roof.edgeX ? "RF" : level;
+      return {ja:`${lift.label.ja} ${label}`,en:`${lift.label.en} ${label}`};
+    })));
+    const roofRow = boards.length;
+    if (roof) boards.push(roof.label);
     const fontPx=boards.length>100?9:18, rowHeight=fontPx*40/18;
     const canvas=typeof document!=="undefined"?document.createElement("canvas"):null;
     const slots:{x:number;y:number;width:number;height:number}[]=[];
@@ -205,12 +254,13 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const pad=cube(plan.aisleX,l.y-0.035,plan.stair.to+1,5,0.07,2);retain(pad);landing.add(matte(new THREE.Mesh(pad,fm)));
       const discs:{x:number;y:number;z:number}[]=[];
       for(let z=Math.ceil(plan.bounds.front/4.4)*4.4;z<plan.bounds.back;z+=4.4)for(let x=Math.ceil(plan.bounds.left/4.4)*4.4;x<plan.bounds.right;x+=4.4){
-        if(plan.contains([x,z]) && (!plan.input.flights || (Math.abs(x-plan.aisleX)<16 && z>plan.stair.from-12 && z<plan.stair.to+16)) && !(Math.abs(x-plan.stair.x)<2.3 && z>plan.stair.from && z<plan.stair.to))discs.push({x,y:l.y+l.clear-0.025,z});
+        if((!l.deck || x<l.deck.edgeX) && plan.contains([x,z]) && (!plan.input.flights || (Math.abs(x-plan.aisleX)<16 && z>plan.stair.from-12 && z<plan.stair.to+16)) && !(Math.abs(x-plan.stair.x)<2.3 && z>plan.stair.from && z<plan.stair.to))discs.push({x,y:l.y+l.clear-0.025,z});
       }
       instance(group,new THREE.CylinderGeometry(0.12,0.12,0.025,8),glow,discs);
-      const positions=plan.counters.map(([x,z])=>({x,y:l.y+0.475,z}));
+      const positions=l.counters.map(([x,z])=>({x,y:l.y+0.475,z}));
       instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
       const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
+      frames.push(...l.rails.map(g=>g.clone()));
       // Repeated shallow bays and a warm cove frame the main aisle without runtime lights.
       if(!plan.input.entrances.some(e=>e.inward)) {
       for(const axis of [0,1] as const){
@@ -249,7 +299,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         }
       };
       const contents:{x:number;y:number;z:number}[]=[];
-      plan.counters.forEach(([x,z],i)=>{
+      l.counters.forEach(([x,z],i)=>{
         const side=x<plan.aisleX?-1:1, front=x-side*0.56;
         if(l.food){
           glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
@@ -289,6 +339,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         const isFrom=l.floor.level===lift.from;
         for(const side of [-1,1])frames.push(cube(lift.x+side*0.46,l.y+1.1,lift.z+0.85,0.88,2.2,0.1));
         board(lift.x,l.y+2.55,lift.z+0.79,liftsRow+2*i+Number(!isFrom),Math.PI,2.3,0.56);
+        // The floor marker faces arriving riders at eye level, below the phone HUD.
+        const roofStop = l.deck && lift.x > l.deck.edgeX;
+        const markerZ = lift.z - 7.5;
+        board(lift.x,l.y+1.68,markerZ,roofStop?roofRow:label,0,2.3,0.56);
+        for(const side of [-1,1])frames.push(cube(lift.x+side*1.05,l.y+0.7,markerZ,0.04,1.4,0.04));
       });
       // Non-emissive directory at both ends of the main aisle.
       for(const [z,yaw] of [[plan.stair.from-2,0],[plan.stair.to+2,Math.PI]]){
@@ -305,7 +360,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
       // Station whole-body people use short, narrow counter-side paths, away from circulation.
       const lanes:Record<string,Lane>={};
-      const paths=plan.counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
+      const paths=l.counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
         const id=`retail-${i}`,side=x<plan.aisleX?-1:1,px=x+side*1.3;
         lanes[id]={stepM:3,left:[0.2],right:[0.2]};
         return {id,from:`${id}-a`,to:`${id}-b`,verification:"verified",geometry:[{x:px,y:-z+1.3,z:l.y},{x:px,y:-z-1.3,z:l.y}]};
@@ -357,6 +412,6 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if(riding)landingGroups[floor+1]!.visible=true;
       flightGroups.forEach((g,i)=>g.visible=i===floor || i+1===floor);
     },
-    dispose(){unload();for(const g of physicalGeometry)g.dispose();for(const l of levels){l.floorG.dispose();l.ceilingG.dispose();l.wallG.dispose();}bridges.forEach(g=>g.dispose());collisionMaterial.dispose();},
+    dispose(){unload();for(const g of physicalGeometry)g.dispose();for(const l of levels){l.floorG.dispose();l.ceilingG.dispose();l.wallG.dispose();l.rails.forEach(g=>g.dispose());}bridges.forEach(g=>g.dispose());collisionMaterial.dispose();},
   };
 }

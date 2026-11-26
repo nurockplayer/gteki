@@ -16,6 +16,7 @@ export interface DepatoInput {
   circulation?: { aisleX: number; from: number; to: number };
   flights?: Record<string, "escalator" | "stairs">; // keyed by the upper landing
   lifts?: { from: string; to: string; x: number; z: number; label: { ja: string; en: string }; source: string }[];
+  roof?: { level: string; edgeX: number; label: { ja: string; en: string } };
   entrances: { level: string; point: PlanPoint; outsideNode: string; inward?: PlanPoint }[];
 }
 
@@ -108,11 +109,17 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
       edge(bundle.nodes.find(n => n.id === entrance.outsideNode)!, door);
     }
   }
+  const roof = plan.input.roof;
+  if (roof) {
+    const deck = node(roof.level, "roof", roof.edgeX + 3, plan.stair.to + 2);
+    edge(nodes.find(n => n.id === id(roof.level, "upper"))!, deck);
+  }
   for (const [i, lift] of (plan.input.lifts ?? []).entries()) {
     const stop = (level: string) => {
       const car = node(level, `lift-${i}`, lift.x, lift.z);
       car.kind = "elevator";
-      edge(nodes.find(n => n.id === id(level, "upper"))!, car);
+      const landing = roof && level === roof.level && lift.x > roof.edgeX ? "roof" : "upper";
+      edge(nodes.find(n => n.id === id(level, landing))!, car);
       return car;
     };
     edge(stop(lift.from), stop(lift.to), "elevator", lift.source);

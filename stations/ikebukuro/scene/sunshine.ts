@@ -90,7 +90,7 @@ const interiorSites: {
     elevations: { "5F": grade + 19.3, "6F": grade + 25.1, "7F": grade + 31, "8F": grade + 36.8, "9F": grade + 42.6, "10F": grade + 48 },
     lifts: [
       ["1F", "9F", -5, "館内", "Building lift", directory],
-      ["1F", "10F", -1, "水族館", "Aquarium lift", aquarium],
+      ["1F", "10F", 9, "水族館", "Aquarium lift", aquarium],
       ["B1", "10F", 3, "プラネタリウム", "Planetarium lift", planetarium],
     ],
   },
@@ -102,11 +102,6 @@ function sunshineLayouts() {
     const roof = store.floors.find(floor => floor.level === "RF");
     const floors = store.floors.filter(floor => floor !== roof).map(floor => ({
       ...floor, tenants: floor.tenants.slice(0, 24),
-      // The aquarium and gallery share the same rooftop plate; keep both recorded labels.
-      label: floor.level === "10F" && roof ? {
-        ja: `${floor.label.ja} / RF ${roof.label.ja}`,
-        en: `${floor.label.en} / RF ${roof.label.en}`,
-      } : floor.label,
     }));
     floors.push(...transfer.map(level => ({ ...transferFloor(level, roof ? aquarium : directory), order: Number(level.slice(0, -1)) })));
     const plan = depatoLayout({
@@ -115,6 +110,7 @@ function sunshineLayouts() {
       poiId: site.id, sourceId: "sunshine-city-en-access-2026-11", elevations: { "1F": grade, ...elevations },
       flights, lifts: lifts.map(([fromLevel, to, dx, ja, en, source]) =>
         ({ from: fromLevel, to, x: aisleX + dx, z: from + 18, label: { ja, en }, source })),
+      ...(roof && { roof: { level: "10F", edgeX: aisleX + 6, label: { ja: `RF ${roof.label.ja}`, en: `RF ${roof.label.en}` } } }),
       circulation: { aisleX, from, to: from + 12 },
       entrances: [{ level: "1F", point: [...doorPoint(site, 0)], outsideNode: site.id, inward: [-site.outward[0], -site.outward[1]] }],
     });
@@ -196,7 +192,7 @@ export function sunshineBundle(bundle: StationBundle): StationBundle {
     const interior = depatoBundle(current, plan);
     const store = plan.input.store;
     const floors: Poi[] = floorData.stores.find(row => row.id === store.id)!.floors.map(floor => {
-      const destination = floor.level === "RF" ? "10F-upper" : `${floor.level}-aisle`;
+      const destination = floor.level === "RF" ? "10F-roof" : `${floor.level}-aisle`;
       const goal = interior.nodes.find(n => n.id === `depato-${store.id}-${destination}`)!;
       return {
         id: `${store.id}-${floor.level}`, category: "shop", floorId: goal.floorId,
@@ -380,11 +376,15 @@ export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(plan => plan.floors.flatMap(floor => [plan.input.store.name.ja, floor.label.ja, ...floor.tenants.map(tenant => tenant.ja)])).join(""));
   const interiors = layouts.map(plan => buildDepatoInterior(ctx, plan, scene.generatedMeshEnvMap));
   const lifts: InteractableSpec[] = layouts.flatMap(plan =>
-    plan.input.lifts!.flatMap((lift, i) => [[lift.from, lift.to], [lift.to, lift.from]].map(([from, to]) => ({
-      id: `depato-${plan.input.store.id}-${from}-lift-${i}`, kind: "elevator",
-      layer: "fictional", simulated: true, anchor: { x: lift.x, y: plan.height(from!), z: lift.z },
-      radiusM: 1.25, steps: [], lift: { level: to!, arrival: { x: lift.x, y: plan.height(to!), z: lift.z } },
-    }))));
+    plan.input.lifts!.flatMap((lift, i) => ([[lift.from, lift.to], [lift.to, lift.from]] as const).map(([from, to]) => {
+      const roof = plan.input.roof;
+      const level = roof && to === roof.level && lift.x > roof.edgeX ? "RF" : to;
+      return {
+        id: `depato-${plan.input.store.id}-${from}-lift-${i}`, kind: "elevator",
+        layer: "fictional", simulated: true, anchor: { x: lift.x, y: plan.height(from), z: lift.z },
+        radiusM: 1.25, steps: [], lift: { level, arrival: { x: lift.x, y: plan.height(to), z: lift.z - 2.6 } },
+      };
+    })));
   scene.root.add(...interiors.flatMap(interior => [interior.root, interior.connectorRoot]));
   let avatar: { x: number; y: number; z: number } | undefined;
   const cameraPoint = new THREE.Vector3();
