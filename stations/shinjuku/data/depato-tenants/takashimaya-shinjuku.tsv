@@ -1,4 +1,68 @@
 floor_label	name_ja	name_latin	category	zone_text	source_url	fetched_jst
+地下1階	紀ノ国屋	KINOKUNIYA	スーパーマーケット	食料品〈グルメスクエア〉	https://www.e-kinokuniya.com/store/department/takashimaya-shinjuku	2026-11-27T02:39:03+09:00
+地下1階	魚久		京粕漬		https://www.uokyu.co.jp/shop/hanbaiten.html	2026-11-27T02:46:09+09:00
+地下1階	千疋屋総本店		果物		https://www.sembikiya.co.jp/shop-list/shinjuku	2026-11-27T02:46:12+09:00
+地下1階	スウィーツパレット		スウィーツ		https://prtimes.jp/main/html/rd/p/000001340.000069859.html	2026-11-27T02:47:44+09:00
+地下1階	パティシェリア		洋菓子		https://prtimes.jp/main/html/rd/p/000001582.000069859.html	2026-11-27T02:50:57+09:00
+地下1階	ヨックモック	YOKUMOKU	フード	洋菓子	https://yokumoku.co.jp/blogs/store/479	2026-11-27T02:53:44+09:00
+地下1階	アンリ・シャルパンティエ	Henri Charpentier	フード	洋菓子	https://www.henri-charpentier.com/shop/shinjyuku-takashimaya/	2026-11-27T02:53:48+09:00
+地下1階	茅乃舎	kayanoya	フード	茅乃舎	https://www.kubara.jp/shoplist/kayanoya/?wh=pc_menu	2026-11-27T02:53:51+09:00
+地下1階	福砂屋	Fukusaya	フード	銘菓百選	https://www.fukusaya.co.jp/sp/store/east.html	2026-11-27T02:55:15+09:00
+地下1階	ダルチアーノ		フード		https://prtimes.jp/main/html/rd/p/000001582.000069859.html	2026-11-27T02:58:24+09:00
+地下1階	富澤商店	TOMIZ	フード		https://tomiz.com/store/detail/23	2026-11-27T02:59:13+09:00
+地下1階	人形町今半		フード	生鮮	https://meat.imahan.com/shinjyuku-takashimaya-seiniku-eatin/	2026-11-27T02:59:16+09:00
+1階	資生堂	SHISEIDO	コスメ	化粧品	https://www.shiseido.co.jp/sw/navi/shopdetail.html?shopCd=205090	2026-11-27T02:39:06+09:00
+1階	アルビオン	ALBION	コスメ	化粧品	https://shop.albion.co.jp/albion/spot/detail?code=5001617	2026-11-27T02:53:31+09:00
+1階	カバーマーク	COVERMARK	コスメ	化粧品	https://www.covermark.co.jp/shop/store/list.aspx?keyword=COVERMARK	2026-11-27T02:53:35+09:00
+1階	イプサ	IPSA	コスメ	化粧品	https://www.ipsa.co.jp/storedetails?StoreID=store-ipsa-10	2026-11-27T02:53:38+09:00
+1階	シャネル	CHANEL	コスメ	化粧品	https://www.chanel.com/jp/storelocator/store/chanel-fragrance-beauty-takashimaya-shinjuku-8118/	2026-11-27T02:53:41+09:00
+1階	ロエベ	LOEWE	ラグジュアリー		https://www.loewe.com/jpn/ja/storedetail?StoreCity=tokyo&StoreID=JP1081026&StoreName=loewe-shinjuku-takashimaya	2026-11-27T02:59:25+09:00
+1階	ベルルッティ	Berluti	ラグジュアリー		https://store.berluti.com/51-berluti-tokyo-shinjuku-takashimaya	2026-11-27T02:59:30+09:00
+2階	シャネル	CHANEL	ラグジュアリー	シャネル	https://www.chanel.com/jp/fashion/services/boutique-takashimaya-shinjuku/	2026-11-27T02:39:09+09:00
+2階	エルメス	Hermès			https://www.hermes.com/jp/ja/find-store/japan/shibuya/hermes-shinjuku-takashimaya-EJS01T1A/	2026-11-27T02:45:35+09:00
+2階	ラヴィシャルム	RAVICHARME	ジュエリー	アクセサリーフロア	https://prtimes.jp/main/html/rd/p/000000012.000097054.html	2026-11-27T02:47:47+09:00
+2階	パーセルジュエリー	PARCELLE JEWELRY	ジュエリー		https://parcelle-jewelry.com/pages/shoplist	2026-11-27T02:50:44+09:00
+3階	ビチェリン	Bicerin	カフェ		https://bicerin.co.jp/cafeshop	2026-11-27T02:46:25+09:00
+3階	フェンディ	FENDI			https://www.fendi.com/jp-ja/store-locator/%E6%97%A5%E6%9C%AC/%E5%8D%83%E9%A7%84%E3%83%B6%E8%B0%B7-5-24-2-3f	2026-11-27T02:46:29+09:00
+3階	ディオール	Dior			https://www.dior.com/fashion/stores/ja_jp/%E6%97%A5%E6%9C%AC/shibuya-ku/sendagaya-5-24-2	2026-11-27T02:46:33+09:00
+4階	ウォッチサロン		時計	時計売場	https://www.grand-seiko.com/jp-ja/storesinfo/10026	2026-11-27T02:39:22+09:00
+4階	サロン・ド・テ・ミュゼ イマダミナコ		カフェ		https://prtimes.jp/main/html/rd/p/000001339.000069859.html	2026-11-27T02:56:10+09:00
+4階	グランドセイコー	Grand Seiko	時計	ウォッチサロン	https://www.grand-seiko.com/jp-ja/storesinfo/10026	2026-11-27T02:58:34+09:00
+4階	ヤッコマリカルド	YACCOMARICARD	婦人服		https://www.yaccomaricard.jp/shoplist	2026-11-27T03:01:15+09:00
+5階	自由区		婦人服		https://www.onward.co.jp/shop/shop.php?k=01794WM	2026-11-27T02:39:26+09:00
+5階	ワコール	Wacoal	レディスファッション	ランジェリーサロン	https://www.wacoal.jp/shops/detail.html?bbr=1380&sid=A02887	2026-11-27T02:55:21+09:00
+5階	タカノ フルーツパーラー		カフェ		https://takano.jp/takano/shop/	2026-11-27T03:00:40+09:00
+6階	23区・ICB		婦人服		https://crosset.onward.co.jp/stores?araslg=0313&bc=002	2026-11-27T02:39:33+09:00
+6階	インディヴィラージ・アンタイトルトール＆ラージ		婦人服		https://store.world.co.jp/real-store/0000077198	2026-11-27T02:45:49+09:00
+6階	茶語（チャユー） ティーサロン	Cha Yu	カフェ		https://chayu.net/shinjyuku/	2026-11-27T02:46:41+09:00
+6階	ローズティアラ	Rose Tiara	レディスファッション	ローズティアラ	https://rosetiara.junior.co.jp/shop/	2026-11-27T02:55:29+09:00
+6階	グリーンノート	green nout	婦人服	大きなサイズのユアサイズ	https://www.eastboy.co.jp/shop-list/	2026-11-27T03:01:12+09:00
+6階	リリアンビューティ・ピサーノ	Liliane Burty / PISANO	婦人服	大きなサイズのユアサイズ	https://junior.co.jp/news/21709/	2026-11-27T03:02:58+09:00
+7階	ポール・スミス	Paul Smith	紳士服		https://www.paulsmith.co.jp/made-to-measure	2026-11-27T02:39:39+09:00
+7階	パパス カフェ	PAPAS CAFE	カフェ		https://papas.jpn.com/ja/papas-cafe	2026-11-27T02:46:44+09:00
+7階	パパス	PAPAS	紳士服		https://papas.jpn.com/ja/news/pps_shinjuku_261007	2026-11-27T02:46:48+09:00
+7階	バナナ・リパブリック	BANANA REPUBLIC	ウィメンズ	ファム・メゾン	https://prtimes.jp/main/html/rd/p/000000781.000011503.html	2026-11-27T02:47:50+09:00
+7階	イーストボーイ	EASTBOY	婦人服		https://www.eastboy.co.jp/shop-list/	2026-11-27T03:01:12+09:00
+8階	発酵デリカテッセン カフェテリア Kouji＆ko（コウジアンドコー）	Kouji&ko	カフェ		https://foodandpartners.co.jp/shop.html	2026-11-27T02:46:51+09:00
+8階	ＣＷ－Ｘ	CW-X	スポーツ・アウトドア	スポーツ・メゾン	https://www.wacoal.jp/shops/detail.html?bbr=901&ph=1&sid=A02887	2026-11-27T02:47:57+09:00
+8階	J.LINDEBERG / SKINS	J.LINDEBERG / SKINS	スポーツ	スポーツ・メゾン	https://grip-inter.com/contents/shoplist/skins/	2026-11-27T02:50:50+09:00
+9階	ミキハウス	MIKI HOUSE	ベビー・キッズ	ベビー・こども服	https://shop.mikihouse.co.jp/_dbsearch/shopdetail/?shop_no=39853	2026-11-27T02:39:46+09:00
+9階	有賀園ゴルフTHE CLUB		ゴルフ用品	ゴルフ・メゾン	https://www.arigaen.co.jp/shop/shinjyuku-takashimaya/	2026-11-27T02:47:54+09:00
+9階	ファミリア	familiar	子供服		https://familiar.co.jp/pages/shops-detail/shinjuku-takashimaya	2026-11-27T02:54:03+09:00
+9階	サンリオ	Sanrio			https://stores.sanrio.co.jp/0131200	2026-11-27T02:54:07+09:00
+9階	ワコール	Wacoal	ベビー・キッズ	マタニティ用品	https://www.wacoal.jp/shops/detail.html?bbr=1380&sid=A02887	2026-11-27T02:55:24+09:00
+10階	JTB	JTB	旅行代理店		https://stores.jtb.co.jp/t3734-0	2026-11-27T02:39:50+09:00
+10階	新宿高島屋タイムズスクエア歯科クリニック		歯科		https://t-square-dental.com/about	2026-11-27T02:39:53+09:00
+10階	トーヨーキッチンスタイル	TOYO KITCHEN STYLE	インテリア		https://www.toyokitchen.co.jp/showroom/tokyo/Shinjuku-Takashimaya-Toyo-Kitchen-Style	2026-11-27T02:45:52+09:00
+10階	ロフテー枕工房	LOFTY	リビング・ライフスタイル	寝具	https://lofty.co.jp/pages/shop_detail/sinjyuku-takashimaya	2026-11-27T02:45:56+09:00
+10階	美術画廊		美術		https://prtimes.jp/main/html/rd/p/000001625.000069859.html	2026-11-27T02:51:00+09:00
+10階	西川	nishikawa	寝具		https://www.nishikawa1566.com/stores/detail/tokyo/237646000	2026-11-27T03:00:44+09:00
+10階	ウェッジウッド	WEDGWOOD	食器		https://www.wedgwood.jp/contents/shop_locator	2026-11-27T03:02:27+09:00
+10階	ロイヤル コペンハーゲン	Royal Copenhagen	食器		https://www.royalcopenhagen.jp/contents/shoplist	2026-11-27T03:02:30+09:00
+11階	新宿高島屋眼科診療所		眼科		https://www.iryou.teikyouseido.mhlw.go.jp/znk-web/juminkanja/S2430/initialize?kikanCd=2133177820&kikanKbn=2&prefCd=13	2026-11-27T02:39:57+09:00
+11階	メガネサロン		メガネ		https://www.kimpo-do.com/shop/shinjyuku_takashimaya/	2026-11-27T02:45:59+09:00
+11階	バイセル（リユースきもの）	BUYSELL	美術・呉服	呉服サロン	https://selection.buysell-technologies.com/blogs/edition/shijukutakashimaya	2026-11-27T02:51:44+09:00
+11階	とみひろふりそで		呉服	呉服サロン	https://ichibankan.tomihiro.co.jp/shopinfo/shinjuku/	2026-11-27T02:58:38+09:00
 2F～7F	ハンズ新宿店		総合雑貨		https://store.hands.net/shinjuku/floor/	2026-11-27T02:34:13+09:00
 8F	カインズ ハンズ新宿店		ホームセンター		https://map.cainz.com/detail/906/	2026-11-27T02:29:59+09:00
 11F	ノジマ 新宿タカシマヤ タイムズスクエア店		携帯電話・生活家電		https://www.nojima.co.jp/shop/tokyo/sinjukutakasimaya/	2026-11-27T02:30:03+09:00
