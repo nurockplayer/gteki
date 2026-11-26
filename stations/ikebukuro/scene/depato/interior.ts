@@ -315,11 +315,15 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.85,0.85],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
   const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
-  return {root,connectorRoot,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
+  const occupies = ({ x, y, z }: NonNullable<typeof avatar>) =>
+    plan.contains([x, z]) && y >= levels[0]!.y - 1 && y <= levels.at(-1)!.y + levels.at(-1)!.clear;
+  const entranceDistance = ({ x, y, z }: NonNullable<typeof avatar>) =>
+    Math.min(...plan.input.entrances.map(e => Math.hypot(x - e.point[0], y - plan.height(e.level), z - e.point[1])));
+  return {root,connectorRoot,walkable,colliders,cameraBlockers,occupies,entranceDistance,setAvatar(p:typeof avatar){avatar=p;},
     update(camera:T.Camera,dt=0,elapsed=0,active=true){
       if(!active){if(loaded)unload();return;}
       const cameraP=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cameraP.x,y:cameraP.y-2,z:cameraP.z};
-      const near=(plan.contains([p.x,p.z]) && p.y>=levels[0]!.y-1 && p.y<=levels.at(-1)!.y+levels.at(-1)!.clear) || plan.input.entrances.some(e=>Math.hypot(p.x-e.point[0],p.z-e.point[1],p.y-plan.height(e.level))<40);
+      const near=occupies(p) || entranceDistance(p)<40;
       if(!near){if(loaded)unload();return;}
       if(!loaded){loaded=true;load();}
       let floor=0;for(const l of levels)if(l.y<=p.y+0.2)floor=l.index;

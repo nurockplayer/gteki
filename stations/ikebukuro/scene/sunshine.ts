@@ -182,7 +182,7 @@ function streetSurface(ctx: SceneContext) {
   return street;
 }
 
-export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
+export async function buildSunshineScene(ctx: SceneContext, base: BuildScene, detailStores: ReturnType<typeof buildDepatoInterior>[]) {
   const { THREE } = ctx;
   let landmarks!: Object3D;
   const towerVertices: number[] = [], neighbours: number[] = [];
@@ -321,33 +321,13 @@ export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
   });
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(plan => plan.floors.flatMap(floor => [plan.input.store.name.ja, floor.label.ja, ...floor.tenants.map(tenant => tenant.ja)])).join(""));
   const interiors = layouts.map(plan => buildDepatoInterior(ctx, plan, scene.generatedMeshEnvMap));
+  detailStores.push(...interiors);
   scene.root.add(...interiors.flatMap(interior => [interior.root, interior.connectorRoot]));
-  let avatar: { x: number; y: number; z: number } | undefined;
-  const cameraPoint = new THREE.Vector3();
   return {
     ...scene,
     walkable: [...scene.walkable, street, ...interiors.flatMap(interior => interior.walkable)],
     colliders: [...(scene.colliders ?? []), ...facades, ...interiors.flatMap(interior => interior.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(interior => interior.cameraBlockers)],
-    setCameraFocus(...args: Parameters<NonNullable<typeof scene.setCameraFocus>>) {
-      scene.setCameraFocus?.(...args);
-      avatar = args[3] ?? undefined;
-      interiors.forEach(interior => interior.setAvatar(avatar ?? null));
-    },
-    update(dt: number, elapsed: number, camera?: import("three").Camera) {
-      scene.update?.(dt, elapsed, camera);
-      if (!camera) return;
-      const cp = camera.getWorldPosition(cameraPoint);
-      const p = avatar ?? { x: cp.x, y: cp.y - 2, z: cp.z };
-      const distances = layouts.map(plan => {
-        if (plan.contains([p.x, p.z]) && p.y >= plan.height(plan.floors[0]!.level) - 1 && p.y <= grade + 3.8) return 0;
-        const [x, z] = plan.input.entrances[0]!.point;
-        return Math.hypot(p.x - x, p.y - grade, p.z - z);
-      });
-      const active = distances.indexOf(Math.min(...distances));
-      interiors.forEach((interior, i) => { if (i !== active) interior.update(camera, dt, elapsed, false); });
-      interiors[active]!.update(camera, dt, elapsed);
-    },
     dispose() {
       disposePortalCuts(resources);
       interiors.forEach(interior => interior.dispose());
