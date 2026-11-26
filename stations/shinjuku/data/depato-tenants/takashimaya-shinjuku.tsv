@@ -1,10 +1,21 @@
 floor_label	name_ja	name_latin	category	zone_text	source_url	fetched_jst
+2F～7F	ハンズ新宿店		総合雑貨		https://store.hands.net/shinjuku/floor/	2026-11-27T02:34:13+09:00
+8F	カインズ ハンズ新宿店		ホームセンター		https://map.cainz.com/detail/906/	2026-11-27T02:29:59+09:00
+11F	ノジマ 新宿タカシマヤ タイムズスクエア店		携帯電話・生活家電		https://www.nojima.co.jp/shop/tokyo/sinjukutakasimaya/	2026-11-27T02:30:03+09:00
 12F	モアナキッチンカフェ		ハワイアン ダイニング	30	https://www.restaurants-park.jp/floor_map?floor=12	2026-11-27T01:54:06+09:00
 12F	椿屋茶房		喫茶	31	https://www.restaurants-park.jp/floor_map?floor=12	2026-11-27T01:54:06+09:00
 12F	ハンバーグ＆ステーキ　黒毛和牛　腰塚		肉料理	32	https://www.restaurants-park.jp/floor_map?floor=12	2026-11-27T01:54:06+09:00
 12F	ドナテロウズ		アイスクリームとドリンク	33	https://www.restaurants-park.jp/floor_map?floor=12	2026-11-27T01:54:06+09:00
 12F	京はやしや		茶カフェ	34	https://www.restaurants-park.jp/floor_map?floor=12	2026-11-27T01:54:06+09:00
 12F	鼎泰豐（ディンタイフォン）		点心	35	https://www.restaurants-park.jp/floor_map?floor=12	2026-11-27T01:54:06+09:00
+12F	ユニクロ 新宿高島屋店		ファミリー・カジュアルウエア		https://utme.uniqlo.com/tips/11275/	2026-11-27T02:34:16+09:00
+12F	ABCクッキングスタジオ		料理教室		https://www.abc-cooking.co.jp/studio/studiolist/studiodetail/?studioID=100000009	2026-11-27T02:30:10+09:00
+12F	ボディーズ	Bodies	フィットネススタジオ	レストラン街奥	https://www.bodies.jp/studio/shinjuku/	2026-11-27T02:30:13+09:00
+12F	エステティック&スパ ビューティアベニュー ソシエ		ビューティーサロン		https://www.socie.jp/shop/tokyo/015/	2026-11-27T02:30:16+09:00
+12F	ヘアーカッティングガーデン ジャック･モアザン		ヘアーサロン		https://hair.socie.jp/shop/jm_shinjuku/	2026-11-27T02:30:28+09:00
+12F	ホワイトエッセンス		デンタルサロン		https://www.whiteessence.com/clinic/tokyo/053/	2026-11-27T02:30:32+09:00
+12F	スーモカウンター		住まい関連サービス		https://www.suumocounter.jp/mansion/tenpo/100379/	2026-11-27T02:30:35+09:00
+12F	ほけん百花		保険代理店		https://www.hokenhyakka.com/shop/tokyo/shinjuku/	2026-11-27T02:30:39+09:00
 13F	新宿つな八		天ぷら	13	https://www.restaurants-park.jp/floor_map?floor=13	2026-11-27T01:54:07+09:00
 13F	つばめグリル		欧風料理	14	https://www.restaurants-park.jp/floor_map?floor=13	2026-11-27T01:54:07+09:00
 13F	ブレッツカフェ クレープリー		ガレット料理	15	https://www.restaurants-park.jp/floor_map?floor=13	2026-11-27T01:54:07+09:00
@@ -30,3 +41,6 @@ floor_label	name_ja	name_latin	category	zone_text	source_url	fetched_jst
 14F	焼肉トラジ		焼肉	10	https://www.restaurants-park.jp/floor_map?floor=14	2026-11-27T01:54:08+09:00
 14F	名代とんかつ かつくら 京都三条		とんかつ	11	https://www.restaurants-park.jp/floor_map?floor=14	2026-11-27T01:54:08+09:00
 14F	維新號 點心茶室		上海料理	12	https://www.restaurants-park.jp/floor_map?floor=14	2026-11-27T01:54:08+09:00
+南館 1F～5F	ニトリ		家具・インテリア		https://shop.nitori-net.jp/nitori/spot/detail?code=0000000876	2026-11-27T02:30:43+09:00
+南館 6F	Books Kinokuniya Tokyo	Books Kinokuniya Tokyo	洋書専門店		https://store.kinokuniya.co.jp/store/books-kinokuniya-tokyo/	2026-11-27T02:30:46+09:00
+南館 7F	紀伊國屋サザンシアターTAKASHIMAYA				https://store.kinokuniya.co.jp/store/kinokuniya-southern-theatre-takashimaya/	2026-11-27T02:30:49+09:00
