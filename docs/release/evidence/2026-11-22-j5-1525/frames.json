@@ -1,0 +1,127 @@
+{
+  "recorded": "2026-11-22 JST",
+  "sourceRun": "45024970894",
+  "sourceHead": "142856ea182c41eb2c98d6d04cb4c2324c3364ab",
+  "frames": [
+    {
+      "file": "desktop-chromium-default-020-84s.jpg",
+      "project": "desktop-chromium",
+      "mode": "default",
+      "sample": 20,
+      "simT": 84,
+      "beforeSha": "f30a85c9cc4f57c0d971125d4852bd96fcfe61c5",
+      "afterSha": "63cf64fd13b8f555104c7047fcf629567e7d4775",
+      "artifact": "journey-reel-desktop-chromium",
+      "beforeAvatar": {
+        "x": -47.808635330502035,
+        "y": 165.37471740195983,
+        "z": -23.514727012964872
+      },
+      "afterAvatar": {
+        "x": -47.808635330502035,
+        "y": 165.37471740195983,
+        "z": -23.514727012964872
+      }
+    },
+    {
+      "file": "desktop-chromium-next-025-84s.jpg",
+      "project": "desktop-chromium",
+      "mode": "next",
+      "sample": 25,
+      "simT": 84,
+      "beforeSha": "f30a85c9cc4f57c0d971125d4852bd96fcfe61c5",
+      "afterSha": "63cf64fd13b8f555104c7047fcf629567e7d4775",
+      "artifact": "journey-reel-desktop-chromium-next",
+      "beforeAvatar": {
+        "x": -47.96461329538768,
+        "y": 165.3184774596912,
+        "z": -23.602272391847873
+      },
+      "afterAvatar": {
+        "x": -47.96461329538768,
+        "y": 165.3184774596912,
+        "z": -23.602272391847873
+      }
+    },
+    {
+      "file": "phone-chromium-default-019-80s.jpg",
+      "project": "phone-chromium",
+      "mode": "default",
+      "sample": 19,
+      "simT": 80,
+      "beforeSha": "f30a85c9cc4f57c0d971125d4852bd96fcfe61c5",
+      "afterSha": "63cf64fd13b8f555104c7047fcf629567e7d4775",
+      "artifact": "journey-reel-phone-chromium",
+      "beforeAvatar": {
+        "x": -45.28179229935452,
+        "y": 166.2858044667116,
+        "z": -22.096491875060245
+      },
+      "afterAvatar": {
+        "x": -45.28179229935452,
+        "y": 166.2858044667116,
+        "z": -22.096491875060245
+      }
+    },
+    {
+      "file": "phone-chromium-next-024-80s.jpg",
+      "project": "phone-chromium",
+      "mode": "next",
+      "sample": 24,
+      "simT": 80,
+      "beforeSha": "f30a85c9cc4f57c0d971125d4852bd96fcfe61c5",
+      "afterSha": "63cf64fd13b8f555104c7047fcf629567e7d4775",
+      "artifact": "journey-reel-phone-chromium-next",
+      "beforeAvatar": {
+        "x": -45.43777026424017,
+        "y": 166.22956452444296,
+        "z": -22.18403725394325
+      },
+      "afterAvatar": {
+        "x": -45.43777026424017,
+        "y": 166.22956452444296,
+        "z": -22.18403725394325
+      }
+    },
+    {
+      "file": "desktop-chromium-next-020-64s.jpg",
+      "project": "desktop-chromium",
+      "mode": "next",
+      "sample": 20,
+      "simT": 64,
+      "beforeSha": "f30a85c9cc4f57c0d971125d4852bd96fcfe61c5",
+      "afterSha": "63cf64fd13b8f555104c7047fcf629567e7d4775",
+      "artifact": "journey-reel-desktop-chromium-next",
+      "beforeAvatar": {
+        "x": -35.33039813965012,
+        "y": 169.8739127834501,
+        "z": -16.51109670232475
+      },
+      "afterAvatar": {
+        "x": -35.33039813965012,
+        "y": 169.8739127834501,
+        "z": -16.51109670232475
+      }
+    },
+    {
+      "file": "phone-chromium-next-019-60s.jpg",
+      "project": "phone-chromium",
+      "mode": "next",
+      "sample": 19,
+      "simT": 60,
+      "beforeSha": "f30a85c9cc4f57c0d971125d4852bd96fcfe61c5",
+      "afterSha": "63cf64fd13b8f555104c7047fcf629567e7d4775",
+      "artifact": "journey-reel-phone-chromium-next",
+      "beforeAvatar": {
+        "x": -32.80355510850261,
+        "y": 170.78499984820186,
+        "z": -15.092861564420126
+      },
+      "afterAvatar": {
+        "x": -32.80355510850261,
+        "y": 170.78499984820186,
+        "z": -15.092861564420126
+      }
+    }
+  ]
+}
