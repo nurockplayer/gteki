@@ -148,15 +148,20 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       canvas.width=canvas.height=1024;const paint=canvas.getContext("2d")!;
       paint.fillStyle="#EFE9DD";paint.fillRect(0,0,1024,1024);paint.textAlign="center";
       let x=0,y=0,lineHeight=0;
-      boards.forEach((b,i)=>{
+      const boardOrder = boards.map((_, i) => i);
+      const tenantRows = boardOrder.filter(i => !storeRows.includes(i));
+      const paintOrder = fullStore ? [...storeRows, ...tenantRows] : boardOrder;
+      paintOrder.forEach((i, index)=>{
+        const b = boards[i]!;
         const nameBoard=storeRows.includes(i), large=i===parcoB1Row || (nameBoard&&boards.length>100);
-        const px=large?36:fontPx, height=large?80:rowHeight;
+        const px=fullStore && nameBoard ? 24 : large ? 36 : fontPx;
+        const height=fullStore && nameBoard ? 52 : large ? 80 : rowHeight;
         paint.font=`600 ${px}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
         paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
-        const width=Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
-        if(x+width>1024){x=0;y+=lineHeight;lineHeight=0;}
+        const width=fullStore ? (nameBoard ? 256 : 128) : Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
+        if(x+width>1024 || (fullStore && index===storeRows.length)){x=0;y+=lineHeight;lineHeight=0;}
         if(y+height>1024)throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
-        slots.push({x,y,width,height});lineHeight=Math.max(lineHeight,height);const door=nameBoard;
+        slots[i]={x,y,width,height};lineHeight=Math.max(lineHeight,height);const door=nameBoard;
         paint.fillStyle=door?LANDMARK_SIGN.band:"#EFE9DD";paint.fillRect(x,y,width,height);paint.fillStyle=door?LANDMARK_SIGN.letters:LANDMARK_SIGN.band;
         paint.font=`600 ${px}px "GTEki Sign JP"`;paint.fillText(b.ja,x+width/2,y+height/2,width-rowHeight*0.3);
         paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;paint.fillText(b.en,x+width/2,y+height*0.825,width-rowHeight*0.3);
