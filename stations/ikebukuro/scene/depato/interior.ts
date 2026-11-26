@@ -135,6 +135,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const directoryEn=plan.floors.map(f=>`${f.level} ${f.label.en}`).join(" / ");
     if(!fullIsetan)boards.push({ja:directoryJa,en:directoryEn});
     const directoryRow=fullIsetan?boards.length:boards.length-1;
+    const denseIsetan=fullIsetan&&boards.length>100;
     const fontPx=boards.length>100?9:18, rowHeight=fontPx*40/18;
     const canvas=typeof document!=="undefined"?document.createElement("canvas"):null;
     const slots:{x:number;y:number;width:number;height:number}[]=[];
@@ -153,10 +154,12 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       rows.forEach(i=>{
         const b=boards[i]!;
         const nameBoard=storeRows.includes(i), large=i===parcoB1Row || (nameBoard&&boards.length>100);
-        const px=large?36:fontPx, height=large?80:rowHeight;
+        const px=large?36:fontPx;
+        // The Main building's 347 names fit in 96×16 cells while its ten floor headers use 320×72.
+        const height=denseIsetan?(nameBoard?72:16):large?80:rowHeight;
         paint.font=`600 ${px}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
         paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
-        const width=Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
+        const width=denseIsetan?(nameBoard?320:96):Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
         const limit=()=>fullIsetan&&y+height>directoryY?directoryX:1024;
         if(x+width>limit()){x=0;y+=lineHeight;lineHeight=0;}
         if(y+height>1024||width>limit())throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
