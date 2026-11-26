@@ -394,7 +394,7 @@ export async function buildSunshineScene(ctx: SceneContext, base: BuildScene) {
     walkable: [...scene.walkable, street, ...interiors.flatMap(interior => interior.walkable)],
     colliders: [...(scene.colliders ?? []), ...facades, ...interiors.flatMap(interior => interior.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(interior => interior.cameraBlockers)],
-    approach(position) {
+    approach(position: Vector3) {
       scene.approach?.(position);
       avatar = position;
       interiors.forEach(interior => interior.setAvatar(position));
