@@ -11,6 +11,8 @@ import { LANDMARK_FACADE, LANDMARK_STREET_BAND, LANDMARK_SIGN } from "../landmar
 export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMap?: T.Texture) {
   const THREE = ctx.THREE, root = new THREE.Group(), connectorRoot = new THREE.Group(); root.name = `depato-interior:${plan.input.store.id}`;
   const fullStore = plan.floors.length > 3;
+  const keio = plan.input.store.id === "keio-shinjuku";
+  const rubber = ctx.quality === "high" && (keio || plan.input.store.id === "odakyu-shinjuku") ? "#242c32" : "#14191b";
   const depthTwins:{mesh:T.Mesh;twin:T.Material;original:T.Material}[]=[];
   root.userData.gteki_gtao_depth_twins=depthTwins;
   const walkable: T.Mesh[] = [], colliders: T.Mesh[] = [], cameraBlockers: T.Mesh[] = [];
@@ -314,7 +316,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if (l.roof) {
         board(plan.aisleX,l.y+1.4,plan.stair.to+5,label,0,3.4,0.6);
         for (const dx of [-1.55, 1.55]) frames.push(cube(plan.aisleX+dx,l.y+0.6,plan.stair.to+5,0.08,1.2,0.1));
-      } else board(plan.aisleX,l.y+l.clear-0.48,plan.stair.to+5,label,0,3.4,0.45);
+      } else {
+        const signY = l.y + (keio ? 2.1 : l.clear - 0.48);
+        board(plan.aisleX,signY,plan.stair.to+5,label,0,3.4,0.45);
+        if (keio && l.floor.level === "8F") board(plan.aisleX-4,signY,plan.stair.to-4,label,0,3.4,0.45);
+      }
       if(l.index>0)for(const side of [-1,1])glassPieces.push(cube(plan.aisleX+side*2.13,l.y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from));
       if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,basic("#e5d9c4")));}
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
@@ -339,7 +345,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const solids:T.BufferGeometry[]=[], glasses:T.BufferGeometry[]=[];
       for(const flight of pair)for(const p of flight.parts.filter(p=>!p.walkableOnly)){
         const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(p.position,3));g.setAttribute("normal",new THREE.Float32BufferAttribute(p.normal,3));
-        const finish={tread:"#30383c",riser:"#30383c",nosing:"#f2c94c",escStep:"#30383c",rubber:"#14191b",escTruss:"#b49e7e",steel:"#889fa4",glass:"#b4ccd1",light:"#ffe0a1",lampOk:"#89a37b",lampNo:"#b27565"}[p.material];
+        const finish={tread:"#30383c",riser:"#30383c",nosing:"#f2c94c",escStep:"#30383c",rubber,escTruss:"#b49e7e",steel:"#889fa4",glass:"#b4ccd1",light:"#ffe0a1",lampOk:"#89a37b",lampNo:"#b27565"}[p.material];
         const c=new THREE.Color(finish),colors=Array.from({length:p.position.length/3},()=>[c.r,c.g,c.b]).flat();
         g.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));(p.material==="glass"?glasses:solids).push(g);
       }

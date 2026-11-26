@@ -28,6 +28,8 @@ const layouts = rollout.stores.map(row => {
   } else if (row.id === "keio-shinjuku") {
     elevations.MB = street - mezzanineRise;
     elevations.B1 = elevations.MB - mezzanineRise;
+    // Keep the 8F ceiling below the lowest PLATEAU roof surface at 32.96 m.
+    for (let n = 2; n <= 8; n++) elevations[`${n}F`] = street + (n - 1) * 4.1;
     elevations.RF = street + 36;
   }
   const layout = depatoLayout({
