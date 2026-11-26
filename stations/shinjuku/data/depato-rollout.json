@@ -1,0 +1,257 @@
+{
+  "stores": [
+    {
+      "id": "keio-shinjuku",
+      "poiId": "shop-sjk-keio",
+      "buildingId": "bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0",
+      "sourceTile": "53394525_bldg_6697_op.gml",
+      "footprint": [[-40.898766, -323], [-2, -323], [-2, -270], [-34.876658, -270]],
+      "circulation": { "aisleX": -20, "from": -289, "to": -277 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [-37.887712, -296.5],
+        "inward": [0.9936066, -0.1128982],
+        "outsideNode": "depato-keio-shinjuku-street",
+        "source": "https://www.keionet.com/info/shinjuku/floor/01.html",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The 1F guide marks a south-side entrance west of the hall beside the Keio Line elevator. The preview door is fitted to that part of the PLATEAU west wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-58.5, 0.02, -245], [-54.5, 0.02, -273], [-51.798204, 0.02, -294.919425], [-44.842958, 0.02, -295.709712]]
+      }
+    },
+    {
+      "id": "lumine-1-shinjuku",
+      "poiId": "shop-sjk-lumine1",
+      "buildingId": "bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0",
+      "sourceTile": "53394525_bldg_6697_op.gml",
+      "footprint": [[-34.649409, -268], [-2, -268], [-2, -222], [-29.422674, -222]],
+      "circulation": { "aisleX": -18, "from": -250, "to": -238 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [-33.569974, -258.5],
+        "inward": [0.9936066, -0.1128982],
+        "outsideNode": "depato-lumine-1-shinjuku-street",
+        "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area01store01&floor=1f",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official 1F map shows an entrance beside the lift and shop 4. The preview fits that entrance to the west wall of the Lumine 1 section of the shared PLATEAU part at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-58.5, 0.02, -245], [-55.8, 0.02, -255.975712], [-40.525220, 0.02, -257.709713]]
+      }
+    },
+    {
+      "id": "lumine-2-shinjuku",
+      "poiId": "shop-sjk-lumine2",
+      "buildingId": "bldg_df40b0c1-53fc-4541-80f5-638976540ee7:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[65, -300], [111, -300], [111, -259.216050], [65, -250.054706]],
+      "circulation": { "aisleX": 89, "from": -283, "to": -272 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [83, -253.639580],
+        "inward": [-0.1953236, -0.9807388],
+        "outsideNode": "depato-lumine-2-shinjuku-street",
+        "source": "https://www.lumine.ne.jp/shinjuku/floorguide/?area=area02store01&floor=1f",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official 1F map marks a street entrance below the lift beside shop 9. The preview fits it to the south PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [85.929854, 0.02, -238.928497], [84.367265, 0.02, -246.774408]]
+      }
+    },
+    {
+      "id": "newoman-shinjuku",
+      "poiId": "shop-sjk-newoman",
+      "buildingId": "bldg_6a5be1be-eea6-45ce-80cb-5a228581b362:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[222, -214], [255.95152, -214], [267.769697, -175], [222, -175]],
+      "circulation": { "aisleX": 246, "from": -205, "to": -187 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [260.4, -199.32],
+        "inward": [-0.957024, 0.290007],
+        "outsideNode": "depato-newoman-shinjuku-street",
+        "source": "https://www.newoman.jp/shinjuku/floorguide/?area=area01nman01&floor=1f",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official 1F map shows the street entrance beside Blue Bottle Coffee. The preview door is fitted to the east PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:3",
+        "exitNode": "n:e6feaa2cc7514b68be2758b956baeb28",
+        "waypoints": [[8.2, 0.02, -24.3], [12, 0.02, -20], [38, 0.02, -28], [32, 0.02, -66], [54, 0.02, -74], [66, 0.02, -78], [65, 0.02, -130], [60, 0.02, -180], [68, 0.02, -200], [115, 0.02, -214], [170, 0.02, -230], [222, 0.02, -246], [258, 0.02, -222], [273.798342, 0.02, -203.380104], [267.099171, 0.02, -201.350052]]
+      }
+    },
+    {
+      "id": "takashimaya-shinjuku",
+      "poiId": "shop-sjk-takashimaya",
+      "buildingId": "bldg_c2144cb0-0e0e-4208-84a9-83059ece20a3:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[238, -112], [276.4625, -112], [297.6, -83.5], [302.368061, -55], [238, -55]],
+      "circulation": { "aisleX": 260, "from": -85, "to": -72 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [286.92, -97.9],
+        "inward": [-0.803201, 0.595708],
+        "outsideNode": "depato-takashimaya-shinjuku-street",
+        "source": "https://www.takashimaya.co.jp/base/shinjuku/top/img/info_221226_shinjuku.pdf",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official entrance map labels the 1F Meiji-dori entrance. The preview door is fitted to the PLATEAU wall facing Meiji-dori at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:4",
+        "exitNode": "n:e4cfe61e944e4f5e8ad8caeb6d521750",
+        "waypoints": [[12, 0.02, 14], [36, 0.02, 20], [80, 0.02, 15], [124, 0.02, 11], [166, 0.02, 7], [214, 0.02, 2], [234, 0.02, 20], [244, 0.02, 50], [248, 0.02, 52], [256, 0.02, 50], [260, 0.02, 46], [285, 0.02, 8], [310, 0.02, -30], [312, 0.02, -65], [298.164819, 0.02, -106.239907], [292.542409, 0.02, -102.069954]]
+      }
+    },
+    {
+      "id": "lumine-est-shinjuku",
+      "poiId": "shop-sjk-lumineest",
+      "buildingId": "bldg_f7a93b6b-0bc8-4a74-897d-ed2954e1d65a:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[145, -499], [167.083879, -499], [172.226616, -450], [145, -450]],
+      "circulation": { "aisleX": 156, "from": -489, "to": -477 },
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [169.917632, -472],
+        "inward": [-0.9945374, 0.1043805],
+        "outsideNode": "depato-lumine-est-shinjuku-street",
+        "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=1f",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The official 1F map marks the entrance beside shop 6 midway along the east side. The preview door is fitted to the east PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [108, 0.02, -246.4], [152, 0.02, -259], [192, 0.02, -270.3], [212, 0.02, -276], [214, 0.02, -280], [218, 0.02, -314], [207, 0.02, -366], [196, 0.02, -418], [183.841156, 0.02, -473.461327], [176.879394, 0.02, -472.730664]]
+      }
+    },
+    {
+      "id": "odakyu-shinjuku",
+      "poiId": "shop-sjk-odakyudept",
+      "buildingId": "bldg_5c2afdef-6b54-4e66-b7c0-98e98ae88ce4:0",
+      "sourceTile": "53394535_bldg_6697_op.gml",
+      "footprint": [[-29.0, -628.0], [-21.1, -588.6], [-29.0, -584.0], [-90.1, -595.5], [-95.4, -598.0], [-101.0, -602.0], [-107.4, -607.8], [-124.5, -625.3], [-122.4, -633.9], [-90.0, -627.8], [-87.8, -639.6]],
+      "circulation": {"aisleX": -56, "from": -621, "to": -608},
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [-43.634, -586.772],
+        "inward": [0.1857448, -0.982598],
+        "outsideNode": "depato-odakyu-shinjuku-street",
+        "source": "https://www.odakyu-dept.co.jp/info/v4l5d000001cquyy-att/20250917.pdf",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "Odakyu’s street access map places the 1F front entrance on the station-facing HALC facade after the crossing by Palette. The preview fits that door to the south PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-58.5, 0.02, -245], [-60, 0.02, -296], [-62, 0.02, -346], [-62, 0.02, -396], [-62, 0.02, -446], [-28, 0.02, -484], [-28, 0.02, -510], [-46, 0.02, -558], [-46.234427, 0.02, -573.015628], [-44.934214, 0.02, -579.893814]]
+      }
+    },
+    {
+      "id": "isetan-shinjuku-main",
+      "poiId": "shop-sjk-isetan-honkan",
+      "buildingId": "bldg_eeca0e71-a7bf-4645-9621-0d10aaf9f603:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[496.4, -458.5], [495.6, -456.9], [494.4, -455.5], [493.0, -454.2], [491.0, -453.0], [484.3, -450.9], [482.0, -450.6], [404.9, -492.1], [403.7, -496.1], [412.2, -515.1], [418.2, -511.9], [419.2, -513.7], [415.6, -515.7], [419.3, -522.4], [417.4, -523.4], [421.5, -531.0], [423.4, -529.9], [449.5, -577.6], [488.9, -565.4], [496.4, -562.9], [535.7, -541.7]],
+      "circulation": {"aisleX": 462, "from": -521, "to": -509},
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [447.2805, -469.2775],
+        "inward": [0.4743585, -0.8803318],
+        "outsideNode": "depato-isetan-shinjuku-main-street",
+        "source": "https://www.mistore.jp/store/shinjuku/shops/mainfloor1.html",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The 1F guide marks door A on the main frontage. The preview fits it to the south PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [108, 0.02, -246.4], [152, 0.02, -259], [192, 0.02, -270.3], [212, 0.02, -276], [214, 0.02, -280], [250, 0.02, -316], [286, 0.02, -352], [322, 0.02, -386], [358, 0.02, -422], [396, 0.02, -456], [440.639481, 0.02, -456.952855], [443.959991, 0.02, -463.115177]]
+      }
+    },
+    {
+      "id": "isetan-shinjuku-mens",
+      "poiId": "shop-sjk-isetan-mens",
+      "buildingId": "bldg_4437dbf7-df89-49aa-bdd7-cc7e231a0cf8:0",
+      "sourceTile": "53394536_bldg_6697_op.gml",
+      "footprint": [[493.1, -573.4], [453.0, -587.0], [451.8, -590.5], [466.0, -618.3], [511.5, -603.7], [497.3, -575.1]],
+      "circulation": {"aisleX": 480, "from": -604, "to": -592},
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [482.3956, -613.0668],
+        "inward": [-0.3061583, 0.9519806],
+        "outsideNode": "depato-isetan-shinjuku-mens-street",
+        "source": "https://www.mistore.jp/store/shinjuku/shops/mensfloor1.html",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The 1F guide marks door N on the Yasukuni-dori side of the Men’s building. The preview fits it to the north PLATEAU wall at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [108, 0.02, -246.4], [152, 0.02, -259], [192, 0.02, -270.3], [212, 0.02, -276], [214, 0.02, -280], [246, 0.02, -318], [282, 0.02, -354], [318, 0.02, -390], [354, 0.02, -426], [390, 0.02, -462], [390, 0.02, -512], [404, 0.02, -560], [440, 0.02, -596], [470, 0.02, -626], [486.681816, 0.02, -626.394528], [484.538708, 0.02, -619.730664]]
+      }
+    },
+    {
+      "id": "shinjuku-marui-main",
+      "poiId": "shop-sjk-marui-honkan",
+      "buildingId": "bldg_0d92c4c0-2a84-4edf-8d8f-1e61a2ed4f82:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[545.9, -419.0], [543.8, -415.6], [520.5, -428.8], [516.3, -441.5], [523.7, -456.1], [554.6, -438.6], [544.3, -420.0]],
+      "circulation": {"aisleX": 535, "from": -444, "to": -432},
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [535.42, -420.3448],
+        "inward": [0.4931542, -0.8699419],
+        "outsideNode": "depato-shinjuku-marui-main-street",
+        "source": "https://www.0101.co.jp/003/info/?floor=1F",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The 1F guide marks a doorway beside Apple. The preview fits it to the Shinjuku-dori frontage at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [108, 0.02, -246.4], [152, 0.02, -259], [192, 0.02, -270.3], [212, 0.02, -276], [214, 0.02, -280], [264, 0.02, -286], [304, 0.02, -316], [340, 0.02, -350], [376, 0.02, -386], [422, 0.02, -408], [472, 0.02, -408], [522, 0.02, -408], [528.515841, 0.02, -408.165613], [531.967921, 0.02, -414.255207]]
+      }
+    },
+    {
+      "id": "shinjuku-marui-annex",
+      "poiId": "shop-sjk-marui-annex",
+      "buildingId": "bldg_6043ff0b-3f42-4fb3-92d3-8fdfb80fddc2:0",
+      "sourceTile": "53394526_bldg_6697_op.gml",
+      "footprint": [[577.7, -367.0], [618.3, -344.4], [598.6, -309.6], [564.0, -338.0], [563.2, -339.2], [563.1, -340.4], [563.4, -341.5], [564.0, -342.7], [561.2, -344.2], [565.8, -353.2], [569.1, -351.5]],
+      "circulation": {"aisleX": 589, "from": -348, "to": -336},
+      "entrance": {
+        "level": "1F",
+        "elevation": 0.02,
+        "point": [579.8944, -324.9152],
+        "inward": [0.6337484, -0.7735393],
+        "outsideNode": "depato-shinjuku-marui-annex-street",
+        "source": "https://www.0101.co.jp/005/info/?floor=1F",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The 1F guide marks paired street doors between the Godzilla Store and the character shop. The preview fits that entrance to the PLATEAU frontage at modeled street grade."
+      },
+      "streetApproach": {
+        "exitPoi": "poi:exit:1",
+        "exitNode": "n:a06f3d191885497bac197b666c4daef9",
+        "waypoints": [[-60.73, 0.02, -220.5], [-46, 0.02, -218], [-34, 0.02, -207], [0, 0.02, -199], [30, 0.02, -216], [51, 0.02, -229], [68, 0.02, -235], [108, 0.02, -246.4], [152, 0.02, -259], [192, 0.02, -270.3], [212, 0.02, -276], [214, 0.02, -280], [264, 0.02, -282], [306, 0.02, -310], [356, 0.02, -314], [406, 0.02, -314], [456, 0.02, -314], [506, 0.02, -314], [556, 0.02, -314], [571.021922, 0.02, -314.08565], [575.458161, 0.02, -319.500425]]
+      }
+    }
+  ]
+}
