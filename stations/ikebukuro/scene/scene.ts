@@ -450,6 +450,15 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
         x35(b, offset + 0.045, topB - 0.025), x35(a, offset + 0.045, topA - 0.025), lamp);
     }
   }
+  // Continue the sightline past the end of the x35 canopy into daylight.
+  // The underside faces the stairs, leaving the street and overview open from above.
+  const skyGeometry = new THREE.BufferGeometry().setFromPoints([
+    x35(-12, -4.15, 34.05), x35(-3.4, -4.15, 34.05), x35(-3.4, 1.7, 34.05),
+    x35(-12, -4.15, 34.05), x35(-3.4, 1.7, 34.05), x35(-12, 1.7, 34.05),
+  ]);
+  skyGeometry.computeVertexNormals();
+  const x35Daylight = new THREE.Mesh(skyGeometry, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.86, 0.92, 1.0) }));
+  x35Daylight.name = "ikebukuro-x35-daylight";
 
   // x39: a soffit over the upper switchback, open toward the street and the lower flight.
   const x39 = (x: number, y: number, height = 35.05) => toRenderer(x, y, height);
@@ -493,9 +502,10 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
   geometry.computeVertexNormals();
   const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
   mesh.name = "ikebukuro-exit-stair-enclosures";
+  mesh.add(x35Daylight);
   // The visual shell joins the root after the stairwell cut. Its matching camera target
   // stays outside that cut, so the follow boom cannot cross a panel.
-  const blocker = mesh.clone();
+  const blocker = mesh.clone(false);
   blocker.userData.gteki_role = "camera_blocker";
   blocker.userData.gteki_source = "procedural";
   // Match the opaque, two-sided shell in the desktop depth pass. Alpha zero marks the
@@ -504,7 +514,7 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
     side: THREE.DoubleSide, blending: THREE.NoBlending, transparent: true, opacity: 0,
   });
   normal.allowOverride = false;
-  return { mesh, blocker, normal, threshold };
+  return { mesh, blocker, normal, threshold, x35Daylight };
 }
 
 export async function buildScene(ctx: SceneContext): Promise<StationScene> {
@@ -520,7 +530,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // display stairs, suspended connector lights and short rail sections.
   root.userData.modelledStairEdges = ["w_n__x18", "e_low__x35", "s39_f__x39"];
   root.userData.modelledStairwellSlabEdges = ["s39_f__x39"];
-  const { mesh: stairEnclosures, blocker: stairEnclosureBlocker, normal: stairEnclosureNormal, threshold } =
+  const { mesh: stairEnclosures, blocker: stairEnclosureBlocker, normal: stairEnclosureNormal, threshold, x35Daylight } =
     exitStairEnclosures(THREE, toRenderer, low);
   root.userData.gteki_gtao_depth_twins = [{ mesh: stairEnclosures, twin: stairEnclosureNormal, original: stairEnclosures.material }];
 
@@ -853,6 +863,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       stairEnclosures.geometry.dispose();
       stairEnclosures.material.dispose();
       stairEnclosureNormal.dispose();
+      x35Daylight.geometry.dispose();
+      x35Daylight.material.dispose();
       threshold.geometry.dispose();
       threshold.material.dispose();
       geometry.dispose();
