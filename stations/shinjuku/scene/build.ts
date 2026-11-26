@@ -510,9 +510,8 @@ export function cladWallGeometry(walls: WallSeg[]): THREE.BufferGeometry | null 
       const position = geo.attributes.position!, uv = geo.attributes.uv!;
       for (let i = 0; i < position.count; i++) {
         const s = position.getX(i), z = position.getY(i), t = (s - s0) / (s1 - s0);
-        // Flight bases follow the walking surface; landing sleeves use a datum 0.18 m below it.
-        const datum = w.surfaceBase ? w.surfaceBase.a + (w.surfaceBase.b - w.surfaceBase.a) * t -
-          (w.finish === "shaft" && Math.abs(w.surfaceBase.a - w.surfaceBase.b) > 1e-5 ? 0.18 : 0) : w.zMin;
+        // Finish datums follow the walking surface, independently of structural bottoms and cuts.
+        const datum = w.surfaceBase ? w.surfaceBase.a + (w.surfaceBase.b - w.surfaceBase.a) * t : w.zMin;
         position.setXYZ(i, plane.u.x * s - plane.u.y * plane.offset, z, -(plane.u.y * s + plane.u.x * plane.offset));
         uv.setXY(i, s / 2.4, (z - datum) / 3.2);
       }
