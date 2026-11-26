@@ -1366,6 +1366,7 @@ export class Explorer {
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
     this.composer = new PostFx(this.renderer, this.scene, this.camera, qaPostFxSettings(location.search));
+    this.composer.setOcclusionExcluded(this.routeGroup);
     // The composer is built after the station scene is attached, so the cat's depth twins are registered here
     // on the first load; later loads register them in the scene step.
     if (this.catAvatar) this.composer.setDepthTwins(this.stationScene?.root ?? null);
@@ -2592,7 +2593,10 @@ export class Explorer {
       el.textContent = label(poi);
       el.addEventListener("click", (ev) => { ev.stopPropagation(); this.events.onPoiClick?.(poi.id); });
       const obj = new CSS2DObject(el);
-      obj.position.copy(at).add(new THREE.Vector3(0, LABEL_LIFT, 0));
+      // Shinjuku preview stores have a display anchor above the doorway header.
+      const display = this.station?.key === "shinjuku" && node?.id.startsWith("depato-") ? poi.displayPosition : null;
+      obj.position.copy(display ? R(display.x, display.y, display.z ?? at.y) : at);
+      obj.position.y += LABEL_LIFT;
       this.poiGroup.add(obj);
       this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0, identityHidden: false, identityOffsetY: 0 });
     }
