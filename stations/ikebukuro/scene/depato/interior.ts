@@ -117,7 +117,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   let groups:T.Group[]=[], landingGroups:T.Group[]=[], flightGroups:T.Group[]=[], loaded=false;
   let shells: T.Object3D[][] = [];
   let avatar:{x:number;y:number;z:number}|null=null;
-  let crowds:ReturnType<typeof buildCrowd>[]=[];
+  let crowds:(ReturnType<typeof buildCrowd>|null)[]=[];
   const retain=<G extends T.BufferGeometry>(g:G)=>{geometries.push(g);return g;};
   const basic=(color:string)=>{const m=new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,fog:false});materials.push(m);return m;};
   const standard=(color:string,roughness:number,emissive=0)=>{
@@ -324,8 +324,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         lanes[id]={stepM:3,left:[0.2],right:[0.2]};
         return {id,from:`${id}-a`,to:`${id}-b`,verification:"verified",geometry:[{x:px,y:-z+1.3,z:l.y},{x:px,y:-z-1.3,z:l.y}]};
       }).filter(p=>p.geometry.every(p=>plan.contains([p.x,-p.y])));
-      const crowd=buildCrowd(THREE,paths,(x,y,z)=>new THREE.Vector3(x,z,-y),8,envMap!,lanes);
-      crowds.push(crowd);group.add(crowd.group);
+      const crowd=paths.length ? buildCrowd(THREE,paths,(x,y,z)=>new THREE.Vector3(x,z,-y),8,envMap!,lanes) : null;
+      crowds.push(crowd);if(crowd)group.add(crowd.group);
       if(detail.length){const g=mergeGeometries(detail);retain(g);detail.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,counterMat));}
       if(frames.length){const g=mergeGeometries(frames);retain(g);frames.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,bronze));}
       if(glassPieces.length){const g=mergeGeometries(glassPieces);retain(g);glassPieces.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glassMat));}
@@ -353,7 +353,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     bridges.forEach((g,i)=>groups[levels.findIndex(l=>l.floor.level===plan.input.entrances[i]!.level)]!.add(new THREE.Mesh(g,basic("#bdb5a7"))));
     root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.85,0.85],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
-  const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];shells=[];loaded=false;};
+  const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c?.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];shells=[];loaded=false;};
   return {root,connectorRoot,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
     update(camera:T.Camera,dt=0,elapsed=0,active=true){
       if(!active){if(loaded)unload();return;}
@@ -363,7 +363,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if(!loaded){loaded=true;load();}
       let floor=0;for(const l of levels)if(l.y<=p.y+0.2)floor=l.index;
       if (fullStore) shells.forEach((meshes,i)=>meshes.forEach(mesh=>{mesh.visible=Math.abs(i-floor)<=1;}));
-      groups.forEach((g,i)=>{g.visible=i===floor;if(g.visible)crowds[i]!.update(dt,elapsed);});landingGroups.forEach(g=>g.visible=false);
+      groups.forEach((g,i)=>{g.visible=i===floor;if(g.visible)crowds[i]?.update(dt,elapsed);});landingGroups.forEach(g=>g.visible=false);
       const riding=p.y>levels[floor]!.y+0.25 && floor+1<levels.length;
       if(riding)landingGroups[floor+1]!.visible=true;
       flightGroups.forEach((g,i)=>g.visible=i===floor || i+1===floor);
