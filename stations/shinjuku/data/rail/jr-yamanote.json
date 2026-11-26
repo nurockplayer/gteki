@@ -1,0 +1,33 @@
+{
+  "line": { "ja": "山手線", "en": "Yamanote Line" },
+  "operator": "JR East",
+  "lineCode": "JY",
+  "status": "representative",
+  "levels": [
+    { "id": "toei-nwd-m1", "label": "B1", "z_m": -7.8, "source": "e27-b1" },
+    { "id": "1f", "label": "1F", "z_m": 0, "source": "tokyo-s03-zip" }
+  ],
+  "gates": [
+    { "id": "west-public", "poiId": "poi:jreast-gate:10", "side": "public", "position": [-47.57, 226, -7.8], "source": "tokyo-s03-zip" },
+    { "id": "west-paid", "side": "paid", "position": [-47.57, 229, -7.8], "source": "preview" }
+  ],
+  "platforms": [
+    { "id": "14", "poiId": "poi:jreast-platform:14", "number": 14, "track": 14, "services": ["山手線内回り"], "level": "1f", "centerline": [[-47.57, 248], [-47.57, 284]], "width_m": 7, "length_m": 36, "source": "tokyo-s03-zip" }
+  ],
+  "connectors": [
+    { "from": "west-public", "to": "west-paid", "kind": "gate", "source": "preview" },
+    { "from": "west-paid", "to": "14", "kind": "stairs", "source": "preview" }
+  ],
+  "openings": [
+    { "position": [-47.57, 224, -7.8], "along": [0, 1], "width_m": 3.5, "depth_m": 4, "height_m": 2.6 }
+  ],
+  "sources": [
+    { "id": "tokyo-s03-zip", "path": "stations/shinjuku/gteki/pois.json", "read_date": "2026-11-26 JST", "terms_ref": "OD-34" },
+    { "id": "e27-b1", "path": "stations/shinjuku/data/plan.json", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN" },
+    { "id": "preview", "path": "stations/shinjuku/scene/rail/jr-yamanote.ts", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN" }
+  ],
+  "gaps": [
+    "S03 March 2020 names and level labels identify JR West Gate and platform 14 Yamanote inner loop. Current access, exact placement, alignment and dimensions are unverified.",
+    "The B1 connection, gate cabinets, stairs and shortened platform are representative game geometry."
+  ]
+}
