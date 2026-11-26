@@ -1375,7 +1375,7 @@ assembleScene	const	stations/shinjuku/gteki/scene.ts
 buildScene	const	stations/shinjuku/gteki/scene.ts
 navmeshPaths	const	stations/shinjuku/gteki/scene.ts
 planBundle	function	stations/shinjuku/gteki/scene.ts
-previewBundle	const	stations/shinjuku/gteki/scene.ts
+previewBundle	function	stations/shinjuku/gteki/scene.ts
 releaseCaches	const	stations/shinjuku/gteki/scene.ts
 releaseShinjukuCaches	function	stations/shinjuku/gteki/scene.ts
 stairwellRecipeUrl	const	stations/shinjuku/gteki/scene.ts
@@ -1426,6 +1426,8 @@ slabGeometry	function	stations/shinjuku/scene/build.ts
 soffitGeometry	function	stations/shinjuku/scene/build.ts
 contentKey	function	stations/shinjuku/scene/content-key.ts
 buildDepartmentStores	function	stations/shinjuku/scene/department-stores.ts
+attachDepatoPreview	function	stations/shinjuku/scene/depato.ts
+depatoPreviewBundle	function	stations/shinjuku/scene/depato.ts
 ACCESS_WORDING	const	stations/shinjuku/scene/fare-fence.ts
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts
 Fence	interface	stations/shinjuku/scene/fare-fence.ts

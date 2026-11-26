@@ -1524,7 +1524,7 @@ const dataFiles: DataFile[] = [
     id: "jr-yamanote", path: "data/rail/jr-yamanote.json",
     sourceIds: [SRC_NWD, SRC_MAP, S03_SOURCE_ID].sort(),
     modified: true,
-    derivation: "Shinjuku rail preview: S03 gate and platform labels, E27 north concourse level, and authored illustrative geometry.",
+    derivation: "data/rail/jr-yamanote.json: S03 gate and platform labels, E27 north concourse level, and authored illustrative geometry.",
   },
   {
     id: "department-stores", path: "data/department-stores.json",
@@ -1577,14 +1577,14 @@ const dataFiles: DataFile[] = [
   {
     id: "stairwell-cut-high",
     path: "scene/stairwell-cut.high.b64.txt",
-    sourceIds: [...new Set(["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, ...departmentStoreSources])].sort(),
+    sourceIds: [...new Set(["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, S03_SOURCE_ID, ...departmentStoreSources])].sort(),
     modified: true,
     derivation: "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#650) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources.",
   },
   {
     id: "stairwell-cut-low",
     path: "scene/stairwell-cut.low.b64.txt",
-    sourceIds: [...new Set(["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, ...departmentStoreSources])].sort(),
+    sourceIds: [...new Set(["gteki-kit-0-1-0", SRC_NWD, SRC_MAP, S03_SOURCE_ID, ...departmentStoreSources])].sort(),
     modified: true,
     derivation: "packages/godot/src/stairwell-bake.ts: the stairwell cut recipe (#650) for both tiers, baked headless from this station's bundle, scene and greybox by the explorer's own cut inputs, stored as base64 text (one line) and bundled with ?raw; replayed at load, live when stale. Derived from the scene and graph sources.",
   },

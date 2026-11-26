@@ -4,7 +4,6 @@
  */
 import { WALKER_BODY, buildWallProps, wallPropDrawRanges, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
-import type { StationBundle } from "@gteki/schema";
 import { cacheBvh, raycastObject } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
@@ -230,8 +229,13 @@ export const releaseCaches = releaseShinjukuCaches;
 export const stairwellRecipeUrl = async (tier: "high" | "low"): Promise<string | null> =>
   (tier === "high" ? await import("../scene/stairwell-recipe-high.ts") : await import("../scene/stairwell-recipe-low.ts")).default;
 
-export const previewBundle = async (bundle: StationBundle) =>
-  (await import("../scene/rail-registry.ts")).mergeRailBundle(bundle);
+export async function previewBundle(bundle: Parameters<BuildScene>[0]["bundle"]) {
+  const [{ depatoPreviewBundle }, { mergeRailBundle }] = await Promise.all([
+    import("../scene/depato.ts"),
+    import("../scene/rail-registry.ts"),
+  ]);
+  return depatoPreviewBundle(mergeRailBundle(bundle));
+}
 
 /**
  * The explorer hook. The Lane E kit swap (Issue #94) is ON by default for the escalator role only: with no query
@@ -251,10 +255,12 @@ export const buildScene: BuildScene = (ctx) => {
     .finally(() => markScene("shops"));
   const markedSwap = swap.finally(() => markScene("kit"));
   const rail = ctx.previewNext ? import("../scene/rail-registry.ts") : null;
-  return Promise.all([markedSwap, shops, layoutBake, rail]).then(([kit, shopKit, layoutBakeText, registry]) => {
+  return Promise.all([markedSwap, shops, layoutBake, rail]).then(async ([kit, shopKit, layoutBakeText, registry]) => {
     markScene("assemble-start");
     const scene = assembleScene(ctx, kit ?? undefined, shopKit ?? undefined, { layoutBakeText });
-    return registry ? registry.attachRailScene(ctx, scene) : scene;
+    if (!registry) return scene;
+    const { attachDepatoPreview } = await import("../scene/depato.ts");
+    return registry.attachRailScene(ctx, await attachDepatoPreview(ctx, scene));
   });
 };
 
@@ -608,6 +614,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
+    ...(ctx.previewNext && envTarget ? { generatedMeshEnvMap: envTarget.texture } : {}),
     startAudio: audio.startAudio,
     setAcousticZone: audio.setAcousticZone,
     audioInfo: audio.audioInfo,
