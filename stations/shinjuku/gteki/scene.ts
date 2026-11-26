@@ -236,6 +236,11 @@ export const stairwellRecipeUrl = async (tier: "high" | "low"): Promise<string |
  * keeps every placeholder. `?kit=1` (or `kit=mobile|full`) opts every hooked role in for QA; `?kit=0` turns the
  * swap off entirely, which is still the same synchronous build as before the kit.
  */
+export async function previewBundle(bundle: Parameters<BuildScene>[0]["bundle"]) {
+  const { depatoPreviewBundle } = await import("../scene/depato.ts");
+  return depatoPreviewBundle(bundle);
+}
+
 export const buildScene: BuildScene = (ctx) => {
   markScene("start");
   const layoutBake = fetchLayoutBake();
@@ -247,9 +252,12 @@ export const buildScene: BuildScene = (ctx) => {
     .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; })
     .finally(() => markScene("shops"));
   const markedSwap = swap.finally(() => markScene("kit"));
-  return Promise.all([markedSwap, shops, layoutBake]).then(([kit, shopKit, layoutBakeText]) => {
+  return Promise.all([markedSwap, shops, layoutBake]).then(async ([kit, shopKit, layoutBakeText]) => {
     markScene("assemble-start");
-    return assembleScene(ctx, kit ?? undefined, shopKit ?? undefined, { layoutBakeText });
+    const scene = assembleScene(ctx, kit ?? undefined, shopKit ?? undefined, { layoutBakeText });
+    if (!ctx.previewNext) return scene;
+    const { attachDepatoPreview } = await import("../scene/depato.ts");
+    return attachDepatoPreview(ctx, scene);
   });
 };
 
@@ -603,6 +611,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
+    ...(ctx.previewNext && envTarget ? { generatedMeshEnvMap: envTarget.texture } : {}),
     startAudio: audio.startAudio,
     setAcousticZone: audio.setAcousticZone,
     audioInfo: audio.audioInfo,
