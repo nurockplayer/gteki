@@ -43,8 +43,10 @@ const layouts = rollout.stores.map(row => {
   layout.counters = layout.counters.filter(([x, z]) => {
     if (layout.input.lift) {
       const [liftX, liftZ] = layout.input.lift;
+      const atDirectory = Math.abs(x - (bypassX - 2)) < 1 &&
+        [layout.stair.from - 2, layout.stair.to + 2].some(stop => Math.abs(z - stop) < 4);
       if (Math.abs(x - bypassX) < 1.25 ||
-        (x > liftX - 1.8 && x < bypassX && Math.abs(z - liftZ) < 4)) return false;
+        atDirectory || (x > liftX - 1.8 && x < bypassX && Math.abs(z - liftZ) < 4)) return false;
     }
     const depth = (x - doorX) * inwardX + (z - doorZ) * inwardZ;
     const across = (z - doorZ) * inwardX - (x - doorX) * inwardZ;

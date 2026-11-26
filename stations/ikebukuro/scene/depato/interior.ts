@@ -11,6 +11,8 @@ import { LANDMARK_FACADE, LANDMARK_STREET_BAND, LANDMARK_SIGN } from "../landmar
 export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMap?: T.Texture) {
   const THREE = ctx.THREE, root = new THREE.Group(), connectorRoot = new THREE.Group(); root.name = `depato-interior:${plan.input.store.id}`;
   const fullStore = plan.input.lift !== undefined;
+  const directoryX = plan.aisleX - 6;
+  const directoryStops = [plan.stair.from - 2, plan.stair.to + 2];
   const depthTwins:{mesh:T.Mesh;twin:T.Material;original:T.Material}[]=[];
   root.userData.gteki_gtao_depth_twins=depthTwins;
   const walkable: T.Mesh[] = [], colliders: T.Mesh[] = [], cameraBlockers: T.Mesh[] = [];
@@ -82,8 +84,12 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     }
     if(index>0)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
     for(const [x,z] of plan.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
+    if(fullStore)for(const z of directoryStops)physical(directoryStand(y,z),colliders);
     return {floor,index,y,food,clear,rooftop,floorG,ceilingG,wallG};
   });
+  function directoryStand(y:number,z:number) {
+    return cube(directoryX-0.17,y+0.925,z,0.32,1.85,4);
+  }
   const flights=levels.slice(1).flatMap((upper,i)=>{
     const lower=levels[i]!, {x,from,to}=plan.stair;
     return [-1,1].map(side=>{
@@ -312,9 +318,14 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         for(const side of [-1,1])glassPieces.push(cube(e.point[0]+(front?side*1.8:-0.65),l.y+1.3,e.point[1]+(front?0.65:side*1.8),front?0.025:1.3,2.6,front?1.3:0.025));
       }
       // Non-emissive floor directory; underline marks this floor without a colour code.
-      for(const [z,yaw] of [[plan.stair.from-2,0],[plan.stair.to+2,Math.PI]]){
-        board(plan.aisleX-3,l.y+2.15,z!,directoryRow,yaw!,fullStore?5.2:4,fullStore?1.8:0.65);
-        if(!fullStore)frames.push(cube(plan.aisleX-3,l.y+1.93-l.index*0.06,z!+0.01,3.8,0.018,0.018));
+      for(const [i,z] of directoryStops.entries()){
+        if(fullStore){
+          board(directoryX,l.y+1.05,z,directoryRow,Math.PI/2,3.9,1.55);
+          frames.push(directoryStand(l.y,z));
+        }else{
+          board(plan.aisleX-3,l.y+2.15,z,directoryRow,i===0?0:Math.PI,4,0.65);
+          frames.push(cube(plan.aisleX-3,l.y+1.93-l.index*0.06,z+0.01,3.8,0.018,0.018));
+        }
       }
       board(plan.aisleX,l.y+l.clear-0.48,plan.stair.to+5,label,0,3.4,0.45);
       if(l.index>0)for(const side of [-1,1])glassPieces.push(cube(plan.aisleX+side*2.13,l.y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from));
