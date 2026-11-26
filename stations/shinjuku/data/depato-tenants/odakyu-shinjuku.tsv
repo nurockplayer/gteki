@@ -1,9 +1,9 @@
 floor_label	name_ja	name_latin	category	zone_text	source_url	fetched_jst
 R	有賀園ゴルフスクール 練習場				https://www.odakyu-dept.co.jp/shinjuku/floorguide/	2026-11-27 01:53 JST
-8F	叙々苑			ハルクレストラン街	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
-8F	六本木 樓外樓			ハルクレストラン街	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
-8F	新宿 なだ万賓館			ハルクレストラン街	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
-8F	ベーカリー レストラン サンマルク			ハルクレストラン街	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+8F	叙々苑		焼肉	ハルクレストラン街	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+8F	六本木 樓外樓		中国料理	ハルクレストラン街	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+8F	新宿 なだ万賓館		和食	ハルクレストラン街	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+8F	ベーカリー レストラン サンマルク		ベーカリーレストラン	ハルクレストラン街	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
 7F	有賀園ゴルフスクール プログレス		その他	ゴルフスクール受付	https://www.odakyu-dept.co.jp/sitesearch/brand/result/?store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%97%E9%9A%8E	2026-11-27 01:53 JST
 7F	イザベル・ラングロア		時計・宝飾	宝飾	https://www.odakyu-dept.co.jp/sitesearch/brand/result/?store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%97%E9%9A%8E	2026-11-27 01:53 JST
 7F	インテリアコンサルティングカウンター		その他	インテリア	https://www.odakyu-dept.co.jp/sitesearch/brand/result/?store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%97%E9%9A%8E	2026-11-27 01:53 JST
@@ -21,8 +21,9 @@ R	有賀園ゴルフスクール 練習場				https://www.odakyu-dept.co.jp/shin
 7F	モニッケンダム		時計・宝飾	宝飾	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=2&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%97%E9%9A%8E&q=	2026-11-27 01:53 JST
 7F	ラ・ソマ		時計・宝飾	宝飾	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=2&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%97%E9%9A%8E&q=	2026-11-27 01:53 JST
 7F	ロイヤル・アッシャー		時計・宝飾	宝飾	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=2&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%97%E9%9A%8E&q=	2026-11-27 01:53 JST
-7F	ビューティーサロン タナカ			ビューティー＆サービス	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
-7F	エステティックサロン ソシエ			ビューティー＆サービス	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+7F	ビューティーサロン タナカ		美容室	ビューティー＆サービス	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+7F	エステティックサロン ソシエ		エステティックサロン	ビューティー＆サービス	https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+7F	愛歯会デンタルオフィス		歯科	ビューティー＆サービス	https://www.aishikai.jp/	2026-11-27 02:17 JST
 6F	ビックカメラ				https://www.odakyu-dept.co.jp/shinjuku/floorguide/	2026-11-27 01:53 JST
 5F	ビックカメラ				https://www.odakyu-dept.co.jp/shinjuku/floorguide/	2026-11-27 01:53 JST
 4F	ビックカメラ				https://www.odakyu-dept.co.jp/shinjuku/floorguide/	2026-11-27 01:53 JST
@@ -160,6 +161,9 @@ M2F	ワック		スポーツ	ゴルフウェア	https://www.odakyu-dept.co.jp/sit
 1F	４℃	４℃	婦人雑貨	アクセサリー・雑貨	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=4&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%91%E9%9A%8E&q=	2026-11-27 01:53 JST
 1F	ヴァンドーム青山		婦人雑貨	アクセサリー・雑貨	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=4&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%91%E9%9A%8E&q=	2026-11-27 01:53 JST
 1F	ヴァンドームブティック		婦人雑貨	アクセサリー・雑貨	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=4&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%EF%BC%91%E9%9A%8E&q=	2026-11-27 01:53 JST
+1F	天兼		天ぷら		https://www.tenkane.tokyo/	2026-11-27 02:21 JST
+1F	時屋		甘味処		https://www.odakyu-life.jp/entry/006636.html	2026-11-27 02:21 JST
+1F	喫茶ピース		喫茶		https://www.odakyu-dept.co.jp/info/v4l5d000001cquyy-att/20250917.pdf	2026-11-27 02:21 JST
 B1F	赤坂柿山		食品	和洋菓子	https://www.odakyu-dept.co.jp/sitesearch/brand/result/?store=%e6%96%b0%e5%ae%bf%e5%ba%97&floor=%E5%9C%B0%E4%B8%8B%EF%BC%91%E9%9A%8E	2026-11-27 01:53 JST
 B1F	アクセーヌ		化粧品	化粧品	https://www.odakyu-dept.co.jp/sitesearch/brand/result/?store=%e6%96%b0%e5%ae%bf%e5%ba%97&floor=%E5%9C%B0%E4%B8%8B%EF%BC%91%E9%9A%8E	2026-11-27 01:53 JST
 B1F	アテニア		化粧品	化粧品	https://www.odakyu-dept.co.jp/sitesearch/brand/result/?store=%e6%96%b0%e5%ae%bf%e5%ba%97&floor=%E5%9C%B0%E4%B8%8B%EF%BC%91%E9%9A%8E	2026-11-27 01:53 JST
@@ -264,4 +268,14 @@ B2F	ラべイユ		食品	お茶・コーヒー・はちみつ	http://sitesearch.
 B2F	ル ビアン		食品	パン	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=4&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%E5%9C%B0%E4%B8%8B%EF%BC%92%E9%9A%8E&q=	2026-11-27 01:54 JST
 B2F	ワインショップ・エノテカ		食品	和洋酒	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=4&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%E5%9C%B0%E4%B8%8B%EF%BC%92%E9%9A%8E&q=	2026-11-27 01:54 JST
 B2F	和洋酒		食品	和洋酒	http://sitesearch.odakyu-dept.co.jp/brand/result/?lang=ja&page=5&store=%E6%96%B0%E5%AE%BF%E5%BA%97&floor=%E5%9C%B0%E4%B8%8B%EF%BC%92%E9%9A%8E&q=	2026-11-27 01:54 JST
-B2F	BEER＆CAFE リトルミュンヘン				https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+B2F	BEER＆CAFE リトルミュンヘン		ビール・コーヒー		https://www.odakyu-dept.co.jp/tomonokai/da4d7d000000oof2-att/tomonokai_shop_list.pdf	2026-11-27 01:59 JST
+MB3	御さしみ家		海鮮居酒屋	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+MB3	ヤンの家		韓国料理	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+MB3	串焼き。ビストロガブリ		串焼きビストロ	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+MB3	ビストロバイニャーヴェトナム	BISTRO by Nha Viet Nam	ベトナム料理	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+MB3	でんがな		串かつ	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+MB3	あぶり 清水		上州豚 やきとん	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+MB3	一歩		鉄板焼・お好み焼	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+MB3	Lad’s Dining	Lad’s Dining	Lunch&Dining	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+B3	ミュンヘン		ビヤレストラン	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
+B3	博多もつ鍋おおやま		博多もつ鍋専門店	食堂酒場 ハル★チカ	https://www.odakyu.jp/news/h3de7600000007sj-att/h3de7600000007sq.pdf	2026-11-27 02:22 JST
