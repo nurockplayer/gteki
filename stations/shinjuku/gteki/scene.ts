@@ -1,7 +1,6 @@
 /**
  * @gteki/scene-api hook for the shared explorer (apps/web). Reuses the Shinjuku lane's
- * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
- * never adds routes (the explorer routes only on graph.json).
+ * renderer-neutral layout + Three.js builder. The separate rail registry adds preview-only routes.
  */
 import { WALKER_BODY, buildWallProps, wallPropDrawRanges, type AcousticZone, type BuildScene, type NavmeshPaths, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
@@ -230,17 +229,20 @@ export const releaseCaches = releaseShinjukuCaches;
 export const stairwellRecipeUrl = async (tier: "high" | "low"): Promise<string | null> =>
   (tier === "high" ? await import("../scene/stairwell-recipe-high.ts") : await import("../scene/stairwell-recipe-low.ts")).default;
 
+export async function previewBundle(bundle: Parameters<BuildScene>[0]["bundle"]) {
+  const [{ depatoPreviewBundle }, { mergeRailBundle }] = await Promise.all([
+    import("../scene/depato.ts"),
+    import("../scene/rail-registry.ts"),
+  ]);
+  return depatoPreviewBundle(mergeRailBundle(bundle));
+}
+
 /**
  * The explorer hook. The Lane E kit swap (Issue #94) is ON by default for the escalator role only: with no query
  * the scene loads the station's mobile kit bundle and dresses the escalators, and if that fails for any reason it
  * keeps every placeholder. `?kit=1` (or `kit=mobile|full`) opts every hooked role in for QA; `?kit=0` turns the
  * swap off entirely, which is still the same synchronous build as before the kit.
  */
-export async function previewBundle(bundle: Parameters<BuildScene>[0]["bundle"]) {
-  const { depatoPreviewBundle } = await import("../scene/depato.ts");
-  return depatoPreviewBundle(bundle);
-}
-
 export const buildScene: BuildScene = (ctx) => {
   markScene("start");
   const layoutBake = fetchLayoutBake();
@@ -252,12 +254,13 @@ export const buildScene: BuildScene = (ctx) => {
     .catch((error: unknown) => { console.warn("[shinjuku] shop kit failed", error); return null; })
     .finally(() => markScene("shops"));
   const markedSwap = swap.finally(() => markScene("kit"));
-  return Promise.all([markedSwap, shops, layoutBake]).then(async ([kit, shopKit, layoutBakeText]) => {
+  const rail = ctx.previewNext ? import("../scene/rail-registry.ts") : null;
+  return Promise.all([markedSwap, shops, layoutBake, rail]).then(async ([kit, shopKit, layoutBakeText, registry]) => {
     markScene("assemble-start");
     const scene = assembleScene(ctx, kit ?? undefined, shopKit ?? undefined, { layoutBakeText });
-    if (!ctx.previewNext) return scene;
+    if (!registry) return scene;
     const { attachDepatoPreview } = await import("../scene/depato.ts");
-    return attachDepatoPreview(ctx, scene);
+    return registry.attachRailScene(ctx, await attachDepatoPreview(ctx, scene));
   });
 };
 
