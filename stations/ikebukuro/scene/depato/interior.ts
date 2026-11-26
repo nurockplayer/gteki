@@ -278,7 +278,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         board(x-side*0.58,l.y+Math.min(2.2,l.clear-0.34),z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
       });
       if(contents.length){
-        const foodMesh=instance(group,new THREE.CapsuleGeometry(0.065,0.06,3,5),glow,contents.map(p=>({...p,scale:[1,0.7,1.4] as [number,number,number]})));
+        const product = fullStore ? new THREE.BoxGeometry(0.13,0.12,0.13) : new THREE.CapsuleGeometry(0.065,0.06,3,5);
+        const foodMesh=instance(group,product,glow,contents.map(p=>({...p,scale:[1,0.7,1.4] as [number,number,number]})));
         const tones=["#d8c8a3","#b99b74","#8e745e","#9caa88"];
         contents.forEach((_,i)=>foodMesh.setColorAt(i,new THREE.Color(tones[i%4])));
       }
