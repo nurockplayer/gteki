@@ -4,14 +4,17 @@ import type { BuildScene } from "@gteki/scene-api";
 export { generatedSignageFromGraph } from "../scene/scene.ts";
 export const previewBundle = async (bundle: import("@gteki/schema").StationBundle) => {
   const pilot = await import("../scene/depato/pilot.ts");
+  const sunshine = await import("../scene/sunshine.ts");
   const rail = await import("../scene/rail.ts");
-  return rail.railBundle(pilot.previewBundle(bundle));
+  return rail.railBundle(sunshine.sunshineBundle(pilot.previewBundle(bundle)));
 };
 export const buildScene: BuildScene = async ctx => {
   if (!ctx.previewNext) return baseScene(ctx);
   const pilot = await import("../scene/depato/pilot.ts");
+  const sunshine = await import("../scene/sunshine.ts");
   const rail = await import("../scene/rail.ts");
-  return rail.buildRailScene(ctx, context => pilot.buildPilotScene(context, baseScene));
+  return rail.buildRailScene(ctx, context => sunshine.buildSunshineScene(context,
+    context => pilot.buildPilotScene(context, baseScene)));
 };
 import type { NavmeshPaths } from "@gteki/scene-api";
 
