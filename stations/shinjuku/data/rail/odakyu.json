@@ -81,9 +81,9 @@
     }
   ],
   "paidConcourseNodes": [
-    { "id": "paid-2f", "level": "2f" },
-    { "id": "paid-1f", "level": "1f" },
-    { "id": "paid-b1f", "level": "b1f" }
+    { "id": "paid-2f", "level": "2f", "position": [42, 274] },
+    { "id": "paid-1f", "level": "1f", "position": [38, 263] },
+    { "id": "paid-b1f", "level": "b1f", "position": [38, 238] }
   ],
   "connectors": [
     { "from": "south", "to": "paid-2f", "kind": "gate", "source": "preview" },
