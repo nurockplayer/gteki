@@ -1293,6 +1293,8 @@ createStationSound	function	stations/ikebukuro/scene/station-sound.ts
 webSpeechPort	function	stations/ikebukuro/scene/station-sound.ts
 createStreetAmbience	function	stations/ikebukuro/scene/street-ambience.ts
 streetLevel	function	stations/ikebukuro/scene/street-ambience.ts
+buildSunshineScene	function	stations/ikebukuro/scene/sunshine.ts
+sunshineBundle	function	stations/ikebukuro/scene/sunshine.ts
 TimeBand	type	stations/ikebukuro/scene/time-band.ts
 bandForHour	function	stations/ikebukuro/scene/time-band.ts
 currentTimeBand	function	stations/ikebukuro/scene/time-band.ts
