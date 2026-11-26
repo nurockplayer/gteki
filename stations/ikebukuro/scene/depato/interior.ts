@@ -11,6 +11,7 @@ import { LANDMARK_FACADE, LANDMARK_STREET_BAND, LANDMARK_SIGN } from "../landmar
 export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMap?: T.Texture) {
   const THREE = ctx.THREE, root = new THREE.Group(), connectorRoot = new THREE.Group(); root.name = `depato-interior:${plan.input.store.id}`;
   const fullIsetan = plan.input.store.id.startsWith("isetan-shinjuku-");
+  const isetanMain = plan.input.store.id === "isetan-shinjuku-main";
   const depthTwins:{mesh:T.Mesh;twin:T.Material;original:T.Material}[]=[];
   root.userData.gteki_gtao_depth_twins=depthTwins;
   const walkable: T.Mesh[] = [], colliders: T.Mesh[] = [], cameraBlockers: T.Mesh[] = [];
@@ -59,7 +60,12 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const merged=mergeGeometries(pieces); pieces.forEach(g=>g.dispose()); return merged;
   };
   const levels=plan.floors.map((floor,index)=>{
-    const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets", clear=food?3.1:3.8;
+    const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets";
+    // Keep the 7F ceiling below the modeled 30.61m terrace.
+    const clear=food?3.1:isetanMain&&floor.level==="7F"?3.4:3.8;
+    const counters=isetanMain&&food&&ctx.quality==="low"
+      ? plan.counters.filter(([x],i)=>Math.abs(x-plan.aisleX)<11 || i%3===0)
+      : plan.counters;
     const rooftop=fullIsetan && floor.category==="rooftop";
     const wallHeight=rooftop?1.15:index+1<plan.floors.length?plan.height(plan.floors[index+1]!.level)-y:clear;
     const floorG=shape(y,index>0), ceilingMesh=rooftop?null:new THREE.Mesh(shape(y+clear,index+1<plan.floors.length,true)), wallG=walls(floor.level,y,wallHeight);
@@ -79,8 +85,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       cameraBlockers.at(-1)!.userData.gtekiCameraTargetOnly=true;
     }
     if(index>0)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
-    for(const [x,z] of plan.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
-    return {floor,index,y,food,clear,rooftop,floorG,ceilingG,wallG};
+    for(const [x,z] of counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
+    return {floor,index,y,food,clear,counters,rooftop,floorG,ceilingG,wallG};
   });
   const flights=levels.slice(1).flatMap((upper,i)=>{
     const lower=levels[i]!, {x,from,to}=plan.stair;
@@ -219,7 +225,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         if(plan.contains([x,z]) && !(Math.abs(x-plan.stair.x)<2.3 && z>plan.stair.from && z<plan.stair.to))discs.push({x,y:l.y+l.clear-0.025,z});
       }
       if(!l.rooftop)instance(group,new THREE.CylinderGeometry(0.12,0.12,0.025,fullIsetan?6:8),glow,discs);
-      const positions=plan.counters.map(([x,z])=>({x,y:l.y+0.475,z}));
+      const positions=l.counters.map(([x,z])=>({x,y:l.y+0.475,z}));
       instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
       if(l.rooftop)instance(group,new THREE.BoxGeometry(0.9,0.22,3.8),basic("#637a4f"),positions.map(p=>({...p,y:l.y+0.97})));
       const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
@@ -261,7 +267,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         }
       };
       const contents:{x:number;y:number;z:number}[]=[];
-      plan.counters.forEach(([x,z],i)=>{
+      l.counters.forEach(([x,z],i)=>{
         if(l.rooftop)return;
         const side=x<plan.aisleX?-1:1, front=x-side*0.56;
         if(l.food){
@@ -315,7 +321,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
       // Station whole-body people use short, narrow counter-side paths, away from circulation.
       const lanes:Record<string,Lane>={};
-      const paths=plan.counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
+      const paths=l.counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
         const id=`retail-${i}`,side=x<plan.aisleX?-1:1,px=x+side*1.3;
         lanes[id]={stepM:3,left:[0.2],right:[0.2]};
         return {id,from:`${id}-a`,to:`${id}-b`,verification:"verified",geometry:[{x:px,y:-z+1.3,z:l.y},{x:px,y:-z-1.3,z:l.y}]};
