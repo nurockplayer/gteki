@@ -38,17 +38,45 @@ const rolloutPlans = () => rolloutData.stores.map(row => {
   return layout;
 });
 
+const pparco = rolloutData.stores.find(row => row.streetApproach)!;
+const { landing, accessBay, sidewalk, exit, frontage } = pparco.streetApproach!;
+
 /** Called before the host creates search/router; the flag-off bundle is never modified. */
 export function previewBundle(bundle: StationBundle): StationBundle {
   const street = { id: "depato-seibu-street", floorId: "street", position: { x: 56, y: -122.5, z: 32.5 }, kind: "junction" as const, inOut: "outside" as const, sourceRefs: [] };
   const streets = rolloutData.stores.map(row => ({ ...street, id: row.street.id,
     position: { x: row.street.point[0]!, y: -row.street.point[1]!, z: row.elevations["1F"] } }));
-  return rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, plan()));
+  const preview = rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, plan()));
+  const route = [...landing, ...accessBay, ...sidewalk].map(([x, y, z]) => ({ x: x!, y: -z!, z: y! }));
+  const geometryEvidence = {
+    sourceIds: ["plateau-13116-bldg-53394576", "plateau-13116-tran-53394576"],
+    method: "Authored surface approach from Exit 22 through the existing 1F opening and along the PLATEAU street context.",
+    checkedDate: "2026-11-25",
+  };
+  const accessEvidence = {
+    sourceIds: [pparco.sourceId],
+    method: `Storefront location referenced from PARCO's street frontage photos (${frontage}); the preview doorway is approximate.`,
+    checkedDate: "2026-11-25",
+  };
+  preview.edges.push({
+    id: `${exit}__${pparco.street.id}`, from: exit, to: pparco.street.id,
+    direction: "both", mode: "walk", geometry: route,
+    lengthM: route.slice(1).reduce((m, p, i) => {
+      const a = route[i]!;
+      return m + Math.hypot(p.x - a.x, p.y - a.y, p.z - a.z);
+    }, 0),
+    paid: false, crossesFareBoundary: false, wheelchair: true, steps: false,
+    hours: null, closed: false, verification: "verified", geometryEvidence, accessEvidence,
+  });
+  const main = preview.pois.find(p => p.id === "shop-ikb-parco")!;
+  main.aliases.push({ lang: "ja", text: "池袋パルコ 本館" }, { lang: "ja", text: "PARCO 本館" });
+  return preview;
 }
 
 /** One station hook: wrap context loading, open the station shell and attach the reusable kit. */
 export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const THREE = ctx.THREE, layout = plan(), layouts = [layout, ...rolloutPlans()];
+  const stationRollout = layouts.slice(1).filter(p => p.input.store.id !== pparco.id);
   const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   const volume = (left: number, right: number, front: number, back: number, low: number, high: number): CutRegion => ({
     key: {}, bounds: new THREE.Box3(new THREE.Vector3(left, low, front), new THREE.Vector3(right, high, back)), clip: null,
@@ -67,7 +95,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     return volume(Math.min(e.point[0],p[0])- (front?2.1:0.2),Math.max(e.point[0],p[0])+(front?2.1:3),
       Math.min(e.point[1],p[2])-(front?0.2:2.1),Math.max(e.point[1],p[2])+(front?3:2.1),y+0.01,y+4.1);
   });
-  const rolloutRooms = layouts.slice(1).flatMap(p => {
+  const rolloutRooms = stationRollout.flatMap(p => {
     const points=p.input.footprint.map(([x,z])=>new THREE.Vector2(x,z));
     // A street-only tie opens the street shell and leaves the station concourses intact.
     const firstCutFloor = p.input.entrances.some(e => e.level !== "1F") ? p.floors[0]!.level : "1F";
@@ -84,13 +112,48 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       return cut;
     });
   });
-  const rolloutDoors=layouts.slice(1).flatMap(p=>p.input.entrances.map(e=>{
+  const rolloutDoors=stationRollout.flatMap(p=>p.input.entrances.map(e=>{
     const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,a=ctx.enuToRenderer({...outside.position,z:outside.position.z!}),y=p.height(e.level);
     const cut=volume(Math.min(a[0],e.point[0])-2.1,Math.max(a[0],e.point[0])+2.1,
       Math.min(a[2],e.point[1])-2.1,Math.max(a[2],e.point[1])+2.1,y-0.1,y+4.1);
     if(outside.inOut === "outside") cut.accepts = normal => Math.abs(normal.y) < 0.5;
     return cut;
   }));
+  // The separate phase-one landmark replaces the context triangles for P'PARCO.
+  // Cut its storefront only, with the same opening width as the kit doorway.
+  const [door] = pparco.entrances;
+  const [px, pz] = door!.point as PlanPoint, [nx, nz] = door!.inward as PlanPoint;
+  const py = pparco.elevations["1F"];
+  const pparcoDoor = volume(px - 3, px + 3, pz - 3, pz + 3, py - 0.05, py + 2.8);
+  for (const side of [-1, 1]) pparcoDoor.planes.push(
+    p => 2 + side * ((p.x - px) * nz - (p.z - pz) * nx),
+    p => 0.6 + side * ((p.x - px) * nx + (p.z - pz) * nz),
+  );
+
+  const pavement = (points: number[][]) => {
+    const vertices = points.map(p => new THREE.Vector3(...p as [number, number, number]));
+    const strip = vertices.flatMap((p, i) => {
+      const tangent = vertices[Math.min(i + 1, vertices.length - 1)]!.clone().sub(vertices[Math.max(i - 1, 0)]!);
+      const side = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize().multiplyScalar(1.7);
+      return [p.clone().add(side), p.clone().sub(side)];
+    });
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(strip.flatMap(p => p.toArray()), 3));
+    geometry.setIndex(vertices.slice(1).flatMap((_, i) => [2*i, 2*i+3, 2*i+1, 2*i, 2*i+2, 2*i+3]));
+    geometry.computeVertexNormals();
+    return geometry;
+  };
+  const sidewalkGeometry = pavement([
+    [108.17, 32.95, -110.87], ...sidewalk,
+    [px - nx * 6, py, pz - nz * 6],
+  ]);
+  const approachMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+  const approach = [pavement(landing), sidewalkGeometry].map(geometry => {
+    const mesh = new THREE.Mesh(geometry, approachMaterial);
+    mesh.name = "depato-pparco-approach";
+    mesh.visible = false;
+    return mesh;
+  });
   const tobu = layouts.find(p => p.input.store.id === "tobu-ikebukuro")!;
   const { x, to, width } = tobu.stair;
   const b1 = tobu.height("B1");
@@ -99,20 +162,27 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   tobuLanding.rejectsMesh = mesh => !["wall", "windows", "windows_solid", "doors", "doors_solid"].includes(mesh.userData.gteki_role);
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
+    if (uri.endsWith("ikebukuro_landmarks_next.glb")) {
+      loaded.scene.updateMatrixWorld(true);
+      cutRegions(loaded.scene.getObjectByName("pparco")!, [pparcoDoor], resources);
+    }
     if (uri.includes("ikebukuro_context_")) {
       loaded.scene.updateMatrixWorld(true);
       cutRegions(loaded.scene, [room, ...streetDoors, ...rolloutRooms, ...rolloutDoors], resources);
       // Fill the missing visual pavement between Tobu's 32.41 m apron and the PLATEAU road.
-      const pavement = new THREE.BufferGeometry();
-      pavement.setAttribute("position", new THREE.Float32BufferAttribute([
+      const tobuPavement = new THREE.BufferGeometry();
+      tobuPavement.setAttribute("position", new THREE.Float32BufferAttribute([
         -118.6, 32.39, -26, -125, 32.78, -26, -125, 32.78, -14,
         -118.6, 32.39, -26, -125, 32.78, -14, -118.6, 32.39, -14,
       ], 3));
-      pavement.computeVertexNormals();
+      tobuPavement.computeVertexNormals();
       const road = loaded.scene.getObjectByName("ctx_road_t00_01") as import("three").Mesh;
-      const forecourt = new THREE.Mesh(pavement, road.material);
+      const forecourt = new THREE.Mesh(tobuPavement, road.material);
       forecourt.name = "ctx_road_tobu_forecourt";
-      loaded.scene.add(forecourt);
+      // Keep the visible strip between the forecourts. The full invisible strip still supports walking.
+      const walk = new THREE.Mesh(pavement(sidewalk.slice(1, -1)), road.material);
+      walk.name = "ctx_road_pparco_approach";
+      loaded.scene.add(forecourt, walk);
     }
     return loaded;
   } });
@@ -126,7 +196,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   const focus = scene.setCameraFocus;
   scene.root.add(...interiors.flatMap(i=>[i.root,i.connectorRoot]));
   const update = scene.update, dispose = scene.dispose;
-  return { ...scene, walkable: [...scene.walkable, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
+  return { ...scene, walkable: [...scene.walkable, ...approach, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(i=>i.cameraBlockers)],
     setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); avatar=args[3] ?? null; interiors.forEach(i=>i.setAvatar(avatar)); },
     update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if(camera){
@@ -138,6 +208,6 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       interiors.forEach((i,n)=>{if(n!==active)i.update(camera,dt,elapsed,false);});
       interiors[active]!.update(camera,dt,elapsed);
     } },
-    dispose() { disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); dispose(); },
+    dispose() { disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); approach.forEach(mesh => mesh.geometry.dispose()); approachMaterial.dispose(); dispose(); },
   };
 }
