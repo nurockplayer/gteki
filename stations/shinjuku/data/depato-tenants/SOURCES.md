@@ -1,10 +1,13 @@
 # Shinjuku department-store tenant sources
 
+## Lumine and NEWoMan collection notes
+
 Counts come from the official floor-guide listing cards. The pages do not display a separate numeric total.
 The two R pages have empty text directories with a floor-map image. Tenant counts for those rooftops are unknown.
 The Japanese-guide display name is stored verbatim in `name_ja`, with HTML spacing normalized.
 When the full display name is in Latin script, it also appears in `name_latin`. The cards have no separate Latin-name field.
 Blank category or position fields mean the card does not print that fact. Shared map numbers are preserved.
+
 
 ## lumine-1-shinjuku
 
@@ -73,3 +76,40 @@ Blank category or position fields mean the card does not print that fact. Shared
 | フードホール | 5 / 5 | complete | 2026-11-27 01:52 JST | [Guide](https://www.newoman.jp/shinjuku/floorguide/?area=area02nman01&floor=103f) |
 | エキソト | 7 / 7 | complete | 2026-11-27 01:52 JST | [Guide](https://www.newoman.jp/shinjuku/floorguide/?area=area02nman01&floor=101f) |
 | エキナカ | 23 / 23 | complete | 2026-11-27 01:52 JST | [Guide](https://www.newoman.jp/shinjuku/floorguide/?area=area02nman01&floor=100f) |
+
+## Marui and Takashimaya collection notes
+
+Collected on 2026-11-27 JST. Where a floor guide shows tenant cards, counts compare TSV rows with the published cards. Each TSV row cites the official feed or page used for verification. The Takashimaya category field appends `[kind=shop]` for a shop, service counter, restaurant or named rooftop venue and `[kind=brand]` for a Brand Search or stocked-brand placement. Floor labels and categories come from the displayed lists. The Latin field repeats a Latin-only display name when the guide prints it. Empty categories and positions mean the list leaves those fields blank.
+
+## Shinjuku Marui Main — `shinjuku-marui-main`
+
+- **Complete** for the shop guide, 63 rows. B1F 4/4, 1F 10/10, 2F 12/12, 3F 1/1, 4F 1/1, 5F 17/17, 6F 5/5, 7F 8/8, 8F 5/5. The facility guide identifies RF as the Q-COURT rooftop garden and provides no tenant list. [Floor guide](https://www.0101.co.jp/003/info/?floor=B1F) · [Floor feed](https://www.0101.co.jp/contents2/floormap/003/floor_map_list.json) · [Shop feed](https://www.0101.co.jp/contents2/shopinfo/003/shop_introduce_list.json) · [Shop index](https://www.0101.co.jp/contents2/shopinfo/003/shop_list.json) · [Facility guide](https://www.0101.co.jp/003/facility/index.html) · [Facility feed](https://www.0101.co.jp/contents2/facilityinfo/003/facility.json).
+- Live spot check on 2026-11-27 JST matched all four B1F shop names and their displayed categories. [B1F](https://www.0101.co.jp/003/info/?floor=B1F).
+
+## Shinjuku Marui Annex — `shinjuku-marui-annex`
+
+- **Complete** for the shop guide, 57 rows. B1F 1/1, 1F 8/8, 2F 8/8, 3F 11/11, 4F 6/6, 5F 1/1, 6F 1/1, 7F 14/14, 8F 7/7. The 6F guide displays one named shop card. [Floor guide](https://www.0101.co.jp/005/info/) · [Floor feed](https://www.0101.co.jp/contents2/floormap/005/floor_map_list.json) · [Shop feed](https://www.0101.co.jp/contents2/shopinfo/005/shop_introduce_list.json) · [Shop index](https://www.0101.co.jp/contents2/shopinfo/005/shop_list.json).
+- Live spot check on 2026-11-27 JST matched all eight 1F shop names and their displayed categories. [1F](https://www.0101.co.jp/005/info/?floor=1F).
+
+## Shinjuku Marui Men — `shinjuku-marui-men`
+
+- **Complete** for the shop guide, 38 rows. Counts match the live cards on 1F 3/3, 2F 4/4, 3F 8/8, 4F 9/9, 5F 5/5, 6F 5/5, 7F 2/2, 8F 2/2. The approved TSV filename reserves the ID for the import step. [Floor guide](https://www.0101.co.jp/074/info/) · [Floor feed](https://www.0101.co.jp/contents2/floormap/074/floor_map_list.json) · [Shop feed](https://www.0101.co.jp/contents2/shopinfo/074/shop_introduce_list.json) · [Shop index](https://www.0101.co.jp/contents2/shopinfo/074/shop_list.json).
+- Live spot check on 2026-11-27 JST matched all five 5F shop names and their displayed categories, including ムッシュニコル キャナルドゥ　コンセプトストア and メンズ　メルローズ. [5F](https://www.0101.co.jp/074/info/?floor=5F).
+
+## Shinjuku Takashimaya department store — `takashimaya-shinjuku`
+
+Ego-lite read the Japanese floor guide, all 12 shopping-floor pages, the 16 linked detail pages, and the browser's network responses on 2026-11-27 JST. Each floor's `/front/api/floor/` response supplies a PNG path and hotspot links. `front_floor.php` supplies the layout. `front_xml.php` supplies floor summaries and topics. The full map's shop-name labels are part of its PNG, with no roster or published floor-wide count in these responses. Each GAP link below identifies that floor's image. Text coverage includes the floor-specific links and the separate official Brand Search. The [main floor guide](https://www.takashimaya.co.jp/shinjuku/floor/) and [access guide](https://www.takashimaya.co.jp/shinjuku/access/) identify 地下2階 and 地下3階 as parking.
+
+The [official Brand Search](https://www.takashimaya.co.jp/brandsearch/?sid=2), scoped to Shinjuku, displays all its entries across 37 initial filters and 104 result pages. The 1,683 cards matched the sum of those result counts and resolve to 839 distinct cards after removing repeated cards across filters. The table's Detail names counts listed names before merging repeated placements and excludes placeholders such as ほか. Multiple categories for the same Brand Search placement are kept together. Linked details and the size guide contribute further text placements. A named salon or counter and the brands stocked there have their respective kind markers. Text lists give 83 shops and 1089 brand placements across these floors. All 64 earlier verified department-store rows are retained.
+
+| Floor and rendered route | Checked | Distinct Brand Search cards | Detail names | Shop rows | Brand rows | Total TSV | Supplemental text routes | Full floor map labels |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| [地下1階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_b1.html) | 2026-11-27 JST | 153 | 34 | 15 | 179 | 194 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_b1/detail_01.html), [food counters](https://www.takashimaya.co.jp/shinjuku/information/food.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/61792390409.png) |
+| [1階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_01.html) | 2026-11-27 JST | 50 | 0 | 7 | 50 | 57 | Brand Search | [GAP](https://www.takashimaya.co.jp/front/img/floor/61792390560.png) |
+| [2階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_02.html) | 2026-11-27 JST | 120 | 51 | 6 | 146 | 152 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_02/detail_01.html), [detail 03](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_02/detail_03.html), [detail 02](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_02/detail_02.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/61793321559.png) |
+| [3階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_03.html) | 2026-11-27 JST | 17 | 0 | 3 | 17 | 20 | [café](https://www.takashimaya.co.jp/shinjuku/cafe/) | [GAP](https://www.takashimaya.co.jp/front/img/floor/69261764142031.png) |
+| [4階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_04.html) | 2026-11-27 JST | 123 | 151 | 7 | 224 | 231 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_04/detail_01.html), [detail 02](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_04/detail_02.html), [detail 03](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_04/detail_03.html), [café](https://www.takashimaya.co.jp/shinjuku/cafe/), [size guide](https://www.takashimaya.co.jp/shinjuku/shop/brand/size.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/61794190234.png) |
+| [5階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_05.html) | 2026-11-27 JST | 69 | 17 | 4 | 82 | 86 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_05/detail_01.html), [café](https://www.takashimaya.co.jp/shinjuku/cafe/), [size guide](https://www.takashimaya.co.jp/shinjuku/shop/brand/size.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/691777251662.png) |
+| [6階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_06.html) | 2026-11-27 JST | 61 | 0 | 6 | 65 | 71 | [café](https://www.takashimaya.co.jp/shinjuku/cafe/), [size guide](https://www.takashimaya.co.jp/shinjuku/shop/brand/size.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/681756428535.png) |
+| [7階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_07.html) | 2026-11-27 JST | 54 | 17 | 6 | 58 | 64 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_07/detail_01.html), [café](https://www.takashimaya.co.jp/shinjuku/cafe/), [size guide](https://www.takashimaya.co.jp/shinjuku/shop/brand/size.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/691778235486.png) |
+... (+24 lines) [see remaining: rtk proxy git show :3:stations/shinjuku/data/depato-tenants/SOURCES.md | tail -n +36]
