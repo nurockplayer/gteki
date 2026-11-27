@@ -1,0 +1,146 @@
+[
+  {
+    "camera": "shinjuku-overview",
+    "expect": "Shinjuku station structure fills the middle of the overview.",
+    "diffRatio": 0.0007708333333333333,
+    "changed": false
+  },
+  {
+    "camera": "sj-escalator-bottom",
+    "expect": "Shinjuku escalator bottom and its surrounding structure are visible.",
+    "diffRatio": 0.005682291666666667,
+    "changed": false
+  },
+  {
+    "camera": "sj-escalator-top",
+    "expect": "Shinjuku escalator and its surrounding structure are visible from the B3 foot.",
+    "diffRatio": 0.0018211805555555555,
+    "changed": false
+  },
+  {
+    "camera": "sj-sign-1ecbdf77",
+    "expect": "The passage and overhead sign 1ecbdf77 are visible.",
+    "diffRatio": 0.011008680555555556,
+    "changed": true
+  },
+  {
+    "camera": "sj-sign-2d2bc35b",
+    "expect": "The passage and overhead sign 2d2bc35b are visible.",
+    "diffRatio": 0.011100694444444444,
+    "changed": true
+  },
+  {
+    "camera": "sj-sign-453ea111",
+    "expect": "The passage and overhead sign 453ea111 are visible.",
+    "diffRatio": 0,
+    "changed": false
+  },
+  {
+    "camera": "sj-sign-c2d39002",
+    "expect": "The passage and overhead sign c2d39002 are visible.",
+    "diffRatio": 0.0030694444444444445,
+    "changed": false
+  },
+  {
+    "camera": "sj-sign-e31954cb",
+    "expect": "The passage and overhead sign e31954cb are visible.",
+    "diffRatio": 0.002095486111111111,
+    "changed": false
+  },
+  {
+    "camera": "sj-stair-1-bottom",
+    "expect": "Shinjuku stair 1 bottom and its surrounding structure are visible.",
+    "diffRatio": 0.04847222222222222,
+    "changed": true
+  },
+  {
+    "camera": "sj-stair-1-top",
+    "expect": "Shinjuku stair 1 top and its surrounding structure are visible.",
+    "diffRatio": 6.25e-05,
+    "changed": false
+  },
+  {
+    "camera": "sj-stair-2-bottom",
+    "expect": "Shinjuku stair 2 bottom and its surrounding structure are visible.",
+    "diffRatio": 0.1059375,
+    "changed": true
+  },
+  {
+    "camera": "sj-stair-2-top",
+    "expect": "Shinjuku stair 2, seen from its foot, and its surrounding structure are visible.",
+    "diffRatio": 0.10593923611111111,
+    "changed": true
+  },
+  {
+    "camera": "slice-01-exit1-mouth",
+    "expect": "Exit 1 entrance stairs and their sign are visible from the street.",
+    "diffRatio": 1.7361111111111112e-06,
+    "changed": false
+  },
+  {
+    "camera": "slice-02-exit1-landing",
+    "expect": "The exit 1 stair landing and the next flight down are visible.",
+    "diffRatio": 0.004185763888888889,
+    "changed": false
+  },
+  {
+    "camera": "slice-03-b1-arrival",
+    "expect": "The B1 concourse opens from the foot of the exit 1 stairs.",
+    "diffRatio": 0.0012135416666666666,
+    "changed": false
+  },
+  {
+    "camera": "slice-04-b1-corridor",
+    "expect": "The B1 corridor and its overhead sign are visible.",
+    "diffRatio": 0.0018871527777777777,
+    "changed": false
+  },
+  {
+    "camera": "slice-05-gate",
+    "expect": "The Oedo ticket gate line is visible.",
+    "diffRatio": 1.7361111111111112e-06,
+    "changed": false
+  },
+  {
+    "camera": "slice-06-to-escalator",
+    "expect": "The paid concourse leading to the first escalator is visible.",
+    "diffRatio": 0.031348958333333336,
+    "changed": true
+  },
+  {
+    "camera": "slice-07-escalator1-top",
+    "expect": "The escalator from B1 down to B3 is visible from its top.",
+    "diffRatio": 0.00734375,
+    "changed": false
+  },
+  {
+    "camera": "slice-08-b3-arrival",
+    "expect": "The B3 concourse is visible from the foot of the first escalator.",
+    "diffRatio": 0.00540625,
+    "changed": false
+  },
+  {
+    "camera": "slice-09-b3-sign",
+    "expect": "The B3 concourse and its overhead sign are visible.",
+    "diffRatio": 0.005477430555555556,
+    "changed": false
+  },
+  {
+    "camera": "slice-10-escalator2-top",
+    "expect": "The long escalator down to the B6 platform is visible from its top.",
+    "diffRatio": 0.02023958333333333,
+    "changed": true
+  },
+  {
+    "camera": "slice-11-b6-arrival",
+    "expect": "The B6 platform is visible from the foot of the long escalator.",
+    "diffRatio": 0.006510416666666667,
+    "changed": false
+  },
+  {
+    "camera": "slice-12-platform",
+    "expect": "The Oedo platform and track are visible.",
+    "diffRatio": 1.7361111111111112e-06,
+    "changed": false
+  }
+]
