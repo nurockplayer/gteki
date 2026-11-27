@@ -1,11 +1,12 @@
 import type { BuildScene, SceneContext, StationScene } from "@gteki/scene-api";
-import type { StationBundle } from "@gteki/schema";
+import type { Edge, StationBundle } from "@gteki/schema";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
 import footprintData from "../../data/depato-footprint.json";
 import floorData from "../../data/depato-floors.json";
 import rolloutData from "../../data/depato-rollout.json";
 import { depatoBundle, depatoLayout, type PlanPoint } from "./layout.ts";
 import { buildDepatoInterior } from "./interior.ts";
+import { removeLandmarkContext } from "../landmarks.ts";
 
 // PLATEAU context low GLB, ctx_bldg_t01_00: southern store wing of the connected
 // station building, clipped at z=70/180 and x=0 (authored internal partitions).
@@ -17,6 +18,37 @@ const plan = () => depatoLayout({
   footprint, elevations: { "1F": 32.2 },
   poiId: "shop-ikb-seibu-honten", sourceId: "sogo-seibu-ikebukuro-floorguide-2026-10",
   entrances: [{ level: "B1", point: [15,70], outsideNode: "sp_e" }, { level: "1F", point: [49.365,122.5], outsideNode: "depato-seibu-street" }],
+});
+
+// 2026-11-25 JST. The official 1F guide shows street access. Fit the door to the
+// west PLATEAU wall of the Metropolitan Plaza feature (bldg_fb241b42-14ae-4785-bb97-134d2714d3a3).
+// The north, east and south sides of this preview hall are authored partitions.
+// https://www.lumine.ne.jp/uploads/pdfs/lumine/000064/000064/261101.pdf
+const lumineStore = floorData.stores.find(s => s.id === "lumine-ikebukuro")!;
+const lumineExit = "x15";
+const lumineStreet = "depato-lumine-street";
+const lumineDoor: PlanPoint = [-215.242, 92];
+const lumineInward: PlanPoint = [0.923, 0.385];
+const lumineY = 31.85;
+const lumineApron: PlanPoint = [lumineDoor[0] - 7 * lumineInward[0], lumineDoor[1] - 7 * lumineInward[1]];
+const lumineWaypoints = [
+  [-120, 32.98, -131], [-140, 32.92, -121], [-167, 32.82, -121], [-183, 32.75, -118],
+  [-185, 32.70, -106], [-185, 32.66, -81], [-183, 32.68, -53], [-184, 32.68, -29],
+  [-186, 32.60, -5], [-192, 32.59, 15], [-199, 32.46, 30], [-205, 32.23, 43],
+  [-211, 32.02, 55], [-216, 31.74, 69], [-222, 31.61, 82],
+] as const;
+const lumineApproachIds = lumineWaypoints.map((_, i) => `depato-lumine-approach-${i}`);
+const luminePlan = () => depatoLayout({
+  store: { ...lumineStore, floors: lumineStore.floors.filter(f => f.level === "B1" || f.level === "1F") },
+  footprint: [
+    [-211.49, 83], [-216.401, 94.78], [-213.309, 96.026], [-214.716, 98.638],
+    [-211.754, 99.785], [-213.071, 102.627], [-209.799, 103.983], [-212.71, 111.477],
+    [-209.828, 112.754], [-210.35, 114], [-170, 114], [-170, 83],
+  ],
+  poiId: "shop-ikb-lumine", sourceId: "lumine-ikebukuro-floorguide-2026-10",
+  elevations: { "1F": lumineY },
+  circulation: { aisleX: -190, from: 96, to: 108 },
+  entrances: [{ level: "1F", point: lumineDoor, outsideNode: lumineStreet, inward: lumineInward }],
 });
 
 // Instance placement only: the accepted kit materials, lights and proportions are shared.
@@ -43,12 +75,31 @@ export function previewBundle(bundle: StationBundle): StationBundle {
   const street = { id: "depato-seibu-street", floorId: "street", position: { x: 56, y: -122.5, z: 32.5 }, kind: "junction" as const, inOut: "outside" as const, sourceRefs: [] };
   const streets = rolloutData.stores.map(row => ({ ...street, id: row.street.id,
     position: { x: row.street.point[0]!, y: -row.street.point[1]!, z: row.elevations["1F"] } }));
-  return rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, plan()));
+  const approach = lumineWaypoints.map(([x, y, z], i) => ({
+    ...street, id: lumineApproachIds[i]!, position: { x, y: -z, z: y },
+  }));
+  const apron = { ...street, id: lumineStreet, position: { x: lumineApron[0], y: -lumineApron[1], z: lumineY } };
+  const route = [bundle.nodes.find(n => n.id === lumineExit)!, ...approach, apron];
+  const evidence = { sourceIds: ["plateau-13116-tran-53394576", "lumine-ikebukuro-access-2026-10"], checkedDate: "2026-11-25",
+    method: "Authored preview street approach from modeled Exit 15, fitted to PLATEAU pavement and the Metropolitan Plaza storefront." };
+  const edges: Edge[] = route.slice(1).map((to, i) => {
+    const from = route[i]!, a = from.position, b = to.position;
+    return { id: `${from.id}__${to.id}`, from: from.id, to: to.id, direction: "both", mode: "walk",
+      lengthM: Math.hypot(b.x-a.x, b.y-a.y, b.z!-a.z!), geometry: [a, b], paid: false, crossesFareBoundary: false,
+      wheelchair: null, steps: false, hours: null, closed: false, verification: "verified",
+      geometryEvidence: evidence, accessEvidence: evidence };
+  });
+  const lumine = luminePlan();
+  const preview = [...rolloutPlans(), lumine].reduce(depatoBundle, depatoBundle({
+    ...bundle, nodes: [...bundle.nodes, street, ...streets, ...approach, apron], edges: [...bundle.edges, ...edges],
+  }, plan()));
+  const original = bundle.pois.find(p => p.id === lumine.input.poiId)!;
+  return { ...preview, pois: preview.pois.map(p => p.id === original.id ? { ...p, aliases: original.aliases } : p) };
 }
 
 /** One station hook: wrap context loading, open the station shell and attach the reusable kit. */
 export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
-  const THREE = ctx.THREE, layout = plan(), layouts = [layout, ...rolloutPlans()];
+  const THREE = ctx.THREE, layout = plan(), rollout = rolloutPlans(), layouts = [layout, ...rollout, luminePlan()];
   const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   const volume = (left: number, right: number, front: number, back: number, low: number, high: number): CutRegion => ({
     key: {}, bounds: new THREE.Box3(new THREE.Vector3(left, low, front), new THREE.Vector3(right, high, back)), clip: null,
@@ -67,7 +118,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     return volume(Math.min(e.point[0],p[0])- (front?2.1:0.2),Math.max(e.point[0],p[0])+(front?2.1:3),
       Math.min(e.point[1],p[2])-(front?0.2:2.1),Math.max(e.point[1],p[2])+(front?3:2.1),y+0.01,y+4.1);
   });
-  const rolloutRooms = layouts.slice(1).flatMap(p => {
+  const rolloutRooms = rollout.flatMap(p => {
     const points=p.input.footprint.map(([x,z])=>new THREE.Vector2(x,z));
     // A street-only tie opens the street shell and leaves the station concourses intact.
     const firstCutFloor = p.input.entrances.some(e => e.level !== "1F") ? p.floors[0]!.level : "1F";
@@ -84,7 +135,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       return cut;
     });
   });
-  const rolloutDoors=layouts.slice(1).flatMap(p=>p.input.entrances.map(e=>{
+  const rolloutDoors=rollout.flatMap(p=>p.input.entrances.map(e=>{
     const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,a=ctx.enuToRenderer({...outside.position,z:outside.position.z!}),y=p.height(e.level);
     const cut=volume(Math.min(a[0],e.point[0])-2.1,Math.max(a[0],e.point[0])+2.1,
       Math.min(a[2],e.point[1])-2.1,Math.max(a[2],e.point[1])+2.1,y-0.1,y+4.1);
@@ -97,10 +148,23 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   // The original station partitions cross the escalator landing and its turn into the west aisle.
   const tobuLanding = volume(x - 4.5, x + width / 2, to - 0.5, to + 2.5, b1 - 0.1, b1 + 3.1);
   tobuLanding.rejectsMesh = mesh => !["wall", "windows", "windows_solid", "doors", "doors_solid"].includes(mesh.userData.gteki_role);
+  const [doorX, doorZ] = lumineDoor, [nx, nz] = lumineInward;
+  const doorway = volume(doorX - 3, doorX + 3, doorZ - 3, doorZ + 3, lumineY - 0.1, lumineY + 2.8);
+  doorway.planes = [...doorway.planes.slice(-2),
+    ...[-1, 1].flatMap(side => [
+      (p: import("three").Vector3) => 1 + side * ((p.x - doorX) * nx + (p.z - doorZ) * nz),
+      (p: import("three").Vector3) => 2.05 + side * ((p.x - doorX) * nz - (p.z - doorZ) * nx),
+    ]),
+  ];
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
+    if (uri.includes("ikebukuro_landmarks_next.glb")) {
+      // The landmark bake partitions this shared wall by triangle, so the opening spans both meshes.
+      cutRegions([loaded.scene.getObjectByName("lumine")!, loaded.scene.getObjectByName("tobu")!], [doorway], resources);
+    }
     if (uri.includes("ikebukuro_context_")) {
-      loaded.scene.updateMatrixWorld(true);
+      // The landmark ranges address the untouched GLB triangle order.
+      removeLandmarkContext(THREE, loaded.scene, ctx.quality);
       cutRegions(loaded.scene, [room, ...streetDoors, ...rolloutRooms, ...rolloutDoors], resources);
       // Fill the missing visual pavement between Tobu's 32.41 m apron and the PLATEAU road.
       const pavement = new THREE.BufferGeometry();
@@ -120,13 +184,35 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   await scene.settled?.();
   scene.root.updateMatrixWorld(true);
   cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance, ...rolloutRooms, ...rolloutDoors, tobuLanding], resources);
+  // The PLATEAU street is visual. Give its authored walking line continuous support from the exit to the door bridge.
+  const route = [lumineExit, ...lumineApproachIds, lumineStreet].map(id => {
+    const { position } = ctx.bundle.nodes.find(n => n.id === id)!;
+    return new THREE.Vector3(...ctx.enuToRenderer({ ...position, z: position.z! }));
+  });
+  route[0]!.addScaledVector(route[0]!.clone().sub(route[1]!).setY(0).normalize(), 0.35);
+  route.at(-1)!.addScaledVector(new THREE.Vector3(nx, 0, nz), 0.35);
+  const strip = route.map((point, i) => {
+    const tangent = route[Math.min(i + 1, route.length - 1)]!.clone().sub(route[Math.max(i - 1, 0)]!).setY(0).normalize();
+    const side = new THREE.Vector3(tangent.z, 0, -tangent.x).multiplyScalar(1.8);
+    return [point.clone().add(side), point.clone().sub(side)] as const;
+  });
+  const pavementGeometry = new THREE.BufferGeometry();
+  pavementGeometry.setAttribute("position", new THREE.Float32BufferAttribute(strip.slice(1).flatMap(([c,d], i) => {
+    const [a,b] = strip[i]!;
+    return [a,b,c,b,d,c].flatMap(p => p.toArray());
+  }), 3));
+  pavementGeometry.computeVertexNormals();
+  const pavementMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+  const streetSupport = new THREE.Mesh(pavementGeometry, pavementMaterial);
+  streetSupport.visible = false;
+  streetSupport.userData.gteki_role = "floor";
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p=>[p.input.store.name.ja,p.input.store.name.en,...p.floors.flatMap(f=>[f.label.ja,f.label.en,...f.tenants.flatMap(t=>[t.ja,t.en])])]).join(""));
   const interiors = layouts.map(p=>buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
   let avatar: {x:number;y:number;z:number}|null=null;
   const focus = scene.setCameraFocus;
   scene.root.add(...interiors.flatMap(i=>[i.root,i.connectorRoot]));
   const update = scene.update, dispose = scene.dispose;
-  return { ...scene, walkable: [...scene.walkable, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
+  return { ...scene, walkable: [...scene.walkable, streetSupport, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(i=>i.cameraBlockers)],
     setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); avatar=args[3] ?? null; interiors.forEach(i=>i.setAvatar(avatar)); },
     update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if(camera){
@@ -138,6 +224,6 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       interiors.forEach((i,n)=>{if(n!==active)i.update(camera,dt,elapsed,false);});
       interiors[active]!.update(camera,dt,elapsed);
     } },
-    dispose() { disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); dispose(); },
+    dispose() { pavementGeometry.dispose(); pavementMaterial.dispose(); disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); dispose(); },
   };
 }
