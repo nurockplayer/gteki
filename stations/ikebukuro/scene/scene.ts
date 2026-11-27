@@ -646,14 +646,18 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   let contextRoadMaterial: THREE_NS.Material | null = null;
   let disposeLandmarks: (() => void) | null = null;
   let disposed = false;
-  const n02Overlay = loadN02Overlay(THREE, ctx, root);
+  // The flat railway ribbons cut blue bands across the preview's continuous ground.
+  const n02Overlay = ctx.previewNext ? null : loadN02Overlay(THREE, ctx, root);
   const contextReady = ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     async (loaded) => {
       const material = createContextMaterial(THREE, { streetY, facade: true });
       const roadMaterial = createContextMaterial(THREE, { color: CONTEXT_ROAD_COLOR });
-      if (ctx.previewNext) removeLandmarkContext(THREE, loaded.scene, ctx.quality);
+      if (ctx.previewNext) {
+        roadMaterial.fog = false;
+        removeLandmarkContext(THREE, loaded.scene, ctx.quality);
+      }
       dressContext(loaded.scene, material, roadMaterial);
-      if (ctx.previewNext) disposeLandmarks = await addLandmarks(ctx, loaded.scene);
+      if (ctx.previewNext) disposeLandmarks = await addLandmarks(ctx, loaded.scene, roadMaterial);
       await cutContextStairOpenings(THREE, loaded.scene, ctx.bundle);
       if (disposed) {
         disposeLandmarks?.();
@@ -677,7 +681,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const probe = meshesByRole.get("floor")?.[0] ?? [...meshesByRole.values()].flat()[0] ?? null;
   const cameraTrack = probe ? trackCamera(probe) : null;
   const setContext = (show: boolean) => {
-    n02Overlay.setVisible(show && context !== null);
+    n02Overlay?.setVisible(show && context !== null);
     if (!context) return;
     if (show && context.parent !== root) root.add(context);
     else if (!show && context.parent === root) root.remove(context);
@@ -904,7 +908,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       acoustics?.dispose();
       cameraTrack?.dispose();
       disposed = true;
-      n02Overlay.dispose();
+      n02Overlay?.dispose();
       contextBlockers.dispose();
       disposeLandmarks?.();
       if (context) {

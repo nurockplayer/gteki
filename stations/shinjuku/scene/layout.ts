@@ -897,7 +897,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const extras = [...layout.pads, ...layout.linkStrips].filter((p) => Math.abs(p.z - lv.z) < 0.1);
     const envelope = union([...source.outline, ...extras.map((p) => p.rings)]);
     lv.ceilings = envelope.flatMap((rings, i) => clearSoffit({ spaceId: `ceiling:${lv.floorId}:${i}`, rings, z: lv.ceilingZ, fare: null, category: "ceiling" }, passages));
-    for (const rings of envelope) enclose(lv, rings, () => lv.z - 0.2, () => lv.ceilingZ, "shaft", true);
+    for (const rings of envelope) enclose(lv, rings, () => lv.z - 0.2, () => lv.ceilingZ, "shaft", true, undefined, undefined, () => lv.z);
   }
 
   // The symbolic model spreads switchback landings across non-source elevations. They need
