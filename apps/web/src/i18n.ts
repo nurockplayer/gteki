@@ -9,6 +9,7 @@ const STRINGS = {
   ja: {
     feedback: { title: "フィードバック", message: "内容（1000文字まで）", detail: "送信すると、ゲームの状態・端末情報・ゲーム画面の画像が送られます。個人情報は入力しないでください。報告内容は開発者のみが確認し、ゲームの改善に利用します。90日以内に自動削除します。迷惑送信防止のため、IPアドレスを一時的に処理する場合があります。", send: "送信", close: "閉じる", sending: "送信中…", sent: "送信しました。ありがとうございます！", error: "送信できませんでした。もう一度お試しください。", rate: "少し待ってから、もう一度送信してください。" },
     interactionStart: "のぞく", interactionReceived: "もらいました",
+    interactionLift: (level: string) => `${level}へ エレベーター`,
     interactionSimulated: "模擬店（実在の店舗ではありません）", interactionSimulatedVending: "模擬の自動販売機（実在の設備ではありません）",
     interactionInterrupted: "中断しました", interactionBag: "持ち物：紙袋",
     greyboxLegend: "示意，非實測",
@@ -277,6 +278,7 @@ const STRINGS = {
   en: {
     feedback: { title: "Feedback", message: "Message (up to 1000 characters)", detail: "Your feedback will include game state, device details, and a game screenshot. Please do not include personal information. Reports are accessible only to the developer, are used to investigate and improve the game, and are automatically deleted within 90 days. Your IP may be processed temporarily to prevent spam.", send: "Send", close: "Close", sending: "Sending…", sent: "Sent. Thank you!", error: "Could not send. Please try again.", rate: "Please wait a minute before sending again." },
     interactionStart: "Look inside", interactionReceived: "Already received",
+    interactionLift: (level: string) => `Take lift to ${level}`,
     interactionSimulated: "Simulated shop (not a real store)", interactionSimulatedVending: "Simulated vending machine (not a real one)",
     interactionInterrupted: "Interrupted", interactionBag: "Held: paper bag",
     greyboxLegend: "Approximate, not surveyed",

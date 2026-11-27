@@ -72,6 +72,7 @@ export interface InteractableSpec {
   steps: { id: string; seconds: number }[];
   reward?: string;
   once?: boolean;
+  lift?: { level: string; arrival: { x: number; y: number; z: number } };
 }
 
 /** Gate-local camera metadata; never walker ground or collision targets. Bounds are asset-local. */

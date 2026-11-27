@@ -14,37 +14,56 @@ export interface DepatoInput {
   sourceId: string;
   elevations: Record<string, number>;
   circulation?: { aisleX: number; from: number; to: number };
+  upperBank?: { transfer: string; x: number; from: number; to: number };
+  floorFootprint?: (level: string) => PlanPoint[];
+  lift?: { x: number; z: number; entrance: string; destinations: string[]; source: string };
   entrances: { level: string; point: PlanPoint; outsideNode: string; inward?: PlanPoint }[];
 }
 
 /** Reusable circulation plan: any number of floors, with paired station-family escalators per pair. */
 export function depatoLayout(input: DepatoInput) {
   const { store, footprint, elevations } = input;
-  const xs = footprint.map(p => p[0]), zs = footprint.map(p => p[1]);
-  const bounds = { left: Math.min(...xs), right: Math.max(...xs), front: Math.min(...zs), back: Math.max(...zs) };
   const ordinal = (level: string) => level.startsWith("B") ? -Number(level.slice(1)) : Number(level.replace("F", "")) - 1;
   const height = (level: string) => elevations[level] ?? elevations["1F"]! + ordinal(level) * 4.5;
   const floors = [...store.floors].sort((a, b) => height(a.level) - height(b.level));
+  const boundsOf = (points: PlanPoint[]) => {
+    const xs = points.map(p => p[0]), zs = points.map(p => p[1]);
+    return { left: Math.min(...xs), right: Math.max(...xs), front: Math.min(...zs), back: Math.max(...zs) };
+  };
+  const bounds = boundsOf(footprint);
   const aisleX = input.circulation?.aisleX ?? (bounds.left + bounds.right) / 2;
   const stair = { x: aisleX, from: input.circulation?.from ?? bounds.front + 26, to: input.circulation?.to ?? bounds.front + 38, width: 4.2 };
-  const contains = ([x, z]: PlanPoint) => {
-    let inside = false;
-    for (let i = 0, j = footprint.length - 1; i < footprint.length; j = i++) {
-      const a = footprint[i]!, b = footprint[j]!;
-      if ((a[1] > z) !== (b[1] > z) && x < (b[0] - a[0]) * (z - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+  const upper = input.upperBank && { ...input.upperBank, width: stair.width };
+  const bank = (level: string) => upper && height(level) >= height(upper.transfer) ? upper : stair;
+  const crossZ = upper ? Math.max(stair.to, upper.to) + 4 : stair.to + 4;
+  const plateFor = (points: PlanPoint[], banks: (typeof stair)[], main: typeof stair) => {
+    const bounds = boundsOf(points);
+    const contains = ([x, z]: PlanPoint) => {
+      let inside = false;
+      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+        const a = points[i]!, b = points[j]!;
+        if ((a[1] > z) !== (b[1] > z) && x < (b[0] - a[0]) * (z - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+      }
+      return inside;
+    };
+    const counters: PlanPoint[] = [];
+    for (let z = bounds.front + 12; z < bounds.back - 5; z += 7) {
+      for (const side of [-1, 1]) for (let offset = 2.3; offset < (bounds.right - bounds.left) / 2; offset += 4) {
+        const x = main.x + side * offset;
+        if (banks.some(b => z > b.from - 5 && z < b.to + 5 && Math.abs(x - b.x) < 6)) continue;
+        if (input.entrances.some(e => Math.abs(e.point[1] - z) < 4)) continue;
+        if (upper && Math.abs(z - crossZ) < 3) continue;
+        if (input.lift && Math.abs(z - input.lift.z) < 5 && Math.abs(x - input.lift.x) < 5) continue;
+        if ([-0.55, 0.55].every(dx => [-2, 2].every(dz => contains([x + dx, z + dz])))) counters.push([x, z]);
+      }
     }
-    return inside;
+    return { footprint: points, bounds, counters, contains };
   };
-  const counters: PlanPoint[] = [];
-  for (let z = bounds.front + 12; z < bounds.back - 5; z += 7) {
-    for (const side of [-1, 1]) for (let offset = 2.3; offset < (bounds.right - bounds.left) / 2; offset += 4) {
-      const x = aisleX + side * offset;
-      if (z > stair.from - 5 && z < stair.to + 5 && offset < 6) continue;
-      if (input.entrances.some(e => Math.abs(e.point[1] - z) < 4)) continue;
-      if ([-0.55, 0.55].every(dx => [-2, 2].every(dz => contains([x + dx, z + dz])))) counters.push([x, z]);
-    }
-  }
-  return { input, bounds, floors, height, aisleX, stair, counters, contains };
+  const base = plateFor(footprint, [stair], stair);
+  const plates = input.floorFootprint && new Map(floors.map(({ level }) => [
+    level, plateFor(input.floorFootprint!(level), level === upper?.transfer ? [stair, upper] : [bank(level)], bank(level)),
+  ]));
+  return { input, ...base, floors, height, aisleX, stair, bank, crossZ, plate: (level: string) => plates?.get(level) ?? base };
 }
 export type DepatoLayout = ReturnType<typeof depatoLayout>;
 
@@ -60,29 +79,53 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     nodes.push(n); return n;
   };
   const edge = (a: Node, b: Node, mode: Edge["mode"] = "walk") => {
+    const geometryEvidence = mode === "elevator" ? {
+      ...evidence, method: `Public restaurant lift access: ${plan.input.lift!.source}; preview stops are illustrative`,
+    } : evidence;
     edges.push({ id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: mode === "escalator" ? "forward" : "both", mode,
       lengthM: Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y, b.position.z! - a.position.z!),
-      geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode === "walk", steps: mode !== "walk",
-      hours: null, closed: false, verification: "geometry_only", geometryEvidence: evidence, accessEvidence: null });
+      geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode !== "escalator", steps: mode === "escalator",
+      hours: null, closed: false, verification: "geometry_only", geometryEvidence, accessEvidence: null });
   };
-  let previousLower: Node | undefined;
-  for (const floor of plan.floors) {
-    const lower = node(floor.level, "lower", plan.aisleX, plan.stair.from - 2);
-    const upper = node(floor.level, "upper", plan.aisleX, plan.stair.to + 2);
-    const aisle = node(floor.level, "aisle", plan.aisleX - 4, plan.stair.from - 2);
-    const bypass = node(floor.level, "bypass", plan.aisleX - 4, plan.stair.to + 2);
+  const halls = (level: string, bank: typeof plan.stair, suffix = "") => {
+    const { x, from, to } = bank;
+    const lower = node(level, "lower" + suffix, x, from - 2);
+    const upper = node(level, "upper" + suffix, x, to + 2);
+    const aisle = node(level, "aisle" + suffix, x - 4, from - 2);
+    const bypass = node(level, "bypass" + suffix, x - 4, to + 2);
     edge(lower, aisle); edge(aisle, bypass); edge(bypass, upper);
-    if (previousLower) {
-      const bottom = previousLower;
-      const takeoff = node(plan.floors[plan.floors.indexOf(floor) - 1]!.level, "takeoff", plan.aisleX - 0.95, plan.stair.from);
-      const landing = node(floor.level, "landing", plan.aisleX - 0.95, plan.stair.to);
-      edge(bottom, takeoff); edge(takeoff, landing, "escalator"); edge(landing, upper);
-      const downStart = node(floor.level, "down-start", plan.aisleX + 0.95, plan.stair.from);
-      const downEnd = node(plan.floors[plan.floors.indexOf(floor) - 1]!.level, "down-end", plan.aisleX + 0.95, plan.stair.to);
-      edge(lower, downStart); edge(downStart, downEnd, "escalator");
-      edge(downEnd, nodes.find(n => n.id === id(plan.floors[plan.floors.indexOf(floor) - 1]!.level, "upper"))!);
+    return { lower, upper, aisle, bypass };
+  };
+  const liftStops: Node[] = [];
+  let previous: ReturnType<typeof halls> | undefined;
+  for (const [index, floor] of plan.floors.entries()) {
+    const { level } = floor, bank = plan.bank(level), main = halls(level, bank);
+    const { bypass } = main;
+    const below = plan.floors[index - 1]?.level;
+    if (previous && below) {
+      const incoming = plan.bank(below), { x, from, to } = incoming;
+      const arrival = incoming === bank ? main : halls(level, incoming, "-arrival");
+      if (arrival !== main) {
+        const a = node(level, "transfer-from", incoming.x - 4, plan.crossZ);
+        const b = node(level, "transfer-to", bank.x - 4, plan.crossZ);
+        edge(arrival.bypass, a); edge(a, b); edge(b, bypass);
+      }
+      const takeoff = node(below, "takeoff", x - 0.95, from);
+      const landing = node(level, "landing", x - 0.95, to);
+      edge(previous.lower, takeoff); edge(takeoff, landing, "escalator"); edge(landing, arrival.upper);
+      const downStart = node(level, "down-start", x + 0.95, from);
+      const downEnd = node(below, "down-end", x + 0.95, to);
+      edge(arrival.lower, downStart); edge(downStart, downEnd, "escalator"); edge(downEnd, previous.upper);
     }
-    previousLower = lower;
+    previous = main;
+    const lift = plan.input.lift;
+    if (lift && (level === lift.entrance || lift.destinations.includes(level))) {
+      const stop = node(level, "lift", lift.x, lift.z - 2);
+      const turn = node(level, "lift-turn", bank.x - 4, plan.crossZ);
+      const lobby = node(level, "lift-lobby", lift.x, plan.crossZ);
+      edge(bypass, turn); edge(turn, lobby); edge(lobby, stop);
+      liftStops.push(stop);
+    }
     for (const [i, entrance] of entrances.filter(e => e.level === floor.level).entries()) {
       const door = node(floor.level, `door${i}`, ...entrance.point);
       if (floor.level === "1F") door.kind = "exit";
@@ -102,6 +145,7 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
       edge(bundle.nodes.find(n => n.id === entrance.outsideNode)!, door);
     }
   }
+  for (const stop of liftStops.slice(1)) edge(liftStops[0]!, stop, "elevator");
   const goal = nodes.find(n => n.id === id(plan.floors[0]!.level, "aisle"))!;
   return { ...bundle,
     floors: [...bundle.floors, ...plan.floors.map(f => ({ id: id(f.level, "floor"), operatorId: "public", sourceLabels: [], ordinal: f.level.startsWith("B") ? -Number(f.level.slice(1)) : Number(f.level.replace("F", "")) - 1, intermediate: false, elevationM: null, elevationSource: "unknown" as const, renderElevationM: plan.height(f.level), displayNames: [{ lang: "ja", text: `${store.name.ja} ${f.level}` }, { lang: "en", text: `${store.name.en} ${f.level}` }] }))],
