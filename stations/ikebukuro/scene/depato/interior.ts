@@ -12,6 +12,10 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   const THREE = ctx.THREE, root = new THREE.Group(), connectorRoot = new THREE.Group(); root.name = `depato-interior:${plan.input.store.id}`;
   const fullIsetan = plan.input.store.id.startsWith("isetan-shinjuku-");
   const isetanMain = plan.input.store.id === "isetan-shinjuku-main";
+  const fullStore = plan.floors.length > 3;
+  const otherFullStore = fullStore && !fullIsetan;
+  const keio = plan.input.store.id === "keio-shinjuku";
+  const rubber = ctx.quality === "high" && (fullIsetan || keio || plan.input.store.id === "odakyu-shinjuku") ? "#242c32" : "#14191b";
   const depthTwins:{mesh:T.Mesh;twin:T.Material;original:T.Material}[]=[];
   root.userData.gteki_gtao_depth_twins=depthTwins;
   const walkable: T.Mesh[] = [], colliders: T.Mesh[] = [], cameraBlockers: T.Mesh[] = [];
@@ -62,12 +66,13 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   const levels=plan.floors.map((floor,index)=>{
     const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets";
     // Keep the 7F ceiling below the modeled 30.61m terrace.
-    const clear=food?3.1:isetanMain&&floor.level==="7F"?3.4:3.8;
+    const rise=index+1<plan.floors.length?plan.height(plan.floors[index+1]!.level)-y:Infinity;
+    const clear=Math.min(food?3.1:isetanMain&&floor.level==="7F"?3.4:3.8,rise-0.12);
     const counters=isetanMain&&food&&ctx.quality==="low"
       ? plan.counters.filter(([x],i)=>Math.abs(x-plan.aisleX)<11 || i%3===0)
       : plan.counters;
-    const rooftop=fullIsetan && floor.category==="rooftop";
-    const wallHeight=rooftop?1.15:index+1<plan.floors.length?plan.height(plan.floors[index+1]!.level)-y:clear;
+    const rooftop=floor.category==="rooftop";
+    const wallHeight=rooftop?(fullIsetan?1.15:1.1):Number.isFinite(rise)?rise:clear;
     const floorG=shape(y,index>0), ceilingMesh=rooftop?null:new THREE.Mesh(shape(y+clear,index+1<plan.floors.length,true)), wallG=walls(floor.level,y,wallHeight);
     if(plan.input.store.id==="tobu-ikebukuro" && floor.level==="B1"){
       // The x18 station stairs cross Tobu's illustrative B1 ceiling.
@@ -85,7 +90,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       cameraBlockers.at(-1)!.userData.gtekiCameraTargetOnly=true;
     }
     if(index>0)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
-    for(const [x,z] of counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
+    if(!rooftop || fullIsetan)for(const [x,z] of counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
     return {floor,index,y,food,clear,counters,rooftop,floorG,ceilingG,wallG};
   });
   const flights=levels.slice(1).flatMap((upper,i)=>{
@@ -119,7 +124,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   let geometries:T.BufferGeometry[]=[], materials:T.Material[]=[], textures:T.Texture[]=[];
   let groups:T.Group[]=[], shells:T.Group[]=[], landingGroups:T.Group[]=[], flightGroups:T.Group[]=[], loaded=false;
   let avatar:{x:number;y:number;z:number}|null=null;
-  let crowds:ReturnType<typeof buildCrowd>[]=[];
+  let crowds:(ReturnType<typeof buildCrowd>|null)[]=[];
   const retain=<G extends T.BufferGeometry>(g:G)=>{geometries.push(g);return g;};
   const basic=(color:string)=>{const m=new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,fog:false});materials.push(m);return m;};
   const standard=(color:string,roughness:number,emissive=0)=>{
@@ -139,8 +144,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const boards=levels.flatMap(l=>[{ja:`${plan.input.store.name.ja} ${l.floor.level}`,en:l.floor.label.en},...l.floor.tenants]);
     const directoryJa=plan.floors.map(f=>`${f.level} ${f.label.ja}`).join(" / ");
     const directoryEn=plan.floors.map(f=>`${f.level} ${f.label.en}`).join(" / ");
-    if(!fullIsetan)boards.push({ja:directoryJa,en:directoryEn});
-    const directoryRow=fullIsetan?boards.length:boards.length-1;
+    if(!fullStore)boards.push({ja:directoryJa,en:directoryEn});
+    const directoryRow=fullStore?boards.length:boards.length-1;
     const denseIsetan=fullIsetan&&boards.length>100;
     const fontPx=boards.length>100?9:18, rowHeight=fontPx*40/18;
     const canvas=typeof document!=="undefined"?document.createElement("canvas"):null;
@@ -155,19 +160,19 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const directoryX=1024-directoryWidth, directoryY=1024-directoryHeight;
       const rows=boards.map((_,i)=>i);
       // Pack the tall floor headers together, leaving the lower right for the directory.
-      if(fullIsetan)rows.sort((a,b)=>Number(storeRows.includes(b))-Number(storeRows.includes(a)));
+      if(fullStore)rows.sort((a,b)=>Number(storeRows.includes(b))-Number(storeRows.includes(a)));
       let x=0,y=0,lineHeight=0;
-      rows.forEach(i=>{
+      rows.forEach((i,index)=>{
         const b=boards[i]!;
         const nameBoard=storeRows.includes(i), large=i===parcoB1Row || (nameBoard&&boards.length>100);
-        const px=large?36:fontPx;
+        const px=otherFullStore&&nameBoard?24:large?36:fontPx;
         // The Main building's 347 names fit in 96×16 cells while its ten floor headers use 320×72.
-        const height=denseIsetan?(nameBoard?72:16):large?80:rowHeight;
+        const height=denseIsetan?(nameBoard?72:16):otherFullStore&&nameBoard?52:large?80:rowHeight;
         paint.font=`600 ${px}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
         paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
-        const width=denseIsetan?(nameBoard?320:96):Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
+        const width=denseIsetan?(nameBoard?320:96):otherFullStore?(nameBoard?256:128):Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
         const limit=()=>fullIsetan&&y+height>directoryY?directoryX:1024;
-        if(x+width>limit()){x=0;y+=lineHeight;lineHeight=0;}
+        if(x+width>limit() || (otherFullStore&&index===storeRows.length)){x=0;y+=lineHeight;lineHeight=0;}
         if(y+height>1024||width>limit())throw new Error(`Department-store board atlas exceeds 1024px: ${plan.input.store.id}`);
         slots[i]={x,y,width,height};lineHeight=Math.max(lineHeight,height);const door=nameBoard;
         paint.fillStyle=door?LANDMARK_SIGN.band:"#EFE9DD";paint.fillRect(x,y,width,height);paint.fillStyle=door?LANDMARK_SIGN.letters:LANDMARK_SIGN.band;
@@ -185,6 +190,22 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
           paint.font='600 21px "GTEki Sign JP"';paint.fillText(floor.level,directoryX+10,top+23);
           paint.font='600 16px "GTEki Sign JP"';paint.fillText(floor.label.ja,directoryX+66,top+14,directoryWidth-76);
           paint.font='600 12px "GTEki Sign JP"';paint.fillText(floor.label.en,directoryX+66,top+27,directoryWidth-76);
+        });
+      } else if (otherFullStore) {
+        y += lineHeight;
+        const width = 960, height = 27 * levels.length + 12;
+        if (y + height > 1024) throw new Error(`Department-store directory exceeds 1024px: ${plan.input.store.id}`);
+        slots[directoryRow]={x:0,y,width,height};
+        paint.fillStyle = "#EFE9DD";
+        paint.fillRect(0, y, width, height);
+        paint.textAlign = "left";
+        paint.fillStyle = LANDMARK_SIGN.band;
+        paint.font = '600 21px "GTEki Sign JP"';
+        levels.slice().reverse().forEach(({floor}, i) => {
+          const line = y + 25 + i * 27;
+          paint.fillText(floor.level, 16, line);
+          paint.fillText(floor.label.ja, 88, line, 400);
+          paint.fillText(floor.label.en, 512, line, 430);
         });
       }
       atlas=new THREE.CanvasTexture(canvas);atlas.colorSpace=THREE.SRGBColorSpace;textures.push(atlas);
@@ -225,9 +246,10 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         if(plan.contains([x,z]) && !(Math.abs(x-plan.stair.x)<2.3 && z>plan.stair.from && z<plan.stair.to))discs.push({x,y:l.y+l.clear-0.025,z});
       }
       if(!l.rooftop)instance(group,new THREE.CylinderGeometry(0.12,0.12,0.025,fullIsetan?6:8),glow,discs);
-      const positions=l.counters.map(([x,z])=>({x,y:l.y+0.475,z}));
-      instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
-      if(l.rooftop)instance(group,new THREE.BoxGeometry(0.9,0.22,3.8),basic("#637a4f"),positions.map(p=>({...p,y:l.y+0.97})));
+      const counters = l.rooftop && !fullIsetan ? [] : l.counters;
+      const positions=counters.map(([x,z])=>({x,y:l.y+0.475,z}));
+      if(!l.rooftop || fullIsetan)instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
+      if(l.rooftop && fullIsetan)instance(group,new THREE.BoxGeometry(0.9,0.22,3.8),basic("#637a4f"),positions.map(p=>({...p,y:l.y+0.97})));
       const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
       // Repeated shallow bays and a warm cove frame the main aisle without runtime lights.
       if(!plan.input.entrances.some(e=>e.inward)) {
@@ -254,7 +276,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       }
       const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
         // The B1 approach sees PARCO's header at a steep angle from the guide.
-        const slot=slots[row]!, labelHeight=height*(fullIsetan&&row===directoryRow?0.96:row===parcoB1Row?0.9:0.6);
+        const slot=slots[row]!, labelHeight=height*(fullIsetan&&row===directoryRow?0.96:row===parcoB1Row || (otherFullStore&&row===directoryRow)?0.9:0.6);
         const labelWidth=slot.width/slot.height*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
         for(const face of [0,1,-1]){
           const text=face!==0;
@@ -267,20 +289,25 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         }
       };
       const contents:{x:number;y:number;z:number}[]=[];
-      l.counters.forEach(([x,z],i)=>{
+      counters.forEach(([x,z],i)=>{
         if(l.rooftop)return;
         const side=x<plan.aisleX?-1:1, front=x-side*0.56;
         if(l.food){
           glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
-          detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
+          const backHeight = Math.min(2.4, l.clear - 0.1);
+          detail.push(cube(x+side*0.48,l.y+backHeight/2,z,0.12,backHeight,4));
           lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
           if(fullIsetan)for(let j=0;j<3;j++)contents.push({x:x-0.13,y:l.y+0.68,z:z-1.2+j*1.2});
-          else for(let j=0;j<10;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*0.37});
+          else {
+            const samples = fullStore ? 5 : 10;
+            for(let j=0;j<samples;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*3.7/samples});
+          }
         }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,2.8));
-        board(x-side*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
+        board(x-side*0.58,l.y+Math.min(2.2,l.clear-0.34),z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
       });
       if(contents.length){
-        const foodMesh=instance(group,new THREE.CapsuleGeometry(0.065,0.06,fullIsetan?1:3,fullIsetan?4:5),glow,contents.map(p=>({...p,scale:[1,0.7,1.4] as [number,number,number]})));
+        const product = otherFullStore ? new THREE.BoxGeometry(0.13,0.12,0.13) : new THREE.CapsuleGeometry(0.065,0.06,fullIsetan?1:3,fullIsetan?4:5);
+        const foodMesh=instance(group,product,glow,contents.map(p=>({...p,scale:[1,0.7,1.4] as [number,number,number]})));
         const tones=["#d8c8a3","#b99b74","#8e745e","#9caa88"];
         contents.forEach((_,i)=>foodMesh.setColorAt(i,new THREE.Color(tones[i%4])));
       }
@@ -310,31 +337,39 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
           // Keep the panel beside the bypass and turn it towards the aisle.
           board(plan.aisleX-5.5,l.y+1.38,z!,directoryRow,Math.PI/2,3.5,2.15);
           frames.push(cube(plan.aisleX-5.5,l.y+0.17,z!,0.1,0.34,0.85));
+        }else if(otherFullStore){
+          board(plan.aisleX-7,l.y+1.17,z!,directoryRow,yaw!,4.6,1.72);
         }else{
           board(plan.aisleX-3,l.y+2.15,z!,directoryRow,yaw!,4,0.65);
           frames.push(cube(plan.aisleX-3,l.y+1.93-l.index*0.06,z!+0.01,3.8,0.018,0.018));
         }
       }
-      board(plan.aisleX,l.y+l.clear-0.48,plan.stair.to+5,label,0,3.4,0.45);
+      if (!fullIsetan && l.rooftop) {
+        board(plan.aisleX,l.y+1.4,plan.stair.to+5,label,0,3.4,0.6);
+        for (const dx of [-1.55, 1.55]) frames.push(cube(plan.aisleX+dx,l.y+0.6,plan.stair.to+5,0.08,1.2,0.1));
+      } else if (!fullIsetan) {
+        const signY = l.y + (keio ? 2.1 : l.clear - 0.48);
+        board(plan.aisleX,signY,plan.stair.to+5,label,0,3.4,0.45);
+        if (keio && l.floor.level === "8F") board(plan.aisleX-4,signY,plan.stair.to-4,label,0,3.4,0.45);
+      }
       if(l.index>0)for(const side of [-1,1])glassPieces.push(cube(plan.aisleX+side*2.13,l.y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from));
       if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,basic("#e5d9c4")));}
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
       // Station whole-body people use short, narrow counter-side paths, away from circulation.
       const lanes:Record<string,Lane>={};
-      const paths=l.counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
+      const paths=counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
         const id=`retail-${i}`,side=x<plan.aisleX?-1:1,px=x+side*1.3;
         lanes[id]={stepM:3,left:[0.2],right:[0.2]};
         return {id,from:`${id}-a`,to:`${id}-b`,verification:"verified",geometry:[{x:px,y:-z+1.3,z:l.y},{x:px,y:-z-1.3,z:l.y}]};
       }).filter(p=>p.geometry.every(p=>plan.contains([p.x,-p.y])));
-      const crowd=buildCrowd(THREE,paths,(x,y,z)=>new THREE.Vector3(x,z,-y),8,envMap!,lanes);
-      crowds.push(crowd);group.add(crowd.group);
+      const crowd=paths.length ? buildCrowd(THREE,paths,(x,y,z)=>new THREE.Vector3(x,z,-y),8,envMap!,lanes) : null;
+      crowds.push(crowd);if(crowd)group.add(crowd.group);
       if(detail.length){const g=mergeGeometries(detail);retain(g);detail.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,counterMat));}
       if(frames.length){const g=mergeGeometries(frames);retain(g);frames.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,bronze));}
       if(glassPieces.length){const g=mergeGeometries(glassPieces);retain(g);glassPieces.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glassMat));}
       if(signs.length){const g=mergeGeometries(signs);retain(g);signs.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,boardMaterial));}
       label+=l.floor.tenants.length+1;
     }
-    const rubber=fullIsetan&&ctx.quality==="high"?"#242c32":"#14191b";
     for(const lower of levels.slice(0,-1)){
       const pair=flights.filter(f=>f.lower===lower.index);
       const group=new THREE.Group();flightGroups.push(group);root.add(group);
@@ -356,7 +391,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     bridges.forEach((g,i)=>groups[levels.findIndex(l=>l.floor.level===plan.input.entrances[i]!.level)]!.add(new THREE.Mesh(g,basic("#bdb5a7"))));
     root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.85,0.85],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
-  const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];shells=[];landingGroups=[];flightGroups=[];loaded=false;};
+  const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c?.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];shells=[];loaded=false;};
   return {root,connectorRoot,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
     update(camera:T.Camera,dt=0,elapsed=0,active=true){
       if(!active){if(loaded)unload();return;}
@@ -365,8 +400,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if(!near){if(loaded)unload();return;}
       if(!loaded){loaded=true;load();}
       let floor=0;for(const l of levels)if(l.y<=p.y+0.2)floor=l.index;
-      if(fullIsetan)shells.forEach((g,i)=>{g.visible=Math.abs(i-floor)<=1;});
-      groups.forEach((g,i)=>{g.visible=i===floor;if(g.visible)crowds[i]!.update(dt,elapsed);});landingGroups.forEach(g=>g.visible=false);
+      if(fullStore)shells.forEach((g,i)=>{g.visible=Math.abs(i-floor)<=1;});
+      groups.forEach((g,i)=>{g.visible=i===floor;if(g.visible)crowds[i]?.update(dt,elapsed);});landingGroups.forEach(g=>g.visible=false);
       const riding=p.y>levels[floor]!.y+0.25 && floor+1<levels.length;
       if(riding)landingGroups[floor+1]!.visible=true;
       flightGroups.forEach((g,i)=>g.visible=i===floor || i+1===floor);

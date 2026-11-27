@@ -18,12 +18,32 @@ const layouts = rollout.stores.map(row => {
   const roof = isetanRoofs.get(row.id);
   const [doorX, doorZ] = row.entrance.point as PlanPoint;
   const [inwardX, inwardZ] = row.entrance.inward as PlanPoint;
+  const fullStore = roof !== undefined || row.id === "odakyu-shinjuku" || row.id === "keio-shinjuku";
+  const street = row.entrance.elevation;
+  const elevations: Record<string, number> = { "1F": street };
+  // Allow headroom beneath stacked escalators at the authored mezzanines.
+  const mezzanineRise = 3.2;
+  if (row.id === "odakyu-shinjuku") {
+    elevations.MB3 = street - 9 - mezzanineRise;
+    elevations.B3 = elevations.MB3 - mezzanineRise;
+    elevations.M2F = street + mezzanineRise;
+    for (let n = 2; n <= 8; n++) elevations[`${n}F`] = street + 2 * mezzanineRise + (n - 2) * 4.5;
+    elevations.RF = elevations["8F"]! + 4.5;
+  } else if (row.id === "keio-shinjuku") {
+    elevations.MB = street - mezzanineRise;
+    elevations.B1 = elevations.MB - mezzanineRise;
+    // Keep the 8F ceiling below the lowest PLATEAU roof surface at 32.96 m.
+    for (let n = 2; n <= 8; n++) elevations[`${n}F`] = street + (n - 1) * 4.1;
+    elevations.RF = street + 36;
+  } else if (roof !== undefined) {
+    elevations.RF = roof;
+  }
   const layout = depatoLayout({
-    store: roof === undefined ? { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") } : store,
+    store: fullStore ? store : { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
     footprint: row.footprint as PlanPoint[],
     poiId: row.poiId,
     sourceId: row.sourceTile,
-    elevations: roof === undefined ? { "1F": row.entrance.elevation } : { "1F": row.entrance.elevation, RF: roof },
+    elevations,
     circulation: row.circulation,
     entrances: [{ ...row.entrance, point: row.entrance.point as PlanPoint, inward: row.entrance.inward as PlanPoint }],
   });
@@ -162,7 +182,8 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
       if (!camera) return;
       const p = avatar ?? camera.position;
       const distances = layouts.map(l =>
-        l.contains([p.x, p.z]) && p.y >= Math.min(l.height("B1"), l.height(l.floors[0]!.level)) - 1 && p.y <= l.height(l.floors.at(-1)!.level) + 4 ? 0 :
+        l.contains([p.x, p.z]) && p.y >= Math.min(l.height("B1"), l.height(l.floors[0]!.level)) - 1 &&
+          p.y <= l.height(l.floors.at(-1)!.level) + 4 ? 0 :
           stableHypot(p.x - l.input.entrances[0]!.point[0], p.y - l.height("1F"), p.z - l.input.entrances[0]!.point[1]));
       const active = distances.indexOf(Math.min(...distances));
       // Keep the detail loaded for the approach and release it after leaving the storefront.
