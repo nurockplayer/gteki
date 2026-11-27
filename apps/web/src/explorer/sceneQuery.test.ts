@@ -21,4 +21,12 @@ it("picks the mesh and its source data id at a viewport point", () => {
     name: "west passage slab",
     dataId: "fixture-floor-B1",
   });
+
+  mesh.userData.sourceAt = (point: THREE.Vector3) => point.x > 0
+    ? { dataId: "fixture-east-link", floorId: "fixture-floor-B1" }
+    : { dataId: "fixture-west-link", floorId: "fixture-floor-B1" };
+  const east = { name: "west passage slab", dataId: "fixture-east-link", floorId: "fixture-floor-B1" };
+  expect(query.pick({ origin: [1.75, 0, 3], direction: [0, 0, -1] })).toMatchObject(east);
+  camera.position.x = 2.25;
+  expect(query.near(2.6)).toMatchObject([east]);
 });

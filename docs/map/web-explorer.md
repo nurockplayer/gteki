@@ -24,7 +24,7 @@ const hit = await page.evaluate(() => {
 
 - `player()` reports the station, current zone, nearest walk node and floor (nearest leg endpoint during a guide), guide leg, camera pose, and the journey's near-clip, void and near-black values.
 - `pick({ x, y })` takes viewport CSS pixels. `pick({ origin, direction })` takes a world ray. Both return the first mesh hit or `null`. `near(radiusM)` lists meshes or instances whose CPU geometry intersects the camera sphere.
-- Positions and bounds use Three.js world metres. Mesh records include the name, ancestor path, source data ID and known zone, building and floor IDs. Where geometry is merged, the ID can identify the input dataset. Missing metadata is `null`.
+- Positions and bounds use Three.js world metres. Mesh records include the name, ancestor path, source data ID and known zone, building and floor IDs. The Shinjuku tactile batch reports the source link and its floor at the contact point, or the source floor for platform trim. Missing metadata is `null`.
 - The journey records `sceneQuery` at J5/J6 failures, including intermediate J5 samples. `nearClipHits` and `catHits` are actual sampler hits. `centerHit` and `groundHit` show nearby geometry for cases such as voids or an offscreen cat.
 
 ## Main files and functions

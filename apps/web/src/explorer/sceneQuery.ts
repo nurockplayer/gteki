@@ -8,6 +8,7 @@ type PickPoint = { x: number; y: number } | {
 
 export class SceneQuery {
   private readonly ray = new THREE.Raycaster();
+  private readonly ndc = new THREE.Vector2();
 
   constructor(
     private readonly scene: THREE.Scene,
@@ -45,10 +46,10 @@ export class SceneQuery {
       this.ray.far = Infinity;
     } else {
       const { left, top, width, height } = this.viewport();
-      this.ray.setFromCamera({
-        x: 2 * (point.x - left) / width - 1,
-        y: 1 - 2 * (point.y - top) / height,
-      }, this.camera);
+      this.ray.setFromCamera(this.ndc.set(
+        2 * (point.x - left) / width - 1,
+        1 - 2 * (point.y - top) / height,
+      ), this.camera);
       this.ray.near = this.camera.near;
       this.ray.far = this.camera.far;
     }
@@ -56,10 +57,13 @@ export class SceneQuery {
     return hit ? this.describe(hit) : null;
   }
 
-  describe({ object, instanceId }: Pick<THREE.Intersection, "object" | "instanceId">) {
+  describe({ object, instanceId, point }: Pick<THREE.Intersection, "object" | "instanceId" | "point">) {
     const mesh = object as THREE.Mesh;
-    let dataId: string | null = instanceId === undefined ? null : mesh.userData.instanceDataId?.(instanceId) ?? null;
-    let zoneId: string | null = null, buildingId: string | null = null, floorId: string | null = null;
+    const matrix = this.worldMatrix(mesh, instanceId);
+    const source = mesh.userData.sourceAt?.(point.clone().applyMatrix4(matrix.clone().invert())) as
+      { dataId: string; floorId: string } | undefined;
+    let dataId: string | null = source?.dataId ?? (instanceId === undefined ? null : mesh.userData.instanceDataId?.(instanceId) ?? null);
+    let zoneId: string | null = null, buildingId: string | null = null, floorId: string | null = source?.floorId ?? null;
     const path = [];
     for (let parent: THREE.Object3D | null = mesh; parent; parent = parent.parent) {
       const data = parent.userData;
@@ -69,10 +73,10 @@ export class SceneQuery {
       floorId ??= data.floorId ?? data.gteki_floor ?? null;
       if (parent.name) path.push(parent.name);
     }
-    const bounds = this.bounds(mesh, this.worldMatrix(mesh, instanceId));
+    const bounds = this.bounds(mesh, matrix);
     return {
       name: mesh.name || (Array.isArray(mesh.material) ? "" : mesh.material.name) || mesh.type,
-      path, dataId, zoneId, buildingId, floorId, instanceId: instanceId ?? null,
+      path, dataId: dataId ?? zoneId ?? buildingId ?? floorId, zoneId, buildingId, floorId, instanceId: instanceId ?? null,
       bounds: { min: bounds.min.toArray(), max: bounds.max.toArray() },
     };
   }
@@ -113,8 +117,9 @@ export class SceneQuery {
           mesh.getVertexPosition(index ? index.getX(j) : j, triangle.a).applyMatrix4(matrix);
           mesh.getVertexPosition(index ? index.getX(j + 1) : j + 1, triangle.b).applyMatrix4(matrix);
           mesh.getVertexPosition(index ? index.getX(j + 2) : j + 2, triangle.c).applyMatrix4(matrix);
-          if (!sphere.containsPoint(triangle.closestPointToPoint(sphere.center, closest))) continue;
-          hits.push(this.describe({ object: mesh, instanceId }));
+          triangle.closestPointToPoint(sphere.center, closest);
+          if (!sphere.containsPoint(closest)) continue;
+          hits.push(this.describe({ object: mesh, instanceId, point: closest }));
           break;
         }
       }
@@ -134,7 +139,7 @@ export class SceneQuery {
     this.ray.near = 0;
     this.ray.far = 0.3;
     for (let y = 0; y < 10; y++) for (let x = 0; x < 16; x++) {
-      this.ray.setFromCamera({ x: (x + 0.5) / 8 - 1, y: 1 - (y + 0.5) / 5 }, this.camera);
+      this.ray.setFromCamera(this.ndc.set((x + 0.5) / 8 - 1, 1 - (y + 0.5) / 5), this.camera);
       const hit = this.hit(meshes);
       if (hit) hits.push(hit);
     }
