@@ -192,6 +192,7 @@ function deforming(mesh: THREE.Mesh): boolean {
 
 interface PoiLabel {
   poiId: string;
+  connectorNodeIds: readonly string[];
   obj: CSS2DObject;
   /** Floor height under the label (renderer Y). */
   groundY: number;
@@ -205,7 +206,7 @@ interface PoiLabel {
   routable: boolean;
   /** Measured box of the label element (px), cached; null until it has been laid out. */
   size: { w: number; h: number } | null;
-  /** Passes that revealed this label while it was still unmeasured. */
+  /** Identity-board passes that tried to measure this chip. */
   measureTries: number;
   identityHidden: boolean;
   identityOffsetY: number;
@@ -425,7 +426,7 @@ export class Explorer {
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private moving = false;
-  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
+  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[]; routeNodes?: readonly string[]; nextLabelNode?: string } | null = null;
   /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
   private openingState: "waiting" | "active" | "ended" = "waiting";
   private openingOrigin: string | null = null;
@@ -2611,7 +2612,7 @@ export class Explorer {
       obj.position.copy(display ? R(display.x, display.y, display.z ?? at.y) : at);
       obj.position.y += LABEL_LIFT;
       this.poiGroup.add(obj);
-      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0, identityHidden: false, identityOffsetY: 0 });
+      this.poiLabels.push({ poiId: poi.id, connectorNodeIds: poi.connectorNodeIds, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.get(poi.id) ?? "none", state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0, identityHidden: false, identityOffsetY: 0 });
     }
     this.poiGroup.updateMatrixWorld(true);
     this.identityLabelsDirty = true;
@@ -2838,6 +2839,7 @@ export class Explorer {
         });
     }
     const p = new THREE.Vector3();
+    const nextLabelNode = this.mode === "guide" ? this.guide?.nextLabelNode : undefined;
     for (const l of labels) {
       l.decluttered = false;
       if (l.state === "hidden") continue;
@@ -2854,7 +2856,8 @@ export class Explorer {
       el.style.translate = `${dx}px ${l.identityOffsetY + dy}px`;
       // Let CSS2D attach unmeasured chips without painting the estimated boxes.
       el.style.visibility = l.size ? "" : "hidden";
-      items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
+      const klass = !l.selected && nextLabelNode !== undefined && l.connectorNodeIds.includes(nextLabelNode) ? LABEL_CLASS.nextStep : l.klass;
+      items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
     }
     const keep = declutter(items, { blocked });
@@ -2865,10 +2868,10 @@ export class Explorer {
       const rect = { x0: item.x - item.w / 2, x1: item.x + item.w / 2, y0: item.y - item.h / 2, y1: item.y + item.h / 2 };
       return this.identityRegions.some((region) => intersectsRect(rect, region));
     }).length : 0;
-    // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
-    // Bounded: a label that never lays out is retried MEASURE_TRIES times.
+    // Measure newly attached chips on the next pass, even if identity-board checks ran earlier.
     for (const id of revealedUnmeasured(items, keep)) {
-      if (byId.get(id)!.measureTries++ < MEASURE_TRIES) this.declutterDirty = true;
+      const el = byId.get(id)!.obj.element;
+      if (!el.isConnected || el.style.display === "none") this.declutterDirty = true;
     }
   }
 
@@ -2983,7 +2986,7 @@ export class Explorer {
     this.setOpeningShot(null);
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
-    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
+    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans, routeNodes };
     // J5: only the first Shinjuku ride gets the authored axis shot in default mode.
     this.firstEscalatorStep = this.station?.key === "shinjuku" ? routeNodes.findIndex((id, i) =>
       id === "n:e4365ef27b14448eb770343c8a024f80" && routeNodes[i + 1] === "n:ea71c5f746934d0a934c43782d861da5") : -1;
@@ -3526,6 +3529,11 @@ export class Explorer {
       this.arrivalElapsed = 0;
     }
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
+    const nextLabelNode = stepIndex >= 0 ? g.routeNodes?.[stepIndex + 1] : undefined;
+    if (g.nextLabelNode !== nextLabelNode) {
+      g.nextLabelNode = nextLabelNode;
+      this.declutterDirty = true;
+    }
     this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total && !g.holding });
     if (stopped !== null) this.events.onGuideStop?.(stopped);
   }

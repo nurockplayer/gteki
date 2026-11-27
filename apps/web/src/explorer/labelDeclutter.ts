@@ -8,7 +8,7 @@ import { protectIdentityChip, type ScreenRect } from "./identityBoards.ts";
  */
 
 /** Priority classes, best first. */
-export const LABEL_CLASS = { endpoint: 0, exit: 1, gate: 2, other: 3 } as const;
+export const LABEL_CLASS = { endpoint: 0, nextStep: 1, exit: 2, gate: 3, other: 4 } as const;
 export type LabelClass = (typeof LABEL_CLASS)[keyof typeof LABEL_CLASS];
 
 /** Origin and destination first, then exits, ticket gates, everything else. */

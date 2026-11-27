@@ -1,62 +1,101 @@
+// @vitest-environment jsdom
 import * as THREE from "three";
+import { CSS2DObject, CSS2DRenderer } from "three/addons/renderers/CSS2DRenderer.js";
 import { expect, it } from "vitest";
-import { Explorer } from "./explorer.ts";
+import { Explorer, type ExplorerMode } from "./explorer.ts";
+import { LABEL_CLASS } from "./labelDeclutter.ts";
+import { OcclusionSweep, type LabelOcclusion } from "./labelVisibility.ts";
+import type { ScreenRect } from "./identityBoards.ts";
+import captured from "./poi-label-layout.fixtures.json";
 
-type Label = readonly [id: string, position: number[], w: number, h: number, klass: number];
+type Label = [id: string, text: string, position: number[], groundY: number, width: number, height: number,
+  klass: keyof typeof LABEL_CLASS, routable: boolean, occluded: LabelOcclusion, selected: boolean,
+  identityHidden: boolean, identityOffsetY: number];
 
-// Flag-off English patrol poses, with world anchors and CSS2D box sizes measured in Chromium.
-// Shinjuku: Exit 1 → Ōedo Line platform, 15 m before sign 1ecbdf77.
-const shinjuku = [
-  { w: 1440, h: 900, position: [-59.073176, -7.130658, -188.821828], rotation: [-0.014444, -0.571709, -0.010067, 0.820267] },
-  { w: 412, h: 839, position: [-59.085673, -7.133565, -188.925710], rotation: [-0.014325, -0.571711, -0.009984, 0.820269] },
-];
-const gate: Label = ["poi:gate:2", [-30, -5.4, -189.48], 157.883, 28, 2];
+type Pose = {
+  mode: ExplorerMode;
+  w: number;
+  h: number;
+  camera: { position: number[]; rotation: number[]; fov: number; near: number; far: number };
+  focusY: number;
+  identityRegions: ScreenRect[];
+  labels: Label[];
+};
 
-// Ikebukuro: golden camera ike-x35, heading 306°.
-const ikeX35 = { w: 1440, h: 900, position: [156.045367, 31.973950, -17.261167], rotation: [-0.017245, 0.453905, 0.008787, 0.890840] };
-const ikeLabels: Label[] = [
-  ["exit-22", [80, 34.822, -114.5], 83.641, 28, 1],
-  ["exit-26", [101, 34.646, -92], 83.766, 28, 1],
-  ["exit-28", [127, 34.77, -95], 83.742, 28, 1],
-  ["exit-34", [139.5, 34.291, -53.5], 84.164, 28, 1],
-  ["shop-ikb-parco", [80, 34.822, -114.5], 92.641, 28, 3],
-  ["shop-ikb-pparco", [80, 34.822, -114.5], 144.539, 24.5, 3],
-];
+// Complete flag-off label sets and native chip sizes from the completed Chromium visibility sweeps.
+// The guide poses are 15 m before sign 1ecbdf77 on Exit 1 → Ōedo Line platform.
+const poses = captured as unknown as Record<keyof typeof captured, Pose>;
 
-function visibleRects(mode: "guide" | "walk", pose: typeof ikeX35, fov: number, labels: Label[]) {
-  const { w, h, position, rotation } = pose;
-  const camera = new THREE.PerspectiveCamera(fov, w / h, 0.1, 2000);
+function renderPose(pose: Pose, measureTries = 0) {
+  const { w, h, focusY, identityRegions, mode } = pose;
+  const { position, rotation, fov, near, far } = pose.camera;
+  const camera = new THREE.PerspectiveCamera(fov, w / h, near, far);
   camera.position.fromArray(position);
-  camera.quaternion.fromArray(rotation).normalize();
+  camera.quaternion.fromArray(rotation);
   camera.updateMatrixWorld();
-  const poiLabels = labels.map(([poiId, position, w, h, klass]) => {
-    const obj = Object.assign(new THREE.Object3D(), { element: { style: { translate: "" } } });
+  const scene = new THREE.Scene();
+  const css = new CSS2DRenderer();
+  css.setSize(w, h);
+  const poiLabels = pose.labels.map(([poiId, text, position, groundY, width, height, klass, routable, occluded, selected, identityHidden, identityOffsetY]) => {
+    const el = document.createElement("button");
+    el.textContent = text;
+    if (identityOffsetY) el.style.translate = `0 ${identityOffsetY}px`;
+    const obj = new CSS2DObject(el);
     obj.position.fromArray(position);
-    obj.updateMatrixWorld();
-    return { poiId, obj, size: { w, h }, klass, selected: false, routable: true, state: "shown", identityOffsetY: 0, decluttered: false };
+    scene.add(obj);
+    // jsdom has no CSS box layout. Apply the real CSS2D/Explorer transforms to the native measured box.
+    el.getBoundingClientRect = () => {
+      if (!el.isConnected || el.style.display === "none") return new DOMRect();
+      const [, x, y] = /translate\(([^,]+)px, ([^)]+)px\)/.exec(el.style.transform)!;
+      const [dx = 0, dy = 0] = el.style.translate.split(" ").filter(Boolean).map(parseFloat);
+      return new DOMRect(Number(x) - width / 2 + dx, Number(y) - height / 2 + dy, width, height);
+    };
+    return { poiId, obj, groundY, klass: LABEL_CLASS[klass], routable, occluded, selected, identityHidden, identityOffsetY,
+      state: "shown", size: null, decluttered: false, measureTries };
   });
-  const explorer = Object.assign(Object.create(Explorer.prototype) as { updateDeclutter(): void }, {
-    camera, mode, viewSize: { w, h }, poiLabels, identityRegions: [], declutterDirty: true,
+  scene.updateMatrixWorld();
+  const explorer = Object.assign(Object.create(Explorer.prototype) as { updateLabels(): void }, {
+    camera, mode, viewSize: { w, h }, poiLabels, identityRegions, declutterDirty: true, declutterAt: -Infinity,
+    labelAt: new THREE.Vector3(), pos: new THREE.Vector3(0, focusY, 0),
+    labelCamPos: camera.position.clone(), labelCamQuat: camera.quaternion.clone().normalize(),
+    labelMode: mode, labelCamFov: fov, labelCamAspect: w / h,
+    labelSweep: new OcclusionSweep(), labelSweepDoneAt: Infinity, identityLabelsDirty: false,
   });
-  explorer.updateDeclutter();
-  return poiLabels.filter((l) => !l.decluttered).map(({ obj, size }) => {
-    const p = obj.position.clone().project(camera);
-    const [dx = 0, dy = 0] = obj.element.style.translate.split(" ").filter(Boolean).map(parseFloat);
-    const left = (p.x + 1) * w / 2 - size.w / 2 + dx;
-    const top = (1 - p.y) * h / 2 - size.h / 2 + dy;
-    return { left, top, right: left + size.w, bottom: top + size.h };
-  });
+  document.body.append(css.domElement);
+  try {
+    for (let i = 0; i < 3; i++) {
+      explorer.updateLabels();
+      css.render(scene, camera);
+    }
+    return poiLabels.flatMap(({ poiId, obj }) => {
+      const el = obj.element;
+      const rect = el.getBoundingClientRect();
+      return el.style.visibility !== "hidden" && rect.width > 0 && rect.height > 0 &&
+        rect.right > 0 && rect.left < w && rect.bottom > 0 && rect.top < h ? [{ poiId, rect }] : [];
+    });
+  } finally {
+    css.domElement.remove();
+  }
 }
 
-it("keeps labels inside the desktop and phone viewports at sign 1ecbdf77", () => {
-  const overflow = shinjuku.map((pose) => Math.max(...visibleRects("guide", pose, 58.187308, [gate])
-    .map(({ left, top, right, bottom }) => Math.max(0, -left, -top, right - pose.w, bottom - pose.h))));
+it("keeps every visible label inside the desktop and phone viewports at sign 1ecbdf77", () => {
+  const overflow = [poses["1ecbdf77-desktop"], poses["1ecbdf77-phone"]].map((pose) => Math.max(...renderPose(pose)
+    .map(({ rect: { left, top, right, bottom } }) => Math.max(0, -left, -top, right - pose.w, bottom - pose.h))));
   expect(overflow).toEqual([0, 0]);
 });
 
-it("keeps visible labels from intersecting at ike-x35", () => {
-  const rects = visibleRects("walk", ikeX35, 50, ikeLabels);
+it("keeps all visible labels from intersecting at ike-x35", () => {
+  const rects = renderPose(poses["ike-x35"]).map(({ rect }) => rect);
   const pairs = rects.flatMap((a, i) => rects.slice(i + 1).filter((b) =>
     a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top));
-  expect(pairs.length).toBe(0);
+  expect(rects.length ? pairs.length : -1).toBe(0);
+});
+
+it("shows the slice-route chips after earlier poses used up identity measurement attempts", () => {
+  const retained = [
+    renderPose(poses["slice-02-exit1-landing"], 10).some(({ poiId }) => poiId === "poi:elevator:2"),
+    renderPose(poses["slice-03-b1-arrival"], 10).some(({ poiId }) => poiId === "poi:gate:2"),
+    renderPose(poses["slice-04-b1-corridor"], 10).some(({ poiId }) => poiId === "poi:exit:5"),
+  ];
+  expect(retained).toEqual([true, true, true]);
 });
