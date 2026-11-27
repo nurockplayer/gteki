@@ -138,6 +138,13 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   };
   const glass=()=>{const m=standard("#b4c4c0",0.32);m.transparent=true;m.opacity=0.28;m.depthWrite=false;m.metalness=0.08;return m;};
   const load=()=>{
+    const compactFoodCounters=ctx.quality==="low" && plan.input.store.id==="tobu-ikebukuro";
+    const panel=(x:number,y:number,z:number,width:number,height:number,horizontal=false)=>{
+      const g=new THREE.PlaneGeometry(width,height).toNonIndexed();
+      g.rotateY(Math.PI/2);
+      if(horizontal)g.rotateZ(Math.PI/2);
+      return g.translate(x,y,z);
+    };
     // Allowed interim baked gradient: same 4.4 m tile as the downlight grid, no runtime pool lights.
     const pixels=new Uint8Array(64*64*4);
     for(let z=0;z<64;z++)for(let x=0;x<64;x++){
@@ -273,11 +280,18 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       counters.forEach(([x,z],i)=>{
         const side=x<aisleX?-1:1, front=x-side*0.56;
         if(l.food){
-          glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
-          detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
-          lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
-          const rows=ctx.quality==="low"?3:10;
-          for(let j=0;j<rows;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*3.33/(rows-1)});
+          if(compactFoodCounters){
+            glassPieces.push(panel(front,l.y+0.76,z,4,0.38));
+            detail.push(panel(x+side*0.48,l.y+1.2,z,4,2.4));
+            lit.push(panel(x,l.y+0.59,z,3.96,1.06,true),panel(x+side*0.43,l.y+0.76,z,3.96,0.34),panel(front,l.y+0.95,z,3.96,0.06,true));
+            for(let j=0;j<3;j++)contents.push({x:x-0.3+(j%2)*0.32,y:l.y+0.68,z:z-1.7+j*1.665});
+          }else{
+            glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
+            detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
+            lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
+            const rows=ctx.quality==="low"?3:10;
+            for(let j=0;j<rows;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*3.33/(rows-1)});
+          }
         }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,2.8));
         board(x-side*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
       });
