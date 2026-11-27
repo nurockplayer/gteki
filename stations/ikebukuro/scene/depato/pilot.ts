@@ -41,9 +41,23 @@ const rolloutPlans = () => rolloutData.stores.map(row => {
 /** Called before the host creates search/router; the flag-off bundle is never modified. */
 export function previewBundle(bundle: StationBundle): StationBundle {
   const street = { id: "depato-seibu-street", floorId: "street", position: { x: 56, y: -122.5, z: 32.5 }, kind: "junction" as const, inOut: "outside" as const, sourceRefs: [] };
+  const layout = plan();
   const streets = rolloutData.stores.map(row => ({ ...street, id: row.street.id,
     position: { x: row.street.point[0]!, y: -row.street.point[1]!, z: row.elevations["1F"] } }));
-  return rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, plan()));
+  const preview = rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, layout));
+  const original = bundle.pois.find(p => p.id === layout.input.poiId)!;
+  return { ...preview, pois: preview.pois.map(p => p.id !== layout.input.poiId ? p : {
+    ...p, floorId: original.floorId, displayPosition: original.displayPosition, connectorNodeIds: [layout.input.entrances[0]!.outsideNode],
+    evidence: {
+      sourceIds: [...original.evidence.sourceIds, layout.input.sourceId, "toshima-underground-guide-2022"],
+      method: "STATION_TIE: official South Passage and B1 South Entrance names; the connector is the verified public passage junction. The doorway coordinates and interior continuation are illustrative.",
+      checkedDate: "2026-11-24",
+    },
+    notes: [
+      { lang: "ja", text: "確認済みの案内は南通路までです。西武B1の入口の位置と店内経路は現地未確認です。" },
+      { lang: "en", text: "Verified station directions end in the South Passage. The Seibu B1 entrance position and interior path are unsurveyed." },
+    ],
+  }) };
 }
 
 /** One station hook: wrap context loading, open the station shell and attach the reusable kit. */

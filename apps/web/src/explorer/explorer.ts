@@ -2390,6 +2390,28 @@ export class Explorer {
     return bodyBlock(from, to, (origin, dir, far) => this.colliderCast(origin, dir, far), RADIUS);
   }
 
+  /** Admit an authored preview leg only if the walker's ground and collision checks pass along it. */
+  previewWalkLeg(start: PolylinePoint, waypoints: readonly PolylinePoint[]): PolylinePoint[] | null {
+    let previous = R(start.x, start.y, start.z);
+    const points: PolylinePoint[] = [];
+    for (const waypoint of waypoints) {
+      const from = previous.clone();
+      const to = R(waypoint.x, waypoint.y, waypoint.z);
+      const samples = Math.ceil(Math.hypot(to.x - from.x, to.z - from.z) / 0.25);
+      for (let i = 1; i <= samples; i++) {
+        const p = from.clone().lerp(to, i / samples);
+        const ground = this.groundAt(p.x, previous.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1);
+        if (ground === null || !acceptGround(previous.y, ground)) return null;
+        p.y = ground;
+        const clear = resolveWalls(p.x, p.z, RADIUS, p.y, WALKER_BODY.bodyTopM, this.walls);
+        if (clear.x !== p.x || clear.z !== p.z || this.blockedByColliders(previous, p)) return null;
+        points.push({ ...waypoint, x: p.x, y: -p.z, z: p.y });
+        previous = p;
+      }
+    }
+    return points;
+  }
+
   // ---- Routes & POIs -------------------------------------------------------------
 
   showRoute(polyline: PolylinePoint[], escalators: readonly { fromS: number; toS: number }[] = []): void {
@@ -3916,6 +3938,16 @@ export class Explorer {
     } else this.stairAimElevation = undefined;
     const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
     if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
+    const boardingDistance = lockOn && firstRide ? this.guide!.s - span!.fromS : Infinity;
+    if (boardingDistance < 1.65) {
+      // The boom turns into the shaft before the guide turns. Follow the cat with the aim
+      // through that crossover, then ease back to the ride composition; keep the J5 boom.
+      const aimIn = THREE.MathUtils.smoothstep(boardingDistance, -ESCALATOR_SHOT.leadM, -1);
+      const aimOut = THREE.MathUtils.smoothstep(boardingDistance, 1, 1.65);
+      const boardingAim = head.clone().sub(this.camera.position)
+        .setLength(pose.target.distanceTo(this.camera.position)).add(this.camera.position);
+      pose.target.lerp(boardingAim, aimIn * (1 - aimOut));
+    }
     this.camera.lookAt(pose.target);
     if (this.openingRelease) {
       this.openingElapsed = Math.min(1.2, this.openingElapsed + dt);
