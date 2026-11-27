@@ -10,16 +10,20 @@ import floorData from "../data/depato-floors.json";
 import rollout from "../data/depato-rollout.json";
 import { stableHypot } from "./stable-hypot.ts";
 
+// PLATEAU roof parapets in renderer metres. The preview decks clear the parapet caps.
+const isetanRoofs = new Map([["isetan-shinjuku-main", 32.22], ["isetan-shinjuku-mens", 39.32]]);
+
 const layouts = rollout.stores.map(row => {
   const store = floorData.stores.find(s => s.id === row.id)!;
+  const roof = isetanRoofs.get(row.id);
   const [doorX, doorZ] = row.entrance.point as PlanPoint;
   const [inwardX, inwardZ] = row.entrance.inward as PlanPoint;
   const layout = depatoLayout({
-    store: { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
+    store: roof === undefined ? { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") } : store,
     footprint: row.footprint as PlanPoint[],
     poiId: row.poiId,
     sourceId: row.sourceTile,
-    elevations: { "1F": row.entrance.elevation },
+    elevations: roof === undefined ? { "1F": row.entrance.elevation } : { "1F": row.entrance.elevation, RF: roof },
     circulation: row.circulation,
     entrances: [{ ...row.entrance, point: row.entrance.point as PlanPoint, inward: row.entrance.inward as PlanPoint }],
   });
@@ -158,7 +162,7 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
       if (!camera) return;
       const p = avatar ?? camera.position;
       const distances = layouts.map(l =>
-        l.contains([p.x, p.z]) && p.y >= l.height("B1") - 1 && p.y <= l.height("1F") + 4 ? 0 :
+        l.contains([p.x, p.z]) && p.y >= Math.min(l.height("B1"), l.height(l.floors[0]!.level)) - 1 && p.y <= l.height(l.floors.at(-1)!.level) + 4 ? 0 :
           stableHypot(p.x - l.input.entrances[0]!.point[0], p.y - l.height("1F"), p.z - l.input.entrances[0]!.point[1]));
       const active = distances.indexOf(Math.min(...distances));
       // Keep the detail loaded for the approach and release it after leaving the storefront.
