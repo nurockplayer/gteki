@@ -3620,10 +3620,10 @@
         {
           "level": "B1",
           "order": -1,
-          "category": "food-hall",
+          "category": "other",
           "label": {
             "ja": "ギフト・アート・カフェ・バッグ・文具",
-            "en": "Food, sweets and shops"
+            "en": "Gifts, art, cafes, bags and stationery"
           },
           "tenants": [
             {
@@ -3950,10 +3950,10 @@
         {
           "level": "7F",
           "order": 7,
-          "category": "other",
+          "category": "restaurants",
           "label": {
             "ja": "パンケーキレストラン・レストラン・だし茶漬け・うどん・スイーツ",
-            "en": "Shops and services"
+            "en": "Restaurants and cafes"
           },
           "tenants": [],
           "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=7f",
@@ -3962,10 +3962,10 @@
         {
           "level": "8F",
           "order": 8,
-          "category": "other",
+          "category": "restaurants",
           "label": {
             "ja": "ラーメン・クレープ・ハワイアンダイナー・ティーカフェ",
-            "en": "Shops and services"
+            "en": "Restaurants and cafes"
           },
           "tenants": [],
           "source": "https://www.lumine.ne.jp/est/floorguide/?area=area01store01&floor=8f",
