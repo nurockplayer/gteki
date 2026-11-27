@@ -57,6 +57,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   const well = ({x,from,to,width}:typeof plan.stair):PlanPoint[] =>
     [[x-width/2,from],[x+width/2,from],[x+width/2,to],[x-width/2,to]];
   const lift = plan.input.lift;
+  const tobu = plan.input.store.id==="tobu-ikebukuro";
   const interactables:InteractableSpec[] = [];
   const levels=plan.floors.map((floor,index)=>{
     const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets", clear=food?3.1:3.8;
@@ -70,7 +71,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const floorG=shape(plate.footprint,y,incoming?[well(incoming)]:[]);
     const ceilingMesh=new THREE.Mesh(shape(plate.footprint,y+clear,ceilingHoles,true));
     const wallG=walls(plate.footprint,floor.level,y,wallHeight);
-    if(plan.input.store.id==="tobu-ikebukuro" && floor.level==="B1"){
+    if(tobu && floor.level==="B1"){
       // The x18 station stairs cross Tobu's illustrative B1 ceiling.
       const left=-111, right=-90, front=-159.5, back=-148;
       const resources:PortalCutResources={geometries:[],materials:[],portalMeshes:new Map(),originals:new Map(),clippedMeshes:[],instances:[]};
@@ -138,7 +139,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   };
   const glass=()=>{const m=standard("#b4c4c0",0.32);m.transparent=true;m.opacity=0.28;m.depthWrite=false;m.metalness=0.08;return m;};
   const load=()=>{
-    const compactFoodCounters=ctx.quality==="low" && plan.input.store.id==="tobu-ikebukuro";
+    const compactFoodCounters=ctx.quality==="low" && tobu;
     const panel=(x:number,y:number,z:number,width:number,height:number,horizontal=false)=>{
       const g=new THREE.PlaneGeometry(width,height).toNonIndexed();
       g.rotateY(Math.PI/2);
@@ -262,11 +263,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         lit.push(cube(plan.aisleX+side*1.48,l.y+l.clear-0.13,(from!+to!)/2,0.08,0.05,to!-from!));
       }
       }
-      const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
+      const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6,backText=true)=>{
         // The B1 approach sees PARCO's header at a steep angle from the guide.
         const slot=slots[row]!, labelHeight=height*(row===parcoB1Row?0.9:0.6);
         const labelWidth=slot.width/slot.height*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
-        for(const face of [0,1,-1]){
+        for(const face of backText?[0,1,-1]:[0,1]){
           const text=face!==0;
           const g=new THREE.PlaneGeometry(text?labelWidth*scale:width,text?labelHeight*scale:height).toNonIndexed(),uv=g.getAttribute("uv");
           for(let i=0;i<uv.count;i++){
@@ -324,14 +325,24 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const directoryBanks=l.incoming && l.incoming!==l.bank?[l.incoming,l.bank]:[l.bank];
       for(const bank of directoryBanks)for(const [z,yaw] of [[bank.from-2,0],[bank.to+2,Math.PI]]){
         const x=bank.x-3,rowHeight=Math.min(1,2/plan.floors.length);
-        plan.floors.forEach((_,i)=>board(x,l.y+2.3-i*rowHeight,z!,directoryStart+i,yaw!,3.8,0.95*rowHeight));
+        plan.floors.forEach((_,i)=>board(x,l.y+2.3-i*rowHeight,z!,directoryStart+i,yaw!,3.8,0.95*rowHeight,!tobu));
         const bottom=2.3-(plan.floors.length-1)*rowHeight-0.475*rowHeight;
         for(const side of [-1,1])frames.push(cube(x+side*1.8,l.y+bottom/2,z!,0.055,bottom,0.08));
-        frames.push(cube(x,l.y+2.3-(l.index+0.25)*rowHeight,z!+0.01,3.6,0.025,0.025));
+        const underline=l.y+2.3-(l.index+0.25)*rowHeight;
+        if(tobu){
+          const top=2.3+0.475*rowHeight, front=Math.cos(yaw!);
+          // Close the back and keep the row marker on the face. The lower rail meets both posts.
+          detail.push(cube(x,l.y+(top+bottom)/2,z!-front*0.031,3.8,top-bottom,0.05));
+          frames.push(cube(x,l.y+bottom+0.0125,z!,3.66,0.025,0.08));
+          frames.push(cube(x,underline,z!+front*0.018,3.6,0.025,0.02));
+        }else frames.push(cube(x,underline,z!+0.01,3.6,0.025,0.025));
       }
-      // Keep Seibu's B2 arrival sign below the HUD in the follow-camera view.
+      // Place the Tobu sign in the diagonal walk off the up escalator, below the HUD.
       const seibuB2=plan.input.store.id==="seibu-ikebukuro" && l.floor.level==="B2";
-      for(const bank of directoryBanks)board(bank.x,l.y+l.clear-(seibuB2?0.83:0.48),bank.to+(seibuB2?6:5),label,0,3.4,0.45);
+      for(const bank of directoryBanks){
+        if(tobu && l.index>=3)board(bank.x+3.3,l.y+2.45,bank.to+7.2,label,0,3.4,0.45);
+        else board(bank.x,l.y+l.clear-(seibuB2?0.83:0.48),bank.to+(seibuB2?6:5),label,0,3.4,0.45);
+      }
       if(l.incoming){
         const {x,from,to}=l.incoming;
         for(const side of [-1,1])glassPieces.push(cube(x+side*2.13,l.y+0.55,(from+to)/2,0.025,1.1,to-from));
