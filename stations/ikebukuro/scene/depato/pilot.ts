@@ -1,5 +1,5 @@
 import type { BuildScene, SceneContext, StationScene } from "@gteki/scene-api";
-import type { StationBundle } from "@gteki/schema";
+import type { Edge, StationBundle } from "@gteki/schema";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
 import footprintData from "../../data/depato-footprint.json";
 import floorData from "../../data/depato-floors.json";
@@ -12,6 +12,8 @@ import { buildDepatoInterior } from "./interior.ts";
 // Source vertices are unchanged; this is a footprint, not a copied store floor plan.
 const footprint = footprintData.footprint as PlanPoint[];
 const store = floorData.stores.find(s => s.id === "seibu-ikebukuro")!;
+const esola = rolloutData.stores.find(row => row.id === "esola-ikebukuro")!;
+const esolaApproach = esola.streetApproach!;
 const plan = () => depatoLayout({
   store: { ...store, floors: store.floors.filter((f,i,all) => ["B1", "1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) },
   footprint, elevations: { "1F": 32.2 },
@@ -43,7 +45,24 @@ export function previewBundle(bundle: StationBundle): StationBundle {
   const street = { id: "depato-seibu-street", floorId: "street", position: { x: 56, y: -122.5, z: 32.5 }, kind: "junction" as const, inOut: "outside" as const, sourceRefs: [] };
   const streets = rolloutData.stores.map(row => ({ ...street, id: row.street.id,
     position: { x: row.street.point[0]!, y: -row.street.point[1]!, z: row.elevations["1F"] } }));
-  return rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, plan()));
+  const exit = bundle.nodes.find(n => n.id === esolaApproach.exitNode)!;
+  const approach = esolaApproach.waypoints.map(([x,y,z], i) => ({
+    ...street, id: `depato-esola-approach-${i}`, position: { x: x!, y: -z!, z: y! },
+  }));
+  const route = [exit, ...approach, streets.find(n => n.id === esola.street.id)!];
+  const evidence = { sourceIds: [esolaApproach.sourceId], checkedDate: "2026-11-25",
+    method: "Preview street walk aligned to PLATEAU roads and the operator's above-ground approach map" };
+  const edges: Edge[] = route.slice(1).map((to, i) => {
+    const from = route[i]!;
+    const a = from.position, b = to.position;
+    return { id: `${from.id}__${to.id}`, from: from.id, to: to.id, direction: "both", mode: "walk",
+      lengthM: Math.hypot(b.x-a.x,b.y-a.y,b.z!-a.z!), geometry: [a,b], paid: false, crossesFareBoundary: false,
+      wheelchair: null, steps: false, hours: null, closed: false, verification: "verified",
+      geometryEvidence: evidence, accessEvidence: evidence };
+  });
+  return rolloutPlans().reduce(depatoBundle, depatoBundle({
+    ...bundle, nodes: [...bundle.nodes, street, ...streets, ...approach], edges: [...bundle.edges, ...edges],
+  }, plan()));
 }
 
 /** One station hook: wrap context loading, open the station shell and attach the reusable kit. */
@@ -67,7 +86,9 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     return volume(Math.min(e.point[0],p[0])- (front?2.1:0.2),Math.max(e.point[0],p[0])+(front?2.1:3),
       Math.min(e.point[1],p[2])-(front?0.2:2.1),Math.max(e.point[1],p[2])+(front?3:2.1),y+0.01,y+4.1);
   });
-  const rolloutRooms = layouts.slice(1).flatMap(p => {
+  // Esola sits outside the station shell; its entrance cuts are in the context assets below.
+  const stationRollout = layouts.slice(1).filter(p => p.input.store.id !== esola.id);
+  const rolloutRooms = stationRollout.flatMap(p => {
     const points=p.input.footprint.map(([x,z])=>new THREE.Vector2(x,z));
     // A street-only tie opens the street shell and leaves the station concourses intact.
     const firstCutFloor = p.input.entrances.some(e => e.level !== "1F") ? p.floors[0]!.level : "1F";
@@ -84,7 +105,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       return cut;
     });
   });
-  const rolloutDoors=layouts.slice(1).flatMap(p=>p.input.entrances.map(e=>{
+  const rolloutDoors=stationRollout.flatMap(p=>p.input.entrances.map(e=>{
     const outside=ctx.bundle.nodes.find(n=>n.id===e.outsideNode)!,a=ctx.enuToRenderer({...outside.position,z:outside.position.z!}),y=p.height(e.level);
     const cut=volume(Math.min(a[0],e.point[0])-2.1,Math.max(a[0],e.point[0])+2.1,
       Math.min(a[2],e.point[1])-2.1,Math.max(a[2],e.point[1])+2.1,y-0.1,y+4.1);
@@ -97,10 +118,31 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   // The original station partitions cross the escalator landing and its turn into the west aisle.
   const tobuLanding = volume(x - 4.5, x + width / 2, to - 0.5, to + 2.5, b1 - 0.1, b1 + 3.1);
   tobuLanding.rejectsMesh = mesh => !["wall", "windows", "windows_solid", "doors", "doors_solid"].includes(mesh.userData.gteki_role);
+  const [doorX, doorZ] = esola.entrances[0]!.point as PlanPoint;
+  const doorY = esola.elevations["1F"];
+  const esolaDoor = volume(doorX - 0.4, doorX + 0.4, doorZ - 2, doorZ + 2, doorY - 0.1, doorY + 2.8);
+  // Both tiers retain a context panel about 6.5 m west of the kit door, plus a duplicate face at the door.
+  // Open the street panel before the context builds its camera blockers from that same geometry.
+  const entryMinZ = -7.55, entryMaxZ = -3.15;
+  const esolaVestibule = volume(-180, -178.9, entryMinZ, entryMaxZ, doorY - 0.1, doorY + 3.1);
+  esolaVestibule.accepts = normal => Math.abs(normal.y) < 0.5;
+  const facadeNorth = { x: -179.74, z: -7.8737 }, facadeSouth = { x: -179.2285, z: -2.7569 };
+  const facadePoint = (z: number) => ({
+    x: facadeNorth.x + (z - facadeNorth.z) * (facadeSouth.x - facadeNorth.x) / (facadeSouth.z - facadeNorth.z),
+    y: -z,
+  });
+  const esolaJambs = [[facadeNorth.z, entryMinZ], [entryMaxZ, facadeSouth.z]].map(([a, b]) => ({
+    source: "esola-street-facade", a: facadePoint(a!), b: facadePoint(b!), zMin: doorY - 0.1, zMax: doorY + 3.1,
+  }));
   const scene = await base({ ...ctx, loadGlb: async uri => {
     const loaded = await ctx.loadGlb(uri);
+    if (uri.includes("ikebukuro_landmarks_next.glb")) {
+      loaded.scene.updateMatrixWorld(true);
+      cutRegions(loaded.scene.getObjectByName("esola")!, [esolaDoor], resources);
+    }
     if (uri.includes("ikebukuro_context_")) {
       loaded.scene.updateMatrixWorld(true);
+      cutRegions(loaded.scene.getObjectByName("ctx_bldg_t00_00")!, [esolaVestibule, esolaDoor], resources);
       cutRegions(loaded.scene, [room, ...streetDoors, ...rolloutRooms, ...rolloutDoors], resources);
       // Fill the missing visual pavement between Tobu's 32.41 m apron and the PLATEAU road.
       const pavement = new THREE.BufferGeometry();
@@ -120,14 +162,40 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   await scene.settled?.();
   scene.root.updateMatrixWorld(true);
   cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance, ...rolloutRooms, ...rolloutDoors, tobuLanding], resources);
+  // PLATEAU roads stay visual. A narrow continuous support strip follows the authored street route.
+  const route = [esolaApproach.exitNode, ...esolaApproach.waypoints.map((_, i) => `depato-esola-approach-${i}`), esola.street.id].map(id => {
+    const { position } = ctx.bundle.nodes.find(n => n.id === id)!;
+    return new THREE.Vector3(...ctx.enuToRenderer({ ...position, z: position.z! }));
+  });
+  const start = route[0]!, end = route.at(-1)!;
+  start.addScaledVector(start.clone().sub(route[1]!).setY(0).normalize(), 0.35);
+  const [inwardX, inwardZ] = esola.entrances[0]!.inward as PlanPoint;
+  end.addScaledVector(new THREE.Vector3(inwardX, 0, inwardZ), 0.35);
+  const strip = route.map((point, i) => {
+    const tangent = route[Math.min(i + 1, route.length - 1)]!.clone().sub(route[Math.max(i - 1, 0)]!).setY(0).normalize();
+    const side = new THREE.Vector3(tangent.z, 0, -tangent.x).multiplyScalar(1.8);
+    return [point.clone().add(side), point.clone().sub(side)] as const;
+  });
+  const pavementGeometry = new THREE.BufferGeometry();
+  pavementGeometry.setAttribute("position", new THREE.Float32BufferAttribute(strip.slice(1).flatMap(([c,d], i) => {
+    const [a,b] = strip[i]!;
+    return [a,b,c,b,d,c].flatMap(p => p.toArray());
+  }), 3));
+  pavementGeometry.computeVertexNormals();
+  const pavementMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+  const esolaPavement = new THREE.Mesh(pavementGeometry, pavementMaterial);
+  esolaPavement.name = "depato-esola-street-support";
+  esolaPavement.visible = false;
+  esolaPavement.userData.gteki_role = "floor";
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p=>[p.input.store.name.ja,p.input.store.name.en,...p.floors.flatMap(f=>[f.label.ja,f.label.en,...f.tenants.flatMap(t=>[t.ja,t.en])])]).join(""));
   const interiors = layouts.map(p=>buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
   let avatar: {x:number;y:number;z:number}|null=null;
   const focus = scene.setCameraFocus;
   scene.root.add(...interiors.flatMap(i=>[i.root,i.connectorRoot]));
   const update = scene.update, dispose = scene.dispose;
-  return { ...scene, walkable: [...scene.walkable, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
+  return { ...scene, walkable: [...scene.walkable, esolaPavement, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(i=>i.cameraBlockers)],
+    walls: [...(scene.walls ?? []), ...esolaJambs],
     setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); avatar=args[3] ?? null; interiors.forEach(i=>i.setAvatar(avatar)); },
     update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if(camera){
       const cp=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cp.x,y:cp.y-2,z:cp.z};
@@ -138,6 +206,6 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
       interiors.forEach((i,n)=>{if(n!==active)i.update(camera,dt,elapsed,false);});
       interiors[active]!.update(camera,dt,elapsed);
     } },
-    dispose() { disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); dispose(); },
+    dispose() { pavementGeometry.dispose(); pavementMaterial.dispose(); disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); dispose(); },
   };
 }

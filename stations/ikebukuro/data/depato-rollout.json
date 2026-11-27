@@ -399,13 +399,51 @@
           -110.67831646749643
         ]
       }
+    },
+    {
+      "id": "esola-ikebukuro",
+      "poiId": "shop-ikb-esola",
+      "sourceId": "esola-ikebukuro-floorguide-2026-10",
+      "building": "bldg_24c06550-4a51-4a0e-9fa0-1401ebd17b32",
+      "footprint": [
+        [-173.349, -8.537],
+        [-167.061, -9.224],
+        [-167.602, -14.589],
+        [-134.501, -17.926],
+        [-132.825, 1.163],
+        [-134.275, 2.693],
+        [-171.785, 7.117]
+      ],
+      "elevations": { "1F": 32.64, "B1": 28.14 },
+      "circulation": { "aisleX": -151, "from": -12, "to": 0 },
+      "entrances": [{
+        "level": "1F",
+        "point": [-173.096, -6],
+        "outsideNode": "depato-esola-street",
+        "inward": [0.995046, -0.099416],
+        "source": "https://www.metropro-sc.jp/esola-ikebukuro/shop/page.jsp?id=2",
+        "checkedAt": "2026-11-25 JST",
+        "placement": "The operator's 1F access diagram marks the west facade by exit 3. The preview door is placed on that side of the PLATEAU ground ring with an authored threshold height."
+      }],
+      "street": { "id": "depato-esola-street", "point": [-180.061, -5.304] },
+      "streetApproach": {
+        "exitNode": "x15",
+        "sourceId": "plateau-13116-tran-53394576",
+        "waypoints": [
+          [-120, 32.98, -131],
+          [-140, 32.92, -121],
+          [-167, 32.82, -121],
+          [-183, 32.75, -118],
+          [-185, 32.70, -106],
+          [-185, 32.66, -81],
+          [-183, 32.68, -53],
+          [-184, 32.68, -29],
+          [-184, 32.66, -5.304]
+        ]
+      }
     }
   ],
   "skipped": [
-    {
-      "id": "esola-ikebukuro",
-      "reason": "No usable entrance in the current walkable station/context: no entrance tie in the POI, nearest public B1 approach sw_h is separated from the footprint by an unmodelled underground gap."
-    },
     {
       "id": "lumine-ikebukuro",
       "reason": "The existing g_jr_s tie is a station tie, explicitly not a store entrance. Phase-1 south wing has no usable doorway within current walkable coverage; connecting it would require a new unmodelled underground corridor."
