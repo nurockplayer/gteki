@@ -73,7 +73,9 @@ mark entries read or create GitHub issues. Pass the last triage time with zone:
 node tools/feedback/list.mjs 2026-11-21T00:00:00Z .qa/feedback
 ```
 
-KV automatically deletes each record 90 days after submission. Local downloads
-are private developer copies: delete them by the same original submission +
-90-day deadline, or earlier after triage; the generated index repeats this
-retention reminder. This command does not automatically delete local files.
+KV automatically deletes each record 90 days after submission. At the start of
+each triage run, the command removes its own exports from the chosen directory
+when their last modification was more than 90 days ago and their contents
+match the recorded checksum in `.gteki-feedback-exports/`. Local downloads are
+private developer copies. Delete them by the original submission deadline when
+triage cleanup would run later or when a download has no matching checksum.
