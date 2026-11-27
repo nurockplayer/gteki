@@ -105,7 +105,7 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
   };
   const pavementMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, visible: false });
   const facadeCuts = new Map<Object3D, CutRegion[]>();
-  const pavement = rollout.stores.map(row => {
+  const pavement = rollout.stores.map((row, index) => {
     const exit = ctx.bundle.nodes.find(n => n.id === row.streetApproach.exitNode)!;
     const start = new THREE.Vector3(exit.position.x, exit.renderZ ?? exit.position.z!, -exit.position.y);
     const points = [start, ...row.streetApproach.waypoints.map(([x, y, z]) => new THREE.Vector3(x, y, z))];
@@ -148,6 +148,25 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     };
     const regions = facadeCuts.get(building) ?? [];
     regions.push(region);
+    const layout = layouts[index]!;
+    const roofIndex = layout.floors.findIndex(floor => floor.category === "rooftop");
+    if (roofIndex > 0) {
+      const roof = layout.floors[roofIndex]!;
+      const lower = layout.floors[roofIndex - 1]!;
+      const { x: aisle, from, to, width } = layout.stair;
+      // The desktop and phone follow cameras trail either flight beyond the well ends.
+      const min = new THREE.Vector3(aisle - width / 2, layout.height(lower.level) - 1, from - 3.8);
+      const max = new THREE.Vector3(aisle + width / 2, layout.height(roof.level) + 3, to + 3.8);
+      regions.push({
+        key: roof, clip: null, accepts: normal => Math.abs(normal.y) > 0.5,
+        bounds: new THREE.Box3(min, max),
+        planes: [
+          p => p.x - min.x, p => max.x - p.x,
+          p => p.y - min.y, p => max.y - p.y,
+          p => p.z - min.z, p => max.z - p.z,
+        ],
+      });
+    }
     if (row.id === "shinjuku-marui-main") {
       regions.push({
         key: {}, clip: null, accepts: () => true,
