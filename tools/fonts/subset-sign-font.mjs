@@ -34,7 +34,10 @@ export async function generate(check = false) {
   await fs.writeFile(cache, source);
   const glyphs = requiredGlyphs();
   const unsupported = [...glyphs].filter((c) => !original.hasGlyphForCodePoint(c.codePointAt(0)));
-  if (unsupported.length) throw new Error(`Pinned font lacks requested characters: ${unsupported.join("")}; choose supported sign text or explicitly review a new font pin`);
+  // Tobu prints Grossѐ and NEWoMan prints 咖喱屋ボングー. Keep those
+  // source characters and let the browser supply the two missing glyphs.
+  const unexpected = unsupported.filter((c) => !"ѐ喱".includes(c));
+  if (unexpected.length) throw new Error(`Pinned font lacks requested characters: ${unexpected.join("")}; choose supported sign text or explicitly review a new font pin`);
   const renamed = renameFont(source, license.toString("utf8"));
   const options = { targetFormat: "woff2", preserveNameIds: [0, 7, 8, 9, 10, 11, 13, 14] };
   // Sequential: a single HarfBuzz/WOFF2 worker under the host's shared lock.
@@ -58,7 +61,7 @@ export async function generate(check = false) {
     mobileStatic600: inspect(mobile600),
     mobileStatic800: inspect(mobile800),
     mobilePairBytes: mobile600.length + mobile800.length,
-    unsupportedCodePoints: [],
+    unsupportedCodePoints: unsupported.map(c => `U+${c.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")}`),
     loadedByBothTiers: "GTEkiSignJP-subset.woff2",
   };
   const outputs = new Map([

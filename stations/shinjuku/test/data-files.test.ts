@@ -17,13 +17,14 @@ import { layouts as shinjukuDepatoLayouts } from "../scene/depato.ts";
 
 it("reads version-1 depato tenant metadata and prints the preview floor inventory", () => {
   const [store] = shinjukuFloors.stores;
-  const [original] = store!.floors;
-  const tenant = { ...original!.tenants[0]!, category: "cosmetics", zone_text: "Main entrance" };
-  const section = { ...original!, section_id: "annex", tenant_coverage: "partial", tenants: [tenant] };
-  const [enriched] = readDepatoFloors({ ...shinjukuFloors, stores: [{ ...store!, floors: [original!, section] }] });
+  const [floor] = store!.floors;
+  const { tenant_coverage: _coverage, ...original } = floor!;
+  const tenant = { ...original.tenants[0]!, category: "cosmetics", zone_text: "Main entrance" };
+  const section = { ...original, section_id: "annex", tenant_coverage: "partial", tenants: [tenant] };
+  const [enriched] = readDepatoFloors({ ...shinjukuFloors, stores: [{ ...store!, floors: [original, section] }] });
   expect(enriched!.floors).toMatchObject([
-    { level: original!.level, tenant_coverage: "unknown" },
-    { level: original!.level, section_id: "annex", tenant_coverage: "partial", tenants: [tenant] },
+    { level: original.level, tenant_coverage: "unknown" },
+    { level: original.level, section_id: "annex", tenant_coverage: "partial", tenants: [tenant] },
   ]);
 
   const layouts = [...shinjukuDepatoLayouts, ...ikebukuroDepatoLayouts(), ...sunshineLayouts()];
