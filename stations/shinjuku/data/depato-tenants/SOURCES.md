@@ -8,7 +8,6 @@ The Japanese-guide display name is stored verbatim in `name_ja`, with HTML spaci
 When the full display name is in Latin script, it also appears in `name_latin`. The cards have no separate Latin-name field.
 Blank category or position fields mean the card does not print that fact. Shared map numbers are preserved.
 
-
 ## lumine-1-shinjuku
 
 **partial** · 123 tenants from the official text directory.
@@ -112,4 +111,27 @@ The [official Brand Search](https://www.takashimaya.co.jp/brandsearch/?sid=2), s
 | [5階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_05.html) | 2026-11-27 JST | 69 | 17 | 4 | 82 | 86 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_05/detail_01.html), [café](https://www.takashimaya.co.jp/shinjuku/cafe/), [size guide](https://www.takashimaya.co.jp/shinjuku/shop/brand/size.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/691777251662.png) |
 | [6階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_06.html) | 2026-11-27 JST | 61 | 0 | 6 | 65 | 71 | [café](https://www.takashimaya.co.jp/shinjuku/cafe/), [size guide](https://www.takashimaya.co.jp/shinjuku/shop/brand/size.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/681756428535.png) |
 | [7階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_07.html) | 2026-11-27 JST | 54 | 17 | 6 | 58 | 64 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_07/detail_01.html), [café](https://www.takashimaya.co.jp/shinjuku/cafe/), [size guide](https://www.takashimaya.co.jp/shinjuku/shop/brand/size.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/691778235486.png) |
-... (+24 lines) [see remaining: rtk proxy git show :3:stations/shinjuku/data/depato-tenants/SOURCES.md | tail -n +36]
+| [8階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_08.html) | 2026-11-27 JST | 50 | 0 | 3 | 50 | 53 | [café](https://www.takashimaya.co.jp/shinjuku/cafe/) | [GAP](https://www.takashimaya.co.jp/front/img/floor/6991771893443.png) |
+| [9階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_09.html) | 2026-11-27 JST | 69 | 17 | 7 | 85 | 92 | [detail 02](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_09/detail_02.html), [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_09/detail_01.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/61795148149.png) |
+| [10階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_10.html) | 2026-11-27 JST | 61 | 64 | 12 | 109 | 121 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_10/detail_01.html), [detail 02](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_10/detail_02.html), [detail 03](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_10/detail_03.html), [detail 04](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_10/detail_04.html), [services](https://www.takashimaya.co.jp/shinjuku/service/) | [GAP](https://www.takashimaya.co.jp/front/img/floor/691778132402.png) |
+| [11階](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_11.html) | 2026-11-27 JST | 12 | 12 | 7 | 24 | 31 | [detail 01](https://www.takashimaya.co.jp/shinjuku/floor/building_01/floor_11/detail_01.html) | [GAP](https://www.takashimaya.co.jp/front/img/floor/6921764724896.png) |
+| **Department store** | | **839** | **363** | **83** | **1089** | **1172** | | |
+
+The dedicated café guide matched one named café each on 3階–8階. Earlier curl coverage could verify individual entries via official tenant and operator sites. The direct curl receipts remain in `/private/tmp/gteki-1629/tenant-collection/takashimaya-curl-evidence.md`. The browser evidence in the same directory records floor image URLs, markup response types, detail lists and per-query counts, with no source HTML or image payloads.
+
+## Takashimaya Times Square specialty floors — `takashimaya-shinjuku`
+
+- **Complete**, 45 rows across the specialty directory and its Restaurants Park listing. The specialty cards show 2F～7F 1/1, 8F 1/1, 11F 1/1, 12F 8/8 non-dining, 南館 1F～5F 1/1, 南館 6F 1/1 and 南館 7F 1/1. The Restaurants Park directory expands the mall's single 12F～14F restaurant card to 12F 6/6, 13F 15/15 and 14F 10/10. The combined count on 12F is 14/14. The 14F count includes the shop displayed as closed for renovation. [Specialty directory](https://www.takashimaya.co.jp/shinjuku/timessquare/) · [Restaurants Park directory](https://www.restaurants-park.jp/restaurant/) · [12F](https://www.restaurants-park.jp/floor_map?floor=12) · [13F](https://www.restaurants-park.jp/floor_map?floor=13) · [14F](https://www.restaurants-park.jp/floor_map?floor=14).
+- The 14 non-dining cards were visible in the mall's live directory on 2026-11-27 JST. Curl obtained the branch and floor from the official merchant pages cited in the TSV. The first-party merchant sources are outside the brief's terms review (UNKNOWN). Rows use the mall's combined floor labels and its tenant names and categories. [Hands floor guide](https://store.hands.net/shinjuku/floor/) · [UNIQLO store directory](https://utme.uniqlo.com/tips/11275/).
+
+### Restaurants and rooftop venues
+
+Ego-lite followed the floor-guide links to the Restaurants Park live floor pages on 2026-11-27 JST. The floor card map numbers matched the 31 restaurant placements already in the TSV. The rooftop venue is a separate 13F row. Spot checks matched the 34 named パティシェリア entries on 地下1階, the 21 named ウォッチサロン entries on 4階, and the 15 map-numbered restaurants on 13F.
+
+| Floor | Checked | Restaurant cards | Other specialty shops | Rooftop venues | Total TSV | Coverage |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| [12F](https://www.restaurants-park.jp/floor_map?floor=12) | 2026-11-27 JST | 6 | 8 | 0 | 14 | complete |
+| [13F](https://www.restaurants-park.jp/floor_map?floor=13) | 2026-11-27 JST | 15 | 0 | 1 | 16 | complete |
+| [14F](https://www.restaurants-park.jp/floor_map?floor=14) | 2026-11-27 JST | 10 | 0 | 0 | 10 | complete |
+
+The park's English guide names White Garden on 13F, and Takashimaya identifies that space as its 13F rooftop garden. The separate rooftop farm sits on the normally closed upper roof, so the public-floor count there is zero. [Restaurants Park venue guide](https://global.restaurants-park.jp/en/guide/) · [Japanese terrace guide](https://www.restaurants-park.jp/pick/kids_guide/terrace.html) · [Takashimaya rooftop garden](https://www.takashimaya.co.jp/corp/csr/contribution/community.html) · [Takashimaya rooftop farm announcement](https://prtimes.jp/main/html/rd/p/000001158.000069859.html).
