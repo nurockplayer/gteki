@@ -47,10 +47,12 @@ export function depatoLayout(input: DepatoInput) {
       return inside;
     };
     const counters: PlanPoint[] = [];
-    for (let z = bounds.front + 12; z < bounds.back - 5; z += 7) {
+    for (let rowZ = bounds.front + 12; rowZ < bounds.back - 5; rowZ += 7) {
       for (const side of [-1, 1]) for (let offset = 2.3; offset < (bounds.right - bounds.left) / 2; offset += 4) {
         const x = main.x + side * offset;
-        if (banks.some(b => z > b.from - 5 && z < b.to + 5 && Math.abs(x - b.x) < 6)) continue;
+        if (banks.some(b => rowZ > b.from - 5 && rowZ < b.to + 5 && Math.abs(x - b.x) < 6)) continue;
+        // The tower's first east-side row faces the landing across the cross-aisle.
+        const z = main === upper && banks.length === 1 && side === 1 && rowZ === bounds.front + 12 ? bounds.back - 3 : rowZ;
         if (input.entrances.some(e => Math.abs(e.point[1] - z) < 4)) continue;
         if (upper && Math.abs(z - crossZ) < 3) continue;
         if (input.lift && Math.abs(z - input.lift.z) < 5 && Math.abs(x - input.lift.x) < 5) continue;
