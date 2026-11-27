@@ -190,7 +190,7 @@
       "buildingId": "bldg_4437dbf7-df89-49aa-bdd7-cc7e231a0cf8:0",
       "sourceTile": "53394536_bldg_6697_op.gml",
       "footprint": [[493.1, -573.4], [453.0, -587.0], [451.8, -590.5], [466.0, -618.3], [511.5, -603.7], [497.3, -575.1]],
-      "circulation": {"aisleX": 480, "from": -604, "to": -592},
+      "circulation": {"aisleX": 474, "from": -604, "to": -592},
       "entrance": {
         "level": "1F",
         "elevation": 0.02,
