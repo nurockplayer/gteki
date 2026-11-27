@@ -231,9 +231,9 @@ workstreams:
       - label: Full station acceptance contract
         url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
     criteria:
-      - id: G0
+      - id: IKEBUKURO-G0
         requirement: |-
-          Evidence/rights/safety gate (G0)
+          **Ikebukuro:** Evidence/rights/safety gate (G0)
 
           Before interpreting a model as the real station, check actual downloaded resource contents, coverage and licensing. Research metadata/link discovery ≠ geometry read ≠ verified walkable topology ≠ current-world route.
 
@@ -246,29 +246,72 @@ workstreams:
         references:
           - label: Full acceptance contract
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
-      - id: G1
-        requirement: "**G1 Geometry:** checked model-scale, collisions, local coordinates, floor connectors, no clipping/teleport shortcuts, documented fidelity of any approximations."
+      - id: IKEBUKURO-G1
+        requirement: "**Ikebukuro G1 Geometry:** checked model-scale, collisions, local coordinates, floor connectors, no clipping/teleport shortcuts, documented fidelity of any approximations."
         judge: Station lead
         status: NOT JUDGED
         references:
           - label: Full acceptance contract
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
-      - id: G2
-        requirement: "**G2 Routing:** path display matches a verified directed graph, not a visual navmesh guess; route narration and destination correspond to real public access conditions within checked data freshness."
+      - id: IKEBUKURO-G2
+        requirement: "**Ikebukuro G2 Routing:** path display matches a verified directed graph, not a visual navmesh guess; route narration and destination correspond to real public access conditions within checked data freshness."
         judge: Station lead
         status: NOT JUDGED
         references:
           - label: Full acceptance contract
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
-      - id: G3
-        requirement: "**G3 Quality:** actual recorded walk (not a static hero screenshot), recognizable station-specific visual identity, polished lighting/materials/wayfinding, sound/input comfort when appropriate, desktop/phone capture and independent critique. Iteration continues until L2 is credibly met."
+      - id: IKEBUKURO-G3
+        requirement: "**Ikebukuro G3 Quality:** actual recorded walk (not a static hero screenshot), recognizable station-specific visual identity, polished lighting/materials/wayfinding, sound/input comfort when appropriate, desktop/phone capture and independent critique. Iteration continues until L2 is credibly met."
         judge: Independent visual/interaction reviewer
         status: NOT JUDGED
         references:
           - label: Full acceptance contract
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
-      - id: G4
-        requirement: "**G4 Delivery:** reproducible build/tests, PR and reviewed SHA, screenshots/video, sources/rights bundle, per-station coverage report, known limitations and Handoff. Owner approval before merging/releasing and before making real-world navigation guarantees; acceptance of a demo ≠ approval of live travel directions."
+      - id: IKEBUKURO-G4
+        requirement: "**Ikebukuro G4 Delivery:** reproducible build/tests, PR and reviewed SHA, screenshots/video, sources/rights bundle, per-station coverage report, known limitations and Handoff. Owner approval before merging/releasing and before making real-world navigation guarantees; acceptance of a demo ≠ approval of live travel directions."
+        judge: Owner
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: SHINJUKU-G0
+        requirement: |-
+          **Shinjuku:** Evidence/rights/safety gate (G0)
+
+          Before interpreting a model as the real station, check actual downloaded resource contents, coverage and licensing. Research metadata/link discovery ≠ geometry read ≠ verified walkable topology ≠ current-world route.
+
+          - No inferred connective edges, shortcut through paid/restricted areas, invented stairs/elevators/levels, or guessed 24-hour access.
+          - Facts about ADA/barrier-free accessibility require actual source evidence and continuity; absent data means **UNKNOWN**, not true/false.
+          - Government open-data usage requires exact dataset/asset rights, derivative redistribution and attribution checks. Operator graphics and other restricted third-party imagery remain reference-only unless explicitly cleared.
+          - If G0 fails for a desired route, produce a **clearly marked synthetic/non-navigational visual prototype**, plus a precise acquisition/survey blocker. Do not greenlight real-user route claims.
+        judge: Station lead
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: SHINJUKU-G1
+        requirement: "**Shinjuku G1 Geometry:** checked model-scale, collisions, local coordinates, floor connectors, no clipping/teleport shortcuts, documented fidelity of any approximations."
+        judge: Station lead
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: SHINJUKU-G2
+        requirement: "**Shinjuku G2 Routing:** path display matches a verified directed graph, not a visual navmesh guess; route narration and destination correspond to real public access conditions within checked data freshness."
+        judge: Station lead
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: SHINJUKU-G3
+        requirement: "**Shinjuku G3 Quality:** actual recorded walk (not a static hero screenshot), recognizable station-specific visual identity, polished lighting/materials/wayfinding, sound/input comfort when appropriate, desktop/phone capture and independent critique. Iteration continues until L2 is credibly met."
+        judge: Independent visual/interaction reviewer
+        status: NOT JUDGED
+        references:
+          - label: Full acceptance contract
+            url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/acceptance.md
+      - id: SHINJUKU-G4
+        requirement: "**Shinjuku G4 Delivery:** reproducible build/tests, PR and reviewed SHA, screenshots/video, sources/rights bundle, per-station coverage report, known limitations and Handoff. Owner approval before merging/releasing and before making real-world navigation guarantees; acceptance of a demo ≠ approval of live travel directions."
         judge: Owner
         status: NOT JUDGED
         references:
