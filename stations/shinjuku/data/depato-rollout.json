@@ -6,7 +6,7 @@
       "buildingId": "bldg_6c808c9c-6c8c-4aa8-8e4d-17d3a4ad1f86:0",
       "sourceTile": "53394525_bldg_6697_op.gml",
       "footprint": [[-40.898766, -323], [-2, -323], [-2, -270], [-34.876658, -270]],
-      "circulation": { "aisleX": -20, "from": -289, "to": -277 },
+      "circulation": { "aisleX": -20, "from": -310, "to": -292 },
       "entrance": {
         "level": "1F",
         "elevation": 0.02,
@@ -190,7 +190,7 @@
       "buildingId": "bldg_4437dbf7-df89-49aa-bdd7-cc7e231a0cf8:0",
       "sourceTile": "53394536_bldg_6697_op.gml",
       "footprint": [[493.1, -573.4], [453.0, -587.0], [451.8, -590.5], [466.0, -618.3], [511.5, -603.7], [497.3, -575.1]],
-      "circulation": {"aisleX": 480, "from": -604, "to": -592},
+      "circulation": {"aisleX": 474, "from": -604, "to": -592},
       "entrance": {
         "level": "1F",
         "elevation": 0.02,

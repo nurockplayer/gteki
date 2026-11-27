@@ -232,7 +232,8 @@ export function stairwellWells(bundle: StationBundle, traversable: (edge: Edge) 
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const wells: StairwellWell[] = [];
   for (const edge of bundle.edges) {
-    if (!VERTICAL_MODES.has(edge.mode) || !traversable(edge)) continue;
+    // Stacked retail flights already have an open well and their own side rails.
+    if (!VERTICAL_MODES.has(edge.mode) || edge.attributes?.authoredStairwell === true || !traversable(edge)) continue;
     const points = edgePoints(bundle, edge, nodes, floors);
     if (points.length < 2) continue;
     const lowerY = Math.min(points[0]!.y, points.at(-1)!.y), upperY = Math.max(points[0]!.y, points.at(-1)!.y);

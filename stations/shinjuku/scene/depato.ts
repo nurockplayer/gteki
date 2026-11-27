@@ -10,16 +10,40 @@ import floorData from "../data/depato-floors.json";
 import rollout from "../data/depato-rollout.json";
 import { stableHypot } from "./stable-hypot.ts";
 
+// PLATEAU roof parapets in renderer metres. The preview decks clear the parapet caps.
+const isetanRoofs = new Map([["isetan-shinjuku-main", 32.22], ["isetan-shinjuku-mens", 39.32]]);
+
 const layouts = rollout.stores.map(row => {
   const store = floorData.stores.find(s => s.id === row.id)!;
+  const roof = isetanRoofs.get(row.id);
   const [doorX, doorZ] = row.entrance.point as PlanPoint;
   const [inwardX, inwardZ] = row.entrance.inward as PlanPoint;
+  const fullStore = roof !== undefined || row.id === "odakyu-shinjuku" || row.id === "keio-shinjuku";
+  const street = row.entrance.elevation;
+  const elevations: Record<string, number> = { "1F": street };
+  // Allow headroom beneath stacked escalators at the authored mezzanines.
+  const mezzanineRise = 3.2;
+  if (row.id === "odakyu-shinjuku") {
+    elevations.MB3 = street - 9 - mezzanineRise;
+    elevations.B3 = elevations.MB3 - mezzanineRise;
+    elevations.M2F = street + mezzanineRise;
+    for (let n = 2; n <= 8; n++) elevations[`${n}F`] = street + 2 * mezzanineRise + (n - 2) * 4.5;
+    elevations.RF = elevations["8F"]! + 4.5;
+  } else if (row.id === "keio-shinjuku") {
+    elevations.MB = street - mezzanineRise;
+    elevations.B1 = elevations.MB - mezzanineRise;
+    // Keep the 8F ceiling below the lowest PLATEAU roof surface at 32.96 m.
+    for (let n = 2; n <= 8; n++) elevations[`${n}F`] = street + (n - 1) * 4.1;
+    elevations.RF = street + 36;
+  } else if (roof !== undefined) {
+    elevations.RF = roof;
+  }
   const layout = depatoLayout({
-    store: { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
+    store: fullStore ? store : { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
     footprint: row.footprint as PlanPoint[],
     poiId: row.poiId,
     sourceId: row.sourceTile,
-    elevations: { "1F": row.entrance.elevation },
+    elevations,
     circulation: row.circulation,
     entrances: [{ ...row.entrance, point: row.entrance.point as PlanPoint, inward: row.entrance.inward as PlanPoint }],
   });
@@ -81,7 +105,7 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
   };
   const pavementMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, visible: false });
   const facadeCuts = new Map<Object3D, CutRegion[]>();
-  const pavement = rollout.stores.map(row => {
+  const pavement = rollout.stores.map((row, index) => {
     const exit = ctx.bundle.nodes.find(n => n.id === row.streetApproach.exitNode)!;
     const start = new THREE.Vector3(exit.position.x, exit.renderZ ?? exit.position.z!, -exit.position.y);
     const points = [start, ...row.streetApproach.waypoints.map(([x, y, z]) => new THREE.Vector3(x, y, z))];
@@ -124,6 +148,25 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     };
     const regions = facadeCuts.get(building) ?? [];
     regions.push(region);
+    const layout = layouts[index]!;
+    const roofIndex = layout.floors.findIndex(floor => floor.category === "rooftop");
+    if (roofIndex > 0) {
+      const roof = layout.floors[roofIndex]!;
+      const lower = layout.floors[roofIndex - 1]!;
+      const { x: aisle, from, to, width } = layout.stair;
+      // The desktop and phone follow cameras trail either flight beyond the well ends.
+      const min = new THREE.Vector3(aisle - width / 2, layout.height(lower.level) - 1, from - 3.8);
+      const max = new THREE.Vector3(aisle + width / 2, layout.height(roof.level) + 3, to + 3.8);
+      regions.push({
+        key: roof, clip: null, accepts: normal => Math.abs(normal.y) > 0.5,
+        bounds: new THREE.Box3(min, max),
+        planes: [
+          p => p.x - min.x, p => max.x - p.x,
+          p => p.y - min.y, p => max.y - p.y,
+          p => p.z - min.z, p => max.z - p.z,
+        ],
+      });
+    }
     if (row.id === "shinjuku-marui-main") {
       regions.push({
         key: {}, clip: null, accepts: () => true,
@@ -158,7 +201,8 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
       if (!camera) return;
       const p = avatar ?? camera.position;
       const distances = layouts.map(l =>
-        l.contains([p.x, p.z]) && p.y >= l.height("B1") - 1 && p.y <= l.height("1F") + 4 ? 0 :
+        l.contains([p.x, p.z]) && p.y >= Math.min(l.height("B1"), l.height(l.floors[0]!.level)) - 1 &&
+          p.y <= l.height(l.floors.at(-1)!.level) + 4 ? 0 :
           stableHypot(p.x - l.input.entrances[0]!.point[0], p.y - l.height("1F"), p.z - l.input.entrances[0]!.point[1]));
       const active = distances.indexOf(Math.min(...distances));
       // Keep the detail loaded for the approach and release it after leaving the storefront.
