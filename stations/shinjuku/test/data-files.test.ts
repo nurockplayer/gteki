@@ -48,12 +48,12 @@ const planPolygons = (): string[] => {
   return [MAP];
 };
 
-/** Stairwell recipes (#650) replay this bundle's cut: the sources the graph cites, and those the other scene files cite. */
+/** Stairwell recipes (#650) replay this bundle's cut. M08 evidence supplies no scene or graph geometry. */
 const stairwellSources = (): string[] => {
   const cited = [
     ...graph.nodes.flatMap((n: Node) => n.sourceRefs.map((r) => r.sourceId)),
     ...graph.edges.flatMap((e: Edge) => [...(e.geometryEvidence?.sourceIds ?? []), ...(e.accessEvidence?.sourceIds ?? [])]),
-    ...(station.dataFiles as DataFile[]).filter((d) => !d.path.startsWith("scene/stairwell-cut.")).flatMap((d) => d.sourceIds),
+    ...(station.dataFiles as DataFile[]).filter((d) => !d.path.startsWith("scene/stairwell-cut.") && d.id !== "metro-m08").flatMap((d) => d.sourceIds),
   ];
   return [...new Set(cited)];
 };
@@ -63,6 +63,7 @@ const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
   "data/depato-rollout.json": { script: "data/depato-rollout.json", sources: () => [PLATEAU, "keio-shinjuku-shopsearch-2026-11", ...read("data/department-stores.json").stores.flatMap((s: { poiId: string }) => read("gteki/pois.json").pois.find((p: { id: string }) => p.id === s.poiId).evidence.sourceIds)] },
   "data/department-stores.json": { script: "tools/import-department-stores.ts", sources: () => [PLATEAU, ...read("data/department-stores.json").stores.flatMap((s: { poiId: string }) => read("gteki/pois.json").pois.find((p: { id: string }) => p.id === s.poiId).evidence.sourceIds)] },
   "data/rail/jr-yamanote.json": { script: "data/rail/jr-yamanote.json", sources: () => [NWD, MAP, "tokyo-s03-zip"] },
+  "data/rail/metro-m08.json": { script: "data/rail/metro-m08.json", sources: () => ["metro-yardmap", "metro-timetable-snapshot", "tokyo-s03-zip", "tokyometro-shinjuku-accessibility-2026-10"] },
   "scene/stairwell-cut.high.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/stairwell-cut.low.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/shop_bays.json": { script: "tools/shop-bays.ts", sources: () => [NWD, MAP] },

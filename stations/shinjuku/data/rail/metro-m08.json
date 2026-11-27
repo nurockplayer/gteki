@@ -1,0 +1,156 @@
+{
+  "line": { "ja": "丸ノ内線", "en": "Marunouchi Line" },
+  "operator": "tokyometro",
+  "lineCode": "M08",
+  "status": "representative",
+  "levels": [
+    {
+      "id": "metro-m08-b1",
+      "label": "B1F",
+      "z_m": -7.8,
+      "source": "metro-yardmap",
+      "z_status": "representative"
+    },
+    {
+      "id": "metro-m08-b2",
+      "label": "B2F",
+      "z_m": -12,
+      "source": "metro-yardmap",
+      "z_status": "representative"
+    }
+  ],
+  "gates": [
+    {
+      "id": "metro-m08-east-public",
+      "name": { "ja": "東改札", "en": "East Gate" },
+      "poiId": null,
+      "candidatePoiId": "poi:tokyometro-gate:1",
+      "level": "metro-m08-b1",
+      "side": "public",
+      "position": null,
+      "source": "metro-accessibility"
+    },
+    {
+      "id": "metro-m08-east-paid",
+      "name": { "ja": "東改札", "en": "East Gate" },
+      "poiId": null,
+      "level": "metro-m08-b1",
+      "side": "paid",
+      "position": null,
+      "source": "metro-accessibility"
+    },
+    {
+      "id": "metro-m08-west-public",
+      "name": { "ja": "西改札", "en": "West Gate" },
+      "poiId": null,
+      "candidatePoiId": "poi:tokyometro-gate:2",
+      "level": "metro-m08-b1",
+      "side": "public",
+      "position": null,
+      "source": "metro-accessibility"
+    },
+    {
+      "id": "metro-m08-west-paid",
+      "name": { "ja": "西改札", "en": "West Gate" },
+      "poiId": null,
+      "level": "metro-m08-b1",
+      "side": "paid",
+      "position": null,
+      "source": "metro-accessibility"
+    }
+  ],
+  "platforms": [
+    {
+      "id": "metro-m08-platform-1",
+      "number": 1,
+      "track": 1,
+      "services": ["Ogikubo", "Honancho", "Nakano-fujimicho", "Nakano-sakaue"],
+      "level": "metro-m08-b2",
+      "island": "metro-m08-island",
+      "centerline": null,
+      "width_m": 4,
+      "length_m": 120,
+      "source": "metro-yardmap",
+      "services_source": "metro-timetable-snapshot",
+      "dimensions_status": "representative"
+    },
+    {
+      "id": "metro-m08-platform-2",
+      "number": 2,
+      "track": 2,
+      "services": ["Ikebukuro", "Myogadani", "Shinjuku-sanchome"],
+      "level": "metro-m08-b2",
+      "island": "metro-m08-island",
+      "centerline": null,
+      "width_m": 4,
+      "length_m": 120,
+      "source": "metro-yardmap",
+      "services_source": "metro-timetable-snapshot",
+      "dimensions_status": "representative"
+    }
+  ],
+  "connectors": [
+    { "from": "metro-m08-east-public", "to": "metro-m08-east-paid", "kind": "gate", "source": "metro-yardmap" },
+    { "from": "metro-m08-west-public", "to": "metro-m08-west-paid", "kind": "gate", "source": "metro-yardmap" },
+    { "from": "metro-m08-east-paid", "to": "metro-m08-platform-1", "kind": "stairs", "source": "metro-yardmap" },
+    { "from": "metro-m08-east-paid", "to": "metro-m08-platform-2", "kind": "stairs", "source": "metro-yardmap" },
+    { "from": "metro-m08-east-paid", "to": "metro-m08-platform-1", "kind": "lift", "source": "metro-accessibility" },
+    { "from": "metro-m08-east-paid", "to": "metro-m08-platform-2", "kind": "lift", "source": "metro-accessibility" },
+    { "from": "metro-m08-platform-1", "to": "metro-m08-east-paid", "kind": "escalator", "direction": "from-to", "source": "metro-accessibility" },
+    { "from": "metro-m08-platform-2", "to": "metro-m08-east-paid", "kind": "escalator", "direction": "from-to", "source": "metro-accessibility" },
+    { "from": "metro-m08-west-paid", "to": "metro-m08-platform-1", "kind": "stairs", "source": "metro-yardmap" },
+    { "from": "metro-m08-west-paid", "to": "metro-m08-platform-2", "kind": "stairs", "source": "metro-yardmap" }
+  ],
+  "sources": [
+    {
+      "id": "metro-yardmap",
+      "url": "https://www.tokyometro.jp/lang_en/station/yardmap_img/figure_yardmap_shinjuku_all.jpg",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "notes": "November 2025 issue. Only floor labels, two gate crossings, stair links, island topology and track numbers/directions are used. The diagram has no station-frame scale or control points."
+    },
+    {
+      "id": "metro-accessibility",
+      "url": "https://www.tokyometro.jp/station/shinjuku/accessibility/index.html",
+      "archive_url": "https://web.archive.org/web/20260216060552id_/https://www.tokyometro.jp/station/shinjuku/accessibility/index.html",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "notes": "Live text and the existing WP4 receipt agree on the named gates and the East paid lift and up-only escalator at the Ikebukuro end. The West–A12 lift and the East–A6/B12a lifts and East–B11 escalator are public-side equipment."
+    },
+    {
+      "id": "metro-timetable-snapshot",
+      "url": "https://www.tokyometro.jp/station/timetable/pdf/202503/M08.pdf",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "notes": "December 2024 revision. Services list the destinations from that operator timetable by direction, including short turns. The September 2026 revision supersedes this for live departures."
+    },
+    {
+      "id": "s03-gate-pois",
+      "path": "docs/research/lines/shinjuku-line-pois.json",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "UNKNOWN",
+      "notes": "S03 March 2020 gate names and existing POI IDs from the Q2/Q3 factual subset. The S03 B2F source label is unregistered to the operator floors. The S03 position contract limits gate centroids to approximate search context."
+    },
+    {
+      "id": "wp4-gate-identity",
+      "path": "docs/research/field/shinjuku-online-closures-2026-10-25.md",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "OD-34",
+      "notes": "Row 28 records the bilingual gate names and the unresolved match between the WP4 East/West pair and the S03 search POIs."
+    },
+    {
+      "id": "plateau-shinjuku-ubld",
+      "path": "docs/gis/acquisitions/plateau-13104-ubld-53394536.json",
+      "read_date": "2026-11-26 JST",
+      "terms_ref": "UNKNOWN",
+      "notes": "The acquired 13104 underground tile has no established M08 gate or platform feature tie to use for placement."
+    }
+  ],
+  "gaps": [
+    "GAP: Gate coordinates, both platform centerlines and exact depth and dimensions lack a tie to the station frame. The B1 and B2 heights and the 8 m by 120 m shared island are representative preview values.",
+    "GAP: East/West candidate POI IDs are directional matches only (field item 31). The two WP4 candidates :3 and :4 are held in research. Gate POI IDs remain unset pending a physical trace or position match.",
+    "GAP: The seam from the existing public concourse to each Metro gate and the within-floor walking alignments need preview placement. The S03 held graph does not establish those routes.",
+    "GAP: MLIT R2 indoor source is login-gated and was not fetched. Direct HTTP for the Japanese station page, its map JPEG and the 2024 notice returned 403. The English station map and accessibility text supply the operator facts used here.",
+    "GAP: The linked timetable service returned 404 during the read. The services list is a dated timetable snapshot."
+  ]
+}
