@@ -14,6 +14,9 @@ export interface DepatoInput {
   sourceId: string;
   elevations: Record<string, number>;
   circulation?: { aisleX: number; from: number; to: number };
+  flights?: Record<string, "escalator" | "stairs">; // keyed by the upper landing
+  lifts?: { from: string; to: string; x: number; z: number; label: { ja: string; en: string }; source: string }[];
+  roof?: { level: string; edgeX: number; label: { ja: string; en: string } };
   entrances: { level: string; point: PlanPoint; outsideNode: string; inward?: PlanPoint }[];
 }
 
@@ -25,6 +28,7 @@ export function depatoLayout(input: DepatoInput) {
   const ordinal = (level: string) => level.startsWith("B") ? -Number(level.slice(1)) : Number(level.replace("F", "")) - 1;
   const height = (level: string) => elevations[level] ?? elevations["1F"]! + ordinal(level) * 4.5;
   const floors = [...store.floors].sort((a, b) => height(a.level) - height(b.level));
+  const flight = (upper: string) => input.flights ? input.flights[upper] : "escalator";
   const aisleX = input.circulation?.aisleX ?? (bounds.left + bounds.right) / 2;
   const stair = { x: aisleX, from: input.circulation?.from ?? bounds.front + 26, to: input.circulation?.to ?? bounds.front + 38, width: 4.2 };
   const contains = ([x, z]: PlanPoint) => {
@@ -44,7 +48,7 @@ export function depatoLayout(input: DepatoInput) {
       if ([-0.55, 0.55].every(dx => [-2, 2].every(dz => contains([x + dx, z + dz])))) counters.push([x, z]);
     }
   }
-  return { input, bounds, floors, height, aisleX, stair, counters, contains };
+  return { input, bounds, floors, height, aisleX, stair, counters, contains, flight };
 }
 export type DepatoLayout = ReturnType<typeof depatoLayout>;
 
@@ -59,11 +63,13 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     const n: Node = { id: id(level, part), floorId: id(level, "floor"), position: { x, y: -z, z: plan.height(level) }, kind: "junction", inOut: "inside", sourceRefs: [] };
     nodes.push(n); return n;
   };
-  const edge = (a: Node, b: Node, mode: Edge["mode"] = "walk") => {
-    edges.push({ id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: mode === "escalator" ? "forward" : "both", mode,
+  const edge = (a: Node, b: Node, mode: Edge["mode"] = "walk", authoredSource?: string) => {
+    const access = authoredSource ? { ...evidence, method: `Public lift access: ${authoredSource}; preview lift positions are illustrative.` } : evidence;
+    edges.push({ id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: mode === "escalator" || mode === "stairs" ? "forward" : "both", mode,
       lengthM: Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y, b.position.z! - a.position.z!),
-      geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode === "walk", steps: mode !== "walk",
-      hours: null, closed: false, verification: "verified", geometryEvidence: evidence, accessEvidence: evidence });
+      geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode === "walk" || mode === "elevator", steps: mode === "escalator" || mode === "stairs",
+      hours: null, closed: false, verification: "verified", geometryEvidence: evidence, accessEvidence: access,
+      ...(mode === "elevator" ? { attributes: { deferredScene: true } } : {}) });
   };
   let previousLower: Node | undefined;
   for (const floor of plan.floors) {
@@ -72,14 +78,15 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     const aisle = node(floor.level, "aisle", plan.aisleX - 4, plan.stair.from - 2);
     const bypass = node(floor.level, "bypass", plan.aisleX - 4, plan.stair.to + 2);
     edge(lower, aisle); edge(aisle, bypass); edge(bypass, upper);
-    if (previousLower) {
+    const mode = plan.flight(floor.level);
+    if (previousLower && mode) {
       const bottom = previousLower;
       const takeoff = node(plan.floors[plan.floors.indexOf(floor) - 1]!.level, "takeoff", plan.aisleX - 0.95, plan.stair.from);
       const landing = node(floor.level, "landing", plan.aisleX - 0.95, plan.stair.to);
-      edge(bottom, takeoff); edge(takeoff, landing, "escalator"); edge(landing, upper);
+      edge(bottom, takeoff); edge(takeoff, landing, mode); edge(landing, upper);
       const downStart = node(floor.level, "down-start", plan.aisleX + 0.95, plan.stair.from);
       const downEnd = node(plan.floors[plan.floors.indexOf(floor) - 1]!.level, "down-end", plan.aisleX + 0.95, plan.stair.to);
-      edge(lower, downStart); edge(downStart, downEnd, "escalator");
+      edge(lower, downStart); edge(downStart, downEnd, mode);
       edge(downEnd, nodes.find(n => n.id === id(plan.floors[plan.floors.indexOf(floor) - 1]!.level, "upper"))!);
     }
     previousLower = lower;
@@ -101,6 +108,21 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
       }else edge(approach, bypass);
       edge(bundle.nodes.find(n => n.id === entrance.outsideNode)!, door);
     }
+  }
+  const roof = plan.input.roof;
+  if (roof) {
+    const deck = node(roof.level, "roof", roof.edgeX + 3, plan.stair.to + 2);
+    edge(nodes.find(n => n.id === id(roof.level, "upper"))!, deck);
+  }
+  for (const [i, lift] of (plan.input.lifts ?? []).entries()) {
+    const stop = (level: string) => {
+      const car = node(level, `lift-${i}`, lift.x, lift.z);
+      car.kind = "elevator";
+      const landing = roof && level === roof.level && lift.x > roof.edgeX ? "roof" : "upper";
+      edge(nodes.find(n => n.id === id(level, landing))!, car);
+      return car;
+    };
+    edge(stop(lift.from), stop(lift.to), "elevator", lift.source);
   }
   const goal = nodes.find(n => n.id === id(plan.floors[0]!.level, "aisle"))!;
   return { ...bundle,
