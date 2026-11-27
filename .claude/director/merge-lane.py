@@ -65,12 +65,11 @@ def view(number):
     return json.loads(gh("pr", "view", str(number), "--json", FIELDS))
 
 
-def pending_waiters(candidates):
+def pending_waiters(number):
     waiting = []
     for row in call("lead-wait", "--role", LEAD, "list").splitlines():
         _, job, kind, ref, _ = row.split("\t", 4)
-        match = re.fullmatch(r"#(\d+)" if kind == "pr" else r"gate-(\d+)", ref)
-        if match and int(match[1]) in candidates:
+        if (kind, ref) in {("pr", f"#{number}"), ("run", f"gate-{number}")}:
             waiting.append(job)
     return waiting
 
@@ -159,18 +158,14 @@ def step(queue, dry_run=False):
 
     active = queue["active"] or {"number": candidates[0]}
     number = active["number"]
+    # Wait before reading the PR so the snapshot includes the old gate's last writes.
+    waiters = [job for job in pending_waiters(number) if job != active.get("job")]
     pr = view(number)
-    if queue["active"] is None:
-        waiters = pending_waiters(candidates)
-        if waiters:
-            message = f"waiting for {len(waiters)} pre-existing gate jobs before starting #{number}"
-            if dry_run:
-                _, head_plan = plan(pr, active)
-                message += f"; head #{number} is {pr['mergeStateStatus']}: {head_plan}"
-            return message
-        if not dry_run:
-            queue["active"] = active
-            save(queue)
+    if waiters and pr["state"] != "MERGED":
+        return f"#{number} waiting for existing gate job(s): {', '.join(waiters)}"
+    if queue["active"] is None and not dry_run:
+        queue["active"] = active
+        save(queue)
 
     if "job" in active and pr["state"] != "MERGED":
         job = active["job"]
@@ -212,8 +207,6 @@ def step(queue, dry_run=False):
         active["updated_from"] = head
         save(queue)
     elif action == "gate":
-        if pending_waiters([number]):
-            return f"#{number} waiting for an existing gate job"
         disarm(number, pr)
         prior_event, _, _ = last_gate_event(number)
         result = call("lead-wait", "--role", LEAD, "pr", str(number))
@@ -266,7 +259,7 @@ def main():
             elif number in queue["candidates"]:
                 active = queue["active"]
                 if active and active["number"] == number:
-                    if "job" in active:
+                    if "job" in active or pending_waiters(number):
                         parser.error(f"#{number} has an active gate job; remove it after the gate finishes")
                     disarm(number, view(number))
                 drop(queue, number)
