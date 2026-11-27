@@ -3895,6 +3895,18 @@ export class Explorer {
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
     if (gateHeld && !gate!.clearPosition(this.camera.position)) this.camera.position.copy(desired);
+    if (lockOn && !this.previewNext && this.camera.aspect < 1) {
+      // On the approach turn the boom is already swinging onto the ride axis while guide yaw is still catching up.
+      // Keep the cat in the middle half of the portrait frame without moving the cleared boom or changing pitch.
+      const offset = pose.target.clone().sub(this.camera.position);
+      const aimYaw = Math.atan2(offset.x, offset.z);
+      const catYaw = Math.atan2(this.pos.x - this.camera.position.x, this.pos.z - this.camera.position.z);
+      const maxYawOffset = Math.atan(0.5 * this.camera.aspect * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2));
+      const framedYaw = catYaw + THREE.MathUtils.clamp(angleDelta(catYaw, aimYaw), -maxYawOffset, maxYawOffset);
+      const reach = Math.hypot(offset.x, offset.z);
+      pose.target.x = this.camera.position.x + Math.sin(framedYaw) * reach;
+      pose.target.z = this.camera.position.z + Math.cos(framedYaw) * reach;
+    }
     if (this.catAvatar) {
       this.gateAimHeld = gateHeld || (!snap && !this.reducedMotion && this.gateAimHeld && this.boomRaise > 0);
       // Retain the local aim through release after all positions have left the gate footprint.
