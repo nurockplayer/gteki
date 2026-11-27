@@ -6,7 +6,7 @@ import { resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import { createServer } from '../../../../apps/web/node_modules/vite/dist/node/index.js';
 
-const output = process.argv[2];
+const output = resolve(process.argv[2]);
 const origin = 'http://127.0.0.1:5296';
 const spaceName = 'depato-seibu-b2';
 const sourceHead = execFileSync('git', ['rev-parse', 'HEAD'], {encoding: 'utf8'}).trim();
