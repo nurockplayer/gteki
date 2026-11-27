@@ -83,14 +83,17 @@ describe("Explorer QA hooks", () => {
   });
   it("walks a three-point renderer-space path through ordinary walk movement", () => {
     const state = qaStand();
-    const sampled: number[] = [];
-    const result = qa(state).walkPath([{ x: 0, z: -1 }, { x: 1, z: -1 }, { x: 1, z: -2 }], {
-      onStep: (i) => sampled.push(i),
+    const path = [{ x: 0, z: -1 }, { x: 1, z: -1 }, { x: 1, z: -2 }];
+    let reached = 0;
+    const result = qa(state).walkPath(path, {
+      onStep: () => {
+        const target = path[reached];
+        if (target && Math.hypot(state.pos.x - target.x, state.pos.z - target.z) <= 0.05) reached++;
+      },
     });
     expect(result).toMatchObject({ done: true, stuck: false, timedOut: false });
     expect(result.steps).toBeGreaterThan(0);
-    expect(Math.hypot(state.pos.x - 1, state.pos.z + 2)).toBeLessThanOrEqual(0.05);
-    expect(sampled).toHaveLength(result.steps);
+    expect(reached).toBe(path.length);
     expect([...state.input.virtualKeys]).toEqual([]);
     expect(state.render).toHaveBeenCalledTimes(1);
   });

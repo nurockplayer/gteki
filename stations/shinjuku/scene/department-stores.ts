@@ -33,7 +33,7 @@ function facadeGeometry(face: Face) {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(points.flatMap(p => p.toArray()), 3));
   const pier = (LANDMARK_PIER_SPACING_M[0] + LANDMARK_PIER_SPACING_M[1]) / 2;
-  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(xy.flatMap(p => [p.x / pier, p.y / LANDMARK_FLOOR_JOINT_M]), 2));
+  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(xy.flatMap((p, i) => [p.x / pier, points[i]!.y / LANDMARK_FLOOR_JOINT_M]), 2));
   geometry.setIndex(indices); geometry.computeVertexNormals();
   return geometry;
 }
@@ -75,40 +75,62 @@ export function buildDepartmentStores(track: <T extends { dispose(): void }>(res
     // A shallow, closed shopfront: warm glass, bronze frames, no content or void.
     const streetHeight = canvas.height - streetY;
     ctx.fillStyle = LANDMARK_SIGN.band; ctx.fillRect(0, streetY, canvas.width, streetHeight);
-    ctx.fillStyle = LANDMARK_STREET_BAND.glow; ctx.fillRect(12, streetY + 12, canvas.width - 24, streetHeight - 24);
+    ctx.fillStyle = "#60574d"; ctx.fillRect(12, streetY + 12, canvas.width - 24, streetHeight - 24);
+    ctx.fillStyle = LANDMARK_STREET_BAND.glow; ctx.fillRect(24, streetY + 24, canvas.width - 48, streetHeight * .18);
     const atlas = track(new THREE.CanvasTexture(canvas)); atlas.colorSpace = THREE.SRGBColorSpace;
     const relief = document.createElement("canvas"); relief.width = relief.height = LANDMARK_MAX_TEXTURE_PX;
     const bump = relief.getContext("2d")!;
     bump.fillStyle = "#ffffff"; bump.fillRect(0, 0, relief.width, relief.height);
-    bump.fillStyle = "#555555"; bump.fillRect(0, 0, relief.width, 3); bump.fillRect(0, 0, 5, relief.height);
-    if (store.upper === "glazed") bump.fillRect(0, relief.height * .75, relief.width, relief.height * .2);
-    const joints = track(new THREE.CanvasTexture(relief)); joints.wrapS = joints.wrapT = THREE.RepeatWrapping;
+    bump.fillStyle = "#777777"; bump.fillRect(0, 0, relief.width, 12);
+    bump.fillStyle = "#aaaaaa"; bump.fillRect(0, 0, 24, relief.height);
+    if (store.upper === "glazed") { bump.fillStyle = "#777777"; bump.fillRect(0, relief.height * .75, relief.width, relief.height * .2); }
+    const joints = track(new THREE.CanvasTexture(relief)); joints.wrapS = joints.wrapT = THREE.RepeatWrapping; joints.colorSpace = THREE.SRGBColorSpace;
     const facade = track(new THREE.MeshStandardMaterial({
       color: LANDMARK_FACADE[store.facade as LandmarkFacade], side: THREE.DoubleSide,
       roughness: store.upper === "glazed" ? LANDMARK_GLASS_ROUGHNESS : .8,
-      bumpMap: joints, bumpScale: .08, fog: false,
+      map: joints, bumpMap: joints, bumpScale: .15, fog: false,
     }));
     // 2026-11-22 JST: keep the two bright stone landmarks below the look-frame sky.
-    if (store.poiId === "shop-sjk-isetan-honkan" || store.poiId === "shop-sjk-odakyudept") facade.color.multiplyScalar(.5);
+    if (store.poiId === "shop-sjk-isetan-honkan") facade.color.multiplyScalar(.5);
     const street = track(new THREE.MeshStandardMaterial({ map: atlas, emissiveMap: atlas,
       emissive: LANDMARK_STREET_BAND.glow, emissiveIntensity: LANDMARK_STREET_BAND.maxEmissive,
       roughness: LANDMARK_GLASS_ROUGHNESS, side: THREE.DoubleSide, fog: false }));
-    // 2026-11-22 JST: these sun-facing bands need diffuse atlas contrast without specular glare.
-    const sign = track(["shop-sjk-keio", "shop-sjk-odakyudept", "shop-sjk-lumine2"].includes(store.poiId)
-      ? new THREE.MeshBasicMaterial({ map: atlas, side: THREE.FrontSide, fog: false })
-      : new THREE.MeshStandardMaterial({ map: atlas, emissiveMap: atlas,
-      emissive: LANDMARK_SIGN.letters, emissiveIntensity: LANDMARK_SIGN.letterEmissive[0],
-      roughness: LANDMARK_SIGN.bandRoughness, side: THREE.FrontSide, fog: false }));
+    // 2026-11-24 JST: preserve atlas contrast on every sun-facing name band.
+    const sign = track(new THREE.MeshBasicMaterial({ map: atlas, side: THREE.FrontSide, fog: false }));
     const surfaces = building.surfaces as Face[];
     const facadeParts = surfaces.map(facadeGeometry), streetParts: THREE.BufferGeometry[] = [], signParts: THREE.BufferGeometry[] = [];
     const ring = building.rings[0]!;
-    for (let i = 1; i < ring.length; i++) {
-      const a = vector([...ring[i - 1]!, 0]), b = vector([...ring[i]!, 0]), u = b.clone().sub(a).normalize();
-      const outward = new THREE.Vector3(-u.z, 0, u.x), v = new THREE.Vector3(0, 1, 0);
+    // The simplified footprint does not follow the recessed LOD2 shopfronts.
+    for (const source of surfaces.filter(f => f.kind === "wall")) {
+      const face = facePlane(source);
+      if (Math.abs(face.normal.y) > .01) continue;
       const height = LANDMARK_STREET_BAND.heightM[0];
-      const bays = Math.ceil(a.distanceTo(b) / LANDMARK_STREET_BAND.mullionSpacingM[1]);
-      const width = a.distanceTo(b) / bays;
-      for (let bay = 0; bay < bays; bay++) streetParts.push(panel(a.clone().lerp(b, (bay + .5) / bays).addScaledVector(outward, .03).setY(height / 2), u.clone().negate(), v, width, height, streetY / canvas.height, 1));
+      const spans = [.1, height / 2 + .1, height + .1].map(y => {
+        const level = (y - face.origin.y) / face.v.y;
+        const xs = face.rings[0]!.flatMap((a, i, ring) => {
+          const b = ring[(i + 1) % ring.length]!;
+          return (a.y > level) !== (b.y > level) ? [a.x + (b.x - a.x) * (level - a.y) / (b.y - a.y)] : [];
+        });
+        return { left: Math.min(...xs), right: Math.max(...xs) };
+      });
+      const left = Math.max(...spans.map(p => p.left)), right = Math.min(...spans.map(p => p.right));
+      if (right <= left) continue; // Upper walls have no street-level span.
+      const center = face.origin.clone().addScaledVector(face.u, (left + right) / 2).setY(height / 2 + .1);
+      const probe = center.clone().addScaledVector(face.normal, .2);
+      if (inside({ x: probe.x, y: -probe.z }, [building.rings])) face.normal.negate();
+      const v = new THREE.Vector3(0, 1, 0), u = v.clone().cross(face.normal);
+      const bays = Math.max(1, Math.round((right - left) / 3)), width = (right - left) / bays;
+      for (let bay = 0; bay < bays; bay++) {
+        const bayCenter = center.clone().addScaledVector(u, (bay + .5 - bays / 2) * width).addScaledVector(face.normal, .06);
+        streetParts.push(panel(bayCenter, u, v, width, height, streetY / canvas.height, 1));
+      }
+      for (let bay = 0; bay <= bays; bay++) {
+        const mullion = new THREE.BoxGeometry(.14, height, .18);
+        const uv = mullion.attributes.uv!;
+        for (let i = 0; i < uv.count; i++) uv.setXY(i, 0, 1 - (streetY + 2) / canvas.height);
+        mullion.applyMatrix4(new THREE.Matrix4().makeBasis(u, v, face.normal).setPosition(center.clone().addScaledVector(u, (bay - bays / 2) * width).addScaledVector(face.normal, .14)));
+        streetParts.push(mullion);
+      }
     }
     const usedFaces = new Set<Face>();
     stores.forEach((s, row) => s.signs.forEach(({ edge, along }) => {
