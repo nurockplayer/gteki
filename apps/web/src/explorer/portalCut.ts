@@ -21,6 +21,8 @@ export interface CutRegion {
   /** GPU clip volume for the shared-mesh fallback; null means the region is always CPU-cut. */
   clip: THREE.Plane[] | null;
   accepts(normal: THREE.Vector3): boolean;
+  /** Keep the shared boundary of a removed inclined face and its surviving pieces. */
+  finishIncline?: boolean;
   /**
    * Optional mesh-only filter, asked once per mesh before any triangle work. True skips this region for that mesh; it
    * must be what `admits` would answer false to on every piece, and depend on the mesh alone.
@@ -111,6 +113,21 @@ function split(poly: Vertex[], plane: Plane): [Vertex[], Vertex[]] {
   return [inside, outside];
 }
 
+type CutEdge = [THREE.Vector3, THREE.Vector3];
+
+/** Return the overlapping portion of two edges on the same line, in the first edge's order. */
+function edgeOverlap(from: THREE.Vector3, to: THREE.Vector3, a: THREE.Vector3, b: THREE.Vector3): CutEdge | undefined {
+  const axis = to.clone().sub(from);
+  const length = axis.length();
+  if (length < 1e-6) return;
+  axis.divideScalar(length);
+  const start = a.clone().sub(from), end = b.clone().sub(from);
+  if (start.clone().cross(axis).lengthSq() > 1e-12 || end.clone().cross(axis).lengthSq() > 1e-12) return;
+  const x = start.dot(axis), y = end.dot(axis);
+  const lo = Math.max(0, Math.min(x, y)), hi = Math.min(length, Math.max(x, y));
+  if (hi - lo > 1e-6) return [from.clone().addScaledVector(axis, lo), from.clone().addScaledVector(axis, hi)];
+}
+
 export interface PortalCutResources {
   geometries: THREE.BufferGeometry[]; materials: THREE.Material[]; portalMeshes: Map<object, THREE.Mesh[]>;
   originals: Map<THREE.Mesh, { geometry: THREE.BufferGeometry; material: THREE.Material | THREE.Material[] }>;
@@ -135,6 +152,7 @@ export interface CutResult {
   heights: Map<object, number[]>;
   /** Maximum world height of each removed polygon, per region key. */
   maxHeights: Map<object, number[]>;
+  inclinedEdges: Map<object, CutEdge[]>;
   /** Hash of the stable meshes in the recipe stage (FNV-1a; the offset basis when no mesh was reached). */
   meshKeysHash: number;
 }
@@ -168,7 +186,7 @@ function regionGrid(regions: readonly CutRegion[]): Map<number, CutRegion[]> {
 export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], regions: readonly CutRegion[], opts: PortalCutResources, walkable: ReadonlySet<THREE.Object3D> = new Set(), clip = true, vertexLimit = Infinity, recipe?: RecipeHooks): CutResult {
   const started = performance.now();
   if (recipe && clip) throw new Error("a recipe cut never clips");
-  const result: CutResult = { cutTriangles: 0, cutMs: 0, cutMeshes: 0, clipped: 0, skipped: [], clonedWalkable: 0, clonedWalkableVertices: [], largeSharedVertices: [], perRegion: new Map(), heights: new Map(), maxHeights: new Map(), meshKeysHash: 0 };
+  const result: CutResult = { cutTriangles: 0, cutMs: 0, cutMeshes: 0, clipped: 0, skipped: [], clonedWalkable: 0, clonedWalkableVertices: [], largeSharedVertices: [], perRegion: new Map(), heights: new Map(), maxHeights: new Map(), inclinedEdges: new Map(), meshKeysHash: 0 };
   const roots: readonly THREE.Object3D[] = root instanceof THREE.Object3D ? [root] : root;
   for (const r of roots) r.updateWorldMatrix(true, true);
   const uses = new Map<THREE.BufferGeometry, number>();
@@ -368,6 +386,57 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     const output: Record<string, number[]> = Object.fromEntries(attrs.map(([name]) => [name, []]));
     const outGroups: { start: number; count: number; materialIndex: number }[] = [];
     let removed = 0;
+    const touchedRegions = (normal: THREE.Vector3) => nearbyRegions().filter(region => triangleBounds.intersectsBox(region.bounds) && region.accepts(normal)
+      && !region.planes.some(plane => plane(vertices[0]!) < 0 && plane(vertices[1]!) < 0 && plane(vertices[2]!) < 0));
+    const finishInclines = active.some(region => region.finishIncline);
+    const isInclined = (normal: THREE.Vector3) => Math.abs(normal.y) > 0.9 && triangleBounds.max.y - triangleBounds.min.y > 1e-5;
+    const clipTriangle = (touched: CutRegion[], normal: THREE.Vector3, countRemoval: boolean): Vertex[][] => {
+      const triangle = vertices.map(vertex => vertex.clone());
+      const inclineCuts: { key: object; poly: Vertex[] }[] | null = finishInclines && isInclined(normal) ? [] : null;
+      let polys: Vertex[][] = [triangle.map((world, corner) => ({ world, corner }))];
+      for (const region of touched) {
+        const next: Vertex[][] = [];
+        for (const poly of polys) {
+          let inside = poly;
+          const outside: Vertex[][] = [];
+          for (const plane of region.planes) {
+            const [ins, out] = split(inside, plane); inside = ins;
+            if (out.length >= 3) outside.push(out);
+            if (inside.length < 3) break;
+          }
+          if (inside.length < 3 || (region.admits && !region.admits(inside.map(v => v.world), mesh, triangle))) {
+            next.push(poly);
+            continue;
+          }
+          if (region.finishIncline) inclineCuts?.push({ key: region.key, poly: inside });
+          if (countRemoval) {
+            removed++; countRegion(region.key);
+            const heights = result.heights.get(region.key) ?? [];
+            heights.push(inside.reduce((sum, v) => sum + v.world.y, 0) / inside.length);
+            result.heights.set(region.key, heights);
+            const maxHeights = result.maxHeights.get(region.key) ?? [];
+            maxHeights.push(Math.max(...inside.map(v => v.world.y)));
+            result.maxHeights.set(region.key, maxHeights);
+            if (draft) draft.events.push(keyIndex.get(region.key)!, heights.at(-1)!, maxHeights.at(-1)!);
+          }
+          next.push(...outside);
+        }
+        polys = next;
+      }
+      // Only edges shared with the final surviving polygons bound the opening. Internal cut seams do not.
+      if (inclineCuts) for (const { key, poly } of inclineCuts) {
+        const edges = result.inclinedEdges.get(key) ?? [];
+        for (let i = 0; i < poly.length; i++) {
+          const a = poly[i]!.world, b = poly[(i + 1) % poly.length]!.world;
+          for (const kept of polys) for (let j = 0; j < kept.length; j++) {
+            const span = edgeOverlap(a, b, kept[j]!.world, kept[(j + 1) % kept.length]!.world);
+            if (span) edges.push(normal.y < 0 ? span : [span[1], span[0]]);
+          }
+        }
+        result.inclinedEdges.set(key, edges);
+      }
+      return polys;
+    };
     // Replay fills typed arrays sized from the recipe (every output triangle is 3 vertices) instead of pushing
     // one number at a time; the geometry then takes those arrays as they are.
     let replayOut: Record<string, Float32Array> | null = null;
@@ -395,6 +464,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
         return { attr, size: attr.itemSize, out, src: !interleaved && ArrayBuffer.isView(array) ? array as ArrayLike<number> : null };
       });
       let t = 0, p = 0, vertex = 0;
+      let previousPiece = -1;
       for (let g = 0; g < groups.length; g++) {
         const group = groups[g]!;
         const start = vertex;
@@ -414,6 +484,13 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
               }
             }
           } else {
+            // Recipes store the surviving pieces, so only their inclined source triangles need re-clipping for finish.
+            if (finishInclines && previousPiece !== i) {
+              previousPiece = i;
+              readTriangle(i);
+              const normal = readNormal();
+              if (isInclined(normal)) clipTriangle(touchedRegions(normal), normal, false);
+            }
             for (let j = 0; j < 3; j++, p += 2) {
               const u = replaying.weights[p]!, w = replaying.weights[p + 1]!;
               for (let a = 0; a < outs.length; a++) {
@@ -432,12 +509,8 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
       const start = output.position!.length / position.itemSize;
       for (let i = group.start; i + 2 < Math.min(group.start + group.count, count); i += 3) {
         readTriangle(i);
-        // A region changes the triangle only if it touches the region's bounds and accepts its normal; otherwise it is copied.
-        // Only the regions near this triangle that touch its bounds and accept its normal can change it.
         const normal = readNormal();
-        // A region whose planes all put the triangle's corners outside is skipped: `split` would leave nothing inside it.
-        const touched = nearbyRegions().filter(region => triangleBounds.intersectsBox(region.bounds) && region.accepts(normal)
-          && !region.planes.some(plane => plane(vertices[0]!) < 0 && plane(vertices[1]!) < 0 && plane(vertices[2]!) < 0));
+        const touched = touchedRegions(normal);
         if (!touched.length) {
           // Nothing changes the triangle: copy its attributes through unchanged, without objects.
           if (draft) draft.codes.push(i * 2);
@@ -448,33 +521,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
           continue;
         }
         const corners = [0, 1, 2].map(j => (index ? index.getX(i + j) : i + j));
-        let polys: Vertex[][] = [[0, 1, 2].map(j => ({ world: vertices[j]!.clone(), corner: j }))];
-        const triangle = [vertices[0]!.clone(), vertices[1]!.clone(), vertices[2]!.clone()];
-        for (const region of touched) {
-          const next: Vertex[][] = [];
-          for (const poly of polys) {
-            let inside = poly;
-            const outside: Vertex[][] = [];
-            for (const plane of region.planes) {
-              const [ins, out] = split(inside, plane); inside = ins;
-              if (out.length >= 3) outside.push(out);
-              if (inside.length < 3) break;
-            }
-            if (inside.length >= 3 && (!region.admits || region.admits(inside.map(v => v.world), mesh, triangle))) {
-              removed++; countRegion(region.key);
-              const heights = result.heights.get(region.key) ?? [];
-              heights.push(inside.reduce((sum, v) => sum + v.world.y, 0) / inside.length);
-              result.heights.set(region.key, heights);
-              const maxHeights = result.maxHeights.get(region.key) ?? [];
-              maxHeights.push(Math.max(...inside.map(v => v.world.y)));
-              result.maxHeights.set(region.key, maxHeights);
-              if (draft) draft.events.push(keyIndex.get(region.key)!, heights.at(-1)!, maxHeights.at(-1)!);
-              next.push(...outside);
-            } else next.push(poly);
-          }
-          polys = next;
-        }
-        for (const poly of polys) for (let j = 1; j + 1 < poly.length; j++) {
+        for (const poly of clipTriangle(touched, normal, true)) for (let j = 1; j + 1 < poly.length; j++) {
           const tri = [poly[0]!, poly[j]!, poly[j + 1]!];
           if (draft) { draft.codes.push(i * 2 + 1); for (const v of tri) { const [u, w] = baryUV(v); draft.weights.push(u, w); } }
           for (const v of tri) for (const [name, attr] of attrs) for (let n = 0; n < attr.itemSize; n++) output[name]!.push(componentOf(v, attr, n, corners));

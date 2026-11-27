@@ -34,10 +34,20 @@ try {
         const pose = await page.evaluate(() => ({ avatar: window.__gteki.avatar(), camera: window.__gteki.scanProbe().explorer.camera.position.toArray(), cameraInfo: window.__gteki.scanProbe().explorer.cameraInfo() }));
         const legs = [];
         for (const [direction, points] of [['outward', path], ['return', [...path].reverse()]]) {
-          const steps = [];
-          for (const p of points) steps.push(await page.evaluate(p => {
+          const walk = await page.evaluate(points => {
             const h = window.__gteki, e = h.scanProbe().explorer;
-            const result = h.walkPath([{ x: p.x, y: p.z, z: -p.y }], { maxSeconds: 20 });
+            const targets = points.map(p => ({ x: p.x, y: p.z, z: -p.y }));
+            let next = 0;
+            const recordReached = () => {
+              while (next < targets.length) {
+                const p = targets[next];
+                if (Math.hypot(p.x - e.pos.x, p.z - e.pos.z) > 0.05 || Math.abs(p.y - e.pos.y) > 0.6) break;
+                next++;
+              }
+            };
+            recordReached();
+            const result = h.walkPath(targets, { onStep: recordReached });
+            const target = targets[Math.min(next, targets.length - 1)];
             const casts = [], grounds = [];
             if (!result.done) {
               const cast = e.colliderCast, ground = e.groundAt;
@@ -47,7 +57,7 @@ try {
                 return hit;
               };
               e.groundAt = function(...args) { const hit = ground.apply(this, args); if (grounds.length < 8) grounds.push({ args, hit }); return hit; };
-              try { h.walkPath([{ x: p.x, y: p.z, z: -p.y }], { maxSeconds: 0.1 }); }
+              try { h.walkPath([target], { maxSeconds: 0.1 }); }
               finally { e.colliderCast = cast; e.groundAt = ground; }
             }
             const at = e.pos;
@@ -57,16 +67,16 @@ try {
               return Math.hypot(at.x - w.ax - t * dx, at.z - w.az - t * dz) < 0.8 && w.yMin < at.y + 1 && w.yMax > at.y + 0.3;
             });
             const probe = at.clone();
-            const direction = at.clone().set(p.x - at.x, 0, -p.y - at.z).normalize();
+            const direction = at.clone().set(target.x - at.x, 0, target.z - at.z).normalize();
             const hits = [];
             if (!result.done) for (const height of [0.3, 0.8]) {
               e.ray.set(probe.clone().add(probe.clone().set(0, height, 0)), direction);
               e.ray.far = 0.8;
               hits.push(...e.ray.intersectObjects(e.colliderTargets, true).slice(0, 4).map(h => ({ height, distance: h.distance, point: h.point.toArray(), name: h.object.name, data: h.object.userData })));
             }
-            return { ...result, target: p, avatar: h.avatar(), camera: e.camera.position.toArray(), walls, hits, casts, grounds };
-          }, p));
-          legs.push({ direction, done: placed && steps.every(s => s.done), steps });
+            return { ...result, waypointsReached: next, target: points[Math.min(next, points.length - 1)], avatar: h.avatar(), camera: e.camera.position.toArray(), walls, hits, casts, grounds };
+          }, points);
+          legs.push({ direction, ...walk, done: placed && walk.done });
           await page.screenshot({ path: `${root}/${device}-${flag}-${exit}-${direction}.png` });
         }
         walks.push({ device, width, height, flag, exit, edge: edge.id, pathSource: 'runtime connectorRoutePaths (ENU)', path, placed, pose, legs, done: legs.every(l => l.done), capturedAtUTC: new Date().toISOString() });
