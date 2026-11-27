@@ -61,13 +61,13 @@ describe("declutter", () => {
     expect([...declutter([item("b", 0, 0, base), item("a", 4, 0, base)])]).toEqual(["a"]);
   });
 
-  it("always keeps the start and the destination, even when they sit on each other", () => {
+  it("keeps the higher-ranked endpoint when start and destination overlap", () => {
     const items = [
       item("exit", 0, 0, { klass: LABEL_CLASS.exit }),
       item("start", 6, 0, { klass: LABEL_CLASS.endpoint }),
       item("dest", 9, 2, { klass: LABEL_CLASS.endpoint }),
     ];
-    expect([...declutter(items)].sort()).toEqual(["dest", "start"]);
+    expect([...declutter(items)]).toEqual(["dest"]);
   });
 
   it("never lets a lower-priority label displace a higher one, even if that frees more labels", () => {
@@ -131,7 +131,7 @@ describe("declutter", () => {
   });
 });
 
-describe("selected labels bypass the declutter", () => {
+describe("selected labels have first priority", () => {
   it("an exit hidden under others reappears once it is picked as from/to (class endpoint)", () => {
     const crowd = [
       item("exit-a", 0, 0, { klass: LABEL_CLASS.exit }),
@@ -147,10 +147,10 @@ describe("selected labels bypass the declutter", () => {
     expect(keep.has("exit-a")).toBe(false);
   });
 
-  it("selected labels are kept even when faded, search-only, unmeasured or covering each other", () => {
+  it("a selected label wins even when faded, search-only and unmeasured", () => {
     const sel = { klass: labelClass(true, "shop"), faded: true, routable: false, measured: false } as const;
     const items = [item("from", 0, 0, sel), item("to", 3, 0, sel), item("exit", 0, 0, { klass: LABEL_CLASS.exit })];
-    expect([...declutter(items)].sort()).toEqual(["from", "to"]);
+    expect([...declutter(items)]).toEqual(["from"]);
   });
 });
 
@@ -209,7 +209,7 @@ describe("containmentShift", () => {
 describe("placeOverviewChip", () => {
   it("rechecks identity regions after containment moves a chip", () => {
     const chip = { x: 195, y: 100, w: 40, h: 20 };
-    const opts = { endpoint: false, selected: false, vw: 200, vh: 200 };
+    const opts = { allowPartial: false, selected: false, vw: 200, vh: 200 };
     const region = { x0: 153, x1: 160, y0: 95, y1: 105 };
     const plain = placeOverviewChip(chip, { ...opts, identityRegions: [] });
     expect(plain).toEqual({ hidden: false, dx: -23, dy: 0 });
@@ -224,10 +224,10 @@ describe("placeOverviewChip", () => {
   it("keeps partly visible endpoints but hides offscreen ordinary labels and endpoints", () => {
     const opts = { selected: true, vw: 200, vh: 200, identityRegions: [] };
     const chip = { x: -10, y: 100, w: 40, h: 20 };
-    const endpoint = placeOverviewChip(chip, { ...opts, endpoint: true });
+    const endpoint = placeOverviewChip(chip, { ...opts, allowPartial: true });
     expect(endpoint.hidden).toBe(false);
     if (!endpoint.hidden) expect(chip.x - chip.w / 2 + endpoint.dx).toBe(8);
-    expect(placeOverviewChip(chip, { ...opts, endpoint: false })).toEqual({ hidden: true });
-    expect(placeOverviewChip({ ...chip, x: -30 }, { ...opts, endpoint: true })).toEqual({ hidden: true });
+    expect(placeOverviewChip(chip, { ...opts, allowPartial: false })).toEqual({ hidden: true });
+    expect(placeOverviewChip({ ...chip, x: -30 }, { ...opts, allowPartial: true })).toEqual({ hidden: true });
   });
 });

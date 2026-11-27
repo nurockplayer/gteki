@@ -128,9 +128,7 @@ const LABEL_RAYS = { low: { count: 6, ms: 0.6 }, high: { count: 16, ms: 1.5 } } 
  * steps) and render-state changes (hidden, faded or relayered meshes) are followed.
  */
 const LABEL_RECHECK_MS = 1000;
-/** Overview declutter runs at most this often (ms) while the view changes. */
-const DECLUTTER_MS = 80;
-/** A revealed label that still cannot be measured (never laid out) is re-checked this many times, then left on its estimate. */
+/** A revealed label that still cannot be measured (never laid out) is re-checked this many times. */
 const MEASURE_TRIES = 5;
 /** Let the initial station identity framing remain readable before guide yaw steering resumes. */
 const IDENTITY_HOLD_S = 4;
@@ -200,7 +198,7 @@ interface PoiLabel {
   selected: boolean;
   occluded: LabelOcclusion;
   state: LabelState;
-  /** Overview only: dropped by the screen-space declutter (hidden on top of `state`, never instead of it). */
+  /** Dropped by the screen-space layout after applying `state`. */
   decluttered: boolean;
   klass: LabelClass;
   /** Backed by a graph node (not search-only). */
@@ -473,11 +471,9 @@ export class Explorer {
   /** Camera pose at the last occlusion sweep. */
   private readonly labelCamPos = new THREE.Vector3(Infinity, 0, 0);
   private readonly labelCamQuat = new THREE.Quaternion();
-  /** Overview declutter: runs when the view, label states or sizes change (see updateDeclutter). */
+  /** Screen-space layout runs when the view, label states or sizes change. */
   private declutterDirty = true;
-  private declutterAt = -Infinity;
-  /** Some label may carry `decluttered` (set by an overview pass, cleared when leaving overview). */
-  private declutterActive = false;
+  private declutterView?: THREE.Matrix4;
   private readonly viewSize = { w: 1, h: 1 };
   /** The routable slice's bounds (renderer frame), or null when the bundle has no usable edge. */
   private routableBox: THREE.Box3 | null = null;
@@ -1025,7 +1021,7 @@ export class Explorer {
   /** POI label states for automated visual checks. */
   labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number; identityOverlap: number } {
     const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0, identityOverlap: this.mode === "overview" ? this.identityOverlap : 0 };
-    // A label dropped by the overview declutter is off screen: counted there, not as shown or faded.
+    // A label dropped by screen-space layout is counted separately from shown and faded labels.
     for (const l of this.poiLabels) { if (l.decluttered && l.state !== "hidden") n.decluttered++; else n[l.state]++; }
     return n;
   }
@@ -2772,7 +2768,7 @@ export class Explorer {
       l.obj.element.classList.toggle("occluded", state === "faded");
       this.declutterDirty = true;
     }
-    this.updateDeclutter(now);
+    this.updateDeclutter();
     for (const l of labels) {
       const shown = l.state !== "hidden" && !l.decluttered;
       if (l.obj.visible !== shown) l.obj.visible = shown;
@@ -2806,7 +2802,7 @@ export class Explorer {
     if (regions.length) for (const l of this.poiLabels) {
       const el = l.obj.element;
       if (l.size || !el.isConnected || el.style.display === "none") continue;
-      const w = el.offsetWidth, h = el.offsetHeight;
+      const { width: w, height: h } = el.getBoundingClientRect();
       if (w > 0 && h > 0) l.size = { w, h };
     }
     for (const l of this.poiLabels) {
@@ -2832,74 +2828,68 @@ export class Explorer {
   }
 
   /**
-   * Overview only: hide labels whose screen rectangle meets a higher-priority one (see labelDeclutter.ts).
-   * Candidates are the labels the floor and occlusion rules leave on screen, so this only ever hides more.
-   * Runs when the camera, sizes or label states changed, at most every DECLUTTER_MS. Label boxes are
-   * measured once (a batched read, no per-frame layout) and cached.
+   * Keep labels within the viewport and clear of higher-priority labels after floor and occlusion checks.
+   * CSS2D moves the chips every frame with the camera, so their layout follows the same view matrix.
+   * Label boxes are measured once in a batched read and cached.
    */
-  private updateDeclutter(now: number): void {
+  private updateDeclutter(): void {
     const labels = this.poiLabels;
-    if (this.mode !== "overview") {
-      // Walk and guide never declutter; undo an earlier overview pass once.
-      if (this.declutterActive) for (const l of labels) {
-        l.decluttered = false;
-        l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
-      }
-      this.declutterActive = false;
-      this.identityOverlap = 0;
-      this.declutterDirty = true;
-      return;
-    }
-    if (!this.declutterDirty || now - this.declutterAt < DECLUTTER_MS) return;
+    const view = this.camera.matrixWorld;
+    if (!this.declutterDirty && this.declutterView?.equals(view)) return;
     this.declutterDirty = false;
-    this.declutterAt = now;
-    this.declutterActive = true;
+    (this.declutterView ??= new THREE.Matrix4()).copy(view);
     // Measure labels the browser has laid out and not yet measured: reads only, so one layout at most.
     for (const l of labels) {
       const el = l.obj.element;
       if (l.size || !el.isConnected || el.style.display === "none") continue;
-      const w = el.offsetWidth, h = el.offsetHeight;
+      const { width: w, height: h } = el.getBoundingClientRect();
       if (w > 0 && h > 0) { l.size = { w, h }; this.declutterDirty = true; }
     }
     const { w: vw, h: vh } = this.viewSize;
     const items: DeclutterItem[] = [];
     const byId = new Map<string, PoiLabel>();
     // Keep chips off the top bar (#1072), credit footer and disclaimer badge (#838).
-    const host = this.host.getBoundingClientRect();
-    const blocked = [this.host.parentElement?.querySelector<HTMLElement>(".topbar"), this.creditEl, this.legendEl]
-      .filter((el): el is HTMLElement => el != null && el.getClientRects().length > 0)
-      .map((el) => {
-        const q = el.getBoundingClientRect();
-        return { x0: q.left - host.left, y0: q.top - host.top, x1: q.right - host.left, y1: q.bottom - host.top };
-      });
+    const overview = this.mode === "overview";
+    let blocked: ScreenRect[] = [];
+    if (overview) {
+      const host = this.host.getBoundingClientRect();
+      blocked = [this.host.parentElement?.querySelector<HTMLElement>(".topbar"), this.creditEl, this.legendEl]
+        .filter((el): el is HTMLElement => el != null && el.getClientRects().length > 0)
+        .map((el) => {
+          const q = el.getBoundingClientRect();
+          return { x0: q.left - host.left, y0: q.top - host.top, x1: q.right - host.left, y1: q.bottom - host.top };
+        });
+    }
     const p = new THREE.Vector3();
     for (const l of labels) {
       l.decluttered = false;
       if (l.state === "hidden") continue;
       p.setFromMatrixPosition(l.obj.matrixWorld).project(this.camera);
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
-      const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
+      const el = l.obj.element;
+      const size = l.size ?? estimateLabelBox(el.textContent ?? "");
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
       let x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
-      l.obj.element.style.translate = l.identityOffsetY ? `0 ${l.identityOffsetY}px` : "";
-      const placement = placeOverviewChip({ x, y, ...size }, { endpoint: l.klass === LABEL_CLASS.endpoint, selected: l.selected, vw, vh, identityRegions: this.identityRegions, anchorY: y - l.identityOffsetY });
+      const placement = placeOverviewChip({ x, y, ...size }, { allowPartial: !overview || l.klass === LABEL_CLASS.endpoint, selected: l.selected, vw, vh, identityRegions: this.identityRegions, anchorY: y - l.identityOffsetY });
       if (placement.hidden) { l.decluttered = true; continue; }
       const { dx, dy } = placement;
       x += dx; y += dy;
-      l.obj.element.style.translate = `${dx}px ${l.identityOffsetY + dy}px`;
+      el.style.translate = `${dx}px ${l.identityOffsetY + dy}px`;
+      // Let CSS2D attach unmeasured chips without painting the estimated boxes.
+      el.style.visibility = l.size ? "" : "hidden";
       items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
     }
     const keep = declutter(items, { blocked });
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
-    this.identityOverlap = items.filter((item) => {
+    this.identityOverlap = overview ? items.filter((item) => {
       const label = byId.get(item.id)!;
       if (!keep.has(item.id) || label.selected || label.state === "hidden") return false;
       const rect = { x0: item.x - item.w / 2, x1: item.x + item.w / 2, y0: item.y - item.h / 2, y1: item.y + item.h / 2 };
       return this.identityRegions.some((region) => intersectsRect(rect, region));
-    }).length;
+    }).length : 0;
     // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
-    // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
+    // Bounded: a label that never lays out is retried MEASURE_TRIES times.
     for (const id of revealedUnmeasured(items, keep)) {
       if (byId.get(id)!.measureTries++ < MEASURE_TRIES) this.declutterDirty = true;
     }
