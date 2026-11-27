@@ -547,7 +547,7 @@ export function buildCrowd(
 ) {
   const preset = band ? CROWD_BANDS[band] : { density: 1, suitBias: 0, toGate: 0.5 };
   const count = Math.max(1, Math.round(maxCount * preset.density));
-  const paths: Path[] = [];
+  const paths: (Path & { id: string })[] = [];
   for (const e of edges) {
     if (e.verification !== "verified" || e.geometry.some((p) => p.z === null)) continue;
     const pts = e.geometry.map((p) => toRenderer(p.x, p.y, p.z as number));
@@ -557,7 +557,7 @@ export function buildCrowd(
       cum.push(cum[i - 1]! + b.distanceTo(a));
       hcum.push(hcum[i - 1]! + Math.hypot(b.x - a.x, b.z - a.z));
     }
-    if (cum[cum.length - 1]! > 1) paths.push({ pts, cum, hcum, length: cum[cum.length - 1]!, from: e.from, to: e.to, lane: lanes[e.id] });
+    if (cum[cum.length - 1]! > 1) paths.push({ id: e.id, pts, cum, hcum, length: cum[cum.length - 1]!, from: e.from, to: e.to, lane: lanes[e.id] });
   }
   const byNode = new Map<string, number[]>();
   paths.forEach((p, i) => {
@@ -683,7 +683,10 @@ export function buildCrowd(
   const group = new THREE.Group();
   group.name = "ikebukuro_crowd";
   // QA captures keep commuters out of both stations, regardless of elapsed frames.
-  group.visible = typeof location === "undefined" || new URLSearchParams(location.search).get("qaCrowd") !== "off";
+  const params = new URLSearchParams(globalThis.location?.search);
+  group.visible = params.get("qaCrowd") !== "off";
+  const diagnostics = params.get("qaSceneQuery") === "1";
+  const edgeAt = (agent: number) => paths[agents[agent]!.path]!.id;
   const c = new THREE.Color();
   const owned: THREE_NS.BufferGeometry[] = [];
   const make = (name: string, g: THREE_NS.BufferGeometry, m: THREE_NS.Material, per: number, has: ((l: Look, i: number) => boolean) | null, colorKey: string): Part => {
@@ -709,6 +712,13 @@ export function buildCrowd(
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     mesh.frustumCulled = false;
     mesh.userData.gteki_role = "ambient_crowd";
+    if (diagnostics) {
+      const peopleBySlot = slots && Array.from(slots.keys()).filter(i => slots[i]! >= 0);
+      mesh.userData.instanceDataId = (instance: number) => {
+        const slot = Math.floor(instance / per);
+        return edgeAt(peopleBySlot ? peopleBySlot[slot]! : slot);
+      };
+    }
     if (!low) group.add(mesh);
     return { mesh, per, slots };
   };
@@ -832,6 +842,7 @@ export function buildCrowd(
     lowMesh.name = "crowd_low";
     lowMesh.frustumCulled = false;
     lowMesh.userData.gteki_role = "ambient_crowd";
+    if (diagnostics) lowMesh.userData.instanceDataId = edgeAt;
     lowMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     group.add(lowMesh);
   }

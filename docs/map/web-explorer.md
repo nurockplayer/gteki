@@ -9,7 +9,26 @@ updated: 2026-11-08 JST
 The 3D station explorer in the web app. One `Explorer` class (a single file, `apps/web/src/explorer/explorer.ts`, about 2300 lines) owns a three.js renderer, a CSS2D label layer, and three camera modes: overview (orbit), walk (follow camera on the avatar), and guide (paced walk along a route). It loads one station at a time: the station's scene module if it has one, otherwise the L0 graph view built from the routing data. Route ribbons, POI chips, identity boards and the minimap all hang off this one object.
 Most helpers in the folder are small pure modules with their own tests (camera math, label declutter, occlusion, guide pacing), so the class mostly wires them together.
 
+## Scene query for Playwright (2026-11-28 JST)
+
+Add `qaSceneQuery=1` to the explorer URL to expose `window.__gteki.sceneQuery` on a dev server or a built QA preview. Wait for station readiness before querying.
+
+```ts
+await page.goto("/?qaSceneQuery=1");
+await page.waitForFunction(() => (window as any).__gteki?.phase() === "ready");
+const hit = await page.evaluate(() => {
+  const { left, top, width, height } = document.querySelector("canvas")!.getBoundingClientRect();
+  return (window as any).__gteki.sceneQuery.pick({ x: left + width / 2, y: top + height / 2 });
+});
+```
+
+- `player()` reports the station, current zone, nearest walk node and floor (nearest leg endpoint during a guide), guide leg, camera pose, and the journey's near-clip, void and near-black values.
+- `pick({ x, y })` takes viewport CSS pixels. `pick({ origin, direction })` takes a world ray. Both return the first mesh hit or `null`. `near(radiusM)` lists meshes or instances whose CPU geometry intersects the camera sphere.
+- Positions and bounds use Three.js world metres. Mesh records include the name, ancestor path, source data ID and known zone, building and floor IDs. Where geometry is merged, the ID can identify the input dataset. Missing metadata is `null`.
+- The journey records `sceneQuery` at J5/J6 failures, including intermediate J5 samples. `nearClipHits` and `catHits` are actual sampler hits. `centerHit` and `groundHit` show nearby geometry for cases such as voids or an offscreen cat.
+
 ## Main files and functions
+- `apps/web/src/explorer/sceneQuery.ts` — screen and world ray picks, camera-sphere queries and shared near-clip sampling.
 - `stations/shinjuku/scene/department-stores.ts` (2026-11-22 JST): `buildDepartmentStores()` adds the eleven names on ten pinned PLATEAU LOD2 building parts only when `previewNext` is true. The original surface batches omit those parts only in that mode. Facade, shut street band and name atlas use three draws per building and reuse Ikebukuro's landmark constants. Existing store POIs have no entrance positions/connectors; this layer does not infer routing or door anchors. The importer reads the already pinned raw tiles and retains geometry only.
 - `apps/web/src/explorer/fetchGlb.ts` — shared GLB loader: production `.glb.gz` assets are fetched through the loading manager, decompressed and parsed with the configured resource path; plain development URLs keep `loadAsync`. The station plugin writes deterministic gzip siblings beside all built GLBs, and station/public avatar build URLs select them (#1341).
 - `apps/web/src/explorer/interaction.ts` — session-only generic interaction state machine, fed by fictional station interactables and exposed to the HUD. Its state carries `nearKind`, and the explorer keeps each reaction object in a map by interactable id (`interactableInfo().visuals`, plus the station's decorative `gtekiWallProps` mesh as `props`); `packages/scene-api/src/wallProps.ts` builds those neutral vending machines and kiosks as one merged mesh whose appended reaction boxes share its draw (#858 item 12).

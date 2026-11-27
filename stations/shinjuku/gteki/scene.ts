@@ -303,6 +303,8 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
     return kit.apply(c);
   } };
   const built = buildStation(sceneBundle, plan as unknown as Plan, { quality: ctx.quality, previewNext: ctx.previewNext, pitchedCeilings: options.pitchedCeilings, reuseLayout: true, layoutBakeText: options.layoutBakeText, verifyRestrictedInput: true, ...(timeBand ? { timeBand } : {}), ...(cameraKit ? { kit: cameraKit } : {}) });
+  built.root.userData.dataId = "plan";
+  for (const [floorId, group] of built.levelGroups) group.userData.floorId = floorId;
   installLightPreset(built.root, parseLightPreset(typeof location === "undefined" ? "" : location.search));
   const { layout } = built;
 

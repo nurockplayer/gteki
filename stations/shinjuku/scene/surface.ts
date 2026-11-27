@@ -89,6 +89,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
 }
 function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high"; previewNext?: boolean }) {
   const root = new THREE.Group(); root.name = "surface-render-only"; root.visible = false;
+  root.userData.dataId = "surface";
   root.userData.attribution = surface.attribution;
   const resources = new Set<{ dispose(): void }>();
   const track = <T extends { dispose(): void }>(r: T) => (resources.add(r), r);
