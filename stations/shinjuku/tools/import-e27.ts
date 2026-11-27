@@ -1519,12 +1519,36 @@ const spawnHeadings = Object.fromEntries(spawnNodeIds.flatMap((id) => (id in SPA
 // source and rights gate as assets; each derivation names the script that writes the file.
 const departmentStores = JSON.parse(readFileSync(join(HERE, "../data/department-stores.json"), "utf8")) as { stores: { poiId: string }[] };
 const departmentStoreSources = [...new Set(["plateau-13104-shinjuku-ku-2025", ...departmentStores.stores.flatMap(s => pois.find(p => p.id === s.poiId)!.evidence.sourceIds)])].sort();
+const odakyuLane = JSON.parse(readFileSync(join(HERE, "../data/rail/odakyu.json"), "utf8")) as {
+  sources: { id: string; url: string; read_date: string; use: string }[];
+};
+const odakyuFacts = [
+  { id: "mlit-terminal", title: "Shinjuku terminal field experiment report", publisher: "国土交通省", datasetDate: "2014-02" },
+  { id: "tokyo-lifts", title: "Shinjuku terminal improvement examples", publisher: "東京都都市整備局", datasetDate: null },
+  { id: "tokyo-platforms", title: "Odakyu Shinjuku platform accessibility inventory", publisher: "東京都都市整備局", datasetDate: "2024-03" },
+].map(({ id, title, publisher, datasetDate }): Source => {
+  const { url, read_date, use } = odakyuLane.sources.find(source => source.id === id)!;
+  return {
+    id: `odakyu-${id}`, title, publisher, url, license: null, rights: "REFERENCE_ONLY",
+    usage: "facts-only",
+    decision: { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" },
+    attribution: `${publisher} — ${title} (facts only)`, modified: false, retrievedAt: null, datasetDate,
+    notes: `Read ${read_date}. ${use}`,
+  };
+});
+sources.push(...odakyuFacts);
 const dataFiles: DataFile[] = [
   {
     id: "jr-yamanote", path: "data/rail/jr-yamanote.json",
     sourceIds: [SRC_NWD, SRC_MAP, S03_SOURCE_ID].sort(),
     modified: true,
     derivation: "data/rail/jr-yamanote.json: S03 gate and platform labels, E27 north concourse level, and authored illustrative geometry.",
+  },
+  {
+    id: "odakyu", path: "data/rail/odakyu.json",
+    sourceIds: [S03_SOURCE_ID, ...odakyuFacts.map(source => source.id)].sort(),
+    modified: true,
+    derivation: "data/rail/odakyu.json: S03-derived gate and platform context, government station facts, and authored representative preview geometry (2026-11-26 JST).",
   },
   {
     id: "department-stores", path: "data/department-stores.json",

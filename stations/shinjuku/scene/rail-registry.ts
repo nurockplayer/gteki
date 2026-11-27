@@ -14,6 +14,7 @@ export interface RailLane {
   levels: { id: string; label: string; z_m: number; source: string }[];
   gates: { id: string; poiId?: string | null; side: "public" | "paid"; position: XYZ | null; source: string }[];
   platforms: { id: string; poiId?: string; number: number | string; track: number | string; services: string[]; level: string; centerline: [XY, XY] | null; width_m: number; length_m: number; source: string }[];
+  paidConcourseNodes?: { id: string; level: string; position: XY }[];
   connectors: { from: string; to: string; kind: "walk" | "stairs" | "escalator" | "lift" | "gate"; source: string }[];
   openings?: { position: XYZ; along: XY; width_m: number; depth_m: number; height_m: number }[];
   sources: { id: string; url?: string; path?: string; read_date: string; terms_ref: string }[];
@@ -72,7 +73,8 @@ export function mergeRailBundle(bundle: StationBundle): StationBundle {
       const isPaid = (paid.get(a.id) ?? false) && (paid.get(b.id) ?? false);
       const step = mode === "stairs" || mode === "escalator";
       edges.push({
-        id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: "both", mode,
+        id: `${a.id}__${b.id}${mode === "escalator" || mode === "elevator" ? `__${mode}` : ""}`,
+        from: a.id, to: b.id, direction: "both", mode,
         lengthM: stableHypot(p.x - q.x, p.y - q.y, (a.renderZ ?? 0) - (b.renderZ ?? 0)),
         geometry: [p, q], geometryZ: "symbolic", paid: isPaid, crossesFareBoundary: mode === "gate",
         wheelchair: step ? false : null, steps: step, hours: null, closed: false,
@@ -102,6 +104,15 @@ export function mergeRailBundle(bundle: StationBundle): StationBundle {
       const level = lane.levels.find(level => level.id === platform.level)!;
       add(platform.id, "platform", levelId(platform.level), point ? [...point, level.z_m] : null, true, platform.source,
         { ja: `${lane.line.ja} ${platform.number}番線`, en: `${lane.line.en} platform ${platform.number}` }, platform.poiId);
+    }
+    for (const landing of lane.paidConcourseNodes ?? []) {
+      const [x, y] = landing.position;
+      const level = lane.levels.find(level => level.id === landing.level)!;
+      const node: Node = { id: id(landing.id), floorId: levelId(level.id), position: { x, y, z: null },
+        renderZ: level.z_m, kind: "junction", inOut: "inside", sourceRefs: [] };
+      nodes.push(node);
+      positions.set(landing.id, node);
+      paid.set(node.id, true);
     }
     for (const link of lane.connectors) {
       const a = positions.get(link.from), b = positions.get(link.to);

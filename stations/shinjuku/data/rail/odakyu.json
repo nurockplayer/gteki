@@ -1,0 +1,171 @@
+{
+  "line": { "ja": "小田急小田原線", "en": "Odakyu Odawara Line" },
+  "operator": "Odakyu Electric Railway",
+  "lineCode": "OH",
+  "stationCode": "OH01",
+  "status": "representative",
+  "levels": [
+    { "id": "b1f", "label": "B1F", "z_m": -6, "source": "s03", "heightSource": "preview" },
+    { "id": "1f", "label": "1F", "z_m": 0, "source": "s03", "heightSource": "preview" },
+    { "id": "2f", "label": "2F", "z_m": 6, "source": "s03", "heightSource": "preview" }
+  ],
+  "gates": [
+    {
+      "id": "south", "label": "南口改札口", "poiId": "poi:odakyu-gate:1", "side": "public",
+      "level": "2f", "position": [36, 272, 6], "source": "s03", "positionSource": "preview"
+    },
+    {
+      "id": "west-ground", "label": "西口地上改札口", "poiId": "poi:odakyu-gate:2", "side": "public",
+      "level": "1f", "position": [14, 424, 0], "source": "s03", "positionSource": "preview"
+    },
+    {
+      "id": "west-underground", "label": "西口地下改札口", "poiId": "poi:odakyu-gate:3", "side": "public",
+      "level": "b1f", "position": [18, 384, -6], "source": "s03", "positionSource": "preview"
+    },
+    {
+      "id": "jr-central-underground", "label": "中央地下JR線連絡改札口", "poiId": "poi:jreast-odakyu-transfer:1",
+      "side": "paid", "approachOperator": "JR East", "level": "b1f", "position": [34, 348, -6],
+      "source": "s03", "positionSource": "preview"
+    },
+    {
+      "id": "jr-south", "label": "南口JR連絡口", "poiId": "poi:jreast-odakyu-transfer:2",
+      "side": "paid", "approachOperator": "JR East", "level": "2f", "position": [60, 292, 6],
+      "source": "s03", "positionSource": "preview"
+    }
+  ],
+  "platforms": [
+    {
+      "id": "p2", "number": 2, "track": "t1", "services": ["romancecar"], "level": "1f",
+      "centerline": [[48, 256], [34, 400]], "width_m": 5, "length_m": 145,
+      "source": "s03", "s03Feature": 29007679, "geometrySource": "preview"
+    },
+    {
+      "id": "p3", "number": 3, "track": "t2", "services": ["romancecar"], "level": "1f",
+      "centerline": [[39, 256], [26, 399]], "width_m": 8, "length_m": 144,
+      "source": "s03", "s03Feature": 29007678, "geometrySource": "preview"
+    },
+    {
+      "id": "p4", "number": 4, "track": "t2", "services": ["rapid-express", "express"], "level": "1f",
+      "centerline": [[30, 255], [16, 398]], "width_m": 3, "length_m": 144,
+      "source": "s03", "s03Feature": 29007677, "geometrySource": "preview"
+    },
+    {
+      "id": "p5", "number": 5, "track": "t3", "services": ["rapid-express", "express"], "level": "1f",
+      "centerline": [[27, 255], [13, 397]], "width_m": 3, "length_m": 143,
+      "source": "s03", "s03Feature": 29007676, "geometrySource": "preview"
+    },
+    {
+      "id": "p6", "number": 6, "track": "t3", "services": ["alighting-only"], "level": "1f",
+      "centerline": [[20, 254], [6, 396]], "width_m": 3, "length_m": 143,
+      "source": "s03", "s03Feature": 29007675, "geometrySource": "preview"
+    },
+    {
+      "id": "p7", "number": 7, "track": "t4", "services": ["alighting-only"], "level": "b1f",
+      "centerline": [[45, 226], [30, 324]], "width_m": 3, "length_m": 99,
+      "source": "mlit-terminal", "geometrySource": "preview"
+    },
+    {
+      "id": "p8", "number": 8, "track": "t4", "services": ["local"], "level": "b1f",
+      "centerline": [[38, 226], [23, 324]], "width_m": 5, "length_m": 99,
+      "source": "mlit-terminal", "geometrySource": "preview"
+    },
+    {
+      "id": "p9", "number": 9, "track": "t5", "services": ["local"], "level": "b1f",
+      "centerline": [[34, 226], [19, 324]], "width_m": 5, "length_m": 99,
+      "source": "mlit-terminal", "geometrySource": "preview"
+    },
+    {
+      "id": "p10", "number": 10, "track": "t5", "services": ["alighting-only"], "level": "b1f",
+      "centerline": [[27, 226], [12, 324]], "width_m": 3, "length_m": 99,
+      "source": "mlit-terminal", "geometrySource": "preview"
+    }
+  ],
+  "paidConcourseNodes": [
+    { "id": "paid-2f", "level": "2f", "position": [42, 274] },
+    { "id": "paid-1f", "level": "1f", "position": [38, 263] },
+    { "id": "paid-b1f", "level": "b1f", "position": [38, 238] }
+  ],
+  "connectors": [
+    { "from": "south", "to": "paid-2f", "kind": "gate", "source": "preview" },
+    { "from": "west-ground", "to": "paid-1f", "kind": "gate", "source": "preview" },
+    { "from": "west-underground", "to": "paid-b1f", "kind": "gate", "source": "preview" },
+    { "from": "jr-south", "to": "paid-2f", "kind": "gate", "source": "preview" },
+    { "from": "jr-central-underground", "to": "paid-b1f", "kind": "gate", "source": "preview" },
+    { "from": "paid-2f", "to": "paid-1f", "kind": "stairs", "source": "preview" },
+    { "from": "paid-1f", "to": "paid-b1f", "kind": "stairs", "source": "preview" },
+    { "from": "paid-2f", "to": "paid-1f", "kind": "escalator", "source": "preview" },
+    { "from": "paid-2f", "to": "paid-1f", "kind": "lift", "source": "preview" },
+    { "from": "paid-1f", "to": "paid-b1f", "kind": "lift", "source": "preview" },
+    { "from": "paid-1f", "to": "p2", "kind": "walk", "source": "preview" },
+    { "from": "paid-1f", "to": "p3", "kind": "walk", "source": "preview" },
+    { "from": "paid-1f", "to": "p4", "kind": "walk", "source": "preview" },
+    { "from": "paid-1f", "to": "p5", "kind": "walk", "source": "preview" },
+    { "from": "paid-1f", "to": "p6", "kind": "walk", "source": "preview" },
+    { "from": "paid-b1f", "to": "p7", "kind": "walk", "source": "preview" },
+    { "from": "paid-b1f", "to": "p8", "kind": "walk", "source": "preview" },
+    { "from": "paid-b1f", "to": "p9", "kind": "walk", "source": "preview" },
+    { "from": "paid-b1f", "to": "p10", "kind": "walk", "source": "preview" }
+  ],
+  "connectorFacts": [
+    { "levels": ["2f", "1f", "b1f"], "kind": "lift", "count": 3, "source": "tokyo-lifts",
+      "note": "Tokyo records three lifts linking the south concourse and the two platform levels. Odakyu's station page corroborates the south-side lift route." },
+    { "levels": ["2f", "1f", "b1f"], "kind": "stairs", "source": "s03",
+      "note": "The dated level geometry identifies stairs. The MLIT study also documents stairs between platform levels." },
+    { "levels": ["2f", "1f", "b1f"], "kind": "escalator", "source": "s03",
+      "note": "The dated level geometry includes escalators in the station area. Their individual paid-side landings and directions are open." }
+  ],
+  "sources": [
+    {
+      "id": "s03", "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-34",
+      "rights_record": "docs/gis/rights/tokyo-s03-zip.json", "owner_ruling": "Q2/Q3",
+      "license": "CC BY 4.0", "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution": "出典：東京都都市整備局「新宿駅周辺の施設情報等」", "dataset_date": "2020-03 JST",
+      "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+      "poi_path": "docs/research/lines/shinjuku-line-pois.json",
+      "approximate_gate_xy_path": "stations/shinjuku/sources/s03-approx-positions.json",
+      "modification": "GTEki normalized plain facts, referenced the S03 features and used their broad layout to place simplified preview anchors and platform strips."
+    },
+    {
+      "id": "tokyo-platforms", "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_bunyabetsu_machizukuri_bfree_pdf_tetsudo_bf_hd_oda06",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-34",
+      "terms_url": "https://www.toshiseibi.metro.tokyo.lg.jp/policy",
+      "use": "Facts only. March 2024 OH01 inventory lists 2–10, with doors on 4, 5, 8 and 9."
+    },
+    {
+      "id": "tokyo-lifts", "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_kiban_shinjuku_terminal_pdf_shinjuku_terminal_1_07",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-34",
+      "terms_url": "https://www.toshiseibi.metro.tokyo.lg.jp/policy",
+      "use": "Facts only. Tokyo's terminal improvement examples, p. 2."
+    },
+    {
+      "id": "mlit-terminal", "url": "https://www.mlit.go.jp/common/001065964.pdf",
+      "read_date": "2026-11-26 JST", "terms_ref": "OD-34",
+      "terms_url": "https://www.mlit.go.jp/link.html",
+      "attribution": "MLIT field experiment report, section 3(1), pp. 28–29, February 2014 station snapshot.",
+      "use": "Facts only. Terminal track counts, floors and platform uses summarized by GTEki."
+    },
+    {
+      "id": "s06", "url": "https://www.odakyu.jp/station/shinjuku/",
+      "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN",
+      "terms_url": "https://www.odakyu.jp/policy/", "decision": "OD-34 round 5(a)",
+      "use": "Corroboration only. Station facilities, current door numbers and central underground JR transfer. Current station timetable cross-checks the base service pattern."
+    },
+    {
+      "id": "preview", "path": "stations/shinjuku/data/rail/odakyu-plan.md",
+      "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN",
+      "use": "Original GTEki representative preview. Stationside points are ENU [east, north, up] in metres."
+    }
+  ],
+  "gaps": [
+    "S03 provides approximate horizontal context only. Gate positions here use simplified horizontal anchors near the existing lookup and symbolic z. Current fare openings, exact approach ties and all physical heights remain open.",
+    "S03 identifies the 1F platform sections by number and shows B1F rails without matching numbered platform outlines. The 1F strips approximate mapped extents. The B1F strips use the broad two-track arrangement. Full platform lengths, widths and alignment remain open.",
+    "Track IDs t1–t5 are local labels. Face pairing is inferred from the S03 level geometry and MLIT terminal counts. Confirm operator track identifiers and exact face assignments before train work.",
+    "The service labels describe regular platform roles. S03 also lists semi-express for 4/5 as of March 2020. Current per-train platform allocation, exceptions and frequency remain open.",
+    "The MLIT historical 1–6 ground range includes 1. S03 and Tokyo's March 2024 count list the active ground faces as 2–6 only. The inactive edge's current physical extent is open.",
+    "Paid connectors express preview reachability. Per-gate device landings, exact stairs and escalator directions, lift-to-face step-free coverage and the JR-side concourse ties need field evidence.",
+    "The historical JR exit-only label matches the separate JR Central West POI, and another adjacent S03 gate feature is unnamed. Neither supplies evidence of an additional Odakyu public fare crossing. Recheck the current footprint during a site walk.",
+    "PLATEAU 13104 underground coverage in the repository receipt supplies no confirmed Odakyu gate, platform or access tie. MLIT R2 indoor data requires sign-in and was not fetched. S03 nav remains held under Check B.",
+    "Tokyo's March 2026 platform-door PDF returned HTTP 503. The March 2024 list and the current Odakyu station notice agree on door-equipped faces 4, 5, 8 and 9."
+  ]
+}

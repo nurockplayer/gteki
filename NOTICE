@@ -185,6 +185,8 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        carries E27-derived content under LicenseRef-Hokonavi-E27-Owner-override
        (4.3); both sets of terms apply. Credit:
        出典：東京都都市整備局「新宿駅周辺の施設情報等」; change notice as above.
+       Shinjuku rail lane data under stations/shinjuku/data/rail/ is derived from
+       S03 and is covered by this credit and modification notice.
 
    4.8 GSI (国土地理院) items - LicenseRef-GSI-terms
        Two Survey Calculation Site bl2xy control responses

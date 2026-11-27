@@ -314,6 +314,13 @@ precedence = "override"
 SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省 Project PLATEAU; modified by GTEki contributors"]
 SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy"
 
+# S03-derived Shinjuku rail lane data; credit and modification notice: NOTICE 4.7.
+[[annotations]]
+path = "stations/shinjuku/data/rail/**"
+precedence = "override"
+SPDX-FileCopyrightText = "東京都都市整備局; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-S03"
+
 [[annotations]]
 path = ["docs/qa/reports/2026-10-21-evidence/shinjuku-*.jpg", "docs/visual/crowd-vanish-1454/*.jpg", "docs/visual/crowd-vanish-1454/**/*.webp"]
 precedence = "override"

@@ -53,7 +53,8 @@ const stairwellSources = (): string[] => {
   const cited = [
     ...graph.nodes.flatMap((n: Node) => n.sourceRefs.map((r) => r.sourceId)),
     ...graph.edges.flatMap((e: Edge) => [...(e.geometryEvidence?.sourceIds ?? []), ...(e.accessEvidence?.sourceIds ?? [])]),
-    ...(station.dataFiles as DataFile[]).filter((d) => !d.path.startsWith("scene/stairwell-cut.")).flatMap((d) => d.sourceIds),
+    // The Odakyu preview graph is loaded separately from the scene used for the cut.
+    ...(station.dataFiles as DataFile[]).filter((d) => !d.path.startsWith("scene/stairwell-cut.") && d.path !== "data/rail/odakyu.json").flatMap((d) => d.sourceIds),
   ];
   return [...new Set(cited)];
 };
@@ -63,6 +64,7 @@ const EXPECTED: Record<string, { script: string; sources: () => string[] }> = {
   "data/depato-rollout.json": { script: "data/depato-rollout.json", sources: () => [PLATEAU, "keio-shinjuku-shopsearch-2026-11", ...read("data/department-stores.json").stores.flatMap((s: { poiId: string }) => read("gteki/pois.json").pois.find((p: { id: string }) => p.id === s.poiId).evidence.sourceIds)] },
   "data/department-stores.json": { script: "tools/import-department-stores.ts", sources: () => [PLATEAU, ...read("data/department-stores.json").stores.flatMap((s: { poiId: string }) => read("gteki/pois.json").pois.find((p: { id: string }) => p.id === s.poiId).evidence.sourceIds)] },
   "data/rail/jr-yamanote.json": { script: "data/rail/jr-yamanote.json", sources: () => [NWD, MAP, "tokyo-s03-zip"] },
+  "data/rail/odakyu.json": { script: "data/rail/odakyu.json", sources: () => ["tokyo-s03-zip", "odakyu-mlit-terminal", "odakyu-tokyo-lifts", "odakyu-tokyo-platforms"] },
   "scene/stairwell-cut.high.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/stairwell-cut.low.b64.txt": { script: "packages/godot/src/stairwell-bake.ts", sources: stairwellSources },
   "scene/shop_bays.json": { script: "tools/shop-bays.ts", sources: () => [NWD, MAP] },
