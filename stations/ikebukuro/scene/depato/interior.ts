@@ -315,7 +315,9 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         for(const side of [-1,1])frames.push(cube(x+side*1.8,l.y+bottom/2,z!,0.055,bottom,0.08));
         frames.push(cube(x,l.y+2.3-(l.index+0.25)*rowHeight,z!+0.01,3.6,0.025,0.025));
       }
-      for(const bank of directoryBanks)board(bank.x,l.y+l.clear-0.48,bank.to+5,label,0,3.4,0.45);
+      // Keep Seibu's B2 arrival sign below the HUD in the follow-camera view.
+      const seibuB2=plan.input.store.id==="seibu-ikebukuro" && l.floor.level==="B2";
+      for(const bank of directoryBanks)board(bank.x,l.y+l.clear-(seibuB2?0.83:0.48),bank.to+(seibuB2?6:5),label,0,3.4,0.45);
       if(l.incoming){
         const {x,from,to}=l.incoming;
         for(const side of [-1,1])glassPieces.push(cube(x+side*2.13,l.y+0.55,(from+to)/2,0.025,1.1,to-from));

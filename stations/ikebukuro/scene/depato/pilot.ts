@@ -25,7 +25,7 @@ const tobuApproach = [
   [-126, -81, 32.8], [-125, -49, 32.68],
 ];
 const plan = () => depatoLayout({
-  store: { ...store, floors: store.floors.filter((f,i,all) => ["B1", "1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) },
+  store: { ...store, floors: store.floors.filter((f,i,all) => ["B2", "B1", "1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) },
   footprint, elevations: { "1F": 32.2 },
   poiId: "shop-ikb-seibu-honten", sourceId: "sogo-seibu-ikebukuro-floorguide-2026-10",
   entrances: [{ level: "B1", point: [15,70], outsideNode: "sp_e" }, { level: "1F", point: [49.365,122.5], outsideNode: "depato-seibu-street" }],
