@@ -69,7 +69,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     if(roof)ceilingHoles.push(roof);
     const floorG=shape(plate.footprint,y,incoming?[well(incoming)]:[]);
     const ceilingMesh=new THREE.Mesh(shape(plate.footprint,y+clear,ceilingHoles,true));
-    const wallG=walls(plate.footprint,floor.level,wallHeight);
+    const wallG=walls(plate.footprint,floor.level,y,wallHeight);
     if(plan.input.store.id==="tobu-ikebukuro" && floor.level==="B1"){
       // The x18 station stairs cross Tobu's illustrative B1 ceiling.
       const left=-111, right=-90, front=-159.5, back=-148;
