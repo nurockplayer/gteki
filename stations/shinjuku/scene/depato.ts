@@ -12,14 +12,32 @@ import { stableHypot } from "./stable-hypot.ts";
 
 const layouts = rollout.stores.map(row => {
   const store = floorData.stores.find(s => s.id === row.id)!;
+  const fullStore = row.id.startsWith("lumine-") || row.id === "newoman-shinjuku";
+  const elevations: Record<string, number> = { "1F": row.entrance.elevation };
+  let floors = store.floors.filter(f => f.level === "1F" || f.level === "B1");
+  if (fullStore) {
+    floors = store.floors.filter((f, i, rows) => rows.findIndex(other => other.level === f.level) === i);
+    if (row.id === "newoman-shinjuku") {
+      // The three station areas are directory entries on 2F, including the paid-side listing.
+      floors = floors.map(f => {
+        if (f.level !== "2F") return f;
+        const labels = store.floors.filter(other => other.level === f.level).map(other => other.label);
+        return { ...f, label: { ja: labels.map(l => l.ja).join(" / "), en: labels.map(l => l.en).join(" / ") } };
+      });
+      // Both mezzanine flights need headroom above their lower runs.
+      elevations.M2 = elevations["1F"]! + 3.2;
+      for (let n = 2; n <= 7; n++) elevations[`${n}F`] = elevations.M2 + 3.2 + (n - 2) * 4.5;
+    }
+    if (row.id === "lumine-1-shinjuku" || row.id === "lumine-est-shinjuku") elevations.R = elevations["1F"]! + 36;
+  }
   const [doorX, doorZ] = row.entrance.point as PlanPoint;
   const [inwardX, inwardZ] = row.entrance.inward as PlanPoint;
   const layout = depatoLayout({
-    store: { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
+    store: { ...store, floors },
     footprint: row.footprint as PlanPoint[],
     poiId: row.poiId,
     sourceId: row.sourceTile,
-    elevations: { "1F": row.entrance.elevation },
+    elevations,
     circulation: row.circulation,
     entrances: [{ ...row.entrance, point: row.entrance.point as PlanPoint, inward: row.entrance.inward as PlanPoint }],
   });
@@ -81,7 +99,8 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
   };
   const pavementMaterial = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, visible: false });
   const facadeCuts = new Map<Object3D, CutRegion[]>();
-  const pavement = rollout.stores.map(row => {
+  const storefronts = rollout.stores.map(row => scene.root.getObjectByName(`department-store:${row.buildingId}`)!);
+  const pavement = rollout.stores.map((row, index) => {
     const exit = ctx.bundle.nodes.find(n => n.id === row.streetApproach.exitNode)!;
     const start = new THREE.Vector3(exit.position.x, exit.renderZ ?? exit.position.z!, -exit.position.y);
     const points = [start, ...row.streetApproach.waypoints.map(([x, y, z]) => new THREE.Vector3(x, y, z))];
@@ -106,7 +125,7 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     mesh.name = `depato-${row.id}-street-support`;
     mesh.userData.gteki_role = "walkable";
 
-    const building = scene.root.getObjectByName(`department-store:${row.buildingId}`)!;
+    const building = storefronts[index]!;
     const [x, z] = row.entrance.point, [nx, nz] = row.entrance.inward;
     const y = row.entrance.elevation;
     const across = (p: Vector3) => (p.x - x!) * -nz! + (p.z - z!) * nx!;
@@ -142,7 +161,12 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
   ]).join(""));
   const interiors = layouts.map(p => buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
   scene.root.add(...pavement, ...interiors.flatMap(i => [i.root, i.connectorRoot]));
+  // The NEWoMan well already has guards. A generated cross-rail closes the stacked mezzanine flights.
+  scene.root.userData.modelledStairwellRailEdges = ctx.bundle.edges
+    .filter(e => e.mode === "escalator" && e.id.startsWith("depato-newoman-shinjuku-"))
+    .map(e => e.id);
   let avatar: { x: number; y: number; z: number } | null = null;
+  let hiddenStorefront: Object3D | undefined;
   return {
     ...scene,
     walkable: [...scene.walkable, ...pavement, ...interiors.flatMap(i => i.walkable)],
@@ -158,9 +182,19 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
       if (!camera) return;
       const p = avatar ?? camera.position;
       const distances = layouts.map(l =>
-        l.contains([p.x, p.z]) && p.y >= l.height("B1") - 1 && p.y <= l.height("1F") + 4 ? 0 :
+        l.contains([p.x, p.z]) && p.y >= Math.min(l.height("B1"), l.height(l.floors[0]!.level)) - 1 &&
+          p.y <= l.height(l.floors.at(-1)!.level) + 4 ? 0 :
           stableHypot(p.x - l.input.entrances[0]!.point[0], p.y - l.height("1F"), p.z - l.input.entrances[0]!.point[1]));
       const active = distances.indexOf(Math.min(...distances));
+      const layout = layouts[active]!;
+      // PLATEAU roof and setback faces cross some authored upper floor plates.
+      const storefront = layout.floors.length > 3 && distances[active] === 0 && p.y > layout.height("1F") + 0.5
+        ? storefronts[active] : undefined;
+      if (hiddenStorefront !== storefront) {
+        if (hiddenStorefront) hiddenStorefront.visible = true;
+        if (storefront) storefront.visible = false;
+        hiddenStorefront = storefront;
+      }
       // Keep the detail loaded for the approach and release it after leaving the storefront.
       interiors.forEach((i, n) => { if (n !== active || distances[n]! > 24) i.update(camera, dt, elapsed, false); });
       if (distances[active]! <= 24) interiors[active]!.update(camera, dt, elapsed);

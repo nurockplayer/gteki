@@ -4,7 +4,7 @@ export interface DepatoStore {
   id: string;
   name: { ja: string; en: string };
   building: string | null;
-  floors: { level: string; category: string; label: { ja: string; en: string }; tenants: { ja: string; en: string }[]; source: string; read: string }[];
+  floors: { level: string; order?: number; category: string; label: { ja: string; en: string }; tenants: { ja: string; en: string }[]; source: string; read: string }[];
 }
 export type PlanPoint = [number, number]; // renderer x, z (east, south), metres
 export interface DepatoInput {
@@ -104,7 +104,15 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
   }
   const goal = nodes.find(n => n.id === id(plan.floors[0]!.level, "aisle"))!;
   return { ...bundle,
-    floors: [...bundle.floors, ...plan.floors.map(f => ({ id: id(f.level, "floor"), operatorId: "public", sourceLabels: [], ordinal: f.level.startsWith("B") ? -Number(f.level.slice(1)) : Number(f.level.replace("F", "")) - 1, intermediate: false, elevationM: null, elevationSource: "unknown" as const, renderElevationM: plan.height(f.level), displayNames: [{ lang: "ja", text: `${store.name.ja} ${f.level}` }, { lang: "en", text: `${store.name.en} ${f.level}` }] }))],
+    floors: [...bundle.floors, ...plan.floors.map((f, index) => ({
+      id: id(f.level, "floor"), operatorId: "public", sourceLabels: [],
+      ordinal: f.category === "rooftop" ? index - plan.floors.findIndex(row => row.level === "1F")
+        : f.level.startsWith("M") ? (f.order ?? 1) - 1
+        : f.level.startsWith("B") ? -Number(f.level.slice(1)) : Number(f.level.replace("F", "")) - 1,
+      intermediate: f.level.startsWith("M"), elevationM: null, elevationSource: "unknown" as const,
+      renderElevationM: plan.height(f.level),
+      displayNames: [{ lang: "ja", text: `${store.name.ja} ${f.level}` }, { lang: "en", text: `${store.name.en} ${f.level}` }],
+    }))],
     nodes: [...bundle.nodes, ...nodes], edges: [...bundle.edges, ...edges],
     pois: bundle.pois.map(p => p.id !== plan.input.poiId ? p : { ...p, floorId: goal.floorId, displayPosition: goal.position, connectorNodeIds: [goal.id], aliases: [...p.aliases, { lang: "ja", text: "デパ地下" }, { lang: "en", text: `${store.name.en} food hall` }], evidence, notes: [{ lang: "ja", text: "生成された店内プレビュー。通路・売場位置は実測ではありません。" }, { lang: "en", text: "Generated interior preview; aisles and tenant positions are illustrative." }] }),
   };
