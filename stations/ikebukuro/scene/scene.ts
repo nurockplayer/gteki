@@ -485,13 +485,11 @@ function exitStairEnclosures(THREE: ThreeNS, toRenderer: (x: number, y: number, 
   const footLeft = x39(170.79, -178.48, 31.57), footRight = x39(171.36, -179.94, 31.57);
   stairSlab(topLeft, topRight, footLeft, footRight);
 
-  // The surveyed street lip is one riser above the upper tread. Cap it at the
-  // portal elevation so the walker can stand on the street threshold.
-  const a = x39(172.23, -178.354, 32.79), b = x39(172.792, -179.753, 32.79);
-  panel(a, b, b.clone().setY(32.645), a.clone().setY(32.645), slab);
+  // End the street threshold at the surveyed top tread so it does not cover the flight or rail posts.
+  const a = topLeft.clone().setY(32.79), b = topRight.clone().setY(32.79);
+  panel(a, b, topRight, topLeft, slab);
   const thresholdStart = positions.length;
-  panel(a, a.clone().add(new THREE.Vector3(1, 0, 0)),
-    b.clone().add(new THREE.Vector3(1, 0, 0)), b, slab);
+  panel(a, x39(173.23, -178.354, 32.79), x39(173.792, -179.753, 32.79), b, slab);
   const thresholdGeometry = new THREE.BufferGeometry();
   thresholdGeometry.setAttribute("position", new THREE.Float32BufferAttribute(positions.slice(thresholdStart), 3));
   const threshold = new THREE.Mesh(thresholdGeometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
