@@ -95,6 +95,8 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   const mats = {
     ground: track(daylight("#f2eee5", track(pavingTexture()))), asphalt: track(daylight("#ffffff",track(pavingTexture(true)))),
     stone: track(daylight("#b7b8b2")), steel: track(daylight("#aebcc2",null,.25)),
+    railingSteel: track(daylight("#758387", null, .35)),
+    railingGlass: track(daylight("#a6bcc0", null, .5)),
     glass: track(daylight("#8aafb9",null,.8)), roof: track(daylight("#899493")),
     paint: track(daylight("#dfdfd2")), tactile: track(daylight("#c7a64c")),
     leaf: track(daylight("#60754b")),
@@ -109,6 +111,8 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     material.map!.image = canvas;
   }
   mats.glass.transparent = true; mats.glass.opacity = .38; mats.glass.depthWrite = false;
+  mats.railingGlass.transparent = true; mats.railingGlass.opacity = .16; mats.railingGlass.depthWrite = false;
+  mats.railingGlass.forceSinglePass = true;
   const batches = new Map<string, { material: THREE.Material; geometries: THREE.BufferGeometry[] }>();
   const add = (key: string, geometry: THREE.BufferGeometry, material: THREE.Material) => {
     let batch = batches.get(key); if (!batch) { batch = { material, geometries: [] }; batches.set(key, batch); } batch.geometries.push(geometry);
@@ -128,24 +132,23 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
     add("stone",flat(strip(a,b,.13),.11),mats.stone);
   }
   for(const w of surfacePadWalls(layout,opts.bundle,opts.previewNext)){
-    add("steel",beam(pos(w.a,1.04),pos(w.b,1.04),.042,.042),mats.steel);
-    add("steel",beam(pos(w.a,.48),pos(w.b,.48),.028,.028),mats.steel);
+    add("railing-steel",beam(pos(w.a,1.04),pos(w.b,1.04),.034,.03),mats.railingSteel);
+    add("railing-glass",quad(w.a,w.b,.1,1.025),mats.railingGlass);
     const count=Math.max(1,Math.ceil(stableHypot(w.b.x-w.a.x,w.b.y-w.a.y)/1.5));
     for(let i=0;i<=count;i++){
       const p={x:w.a.x+(w.b.x-w.a.x)*i/count,y:w.a.y+(w.b.y-w.a.y)*i/count};
-      add("steel",beam(pos(p,0),pos(p,1.08),.045,.045),mats.steel);
+      add("railing-steel",beam(pos(p,.1),pos(p,1.055),.028,.028),mats.railingSteel);
     }
     add("stone",beam(pos(w.a,.05),pos(w.b,.05),.09,.1),mats.stone);
   }
   for(const w of surfaceColumns(layout,opts.bundle)){
     const p={x:(w.a.x+w.b.x)/2,y:(w.a.y+w.b.y)/2};
-    add("steel",beam(pos(p,0),pos(p,w.zMax),.08,.08),mats.steel);
+    add("railing-steel",beam(pos(p,0),pos(p,w.zMax),.055,.055),mats.railingSteel);
   }
   for(const w of surfaceCanopyWalls(layout,opts.bundle)){
     add("stone",quad(w.a,w.b,0,.28),mats.stone);
     add(w.canopyPart==="back"?"stone":"glass",quad(w.a,w.b,.28,2.94),w.canopyPart==="back"?mats.stone:mats.glass);
-    add("steel",beam(pos(w.a,.95),pos(w.b,.95),.038,.038),mats.steel);
-    add("steel",beam(pos(w.a,.28),pos(w.b,.28),.04,.04),mats.steel);
+    add("railing-steel",beam(pos(w.a,.28),pos(w.b,.28),.028,.028),mats.railingSteel);
   }
   const entrances=surfaceEntrances(layout,opts.bundle);
   const atlas=document.createElement("canvas");atlas.width=2048;atlas.height=entrances.length*384;
