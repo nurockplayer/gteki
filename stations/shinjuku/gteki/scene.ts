@@ -283,7 +283,7 @@ export function planBundle(bundle: Parameters<BuildScene>[0]["bundle"]): Paramet
 export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, shopKit?: LoadedShopKit, options: { pitchedCeilings?: boolean; layoutBakeText?: string | null } = {}): StationScene => {
   const T = ctx.THREE;
   const low = ctx.quality === "low";
-  const sceneBundle = planBundle(ctx.bundle);
+  const sceneBundle = planBundle(ctx.baseBundle ?? ctx.bundle);
   // Decorative train rhythm (#870): the QA param, else the Tokyo clock, read once per build. Headless
   // builds (no `location`) get build.ts's "midday" default, so their output stays deterministic.
   const timeBand = typeof location === "undefined" ? undefined : currentTimeBand(location.search, new Date());

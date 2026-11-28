@@ -1508,6 +1508,7 @@ export class Explorer {
     const ctx: SceneContext = {
       THREE,
       bundle,
+      baseBundle: station.baseBundle,
       previewNext: this.previewNext,
       mountChunk: (chunk) => {
         if (generation !== this.loadGeneration || this.disposed) return;

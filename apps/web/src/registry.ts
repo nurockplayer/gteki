@@ -20,6 +20,7 @@ export interface StationEntry {
 export interface LoadedStation {
   key: string;
   bundle: StationBundle;
+  baseBundle?: StationBundle;
   issues: ValidationIssue[];
   scene: StationSceneModule | null;
   /** Why the optional scene module could not be imported; routing data is still usable (L0 view). */
@@ -97,7 +98,7 @@ export async function listStations(): Promise<StationEntry[]> {
         const privateRegions = privateBuild && s.privateRegions ? await s.privateRegions() : undefined;
         const preview = (sceneModule as (StationSceneModule & { previewBundle?: (bundle: StationBundle) => Promise<StationBundle> }) | null)?.previewBundle;
         const bundle = previewNext && preview ? await preview(parsed.bundle) : parsed.bundle;
-        return { ...(privateRegions ? { privateRegions } : {}), key: s.dir, bundle, issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, sceneImportError, assetUrls };
+        return { ...(privateRegions ? { privateRegions } : {}), key: s.dir, bundle, ...(bundle !== parsed.bundle ? { baseBundle: parsed.bundle } : {}), issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, sceneImportError, assetUrls };
       },
     });
   }
