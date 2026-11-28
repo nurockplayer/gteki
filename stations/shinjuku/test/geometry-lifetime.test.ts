@@ -49,7 +49,7 @@ describe("station geometry lifetime", () => {
     expect(result.live).toBe(128); // #221: +3 render-only room floors (B1, B3, B6); vertical pass: +2 (risers, truss); #744: -24 coverage-portal quads, -6 level-B6 batches
     // #645 step 2c: lift-door clearances split two restricted boundaries (+5,184 B); the shaft-geometry
     // cut of the join:/return: pieces inside a stop square then removes 44,592 B.
-    expect(result.bytes).toBe(17313746); // vertical pass: +490,580 B riser planes and nosing lips; batch 3: +39,792 B contact-shade colours + soffit luminaires
+    expect(result.bytes).toBe(17306186); // #1667: fit the Exit 1 shaft enclosure to the B1 partition.
     // #49 retains two clipped render-only shell batches: +217,498 B and +5,055 triangles
     // after #316 stopped letting surfaces below the runs suppress the shell.
     // #789 updates the expected buffers for the repaired display heights; the
@@ -61,7 +61,7 @@ describe("station geometry lifetime", () => {
     // #1169 (2026-11-14 JST): align the shaft stripe UV datum; positions and counts are unchanged.
     // #1238/#1243 (2026-11-16 JST): inset stair render surfaces and reparent preview roofs.
     // #1391 (2026-11-17 JST): owned-roof linear lights; all other meshes unchanged.
-    expect(result.geometryHash).toBe("4c590418f89ed0cb4c9393a3a9ed1a299315a3856420bcecfc1f7b590dc31708");
+    expect(result.geometryHash).toBe("66ed8117d6a3ad1b040a5f11086ba3c28c2535ef0500af02ee13aba6a7da5a37");
   }, 60_000);
 
   // #968: no closure defined inside assembleScene is reachable from the returned scene, so its scope (the
