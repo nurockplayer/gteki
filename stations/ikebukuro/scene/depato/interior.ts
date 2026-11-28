@@ -321,7 +321,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         // Glazed leaves stand open against the jambs, never across the walk line.
         for(const side of [-1,1])glassPieces.push(cube(e.point[0]+(front?side*1.8:-0.65),l.y+1.3,e.point[1]+(front?0.65:side*1.8),front?0.025:1.3,2.6,front?1.3:0.025));
       }
-      // Non-emissive floor directory; underline marks this floor without a colour code.
+      // Non-emissive floor directory.
       const directoryBanks=l.incoming && l.incoming!==l.bank?[l.incoming,l.bank]:[l.bank];
       for(const bank of directoryBanks)for(const [z,yaw] of [[bank.from-2,0],[bank.to+2,Math.PI]]){
         const x=bank.x-3,rowHeight=Math.min(1,2/plan.floors.length);
@@ -334,7 +334,6 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
           // Close the gaps behind the plates, with the lower rail projecting past the back.
           detail.push(cube(x,l.y+(top+bottom)/2,z!-front*0.02,3.8,top-bottom,0.024));
           frames.push(cube(x,l.y+bottom+0.02,z!,3.66,0.04,0.13));
-          frames.push(cube(x,underline-0.1*rowHeight,z!+front*0.01,3.6,0.018,0.008));
         }else frames.push(cube(x,underline,z!+0.01,3.6,0.025,0.025));
       }
       // Place the Tobu sign in the diagonal walk off the up escalator, below the HUD.
