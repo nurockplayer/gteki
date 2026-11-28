@@ -1,0 +1,63 @@
+{
+  "line": {"ja": "副都心線", "en": "Fukutoshin Line"},
+  "operator": "Tokyo Metro",
+  "lineCode": "F09",
+  "status": "representative",
+  "publication": {
+    "id": "metro-f09-evidence",
+    "sourceIds": ["plateau-ubld-13116", "tokyometro-ikebukuro-accessibility-2026-10", "tokyometro-ikebukuro-station-en-2026-10"],
+    "modified": true,
+    "derivation": "Hand-authored register of station facts and representative levels (2026-11-26 JST). The B1 datum and gate POI IDs come from the existing station data. Additional fact references are listed in this lane's sources. 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"
+  },
+  "levels": [
+    {"id": "b1", "label": "B1F", "z_m": 27.9, "source": "toshima-floors", "zBasis": "Existing B1 render elevation (ikebukuro-station)."},
+    {"id": "b2", "label": "B2F 中二階", "z_m": 22.9, "source": "metro-f09-lift-floors", "zBasis": "Representative preview elevation 5 m below B1."},
+    {"id": "b4", "label": "B4F", "z_m": 12.9, "source": "toshima-floors", "zBasis": "Representative preview elevation 15 m below B1."}
+  ],
+  "gates": [
+    {"id": "metro-f-west-west-gate", "name": "西通路西改札", "poiId": "metro-f-west-west-gate", "side": "public", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-f-west-west-gate-paid", "name": "西通路西改札", "poiId": null, "side": "paid", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-f-west-east-gate", "name": "西通路東改札", "poiId": "metro-f-west-east-gate", "side": "public", "level": "b1", "position": null, "source": "ikebukuro-pois"},
+    {"id": "metro-f-west-east-gate-paid", "name": "西通路東改札", "poiId": null, "side": "paid", "level": "b1", "position": null, "source": "ikebukuro-pois"}
+  ],
+  "platforms": [
+    {"id": "metro-f09-platform-5", "number": 5, "track": 5, "services": ["渋谷方面"], "level": "b4", "islandId": "metro-f09-island", "centerline": null, "width_m": 8, "length_m": 210, "source": "metro-map-facts", "servicesSource": "metro-timetable"},
+    {"id": "metro-f09-platform-6", "number": 6, "track": 6, "services": ["和光市方面"], "level": "b4", "islandId": "metro-f09-island", "centerline": null, "width_m": 8, "length_m": 210, "source": "metro-map-facts", "servicesSource": "metro-timetable"}
+  ],
+  "junctions": [
+    {"id": "metro-f09-east-mezzanine", "level": "b2", "label": "East gate paid mezzanine", "side": "paid", "source": "metro-accessibility"},
+    {"id": "metro-f09-island", "level": "b4", "label": "Shared island", "side": "paid", "source": "metro-map-facts"}
+  ],
+  "connectors": [
+    {"from": "metro-f-west-west-gate", "to": "metro-f-west-west-gate-paid", "kind": "gate", "source": "ikebukuro-pois"},
+    {"from": "metro-f-west-east-gate", "to": "metro-f-west-east-gate-paid", "kind": "gate", "source": "ikebukuro-pois"},
+    {"from": "metro-f-west-west-gate-paid", "to": "metro-f09-island", "kind": "stairs", "source": "metro-map-facts"},
+    {"from": "metro-f-west-west-gate-paid", "to": "metro-f09-island", "kind": "escalator", "source": "metro-accessibility", "platformEnd": "center / Wakoshi"},
+    {"from": "metro-f-west-east-gate-paid", "to": "metro-f09-east-mezzanine", "kind": "stairs", "source": "metro-map-facts"},
+    {"from": "metro-f-west-east-gate-paid", "to": "metro-f09-east-mezzanine", "kind": "lift", "source": "metro-f09-lift-floors"},
+    {"from": "metro-f-west-east-gate-paid", "to": "metro-f09-east-mezzanine", "kind": "escalator", "source": "metro-accessibility"},
+    {"from": "metro-f09-east-mezzanine", "to": "metro-f09-island", "kind": "stairs", "source": "metro-map-facts"},
+    {"from": "metro-f09-east-mezzanine", "to": "metro-f09-island", "kind": "lift", "source": "metro-f09-lift-floors", "platformEnd": "center"},
+    {"from": "metro-f09-east-mezzanine", "to": "metro-f09-island", "kind": "escalator", "source": "metro-accessibility", "platformEnd": "center / Wakoshi and center / Shibuya"},
+    {"from": "metro-f09-island", "to": "metro-f09-platform-5", "kind": "walk", "source": "metro-map-facts"},
+    {"from": "metro-f09-island", "to": "metro-f09-platform-6", "kind": "walk", "source": "metro-map-facts"}
+  ],
+  "sources": [
+    {"id": "ikebukuro-station", "path": "stations/ikebukuro/gteki/station.json", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Existing PLATEAU 13116-derived B1 render datum. See the plateau-ubld-13116 credit and conditions in that file."},
+    {"id": "toshima-floors", "url": "https://www.city.toshima.lg.jp/303/machizukuri/toshikekaku/shisaku/021391/documents/kihonnkousou.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Toshima barrier-free concept, printed p. 19, platform and gate floor table."},
+    {"id": "ikebukuro-pois", "path": "stations/ikebukuro/gteki/pois.json", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Existing search-only gate POI names and IDs."},
+    {"id": "metro-map-facts", "url": "https://www.metocan.co.jp/upfile/c91fd36928e7611357c3b0f72471652c55e1acb9.pdf#page=8", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Tokyo Metro joint release supplement, p. 8, Ikebukuro diagram dated 2022-10. Platform numbers, island count and stair/device facts only. Printed credits: Shobunsha and Tokyo Metro."},
+    {"id": "metro-accessibility", "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Printed equipment spans, fare-side labels where given and escalator directions."},
+    {"id": "metro-timetable", "url": "https://www.tokyometro.jp/station/ikebukuro/timetable/index.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Tokyo Metro station timetable directions."},
+    {"id": "metro-f09-lift-floors", "url": "https://www.tokyometro.jp/safety/elevator/pdf/2017/884a8d1535cbac3e8180ac4b68b97f1e.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "April 2017 inspection schedule names the B1–B2 and B2–B4 lifts separately. The current accessibility listing names the same three endpoints."},
+    {"id": "toshima-echika", "url": "https://www.city.toshima.lg.jp/documents/55773/3_guruttotoshima2025.pdf#page=4", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Ward-hosted 2025 guide, PDF p. 4. Echika and C-series public underground passage labels only."},
+    {"id": "metro-m-f-passage", "url": "https://www.tokyometro.jp/station/ikebukuro/shop/shomeishashin.html", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "Operator names the paid M25–F09 passage."},
+    {"id": "metro-transfer-guide", "url": "https://www.tokyometro.jp/support/guide/operation/pdf/information_20260314.pdf", "read_date": "2026-11-26 JST", "terms_ref": "OD-34", "note": "March 2026 guide lists the three Metro line pairs among valid out-of-gate transfers."}
+  ],
+  "gaps": [
+    "No sourced station-frame gate positions or platform/track centerlines, measured island dimensions, paid path geometry or paid elevations. Geometry fields are unset or representative; B1 uses the existing render datum.",
+    "Echika and C-series exits identify the public west approach. The surveyed shell lacks that bridge and the two gate openings. The operator lists public C9/C1b lifts and C6/C7/C8 escalators; their physical landings remain open.",
+    "The operator reports a stairlift and escalator between the east gate and the M25/Y09 connecting level. The stairlift is a distinct device from the two lifts on the paid B1–B2–B4 route.",
+    "The operator identifies a paid M25–F09 passage and a platform escalator towards the M25 boarding level. The current fare guide also lists an out-of-gate option. Confirm transfer seams and controls before adding a cross-line edge."
+  ]
+}

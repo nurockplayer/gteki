@@ -55,6 +55,7 @@ export function buildDepartmentStores(track: <T extends { dispose(): void }>(res
   for (const building of data.buildings) {
     const stores = data.stores.filter(s => s.buildingId === building.id), store = stores[0]!;
     const group = new THREE.Group(); group.name = `department-store:${building.id}`;
+    group.userData.buildingId = group.userData.dataId = building.id;
     group.userData.poiIds = stores.map(s => s.poiId);
     group.userData.source = { tile: building.sourceTile, heightM: building.height, lod: 2 };
     const canvas = document.createElement("canvas"); canvas.width = canvas.height = LANDMARK_MAX_TEXTURE_PX;
