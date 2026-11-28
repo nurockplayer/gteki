@@ -55,10 +55,10 @@ function plainGeometry(src: THREE.BufferGeometry): THREE.BufferGeometry {
 }
 
 /**
- * Pack a merged batch for upload: normals as normalised Int8 and uv as half floats, so a vertex is 19 B instead of 32.
+ * Pack a merged batch for upload: normals as normalised Int8 and UVs as 16-bit values, so a vertex is 19 B instead of 32.
  * Positions stay Float32 (world metres across a floor), and packing happens after merging, once every part is in place.
  */
-function packGeometry(geo: THREE.BufferGeometry): void {
+function packGeometry(geo: THREE.BufferGeometry, material: string): void {
   const normal = geo.getAttribute("normal");
   if (normal) {
     const packed = new THREE.BufferAttribute(new Int8Array(normal.count * 3), 3, true);
@@ -67,7 +67,11 @@ function packGeometry(geo: THREE.BufferGeometry): void {
   }
   const uv = geo.getAttribute("uv");
   if (uv) {
-    const packed = new THREE.Float16BufferAttribute(new Uint16Array(uv.count * 2), 2);
+    // Palette UVs are swatch centres in [0, 1]. Keep them packed in a format the scene cutter's
+    // getComponent calls can decode. Float16BufferAttribute exposes its raw bits through that API.
+    const packed = material === "gteki_palette" || material === "gteki_palette_blend"
+      ? new THREE.Uint16BufferAttribute(new Uint16Array(uv.count * 2), 2, true)
+      : new THREE.Float16BufferAttribute(new Uint16Array(uv.count * 2), 2);
     for (let i = 0; i < uv.count; i++) packed.setXY(i, uv.getX(i), uv.getY(i));
     geo.setAttribute("uv", packed);
   }
@@ -186,7 +190,7 @@ export function batchKitPlacements(args: {
   for (const batch of ordered) for (const part of batch.parts) part.geo.dispose();
   for (const { batch: b, geo } of merged) {
     for (const part of b.parts) if (!failed.has(part.placement)) drawn.add(part.placement);
-    packGeometry(geo);
+    packGeometry(geo, b.key);
     geo.computeBoundingBox();
     geo.computeBoundingSphere();
     track(geo);
