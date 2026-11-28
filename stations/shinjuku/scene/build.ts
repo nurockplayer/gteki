@@ -1015,6 +1015,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   let stepOffset = 0;
   {
     const stairGeos: THREE.BufferGeometry[] = [...fasciaGeos];
+    const streetTreadGeos: THREE.BufferGeometry[] = [];
     const nosingGeos: THREE.BufferGeometry[] = [];
     const riserGeos: THREE.BufferGeometry[] = [];
     const trussGeos: THREE.BufferGeometry[] = [];
@@ -1050,7 +1051,15 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             const box = new THREE.BoxGeometry(run + 0.02, rise + 0.18, r.width + 2 * RUN_WALL_OFFSET - 0.01);
             box.rotateY(yaw);
             box.translate(cx, top - (rise + 0.18) / 2, -cy);
-            stairGeos.push(box);
+            // The tread flush with the street landing continues its tile finish.
+            const streetTread = i === steps - 1 && Math.abs(hi.z) < 0.05;
+            if (streetTread) {
+              const { position, normal, uv } = box.attributes;
+              for (let j = 0; j < position!.count; j++) {
+                if (normal!.getY(j) === 1) uv!.setXY(j, position!.getX(j) / 2.4, -position!.getZ(j) / 2.4);
+              }
+            }
+            (streetTread ? streetTreadGeos : stairGeos).push(box);
             const ex = lo.x + u.x * run * i;
             const ey = lo.y + u.y * run * i;
             // Enamel riser face 3 mm proud of the block, then a 55 mm rubber nosing strip and a steel lip.
@@ -1058,6 +1067,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             riser.rotateY(-Math.PI / 2 + yaw);
             riser.translate(ex - u.x * 0.013, top - rise / 2 - 0.012, -(ey - u.y * 0.013));
             riserGeos.push(riser);
+            if (streetTread) continue;
             const nose = new THREE.BoxGeometry(0.055, 0.008, r.width - 0.06);
             nose.rotateY(yaw);
             nose.translate(ex + u.x * 0.035, top + 0.004, -(ey + u.y * 0.035));
@@ -1156,8 +1166,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       return mesh;
     };
     const stairMesh = add(stairGeos, mat.stair, "walkable");
+    const streetTreadMesh = add(streetTreadGeos, mat.floor, "walkable");
     const riserMesh = add(riserGeos, mat.riser);
     if (stairMesh) stairMesh.userData.goldenRole = "stairs_ramps";
+    if (streetTreadMesh) streetTreadMesh.userData.goldenRole = "stairs_ramps";
     if (riserMesh) riserMesh.userData.goldenRole = "stairs_ramps";
     add(trussGeos, mat.escTruss);
     const nosingMesh = add(nosingGeos, mat.nosing);
