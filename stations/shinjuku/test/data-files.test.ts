@@ -8,14 +8,16 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import ikebukuroFloors from "../../ikebukuro/data/depato-floors.json";
+import * as THREE from "three";
+import { enuToRenderer } from "@gteki/geo";
+import { WALKER_BODY, type SceneContext } from "@gteki/scene-api";
+import { buildDepatoInterior } from "../../ikebukuro/scene/depato/interior.ts";
 import { readDepatoFloors, type DepatoLayout } from "../../ikebukuro/scene/depato/layout.ts";
-import { ikebukuroDepatoLayouts } from "../../ikebukuro/scene/depato/pilot.ts";
-import { sunshineLayouts } from "../../ikebukuro/scene/sunshine.ts";
+import { loadShinjukuBundle } from "../data/bundle.ts";
 import shinjukuFloors from "../data/depato-floors.json";
-import { layouts as shinjukuDepatoLayouts } from "../scene/depato.ts";
+import { depatoPreviewBundle, layouts as shinjukuDepatoLayouts } from "../scene/depato.ts";
 
-it("reads version-1 depato tenant metadata and prints the preview floor inventory", () => {
+it("reads version-1 depato tenant metadata", () => {
   const [store] = shinjukuFloors.stores;
   const [original] = store!.floors;
   const tenant = { ...original!.tenants[0]!, category: "cosmetics", zone_text: "Main entrance" };
@@ -25,24 +27,78 @@ it("reads version-1 depato tenant metadata and prints the preview floor inventor
     { level: original!.level, tenant_coverage: "unknown" },
     { level: original!.level, section_id: "annex", tenant_coverage: "partial", tenants: [tenant] },
   ]);
+});
 
-  const layouts: DepatoLayout[] = [...shinjukuDepatoLayouts, ...ikebukuroDepatoLayouts(), ...sunshineLayouts()];
-  // The adapters retain each source label object, even when they slice a tenant list.
-  // The renderer cycles once through that list before reusing a name on another counter.
-  const shown = new Map(layouts.flatMap(plan => plan.floors.map(floor => {
-    const bays = plan.floorBays?.[floor.level];
-    const count = Math.min(floor.tenants.length, bays?.positions.length ?? plan.counters.length);
-    const missing = floor.tenants.length - count;
-    const capacityGap = bays ? `${missing} frontages / ${(missing * bays.width).toFixed(1)} m` : "";
-    return [floor.label, { count, capacityGap }] as const;
-  })));
-  const inventory = [shinjukuFloors, ikebukuroFloors].flatMap(data =>
-    readDepatoFloors(data).flatMap(store => store.floors.map(floor => [
-      store.id, floor.level, floor.section_id ?? floor.label.en, floor.tenants.length,
-      floor.tenant_coverage, shown.get(floor.label)?.count ?? 0, shown.get(floor.label)?.capacityGap ?? "",
-    ].join("\t"))));
-  console.log(["Store\tFloor\tSection or label\tListings\tCoverage\tShown (?next=1, reachable for compact layouts)\tCompact capacity gap",
-    ...inventory].join("\n"));
+it("gives Isetan Main 1F listings separate reachable signed frontages", () => {
+  const storeId = "isetan-shinjuku-main";
+  const source = shinjukuFloors.stores.find(store => store.id === storeId)!;
+  const listings = source.floors.find(floor => floor.level === "1F")!.tenants;
+  expect(listings).toHaveLength(191);
+  const layout: DepatoLayout = shinjukuDepatoLayouts.find(plan => plan.input.store.id === storeId)!;
+  const floor = layout.floors.find(floor => floor.level === "1F")!;
+  const bays = layout.floorBays?.[floor.level]?.positions ??
+    layout.counters.map(([x, z]) => ({ x, z, facing: x < layout.aisleX ? 1 : -1 }));
+  const bundle = depatoPreviewBundle(loadShinjukuBundle().bundle);
+  const scene = buildDepatoInterior({ THREE, bundle, enuToRenderer, quality: "low" } as SceneContext, layout);
+  try {
+    const y = layout.height(floor.level);
+    const boxes = scene.colliders.map(mesh => new THREE.Box3().setFromObject(mesh))
+      .filter(box => Math.abs(box.min.y - y) < 1e-4 && box.max.y < y + WALKER_BODY.bodyTopM);
+    const footprints = bays.map(({ x, z }) => {
+      const box = boxes.find(({ min, max }) =>
+        Math.abs((min.x + max.x) / 2 - x) < 1e-4 && Math.abs((min.z + max.z) / 2 - z) < 1e-4);
+      expect(box, `Missing counter collider at (${x}, ${z})`).toBeDefined();
+      return box!;
+    });
+    const overlap = footprints.some(({ min, max }, i) => footprints.slice(i + 1).some(other =>
+      Math.min(max.x, other.max.x) - Math.max(min.x, other.min.x) > 1e-4 &&
+      Math.min(max.z, other.max.z) - Math.max(min.z, other.min.z) > 1e-4));
+    expect(overlap, "Isetan Main 1F counter footprints overlap").toBe(false);
+
+    // Flood the floor from the door, giving the walker room between grid centres.
+    const step = 0.5;
+    const clearance = WALKER_BODY.radiusM + step / 2;
+    const cell = (x: number, z: number) => [Math.round(x / step), Math.round(z / step)] as const;
+    const { point: [doorX, doorZ], inward } = layout.input.entrances.find(e => e.level === "1F")!;
+    const [nx, nz] = inward!;
+    const queue = [cell(doorX + nx, doorZ + nz)];
+    const visited = new Set<string>();
+    const reachable = new Set<string>();
+    const ray = new THREE.Raycaster(undefined, new THREE.Vector3(0, -1, 0), 0, 0.1);
+    const directions = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
+    for (let i = 0; i < queue.length; i++) {
+      const [col, row] = queue[i]!;
+      const key = `${col},${row}`;
+      if (visited.has(key)) continue;
+      visited.add(key);
+      const x = col * step, z = row * step;
+      if (boxes.some(({ min, max }) => x > min.x - clearance && x < max.x + clearance &&
+          z > min.z - clearance && z < max.z + clearance)) continue;
+      if (!directions.every(([dx, dz]) => {
+        ray.ray.origin.set(x + dx * clearance, y + 0.05, z + dz * clearance);
+        return ray.intersectObjects(scene.walkable, false).length > 0;
+      })) continue;
+      reachable.add(key);
+      for (const [dx, dz] of directions) queue.push([col + dx, row + dz]);
+    }
+
+    // The renderer assigns the floor's signs in order, cycling if counters outnumber listings.
+    const signs = new Map<number, { uses: number; reachable: boolean }>();
+    bays.forEach(({ z, facing }, i) => {
+      const index = i % floor.tenants.length;
+      const tenant = floor.tenants[index], listing = listings[index];
+      if (!tenant || !listing || tenant.ja !== listing.ja || tenant.en !== listing.en) return;
+      const standX = facing > 0 ? footprints[i]!.max.x : footprints[i]!.min.x;
+      signs.set(index, {
+        uses: (signs.get(index)?.uses ?? 0) + 1,
+        reachable: reachable.has(cell(standX + facing * (clearance + step), z).join(",")),
+      });
+    });
+    const signedFrontages = [...signs.values()].filter(sign => sign.uses === 1 && sign.reachable).length;
+    expect(signedFrontages, "reachably signed frontages assigned to one listing each").toBeGreaterThanOrEqual(listings.length);
+  } finally {
+    scene.dispose();
+  }
 });
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
