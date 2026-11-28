@@ -3943,6 +3943,27 @@ export class Explorer {
       dist = solved.distance;
       this.boomRaise = solved.raise;
     }
+    // An ascending pivot can bring a band into the ray well inside the old boom.
+    // Start contracting before that height is reached, while retaining the real
+    // collision cast below as the final near-plane bound.
+    let ascendingBand = false;
+    if (this.catAvatar && this.slope.velocity > SLOPE.exit && !snap && !this.reducedMotion) {
+      const origin = pose.pivot.clone();
+      for (let seconds = 0.1; seconds <= wantedDistance / FOLLOW.contractSpeed; seconds += 0.1) {
+        origin.copy(pose.pivot).y += this.slope.velocity * seconds;
+        this.ray.set(origin, back);
+        this.ray.far = wantedDistance + FOLLOW.clearance;
+        const hit = castCamera(this.ray, this.cameraTargets, cameraSides).find((h) =>
+          h.faceIndex != null && h.faceIndex >= h.object.userData.stairwellBandFaceStart);
+        if (!hit) continue;
+        const limit = Math.max(0, hit.distance - FOLLOW.clearance) + FOLLOW.contractSpeed * seconds;
+        if (limit < dist) {
+          dist = limit;
+          ascendingBand = true;
+        }
+      }
+      ascendingBand ||= !!cast(back)[0]?.stairwellBand;
+    }
     this.squeezed = this.cameraTargets.length
       ? (snap ? dist < FOLLOW.comfortDistance : boomSqueezed(this.squeezed, dist))
       : false;
@@ -3985,6 +4006,21 @@ export class Explorer {
       const aimRaise = this.gateAimHeld ? Math.max(this.boomRaise, Math.asin(this.camera.position.clone().sub(pose.pivot).normalize().y) - Math.asin(pose.back.y)) : this.boomRaise;
       // Keep the feet correction complete while a local gate raise is releasing.
       aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.gateAimHeld ? Math.max(aimRaise, CAT_RAISE_AIM.end) : aimRaise, this.camera.fov, this.camera.aspect);
+      if (ascendingBand || (this.slope.velocity > SLOPE.exit && this.camera.position.distanceTo(pose.pivot) < wantedDistance)) {
+        // A contracted boom must retain the nearest feet-box corners, not just
+        // the floor point beneath the cat's centre, through the boom's release.
+        const box = this.catWorldBox();
+        const aim = pose.target.clone().sub(this.camera.position);
+        const ahead = Math.hypot(aim.x, aim.z);
+        const feetNdc = this.camera.aspect < 1 ? CAT_RAISE_AIM.feetNdcPortrait : CAT_RAISE_AIM.feetNdc;
+        const margin = Math.atan(feetNdc * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2));
+        let highest = Infinity;
+        for (const x of [box.min.x, box.max.x]) for (const z of [box.min.z, box.max.z]) {
+          const forward = ((x - this.camera.position.x) * aim.x + (z - this.camera.position.z) * aim.z) / ahead;
+          highest = Math.min(highest, Math.atan2(box.min.y - this.camera.position.y, forward) + margin);
+        }
+        pose.target.y = Math.min(pose.target.y, this.camera.position.y + ahead * Math.tan(highest));
+      }
       if (stairRaise > 0) aimAtRaisedCat(pose.target, this.camera.position, this.pos, this.boomRaise + stairRaise, this.camera.fov, this.camera.aspect,
         this.camera.aspect >= 1 ? STAIR_POSE.desktop.feetNdc : undefined);
       const ahead = Math.hypot(pose.target.x - this.camera.position.x, pose.target.z - this.camera.position.z);
