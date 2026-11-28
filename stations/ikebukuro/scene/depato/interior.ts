@@ -132,20 +132,18 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     // Allowed interim baked gradient: same 4.4 m tile as the downlight grid, no runtime pool lights.
     const pixels=new Uint8Array(64*64*4);
     for(let z=0;z<64;z++)for(let x=0;x<64;x++){
-      const pool=Math.exp(-((x-32)**2+(z-32)**2)/170), value=0.88+0.12*pool;
+      const pool=Math.exp(-((x-32)**2+(z-32)**2)/170), value=0.70+0.30*pool;
       const at=(z*64+x)*4;pixels.set([255*value,252*value,246*value,255],at);
     }
     const pool=new THREE.DataTexture(pixels,64,64);pool.colorSpace=THREE.SRGBColorSpace;pool.wrapS=pool.wrapT=THREE.RepeatWrapping;pool.repeat.set(1/4.4,1/4.4);pool.offset.set(0.5,0.5);pool.needsUpdate=true;textures.push(pool);
     const counterMat=basic("#e6ddcd"), glassMat=glass(), bronze=standard(LANDMARK_FACADE.F4_darkBronze,0.5,0.12), glow=basic(LANDMARK_STREET_BAND.glow);
-    counterMat.color.multiplyScalar(0.65);
+    counterMat.color.multiplyScalar(fullStore?0.65:0.9);
     const boards=levels.flatMap(l=>[{
       ja:fullStore && l.floor.level!=="1F" ? `${l.floor.level}  ${l.floor.label.ja}` : `${plan.input.store.name.ja} ${l.floor.level}`,
       en:l.floor.label.en===l.floor.label.ja && fullStore ? "" : l.floor.label.en,
     },...l.floor.tenants]);
-    const directoryJa=plan.floors.map(f=>`${f.level} ${f.label.ja}`).join(" / ");
-    const directoryEn=plan.floors.map(f=>`${f.level} ${f.label.en}`).join(" / ");
-    const directoryRow=boards.length;
-    if(!fullStore)boards.push({ja:directoryJa,en:directoryEn});
+    const directoryStart=boards.length;
+    if(!fullStore)boards.push(...plan.floors.map(f=>({ja:`${f.level} ${f.label.ja}`,en:`${f.level} ${f.label.en}`})));
     const fontPx=boards.length>100?9:18, rowHeight=fontPx*40/18;
     const canvas=typeof document!=="undefined"?document.createElement("canvas"):null;
     const slots:{x:number;y:number;width:number;height:number}[]=[];
@@ -213,17 +211,31 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     let label=0;
     for(const l of levels){
       const group=new THREE.Group(), landing=new THREE.Group();groups.push(group);landingGroups.push(landing);root.add(group,landing);
-      const fm=basic("#d6cfc2");fm.lightMap=pool;fm.lightMapIntensity=3.3;
+      const fm=basic("#d6cfc2");
+      if(fullStore){
+        fm.lightMap=pool;fm.lightMapIntensity=3.3;
+      }else{
+        fm.map=pool;
+        const floorPositions=l.floorG.getAttribute("position");
+        l.floorG.setAttribute("uv",new THREE.Float32BufferAttribute(Array.from({length:floorPositions.count},(_,i)=>[floorPositions.getX(i),floorPositions.getZ(i)]).flat(),2));
+      }
       const shell=l.rooftop?[l.wallG.clone()]:[l.ceilingG.clone(),l.wallG.clone()];
       shell.forEach((g,i)=>{
         const positions=g.getAttribute("position"), normals=g.getAttribute("normal"), colors:number[]=[];
         for(let v=0;v<positions.count;v++){
           // Keep the concourse-facing portal wall at its original station value.
           const stationSide=i===1 && positions.getZ(v)<plan.bounds.front && normals.getZ(v)<-0.9;
-          const c=new THREE.Color(i===0&&!l.rooftop?"#fff2dc":stationSide?"#9daaa7":"#9e8c72");colors.push(c.r,c.g,c.b);
+          const c=new THREE.Color(i===0&&!l.rooftop?"#fff2dc":stationSide?"#9daaa7":fullStore?"#9e8c72":"#776c60");colors.push(c.r,c.g,c.b);
         }
         g.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));
       });
+      // Finish the slab's well reveals between the lower ceiling and upper floor.
+      if(l.index+1<levels.length){
+        const top=levels[l.index+1]!.y,bottom=l.y+l.clear,h=top-bottom,{x,from,to,width}=plan.stair;
+        const reveals=[...[-1,1].map(side=>cube(x+side*(width/2+0.04),(top+bottom)/2,(from+to)/2,0.08,h,to-from)),
+          ...[from-0.04,to+0.04].map(z=>cube(x,(top+bottom)/2,z,width+0.16,h,0.08))];
+        for(const g of reveals){const c=new THREE.Color("#c1b9aa");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));shell.push(g);}
+      }
       const shellG=retain(mergeGeometries(shell));shell.forEach(g=>g.dispose());const shellMat=basic("#ffffff");shellMat.vertexColors=true;
       shellMat.fog=false; // The station's 90 m fog must not turn the aisle end walls black.
       // Both store shells remain visible through the well and behind the landing camera.
@@ -287,13 +299,13 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
           glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
           detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
           lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
-          const samples=fullStore?3:10;
-          for(let j=0;j<samples;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*(fullStore?1.65:0.37)});
+          const rows=fullStore||ctx.quality==="low"?3:10, spacing=fullStore?1.65:3.33/(rows-1);
+          for(let j=0;j<rows;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*spacing});
         }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,2.8));
         board(x-side*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
       });
       if(contents.length){
-        const foodMesh=instance(group,new THREE.CapsuleGeometry(0.065,0.06,3,5),glow,contents.map(p=>({...p,scale:[1,0.7,1.4] as [number,number,number]})));
+        const foodMesh=instance(group,ctx.quality==="low"?new THREE.BoxGeometry(0.13,0.12,0.13):new THREE.CapsuleGeometry(0.065,0.06,3,5),glow,contents.map(p=>({...p,scale:[1,0.7,1.4] as [number,number,number]})));
         const tones=["#d8c8a3","#b99b74","#8e745e","#9caa88"];
         contents.forEach((_,i)=>foodMesh.setColorAt(i,new THREE.Color(tones[i%4])));
       }
@@ -320,14 +332,19 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       // Non-emissive floor directory; underline marks this floor without a colour code.
       for(const [i,z] of directoryStops.entries()){
         if(fullStore){
-          board(directoryX,l.y+1.05,z,directoryRow,Math.PI/2,3.9,1.55);
+          board(directoryX,l.y+1.05,z,directoryStart,Math.PI/2,3.9,1.55);
           frames.push(directoryStand(l.y,z));
         }else{
-          board(plan.aisleX-3,l.y+2.15,z,directoryRow,i===0?0:Math.PI,4,0.65);
-          frames.push(cube(plan.aisleX-3,l.y+1.93-l.index*0.06,z+0.01,3.8,0.018,0.018));
+          const yaw=i===0?0:Math.PI, x=plan.aisleX-3,rowHeight=Math.min(1,2/plan.floors.length);
+          plan.floors.forEach((_,row)=>board(x,l.y+2.3-row*rowHeight,z,directoryStart+row,yaw,3.8,0.95*rowHeight));
+          const bottom=2.3-(plan.floors.length-1)*rowHeight-0.475*rowHeight;
+          for(const side of [-1,1])frames.push(cube(x+side*1.8,l.y+bottom/2,z,0.055,bottom,0.08));
+          frames.push(cube(x,l.y+2.3-(l.index+0.25)*rowHeight,z+0.01,3.6,0.025,0.025));
         }
       }
-      board(plan.aisleX,l.y+l.clear-0.48,plan.stair.to+5,label,0,3.4,0.45);
+      // Keep Seibu's B2 arrival sign below the HUD in the follow-camera view.
+      const seibuB2=plan.input.store.id==="seibu-ikebukuro" && l.floor.level==="B2";
+      board(plan.aisleX,l.y+l.clear-(seibuB2?0.83:0.48),plan.stair.to+(seibuB2?6:5),label,0,3.4,0.45);
       if(l.index>0)for(const side of [-1,1])glassPieces.push(cube(plan.aisleX+side*2.13,l.y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from));
       if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,basic("#e5d9c4")));}
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
@@ -350,11 +367,20 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       const pair=flights.filter(f=>f.lower===lower.index);
       const group=new THREE.Group();flightGroups.push(group);root.add(group);
       const solids:T.BufferGeometry[]=[], glasses:T.BufferGeometry[]=[];
-      for(const flight of pair)for(const p of flight.parts.filter(p=>!p.walkableOnly)){
+      for(const flight of pair)for(const p of flight.parts.filter(p=>!p.walkableOnly&&!p.soffit)){
         const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(p.position,3));g.setAttribute("normal",new THREE.Float32BufferAttribute(p.normal,3));
-        const finish={tread:"#30383c",riser:"#30383c",nosing:"#f2c94c",escStep:"#30383c",rubber:fullStore?"#283136":"#14191b",escTruss:"#b49e7e",steel:"#889fa4",glass:"#b4ccd1",light:"#ffe0a1",lampOk:"#89a37b",lampNo:"#b27565"}[p.material];
+        const finish={tread:"#30383c",riser:"#30383c",nosing:"#f2c94c",escStep:"#30383c",rubber:fullStore?"#283136":"#2d3032",escTruss:fullStore?"#b49e7e":"#a6b2b5",steel:"#889fa4",glass:"#b4ccd1",light:"#ffe0a1",lampOk:"#89a37b",lampNo:"#b27565"}[p.material];
         const c=new THREE.Color(finish),colors=Array.from({length:p.position.length/3},()=>[c.r,c.g,c.b]).flat();
         g.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));(p.material==="glass"?glasses:solids).push(g);
+      }
+      // Closely spaced steel panel joints finish the underside, rather than isolated light rectangles.
+      for(const flight of pair){
+        const dz=flight.b.z-flight.a.z,dy=flight.b.y-flight.a.y,angle=Math.atan2(dy,dz),length=Math.hypot(dz,dy);
+        for(let d=0.6;d<length;d+=0.9){
+          const g=new THREE.BoxGeometry(1.5,0.018,0.025).toNonIndexed();g.rotateX(-angle);
+          g.translate(flight.a.x,flight.a.y+Math.sin(angle)*d-1.15*Math.cos(angle)**2,flight.a.z+Math.cos(angle)*d+1.15*Math.cos(angle)*Math.sin(angle));
+          g.deleteAttribute("uv");const c=new THREE.Color("#72878b");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));solids.push(g);
+        }
       }
       for(const flight of pair)for(let i=0;i<=30;i++){
         const t=i/30,g=cube(flight.a.x,THREE.MathUtils.lerp(flight.a.y,flight.b.y,t)+0.012,THREE.MathUtils.lerp(flight.a.z,flight.b.z,t),0.98,0.015,0.025);

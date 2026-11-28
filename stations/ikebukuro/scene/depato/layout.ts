@@ -1,11 +1,41 @@
 import type { StationBundle, Edge, Node } from "@gteki/schema";
 
+type TenantCoverage = "complete" | "partial" | "unknown";
+interface DepatoFloor {
+  level: string;
+  order: number;
+  category: string;
+  label: { ja: string; en: string };
+  tenants: { ja: string; en: string; category?: string; zone_text?: string }[];
+  source: string;
+  read: string;
+  section_id?: string;
+  tenant_coverage?: TenantCoverage;
+}
+
 export interface DepatoStore {
   id: string;
   name: { ja: string; en: string };
   building: string | null;
-  floors: { level: string; category: string; label: { ja: string; en: string }; tenants: { ja: string; en: string }[]; source: string; read: string }[];
+  floors: DepatoFloor[];
 }
+
+type SourceFloor = Omit<DepatoFloor, "tenant_coverage"> & { tenant_coverage?: string };
+type SourceStore = Omit<DepatoStore, "floors"> & { floors: SourceFloor[] };
+
+export function readDepatoFloors(data: { version: number; stores: SourceStore[] }) {
+  return data.stores.map(store => ({
+    ...store,
+    floors: store.floors.map(floor => {
+      const coverage = floor.tenant_coverage ?? "unknown";
+      if (coverage !== "complete" && coverage !== "partial" && coverage !== "unknown") {
+        throw new Error(`Invalid tenant_coverage for ${store.id} ${floor.level}: ${coverage}`);
+      }
+      return { ...floor, tenant_coverage: coverage } satisfies DepatoFloor;
+    }),
+  }));
+}
+
 export type PlanPoint = [number, number]; // renderer x, z (east, south), metres
 export interface DepatoInput {
   store: DepatoStore;
@@ -61,10 +91,11 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     nodes.push(n); return n;
   };
   const edge = (a: Node, b: Node, mode: Edge["mode"] = "walk") => {
+    const fullStore = plan.input.lift !== undefined;
     edges.push({ id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: mode === "escalator" ? "forward" : "both", mode,
       lengthM: Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y, b.position.z! - a.position.z!),
       geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode !== "escalator", steps: mode === "escalator",
-      hours: null, closed: false, verification: "verified", geometryEvidence: evidence, accessEvidence: evidence });
+      hours: null, closed: false, verification: fullStore ? "verified" : "geometry_only", geometryEvidence: evidence, accessEvidence: fullStore ? evidence : null });
   };
   let previousLower: Node | undefined;
   let previousLift: Node | undefined;

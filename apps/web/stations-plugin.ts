@@ -100,6 +100,27 @@ export function readOptionalTenants(gtekiDir: string): unknown {
   }
 }
 
+/** Lane-local declarations use the normal dataFiles publication rules without changing the shipped manifest. */
+function publicationManifest(station: DiscoveredStation): unknown {
+  let manifest: unknown;
+  try { manifest = JSON.parse(fs.readFileSync(path.join(station.dataDir, "station.json"), "utf8")); } catch { return undefined; }
+  const railDir = path.join(station.folder, "data/rail");
+  if (station.dir !== "ikebukuro" || !manifest || typeof manifest !== "object" || !fs.existsSync(railDir)) return manifest;
+  const { dataFiles } = manifest as { dataFiles?: unknown };
+  if (dataFiles !== undefined && !Array.isArray(dataFiles)) return manifest;
+  const readInside = (file: string) => {
+    const real = fs.realpathSync(file);
+    if (!isInside(real, station.folder)) throw new Error(`ikebukuro: ${file} resolves outside the station folder`);
+    return real;
+  };
+  const railFiles = fs.readdirSync(readInside(railDir)).filter(name => name.endsWith(".json")).map(name => {
+    const file = `data/rail/${name}`;
+    const lane = JSON.parse(fs.readFileSync(readInside(path.join(station.folder, file)), "utf8"));
+    return { ...lane.publication, path: file };
+  });
+  return { ...manifest, dataFiles: [...(dataFiles ?? []), ...railFiles] };
+}
+
 /**
  * What a production build may publish for each station: the manifest's declared asset files
  * (`assets[].uri`, `assets[].uriMobile` and `assets[].files`), keyed by station folder. Throws, refusing the build, when a
@@ -115,7 +136,7 @@ export function publishableAssets(stations: DiscoveredStation[], opts: { private
     };
     // Only a missing file is "no directory"; null or any other non-object content fails the shape check.
     const tenants = readOptionalTenants(s.dataDir);
-    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants, { privateTier: opts.privateBuild });
+    const parsed = parseStationFiles(publicationManifest(s), read("graph.json"), read("pois.json"), tenants, { privateTier: opts.privateBuild });
     if (!parsed.ok) {
       const errors = parsed.issues.filter((i) => i.level === "error");
       failures.push(`${s.dir}: ${errors.slice(0, 5).map((i) => `${i.code}${i.ref ? ` (${i.ref})` : ""}`).join(", ")}${errors.length > 5 ? ` and ${errors.length - 5} more` : ""}`);
@@ -183,8 +204,7 @@ function symlinkEscapes(dir: string, fence: string, depth = 0, out = new Map<str
 export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredStationFiles[] {
   return stations.map((s) => {
     const folder = s.folder;
-    let manifest: { assets?: { uri?: unknown; uriMobile?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
-    try { manifest = JSON.parse(fs.readFileSync(path.join(s.dataDir, "station.json"), "utf8")); } catch { /* invalid: publishableAssets refuses it */ }
+    const manifest = (publicationManifest(s) ?? {}) as { assets?: { uri?: unknown; uriMobile?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] };
     const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
     const real = (p: string) => { try { return fs.realpathSync(p); } catch { return null; } };
     const declared = new Set<string>();
@@ -330,7 +350,7 @@ export function factsOnlyDataLines(stations: DiscoveredStation[], privateBuild =
       try { return JSON.parse(fs.readFileSync(path.join(s.dataDir, name), "utf8")); } catch { return undefined; }
     };
     const tenants = readOptionalTenants(s.dataDir);
-    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"), tenants, { privateTier: privateBuild });
+    const parsed = parseStationFiles(publicationManifest(s), read("graph.json"), read("pois.json"), tenants, { privateTier: privateBuild });
     if (!parsed.ok) return [];
     return dataFileFactsOnlySources(parsed.bundle).map((d) => `[gteki] ${s.dir} ${d.path} cites facts-only: ${d.factsOnlySourceIds.join(", ")}`);
   });

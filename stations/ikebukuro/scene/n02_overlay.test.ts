@@ -138,10 +138,11 @@ describe("N02 loader", () => {
     expect(collision.colliders).toEqual([fenceCollider]);
     expect([...collision.meshesByRole.keys()]).toEqual(["context"]);
     const sceneCode = readFileSync(new URL("./scene.ts", import.meta.url), "utf8");
-    expect(sceneCode).toContain("n02Overlay.setVisible(show && context !== null)");
+    expect(sceneCode).toContain("const n02Overlay = ctx.previewNext ? null : loadN02Overlay(THREE, ctx, root)");
+    expect(sceneCode).toContain("n02Overlay?.setVisible(show && context !== null)");
     expect(sceneCode).toContain("setContext(ctx.previewNext && camera ? contextVisibleAt(camera.position.y, streetY, (host as THREE_NS.Scene).fog != null)");
     expect(sceneCode).toContain(": seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged))");
-    expect(sceneCode).toContain("n02Overlay.dispose()");
+    expect(sceneCode).toContain("n02Overlay?.dispose()");
     const geometrySpies = parts.map((m) => vi.spyOn(m.geometry, "dispose"));
     const materialSpies = [...new Set(parts.map((m) => m.material as THREE.Material))].map((m) => vi.spyOn(m, "dispose"));
     overlay.setVisible(true);
