@@ -85,7 +85,7 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
       window.__depato = {
         capture(store, kind, saved, step) {
           const group = e.scene.getObjectByName('department-store:' + store.buildingId);
-          if (!group) { if (!saved) throw new Error(store.poiId + ': missing next store'); apply(saved); return { ...saved, metrics: { contrast: null, jaCapPx: 0, reason: 'Landmark sign absent with flag off' }, drawProof: { present: false } }; }
+          if (!group) { if (!saved) throw new Error(store.poiId + ': missing next store'); apply(saved); return { ...saved, facadeY: null, skyY: null, facadeSkyRatio: null, signWayfindingRatio: null, metrics: { contrast: null, jaCapPx: 0, reason: 'Landmark sign absent with flag off' }, drawProof: { present: false } }; }
           const sign = group.children.find(m => m.name.endsWith(':sign'));
           const siblings = stores.filter(s => s.buildingId === store.buildingId), siblingIndex = siblings.findIndex(s => s.poiId === store.poiId);
           const offset = siblings.slice(0, siblingIndex).reduce((n, s) => n + s.signs.length, 0) * 4;
@@ -131,7 +131,8 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
           apply(best);
           const callbacks = group.children.map(mesh => { const old = mesh.onAfterRender; mesh.onAfterRender = () => { calls[mesh.name] = (calls[mesh.name] ?? 0) + 1; }; return [mesh, old]; });
           const calls = {}; e.renderer.render(e.scene, e.camera); for (const [mesh, old] of callbacks) mesh.onAfterRender = old;
-          const drawProof = { present: true, calls, source: group.userData.source };
+          const textures = [...new Set(group.children.flatMap(mesh => ['map', 'bumpMap', 'emissiveMap'].map(key => mesh.material[key]).filter(Boolean)))].map(texture => ({ width: texture.image.width, height: texture.image.height }));
+          const drawProof = { present: true, calls, textures, source: group.userData.source };
           const visibleMean = mesh => {
             e.renderer.render(e.scene, e.camera); const shown = read(), old = mesh.material;
             const mask = new Basic({ color: 0xffffff, fog: false, toneMapped: false, side: old.side });
@@ -171,10 +172,10 @@ for (const viewport of [{ width: 1440, height: 900, mobile: false, name: 'deskto
       if (next) plans.push({ ...row, store: store.poiId, kind });
       const filename = `${viewport.name}-${store.poiId.replace('shop-sjk-', '')}-${kind}-${next ? 'next' : 'off'}.png`;
       await page.screenshot({ path: settings.output + '/' + filename });
-      rows.push({ store: store.poiId, kind, next, viewport, image: filename, ...row });
-      await fs.writeFile(settings.output + '/frames.json', JSON.stringify({ capturedAt: new Date().toISOString(), timezone: 'UTC', rows }, null, 2));
+      rows.push({ ...row, store: store.poiId, kind, next, viewport, image: filename, sourceSha: settings.sourceSha });
+      await fs.writeFile(settings.output + '/frames.json', JSON.stringify({ captureSourceCommit: settings.sourceSha, capturedAt: new Date().toISOString(), timezone: 'UTC', rows }, null, 2));
       console.log(JSON.stringify({ image: filename, contrast: row.metrics.contrast, cap: row.metrics.jaCapPx, pitch: row.pitchDeg, distance: row.distanceM, pixels: row.metrics.signPixels, coverage: row.metrics.coverage, drawn: row.drawProof }));
     }
   }
 }
-console.log('2026-11-22 JST: completed four affected next frames and their off pairs');
+console.log('2026-11-24 JST: completed all 44 original next frames and their matching off pairs');
