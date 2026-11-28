@@ -91,6 +91,25 @@ it("keeps all visible labels from intersecting at ike-x35", () => {
   expect(rects.length ? pairs.length : -1).toBe(0);
 });
 
+it.each([0, 4.2])("separates coincident route endpoint buttons at anchor height %s", (y) => {
+  const pose: Pose = {
+    mode: "guide", w: 320, h: 180, focusY: 0, identityRegions: [],
+    camera: { position: [0, 0, 10], rotation: [0, 0, 0, 1], fov: 50, near: 0.1, far: 100 },
+    labels: [
+      ["start", "Start", [0, y, 0], 0, 100, 26, "endpoint", true, "none", true, false, 0],
+      ["dest", "Destination", [0, y, 0], 0, 120, 26, "endpoint", true, "none", true, false, 0],
+    ],
+  };
+  const visible = renderPose(pose);
+  expect(visible.map(({ poiId }) => poiId)).toEqual(["start", "dest"]);
+  const [start, dest] = visible.map(({ rect }) => rect);
+  expect(start!.bottom <= dest!.top || dest!.bottom <= start!.top).toBe(true);
+  for (const { rect } of visible) {
+    expect(rect.top).toBeGreaterThanOrEqual(0);
+    expect(rect.bottom).toBeLessThanOrEqual(pose.h);
+  }
+});
+
 it("shows the slice-route chips after earlier poses used up identity measurement attempts", () => {
   const retained = [
     renderPose(poses["slice-02-exit1-landing"], 10).some(({ poiId }) => poiId === "poi:elevator:2"),
