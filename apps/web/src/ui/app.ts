@@ -163,6 +163,7 @@ export class App {
   private readonly directories = new Map<string, { bundle: StationBundle; search: SearchIndex } | null>();
   private panelExpanded = false;
   private coldOpen = false;
+  private seibuGuide = false;
   private bootValue = 0;
   private bootWalkAt: number | null = null;
   private bootFrames = new FrameReadiness();
@@ -1213,6 +1214,7 @@ export class App {
     this.s.noPath = null;
     this.s.polyline = [];
     this.s.instructions = [];
+    this.seibuGuide = false;
     this.explorer.clearRoute();
     this.ui.minimap.setRoute(null, null);
     if (!router || !loaded || !origin || !destination) { this.renderSheet(); return; }
@@ -1253,8 +1255,37 @@ export class App {
       this.explorer.showRoute(this.s.polyline, this.escalatorSpans);
       this.ui.minimap.setRoute({ points: this.s.polyline, steps: best.steps }, destination);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
+      if (loaded.key === "ikebukuro" && this.explorer.previewNext && destination.id === "shop-ikb-seibu-honten" && best.nodeIds.at(-1) === "sp_e") {
+        this.addSeibuPreview(loaded.bundle, best);
+      }
     }
     this.renderSheet();
+  }
+
+  private addSeibuPreview(bundle: StationBundle, route: RouteResult): void {
+    const approach = this.s.polyline.at(-1)!;
+    const arrival = this.s.instructions.at(-1)!;
+    this.seibuGuide = true;
+    arrival.text = this.t.seibuApproachEnd;
+    if (route.profile.stepFree || this.explorer.sceneError) return;
+
+    const stepIndex = route.steps.length;
+    const waypoints = ["door0", "inside0", "approach0", "aisle"].map((part): PolylinePoint => {
+      const node = bundle.nodes.find(n => n.id === `depato-seibu-ikebukuro-B1-${part}`)!;
+      return { x: node.position.x, y: node.position.y, z: node.position.z!, zKnown: false, floorId: node.floorId, stepIndex };
+    });
+    const door = waypoints[0]!;
+    // Align with the clear centre of the authored doorway from the public passage.
+    const preview = this.explorer.previewWalkLeg(approach, [{ ...door, y: door.y + 4 }, ...waypoints]);
+    if (!preview) return;
+    const end = preview.at(-1)!;
+    this.s.polyline = [...this.s.polyline, ...preview];
+    arrival.text = this.t.seibuPreviewEnd;
+    arrival.toFloorId = end.floorId;
+    this.s.instructions.splice(-1, 0, {
+      kind: "walk", stepIndexes: [stepIndex], distanceM: polylineLengthM([approach, ...preview]),
+      vertical: null, toFloorId: end.floorId, text: this.t.seibuPreviewLeg,
+    });
   }
 
   private renderSheet(): void {
@@ -1756,8 +1787,8 @@ export class App {
       box.append(el("div", "hud-instruction", `${escalatorArrow(start!.z, end!.z)} ${floor}${suffix}`));
       return box;
     }
-    const card = exit && this.arrived
-      ? { line: this.t.arrivedAt(this.poiName(exit)), detail: null }
+    const card = this.arrived && this.seibuGuide ? { line: ins.text, detail: null }
+      : exit && this.arrived ? { line: this.t.arrivedAt(this.poiName(exit)), detail: null }
       : guideCardText(ins, { arrived: this.arrived, connector: this.endsOnConnector(), name: this.destinationLabel(), t: this.t, lang: this.s.lang, next: true });
     const instruction = el("div", "hud-instruction");
     const line = el("span", "guide-card-line", card.line);

@@ -948,6 +948,10 @@ liftDoorClearance	function	packages/scene-api/src/liftShaft.ts
 liftRides	function	packages/scene-api/src/liftShaft.ts
 liftShafts	function	packages/scene-api/src/liftShaft.ts
 liftStopSquare	function	packages/scene-api/src/liftShaft.ts
+RailBuilder	type	packages/scene-api/src/rail-registry.ts
+RailLane	interface	packages/scene-api/src/rail-registry.ts
+discoverRailLanes	function	packages/scene-api/src/rail-registry.ts
+mountRailChunks	function	packages/scene-api/src/rail-registry.ts
 WallPropPlacement	interface	packages/scene-api/src/wallProps.ts
 buildWallProps	function	packages/scene-api/src/wallProps.ts
 wallPropDrawRanges	function	packages/scene-api/src/wallProps.ts
@@ -1266,6 +1270,9 @@ N02_RENDER_ORDER	const	stations/ikebukuro/scene/n02_overlay.ts
 createN02Material	function	stations/ikebukuro/scene/n02_overlay.ts
 dressN02Overlay	function	stations/ikebukuro/scene/n02_overlay.ts
 loadN02Overlay	function	stations/ikebukuro/scene/n02_overlay.ts
+buildRailScene	function	stations/ikebukuro/scene/rail.ts
+railBundle	function	stations/ikebukuro/scene/rail.ts
+buildYamanote	function	stations/ikebukuro/scene/rail/jr-yamanote.ts
 assembleCollision	function	stations/ikebukuro/scene/scene.ts
 buildScene	function	stations/ikebukuro/scene/scene.ts
 generatedSignageFromGraph	const	stations/ikebukuro/scene/scene.ts
@@ -1632,7 +1639,6 @@ installLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 parseLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 shaftGrade	function	stations/shinjuku/scene/lightPreset.ts
 OEDO_MAGENTA	const	stations/shinjuku/scene/palette.ts
-RailLane	interface	stations/shinjuku/scene/rail-registry.ts
 attachRailScene	function	stations/shinjuku/scene/rail-registry.ts
 mergeRailBundle	function	stations/shinjuku/scene/rail-registry.ts
 buildYamanote	function	stations/shinjuku/scene/rail/jr-yamanote.ts

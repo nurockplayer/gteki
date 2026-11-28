@@ -92,7 +92,7 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     edges.push({ id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: mode === "escalator" ? "forward" : "both", mode,
       lengthM: Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y, b.position.z! - a.position.z!),
       geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode === "walk", steps: mode !== "walk",
-      hours: null, closed: false, verification: "verified", geometryEvidence: evidence, accessEvidence: evidence });
+      hours: null, closed: false, verification: "geometry_only", geometryEvidence: evidence, accessEvidence: null });
   };
   let previousLower: Node | undefined;
   for (const floor of plan.floors) {
