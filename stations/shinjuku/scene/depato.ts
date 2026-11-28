@@ -4,7 +4,7 @@ import type { Edge, Node, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import type { Object3D, Vector3 } from "three";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../apps/web/src/explorer/portalCut.ts";
-import { depatoBundle, depatoLayout, readDepatoFloors, type PlanPoint } from "../../ikebukuro/scene/depato/layout.ts";
+import { depatoBundle, depatoLayout, readDepatoFloors, type DepatoLayout, type PlanPoint } from "../../ikebukuro/scene/depato/layout.ts";
 import { buildDepatoInterior } from "../../ikebukuro/scene/depato/interior.ts";
 import floorData from "../data/depato-floors.json";
 import rollout from "../data/depato-rollout.json";
@@ -24,7 +24,7 @@ export const layouts = rollout.stores.map(row => {
       .filter(f => f.order >= 2 && f.level !== "RF")
       .map(f => [f.level, row.entrance.elevation + (f.order - 1) * 4.25])), { RF: 34.4 });
   }
-  const layout = depatoLayout({
+  const layout: DepatoLayout = depatoLayout({
     store: fullStore ? store : { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
     footprint: row.footprint as PlanPoint[],
     poiId: row.poiId,
@@ -55,6 +55,19 @@ export const layouts = rollout.stores.map(row => {
     const onCrossAisle = x > crossAisleLeft && x < crossAisleRight && Math.abs(z - crossAisleZ) < 2.4;
     return !onEntry && !onCrossAisle;
   });
+  if (row.id === "isetan-shinjuku-main") {
+    // Four double-sided rows east of the escalators, with 2.8 m between rows.
+    // Leave both ends open and break each row at the 4 m cross-aisle.
+    const width = 1.5;
+    const pitch = 1.55;
+    const nearToFar = [-495, -517.55].flatMap(start =>
+      Array.from({ length: 12 }, (_, i) => start - width / 2 - i * pitch));
+    const positions = [470, 475, 480, 485].flatMap(center =>
+      [-1, 1].flatMap(facing => (facing < 0 ? nearToFar : [...nearToFar].reverse()).map(z =>
+        ({ x: center + facing * 0.55, z, facing }))));
+    const floor = layout.floors.find(f => f.level === "1F")!;
+    layout.floorBays = { "1F": { width, positions: positions.slice(0, floor.tenants.length) } };
+  }
   return layout;
 });
 
