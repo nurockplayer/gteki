@@ -109,7 +109,7 @@ function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt
     update: (dt: number, t: number, camera?: THREE.Camera) => {
       refreshViewer();
       stepBuilt(dt, t);
-      crowd?.update(dt, t);
+      crowd?.update(dt, t, camera?.position);
       stepAudio?.(dt, camera);
     },
     dispose() {

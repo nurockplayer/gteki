@@ -1146,7 +1146,7 @@ export function buildCrowd(
     }
   }
 
-  function update(dt: number, _elapsed: number) {
+  function update(dt: number, _elapsed: number, nearCamera = cam) {
     let near = 0, moves = 0;
     let signMinX = Infinity, signMaxX = -Infinity, signMinY = Infinity, signMaxY = -Infinity;
     const sign = cameraSignFocus;
@@ -1288,6 +1288,8 @@ export function buildCrowd(
       const floorY = pos.y;
       pos.y += Math.abs(Math.cos(a.bobPhase)) * 0.025;
       const dx = pos.x - cam.x, dz = pos.z - cam.z, dy = pos.y + 1.1 - cam.y;
+      // Simulation can step several times between renders. Near hiding follows the simulation pose.
+      const nearDistanceSq = nearCamera.distanceToSquared(focusBody.set(pos.x, pos.y + 1.1, pos.z));
       if (dx * dx + dz * dz + dy * dy < 64) near++;
       // Someone who just moved stays hidden until a frame rendered after the move shows the spot out
       // of view: a turn of any speed between the move and the next frame never shows the jump.
@@ -1361,7 +1363,7 @@ export function buildCrowd(
       openingFades[i] = openingFade;
       focusFades[i] = focusFade;
       const hideFocus = blocksFocus && (!softenFocus || focusFade === 0);
-      if (excluded || !shown || hideFocus || dx * dx + dz * dz + dy * dy < hideRadius * hideRadius) {
+      if (excluded || !shown || hideFocus || nearDistanceSq < hideRadius * hideRadius) {
         hide(i);
         continue;
       }
