@@ -77,7 +77,7 @@ export const DECLUTTER_HOLD_PX = 4;
 
 /**
  * Ids of the labels to keep. Properties:
- * - no two kept labels intersect. Endpoints can sit flush so close route choices stay findable;
+ * - no two kept labels intersect. Endpoints can sit flush;
  * - labels are considered in order of class, then clear before faded, then routable before search-only,
  *   then id, so a lower-priority label never takes the place of a higher one;
  * - the result depends only on the input (order of `items` does not matter).

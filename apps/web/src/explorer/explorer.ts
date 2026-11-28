@@ -41,7 +41,7 @@ import { ZONE_LOOK, backdropOutdoors, classifyZone, zoneAnchors, type StationZon
 import { CAT_RAISE_AIM, OPENING_SHOTS, openingShotState, ARRIVAL_SHOTS, ESCALATOR_SHOT, arrivalShotState, CAT_NPC_FADE, guideSignInView, FOLLOW, FOLLOW_CAT, FOLLOW_CAT_NEXT, escalatorPose, followLens, stepEscalatorLock, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, descentAimDrop, easeRaise, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepAvatarFade, stepSlope, steerYaw, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_MIN_VIEWPORT_SHARE, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeAreas, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
-import { LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { DECLUTTER_PAD_PX, LABEL_CLASS, placeOverviewChip, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { collectIdentityBoards, identityBoardObjects, identityFront, identityNameBehind, identityNameCentre, identityNameCorners, identityNameSamples, identityRegionRect, intersectsRect, protectIdentityChip, withinObject, type IdentityBoard, type ScreenRect } from "./identityBoards.ts";
 import { IDENTITY_RANGE_M, LOOK_PITCH, identityFraming, type FramingRig } from "./identityFraming.ts";
 import { StationCaches, shouldRelease } from "./stationCaches.ts";
@@ -2896,7 +2896,7 @@ export class Explorer {
     }
     const { w: vw, h: vh } = this.viewSize;
     const items: DeclutterItem[] = [];
-    const byId = new Map<string, PoiLabel>();
+    const byId = new Map<string, { label: PoiLabel; anchorX: number; anchorY: number }>();
     // Keep chips off the top bar (#1072), credit footer and disclaimer badge (#838).
     const overview = this.mode === "overview";
     let blocked: ScreenRect[] = [];
@@ -2919,30 +2919,60 @@ export class Explorer {
       const el = l.obj.element;
       const size = l.size ?? estimateLabelBox(el.textContent ?? "");
       // The chip is drawn nudged off identity boards, so declutter must use where it actually lands.
-      let x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh + l.identityOffsetY;
-      const placement = placeOverviewChip({ x, y, ...size }, { allowPartial: !overview || l.klass === LABEL_CLASS.endpoint, selected: l.selected, vw, vh, identityRegions: this.identityRegions, anchorY: y - l.identityOffsetY });
+      const anchorX = (p.x * 0.5 + 0.5) * vw, anchorY = (-p.y * 0.5 + 0.5) * vh;
+      const y = anchorY + l.identityOffsetY;
+      const placement = placeOverviewChip({ x: anchorX, y, ...size }, { allowPartial: !overview || l.klass === LABEL_CLASS.endpoint, selected: l.selected, vw, vh, identityRegions: this.identityRegions, anchorY });
       if (placement.hidden) { l.decluttered = true; continue; }
       const { dx, dy } = placement;
-      x += dx; y += dy;
-      el.style.translate = `${dx}px ${l.identityOffsetY + dy}px`;
       // Let CSS2D attach unmeasured chips without painting the estimated boxes.
       el.style.visibility = l.size ? "" : "hidden";
       const klass = !l.selected && nextLabelNode !== undefined && l.connectorNodeIds.includes(nextLabelNode) ? LABEL_CLASS.nextStep : l.klass;
-      items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
-      byId.set(l.poiId, l);
+      items.push({ id: l.poiId, x: anchorX + dx, y: y + dy, w: size.w, h: size.h, klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
+      byId.set(l.poiId, { label: l, anchorX, anchorY });
     }
+    this.separateEndpointLabels(items, vw, vh, blocked);
     const keep = declutter(items, { blocked });
-    for (const [id, l] of byId) l.decluttered = !keep.has(id);
+    for (const { id, x, y } of items) {
+      const { label, anchorX, anchorY } = byId.get(id)!;
+      label.decluttered = !keep.has(id);
+      label.obj.element.style.translate = `${x - anchorX}px ${y - anchorY}px`;
+    }
     this.identityOverlap = overview ? items.filter((item) => {
-      const label = byId.get(item.id)!;
+      const { label } = byId.get(item.id)!;
       if (!keep.has(item.id) || label.selected || label.state === "hidden") return false;
       const rect = { x0: item.x - item.w / 2, x1: item.x + item.w / 2, y0: item.y - item.h / 2, y1: item.y + item.h / 2 };
       return this.identityRegions.some((region) => intersectsRect(rect, region));
     }).length : 0;
     // Measure newly attached chips on the next pass, even if identity-board checks ran earlier.
     for (const id of revealedUnmeasured(items, keep)) {
-      const el = byId.get(id)!.obj.element;
+      const el = byId.get(id)!.label.obj.element;
       if (!el.isConnected || el.style.display === "none") this.declutterDirty = true;
+    }
+  }
+
+  private separateEndpointLabels(items: DeclutterItem[], vw: number, vh: number, blocked: readonly ScreenRect[]): void {
+    const [first, second] = items.filter((item) => item.klass === LABEL_CLASS.endpoint);
+    if (!first || !second) return;
+    const rect = ({ x, y, w, h }: DeclutterItem): ScreenRect => ({ x0: x - w / 2, x1: x + w / 2, y0: y - h / 2, y1: y + h / 2 });
+    if (!intersectsRect(rect(first), rect(second))) return;
+    const obstacles = [...blocked, ...this.identityRegions];
+    // Keep one chip at its anchor and try the other above, below, or beside it.
+    for (const [fixed, moving] of [[first, second], [second, first]] as const) {
+      const box = rect(fixed);
+      if (blocked.some((region) => intersectsRect(box, region))) continue;
+      const candidates = [
+        { x: moving.x, y: box.y0 - moving.h / 2 - DECLUTTER_PAD_PX },
+        { x: moving.x, y: box.y1 + moving.h / 2 + DECLUTTER_PAD_PX },
+        { x: box.x0 - moving.w / 2 - DECLUTTER_PAD_PX, y: moving.y },
+        { x: box.x1 + moving.w / 2 + DECLUTTER_PAD_PX, y: moving.y },
+      ];
+      for (const { x, y } of candidates) {
+        const next = rect({ ...moving, x, y });
+        if (next.x0 < 0 || next.y0 < 0 || next.x1 > vw || next.y1 > vh || obstacles.some((region) => intersectsRect(next, region))) continue;
+        moving.x = x;
+        moving.y = y;
+        return;
+      }
     }
   }
 
@@ -4021,9 +4051,10 @@ export class Explorer {
       this.camera.updateProjectionMatrix();
       if (t === 1) this.openingRelease = null;
     }
-    const nextSign = this.mode === "guide" && this.guide ? this.guideSigns?.find((sign) => sign.s >= this.guide!.s) : undefined;
     const forward = this.camera.getWorldDirection(new THREE.Vector3());
-    const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
+    const sign = this.mode === "guide" && this.guide
+      ? this.guideSigns?.find(({ s, anchor }) => s >= this.guide!.s && guideSignInView(this.pos, this.camera.position, forward, anchor))?.anchor ?? null
+      : null;
     if (catFocus) {
       this.setCameraFocus(catFocus, this.cameraFacingCatAnchor());
     } else this.setCameraFocus(pose.target, sign);
