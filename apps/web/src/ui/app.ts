@@ -2172,9 +2172,13 @@ export class App {
 
   /** Stable hooks for the QA lane's browser automation (read-mostly). */
   private exposeTestHooks(): void {
+    const sceneQuery = new URLSearchParams(location.search).get("qaSceneQuery") === "1"
+      ? this.explorer.sceneQuery(() => this.s.route?.ok ? this.s.route.steps : [])
+      : undefined;
     (window as unknown as { __gteki: unknown }).__gteki = {
       version: "gteki.web/0.1",
-      scanProbe: () => ({ explorer: this.explorer, castAll, prepareRayTrees }),
+      scanProbe: () => ({ explorer: this.explorer, castAll, prepareRayTrees, ...(sceneQuery && { sceneQuery }) }),
+      ...(sceneQuery && { sceneQuery: { player: sceneQuery.player, pick: sceneQuery.pick, near: sceneQuery.near } }),
       stations: () => this.s.entries.map((e) => ({ key: e.key, label: e.label, synthetic: e.synthetic })),
       openStation: (key: string) => { const e = this.s.entries.find((x) => x.key === key); return e ? this.openStation(e) : Promise.reject(new Error(`no station ${key}`)); },
       setOrigin: (poiId: string) => { const p = this.s.loaded?.bundle.pois.find((x) => x.id === poiId); if (p) this.setOrigin({ kind: "poi", poi: p }); return Boolean(p); },
