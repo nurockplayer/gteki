@@ -30,6 +30,9 @@ export const WALKER_BODY = { radiusM: 0.3, bodyBottomM: 0.2, bodyTopM: 1.7, eyeM
  */
 export const WALKER_SPEED = { walkMps: 1.45, runMps: 3.4 } as const;
 
+/** Speed along the escalator incline, shared by the step band and guided riders (m/s). */
+export const ESCALATOR_MPS = 0.5;
+
 /** Vertical wall in station ENU metres; blocks the walker between zMin and zMax (see WALKER_BODY). */
 export interface WallSegment {
   source?: string;

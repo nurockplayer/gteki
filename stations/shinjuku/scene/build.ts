@@ -6,6 +6,7 @@ import * as THREE from "three";
 import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
+import { ESCALATOR_MPS } from "@gteki/scene-api";
 import { createRouter } from "@gteki/navigation";
 import { centroid, cutWallsByVoids, pointInRings, roomFloorFill, soffitHeight, stairShaftGroups, STREET_PAD, RUN_WALL_OFFSET, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, escalatorStepTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
@@ -1092,7 +1093,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
           steps.userData = { lo, hi, yaw, count, L3, stepLen };
           root.add(steps);
         }
-        escalators.push({ run: r, steps, speed: 0.5 * (r.travel === 0 ? 0 : (r.a.z <= r.b.z ? 1 : -1) * r.travel) });
+        escalators.push({ run: r, steps, speed: ESCALATOR_MPS * (r.travel === 0 ? 0 : (r.a.z <= r.b.z ? 1 : -1) * r.travel) });
         // entry/exit indicators: green arrow where you board, red bar where you must not.
         // Low on the skirt end at the comb, facing the approach (not floating out over the landing).
         const board = r.travel >= 0 ? r.a : r.b;

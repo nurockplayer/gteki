@@ -3429,7 +3429,7 @@ export class Explorer {
     this.stepCatTap();
     if (this.catAvatar) this.avatarRig?.setTurnLead?.(this.mode !== "overview" && motion.speed > 0 && dt > 0 ? angleDelta(previousYaw, motion.yaw) / (dt * CAT_TURN_RATE) : 0);
     if (this.catAvatar) this.avatarRig?.setLookPitch?.(this.mode === "overview" ? 0 : this.pitch);
-    this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
+    this.avatarRig?.update(dt, this.mode === "overview" || this.catRidingEscalator() ? 0 : motion.speed);
     this.stepPaws(dt, motion.speed);
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
