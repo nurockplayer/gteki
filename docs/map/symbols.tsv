@@ -948,6 +948,10 @@ liftDoorClearance	function	packages/scene-api/src/liftShaft.ts
 liftRides	function	packages/scene-api/src/liftShaft.ts
 liftShafts	function	packages/scene-api/src/liftShaft.ts
 liftStopSquare	function	packages/scene-api/src/liftShaft.ts
+RailBuilder	type	packages/scene-api/src/rail-registry.ts
+RailLane	interface	packages/scene-api/src/rail-registry.ts
+discoverRailLanes	function	packages/scene-api/src/rail-registry.ts
+mountRailChunks	function	packages/scene-api/src/rail-registry.ts
 WallPropPlacement	interface	packages/scene-api/src/wallProps.ts
 buildWallProps	function	packages/scene-api/src/wallProps.ts
 wallPropDrawRanges	function	packages/scene-api/src/wallProps.ts
@@ -1113,7 +1117,9 @@ DepatoStore	interface	stations/ikebukuro/scene/depato/layout.ts
 PlanPoint	type	stations/ikebukuro/scene/depato/layout.ts
 depatoBundle	function	stations/ikebukuro/scene/depato/layout.ts
 depatoLayout	function	stations/ikebukuro/scene/depato/layout.ts
+readDepatoFloors	function	stations/ikebukuro/scene/depato/layout.ts
 buildPilotScene	function	stations/ikebukuro/scene/depato/pilot.ts
+ikebukuroDepatoLayouts	const	stations/ikebukuro/scene/depato/pilot.ts
 previewBundle	function	stations/ikebukuro/scene/depato/pilot.ts
 AccessFences	interface	stations/ikebukuro/scene/fences.ts
 buildAccessFences	function	stations/ikebukuro/scene/fences.ts
@@ -1264,6 +1270,9 @@ N02_RENDER_ORDER	const	stations/ikebukuro/scene/n02_overlay.ts
 createN02Material	function	stations/ikebukuro/scene/n02_overlay.ts
 dressN02Overlay	function	stations/ikebukuro/scene/n02_overlay.ts
 loadN02Overlay	function	stations/ikebukuro/scene/n02_overlay.ts
+buildRailScene	function	stations/ikebukuro/scene/rail.ts
+railBundle	function	stations/ikebukuro/scene/rail.ts
+buildYamanote	function	stations/ikebukuro/scene/rail/jr-yamanote.ts
 assembleCollision	function	stations/ikebukuro/scene/scene.ts
 buildScene	function	stations/ikebukuro/scene/scene.ts
 generatedSignageFromGraph	const	stations/ikebukuro/scene/scene.ts
@@ -1295,6 +1304,7 @@ createStreetAmbience	function	stations/ikebukuro/scene/street-ambience.ts
 streetLevel	function	stations/ikebukuro/scene/street-ambience.ts
 buildSunshineScene	function	stations/ikebukuro/scene/sunshine.ts
 sunshineBundle	function	stations/ikebukuro/scene/sunshine.ts
+sunshineLayouts	function	stations/ikebukuro/scene/sunshine.ts
 TimeBand	type	stations/ikebukuro/scene/time-band.ts
 bandForHour	function	stations/ikebukuro/scene/time-band.ts
 currentTimeBand	function	stations/ikebukuro/scene/time-band.ts
@@ -1430,6 +1440,7 @@ contentKey	function	stations/shinjuku/scene/content-key.ts
 buildDepartmentStores	function	stations/shinjuku/scene/department-stores.ts
 attachDepatoPreview	function	stations/shinjuku/scene/depato.ts
 depatoPreviewBundle	function	stations/shinjuku/scene/depato.ts
+layouts	const	stations/shinjuku/scene/depato.ts
 ACCESS_WORDING	const	stations/shinjuku/scene/fare-fence.ts
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts
 Fence	interface	stations/shinjuku/scene/fare-fence.ts
@@ -1628,7 +1639,6 @@ installLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 parseLightPreset	function	stations/shinjuku/scene/lightPreset.ts
 shaftGrade	function	stations/shinjuku/scene/lightPreset.ts
 OEDO_MAGENTA	const	stations/shinjuku/scene/palette.ts
-RailLane	interface	stations/shinjuku/scene/rail-registry.ts
 attachRailScene	function	stations/shinjuku/scene/rail-registry.ts
 mergeRailBundle	function	stations/shinjuku/scene/rail-registry.ts
 buildYamanote	function	stations/shinjuku/scene/rail/jr-yamanote.ts
