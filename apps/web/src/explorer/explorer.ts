@@ -1,4 +1,5 @@
 import { goldenPixels, goldenPixelDiff } from "./goldenPixels";
+import { SceneQuery } from "./sceneQuery.ts";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -422,6 +423,7 @@ export class Explorer {
   /** Empty/null until the QA hooks are explicitly called. */
   private qaCamera: CameraHold = {};
   private qaCameraSnap = false;
+  private qaSceneTarget: THREE.Vector3 | null = null;
   private qaAvatarFade: number | null = null;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
@@ -1070,6 +1072,45 @@ export class Explorer {
     return { east: x, north: y, up: z, headingDeg: headingFromYaw(this.bodyYaw), mode: this.mode };
   }
 
+  /** Opted-in scene diagnostics. Route steps are resolved when the probe runs. */
+  sceneQuery(routeSteps: () => readonly RouteStep[]) {
+    const query = new SceneQuery(this.scene, this.camera, this.avatar, () => this.renderer.domElement.getBoundingClientRect());
+    const target = this.qaSceneTarget = new THREE.Vector3();
+    const player = (sample?: { nearClip: number; voidRatio: number; nearBlack: number }) => {
+      const bundle = this.station?.bundle;
+      if (!bundle || this.phase !== "ready") return null;
+      const g = this.mode === "guide" ? this.guide : null;
+      const stepIndex = g ? g.steps[samplePolyline(g.pts, g.cum, g.s).segment + 1]! : null;
+      const leg = stepIndex === null ? null : routeSteps()[stepIndex] ?? null;
+      const floors = new Map(bundle.floors.map(floor => [floor.id, floor]));
+      let node: StationBundle["nodes"][number] | null = null;
+      let best = Infinity;
+      for (const candidate of bundle.nodes) {
+        if (leg && candidate.id !== leg.fromNodeId && candidate.id !== leg.toNodeId) continue;
+        const p = candidate.position;
+        const distance = this.pos.distanceToSquared(R(p.x, p.y, nodeDisplayZ(candidate, floors.get(candidate.floorId)).z));
+        if (distance < best) { node = candidate; best = distance; }
+      }
+      const camera = this.camera.position;
+      const look = this.mode === "overview" ? this.orbit.target : target;
+      const cameraTarget = this.openingRelease && this.mode !== "overview"
+        ? this.camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(camera.distanceTo(look)).add(camera)
+        : look;
+      const metrics = sample ?? { nearClip: query.nearClip().ratio, ...this.goldenProbe(false) };
+      return {
+        position: this.pos.toArray(), stationId: bundle.station.id, zoneId: this.zone, floorId: node?.floorId ?? null,
+        nodeId: node?.id ?? null, leg: leg && { ...leg, index: stepIndex, distanceM: g!.s },
+        camera: { position: camera.toArray(), target: cameraTarget.toArray() },
+        nearClip: metrics.nearClip, voidRatio: metrics.voidRatio, nearBlack: metrics.nearBlack,
+      };
+    };
+    return {
+      query, player,
+      pick: (point: Parameters<SceneQuery["pick"]>[0]) => query.pick(point),
+      near: (radiusM: number) => query.near(radiusM),
+    };
+  }
+
   /** Render and copy in the same task: WebGL's drawing buffer is not preserved between frames. */
   captureFeedback() {
     this.render(0);
@@ -1485,7 +1526,14 @@ export class Explorer {
         const url = station.assetUrls.get(uri);
         if (!url) return Promise.reject(new Error(`asset not found in station folder: ${uri}`));
         const loader = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder).setResourcePath(`${ASSET_SCHEME}${stationDir(uri)}/`).register(glbPrimitivePlugin);
-        return fetchGlb(loader, url).catch((err: unknown) => { throw fenceError(err); });
+        const gltf = fetchGlb(loader, url).catch((err: unknown) => { throw fenceError(err); });
+        if (!this.qaSceneTarget) return gltf;
+        return gltf.then(model => {
+          const asset = bundle.assets?.find(asset => asset.uri === uri || asset.uriMobile === uri);
+          model.scene.userData.dataId = asset?.id ?? uri;
+          if (asset?.floorIds.length === 1) model.scene.userData.floorId = asset.floorIds[0];
+          return model;
+        });
       },
       loadTexture: async (uri, opts = {}) => {
         const url = station.assetUrls.get(uri);
@@ -3674,6 +3722,7 @@ export class Explorer {
       this.camera.position.copy(this.pos).add(new THREE.Vector3(Math.sin(yaw) * back + Math.cos(yaw) * shot.shoulder, shot.height, Math.cos(yaw) * back - Math.sin(yaw) * shot.shoulder));
       const target = this.camera.position.clone().addScaledVector(new THREE.Vector3(-Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)), FOLLOW.aim);
       this.camera.lookAt(target);
+      this.qaSceneTarget?.copy(target);
       this.camera.fov = shot.fov;
       this.camera.updateProjectionMatrix();
       this.boomActual = shot.distance;
@@ -3754,7 +3803,9 @@ export class Explorer {
       this.stairAimElevation = undefined;
       this.applyAvatarFade(dt, snap);
       this.camera.position.copy(eye);
-      this.camera.lookAt(eye.clone().add(dir));
+      const target = eye.clone().add(dir);
+      this.camera.lookAt(target);
+      this.qaSceneTarget?.copy(target);
       this.setCameraFocus(null);
       this.setFov(lens(), lensSnap, dt);
       return;
@@ -3959,6 +4010,7 @@ export class Explorer {
       pose.target.lerp(boardingAim, aimIn * (1 - aimOut));
     }
     this.camera.lookAt(pose.target);
+    this.qaSceneTarget?.copy(pose.target);
     if (this.openingRelease) {
       this.openingElapsed = Math.min(1.2, this.openingElapsed + dt);
       const t = this.openingElapsed / 1.2;

@@ -4,14 +4,15 @@ import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources 
 import footprintData from "../../data/depato-footprint.json";
 import floorData from "../../data/depato-floors.json";
 import rolloutData from "../../data/depato-rollout.json";
-import { depatoBundle, depatoLayout, type PlanPoint } from "./layout.ts";
+import { depatoBundle, depatoLayout, readDepatoFloors, type PlanPoint } from "./layout.ts";
 import { buildDepatoInterior } from "./interior.ts";
 
 // PLATEAU context low GLB, ctx_bldg_t01_00: southern store wing of the connected
 // station building, clipped at z=70/180 and x=0 (authored internal partitions).
 // Source vertices are unchanged; this is a footprint, not a copied store floor plan.
 const footprint = footprintData.footprint as PlanPoint[];
-const store = floorData.stores.find(s => s.id === "seibu-ikebukuro")!;
+const floorStores = readDepatoFloors(floorData);
+const store = floorStores.find(s => s.id === "seibu-ikebukuro")!;
 const plan = () => depatoLayout({
   store: { ...store, floors: store.floors.filter((f,i,all) => ["B2", "B1", "1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) },
   footprint, elevations: { "1F": 32.2 },
@@ -21,7 +22,7 @@ const plan = () => depatoLayout({
 
 // Instance placement only: the accepted kit materials, lights and proportions are shared.
 const rolloutPlans = () => rolloutData.stores.map(row => {
-  const store = floorData.stores.find(s => s.id === row.id)!;
+  const store = floorStores.find(s => s.id === row.id)!;
   const layout = depatoLayout({ ...row, footprint: row.footprint as PlanPoint[],
     entrances: row.entrances.map(e=>({ ...e, point: e.point as PlanPoint, inward: e.inward as PlanPoint })),
     store: { ...store, floors: store.floors.filter((f,i,all) =>
@@ -37,6 +38,8 @@ const rolloutPlans = () => rolloutData.stores.map(row => {
     x < 64.95 || x > 72.55 || z < -119 || z > -110.5);
   return layout;
 });
+
+export const ikebukuroDepatoLayouts = () => [plan(), ...rolloutPlans()];
 
 /** Called before the host creates search/router; the flag-off bundle is never modified. */
 export function previewBundle(bundle: StationBundle): StationBundle {
@@ -62,7 +65,7 @@ export function previewBundle(bundle: StationBundle): StationBundle {
 
 /** One station hook: wrap context loading, open the station shell and attach the reusable kit. */
 export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
-  const THREE = ctx.THREE, layout = plan(), layouts = [layout, ...rolloutPlans()];
+  const THREE = ctx.THREE, layouts = ikebukuroDepatoLayouts(), layout = layouts[0]!;
   const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   const volume = (left: number, right: number, front: number, back: number, low: number, high: number): CutRegion => ({
     key: {}, bounds: new THREE.Box3(new THREE.Vector3(left, low, front), new THREE.Vector3(right, high, back)), clip: null,
