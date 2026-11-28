@@ -1,5 +1,5 @@
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import type { RailLane } from "../rail-registry.ts";
+import type { RailLane } from "@gteki/scene-api/rail-registry";
 import { stairProfile } from "../stairProfile.ts";
 
 /** An authored, shortened platform and its west-gate approach. No operator plan was traced. */
@@ -8,7 +8,7 @@ export default function buildYamanote(ctx: SceneContext, lane: RailLane): Statio
   const [entry, end] = platform.centerline!;
   const [x, start] = entry, finish = end[1];
   const z = lane.levels.find(level => level.id === platform.level)!.z_m;
-  const half = platform.width_m / 2;
+  const half = platform.width_m! / 2;
   const publicGate = lane.gates[0]!.position!, [sx, sy, sz] = lane.gates[1]!.position!;
   const seam = lane.openings![0]!.position[1] - 0.25;
   const root = new T.Group();

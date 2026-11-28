@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
+import { buildCrowd } from "../../../../stations/ikebukuro/scene/crowd.ts";
+import { castAll } from "./raycast.ts";
 import { GUIDE_YAW, steerYaw, FOLLOW_CAT_NEXT, ESCALATOR_SHOT, escalatorPose, followLens, stepEscalatorLock, guideSignInView, CAT_RAISE_AIM, DESCENT, FOLLOW, FOV, NO_SLOPE, SLOPE, aimAtRaisedCat, cameraGateConstraint, approachBoom, approachFov, avatarFade, catShoulder, boomSqueezed, clampDistance, descentAimDrop, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepAvatarFade, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("guided yaw easing (#1331)", () => {
@@ -49,6 +51,35 @@ describe("guided yaw easing (#1331)", () => {
 });
 
 describe("follow camera", () => {
+  it("keeps the phone camera clear of commuters at Shinjuku's 74.48 m landing", () => {
+    const crowd = buildCrowd(THREE, [{
+      id: "e:b56c4b8d15ec46118120e3430388d9f0", from: "west", to: "east", verification: "verified",
+      geometry: [{ x: -25.06, y: 179.99, z: -7.8 }, { x: -21.74, y: 181.07, z: -7.8 }],
+    }], (x, y, z) => new THREE.Vector3(x, z, -y), 1, new THREE.Texture());
+    const mesh = crowd.group.children[0] as THREE.InstancedMesh;
+    const camera = new THREE.PerspectiveCamera(50, 393 / 727, 0.05);
+    const rendered = new THREE.Vector3(-26.447, -7.094, -179.425);
+    const landing = new THREE.Vector3(-24.187, -7.127, -180.160);
+    const aim = new THREE.Vector3(0.9504, -0.0343, -0.3092);
+    camera.position.copy(rendered);
+    camera.lookAt(rendered.clone().add(aim));
+    camera.updateMatrixWorld();
+    mesh.onBeforeRender(null!, new THREE.Scene(), camera, mesh.geometry, mesh.material as THREE.Material, null!);
+
+    const ray = new THREE.Raycaster(undefined, undefined, 0, 0.3);
+    let nearHits = 0;
+    for (let frame = 1; frame <= 180; frame++) {
+      crowd.update(1 / 60, frame / 60, camera.position);
+      camera.position.lerpVectors(rendered, landing, Math.min(frame / 42, 1));
+      camera.lookAt(camera.position.clone().add(aim));
+      camera.updateMatrixWorld();
+      ray.setFromCamera(new THREE.Vector2(), camera);
+      nearHits += castAll(ray, [mesh]).length;
+    }
+    crowd.dispose();
+    expect(nearHits).toBe(0);
+  });
+
   it("scales the cat shoulder for portrait aspect", () => {
     expect(catShoulder(0.49)).toBeCloseTo(0.098);
     expect(catShoulder(1.6)).toBeCloseTo(0.2);

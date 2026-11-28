@@ -1,0 +1,14 @@
+{
+  "sourceSha": "5a99f850e9ba94078701f2a0bbca06531377f5c7",
+  "capturedAtUTC": "2026-11-24T08:45:04.750Z",
+  "goal": "depato-seibu-ikebukuro-B1-aisle",
+  "interiorSteps": 4,
+  "arrival": "Arrive at destination. Generated interior preview; aisles and tenant positions are illustrative.",
+  "avatar": {
+    "x": 22.9055,
+    "y": -94,
+    "z": 27.700000000000003
+  },
+  "mode": "guide",
+  "arrived": true
+}
