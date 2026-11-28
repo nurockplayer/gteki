@@ -100,6 +100,13 @@ export function batchKitPlacements(args: {
       delete out.userData.gteki_role;
       const s = out as THREE.MeshStandardMaterial;
       if (s.aoMap) { s.aoMap = null; s.aoMapIntensity = 1; }
+      // The escalator palette's steel is fully metallic and the glass is nearly smooth.
+      // Keep their station-environment highlights below the landing lights.
+      if (key === "gteki_palette") s.envMapIntensity = 0.3;
+      if (key === "gteki_palette_blend") {
+        s.envMapIntensity = 0.18;
+        s.opacity = 0.6;
+      }
       if (slot && s.color) {
         s.color.set(slot.colour);
         if (s.map) for (const c of ["r", "g", "b"] as const) s.color[c] = Math.min(1, s.color[c] * TINT_BASE_COMPENSATION);

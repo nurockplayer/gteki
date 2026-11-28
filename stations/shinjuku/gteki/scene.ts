@@ -548,7 +548,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap, sho
       for (const m of [(o as THREE.Mesh).material].flat()) {
         if (m instanceof T.MeshStandardMaterial && !m.envMap) {
           m.envMap = tex;
-          m.envMapIntensity = 0.55;
+          m.envMapIntensity = o.userData.gteki_kit ? 0.55 * m.envMapIntensity : 0.55;
           m.needsUpdate = true;
         }
       }
