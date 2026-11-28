@@ -10,18 +10,28 @@ import floorData from "../data/depato-floors.json";
 import rollout from "../data/depato-rollout.json";
 import { stableHypot } from "./stable-hypot.ts";
 
+const fullStores = new Set(["takashimaya-shinjuku", "shinjuku-marui-main", "shinjuku-marui-annex"]);
 const floorStores = readDepatoFloors(floorData);
 export const layouts = rollout.stores.map(row => {
   const store = floorStores.find(s => s.id === row.id)!;
+  const fullStore = fullStores.has(row.id);
   const [doorX, doorZ] = row.entrance.point as PlanPoint;
   const [inwardX, inwardZ] = row.entrance.inward as PlanPoint;
+  const elevations = { "1F": row.entrance.elevation };
+  if (row.id === "shinjuku-marui-main") {
+    // Fit the public floors below the PLATEAU roof deck.
+    Object.assign(elevations, Object.fromEntries(store.floors
+      .filter(f => f.order >= 2 && f.level !== "RF")
+      .map(f => [f.level, row.entrance.elevation + (f.order - 1) * 4.25])), { RF: 34.4 });
+  }
   const layout: DepatoLayout = depatoLayout({
-    store: { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
+    store: fullStore ? store : { ...store, floors: store.floors.filter(f => f.level === "1F" || f.level === "B1") },
     footprint: row.footprint as PlanPoint[],
     poiId: row.poiId,
     sourceId: row.sourceTile,
-    elevations: { "1F": row.entrance.elevation },
+    elevations,
     circulation: row.circulation,
+    ...(fullStore ? { lift: [row.circulation.aisleX - 8, (row.circulation.from + row.circulation.to) / 2] as PlanPoint } : {}),
     entrances: [{ ...row.entrance, point: row.entrance.point as PlanPoint, inward: row.entrance.inward as PlanPoint }],
   });
   // Clear the entry and the cross-aisle joining it to the stair bypass.
@@ -31,6 +41,13 @@ export const layouts = rollout.stores.map(row => {
   const crossAisleLeft = Math.min(insideX, bypassX) - 0.9;
   const crossAisleRight = Math.max(insideX, bypassX) + 0.9;
   layout.counters = layout.counters.filter(([x, z]) => {
+    if (layout.input.lift) {
+      const [liftX, liftZ] = layout.input.lift;
+      const atDirectory = Math.abs(x - (bypassX - 2)) < 1 &&
+        [layout.stair.from - 2, layout.stair.to + 2].some(stop => Math.abs(z - stop) < 4);
+      if (Math.abs(x - bypassX) < 1.25 ||
+        atDirectory || (x > liftX - 1.8 && x < bypassX && Math.abs(z - liftZ) < 4)) return false;
+    }
     const depth = (x - doorX) * inwardX + (z - doorZ) * inwardZ;
     const across = (z - doorZ) * inwardX - (x - doorX) * inwardZ;
     const entryWidth = row.id === "shinjuku-marui-main" ? 4 : 2;
@@ -155,6 +172,8 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
     ...p.floors.flatMap(f => [f.label.ja, f.label.en, ...f.tenants.flatMap(t => [t.ja, t.en])]),
   ]).join(""));
   const interiors = layouts.map(p => buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
+  const fullStoreFacades = rollout.stores.map(row => fullStores.has(row.id)
+    ? scene.root.getObjectByName(`department-store:${row.buildingId}`)! : null);
   scene.root.add(...pavement, ...interiors.flatMap(i => [i.root, i.connectorRoot]));
   let avatar: { x: number; y: number; z: number } | null = null;
   return {
@@ -171,9 +190,14 @@ export async function attachDepatoPreview(ctx: SceneContext, scene: StationScene
       scene.update?.(dt, elapsed, camera);
       if (!camera) return;
       const p = avatar ?? camera.position;
-      const distances = layouts.map(l =>
-        l.contains([p.x, p.z]) && p.y >= l.height("B1") - 1 && p.y <= l.height("1F") + 4 ? 0 :
-          stableHypot(p.x - l.input.entrances[0]!.point[0], p.y - l.height("1F"), p.z - l.input.entrances[0]!.point[1]));
+      const distances = layouts.map((l, n) => {
+        const facade = fullStoreFacades[n];
+        const top = facade ? l.floors.at(-1)!.level : "1F";
+        const inside = l.contains([p.x, p.z]) && p.y >= l.height("B1") - 1 && p.y <= l.height(top) + 4;
+        // Some LOD2 roof/setback faces cross the illustrative upper-floor plates.
+        if (facade) facade.visible = !inside || p.y < l.height("1F") + 2;
+        return inside ? 0 : stableHypot(p.x - l.input.entrances[0]!.point[0], p.y - l.height("1F"), p.z - l.input.entrances[0]!.point[1]);
+      });
       const active = distances.indexOf(Math.min(...distances));
       // Keep the detail loaded for the approach and release it after leaving the storefront.
       interiors.forEach((i, n) => { if (n !== active || distances[n]! > 24) i.update(camera, dt, elapsed, false); });

@@ -40,7 +40,7 @@ function labelAt(board: THREE.Object3D, selected: boolean) {
   let translate = "";
   const obj = Object.assign(new THREE.Object3D(), {
     element: {
-      isConnected: true, get offsetWidth() { return 100; }, get offsetHeight() { return 26; },
+      isConnected: true, getBoundingClientRect: () => ({ width: 100, height: 26 }),
       textContent: "Name", style: { get translate() { return translate; }, set translate(value: string) { translate = value; } }, classList: { toggle: vi.fn() },
     },
   });
@@ -321,18 +321,16 @@ describe("identity QA and chip integration", () => {
     e.poiLabels = labels;
     const events: string[] = [];
     const spies = labels.map((l, i) => ({
-      width: vi.spyOn(l.obj.element, "offsetWidth", "get").mockImplementation(() => { events.push(`width${i}`); return 100; }),
-      height: vi.spyOn(l.obj.element, "offsetHeight", "get").mockImplementation(() => { events.push(`height${i}`); return 26; }),
+      measure: vi.spyOn(l.obj.element, "getBoundingClientRect").mockImplementation(() => { events.push(`measure${i}`); return { width: 100, height: 26 }; }),
       translate: vi.spyOn(l.obj.element.style, "translate", "set").mockImplementation(() => { events.push(`write${i}`); }),
     }));
     e.updateIdentityLabels();
-    expect(events).toEqual(["width0", "height0", "width1", "height1", "write0", "write1"]);
+    expect(events).toEqual(["measure0", "measure1", "write0", "write1"]);
     for (const l of labels) expect(l.size).toEqual({ w: 100, h: 26 });
-    for (const s of spies) { s.width.mockClear(); s.height.mockClear(); s.translate.mockClear(); }
+    for (const s of spies) { s.measure.mockClear(); s.translate.mockClear(); }
     for (let i = 0; i < 5; i++) e.updateIdentityLabels();
     for (const s of spies) {
-      expect(s.width).not.toHaveBeenCalled();
-      expect(s.height).not.toHaveBeenCalled();
+      expect(s.measure).not.toHaveBeenCalled();
       expect(s.translate).not.toHaveBeenCalled();
     }
     // #400: overview protects the same name, so the mode change neither resets nor rewrites the offset.
@@ -341,8 +339,7 @@ describe("identity QA and chip integration", () => {
     for (const s of spies) expect(s.translate).not.toHaveBeenCalled();
     for (let i = 0; i < 5; i++) e.updateIdentityLabels();
     for (const s of spies) {
-      expect(s.width).not.toHaveBeenCalled();
-      expect(s.height).not.toHaveBeenCalled();
+      expect(s.measure).not.toHaveBeenCalled();
       expect(s.translate).not.toHaveBeenCalled();
     }
   });
@@ -550,13 +547,13 @@ describe("identity QA and chip integration", () => {
     const [ya, yb] = [screenY(a), screenY(b)];
     // Far enough apart to coexist (26 px box plus the 3 px pad and 4 px hold), so nothing is hidden yet.
     expect(Math.abs(ya - yb)).toBeGreaterThan(40);
-    e.declutterDirty = true; e.declutterAt = -Infinity;
-    e.updateDeclutter(0);
+    e.declutterDirty = true;
+    e.updateDeclutter();
     expect([a.decluttered, b.decluttered]).toEqual([false, false]);
     // The identity pass nudges a onto b; declutter must hide one where a is now drawn, not at its anchor.
     a.identityOffsetY = yb - ya;
     e.declutterDirty = true;
-    e.updateDeclutter(1000);
+    e.updateDeclutter();
     expect([a.decluttered, b.decluttered].filter(Boolean)).toHaveLength(1);
   });
 
