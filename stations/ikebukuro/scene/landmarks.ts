@@ -33,7 +33,7 @@ export function removeLandmarkContext(THREE: typeof Three, root: Three.Object3D,
 }
 
 /** Each store uses one facade draw (including its street band), and one baked sign draw. */
-export async function addLandmarks(ctx: SceneContext, parent: Three.Object3D): Promise<() => void> {
+export async function addLandmarks(ctx: SceneContext, parent: Three.Object3D, roadMaterial: Three.Material): Promise<() => void> {
   const THREE = ctx.THREE;
   if (!document.fonts.check('600 32px "GTEki Sign JP"')) throw new Error("Landmarks require the project sign font");
   const loaded = await ctx.loadGlb("assets/ikebukuro_landmarks_next.glb");
@@ -53,15 +53,25 @@ export async function addLandmarks(ctx: SceneContext, parent: Three.Object3D): P
     material.onBeforeCompile = (shader, renderer) => {
       daylight(shader, renderer);
       shader.vertexShader = shader.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 landmarkP;").replace("#include <begin_vertex>", "#include <begin_vertex>\nlandmarkP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
-      shader.fragmentShader = shader.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec3 landmarkP;").replace("#include <opaque_fragment>", `
+      shader.fragmentShader = shader.fragmentShader.replace("#include <common>", `#include <common>
+varying vec3 landmarkP;
+// Average each repeated strip over the pixel footprint so distant lines do not stipple.
+float landmarkStripIntegral(float coord, float spacing, float width) {
+  return floor(coord / spacing) * width + min(mod(coord, spacing), width);
+}
+float landmarkStrip(float coord, float spacing, float width) {
+  float pixel = max(fwidth(coord), 0.001);
+  return (landmarkStripIntegral(coord + pixel * 0.5, spacing, width)
+        - landmarkStripIntegral(coord - pixel * 0.5, spacing, width)) / pixel;
+}`).replace("#include <opaque_fragment>", `
 float h = landmarkP.y - 32.5;
 float along = abs(vCtxN.x) > abs(vCtxN.z) ? landmarkP.z : landmarkP.x;
-float joint = step(mod(h, ${LANDMARK_FLOOR_JOINT_M.toFixed(1)}), 0.08);
-float pier = step(mod(along + 1000.0, ${((LANDMARK_PIER_SPACING_M[0] + LANDMARK_PIER_SPACING_M[1])/2).toFixed(1)}), 0.18);
+float joint = landmarkStrip(h, ${LANDMARK_FLOOR_JOINT_M.toFixed(1)}, 0.08);
+float pier = landmarkStrip(along + 1000.0, ${((LANDMARK_PIER_SPACING_M[0] + LANDMARK_PIER_SPACING_M[1])/2).toFixed(1)}, 0.18);
 float wall = 1.0 - step(0.5, abs(vCtxN.y));
 outgoingLight *= 1.0 - wall * max(joint, pier) * 0.22;
 float street = wall * step(0.0, h) * (1.0 - step(${LANDMARK_STREET_BAND.heightM[0].toFixed(1)}, h));
-float mullion = step(mod(along + 1000.0, ${((LANDMARK_STREET_BAND.mullionSpacingM[0]+LANDMARK_STREET_BAND.mullionSpacingM[1])/2).toFixed(1)}), 0.08);
+float mullion = landmarkStrip(along + 1000.0, ${((LANDMARK_STREET_BAND.mullionSpacingM[0]+LANDMARK_STREET_BAND.mullionSpacingM[1])/2).toFixed(1)}, 0.08);
 vec3 streetColor = mix(vec3(${glow.toArray().join(",")}) * ${LANDMARK_STREET_BAND.maxEmissive.toFixed(1)}, vec3(${bronze.toArray().join(",")}), mullion);
 outgoingLight = mix(outgoingLight, streetColor, street);
 #include <opaque_fragment>`);
@@ -123,13 +133,10 @@ diffuseColor.a = 1.0;`);
     loaded.scene.add(sign);
   }
   // Visual city backing reaches beyond the farthest landmark; it adds no walkable route.
-  const groundMaterial = createContextMaterial(THREE, { color: 0x62635f });
-  groundMaterial.fog = false;
-  materials.push(groundMaterial);
   const groundGeometry = new THREE.PlaneGeometry(2400, 2400);
   groundGeometry.rotateX(-Math.PI / 2);
   groundGeometry.translate(0, 31, 0);
-  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  const ground = new THREE.Mesh(groundGeometry, roadMaterial);
   ground.name = "ctx_road_landmark_ring";
   loaded.scene.add(ground);
   parent.add(loaded.scene);
