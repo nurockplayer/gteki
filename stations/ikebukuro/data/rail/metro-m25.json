@@ -3,6 +3,12 @@
   "operator": "Tokyo Metro",
   "lineCode": "M25",
   "status": "representative",
+  "publication": {
+    "id": "metro-m25-evidence",
+    "sourceIds": ["plateau-ubld-13116", "tokyometro-ikebukuro-accessibility-2026-10", "tokyometro-ikebukuro-station-en-2026-10", "toshima-underground-guide-2022", "tokyometro-ikebukuro-yardmap-print-2026-10"],
+    "modified": true,
+    "derivation": "Hand-authored register of station facts and representative levels (2026-11-26 JST). The B1 datum and gate POI IDs come from the existing station data. Additional fact references are listed in this lane's sources. 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"
+  },
   "levels": [
     {"id": "b1", "label": "B1F", "z_m": 27.9, "source": "toshima-floors", "zBasis": "Existing B1 render elevation (ikebukuro-station)."},
     {"id": "b2", "label": "B2F", "z_m": 22.9, "source": "toshima-floors", "zBasis": "Representative preview elevation 5 m below B1."}
