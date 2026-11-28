@@ -5,6 +5,7 @@ import type { Edge, Node, Poi, StationBundle } from "@gteki/schema";
 type Position = [number, number, number];
 type IkebukuroRailLane = RailLane & {
   serviceNames?: Record<string, RailLane["line"]>;
+  platforms: (RailLane["platforms"][number] & { arrival?: [number, number] })[];
   connectors: (RailLane["connectors"][number] & { paid?: boolean; deferredScene?: boolean })[];
 };
 
@@ -23,7 +24,7 @@ export function railBundle(bundle: StationBundle): StationBundle {
 
   for (const { lane, prefix, load } of entries) {
     if (!load) continue;
-    const { serviceNames, connectors } = lane as IkebukuroRailLane;
+    const { serviceNames, platforms, connectors } = lane as IkebukuroRailLane;
     const evidence = (id: string) => ({
       sourceIds: [id],
       method: `Ikebukuro rail preview (${lane.status})`,
@@ -70,11 +71,12 @@ export function railBundle(bundle: StationBundle): StationBundle {
       }
     }
     for (const point of lane.waypoints ?? []) place(point.id, point.level, point.position, "junction", point.source);
-    for (const platform of lane.platforms) {
+    for (const platform of platforms) {
       if (!platform.centerline) continue;
       const [[ax, ay], [bx, by]] = platform.centerline;
       const floor = floors.get(platform.level)!;
-      const node = place(platform.id, floor.id, [(ax + bx) / 2, (ay + by) / 2, floor.renderElevationM], "platform", platform.source);
+      const [x, y] = platform.arrival ?? [(ax + bx) / 2, (ay + by) / 2];
+      const node = place(platform.id, floor.id, [x, y, floor.renderElevationM], "platform", platform.source);
       const line = serviceNames?.[platform.services[0]!] ?? lane.line;
       const names: Poi["names"] = platform.number === null
         ? [{ lang: "ja", text: `${line.ja} ホーム` }, { lang: "en", text: `${line.en} platform` }]
