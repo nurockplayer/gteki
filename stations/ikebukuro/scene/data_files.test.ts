@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import { createRouter } from "../../../packages/navigation/src/index.ts";
+import { createRouter, DEFAULT_PROFILE } from "../../../packages/navigation/src/index.ts";
 import { listStations } from "../../../apps/web/src/registry.ts";
 
 vi.mock("virtual:gteki-stations", () => ({
@@ -123,15 +123,35 @@ describe("ikebukuro dataFiles", () => {
   });
 });
 
-it("routes from Central Passage through a JR fare gate to the next-preview platform only", async () => {
+it("routes between all five fare gates and all eight next-preview JR faces", async () => {
   const [station] = await listStations();
   const baseline = (await station!.load()).bundle;
   const preview = (await station!.load(true)).bundle;
-  const destination = "jr-yamanote-platform";
-  expect(baseline.pois.some(poi => poi.id === destination)).toBe(false);
-  expect(createRouter(baseline).route(["c_mid"], [destination]).ok).toBe(false);
-  expect(createRouter(preview).route(["c_mid"], [destination])).toMatchObject({
-    ok: true,
-    steps: expect.arrayContaining([expect.objectContaining({ mode: "gate" })]),
-  });
+  const router = createRouter(preview);
+  const baselineRouter = createRouter(baseline);
+  const gates = ["g_jr_c1", "g_jr_c2", "g_jr_s", "jr-north-public", "jr-metropolitan-public"];
+  for (const number of [1, 2, 3, 4, 5, 6, 7, 8]) {
+    const platform = `jr-platform-${number}`;
+    expect(baseline.pois.some(poi => poi.id === platform)).toBe(false);
+    expect(baselineRouter.route(["c_mid"], [platform]).ok).toBe(false);
+    for (const gate of gates) {
+      for (const [from, to] of [[gate, platform], [platform, gate]] as const) {
+        const route = router.route([from], [to]);
+        expect(route.ok, `${from} to ${to}`).toBe(true);
+        if (route.ok) {
+          const crossings = route.steps.filter(step => step.mode === "gate");
+          expect(crossings).toHaveLength(1);
+          expect(crossings[0]!.edgeId).toContain(`rail:jr:${gate}__`);
+        }
+      }
+    }
+    for (const gate of ["g_jr_c1", "g_jr_s"]) {
+      const route = router.route(gate, platform, { ...DEFAULT_PROFILE, stepFree: true });
+      expect(route).toMatchObject({
+        ok: true,
+        steps: expect.arrayContaining([expect.objectContaining({ mode: "elevator" })]),
+      });
+      if (route.ok) expect(route.steps.filter(step => ["stairs", "escalator"].includes(step.mode))).toEqual([]);
+    }
+  }
 });

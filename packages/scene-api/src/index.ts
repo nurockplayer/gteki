@@ -105,6 +105,8 @@ export interface StationScene {
   openings?: { center: THREE.Vector3; along: THREE.Vector3; across: THREE.Vector3; width: number; depth: number; height: number }[];
   /** Called with the walker position in renderer coordinates to load nearby extensions. */
   approach?(position: THREE.Vector3): void;
+  /** Move a free walker with a station-owned moving platform. True while the ride takes over walking input. */
+  carryWalker?(position: THREE.Vector3, dtSeconds: number, guided?: boolean): boolean;
   spawnPoints?: SpawnPoint[];
   /** Fog/background/lighting preferences; the explorer applies sane defaults otherwise. */
   environment?: {

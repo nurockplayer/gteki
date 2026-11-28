@@ -19,7 +19,7 @@ export interface RailLane {
   gaps: string[];
 }
 
-type RailChunk = Pick<StationScene, "root" | "walkable" | "colliders" | "cameraBlockers" | "dispose">;
+type RailChunk = Pick<StationScene, "root" | "walkable" | "colliders" | "cameraBlockers" | "carryWalker" | "dispose">;
 export type RailBuilder = (ctx: SceneContext, lane: RailLane, scene: StationScene) => RailChunk | Promise<RailChunk>;
 
 /** A station's glob paths are relative to its scene module. Match lane JSON to builders by stem. */
@@ -40,6 +40,10 @@ export function mountRailChunks(
   let disposed = false;
   return {
     ...scene,
+    carryWalker(position, dt, guided) {
+      return (scene.carryWalker?.(position, dt, guided) ?? false) ||
+        chunks.some(chunk => chunk.carryWalker?.(position, dt, guided));
+    },
     approach(position) {
       scene.approach?.(position);
       const index = queued.findIndex(entry => entry.anchors.some(anchor => anchor.distanceToSquared(position) <= distanceM ** 2));
