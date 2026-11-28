@@ -1070,6 +1070,22 @@ describe("stairwell cut recipes", () => {
     for (const name of ["ceiling", "upper"] as const) positions(replay[name]).forEach((v, k) => expect(v).toBeCloseTo(positions(live[name])[k]!, 4));
   });
 
+  it("cuts a changed mesh live and keeps matching recipe meshes in the preview", () => {
+    const wells = stairwellWells(bundle(), traversable);
+    const recipe = recipeFor(wells);
+    const live = scene(), preview = scene();
+    for (const s of [live, preview]) {
+      s.ceiling.position.y += 0.001;
+      s.root.add(s.upper.clone());
+    }
+    const a = cutStairwells(live.root, wells, { tier: "high" });
+    const b = cutStairwells(preview.root, wells, { tier: "high", recipe, replayCompatibleMeshes: true });
+    expect(b.stats.recipe).toBe("replayed");
+    expect(b.stats.cutTriangles).toBe(a.stats.cutTriangles);
+    expect(positions(preview.ceiling)).toEqual(positions(live.ceiling));
+    positions(preview.upper).forEach((v, k) => expect(v).toBeCloseTo(positions(live.upper)[k]!, 4));
+  });
+
   it("falls back to a clean live cut when a later mesh no longer matches, undoing the meshes it already replayed", () => {
     const wells = stairwellWells(bundle(), traversable);
     const recipe = recipeFor(wells);

@@ -217,6 +217,8 @@ export interface StairwellOptions {
   collision?: readonly THREE.Object3D[];
   /** A baked recipe for this tier: replayed when it matches the live wells and scene, otherwise the live cut runs. */
   recipe?: CutRecipe | null;
+  /** Replay matching base meshes and cut preview changes live. */
+  replayCompatibleMeshes?: boolean;
   /** Bake only: the live cut records every mesh it reaches here. */
   record?: MeshRecord[];
   /**
@@ -379,8 +381,8 @@ export function cutStairwells(root: THREE.Object3D, wells: readonly StairwellWel
   if (options.record) cut = cutLive({ keys, record: options.record });
   else if (baked && recipeMatches(baked, wells, options.tier, keys.length)) {
     try {
-      cut = cutLive({ keys, replay: baked.meshes });
-      if (cut.meshKeysHash !== baked.meshKeysHash) throw new StaleRecipe("the cut meshes differ from the recipe");
+      cut = cutLive({ keys, replay: baked.meshes, replayCompatibleMeshes: options.replayCompatibleMeshes });
+      if (!options.replayCompatibleMeshes && cut.meshKeysHash !== baked.meshKeysHash) throw new StaleRecipe("the cut meshes differ from the recipe");
       recipe = "replayed";
     } catch (error) {
       if (!(error instanceof StaleRecipe)) throw error;

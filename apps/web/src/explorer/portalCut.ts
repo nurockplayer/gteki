@@ -284,9 +284,10 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     }
     const key = meshRecipe ? meshKey(mesh, geometry, position) : null;
     if (key) keysHash = fnv1a(bytesOf(Uint32Array.of(key.count, key.hash, key.matrix)), keysHash);
-    const replaying: MeshRecord | null = meshRecipe?.replay ? meshRecipe.replay[stage] ?? null : null;
+    let replaying: MeshRecord | null = meshRecipe?.replay ? meshRecipe.replay[stage] ?? null : null;
     if (meshRecipe?.replay && (!replaying || replaying.count !== key!.count || replaying.hash !== key!.hash || replaying.matrix !== key!.matrix)) {
-      throw new StaleRecipe(`${mesh.name || mesh.uuid}: changed since the recipe was baked`);
+      if (!meshRecipe.replayCompatibleMeshes) throw new StaleRecipe(`${mesh.name || mesh.uuid}: changed since the recipe was baked`);
+      replaying = null;
     }
     const draft: MeshRecord | null = meshRecipe?.record ? { count: key!.count, hash: key!.hash, matrix: key!.matrix, hasCut: false, groups: [], codes: [], weights: [], events: [] } : null;
     if (draft) meshRecipe!.record!.push(draft);
@@ -543,7 +544,7 @@ export function cutRegions(root: THREE.Object3D | readonly THREE.Object3D[], reg
     if (isWalkable && shared) { result.clonedWalkable++; result.clonedWalkableVertices.push(position.count); }
   };
   for (const r of roots) r.traverse(visit);
-  if (recipe?.replay && stage !== recipe.replay.length) throw new StaleRecipe(`${stage} meshes reached the cut, the recipe has ${recipe.replay.length}`);
+  if (recipe?.replay && !recipe.replayCompatibleMeshes && stage !== recipe.replay.length) throw new StaleRecipe(`${stage} meshes reached the cut, the recipe has ${recipe.replay.length}`);
   result.meshKeysHash = keysHash;
   result.cutMs = performance.now() - started;
   return result;
