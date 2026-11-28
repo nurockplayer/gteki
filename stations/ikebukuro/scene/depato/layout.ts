@@ -1,11 +1,41 @@
 import type { StationBundle, Edge, Node } from "@gteki/schema";
 
+type TenantCoverage = "complete" | "partial" | "unknown";
+interface DepatoFloor {
+  level: string;
+  order: number;
+  category: string;
+  label: { ja: string; en: string };
+  tenants: { ja: string; en: string; category?: string; zone_text?: string }[];
+  source: string;
+  read: string;
+  section_id?: string;
+  tenant_coverage?: TenantCoverage;
+}
+
 export interface DepatoStore {
   id: string;
   name: { ja: string; en: string };
   building: string | null;
-  floors: { level: string; category: string; label: { ja: string; en: string }; tenants: { ja: string; en: string }[]; source: string; read: string }[];
+  floors: DepatoFloor[];
 }
+
+type SourceFloor = Omit<DepatoFloor, "tenant_coverage"> & { tenant_coverage?: string };
+type SourceStore = Omit<DepatoStore, "floors"> & { floors: SourceFloor[] };
+
+export function readDepatoFloors(data: { version: number; stores: SourceStore[] }) {
+  return data.stores.map(store => ({
+    ...store,
+    floors: store.floors.map(floor => {
+      const coverage = floor.tenant_coverage ?? "unknown";
+      if (coverage !== "complete" && coverage !== "partial" && coverage !== "unknown") {
+        throw new Error(`Invalid tenant_coverage for ${store.id} ${floor.level}: ${coverage}`);
+      }
+      return { ...floor, tenant_coverage: coverage } satisfies DepatoFloor;
+    }),
+  }));
+}
+
 export type PlanPoint = [number, number]; // renderer x, z (east, south), metres
 export interface DepatoInput {
   store: DepatoStore;
@@ -14,6 +44,7 @@ export interface DepatoInput {
   sourceId: string;
   elevations: Record<string, number>;
   circulation?: { aisleX: number; from: number; to: number };
+  lift?: PlanPoint;
   entrances: { level: string; point: PlanPoint; outsideNode: string; inward?: PlanPoint }[];
 }
 
@@ -60,18 +91,28 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
     nodes.push(n); return n;
   };
   const edge = (a: Node, b: Node, mode: Edge["mode"] = "walk") => {
+    const fullStore = plan.input.lift !== undefined;
     edges.push({ id: `${a.id}__${b.id}`, from: a.id, to: b.id, direction: mode === "escalator" ? "forward" : "both", mode,
       lengthM: Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y, b.position.z! - a.position.z!),
-      geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode === "walk", steps: mode !== "walk",
-      hours: null, closed: false, verification: "geometry_only", geometryEvidence: evidence, accessEvidence: null });
+      geometry: [a.position, b.position], paid: false, crossesFareBoundary: false, wheelchair: mode !== "escalator", steps: mode === "escalator",
+      hours: null, closed: false, verification: fullStore ? "verified" : "geometry_only", geometryEvidence: evidence, accessEvidence: fullStore ? evidence : null });
   };
   let previousLower: Node | undefined;
+  let previousLift: Node | undefined;
   for (const floor of plan.floors) {
     const lower = node(floor.level, "lower", plan.aisleX, plan.stair.from - 2);
     const upper = node(floor.level, "upper", plan.aisleX, plan.stair.to + 2);
     const aisle = node(floor.level, "aisle", plan.aisleX - 4, plan.stair.from - 2);
     const bypass = node(floor.level, "bypass", plan.aisleX - 4, plan.stair.to + 2);
     edge(lower, aisle); edge(aisle, bypass); edge(bypass, upper);
+    if (plan.input.lift && floor.category !== "rooftop") {
+      const [x, z] = plan.input.lift;
+      const hall = node(floor.level, "lift-hall", plan.aisleX - 4, z);
+      const lift = node(floor.level, "lift", x, z);
+      edge(aisle, hall); edge(hall, bypass); edge(hall, lift);
+      if (previousLift) edge(previousLift, lift, "elevator");
+      previousLift = lift;
+    }
     if (previousLower) {
       const bottom = previousLower;
       const takeoff = node(plan.floors[plan.floors.indexOf(floor) - 1]!.level, "takeoff", plan.aisleX - 0.95, plan.stair.from);
@@ -104,7 +145,7 @@ export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): Station
   }
   const goal = nodes.find(n => n.id === id(plan.floors[0]!.level, "aisle"))!;
   return { ...bundle,
-    floors: [...bundle.floors, ...plan.floors.map(f => ({ id: id(f.level, "floor"), operatorId: "public", sourceLabels: [], ordinal: f.level.startsWith("B") ? -Number(f.level.slice(1)) : Number(f.level.replace("F", "")) - 1, intermediate: false, elevationM: null, elevationSource: "unknown" as const, renderElevationM: plan.height(f.level), displayNames: [{ lang: "ja", text: `${store.name.ja} ${f.level}` }, { lang: "en", text: `${store.name.en} ${f.level}` }] }))],
+    floors: [...bundle.floors, ...plan.floors.map((f, index) => ({ id: id(f.level, "floor"), operatorId: "public", sourceLabels: [], ordinal: f.category === "rooftop" ? index - plan.floors.findIndex(row => row.level === "1F") : f.level.startsWith("B") ? -Number(f.level.slice(1)) : Number(f.level.replace("F", "")) - 1, intermediate: false, elevationM: null, elevationSource: "unknown" as const, renderElevationM: plan.height(f.level), displayNames: [{ lang: "ja", text: `${store.name.ja} ${f.level}` }, { lang: "en", text: `${store.name.en} ${f.level}` }] }))],
     nodes: [...bundle.nodes, ...nodes], edges: [...bundle.edges, ...edges],
     pois: bundle.pois.map(p => p.id !== plan.input.poiId ? p : { ...p, floorId: goal.floorId, displayPosition: goal.position, connectorNodeIds: [goal.id], aliases: [...p.aliases, { lang: "ja", text: "デパ地下" }, { lang: "en", text: `${store.name.en} food hall` }], evidence, notes: [{ lang: "ja", text: "生成された店内プレビュー。通路・売場位置は実測ではありません。" }, { lang: "en", text: "Generated interior preview; aisles and tenant positions are illustrative." }] }),
   };

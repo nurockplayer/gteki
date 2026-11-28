@@ -1117,7 +1117,9 @@ DepatoStore	interface	stations/ikebukuro/scene/depato/layout.ts
 PlanPoint	type	stations/ikebukuro/scene/depato/layout.ts
 depatoBundle	function	stations/ikebukuro/scene/depato/layout.ts
 depatoLayout	function	stations/ikebukuro/scene/depato/layout.ts
+readDepatoFloors	function	stations/ikebukuro/scene/depato/layout.ts
 buildPilotScene	function	stations/ikebukuro/scene/depato/pilot.ts
+ikebukuroDepatoLayouts	const	stations/ikebukuro/scene/depato/pilot.ts
 previewBundle	function	stations/ikebukuro/scene/depato/pilot.ts
 AccessFences	interface	stations/ikebukuro/scene/fences.ts
 buildAccessFences	function	stations/ikebukuro/scene/fences.ts
@@ -1302,6 +1304,7 @@ createStreetAmbience	function	stations/ikebukuro/scene/street-ambience.ts
 streetLevel	function	stations/ikebukuro/scene/street-ambience.ts
 buildSunshineScene	function	stations/ikebukuro/scene/sunshine.ts
 sunshineBundle	function	stations/ikebukuro/scene/sunshine.ts
+sunshineLayouts	function	stations/ikebukuro/scene/sunshine.ts
 TimeBand	type	stations/ikebukuro/scene/time-band.ts
 bandForHour	function	stations/ikebukuro/scene/time-band.ts
 currentTimeBand	function	stations/ikebukuro/scene/time-band.ts
@@ -1437,6 +1440,7 @@ contentKey	function	stations/shinjuku/scene/content-key.ts
 buildDepartmentStores	function	stations/shinjuku/scene/department-stores.ts
 attachDepatoPreview	function	stations/shinjuku/scene/depato.ts
 depatoPreviewBundle	function	stations/shinjuku/scene/depato.ts
+layouts	const	stations/shinjuku/scene/depato.ts
 ACCESS_WORDING	const	stations/shinjuku/scene/fare-fence.ts
 FareProtection	interface	stations/shinjuku/scene/fare-fence.ts
 Fence	interface	stations/shinjuku/scene/fare-fence.ts
