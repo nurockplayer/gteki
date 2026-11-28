@@ -885,10 +885,16 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       }
     }
   };
-  const enclose = (lv: LevelLayout, rings: XY[][], bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false, cap?: (p: XY) => number, inside?: (p: XY) => boolean, surface = bottom) => {
+  const enclose = (lv: LevelLayout, rings: XY[][], bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false, cap?: (p: XY) => number, inside?: (p: XY) => boolean, surface = bottom, hallFace?: (a: XY, b: XY) => boolean) => {
     for (const ring of rings) for (let i = 0; i < ring.length; i++) {
       const a = ring[i]!, b = ring[(i + 1) % ring.length]!;
-      if (len(sub(b, a)) > 0.01) addWall(lv, a, b, bottom, top, finish, skipExisting, cap, inside, surface);
+      if (len(sub(b, a)) <= 0.01) continue;
+      if (hallFace?.(a, b)) {
+        addWall(lv, a, b, (p) => Math.min(bottom(p), lv.z - 0.2), (p) => Math.max(top(p), lv.ceilingZ),
+          finish, skipExisting, cap, inside, () => lv.z);
+      } else {
+        addWall(lv, a, b, bottom, top, finish, skipExisting, cap, inside, surface);
+      }
     }
   };
 
@@ -952,8 +958,27 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const collarHalfLength = 0.85;
     const minN = Math.min(...corners), maxN = Math.max(...corners);
     const at = (s: number, c: number): XY => ({ x: lo.x + u.x * s + n.x * c, y: lo.y + u.y * s + n.y * c });
-    // One rectangular hull spans intermediate landings and parallel lanes without interior walls.
-    const envelope = [ [ [at(minS, minN), at(maxS, minN), at(maxS, maxN), at(minS, maxN), at(minS, minN)] ] ];
+    // Exit 1's generic stair shoulder projects into the B1 concourse. Its CAD
+    // partition (B019) bounds the shaft on this side and carries the level stripe.
+    const exit1 = group.some((r) => r.edgeId === "e:03bd24ff9bc0412b92016f57625f0ba5");
+    const partition = exit1 ? plan.levels.find((l) => l.floorId === lv.floorId)!.spaces
+      .find((s) => s.id === "7bb4b421d5e74e26ba168e239c06c8e9")!.rings[0]! : null;
+    const hallDirection = partition && sub(partition[1]!, partition[0]!);
+    const hallNormal = hallDirection && { x: -hallDirection.y / len(hallDirection), y: hallDirection.x / len(hallDirection) };
+    const hallSide = hallNormal && ((p: XY) => (p.x - partition![0]!.x) * hallNormal.x + (p.y - partition![0]!.y) * hallNormal.y);
+    const hallFace = hallSide ? (a: XY, b: XY) => Math.abs(hallSide(a)) < 1e-6 && Math.abs(hallSide(b)) < 1e-6 : undefined;
+    const fitShell = (rings: XY[][]) => hallSide && hallNormal ? affineMask(rings, hallSide).map((poly) => poly.map((ring) => ring.map((p) => {
+      // Polygon clipping snaps to millimetres. Put the cut edge back on the CAD wall plane.
+      const distance = hallSide(p);
+      return Math.abs(distance) < 0.001 ? { x: p.x - distance * hallNormal.x, y: p.y - distance * hallNormal.y } : p;
+    }))) : [rings];
+    const nearEnd = (s: number) => {
+      const p = at(s, minN);
+      if (!hallSide || hallSide(p) >= 0) return p;
+      return lerp(p, at(s, maxN), hallSide(p) / (hallSide(p) - hallSide(at(s, maxN))));
+    };
+    // One hull spans intermediate landings and parallel lanes without interior walls.
+    const envelope = fitShell([[at(minS, minN), at(maxS, minN), at(maxS, maxN), at(minS, maxN), at(minS, minN)]]);
     // Pairwise, undirected axes: a shared plane must accommodate every lane.
     const parallel = group.every((a) => a.mode === "escalator" && group.every((b) => {
       const da = sub(a.b, a.a), db = sub(b.b, b.a), la = len(da), lb = len(db);
@@ -1058,7 +1083,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         z: lo.z + Math.min(...offsets) - 0.3 };
       shaftHulls.push(invert);
       for (const panel of cropUndergroundRoof(invert, streetUnderside)) layout.soffits.push(...clearSoffit(panel, passages, 0.025, 2.1));
-      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => Math.min(base(p) + rise, streetSurface) : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined, wallSurface);
+      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft", false, capToRoof ? (p) => Math.min(base(p) + rise, streetSurface) : undefined, capToRoof ? (p) => pointInRings(p, rings) : undefined, wallSurface, hallFace);
     }
     // Raised short collars bridge the clearance cut at the tangent change between an
     // inclined shaft and a flat hall. Without this step, two individually safe cut roofs
@@ -1078,7 +1103,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       const L = Math.sqrt(l2), u = { x: d.x / L, y: d.y / L };
       const collars = union(mouths.map(({ p, width }) => {
         return [passageRing({ x: p.x - u.x * collarHalfLength, y: p.y - u.y * collarHalfLength }, { x: p.x + u.x * collarHalfLength, y: p.y + u.y * collarHalfLength }, width / 2 + wallMargin)];
-      }));
+      })).flatMap(fitShell);
       for (const [i, rings] of collars.entries()) {
         // The collar is the higher of the two roof surfaces. Keep its raised panel only
         // where it actually rises above the pitched shaft roof, then remove the hidden
@@ -1113,7 +1138,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
           shaftRoofCuts.push({ prefix: `shaft-roof:${si}:`, rings: panel });
           shaftVoids.push({ rings: panel, bottom: () => z - 0.18, top: () => z + collarClearance, ceilingTop: () => z + collarClearance });
           enclose(lv, panel, () => z - 0.18, () => z + collarClearance, "shaft", false, undefined, undefined,
-            () => group[0]!.mode === "stairs" ? z - 0.18 : z);
+            () => group[0]!.mode === "stairs" ? z - 0.18 : z, hallFace);
         }
       }
     }
@@ -1129,7 +1154,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       for (const [bottom, top] of [[endBottom, endTop],
         [Math.min(...mouths.map((p) => p.z)) - 0.18, Math.max(...mouths.map((p) => p.z)) - 0.18]]) {
         if (top! - bottom! < 0.005) continue;
-        shaftEndFaces.push({ floorId: lv.floorId, wall: { a: at(s, minN), b: at(s, maxN), side: 1, kind: "wall",
+        shaftEndFaces.push({ floorId: lv.floorId, wall: { a: nearEnd(s), b: at(s, maxN), side: 1, kind: "wall",
           zMin: bottom!, zMax: top!, profile: { bottomA: bottom!, bottomB: bottom!, topA: top!, topB: top! } } });
       }
     }

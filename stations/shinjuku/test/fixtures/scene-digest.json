@@ -1,17 +1,17 @@
 {
  "protect": {
-  "layoutAfterProtect": "6678e99fefc6d6922d45fb2ea676962368ccc8524caa7e6e67370b3ca19271e8",
-  "protection": "1cef6b3f949890f6b36fd2323f297b3ad03530b74da48240fc9c37af396e4d7f",
-  "fences": "1527d1aca21ba2311d781262f6d7f1af576ebf0ad4253784bd9ebd9500b866a7",
+  "layoutAfterProtect": "395fe6562681282c5037afabcc47fad9eded89f3f7800882ce2777efa41d950e",
+  "protection": "9dd3bca51bd53026c0709a48671154e29036ba056a8dcaa3676f2c4281b1c5ca",
+  "fences": "fae705283b3e31d942c504629c4af07a8fa3ed24d6c0b3cbe56078a63f8c9c27",
   "gates": "b12d68f308c2d3bf796c28f3a5d0ee120d78795bbbc799a1e077757d6f3e92c5",
   "removedAccess": "a8bea4ec00c75027b962716885b78396b0d008e6298561de838d4bb6b6e747ba",
   "restrictedConflicts": "58e9b61e14dac3ac18d7df2430f0ef1f368ffce1f35e73009f92c2f781264c12",
   "cacheHit": true
  },
  "station": {
-  "layoutAfterBuild": "bfe61e446ace4de3baad11543a9d44c51eb6e327213807ae02e208529709abee",
-  "propWalls": "69aa5d1992b652ec3d5a3916ee2ae86689d3bdf3d3a8512bbce7948726322865",
-  "levelWalls": "51328b5cb0bcc73d4add85fbe4d55eb5fdaaf0b6d83373f7664b957a1ec52396",
+  "layoutAfterBuild": "9eb6689a40f3bd1d2aa325233c76271c9579e86fc6aada6ec1a283508ff23218",
+  "propWalls": "dcad47f1ae6d000f6a0f4c7ccd4d791941cfad1f1fffc512e401e3c806cbe5fd",
+  "levelWalls": "117aead8fe776fa6c99058a7e3483bed93bba95740d36f69209ee25beeada6c3",
   "escalators": "15a5224f8c32deb2ca23240bac233cfea59c30dc8198a60f992b5040b5fee0c3"
  },
  "scene": {
@@ -461,11 +461,11 @@
     "1ed611bdb461169036ff8e8685c71f4a5b01087adccc1f4528e0ef6db86b8436"
    ],
    "colliders": [
-    "9f3d8fd1533a983d6f19d8e79ef0723035734a9c439bb6a02205c87591589fd0",
-    "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3"
+    "216a7bb4e132401cb949eb065d59559284fe8d4526c3ac60324c433fb5f712e0",
+    "4fcefeebcb7e3dae41ba41d5ddd849258b1c7051736af3b9dfa916709f60663f"
    ],
    "cameraBlockers": [
-    "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3",
+    "4fcefeebcb7e3dae41ba41d5ddd849258b1c7051736af3b9dfa916709f60663f",
     "e3055c3693daa1e4c1dc69ce0e02dce2d0469b93411cc1931320325cea76b768",
     "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a",
     "ee09a2324ce16f349ccef0dc60fab2ed5c1c748cf5991ea604781253be04f5f0",
@@ -494,7 +494,7 @@
     false,
     false
    ],
-   "walls": "7f279b9bdd6a41b37e155ccec4efe4eab8462af601c71728aaeaa6337a01c0c2",
+   "walls": "dc2858b55707a63c7582aefe154fe548252eeb79ba12b52f924418efae234523",
    "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
@@ -559,7 +559,7 @@
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 356,
-     "hash": "a943eb7900ee28b36751bc15efc45dfabf6ce11381b2381aa7c0cdf1f1e9fe94"
+     "hash": "7cfe9631f3ed739f5b36bec562127da99c1b6c4511cc144f6226b6816e631757"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,2,true,null,null,true,true,true,true,false,false]#visible=true#order=1#instanced=false": {
      "triangles": 26,
@@ -602,16 +602,16 @@
      "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
     },
     "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 48375,
-     "hash": "1bf981b8ac21b6e1d1b1cb5908f6f5fbe9c1c70e3a9a214c72be116f0cfad34f"
+     "triangles": 48277,
+     "hash": "f4e234342e7065ab885c3a2c1d8ce6b5f5fe46346f1dc890050405cfc7d4aef9"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
      "hash": "e2f395f4460e3174e5c5b3a905ffa8c05e5e4ad44ae26de957176b290685557f"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 6616,
-     "hash": "c8f514837e341ee40929a9e9e1705a6e9f3f64dc8c95ad8b4e1c30059e61e688"
+     "triangles": 6608,
+     "hash": "d2424e4dc5d855986ac862d07321ef49e213e0397f7ce2c51ef048c7b2a8e596"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 96,
@@ -662,8 +662,8 @@
      "hash": "c78243cf74512aab885bde303cf9266c42b87472b4b9de42e4c1e2e1575a60d0"
     },
     "[\"MeshStandardMaterial\",\"mat.glass\",\"b4ccd1\",\"000000\",1,0.28,true,2,true,0.32,0.08,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 3952,
-     "hash": "62c495bffc1530343c99d8214dd260b064c1b9377ab0e6799e22e0f2d9b4abfa"
+     "triangles": 3950,
+     "hash": "b86772b0d365e839ede52edf158f7bd779e15038dbdcf1a1f8411baf50c8f27e"
     },
     "[\"MeshStandardMaterial\",\"mat.identityHardware\",\"ffffff\",\"000000\",1,1,false,0,true,0.4,1,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 300,
@@ -710,8 +710,8 @@
      "hash": "ffff33e62b796e812bc2c47023a93a60f6456bb4e2d948a6c25058d2ef3fa794"
     },
     "[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 57232,
-     "hash": "60ad14216c7f63fe71584ac043b85928e62f7afe8451e552513385298fa67d43"
+     "triangles": 57224,
+     "hash": "9f80da6b85d9a4ba6d3cd4a95bae6528489ee0beead3ad87e071177f8b46da4a"
     },
     "[\"MeshStandardMaterial\",\"mat.tactile\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
      "triangles": 446,
@@ -750,8 +750,8 @@
      "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 19406,
-     "hash": "b45632776a53ab43882d3ceffe2cb52869c004a0080cb30785909779d3a0aad6"
+     "triangles": 19422,
+     "hash": "48eb73c317de85cc023cd898bb02e203f3d23de70f65b80b73ae63dca0ee1cae"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -759,8 +759,8 @@
     }
    },
    "semantic": [
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29588",
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4636",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29536",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4633",
     "sign|No entry||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|12",
     "sign|Restricted area||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|344",
     "sign|sign-cases||[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]|252",
@@ -1213,9 +1213,9 @@
     "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2800",
     "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11090",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6616",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6608",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|684",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|57232"
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|57224"
    ]
   },
   "high": {
@@ -1664,11 +1664,11 @@
     "1ed611bdb461169036ff8e8685c71f4a5b01087adccc1f4528e0ef6db86b8436"
    ],
    "colliders": [
-    "9f3d8fd1533a983d6f19d8e79ef0723035734a9c439bb6a02205c87591589fd0",
-    "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3"
+    "216a7bb4e132401cb949eb065d59559284fe8d4526c3ac60324c433fb5f712e0",
+    "4fcefeebcb7e3dae41ba41d5ddd849258b1c7051736af3b9dfa916709f60663f"
    ],
    "cameraBlockers": [
-    "ed66424ce493a9a9b5cfbbf360d499d16e0cf97a6279a32589cba1cbea9387b3",
+    "4fcefeebcb7e3dae41ba41d5ddd849258b1c7051736af3b9dfa916709f60663f",
     "e3055c3693daa1e4c1dc69ce0e02dce2d0469b93411cc1931320325cea76b768",
     "9a4ddecfaa8651cc2d8ac5dda607f58f0cdc107498c39e8a57c607f54e1c143a",
     "ee09a2324ce16f349ccef0dc60fab2ed5c1c748cf5991ea604781253be04f5f0",
@@ -1697,7 +1697,7 @@
     false,
     false
    ],
-   "walls": "7f279b9bdd6a41b37e155ccec4efe4eab8462af601c71728aaeaa6337a01c0c2",
+   "walls": "dc2858b55707a63c7582aefe154fe548252eeb79ba12b52f924418efae234523",
    "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
@@ -1762,7 +1762,7 @@
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 356,
-     "hash": "a943eb7900ee28b36751bc15efc45dfabf6ce11381b2381aa7c0cdf1f1e9fe94"
+     "hash": "7cfe9631f3ed739f5b36bec562127da99c1b6c4511cc144f6226b6816e631757"
     },
     "[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,2,true,null,null,true,true,true,true,false,false]#visible=true#order=1#instanced=false": {
      "triangles": 26,
@@ -1805,16 +1805,16 @@
      "hash": "6a1646c94edfd1a45fa45000694f0eca1e83f1a8cc4281d73d740e2050af09af"
     },
     "[\"MeshStandardMaterial\",\"mat.ceiling\",\"c0c2bd\",\"000000\",1,1,false,2,true,0.96,0,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 48375,
-     "hash": "1bf981b8ac21b6e1d1b1cb5908f6f5fbe9c1c70e3a9a214c72be116f0cfad34f"
+     "triangles": 48277,
+     "hash": "f4e234342e7065ab885c3a2c1d8ce6b5f5fe46346f1dc890050405cfc7d4aef9"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=false#order=0#instanced=true": {
      "triangles": 96,
      "hash": "e2f395f4460e3174e5c5b3a905ffa8c05e5e4ad44ae26de957176b290685557f"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 6616,
-     "hash": "c8f514837e341ee40929a9e9e1705a6e9f3f64dc8c95ad8b4e1c30059e61e688"
+     "triangles": 6608,
+     "hash": "d2424e4dc5d855986ac862d07321ef49e213e0397f7ce2c51ef048c7b2a8e596"
     },
     "[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 96,
@@ -1865,8 +1865,8 @@
      "hash": "c78243cf74512aab885bde303cf9266c42b87472b4b9de42e4c1e2e1575a60d0"
     },
     "[\"MeshStandardMaterial\",\"mat.glass\",\"b4ccd1\",\"000000\",1,0.28,true,2,true,0.32,0.08,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 3952,
-     "hash": "62c495bffc1530343c99d8214dd260b064c1b9377ab0e6799e22e0f2d9b4abfa"
+     "triangles": 3950,
+     "hash": "b86772b0d365e839ede52edf158f7bd779e15038dbdcf1a1f8411baf50c8f27e"
     },
     "[\"MeshStandardMaterial\",\"mat.identityHardware\",\"ffffff\",\"000000\",1,1,false,0,true,0.4,1,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 300,
@@ -1913,8 +1913,8 @@
      "hash": "ffff33e62b796e812bc2c47023a93a60f6456bb4e2d948a6c25058d2ef3fa794"
     },
     "[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 57232,
-     "hash": "60ad14216c7f63fe71584ac043b85928e62f7afe8451e552513385298fa67d43"
+     "triangles": 57224,
+     "hash": "9f80da6b85d9a4ba6d3cd4a95bae6528489ee0beead3ad87e071177f8b46da4a"
     },
     "[\"MeshStandardMaterial\",\"mat.tactile\",\"ffffff\",\"000000\",1,1,false,0,true,0.6,0,true,true,true,true,false,true]#visible=true#order=0#instanced=false": {
      "triangles": 446,
@@ -1953,8 +1953,8 @@
      "hash": "db31f4327bada7362ebc906291f807dd71f761c4eef985cbbbed1886aee494dd"
     },
     "[\"MeshStandardMaterial\",\"mat.wall\",\"d3cec4\",\"000000\",1,1,false,0,true,0.76,0.03,true,true,true,true,true,false]#visible=true#order=0#instanced=false": {
-     "triangles": 19406,
-     "hash": "b45632776a53ab43882d3ceffe2cb52869c004a0080cb30785909779d3a0aad6"
+     "triangles": 19422,
+     "hash": "48eb73c317de85cc023cd898bb02e203f3d23de70f65b80b73ae63dca0ee1cae"
     },
     "[\"ShaderMaterial\",\"\",null,null,null,1,false,1,true,null,null,false,false,true,false,false,false]#visible=true#order=-1000#instanced=false": {
      "triangles": 528,
@@ -1962,8 +1962,8 @@
     }
    },
    "semantic": [
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29588",
-    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4636",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|29536",
+    "collider|||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,false,2,false,null,null,true,true,true,false,false,false]|4633",
     "sign|No entry||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|12",
     "sign|Restricted area||[\"MeshBasicMaterial\",\"\",\"ffffff\",null,null,1,true,0,true,null,null,true,true,true,true,false,false]|344",
     "sign|sign-cases||[\"MeshStandardMaterial\",\"\",\"2b2d30\",\"000000\",1,1,false,0,true,0.4,0.4,true,true,true,false,false,false]|252",
@@ -2416,9 +2416,9 @@
     "|surface-ground||[\"MeshBasicMaterial\",\"\",\"f2eee5\",null,null,1,false,2,true,null,null,true,true,true,true,false,false]|2800",
     "|surface-stone||[\"MeshBasicMaterial\",\"\",\"b7b8b2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]|11090",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.accent\",\"b0186f\",\"b0186f\",0.15,1,false,0,true,0.4,0,true,true,true,false,false,false]|108",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6616",
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.darkSteel\",\"3b3f44\",\"000000\",1,1,false,0,true,0.45,0.6,true,true,true,false,false,false]|6608",
     "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.gateOk\",\"247c53\",\"4bcb86\",0.16,1,false,0,true,0.45,0,true,true,true,false,false,false]|684",
-    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|57232"
+    "||portals:f19c6da1d03a95e1420a90aa8812736dbf54dd429775a164e5366c092ee1d24a|[\"MeshStandardMaterial\",\"mat.steel\",\"aab2b5\",\"000000\",1,1,false,2,true,0.58,0.6,true,true,true,false,false,false]|57224"
    ]
   }
  }

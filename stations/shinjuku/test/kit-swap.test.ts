@@ -76,22 +76,23 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 // #1434 (2026-11-17 JST): nosing goldenRole metadata changes nodes/lists digests; geometry and list counts unchanged.
 // #1432 (2026-11-17 JST): nosing-line stair walk proxies change the lists digest; list counts unchanged.
 // #1522 row 5 (2026-11-27 JST): align underground envelope wall UVs with the walking-floor datum.
+// #1667: fit the Exit 1 shaft enclosure to the B1 partition.
 const MAIN_BASELINE = {
   "station": {
-    "geometryDigest": "2409709d3bbc1dd2845dd09d8c2c99a1c1f4f90373c956e7110e0310585f0a3a",
+    "geometryDigest": "a2016a53381019e981ea3655fc25c94326f0ff78816c121e6ffcaacaf6032156",
     "appearanceDigest": "11be0466e83497f0111b5fa6228344fafc01a7d1a85ec920a4c03dd2778af599",
-    "nodesDigest": "89c9a2aee9c888cc2f1c7bbf1b0b0783e4c4b688598ddd8350ab9747d2a2930a",
+    "nodesDigest": "6f1a19c0cc21e05e5734ceef349d06829fa1eeb73673669a3a2c02f78a6e3a1b",
     "texturesDigest": "8a422143d029be504bfd8474558739d87aa5388c9aa650bca5564c073b39fc8d",
     "meshes": 108,
-    "bytes": 17314874
+    "bytes": 17307314
   },
   "lists": {
-    "listsDigest": "a3fce78f5b087586d3468fe720fc486d005fb215b79023aa70898a32b20be91d",
+    "listsDigest": "09b10ae57812d2520b5f1498c7bdf1bc60f826d65d4d5506db863b6df8bdd121",
     "counts": {
       "walkable": 442,
       "colliders": 2,
       "cameraBlockers": 13,
-      "walls": 14886
+      "walls": 14860
     }
   }
 };

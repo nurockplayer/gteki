@@ -25,6 +25,7 @@ describe("layout equivalence", () => {
     // at -1.6, 636c6fc9 and 0564105d at -1.68) up to their own roofs, and (fix 1) cuts
     // that shell only where a passage crosses it. Includes the merge with main's
     // cornerFills changes (#1170/#1188). #1192 restores the B3 concourse source wall.
-    expect(digest).toBe("8ff3ff8540b60611c2670d181253516be6ead063a2527ae05222966b3024de82");
+    // #1667 fits the Exit 1 shaft enclosure to the B1 partition.
+    expect(digest).toBe("283f4c012004a4096e083451f18f82a285257a61f01502b2e364abbd28637d20");
   });
 });
