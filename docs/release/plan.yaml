@@ -85,19 +85,27 @@ workstreams:
         judge: "script: guide camera samples ≤ 2.5 m apart along the path, with count and max gap in journey.json"
         status: FAIL
         context: whole walk
-        status_detail: "FAIL: desktop 1 / 38, phone 0 / 38 (run 44940000006, main b99e7f0b equivalent). Near clip 0 since #1479; desktop void 0.0085 at 88 s (B3 wall slit, draft PR #1478)."
+        status_detail: "FAIL (re-scored 2026-11-27 22:3x JST, main 79b47a6b, E2E smoke run 45996801987 + 9 main runs 11-26→11-27): void 0 on every run (B3 slit fixed by #1527), 109 samples, max gap 2.44 m, desktop near clip 0. Phone near clip is intermittent at s ≈ 74.5 m (3 / 9 runs: 77adb66f 0.78, 4709b7d6 0.55, 3f9d2344 1.0) → #1653"
         evidence:
+          - label: "Issue #1653"
+            url: https://github.com/nurockplayer/gteki/issues/1653
+          - label: Reel run 45996801987
+            url: https://github.com/nurockplayer/gteki/actions/runs/45996801987
           - label: Original journey judgement
             url: https://github.com/nurockplayer/gteki/blob/78fa4aec2e0f06317a8596a777fa98310f45dd1d/docs/release/journey.md#the-table
       - id: J6
         requirement: The cat is always in view
         judge: "script: avatar visible in ≥ 95% of samples"
-        status: PASS
+        status: FAIL
         context: whole walk
-        status_detail: "PASS since #1332 (2026-11-15 08:0x JST): the script passes since #1268 (39 / 39 on desktop and on phone, main 2ffb4a65, E2E smoke run 43641997007), and the art director accepted the eased body-check raise on PR #1332 (frame at 11.88 s: 5.4° → 1.56°, phone 1.59°; budget 3°). The remaining frames over 3° are corner yaw snaps, #1331, not this row"
-        verified_at: 2026-11-15 JST
-        verified_sha: 2ffb4a65
+        status_detail: "FAIL (re-scored 2026-11-27 22:3x JST): phone default fails on every main run checked from cb0ef7c1 (2026-11-25) to 77adb66f: sample 9, s = 85.7 m, catVisible 0.22; desktop passes. Last known pass 2ffb4a65 (2026-11-15) → #1652 (breakage). Was PASS since #1332"
+        verified_at: 2026-11-27 JST
+        verified_sha: 79b47a6b
         evidence:
+          - label: "Issue #1652"
+            url: https://github.com/nurockplayer/gteki/issues/1652
+          - label: Reel run 45996801987
+            url: https://github.com/nurockplayer/gteki/actions/runs/45996801987
           - label: "PR #1332"
             url: https://github.com/nurockplayer/gteki/pull/1332
           - label: "PR #1268"

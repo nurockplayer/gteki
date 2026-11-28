@@ -62,8 +62,9 @@
       "station": "ikebukuro",
       "kind": "node",
       "node": "x39",
-      "headingDeg": 243,
-      "expect": "Ikebukuro passage and station features at x39 are visible."
+      "headingDeg": 264,
+      "pitch": -0.62,
+      "expect": "The upper stair, handrails and lower switchback landing at x39 are visible."
     },
     {
       "id": "ike-c_mid",
