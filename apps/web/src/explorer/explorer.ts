@@ -3969,9 +3969,10 @@ export class Explorer {
       this.camera.updateProjectionMatrix();
       if (t === 1) this.openingRelease = null;
     }
-    const nextSign = this.mode === "guide" && this.guide ? this.guideSigns?.find((sign) => sign.s >= this.guide!.s) : undefined;
     const forward = this.camera.getWorldDirection(new THREE.Vector3());
-    const sign = nextSign?.anchor && guideSignInView(this.pos, this.camera.position, forward, nextSign.anchor) ? nextSign.anchor : null;
+    const sign = this.mode === "guide" && this.guide
+      ? this.guideSigns?.find(({ s, anchor }) => s >= this.guide!.s && guideSignInView(this.pos, this.camera.position, forward, anchor))?.anchor ?? null
+      : null;
     if (catFocus) {
       this.setCameraFocus(catFocus, this.cameraFacingCatAnchor());
     } else this.setCameraFocus(pose.target, sign);

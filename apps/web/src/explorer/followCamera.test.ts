@@ -793,10 +793,10 @@ describe("cat aim under a raised boom", () => {
   });
 });
 
-it("gates an upcoming sign by 12 m and the camera's forward direction", () => {
+it("protects an upcoming overhead sign at the 15 m approach", () => {
   const avatar = new THREE.Vector3(), camera = new THREE.Vector3(0, 0, 1), forward = new THREE.Vector3(0, 0, -1);
-  expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, -12))).toBe(true);
-  expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, -12.1))).toBe(false);
+  expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 2.5, -15))).toBe(true);
+  expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, -18.1))).toBe(false);
   expect(guideSignInView(avatar, camera, forward, new THREE.Vector3(0, 0, 2))).toBe(false);
 });
 

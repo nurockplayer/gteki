@@ -544,5 +544,6 @@ export function fadeHold(value: number | null): number | null {
 
 /** Whether the upcoming route sign is close to the walker and in front of the rendered camera. */
 export function guideSignInView(avatar: THREE.Vector3, camera: THREE.Vector3, forward: THREE.Vector3, sign: THREE.Vector3): boolean {
-  return avatar.distanceToSquared(sign) <= 12 * 12 && sign.clone().sub(camera).dot(forward) > 0;
+  // Include the height of the overhead sign and allow for the approach before it fills the view.
+  return avatar.distanceToSquared(sign) <= 18 * 18 && sign.clone().sub(camera).dot(forward) > 0;
 }
