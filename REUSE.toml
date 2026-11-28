@@ -505,7 +505,7 @@ SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki con
 SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy"
 # Department-store pilot: factual names only; generic fronts are original code.
 [[annotations]]
-path = "stations/ikebukuro/data/depato-floors.json"
+path = ["stations/ikebukuro/data/depato-floors.json", "stations/ikebukuro/data/depato-tenants/seibu-ikebukuro.tsv"]
 precedence = "override"
 SPDX-FileCopyrightText = "No licence granted: facts-only source (そごう・西武); compiled by GTEki contributors"
 SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
