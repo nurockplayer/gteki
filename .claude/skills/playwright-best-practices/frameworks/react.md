@@ -451,7 +451,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: process.env.CI ? 'npm run build && npx vite preview --port 5173' : 'npm run dev',
+    command: process.env.CI ? 'npm run build && pnpm exec vite preview --port 5173' : 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
@@ -465,7 +465,7 @@ export default defineConfig({
 |---|---|---|
 | Default port | `3000` | `5173` |
 | Build output | `build/` | `dist/` |
-| Serve production | `npx serve -s build -l 3000` | `npx vite preview --port 5173` |
+| Serve production | `pnpm dlx serve -s build -l 3000` | `pnpm exec vite preview --port 5173` |
 | Env var prefix | `REACT_APP_*` | `VITE_*` |
 
 ## Framework Tips

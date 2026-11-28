@@ -47,13 +47,13 @@ Test fails intermittently
 
 ```bash
 # Run test multiple times to confirm instability
-npx playwright test tests/checkout.spec.ts --repeat-each=20
+pnpm exec playwright test tests/checkout.spec.ts --repeat-each=20
 
 # Run with single worker to isolate parallelism issues
-npx playwright test --workers=1
+pnpm exec playwright test --workers=1
 
 # Run in CI-like conditions locally
-CI=true npx playwright test --repeat-each=10
+CI=true pnpm exec playwright test --repeat-each=10
 ```
 
 ### Reproduction Strategies
@@ -127,10 +127,10 @@ test.beforeEach(async ({ page }) => {
 
 ```bash
 # View trace from failed CI run
-npx playwright show-trace path/to/trace.zip
+pnpm exec playwright show-trace path/to/trace.zip
 
 # Generate trace for specific test
-npx playwright test tests/flaky.spec.ts --trace on
+pnpm exec playwright test tests/flaky.spec.ts --trace on
 ```
 
 ## Fixing Strategies by Type
@@ -331,17 +331,17 @@ export const test = base.extend<{ tempFile: string }>({
 
 ```bash
 # Run headless with CI environment variable
-CI=true npx playwright test
+CI=true pnpm exec playwright test
 
 # Limit CPU (Linux/Mac)
-cpulimit -l 50 -- npx playwright test
+cpulimit -l 50 -- pnpm exec playwright test
 
 # Run in Docker matching CI environment
 docker run -it --rm \
   -v $(pwd):/work \
   -w /work \
   mcr.microsoft.com/playwright:v1.40.0-jammy \
-  npx playwright test
+  pnpm exec playwright test
 ```
 
 ### Consistent Viewport and Scale
@@ -426,10 +426,10 @@ test("known CI flaky", async ({ page }) => {
 
 ```bash
 # Run new tests many times before merging
-npx playwright test tests/new-feature.spec.ts --repeat-each=50
+pnpm exec playwright test tests/new-feature.spec.ts --repeat-each=50
 
 # Run in parallel to expose race conditions
-npx playwright test tests/new-feature.spec.ts --repeat-each=20 --workers=4
+pnpm exec playwright test tests/new-feature.spec.ts --repeat-each=20 --workers=4
 ```
 
 ### Isolation Checklist

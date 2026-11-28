@@ -16,7 +16,7 @@
 
 ```bash
 npm install -D @playwright/test
-npx playwright install chromium  # Extensions only work in Chromium
+pnpm exec playwright install chromium  # Extensions only work in Chromium
 ```
 
 ### Basic Configuration

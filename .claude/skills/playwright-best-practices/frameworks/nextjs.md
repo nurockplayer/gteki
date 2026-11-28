@@ -426,7 +426,7 @@ test('authenticated user sees dashboard', async ({ page }) => {
 webServer: {
   command: process.env.CI
     ? 'npm run build && npm run start'
-    : 'npx next dev --turbopack',
+    : 'pnpm exec next dev --turbopack',
   url: 'http://localhost:3000',
   reuseExistingServer: !process.env.CI,
 },

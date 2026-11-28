@@ -39,10 +39,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: pnpm exec playwright test
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -82,10 +82,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: pnpm exec playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+        run: pnpm exec playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload blob report
         if: ${{ !cancelled() }}
@@ -118,7 +118,7 @@ jobs:
           merge-multiple: true
 
       - name: Merge reports
-        run: npx playwright merge-reports --reporter html ./all-blob-reports
+        run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
@@ -150,7 +150,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npx playwright test
+        run: pnpm exec playwright test
         env:
           HOME: /root
 ```
@@ -169,7 +169,7 @@ RUN npm ci
 
 COPY . .
 
-CMD ["npx", "playwright", "test"]
+CMD ["pnpm", "exec", "playwright", "test"]
 ```
 
 ### Docker Compose
@@ -252,10 +252,10 @@ export default defineConfig({
 
 ```bash
 # Split into 4 shards, run shard 1
-npx playwright test --shard=1/4
+pnpm exec playwright test --shard=1/4
 
 # Run shard 2
-npx playwright test --shard=2/4
+pnpm exec playwright test --shard=2/4
 ```
 
 ### Configuration
@@ -275,7 +275,7 @@ export default defineConfig({
 
 ```bash
 # After all shards complete, merge blob reports
-npx playwright merge-reports --reporter html ./all-blob-reports
+pnpm exec playwright merge-reports --reporter html ./all-blob-reports
 ```
 
 ## Environment Management
@@ -308,7 +308,7 @@ jobs:
         environment: [staging, production]
     steps:
       - name: Run tests
-        run: npx playwright test
+        run: pnpm exec playwright test
         env:
           BASE_URL: ${{ matrix.environment == 'staging' && 'https://staging.example.com' || 'https://example.com' }}
           TEST_USER: ${{ secrets[format('TEST_USER_{0}', matrix.environment)] }}
@@ -319,7 +319,7 @@ jobs:
 ```yaml
 # GitHub Actions secrets
 - name: Run tests
-  run: npx playwright test
+  run: pnpm exec playwright test
   env:
     TEST_EMAIL: ${{ secrets.TEST_EMAIL }}
     TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
@@ -347,11 +347,11 @@ test("login", async ({ page }) => {
 
 - name: Install Playwright browsers
   if: steps.playwright-cache.outputs.cache-hit != 'true'
-  run: npx playwright install --with-deps
+  run: pnpm exec playwright install --with-deps
 
 - name: Install system deps only
   if: steps.playwright-cache.outputs.cache-hit == 'true'
-  run: npx playwright install-deps
+  run: pnpm exec playwright install-deps
 ```
 
 ### Cache Node Modules
@@ -373,15 +373,15 @@ test("login", async ({ page }) => {
 ```yaml
 # Run smoke tests on PR
 - name: Run smoke tests
-  run: npx playwright test --grep @smoke
+  run: pnpm exec playwright test --grep @smoke
 
 # Run full regression nightly
 - name: Run regression
-  run: npx playwright test --grep @regression
+  run: pnpm exec playwright test --grep @regression
 
 # Exclude flaky tests
 - name: Run stable tests
-  run: npx playwright test --grep-invert @flaky
+  run: pnpm exec playwright test --grep-invert @flaky
 ```
 
 ### PR vs Nightly Strategy
@@ -389,11 +389,11 @@ test("login", async ({ page }) => {
 ```yaml
 # .github/workflows/pr.yml - Fast feedback
 - name: Run critical tests
-  run: npx playwright test --grep "@smoke|@critical"
+  run: pnpm exec playwright test --grep "@smoke|@critical"
 
 # .github/workflows/nightly.yml - Full coverage
 - name: Run all tests
-  run: npx playwright test --grep-invert @flaky
+  run: pnpm exec playwright test --grep-invert @flaky
 ```
 
 ### Tag Filtering in Config

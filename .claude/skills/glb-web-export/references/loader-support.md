@@ -208,7 +208,7 @@ grep -rn "useGLTF\|<Gltf" src/
 grep -rn "meshoptDecoderLocation\|ktx2TranscoderLocation\|dracoDecoderLocation" src/
 
 # what the asset actually demands
-npx @gltf-transform/cli inspect model.glb   # read the extensionsRequired row
+pnpm dlx @gltf-transform/cli inspect model.glb   # read the extensionsRequired row
 ```
 
 If the asset lists an extension the app never wires up, the load fails at

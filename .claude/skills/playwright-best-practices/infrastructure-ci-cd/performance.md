@@ -74,10 +74,10 @@ export default defineConfig({
 
 ```bash
 # Run all projects in parallel
-npx playwright test
+pnpm exec playwright test
 
 # Run specific project
-npx playwright test --project=chromium
+pnpm exec playwright test --project=chromium
 ```
 
 ## Sharding
@@ -87,16 +87,16 @@ npx playwright test --project=chromium
 ```bash
 # Split tests across 4 machines
 # Machine 1:
-npx playwright test --shard=1/4
+pnpm exec playwright test --shard=1/4
 
 # Machine 2:
-npx playwright test --shard=2/4
+pnpm exec playwright test --shard=2/4
 
 # Machine 3:
-npx playwright test --shard=3/4
+pnpm exec playwright test --shard=3/4
 
 # Machine 4:
-npx playwright test --shard=4/4
+pnpm exec playwright test --shard=4/4
 ```
 
 ### Sharding Strategy
@@ -117,7 +117,7 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     steps:
-      - run: npx playwright test --shard=${{ matrix.shard }}/4
+      - run: pnpm exec playwright test --shard=${{ matrix.shard }}/4
 ```
 
 > **For comprehensive CI sharding** (blob reports, merging sharded results, full workflows), see [ci-cd.md](ci-cd.md#sharding).

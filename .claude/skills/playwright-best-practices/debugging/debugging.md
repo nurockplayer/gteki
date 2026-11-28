@@ -18,9 +18,9 @@
 
 ```bash
 # Run with inspector
-PWDEBUG=1 npx playwright test
+PWDEBUG=1 pnpm exec playwright test
 # Or specific test
-PWDEBUG=1 npx playwright test login.spec.ts
+PWDEBUG=1 pnpm exec playwright test login.spec.ts
 ```
 
 Features:
@@ -34,10 +34,10 @@ Features:
 
 ```bash
 # Run with visible browser
-npx playwright test --headed
+pnpm exec playwright test --headed
 
 # Interactive debugging (headed, paused, step-through)
-npx playwright test --debug
+pnpm exec playwright test --debug
 ```
 
 You can also set `slowMo` to add an `N` ms delay per action, making test execution easier to follow while debugging.
@@ -57,7 +57,7 @@ export default defineConfig({
 
 ```bash
 # Interactive test runner
-npx playwright test --ui
+pnpm exec playwright test --ui
 ```
 
 Features:
@@ -101,10 +101,10 @@ export default defineConfig({
 
 ```bash
 # Open trace file
-npx playwright show-trace trace.zip
+pnpm exec playwright show-trace trace.zip
 
 # From test-results
-npx playwright show-trace test-results/test-name/trace.zip
+pnpm exec playwright show-trace test-results/test-name/trace.zip
 ```
 
 ### Trace Contents
@@ -207,15 +207,15 @@ test("find slow requests", async ({ page }) => {
 
 ```bash
 # Run in headless mode like CI
-CI=true npx playwright test
+CI=true pnpm exec playwright test
 
 # Match CI browser versions
-npx playwright install --with-deps
+pnpm exec playwright install --with-deps
 
 # Run in Docker (same as CI)
 docker run --rm -v $(pwd):/work -w /work \
   mcr.microsoft.com/playwright:v1.40.0-jammy \
-  npx playwright test
+  pnpm exec playwright test
 ```
 
 ### CI-Specific Configuration
@@ -401,10 +401,10 @@ console.log(await frame.getByRole("button").count());
 
 ```bash
 # Show the builds this version needs and where they go
-npx playwright install --dry-run
+pnpm exec playwright install --dry-run
 
 # Install only the browsers the tests use
-npx playwright install chromium
+pnpm exec playwright install chromium
 ```
 
 Do not change the `@playwright/test` version to match a build that is already in the cache. Choose the version for the project, then install its browsers. In Docker, use the image tag that matches the version (see [docker.md](../infrastructure-ci-cd/docker.md)).
@@ -465,23 +465,23 @@ test("with attachments", async ({ page }, testInfo) => {
 
    ```bash
    # Run with trace enabled
-   npx playwright test tests/failing.spec.ts --trace on
+   pnpm exec playwright test tests/failing.spec.ts --trace on
 
    # If intermittent, run multiple times
-   npx playwright test --repeat-each=10
+   pnpm exec playwright test --repeat-each=10
    ```
 
 2. **Inspect the failure**
 
    ```bash
    # View trace
-   npx playwright show-trace test-results/path-to-trace.zip
+   pnpm exec playwright show-trace test-results/path-to-trace.zip
 
    # Run in headed mode to watch
-   npx playwright test --headed
+   pnpm exec playwright test --headed
 
    # Use inspector for step-by-step
-   PWDEBUG=1 npx playwright test
+   PWDEBUG=1 pnpm exec playwright test
    ```
 
 3. **Isolate the problem**

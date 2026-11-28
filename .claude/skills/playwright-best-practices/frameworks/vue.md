@@ -18,8 +18,8 @@
 ```bash
 npm init playwright@latest
 npm install -D @playwright/experimental-ct-vue
-npx playwright test
-npx playwright test -c playwright-ct.config.ts
+pnpm exec playwright test
+pnpm exec playwright test -c playwright-ct.config.ts
 ```
 
 ## Configuration
@@ -52,7 +52,7 @@ export default defineConfig({
 
   webServer: {
     command: process.env.CI
-      ? 'npm run build && npx vite preview --port 5173'
+      ? 'npm run build && pnpm exec vite preview --port 5173'
       : 'npm run dev',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
@@ -88,8 +88,8 @@ export default defineConfig({
 
   webServer: {
     command: process.env.CI
-      ? 'npx nuxi build && npx nuxi preview'
-      : 'npx nuxi dev',
+      ? 'pnpm exec nuxi build && pnpm exec nuxi preview'
+      : 'pnpm exec nuxi dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
@@ -501,8 +501,8 @@ test.describe('nuxt features', () => {
 | Aspect | Vue 3 (Vite) | Nuxt 3 |
 | --- | --- | --- |
 | Default port | `5173` | `3000` |
-| Dev command | `npm run dev` | `npx nuxi dev` |
-| Build + preview | `npm run build && npx vite preview` | `npx nuxi build && npx nuxi preview` |
+| Dev command | `npm run dev` | `pnpm exec nuxi dev` |
+| Build + preview | `npm run build && pnpm exec vite preview` | `pnpm exec nuxi build && pnpm exec nuxi preview` |
 | SSR | Optional | Built-in |
 | API routes | External backend | `/server/api/` built-in |
 | Env variables | `VITE_*` prefix | `NUXT_PUBLIC_*` (client), `NUXT_*` (server) |
@@ -571,4 +571,4 @@ test('no Vue warnings during render', async ({ page }) => {
 | Mock Pinia by patching `window.__pinia` | Fragile; may not trigger reactivity | Control state through UI or mock API responses |
 | Test composables via `page.evaluate` | Composables need Vue's setup context | Test through components or unit test with Vitest |
 | `page.locator('.v-btn')` for Vuetify | Class names change between versions | `page.getByRole('button', { name: 'Submit' })` |
-| Run Nuxt dev server in CI | Dev mode is slower with hot reload overhead | Use `npx nuxi build && npx nuxi preview` |
+| Run Nuxt dev server in CI | Dev mode is slower with hot reload overhead | Use `pnpm exec nuxi build && pnpm exec nuxi preview` |

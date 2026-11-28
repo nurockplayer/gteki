@@ -2,7 +2,7 @@
 name: glb-web-export
 description: Audit a .glb or .gltf and make it small, correct, and fast to load in a browser, with a measured before/after report. Use when a model is "too big" or "slow to load", when the user asks to "optimize this GLB", "compress this glTF", or "export for web", or when they mention Draco, meshopt, gltfpack, KTX2, Basis, texture VRAM, draw calls, or a Blender / CAD / photogrammetry / Pascal export headed for Three.js, React Three Fiber (drei useGLTF), Babylon.js, or model-viewer. Covers inspection, spec validation, geometry and texture compression, scene-graph cleanup, and the correctness checks (metres, Y-up, node names, animations, PBR fidelity, alpha modes, vertex colors) that must not regress. Not for editing or modelling geometry, authoring or laying out a scene, generating 3D from text or images, converting from FBX/OBJ/CAD, or debugging a runtime frame rate that has nothing to do with asset size.
 license: MIT
-compatibility: Node.js 18+ with npx. Uses @gltf-transform/cli (inspect, validate, dedup, prune, weld, quantize, instance, flatten, join, draco, meshopt, resize, webp, etc1s, uastc). Optionally uses a native gltfpack binary for meshopt plus KTX2/WebP in one pass, and the KTX-Software `ktx` CLI on PATH, which the etc1s and uastc commands shell out to. The scripts in scripts/ need npm install (@gltf-transform/core, @gltf-transform/extensions, draco3dgltf, meshoptimizer, pngjs).
+compatibility: Node.js 18+ with pnpm. Uses @gltf-transform/cli (inspect, validate, dedup, prune, weld, quantize, instance, flatten, join, draco, meshopt, resize, webp, etc1s, uastc). Optionally uses a native gltfpack binary for meshopt plus KTX2/WebP in one pass, and the KTX-Software `ktx` CLI on PATH, which the etc1s and uastc commands shell out to.
 metadata:
   author: pascalorg
   version: "1.0.0"
@@ -53,33 +53,33 @@ cp model.glb model.original.glb
 Check the tool versions rather than assuming (package names and versions move):
 
 ```bash
-npm view @gltf-transform/cli version
-npm view gltfpack version
+pnpm view @gltf-transform/cli version
+pnpm view gltfpack version
 ```
 
 Inspect, then validate against the spec:
 
 ```bash
-npx @gltf-transform/cli inspect model.glb
-npx @gltf-transform/cli validate model.glb
+pnpm dlx @gltf-transform/cli inspect model.glb
+pnpm dlx @gltf-transform/cli validate model.glb
 ```
 
 `inspect` gives resolution and `gpuSize` per texture, per-mesh vertex/triangle
 counts, and the extension list. `validate` runs the Khronos validator (the
-`gltf-validator` npm package is a **library with no CLI** — `npx gltf-validator`
-fails with "could not determine executable to run"; `gltf-transform validate`
+`gltf-validator` npm package is a **library with no CLI**. The `gltf-transform validate` command
 wraps it, verified with `@gltf-transform/cli@4.5.0` bundling
 `gltf-validator@2.0.0-dev.3.10`).
 
-Then capture the numbers you will be judged on:
+Record the baseline raw and gzip-compressed file sizes in bytes:
 
 ```bash
-bash <skill-path>/scripts/glb-audit.sh model.glb
+wc -c < model.original.glb
+gzip -9 -c model.original.glb | wc -c
 ```
 
-It reports raw/gzip/brotli bytes, texture VRAM, draw calls, triangles,
-world-space bounds in metres, named nodes, and required extensions. Pass a second
-path after optimizing to get a delta plus an automatic regression list.
+Use the inspection tables for texture GPU sizes, primitive and triangle counts,
+and required extensions. Record world-space dimensions and app-visible node
+names in the target loader. See `references/commands.md` for Brotli measurement.
 
 Read `inspect` to answer: is this **texture-heavy** (large `size`/`gpuSize`),
 **geometry-heavy** (high vertex counts, `f32` attributes), **draw-call-heavy**
@@ -143,12 +143,12 @@ Two pipelines. Start with the first.
 Keeps the scene graph and every node name an app might look up.
 
 ```bash
-npx @gltf-transform/cli dedup  model.glb  s1.glb
-npx @gltf-transform/cli prune  s1.glb     s2.glb          # add --keep-leaves to keep empty helper nodes
-npx @gltf-transform/cli weld   s2.glb     s3.glb
-npx @gltf-transform/cli resize s3.glb     s4.glb --width 1024 --height 1024
-npx @gltf-transform/cli etc1s  s4.glb     s5.glb --quality 128   # or: webp s4.glb s5.glb --quality 85
-npx @gltf-transform/cli meshopt s5.glb    model.web.glb --level high
+pnpm dlx @gltf-transform/cli dedup  model.glb  s1.glb
+pnpm dlx @gltf-transform/cli prune  s1.glb     s2.glb          # add --keep-leaves to keep empty helper nodes
+pnpm dlx @gltf-transform/cli weld   s2.glb     s3.glb
+pnpm dlx @gltf-transform/cli resize s3.glb     s4.glb --width 1024 --height 1024
+pnpm dlx @gltf-transform/cli etc1s  s4.glb     s5.glb --quality 128   # or: webp s4.glb s5.glb --quality 85
+pnpm dlx @gltf-transform/cli meshopt s5.glb    model.web.glb --level high
 ```
 
 ### Draw-call reduction (opt in)
@@ -156,7 +156,7 @@ npx @gltf-transform/cli meshopt s5.glb    model.web.glb --level high
 Add before the compression step, only if the app does not resolve nodes by name:
 
 ```bash
-npx @gltf-transform/cli instance s3.glb s3b.glb --min 5
+pnpm dlx @gltf-transform/cli instance s3.glb s3b.glb --min 5
 ```
 
 ### One-liner
@@ -167,7 +167,7 @@ and changed the triangle count (7,056 → 6,740). Use it only when the asset is 
 static prop with no app-visible structure:
 
 ```bash
-npx @gltf-transform/cli optimize model.glb model.web.glb \
+pnpm dlx @gltf-transform/cli optimize model.glb model.web.glb \
   --compress meshopt --texture-compress ktx2 --texture-size 1024
 ```
 
@@ -182,18 +182,20 @@ gltfpack -i model.glb -o model.web.glb -cc -tc -tl 1024 -kn -km -v
 
 ## 4. Verify
 
-Re-run the audit against the original and check the regression list is empty:
+Inspect and validate the result, then compare the file sizes in bytes:
 
 ```bash
-bash <skill-path>/scripts/glb-audit.sh model.original.glb model.web.glb
-npx @gltf-transform/cli validate model.web.glb
+pnpm dlx @gltf-transform/cli inspect model.web.glb
+wc -c model.original.glb model.web.glb
+gzip -9 -c model.web.glb | wc -c
+pnpm dlx @gltf-transform/cli validate model.web.glb
 ```
 
 Then confirm each item in `references/correctness-checklist.md`. The
 non-negotiables:
 
-- **Units and scale.** glTF units are metres and +Y is up ([spec §Coordinate System and Units](https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/Specification.adoc), fetched 2026-09-11). The audit's `worldBounds.sizeMeters` must be unchanged. Do **not** read `inspect`'s `bboxMin`/`bboxMax` for this — after `quantize`/`meshopt`/`draco` it reports accessor-local bounds, and the fixture's harmless output shows `-1,-1,-1 → 1,1,1` while the real world size is still `4.4 × 1 × 3.2 m`.
-- **Node names and hierarchy.** `namedNodesLost` must be empty, or every entry must be one the app provably does not use.
+- **Units and scale.** glTF units are metres and +Y is up ([spec §Coordinate System and Units](https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/Specification.adoc), fetched 2026-09-11). Measure both files in the target loader and confirm their world-space dimensions match. Do **not** read `inspect`'s `bboxMin`/`bboxMax` for this — after `quantize`/`meshopt`/`draco` it reports accessor-local bounds, and the fixture's harmless output shows `-1,-1,-1 → 1,1,1` while the real world size is still `4.4 × 1 × 3.2 m`.
+- **Node names and hierarchy.** Compare node names before and after loading. Confirm the app does not use any removed names.
 - **Animations and skins.** Counts must not drop. `join`/`flatten` will not move animated nodes, but `prune` removes animations that target nothing in a scene.
 - **Materials.** Same count of *distinct* appearances, same `alphaMode` per material, `KHR_materials_*` extensions still listed, vertex colors (`COLOR_0`) still present.
 - **Loader can decode it.** Every entry in `extensionsRequired` must be supported by the target loader, with its decoder wired up. Load the output in the real app before shipping.
@@ -229,8 +231,7 @@ Requires: EXT_meshopt_compression, KHR_mesh_quantization, KHR_texture_basisu —
 the loader must have MeshoptDecoder and KTX2Loader wired up.
 ```
 
-State "not measured" for load time unless you actually measured it. Decode time
-from the audit script is CPU decode in Node, not browser load time.
+State "not measured" for load time unless you measured it in the browser.
 
 ---
 
@@ -280,7 +281,6 @@ not acceptable if a downstream tool counts faces.
 - `references/loader-support.md` — Three.js / R3F-drei / Babylon.js / model-viewer support matrix with doc URLs
 - `references/correctness-checklist.md` — what to check before shipping
 - `examples/textured-scene.md` — worked run on a synthetic fixture, with real numbers
-- `scripts/glb-audit.sh` — the measurement tool; `scripts/make-fixture.sh` regenerates that fixture
 
 ---
 

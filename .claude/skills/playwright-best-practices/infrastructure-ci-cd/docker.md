@@ -22,7 +22,7 @@ docker run --rm \
   -e CI=true \
   -e BASE_URL=http://host.docker.internal:3000 \
   mcr.microsoft.com/playwright:v1.48.0-noble \
-  bash -c "npm ci && npx playwright test"
+  bash -c "npm ci && pnpm exec playwright test"
 ```
 
 Extract reports with bind mounts:
@@ -34,7 +34,7 @@ docker run --rm \
   -v $(pwd)/test-results:/app/test-results \
   -w /app \
   mcr.microsoft.com/playwright:v1.48.0-noble \
-  bash -c "npm ci && npx playwright test"
+  bash -c "npm ci && pnpm exec playwright test"
 ```
 
 ### Custom Dockerfile
@@ -51,7 +51,7 @@ RUN npm ci
 
 COPY . .
 
-CMD ["npx", "playwright", "test"]
+CMD ["pnpm", "exec", "playwright", "test"]
 ```
 
 Chromium-only slim image:
@@ -59,14 +59,14 @@ Chromium-only slim image:
 ```dockerfile
 FROM node:latest-slim
 
-RUN npx playwright install --with-deps chromium
+RUN pnpm exec playwright install --with-deps chromium
 
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 
-CMD ["npx", "playwright", "test", "--project=chromium"]
+CMD ["pnpm", "exec", "playwright", "test", "--project=chromium"]
 ```
 
 ### Docker Compose Stack
@@ -111,7 +111,7 @@ services:
       - BASE_URL=http://app:3000
     depends_on:
       - app
-    command: bash -c "npm ci && npx playwright test"
+    command: bash -c "npm ci && pnpm exec playwright test"
     profiles:
       - test
 ```
@@ -137,7 +137,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm ci
-      - run: npx playwright test
+      - run: pnpm exec playwright test
         env:
           HOME: /root
 ```
@@ -149,7 +149,7 @@ test:
   image: mcr.microsoft.com/playwright:v1.48.0-noble
   script:
     - npm ci
-    - npx playwright test
+    - pnpm exec playwright test
 ```
 
 **Jenkins:**
@@ -166,7 +166,7 @@ pipeline {
         stage('Test') {
             steps {
                 sh 'npm ci'
-                sh 'npx playwright test'
+                sh 'pnpm exec playwright test'
             }
         }
     }
@@ -257,7 +257,7 @@ Match user IDs or run as root:
 docker run --rm -u $(id -u):$(id -g) \
   -v $(pwd):/app -w /app \
   mcr.microsoft.com/playwright:v1.48.0-noble \
-  npx playwright test
+  pnpm exec playwright test
 ```
 
 ### Slow container tests on macOS/Windows
@@ -269,7 +269,7 @@ FROM mcr.microsoft.com/playwright:v1.48.0-noble
 WORKDIR /app
 COPY . .
 RUN npm ci
-CMD ["npx", "playwright", "test"]
+CMD ["pnpm", "exec", "playwright", "test"]
 ```
 
 Or use delegated mount:
@@ -279,5 +279,5 @@ docker run --rm \
   -v $(pwd):/app:delegated \
   -w /app \
   mcr.microsoft.com/playwright:v1.48.0-noble \
-  bash -c "npm ci && npx playwright test"
+  bash -c "npm ci && pnpm exec playwright test"
 ```

@@ -145,13 +145,13 @@ await fs.writeFile(".nyc_output/coverage.json", JSON.stringify(map.toJSON()));
 Run the script as an ES module (for example, set `"type": "module"` in the test project's `package.json`):
 
 ```bash
-npx tsx scripts/convert-coverage.ts
+pnpm exec tsx scripts/convert-coverage.ts
 ```
 
 ### Generating HTML Report
 
 ```bash
-npx nyc report --temp-dir=.nyc_output --report-dir=coverage --reporter=html --reporter=text --reporter=lcov --reporter=json-summary
+pnpm exec nyc report --temp-dir=.nyc_output --report-dir=coverage --reporter=html --reporter=text --reporter=lcov --reporter=json-summary
 ```
 
 `coverage/coverage-summary.json` now contains actual Istanbul line/statement/function/branch summaries, not a byte percentage relabeled as line coverage.
@@ -165,7 +165,7 @@ Run conversion/report generation after Playwright exits, so all test-scoped fixt
 ### Enforcing Minimum Coverage
 
 ```bash
-npx nyc check-coverage --temp-dir=.nyc_output --lines=80 --statements=80 --functions=80 --branches=70
+pnpm exec nyc check-coverage --temp-dir=.nyc_output --lines=80 --statements=80 --functions=80 --branches=70
 ```
 
 ### Per-Directory Thresholds
@@ -173,7 +173,7 @@ npx nyc check-coverage --temp-dir=.nyc_output --lines=80 --statements=80 --funct
 Use nyc's `--include` and `--per-file` options for a selected source directory after source-map conversion:
 
 ```bash
-npx nyc check-coverage --temp-dir=.nyc_output --include='**/src/core/**' --per-file --lines=90
+pnpm exec nyc check-coverage --temp-dir=.nyc_output --include='**/src/core/**' --per-file --lines=90
 ```
 
 Ensure your app's expected source files appear in the report. Runtime coverage only includes loaded scripts; an empty or incomplete report is not proof that unvisited source files meet a threshold.
@@ -185,8 +185,8 @@ Ensure your app's expected source files appear in the report. Runtime coverage o
 Download each shard's `test-results/` into a separate directory, then pass all roots to the conversion script. `CoverageMap.merge()` combines execution counts for the same source file; concatenating raw ranges and adding lengths would double-count overlapping coverage.
 
 ```bash
-npx tsx scripts/convert-coverage.ts shard-1/test-results shard-2/test-results
-npx nyc report --temp-dir=.nyc_output --report-dir=coverage --reporter=html --reporter=lcov
+pnpm exec tsx scripts/convert-coverage.ts shard-1/test-results shard-2/test-results
+pnpm exec nyc report --temp-dir=.nyc_output --report-dir=coverage --reporter=html --reporter=lcov
 ```
 
 ### Incremental Coverage
@@ -200,12 +200,12 @@ Compare changed source paths with the source-mapped Istanbul report, not browser
 ```yaml
 # Steps in an existing job, after checkout, npm ci and browser installation.
 - name: Run tests with coverage fixture
-  run: npx playwright test --project=coverage
+  run: pnpm exec playwright test --project=coverage
 - name: Convert and report coverage
   run: |
-    npx tsx scripts/convert-coverage.ts
-    npx nyc report --temp-dir=.nyc_output --report-dir=coverage --reporter=lcov --reporter=json-summary
-    npx nyc check-coverage --temp-dir=.nyc_output --lines=80
+    pnpm exec tsx scripts/convert-coverage.ts
+    pnpm exec nyc report --temp-dir=.nyc_output --report-dir=coverage --reporter=lcov --reporter=json-summary
+    pnpm exec nyc check-coverage --temp-dir=.nyc_output --lines=80
 - uses: actions/upload-artifact@v4
   if: ${{ !cancelled() }}
   with:

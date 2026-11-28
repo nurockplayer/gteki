@@ -110,14 +110,14 @@ test.describe(
 
 ```bash
 # Run all @fast tests
-npx playwright test --grep @fast
+pnpm exec playwright test --grep @fast
 ```
 
 ### Exclude Tests with Tag
 
 ```bash
 # Run all tests except @slow
-npx playwright test --grep-invert @slow
+pnpm exec playwright test --grep-invert @slow
 ```
 
 ## Filtering by Tags
@@ -126,24 +126,24 @@ npx playwright test --grep-invert @slow
 
 ```bash
 # Run tests with @fast OR @smoke
-npx playwright test --grep "@fast|@smoke"
+pnpm exec playwright test --grep "@fast|@smoke"
 ```
 
 ### Logical AND (Both Tags)
 
 ```bash
 # Run tests with both @fast AND @critical
-npx playwright test --grep "(?=.*@fast)(?=.*@critical)"
+pnpm exec playwright test --grep "(?=.*@fast)(?=.*@critical)"
 ```
 
 ### Complex Patterns
 
 ```bash
 # Run @e2e tests that are also @critical
-npx playwright test --grep "(?=.*@e2e)(?=.*@critical)"
+pnpm exec playwright test --grep "(?=.*@e2e)(?=.*@critical)"
 
 # Run @api tests excluding @slow
-npx playwright test --grep "@api" --grep-invert "@slow"
+pnpm exec playwright test --grep "@api" --grep-invert "@slow"
 ```
 
 ## Configuration-Based Filtering

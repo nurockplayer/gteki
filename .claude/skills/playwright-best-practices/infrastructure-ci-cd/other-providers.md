@@ -18,10 +18,10 @@
 ## Common Commands
 
 ```bash
-npx playwright install --with-deps    # browsers + OS dependencies
-npx playwright test --shard=1/4       # parallel sharding
-npx playwright merge-reports ./blob-report  # combine shard results
-npx playwright test --reporter=dot,html     # multiple reporters
+pnpm exec playwright install --with-deps    # browsers + OS dependencies
+pnpm exec playwright test --shard=1/4       # parallel sharding
+pnpm exec playwright merge-reports ./blob-report  # combine shard results
+pnpm exec playwright test --reporter=dot,html     # multiple reporters
 ```
 
 ## Jenkins
@@ -58,7 +58,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'npx playwright test'
+                sh 'pnpm exec playwright test'
             }
             post {
                 always {
@@ -112,7 +112,7 @@ pipeline {
                     }
                     steps {
                         sh 'npm ci'
-                        sh 'npx playwright test --shard=1/4'
+                        sh 'pnpm exec playwright test --shard=1/4'
                     }
                     post {
                         always {
@@ -130,7 +130,7 @@ pipeline {
                     }
                     steps {
                         sh 'npm ci'
-                        sh 'npx playwright test --shard=2/4'
+                        sh 'pnpm exec playwright test --shard=2/4'
                     }
                     post {
                         always {
@@ -148,7 +148,7 @@ pipeline {
                     }
                     steps {
                         sh 'npm ci'
-                        sh 'npx playwright test --shard=3/4'
+                        sh 'pnpm exec playwright test --shard=3/4'
                     }
                     post {
                         always {
@@ -166,7 +166,7 @@ pipeline {
                     }
                     steps {
                         sh 'npm ci'
-                        sh 'npx playwright test --shard=4/4'
+                        sh 'pnpm exec playwright test --shard=4/4'
                     }
                     post {
                         always {
@@ -223,7 +223,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            npx playwright test --shard=$((CIRCLE_NODE_INDEX + 1))/$CIRCLE_NODE_TOTAL
+            pnpm exec playwright test --shard=$((CIRCLE_NODE_INDEX + 1))/$CIRCLE_NODE_TOTAL
       - store_artifacts:
           path: pw-report
           destination: pw-report
@@ -265,7 +265,7 @@ jobs:
       - node/install-packages
       - run:
           name: Run tests
-          command: npx playwright test --shard=$((CIRCLE_NODE_INDEX + 1))/$CIRCLE_NODE_TOTAL
+          command: pnpm exec playwright test --shard=$((CIRCLE_NODE_INDEX + 1))/$CIRCLE_NODE_TOTAL
       - store_artifacts:
           path: pw-report
       - store_test_results:
@@ -317,10 +317,10 @@ steps:
   - script: npm ci
     displayName: "Install dependencies"
 
-  - script: npx playwright install --with-deps
+  - script: pnpm exec playwright install --with-deps
     displayName: "Install browsers"
 
-  - script: npx playwright test
+  - script: pnpm exec playwright test
     displayName: "Run tests"
 
   - task: PublishTestResults@2
@@ -382,10 +382,10 @@ stages:
           - script: npm ci
             displayName: "Install dependencies"
 
-          - script: npx playwright install --with-deps
+          - script: pnpm exec playwright install --with-deps
             displayName: "Install browsers"
 
-          - script: npx playwright test --shard=$(SHARD)
+          - script: pnpm exec playwright test --shard=$(SHARD)
             displayName: "Run tests (shard $(SHARD))"
 
           - task: PublishPipelineArtifact@1
@@ -423,7 +423,7 @@ stages:
               find downloaded-blob-reports -name '*.zip' -exec cp {} all-blob-reports/ \;
             displayName: "Flatten blob reports"
 
-          - script: npx playwright merge-reports --reporter=html ./all-blob-reports
+          - script: pnpm exec playwright merge-reports --reporter=html ./all-blob-reports
             displayName: "Merge reports"
             env:
               PLAYWRIGHT_HTML_OUTPUT_DIR: pw-report
@@ -515,7 +515,7 @@ CircleCI's `CIRCLE_NODE_INDEX` is 0-based, Playwright's `--shard` is 1-based:
 
 ```yaml
 # CircleCI - add 1
-command: npx playwright test --shard=$((CIRCLE_NODE_INDEX + 1))/$CIRCLE_NODE_TOTAL
+command: pnpm exec playwright test --shard=$((CIRCLE_NODE_INDEX + 1))/$CIRCLE_NODE_TOTAL
 ```
 
 ## Anti-Patterns

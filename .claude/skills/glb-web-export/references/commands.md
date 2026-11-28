@@ -7,18 +7,18 @@ on a generated fixture. Nothing here is from memory.
 
 | Tool | Version | How it was obtained |
 |---|---|---|
-| `@gltf-transform/cli` | `4.5.0` | `npm view @gltf-transform/cli version`; `gltf-transform --version` |
+| `@gltf-transform/cli` | `4.5.0` | `pnpm view @gltf-transform/cli version`; `gltf-transform --version` |
 | `gltf-validator` (bundled by the above) | `2.0.0-dev.3.10` | dependency of `@gltf-transform/cli@4.5.0` |
-| `gltfpack` (npm) | `1.2.0` | `npm view gltfpack version`; `gltfpack -h` → `gltfpack 1.2` |
+| `gltfpack` (npm) | `1.2.0` | `pnpm view gltfpack version`; `gltfpack -h` → `gltfpack 1.2` |
 | `gltfpack` (native, macOS arm64) | `1.2` | `zeux/meshoptimizer` release `v1.2` (published 2026-06-30); `gltfpack -v` → `gltfpack 1.2` |
 | KTX-Software | `4.4.2` | release `v4.4.2` (published 2025-10-04); `ktx --version` → `ktx version: v4.4.2` |
 
 Re-check before relying on any version-sensitive detail:
 
 ```bash
-npm view @gltf-transform/cli version
-npm view gltfpack version
-npx @gltf-transform/cli --version
+pnpm view @gltf-transform/cli version
+pnpm view gltfpack version
+pnpm dlx @gltf-transform/cli --version
 gltfpack -v
 ktx --version
 ```
@@ -27,8 +27,8 @@ ktx --version
 
 ## Package names — read this first
 
-- `@gltf-transform/cli` is the CLI. Run it via `npx @gltf-transform/cli <command>`, or install it (`npm install --global @gltf-transform/cli`, per https://gltf-transform.dev/cli, fetched 2026-09-11). The installed binary is named `gltf-transform`.
-- **`gltf-validator` on npm has no `bin`.** `npx gltf-validator --help` fails with `npm error could not determine executable to run`. Use `gltf-transform validate`, which wraps the same library.
+- `@gltf-transform/cli` is the CLI. Run it via `pnpm dlx @gltf-transform/cli <command>`, or use `pnpm exec gltf-transform <command>` if it is installed in the project.
+- **`gltf-validator` on npm has no `bin`.** Use `gltf-transform validate`, which wraps the same library.
 - `gltfpack` on npm works for geometry only. Per its own README (https://github.com/zeux/meshoptimizer/blob/master/gltf/README.md, fetched 2026-09-11): "Native binaries are recommended over npm since they can work with larger files, run faster, and support texture compression." Confirmed empirically — see the errors at the bottom of this file.
 - `gltf-pipeline` (`4.3.1`) is the Cesium tool. It also does Draco, but is not covered here.
 
@@ -254,12 +254,12 @@ output: buffers: vertex 20301 bytes, index 7148 bytes, skin 0 bytes, ... image 6
 ### npm build limitations (measured)
 
 ```
-$ npx gltfpack -i model.glb -o out.glb -cc -tw -tl 1024
+$ pnpm dlx gltfpack -i model.glb -o out.glb -cc -tw -tl 1024
 Error: gltfpack was built without WebP support, texture compression is not available
 Note: node.js builds do not support WebP due to lack of platform features;
       download a native build from https://github.com/zeux/meshoptimizer/releases
 
-$ npx gltfpack -i model.glb -o out.glb -cc -tc -tl 1024
+$ pnpm dlx gltfpack -i model.glb -o out.glb -cc -tc -tl 1024
 Error: gltfpack was built without BasisU support, texture compression is not available
 ```
 
@@ -287,10 +287,6 @@ Serve `.glb` with compression on and measure the compressed size, not the raw on
 gzip -9 -c model.glb | wc -c
 brotli -q 11 -c model.glb | wc -c
 ```
-
-`scripts/glb-audit.mjs` reproduces `brotli -q 11` exactly using Node's zlib —
-this needs `BROTLI_PARAM_LGWIN: 24`; with Node's default window the same file
-measured 18,164,403 B instead of the CLI's 10,104,870 B.
 
 Meshopt output is designed to be re-compressed: on the fixture, meshopt was
 375,252 B raw → 348,653 B brotli, while Draco was *smaller raw* (358,564 B) but

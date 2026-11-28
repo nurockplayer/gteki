@@ -49,8 +49,8 @@ export default defineConfig({
 
   webServer: {
     command: process.env.CI
-      ? 'npx ng build && npx serve -s dist/my-app/browser -l 4200'
-      : 'npx ng serve',
+      ? 'pnpm exec ng build && pnpm dlx serve -s dist/my-app/browser -l 4200'
+      : 'pnpm exec ng serve',
     url: 'http://localhost:4200',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
@@ -449,8 +449,8 @@ Angular uses Zone.js for change detection. Playwright does not depend on Zone.js
 // playwright.config.ts for SSR
 webServer: {
   command: process.env.CI
-    ? 'npx ng build --ssr && node dist/my-app/server/server.mjs'
-    : 'npx ng serve --ssr',
+    ? 'pnpm exec ng build --ssr && node dist/my-app/server/server.mjs'
+    : 'pnpm exec ng serve --ssr',
   url: 'http://localhost:4200',
   reuseExistingServer: !process.env.CI,
   timeout: 180_000,
@@ -492,9 +492,9 @@ test('no hydration errors', async ({ page }) => {
 
 | Scenario | Command | Notes |
 |---|---|---|
-| Local dev | `npx ng serve` | Fast rebuild, source maps |
-| CI production | `npx ng build && npx serve -s dist/app/browser -l 4200` | Tests production bundle with SPA fallback |
-| CI SSR | `npx ng build --ssr && node dist/app/server/server.mjs` | Tests server-side rendering |
+| Local dev | `pnpm exec ng serve` | Fast rebuild, source maps |
+| CI production | `pnpm exec ng build && pnpm dlx serve -s dist/app/browser -l 4200` | Tests production bundle with SPA fallback |
+| CI SSR | `pnpm exec ng build --ssr && node dist/app/server/server.mjs` | Tests server-side rendering |
 | Staging | No `webServer` | Point `baseURL` to staging URL |
 
 The `-s` flag on `serve` enables SPA fallback for Angular Router. In `http-server`, `-s` means silent logging, not SPA fallback.

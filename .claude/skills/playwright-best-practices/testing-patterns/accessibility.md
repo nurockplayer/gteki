@@ -372,7 +372,7 @@ export default defineConfig({
 ```yaml
 # .github/workflows/a11y.yml
 - name: Run accessibility tests
-  run: npx playwright test --project=a11y
+  run: pnpm exec playwright test --project=a11y
 ```
 
 ## Anti-Patterns to Avoid

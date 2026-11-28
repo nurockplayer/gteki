@@ -13,10 +13,10 @@
 ## Key Commands
 
 ```bash
-npx playwright install --with-deps    # install browsers + OS deps
-npx playwright test --shard=1/4       # run 1 of 4 parallel shards
-npx playwright merge-reports ./blob-report  # merge shard results
-npx playwright test --reporter=dot    # minimal output for CI logs
+pnpm exec playwright install --with-deps    # install browsers + OS deps
+pnpm exec playwright test --shard=1/4       # run 1 of 4 parallel shards
+pnpm exec playwright merge-reports ./blob-report  # merge shard results
+pnpm exec playwright test --reporter=dot    # minimal output for CI logs
 ```
 
 ## Patterns
@@ -59,7 +59,7 @@ e2e:
   stage: test
   needs: [setup]
   script:
-    - npx playwright test
+    - pnpm exec playwright test
   artifacts:
     when: always
     paths:
@@ -110,7 +110,7 @@ e2e:
   needs: [setup]
   parallel: 4
   script:
-    - npx playwright test --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL
+    - pnpm exec playwright test --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL
   artifacts:
     when: always
     paths:
@@ -125,7 +125,7 @@ combine-reports:
   needs: [e2e]
   when: always
   script:
-    - npx playwright merge-reports --reporter=html ./blob-report
+    - pnpm exec playwright merge-reports --reporter=html ./blob-report
   artifacts:
     when: always
     paths:
@@ -166,7 +166,7 @@ e2e:staging:
   before_script:
     - npm ci
   script:
-    - npx playwright test
+    - pnpm exec playwright test
   artifacts:
     when: always
     paths:
@@ -214,7 +214,7 @@ e2e:chromium:
   stage: test
   needs: [setup]
   script:
-    - npx playwright test --project=chromium
+    - pnpm exec playwright test --project=chromium
   artifacts:
     when: always
     paths:
@@ -231,7 +231,7 @@ e2e:all-browsers:
     matrix:
       - PROJECT: [chromium, firefox, webkit]
   script:
-    - npx playwright test --project=$PROJECT
+    - pnpm exec playwright test --project=$PROJECT
   artifacts:
     when: always
     paths:
@@ -266,10 +266,10 @@ e2e:integration:
     POSTGRES_DB: "testdb"
   before_script:
     - npm ci
-    - npx prisma db push
-    - npx prisma db seed
+    - pnpm exec prisma db push
+    - pnpm exec prisma db seed
   script:
-    - npx playwright test
+    - pnpm exec playwright test
   artifacts:
     when: always
     paths:
@@ -292,7 +292,7 @@ e2e:nightly:
   before_script:
     - npm ci
   script:
-    - npx playwright test --grep @regression
+    - pnpm exec playwright test --grep @regression
   artifacts:
     when: always
     paths:

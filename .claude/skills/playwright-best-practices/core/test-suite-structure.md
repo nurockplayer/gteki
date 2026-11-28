@@ -280,10 +280,10 @@ export default defineConfig({
 
 ```bash
 # Update all snapshots
-npx playwright test --update-snapshots
+pnpm exec playwright test --update-snapshots
 
 # Update specific test
-npx playwright test homepage.spec.ts --update-snapshots
+pnpm exec playwright test homepage.spec.ts --update-snapshots
 ```
 
 ## Directory Structure
@@ -349,13 +349,13 @@ test.describe("API tests @api", () => {
 
 ```bash
 # Run smoke tests
-npx playwright test --grep @smoke
+pnpm exec playwright test --grep @smoke
 
 # Run all except slow tests
-npx playwright test --grep-invert @slow
+pnpm exec playwright test --grep-invert @slow
 
 # Combine tags
-npx playwright test --grep "@smoke|@critical"
+pnpm exec playwright test --grep "@smoke|@critical"
 ```
 
 For project-based filtering and advanced project configuration, see **[projects-dependencies.md](projects-dependencies.md)**.

@@ -16,13 +16,13 @@
 
 ```bash
 npm init playwright@latest                    # scaffold config + first test
-npx playwright test --config=custom.config.ts # use alternate config
-npx playwright test --project=chromium        # run single project
-npx playwright test --reporter=html           # override reporter
-npx playwright test --grep @smoke             # run tests tagged @smoke
-npx playwright test --grep-invert @slow       # exclude @slow tests
-npx playwright show-report                    # open last HTML report
-DEBUG=pw:api npx playwright test              # verbose logging
+pnpm exec playwright test --config=custom.config.ts # use alternate config
+pnpm exec playwright test --project=chromium        # run single project
+pnpm exec playwright test --reporter=html           # override reporter
+pnpm exec playwright test --grep @smoke             # run tests tagged @smoke
+pnpm exec playwright test --grep-invert @slow       # exclude @slow tests
+pnpm exec playwright show-report                    # open last HTML report
+DEBUG=pw:api pnpm exec playwright test              # verbose logging
 ```
 
 ## Decision Guide
@@ -150,8 +150,8 @@ export default defineConfig({
 ```
 
 ```bash
-TEST_ENV=staging npx playwright test
-TEST_ENV=prod npx playwright test --grep @smoke
+TEST_ENV=staging pnpm exec playwright test
+TEST_ENV=prod pnpm exec playwright test --grep @smoke
 ```
 
 ### Setup Project with Dependencies
@@ -252,7 +252,7 @@ import { FullConfig } from '@playwright/test';
 
 export default async function globalSetup(config: FullConfig) {
   const { execSync } = await import('child_process');
-  execSync('npx prisma db seed', { stdio: 'inherit' });
+  execSync('pnpm exec prisma db seed', { stdio: 'inherit' });
   process.env.TEST_RUN_ID = `run-${Date.now()}`;
 }
 ```
@@ -263,7 +263,7 @@ import { FullConfig } from '@playwright/test';
 
 export default async function globalTeardown(config: FullConfig) {
   const { execSync } = await import('child_process');
-  execSync('npx prisma db push --force-reset', { stdio: 'inherit' });
+  execSync('pnpm exec prisma db push --force-reset', { stdio: 'inherit' });
 }
 ```
 
@@ -350,8 +350,8 @@ export default defineConfig({
 
 ```bash
 # Run specific project
-npx playwright test --project=smoke
-npx playwright test --project=regression
+pnpm exec playwright test --project=smoke
+pnpm exec playwright test --project=regression
 ```
 
 ### Artifact Collection Strategy
@@ -439,8 +439,8 @@ export default defineConfig({
 **Fix**: Don't increase global timeout. Find slow step using trace:
 
 ```bash
-npx playwright test --trace on
-npx playwright show-report
+pnpm exec playwright test --trace on
+pnpm exec playwright show-report
 ```
 
 ## Related

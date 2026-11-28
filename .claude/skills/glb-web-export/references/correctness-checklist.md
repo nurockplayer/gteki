@@ -3,8 +3,8 @@
 Run this against every output before reporting a win. Anything you cannot check,
 say you did not check — do not assume it survived.
 
-`bash scripts/glb-audit.sh before.glb after.glb` covers items 1, 2, 4, 5, 6 and 9
-automatically and prints a `regressions` array. The rest need eyes or the app.
+Use the inspection and validation commands in `SKILL.md` and confirm the scene
+properties below in the target loader.
 
 ---
 
@@ -17,7 +17,7 @@ coordinate system" (glTF 2.0 Specification, *Coordinate System and Units*,
 https://github.com/KhronosGroup/glTF/blob/main/specification/2.0/Specification.adoc,
 fetched 2026-09-11).
 
-- [ ] `worldBounds.sizeMeters` identical before and after
+- [ ] World-space dimensions in the target loader match before and after
 - [ ] The dimensions match reality: a door ≈ 2.0 m tall, a chair ≈ 0.45 m seat height. A 1000× or 0.01× value means the source exporter used centimetres or inches
 - [ ] Up axis unchanged. A Z-up source (most CAD, some Blender setups) must be rotated at export, not "fixed" in the optimizer
 
@@ -26,12 +26,11 @@ check this. After `quantize`, `meshopt` or `draco`, positions are stored as
 normalized integers with the factor pushed onto the node transform, so `inspect`
 reports accessor-local bounds. Measured on the fixture: `inspect` went from
 `-2.2, 0, -1.6 → 2.2, 1, 1.6` to `-1, -1, -1 → 1, 1, 1`, while the true
-world-space size stayed `4.4 × 1 × 3.2 m`. The audit script applies the node
-transforms, so its numbers are the ones to trust.
+world-space size stayed `4.4 × 1 × 3.2 m`. Measure the bounds with node transforms applied.
 
 ## 2. Node names and hierarchy
 
-- [ ] `namedNodesLost` is empty, **or** every lost name is one the app provably never resolves
+- [ ] Every node name removed from the asset is one the app never resolves
 - [ ] Names the app looks up by string (`scene.getObjectByName(...)`, drei `nodes.Foo`, a click-target map, an animation target) are all still present
 - [ ] Parent/child relationships the app relies on are intact if it walks the graph
 

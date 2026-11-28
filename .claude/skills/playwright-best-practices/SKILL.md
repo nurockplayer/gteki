@@ -294,10 +294,10 @@ What are you doing?
 
 After writing or modifying tests:
 
-1. **Run tests**: `npx playwright test --reporter=list`
+1. **Run tests**: `pnpm exec playwright test --reporter=list`
 2. **If tests fail**:
-   - Review error output and trace (`npx playwright show-trace`)
+   - Review error output and trace (`pnpm exec playwright show-trace`)
    - Fix locators, waits, or assertions
    - Re-run tests
 3. **Only proceed when all tests pass**
-4. **Run multiple times** for critical tests: `npx playwright test --repeat-each=5`
+4. **Run multiple times** for critical tests: `pnpm exec playwright test --repeat-each=5`
