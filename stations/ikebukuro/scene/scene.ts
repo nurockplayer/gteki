@@ -680,9 +680,17 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // The camera is read from a mesh drawn every frame anyway (the floor), so the gate costs no draw call.
   const probe = meshesByRole.get("floor")?.[0] ?? [...meshesByRole.values()].flat()[0] ?? null;
   const cameraTrack = probe ? trackCamera(probe) : null;
+  let jrContextCut = false;
   const setContext = (show: boolean) => {
     n02Overlay?.setVisible(show && context !== null);
     if (!context) return;
+    if (ctx.previewNext && show && !jrContextCut) {
+      const cut = root.getObjectByName("jr-platform-preview")?.userData.cutStreetContext;
+      if (cut) {
+        cut(context, contextBlockers.meshes);
+        jrContextCut = true;
+      }
+    }
     if (show && context.parent !== root) root.add(context);
     else if (!show && context.parent === root) root.remove(context);
     context.visible = show;

@@ -3,6 +3,7 @@ import { discoverRailLanes, mountRailChunks, type RailBuilder, type RailLane } f
 import type { Edge, Node, Poi, StationBundle } from "@gteki/schema";
 
 type Position = [number, number, number];
+type IkebukuroRailLane = RailLane & { serviceNames?: Record<string, RailLane["line"]> };
 
 const lanes = import.meta.glob<RailLane>("../data/rail/*.json", { eager: true, import: "default" });
 const builders = import.meta.glob<RailBuilder>(["./rail/*.ts", "!./rail/*.test.ts"], { import: "default" });
@@ -19,6 +20,7 @@ export function railBundle(bundle: StationBundle): StationBundle {
 
   for (const { lane, prefix, load } of entries) {
     if (!load) continue;
+    const serviceNames = (lane as IkebukuroRailLane).serviceNames;
     const evidence = (id: string) => ({
       sourceIds: [id],
       method: `Ikebukuro rail preview (${lane.status})`,
@@ -64,12 +66,14 @@ export function railBundle(bundle: StationBundle): StationBundle {
       const [[ax, ay], [bx, by]] = platform.centerline;
       const floor = floors.get(platform.level)!;
       const node = place(platform.id, floor.id, [(ax + bx) / 2, (ay + by) / 2, floor.renderElevationM], "platform", platform.source);
+      const line = serviceNames?.[platform.services[0]!] ?? lane.line;
       const names: Poi["names"] = platform.number === null
-        ? [{ lang: "ja", text: `${lane.line.ja} ホーム` }, { lang: "en", text: `${lane.line.en} platform` }]
-        : [{ lang: "ja", text: `${lane.line.ja} ${platform.number}番線` }, { lang: "en", text: `${lane.line.en} platform ${platform.number}` }];
+        ? [{ lang: "ja", text: `${line.ja} ホーム` }, { lang: "en", text: `${line.en} platform` }]
+        : [{ lang: "ja", text: `${line.ja} ${platform.number}番線` }, { lang: "en", text: `${line.en} platform ${platform.number}` }];
       const previous = pois.get(platform.id);
       pois.set(platform.id, {
-        id: platform.id, category: "platform", names, aliases: [{ lang: "en", text: lane.lineCode }],
+        id: platform.id, category: "platform", names,
+        aliases: [...new Set([lane.lineCode, ...platform.services])].map(text => ({ lang: "en", text })),
         ...previous, floorId: floor.id, displayPosition: node.position, connectorNodeIds: [node.id], paid: true,
         evidence: evidence(platform.source),
         ...(lane.status === "representative" ? { notes: [

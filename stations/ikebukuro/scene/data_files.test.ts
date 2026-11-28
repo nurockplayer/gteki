@@ -123,15 +123,24 @@ describe("ikebukuro dataFiles", () => {
   });
 });
 
-it("routes from Central Passage through a JR fare gate to the next-preview platform only", async () => {
+it("routes between each Central fare gate and both next-preview Yamanote faces", async () => {
   const [station] = await listStations();
   const baseline = (await station!.load()).bundle;
   const preview = (await station!.load(true)).bundle;
-  const destination = "jr-yamanote-platform";
-  expect(baseline.pois.some(poi => poi.id === destination)).toBe(false);
-  expect(createRouter(baseline).route(["c_mid"], [destination]).ok).toBe(false);
-  expect(createRouter(preview).route(["c_mid"], [destination])).toMatchObject({
-    ok: true,
-    steps: expect.arrayContaining([expect.objectContaining({ mode: "gate" })]),
-  });
+  const router = createRouter(preview);
+  for (const platform of ["jr-platform-5", "jr-platform-6"]) {
+    expect(baseline.pois.some(poi => poi.id === platform)).toBe(false);
+    expect(createRouter(baseline).route(["c_mid"], [platform]).ok).toBe(false);
+    for (const gate of ["g_jr_c1", "g_jr_c2"]) {
+      for (const [from, to] of [[gate, platform], [platform, gate]] as const) {
+        expect(router.route([from], [to])).toMatchObject({
+          ok: true,
+          steps: expect.arrayContaining([
+            expect.objectContaining({ mode: "gate" }),
+            expect.objectContaining({ mode: "stairs" }),
+          ]),
+        });
+      }
+    }
+  }
 });

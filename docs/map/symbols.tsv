@@ -1270,7 +1270,7 @@ dressN02Overlay	function	stations/ikebukuro/scene/n02_overlay.ts
 loadN02Overlay	function	stations/ikebukuro/scene/n02_overlay.ts
 buildRailScene	function	stations/ikebukuro/scene/rail.ts
 railBundle	function	stations/ikebukuro/scene/rail.ts
-buildYamanote	function	stations/ikebukuro/scene/rail/jr-yamanote.ts
+buildJr	function	stations/ikebukuro/scene/rail/jr.ts
 assembleCollision	function	stations/ikebukuro/scene/scene.ts
 buildScene	function	stations/ikebukuro/scene/scene.ts
 generatedSignageFromGraph	const	stations/ikebukuro/scene/scene.ts

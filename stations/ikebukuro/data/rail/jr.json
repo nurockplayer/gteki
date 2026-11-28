@@ -12,7 +12,7 @@
     "id": "jr-ikebukuro-evidence",
     "sourceIds": ["plateau-ubld-13116", "toshima-underground-guide-2022"],
     "modified": true,
-    "derivation": "Hand-authored register of station facts and representative access for 2026-11-26 JST. The station pipeline supplies three snapped public B1 approach anchors from gteki/graph.json. The lane source list records fact provenance. 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"
+    "derivation": "Hand-authored register of station facts and representative access for 2026-11-26 JST. The station pipeline supplies three snapped public B1 approach anchors from gteki/graph.json. The 5/6 island and its Central 1/2 paid access use GTEki-authored geometry (2026-11-28 JST). The lane source list records fact provenance. 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"
   },
   "levels": [
     { "id": "b1", "label": "B1", "z_m": 27.9, "source": "ikebukuro-public-anchors" },
@@ -23,9 +23,9 @@
     { "id": "jr-north-public", "poiId": "jr-north-gate", "side": "public", "level": "b1", "position": null, "source": "toshima-sign-guide" },
     { "id": "jr-north-paid", "poiId": "jr-north-gate", "side": "paid", "level": "b1", "position": null, "source": "toshima-access-2011" },
     { "id": "jr-central-2-public", "poiId": "jr-central-gate-2", "side": "public", "level": "b1", "position": [-14, 78.5, 27.91], "approachNodeId": "g_jr_c2", "source": "ikebukuro-public-anchors" },
-    { "id": "jr-central-2-paid", "poiId": "jr-central-gate-2", "side": "paid", "level": "b1", "position": null, "source": "toshima-access-2011" },
+    { "id": "jr-central-2-paid", "poiId": "jr-central-gate-2", "side": "paid", "level": "b1", "position": [-14, 84, 27.91], "source": "jr-representative" },
     { "id": "jr-central-1-public", "poiId": "jr-central-gate-1", "side": "public", "level": "b1", "position": [-24, 59.5, 27.91], "approachNodeId": "g_jr_c1", "source": "ikebukuro-public-anchors" },
-    { "id": "jr-central-1-paid", "poiId": "jr-central-gate-1", "side": "paid", "level": "b1", "position": null, "source": "toshima-access-2011" },
+    { "id": "jr-central-1-paid", "poiId": "jr-central-gate-1", "side": "paid", "level": "b1", "position": [-23.48, 54, 27.91], "source": "jr-representative" },
     { "id": "jr-south-public", "poiId": "jr-south-gate", "side": "public", "level": "b1", "position": [-69.5, -30.5, 27.58], "approachNodeId": "g_jr_s", "source": "ikebukuro-public-anchors" },
     { "id": "jr-south-paid", "poiId": "jr-south-gate", "side": "paid", "level": "b1", "position": null, "source": "toshima-access-2011" },
     { "id": "jr-metropolitan-public", "poiId": "jr-metropolitan-gate", "side": "public", "level": "jr-2f", "position": null, "source": "toshima-sign-guide" },
@@ -36,8 +36,8 @@
     { "id": "jr-platform-2", "number": 2, "track": 2, "services": ["JS"], "direction": { "ja": "新宿方面", "en": "Toward Shinjuku" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
     { "id": "jr-platform-3", "number": 3, "track": 3, "services": ["JS"], "direction": { "ja": "赤羽・大宮方面", "en": "Toward Akabane and Ōmiya" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
     { "id": "jr-platform-4", "number": 4, "track": 4, "services": ["JA"], "direction": { "ja": "赤羽・大宮方面", "en": "Toward Akabane and Ōmiya" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
-    { "id": "jr-platform-5", "number": 5, "track": 5, "services": ["JY"], "direction": { "ja": "内回り・新宿方面", "en": "Inner loop toward Shinjuku" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
-    { "id": "jr-platform-6", "number": 6, "track": 6, "services": ["JY"], "direction": { "ja": "内回り・新宿方面", "en": "Inner loop toward Shinjuku" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-5", "number": 5, "track": 5, "services": ["JY"], "direction": { "ja": "内回り・新宿方面", "en": "Inner loop toward Shinjuku" }, "level": "jr-1f", "centerline": [[-23.1, 35], [-23.1, 103]], "width_m": 7, "length_m": 68, "source": "toshima-station-2f-b1" },
+    { "id": "jr-platform-6", "number": 6, "track": 6, "services": ["JY"], "direction": { "ja": "内回り・新宿方面", "en": "Inner loop toward Shinjuku" }, "level": "jr-1f", "centerline": [[-14.9, 35], [-14.9, 103]], "width_m": 7, "length_m": 68, "source": "toshima-station-2f-b1" },
     { "id": "jr-platform-7", "number": 7, "track": 7, "services": ["JY"], "direction": { "ja": "外回り・上野方面", "en": "Outer loop toward Ueno" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" },
     { "id": "jr-platform-8", "number": 8, "track": 8, "services": ["JY"], "direction": { "ja": "外回り・上野方面", "en": "Outer loop toward Ueno" }, "level": "jr-1f", "centerline": null, "width_m": null, "length_m": null, "source": "toshima-station-2f-b1" }
   ],
@@ -49,6 +49,11 @@
   ],
   "paidAreas": [
     { "id": "jr-south-paid-hall", "level": "b1", "source": "jr-representative" }
+  ],
+  "waypoints": [
+    { "id": "jr-central-1-landing", "level": "jr-1f", "position": [-23.48, 43, 32.21], "source": "jr-representative" },
+    { "id": "jr-central-2-landing", "level": "jr-1f", "position": [-14, 95, 32.21], "source": "jr-representative" },
+    { "id": "jr-island-5-6", "level": "jr-1f", "position": [-19, 64, 32.21], "source": "jr-representative" }
   ],
   "connectors": [
     { "from": "jr-north-public", "to": "jr-north-paid", "kind": "gate", "source": "toshima-sign-guide" },
@@ -65,8 +70,11 @@
     { "from": "jr-north-paid", "to": "jr-island-7-8", "kind": "stairs", "source": "toshima-station-2f-b1" },
     { "from": "jr-central-2-paid", "to": "jr-island-1-2", "kind": "stairs", "source": "toshima-station-2f-b1" },
     { "from": "jr-central-2-paid", "to": "jr-island-3-4", "kind": "stairs", "source": "toshima-station-2f-b1" },
-    { "from": "jr-central-2-paid", "to": "jr-island-5-6", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-central-2-paid", "to": "jr-central-2-landing", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-central-2-landing", "to": "jr-island-5-6", "kind": "walk", "via": [[-14, 97, 32.21], [-19, 97, 32.21]], "source": "jr-representative" },
     { "from": "jr-central-2-paid", "to": "jr-island-7-8", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-central-1-paid", "to": "jr-central-1-landing", "kind": "stairs", "source": "toshima-station-2f-b1" },
+    { "from": "jr-central-1-landing", "to": "jr-island-5-6", "kind": "walk", "via": [[-23.48, 41, 32.21], [-19, 41, 32.21]], "source": "jr-representative" },
 
     { "from": "jr-south-paid-hall", "to": "jr-island-1-2", "kind": "stairs", "source": "toshima-station-2f-b1" },
     { "from": "jr-south-paid-hall", "to": "jr-island-1-2", "kind": "escalator", "source": "toshima-station-2f-b1" },
@@ -90,8 +98,8 @@
     { "from": "jr-island-1-2", "to": "jr-platform-2", "kind": "walk", "source": "jr-representative" },
     { "from": "jr-island-3-4", "to": "jr-platform-3", "kind": "walk", "source": "jr-representative" },
     { "from": "jr-island-3-4", "to": "jr-platform-4", "kind": "walk", "source": "jr-representative" },
-    { "from": "jr-island-5-6", "to": "jr-platform-5", "kind": "walk", "source": "jr-representative" },
-    { "from": "jr-island-5-6", "to": "jr-platform-6", "kind": "walk", "source": "jr-representative" },
+    { "from": "jr-island-5-6", "to": "jr-platform-5", "kind": "walk", "via": [[-23.1, 64, 32.21]], "source": "jr-representative" },
+    { "from": "jr-island-5-6", "to": "jr-platform-6", "kind": "walk", "via": [[-14.9, 64, 32.21]], "source": "jr-representative" },
     { "from": "jr-island-7-8", "to": "jr-platform-7", "kind": "walk", "source": "jr-representative" },
     { "from": "jr-island-7-8", "to": "jr-platform-8", "kind": "walk", "source": "jr-representative" }
   ],
@@ -109,6 +117,7 @@
     { "id": "isp-access-corroboration", "url": "https://secure02.red.shared-server.net/www.zenshinza.com/stage_guide6/2024-05zenshinza-kabuki/ikebukuro-map02.pdf", "read_date": "2026-11-26 JST", "terms_ref": "UNKNOWN", "scope": "Hosted copy of an Ikebukuro Shopping Park access sheet. Corroborates stairs at North/Central 2 and escalator/lift access at Central 1. Host reuse status is UNKNOWN." }
   ],
   "gaps": [
+    "The first playable island is 5/6 via Central 1 and Central 2. Paid geometry follows the representative Yamanote sample with separate boarding goals and a generic canopy.",
     "The three PLATEAU-derived public anchors locate the B1 approaches. Exact fare thresholds, paid endpoints and North/Metropolitan public seam coordinates are GAPs. Central 1's existing opening tie is weaker than Central 2's.",
     "1F and 2F labels are sourced. Their z_m values are nominal render heights. Exact platform centerlines, widths, lengths, paid concourse shapes and device landings are GAPs.",
     "The connector records describe preview adjacency and device categories. Exact counts, landing positions, escalator directions and gate hours are GAPs. The south paid hall groups shared access from Central 1 and South.",
