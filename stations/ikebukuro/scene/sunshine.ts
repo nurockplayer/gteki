@@ -12,7 +12,7 @@ import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources 
 import floorData from "../data/depato-floors.json";
 import { createContextMaterial } from "./context.ts";
 import { buildDepatoInterior } from "./depato/interior.ts";
-import { depatoBundle, depatoLayout, type PlanPoint } from "./depato/layout.ts";
+import { depatoBundle, depatoLayout, readDepatoFloors, type PlanPoint } from "./depato/layout.ts";
 import { LANDMARK_FACADE, LANDMARK_SIGN } from "./landmark-style.ts";
 
 type Point = readonly [number, number];
@@ -52,9 +52,10 @@ const interiorSites = [
   { site: stores[2], levels: ["B1", "1F"], aisleX: 786, from: 38 },
 ];
 
-function sunshineLayouts() {
+const floorStores = readDepatoFloors(floorData);
+export function sunshineLayouts() {
   return interiorSites.map(({ site, levels, aisleX, from }) => {
-    const store = floorData.stores.find(row => row.id === site.id)!;
+    const store = floorStores.find(row => row.id === site.id)!;
     const plan = depatoLayout({
       store: { ...store, floors: store.floors.filter(floor => levels.includes(floor.level)).map(floor => ({ ...floor, tenants: floor.tenants.slice(0, 24) })) },
       footprint: site.footprint.map(([u, v]) => [...point(u, v)] as PlanPoint),
