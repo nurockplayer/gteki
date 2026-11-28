@@ -1,10 +1,10 @@
 import type * as T from "three";
-import type { SceneContext } from "@gteki/scene-api";
+import type { InteractableSpec, SceneContext } from "@gteki/scene-api";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { buildEscalator } from "../../../../apps/web/src/explorer/greyboxConnectors.ts";
 import { cutRegions, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
 import { buildCrowd, type Lane } from "../crowd.ts";
-import type { DepatoLayout } from "./layout.ts";
+import type { DepatoLayout, PlanPoint } from "./layout.ts";
 import { LANDMARK_FACADE, LANDMARK_STREET_BAND, LANDMARK_SIGN } from "../landmark-style.ts";
 
 /** AD 2026-11-22 JST: one neutral retail kit, baked pools, no scene lights. */
@@ -21,12 +21,9 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     if (support) mesh.userData.gtekiStairWalkSupport = true;
     physicalGeometry.push(g); target.push(mesh);
   };
-  const shape = (y: number, hole: boolean, ceiling = false) => {
-    const s = new THREE.Shape(plan.input.footprint.map(([x,z]) => new THREE.Vector2(x,-z)));
-    if (hole) {
-      const { x, from, to, width } = plan.stair;
-      s.holes.push(new THREE.Path([[x-width/2,-from],[x+width/2,-from],[x+width/2,-to],[x-width/2,-to]].map(([x,z]) => new THREE.Vector2(x!,z!))));
-    }
+  const shape = (footprint: PlanPoint[], y: number, holes: PlanPoint[][], ceiling = false) => {
+    const s = new THREE.Shape(footprint.map(([x,z]) => new THREE.Vector2(x,-z)));
+    for (const hole of holes) s.holes.push(new THREE.Path(hole.map(([x,z]) => new THREE.Vector2(x,-z))));
     const g = new THREE.ShapeGeometry(s).toNonIndexed(); g.rotateX(-Math.PI/2); g.translate(0,y,0);
     if(ceiling){
       // GTAO's front-face depth pass must see the underside, just like the main render.
@@ -38,10 +35,10 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   const cube = (x:number,y:number,z:number,w:number,h:number,d:number,yaw=0) => {
     const g = new THREE.BoxGeometry(w,h,d).toNonIndexed(); g.rotateY(yaw); g.translate(x,y,z); return g;
   };
-  const walls = (level:string, y:number, clear:number) => {
+  const walls = (footprint:PlanPoint[], level:string, y:number, clear:number) => {
     const pieces:T.BufferGeometry[]=[];
-    for (let i=0;i<plan.input.footprint.length;i++) {
-      const a=plan.input.footprint[i]!, b=plan.input.footprint[(i+1)%plan.input.footprint.length]!;
+    for (let i=0;i<footprint.length;i++) {
+      const a=footprint[i]!, b=footprint[(i+1)%footprint.length]!;
       const length=Math.hypot(b[0]-a[0],b[1]-a[1]);
       const cuts=plan.input.entrances.filter(e=>e.level===level).flatMap(e=>{
         const t=((e.point[0]-a[0])*(b[0]-a[0])+(e.point[1]-a[1])*(b[1]-a[1]))/length**2;
@@ -57,11 +54,24 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     }
     const merged=mergeGeometries(pieces); pieces.forEach(g=>g.dispose()); return merged;
   };
+  const well = ({x,from,to,width}:typeof plan.stair):PlanPoint[] =>
+    [[x-width/2,from],[x+width/2,from],[x+width/2,to],[x-width/2,to]];
+  const lift = plan.input.lift;
+  const tobu = plan.input.store.id==="tobu-ikebukuro";
+  const interactables:InteractableSpec[] = [];
   const levels=plan.floors.map((floor,index)=>{
     const y=plan.height(floor.level), food=floor.category==="food-hall" || floor.category==="sweets", clear=food?3.1:3.8;
-    const wallHeight=index+1<plan.floors.length?plan.height(plan.floors[index+1]!.level)-y:clear;
-    const floorG=shape(y,index>0), ceilingMesh=new THREE.Mesh(shape(y+clear,index+1<plan.floors.length,true)), wallG=walls(floor.level,y,wallHeight);
-    if(plan.input.store.id==="tobu-ikebukuro" && floor.level==="B1"){
+    const plate=plan.plate(floor.level), bank=plan.bank(floor.level), below=plan.floors[index-1], above=plan.floors[index+1];
+    const incoming=below && plan.bank(below.level), outgoing=above && bank;
+    const wallHeight=above?plan.height(above.level)-y:clear;
+    const roof:PlanPoint[]|undefined=plan.input.upperBank?.transfer===floor.level ?
+      [[-114,-103],[-106,-103],[-106,-81],[-114,-81]] : undefined;
+    const ceilingHoles=outgoing?[well(outgoing)]:[];
+    if(roof)ceilingHoles.push(roof);
+    const floorG=shape(plate.footprint,y,incoming?[well(incoming)]:[]);
+    const ceilingMesh=new THREE.Mesh(shape(plate.footprint,y+clear,ceilingHoles,true));
+    const wallG=walls(plate.footprint,floor.level,y,wallHeight);
+    if(tobu && floor.level==="B1"){
       // The x18 station stairs cross Tobu's illustrative B1 ceiling.
       const left=-111, right=-90, front=-159.5, back=-148;
       const resources:PortalCutResources={geometries:[],materials:[],portalMeshes:new Map(),originals:new Map(),clippedMeshes:[],instances:[]};
@@ -71,17 +81,27 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     }
     const ceilingG=ceilingMesh.geometry;
     physical(floorG.clone(),walkable); physical(ceilingG.clone(),colliders); physical(wallG.clone(),colliders);
-    if(index>0){
+    if(incoming){
+      const {x,from,to,width}=incoming;
       // The follow boom must clear the upper floor even while its endpoint is over the well.
-      physical(cube(plan.stair.x,y+0.08,(plan.stair.from+plan.stair.to)/2,plan.stair.width,0.16,plan.stair.to-plan.stair.from),cameraBlockers);
+      physical(cube(x,y+0.08,(from+to)/2,width,0.16,to-from),cameraBlockers);
       cameraBlockers.at(-1)!.userData.gtekiCameraTargetOnly=true;
+      for(const side of [-1,1])physical(cube(x+side*2.13,y+0.55,(from+to)/2,0.025,1.1,to-from),colliders);
     }
-    if(index>0)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
-    for(const [x,z] of plan.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
-    return {floor,index,y,food,clear,floorG,ceilingG,wallG};
+    for(const [x,z] of plate.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
+    if(lift && (floor.level===lift.entrance || lift.destinations.includes(floor.level))){
+      const destinations=floor.level===lift.entrance?lift.destinations:[lift.entrance];
+      destinations.forEach((level,i)=>{
+        const x=lift.x+(i-(destinations.length-1)/2)*1.12;
+        interactables.push({id:`${plan.input.store.id}-lift-${floor.level}-${level}`,kind:"lift",layer:"fictional",simulated:true,
+          anchor:{x,y,z:lift.z-0.75},radiusM:0.55,steps:[],lift:{level,arrival:{x:lift.x,y:plan.height(level),z:lift.z-2}}});
+      });
+      physical(cube(lift.x,y+1.1,lift.z,2+(destinations.length-1)*1.12,2.2,0.12),colliders);
+    }
+    return {floor,index,y,food,clear,floorG,ceilingG,wallG,plate,bank,incoming,outgoing,roof};
   });
   const flights=levels.slice(1).flatMap((upper,i)=>{
-    const lower=levels[i]!, {x,from,to}=plan.stair;
+    const lower=levels[i]!, {x,from,to}=lower.bank;
     return [-1,1].map(side=>{
       const a=new THREE.Vector3(x+side*0.95,side<0?lower.y:upper.y,from);
       const b=new THREE.Vector3(x+side*0.95,side<0?upper.y:lower.y,to);
@@ -109,7 +129,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     physical(g.clone(),walkable);bridges.push(g);
   }
   let geometries:T.BufferGeometry[]=[], materials:T.Material[]=[], textures:T.Texture[]=[];
-  let groups:T.Group[]=[], landingGroups:T.Group[]=[], flightGroups:T.Group[]=[], loaded=false;
+  let groups:T.Group[]=[], shells:T.Mesh[][]=[], landingGroups:T.Group[]=[], flightGroups:T.Group[]=[], loaded=false;
   let avatar:{x:number;y:number;z:number}|null=null;
   let crowds:ReturnType<typeof buildCrowd>[]=[];
   const retain=<G extends T.BufferGeometry>(g:G)=>{geometries.push(g);return g;};
@@ -119,6 +139,13 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
   };
   const glass=()=>{const m=standard("#b4c4c0",0.32);m.transparent=true;m.opacity=0.28;m.depthWrite=false;m.metalness=0.08;return m;};
   const load=()=>{
+    const compactFoodCounters=ctx.quality==="low" && tobu;
+    const panel=(x:number,y:number,z:number,width:number,height:number,horizontal=false)=>{
+      const g=new THREE.PlaneGeometry(width,height).toNonIndexed();
+      g.rotateY(Math.PI/2);
+      if(horizontal)g.rotateZ(Math.PI/2);
+      return g.translate(x,y,z);
+    };
     // Allowed interim baked gradient: same 4.4 m tile as the downlight grid, no runtime pool lights.
     const pixels=new Uint8Array(64*64*4);
     for(let z=0;z<64;z++)for(let x=0;x<64;x++){
@@ -131,6 +158,10 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const boards=levels.flatMap(l=>[{ja:`${plan.input.store.name.ja} ${l.floor.level}`,en:l.floor.label.en},...l.floor.tenants]);
     const directoryStart=boards.length;
     boards.push(...plan.floors.map(f=>({ja:`${f.level} ${f.label.ja}`,en:`${f.level} ${f.label.en}`})));
+    const liftStart=boards.length;
+    if(lift)boards.push(...[...lift.destinations,lift.entrance].map(level=>({ja:`1番地 エレベーター ${level}`,en:`No. 1 lift • ${level}`})));
+    const roofRow=boards.length;
+    if(levels.some(l=>l.roof))boards.push({ja:"8F 屋上 スカイデッキ広場",en:"8F Sky Deck"});
     const fontPx=boards.length>100?9:18, rowHeight=fontPx*40/18;
     const canvas=typeof document!=="undefined"?document.createElement("canvas"):null;
     const slots:{x:number;y:number;width:number;height:number}[]=[];
@@ -142,8 +173,9 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       paint.fillStyle="#EFE9DD";paint.fillRect(0,0,1024,1024);paint.textAlign="center";
       let x=0,y=0,lineHeight=0;
       boards.forEach((b,i)=>{
-        const nameBoard=storeRows.includes(i), large=i===parcoB1Row || (nameBoard&&boards.length>100);
-        const px=large?36:fontPx, height=large?80:rowHeight;
+        const nameBoard=storeRows.includes(i), large=i===parcoB1Row || (!lift&&nameBoard&&boards.length>100);
+        const directory=lift && (nameBoard || i>=directoryStart);
+        const px=large?36:directory?18:fontPx, height=large?80:directory?40:rowHeight;
         paint.font=`600 ${px}px "GTEki Sign JP"`;const ja=paint.measureText(b.ja).width;
         paint.font=`600 ${px*LANDMARK_SIGN.enScale}px "GTEki Sign JP"`;const en=paint.measureText(b.en).width;
         const width=Math.min(1024,Math.ceil(Math.max(ja,en))+rowHeight*0.3);
@@ -168,6 +200,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     const matte=(mesh:T.Mesh)=>{depthTwins.push({mesh,twin:matteNormal,original:mesh.material as T.Material});return mesh;};
     let label=0;
     for(const l of levels){
+      const {bounds,footprint,contains,counters}=l.plate, {x:aisleX}=l.bank;
       const group=new THREE.Group(), landing=new THREE.Group();groups.push(group);landingGroups.push(landing);root.add(group,landing);
       const fm=basic("#d6cfc2");fm.map=pool;
       const floorPositions=l.floorG.getAttribute("position");
@@ -177,14 +210,14 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         const positions=g.getAttribute("position"), normals=g.getAttribute("normal"), colors:number[]=[];
         for(let v=0;v<positions.count;v++){
           // Keep the concourse-facing portal wall at its original station value.
-          const stationSide=i===1 && positions.getZ(v)<plan.bounds.front && normals.getZ(v)<-0.9;
+          const stationSide=i===1 && positions.getZ(v)<bounds.front && normals.getZ(v)<-0.9;
           const c=new THREE.Color(i===0?"#fff2dc":stationSide?"#9daaa7":"#776c60");colors.push(c.r,c.g,c.b);
         }
         g.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));
       });
       // Finish the slab's well reveals between the lower ceiling and upper floor.
-      if(l.index+1<levels.length){
-        const top=levels[l.index+1]!.y,bottom=l.y+l.clear,h=top-bottom,{x,from,to,width}=plan.stair;
+      if(l.outgoing){
+        const top=levels[l.index+1]!.y,bottom=l.y+l.clear,h=top-bottom,{x,from,to,width}=l.outgoing;
         const reveals=[...[-1,1].map(side=>cube(x+side*(width/2+0.04),(top+bottom)/2,(from+to)/2,0.08,h,to-from)),
           ...[from-0.04,to+0.04].map(z=>cube(x,(top+bottom)/2,z,width+0.16,h,0.08))];
         for(const g of reveals){const c=new THREE.Color("#c1b9aa");g.setAttribute("color",new THREE.Float32BufferAttribute(Array.from({length:g.getAttribute("position").count},()=>[c.r,c.g,c.b]).flat(),3));shell.push(g);}
@@ -194,14 +227,17 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       // Both store shells remain visible through the well and behind the landing camera.
       const floorMesh=matte(new THREE.Mesh(l.floorG,fm)),shellMesh=new THREE.Mesh(shellG,shellMat);
       floorMesh.name=`retail-floor-${l.floor.level}`;shellMesh.name=`retail-shell-${l.floor.level}`;
+      shells.push([floorMesh,shellMesh]);
       root.add(floorMesh,shellMesh);
-      const pad=cube(plan.aisleX,l.y-0.035,plan.stair.to+1,5,0.07,2);retain(pad);landing.add(matte(new THREE.Mesh(pad,fm)));
+      const arrival=l.incoming??l.bank;
+      const pad=cube(arrival.x,l.y-0.035,arrival.to+1,5,0.07,2);retain(pad);landing.add(matte(new THREE.Mesh(pad,fm)));
       const discs:{x:number;y:number;z:number}[]=[];
-      for(let z=Math.ceil(plan.bounds.front/4.4)*4.4;z<plan.bounds.back;z+=4.4)for(let x=Math.ceil(plan.bounds.left/4.4)*4.4;x<plan.bounds.right;x+=4.4){
-        if(plan.contains([x,z]) && !(Math.abs(x-plan.stair.x)<2.3 && z>plan.stair.from && z<plan.stair.to))discs.push({x,y:l.y+l.clear-0.025,z});
+      for(let z=Math.ceil(bounds.front/4.4)*4.4;z<bounds.back;z+=4.4)for(let x=Math.ceil(bounds.left/4.4)*4.4;x<bounds.right;x+=4.4){
+        const sky=l.roof && x>l.roof[0]![0] && x<l.roof[2]![0] && z>l.roof[0]![1] && z<l.roof[2]![1];
+        if(!sky && contains([x,z]) && !(Math.abs(x-l.bank.x)<2.3 && z>l.bank.from && z<l.bank.to))discs.push({x,y:l.y+l.clear-0.025,z});
       }
       instance(group,new THREE.CylinderGeometry(0.12,0.12,0.025,8),glow,discs);
-      const positions=plan.counters.map(([x,z])=>({x,y:l.y+0.475,z}));
+      const positions=counters.map(([x,z])=>({x,y:l.y+0.475,z}));
       instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
       const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
       // Repeated shallow bays and a warm cove frame the main aisle without runtime lights.
@@ -210,8 +246,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         const cross=axis===0?1:0, lo=axis===0?plan.bounds.front:plan.bounds.left, hi=axis===0?plan.bounds.back:plan.bounds.right;
         for(let v=Math.ceil(lo/4.4)*4.4-2.2;v<hi;v+=4.4){
           if(v<=lo)continue;
-          const ends=plan.input.footprint.flatMap((a,i)=>{
-            const b=plan.input.footprint[(i+1)%plan.input.footprint.length]!;
+          const ends=footprint.flatMap((a,i)=>{
+            const b=footprint[(i+1)%footprint.length]!;
             return (a[cross]<=v&&b[cross]>v)||(b[cross]<=v&&a[cross]>v)?[a[axis]+(b[axis]-a[axis])*(v-a[cross])/(b[cross]-a[cross])]:[];
           }).sort((a,b)=>a-b);
           for(let i=0;i<ends.length;i+=2){
@@ -227,11 +263,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         lit.push(cube(plan.aisleX+side*1.48,l.y+l.clear-0.13,(from!+to!)/2,0.08,0.05,to!-from!));
       }
       }
-      const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6)=>{
+      const board=(x:number,y:number,z:number,row:number,yaw=0,width=3.8,height=0.6,backText=true)=>{
         // The B1 approach sees PARCO's header at a steep angle from the guide.
         const slot=slots[row]!, labelHeight=height*(row===parcoB1Row?0.9:0.6);
         const labelWidth=slot.width/slot.height*labelHeight, scale=Math.min(1,(width-0.1)/labelWidth);
-        for(const face of [0,1,-1]){
+        for(const face of backText?[0,1,-1]:[0,1]){
           const text=face!==0;
           const g=new THREE.PlaneGeometry(text?labelWidth*scale:width,text?labelHeight*scale:height).toNonIndexed(),uv=g.getAttribute("uv");
           for(let i=0;i<uv.count;i++){
@@ -242,14 +278,21 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         }
       };
       const contents:{x:number;y:number;z:number}[]=[];
-      plan.counters.forEach(([x,z],i)=>{
-        const side=x<plan.aisleX?-1:1, front=x-side*0.56;
+      counters.forEach(([x,z],i)=>{
+        const side=x<aisleX?-1:1, front=x-side*0.56;
         if(l.food){
-          glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
-          detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
-          lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
-          const rows=ctx.quality==="low"?3:10;
-          for(let j=0;j<rows;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*3.33/(rows-1)});
+          if(compactFoodCounters){
+            glassPieces.push(panel(front,l.y+0.76,z,4,0.38));
+            detail.push(panel(x+side*0.48,l.y+1.2,z,4,2.4));
+            lit.push(panel(x,l.y+0.59,z,3.96,1.06,true),panel(x+side*0.43,l.y+0.76,z,3.96,0.34),panel(front,l.y+0.95,z,3.96,0.06,true));
+            for(let j=0;j<3;j++)contents.push({x:x-0.3+(j%2)*0.32,y:l.y+0.68,z:z-1.7+j*1.665});
+          }else{
+            glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
+            detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
+            lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
+            const rows=ctx.quality==="low"?3:10;
+            for(let j=0;j<rows;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*3.33/(rows-1)});
+          }
         }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,2.8));
         board(x-side*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
       });
@@ -279,26 +322,55 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         for(const side of [-1,1])glassPieces.push(cube(e.point[0]+(front?side*1.8:-0.65),l.y+1.3,e.point[1]+(front?0.65:side*1.8),front?0.025:1.3,2.6,front?1.3:0.025));
       }
       // Non-emissive floor directory; underline marks this floor without a colour code.
-      for(const [z,yaw] of [[plan.stair.from-2,0],[plan.stair.to+2,Math.PI]]){
-        const x=plan.aisleX-3,rowHeight=Math.min(1,2/plan.floors.length);
-        plan.floors.forEach((_,i)=>board(x,l.y+2.3-i*rowHeight,z!,directoryStart+i,yaw!,3.8,0.95*rowHeight));
+      const directoryBanks=l.incoming && l.incoming!==l.bank?[l.incoming,l.bank]:[l.bank];
+      for(const bank of directoryBanks)for(const [z,yaw] of [[bank.from-2,0],[bank.to+2,Math.PI]]){
+        const x=bank.x-3,rowHeight=Math.min(1,2/plan.floors.length);
+        plan.floors.forEach((_,i)=>board(x,l.y+2.3-i*rowHeight,z!,directoryStart+i,yaw!,3.8,0.95*rowHeight,!tobu));
         const bottom=2.3-(plan.floors.length-1)*rowHeight-0.475*rowHeight;
         for(const side of [-1,1])frames.push(cube(x+side*1.8,l.y+bottom/2,z!,0.055,bottom,0.08));
-        frames.push(cube(x,l.y+2.3-(l.index+0.25)*rowHeight,z!+0.01,3.6,0.025,0.025));
+        const underline=l.y+2.3-(l.index+0.25)*rowHeight;
+        if(tobu){
+          const top=2.3+0.475*rowHeight, front=Math.cos(yaw!);
+          // Close the gaps behind the plates, with the lower rail projecting past the back.
+          detail.push(cube(x,l.y+(top+bottom)/2,z!-front*0.02,3.8,top-bottom,0.024));
+          frames.push(cube(x,l.y+bottom+0.02,z!,3.66,0.04,0.13));
+          frames.push(cube(x,underline-0.1*rowHeight,z!+front*0.01,3.6,0.018,0.008));
+        }else frames.push(cube(x,underline,z!+0.01,3.6,0.025,0.025));
       }
-      // Keep Seibu's B2 arrival sign below the HUD in the follow-camera view.
+      // Place the Tobu sign in the diagonal walk off the up escalator, below the HUD.
       const seibuB2=plan.input.store.id==="seibu-ikebukuro" && l.floor.level==="B2";
-      board(plan.aisleX,l.y+l.clear-(seibuB2?0.83:0.48),plan.stair.to+(seibuB2?6:5),label,0,3.4,0.45);
-      if(l.index>0)for(const side of [-1,1])glassPieces.push(cube(plan.aisleX+side*2.13,l.y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from));
+      for(const bank of directoryBanks){
+        if(tobu && l.index>=3)board(bank.x+3.3,l.y+2.45,bank.to+7.2,label,0,3.4,0.45);
+        else board(bank.x,l.y+l.clear-(seibuB2?0.83:0.48),bank.to+(seibuB2?6:5),label,0,3.4,0.45);
+      }
+      if(l.incoming){
+        const {x,from,to}=l.incoming;
+        for(const side of [-1,1])glassPieces.push(cube(x+side*2.13,l.y+0.55,(from+to)/2,0.025,1.1,to-from));
+      }
+      if(lift && (l.floor.level===lift.entrance || lift.destinations.includes(l.floor.level))){
+        const entrance=l.floor.level===lift.entrance, doors=entrance?lift.destinations.length:1;
+        for(let i=0;i<doors;i++){
+          const x=lift.x+(i-(doors-1)/2)*1.12;
+          frames.push(cube(x,l.y+1.1,lift.z,1.1,2.2,0.12));
+          detail.push(cube(x,l.y+1.02,lift.z-0.065,0.009,2.04,0.01));
+          board(x,l.y+2.4,lift.z-0.07,liftStart+(entrance?i:lift.destinations.length),Math.PI,1.1,0.38);
+        }
+      }
+      if(l.roof){
+        const [[left,front],,[right,back]]=l.roof as [PlanPoint,PlanPoint,PlanPoint,PlanPoint];
+        const deck=retain(cube((left+right)/2,l.y,(front+back)/2,right-left,0.025,back-front));
+        group.add(new THREE.Mesh(deck,basic("#aa9a85")));
+        board((left+right)/2,l.y+2.2,front,roofRow,0,3.4,0.5);
+      }
       if(bays.length){const g=retain(mergeGeometries(bays));bays.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,basic("#e5d9c4")));}
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
       // Station whole-body people use short, narrow counter-side paths, away from circulation.
       const lanes:Record<string,Lane>={};
-      const paths=plan.counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
-        const id=`retail-${i}`,side=x<plan.aisleX?-1:1,px=x+side*1.3;
+      const paths=counters.filter(([x])=>Math.abs(x-aisleX)>6).map(([x,z],i)=>{
+        const id=`retail-${i}`,side=x<aisleX?-1:1,px=x+side*1.3;
         lanes[id]={stepM:3,left:[0.2],right:[0.2]};
         return {id,from:`${id}-a`,to:`${id}-b`,verification:"verified",geometry:[{x:px,y:-z+1.3,z:l.y},{x:px,y:-z-1.3,z:l.y}]};
-      }).filter(p=>p.geometry.every(p=>plan.contains([p.x,-p.y])));
+      }).filter(p=>p.geometry.every(p=>contains([p.x,-p.y])));
       const crowd=buildCrowd(THREE,paths,(x,y,z)=>new THREE.Vector3(x,z,-y),8,envMap!,lanes);
       crowds.push(crowd);group.add(crowd.group);
       if(detail.length){const g=mergeGeometries(detail);retain(g);detail.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,counterMat));}
@@ -337,8 +409,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
     bridges.forEach((g,i)=>groups[levels.findIndex(l=>l.floor.level===plan.input.entrances[i]!.level)]!.add(new THREE.Mesh(g,basic("#bdb5a7"))));
     root.userData.depato={atlasPx:1024,boardContrast:10.625628349541163,floorRoughness:[0.85,0.85],clearHeights:levels.map(l=>l.clear),drawCallsPerFloor:groups.map((g,i)=>g.children.length+2*levels.slice(0,-1).filter(l=>l.index===i||l.index+1===i).length),font:'GTEki Sign JP',jaCapHeightM:0.15};
   };
-  const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];landingGroups=[];flightGroups=[];loaded=false;};
-  return {root,connectorRoot,walkable,colliders,cameraBlockers,setAvatar(p:typeof avatar){avatar=p;},
+  const unload=()=>{depthTwins.length=0;crowds.forEach(c=>c.dispose());crowds=[];root.clear();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());geometries=[];materials=[];textures=[];groups=[];shells=[];landingGroups=[];flightGroups=[];loaded=false;};
+  return {root,connectorRoot,walkable,colliders,cameraBlockers,interactables,setAvatar(p:typeof avatar){avatar=p;},
     update(camera:T.Camera,dt=0,elapsed=0,active=true){
       if(!active){if(loaded)unload();return;}
       const cameraP=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cameraP.x,y:cameraP.y-2,z:cameraP.z};
@@ -349,6 +421,7 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       groups.forEach((g,i)=>{g.visible=i===floor;if(g.visible)crowds[i]!.update(dt,elapsed);});landingGroups.forEach(g=>g.visible=false);
       const riding=p.y>levels[floor]!.y+0.25 && floor+1<levels.length;
       if(riding)landingGroups[floor+1]!.visible=true;
+      if(plan.input.upperBank)shells.forEach((meshes,i)=>meshes.forEach(mesh=>{mesh.visible=Math.abs(i-floor)<=1;}));
       flightGroups.forEach((g,i)=>g.visible=i===floor || i+1===floor);
     },
     dispose(){unload();for(const g of physicalGeometry)g.dispose();for(const l of levels){l.floorG.dispose();l.ceilingG.dispose();l.wallG.dispose();}bridges.forEach(g=>g.dispose());collisionMaterial.dispose();},

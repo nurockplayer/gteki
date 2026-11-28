@@ -13,6 +13,8 @@ updated: 2026-11-23 JST
 
 The station module’s optional `previewBundle` export is applied in `apps/web/src/registry.ts` before search/router construction when `StationEntry.load(true)` is requested. The UI passes its existing next flag. Default loads use the original bundle and scene.
 
+Tobu (2026-11-28 JST) uses the existing 1F store doorway and a preview sidewalk from Exit 18. Its searchable B2–15F floor plates use two escalator banks with an 8F transfer beside the Sky Deck. The signed No. 1 lift connects 1F with 11F–15F. Circulation and floor outlines are authored preview geometry. The B1 station tie remains skipped.
+
 Sunshine City (2026-11-26 JST) lives in `stations/ikebukuro/scene/sunshine.ts`. The next preview adds surface routes from Exit 35 via Sunshine 60 Street to the west plaza and the three exterior doors. The street mesh and graph share the same authored centreline. The existing PLATEAU shaft supplies the Sunshine 60 skyline, while the official 1F directory identifies its lobby entrance, ALPA’s west entrance, and World Import Mart’s north-side entrance. The first interior batch opens ALPA and World Import Mart B1/1F and Sunshine 60 B2/B1/1F, with searchable floor concourses and representative escalators based on the official directory.
 
 Shinjuku's `stations/shinjuku/scene/depato.ts` uses the same kit and routes searches to PLATEAU-fitted 1F doors. NEWoMan uses Exit 3, Takashimaya uses Exit 4, and the other nine stores use Exit 1. The approaches and entrance sources are recorded in `stations/shinjuku/data/depato-rollout.json`. Shinjuku's surface layer opens the preview doors and clears guard rails along the routes. Updated 2026-11-25 JST.

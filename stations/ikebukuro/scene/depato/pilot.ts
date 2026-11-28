@@ -1,5 +1,5 @@
 import type { BuildScene, SceneContext, StationScene } from "@gteki/scene-api";
-import type { StationBundle } from "@gteki/schema";
+import type { Edge, Poi, StationBundle } from "@gteki/schema";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
 import footprintData from "../../data/depato-footprint.json";
 import floorData from "../../data/depato-floors.json";
@@ -12,6 +12,18 @@ import { buildDepatoInterior } from "./interior.ts";
 // Source vertices are unchanged; this is a footprint, not a copied store floor plan.
 const footprint = footprintData.footprint as PlanPoint[];
 const store = floorData.stores.find(s => s.id === "seibu-ikebukuro")!;
+const tobuId = "tobu-ikebukuro";
+const upperBank = { transfer: "8F", x: -70, from: -142, to: -130 };
+const towerPlate: PlanPoint[] = [[-78, -145], [-51, -145], [-52, -118], [-78, -118]];
+const lift = {
+  x: -75.5, z: -120.5, entrance: "1F", destinations: ["11F", "12F", "13F", "14F", "15F"],
+  source: "https://www.tobu-dept.jp/ikebukuro/event/detail/8830",
+};
+// Street waypoints from the Exit 18 stair top around the northwest corner to the existing retail apron.
+const tobuApproach = [
+  [-108, -155, 33.14], [-120, -150, 33.09], [-125, -122, 32.98],
+  [-126, -81, 32.8], [-125, -49, 32.68],
+];
 const plan = () => depatoLayout({
   store: { ...store, floors: store.floors.filter((f,i,all) => ["B2", "B1", "1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) },
   footprint, elevations: { "1F": 32.2 },
@@ -22,18 +34,28 @@ const plan = () => depatoLayout({
 // Instance placement only: the accepted kit materials, lights and proportions are shared.
 const rolloutPlans = () => rolloutData.stores.map(row => {
   const store = floorData.stores.find(s => s.id === row.id)!;
-  const layout = depatoLayout({ ...row, footprint: row.footprint as PlanPoint[],
+  const footprint = row.footprint as PlanPoint[];
+  const tobu = row.id === tobuId;
+  const layout = depatoLayout({ ...row, footprint,
     entrances: row.entrances.map(e=>({ ...e, point: e.point as PlanPoint, inward: e.inward as PlanPoint })),
+    ...(tobu ? { upperBank, lift, floorFootprint: (level: string) => Number.parseInt(level) >= 9 ? towerPlate : footprint } : {}),
     store: { ...store, floors: store.floors.filter((f,i,all) =>
-      ["B2","B1","1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i)
+      (tobu || ["B2","B1","1F"].includes(f.level)) && all.findIndex(other => other.level === f.level) === i)
       // Tobu's illustrative counter labels must fit the shared 1024px atlas.
-      .map(f => row.id === "tobu-ikebukuro" ? { ...f, tenants: f.tenants.slice(0,40) } : f) } });
+      .map(f => tobu ? { ...f, tenants: f.tenants.slice(0,40) } : f) } });
   // Keep accepted counter positions when a station entrance tie is skipped.
-  if (row.skippedEntrances) layout.counters = layout.counters.filter(([,z]) =>
-    !row.skippedEntrances.some(e => Math.abs(e.point[1]! - z) < 4));
+  if (row.skippedEntrances) for (const {level} of layout.floors) {
+    const plate = layout.plate(level);
+    plate.counters = plate.counters.filter(([,z]) =>
+      !row.skippedEntrances.some(e => Math.abs(e.point[1]! - z) < 4));
+  }
+  if (tobu) {
+    const terrace = layout.plate("8F");
+    terrace.counters = terrace.counters.filter(([x,z])=>x>-106 || z<-105 || z>-79);
+  }
   // n_h__n_c spans (66,-113)–(71.5,-116.5). Reserve its bounds plus
   // 0.5m walker clearance and the shared counter's 0.55m/2m half extents.
-  if (row.id === "ikebukuro-parco") layout.counters = layout.counters.filter(([x,z]) =>
+  if (row.id === "ikebukuro-parco") layout.plate("B1").counters = layout.counters.filter(([x,z]) =>
     x < 64.95 || x > 72.55 || z < -119 || z > -110.5);
   return layout;
 });
@@ -44,9 +66,34 @@ export function previewBundle(bundle: StationBundle): StationBundle {
   const layout = plan();
   const streets = rolloutData.stores.map(row => ({ ...street, id: row.street.id,
     position: { x: row.street.point[0]!, y: -row.street.point[1]!, z: row.elevations["1F"] } }));
-  const preview = rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, layout));
+  const approach = tobuApproach.map(([x,z,y],i) => ({
+    ...street, id: `depato-tobu-approach-${i}`, position: {x:x!, y:-z!, z:y!},
+  }));
+  const route = [bundle.nodes.find(n=>n.id==="x18")!, ...approach, streets.find(n=>n.id==="depato-tobu-street")!];
+  const approachEdges: Edge[] = route.slice(1).map((b,i) => {
+    const a = route[i]!;
+    return { id: `${a.id}__${b.id}`, from:a.id, to:b.id, direction:"both", mode:"walk",
+      lengthM:Math.hypot(b.position.x-a.position.x,b.position.y-a.position.y,b.position.z!-a.position.z!),
+      geometry:[a.position,b.position], paid:false, crossesFareBoundary:false, wheelchair:true, steps:false,
+      hours:null, closed:false, verification:"geometry_only", accessEvidence:null,
+      geometryEvidence:{sourceIds:[],method:"Authored street approach from the modeled Exit 18 landing to the Tobu preview entrance",checkedDate:"2026-11-28"},
+    };
+  });
+  const preview = rolloutPlans().reduce(depatoBundle, depatoBundle({
+    ...bundle, nodes: [...bundle.nodes, street, ...streets, ...approach], edges:[...bundle.edges,...approachEdges],
+  }, layout));
+  const tobu = floorData.stores.find(s=>s.id===tobuId)!;
+  const tobuFloors: Poi[] = tobu.floors.map(floor=>{
+    const goal = preview.nodes.find(n=>n.id===`depato-${tobuId}-${floor.level}-aisle`)!;
+    return {
+      id:`${tobuId}-${floor.level}`,category:"shop",floorId:goal.floorId,displayPosition:goal.position,connectorNodeIds:[goal.id],
+      names:[{lang:"ja",text:`${tobu.name.ja} ${floor.level}`},{lang:"en",text:`${tobu.name.en} ${floor.level}`}],
+      aliases:[{lang:"ja",text:floor.label.ja},{lang:"en",text:floor.label.en}],paid:false,
+      evidence:{sourceIds:[],method:`Public Tobu floor directory; preview circulation is illustrative. ${floor.source}`,checkedDate:floor.read},
+    };
+  });
   const original = bundle.pois.find(p => p.id === layout.input.poiId)!;
-  return { ...preview, pois: preview.pois.map(p => p.id !== layout.input.poiId ? p : {
+  return { ...preview, pois: [...preview.pois, ...tobuFloors].map(p => p.id !== layout.input.poiId ? p : {
     ...p, floorId: original.floorId, displayPosition: original.displayPosition, connectorNodeIds: [layout.input.entrances[0]!.outsideNode],
     evidence: {
       sourceIds: [...original.evidence.sourceIds, layout.input.sourceId, "toshima-underground-guide-2022"],
@@ -105,7 +152,7 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
     if(outside.inOut === "outside") cut.accepts = normal => Math.abs(normal.y) < 0.5;
     return cut;
   }));
-  const tobu = layouts.find(p => p.input.store.id === "tobu-ikebukuro")!;
+  const tobu = layouts.find(p => p.input.store.id === tobuId)!;
   const { x, to, width } = tobu.stair;
   const b1 = tobu.height("B1");
   // The original station partitions cross the escalator landing and its turn into the west aisle.
@@ -136,22 +183,40 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance, ...rolloutRooms, ...rolloutDoors, tobuLanding], resources);
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p=>[p.input.store.name.ja,p.input.store.name.en,...p.floors.flatMap(f=>[f.label.ja,f.label.en,...f.tenants.flatMap(t=>[t.ja,t.en])])]).join(""));
   const interiors = layouts.map(p=>buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
+  const road = new THREE.BufferGeometry();
+  const roadNodes = ["x18", ...tobuApproach.map((_,i)=>`depato-tobu-approach-${i}`), "depato-tobu-street"]
+    .map(id=>ctx.bundle.nodes.find(n=>n.id===id)!.position)
+    .map(p=>new THREE.Vector3(...ctx.enuToRenderer({...p,z:p.z!})));
+  const sides = roadNodes.map((p,i)=>{
+    const a=roadNodes[Math.max(0,i-1)]!, b=roadNodes[Math.min(roadNodes.length-1,i+1)]!;
+    const offset=new THREE.Vector3(b.z-a.z,0,a.x-b.x).normalize().multiplyScalar(1.6);
+    return [p.clone().add(offset),p.clone().sub(offset)] as const;
+  });
+  road.setAttribute("position",new THREE.Float32BufferAttribute(sides.slice(1).flatMap(([c,d],i)=>{
+    const [a,b]=sides[i]!;
+    return [a,b,d,a,d,c].flatMap(p=>p.toArray());
+  }),3));
+  road.computeVertexNormals();
+  const pavement = new THREE.Mesh(road,new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));
+  pavement.visible=false;
+  pavement.userData.gteki_role="floor";
   let avatar: {x:number;y:number;z:number}|null=null;
   const focus = scene.setCameraFocus;
   scene.root.add(...interiors.flatMap(i=>[i.root,i.connectorRoot]));
   const update = scene.update, dispose = scene.dispose;
-  return { ...scene, walkable: [...scene.walkable, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
+  return { ...scene, walkable: [...scene.walkable,pavement,...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
+    interactables: [...(scene.interactables ?? []),...interiors.flatMap(i=>i.interactables)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(i=>i.cameraBlockers)],
     setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); avatar=args[3] ?? null; interiors.forEach(i=>i.setAvatar(avatar)); },
     update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if(camera){
       const cp=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cp.x,y:cp.y-2,z:cp.z};
-      const distances=layouts.map(l=>l.contains([p.x,p.z]) && p.y>=l.height(l.floors[0]!.level)-1 && p.y<=l.height("1F")+4.1 ? 0 :
+      const distances=layouts.map(l=>l.contains([p.x,p.z]) && p.y>=l.height(l.floors[0]!.level)-1 && p.y<=l.height(l.floors.at(-1)!.level)+4.1 ? 0 :
         Math.min(...l.input.entrances.map(e=>Math.hypot(p.x-e.point[0],p.z-e.point[1],p.y-l.height(e.level)))));
       const active=distances.indexOf(Math.min(...distances));
       // Release the previous store before a neighbour allocates its detail.
       interiors.forEach((i,n)=>{if(n!==active)i.update(camera,dt,elapsed,false);});
       interiors[active]!.update(camera,dt,elapsed);
     } },
-    dispose() { disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); dispose(); },
+    dispose() { road.dispose(); pavement.material.dispose(); disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); dispose(); },
   };
 }
