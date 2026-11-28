@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import ikebukuroFloors from "../../ikebukuro/data/depato-floors.json";
-import { readDepatoFloors } from "../../ikebukuro/scene/depato/layout.ts";
+import { readDepatoFloors, type DepatoLayout } from "../../ikebukuro/scene/depato/layout.ts";
 import { ikebukuroDepatoLayouts } from "../../ikebukuro/scene/depato/pilot.ts";
 import { sunshineLayouts } from "../../ikebukuro/scene/sunshine.ts";
 import shinjukuFloors from "../data/depato-floors.json";
@@ -26,17 +26,23 @@ it("reads version-1 depato tenant metadata and prints the preview floor inventor
     { level: original!.level, section_id: "annex", tenant_coverage: "partial", tenants: [tenant] },
   ]);
 
-  const layouts = [...shinjukuDepatoLayouts, ...ikebukuroDepatoLayouts(), ...sunshineLayouts()];
+  const layouts: DepatoLayout[] = [...shinjukuDepatoLayouts, ...ikebukuroDepatoLayouts(), ...sunshineLayouts()];
   // The adapters retain each source label object, even when they slice a tenant list.
   // The renderer cycles once through that list before reusing a name on another counter.
-  const shown = new Map(layouts.flatMap(plan => plan.floors.map(floor =>
-    [floor.label, Math.min(floor.tenants.length, plan.counters.length)] as const)));
+  const shown = new Map(layouts.flatMap(plan => plan.floors.map(floor => {
+    const bays = plan.floorBays?.[floor.level];
+    const count = Math.min(floor.tenants.length, bays?.positions.length ?? plan.counters.length);
+    const missing = floor.tenants.length - count;
+    const capacityGap = bays ? `${missing} frontages / ${(missing * bays.width).toFixed(1)} m` : "";
+    return [floor.label, { count, capacityGap }] as const;
+  })));
   const inventory = [shinjukuFloors, ikebukuroFloors].flatMap(data =>
     readDepatoFloors(data).flatMap(store => store.floors.map(floor => [
       store.id, floor.level, floor.section_id ?? floor.label.en, floor.tenants.length,
-      floor.tenant_coverage, shown.get(floor.label) ?? 0,
+      floor.tenant_coverage, shown.get(floor.label)?.count ?? 0, shown.get(floor.label)?.capacityGap ?? "",
     ].join("\t"))));
-  console.log(["Store\tFloor\tSection or label\tListings\tCoverage\tShown (?next=1)", ...inventory].join("\n"));
+  console.log(["Store\tFloor\tSection or label\tListings\tCoverage\tShown (?next=1, reachable for compact layouts)\tCompact capacity gap",
+    ...inventory].join("\n"));
 });
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");

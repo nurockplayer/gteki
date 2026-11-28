@@ -75,7 +75,9 @@ export function depatoLayout(input: DepatoInput) {
   }
   return { input, bounds, floors, height, aisleX, stair, counters, contains };
 }
-export type DepatoLayout = ReturnType<typeof depatoLayout>;
+export type DepatoLayout = ReturnType<typeof depatoLayout> & {
+  floorBays?: Record<string, { width: number; positions: { x: number; z: number; facing: number }[] }>;
+};
 
 /** Preview-only graph, kept out of the published station's survey data. */
 export function depatoBundle(bundle: StationBundle, plan: DepatoLayout): StationBundle {

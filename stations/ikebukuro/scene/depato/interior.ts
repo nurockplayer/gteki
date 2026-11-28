@@ -77,8 +77,11 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       cameraBlockers.at(-1)!.userData.gtekiCameraTargetOnly=true;
     }
     if(index>0)for(const side of [-1,1])physical(cube(plan.aisleX+side*2.13,y+0.55,(plan.stair.from+plan.stair.to)/2,0.025,1.1,plan.stair.to-plan.stair.from),colliders);
-    for(const [x,z] of plan.counters) physical(cube(x,y+0.48,z,1.1,0.96,4),colliders);
-    return {floor,index,y,food,clear,floorG,ceilingG,wallG};
+    const floorBays=plan.floorBays?.[floor.level];
+    const counterWidth=floorBays?.width??4;
+    const counters=floorBays?.positions??plan.counters.map(([x,z])=>({x,z,facing:x<plan.aisleX?1:-1}));
+    for(const {x,z} of counters) physical(cube(x,y+0.48,z,1.1,0.96,counterWidth),colliders);
+    return {floor,index,y,food,clear,floorG,ceilingG,wallG,counters,counterWidth,floorBays};
   });
   const flights=levels.slice(1).flatMap((upper,i)=>{
     const lower=levels[i]!, {x,from,to}=plan.stair;
@@ -201,8 +204,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         if(plan.contains([x,z]) && !(Math.abs(x-plan.stair.x)<2.3 && z>plan.stair.from && z<plan.stair.to))discs.push({x,y:l.y+l.clear-0.025,z});
       }
       instance(group,new THREE.CylinderGeometry(0.12,0.12,0.025,8),glow,discs);
-      const positions=plan.counters.map(([x,z])=>({x,y:l.y+0.475,z}));
-      instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,4),counterMat,positions.map(p=>({...p,y:l.y+(l.food?0.29:0.475)})));
+      const positions=l.counters.map(({x,z})=>({x,y:l.y+(l.food?0.29:0.475),z}));
+      instance(group,new THREE.BoxGeometry(1.1,l.food?0.58:0.95,l.counterWidth),counterMat,positions);
       const detail:T.BufferGeometry[]=[], frames:T.BufferGeometry[]=[], signs:T.BufferGeometry[]=[], glassPieces:T.BufferGeometry[]=[], bays:T.BufferGeometry[]=[], lit:T.BufferGeometry[]=[];
       // Repeated shallow bays and a warm cove frame the main aisle without runtime lights.
       if(!plan.input.entrances.some(e=>e.inward)) {
@@ -242,16 +245,17 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
         }
       };
       const contents:{x:number;y:number;z:number}[]=[];
-      plan.counters.forEach(([x,z],i)=>{
-        const side=x<plan.aisleX?-1:1, front=x-side*0.56;
+      l.counters.forEach(({x,z,facing},i)=>{
+        const side=-facing, front=x+facing*0.56;
         if(l.food){
           glassPieces.push(cube(front,l.y+0.76,z,0.025,0.38,4));
           detail.push(cube(x+side*0.48,l.y+1.2,z,0.12,2.4,4));
           lit.push(cube(x,l.y+0.58,z,1.06,0.025,3.96),cube(x+side*0.43,l.y+0.76,z,0.025,0.34,3.96),cube(front,l.y+0.95,z,0.06,0.035,3.96));
           const rows=ctx.quality==="low"?3:10;
           for(let j=0;j<rows;j++)for(let k=0;k<2;k++)contents.push({x:x-0.3+k*0.32,y:l.y+0.68,z:z-1.7+j*3.33/(rows-1)});
-        }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,2.8));
-        board(x-side*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),side<0?Math.PI/2:-Math.PI/2);
+        }else detail.push(cube(x+side*0.3,l.y+1.25,z,0.04,0.55,l.floorBays?l.counterWidth*0.7:2.8));
+        board(x+facing*0.58,l.y+2.2,z,label+(l.floor.tenants.length?1+i%l.floor.tenants.length:0),
+          facing*Math.PI/2,l.floorBays?l.counterWidth:3.8);
       });
       if(contents.length){
         const foodMesh=instance(group,ctx.quality==="low"?new THREE.BoxGeometry(0.13,0.12,0.13):new THREE.CapsuleGeometry(0.065,0.06,3,5),glow,contents.map(p=>({...p,scale:[1,0.7,1.4] as [number,number,number]})));
@@ -294,8 +298,8 @@ export function buildDepatoInterior(ctx: SceneContext, plan: DepatoLayout, envMa
       if(lit.length){const g=retain(mergeGeometries(lit));lit.forEach(g=>g.dispose());group.add(new THREE.Mesh(g,glow));}
       // Station whole-body people use short, narrow counter-side paths, away from circulation.
       const lanes:Record<string,Lane>={};
-      const paths=plan.counters.filter(([x])=>Math.abs(x-plan.aisleX)>6).map(([x,z],i)=>{
-        const id=`retail-${i}`,side=x<plan.aisleX?-1:1,px=x+side*1.3;
+      const paths=l.counters.filter(({x})=>Math.abs(x-plan.aisleX)>6).map(({x,z,facing},i)=>{
+        const id=`retail-${i}`,px=x+(l.floorBays?facing:-facing)*1.3;
         lanes[id]={stepM:3,left:[0.2],right:[0.2]};
         return {id,from:`${id}-a`,to:`${id}-b`,verification:"verified",geometry:[{x:px,y:-z+1.3,z:l.y},{x:px,y:-z-1.3,z:l.y}]};
       }).filter(p=>p.geometry.every(p=>plan.contains([p.x,-p.y])));
