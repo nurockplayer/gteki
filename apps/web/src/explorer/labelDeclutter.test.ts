@@ -61,13 +61,13 @@ describe("declutter", () => {
     expect([...declutter([item("b", 0, 0, base), item("a", 4, 0, base)])]).toEqual(["a"]);
   });
 
-  it("keeps the higher-ranked endpoint when start and destination overlap", () => {
+  it("keeps both endpoints when start and destination overlap", () => {
     const items = [
       item("exit", 0, 0, { klass: LABEL_CLASS.exit }),
       item("start", 6, 0, { klass: LABEL_CLASS.endpoint }),
       item("dest", 9, 2, { klass: LABEL_CLASS.endpoint }),
     ];
-    expect([...declutter(items)]).toEqual(["dest"]);
+    expect([...declutter(items)]).toEqual(["dest", "start"]);
   });
 
   it("never lets a lower-priority label displace a higher one, even if that frees more labels", () => {
@@ -147,10 +147,10 @@ describe("selected labels have first priority", () => {
     expect(keep.has("exit-a")).toBe(false);
   });
 
-  it("a selected label wins even when faded, search-only and unmeasured", () => {
+  it("selected labels win even when faded, search-only and unmeasured", () => {
     const sel = { klass: labelClass(true, "shop"), faded: true, routable: false, measured: false } as const;
     const items = [item("from", 0, 0, sel), item("to", 3, 0, sel), item("exit", 0, 0, { klass: LABEL_CLASS.exit })];
-    expect([...declutter(items)]).toEqual(["from"]);
+    expect([...declutter(items)]).toEqual(["from", "to"]);
   });
 });
 

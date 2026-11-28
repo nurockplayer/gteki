@@ -77,7 +77,8 @@ export const DECLUTTER_HOLD_PX = 4;
 
 /**
  * Ids of the labels to keep. Properties:
- * - no two kept labels intersect. Endpoints can sit flush so close route choices stay findable;
+ * - selected endpoints can overlap each other so both route choices stay findable.
+ *   Other labels clear all higher-priority labels;
  * - labels are considered in order of class, then clear before faded, then routable before search-only,
  *   then id, so a lower-priority label never takes the place of a higher one;
  * - the result depends only on the input (order of `items` does not matter).
@@ -98,8 +99,10 @@ export function declutter(items: readonly DeclutterItem[], options: DeclutterOpt
     // `gap` is the clearance kept to every placed label; one that was hidden needs the extra `hold` to come back.
     const gap = it.klass === LABEL_CLASS.endpoint ? 0 : it.wasVisible ? pad : pad + hold;
     let clear = true;
-    for (let i = 0; i < placed; i++) {
-      if (l < Rr[i]! + gap && r > L[i]! - gap && t < B[i]! + gap && b > T[i]! - gap) { clear = false; break; }
+    if (it.klass !== LABEL_CLASS.endpoint) {
+      for (let i = 0; i < placed; i++) {
+        if (l < Rr[i]! + gap && r > L[i]! - gap && t < B[i]! + gap && b > T[i]! - gap) { clear = false; break; }
+      }
     }
     if (!clear) continue;
     keep.add(it.id);
