@@ -1,4 +1,4 @@
-import type { BuildScene, SceneContext, StationScene } from "@gteki/scene-api";
+import type { BuildScene, SceneContext } from "@gteki/scene-api";
 import type { StationBundle } from "@gteki/schema";
 import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources } from "../../../../apps/web/src/explorer/portalCut.ts";
 import footprintData from "../../data/depato-footprint.json";
@@ -64,7 +64,7 @@ export function previewBundle(bundle: StationBundle): StationBundle {
 }
 
 /** One station hook: wrap context loading, open the station shell and attach the reusable kit. */
-export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
+export async function buildPilotScene(ctx: SceneContext, base: BuildScene, detailStores: ReturnType<typeof buildDepatoInterior>[]) {
   const THREE = ctx.THREE, layouts = ikebukuroDepatoLayouts(), layout = layouts[0]!;
   const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   const volume = (left: number, right: number, front: number, back: number, low: number, high: number): CutRegion => ({
@@ -139,22 +139,10 @@ export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
   cutRegions([scene.root, ...scene.walkable, ...(scene.colliders ?? [])], [room, entrance, ...rolloutRooms, ...rolloutDoors, tobuLanding], resources);
   await document.fonts.load('600 32px "GTEki Sign JP"', layouts.flatMap(p=>[p.input.store.name.ja,p.input.store.name.en,...p.floors.flatMap(f=>[f.label.ja,f.label.en,...f.tenants.flatMap(t=>[t.ja,t.en])])]).join(""));
   const interiors = layouts.map(p=>buildDepatoInterior(ctx, p, scene.generatedMeshEnvMap));
-  let avatar: {x:number;y:number;z:number}|null=null;
-  const focus = scene.setCameraFocus;
+  detailStores.push(...interiors);
   scene.root.add(...interiors.flatMap(i=>[i.root,i.connectorRoot]));
-  const update = scene.update, dispose = scene.dispose;
   return { ...scene, walkable: [...scene.walkable, ...interiors.flatMap(i=>i.walkable)], colliders: [...(scene.colliders ?? []), ...interiors.flatMap(i=>i.colliders)],
     cameraBlockers: [...(scene.cameraBlockers ?? []), ...interiors.flatMap(i=>i.cameraBlockers)],
-    setCameraFocus: (...args: Parameters<NonNullable<StationScene["setCameraFocus"]>>) => { focus?.(...args); avatar=args[3] ?? null; interiors.forEach(i=>i.setAvatar(avatar)); },
-    update: (dt: number, elapsed: number, camera?: import("three").Camera) => { update?.(dt,elapsed,camera); if(camera){
-      const cp=camera.getWorldPosition(new THREE.Vector3()),p=avatar??{x:cp.x,y:cp.y-2,z:cp.z};
-      const distances=layouts.map(l=>l.contains([p.x,p.z]) && p.y>=l.height(l.floors[0]!.level)-1 && p.y<=l.height("1F")+4.1 ? 0 :
-        Math.min(...l.input.entrances.map(e=>Math.hypot(p.x-e.point[0],p.z-e.point[1],p.y-l.height(e.level)))));
-      const active=distances.indexOf(Math.min(...distances));
-      // Release the previous store before a neighbour allocates its detail.
-      interiors.forEach((i,n)=>{if(n!==active)i.update(camera,dt,elapsed,false);});
-      interiors[active]!.update(camera,dt,elapsed);
-    } },
-    dispose() { disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); dispose(); },
+    dispose() { disposePortalCuts(resources); interiors.forEach(i=>i.dispose()); scene.dispose(); },
   };
 }

@@ -1,6 +1,7 @@
 // gteki.scene/0.1 hook discovered by the shared explorer; implementation lives in ../scene/.
 import { buildScene as baseScene } from "../scene/scene.ts";
 import type { BuildScene } from "@gteki/scene-api";
+import type { buildDepatoInterior } from "../scene/depato/interior.ts";
 export { generatedSignageFromGraph } from "../scene/scene.ts";
 export const previewBundle = async (bundle: import("@gteki/schema").StationBundle) => {
   const pilot = await import("../scene/depato/pilot.ts");
@@ -13,8 +14,42 @@ export const buildScene: BuildScene = async ctx => {
   const pilot = await import("../scene/depato/pilot.ts");
   const sunshine = await import("../scene/sunshine.ts");
   const rail = await import("../scene/rail.ts");
-  return rail.buildRailScene(ctx, context => sunshine.buildSunshineScene(context,
-    context => pilot.buildPilotScene(context, baseScene)));
+  type Store = ReturnType<typeof buildDepatoInterior>;
+  const stores: Store[] = [];
+  const scene = await rail.buildRailScene(ctx, context => sunshine.buildSunshineScene(context,
+    context => pilot.buildPilotScene(context, baseScene, stores), stores));
+  let avatar: { x: number; y: number; z: number } | null = null;
+  let active: Store | undefined;
+  const cameraPoint = new ctx.THREE.Vector3();
+  return {
+    ...scene,
+    setCameraFocus(...args) {
+      scene.setCameraFocus?.(...args);
+      avatar = args[3] ?? null;
+    },
+    update(dt, elapsed, camera) {
+      scene.update?.(dt, elapsed, camera);
+      if (!camera) return;
+      camera.getWorldPosition(cameraPoint);
+      const point = avatar ?? { x: cameraPoint.x, y: cameraPoint.y - 2, z: cameraPoint.z };
+      let next: Store | undefined;
+      let occupied = false;
+      let distance = Infinity;
+      for (const store of stores) {
+        const inside = store.occupies(point);
+        const entranceDistance = store.entranceDistance(point);
+        if ((inside && !occupied) || (inside === occupied && entranceDistance < distance)) {
+          next = store;
+          occupied = inside;
+          distance = entranceDistance;
+        }
+      }
+      if (active !== next) active?.update(camera, dt, elapsed, false);
+      active = next;
+      active?.setAvatar(point);
+      active?.update(camera, dt, elapsed);
+    },
+  };
 };
 import type { NavmeshPaths } from "@gteki/scene-api";
 
