@@ -2387,6 +2387,28 @@ export class Explorer {
     return bodyBlock(from, to, (origin, dir, far) => this.colliderCast(origin, dir, far), RADIUS);
   }
 
+  /** Admit an authored preview leg only if the walker's ground and collision checks pass along it. */
+  previewWalkLeg(start: PolylinePoint, waypoints: readonly PolylinePoint[]): PolylinePoint[] | null {
+    let previous = R(start.x, start.y, start.z);
+    const points: PolylinePoint[] = [];
+    for (const waypoint of waypoints) {
+      const from = previous.clone();
+      const to = R(waypoint.x, waypoint.y, waypoint.z);
+      const samples = Math.ceil(Math.hypot(to.x - from.x, to.z - from.z) / 0.25);
+      for (let i = 1; i <= samples; i++) {
+        const p = from.clone().lerp(to, i / samples);
+        const ground = this.groundAt(p.x, previous.y + DEFAULT_GROUND.stepUp + 0.05, p.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1);
+        if (ground === null || !acceptGround(previous.y, ground)) return null;
+        p.y = ground;
+        const clear = resolveWalls(p.x, p.z, RADIUS, p.y, WALKER_BODY.bodyTopM, this.walls);
+        if (clear.x !== p.x || clear.z !== p.z || this.blockedByColliders(previous, p)) return null;
+        points.push({ ...waypoint, x: p.x, y: -p.z, z: p.y });
+        previous = p;
+      }
+    }
+    return points;
+  }
+
   // ---- Routes & POIs -------------------------------------------------------------
 
   showRoute(polyline: PolylinePoint[], escalators: readonly { fromS: number; toS: number }[] = []): void {
@@ -2456,7 +2478,8 @@ export class Explorer {
     if (gaps.length > 0) {
       this.noModelTexture ??= dashTexture();
       this.noModelTexture.repeat.set(1 / 1.6, 1);
-      const gapMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.noModelTexture, color: 0xffb547, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+      // Preview store floors are modelled: their slabs must occlude approximate guide segments above.
+      const gapMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.noModelTexture, color: 0xffb547, transparent: true, opacity: 0.95, depthTest: polyline.some(p => p.floorId.startsWith("depato-")), depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
       for (const run of gaps) {
         const band = new THREE.Mesh(ribbonGeometry(run.map((p) => R(p.x, p.y, p.z)), 0.5, 0.15), gapMat);
         band.renderOrder = 21;
@@ -3893,6 +3916,18 @@ export class Explorer {
       this.camera.position.copy(pose.pivot).addScaledVector(offset, actual);
     }
     if (gateHeld && !gate!.clearPosition(this.camera.position)) this.camera.position.copy(desired);
+    if (lockOn && !this.previewNext && this.camera.aspect < 1) {
+      // On the approach turn the boom is already swinging onto the ride axis while guide yaw is still catching up.
+      // Keep the cat in the middle half of the portrait frame without moving the cleared boom or changing pitch.
+      const offset = pose.target.clone().sub(this.camera.position);
+      const aimYaw = Math.atan2(offset.x, offset.z);
+      const catYaw = Math.atan2(this.pos.x - this.camera.position.x, this.pos.z - this.camera.position.z);
+      const maxYawOffset = Math.atan(0.5 * this.camera.aspect * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2));
+      const framedYaw = catYaw + THREE.MathUtils.clamp(angleDelta(catYaw, aimYaw), -maxYawOffset, maxYawOffset);
+      const reach = Math.hypot(offset.x, offset.z);
+      pose.target.x = this.camera.position.x + Math.sin(framedYaw) * reach;
+      pose.target.z = this.camera.position.z + Math.cos(framedYaw) * reach;
+    }
     if (this.catAvatar) {
       this.gateAimHeld = gateHeld || (!snap && !this.reducedMotion && this.gateAimHeld && this.boomRaise > 0);
       // Retain the local aim through release after all positions have left the gate footprint.
@@ -3913,6 +3948,16 @@ export class Explorer {
     } else this.stairAimElevation = undefined;
     const catFocus = shot && this.catAvatar ? pose.target.clone() : null;
     if (shot) pose.target.lerp(this.camera.position.clone().addScaledVector(dir, FOLLOW.aim), weight);
+    const boardingDistance = lockOn && firstRide ? this.guide!.s - span!.fromS : Infinity;
+    if (boardingDistance < 1.65) {
+      // The boom turns into the shaft before the guide turns. Follow the cat with the aim
+      // through that crossover, then ease back to the ride composition; keep the J5 boom.
+      const aimIn = THREE.MathUtils.smoothstep(boardingDistance, -ESCALATOR_SHOT.leadM, -1);
+      const aimOut = THREE.MathUtils.smoothstep(boardingDistance, 1, 1.65);
+      const boardingAim = head.clone().sub(this.camera.position)
+        .setLength(pose.target.distanceTo(this.camera.position)).add(this.camera.position);
+      pose.target.lerp(boardingAim, aimIn * (1 - aimOut));
+    }
     this.camera.lookAt(pose.target);
     if (this.openingRelease) {
       this.openingElapsed = Math.min(1.2, this.openingElapsed + dt);

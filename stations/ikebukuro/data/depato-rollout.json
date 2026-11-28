@@ -3,7 +3,7 @@
   "source": "assets/ikebukuro_context_low.glb",
   "sourceReceipt": "docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-daebc9ca51cbeea3c90a.json",
   "buildingIdentity": "PR #1512 at 8302307a4c454f11ff131f19ccff191066ce2096, docs/gis/context/ikebukuro-landmarks-next.json",
-  "partitions": "PLATEAU LOD1 bottom-face boundary; PARCO clipped at renderer z=-65, Tobu at z=70 and x=-65 (station-side internal partition). Original outer vertices retained to 1 mm. Floor spacing 4.5 m anchored to station entrance height, not surveyed store heights.",
+  "partitions": "PLATEAU LOD1 bottom-face boundary; PARCO clipped at renderer z=-65, Tobu at z=70 and x=-65 (station-side internal partition). Tobu's northwest corner (x<-90, z<-149) is reserved for the existing x18 station connector. Original outer vertices retained to 1 mm. Floor spacing 4.5 m anchored to station entrance height, not surveyed store heights.",
   "stores": [
     {
       "id": "tobu-ikebukuro",
@@ -132,16 +132,16 @@
           -125.097
         ],
         [
-          -96.638,
-          -169.665
+          -105.307,
+          -149
         ],
         [
-          -94.001,
-          -168.67
+          -90,
+          -149
         ],
         [
-          -93.546,
-          -169.938
+          -90,
+          -168.365
         ],
         [
           -83.541,

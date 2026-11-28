@@ -4,16 +4,17 @@ import { cutRegions, disposePortalCuts, type CutRegion, type PortalCutResources 
 import footprintData from "../../data/depato-footprint.json";
 import floorData from "../../data/depato-floors.json";
 import rolloutData from "../../data/depato-rollout.json";
-import { depatoBundle, depatoLayout, type PlanPoint } from "./layout.ts";
+import { depatoBundle, depatoLayout, readDepatoFloors, type PlanPoint } from "./layout.ts";
 import { buildDepatoInterior } from "./interior.ts";
 
 // PLATEAU context low GLB, ctx_bldg_t01_00: southern store wing of the connected
 // station building, clipped at z=70/180 and x=0 (authored internal partitions).
 // Source vertices are unchanged; this is a footprint, not a copied store floor plan.
 const footprint = footprintData.footprint as PlanPoint[];
-const store = floorData.stores.find(s => s.id === "seibu-ikebukuro")!;
+const floorStores = readDepatoFloors(floorData);
+const store = floorStores.find(s => s.id === "seibu-ikebukuro")!;
 const plan = () => depatoLayout({
-  store: { ...store, floors: store.floors.filter((f,i,all) => ["B1", "1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) },
+  store: { ...store, floors: store.floors.filter((f,i,all) => ["B2", "B1", "1F"].includes(f.level) && all.findIndex(other => other.level === f.level) === i) },
   footprint, elevations: { "1F": 32.2 },
   poiId: "shop-ikb-seibu-honten", sourceId: "sogo-seibu-ikebukuro-floorguide-2026-10",
   entrances: [{ level: "B1", point: [15,70], outsideNode: "sp_e" }, { level: "1F", point: [49.365,122.5], outsideNode: "depato-seibu-street" }],
@@ -21,7 +22,7 @@ const plan = () => depatoLayout({
 
 // Instance placement only: the accepted kit materials, lights and proportions are shared.
 const rolloutPlans = () => rolloutData.stores.map(row => {
-  const store = floorData.stores.find(s => s.id === row.id)!;
+  const store = floorStores.find(s => s.id === row.id)!;
   const layout = depatoLayout({ ...row, footprint: row.footprint as PlanPoint[],
     entrances: row.entrances.map(e=>({ ...e, point: e.point as PlanPoint, inward: e.inward as PlanPoint })),
     store: { ...store, floors: store.floors.filter((f,i,all) =>
@@ -38,17 +39,33 @@ const rolloutPlans = () => rolloutData.stores.map(row => {
   return layout;
 });
 
+export const ikebukuroDepatoLayouts = () => [plan(), ...rolloutPlans()];
+
 /** Called before the host creates search/router; the flag-off bundle is never modified. */
 export function previewBundle(bundle: StationBundle): StationBundle {
   const street = { id: "depato-seibu-street", floorId: "street", position: { x: 56, y: -122.5, z: 32.5 }, kind: "junction" as const, inOut: "outside" as const, sourceRefs: [] };
+  const layout = plan();
   const streets = rolloutData.stores.map(row => ({ ...street, id: row.street.id,
     position: { x: row.street.point[0]!, y: -row.street.point[1]!, z: row.elevations["1F"] } }));
-  return rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, plan()));
+  const preview = rolloutPlans().reduce(depatoBundle, depatoBundle({ ...bundle, nodes: [...bundle.nodes, street, ...streets] }, layout));
+  const original = bundle.pois.find(p => p.id === layout.input.poiId)!;
+  return { ...preview, pois: preview.pois.map(p => p.id !== layout.input.poiId ? p : {
+    ...p, floorId: original.floorId, displayPosition: original.displayPosition, connectorNodeIds: [layout.input.entrances[0]!.outsideNode],
+    evidence: {
+      sourceIds: [...original.evidence.sourceIds, layout.input.sourceId, "toshima-underground-guide-2022"],
+      method: "STATION_TIE: official South Passage and B1 South Entrance names; the connector is the verified public passage junction. The doorway coordinates and interior continuation are illustrative.",
+      checkedDate: "2026-11-24",
+    },
+    notes: [
+      { lang: "ja", text: "確認済みの案内は南通路までです。西武B1の入口の位置と店内経路は現地未確認です。" },
+      { lang: "en", text: "Verified station directions end in the South Passage. The Seibu B1 entrance position and interior path are unsurveyed." },
+    ],
+  }) };
 }
 
 /** One station hook: wrap context loading, open the station shell and attach the reusable kit. */
 export async function buildPilotScene(ctx: SceneContext, base: BuildScene) {
-  const THREE = ctx.THREE, layout = plan(), layouts = [layout, ...rolloutPlans()];
+  const THREE = ctx.THREE, layouts = ikebukuroDepatoLayouts(), layout = layouts[0]!;
   const resources: PortalCutResources = { geometries: [], materials: [], portalMeshes: new Map(), originals: new Map(), clippedMeshes: [], instances: [] };
   const volume = (left: number, right: number, front: number, back: number, low: number, high: number): CutRegion => ({
     key: {}, bounds: new THREE.Box3(new THREE.Vector3(left, low, front), new THREE.Vector3(right, high, back)), clip: null,
